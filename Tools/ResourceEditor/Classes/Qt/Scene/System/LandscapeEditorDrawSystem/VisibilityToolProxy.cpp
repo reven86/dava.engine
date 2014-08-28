@@ -30,6 +30,8 @@
 
 #include "VisibilityToolProxy.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 VisibilityToolProxy::VisibilityToolProxy(int32 size)
 :	changedRect(Rect())
 ,	spriteChanged(false)
@@ -37,22 +39,26 @@ VisibilityToolProxy::VisibilityToolProxy(int32 size)
 ,	isVisibilityPointSet(false)
 ,	visibilityPoint(Vector2(-1.f, -1.f))
 {
-	visibilityToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
+    uint32 renderTargetWidth = (uint32)size;
+    uint32 renderTargetHeight = renderTargetWidth;
+
+    renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                       renderTargetWidth,
+                                                                       renderTargetHeight,
+                                                                       FramebufferDescriptor::PRE_ACTION_LOAD,
+                                                                       FramebufferDescriptor::POST_ACTION_RESOLVE);
+    renderTexture = renderTarget->GetColorAttachment()->Lock();
 }
 
 VisibilityToolProxy::~VisibilityToolProxy()
 {
-	SafeRelease(visibilityToolSprite);
+    renderTarget->GetColorAttachment()->Unlock(renderTexture);
+	SafeRelease(renderTarget);
 }
 
 int32 VisibilityToolProxy::GetSize()
 {
 	return size;
-}
-
-Sprite* VisibilityToolProxy::GetSprite()
-{
-	return visibilityToolSprite;
 }
 
 void VisibilityToolProxy::ResetSpriteChanged()
@@ -102,4 +108,14 @@ bool VisibilityToolProxy::IsVisibilityPointSet()
 void VisibilityToolProxy::UpdateVisibilityPointSet(bool visibilityPointSet)
 {
 	isVisibilityPointSet = visibilityPointSet;
+}
+
+RenderTarget* VisibilityToolProxy::GetRenderTarget()
+{
+    return renderTarget;
+}
+
+Texture* VisibilityToolProxy::GetRenderTexture()
+{
+    return renderTexture;
 }

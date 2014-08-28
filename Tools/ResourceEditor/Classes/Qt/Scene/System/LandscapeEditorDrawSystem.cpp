@@ -315,7 +315,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetVisibilityCheckToolTexture(visibilityToolProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetVisibilityCheckToolTexture(visibilityToolProxy->GetRenderTexture());
 		}
 		visibilityToolProxy->ResetSpriteChanged();
 	}
@@ -324,7 +324,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		if (rulerToolProxy)
 		{
-			landscapeProxy->SetRulerToolTexture(rulerToolProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetRulerToolTexture(rulerToolProxy->GetRenderTexture());
 		}
 		rulerToolProxy->ResetSpriteChanged();
 	}

@@ -36,6 +36,7 @@
 #include "LandscapeEditorDrawSystem.h"
 
 #include "Render/UniqueStateSet.h"
+#include "Render/RenderTarget/RenderTarget.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
@@ -114,9 +115,12 @@ protected:
 	
 	bool editingIsEnabled;
 	
-	Sprite* stencilSprite;
-	Sprite* toolSprite;
 	bool toolSpriteUpdated;
+
+    RenderTarget* stencilRenderTarget;
+    RenderTarget* toolRenderTarget;
+    Texture* stencilRenderTexture;
+    Texture* toolRenderTexture;
 
 	eBlendMode srcBlendMode;
 	eBlendMode dstBlendMode;

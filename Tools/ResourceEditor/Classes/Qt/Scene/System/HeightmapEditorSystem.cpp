@@ -292,8 +292,8 @@ void HeightmapEditorSystem::UpdateToolImage(bool force)
 
 Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
 {
-    uint32 renderTargetWidth = (uint32)ceilf(sideSize * Core::GetVirtualToPhysicalFactor());
-    uint32 renderTargetHeight = (uint32)ceilf(sideSize * Core::GetVirtualToPhysicalFactor());
+    uint32 renderTargetWidth = (uint32)sideSize;
+    uint32 renderTargetHeight = (uint32)sideSize;
 
     RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR,
                                                                                      renderTargetWidth,

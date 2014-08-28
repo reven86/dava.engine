@@ -35,6 +35,8 @@
 
 #include "../Qt/Main/QtUtils.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 ActionEnableVisibilityTool::ActionEnableVisibilityTool(SceneEditor2* forSceneEditor)
 :	CommandAction(CMDID_VISIBILITY_TOOL_ENABLE)
 ,	sceneEditor(forSceneEditor)
@@ -135,18 +137,23 @@ ActionSetVisibilityPoint::~ActionSetVisibilityPoint()
 
 void ActionSetVisibilityPoint::Redo()
 {
-	Sprite* visibilityToolSprite = visibilityToolProxy->GetSprite();
-	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
+    RenderTarget* renderTarget = visibilityToolProxy->GetRenderTarget();
+
+    renderTarget->BeginRender();
+
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
     Sprite::DrawState drawState;
     drawState.SetPosition((redoVisibilityPoint - cursorSprite->GetSize() / 2.f) / Core::GetVirtualToPhysicalFactor());
 	cursorSprite->Draw(&drawState);
 
-	RenderManager::Instance()->RestoreRenderTarget();
+	renderTarget->EndRender();
 
 	visibilityToolProxy->UpdateVisibilityPointSet(true);
-	visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, visibilityToolSprite->GetWidth(), visibilityToolSprite->GetHeight()));
+	visibilityToolProxy->UpdateRect(Rect(0.f,
+                                         0.f,
+                                         visibilityToolProxy->GetRenderTexture()->GetWidth(),
+                                         visibilityToolProxy->GetRenderTexture()->GetHeight()));
 	visibilityToolProxy->SetVisibilityPoint(redoVisibilityPoint);
 }
 
@@ -186,12 +193,14 @@ ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
 												 const Rect& updatedRect)
 :	CommandAction(CMDID_VISIBILITY_TOOL_SET_AREA, "Set Visibility Area")
 {
-	Image* currentImage = visibilityToolProxy->GetSprite()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
 
-//	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+    Image* currentImage = renderDataReader->ReadColorData(visibilityToolProxy->GetRenderTarget());
+
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
 
 	SafeRelease(currentImage);
+    SafeRelease(renderDataReader);
 
 	this->visibilityToolProxy = SafeRetain(visibilityToolProxy);
 	this->updatedRect = updatedRect;
@@ -216,28 +225,30 @@ void ActionSetVisibilityArea::Redo()
 
 void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 {
-	Sprite* visibilityToolSprite = visibilityToolProxy->GetSprite();
+    RenderTarget* renderTarget = visibilityToolProxy->GetRenderTarget();
 
 	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 											   image->GetWidth(), image->GetHeight(), false);
 	texture->GeneratePixelesation();
 	Sprite* sprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)image->GetWidth(), (float32)image->GetHeight());
 
-	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
+	renderTarget->BeginRender();
 
     Rect rect = ConvertPhysicalToVirtual(updatedRect);
     
 	RenderManager::Instance()->ClipPush();
 	RenderManager::Instance()->SetClip(rect);
 
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+	RenderManager::Instance
+    ()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     
     Sprite::DrawState drawState;
     drawState.SetPosition(rect.x, rect.y);
 	sprite->Draw(&drawState);
 
 	RenderManager::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+
+    renderTarget->EndRender();
 
 	visibilityToolProxy->UpdateRect(updatedRect);
 

@@ -40,6 +40,8 @@
 #include "Scene/SceneSignals.h"
 #include "Commands2/VisibilityToolActions.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 :	SceneSystem(scene)
 ,	enabled(false)
@@ -103,7 +105,7 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 	selectionSystem->SetLocked(true);
 	modifSystem->SetLocked(true);
 
-	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetSprite()->GetTexture();
+	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetRenderTexture();
 	drawSystem->GetLandscapeProxy()->SetVisibilityCheckToolTexture(visibilityToolTexture);
 	drawSystem->GetLandscapeProxy()->SetVisibilityCheckToolTextureEnabled(true);
 	landscapeSize = visibilityToolTexture->GetWidth();
@@ -276,8 +278,14 @@ void VisibilityToolSystem::SetBrushSize(int32 brushSize)
 void VisibilityToolSystem::StoreOriginalState()
 {
 	DVASSERT(originalImage == NULL);
-	originalImage = drawSystem->GetVisibilityToolProxy()->GetSprite()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+    originalImage = renderDataReader->ReadColorData(drawSystem->GetVisibilityToolProxy()->GetRenderTarget());
+
 	ResetAccumulatorRect();
+
+    SafeRelease(renderDataReader);
 }
 
 void VisibilityToolSystem::CreateUndoPoint()
@@ -357,21 +365,30 @@ void VisibilityToolSystem::SetVisibilityArea()
 
 void VisibilityToolSystem::SetVisibilityPointInternal(const Vector2& point)
 {
-	Sprite* sprite = Sprite::CreateAsRenderTarget(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE, FORMAT_RGBA8888);
+    uint32 renderTargetWidth = (uint32)CROSS_TEXTURE_SIZE;
+    uint32 renderTargetHeight = renderTargetWidth;
 
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                                     renderTargetWidth,
+                                                                                     renderTargetHeight);
 	Sprite* cursorSprite = Sprite::CreateFromTexture(crossTexture, 0, 0,
 													 crossTexture->GetWidth(), crossTexture->GetHeight());
 
-	RenderManager::Instance()->SetRenderTarget(sprite);
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+    renderTarget->BeginRender();
 
     Sprite::DrawState drawState;
     drawState.SetPosition(0.f, 0.f);
-	drawState.SetScaleSize(sprite->GetWidth(), sprite->GetHeight(),
+	drawState.SetScaleSize(renderTargetWidth, renderTargetHeight,
                            cursorSprite->GetWidth(), cursorSprite->GetHeight());
 	cursorSprite->Draw(&drawState);
 
-	RenderManager::Instance()->RestoreRenderTarget();
+	renderTarget->EndRender();
+
+    Texture* renderedCrossTexture = renderTarget->GetColorAttachment()->Lock();
+
+    Sprite* sprite = Sprite::CreateFromTexture(renderedCrossTexture, 0, 0, renderedCrossTexture->GetWidth(), renderedCrossTexture->GetHeight());
+
+    renderTarget->GetColorAttachment()->Unlock(renderedCrossTexture);
 
 	SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
 	DVASSERT(scene);
@@ -379,8 +396,9 @@ void VisibilityToolSystem::SetVisibilityPointInternal(const Vector2& point)
 											 drawSystem->GetVisibilityToolProxy(), cursorPosition));
 
 	SafeRelease(originalImage);
-	SafeRelease(sprite);
 	SafeRelease(cursorSprite);
+
+    SafeRelease(renderTarget);
 
 	SetState(VT_STATE_NORMAL);
 }
@@ -544,12 +562,12 @@ bool VisibilityToolSystem::IsCircleContainsPoint(const Vector2& circleCenter, fl
 void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points)
 {
 	VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
-	Sprite* visibilityAreaSprite = visibilityToolProxy->GetSprite();
+    RenderTarget* renderTarget = visibilityToolProxy->GetRenderTarget();
 
 	RenderManager* manager = RenderManager::Instance();
 	RenderHelper* helper = RenderHelper::Instance();
 
-	manager->SetRenderTarget(visibilityAreaSprite);
+	renderTarget->BeginRender();
 
 	for(uint32 i = 0; i < points.size(); ++i)
 	{
@@ -562,7 +580,8 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 	}
 
 	manager->ResetColor();
-	manager->RestoreRenderTarget();
+
+	renderTarget->EndRender();
 }
 
 void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
@@ -572,12 +591,13 @@ void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
 		return;
 	}
 
-	Sprite* visibilityToolSprite = drawSystem->GetVisibilityToolProxy()->GetSprite();
-	Texture* visibilityToolTexture = visibilityToolSprite->GetTexture();
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
 
-	Image* image = visibilityToolTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image* image = renderDataReader->ReadColorData(drawSystem->GetVisibilityToolProxy()->GetRenderTarget());
     ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
+
+    SafeRelease(renderDataReader);
 }
 
 VisibilityToolSystem::eVisibilityToolState VisibilityToolSystem::GetState()

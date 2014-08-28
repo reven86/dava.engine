@@ -7,6 +7,7 @@
 #include "../LandscapeEditorShortcutManager.h"
 
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/RenderTarget/RenderTargetFactory.h"
 
 #include <QLayout>
 #include <QComboBox>
@@ -267,19 +268,26 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 											 width, height, false);
 		Sprite* s = Sprite::CreateFromTexture(t, 0, 0, width, height);
 
-		Sprite* sprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888);
-		RenderManager::Instance()->SetRenderTarget(sprite);
-        
+        RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR,
+                                                                                         (uint32)width,
+                                                                                         (uint32)height);
+
+        renderTarget->BeginRender();
+
         Sprite::DrawState drawState;
 		drawState.SetPosition(0.f, 0.f);
         drawState.SetRenderState(noBlendDrawState);
 		s->Draw(&drawState);
-		RenderManager::Instance()->RestoreRenderTarget();
 
-		image = sprite->GetTexture()->CreateImageFromMemory(noBlendDrawState);
+		renderTarget->EndRender();
+
+        RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+		image = renderDataReader->ReadColorData(renderTarget);
 		image->ResizeCanvas(width, height);
 
-		SafeRelease(sprite);
+        SafeRelease(renderDataReader);
+		SafeRelease(renderTarget);
 		SafeRelease(s);
 		SafeRelease(t);
 	}

@@ -86,7 +86,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
 	selectionSystem->SetLocked(true);
 	modifSystem->SetLocked(true);
 
-	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetSprite()->GetTexture();
+	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetRenderTexture();
 	drawSystem->GetLandscapeProxy()->SetRulerToolTexture(rulerToolTexture);
 	drawSystem->GetLandscapeProxy()->SetRulerToolTextureEnabled(true);
 	landscapeSize = drawSystem->GetHeightmapProxy()->Size();
@@ -321,11 +321,10 @@ void RulerToolSystem::DrawPoints()
 		return;
 	}
 
-	Sprite* sprite = drawSystem->GetRulerToolProxy()->GetSprite();
-	Texture* targetTexture = sprite->GetTexture();
+	RenderTarget* renderTarget = drawSystem->GetRulerToolProxy()->GetRenderTarget();
+	Texture* targetTexture = drawSystem->GetRulerToolProxy()->GetRenderTexture();
 
-	RenderManager::Instance()->SetRenderTarget(sprite);
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+	renderTarget->BeginRender();
 
 	Vector<Vector3> points;
 	points.reserve(linePoints.size() + 1);
@@ -371,7 +370,7 @@ void RulerToolSystem::DrawPoints()
 	}
 
 	RenderManager::Instance()->ResetColor();
-	RenderManager::Instance()->RestoreRenderTarget();
+	renderTarget->EndRender();
 
 	drawSystem->GetRulerToolProxy()->UpdateSprite();
 }

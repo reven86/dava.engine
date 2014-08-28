@@ -35,6 +35,8 @@
 #include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Project/ProjectManager.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 #include <QHBoxLayout>
 #include <QGraphicsWidget>
 #include <QFile>
@@ -906,8 +908,12 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
     //LAYER_SPRITE = 0,
     sprite = layer->sprite;
-    Sprite* renderSprite = Sprite::CreateAsRenderTarget(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-    RenderManager::Instance()->SetRenderTarget(renderSprite);
+
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR,
+                                                                                     (uint32)SPRITE_SIZE,
+                                                                                     (uint32)SPRITE_SIZE);
+
+    renderTarget->BeginRender();
     if (sprite)
     {
         Sprite::DrawState drawState;
@@ -916,12 +922,14 @@ void EmitterLayerWidget::Update(bool updateMinimized)
         sprite->Draw(&drawState);
     }
 
-    RenderManager::Instance()->RestoreRenderTarget();
-    Texture* texture = renderSprite->GetTexture();
-    Image* image = texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+    renderTarget->EndRender();
+
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+    Image* image = renderDataReader->ReadColorData(renderTarget);
     spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
     SafeRelease(image);
-    SafeRelease(renderSprite);
+    SafeRelease(renderTarget);
+    SafeRelease(renderDataReader);
 
     QString spriteName = "<none>";
     if (sprite)

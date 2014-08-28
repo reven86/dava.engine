@@ -33,6 +33,8 @@
 
 #include "DAVAEngine.h"
 
+#include "Render/RenderTarget/RenderTarget.h"
+
 using namespace DAVA;
 
 class VisibilityToolProxy: public BaseObject
@@ -44,7 +46,6 @@ public:
 
 	int32 GetSize();
 
-	Sprite* GetSprite();
 	void UpdateRect(const Rect& rect);
 
 	void ResetSpriteChanged();
@@ -58,6 +59,9 @@ public:
 	void UpdateVisibilityPointSet(bool visibilityPointSet);
 	bool IsVisibilityPointSet();
 
+    RenderTarget* GetRenderTarget();
+    Texture* GetRenderTexture();
+
 protected:
 	Sprite* visibilityToolSprite;
 	Rect changedRect;
@@ -65,6 +69,9 @@ protected:
 	int32 size;
 	Vector2 visibilityPoint;
 	bool isVisibilityPointSet;
+
+    RenderTarget* renderTarget;
+    Texture* renderTexture;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLPROXY__) */

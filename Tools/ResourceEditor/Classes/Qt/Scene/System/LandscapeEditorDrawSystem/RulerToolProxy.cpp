@@ -30,16 +30,20 @@
 
 #include "RulerToolProxy.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 RulerToolProxy::RulerToolProxy(int32 size)
 :	size(size)
 ,	spriteChanged(false)
 {
-	rulerToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
+	renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE, (uint32)size, (uint32)size);
+    renderTexture = renderTarget->GetColorAttachment()->Lock();
 }
 
 RulerToolProxy::~RulerToolProxy()
 {
-	SafeRelease(rulerToolSprite);
+    renderTarget->GetColorAttachment()->Unlock(renderTexture);
+	SafeRelease(renderTarget);
 }
 
 int32 RulerToolProxy::GetSize()
@@ -47,9 +51,14 @@ int32 RulerToolProxy::GetSize()
 	return size;
 }
 
-Sprite* RulerToolProxy::GetSprite()
+RenderTarget* RulerToolProxy::GetRenderTarget()
 {
-	return rulerToolSprite;
+	return renderTarget;
+}
+
+Texture* RulerToolProxy::GetRenderTexture()
+{
+    return renderTexture;
 }
 
 bool RulerToolProxy::IsSpriteChanged()

@@ -33,6 +33,8 @@
 
 #include "DAVAEngine.h"
 
+#include "Render/RenderTarget/RenderTarget.h"
+
 using namespace DAVA;
 
 class RulerToolProxy: public BaseObject
@@ -44,14 +46,18 @@ public:
 
 	int32 GetSize();
 
-	Sprite* GetSprite();
+	RenderTarget* GetRenderTarget();
+    Texture* GetRenderTexture();
 
 	void UpdateSprite();
 	void ResetSpriteChanged();
 	bool IsSpriteChanged();
 
 protected:
-	Sprite* rulerToolSprite;
+
+    RenderTarget* renderTarget;
+    Texture* renderTexture;
+
 	int32 size;
 	bool spriteChanged;
 };

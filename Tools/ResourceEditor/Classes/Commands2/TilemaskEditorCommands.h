@@ -36,6 +36,7 @@
 #include "DAVAEngine.h"
 
 #include "Render/UniqueStateSet.h"
+#include "Render/RenderTarget/RenderTarget.h"
 
 using namespace DAVA;
 
@@ -83,7 +84,7 @@ protected:
 	Rect updatedRect;
 
 	Sprite* ApplyImageToTexture(Image* image, Texture* texture);
-	void ApplyImageToSprite(Image* image, Sprite* dstSprite);
+	void ApplyImageToRenderTarget(Image* image, RenderTarget* renderTarget);
 	
 	UniqueHandle noBlendDrawState;
 };

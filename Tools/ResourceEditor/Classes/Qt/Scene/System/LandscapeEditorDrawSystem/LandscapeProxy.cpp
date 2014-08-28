@@ -31,6 +31,8 @@
 #include "LandscapeProxy.h"
 #include "CustomLandscape.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 :	displayingTexture(0)
 ,	mode(MODE_ORIGINAL_LANDSCAPE)
@@ -42,8 +44,14 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 {
 	DVASSERT(landscape != NULL);
 
-	tilemaskSprites[TILEMASK_SPRITE_SOURCE] = NULL;
-	tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = NULL;
+    tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE] = NULL;
+	tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION] = NULL;
+
+    tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE] = NULL;
+	tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION] = NULL;
+
+    tilemaskRenderSprites[TILEMASK_SPRITE_SOURCE] = NULL;
+    tilemaskRenderSprites[TILEMASK_SPRITE_DESTINATION] = NULL;
 
 	baseLandscape = SafeRetain(landscape);
 	landscapeNode = SafeRetain(node);
@@ -73,9 +81,23 @@ LandscapeProxy::~LandscapeProxy()
 	SafeRelease(displayingTexture);
 	SafeRelease(customLandscape);
 	SafeRelease(tilemaskImageCopy);
-	SafeRelease(tilemaskSprites[TILEMASK_SPRITE_SOURCE]);
-	SafeRelease(tilemaskSprites[TILEMASK_SPRITE_DESTINATION]);
 	SafeRelease(fullTiledTexture);
+
+    SafeRelease(tilemaskRenderSprites[TILEMASK_SPRITE_SOURCE]);
+    SafeRelease(tilemaskRenderSprites[TILEMASK_SPRITE_DESTINATION]);
+
+
+    if(tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE] != NULL)
+    {
+        tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE]->GetColorAttachment()->Unlock(tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE]);
+        SafeRelease(tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE]);
+    }
+
+    if(tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION] != NULL)
+    {
+        tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION]->GetColorAttachment()->Unlock(tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION]);
+        SafeRelease(tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION]);
+    }
 
     SafeRelease(cursorTexture);
 
@@ -210,8 +232,12 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	Sprite* fullTiledSprite = Sprite::CreateFromTexture(fullTiledTexture, 0, 0,
 														(float32)fullTiledWidth, (float32)fullTiledHeight, true);
 
-	Sprite *dstSprite = Sprite::CreateAsRenderTarget((float32)fullTiledWidth, (float32)fullTiledHeight, FORMAT_RGBA8888, true);
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                                     (uint32)fullTiledWidth,
+                                                                                     (uint32)fullTiledHeight);
+
+
+	renderTarget->BeginRender();
 	
     Sprite::DrawState drawState;
     drawState.SetPosition(0.f, 0.f);
@@ -267,12 +293,15 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	}
 	SafeRelease(rulerToolSprite);
 
-	RenderManager::Instance()->RestoreRenderTarget();
+	renderTarget->EndRender();
 	
 	SafeRelease(displayingTexture);
-	displayingTexture = SafeRetain(dstSprite->GetTexture());
-	
-	SafeRelease(dstSprite);
+
+    Texture* renderTexture = renderTarget->GetColorAttachment()->Lock();
+	displayingTexture = SafeRetain(renderTexture);
+    renderTarget->GetColorAttachment()->Unlock(renderTexture);
+
+    SafeRelease(renderTarget);
 
 //	displayingTexture->GenerateMipmaps();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, displayingTexture);
@@ -430,33 +459,103 @@ Image* LandscapeProxy::GetTilemaskImageCopy()
 	return tilemaskImageCopy;
 }
 
-void LandscapeProxy::InitTilemaskSprites()
+void LandscapeProxy::InitTilemaskRenderData()
 {
-	if (tilemaskSprites[TILEMASK_SPRITE_SOURCE] == NULL
-		|| tilemaskSprites[TILEMASK_SPRITE_DESTINATION] == NULL)
+	if (tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE] == NULL
+		|| tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION] == NULL)
 	{
-		SafeRelease(tilemaskSprites[TILEMASK_SPRITE_SOURCE]);
-		SafeRelease(tilemaskSprites[TILEMASK_SPRITE_DESTINATION]);
+        if(tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE] != NULL)
+        {
+            tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE]->GetColorAttachment()->Unlock(tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE]);
+            SafeRelease(tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE]);
+        }
+
+        if(tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION] != NULL)
+        {
+            tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION]->GetColorAttachment()->Unlock(tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION]);
+            SafeRelease(tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION]);
+        }
+
+        SafeRelease(tilemaskRenderSprites[TILEMASK_SPRITE_SOURCE]);
+        SafeRelease(tilemaskRenderSprites[TILEMASK_SPRITE_DESTINATION]);
 
 		float32 texSize = (float32)GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->GetWidth();
-		tilemaskSprites[TILEMASK_SPRITE_SOURCE] = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888, true);
-		tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888, true);
-	}
+
+        uint32 renderTargetSize = (uint32)texSize;
+
+		tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE] = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                                                            renderTargetSize,
+                                                                                                            renderTargetSize,
+                                                                                                            FramebufferDescriptor::PRE_ACTION_LOAD,
+                                                                                                            FramebufferDescriptor::POST_ACTION_RESOLVE);
+
+		tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION] = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                                                                 renderTargetSize,
+                                                                                                                 renderTargetSize,
+                                                                                                                 FramebufferDescriptor::PRE_ACTION_LOAD,
+                                                                                                                 FramebufferDescriptor::POST_ACTION_RESOLVE);
+
+        tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE] = tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE]->GetColorAttachment()->Lock();
+        tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION] = tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION]->GetColorAttachment()->Lock();
+
+        tilemaskRenderSprites[TILEMASK_SPRITE_SOURCE] = Sprite::CreateFromTexture(tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE],
+                                                                                  0,
+                                                                                  0,
+                                                                                  (float32)tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE]->GetWidth(),
+                                                                                  (float32)tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE]->GetHeight(),
+                                                                                  true);
+
+        tilemaskRenderSprites[TILEMASK_SPRITE_DESTINATION] = Sprite::CreateFromTexture(tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION],
+                                                                                       0,
+                                                                                       0,
+                                                                                       (float32)tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION]->GetWidth(),
+                                                                                       (float32)tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION]->GetHeight(),
+                                                                                       true);
+
+    }
 }
 
-Sprite* LandscapeProxy::GetTilemaskSprite(int32 number)
+RenderTarget* LandscapeProxy::GetTilemaskRenderTarget(int32 number)
 {
-	if (number >= 0 && number < TILEMASK_SPRITES_COUNT)
+    if (number >= 0 && number < TILEMASK_SPRITES_COUNT)
 	{
-		return tilemaskSprites[number];
+		return tilemaskRenderTargets[number];
 	}
 
 	return NULL;
 }
 
-void LandscapeProxy::SwapTilemaskSprites()
+Texture* LandscapeProxy::GetTilemaskRenderTexture(int32 number)
 {
-	Sprite* temp = tilemaskSprites[TILEMASK_SPRITE_SOURCE];
-	tilemaskSprites[TILEMASK_SPRITE_SOURCE] = tilemaskSprites[TILEMASK_SPRITE_DESTINATION];
-	tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = temp;
+    if (number >= 0 && number < TILEMASK_SPRITES_COUNT)
+	{
+		return tilemaskRenderTextures[number];
+	}
+
+	return NULL;
+}
+
+Sprite* LandscapeProxy::GetTilemaskRenderSprite(int32 number)
+{
+    if (number >= 0 && number < TILEMASK_SPRITES_COUNT)
+	{
+		return tilemaskRenderSprites[number];
+	}
+
+	return NULL;
+}
+
+void LandscapeProxy::SwapTilemaskRenderTargets()
+{
+    RenderTarget* tempTarget = tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE];
+    tilemaskRenderTargets[TILEMASK_SPRITE_SOURCE] = tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION];
+    tilemaskRenderTargets[TILEMASK_SPRITE_DESTINATION] = tempTarget;
+
+    Texture* tempTexture = tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE];
+    tilemaskRenderTextures[TILEMASK_SPRITE_SOURCE] = tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION];
+    tilemaskRenderTextures[TILEMASK_SPRITE_DESTINATION] = tempTexture;
+
+    Sprite* tempSprite = tilemaskRenderSprites[TILEMASK_SPRITE_SOURCE];
+    tilemaskRenderSprites[TILEMASK_SPRITE_SOURCE] = tilemaskRenderSprites[TILEMASK_SPRITE_DESTINATION];
+    tilemaskRenderSprites[TILEMASK_SPRITE_DESTINATION] = tempSprite;
 }

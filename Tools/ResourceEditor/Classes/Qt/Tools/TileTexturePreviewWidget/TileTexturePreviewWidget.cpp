@@ -10,6 +10,8 @@
 #include <QColorDialog>
 #include <QEvent>
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 TileTexturePreviewWidget::TileTexturePreviewWidget(QWidget* parent)
 :	QTreeWidget(parent)
 ,	selectedTexture(0)
@@ -318,10 +320,17 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 												  width, height, false);
 	Sprite* srcSprite = Sprite::CreateFromTexture(srcTexture, 0, 0, width, height, true);
 
-	Sprite* dstSprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888, true);
+    uint32 renderTargetWidth = width;
+    uint32 renderTargetHeight = height;
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR,
+                                                                                     renderTargetWidth,
+                                                                                     renderTargetHeight,
+                                                                                     FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                                                                     FramebufferDescriptor::POST_ACTION_STORE);
+    renderTarget->SetClearColor(Color(0.0f, 0.0f, 0.0f, 1.0f));
 
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
+    renderTarget->BeginRender();
+
 	RenderManager::Instance()->SetColor(color);
 
     Sprite::DrawState drawState;
@@ -330,13 +339,18 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 	srcSprite->Draw(&drawState);
 
 	RenderManager::Instance()->ResetColor();
-	RenderManager::Instance()->RestoreRenderTarget();
 
-	Image* res = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
+    renderTarget->EndRender();
 
-	SafeRelease(dstSprite);
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+    Image* res = renderDataReader->ReadColorData(renderTarget);
+
+    SafeRelease(renderDataReader);
+
 	SafeRelease(srcSprite);
 	SafeRelease(srcTexture);
+    SafeRelease(renderTarget);
 
 	return res;
 }

@@ -35,6 +35,8 @@
 
 #include "../Qt/Main/QtUtils.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 ActionEnableTilemaskEditor::ActionEnableTilemaskEditor(SceneEditor2* forSceneEditor)
 :	CommandAction(CMDID_TILEMASK_EDITOR_ENABLE)
 ,	sceneEditor(forSceneEditor)
@@ -154,8 +156,8 @@ void ModifyTilemaskCommand::Undo()
     
     RenderManager::Instance()->SetColor(Color::White);
     
-    Sprite* srcSprite = landscapeProxy->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
-	ApplyImageToSprite(undoImageMask, srcSprite);
+    RenderTarget* srcRenderTarget = landscapeProxy->GetTilemaskRenderTarget(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
+	ApplyImageToRenderTarget(undoImageMask, srcRenderTarget);
     
 	Texture* maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
 
@@ -177,7 +179,7 @@ void ModifyTilemaskCommand::Redo()
 {
     RenderManager::Instance()->Setup2DMatrices();
     
-	ApplyImageToSprite(redoImageMask, landscapeProxy->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
+	ApplyImageToRenderTarget(redoImageMask, landscapeProxy->GetTilemaskRenderTarget(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
 
 	Texture* maskTexture = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK);
     
@@ -203,10 +205,13 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
 {
 	int32 width = texture->GetWidth();
 	int32 height = texture->GetHeight();
-    
-	Sprite* resSprite = Sprite::CreateAsRenderTarget((float32)width, (float32)height, FORMAT_RGBA8888, true);
-	RenderManager::Instance()->SetRenderTarget(resSprite);
-    
+
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                                     (uint32)width,
+                                                                                     (uint32)height);
+
+    renderTarget->BeginRender();
+
     RenderManager::Instance()->SetColor(Color::White);
     
 	Sprite* s = Sprite::CreateFromTexture(texture, 0, 0, (float32)width, (float32)height);
@@ -241,16 +246,23 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
     
 	RenderManager::Instance()->ClipPop();
 	
-    RenderManager::Instance()->RestoreRenderTarget();
-    
+    renderTarget->EndRender();
+
+    Texture* renderTexture = renderTarget->GetColorAttachment()->Lock();
+    Sprite* resSprite = Sprite::CreateFromTexture(renderTexture, 0, 0, (float32)renderTexture->GetWidth(), (float32)renderTexture->GetHeight());
+
+    renderTarget->GetColorAttachment()->Unlock(renderTexture);
+    SafeRelease(renderTarget);
+
 	return resSprite;
 }
 
-void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
+void ModifyTilemaskCommand::ApplyImageToRenderTarget(Image* image, RenderTarget* renderTarget)
 {
     Rect rect = ConvertPhysicalToVirtual(updatedRect);
     
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
+	renderTarget->BeginRender();
+
 	RenderManager::Instance()->ClipPush();
 	RenderManager::Instance()->SetClip(rect);
 
@@ -266,7 +278,7 @@ void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
 	srcSprite->Draw(&drawState);
     
 	RenderManager::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+	renderTarget->EndRender();
 	
 	SafeRelease(texture);
 	SafeRelease(srcSprite);

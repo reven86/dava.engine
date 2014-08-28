@@ -35,6 +35,7 @@
 #include "Deprecated/LandscapeRenderer.h"
 
 #include "Render/UniqueStateSet.h"
+#include "Render/RenderTarget/RenderTarget.h"
 
 using namespace DAVA;
 
@@ -112,9 +113,11 @@ public:
 	void InitTilemaskImageCopy();
 	Image* GetTilemaskImageCopy();
 
-	void InitTilemaskSprites();
-	Sprite* GetTilemaskSprite(int32 number);
-	void SwapTilemaskSprites();
+	void InitTilemaskRenderData();
+	RenderTarget* GetTilemaskRenderTarget(int32 number);
+    Texture* GetTilemaskRenderTexture(int32 number);
+    Sprite* GetTilemaskRenderSprite(int32 number);
+	void SwapTilemaskRenderTargets();
 
 protected:
 	enum eTextureType
@@ -131,7 +134,10 @@ protected:
 	bool texturesEnabled[TEXTURE_TYPES_COUNT];
 
 	Image* tilemaskImageCopy;
-	Sprite* tilemaskSprites[TILEMASK_SPRITES_COUNT];
+
+    RenderTarget* tilemaskRenderTargets[TILEMASK_SPRITES_COUNT];
+    Texture* tilemaskRenderTextures[TILEMASK_SPRITES_COUNT];
+    Sprite* tilemaskRenderSprites[TILEMASK_SPRITES_COUNT];
 
 	int32 tilemaskWasChanged;
 
