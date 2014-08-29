@@ -34,6 +34,8 @@
 
 #include "Render/Material/NMaterialNames.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 using namespace DAVA;
 
 CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent, int32 _fromLodLayer, uint32 _textureSize, const DAVA::FilePath & texturePath)
@@ -108,7 +110,7 @@ DAVA::Entity* CreatePlaneLODCommand::GetEntity() const
     return lodComponent->GetEntity();
 }
 
-void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camera * camera, DAVA::Texture * toTexture, DAVA::int32 fromLodLayer, const DAVA::Rect & viewport /* = DAVA::Rect(0, 0, -1, -1) */, bool clearTarget /* = true */)
+void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camera * camera, DAVA::RenderTarget* renderTarget, DAVA::int32 fromLodLayer, const DAVA::Rect & viewport /* = DAVA::Rect(0, 0, -1, -1) */, bool clearTarget /* = true */)
 {
     DAVA::TexturesMap textures;
     SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures, SceneHelper::EXCLUDE_NULL);
@@ -119,15 +121,14 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     for(; it != end; ++it)
         it->second->ReloadAs(GPU_PNG);
 
-    Rect oldViewport = RenderManager::Instance()->GetViewport();
+    renderTarget->BeginRender();
+
     Rect newViewport = viewport;
 
     if(newViewport.dx == -1)
-        newViewport.dx = (float32)toTexture->GetWidth();
+        newViewport.dx = (float32)renderTarget->GetColorAttachment()->GetFramebufferWidth();
     if(newViewport.dy == -1)
-        newViewport.dy = (float32)toTexture->GetHeight();
-
-    RenderManager::Instance()->SetRenderTarget(toTexture);
+        newViewport.dy = (float32)renderTarget->GetColorAttachment()->GetFramebufferHeight();
 
 	RenderManager::Instance()->SetViewport(newViewport, true);
 
@@ -165,11 +166,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     SafeRelease(entity);
     SafeRelease(tempScene);
 
-    RenderManager::Instance()->SetViewport(oldViewport, true);
-
-#ifdef __DAVAENGINE_OPENGL__
-    RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
-#endif //#ifdef __DAVAENGINE_OPENGL__
+    renderTarget->EndRender();
 
     it = textures.begin();
     end = textures.end();
@@ -208,26 +205,34 @@ void CreatePlaneLODCommand::CreatePlaneImage()
         firstSideViewport = Rect(0, 0, halfSizef, (float32)textureSize);
         secondSideViewport = Rect(halfSizef, 0, halfSizef, (float32)textureSize);
     }
-    
-    Texture * fboTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
+
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR | RenderTargetFactory::ATTACHMENT_DEPTH | RenderTargetFactory::ATTACHMENT_STENCIL,
+                                                                                     (uint32)textureSize,
+                                                                                     (uint32)textureSize,
+                                                                                     FramebufferDescriptor::PRE_ACTION_DONTCARE,
+                                                                                     FramebufferDescriptor::POST_ACTION_STORE);
 
     float32 depth = 0.f;
     //draw 1st side
     depth = max.y - min.y;
  	camera->Setup(min.x, max.x, max.z, min.z, -depth, depth * 2);
     camera->SetPosition(Vector3(0.f, min.y, 0.f));
-    DrawToTexture(fromEntity, camera, fboTexture, fromLodLayer, firstSideViewport, true);
+    DrawToTexture(fromEntity, camera, renderTarget, fromLodLayer, firstSideViewport, true);
     
     //draw 2nd side
     depth = max.x - min.x;
 	camera->Setup(min.y, max.y, max.z, min.z, -depth, depth * 2);
     camera->SetPosition(Vector3(max.x, 0.f, 0.f));
-    DrawToTexture(fromEntity, camera, fboTexture, fromLodLayer, secondSideViewport, false);
+    DrawToTexture(fromEntity, camera, renderTarget, fromLodLayer, secondSideViewport, false);
     
     SafeRelease(camera);
 
-    planeImage = fboTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
-    SafeRelease(fboTexture);
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+    planeImage = renderDataReader->ReadColorData(renderTarget);
+
+    SafeRelease(renderDataReader);
+    SafeRelease(renderTarget);
 }
 
 void CreatePlaneLODCommand::CreatePlaneBatch()

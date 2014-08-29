@@ -70,17 +70,17 @@ public:
     virtual RenderTarget* CreateRenderTarget(const RenderTargetDescriptor& rtDesc) = 0;
     virtual RenderDataReader* GetRenderDataReader() = 0;
 
-    RenderTarget* CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+    RenderTarget* CreateRenderTarget(uint32 flags,
                                      uint32 width,
                                      uint32 height);
 
-    RenderTarget* CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+    RenderTarget* CreateRenderTarget(uint32 flags,
                                      uint32 width,
                                      uint32 height,
                                      FramebufferDescriptor::PreRenderAction colorPreRenderAction,
                                      FramebufferDescriptor::PostRenderAction colorPostRenderAction);
 
-    RenderTarget* CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+    RenderTarget* CreateRenderTarget(uint32 flags,
                                      uint32 width,
                                      uint32 height,
                                      FramebufferDescriptor::PreRenderAction colorPreRenderAction,
@@ -90,19 +90,19 @@ public:
                                      FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
                                      FramebufferDescriptor::PostRenderAction stencilPostRenderAction);
 
-    void ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+    void ConstructGenericTargetDescription(uint32 flags,
                                            uint32 width,
                                            uint32 height,
                                            RenderTargetDescriptor& outDesc);
 
-    void ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+    void ConstructGenericTargetDescription(uint32 flags,
                                            uint32 width,
                                            uint32 height,
                                            FramebufferDescriptor::PreRenderAction colorPreRenderAction,
                                            FramebufferDescriptor::PostRenderAction colorPostRenderAction,
                                            RenderTargetDescriptor& outDesc);
 
-    void ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+    void ConstructGenericTargetDescription(uint32 flags,
                                            uint32 width,
                                            uint32 height,
                                            FramebufferDescriptor::PreRenderAction colorPreRenderAction,

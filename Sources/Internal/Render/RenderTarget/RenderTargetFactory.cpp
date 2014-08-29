@@ -59,7 +59,7 @@ void RenderTargetFactory::ReleaseFactory()
     SafeRelease(instance);
 }
 
-void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+void RenderTargetFactory::ConstructGenericTargetDescription(uint32 flags,
                                        uint32 width,
                                        uint32 height,
                                        RenderTargetDescriptor& outDesc)
@@ -86,7 +86,7 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
                                       outDesc);
 }
 
-void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+void RenderTargetFactory::ConstructGenericTargetDescription(uint32 flags,
                                                             uint32 width,
                                                             uint32 height,
                                                             FramebufferDescriptor::PreRenderAction colorPreRenderAction,
@@ -132,7 +132,7 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
                                       outDesc);
 }
 
-void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+void RenderTargetFactory::ConstructGenericTargetDescription(uint32 flags,
                                                             uint32 width,
                                                             uint32 height,
                                                             FramebufferDescriptor::PreRenderAction colorPreRenderAction,
@@ -230,7 +230,7 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     DVASSERT(outDesc.Validate());
 }
 
-RenderTarget* RenderTargetFactory::CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+RenderTarget* RenderTargetFactory::CreateRenderTarget(uint32 flags,
                                  uint32 width,
                                  uint32 height)
 {
@@ -240,7 +240,7 @@ RenderTarget* RenderTargetFactory::CreateRenderTarget(RenderTargetFactory::Gener
     return CreateRenderTarget(rtDesc);
 }
 
-RenderTarget* RenderTargetFactory::CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+RenderTarget* RenderTargetFactory::CreateRenderTarget(uint32 flags,
                                  uint32 width,
                                  uint32 height,
                                  FramebufferDescriptor::PreRenderAction colorPreRenderAction,
@@ -253,7 +253,7 @@ RenderTarget* RenderTargetFactory::CreateRenderTarget(RenderTargetFactory::Gener
 
 }
 
-RenderTarget* RenderTargetFactory::CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+RenderTarget* RenderTargetFactory::CreateRenderTarget(uint32 flags,
                                  uint32 width,
                                  uint32 height,
                                  FramebufferDescriptor::PreRenderAction colorPreRenderAction,

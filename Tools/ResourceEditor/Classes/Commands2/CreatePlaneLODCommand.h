@@ -35,6 +35,8 @@ Copyright (c) 2008, binaryzebra
 #include "Commands2/Command2.h"
 #include "DAVAEngine.h"
 
+#include "Render/RenderTarget/RenderTarget.h"
+
 class CreatePlaneLODCommand : public Command2
 {
 public:
@@ -45,7 +47,7 @@ public:
 	virtual void Redo();
 	virtual DAVA::Entity* GetEntity() const;
     
-    static void DrawToTexture(DAVA::Entity * entity, DAVA::Camera * camera, DAVA::Texture * toTexture, DAVA::int32 fromLodLayer = -1, const DAVA::Rect & viewport = DAVA::Rect(0, 0, -1, -1), bool clearTarget = true);
+    static void DrawToTexture(DAVA::Entity * entity, DAVA::Camera * camera, DAVA::RenderTarget* renderTarget, DAVA::int32 fromLodLayer = -1, const DAVA::Rect & viewport = DAVA::Rect(0, 0, -1, -1), bool clearTarget = true);
 
     DAVA::RenderBatch * GetRenderBatch() const;
     
