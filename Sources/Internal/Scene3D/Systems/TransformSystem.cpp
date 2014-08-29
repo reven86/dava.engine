@@ -36,6 +36,8 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Debug/Stats.h"
+#include "Job/JobScheduler.h"
+#include "Job/JobWaiter.h"
 
 namespace DAVA
 {
@@ -72,6 +74,9 @@ void TransformSystem::Process(float32 timeElapsed)
         //HierahicFindUpdatableTransform(updatableEntities[i]);
         FindNodeThatRequireUpdate(updatableEntities[i]);
     }
+
+    TaggedWorkerJobsWaiter waiter(1);
+    waiter.Wait();
     
     GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
     sendEvent.clear();
@@ -98,7 +103,8 @@ void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
         
         if (entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
         {
-            TransformAllChildEntities(entity);
+            TransformAllChildEntities(0, entity, 0);
+            //TransformAllChildEntities(entity);
         }
         else
         {
@@ -121,8 +127,10 @@ void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
     
 }
 
-void TransformSystem::TransformAllChildEntities(Entity * entity)
+void TransformSystem::TransformAllChildEntities(BaseObject * bo, void * userData, void * callerData)
 {
+    Entity * entity = (Entity*)userData;
+
     static const uint32 STACK_SIZE = 5000;
     uint32 stackPosition = 0;
     Entity * stack[STACK_SIZE];

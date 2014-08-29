@@ -36,6 +36,7 @@
 #include "Math/Matrix4.h"
 #include "Base/Singleton.h"
 #include "Entity/SceneSystem.h"
+#include "Base/BaseObject.h"
 
 namespace DAVA 
 {
@@ -74,7 +75,7 @@ private:
 	void EntityNeedUpdate(Entity * entity);
 	void HierahicAddToUpdate(Entity * entity);
     void FindNodeThatRequireUpdate(Entity * entity);
-    void TransformAllChildEntities(Entity * entity);
+    void TransformAllChildEntities(BaseObject * bo, void * userData, void * callerData);
     void RecursiveTransformCheck(Entity * entity);
 
 
