@@ -36,7 +36,8 @@ namespace DAVA
 
 RenderTargetOGL::RenderTargetOGL() :    framebufferId(0),
                                         prevFramebufferId(0),
-                                        renderBuffersAttached(false)
+                                        renderBuffersAttached(false),
+                                        prevRenderOrientation(0)
 {
 }
 
@@ -60,6 +61,7 @@ void RenderTargetOGL::Initialize()
 void RenderTargetOGL::BindRenderTarget()
 {
     prevFramebufferId = RenderManager::Instance()->HWglGetLastFBO();
+    prevViewport = RenderManager::Instance()->GetViewport();
 
     RenderManager::Instance()->HWglBindFBO(framebufferId);
 }
@@ -67,6 +69,7 @@ void RenderTargetOGL::BindRenderTarget()
 void RenderTargetOGL::UnbindRenderTarget()
 {
     RenderManager::Instance()->HWglBindFBO(prevFramebufferId);
+    RenderManager::Instance()->SetViewport(prevViewport, true);
     prevFramebufferId = 0;
 }
 
@@ -123,6 +126,7 @@ void RenderTargetOGL::BeginRender()
     CalculateViewport(viewport);
 
     //VI: I believe all this stuff like render orientation doesn't belong to RenderManager
+    prevRenderOrientation = RenderManager::Instance()->GetRenderOrientation();
     RenderManager::Instance()->SetRenderOrientation(Core::SCREEN_ORIENTATION_TEXTURE, viewport.dx, viewport.dy);
 
     BindRenderTarget();
@@ -136,7 +140,7 @@ void RenderTargetOGL::EndRender()
 
     UnbindRenderTarget();
 
-    RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
+    RenderManager::Instance()->SetRenderOrientation(prevRenderOrientation);
 
     RenderManager::Instance()->PopDrawMatrix();
 	RenderManager::Instance()->PopMappingMatrix();
@@ -184,7 +188,6 @@ void RenderTargetOGL::ProcessPreRenderActions(const Rect& viewport)
 
     bool needClearStencil = (stencilAttachment != NULL &&
                              stencilAttachment->GetPreRenderAction() == FramebufferDescriptor::PRE_ACTION_CLEAR);
-
 
     RenderManager::Instance()->SetViewport(viewport, true);
     RenderManager::Instance()->RemoveClip();

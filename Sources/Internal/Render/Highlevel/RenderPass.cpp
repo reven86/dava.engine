@@ -36,6 +36,8 @@
 
 #include "Render/Image/ImageSystem.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 namespace DAVA
 {
     
@@ -147,8 +149,8 @@ void RenderPass::ClearBuffers(uint32 clearBuffers)
 
 
 MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID id):RenderPass(name, id),
-    reflectionTexture(NULL), 
-    refractionTexture(NULL), 
+    reflectionTarget(NULL),
+    refractionTarget(NULL),
     reflectionPass(NULL), 
     refractionPass(NULL), 
     needWaterPrepass(false)
@@ -174,55 +176,91 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     RenderLayerBatchArray *waterLayer = renderPassBatchArray->Get(RenderLayerManager::Instance()->GetLayerIDByName(LAYER_WATER));
     uint32 waterBatchesCount = waterLayer->GetRenderBatchCount();
 
-    const static int32 REFLECTION_TEX_SIZE = 512;
-    const static int32 REFRACTION_TEX_SIZE = 512;
+    const static uint32 REFLECTION_TEX_SIZE = 512;
+    const static uint32 REFRACTION_TEX_SIZE = 512;
     if (!reflectionPass)
-    {             
+    {
+        FramebufferDescriptor colorDesc;
+        colorDesc.SetFramebufferType(FramebufferDescriptor::FRAMEBUFFER_COLOR0);
+        colorDesc.SetFramebufferFormat(FramebufferDescriptor::FORMAT_RGB565);
+        colorDesc.SetFramebufferHeight(REFLECTION_TEX_SIZE);
+        colorDesc.SetFramebufferWidth(REFLECTION_TEX_SIZE);
+        colorDesc.SetPreRenderAction(FramebufferDescriptor::PRE_ACTION_DONTCARE);
+        colorDesc.SetPostRenderAction(FramebufferDescriptor::POST_ACTION_RESOLVE);
+
+        RenderTextureDescriptor colorTextureDesc(Texture::TEXTURE_2D,
+                                                 Texture::WRAP_CLAMP_TO_EDGE,
+                                                 Texture::WRAP_CLAMP_TO_EDGE,
+                                                 Texture::FILTER_LINEAR_MIPMAP_LINEAR,
+                                                 Texture::FILTER_LINEAR_MIPMAP_LINEAR);
+
+        FramebufferDescriptor depthDesc;
+        depthDesc.SetFramebufferType(FramebufferDescriptor::FRAMEBUFFER_DEPTH);
+        depthDesc.SetFramebufferFormat(FramebufferDescriptor::FORMAT_DEPTH24);
+        depthDesc.SetFramebufferHeight(REFLECTION_TEX_SIZE);
+        depthDesc.SetFramebufferWidth(REFLECTION_TEX_SIZE);
+        depthDesc.SetPreRenderAction(FramebufferDescriptor::PRE_ACTION_DONTCARE);
+        depthDesc.SetPostRenderAction(FramebufferDescriptor::POST_ACTION_DONTCARE);
+
+        FramebufferDescriptor stencilDesc;
+        stencilDesc.SetFramebufferType(FramebufferDescriptor::FRAMEBUFFER_STENCIL);
+        stencilDesc.SetFramebufferFormat(FramebufferDescriptor::FORMAT_STENCIL8);
+        stencilDesc.SetFramebufferHeight(REFLECTION_TEX_SIZE);
+        stencilDesc.SetFramebufferWidth(REFLECTION_TEX_SIZE);
+        stencilDesc.SetPreRenderAction(FramebufferDescriptor::PRE_ACTION_DONTCARE);
+        stencilDesc.SetPostRenderAction(FramebufferDescriptor::POST_ACTION_DONTCARE);
+
+        RenderTargetDescriptor rtDesc;
+        rtDesc.SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+        rtDesc.SetClearDepth(1.0f);
+        rtDesc.SetClearStencil(0);
+
+        rtDesc.AddFramebuffer(colorDesc, colorTextureDesc);
+        rtDesc.AddFramebuffer(depthDesc);
+        rtDesc.AddFramebuffer(stencilDesc);
+
         reflectionPass = new WaterReflectionRenderPass(PASS_FORWARD, RENDER_PASS_WATER_REFLECTION);
-        reflectionTexture = Texture::CreateFBO(REFLECTION_TEX_SIZE, REFLECTION_TEX_SIZE, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);          
-                    
+        reflectionTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
+
+        colorDesc.SetFramebufferHeight(REFRACTION_TEX_SIZE);
+        colorDesc.SetFramebufferWidth(REFRACTION_TEX_SIZE);
+        depthDesc.SetFramebufferHeight(REFRACTION_TEX_SIZE);
+        depthDesc.SetFramebufferWidth(REFRACTION_TEX_SIZE);
+        stencilDesc.SetFramebufferHeight(REFRACTION_TEX_SIZE);
+        stencilDesc.SetFramebufferWidth(REFRACTION_TEX_SIZE);
+
         refractionPass = new WaterRefractionRenderPass(PASS_FORWARD, RENDER_PASS_WATER_REFRACTION);
-        refractionTexture = Texture::CreateFBO(REFRACTION_TEX_SIZE, REFRACTION_TEX_SIZE, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);                  
+        refractionTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
     }   
-        
-    RenderManager::Instance()->ClipPush();
-    Rect viewportSave = RenderManager::Instance()->GetViewport();
-    uint32 currFboId = RenderManager::Instance()->HWglGetLastFBO();
-    int32 currRenderOrientation = RenderManager::Instance()->GetRenderOrientation();
-    //RenderManager::Instance()->SetRenderOrientation(Core::SCREEN_ORIENTATION_TEXTURE);
-        
-    RenderManager::Instance()->SetHWRenderTargetTexture(reflectionTexture);
+
+    reflectionTarget->BeginRender();
     //discard everything here
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE), true);            
 
     reflectionPass->SetWaterLevel(waterBox.max.z);
     reflectionPass->Draw(renderSystem, RenderManager::ALL_BUFFERS);
 
         
     //discrad depth(everything?) here
-    RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
+    reflectionTarget->EndRender();
         
-        
-    RenderManager::Instance()->SetHWRenderTargetTexture(refractionTexture);
-        
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE), true);            
+
+    refractionTarget->BeginRender();
 
     refractionPass->SetWaterLevel(waterBox.min.z);
     refractionPass->Draw(renderSystem, RenderManager::ALL_BUFFERS);
 
     //discrad depth(everything?) here
-    RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
-        
-    RenderManager::Instance()->HWglBindFBO(currFboId?currFboId:RenderManager::Instance()->GetFBOViewFramebuffer());
-    RenderManager::Instance()->SetRenderOrientation(currRenderOrientation);
-    RenderManager::Instance()->SetViewport(viewportSave, true);
-    RenderManager::Instance()->ClipPop();
-
+    refractionTarget->EndRender();
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		
-        
+
+    Rect viewportSave = RenderManager::Instance()->GetViewport();
     Vector2 rssVal(1.0f/viewportSave.dx, 1.0f/viewportSave.dy);
     Vector2 screenOffsetVal(viewportSave.x, viewportSave.y);
+
+    Texture* reflectionTexture = reflectionTarget->GetColorAttachment()->Lock();
+    Texture* refractionTexture = refractionTarget->GetColorAttachment()->Lock();
+
 	for (uint32 i=0; i<waterBatchesCount; ++i)
 	{
         NMaterial *mat = waterLayer->Get(i)->GetMaterial();
@@ -230,7 +268,10 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         mat->SetPropertyValue(NMaterial::PARAM_SCREEN_OFFSET, Shader::UT_FLOAT_VEC2, 1, &screenOffsetVal);
         mat->SetTexture(NMaterial::TEXTURE_DYNAMIC_REFLECTION, reflectionTexture);
         mat->SetTexture(NMaterial::TEXTURE_DYNAMIC_REFRACTION, refractionTexture);
-	}    
+	}
+
+    reflectionTarget->GetColorAttachment()->Unlock(reflectionTexture);
+    refractionTarget->GetColorAttachment()->Unlock(refractionTexture);
 }
 
 void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffers)
@@ -287,8 +328,8 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffer
 
 MainForwardRenderPass::~MainForwardRenderPass()
 {	
-	SafeRelease(reflectionTexture);
-	SafeRelease(refractionTexture);
+	SafeRelease(reflectionTarget);
+	SafeRelease(refractionTarget);
 	SafeDelete(reflectionPass);
 	SafeDelete(refractionPass);
 }

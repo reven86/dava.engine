@@ -50,6 +50,8 @@
 
 #include "Render/Material/NMaterialNames.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 namespace DAVA
 {
 
@@ -1661,14 +1663,15 @@ Texture * Landscape::CreateLandscapeTexture()
     ftRenderData->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &ftTextureCoords.front());
 
     //Draw landscape to texture
+
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                                     TEXTURE_TILE_FULL_SIZE,
+                                                                                     TEXTURE_TILE_FULL_SIZE);
+    renderTarget->SetClearColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
+
     Rect oldViewport = RenderManager::Instance()->GetViewport();
     
-    Texture *fullTiled = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-    RenderManager::Instance()->SetRenderTarget(fullTiled);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()), true);
-
-
-	RenderManager::Instance()->ClearWithColor(1.f, 1.f, 1.f, 1.f);
+    renderTarget->BeginRender();
  
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Matrix4 projection;
@@ -1700,13 +1703,16 @@ Texture * Landscape::CreateLandscapeTexture()
         tileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, (NMaterial::eFlagValue) (fogFlag & NMaterial::FlagOn));
     }
 
-#ifdef __DAVAENGINE_OPENGL__
-	RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
-#endif //#ifdef __DAVAENGINE_OPENGL__
+    renderTarget->EndRender();
     
     RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
 	RenderManager::Instance()->SetViewport(oldViewport, true);
     SafeRelease(ftRenderData);
+
+    Texture* fullTiled = SafeRetain(renderTarget->GetColorAttachment()->Lock());
+    renderTarget->GetColorAttachment()->Unlock(fullTiled);
+
+    SafeRelease(renderTarget);
     
     return fullTiled;
 }

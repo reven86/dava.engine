@@ -34,6 +34,7 @@
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderFastNames.h"
+#include "Render/RenderTarget/RenderTarget.h"
 
 namespace DAVA
 {
@@ -141,7 +142,10 @@ public:
 private:
 	WaterReflectionRenderPass *reflectionPass;
     WaterRefractionRenderPass *refractionPass;
-    Texture *reflectionTexture, *refractionTexture;    
+    //Texture *reflectionTexture, *refractionTexture;
+
+    RenderTarget* reflectionTarget;
+    RenderTarget* refractionTarget;
     
     bool needWaterPrepass;
     AABBox3 waterBox;

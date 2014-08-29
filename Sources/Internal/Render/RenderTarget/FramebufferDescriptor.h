@@ -63,6 +63,7 @@ public:
         FORMAT_A8,
         FORMAT_A16,
         FORMAT_RGBA16161616,
+        FORMAT_RGB565,
 
         FORMAT_DEPTH16,
         FORMAT_DEPTH24,

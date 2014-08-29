@@ -81,6 +81,8 @@ protected:
     GLuint framebufferId;
 
     GLuint prevFramebufferId;
+    Rect prevViewport;
+    int32 prevRenderOrientation;
 
     bool renderBuffersAttached;
 };
