@@ -90,10 +90,26 @@ public:
                                      FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
                                      FramebufferDescriptor::PostRenderAction stencilPostRenderAction);
 
+    RenderTarget* CreateRenderTarget(GenericAttachmentFlags colorAttachmentType,
+                                     GenericAttachmentFlags depthAttachmentType,
+                                     GenericAttachmentFlags stencilAttachmentType,
+                                     uint32 width,
+                                     uint32 height,
+                                     FramebufferDescriptor::FramebufferFormat colorFormat,
+                                     FramebufferDescriptor::FramebufferFormat depthFormat,
+                                     FramebufferDescriptor::FramebufferFormat stencilFormat,
+                                     FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                     FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                     FramebufferDescriptor::PreRenderAction depthPreRenderAction,
+                                     FramebufferDescriptor::PostRenderAction depthPostRenderAction,
+                                     FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
+                                     FramebufferDescriptor::PostRenderAction stencilPostRenderAction);
+
     void ConstructGenericTargetDescription(uint32 flags,
                                            uint32 width,
                                            uint32 height,
                                            RenderTargetDescriptor& outDesc);
+
 
     void ConstructGenericTargetDescription(uint32 flags,
                                            uint32 width,
@@ -113,6 +129,22 @@ public:
                                            FramebufferDescriptor::PostRenderAction stencilPostRenderAction,
                                            RenderTargetDescriptor& outDesc);
 
+
+    void ConstructGenericTargetDescription(GenericAttachmentFlags colorAttachmentType,
+                                           GenericAttachmentFlags depthAttachmentType,
+                                           GenericAttachmentFlags stencilAttachmentType,
+                                           uint32 width,
+                                           uint32 height,
+                                           FramebufferDescriptor::FramebufferFormat colorFormat,
+                                           FramebufferDescriptor::FramebufferFormat depthFormat,
+                                           FramebufferDescriptor::FramebufferFormat stencilFormat,
+                                           FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                           FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                           FramebufferDescriptor::PreRenderAction depthPreRenderAction,
+                                           FramebufferDescriptor::PostRenderAction depthPostRenderAction,
+                                           FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
+                                           FramebufferDescriptor::PostRenderAction stencilPostRenderAction,
+                                           RenderTargetDescriptor& outDesc);
 
 protected:
 

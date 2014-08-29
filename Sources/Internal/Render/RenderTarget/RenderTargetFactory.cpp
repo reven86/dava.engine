@@ -278,4 +278,121 @@ RenderTarget* RenderTargetFactory::CreateRenderTarget(uint32 flags,
     return CreateRenderTarget(rtDesc);
 }
 
+
+RenderTarget* RenderTargetFactory::CreateRenderTarget(GenericAttachmentFlags colorAttachmentType,
+                                                      GenericAttachmentFlags depthAttachmentType,
+                                                      GenericAttachmentFlags stencilAttachmentType,
+                                                      uint32 width,
+                                                      uint32 height,
+                                                      FramebufferDescriptor::FramebufferFormat colorFormat,
+                                                      FramebufferDescriptor::FramebufferFormat depthFormat,
+                                                      FramebufferDescriptor::FramebufferFormat stencilFormat,
+                                                      FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                                      FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                                      FramebufferDescriptor::PreRenderAction depthPreRenderAction,
+                                                      FramebufferDescriptor::PostRenderAction depthPostRenderAction,
+                                                      FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
+                                                      FramebufferDescriptor::PostRenderAction stencilPostRenderAction)
+{
+    RenderTargetDescriptor rtDesc;
+    ConstructGenericTargetDescription(colorAttachmentType,
+                                      depthAttachmentType,
+                                      stencilAttachmentType,
+                                      width,
+                                      height,
+                                      colorFormat,
+                                      depthFormat,
+                                      stencilFormat,
+                                      colorPreRenderAction,
+                                      colorPostRenderAction,
+                                      depthPreRenderAction,
+                                      depthPostRenderAction,
+                                      stencilPreRenderAction,
+                                      stencilPostRenderAction,
+                                      rtDesc);
+
+    return CreateRenderTarget(rtDesc);
+}
+
+
+void RenderTargetFactory::ConstructGenericTargetDescription(GenericAttachmentFlags colorAttachmentType,
+                                                            GenericAttachmentFlags depthAttachmentType,
+                                                            GenericAttachmentFlags stencilAttachmentType,
+                                                            uint32 width,
+                                                            uint32 height,
+                                                            FramebufferDescriptor::FramebufferFormat colorFormat,
+                                                            FramebufferDescriptor::FramebufferFormat depthFormat,
+                                                            FramebufferDescriptor::FramebufferFormat stencilFormat,
+                                                            FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                                            FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                                            FramebufferDescriptor::PreRenderAction depthPreRenderAction,
+                                                            FramebufferDescriptor::PostRenderAction depthPostRenderAction,
+                                                            FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
+                                                            FramebufferDescriptor::PostRenderAction stencilPostRenderAction,
+                                                            RenderTargetDescriptor& outDesc)
+{
+    RenderTextureDescriptor textureDesc(Texture::TEXTURE_2D,
+                                        Texture::WRAP_CLAMP_TO_EDGE,
+                                        Texture::WRAP_CLAMP_TO_EDGE,
+                                        Texture::FILTER_LINEAR_MIPMAP_LINEAR,
+                                        Texture::FILTER_LINEAR_MIPMAP_LINEAR);
+
+    FramebufferDescriptor colorDesc;
+    colorDesc.SetFramebufferType(FramebufferDescriptor::FRAMEBUFFER_COLOR0);
+    colorDesc.SetFramebufferFormat(colorFormat);
+    colorDesc.SetFramebufferHeight(height);
+    colorDesc.SetFramebufferWidth(width);
+    colorDesc.SetPreRenderAction(colorPreRenderAction);
+    colorDesc.SetPostRenderAction(colorPostRenderAction);
+
+    FramebufferDescriptor depthDesc;
+    depthDesc.SetFramebufferType(FramebufferDescriptor::FRAMEBUFFER_DEPTH);
+    depthDesc.SetFramebufferFormat(depthFormat);
+    depthDesc.SetFramebufferHeight(height);
+    depthDesc.SetFramebufferWidth(width);
+    depthDesc.SetPreRenderAction(depthPreRenderAction);
+    depthDesc.SetPostRenderAction(depthPostRenderAction);
+
+    FramebufferDescriptor stencilDesc;
+    stencilDesc.SetFramebufferType(FramebufferDescriptor::FRAMEBUFFER_STENCIL);
+    stencilDesc.SetFramebufferFormat(stencilFormat);
+    stencilDesc.SetFramebufferHeight(height);
+    stencilDesc.SetFramebufferWidth(width);
+    stencilDesc.SetPreRenderAction(stencilPreRenderAction);
+    stencilDesc.SetPostRenderAction(stencilPostRenderAction);
+
+    outDesc.SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+    outDesc.SetClearDepth(1.0f);
+    outDesc.SetClearStencil(0);
+
+    if(RenderTargetFactory::ATTACHMENT_COLOR == colorAttachmentType)
+    {
+        outDesc.AddFramebuffer(colorDesc);
+    }
+    else
+    {
+        outDesc.AddFramebuffer(colorDesc, textureDesc);
+    }
+
+    if(RenderTargetFactory::ATTACHMENT_DEPTH == depthAttachmentType)
+    {
+        outDesc.AddFramebuffer(depthDesc);
+    }
+    else
+    {
+        outDesc.AddFramebuffer(depthDesc, textureDesc);
+    }
+
+    if(RenderTargetFactory::ATTACHMENT_STENCIL == stencilAttachmentType)
+    {
+        outDesc.AddFramebuffer(stencilDesc);
+    }
+    else
+    {
+        outDesc.AddFramebuffer(stencilDesc, textureDesc);
+    }
+
+}
+
+
 };

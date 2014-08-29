@@ -34,6 +34,7 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIScreen.h"
 
+#include "Render/RenderTarget/RenderTarget.h"
 
 namespace DAVA
 {
@@ -44,7 +45,7 @@ public:
 	UIScreenTransition();
 	virtual ~UIScreenTransition();
 	
-	static void CreateRenderTargets();
+	static void CreateRenderTargets(Texture* prevTexture, Texture* nextTexture);
 	static void ReleaseRenderTargets();
 	
 	virtual void StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen);
@@ -53,10 +54,10 @@ public:
 	virtual void SetDuration(float32 timeInSeconds);
 	virtual bool IsLoadingTransition(); 
 protected:
-	static Sprite * renderTargetPrevScreen;
+
+    static Sprite * renderTargetPrevScreen;
 	static Sprite * renderTargetNextScreen;
-	
-	
+
 	Interpolation::Func interpolationFunc;
 	float32 currentTime;
 	float32 duration;

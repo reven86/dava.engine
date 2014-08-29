@@ -36,12 +36,14 @@
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 namespace DAVA 
 {
 
 	
-Sprite * UIScreenTransition::renderTargetPrevScreen = 0;	
-Sprite * UIScreenTransition::renderTargetNextScreen = 0;	
+Sprite* UIScreenTransition::renderTargetPrevScreen = 0;
+Sprite* UIScreenTransition::renderTargetNextScreen = 0;
 
 UniqueHandle UIScreenTransition::alphaClearStateHandle = InvalidUniqueHandle;
 	
@@ -57,7 +59,7 @@ UIScreenTransition::~UIScreenTransition()
 {
 }
 	
-void UIScreenTransition::CreateRenderTargets()
+void UIScreenTransition::CreateRenderTargets(Texture* prevTexture, Texture* nextTexture)
 {
 	if (renderTargetPrevScreen || renderTargetNextScreen)
 	{
@@ -67,20 +69,11 @@ void UIScreenTransition::CreateRenderTargets()
     /*copy of default 3d blend with alpha write only - to minimize state changes*/
     alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_COLORMASK_ALPHA);
 
-    uint32 width = (uint32)Core::Instance()->GetPhysicalScreenWidth();//(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin());
-    uint32 height = (uint32)Core::Instance()->GetPhysicalScreenHeight();//(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin());
-    
-    Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
-    Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
-	
-	renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height);
+	renderTargetPrevScreen = Sprite::CreateFromTexture(prevTexture, 0, 0, (float32)prevTexture->GetWidth(), (float32)prevTexture->GetHeight());
 	renderTargetPrevScreen->SetDefaultPivotPoint(-Core::Instance()->GetVirtualScreenXMin(), -Core::Instance()->GetVirtualScreenYMin());
 	
-	renderTargetNextScreen = Sprite::CreateFromTexture(tex2, 0, 0, (float32)width, (float32)height);
+	renderTargetNextScreen = Sprite::CreateFromTexture(nextTexture, 0, 0, (float32)nextTexture->GetWidth(), (float32)nextTexture->GetHeight());
 	renderTargetNextScreen->SetDefaultPivotPoint(-Core::Instance()->GetVirtualScreenXMin(), -Core::Instance()->GetVirtualScreenYMin());
-
-    SafeRelease(tex1);
-    SafeRelease(tex2);
 }
 
 void UIScreenTransition::ReleaseRenderTargets()
@@ -91,16 +84,49 @@ void UIScreenTransition::ReleaseRenderTargets()
 	
 void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen)
 {
-	CreateRenderTargets();
 	nextScreen = _nextScreen;
 	prevScreen = _prevScreen;
-	
-	RenderManager::Instance()->SetRenderTarget(renderTargetPrevScreen);
+
+    uint32 width = (uint32)Core::Instance()->GetPhysicalScreenWidth();//(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin());
+    uint32 height = (uint32)Core::Instance()->GetPhysicalScreenHeight();//(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin());
+
+    RenderTarget* prevRenderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                                         RenderTargetFactory::ATTACHMENT_DEPTH,
+                                                                                         RenderTargetFactory::ATTACHMENT_STENCIL,
+                                                                                         width,
+                                                                                         height,
+                                                                                         FramebufferDescriptor::FORMAT_RGB565,
+                                                                                         FramebufferDescriptor::FORMAT_DEPTH24,
+                                                                                         FramebufferDescriptor::FORMAT_STENCIL8,
+                                                                                         FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                                                                         FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                                                                         FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                                                                         FramebufferDescriptor::POST_ACTION_DONTCARE,
+                                                                                         FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                                                                         FramebufferDescriptor::POST_ACTION_DONTCARE);
+
+    RenderTarget* nextRenderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                                         RenderTargetFactory::ATTACHMENT_DEPTH,
+                                                                                         RenderTargetFactory::ATTACHMENT_STENCIL,
+                                                                                         width,
+                                                                                         height,
+                                                                                         FramebufferDescriptor::FORMAT_RGB565,
+                                                                                         FramebufferDescriptor::FORMAT_DEPTH24,
+                                                                                         FramebufferDescriptor::FORMAT_STENCIL8,
+                                                                                         FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                                                                         FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                                                                         FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                                                                         FramebufferDescriptor::POST_ACTION_DONTCARE,
+                                                                                         FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                                                                         FramebufferDescriptor::POST_ACTION_DONTCARE);
+
+
+    prevRenderTarget->BeginRender();
+
 	RenderManager::Instance()->SetVirtualViewOffset();
 	RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
     RenderManager::Instance()->FlushState();
-    RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
     
 	if (prevScreen)
 	{
@@ -125,7 +151,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 //    RenderManager::Instance()->SetColor(1.0, 0.0, 0.0, 1.0);
 //    RenderHelper::Instance()->FillRect(Rect(screenRect.x, screenRect.y, screenRect.dx / 2, screenRect.dy));
 //    
-	RenderManager::Instance()->RestoreRenderTarget();
+	prevRenderTarget->EndRender();
 
 	nextScreen->LoadGroup();
 	
@@ -133,12 +159,12 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	
 	//
 	
-	RenderManager::Instance()->SetRenderTarget(renderTargetNextScreen);
+	nextRenderTarget->BeginRender();
+
 	RenderManager::Instance()->SetVirtualViewOffset();
     RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
     RenderManager::Instance()->FlushState();
-    RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 
 	float32 timeElapsed = SystemTimer::FrameDelta();
 	nextScreen->SystemUpdate(timeElapsed);
@@ -153,7 +179,18 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
 
-	RenderManager::Instance()->RestoreRenderTarget();
+	nextRenderTarget->EndRender();
+
+    Texture* prevTexture = prevRenderTarget->GetColorAttachment()->Lock();
+    Texture* nextTexture = nextRenderTarget->GetColorAttachment()->Lock();
+
+    CreateRenderTargets(prevTexture, nextTexture);
+
+    prevRenderTarget->GetColorAttachment()->Unlock(prevTexture);
+    nextRenderTarget->GetColorAttachment()->Unlock(nextTexture);
+
+    SafeRelease(prevRenderTarget);
+    SafeRelease(nextRenderTarget);
     
 //  Debug images. Left here for future bugs :)
 //    Image * image = renderTargetPrevScreen->GetTexture()->CreateImageFromMemory();
