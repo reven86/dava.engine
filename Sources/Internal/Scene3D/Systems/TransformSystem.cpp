@@ -53,13 +53,6 @@ TransformSystem::~TransformSystem()
 {
 }
 
-void TransformSystem::LinkTransform(int32 parentIndex, int32 childIndex)
-{
-}
-
-void TransformSystem::UnlinkTransform(int32 childIndex)
-{
-}
 
 void TransformSystem::Process(float32 timeElapsed)
 {
@@ -71,8 +64,14 @@ void TransformSystem::Process(float32 timeElapsed)
     uint32 size = updatableEntities.size();
     for(uint32 i = 0; i < size; ++i)
     {
-        //HierahicFindUpdatableTransform(updatableEntities[i]);
-        FindNodeThatRequireUpdate(updatableEntities[i]);
+        //Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, updatableEntities[i]), Thread::GetCurrentThreadId(), 0, 1);
+        JobArgument * arg = new JobArgument();
+        arg->entity = updatableEntities[i];
+        arg->forceUpdate = false;
+        //JobScheduler::Instance()->PushJob(j);
+
+        HierahicFindUpdatableTransform(0, arg, 0);
+        //FindNodeThatRequireUpdate(updatableEntities[i]);
     }
 
     TaggedWorkerJobsWaiter waiter(1);
@@ -103,8 +102,7 @@ void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
         
         if (entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
         {
-            TransformAllChildEntities(0, entity, 0);
-            //TransformAllChildEntities(entity);
+            TransformAllChildEntities(entity);
         }
         else
         {
@@ -127,10 +125,8 @@ void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
     
 }
 
-void TransformSystem::TransformAllChildEntities(BaseObject * bo, void * userData, void * callerData)
+void TransformSystem::TransformAllChildEntities(Entity * entity)
 {
-    Entity * entity = (Entity*)userData;
-
     static const uint32 STACK_SIZE = 5000;
     uint32 stackPosition = 0;
     Entity * stack[STACK_SIZE];
@@ -171,8 +167,12 @@ void TransformSystem::TransformAllChildEntities(BaseObject * bo, void * userData
 }
 
 
-void TransformSystem::HierahicFindUpdatableTransform(Entity * entity, bool forcedUpdate)
+void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * userData, void * callerData)
 {
+    JobArgument * arg = (JobArgument*)userData;
+    Entity * entity = arg->entity;
+    bool & forcedUpdate = arg->forceUpdate;
+
 	passedNodes++;
 
 	if(forcedUpdate || entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
@@ -192,16 +192,17 @@ void TransformSystem::HierahicFindUpdatableTransform(Entity * entity, bool force
 	{
 		if(forcedUpdate || entity->GetChild(i)->GetFlags() & Entity::TRANSFORM_DIRTY)
 		{
-			HierahicFindUpdatableTransform(entity->GetChild(i), forcedUpdate);
+            JobArgument * arg = new JobArgument();
+            arg->entity = entity->GetChild(i);
+            arg->forceUpdate = forcedUpdate;
+			HierahicFindUpdatableTransform(0, arg, 0);
 		}
 	}
 
 	entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE);
 	entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
-}
 
-void TransformSystem::SortAndThreadSplit()
-{
+    delete arg;
 }
 
 void TransformSystem::ImmediateEvent(Entity * entity, uint32 event)

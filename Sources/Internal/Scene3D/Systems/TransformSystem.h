@@ -50,36 +50,31 @@ public:
 	TransformSystem(Scene * scene);
 	~TransformSystem();
 
-    Transform * CreateTransform();
-
 	virtual void ImmediateEvent(Entity * entity, uint32 event);
 	virtual void AddEntity(Entity * entity);
 	virtual void RemoveEntity(Entity * entity);
-    //virtual void SetParent(Entity * entity, Entity * parent);
-
-
-    void DeleteTransform(Transform * transform);
-    void LinkTransform(int32 parentIndex, int32 childIndex);
-	void UnlinkTransform(int32 childIndex);
-
-    //void AllocateMatrix();
 
     virtual void Process(float32 timeElapsed);
 
 private:
-    void SortAndThreadSplit();
     
 	Vector<Entity*> updatableEntities;
     Vector<Entity*> sendEvent;
     
 	void EntityNeedUpdate(Entity * entity);
 	void HierahicAddToUpdate(Entity * entity);
+
     void FindNodeThatRequireUpdate(Entity * entity);
-    void TransformAllChildEntities(BaseObject * bo, void * userData, void * callerData);
+    void TransformAllChildEntities(Entity * entity);
     void RecursiveTransformCheck(Entity * entity);
 
 
-	void HierahicFindUpdatableTransform(Entity * entity, bool forcedUpdate = false);
+	void HierahicFindUpdatableTransform(BaseObject * bo, void * userData, void * callerData);
+    struct JobArgument
+    {
+        Entity * entity;
+        bool forceUpdate;
+    };
 
 	int32 passedNodes;
 	int32 multipliedNodes;
