@@ -137,8 +137,9 @@ void JobScheduler::OnJobCompleted(Job * job)
     int32 tag = job->GetTag();
     if(tag >= 0)
     {
-        LockGuard<Mutex> guard(waiterMutex);
         AtomicDecrement(taggedJobsCount[tag]);
+
+        LockGuard<Mutex> guard(waiterMutex);
         if(taggedJobsCount[tag] == 0)
         {
             //notify that all jobs completed
