@@ -49,7 +49,8 @@ TransformSystem::TransformSystem(Scene * scene)
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
-TransformSystem::~TransformSystem()
+TransformSystem::~TransformSystem()                                                                                                                                                   
+
 {
 }
 
@@ -64,17 +65,17 @@ void TransformSystem::Process(float32 timeElapsed)
     uint32 size = updatableEntities.size();
     for(uint32 i = 0; i < size; ++i)
     {
-        //Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, updatableEntities[i]), Thread::GetCurrentThreadId(), 0, 1);
         JobArgument * arg = new JobArgument();
         arg->entity = updatableEntities[i];
         arg->forceUpdate = false;
-        //JobScheduler::Instance()->PushJob(j);
+        Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, arg), Thread::GetCurrentThreadId(), 0, 2);
 
-        HierahicFindUpdatableTransform(0, arg, 0);
-        //FindNodeThatRequireUpdate(updatableEntities[i]);
+        JobScheduler::Instance()->PushJob(j);
+
+        //HierahicFindUpdatableTransform(0, arg, 0);
     }
 
-    TaggedWorkerJobsWaiter waiter(1);
+    TaggedWorkerJobsWaiter waiter(2);
     waiter.Wait();
     
     GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);

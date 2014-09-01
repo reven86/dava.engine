@@ -29,6 +29,7 @@
 #include "Job/JobWaiter.h"
 #include "Job/JobManager.h"
 #include "Job/JobScheduler.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
@@ -108,9 +109,13 @@ TaggedWorkerJobsWaiter::~TaggedWorkerJobsWaiter()
 
 void TaggedWorkerJobsWaiter::Wait()
 {
-    if(JobManager::WAITER_WILL_WAIT == JobScheduler::Instance()->RegisterWaiter(this))
+    if(JobManager::WAITER_WILL_WAIT == JobScheduler::Instance()->RegisterWaiterAndWait(this))
     {
-        Thread::Wait(&cv);
+        LockGuard<Mutex> guard(JobScheduler::Instance()->GetWaiterMutex());
+        if(JobScheduler::Instance()->GetJobsCountForTag(tag))
+        {
+            Thread::Wait(&cv);
+        }
     }
 }
 

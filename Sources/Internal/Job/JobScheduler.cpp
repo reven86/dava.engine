@@ -151,10 +151,9 @@ void JobScheduler::OnJobCompleted(Job * job)
     }
 }
 
-JobManager::eWaiterRegistrationResult JobScheduler::RegisterWaiter(TaggedWorkerJobsWaiter * waiter)
+JobManager::eWaiterRegistrationResult JobScheduler::RegisterWaiterAndWait(TaggedWorkerJobsWaiter * waiter)
 {
     LockGuard<Mutex> guard(waiterMutex);
-
     JobManager::eWaiterRegistrationResult result = JobManager::WAITER_WILL_WAIT;
 
     if(0 == taggedJobsCount[waiter->GetTag()])

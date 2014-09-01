@@ -52,8 +52,12 @@ public:
     void Schedule();
     void OnJobCompleted(Job * job);
     
-    JobManager::eWaiterRegistrationResult RegisterWaiter(TaggedWorkerJobsWaiter * waiter);
+    JobManager::eWaiterRegistrationResult RegisterWaiterAndWait(TaggedWorkerJobsWaiter * waiter);
     void UnregisterWaiter(TaggedWorkerJobsWaiter * waiter);
+
+    Mutex & GetWaiterMutex();
+
+    int32 GetJobsCountForTag(int32 tag);
     
 private:
     const int32 workerThreadsCount;
@@ -75,6 +79,16 @@ private:
     Map<int32, TaggedWorkerJobsWaiter*> taggedJobsWaiters;
     Mutex waiterMutex;
 };
+
+inline Mutex & JobScheduler::GetWaiterMutex()
+{
+    return waiterMutex;
+}
+
+inline int32 JobScheduler::GetJobsCountForTag(int32 tag)
+{
+    return taggedJobsCount[tag];
+}
 
 }
 
