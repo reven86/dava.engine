@@ -32,6 +32,7 @@
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/WindSystem.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {
@@ -91,6 +92,8 @@ void FoliageSystem::RemoveEntity(Entity * entity)
     
 void FoliageSystem::Process(float32 timeElapsed)
 {
+    TIME_PROFILE("FoliageSystem::Process");
+    
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(vegetationRO && vegetationRO->ReadyToRender())
     {

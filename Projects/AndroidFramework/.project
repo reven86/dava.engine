@@ -3142,6 +3142,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/AndroidCrashReport.h</locationURI>
 		</link>
 		<link>
+			<name>Internal/Platform/TemplateAndroid/AssetsManagerAndroid.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/AssetsManagerAndroid.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/AssetsManagerAndroid.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/AssetsManagerAndroid.h</locationURI>
+		</link>
+		<link>
 			<name>Internal/Platform/TemplateAndroid/CorePlatformAndroid.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/CorePlatformAndroid.cpp</locationURI>
@@ -4185,6 +4195,16 @@
 			<name>Internal/Scene3D/Systems/ParticleEmitterSystem.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Scene3D/Systems/ParticleEmitterSystem.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Scene3D/Systems/QualitySettingsSystem.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Scene3D/Systems/QualitySettingsSystem.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Scene3D/Systems/QualitySettingsSystem.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Scene3D/Systems/QualitySettingsSystem.h</locationURI>
 		</link>
 		<link>
 			<name>Internal/Scene3D/Systems/RenderUpdateSystem.cpp</name>

@@ -246,7 +246,7 @@ DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
 		fieldID = GetEnvironment()->GetFieldID(classInfo, "path", "Ljava/lang/String;");
 		jstring jStr = (jstring)GetEnvironment()->GetObjectField(object, fieldID);
 		char str[512] = {0};
-		CreateStringFromJni(env, jStr, str);
+		CreateStringFromJni(GetEnvironment(), jStr, str);
 		info.path = String(str);
 	}
 

@@ -2641,6 +2641,54 @@ fail:
 }
 
 
+static int _wrap_UIControl_GetState(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
+  DAVA::int32 result;
+  
+  SWIG_check_num_args("DAVA::UIControl::GetState",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetState",1,"DAVA::UIControl const *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
+    SWIG_fail_ptr("UIControl_GetState",1,SWIGTYPE_p_DAVA__UIControl);
+  }
+  
+  result = (DAVA::int32)((DAVA::UIControl const *)arg1)->GetState();
+  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_UIControl_GetFrame(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
+  DAVA::int32 result;
+  
+  SWIG_check_num_args("DAVA::UIControl::GetFrame",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetFrame",1,"DAVA::UIControl const *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
+    SWIG_fail_ptr("UIControl_GetFrame",1,SWIGTYPE_p_DAVA__UIControl);
+  }
+  
+  result = (DAVA::int32)((DAVA::UIControl const *)arg1)->GetFrame();
+  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static swig_lua_method swig_DAVA_UIControl_methods[] = {
     {"GetRect", _wrap_UIControl_GetRect}, 
     {"GetPosition", _wrap_UIControl_GetPosition}, 
@@ -2655,6 +2703,8 @@ static swig_lua_method swig_DAVA_UIControl_methods[] = {
     {"IsOnScreen", _wrap_UIControl_IsOnScreen}, 
     {"GetTag", _wrap_UIControl_GetTag}, 
     {"GetParent", _wrap_UIControl_GetParent}, 
+    {"GetState", _wrap_UIControl_GetState}, 
+    {"GetFrame", _wrap_UIControl_GetFrame}, 
     {0,0}
 };
 static swig_lua_attribute swig_DAVA_UIControl_attributes[] = {

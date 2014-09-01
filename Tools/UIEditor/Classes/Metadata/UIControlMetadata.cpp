@@ -594,7 +594,7 @@ void UIControlMetadata::UpdateThumbSizeForUIControlThumb()
     }
 }
     
-QString UIControlMetadata::GetSprite()
+QString UIControlMetadata::GetSprite() const
 {
     if (!VerifyActiveParamID())
     {
@@ -1015,16 +1015,6 @@ void UIControlMetadata::ResizeScrollViewContent(UIControl * control)
 	{
 		ResizeScrollViewContent(parentControl);
 	}
-}
-
-void UIControlMetadata::SetUIControlVisible(const bool value)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-    
-    GetActiveUIControl()->SetVisible(value);
 }
 
 };

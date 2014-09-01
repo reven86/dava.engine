@@ -62,6 +62,7 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
 
 	customLandscape = new CustomLandscape();
+    customLandscape->Create();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, baseLandscape->GetTexture(Landscape::TEXTURE_TILE_FULL));
 	customLandscape->SetAABBox(baseLandscape->GetBoundingBox());
 }

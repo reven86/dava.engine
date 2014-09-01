@@ -103,7 +103,7 @@ public:
      \brief Returns Sprite used for draw.
      \returns Sprite used for draw.
      */
-    virtual Sprite*	GetSprite();
+    virtual Sprite*	GetSprite() const;
     /**
      \brief Returns Sprite frame used for draw.
      \returns Sprite frame used for draw.

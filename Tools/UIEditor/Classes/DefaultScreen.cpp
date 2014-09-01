@@ -374,7 +374,7 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
             currList = newList;
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             SmartGetSelectedControl(currList, node, point);
         }
@@ -441,7 +441,7 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
                 list.push_back(node);
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             GetSelectedControl(list, rect, node);
         }
@@ -450,7 +450,7 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
 
 HierarchyTreeController::SELECTEDCONTROLNODES DefaultScreen::GetActiveMoveControls() const
 {
-	HierarchyTreeController::SELECTEDCONTROLNODES list = HierarchyTreeController::Instance()->GetActiveControlNodes();
+	const HierarchyTreeController::SELECTEDCONTROLNODES &list = HierarchyTreeController::Instance()->GetActiveControlNodes();
 	
 	//YZ we need apply only for parent object
 	HierarchyTreeController::SELECTEDCONTROLNODES selectedList;
@@ -1349,8 +1349,8 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 		{
 			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
 			{
-                HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
-                if (selectedList.size() == 0)
+                const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
+                if (selectedList.empty())
                 {
                     // No controls selected - paste to screen.
                     HierarchyTreeScreenNode* activeScreenNode = HierarchyTreeController::Instance()->GetActiveScreen();
@@ -1463,7 +1463,7 @@ int32 DefaultScreen::CalculateStickToGuidesDrag(Vector2& offset) const
     }
 
     // Build the list of selected controls' rects and send it to the alignment.
-    HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
+    const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
     List<Rect> controlRects;
     for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedList.begin(); iter != selectedList.end(); ++iter)
     {
@@ -1643,8 +1643,8 @@ bool DefaultScreen::NeedCalculateStickMode(HierarchyTreeScreenNode* screenNode) 
         return false;
     }
     
-    HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
-    if (selectedList.size() == 0)
+    const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
+    if (selectedList.empty())
     {
         return false;
     }
@@ -1787,31 +1787,6 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 bool DefaultScreen::IsControlVisible(const UIControl* uiControl) const
 {
     return (uiControl->GetVisibleForUIEditor() && uiControl->GetVisible());
-}
-
-bool DefaultScreen::IsControlContentVisible( const UIControl *control ) const
-{
-    const List<UIControl*>& children = control->GetChildren();
-    if( children.empty() )
-        return false;
-
-    List<UIControl*>::const_iterator iter = children.begin();
-    List<UIControl*>::const_iterator end = children.end();
-    for(; iter != end; ++iter)
-    {
-        if (!control->GetVisible())
-        {
-            continue;
-        }
-
-        if (IsControlVisible(*iter))
-            return true;
-
-        if (IsControlContentVisible(*iter))
-            return true;
-    }
-
-    return false;
 }
 
 void DefaultScreen::SetScreenControl(ScreenControl* control)

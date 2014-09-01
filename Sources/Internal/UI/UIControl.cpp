@@ -254,24 +254,6 @@ namespace DAVA
         return false;
     }
 
-    String UIControl::GetSpriteFrameworkPath( const Sprite* sprite)
-    {
-        if (!sprite)
-        {
-            return "";
-        }
-
-        FilePath path(sprite->GetRelativePathname());
-        String pathName = "";
-        if (!path.IsEmpty())
-        {
-            path.TruncateExtension();
-            pathName = path.GetFrameworkPath();
-        }
-
-        return pathName;
-    }
-
     void UIControl::SetName(const String & _name)
     {
         name = _name;
@@ -305,7 +287,7 @@ namespace DAVA
         controlState = state;
     }
 
-    Sprite* UIControl::GetSprite()
+    Sprite* UIControl::GetSprite() const
     {
         return background->GetSprite();
     }
@@ -863,6 +845,7 @@ namespace DAVA
         if (!parent)
         {
             SetRect(rect);
+            return;
         }
 
         Rect localRect = rect;
@@ -903,28 +886,48 @@ namespace DAVA
     void UIControl::SetVisible(bool isVisible)
     {
         if (visible == isVisible)
-            return;
-
-        visible = isVisible;
-
-        if (parent && parent->IsOnScreen())
         {
-            if (visible)
-                SystemWillBecomeVisible();
-            else
-                SystemWillBecomeInvisible();
+            return;
         }
+
+        bool oldSystemVisible = GetSystemVisible();
+        visible = isVisible;
+        if (GetSystemVisible() == oldSystemVisible)
+        {
+            return;
+        }
+
+        SystemNotifyVisibilityChanged();
     }
 
-    void UIControl::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
+    void UIControl::SetVisibleForUIEditor(bool value)
     {
-        visibleForUIEditor = value;
-        if(hierarchic)
+        if (visibleForUIEditor == value)
         {
-            List<UIControl*>::iterator it = childs.begin();
-            for(; it != childs.end(); ++it)
+            return;
+        }
+
+        bool oldSystemVisible = GetSystemVisible();
+        visibleForUIEditor = value;
+        if (GetSystemVisible() == oldSystemVisible)
+        {
+            return;
+        }
+
+        SystemNotifyVisibilityChanged();
+    }
+
+    void UIControl::SystemNotifyVisibilityChanged()
+    {
+        if (parent && parent->IsOnScreen())
+        {
+            if (GetSystemVisible())
             {
-                (*it)->SetVisibleForUIEditor(value, hierarchic);
+                SystemWillBecomeVisible();
+            }
+            else
+            {
+                SystemWillBecomeInvisible();
             }
         }
     }
@@ -1041,7 +1044,7 @@ namespace DAVA
             control->SystemDidAppear();
         }
 
-        if (IsOnScreen() && control->GetVisible())
+        if (IsOnScreen() && control->GetSystemVisible())
             control->SystemWillBecomeVisible();
 
         isIteratorCorrupted = true;
@@ -1059,7 +1062,7 @@ namespace DAVA
         {
             if((*it) == control)
             {
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeInvisible();
 
                 bool inHierarchy = InViewHierarchy();
@@ -1147,7 +1150,7 @@ namespace DAVA
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1179,7 +1182,7 @@ namespace DAVA
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1346,10 +1349,10 @@ namespace DAVA
         if(UIControlSystem::Instance()->GetScreen() == this ||
            UIControlSystem::Instance()->GetPopupContainer() == this)
         {
-            return GetVisible();
+            return GetSystemVisible();
         }
 
-        if( !GetVisible() || !parent )
+        if( !GetSystemVisible() || !parent )
             return false;
 
         return parent->IsOnScreen();
@@ -1520,7 +1523,7 @@ namespace DAVA
 
     void UIControl::SystemDraw(const UIGeometricData &geometricData)
     {
-        if( !visible )
+        if (!GetSystemVisible())
             return;
 
         UIControlSystem::Instance()->drawCounter++;
@@ -1539,10 +1542,7 @@ namespace DAVA
             RenderManager::Instance()->ClipRect(unrotatedRect);
         }
 
-        if(visible && visibleForUIEditor)
-        {
-            Draw(drawData);
-        }
+        Draw(drawData);
 
         isIteratorCorrupted = false;
         List<UIControl*>::iterator it = childs.begin();
@@ -1553,10 +1553,7 @@ namespace DAVA
             DVASSERT(!isIteratorCorrupted);
         }
 
-        if(visible && visibleForUIEditor)
-        {
-            DrawAfterChilds(drawData);
-        }
+        DrawAfterChilds(drawData);
 
         if(clipContents)
         {
@@ -1681,7 +1678,7 @@ namespace DAVA
 
     bool UIControl::SystemProcessInput(UIEvent *currentInput)
     {
-        if(!inputEnabled || !visible || controlState & STATE_DISABLED)
+        if(!inputEnabled || !GetSystemVisible() || controlState & STATE_DISABLED)
         {
             return false;
         }
@@ -1878,7 +1875,7 @@ namespace DAVA
         UIControlSystem::Instance()->inputCounter++;
         isUpdated = true;
 
-        if( !visible )
+        if( !GetSystemVisible() )
             return false;
 
         //if(currentInput->touchLocker != this)
@@ -2014,7 +2011,7 @@ namespace DAVA
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetVisible())
+            if ((*it)->GetSystemVisible())
                 (*it)->SystemWillBecomeVisible();
         }
     }
@@ -2038,7 +2035,7 @@ namespace DAVA
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetVisible())
+            if ((*it)->GetSystemVisible())
                 (*it)->SystemWillBecomeInvisible();
         }
 
@@ -2089,7 +2086,7 @@ namespace DAVA
         Sprite *sprite =  this->GetSprite();
         if (sprite)
         {
-            node->Set("sprite", GetSpriteFrameworkPath(sprite));
+            node->Set("sprite", Sprite::GetPathString(sprite));
         }
 
         // Color

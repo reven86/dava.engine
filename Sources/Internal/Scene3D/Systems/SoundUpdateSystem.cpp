@@ -36,6 +36,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {
@@ -102,6 +103,8 @@ void SoundUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
     
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
+    TIME_PROFILE("SoundUpdateSystem::Process")
+
     Camera * activeCamera = GetScene()->GetCurrentCamera();
 
     if(activeCamera)

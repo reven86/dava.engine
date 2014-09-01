@@ -53,10 +53,10 @@ public:
     
     // Get the active tree node or nodes list.
     const HierarchyTreeNode* GetActiveTreeNode() const;
-    const HierarchyTreeController::SELECTEDCONTROLNODES GetActiveTreeNodesList() const;
+    const HierarchyTreeController::SELECTEDCONTROLNODES &GetActiveTreeNodesList() const;
 
     // Access to the active UI Control State.
-    Vector<UIControl::eControlState> GetActiveUIControlStates() const;
+    const Vector<UIControl::eControlState> &GetActiveUIControlStates() const;
     void SetActiveUIControlStates(const Vector<UIControl::eControlState>& newStates);
 
 signals:

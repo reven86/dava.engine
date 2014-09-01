@@ -3,6 +3,7 @@ uniform sampler2D tileTexture0 = 2;
 uniform sampler2D tileMask = 1;
 uniform sampler2D colorTexture = 0;
 uniform sampler2D specularMap = 6;
+uniform samplerCube atmospheremap = 7;
 <FRAGMENT_SHADER>
 #ifdef GL_ES
 precision highp float;
@@ -12,10 +13,12 @@ precision highp float;
 #define mediump
 #endif
 
-#ifdef SPECULAR_LAND
+#ifdef SPECULAR
 uniform sampler2D specularMap;
-uniform vec3 materialLightSpecularColor;
-varying float varSpecularColor;
+uniform float inGlossiness;
+
+varying vec3 varSpecularColor;
+varying float varNdotH;
 #endif
 
 uniform lowp vec3 tileColor0;
@@ -36,8 +39,8 @@ uniform sampler2D cursorTexture;
 #endif
 
 #if defined(VERTEX_FOG)
-uniform vec3 fogColor;
-varying float varFogFactor;
+varying lowp float varFogAmoung;
+varying lowp vec3 varFogColor;
 #endif
 
 void main()
@@ -54,13 +57,17 @@ void main()
 	color += colorCursor.rgb*colorCursor.a;
 #endif
 	
-#ifdef SPECULAR_LAND
-	color = color + varSpecularColor * materialLightSpecularColor * texture2D(specularMap, varTexCoordOrig).rgb;
+#ifdef SPECULAR
+	float glossiness = pow(5000.0, inGlossiness * lightMask.a);
+    float specularNorm = (glossiness + 2.0) / 8.0;
+    color += varSpecularColor * pow(varNdotH, glossiness) * specularNorm;
 #endif
+    //color = vec3(1.0);
 
 #if defined(VERTEX_FOG)
-    gl_FragColor = vec4(mix(fogColor, color, varFogFactor), 1.0);
+    gl_FragColor.rgb = mix(color, varFogColor, varFogAmoung);
 #else
     gl_FragColor = vec4(color, 1.0);
 #endif
+    //gl_FragColor = vec4(varSpecularColor, 1.0);
 }

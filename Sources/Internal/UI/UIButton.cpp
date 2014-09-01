@@ -40,8 +40,8 @@
 
 namespace DAVA
 {
-static const UIControl::eControlState stateArray[] = {UIControl::STATE_NORMAL, UIControl::STATE_PRESSED_INSIDE, UIControl::STATE_PRESSED_OUTSIDE, UIControl::STATE_DISABLED, UIControl::STATE_SELECTED, UIControl::STATE_HOVER};
-static const String statePostfix[] = {"Normal", "PressedInside", "PressedOutside", "Disabled", "Selected", "Hover"};
+static const UIControl::eControlState stateArray[] = {UIControl::STATE_NORMAL, UIControl::STATE_PRESSED_OUTSIDE, UIControl::STATE_PRESSED_INSIDE, UIControl::STATE_DISABLED, UIControl::STATE_SELECTED, UIControl::STATE_HOVER};
+static const String statePostfix[] = {"Normal", "PressedOutside", "PressedInside", "Disabled", "Selected", "Hover"};
 
 UIButton::UIButton(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     : UIControl(rect, rectInAbsoluteCoordinates)
@@ -283,6 +283,21 @@ void UIButton::SetStateFontColor(int32 state, const Color& fontColor)
     }
 }
 
+void UIButton::SetStateFontColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            UIStaticText* staticText = GetOrCreateTextBlock((eButtonDrawState)i);
+            staticText->GetTextBackground()->SetColorInheritType(colorInheritType);
+            staticText->GetShadowBackground()->SetColorInheritType(colorInheritType);
+        }
+
+        state >>= 1;
+    }
+}
+
 void UIButton::SetStateShadowColor(int32 state, const Color& shadowColor)
 {
     for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
@@ -520,15 +535,27 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * stateAlignNode = node->Get(Format("stateAlign%s", statePostfix.c_str()));
         const YamlNode * colorInheritNode = node->Get(Format("stateColorInherit%s", statePostfix.c_str()));
         const YamlNode * colorNode = node->Get(Format("stateColor%s", statePostfix.c_str()));
+        const YamlNode * leftRightStretchCapNode = node->Get(Format("leftRightStretchCap%s", statePostfix.c_str()));
+        const YamlNode * topBottomStretchCapNode = node->Get(Format("topBottomStretchCap%s", statePostfix.c_str()));
 
         if (stateSpriteNode || stateDrawTypeNode || stateAlignNode ||
-            colorInheritNode || colorNode)
+            colorInheritNode || colorNode || leftRightStretchCapNode || topBottomStretchCapNode)
         {
-            ScopedPtr<UIControlBackground> stateBackground(CreateDefaultBackground());
-            SetBackground(drawState, stateBackground);
+            RefPtr<UIControlBackground> stateBackground;
+            if (drawState == DRAW_STATE_UNPRESSED)
+            {
+                stateBackground.Set(CreateDefaultBackground());
+            }
+            else
+            {
+                stateBackground.Set(GetActualBackground(GetStateReplacer(drawState))->Clone());
+            }
+            
+            SetBackground(drawState, stateBackground.Get());
 
             if (stateSpriteNode)
             {
+                DVASSERT(stateSpriteNode->GetCount() == 3);
                 const YamlNode * spriteNode = stateSpriteNode->Get(0);
                 const YamlNode * frameNode = stateSpriteNode->Get(1);
                 const YamlNode * backgroundModificationNode = NULL;
@@ -553,21 +580,18 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
             {
                 UIControlBackground::eDrawType type = (UIControlBackground::eDrawType)loader->GetDrawTypeFromNode(stateDrawTypeNode);
                 stateBackground->SetDrawType(type);
+            }
 
-                const YamlNode * leftRightStretchCapNode = node->Get(Format("leftRightStretchCap%s", statePostfix.c_str()));
-                const YamlNode * topBottomStretchCapNode = node->Get(Format("topBottomStretchCap%s", statePostfix.c_str()));
+            if(leftRightStretchCapNode)
+            {
+                float32 leftStretchCap = leftRightStretchCapNode->AsFloat();
+                stateBackground->SetLeftRightStretchCap(leftStretchCap);
+            }
 
-                if(leftRightStretchCapNode)
-                {
-                    float32 leftStretchCap = leftRightStretchCapNode->AsFloat();
-                    stateBackground->SetLeftRightStretchCap(leftStretchCap);
-                }
-
-                if(topBottomStretchCapNode)
-                {
-                    float32 topStretchCap = topBottomStretchCapNode->AsFloat();
-                    stateBackground->SetTopBottomStretchCap(topStretchCap);
-                }
+            if(topBottomStretchCapNode)
+            {
+                float32 topStretchCap = topBottomStretchCapNode->AsFloat();
+                stateBackground->SetTopBottomStretchCap(topStretchCap);
             }
 
             if (stateAlignNode)
@@ -598,13 +622,23 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * stateTextNode = node->Get(Format("stateText%s", statePostfix.c_str()));
         const YamlNode * multilineNode = node->Get(Format("stateMultiline%s", statePostfix.c_str()));
         const YamlNode * multilineBySymbolNode = node->Get(Format("stateMultilineBySymbol%s", statePostfix.c_str()));
-
+        const YamlNode * textColorInheritTypeNode = node->Get(Format("stateTextColorInheritType%s", statePostfix.c_str()));
+                                                   
         if (stateFontNode || stateTextAlignNode || stateTextColorNode ||
             stateShadowColorNode || stateShadowOffsetNode || stateFittingOptionNode ||
-            stateTextNode || multilineNode || multilineBySymbolNode)
+            stateTextNode || multilineNode || multilineBySymbolNode || textColorInheritTypeNode)
         {
-            ScopedPtr<UIStaticText> stateTextBlock(CreateDefaultTextBlock());
-            SetTextBlock(drawState, stateTextBlock);
+            RefPtr<UIStaticText> stateTextBlock;
+            if (drawState == DRAW_STATE_UNPRESSED)
+            {
+                stateTextBlock.Set(CreateDefaultTextBlock());
+            }
+            else
+            {
+                stateTextBlock.Set(GetActualTextBlock(GetStateReplacer(drawState))->Clone());
+            }
+
+            SetTextBlock(drawState, stateTextBlock.Get());
 
             if (stateFontNode)
             {
@@ -641,6 +675,13 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
             {
                 stateTextBlock->SetText(LocalizedString(stateTextNode->AsWString()));
             }
+            
+            if (textColorInheritTypeNode)
+            {
+                UIControlBackground::eColorInheritType type = (UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(textColorInheritTypeNode);
+                stateTextBlock->GetTextBackground()->SetColorInheritType(type);
+                stateTextBlock->GetShadowBackground()->SetColorInheritType(type);
+            }
 
             bool multiline = loader->GetBoolFromYamlNode(multilineNode, false);
             bool multilineBySymbol = loader->GetBoolFromYamlNode(multilineBySymbolNode, false);
@@ -671,19 +712,23 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
     {
         eButtonDrawState drawState = (eButtonDrawState)i;
         const String &statePostfix = DrawStatePostfix(drawState);
-        const UIControlBackground *baseStateBackground = baseControl->GetActualBackground(drawState);
-
-        UIControlBackground *stateBackground = GetBackground(drawState);
+        const UIControlBackground *stateBackground = GetBackground(drawState);
         if (stateBackground)
         {
-            //Get sprite and frame for state
-            Sprite *stateSprite = stateBackground->GetSprite();
-            if (stateSprite)
+            const UIControlBackground *baseStateBackground = NULL;
+            if (drawState == DRAW_STATE_UNPRESSED)
+                baseStateBackground = baseControl->GetBackground(drawState);
+            else
+                baseStateBackground = GetActualBackground(GetStateReplacer(drawState));
+
+            String spritePath = Sprite::GetPathString(stateBackground->GetSprite());
+            if( spritePath != Sprite::GetPathString(baseStateBackground->GetSprite()) ||
+                stateBackground->GetFrame() != baseStateBackground->GetFrame() ||
+                stateBackground->GetModification() != baseStateBackground->GetModification() )
             {
                 //Create array yamlnode and add it to map
                 YamlNode *spriteNode = YamlNode::CreateArrayNode(YamlNode::AR_FLOW_REPRESENTATION);
-
-                spriteNode->Add(GetSpriteFrameworkPath(stateSprite));
+                spriteNode->Add(spritePath);
                 spriteNode->Add(stateBackground->GetFrame());
                 spriteNode->Add(stateBackground->GetModification());
                 node->AddNodeToMap(Format("stateSprite%s", statePostfix.c_str()), spriteNode);
@@ -734,9 +779,18 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
         const UIStaticText *stateTextBlock = GetTextBlock(drawState);
         if (stateTextBlock)
         {
-            ScopedPtr<UIStaticText> baseStaticText(CreateDefaultTextBlock());
-            Font *stateFont = stateTextBlock->GetFont();
-            node->Set(Format("stateFont%s", statePostfix.c_str()), FontManager::Instance()->GetFontName(stateFont));
+            RefPtr<UIStaticText> baseStaticText;
+            if (drawState == DRAW_STATE_UNPRESSED)
+                baseStaticText.Set(CreateDefaultTextBlock());
+            else
+                baseStaticText = GetActualTextBlock(GetStateReplacer(drawState));
+
+            String fontName = FontManager::Instance()->GetFontName(stateTextBlock->GetFont());
+            String baseFontName = FontManager::Instance()->GetFontName(baseStaticText->GetFont());
+            if (baseFontName != fontName)
+            {
+                node->Set(Format("stateFont%s", statePostfix.c_str()), fontName);
+            }
 
             const WideString &text = stateTextBlock->GetText();
             if (baseStaticText->GetText() != text)
@@ -786,6 +840,12 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             if (baseStaticText->GetTextAlign() != textAlign)
             {
                 node->SetNodeToMap(Format("stateTextAlign%s", statePostfix.c_str()), loader->GetAlignNodeValue(textAlign));
+            }
+            
+            UIControlBackground::eColorInheritType colorInheritType = stateTextBlock->GetTextBackground()->GetColorInheritType();
+            if (baseStaticText->GetTextBackground()->GetColorInheritType() != colorInheritType)
+            {
+                node->Set(Format("stateTextColorInheritType%s", statePostfix.c_str()), loader->GetColorInheritTypeNodeValue(colorInheritType));
             }
         }
     }

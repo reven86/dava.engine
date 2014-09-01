@@ -128,7 +128,7 @@ void FilePath::InitializeBundleName()
 #ifdef USE_LOCAL_RESOURCES
     SetBundleName(FilePath(USE_LOCAL_RESOURCES_PATH));
 #else
-    SetBundleName(FilePath());
+    SetBundleName(FilePath("assets/"));
 #endif
 }
 
@@ -272,6 +272,24 @@ const String FilePath::GetAbsolutePathname() const
     
     return absolutePathname;
 }
+
+#ifdef __DAVAENGINE_ANDROID__
+const String FilePath::GetAbsoluteAssetPathnameTruncated() const
+{
+    String str = GetAbsolutePathname();
+
+    if(pathType == PATH_IN_RESOURCES)
+    {
+        String::size_type find = str.find("assets/");
+        if (0 == find)
+        {
+            str = str.substr(7);
+        }
+    }
+
+    return str;
+}
+#endif //__DAVAENGINE_ANDROID__
 
 String FilePath::ResolveResourcesPath() const
 {

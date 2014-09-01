@@ -177,7 +177,7 @@ protected:
     // Sprite getter/setter. Also virtual one - its implementation is different
     // for different control types.
     virtual void SetSprite(const QString& value);
-    virtual QString GetSprite();
+    virtual QString GetSprite() const;
 
     virtual void SetSpriteFrame(int value);
     virtual int GetSpriteFrame();
@@ -247,9 +247,6 @@ protected:
 
     // Refresh the thumb size for UISlider.
     void UpdateThumbSizeForUIControlThumb();
-
-    // Verify whether UIControl exists and set its visible flag.
-    void SetUIControlVisible(const bool isVisible);
 
 private:
 	void ResizeScrollViewContent(UIControl *control);

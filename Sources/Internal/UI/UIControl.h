@@ -211,8 +211,8 @@ public:
     enum eControlState
     {
         STATE_NORMAL			= 1 << 0,//!<Control isn't under influence of any activities.
-        STATE_PRESSED_INSIDE	= 1 << 1,//!<Mouse or touch comes into control.
-        STATE_PRESSED_OUTSIDE	= 1 << 2,//!<Mouse or touch comes into control but dragged outside of control.
+        STATE_PRESSED_OUTSIDE	= 1 << 1,//!<Mouse or touch comes into control but dragged outside of control.
+        STATE_PRESSED_INSIDE	= 1 << 2,//!<Mouse or touch comes into control.
         STATE_DISABLED			= 1 << 3,//!<Control is disabled (don't process any input). Use this state only if you want change graphical representation of the control. Don't use this state for the disabling inputs for parts of the controls hierarchy!.
         STATE_SELECTED			= 1 << 4,//!<Just a state for base control, nothing more.
         STATE_HOVER				= 1 << 5,//!<This bit is rise then mouse is over the control.
@@ -262,7 +262,7 @@ public:
         You can call this function directly for the controlBackgound.
      \returns Sprite used for draw.
      */
-    virtual Sprite* GetSprite();
+    virtual Sprite* GetSprite() const;
     /**
      \brief Returns Sprite frame used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
@@ -1272,16 +1272,13 @@ public:
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
 
-    // Get the framework path for sprite, don't process it if it is empty.
-    static String GetSpriteFrameworkPath( const Sprite* sprite);
-
     // Get/set the Initial State.
     int32 GetInitialState() const;
     void SetInitialState(int32 newState);
 
     // Get/set visible flag for UI editor. Should not be serialized.
     bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
-    virtual void SetVisibleForUIEditor(bool value, bool hierarchic = true);
+    virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
 
@@ -1388,6 +1385,9 @@ private:
     float32 GetRelativeX(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
     float32 GetRelativeY(UIControl *parent, int32 align);
     float32 GetRelativeY(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
+    
+    inline bool GetSystemVisible() const;
+    void SystemNotifyVisibilityChanged();
 };
 
 const Vector2 & UIControl::GetPivotPoint() const
@@ -1464,6 +1464,12 @@ int32 UIControl::GetState() const
 {
     return controlState;
 }
+    
+bool UIControl::GetSystemVisible() const
+{
+    return visible & visibleForUIEditor;
+}
+
 };
 
 #endif

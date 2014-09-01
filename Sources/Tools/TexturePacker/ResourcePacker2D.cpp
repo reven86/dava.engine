@@ -242,10 +242,11 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			const Magick::Geometry bbox = currentLayer.page();
 			const Magick::Geometry croppedGeometry(width,height, 0, 0);
 			currentLayer.crop(croppedGeometry);
-			if(bbox.width() > (size_t)width || bbox.height() > (size_t)height)
-			{
-				currentLayer.page(croppedGeometry);
-			}
+//TODO: disabled for future investigation of correct cropping in different situations
+// 			if(bbox.width() > (size_t)width || bbox.height() > (size_t)height)
+// 			{
+// 				currentLayer.page(croppedGeometry);
+// 			}
 
 			currentLayer.magick("PNG");
 			currentLayer.write(outputFile.GetAbsolutePathname());

@@ -1525,7 +1525,10 @@ void QtMainWindow::OnAddLandscape()
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
     entityToProcess->SetLocked(true);
+    
     Landscape* newLandscape = new Landscape();
+    newLandscape->Create();
+
     RenderComponent* component = new RenderComponent();
     component->SetRenderObject(newLandscape);
 	newLandscape->Release();

@@ -104,6 +104,7 @@ void EMailTest::LoadResources()
 	address->SetText(L"test@test.com");
 	address->SetDebugDraw(true);
 	address->SetDelegate(new UITextFieldDelegate());
+	address->SetKeyboardType(UITextField::KEYBOARD_TYPE_EMAIL_ADDRESS);
 	AddControl(address);
 
 	subject = new UITextField(Rect(100, 50, 600, 30));

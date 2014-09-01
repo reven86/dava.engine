@@ -67,7 +67,7 @@ public:
 
 	CorePlatformAndroid();
 
-	virtual void CreateAndroidWindow(const char8 *docPath, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate);
+	virtual void CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate);
 
 	virtual void Quit();
 
@@ -95,6 +95,7 @@ public:
 	void SetAssetManager(AAssetManager * mngr);
 
 	const String& GetExternalStoragePathname() const {return externalStorage;};
+	const String& GetInternalStoragePathname() const {return internalStorage;};
 	
 	AndroidSystemDelegate* GetAndroidSystemDelegate() const;
 
@@ -110,8 +111,6 @@ private:
 
     void ResizeView(int32 w, int32 h);
 
-    
-
 private:
 	int32 width;
 	int32 height;
@@ -126,9 +125,9 @@ private:
 	Vector<DAVA::UIEvent> totalTouches;
 
 	AndroidSystemDelegate *androidDelegate;
-	AAssetManager * assetMngr;
 
 	String externalStorage;
+	String internalStorage;
 };
 };
 #endif // #if defined(__DAVAENGINE_ANDROID__)

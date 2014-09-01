@@ -237,8 +237,8 @@ void PasteCommand::UpdateControlName(const HierarchyTreeNode* parent, HierarchyT
         controlNode->GetUIObject()->SetName(node->GetName().toStdString());
     }
 
-	HierarchyTreeNode::HIERARCHYTREENODESLIST child = node->GetChildNodes();
-	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::iterator iter = child.begin();
+	const HierarchyTreeNode::HIERARCHYTREENODESLIST &child = node->GetChildNodes();
+	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = child.begin();
 		 iter != child.end();
 		 ++iter)
 	{

@@ -44,7 +44,7 @@ public:
 	virtual ~HierarchyTreeControlMimeData();
 	
 	bool IsDropEnable(const HierarchyTreeNode* parentItem) const;
-	HierarchyTreeNode::HIERARCHYTREENODESIDLIST GetItems() const;
+	const HierarchyTreeNode::HIERARCHYTREENODESIDLIST &GetItems() const;
 	
 private:
 	HierarchyTreeNode::HIERARCHYTREENODESIDLIST items;
