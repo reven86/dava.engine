@@ -386,7 +386,7 @@ void UIButton::SetBackground(UIControlBackground *newBg)
     DVASSERT(false);
 }
 
-UIControlBackground * UIButton::GetBackground()
+UIControlBackground * UIButton::GetBackground() const
 {
     return selectedBackground;
 }
@@ -405,8 +405,8 @@ void UIButton::SystemDraw( const UIGeometricData &geometricData )
 
 void UIButton::Draw(const UIGeometricData &geometricData)
 {
-    if (selectedBackground)
-        selectedBackground->Draw(geometricData);
+    DVASSERT(selectedBackground);
+    selectedBackground->Draw(geometricData);
     if (selectedTextBlock)
         selectedTextBlock->Draw(geometricData);
 }
@@ -414,8 +414,10 @@ void UIButton::Draw(const UIGeometricData &geometricData)
 void UIButton::SetParentColor( const Color &parentColor )
 {
     UIControl::SetParentColor(parentColor);
+    DVASSERT(selectedBackground);
+    selectedBackground->SetParentColor(parentColor);
     if (selectedTextBlock)
-        selectedTextBlock->SetParentColor(parentColor);
+        selectedTextBlock->SetParentColor(selectedBackground->GetDrawColor());
 }
 
 UIControlBackground *UIButton::GetActualBackgroundForState(int32 state) const

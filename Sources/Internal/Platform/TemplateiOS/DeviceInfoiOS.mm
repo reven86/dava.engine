@@ -317,6 +317,12 @@ void DeviceInfo::InitializeScreenInfo()
 }
 
 
+
+int32 DeviceInfo::GetCpuCount()
+{
+    return (int32)[[NSProcessInfo processInfo] processorCount];
+}
+
 }
 
 #endif

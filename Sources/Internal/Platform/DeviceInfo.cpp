@@ -86,4 +86,14 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 }
     
 #endif
+
+#ifdef __DAVAENGINE_WIN32__
+
+int32 DeviceInfo::GetCpuCount()
+{
+    return -1;
+}
+
+#endif
+
 }

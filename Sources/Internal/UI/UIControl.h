@@ -324,7 +324,7 @@ public:
      \brief Returns current background used for draw.
      \returns background used for draw.
      */
-    virtual UIControlBackground * GetBackground();
+    virtual UIControlBackground * GetBackground() const;
 
     /**
      \brief Sets left align of control relative to its parent.

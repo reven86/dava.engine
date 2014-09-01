@@ -1662,6 +1662,26 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/Notification.h</locationURI>
 		</link>
 		<link>
+			<name>Internal/Platform/NotificationAndroid.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/NotificationAndroid.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/NotificationAndroid.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/NotificationAndroid.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/NotificationNotImplemented.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/NotificationNotImplemented.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/NotificationNotImplemented.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/NotificationNotImplemented.h</locationURI>
+		</link>
+		<link>
 			<name>Internal/Platform/OpenUDIDApple.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/OpenUDIDApple.h</locationURI>
@@ -3237,16 +3257,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/MovieViewControlAndroid.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/Platform/TemplateAndroid/NotificationAndroid.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/NotificationAndroid.cpp</locationURI>
-		</link>
-		<link>
-			<name>Internal/Platform/TemplateAndroid/NotificationAndroid.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/NotificationAndroid.h</locationURI>
-		</link>
-		<link>
 			<name>Internal/Platform/TemplateAndroid/WebViewControl.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/WebViewControl.cpp</locationURI>
@@ -4360,21 +4370,6 @@
 			<name>Internal/Platform/TemplateAndroid/ExternC/AndroidLayer.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/ExternC/AndroidLayer.h</locationURI>
-		</link>
-		<link>
-			<name>Internal/Platform/TemplateAndroid/ExternC/JNIDownloadManager.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/ExternC/JNIDownloadManager.cpp</locationURI>
-		</link>
-		<link>
-			<name>Internal/Platform/TemplateAndroid/ExternC/JNIForegroundUpdateThread.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/ExternC/JNIForegroundUpdateThread.cpp</locationURI>
-		</link>
-		<link>
-			<name>Internal/Platform/TemplateAndroid/ExternC/JNINotification.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/ExternC/JNINotification.cpp</locationURI>
 		</link>
 		<link>
 			<name>Internal/Platform/TemplateAndroid/ExternC/JNITextField.cpp</name>

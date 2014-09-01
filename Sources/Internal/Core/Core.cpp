@@ -53,6 +53,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Platform/DeviceInfo.h"
+#include "Platform/Notification.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -173,6 +174,8 @@ void Core::CreateSingletons()
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
+
+    new LocalNotificationController();
     
 	DeviceInfo::InitializeScreenInfo();
 
@@ -196,6 +199,7 @@ void Core::ReleaseSingletons()
 	UIControlBackground::ReleaseRenderObject();
 	Sprite::ReleaseRenderObject();
 
+	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
 	RenderHelper::Instance()->Release();
@@ -717,6 +721,7 @@ void Core::SystemProcessFrame()
 			}
 		}
 		
+		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
 		core->Update(frameDelta);

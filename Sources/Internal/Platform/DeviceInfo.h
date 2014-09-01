@@ -147,11 +147,13 @@ public:
     static NetworkInfo GetNetworkInfo();
 
     static List<StorageInfo> GetStoragesList();
+    static int32 GetCpuCount();
 
-	static void InitializeScreenInfo();
 
-	private:
-		static ScreenInfo screenInfo;
+    static void InitializeScreenInfo();
+
+private:
+    static ScreenInfo screenInfo;
 };
 
 };

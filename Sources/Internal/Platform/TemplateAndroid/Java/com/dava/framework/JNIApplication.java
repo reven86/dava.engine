@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.util.Log;
+import com.dava.framework.JNINotificationProvider;
 
 public class JNIApplication extends Application
 {
@@ -23,6 +24,8 @@ public class JNIApplication extends Application
 		app = this;
 		super.onCreate();
 	
+        JNINotificationProvider.Init();
+
 		ApplicationInfo info = getApplicationInfo();
 		
 		Log.i(JNIConst.LOG_TAG, "[Application::onCreate] start"); 
@@ -32,6 +35,7 @@ public class JNIApplication extends Application
 		
 		Log.w(JNIConst.LOG_TAG, String.format("[Application::onCreate] apkFilePath is %s", info.publicSourceDir)); 
 		OnCreateApplication(externalDocumentsDir, internalDocumentsDir, info.publicSourceDir, JNIConst.LOG_TAG, info.packageName);
+
 
 		Log.i(JNIConst.LOG_TAG, "[Application::onCreate] finish"); 
 	}

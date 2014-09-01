@@ -424,23 +424,17 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
         return;
     }
 
-    LoadFontsFromNode(rootNode);
+    const YamlNode *childrenNode = rootNode->Get("children");
+    if (!childrenNode)
+        childrenNode = rootNode;
 
-    LoadFromNode(rootControl, rootNode, false);
+    LoadFromNode(rootControl, childrenNode, false);
 
     SafeRelease(rootNode);
 
     // After the scene is fully loaded, apply the align settings
     // to position child controls correctly.
     rootControl->ApplyAlignSettingsForChildren();
-
-//	for (Map<String, Font *>::iterator t = fontMap.begin(); t != fontMap.end(); ++t)
-//	{
-//		Font * font = t->second;
-//		SafeRelease(font);
-//	}
-//	fontMap.clear();
-
 
     uint64 t2 = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("Load of %s time: %lld", yamlPathname.GetAbsolutePathname().c_str(), t2 - t1);
@@ -454,31 +448,6 @@ bool UIYamlLoader::ProcessSave(UIControl * rootControl, const FilePath & yamlPat
     YamlNode* resultNode = SaveToNode(rootControl, NULL);
 
     uint32 fileAttr = File::CREATE | File::WRITE;
-
-#if defined(SAVE_TRACKED_FONTS)
-    //save used fonts
-    const FontManager::TRACKED_FONTS& usedFonts = FontManager::Instance()->GetTrackedFont();
-    ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
-    for (FontManager::TRACKED_FONTS::const_iterator iter = usedFonts.begin();
-         iter != usedFonts.end();
-         ++iter)
-    {
-        Font* font = (*iter);
-        if (!font)
-            continue;
-
-        // The font should be stored once only.
-        String fontName = FontManager::Instance()->GetFontName(font);
-        if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
-        {
-            fontsNode->AddNodeToMap( fontName, font->SaveToYamlNode() );
-        }
-    }
-
-    //resultNode
-    YamlEmitter::SaveToYamlFile(yamlPathname, fontsNode, fileAttr);
-    fileAttr = File::APPEND | File::WRITE;
-#endif
 
     // Save the resulting YAML file to the path passed.
     bool savedOK = YamlEmitter::SaveToYamlFile(yamlPathname, resultNode, fileAttr);
@@ -597,40 +566,45 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
 
 void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * rootNode, bool needParentCallback)
 {
-	//for (Map<String, YamlNode*>::iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
-	int cnt = rootNode->GetCount();
-	for (int k = 0; k < cnt; ++k)
-	{
-		const YamlNode * node = rootNode->Get(k);
-		const YamlNode * typeNode = node->Get("type");
-		if (!typeNode)continue;
-		const String & type = typeNode->AsString();
-		if (type == "FTFont")continue;
-		if (type == "GraphicsFont")continue;
-		if (type == "DFFont") continue;
+    //for (Map<String, YamlNode*>::iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
+    int cnt = rootNode->GetCount();
+    for (int k = 0; k < cnt; ++k)
+    {
+        const YamlNode * node = rootNode->Get(k);
+        const YamlNode * typeNode = node->Get("type");
+        if (!typeNode)
+            continue;
 
-		// Base Type might be absent.
-		const YamlNode* baseTypeNode = node->Get("baseType");
-		const String baseType = baseTypeNode ? baseTypeNode->AsString() : String();
+        const String & type = typeNode->AsString();
 
-		// The control can be loaded either from its Type or from Base Type (depending on
-		// whether the control is custom or not.
-		UIControl* control = CreateControl(type, baseType);
-		if (!control)
-		{
-			Logger::Warning("ObjectFactory haven't found object with type:%s, base type %s", type.c_str(), baseType.c_str());
-			continue;
-		}else
-		{
-			//Logger::FrameworkDebug("Create control with type:%s", type.c_str());
-		}
-		control->LoadFromYamlNode(node, this);
-		parentControl->AddControl(control);
-		control->SetName(rootNode->GetItemKeyName(k));
-		LoadFromNode(control, node, true);
-		SafeRelease(control);
-	}
-    
+        // Base Type might be absent.
+        const YamlNode* baseTypeNode = node->Get("baseType");
+        const String baseType = baseTypeNode ? baseTypeNode->AsString() : String();
+
+        // The control can be loaded either from its Type or from Base Type (depending on
+        // whether the control is custom or not.
+        UIControl* control = CreateControl(type, baseType);
+        if (!control)
+        {
+            Logger::Warning("ObjectFactory haven't found object with type:%s, base type %s", type.c_str(), baseType.c_str());
+            continue;
+        }else
+        {
+            //Logger::FrameworkDebug("Create control with type:%s", type.c_str());
+        }
+
+        control->SetName(rootNode->GetItemKeyName(k));
+        control->LoadFromYamlNode(node, this);
+        parentControl->AddControl(control);
+
+        const YamlNode *childrenNode = node->Get("children");
+        if (!childrenNode)
+            childrenNode = node;
+
+        LoadFromNode(control, childrenNode, true);
+        SafeRelease(control);
+    }
+
     if(needParentCallback)
     {
         parentControl->LoadFromYamlNodeCompleted();
@@ -693,11 +667,18 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentN
 void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode)
 {
     const List<UIControl*>& children = parentControl->GetRealChildren();
+    if (children.empty())
+        return;
+
+    YamlNode *childrenNode = YamlNode::CreateMapNode(false);
+
     for (List<UIControl*>::const_iterator childIter = children.begin(); childIter != children.end(); childIter ++)
     {
         UIControl* childControl = (*childIter);
-        SaveToNode(childControl, parentNode);
+        SaveToNode(childControl, childrenNode);
     }
+
+    parentNode->Add("children", childrenNode);
 }
 
 void UIYamlLoader::SetAssertIfCustomControlNotFound(bool value)

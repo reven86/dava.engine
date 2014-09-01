@@ -190,7 +190,8 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
     {
         RenderObject * renderObject = GetRenderObject(entities[k]);
         if (   (RenderObject::TYPE_MESH == renderObject->GetType())
-            || (RenderObject::TYPE_LANDSCAPE == renderObject->GetType()))
+            || (RenderObject::TYPE_LANDSCAPE == renderObject->GetType())
+            || (RenderObject::TYPE_SPEED_TREE == renderObject->GetType()))
         {
             renderObjectsArray.push_back(renderObject);
             renderObject->SetFlags(renderObject->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
@@ -258,6 +259,9 @@ void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * mess
             
             staticOcclusion->RenderFrame(x, y, z);
         }
+
+        entities[activeIndex]->AddComponent(componentInProgress);
+        componentInProgress = 0;
         
         activeIndex = -1;
         

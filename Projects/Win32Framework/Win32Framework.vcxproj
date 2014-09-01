@@ -409,6 +409,8 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Notification.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -856,6 +858,8 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt\QtLayer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

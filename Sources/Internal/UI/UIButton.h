@@ -176,7 +176,7 @@ public:
      \brief Returns UIControlBackground object actual for the current button state.
      \returns background used currently for draw.
      */
-    virtual UIControlBackground * GetBackground();
+    virtual UIControlBackground * GetBackground() const;
 
     /**
      \brief Sets background what will be used for draw of the requested states.

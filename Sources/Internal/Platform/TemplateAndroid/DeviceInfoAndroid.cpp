@@ -33,6 +33,7 @@
 
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
+#include "unistd.h"
 
 DAVA::String intermediateStr;
 
@@ -475,6 +476,11 @@ void DeviceInfo::InitializeScreenInfo()
     screenInfo.scale = 1;
 }
 
+
+int32 DeviceInfo::GetCpuCount()
+{
+	return sysconf(_SC_NPROCESSORS_CONF);
+}
 
 }
 

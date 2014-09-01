@@ -95,6 +95,7 @@ void DeviceInfoTest::DidAppear()
     deviceInfoString += Format("Proxy Host: %s\n", proxyHost.c_str());
     deviceInfoString += Format("Proxy Port: %d\n", proxyPort);
     deviceInfoString += Format("Proxy Exclude Hosts: %s\n", proxyExculde.c_str());
+    deviceInfoString += Format("CPU count: %d\n", DeviceInfo::GetCpuCount());
 	const eGPUFamily gpu = DeviceInfo::GetGPUFamily();
 	if(gpu == GPU_INVALID)
 	{
