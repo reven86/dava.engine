@@ -52,6 +52,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Input/AccelerometeriPhone.h"
@@ -165,6 +166,8 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
     
+	DeviceInfo::InitializeScreenInfo();
+
 	Sprite::CreateRenderObject();
 	UIControlBackground::CreateRenderObject();
 

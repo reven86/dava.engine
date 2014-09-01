@@ -116,6 +116,13 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     return NetworkInfo();
 }
 
+void DeviceInfo::InitializeScreenInfo()
+{
+	screenInfo.width = [[NSScreen mainScreen] frame].size.width;
+	screenInfo.height = [[NSScreen mainScreen] frame].size.height;
+	screenInfo.scale = 1;
+}
+
 }
 
 #endif

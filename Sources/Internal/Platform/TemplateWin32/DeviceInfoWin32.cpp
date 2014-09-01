@@ -205,6 +205,13 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     return NetworkInfo();
 }
 
+void DeviceInfo::InitializeScreenInfo()
+{
+	screenInfo.width = ::GetSystemMetrics(SM_CXSCREEN);
+	screenInfo.height = ::GetSystemMetrics(SM_CYSCREEN);
+	screenInfo.scale = 1;
+}
+
 }
 
 #endif

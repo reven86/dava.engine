@@ -76,6 +76,7 @@ public:
 	static const char* gJavaClassName;
 };
 
+
 };
 
 #endif //defined(__DAVAENGINE_ANDROID__)

@@ -98,6 +98,9 @@ public:
 	
 	AndroidSystemDelegate* GetAndroidSystemDelegate() const;
 
+	int32 GetViewWidth() const { return width; };
+	int32 GetViewHeight() const { return height; };
+
 private:
 
 	void QuitAction();

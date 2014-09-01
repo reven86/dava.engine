@@ -197,11 +197,6 @@ namespace DAVA
 		RenderManager::Create(Core::RENDERER_OPENGL);
 #endif
 		RenderManager::Instance()->Create(hInstance, hWindow);
-		// DF-2274 - Get actual screen resolution and save it inside DeviceInfo
-		int nScreenWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		int nScreenHeight = ::GetSystemMetrics(SM_CYSCREEN);
-
-		DeviceInfo::SetScreenInfo(nScreenWidth, nScreenHeight, 1);
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();

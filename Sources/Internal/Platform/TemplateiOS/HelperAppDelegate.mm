@@ -47,13 +47,12 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 		
 	unsigned int scale = 1;
 		
-    if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-        && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
-    {
-        scale = (unsigned int)[[::UIScreen mainScreen] scale];
-    }
+	if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+		&& [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+	{
+		scale = (unsigned int)[[::UIScreen mainScreen] scale];
+	}
 
-    DeviceInfo::SetScreenInfo(width, height, scale);
 
 	FrameworkDidLaunched();
 
