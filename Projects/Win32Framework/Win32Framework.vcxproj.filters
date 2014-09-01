@@ -1573,6 +1573,8 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2821,5 +2823,7 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp" />
   </ItemGroup>
 </Project>

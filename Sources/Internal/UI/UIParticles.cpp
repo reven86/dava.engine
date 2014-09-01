@@ -93,7 +93,11 @@ void UIParticles::Start()
     
 void UIParticles::DoStart()
 {
-    DVASSERT(effect);
+    if (!effect)
+    {
+        return;
+    }
+
     updateTime = 0;
 
     if (effect->state == ParticleEffectComponent::STATE_STARTING ||
@@ -110,7 +114,11 @@ void UIParticles::DoStart()
 
 void UIParticles::Stop(bool isDeleteAllParticles)
 {
-    DVASSERT(effect);
+    if (!effect)
+    {
+        return;
+    }
+
     updateTime = 0;
     
     if (effect->state == ParticleEffectComponent::STATE_STOPPED) return;
@@ -130,19 +138,31 @@ void UIParticles::Stop(bool isDeleteAllParticles)
 
 void UIParticles::Pause(bool isPaused /*= true*/)
 {	
-    DVASSERT(effect);
+    if (!effect)
+    {
+        return;
+    }
+
     effect->isPaused = isPaused;
 }
 
 bool UIParticles::IsStopped()
 {
-    DVASSERT(effect);
+    if (!effect)
+    {
+        return false;
+    }
+
     return effect->state == ParticleEffectComponent::STATE_STOPPED;
 }
 
 bool UIParticles::IsPaused()
 {
-    DVASSERT(effect);
+    if (!effect)
+    {
+        return false;
+    }
+
     return effect->isPaused;
 }
 
@@ -161,8 +181,12 @@ void UIParticles::Restart(bool isDeleteAllParticles)
 }
     
 void UIParticles::DoRestart()
+{
+    if (!effect)
     {
-    DVASSERT(effect);
+        return;
+    }
+
     effect->isPaused = false;
     if (delayedDeleteAllParticles)
     {
@@ -255,11 +279,6 @@ void UIParticles::Reload()
 const FilePath& UIParticles::GetEffectPath() const
 {
     return effectPath;
-}
-
-bool UIParticles::IsEffectLoaded() const
-{
-    return (effect != NULL);
 }
 
 void UIParticles::SetAutostart(bool value)

@@ -10,7 +10,10 @@ import android.os.Handler;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import com.dava.framework.JNINotificationProvider;
+
 import org.fmod.FMODAudioDevice;
+
 import com.bda.controller.Controller;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
@@ -49,6 +52,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	activity = this;
         super.onCreate(savedInstanceState);
         
+        JNINotificationProvider.AttachToActivity();
+        
         if(null != savedInstanceState)
         {
         	isFirstRun = savedInstanceState.getBoolean("isFirstRun");
@@ -56,7 +61,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
     	// The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate]");
-
+        
         // initialize accelerometer
         SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         accelerometer = new JNIAccelerometer(this, sensorManager);
@@ -75,7 +80,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         	mController.init();
         	mController.setListener(glView.mogaListener, new Handler());
         }
-
+        
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
         
@@ -94,8 +99,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		} catch (Exception e) {
 			Log.d("", "no singalStrengthListner");
 		}
-        
-        JNINotification.Init();
     }
     
     @Override
@@ -247,7 +250,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     @Override
     public void onBackPressed() {
-    	
     }
     
     public void onAccelerationChanged(float x, float y, float z)

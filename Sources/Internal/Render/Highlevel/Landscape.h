@@ -43,7 +43,7 @@
 
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-#define LANDSCAPE_SPECULAR_LIT 1
+//#define LANDSCAPE_SPECULAR_LIT 1
 
 namespace DAVA
 {

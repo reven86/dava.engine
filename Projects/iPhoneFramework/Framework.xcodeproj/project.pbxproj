@@ -1075,6 +1075,18 @@
 		CCEB543D1886FF0C0018491F /* LodToLod2Converter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB54391886FF0C0018491F /* LodToLod2Converter.h */; };
 		CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */; };
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
+		D7B50F2D19ACB28900F8C0C9 /* Notification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2719ACB28900F8C0C9 /* Notification.cpp */; };
+		D7B50F2E19ACB28900F8C0C9 /* Notification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2719ACB28900F8C0C9 /* Notification.cpp */; };
+		D7B50F2F19ACB28900F8C0C9 /* Notification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2819ACB28900F8C0C9 /* Notification.h */; };
+		D7B50F3019ACB28900F8C0C9 /* Notification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2819ACB28900F8C0C9 /* Notification.h */; };
+		D7B50F3119ACB28900F8C0C9 /* NotificationAndroid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */; };
+		D7B50F3219ACB28900F8C0C9 /* NotificationAndroid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */; };
+		D7B50F3319ACB28900F8C0C9 /* NotificationAndroid.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2A19ACB28900F8C0C9 /* NotificationAndroid.h */; };
+		D7B50F3419ACB28900F8C0C9 /* NotificationAndroid.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2A19ACB28900F8C0C9 /* NotificationAndroid.h */; };
+		D7B50F3519ACB28900F8C0C9 /* NotificationNotImplemented.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2B19ACB28900F8C0C9 /* NotificationNotImplemented.cpp */; };
+		D7B50F3619ACB28900F8C0C9 /* NotificationNotImplemented.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2B19ACB28900F8C0C9 /* NotificationNotImplemented.cpp */; };
+		D7B50F3719ACB28900F8C0C9 /* NotificationNotImplemented.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2C19ACB28900F8C0C9 /* NotificationNotImplemented.h */; };
+		D7B50F3819ACB28900F8C0C9 /* NotificationNotImplemented.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2C19ACB28900F8C0C9 /* NotificationNotImplemented.h */; };
 		D7FEF13B19864E5C00B2C7AF /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12319864E5C00B2C7AF /* DLC.cpp */; };
 		D7FEF13C19864E5C00B2C7AF /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12319864E5C00B2C7AF /* DLC.cpp */; };
 		D7FEF13D19864E5C00B2C7AF /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12419864E5C00B2C7AF /* DLC.h */; };
@@ -1968,6 +1980,12 @@
 		CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SwitchToRenerObjectConverter.cpp; sourceTree = "<group>"; };
 		CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchToRenerObjectConverter.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7B50F2719ACB28900F8C0C9 /* Notification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Notification.cpp; sourceTree = "<group>"; };
+		D7B50F2819ACB28900F8C0C9 /* Notification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Notification.h; sourceTree = "<group>"; };
+		D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NotificationAndroid.cpp; sourceTree = "<group>"; };
+		D7B50F2A19ACB28900F8C0C9 /* NotificationAndroid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotificationAndroid.h; sourceTree = "<group>"; };
+		D7B50F2B19ACB28900F8C0C9 /* NotificationNotImplemented.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NotificationNotImplemented.cpp; sourceTree = "<group>"; };
+		D7B50F2C19ACB28900F8C0C9 /* NotificationNotImplemented.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotificationNotImplemented.h; sourceTree = "<group>"; };
 		D7FEF12319864E5C00B2C7AF /* DLC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DLC.cpp; sourceTree = "<group>"; };
 		D7FEF12419864E5C00B2C7AF /* DLC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLC.h; sourceTree = "<group>"; };
 		D7FEF12619864E5C00B2C7AF /* CurlDownloader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CurlDownloader.cpp; sourceTree = "<group>"; };
@@ -3211,6 +3229,12 @@
 		E8B3C8BB16B9326D002BD35F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				D7B50F2719ACB28900F8C0C9 /* Notification.cpp */,
+				D7B50F2819ACB28900F8C0C9 /* Notification.h */,
+				D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */,
+				D7B50F2A19ACB28900F8C0C9 /* NotificationAndroid.h */,
+				D7B50F2B19ACB28900F8C0C9 /* NotificationNotImplemented.cpp */,
+				D7B50F2C19ACB28900F8C0C9 /* NotificationNotImplemented.h */,
 				6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */,
 				624C87F018C6160F00E1049D /* DateTime.cpp */,
 				624C87F118C6160F00E1049D /* DateTime.h */,
@@ -4073,6 +4097,7 @@
 				17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */,
 				02FD7FB71924997C007762C0 /* LandscapeCursor.h in Headers */,
 				02FD7FB81924997C007762C0 /* Light.h in Headers */,
+				D7B50F3019ACB28900F8C0C9 /* Notification.h in Headers */,
 				02FD7FB91924997C007762C0 /* Mesh.h in Headers */,
 				02FD7FBA1924997C007762C0 /* RenderBatch.h in Headers */,
 				02FD7FBB1924997C007762C0 /* RenderDataSource.h in Headers */,
@@ -4142,6 +4167,7 @@
 				02FD7FFB1924997C007762C0 /* RenderComponent.h in Headers */,
 				02FD7FFC1924997C007762C0 /* SwitchComponent.h in Headers */,
 				02FD7FFD1924997C007762C0 /* TransformComponent.h in Headers */,
+				D7B50F3419ACB28900F8C0C9 /* NotificationAndroid.h in Headers */,
 				02FD7FFE1924997C007762C0 /* UpdatableComponent.h in Headers */,
 				02FD7FFF1924997C007762C0 /* DataNode.h in Headers */,
 				02FD80001924997C007762C0 /* Drawable.h in Headers */,
@@ -4220,6 +4246,7 @@
 				02FD803E1924997C007762C0 /* SpeedTreeObject.h in Headers */,
 				02FD803F1924997C007762C0 /* UIScreenTransition.h in Headers */,
 				02FD80401924997C007762C0 /* UIScrollBar.h in Headers */,
+				D7B50F3819ACB28900F8C0C9 /* NotificationNotImplemented.h in Headers */,
 				02FD80411924997C007762C0 /* UISlider.h in Headers */,
 				02FD80421924997C007762C0 /* UIStaticText.h in Headers */,
 				02FD80431924997C007762C0 /* UITextField.h in Headers */,
@@ -4384,6 +4411,7 @@
 				E8B3CADD16B9326E002BD35F /* List.h in Headers */,
 				E8B3CADE16B9326E002BD35F /* ListAllocator.h in Headers */,
 				647EFC75195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
+				D7B50F3319ACB28900F8C0C9 /* NotificationAndroid.h in Headers */,
 				0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */,
 				E8B3CAE016B9326E002BD35F /* MemoryManager.h in Headers */,
 				E8B3CAE216B9326E002BD35F /* Replay.h in Headers */,
@@ -4409,6 +4437,7 @@
 				D7FEF14119864E5C00B2C7AF /* CurlDownloader.h in Headers */,
 				E8B3CB2616B9326E002BD35F /* LocalizationSystem.h in Headers */,
 				C172EC3118C9F9D4004309CF /* TextBlockSoftwareRender.h in Headers */,
+				D7B50F2F19ACB28900F8C0C9 /* Notification.h in Headers */,
 				E8B3CB2816B9326E002BD35F /* Logger.h in Headers */,
 				E8B3CB2E16B9326E002BD35F /* ResourceArchive.h in Headers */,
 				E8B3CB3016B9326E002BD35F /* VariantType.h in Headers */,
@@ -4734,6 +4763,7 @@
 				CC84B04118211BCE00934482 /* JobManager.h in Headers */,
 				17DC600A17DE16D40075813E /* IMovieViewControl.h in Headers */,
 				17DC600C17DE16D40075813E /* UIMovieView.h in Headers */,
+				D7B50F3719ACB28900F8C0C9 /* NotificationNotImplemented.h in Headers */,
 				17DC601017DE18460075813E /* MovieViewControliOS.h in Headers */,
 				EA84E17617FAC20100304C3C /* SpatialTree.h in Headers */,
 				02D4CFC118055E29007EC9EC /* FMODSoundEvent.h in Headers */,
@@ -5069,6 +5099,7 @@
 				02FD815E1924997C007762C0 /* AtomicMacOS.mm in Sources */,
 				02FD815F1924997C007762C0 /* JobManager.cpp in Sources */,
 				02FD81601924997C007762C0 /* PolygonGroupInstance.cpp in Sources */,
+				D7B50F3219ACB28900F8C0C9 /* NotificationAndroid.cpp in Sources */,
 				02FD81611924997C007762C0 /* ProxyNode.cpp in Sources */,
 				02FD81621924997C007762C0 /* Scene.cpp in Sources */,
 				02FD81631924997C007762C0 /* SceneAnimationMixer.cpp in Sources */,
@@ -5145,6 +5176,8 @@
 				02FD81A31924997C007762C0 /* UtilsMacOS.mm in Sources */,
 				02FD81A41924997C007762C0 /* IntrospectionBase.cpp in Sources */,
 				02FD81A51924997C007762C0 /* GlobalEventSystem.cpp in Sources */,
+				D7B50F3619ACB28900F8C0C9 /* NotificationNotImplemented.cpp in Sources */,
+				D7B50F2E19ACB28900F8C0C9 /* Notification.cpp in Sources */,
 				02FD81A61924997C007762C0 /* SpriteObject.cpp in Sources */,
 				02FD81A71924997C007762C0 /* SpriteRenderBatch.cpp in Sources */,
 				02FD81A81924997C007762C0 /* ComponentHelpers.cpp in Sources */,
@@ -5239,6 +5272,7 @@
 				E8ADAEC818CA1325000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				E8B3CA8216B9326E002BD35F /* AnimationManager.cpp in Sources */,
 				D7FEF14319864E5C00B2C7AF /* Downloader.cpp in Sources */,
+				D7B50F3519ACB28900F8C0C9 /* NotificationNotImplemented.cpp in Sources */,
 				E8B3CA8416B9326E002BD35F /* BezierSplineAnimation.cpp in Sources */,
 				E8B3CA8616B9326E002BD35F /* Interpolation.cpp in Sources */,
 				E8B3CA8816B9326E002BD35F /* KeyframeAnimation.cpp in Sources */,
@@ -5538,6 +5572,7 @@
 				C7E76D3116DF69370041ED9A /* AutotestingSystemLua.cpp in Sources */,
 				C7E76D3316DF69370041ED9A /* AutotestingSystemSwig.cpp in Sources */,
 				C7E76D3816DF69370041ED9A /* RectSwig.cpp in Sources */,
+				D7B50F3119ACB28900F8C0C9 /* NotificationAndroid.cpp in Sources */,
 				C7E76D3B16DF69370041ED9A /* UIControlSwig.cpp in Sources */,
 				C7E76D3E16DF69370041ED9A /* VectorSwig.cpp in Sources */,
 				17F53E3016D36FF3004D5099 /* UIWebView.cpp in Sources */,
@@ -5586,6 +5621,7 @@
 				E8679184175F62D600C5A6A2 /* EnumMap.cpp in Sources */,
 				A6E4FDF31761D40200B48E41 /* ActionComponent.cpp in Sources */,
 				A6E4FDF51761D40200B48E41 /* CustomPropertiesComponent.cpp in Sources */,
+				D7B50F2D19ACB28900F8C0C9 /* Notification.cpp in Sources */,
 				A6E4FDFB1761D83100B48E41 /* ActionUpdateSystem.cpp in Sources */,
 				A6A1E8691785688600AA3A86 /* CRC32.cpp in Sources */,
 				84D18C0619201BEF009E3E90 /* LibPngHelpers.cpp in Sources */,

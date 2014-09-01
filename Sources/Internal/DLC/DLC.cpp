@@ -693,8 +693,9 @@ void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status
             switch(downloadError)
             {
                 case DAVA::DLE_NO_ERROR:
-                    // ok
-                    PostEvent(EVENT_DOWNLOAD_OK);
+                    //we want to have this switch from DS_DOWNLOADING to DS_PATCHING when app is in background,
+                    //that's why we call FSM() directly instead of using job in PostEvent()
+                    FSM(EVENT_DOWNLOAD_OK);
                     break;
 
                 case DAVA::DLE_COULDNT_RESOLVE_HOST:
