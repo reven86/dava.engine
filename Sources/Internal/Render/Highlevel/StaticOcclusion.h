@@ -49,6 +49,7 @@ class RenderSystem;
 class Scene;
 class Sprite;
 class Landscape;
+class RenderTarget;
     
 class StaticOcclusionData
 {
@@ -110,7 +111,7 @@ public:
     //Vector<Vector3> renderPositions;
     //Vector<Vector3> renderDirections;
     
-    inline Texture * GetRTTexture() const;
+    //inline Texture * GetRTTexture() const;
     
 private:
     void ProcessRecordedBatches();
@@ -131,8 +132,10 @@ private:
     uint32 currentFrameZ;
     Camera * cameras[6];
     StaticOcclusionRenderPass * staticOcclusionRenderPass;
-    Sprite * renderTargetSprite;
-    Texture * renderTargetTexture;
+    //Sprite * renderTargetSprite;
+    //Texture * renderTargetTexture;
+
+    RenderTarget* renderTarget;
 
     StaticOcclusionData * currentData;
     
@@ -151,7 +154,7 @@ inline OcclusionQueryManager & StaticOcclusion::GetOcclusionQueryManager()
 
 inline void StaticOcclusion::SetScene(Scene * _scene) { scene = _scene; };
 inline void StaticOcclusion::SetRenderSystem(RenderSystem * _renderSystem) {renderSystem = _renderSystem; };
-inline Texture * StaticOcclusion::GetRTTexture() const { return renderTargetTexture; };
+//inline Texture * StaticOcclusion::GetRTTexture() const { return renderTargetTexture; };
 
 };
 

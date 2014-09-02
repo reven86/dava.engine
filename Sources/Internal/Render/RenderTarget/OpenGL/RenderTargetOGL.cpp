@@ -192,6 +192,13 @@ void RenderTargetOGL::ProcessPreRenderActions(const Rect& viewport)
     RenderManager::Instance()->SetViewport(viewport, true);
     RenderManager::Instance()->RemoveClip();
 
+    //VI: need to set state in order Clear() to work. Current state may block color channels from modification
+    if(needClearColor || needClearDepth || needClearStencil)
+    {
+        RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+        RenderManager::Instance()->FlushState();
+    }
+
     if(needClearColor &&
        needClearDepth &&
        needClearStencil)

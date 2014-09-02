@@ -38,6 +38,8 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/ImageSystem.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 namespace DAVA
 {
     
@@ -49,10 +51,12 @@ namespace DAVA
     : manager(10000)
     {
         staticOcclusionRenderPass = 0;
-        renderTargetSprite = 0;
-        renderTargetTexture = 0;
+        //renderTargetSprite = 0;
+        //renderTargetTexture = 0;
         currentData = 0;
         landscape = 0;
+
+        renderTarget = NULL;
     }
     
     StaticOcclusion::~StaticOcclusion()
@@ -62,8 +66,10 @@ namespace DAVA
             SafeRelease(cameras[k]);
         }
         SafeDelete(staticOcclusionRenderPass);
-        SafeRelease(renderTargetSprite);
-        SafeRelease(renderTargetTexture);
+        //SafeRelease(renderTargetSprite);
+        //SafeRelease(renderTargetTexture);
+
+        SafeRelease(renderTarget);
     }
     
     
@@ -94,10 +100,17 @@ namespace DAVA
         }
         
         
-        if (!renderTargetTexture)
-            renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
-        if (!renderTargetSprite)
-            renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT);
+        if (NULL == renderTarget)
+        {
+            renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR | RenderTargetFactory::ATTACHMENT_DEPTH | RenderTargetFactory::ATTACHMENT_STENCIL,
+                                                                               RENDER_TARGET_WIDTH,
+                                                                               RENDER_TARGET_HEIGHT);
+        }
+
+        //if (!renderTargetTexture)
+        //    renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
+        //if (!renderTargetSprite)
+        //    renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT);
         
         /* Set<uint16> busyIndices;
          for (uint32 k = 0; k < renderObjects.size(); ++k)
@@ -327,9 +340,11 @@ namespace DAVA
                         }
                         //camera->SetupDynamicParameters();
                         // Do Render
-                        
-                        RenderManager::Instance()->SetRenderTarget(renderTargetSprite);
-                        RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT), true);
+
+                        renderTarget->BeginRender();
+
+                        //-rt-//RenderManager::Instance()->SetRenderTarget(renderTargetSprite);
+                        //-rt-//RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT), true);
                         
                         //camera->SetupDynamicParameters();
                         
@@ -347,7 +362,13 @@ namespace DAVA
                         timeRendering = SystemTimer::Instance()->GetAbsoluteNano() - timeRendering;
                         timeTotalRendering += timeRendering;
                         
-                        RenderManager::Instance()->RestoreRenderTarget();
+                        renderTarget->EndRender();
+
+                        //RenderDataReader* reader = RenderTargetFactory::Instance()->GetRenderDataReader();
+                        //Image* img = reader->ReadColorData(renderTarget);
+                        //ImageSystem::Instance()->Save("~doc:/static_occlusion.png", img);
+                        //SafeRelease(img);
+                        //SafeRelease(reader);
                         
                         size_t size = recordedBatches.size();
                         /*
