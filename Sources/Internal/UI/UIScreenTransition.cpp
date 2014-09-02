@@ -66,8 +66,6 @@ void UIScreenTransition::CreateRenderTargets(Texture* prevTexture, Texture* next
 		Logger::FrameworkDebug("Render targets already created");
 		return;
 	}
-    /*copy of default 3d blend with alpha write only - to minimize state changes*/
-    alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_COLORMASK_ALPHA);
 
 	renderTargetPrevScreen = Sprite::CreateFromTexture(prevTexture, 0, 0, (float32)prevTexture->GetWidth(), (float32)prevTexture->GetHeight());
 	renderTargetPrevScreen->SetDefaultPivotPoint(-Core::Instance()->GetVirtualScreenXMin(), -Core::Instance()->GetVirtualScreenYMin());
@@ -86,6 +84,12 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 {
 	nextScreen = _nextScreen;
 	prevScreen = _prevScreen;
+
+    if(InvalidUniqueHandle == UIScreenTransition::alphaClearStateHandle)
+    {
+        /*copy of default 3d blend with alpha write only - to minimize state changes*/
+        alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_COLORMASK_ALPHA);
+    }
 
     uint32 width = (uint32)Core::Instance()->GetPhysicalScreenWidth();//(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin());
     uint32 height = (uint32)Core::Instance()->GetPhysicalScreenHeight();//(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin());
@@ -150,15 +154,17 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
 //    RenderManager::Instance()->SetColor(1.0, 0.0, 0.0, 1.0);
 //    RenderHelper::Instance()->FillRect(Rect(screenRect.x, screenRect.y, screenRect.dx / 2, screenRect.dy));
-//    
+//
+
+    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+    RenderManager::Instance()->FlushState();
+
 	prevRenderTarget->EndRender();
 
 	nextScreen->LoadGroup();
 	
 	nextScreen->SystemWillAppear();
-	
-	//
-	
+
 	nextRenderTarget->BeginRender();
 
 	RenderManager::Instance()->SetVirtualViewOffset();
@@ -178,6 +184,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
+
+    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+    RenderManager::Instance()->FlushState();
 
 	nextRenderTarget->EndRender();
 
