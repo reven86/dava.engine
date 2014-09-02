@@ -114,6 +114,7 @@ public class JNIMovieViewControl {
 
 					view.clearAnimation();
 					layout.clearAnimation();
+					view.setZOrderOnTop(true);
 					view.getHolder().addCallback(new MovieHolder(control));
 					activity.addContentView(layout, params);
 					controls.put(id, control);

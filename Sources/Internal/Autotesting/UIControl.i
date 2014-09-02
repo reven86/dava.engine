@@ -42,9 +42,9 @@ public:
 
 	UIControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
-	virtual const Rect & GetRect(bool absoluteCoordinates = false);
+	inline const Rect GetRect() const;
     
-	virtual const Vector2 &GetPosition(bool absoluteCoordinates = false);
+	inline const Vector2 &GetPosition() const;
 	
 	virtual const Vector2 &GetSize() const;
 
@@ -67,6 +67,10 @@ public:
 	int32 GetTag() const;
     
 	UIControl *GetParent();
+
+	DAVA::int32 GetState() const;
+
+	int32 GetFrame() const;
 
 protected:
 	virtual ~UIControl();

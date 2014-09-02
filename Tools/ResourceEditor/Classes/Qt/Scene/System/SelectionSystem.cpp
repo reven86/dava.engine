@@ -39,7 +39,7 @@
 #include <QApplication>
 #include "Scene/SceneEditor2.h"
 
-ENUM_IMPLEMENTATION(SelectionSystemDrawMode)
+ENUM_DECLARE(SelectionSystemDrawMode)
 {
 	ENUM_ADD(SS_DRAW_SHAPE);
 	ENUM_ADD(SS_DRAW_CORNERS);

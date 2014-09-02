@@ -33,6 +33,7 @@
 
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
+#include "unistd.h"
 
 DAVA::String intermediateStr;
 
@@ -207,7 +208,7 @@ DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
 		fieldID = GetEnvironment()->GetFieldID(classInfo, "path", "Ljava/lang/String;");
 		jstring jStr = (jstring)GetEnvironment()->GetObjectField(object, fieldID);
 		char str[512] = {0};
-		CreateStringFromJni(env, jStr, str);
+		CreateStringFromJni(GetEnvironment(), jStr, str);
 		info.path = String(str);
 	}
 
@@ -408,6 +409,11 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 	std::copy(secondaryList.begin(), secondaryList.end(), back_inserter(l));
 
     return l;
+}
+
+int32 DeviceInfo::GetCpuCount()
+{
+	return sysconf(_SC_NPROCESSORS_CONF);
 }
 
 }

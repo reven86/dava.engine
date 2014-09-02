@@ -108,7 +108,7 @@ void LandscapeRenderer::RebuildVertexes(const DAVA::Rect &rebuildForRect)
         for (int32 x = (int32)rebuildForRect.x; x < lastX; ++x)
         {
             vertices[index + x].position = GetPoint(x, y, heightmap->Data()[index + x]);
-            vertices[index + x].texCoord = Vector2((float32)x / (float32)(heightmap->Size() - 1), deltaY);
+            vertices[index + x].texCoord = Vector2((float32)x / (float32)(heightmap->Size() - 1), 1.0f - deltaY);
         }
     }
 

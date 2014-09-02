@@ -45,11 +45,9 @@
 #include <QApplication>
 
 HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
-:	SceneSystem(scene)
-,	enabled(false)
+:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	cursorSize(30)
 ,	originalHeightmap(NULL)
 ,	toolImage(NULL)
 ,	strength(15)
@@ -59,38 +57,20 @@ HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
 ,	drawingType(HEIGHTMAP_DRAW_ABSOLUTE)
 ,	copyPasteFrom(-1.f, -1.f)
 ,	copyPasteTo(-1.f, -1.f)
-,	prevCursorPosition(-1.f, -1.f)
 ,   squareTexture(NULL)
 ,	toolImageIndex(0)
 ,	curHeight(0.f)
 ,	activeDrawingType(drawingType)
 ,	textureLevel(Landscape::TEXTURE_TILE_MASK)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
+    cursorSize = 30;
 	
 	noBlendDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::BLEND_ONE, DAVA::BLEND_ZERO);
 }
 
 HeightmapEditorSystem::~HeightmapEditorSystem()
 {
-	SafeRelease(cursorTexture);
 	SafeRelease(squareTexture);
-}
-
-bool HeightmapEditorSystem::IsLandscapeEditingEnabled() const
-{
-	return enabled;
-}
-
-LandscapeEditorDrawSystem::eErrorType HeightmapEditorSystem::IsCanBeEnabled()
-{
-	return drawSystem->VerifyLandscape();
 }
 
 LandscapeEditorDrawSystem::eErrorType HeightmapEditorSystem::EnableLandscapeEditing()
@@ -179,7 +159,7 @@ void HeightmapEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
 				if (drawingType == HEIGHTMAP_DRAW_ABSOLUTE_DROPPER ||
 					drawingType == HEIGHTMAP_DROPPER)
 				{
-					curHeight = drawSystem->GetHeightAtPoint(cursorPosition);
+					curHeight = drawSystem->GetHeightAtPoint(GetHeightmapPositionFromCursor());
 					
 					SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
 				}
@@ -191,7 +171,7 @@ void HeightmapEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
 						int32 curKeyModifiers = QApplication::keyboardModifiers();
 						if (curKeyModifiers & Qt::AltModifier)
 						{
-							copyPasteFrom = cursorPosition;
+							copyPasteFrom = GetHeightmapPositionFromCursor();
 							copyPasteTo = Vector2(-1.f, -1.f);
 							return;
 						}
@@ -201,7 +181,7 @@ void HeightmapEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
 							{
 								return;
 							}
-							copyPasteTo = cursorPosition;
+							copyPasteTo = GetHeightmapPositionFromCursor();
 							StoreOriginalHeightmap();
 						}
 					}
@@ -242,33 +222,6 @@ void HeightmapEditorSystem::FinishEditing()
 	}
 }
 
-void HeightmapEditorSystem::UpdateCursorPosition()
-{
-	Vector3 landPos;
-	isIntersectsLandscape = false;
-	if (collisionSystem->LandRayTestFromCamera(landPos))
-	{
-		isIntersectsLandscape = true;
-		Vector2 point(landPos.x, landPos.y);
-		
-		point.x = (float32)((int32)point.x);
-		point.y = (float32)((int32)point.y);
-		
-		AABBox3 box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-		
-		cursorPosition.x = (point.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (point.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = (int32)cursorPosition.y;
-
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
-	{
-		// hide cursor
-		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
-	}
-}
 
 void HeightmapEditorSystem::UpdateToolImage(bool force)
 {
@@ -341,7 +294,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 	EditorHeightmap* editorHeightmap = drawSystem->GetHeightmapProxy();
 	
 	int32 scaleSize = toolImage->GetWidth();
-	Vector2 pos = cursorPosition - Vector2((float32)scaleSize, (float32)scaleSize) / 2.0f;
+	Vector2 pos = GetHeightmapPositionFromCursor() - Vector2((float32)scaleSize, (float32)scaleSize) / 2.0f;
 	{
 		switch (activeDrawingType)
 		{
@@ -382,7 +335,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 
 			case HEIGHTMAP_DROPPER:
 			{
-				float32 curHeight = drawSystem->GetHeightAtPoint(cursorPosition);
+				float32 curHeight = drawSystem->GetHeightAtPoint(GetHeightmapPositionFromCursor());
 				SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
 				return;
 			}
@@ -396,7 +349,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 
 				Vector2 posTo = pos;
 				
-				Vector2 deltaPos = cursorPosition - copyPasteTo;
+				Vector2 deltaPos = GetHeightmapPositionFromCursor() - copyPasteTo;
 				Vector2 posFrom = copyPasteFrom + deltaPos - Vector2((float32)scaleSize, (float32)scaleSize)/2.f;
 				
 				float32 koef = (averageStrength * timeElapsed) * 2.0f;
@@ -535,7 +488,7 @@ void HeightmapEditorSystem::SetDropperHeight(float32 height)
 	if (height >= 0 && height <= maxHeight)
 	{
 		curHeight = height;
-		SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
+		SceneSignals::Instance()->EmitDropperHeightChanged(static_cast<SceneEditor2*>(GetScene()), curHeight);
 	}
 }
 
@@ -543,3 +496,9 @@ float32 HeightmapEditorSystem::GetDropperHeight()
 {
 	return curHeight;
 }
+
+Vector2 HeightmapEditorSystem::GetHeightmapPositionFromCursor() const
+{
+    return Vector2(cursorPosition.x, landscapeSize - 1 - cursorPosition.y);
+}
+

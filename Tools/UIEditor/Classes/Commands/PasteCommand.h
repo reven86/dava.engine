@@ -42,7 +42,7 @@ namespace DAVA
 		virtual ~PasteCommand();
 		
 		// Execute command.
-		virtual eExecuteResult Execute();
+		virtual void Execute();
 		virtual void Rollback();
 		virtual bool IsUndoRedoSupported() {return true;};
 		

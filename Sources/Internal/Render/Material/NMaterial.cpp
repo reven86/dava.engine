@@ -52,6 +52,7 @@ namespace DAVA
 
 static const FastName DEFINE_VERTEX_LIT("VERTEX_LIT");
 static const FastName DEFINE_PIXEL_LIT("PIXEL_LIT");
+static const FastName DEFINE_LAND_SPECULAR("SPECULAR_LAND");
 
 const FastName NMaterial::TEXTURE_ALBEDO("albedo");
 const FastName NMaterial::TEXTURE_NORMAL("normalmap");
@@ -80,6 +81,14 @@ const FastName NMaterial::PARAM_FOG_COLOR("fogColor");
 const FastName NMaterial::PARAM_FOG_DENSITY("fogDensity");
 const FastName NMaterial::PARAM_FOG_START("fogStart");
 const FastName NMaterial::PARAM_FOG_END("fogEnd");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_DENSITY("fogHalfspaceDensity");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_HEIGHT("fogHalfspaceHeight");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_FALLOFF("fogHalfspaceFalloff");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_LIMIT("fogHalfspaceLimit");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SUN("fogAtmosphereColorSun");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SKY("fogAtmosphereColorSky");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_SCATTERING("fogAtmosphereScattering");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_DISTANCE("fogAtmosphereDistance");
 const FastName NMaterial::PARAM_FLAT_COLOR("flatColor");
 const FastName NMaterial::PARAM_TEXTURE0_SHIFT("texture0Shift");
 const FastName NMaterial::PARAM_UV_OFFSET("uvOffset");
@@ -91,10 +100,12 @@ const FastName NMaterial::PARAM_DECAL_TILE_COLOR("decalTileColor");
 const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 
-
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
+const FastName NMaterial::FLAG_FOG_HALFSPACE = FastName("FOG_HALFSPACE");
+const FastName NMaterial::FLAG_FOG_HALFSPACE_LINEAR = FastName("FOG_HALFSPACE_LINEAR");
+const FastName NMaterial::FLAG_FOG_ATMOSPHERE = FastName("FOG_ATMOSPHERE");
 const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED");
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
@@ -1162,7 +1173,6 @@ void NMaterial::UpdateMaterialTemplate()
 	SetRenderLayers(RenderLayerManager::Instance()->GetLayerIDMaskBySet(baseTechnique->GetLayersSet()));
 
     //{VI: temporray code should be removed once lighting system is up
-
     dynamicBindFlags = (baseTechnique->GetLayersSet().count(LAYER_SHADOW_VOLUME) != 0) ? DYNAMIC_BIND_LIGHT : 0;
     for(uint32 i = 0; i < passCount; ++i)
     {

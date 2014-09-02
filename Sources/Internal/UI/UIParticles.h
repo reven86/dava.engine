@@ -73,7 +73,7 @@ public:
     void Reload();
     
     const FilePath& GetEffectPath() const;
-
+    
     void SetAutostart(bool value);
     bool IsAutostart() const;
     

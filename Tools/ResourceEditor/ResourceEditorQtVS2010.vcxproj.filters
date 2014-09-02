@@ -232,6 +232,9 @@
     <Filter Include="Classes\Qt\Tools\HeightDeltaTool">
       <UniqueIdentifier>{8c57bbd9-39b8-44aa-88de-7d953c6aaa9c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\SceneProcessing">
+      <UniqueIdentifier>{2bf6f948-d61d-4b65-b129-1da84f9d082c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\Collada\ColladaAnimatedMesh.cpp">
@@ -1995,6 +1998,9 @@
     <ClCompile Include="_GeneratedQt\RunActionEventWidget\RunActionEventWidget_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorSystem.cpp">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\Qt\DebugTools\VersionInfoWidget\VersionInfoWidget.cpp">
       <Filter>Classes\Qt\DebugTools\VersionInfoWidget</Filter>
     </ClCompile>
@@ -2009,6 +2015,9 @@
     </ClCompile>
     <ClCompile Include="_GeneratedQt\Tools\HeightDeltaTool\HeightDeltaTool_moc.cpp">
       <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\SceneProcessing\SceneProcessor.cpp">
+      <Filter>Classes\SceneProcessing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3527,6 +3536,9 @@
     <ClInclude Include="_GeneratedQt\ui_RunActionEventWidget.h">
       <Filter>QtGenerated</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorSystem.h">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\Qt\DebugTools\VersionInfoWidget\VersionInfoWidget.h">
       <Filter>Classes\Qt\DebugTools\VersionInfoWidget</Filter>
     </ClInclude>
@@ -3535,6 +3547,9 @@
     </ClInclude>
     <ClInclude Include="Classes\Qt\Tools\HeightDeltaTool\HeightDeltaTool.h">
       <Filter>Classes\Qt\Tools\HeightDeltaTool</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\SceneProcessing\SceneProcessor.h">
+      <Filter>Classes\SceneProcessing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

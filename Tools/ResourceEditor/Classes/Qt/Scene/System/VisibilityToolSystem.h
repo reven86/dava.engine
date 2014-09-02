@@ -31,16 +31,12 @@
 #ifndef __RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__
 #define __RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__
 
-#include "DAVAEngine.h"
+#include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
-
-class SceneCollisionSystem;
-class SceneSelectionSystem;
-class EntityModificationSystem;
 
 using namespace DAVA;
 
-class VisibilityToolSystem: public DAVA::SceneSystem
+class VisibilityToolSystem: public LandscapeEditorSystem
 {
 public:
 	enum eVisibilityToolState
@@ -57,7 +53,6 @@ public:
 
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
-	bool IsLandscapeEditingEnabled() const;
 
 	virtual void Process(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
@@ -75,22 +70,8 @@ public:
 protected:
 	static const uint32 CROSS_TEXTURE_SIZE = 64;
 
-	bool enabled;
-
-	SceneCollisionSystem* collisionSystem;
-	SceneSelectionSystem* selectionSystem;
-	EntityModificationSystem* modifSystem;
-	LandscapeEditorDrawSystem* drawSystem;
-
-	Texture* cursorTexture;
 	Texture* crossTexture;
-	uint32 cursorSize;
 	uint32 curToolSize;
-
-	int32 landscapeSize;
-	bool isIntersectsLandscape;
-	Vector2 cursorPosition;
-	Vector2 prevCursorPos;
 
 	Rect updatedRectAccumulator;
 
@@ -108,8 +89,6 @@ protected:
 	Vector2 visibilityPoint;
 
 	Landscape::eTextureLevel textureLevel;
-
-	void UpdateCursorPosition(int32 landscapeSize);
 
 	void AddRectToAccumulator(const Rect& rect);
 	void ResetAccumulatorRect();
@@ -135,8 +114,6 @@ protected:
 							   float32 circleRadius,
 							   const Vector2& point);
 	void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points);
-
-	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__) */

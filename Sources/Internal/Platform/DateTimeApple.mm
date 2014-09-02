@@ -37,15 +37,15 @@ namespace DAVA
     {
         DAVA::String locID = LocalizationSystem::Instance()->GetCountryCode();
         
-        struct tm *timeinfo;
+        struct tm timeinfo;
         wchar_t buffer [256] = {0};
         
         Timestamp timeWithTZ = innerTime + timeZoneOffset;
         
-        GmTimeThreadSafe(timeinfo, &timeWithTZ);
+        GmTimeThreadSafe(&timeinfo, &timeWithTZ);
         
         locale_t loc = newlocale(LC_ALL_MASK, locID.c_str(), NULL);
-        size_t size = wcsftime_l(buffer, 256, format, timeinfo, loc);
+        size_t size = wcsftime_l(buffer, 256, format, &timeinfo, loc);
         DVASSERT(size);
         DAVA::WideString str(buffer);
         
@@ -57,6 +57,6 @@ namespace DAVA
         Timestamp  t = time(NULL);
         struct tm resultStruct = {0};
         DateTime::LocalTimeThreadSafe(&resultStruct, &t);
-        return resultStruct.tm_gmtoff;
+        return (int32)resultStruct.tm_gmtoff;
     }
 }

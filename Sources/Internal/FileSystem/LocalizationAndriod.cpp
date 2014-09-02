@@ -53,7 +53,7 @@ String JniLocalization::GetLocale()
 	{
 		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
 		char str[256] = {0};
-		CreateStringFromJni(env, jstring(obj), str);
+		CreateStringFromJni(GetEnvironment(), jstring(obj), str);
 		String locale = str;
 		return locale;
 	}
@@ -63,8 +63,12 @@ String JniLocalization::GetLocale()
 
 void LocalizationAndroid::SelecePreferedLocalization()
 {
-	JniLocalization jniLocalization;
-	LocalizationSystem::Instance()->SetCurrentLocale(jniLocalization.GetLocale());
+	LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
 }
 
+String LocalizationAndroid::GetDeviceLang(void)
+{
+    JniLocalization jniLocalization;
+    return jniLocalization.GetLocale();
+}
 };

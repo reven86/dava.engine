@@ -72,11 +72,11 @@ void UIScrollViewContainer::CopyDataFrom(UIControl *srcControl)
 	UIControl::CopyDataFrom(srcControl);
 }
 
-void UIScrollViewContainer::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
+void UIScrollViewContainer::SetRect(const Rect &rect)
 {
-	UIControl::SetRect(rect, rectInAbsoluteCoordinates);
+	UIControl::SetRect(rect);
 	
-	UIControl *parent = this->GetParent();
+	UIControl *parent = GetParent();
 	if (parent)
 	{
 		Rect parentRect = parent->GetRect();

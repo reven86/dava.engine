@@ -200,5 +200,18 @@ void ScreenControl::DrawPivotPoint(const UIGeometricData &gd, const Color &color
 void ScreenControl::SetScreenshotMode(bool value)
 {
     screenShotMode = value;
+
+}
+
+YamlNode* ScreenControl::SaveToYamlNode( UIYamlLoader * loader )
+{
+    YamlNode * node = UIControl::SaveToYamlNode(loader);
+
+    node->RemoveNodeFromMap("drawType");
+    node->RemoveNodeFromMap("type");
+    node->RemoveNodeFromMap("rect");
+    node->RemoveNodeFromMap("position");
+    node->RemoveNodeFromMap("size");
+    return node;
 }
 

@@ -44,8 +44,7 @@ namespace DAVA
 		if (!aggregatorPath.IsEmpty())
 		{
 			UIAggregatorControl *aggregator = new UIAggregatorControl();
-			ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
-			loader->Load(aggregator, aggregatorPath);
+			UIYamlLoader::Load(aggregator, aggregatorPath);
 			
 			this->AddControl(aggregator);
 			SafeRelease(aggregator);

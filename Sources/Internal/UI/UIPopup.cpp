@@ -43,8 +43,7 @@ UIPopup::UIPopup(const Rect &rect)
 
 void UIPopup::Show()
 {
-    if (!InViewHierarchy())
-        UIControlSystem::Instance()->AddPopup(this);
+    UIControlSystem::Instance()->AddPopup(this);
 }
 
 void UIPopup::Hide()

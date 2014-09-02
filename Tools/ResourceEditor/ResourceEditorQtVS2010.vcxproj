@@ -506,6 +506,7 @@
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\NotPassableTerrainProxy.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\RulerToolProxy.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\VisibilityToolProxy.cpp" />
+    <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\ModifSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\OwnersSignatureSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\RulerToolSystem.cpp" />
@@ -578,6 +579,7 @@
     <ClCompile Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidget.cpp" />
     <ClCompile Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate.cpp" />
     <ClCompile Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.cpp" />
+    <ClCompile Include="Classes\SceneProcessing\SceneProcessor.cpp" />
     <ClCompile Include="Classes\SpritesPacker.cpp" />
     <ClCompile Include="_GeneratedQt\BeastDialog\BeastDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\CubemapEditor\ClickableQLabel_moc.cpp" />
@@ -1160,6 +1162,7 @@
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\NotPassableTerrainProxy.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\RulerToolProxy.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\VisibilityToolProxy.h" />
+    <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\ModifSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\OwnersSignatureSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\RulerToolSystem.h" />
@@ -1236,6 +1239,7 @@
     <ClInclude Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidget.h" />
     <ClInclude Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate.h" />
     <ClInclude Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.h" />
+    <ClInclude Include="Classes\SceneProcessing\SceneProcessor.h" />
     <ClInclude Include="Classes\SpritesPacker.h" />
     <ClInclude Include="Classes\StringConstants.h" />
     <ClInclude Include="resource.h" />

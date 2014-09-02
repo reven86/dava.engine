@@ -61,9 +61,9 @@ void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& pa
 	movieViewControl->OpenMovie(moviePath, params);
 }
 	
-void UIMovieView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
+void UIMovieView::SetPosition(const Vector2 &position)
 {
-	UIControl::SetPosition(position, positionInAbsoluteCoordinates);
+	UIControl::SetPosition(position);
 	
 	Rect newRect = GetRect();
 	movieViewControl->SetRect(newRect);

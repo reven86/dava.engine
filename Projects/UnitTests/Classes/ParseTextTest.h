@@ -43,7 +43,7 @@ class ParseTextTest : public UITestTemplate<ParseTextTest>
 protected:
     ~ParseTextTest();
 public:
-	ParseTextTest();
+	ParseTextTest(Font::eFontType fontType);
     
 	virtual void LoadResources();
 	virtual void UnloadResources();

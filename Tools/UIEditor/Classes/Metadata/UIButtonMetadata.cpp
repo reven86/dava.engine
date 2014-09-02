@@ -123,6 +123,8 @@ void UIButtonMetadata::SetFont(Font * font)
 		{
 			GetActiveUIButton()->SetStateFont(this->uiControlStates[i], localizedFont);
 		}
+
+        UpdateExtraDataLocalizationKey();
         UpdatePropertyDirtyFlagForFont();
     }
 }
@@ -163,48 +165,6 @@ float UIButtonMetadata::GetFontSize() const
     return GetFontSizeForState(this->uiControlStates[GetActiveStateIndex()]);
 }
 
-//void UIButtonMetadata::SetFontSize(float fontSize)
-//{
-//    if (!VerifyActiveParamID())
-//    {
-//        return;
-//    }
-//
-//	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
-//	{
-//		UIStaticText *buttonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[i]);
-//		if (!buttonText)
-//		{
-//			return;
-//		}
-//    
-//		Font *font = buttonText->GetFont();
-//		if (!font)
-//		{
-//			return;
-//		}
-//
-//		Font* newFont = font->Clone();
-//		newFont->SetSize(fontSize);
-//		buttonText->SetFont(newFont);
-//		newFont->Release();
-//	}
-//
-//    UpdatePropertyDirtyFlagForFontSize();
-//}
-
-//void UIButtonMetadata::UpdatePropertyDirtyFlagForFontSize()
-//{
-//    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
-//    for (int i = 0; i < statesCount; i ++)
-//    {
-//        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
-//
-//        bool curStateDirty = (GetFontSizeForState(curState) !=
-//                              GetFontSizeForState(GetReferenceState()));
-//        SetStateDirtyForProperty(curState, PropertyNames::FONT_SIZE_PROPERTY_NAME, curStateDirty);
-//    }
-//}
 
 float UIButtonMetadata::GetFontSizeForState(UIControl::eControlState state) const
 {
@@ -247,21 +207,18 @@ void UIButtonMetadata::SetFontColor(const QColor& value)
 		GetActiveUIButton()->SetStateFontColor(this->uiControlStates[i], ColorHelper::QTColorToDAVAColor(value));
 	}
 
+    UpdateExtraDataLocalizationKey();
     UpdatePropertyDirtyFlagForFontColor();
 }
 
 float UIButtonMetadata::GetShadowOffsetX() const
 {
-    if (VerifyActiveParamID())
+    if (!VerifyActiveParamID())
     {
-		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[GetActiveStateIndex()]);
-    	if (referenceButtonText)
-    	{
-			return referenceButtonText->GetShadowOffset().x;
-    	}
-	}
+        return 0.0f;
+    }
     
-	return -1.0f;	
+    return GetShadowOffsetXForState(this->uiControlStates[GetActiveStateIndex()]);
 }
 
 void UIButtonMetadata::SetShadowOffsetX(float offset)
@@ -273,27 +230,27 @@ void UIButtonMetadata::SetShadowOffsetX(float offset)
 
 	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
 	{
-		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[i]);
+        UIControl::eControlState state = uiControlStates[i];
+		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
 		if (referenceButtonText)
 		{
 			Vector2 shadowOffset = GetOffsetX(referenceButtonText->GetShadowOffset(), offset);
-			referenceButtonText->SetShadowOffset(shadowOffset);
+            GetActiveUIButton()->SetStateShadowOffset(state, shadowOffset);
 		}
 	}
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForShadowOffsetX();
 }
 	
 float UIButtonMetadata::GetShadowOffsetY() const
 {
-    if (VerifyActiveParamID())
+    if (!VerifyActiveParamID())
     {
-		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[GetActiveStateIndex()]);
-    	if (referenceButtonText)
-    	{
-			return referenceButtonText->GetShadowOffset().y;
-    	}
-	}
+        return 0.0f;
+    }
     
-	return -1.0f;	
+    return GetShadowOffsetYForState(this->uiControlStates[GetActiveStateIndex()]);
 }
 
 void UIButtonMetadata::SetShadowOffsetY(float offset)
@@ -303,29 +260,29 @@ void UIButtonMetadata::SetShadowOffsetY(float offset)
         return;
     }
 
-	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
 	{
-		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[i]);
+        UIControl::eControlState state = uiControlStates[i];
+		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
 		if (referenceButtonText)
 		{
 			Vector2 shadowOffset = GetOffsetY(referenceButtonText->GetShadowOffset(), offset);
-			referenceButtonText->SetShadowOffset(shadowOffset);
+            GetActiveUIButton()->SetStateShadowOffset(state, shadowOffset);
 		}
 	}
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForShadowOffsetY();
 }
 	
 QColor UIButtonMetadata::GetShadowColor() const
 {
-    if (VerifyActiveParamID())
+    if (!VerifyActiveParamID())
     {
-		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[GetActiveStateIndex()]);
-    	if (referenceButtonText)
-    	{
-			return ColorHelper::DAVAColorToQTColor(referenceButtonText->GetShadowColor());
-    	}
-	}
+        return QColor();
+    }
     
-	return QColor();
+    return GetShadowColorForState(this->uiControlStates[GetActiveStateIndex()]);
 }
 
 void UIButtonMetadata::SetShadowColor(const QColor& value)
@@ -334,15 +291,14 @@ void UIButtonMetadata::SetShadowColor(const QColor& value)
     {
         return;
     }
-	
+    
 	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
 	{
-		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[i]);
-		if (referenceButtonText)
-		{
-			referenceButtonText->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
-		}
+		GetActiveUIButton()->SetStateShadowColor(this->uiControlStates[i], ColorHelper::QTColorToDAVAColor(value));
 	}
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForShadowColor();
 }
 
 void UIButtonMetadata::UpdatePropertyDirtyFlagForFontColor()
@@ -440,7 +396,7 @@ QString UIButtonMetadata::GetSpriteNameForState(UIControl::eControlState state) 
 	return QString::fromStdString(sprite->GetRelativePathname().GetFrameworkPath());
 }
 
-QString UIButtonMetadata::GetSprite()
+QString UIButtonMetadata::GetSprite() const
 {
     if (!VerifyActiveParamID())
     {
@@ -722,6 +678,7 @@ void UIButtonMetadata::SetTextAlign(int align)
 		GetActiveUIButton()->SetStateTextAlign(this->uiControlStates[i], align);
 	}
 
+    UpdateExtraDataLocalizationKey();
 	UpdatePropertyDirtyFlagForTextAlign();
 }
 
@@ -846,6 +803,7 @@ void UIButtonMetadata::SetFittingType(int value)
         }
     }
 
+    UpdateExtraDataLocalizationKey();
     UpdatePropertyDirtyFlagForFittingType();
 }
 
@@ -965,6 +923,39 @@ float UIButtonMetadata::GetTopBottomStretchCapForState(UIControl::eControlState 
 	return background->GetTopBottomStretchCap();
 }
 
+float UIButtonMetadata::GetShadowOffsetXForState(UIControl::eControlState state) const
+{
+	UIStaticText* staticText = GetActiveUIButton()->GetStateTextControl(state);
+	if (!staticText)
+	{
+		return 0.0f;
+	}
+
+	return staticText->GetShadowOffset().x;
+}
+
+float UIButtonMetadata::GetShadowOffsetYForState(UIControl::eControlState state) const
+{
+	UIStaticText* staticText = GetActiveUIButton()->GetStateTextControl(state);
+	if (!staticText)
+	{
+		return 0.0f;
+	}
+    
+	return staticText->GetShadowOffset().y;
+}
+
+QColor UIButtonMetadata::GetShadowColorForState(UIControl::eControlState state) const
+{
+    UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
+    if (referenceButtonText)
+    {
+		return ColorHelper::DAVAColorToQTColor(referenceButtonText->GetShadowColor());
+    }
+    
+    return QColor();
+}
+
 void UIButtonMetadata::UpdatePropertyDirtyFlagForTopBottomStretchCap()
 {
     int statesCount = UIControlStateHelper::GetUIControlStatesCount();
@@ -978,11 +969,100 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForTopBottomStretchCap()
     }
 }
 
+void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowOffsetX()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetShadowOffsetXForState(curState) !=
+                              GetShadowOffsetXForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::SHADOW_OFFSET_X, curStateDirty);
+    }
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowOffsetY()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetShadowOffsetYForState(curState) !=
+                              GetShadowOffsetYForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::SHADOW_OFFSET_Y, curStateDirty);
+    }
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowColor()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetShadowColorForState(curState) !=
+                              GetShadowColorForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::SHADOW_COLOR, curStateDirty);
+    }
+}
+
+int UIButtonMetadata::GetFontShadowColorInheritType() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::COLOR_IGNORE_PARENT;
+    }
+    
+    return GetFontShadowColorInheritTypeForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetFontShadowColorInheritType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        GetActiveUIButton()->SetStateFontColorInheritType(state, (UIControlBackground::eColorInheritType)value);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForFontShadowColorInheritType();
+}
+
+int UIButtonMetadata::GetFontShadowColorInheritTypeForState(UIControl::eControlState state) const
+{
+    UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
+    if (textControl)
+    {
+        return textControl->GetTextBackground()->GetColorInheritType();
+    }
+    
+    return UIControlBackground::COLOR_IGNORE_PARENT;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForFontShadowColorInheritType()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetFontShadowColorInheritTypeForState(curState) !=
+                              GetFontShadowColorInheritTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME, curStateDirty);
+    }
+}
+
 void UIButtonMetadata::RecoverPropertyDirtyFlags()
 {
     UpdatePropertyDirtyFlagForLocalizedText();
     UpdatePropertyDirtyFlagForFont();
-    //UpdatePropertyDirtyFlagForFontSize();
     UpdatePropertyDirtyFlagForColor();
 
     UpdatePropertyDirtyFlagForSpriteName();
@@ -993,7 +1073,48 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
     UpdatePropertyDirtyFlagForAlign();
     
     UpdatePropertyDirtyFlagForFittingType();
+    UpdatePropertyDirtyFlagForFontShadowColorInheritType();
     
     UpdatePropertyDirtyFlagForLeftRightStretchCap();
     UpdatePropertyDirtyFlagForTopBottomStretchCap();
+
+    UpdatePropertyDirtyFlagForShadowColor();
+    UpdatePropertyDirtyFlagForShadowOffsetX();
+    UpdatePropertyDirtyFlagForShadowOffsetY();
 }
+
+void UIButtonMetadata::UpdateExtraDataLocalizationKey()
+{
+    UIButton* button = GetActiveUIButton();
+    HierarchyTreeNode* node = this->GetActiveTreeNode();
+    if (!node || !button)
+    {
+        return;
+    }
+
+    for(uint32 i = 0; i < GetStatesCount(); ++i)
+	{
+        UIControl::eControlState curState = uiControlStates[i];
+        if (node->GetExtraData().IsLocalizationKeyExist(curState))
+        {
+            // There is already localization key for this string - no need to update it.
+            continue;
+        }
+
+        UIButton::eButtonDrawState drawState = button->ControlStateToDrawState(curState);
+
+        // Sanity check to verify whether appropriate textblock was created.
+        if (!button->GetTextBlock(drawState))
+        {
+            continue;
+        }
+
+        // Get the reference draw state.
+        UIButton::eButtonDrawState refDrawState = button->GetActualTextBlockState(button->GetStateReplacer(drawState));
+        const WideString& referenceLocalizationKey = node->GetExtraData().GetLocalizationKey(button->DrawStateToControlState(refDrawState));
+
+        // Update the current localization key with the reference one.
+        node->GetExtraData().SetLocalizationKey(referenceLocalizationKey, button->DrawStateToControlState(drawState));
+    }
+}
+

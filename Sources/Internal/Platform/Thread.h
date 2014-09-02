@@ -177,6 +177,11 @@ public:
 	void SetThreadId(const ThreadId & threadId);
 	ThreadId GetThreadId();
 
+#if defined(__DAVAENGINE_ANDROID__)
+	static void AttachToJVM();
+	static void DetachFromJVM();
+#endif
+
 private:
     ~Thread();
 	Thread(const Message& msg);
@@ -219,6 +224,8 @@ private:
 public:
 	static void	InitMainThread();
 	static void	InitGLThread();
+private:
+	uint32 attachedToJVMCount;
 #else //PLATFORMS
 	// other platforms
 #endif //PLATFORMS	

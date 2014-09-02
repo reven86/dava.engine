@@ -79,8 +79,7 @@ public:
 	static const char* SHADOW_OFFSET_Y;
 	static const char* SHADOW_COLOR;
     
-    static const char* FONT_COLOR_INHERIT_TYPE_PROPERTY_NAME;
-    static const char* SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME;
+    static const char* FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME;
 
 	// Slider properties
 	static const char* SLIDER_VALUE_PROPERTY_NAME;

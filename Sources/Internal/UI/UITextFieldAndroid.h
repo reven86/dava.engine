@@ -61,8 +61,7 @@ public:
 	void SetKeyboardType(int32_t value);
 	void SetReturnKeyType(int32_t value);
 	void SetEnableReturnKeyAutomatically(bool value);
-	void ShowField();
-	void HideField();
+	void SetVisible(bool isVisible);
 	void OpenKeyboard();
 	void CloseKeyboard();
 	uint32 GetCursorPos();
@@ -98,8 +97,6 @@ public:
 	void SetTextAlign(DAVA::int32 align);
 	DAVA::int32 GetTextAlign();
 
-	void ShowField();
-	void HideField();
 	void SetVisible(bool isVisible);
 
 	void SetIsPassword(bool isPassword);

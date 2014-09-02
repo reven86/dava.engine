@@ -62,9 +62,9 @@ UIScrollView::~UIScrollView()
 	SafeRelease(scrollVertical);
 }
 
-void UIScrollView::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
+void UIScrollView::SetRect(const Rect &rect)
 {
-	UIControl::SetRect(rect, rectInAbsoluteCoordinates);
+	UIControl::SetRect(rect);
 
 	scrollHorizontal->SetViewSize(rect.dx);
 	scrollVertical->SetViewSize(rect.dy);

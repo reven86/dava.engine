@@ -69,7 +69,7 @@ AddNewGuideCommand::AddNewGuideCommand(const HierarchyTreeScreenNode* screenNode
 {
 }
 
-BaseCommand::eExecuteResult AddNewGuideCommand::Execute()
+void AddNewGuideCommand::Execute()
 {
     if (!isFirstAdd)
     {
@@ -85,8 +85,6 @@ BaseCommand::eExecuteResult AddNewGuideCommand::Execute()
     
     IncrementUnsavedChanges();
     HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
-
-    return BaseCommand::Success;
 }
 
 void AddNewGuideCommand::Rollback()
@@ -124,12 +122,12 @@ MoveGuideByMouseCommand::MoveGuideByMouseCommand(const HierarchyTreeScreenNode* 
 {
 }
 
-BaseCommand::eExecuteResult MoveGuideByMouseCommand::Execute()
+void MoveGuideByMouseCommand::Execute()
 {
     HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
     if (!screen)
     {
-        return BaseCommand::Failed;
+        return;
     }
 
     if (!isFirstMovePerformed)
@@ -154,7 +152,6 @@ BaseCommand::eExecuteResult MoveGuideByMouseCommand::Execute()
     
     IncrementUnsavedChanges();
     HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
-    return BaseCommand::Success;
 }
     
 void MoveGuideByMouseCommand::Rollback()
@@ -187,12 +184,12 @@ MoveGuideCommand::MoveGuideCommand(const HierarchyTreeScreenNode* screenNode, co
 {
 }
     
-BaseCommand::eExecuteResult MoveGuideCommand::Execute()
+void MoveGuideCommand::Execute()
 {
     HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
     if (!screen)
     {
-        return BaseCommand::Failed;
+        return;
     }
     
     if (!isFirstMovePerformed)
@@ -229,7 +226,6 @@ BaseCommand::eExecuteResult MoveGuideCommand::Execute()
 
     IncrementUnsavedChanges();
     HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
-    return BaseCommand::Success;
 }
 
 void MoveGuideCommand::Rollback()
@@ -269,12 +265,12 @@ DeleteSingleGuideCommand::DeleteSingleGuideCommand(const HierarchyTreeScreenNode
 {
 }
 
-BaseCommand::eExecuteResult DeleteSingleGuideCommand::Execute()
+void DeleteSingleGuideCommand::Execute()
 {
     HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
     if (!screen)
     {
-        return BaseCommand::Failed;
+        return;
     }
 
     if (!isFirstDeletePerformed)
@@ -289,8 +285,6 @@ BaseCommand::eExecuteResult DeleteSingleGuideCommand::Execute()
     
     IncrementUnsavedChanges();
     HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
-
-    return BaseCommand::Success;
 }
 
 void DeleteSingleGuideCommand::Rollback()
@@ -311,12 +305,12 @@ DeleteGuidesCommand::DeleteGuidesCommand(const HierarchyTreeScreenNode* screenNo
 {
 }
 
-BaseCommand::eExecuteResult DeleteGuidesCommand::Execute()
+void DeleteGuidesCommand::Execute()
 {
     HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
     if (!screen)
     {
-        return BaseCommand::Failed;
+        return;
     }
 
     if (!isFirstDeletePerformed)
@@ -331,8 +325,6 @@ BaseCommand::eExecuteResult DeleteGuidesCommand::Execute()
     
     IncrementUnsavedChanges();
     HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
-
-    return BaseCommand::Success;
 }
 
 void DeleteGuidesCommand::Rollback()

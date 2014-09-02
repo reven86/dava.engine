@@ -57,8 +57,9 @@ class FTInternalFont : public BaseObject
 {
 	friend class FTFont;
 	FilePath fontPath;
-	uint8 * memoryFont;
-	uint32 memoryFontSize;
+	FT_StreamRec streamFont;
+	File * fontFile;
+
 private:
 	FTInternalFont(const FilePath & path);
 	virtual ~FTInternalFont();
@@ -102,6 +103,9 @@ private:
 	void Prepare(FT_Vector * advances);
 
 	inline FT_Pos Round(FT_Pos val);
+	
+	static unsigned long StreamLoad(FT_Stream stream, unsigned long offset, uint8* buffer, unsigned long count);
+	static void StreamClose(FT_Stream stream);
 };
 
 FTFont::FTFont(FTInternalFont* _internalFont)
@@ -230,41 +234,45 @@ YamlNode * FTFont::SaveToYamlNode() const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 	
 FTInternalFont::FTInternalFont(const FilePath & path)
 :	face(NULL),
 	fontPath(path),
-    memoryFont(NULL),
-    memoryFontSize(0)
+    streamFont(),
+	fontFile(NULL)
 {
     FilePath pathName(path);
     pathName.ReplaceDirectory(path.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
     
-    File * fp = File::Create(pathName, File::READ|File::OPEN);
-    if (!fp)
+    fontFile = File::Create(pathName, File::READ|File::OPEN);
+    if (!fontFile)
     {    
-        fp = File::Create(path, File::READ|File::OPEN);
-        if (!fp)
+        fontFile = File::Create(path, File::READ|File::OPEN);
+        if (!fontFile)
         {
-            Logger::Error("Failed to open font: %s", path.GetAbsolutePathname().c_str());
+            Logger::Error("Failed to open font: %s", path.GetStringValue().c_str());
             return;
         }
     }
 
-	memoryFontSize = fp->GetSize();
-	memoryFont = new uint8[memoryFontSize];
-	fp->Read(memoryFont, memoryFontSize);
-	SafeRelease(fp);
+	Memset(&streamFont, 0, sizeof(FT_StreamRec));
+	streamFont.descriptor.pointer = (void*)fontFile;
+	streamFont.size = fontFile->GetSize();
+	streamFont.read = &StreamLoad;
+	streamFont.close = &StreamClose;
 	
-	FT_Error error = FT_New_Memory_Face(FontManager::Instance()->GetFTLibrary(), memoryFont, memoryFontSize, 0, &face);
+	FT_Open_Args args = {0};
+	args.flags = FT_OPEN_STREAM;
+	args.stream = &streamFont;
+	
+	FT_Error error = FT_Open_Face(FontManager::Instance()->GetFTLibrary(), &args, 0, &face);
 	if(error == FT_Err_Unknown_File_Format)
 	{
-		Logger::Error("FTInternalFont::FTInternalFont FT_Err_Unknown_File_Format");
+		Logger::Error("FTInternalFont::FTInternalFont FT_Err_Unknown_File_Format: %s", fontFile->GetFilename().GetStringValue().c_str());
 	}
 	else if(error)
 	{
-		Logger::Error("FTInternalFont::FTInternalFont cannot create font(no file?)");
+		Logger::Error("FTInternalFont::FTInternalFont cannot create font(no file?): %s", fontFile->GetFilename().GetStringValue().c_str());
 	}
 }
 	
@@ -273,7 +281,7 @@ FTInternalFont::~FTInternalFont()
 	ClearString();
 
 	FT_Done_Face(face);
-	SafeDeleteArray(memoryFont);
+	SafeRelease(fontFile);
 }
 
 
@@ -342,9 +350,7 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 	FT_Vector * advances = new FT_Vector[strLen];
 	Prepare(advances);
 
-    const int spaceWidth = (face->glyph->metrics.width >> 6) >> 1;
-    
-	int32 lastRight = 0; //charSizes helper
+    int32 lastRight = 0; //charSizes helper
     int32 justifyOffset = 0;
     int32 fixJustifyOffset = 0;
     if (countSpace > 0 && justifyWidth > 0 && spaceAddon > 0)
@@ -390,9 +396,6 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 			continue;
 		}
 
-		pen.x += advances[i].x;
-		pen.y += advances[i].y;
-
 		FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
 
 		float32 bboxSize = ceilf(((float32)(faceBboxYMax-faceBboxYMin))/64.f);
@@ -411,14 +414,20 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 				int32 width = bitmap->width;
 				//int32 height = bitmap->rows;
 
+				if(0 == width && ' ' == str[i])
+				{
+					width = advances[i].x >> 6;
+					left = pen.x >> 6;
+				}
+				
 				if(charSizes)
 				{
 					if(0 == width)
 					{
                         if(str[i] == ' ')
                         {
-                            charSizes->push_back((float32)spaceWidth);
-                            lastRight += spaceWidth;
+                            charSizes->push_back((float32)width);
+                            lastRight += width;
                         }
                         else
                         {
@@ -466,6 +475,9 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 				}
 			}
 		}
+		
+		pen.x += advances[i].x;
+		pen.y += advances[i].y;
 
 		FT_Done_Glyph(image);
 	}
@@ -515,7 +527,6 @@ void FTInternalFont::SetFTCharSize(float32 size) const
 void FTInternalFont::Prepare(FT_Vector * advances)
 {
 	FT_Vector	* prevAdvance = 0;
-	FT_Vector	extent = {0, 0};
 	FT_UInt		prevIndex   = 0;
 	const bool		useKerning = (FT_HAS_KERNING(face) > 0);
 	const int32		size = glyphs.size();
@@ -550,30 +561,10 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 			//	prevAdvance->x = Round(prevAdvance->x);
 			//	prevAdvance->y = Round(prevAdvance->y);
 			//}
-
-			extent.x += prevAdvance->x;
-			extent.y += prevAdvance->y;
 		}
 
 		prevIndex   = glyph.index;
 		prevAdvance = &advances[i];
-	}
-
-	if(prevAdvance)
-	{
-		//if(handle->hinted)
-		//{
-		//	prevAdvance->x = Round(prevAdvance->x);
-		//	prevAdvance->y = Round(prevAdvance->y);
-		//}
-
-		extent.x += prevAdvance->x;
-		extent.y += prevAdvance->y;
-	}
-
-	if(size > 0)
-	{
-		advances[size-1] = extent;
 	}
 }
 
@@ -660,5 +651,17 @@ FT_Pos FTInternalFont::Round(FT_Pos val)
 	return (((val) + 32) & -64);
 }
 
+unsigned long FTInternalFont::StreamLoad(FT_Stream stream, unsigned long offset, uint8* buffer, unsigned long count)
+{
+	File* is = reinterpret_cast<File*>(stream->descriptor.pointer);
+	if (count == 0) return 0;
+	is->Seek((int32)offset, File::SEEK_FROM_START);
+	return is->Read(buffer, (uint32)count);
+}
+
+void FTInternalFont::StreamClose(FT_Stream stream)
+{
+	// Close file stream in destructor
+}
 	
 };

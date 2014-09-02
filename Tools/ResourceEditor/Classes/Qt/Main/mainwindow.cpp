@@ -122,6 +122,7 @@
 
 #include "Tools/HeightDeltaTool/HeightDeltaTool.h"
 
+#include "SceneProcessing/SceneProcessor.h"
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -764,6 +765,8 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionHangingObjects, SIGNAL(triggered()), this, SLOT(OnHangingObjects()));
 	QObject::connect(ui->actionReloadShader, SIGNAL(triggered()), this, SLOT(OnReloadShaders()));
     QObject::connect(ui->actionSwitchesWithDifferentLODs, SIGNAL(triggered(bool)), this, SLOT(OnSwitchWithDifferentLODs(bool)));
+    
+    QObject::connect(ui->actionBatchProcess, SIGNAL(triggered(bool)), this, SLOT(OnBatchProcessScene()));
 }
 
 void QtMainWindow::SetupShortCuts()
@@ -1525,7 +1528,10 @@ void QtMainWindow::OnAddLandscape()
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
     entityToProcess->SetLocked(true);
+    
     Landscape* newLandscape = new Landscape();
+    newLandscape->Create();
+
     RenderComponent* component = new RenderComponent();
     component->SetRenderObject(newLandscape);
 	newLandscape->Release();
@@ -2021,6 +2027,15 @@ void QtMainWindow::OnConvertModifiedTextures()
 		{
 
 			DAVA::TextureConverter::ConvertTexture(*descriptor, gpu, true, (TextureConverter::eConvertQuality)quality.AsInt32());
+
+            DAVA::TexturesMap texturesMap = Texture::GetTextureMap();
+            DAVA::TexturesMap::iterator found = texturesMap.find(FILEPATH_MAP_KEY(descriptor->pathname));
+            if(found != texturesMap.end())
+            {
+                DAVA::Texture *tex = found->second;
+                tex->Reload();
+            }
+            
 			WaitSetValue(++convretedNumber);
 		}
 	}
@@ -2947,4 +2962,20 @@ void QtMainWindow::OnGenerateHeightDelta()
     w->SetOutputTemplate( "h_", QString() );
     
     w->show();
+}
+
+void QtMainWindow::OnBatchProcessScene()
+{
+    SceneProcessor sceneProcessor;
+
+    // For client developers: need to set entity processor derived from EntityProcessorBase
+    //DestructibleSoundAdder *entityProcessor = new DestructibleSoundAdder();
+    //sceneProcessor.SetEntityProcessor(entityProcessor);
+    //SafeRelease(entityProcessor);
+
+    SceneEditor2* sceneEditor = GetCurrentScene();
+    if (sceneProcessor.Execute(sceneEditor))
+    {
+        SaveScene(sceneEditor);
+    }
 }

@@ -44,7 +44,7 @@ public:
 	virtual ~HierarchyTreeControlMimeData();
 	
 	bool IsDropEnable(const HierarchyTreeNode* parentItem) const;
-	HierarchyTreeNode::HIERARCHYTREENODESIDLIST GetItems() const;
+	const HierarchyTreeNode::HIERARCHYTREENODESIDLIST &GetItems() const;
 	
 private:
 	HierarchyTreeNode::HIERARCHYTREENODESIDLIST items;
@@ -66,7 +66,7 @@ public:
 
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent * event);
-	
+	virtual void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible);
 	virtual QMimeData *mimeData(const QList<QTreeWidgetItem*> items) const;
 	
     void dropEvent(QDropEvent *event);

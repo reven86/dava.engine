@@ -888,7 +888,7 @@ bool BasePropertyGridWidget::IsActiveStatePropertyDirty(const QString& propertyN
 
 	bool res = false;
 
-	Vector<UIControl::eControlState> states = activeMetadata->GetUIControlStates();
+	const Vector<UIControl::eControlState> &states = activeMetadata->GetUIControlStates();
 	for (uint32 i = 0; i < activeMetadata->GetStatesCount(); ++i)
 	{
 		UIControl::eControlState state = states[i];

@@ -41,13 +41,12 @@ ControlsMoveCommand::ControlsMoveCommand(const HierarchyTreeController::SELECTED
     this->alignControlsToIntegerPos = alignControlsToIntegerPos;
 }
 
-BaseCommand::eExecuteResult ControlsMoveCommand::Execute()
+void ControlsMoveCommand::Execute()
 {
 	ApplyMove(this->delta, this->alignControlsToIntegerPos);
     
     // Notify the Grid some properties were changed.
     CommandsController::Instance()->EmitUpdatePropertyValues();
-    return BaseCommand::Success;
 }
 
 void ControlsMoveCommand::Rollback()
@@ -82,13 +81,12 @@ ControlResizeCommand::ControlResizeCommand(HierarchyTreeNode::HIERARCHYTREENODEI
 	this->newRect = newRect;
 }
 
-BaseCommand::eExecuteResult ControlResizeCommand::Execute()
+void ControlResizeCommand::Execute()
 {
 	ApplyResize(originalRect, newRect);
 	
 	// Notify the Grid some properties were changed.
     CommandsController::Instance()->EmitUpdatePropertyValues();
-    return BaseCommand::Success;
 }
 
 void ControlResizeCommand::Rollback()
@@ -117,13 +115,12 @@ ControlsAdjustSizeCommand::ControlsAdjustSizeCommand(const HierarchyTreeControll
 	this->selectedControls = controls;
 }
 
-BaseCommand::eExecuteResult ControlsAdjustSizeCommand::Execute()
+void ControlsAdjustSizeCommand::Execute()
 {
 	// Apply resize and save previous size data for possible undo action
 	this->prevSizeData = ApplyAjustedSize(selectedControls);
 
     CommandsController::Instance()->EmitUpdatePropertyValues();
-    return BaseCommand::Success;
 }
 
 void ControlsAdjustSizeCommand::Rollback()
@@ -201,7 +198,7 @@ ControlsAlignDistributeCommand::ControlsAlignDistributeCommand(const HierarchyTr
 	this->commandMode = MODE_DISTRIBUTE;
 }
 
-BaseCommand::eExecuteResult ControlsAlignDistributeCommand::Execute()
+void ControlsAlignDistributeCommand::Execute()
 {
 	List<UIControl*> selectedUIControls;
 	for (HierarchyTreeController::SELECTEDCONTROLNODES::iterator iter = selectedControls.begin(); iter != selectedControls.end(); ++iter)
@@ -234,8 +231,6 @@ BaseCommand::eExecuteResult ControlsAlignDistributeCommand::Execute()
 			break;
 		}
 	}
-    
-    return BaseCommand::Success;
 }
 
 void ControlsAlignDistributeCommand::Rollback()
@@ -250,13 +245,12 @@ ControlRenameCommand::ControlRenameCommand(HierarchyTreeNode::HIERARCHYTREENODEI
 	this->newName = newName;
 }
 
-BaseCommand::eExecuteResult ControlRenameCommand::Execute()
+void ControlRenameCommand::Execute()
 {
 	ApplyRename(originalName, newName);
 	
 	// Notify the Grid some properties were changed.
     CommandsController::Instance()->EmitUpdatePropertyValues();
-    return BaseCommand::Success;
 }
 
 void ControlRenameCommand::Rollback()

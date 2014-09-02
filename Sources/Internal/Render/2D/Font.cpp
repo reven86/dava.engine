@@ -482,7 +482,22 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
                             
                                 pos = separator.currentLineEnd;
                                 AddCurrentLine(text, pos, separator, resultVector);
-							    state = SKIP;
+                                t = 0;
+                                if(pos + 1 < totalSize)
+		                        {
+			                        t = text[pos + 1];
+		                        }
+                                if(IsSpace(t) || IsLineEnd(t) || t == 0)
+                                {
+							        state = SKIP;
+                                }
+                                else
+                                {
+                                    state = GOODCHAR;
+					                separator.lastWordStart = pos;
+					                separator.lastWordEnd = pos;
+					                if (!separator.IsLineInitialized()) separator.currentLineStart = pos;
+                                }
 							    break;
                             }
                             else if(pos)

@@ -41,9 +41,7 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const FilePath &direc
     }
     else
     {
-        NSArray *ar = [NSLocale preferredLanguages];
-
-        lid = [[ar objectAtIndex:0] UTF8String];
+        lid = GetDeviceLang();
 
         Logger::Info("LocalizationIPhone:: pref lang = %s", lid.c_str());
         File *fl = File::Create(directoryPath + (lid + ".yaml"), File::OPEN|File::READ);
@@ -82,4 +80,12 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const FilePath &direc
         return;
     }
 }
+    
+const char * LocalizationIPhone::GetDeviceLang(void)
+{
+    NSArray *ar = [NSLocale preferredLanguages];
+    
+    return [[ar objectAtIndex:0] UTF8String];
+}
+    
 };

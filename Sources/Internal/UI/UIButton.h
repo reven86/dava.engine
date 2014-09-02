@@ -63,7 +63,7 @@ public:
      */
     UIButton(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 
-    virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates = false );
+    virtual void SetRect(const Rect &rect);
 
     virtual void SetSize(const Vector2 &newSize);
 
@@ -176,7 +176,7 @@ public:
      \brief Returns UIControlBackground object actual for the current button state.
      \returns background used currently for draw.
      */
-    virtual UIControlBackground * GetBackground();
+    virtual UIControlBackground * GetBackground() const;
 
     /**
      \brief Sets background what will be used for draw of the requested states.
@@ -192,6 +192,13 @@ public:
      \param[in] color font used for text draw of the states.
      */
     virtual void SetStateFontColor(int32 state, const Color& fontColor);
+
+    /**
+     \brief Sets the color inherit type of the text and shadow for particular state.
+     \param[in] state state bit mask to set value for.
+     \param[in] color font used for text draw of the states.
+     */
+    void SetStateFontColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType);
 
     /**
      \brief Sets the color of the shadow for particular state.
@@ -260,8 +267,8 @@ protected:
     enum eButtonDrawState
     {
             DRAW_STATE_UNPRESSED = 0
-        ,	DRAW_STATE_PRESSED_INSIDE
         ,	DRAW_STATE_PRESSED_OUTSIDE
+        ,	DRAW_STATE_PRESSED_INSIDE
         ,	DRAW_STATE_DISABLED
         ,	DRAW_STATE_SELECTED
         ,	DRAW_STATE_HOVERED
@@ -289,6 +296,7 @@ private:
     UIControlBackground *GetActualBackground(eButtonDrawState drawState) const  { return stateBacks[GetActualBackgroundState(drawState)]; }
     UIControlBackground *GetOrCreateBackground(eButtonDrawState drawState);
     void SetBackground(eButtonDrawState drawState, UIControlBackground * newBackground);
+    UIControlBackground *CreateDefaultBackground() const{ return new UIControlBackground(); }
 
     eButtonDrawState GetActualTextBlockState(eButtonDrawState drawState) const;
     UIStaticText *GetActualTextBlockForState(int32 state) const;
@@ -296,6 +304,7 @@ private:
     UIStaticText *GetActualTextBlock(eButtonDrawState drawState) const  { return stateTexts[GetActualTextBlockState(drawState)]; }
     UIStaticText *GetOrCreateTextBlock(eButtonDrawState drawState);
     void SetTextBlock(eButtonDrawState drawState, UIStaticText * newTextBlock);
+    UIStaticText *CreateDefaultTextBlock() const;
 
     void UpdateStateTextControlSize();
 };

@@ -41,6 +41,7 @@
 #include "Scene3D/Systems/LodSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
+#include "Debug/Stats.h"
 
 
 namespace DAVA
@@ -227,7 +228,9 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
 }
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
-{        
+{
+    TIME_PROFILE("ParticleEffectSystem::Process");
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
 		return;		
 	/*shortEffectTime*/
@@ -447,7 +450,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
 				effect->effectData.infoSources[current->positionTarget].size = current->currSize;
 			}
 			
-			if (group.layer->frameOverLifeEnabled)
+			if (group.layer->frameOverLifeEnabled&&group.layer->sprite)
 			{
 				float32 animDelta = group.layer->frameOverLifeFPS;
 				if (group.layer->animSpeedOverLife)

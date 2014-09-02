@@ -35,6 +35,7 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
+#include "Debug/Stats.h"
 
 namespace DAVA 
 {
@@ -129,8 +130,8 @@ void UIControlSystem::AddPopup(UIPopup *newPopup)
         return;
     }
 
-	newPopup->LoadGroup();
-	popupContainer->AddControl(newPopup);
+    newPopup->LoadGroup();
+    popupContainer->AddControl(newPopup);
 }
 	
 void UIControlSystem::RemovePopup(UIPopup *popup)
@@ -297,6 +298,8 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
+	TIME_PROFILE("UIControlSystem::Update");
+
     updateCounter = 0;
 	ProcessScreenLogic();
 	
@@ -318,6 +321,8 @@ void UIControlSystem::Update()
 	
 void UIControlSystem::Draw()
 {
+    TIME_PROFILE("UIControlSystem::Draw");
+
     drawCounter = 0;
     if (!ui3DViewCount)
     {
@@ -734,7 +739,7 @@ UIControl *UIControlSystem::GetFocusedControl()
     
 
 	
-const UIGeometricData &UIControlSystem::GetBaseGeometricData()
+const UIGeometricData &UIControlSystem::GetBaseGeometricData() const
 {
 	return baseGeometricData;	
 }

@@ -252,8 +252,6 @@ void UITextField::DidAppear()
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->ShowField();
-#elif defined(__DAVAENGINE_ANDROID__)
-    textFieldAndroid->ShowField();
 #endif
 }
 
@@ -261,8 +259,6 @@ void UITextField::WillDisappear()
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->HideField();
-#elif defined(__DAVAENGINE_ANDROID__)
-    textFieldAndroid->HideField();
 #endif
 }
     
@@ -522,7 +518,14 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
     
     if(replacementLocation >= 0)
     {
-        txt.replace(replacementLocation, replacementLength, replacementString);
+        if(replacementLocation <= (int32)txt.length())
+        {
+            txt.replace(replacementLocation, replacementLength, replacementString);
+        }
+        else
+        {
+            Logger::Error("[UITextField::GetAppliedChanges] - index out of bounds.");
+        }
     }
     
     return txt;

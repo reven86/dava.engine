@@ -23,7 +23,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	private int height = 0;
 	
 	private boolean isRenderRecreated = false;
-	
+
 	public JNIRenderer()
 	{
 	}
@@ -92,4 +92,5 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	{
 		nativeOnResumeView();
 	}
+	
 }

@@ -45,9 +45,13 @@ public:
 	virtual ~LocalizationSystem();
 	
 	void InitWithDirectory(const FilePath &directoryPath);
+	void SetDirectory(const FilePath &directoryPath);
+	void Init();
 	
 	const String &GetCurrentLocale();
 	void SetCurrentLocale(const String &newLangId);
+    
+    const char * GetDeviceLocale();
     
     String GetCountryCode() const;
 	

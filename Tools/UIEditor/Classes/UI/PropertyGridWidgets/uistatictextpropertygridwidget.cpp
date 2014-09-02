@@ -68,8 +68,7 @@ void UIStaticTextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     
     // All these properties are state-aware.
     RegisterColorWidgetForProperty(propertiesMap, PropertyNames::FONT_COLOR_PROPERTY_NAME, ui->textColorWidget, false, true);
-    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_COLOR_INHERIT_TYPE_PROPERTY_NAME, ui->fontColorInheritTypeCombobox, false, true);
-    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME, ui->shadowColorInheritTypeCombobox, false, true);
+    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME, ui->fontShadowColorInheritTypeCombobox, false, true);
 
     // Localized Text Key is handled through generic Property mechanism, but we need to update the
     // Localization Value widget each time Localization Key is changes.
@@ -232,8 +231,7 @@ void UIStaticTextPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QComb
         return SetComboboxSelectedItem(ui->fittingTypeComboBox, BackgroundGridWidgetHelper::GetFittingTypeDescByType(propertyValue) );
     }
     
-    if (comboBoxWidget == ui->fontColorInheritTypeCombobox ||
-        comboBoxWidget == ui->shadowColorInheritTypeCombobox)
+    if (comboBoxWidget == ui->fontShadowColorInheritTypeCombobox)
     {
         int propertyValue = PropertiesHelper::GetPropertyValue<int>(this->activeMetadata, propertyName, isPropertyValueDiffers);
 
@@ -272,7 +270,7 @@ void UIStaticTextPropertyGridWidget::ProcessComboboxValueChanged(QComboBox* send
         return;
     }
 
-    if (senderWidget == ui->fontColorInheritTypeCombobox || senderWidget == ui->shadowColorInheritTypeCombobox)
+    if (senderWidget == ui->fontShadowColorInheritTypeCombobox)
     {
         int selectedIndex = senderWidget->currentIndex();
         return CustomProcessComboboxValueChanged(iter, BackgroundGridWidgetHelper::GetColorInheritType(selectedIndex));
@@ -286,16 +284,12 @@ void UIStaticTextPropertyGridWidget::FillComboboxes()
 {
     TextPropertyGridWidget::FillComboboxes();
 
-    WidgetSignalsBlocker fontColorInheritTypeBlocker(ui->fontColorInheritTypeCombobox);
-    WidgetSignalsBlocker shadowColorInheritTypeBlocker(ui->shadowColorInheritTypeCombobox);
-    
-    ui->fontColorInheritTypeCombobox->clear();
-    ui->shadowColorInheritTypeCombobox->clear();
+    WidgetSignalsBlocker fontShadowColorInheritTypeBlocker(ui->fontShadowColorInheritTypeCombobox);
+    ui->fontShadowColorInheritTypeCombobox->clear();
 
     int32 itemsCount = BackgroundGridWidgetHelper::GetColorInheritTypesCount();
     for (int i = 0; i < itemsCount; i ++)
     {
-        ui->fontColorInheritTypeCombobox->addItem(BackgroundGridWidgetHelper::GetColorInheritTypeDesc(i));
-        ui->shadowColorInheritTypeCombobox->addItem(BackgroundGridWidgetHelper::GetColorInheritTypeDesc(i));
+        ui->fontShadowColorInheritTypeCombobox->addItem(BackgroundGridWidgetHelper::GetColorInheritTypeDesc(i));
     }
 }
