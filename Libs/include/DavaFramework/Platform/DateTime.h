@@ -1,0 +1,254 @@
+/*==================================================================================
+ Copyright (c) 2008, binaryzebra
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ * Neither the name of the binaryzebra nor the
+ names of its contributors may be used to endorse or promote products
+ derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ =====================================================================================*/
+
+
+#ifndef __DAVAENGINE_DATE_TIME_H__
+#define __DAVAENGINE_DATE_TIME_H__
+
+#include "Base/BaseTypes.h"
+#include "DAVAEngine.h"
+
+namespace DAVA
+{
+
+typedef time_t Timestamp;
+    
+class DateTime
+{
+public:
+    
+    /**
+	 \brief Creates DateTime with specified params. Hours, seconds, minuntes will be setted to 0.
+	 \param[in] year: 1969 and lower is not allowed.
+     \param[in] month: 0-11.
+     \param[in] day of the month: 1-31, attention: 0 as param will lead to last day of prev. month.
+     \param[in] time zone offset in seconds.For example, for U.S. Eastern Standard Time, the value is -5*60*60.
+	 */
+    DateTime(int32 year, int32 month, int32 day, int32 timeZoneOffset );
+    
+    /**
+	 \brief Creates DateTime with specified params.
+	 \param[in] year: 1969 and lower is not allowed.
+     \param[in] month: 0-11.
+     \param[in] day of the month: 1-31, attention: 0 as param will lead to last day of prev. month.
+     \param[in] hour: 0-23.
+     \param[in] minute: 0-59.
+     \param[in] second: 0-59.
+     \param[in] time zone offset in seconds.For example, for U.S. Eastern Standard Time, the value is -5*60*60.
+	 */
+    DateTime(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 timeZoneOffset);
+    
+    /**
+	 \brief Returns DateTime with shifted time zone offset to local one.
+	 \param[in] input timeStamp will be recognized as in utc.
+     \returns DateTime with local offset.
+	 */
+    static DateTime LocalTime(Timestamp);
+    
+    /**
+	 \brief Uses the value pointed by Timestamp to fill DateTime with the values that represent the corresponding time, expressed as a UTC time (i.e., the time at the GMT timezone).
+	 \param[in] input timeStamp.
+     \returns DateTime in utc.
+	 */
+    static DateTime GmTime(Timestamp);
+    
+    /**
+    \brief Get DateTime in current time zone on local mashing.
+    \returns DateTime in local time zone.
+    */
+    static DateTime Now();
+    
+    /**
+	 \brief Returns DateTime with changed time zone to specified one.
+	 \param[in] time zone offset. For example, for U.S. Eastern Standard Time, the value is -5*60*60.
+     \returns DateTime with mentioned time zone offset.
+	 */
+    DateTime ConvertToTimeZone(int32 timeZoneOffset);
+    
+    /**
+	 \brief Returns DateTime with changed time zone local one.
+     \returns DateTime with local time zone offset.
+	 */
+    DateTime ConvertToLocalTimeZone();
+    
+    /**
+	 \brief Returns year of current DateTime according to inner time zone offset.
+     \returns year.
+	 */
+    int32 GetYear() const;
+    
+    /**
+	 \brief Returns month of current DateTime according to inner time zone offset.
+     \returns month.
+	 */
+    int32 GetMonth() const;
+    
+    /**
+	 \brief Returns day of current DateTime according to inner time zone offset.
+     \returns day.
+	 */
+    int32 GetDay() const;
+    
+    /**
+	 \brief Returns hour of current DateTime according to inner time zone offset.
+     \returns hour.
+	 */
+    int32 GetHour() const;
+
+    /**
+	 \brief Returns minute of current DateTime according to inner time zone offset.
+     \returns minute.
+	 */
+    int32 GetMinute() const;
+
+    /**
+	 \brief Returns second of current DateTime according to inner time zone offset.
+     \returns second.
+	 */
+    int32 GetSecond() const;
+    
+    /**
+	 \brief Set time zone offset in seconds for current DateTime.
+	 \param[in] input time zone offset.
+	 */
+    void SetTimeZoneOffset(int32);
+    
+    /**
+	 \brief Returns time zone offset on current Date Time in seconds.
+	 \returns time zone offset.
+	 */
+    inline int32 GetTimeZoneOffset() const;
+    
+    /**
+	 \brief Returns inner time stamp (amount of seconds since 1970) in utc.
+	 \returns time stamp.
+	 */
+    inline Timestamp GetTimestamp() const;
+
+    /**
+	 \brief Parcing of string in format like "1969-07-21T02:56:15Z".
+	 \param[in] string representation of date in ISO8601 standart.
+     \returns bool value of success.
+	 */
+    bool ParseISO8601Date(const DAVA::String&);
+    
+    /**
+	 \brief Parcing of string in format like "Wed, 27 Sep 2006 21:36:45 +0200".
+	 \param[in] string representation of date in RFC822 standart.
+     \returns bool value of success.
+	 */
+    bool ParseRFC822Date(const DAVA::String&);
+    
+    /**
+	 \brief Present DateTime according to pattern.
+	 \param[in] string pattern in strftime format.
+     \returns localized string representation.
+	 */
+    DAVA::WideString AsWString(const wchar_t* format) const;
+   
+private:
+    
+    DateTime(Timestamp timeStamp, int32 timeZone);
+    
+    static void GmTimeThreadSafe( tm* resultGmTime, const time_t *unixTimestamp);
+    
+    static void LocalTimeThreadSafe( tm* resultLocalTime, const time_t *unixTimestamp);
+
+    static int32 GetLocalTimeZoneOffset();
+
+    Timestamp GetRawTimeStampForCurrentTZ() const;
+    
+    void UpdateLocalTimeStructure();
+    
+    inline bool IsLeap(int32 year) const;
+    
+    inline int32 DaysFrom1970(int32 year) const;
+    
+    inline int32 DaysFrom0(int32 year) const;
+    
+    inline int32 DaysFrom1jan(int32 year, int32 month, int32 day) const;
+    
+    Timestamp InternalTimeGm(std::tm *t) const;
+    
+    bool IsNumber(const char * s) const;
+    
+    Timestamp   innerTime;
+    int32       timeZoneOffset;// offset in seconds
+    tm          localTime;
+};
+    
+int32 DateTime::GetTimeZoneOffset() const
+{
+    return timeZoneOffset;
+}
+    
+Timestamp DateTime::GetTimestamp() const
+{
+    return innerTime;
+}
+    
+bool DateTime::IsLeap(int32 year) const
+{
+    DVASSERT(year >= 1970);
+    if(year % 400 == 0)
+        return true;
+    if(year % 100 == 0)
+        return false;
+    if(year % 4 == 0)
+        return true;
+    return false;
+}
+
+int32 DateTime::DaysFrom0(int32 year) const
+{
+    DVASSERT(year >= 1970);
+    year--;
+    return 365 * year + (year / 400) - (year/100) + (year / 4);
+}
+
+int32 DateTime::DaysFrom1970(int32 year) const
+{
+    DVASSERT(year >= 1970);
+    static const int32 daysFrom0To1970 = DaysFrom0(1970);
+    return DaysFrom0(year) - daysFrom0To1970;
+}
+
+int32 DateTime::DaysFrom1jan(int32 year, int32 month, int32 day) const
+{
+    DVASSERT(year >= 1970 && month >= 0 && month < 12 && day >=0 && day < 31);
+    static const int32 days[2][12] =
+    {
+        { 0,31,59,90,120,151,181,212,243,273,304,334},
+        { 0,31,60,91,121,152,182,213,244,274,305,335}
+    };
+    int32 rowNumberToSelect = IsLeap(year) ? 1 : 0;
+    return days[rowNumberToSelect][month-1] + day - 1;
+}
+};
+
+#endif
