@@ -55,12 +55,20 @@ public:
 		If the mutex is already locked, the calling thread shall block until the mutex becomes available. 
 		This operation returns when all references of this mutex will be unlocked. 
 	*/
-	virtual void Lock();
+	void Lock();
+
+    /**
+		\brief attempt to lock a mutex
+
+		Same as Lock(), but return immediately if the mutex is already locked
+        \return true if lock was successful, false if mutex was already locked
+	*/
+    bool TryLock();
 
 	/**
 		\brief release the mutex object.
 	*/
-	virtual void Unlock();
+	void Unlock();
 
 #if defined(__DAVAENGINE_WIN32__)
 	CRITICAL_SECTION criticalSection;

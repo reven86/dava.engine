@@ -50,6 +50,11 @@ void Mutex::Lock()
 	EnterCriticalSection(&criticalSection); 
 }
 
+bool Mutex::TryLock()
+{
+    return (0 != TryEnterCriticalSection(&criticalSection)); 
+}
+
 void Mutex::Unlock()
 {
 	LeaveCriticalSection(&criticalSection);
@@ -77,6 +82,8 @@ void Mutex::Unlock()
 {
 	pthread_mutex_unlock(&mutex);
 }
+
+
 
 #endif //PLATFORMS
 
