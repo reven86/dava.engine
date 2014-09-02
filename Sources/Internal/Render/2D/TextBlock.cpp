@@ -99,6 +99,8 @@ TextBlock::TextBlock()
 	fittingType = FITTING_DISABLED;
 
 	originalFontSize = 0.1f;
+    renderFontSize = originalFontSize;
+    
 	align = ALIGN_HCENTER|ALIGN_VCENTER;
 	RegisterTextBlock(this);
     isMultilineBySymbolEnabled = false;
@@ -131,6 +133,7 @@ void TextBlock::SetFont(Font * _font)
 	font = SafeRetain(_font);
 
 	originalFontSize = font->GetSize();
+    renderFontSize = originalFontSize;
 	
 	SafeRelease(textBlockRender);
 	switch (font->GetFontType()) {
@@ -346,8 +349,9 @@ void TextBlock::PrepareInternal()
 	mutex.Lock();
 	
 	needPrepareInternal = false;
-	if (textBlockRender)
+	if (textBlockRender && font)
 	{
+        font->SetRenderSize(renderFontSize);
 		textBlockRender->Prepare();
 	}
 	mutex.Unlock();
@@ -765,6 +769,8 @@ void TextBlock::CalculateCacheParams()
     cacheFinalSize.x = (float32)dx / Core::GetVirtualToPhysicalFactor();
     cacheFinalSize.y = (float32)dy / Core::GetVirtualToPhysicalFactor();
 	
+    renderFontSize = font->GetRenderSize();
+    
 	mutex.Unlock();
 }
     
