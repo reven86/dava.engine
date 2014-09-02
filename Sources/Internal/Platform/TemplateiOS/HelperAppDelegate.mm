@@ -30,7 +30,9 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	DAVA::Core * core = new DAVA::Core();
 	core->CreateSingletons();
-	
+
+    FrameworkDidLaunched();
+
 	//detecting physical screen size and initing core system with this size
 	::UIScreen* mainScreen = [::UIScreen mainScreen];
 	unsigned int width = [mainScreen bounds].size.width;
@@ -46,16 +48,15 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	}
 		
 	unsigned int scale = 1;
-		
-	if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-		&& [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
-	{
-		scale = (unsigned int)[[::UIScreen mainScreen] scale];
-	}
-
-
-	FrameworkDidLaunched();
-
+    if (DAVA::Core::IsAutodetectContentScaleFactor())
+    {
+        if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+            && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+        {
+            scale = (unsigned int)[[::UIScreen mainScreen] scale];
+        }
+    }
+    
 	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
 	DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
 		

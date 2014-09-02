@@ -21,6 +21,7 @@
 #include "Utils/StringFormat.h"
 
 #import <UIKit/UIDevice.h>
+#import <UIKit/UIKit.h>
 #import <Foundation/NSLocale.h>
 #import <sys/utsname.h>
 #import <AdSupport/ASIdentifierManager.h>
@@ -304,7 +305,6 @@ void DeviceInfo::InitializeScreenInfo()
     screenInfo.width = [mainScreen bounds].size.width;
     screenInfo.height = [mainScreen bounds].size.height;
 
-		
     if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
         && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
     {
