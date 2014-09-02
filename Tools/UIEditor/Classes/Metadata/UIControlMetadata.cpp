@@ -240,7 +240,7 @@ float UIControlMetadata::GetPivotX() const
         return -1.0f;
     }
 
-    return GetActiveUIControl()->pivotPoint.x;
+    return GetActiveUIControl()->GetPivot().x;
 }
     
 void UIControlMetadata::SetPivotX(float value)
@@ -250,7 +250,9 @@ void UIControlMetadata::SetPivotX(float value)
         return;
     }
     
-    GetActiveUIControl()->pivotPoint.x = value;
+    Vector2 pivot = GetActiveUIControl()->GetPivot();
+    pivot.x = value;
+    GetActiveUIControl()->SetPivot(pivot);
     // DF-2009 - Re-set align properties if pivot point was changed
     RefreshAlign();
 }
@@ -262,7 +264,7 @@ float UIControlMetadata::GetPivotY() const
         return -1.0f;
     }
 
-    return GetActiveUIControl()->pivotPoint.y;
+    return GetActiveUIControl()->GetPivot().y;
 }
     
 void UIControlMetadata::SetPivotY(float value)
@@ -272,7 +274,9 @@ void UIControlMetadata::SetPivotY(float value)
         return;
     }
     
-    GetActiveUIControl()->pivotPoint.y = value;
+    Vector2 pivot = GetActiveUIControl()->GetPivot();
+    pivot.y = value;
+    GetActiveUIControl()->SetPivot(pivot);
     // DF-2009 - Re-set align properties if pivot point was changed
     RefreshAlign();
 }
@@ -284,7 +288,7 @@ QPointF UIControlMetadata::GetPivot() const
         return QPointF();
     }
 
-    return QPointF(GetActiveUIControl()->pivotPoint.x, GetActiveUIControl()->pivotPoint.y);
+    return QPointF(GetActiveUIControl()->GetPivot().x, GetActiveUIControl()->GetPivot().y);
 }
 
 void UIControlMetadata::SetPivot(const QPointF& value)
@@ -294,8 +298,7 @@ void UIControlMetadata::SetPivot(const QPointF& value)
         return;
     }
 
-    GetActiveUIControl()->pivotPoint.x = value.x();
-    GetActiveUIControl()->pivotPoint.y = value.y();
+    GetActiveUIControl()->SetPivot( Vector2(value.x(), value.y()) );
 
     // DF-2009 - Re-set align properties if pivot point was changed
     RefreshAlign();
@@ -434,7 +437,7 @@ void UIControlMetadata::ApplyMove(const Vector2& moveDelta, bool alignControlsTo
 	rect.y = controlPosition.y;
 	
 	// Apply the pivot point.
-	Vector2 pivotPoint = GetActiveUIControl()->pivotPoint;
+	Vector2 pivotPoint = GetActiveUIControl()->GetPivotPoint();
 	rect.x -= pivotPoint.x;
 	rect.y -= pivotPoint.y;
 

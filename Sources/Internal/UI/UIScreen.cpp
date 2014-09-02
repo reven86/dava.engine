@@ -115,11 +115,11 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
 	RenderManager::Instance()->SetColor(0, 0, 0, 1.0f);
 	UIGeometricData drawData;
-	drawData.position = relativePosition;
-	drawData.size = size;
-	drawData.pivotPoint = pivotPoint;
-	drawData.scale = scale;
-	drawData.angle = angle;
+	drawData.position = GetPosition();
+	drawData.size = GetSize();
+	drawData.pivotPoint = GetPivotPoint();
+	drawData.scale = GetScale();
+	drawData.angle = GetAngle();
 	drawData.AddToGeometricData(geometricData);
 
 	Rect drawRect = drawData.GetUnrotatedRect();

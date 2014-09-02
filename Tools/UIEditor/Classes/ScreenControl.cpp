@@ -140,10 +140,10 @@ void ScreenControl::DrawAfterChilds(const UIGeometricData & /*geometricData*/)
         controlGd.AddToGeometricData(screenGd);
         DrawSelectionFrame(controlGd, RED_COLOR);
 
-        if (!control->pivotPoint.IsZero())
+        if (!control->GetPivot().IsZero())
         {
             UIGeometricData pivotGd;
-            pivotGd.position = control->pivotPoint;
+            pivotGd.position = control->GetPivotPoint();
             pivotGd.AddToGeometricData(controlGd);
             DrawPivotPoint(pivotGd, RED_COLOR);
         }

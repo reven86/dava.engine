@@ -519,17 +519,41 @@ public:
      */
     virtual void SetSize(const Vector2 &newSize);
 
+        /**
+     \brief Returns control pivot point.
+     \returns control pivot point.
+     */
+    inline const Vector2 &GetPivot() const;
+
+    /**
+     \brief Sets the control pivot point.
+     \param[in] newPivot new control pivot point.
+     */
+    inline void SetPivot(const Vector2 &newPivot);
+
     /**
      \brief Returns control pivot point.
      \returns control pivot point.
      */
-    inline const Vector2 &GetPivotPoint() const;
+    inline Vector2 GetPivotPoint() const;
 
     /**
      \brief Sets the control pivot point.
      \param[in] newPivot new control pivot point.
      */
     inline void SetPivotPoint(const Vector2 &newPivot);
+
+    /**
+     \brief Returns control scale.
+     \returns control scale.
+     */
+    inline const Vector2 &GetScale() const;
+
+    /**
+     \brief Sets the control scale.
+     \param[in] newScale new control scale.
+     */
+    inline void SetScale(const Vector2 &newScale);
 
     /**
      \brief Returns actual control transformation and metrics.
@@ -1310,7 +1334,6 @@ public:
     Vector2 relativePosition;//!<position in the parent control.
     Vector2 size;//!<control size.
 
-    Vector2 pivotPoint;//!<control pivot point. Top left control corner by default.
     Vector2 scale;//!<control scale. Scale relative to pivot point.
     float32 angle;//!<control rotation angle. Rotation around pivot point.
 
@@ -1321,6 +1344,7 @@ protected:
 
     UIControlBackground *background;
     int32 controlState;
+    Vector2 pivot;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
@@ -1397,7 +1421,6 @@ private:
 
     void RecalculateAlignProperties();
     void RecalculateChildsSize();
-    void RecalculatePivotPoint(const Rect &newRect);
 
     float32 GetSizeX(UIControl *parent, int32 leftAlign, int32 rightAlign, bool useHalfParentSize = false);
     float32 GetSizeY(UIControl *parent, int32 topAlign, int32 bottomAlign, bool useHalfParentSize = false);
@@ -1411,14 +1434,35 @@ private:
     float32 GetRelativeY(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
 };
 
-const Vector2 & UIControl::GetPivotPoint() const
+
+const Vector2 & UIControl::GetPivot() const
 {
-    return pivotPoint;
+    return pivot;
 }
 
-void UIControl::SetPivotPoint(const Vector2 &newPivot)
+void UIControl::SetPivot(const Vector2 &newPivot)
 {
-    pivotPoint = newPivot;
+    pivot = newPivot;
+}
+
+Vector2 UIControl::GetPivotPoint() const
+{
+    return size*pivot;
+}
+
+void UIControl::SetPivotPoint(const Vector2 &newPivotPoint)
+{
+    pivot = newPivotPoint/size;
+}
+
+const Vector2 & UIControl::GetScale() const
+{
+    return scale;
+}
+
+void UIControl::SetScale(const Vector2 &newScale)
+{
+    scale = newScale;
 }
 
 const Vector2 &UIControl::GetSize() const
@@ -1448,7 +1492,7 @@ int32 UIControl::GetTag() const
 
 Rect UIControl::GetRect() const
 {
-    return Rect(relativePosition - pivotPoint, size);
+    return Rect(relativePosition - GetPivotPoint(), size);
 }
 
 bool UIControl::GetRecursiveVisible() const
