@@ -59,6 +59,8 @@ public:
 
     int32 GetJobsCountForTag(int32 tag);
     
+    int32 GetThreadsCount();
+    
 private:
     const int32 workerThreadsCount;
     Mutex scheduleMutex;
@@ -88,6 +90,11 @@ inline Mutex & JobScheduler::GetWaiterMutex()
 inline int32 JobScheduler::GetJobsCountForTag(int32 tag)
 {
     return taggedJobsCount[tag];
+}
+
+inline int32 JobScheduler::GetThreadsCount()
+{
+    return workerThreadsCount;
 }
 
 }

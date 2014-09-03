@@ -69,6 +69,7 @@ void TransformSystem::Process(float32 timeElapsed)
         arg->entity = updatableEntities[i];
         arg->forceUpdate = false;
         arg->recursionDepth = 0;
+        Vector<Entity*> lovalSendEvent;
         //Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, arg), Thread::GetCurrentThreadId(), 0, 2);
         //JobScheduler::Instance()->PushJob(j);
 
@@ -78,8 +79,12 @@ void TransformSystem::Process(float32 timeElapsed)
     TaggedWorkerJobsWaiter waiter(2);
     waiter.Wait();
     
-    GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
-    sendEvent.clear();
+    for(Map<Thread::ThreadId, Vector<Entity*> >::iterator it = eventMap.begin(), itEnd = eventMap.end(); it != itEnd; ++it)
+    {
+        Vector<Entity*> & vector = (*it).second;
+        GlobalEventSystem::Instance()->GroupEvent(GetScene(), vector, EventSystem::WORLD_TRANSFORM_CHANGED);
+        vector.clear();
+    }
     
     updatableEntities.clear();
     
@@ -185,10 +190,7 @@ void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * use
 		if(transform->parentMatrix)
 		{
 			transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            static Mutex mutex;
-            mutex.Lock();
-            sendEvent.push_back(entity);
-            mutex.Unlock();
+            eventMap[Thread::GetCurrentThreadId()].push_back(entity);
 		}
 	}
 

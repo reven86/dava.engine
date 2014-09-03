@@ -278,7 +278,7 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     return networkInfo;
 }
 
-int32 DeviceInfo::GetCpuCount()
+int32 DeviceInfo::GetCPUCoresCount()
 {
     return (int32)[[NSProcessInfo processInfo] processorCount];
 }

@@ -37,6 +37,7 @@
 #include "Base/Singleton.h"
 #include "Entity/SceneSystem.h"
 #include "Base/BaseObject.h"
+#include "Platform/Thread.h"
 
 namespace DAVA 
 {
@@ -75,7 +76,9 @@ private:
         int32 recursionDepth;
         Entity * entity;
         bool forceUpdate;
+        Vector<Entity*>  localSendEvent;
     };
+    Map<Thread::ThreadId, Vector<Entity*> > eventMap;
 
 	int32 passedNodes;
 	int32 multipliedNodes;
