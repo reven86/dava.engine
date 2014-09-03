@@ -185,7 +185,10 @@ void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * use
 		if(transform->parentMatrix)
 		{
 			transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            GlobalEventSystem::Instance()->Event(entity, EventSystem::WORLD_TRANSFORM_CHANGED);
+            static Mutex mutex;
+            mutex.Lock();
+            sendEvent.push_back(entity);
+            mutex.Unlock();
 		}
 	}
 
