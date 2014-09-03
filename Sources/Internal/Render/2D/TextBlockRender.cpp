@@ -44,7 +44,7 @@ TextBlockRender::~TextBlockRender()
 	SafeRelease(sprite);
 }
 	
-void TextBlockRender::Prepare()
+void TextBlockRender::Prepare(Texture *texture /*= NULL*/)
 {
 	SafeRelease(sprite);
 }

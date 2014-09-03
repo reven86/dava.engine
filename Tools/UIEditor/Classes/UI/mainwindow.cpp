@@ -1825,7 +1825,12 @@ void MainWindow::OnSearchPressed()
         
         if (!foundScreens.empty())
         {
+        	// Select first found screen/aggregator
         	this->ui->hierarchyDockWidgetContents->ScrollTo(foundScreens.at(0));
+            if (foundScreens.size() > 1)
+            {	// and highlight other found screens/aggregators
+            	this->ui->hierarchyDockWidgetContents->HighlightScreenNodes(foundScreens);
+            }
         }
     }
     else
@@ -1835,8 +1840,11 @@ void MainWindow::OnSearchPressed()
         {
         	// Multiple selection, or control selected
         	HierarchyTreeController::Instance()->SynchronizeSelection(foundNodes);
-        	// Scroll to first one in the list
-        	this->ui->hierarchyDockWidgetContents->ScrollTo(foundNodes.at(0));
+            if (foundNodes.size() == 1)
+            {
+        		// Scroll to first one in the list
+        		this->ui->hierarchyDockWidgetContents->ScrollTo(foundNodes.at(0));
+            }
         }
     }
 }

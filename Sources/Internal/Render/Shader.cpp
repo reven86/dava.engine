@@ -582,7 +582,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
                 autobindUniformIndex++;
             }
         }
-    }		
+    }
 }
 
 bool Shader::Recompile(bool silentDelete)
@@ -1398,7 +1398,7 @@ void Shader::Lost()
     fragmentShader = 0;
     if (program == activeProgram)
         activeProgram = 0;
-    program = 0;
+    //program = 0;
     activeAttributes = 0;
     activeUniforms = 0;
     
@@ -1407,6 +1407,10 @@ void Shader::Lost()
 
 void Shader::Invalidate()
 {
+    if (program == 0)
+        return;
+    program = 0;
+    
     RenderResource::Invalidate();
     Recompile();
     

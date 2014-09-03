@@ -29,6 +29,7 @@
 
 
 #include "UITextFieldAndroid.h"
+#include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
 
@@ -369,7 +370,7 @@ void UITextFieldAndroid::SetText(const WideString & string)
 	{
 		text = string;
 		JniTextField jniTextField(id);
-		String utfText = WStringToString(text);
+		String utfText = UTF8Utils::EncodeToUTF8(text);
 		jniTextField.SetText(utfText.c_str());
 	}
 }

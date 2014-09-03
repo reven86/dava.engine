@@ -49,6 +49,7 @@ public:
     explicit HierarchyTreeWidget(QWidget *parent = 0);
     ~HierarchyTreeWidget();
     void ScrollTo(HierarchyTreeNode *node);
+    void HighlightScreenNodes(const QList<HierarchyTreeScreenNode*>& foundNodesList);
 	
 private:
 	typedef Set<HierarchyTreeNode::HIERARCHYTREENODEID> EXPANDEDITEMS;

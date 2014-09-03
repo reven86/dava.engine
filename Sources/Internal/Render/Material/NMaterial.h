@@ -719,6 +719,11 @@ public:
     void BuildActiveUniformsCacheParamsCache();
     
     /**
+	 \brief Rebuilds cache of texture parameters
+	 */
+    void BuildTextureParamsCache();
+    
+    /**
 	 \brief Marks all material properties as dirty to re-bind them to shader
 	 */
     void InvalidateProperties();

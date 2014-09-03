@@ -115,11 +115,13 @@ TextBlock::TextBlock()
     treatMultilineAsSingleLine = false;
     
 	textBlockRender = NULL;
+    textureInvalidater = NULL;
 }
 
 TextBlock::~TextBlock()
 {
 	SafeRelease(textBlockRender);
+    SafeDelete(textureInvalidater);
 	SafeRelease(font);
 	UnregisterTextBlock(this);
 }
@@ -142,9 +144,11 @@ void TextBlock::SetFont(Font * _font)
 	originalFontSize = font->GetSize();
 	
 	SafeRelease(textBlockRender);
+    SafeDelete(textureInvalidater);
 	switch (font->GetFontType()) {
 		case Font::TYPE_FT:
 			textBlockRender = new TextBlockSoftwareRender(this);
+            textureInvalidater = new TextBlockSoftwareTexInvalidater(this);
 			break;
 		case Font::TYPE_GRAPHICAL:
 			textBlockRender = new TextBlockGraphicsRender(this);
@@ -341,14 +345,16 @@ bool TextBlock::IsSpriteReady()
 	return sprite != NULL;
 }
 
-void TextBlock::Prepare()
+void TextBlock::Prepare(Texture *texture /*=NULL*/)
 {
 	Retain();
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal));
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal,
+                                                                                            SafeRetain(texture)));
 }
 
 void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
 {
+    Texture * texture = (Texture *)param;
 	if(!font)
 	{
         Release();
@@ -362,13 +368,14 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 
         if (textBlockRender)
         {
-			textBlockRender->Prepare();
+			textBlockRender->Prepare(texture);
         }
 
         needRedraw = false;
     }
     
     mutex.Unlock();
+    SafeRelease(texture);
 	Release();
 }
 
@@ -814,6 +821,12 @@ TextBlock * TextBlock::Clone()
     block->SetText(GetText(), requestedSize);
     
     return block;
+}
+
+void TextBlock::ForcePrepare(Texture *texture)
+{
+    needRedraw = true;
+    Prepare(texture);
 }
 
 const Vector2 & TextBlock::GetTextSize()

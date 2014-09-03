@@ -1,9 +1,5 @@
 package com.dava.framework;
 
-import android.R;
-import android.app.Notification;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.content.res.AssetManager;
 
 

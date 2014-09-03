@@ -450,7 +450,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
 				effect->effectData.infoSources[current->positionTarget].size = current->currSize;
 			}
 			
-			if (group.layer->frameOverLifeEnabled)
+			if (group.layer->frameOverLifeEnabled&&group.layer->sprite)
 			{
 				float32 animDelta = group.layer->frameOverLifeFPS;
 				if (group.layer->animSpeedOverLife)

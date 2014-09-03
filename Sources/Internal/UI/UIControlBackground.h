@@ -59,15 +59,15 @@ public:
      */
     enum eDrawType
     {
-        DRAW_ALIGNED = 0,			//!<Align sprite inside ronctrol rect.
-        DRAW_SCALE_TO_RECT,			//!<Scale sprite along the all control rect.
-        DRAW_SCALE_PROPORTIONAL,	//!<Scale sprite to fit both width and height into the control rect but with keeping sprite proportions.
+        DRAW_ALIGNED = 0,           //!<Align sprite inside ronctrol rect.
+        DRAW_SCALE_TO_RECT,         //!<Scale sprite along the all control rect.
+        DRAW_SCALE_PROPORTIONAL,    //!<Scale sprite to fit both width and height into the control rect but with keeping sprite proportions.
         DRAW_SCALE_PROPORTIONAL_ONE,//!<Scale sprite to fit width or height into control rect but with keeping sprite proportions.
-        DRAW_FILL,					//!<Fill control rect with the control color.
-        DRAW_STRETCH_HORIZONTAL,	//!<Stretch sprite horizontally along the control rect.
-        DRAW_STRETCH_VERTICAL,		//!<Stretch sprite vertically along the control rect.
-        DRAW_STRETCH_BOTH,			//!<Stretch sprite along the all control rect.
-        DRAW_TILED 					//!<Fill control with sprite tiles
+        DRAW_FILL,                  //!<Fill control rect with the control color.
+        DRAW_STRETCH_HORIZONTAL,    //!<Stretch sprite horizontally along the control rect.
+        DRAW_STRETCH_VERTICAL,      //!<Stretch sprite vertically along the control rect.
+        DRAW_STRETCH_BOTH,          //!<Stretch sprite along the all control rect.
+        DRAW_TILED                  //!<Fill control with sprite tiles
     };
 
     /**
@@ -75,14 +75,13 @@ public:
      */
     enum eColorInheritType
     {
-        COLOR_MULTIPLY_ON_PARENT = 0	//!<Draw color = control color * parent color.
-        ,	COLOR_ADD_TO_PARENT			//!<Draw color = Min(control color + parent color, 1.0f).
-        ,	COLOR_REPLACE_TO_PARENT		//!<Draw color = parent color.
-        ,	COLOR_IGNORE_PARENT			//!<Draw color = control color.
-        ,	COLOR_MULTIPLY_ALPHA_ONLY	//!<Draw color = control color. Draw alpha = control alpha * parent alpha.
-        ,	COLOR_REPLACE_ALPHA_ONLY	//!<Draw color = control color. Draw alpha = parent alpha.
-
-        ,	COLOR_INHERIT_TYPES_COUNT
+        COLOR_MULTIPLY_ON_PARENT = 0,   //!<Draw color = control color * parent color.
+        COLOR_ADD_TO_PARENT,            //!<Draw color = Min(control color + parent color, 1.0f).
+        COLOR_REPLACE_TO_PARENT,        //!<Draw color = parent color.
+        COLOR_IGNORE_PARENT,            //!<Draw color = control color.
+        COLOR_MULTIPLY_ALPHA_ONLY,      //!<Draw color = control color. Draw alpha = control alpha * parent alpha.
+        COLOR_REPLACE_ALPHA_ONLY,       //!<Draw color = control color. Draw alpha = parent alpha.
+        COLOR_INHERIT_TYPES_COUNT
     };
 
     enum ePerPixelAccuracyType
@@ -98,6 +97,8 @@ public:
      \brief Constructor.
      */
     UIControlBackground();
+
+    virtual bool IsEqualTo(const UIControlBackground *back) const;
 
     /**
      \brief Returns Sprite used for draw.
@@ -259,6 +260,9 @@ public:
 
 
     void SetShader(Shader *shader);
+    
+    void SetRenderState(UniqueHandle renderState);
+    UniqueHandle GetRenderState() const;
 
 protected:
     void DrawStretched(const Rect &drawRect, UniqueHandle renderState);
@@ -309,6 +313,8 @@ protected:
     Color drawColor;
 
     Shader *shader;
+    
+    UniqueHandle renderState;
 };
 
 // Implementation
@@ -320,6 +326,16 @@ inline void UIControlBackground::SetColor(const Color & _color)
 inline const Color &UIControlBackground::GetColor() const
 {
     return color;
+}
+    
+inline void UIControlBackground::SetRenderState(UniqueHandle _renderState)
+{
+    renderState = _renderState;
+}
+    
+inline UniqueHandle UIControlBackground::GetRenderState() const
+{
+    return renderState;
 }
 
 };

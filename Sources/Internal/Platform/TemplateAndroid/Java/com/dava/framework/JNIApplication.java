@@ -48,6 +48,9 @@ public class JNIApplication extends Application
 		super.onConfigurationChanged(newConfig);
 
 		OnConfigurationChanged();
+
+		Log.w(JNIConst.LOG_TAG, String.format("[Application::onConfigurationChanged] Application should now be closed"));
+		System.exit(0);
 	}
 
 	@Override

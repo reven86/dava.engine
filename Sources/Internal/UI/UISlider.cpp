@@ -393,9 +393,9 @@ void UISlider::AttachToSubcontrols()
 		thumbButton = FindByName(UISLIDER_THUMB_SPRITE_CONTROL_NAME);
 		DVASSERT(thumbButton);
         thumbButton->Retain();
-        
-		InitInactiveParts(thumbButton->GetBackground()->GetSprite());
 	}
+
+    InitInactiveParts(thumbButton->GetBackground()->GetSprite());
 }
 
 List<UIControl*> UISlider::GetSubcontrols()

@@ -210,6 +210,8 @@ YamlNode* ScreenControl::SaveToYamlNode( UIYamlLoader * loader )
     node->RemoveNodeFromMap("drawType");
     node->RemoveNodeFromMap("type");
     node->RemoveNodeFromMap("rect");
+    node->RemoveNodeFromMap("position");
+    node->RemoveNodeFromMap("size");
     return node;
 }
 

@@ -56,6 +56,7 @@ UIControlBackground::UIControlBackground()
 ,   vertexStream(NULL)
 ,   texCoordStream(NULL)
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
+,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
 }
 
@@ -93,6 +94,22 @@ UIControlBackground::~UIControlBackground()
     SafeRelease(spr);
     SafeRelease(shader);
     ReleaseDrawData();
+}
+
+bool UIControlBackground::IsEqualTo( const UIControlBackground *back ) const
+{
+    if (GetDrawType() != back->GetDrawType() ||
+        Sprite::GetPathString(GetSprite()) != Sprite::GetPathString(back->GetSprite()) ||
+        GetFrame() != back->GetFrame() ||
+        GetAlign() != back->GetAlign() ||
+        GetColor() != back->GetColor() ||
+        GetColorInheritType() != back->GetColorInheritType() ||
+        GetModification() != back->GetModification() ||
+        GetLeftRightStretchCap() != back->GetLeftRightStretchCap() ||
+        GetTopBottomStretchCap() != back->GetTopBottomStretchCap() ||
+        GetPerPixelAccuracyType() != back->GetPerPixelAccuracyType())
+        return false;
+    return true;
 }
 
 Sprite*	UIControlBackground::GetSprite() const
@@ -267,7 +284,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND); // set state explicitly
+    drawState.SetRenderState(renderState);
     if (spr)
     {
         drawState.SetShader(shader);

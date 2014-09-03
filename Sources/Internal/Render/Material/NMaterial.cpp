@@ -1242,6 +1242,17 @@ void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
     SetTexturesDirty();
 }
     
+void NMaterial::BuildTextureParamsCache()
+{
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
+    while(it != endIt)
+    {
+        BuildTextureParamsCache(it->second);
+        ++it;
+    }
+}
+    
 void NMaterial::BuildActiveUniformsCacheParamsCache()
 {
     HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();

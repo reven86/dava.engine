@@ -258,7 +258,8 @@ public class JNITextField {
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-				text.setText(string);
+				text.setText("");
+				text.append(string);
 				return null;
 			}
 		});

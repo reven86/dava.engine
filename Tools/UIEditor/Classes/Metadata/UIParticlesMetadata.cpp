@@ -41,7 +41,7 @@ UIParticles* UIParticlesMetadata::GetActiveUIParticles() const
 
 void UIParticlesMetadata::Start()
 {
-    if (!VerifyActiveParamID() || !GetActiveUIParticles()->IsEffectLoaded())
+    if (!VerifyActiveParamID())
     {
         return;
     }
@@ -60,7 +60,7 @@ void UIParticlesMetadata::Start()
 
 void UIParticlesMetadata::Stop()
 {
-    if (!VerifyActiveParamID() || !GetActiveUIParticles()->IsEffectLoaded())
+    if (!VerifyActiveParamID())
     {
         return;
     }
@@ -70,7 +70,7 @@ void UIParticlesMetadata::Stop()
 
 void UIParticlesMetadata::Pause()
 {
-    if (!VerifyActiveParamID() || !GetActiveUIParticles()->IsEffectLoaded())
+    if (!VerifyActiveParamID())
     {
         return;
     }
@@ -81,7 +81,7 @@ void UIParticlesMetadata::Pause()
 
 void UIParticlesMetadata::Restart()
 {
-    if (!VerifyActiveParamID() || !GetActiveUIParticles()->IsEffectLoaded())
+    if (!VerifyActiveParamID())
     {
         return;
     }
