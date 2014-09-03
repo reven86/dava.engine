@@ -76,10 +76,12 @@ public:
     void Wait();
     ConditionalVariable * GetConditionalVariable();
     int32 GetTag();
+    Mutex * GetMutex();
     
 private:
     int32 tag;
     ConditionalVariable cv;
+    Mutex mutex;
 };
 
 inline ConditionalVariable * TaggedWorkerJobsWaiter::GetConditionalVariable()
@@ -90,6 +92,11 @@ inline ConditionalVariable * TaggedWorkerJobsWaiter::GetConditionalVariable()
 inline int32 TaggedWorkerJobsWaiter::GetTag()
 {
     return tag;
+}
+
+inline Mutex * TaggedWorkerJobsWaiter::GetMutex()
+{
+    return &mutex;
 }
 
 }

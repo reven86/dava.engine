@@ -61,6 +61,7 @@ JobScheduler::~JobScheduler()
 
 void JobScheduler::PushJob(Job * job)
 {
+    job->Retain();
     int32 tag = job->GetTag();
     DVASSERT(tag >= -1 && tag <= MAX_TAG_VALUE && "tag must be in -1...999 range");
     
@@ -135,6 +136,7 @@ void JobScheduler::Schedule()
 void JobScheduler::OnJobCompleted(Job * job)
 {
     int32 tag = job->GetTag();
+    SafeRelease(job);
     if(tag >= 0)
     {
         AtomicDecrement(taggedJobsCount[tag]);
@@ -146,7 +148,10 @@ void JobScheduler::OnJobCompleted(Job * job)
             Map<int32, TaggedWorkerJobsWaiter*>::iterator it = taggedJobsWaiters.find(tag);
             if(taggedJobsWaiters.end() != it)
             {
-                Thread::Signal((*it).second->GetConditionalVariable());
+                TaggedWorkerJobsWaiter * waiter = (*it).second;
+                waiter->GetMutex()->Lock();
+                Thread::Signal(waiter->GetConditionalVariable());
+                waiter->GetMutex()->Unlock();
             }
         }
     }
@@ -163,6 +168,7 @@ JobManager::eWaiterRegistrationResult JobScheduler::RegisterWaiterAndWait(Tagged
     }
     else
     {
+        waiter->GetMutex()->Lock();
         taggedJobsWaiters[waiter->GetTag()] = waiter;
     }
 

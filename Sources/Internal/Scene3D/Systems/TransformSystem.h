@@ -72,6 +72,7 @@ private:
 	void HierahicFindUpdatableTransform(BaseObject * bo, void * userData, void * callerData);
     struct JobArgument
     {
+        int32 recursionDepth;
         Entity * entity;
         bool forceUpdate;
     };

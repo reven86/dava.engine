@@ -51,7 +51,9 @@ void ThreadIdJobWaiter::Wait()
 {
 	if(JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForCreatorThread(this))
 	{
-		Thread::Wait(&cv);
+        Mutex mutex;
+        mutex.Lock();
+		Thread::Wait(&cv, &mutex);
 	}
 }
 
@@ -82,7 +84,9 @@ void JobInstanceWaiter::Wait()
 {
 	if(JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForJobInstance(this))
 	{
-		Thread::Wait(&cv);
+        Mutex mutex;
+        mutex.Lock();
+		Thread::Wait(&cv, &mutex);
 	}
 }
 
@@ -111,11 +115,8 @@ void TaggedWorkerJobsWaiter::Wait()
 {
     if(JobManager::WAITER_WILL_WAIT == JobScheduler::Instance()->RegisterWaiterAndWait(this))
     {
-        LockGuard<Mutex> guard(JobScheduler::Instance()->GetWaiterMutex());
-        if(JobScheduler::Instance()->GetJobsCountForTag(tag))
-        {
-            Thread::Wait(&cv);
-        }
+        Thread::Wait(&cv, &mutex);
+        mutex.Unlock();
     }
 }
 

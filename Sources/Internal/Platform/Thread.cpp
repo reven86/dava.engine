@@ -45,9 +45,6 @@ ConditionalVariable::ConditionalVariable()
     int32 ret = pthread_cond_init(&cv, 0);
     if(ret)
         Logger::FrameworkDebug("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
-    ret = pthread_mutex_init(&exMutex, 0);
-    if(ret)
-        Logger::FrameworkDebug("[ConditionalVariable::ConditionalVariable()]: pthread_mutex_init error code %d", ret);
 }
 
 ConditionalVariable::~ConditionalVariable()
@@ -55,9 +52,6 @@ ConditionalVariable::~ConditionalVariable()
     int32 ret = pthread_cond_destroy(&cv);
     if(ret)
         Logger::FrameworkDebug("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
-    ret = pthread_mutex_destroy(&exMutex);
-    if(ret)
-        Logger::FrameworkDebug("[ConditionalVariable::~ConditionalVariable()]: pthread_mutex_destroy error code %d", ret);
 }
 
 Thread * Thread::Create(const Message& msg)
@@ -140,17 +134,12 @@ void Thread::Kill()
 }
 #endif
 
-void Thread::Wait(ConditionalVariable * cv)
+void Thread::Wait(ConditionalVariable * cv, Mutex * mutex)
 {
     int32 ret = 0;
-    if((ret = pthread_mutex_lock(&cv->exMutex)))
-        Logger::FrameworkDebug("[Thread::Wait]: pthread_mutex_lock error code %d", ret);
     
-    if((ret = pthread_cond_wait(&cv->cv, &cv->exMutex)))
+    if((ret = pthread_cond_wait(&cv->cv, &mutex->mutex)))
         Logger::FrameworkDebug("[Thread::Wait]: pthread_cond_wait error code %d", ret);
-
-    if((ret = pthread_mutex_unlock(&cv->exMutex)))
-        Logger::FrameworkDebug("[Thread::Wait]: pthread_mutex_unlock error code %d", ret);
 }
 
 void Thread::Signal(ConditionalVariable * cv)

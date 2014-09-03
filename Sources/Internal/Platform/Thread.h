@@ -61,10 +61,11 @@ public:
 
 private:
     pthread_cond_t cv;
-    pthread_mutex_t exMutex;
 
     friend class Thread;
 };
+
+
 
 class Thread : public BaseObject
 {
@@ -156,7 +157,7 @@ public:
     /**
         Wrapp pthread wait, signal and broadcast
 	*/
-    static void Wait(ConditionalVariable * cv);
+    static void Wait(ConditionalVariable * cv, Mutex * mutex);
     static void Signal(ConditionalVariable * cv);
     static void Broadcast(ConditionalVariable * cv);
     

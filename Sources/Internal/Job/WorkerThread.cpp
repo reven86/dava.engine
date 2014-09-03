@@ -60,7 +60,9 @@ void WorkerThread::ThreadFunc(BaseObject * bo, void * userParam, void * callerPa
             scheduler->PushIdleThread(this);
             scheduler->Schedule();
         }
-        Thread::Wait(&cv);
+        Mutex mutex;
+        mutex.Lock();
+        Thread::Wait(&cv, &mutex);
     }
 }
 

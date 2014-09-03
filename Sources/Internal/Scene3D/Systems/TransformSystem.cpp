@@ -68,11 +68,11 @@ void TransformSystem::Process(float32 timeElapsed)
         JobArgument * arg = new JobArgument();
         arg->entity = updatableEntities[i];
         arg->forceUpdate = false;
-        Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, arg), Thread::GetCurrentThreadId(), 0, 2);
+        arg->recursionDepth = 0;
+        //Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, arg), Thread::GetCurrentThreadId(), 0, 2);
+        //JobScheduler::Instance()->PushJob(j);
 
-        JobScheduler::Instance()->PushJob(j);
-
-        //HierahicFindUpdatableTransform(0, arg, 0);
+        HierahicFindUpdatableTransform(0, arg, 0);
     }
 
     TaggedWorkerJobsWaiter waiter(2);
@@ -173,6 +173,7 @@ void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * use
     JobArgument * arg = (JobArgument*)userData;
     Entity * entity = arg->entity;
     bool & forcedUpdate = arg->forceUpdate;
+    int32 recursionDepth = arg->recursionDepth;
 
 	passedNodes++;
 
@@ -196,7 +197,17 @@ void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * use
             JobArgument * arg = new JobArgument();
             arg->entity = entity->GetChild(i);
             arg->forceUpdate = forcedUpdate;
-			HierahicFindUpdatableTransform(0, arg, 0);
+            arg->recursionDepth = recursionDepth+1;
+            if(arg->recursionDepth == 1)
+            {
+                Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, arg), Thread::GetCurrentThreadId(), 0, 2);
+                JobScheduler::Instance()->PushJob(j);
+                j->Release();
+            }
+            else
+            {
+                HierahicFindUpdatableTransform(0, arg, 0);
+            }
 		}
 	}
 
