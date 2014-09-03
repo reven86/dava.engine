@@ -32,22 +32,41 @@
 #include "Utils/Utils.h"
 #include "Render/RenderManager.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 namespace DAVA 
 {
 	
 TextBlockGraphicsRender::TextBlockGraphicsRender(TextBlock* textBlock) :
-	TextBlockRender(textBlock)
+	TextBlockRender(textBlock),
+    renderTarget(NULL)
 {
 	grFont = (GraphicsFont*)textBlock->font;
 	isPredrawed = true;
+}
+
+TextBlockGraphicsRender::~TextBlockGraphicsRender()
+{
+    SafeRelease(renderTarget);
 }
 	
 void TextBlockGraphicsRender::Prepare()
 {
 	TextBlockRender::Prepare();
-	
+
+    uint32 virtualWidth = (uint32)(Core::GetVirtualToPhysicalFactor() * textBlock->cacheDx);
+    uint32 virtualHeight = (uint32)(Core::GetVirtualToPhysicalFactor() * textBlock->cacheDy);
+    
+    renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                       virtualWidth,
+                                                                       virtualHeight);
+
 	isPredrawed = false;
-	sprite = Sprite::CreateAsRenderTarget((float32)textBlock->cacheDx, (float32)textBlock->cacheDy, FORMAT_RGBA8888);
+
+    Texture* renderTexture = renderTarget->GetColorAttachment()->Lock();
+    sprite = Sprite::CreateFromTexture(renderTexture, 0, 0, renderTexture->GetWidth(), renderTexture->GetHeight(), true);
+    renderTarget->GetColorAttachment()->Unlock(renderTexture);
+
 	if (sprite && sprite->GetTexture())
 	{
 		if (!textBlock->isMultilineEnabled)
@@ -66,9 +85,12 @@ void TextBlockGraphicsRender::PreDraw()
 		return;
 	
 	isPredrawed = true;
-	RenderManager::Instance()->SetRenderTarget(sprite);
+
+    renderTarget->BeginRender();
+
 	DrawText();
-	RenderManager::Instance()->RestoreRenderTarget();
+
+    renderTarget->EndRender();
 }
 	
 Size2i TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

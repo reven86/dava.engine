@@ -39,6 +39,8 @@
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
 
+#include "Render/Image/Image.h"
+
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Render/2D/TextBlockDistanceRender.h"
@@ -319,7 +321,18 @@ Sprite * TextBlock::GetSprite()
 	DVASSERT(sprite);
 	if (!sprite) 
 	{
-		sprite = Sprite::CreateAsRenderTarget(8, 8, FORMAT_RGBA4444);
+        static Image* image = NULL;
+        static Sprite* stubSprite = NULL;
+
+        if(NULL == image)
+        {
+            image = Image::Create(8, 8, FORMAT_RGBA8888);
+            image->MakePink();
+
+            stubSprite = Sprite::CreateFromImage(image);
+        }
+
+		sprite = stubSprite;
         Logger::Error("[Textblock] getting NULL sprite");
 	}
 

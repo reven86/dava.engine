@@ -42,6 +42,8 @@
 #include "Render/Image/LibPngHelpers.h"
 #include "Render/PixelFormatDescriptor.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 #if !defined(__DAVAENGINE_WIN32__)
 #include <unistd.h>
 #endif //#if !defined(__DAVAENGINE_WIN32__)
@@ -627,17 +629,15 @@ bool PngImage::CreateFromFBOSprite(Sprite * fboSprite)
 	
 	width = fboSprite->GetTexture()->GetWidth();
 	height = fboSprite->GetTexture()->GetHeight();
-	data = new uint8[width * 4 * height];
 
 	Texture * texture = fboSprite->GetTexture();
 
-	format = texture->GetFormat();    
-	if (format == FORMAT_RGBA8888)
-	{
-		RenderManager::Instance()->SetRenderTarget(fboSprite);
-		glReadPixels(0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		RenderManager::Instance()->RestoreRenderTarget();
-	}
-	return true;
+    RenderDataReader* dataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+    bool result = dataReader->ReadTextureDataToBuffer(texture, &data);
+
+    SafeRelease(dataReader);
+
+    return result;
 }
 

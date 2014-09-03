@@ -47,4 +47,10 @@ Image* RenderDataReader::ReadCurrentColorData(PixelFormat pixelFormat, uint32 wi
     return NULL;
 }
 
+bool RenderDataReader::ReadTextureDataToBuffer(Texture* tx, uint8** outData)
+{
+    *outData = NULL;
+    return false;
+}
+
 };

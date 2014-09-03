@@ -36,10 +36,14 @@
 namespace DAVA
 {
 
+class RenderTarget;
+
 class TextBlockGraphicsRender: public TextBlockRender
 {
 public:
+
 	TextBlockGraphicsRender(TextBlock*);
+    virtual ~TextBlockGraphicsRender();
 	virtual void Prepare();
 	virtual void PreDraw();
 	
@@ -51,6 +55,9 @@ protected:
 							  int32 lineSize);
 	
 private:
+
+    RenderTarget* renderTarget;
+
 	GraphicsFont* grFont;
 	bool isPredrawed;
 };

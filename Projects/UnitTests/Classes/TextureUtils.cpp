@@ -31,6 +31,7 @@
 #include "TextureUtils.h"
 #include "Render/PixelFormatDescriptor.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
 
 Sprite * TextureUtils::CreateSpriteFromTexture(const String &texturePathname)
 {
@@ -113,19 +114,12 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *sec
 
 Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
 {
-    Sprite *renderTarget = Sprite::CreateAsRenderTarget(sprite->GetWidth(), sprite->GetHeight(), FORMAT_RGBA8888);
-    RenderManager::Instance()->SetRenderTarget(renderTarget);
-    
-    
-    Sprite::DrawState drawState;
-    sprite->Draw(&drawState);
-    
-    RenderManager::Instance()->RestoreRenderTarget();
-    
-    Texture *renderTargetTexture = renderTarget->GetTexture();
-    Image *resultImage = renderTargetTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-    
-    SafeRelease(renderTarget);
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+    Image *resultImage = renderDataReader->ReadTextureData(sprite->GetTexture());
+
+    SafeRelease(renderDataReader);
+
     return resultImage;
 }
 

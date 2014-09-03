@@ -71,6 +71,58 @@ Image* RenderDataReaderOGL::ReadTextureData(Texture* tx)
     return resultImage;
 }
 
+bool RenderDataReaderOGL::ReadTextureDataToBuffer(Texture* tx, uint8** outData)
+{
+    *outData = NULL;
+
+    RenderTargetDescriptor rtDesc;
+    FillTextureDataReaderDescriptor(tx, rtDesc);
+
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
+
+    PixelFormat imageFormat = FORMAT_INVALID;
+    uint32 width = 0;
+    uint32 height = 0;
+    GetImageInfo(renderTarget, imageFormat, width, height);
+
+    const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(imageFormat);
+
+    bool canReadPixels = (FORMAT_RGBA8888 == imageFormat);
+    if(canReadPixels)
+    {
+        renderTarget->BeginRender();
+
+        RenderHelper::Instance()->Setup2dCanvas((float32)tx->width, (float32)tx->height);
+
+        Sprite* drawSprite = Sprite::CreateFromTexture(tx, 0, 0, (float32)tx->width, (float32)tx->height, true);
+
+        Sprite::DrawState drawState;
+        drawState.SetPosition(0, 0);
+        drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+        drawSprite->Draw(&drawState);
+
+        SafeRelease(drawSprite);
+
+        *outData = new uint8[width * height * 4];
+
+        RENDER_VERIFY(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+        RENDER_VERIFY(glReadPixels(0,
+                                   0,
+                                   width,
+                                   height,
+                                   formatDescriptor.format,
+                                   formatDescriptor.type,
+                                   (GLvoid*)*outData));
+        
+        renderTarget->EndRender();
+        
+    }
+    
+    SafeRelease(renderTarget);
+
+    return canReadPixels;
+}
+
 Image* RenderDataReaderOGL::ReadColorData(RenderTarget* renderTarget)
 {
     DVASSERT(renderTarget);
