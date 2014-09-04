@@ -32,7 +32,7 @@
 namespace DAVA
 {
 
-Image* RenderDataReader::ReadTextureData(Texture* tx)
+Image* RenderDataReader::ReadTextureData(Texture* tx, UniqueHandle renderState)
 {
     return NULL;
 }

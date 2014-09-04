@@ -135,10 +135,14 @@ ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, con
 	undoImageMask = Image::CopyImageRegion(originalMask, updatedRect);
 
     RenderManager::Instance()->SetColor(Color::White);
-	Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory(noBlendDrawState);
+
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+	
+    Image* currentImageMask = renderDataReader->ReadTextureData(landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK), noBlendDrawState);
 
 	redoImageMask = Image::CopyImageRegion(currentImageMask, updatedRect);
 	SafeRelease(currentImageMask);
+    SafeRelease(renderDataReader);
 }
 
 ModifyTilemaskCommand::~ModifyTilemaskCommand()

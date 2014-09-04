@@ -452,7 +452,10 @@ void LandscapeProxy::InitTilemaskImageCopy()
 	SafeRelease(tilemaskImageCopy);
 
     RenderManager::Instance()->SetColor(Color::White);
-	tilemaskImageCopy = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory(noBlendDrawState);
+
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+	tilemaskImageCopy = renderDataReader->ReadTextureData(baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK), noBlendDrawState);
+    SafeRelease(renderDataReader);
 }
 
 Image* LandscapeProxy::GetTilemaskImageCopy()

@@ -168,17 +168,7 @@ public:
         \param[in] pathName path to the png or pvr file
      */
 	static Texture * PureCreate(const FilePath & pathName, const FastName &group = FastName());
-    
-	/**
-        \brief Create FBO from given width, height and format
-        \param[in] width width of the fbo
-        \param[in] height height of the fbo
-        \param[in] format format of the fbo
-		\param[in] useDepthbuffer if set to true, addition depthbuffer will be created for this fbo
-        \todo reorder variables in function, and make format variable first to make it similar to CreateFromData function.
-     */
-	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat);
-	
+    	
 	static Texture * CreatePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
 
 
@@ -211,8 +201,6 @@ public:
      */
     const FilePath & GetPathname() const;
     
-    Image * CreateImageFromMemory(UniqueHandle renderState);
-
 	bool IsPinkPlaceholder();
     
 	static void GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames);
@@ -286,14 +274,7 @@ protected:
     
 	Texture();
 	virtual ~Texture();
-    
-    Image * ReadDataToImage();
-    
-#if defined(__DAVAENGINE_OPENGL__)
-	void HWglCreateFBOBuffers();
-	void HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, void *callerData);
-#endif //#if defined(__DAVAENGINE_OPENGL__)
-    
+        
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
     
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);

@@ -43,7 +43,7 @@ bool SortBlocks(SharedFBO::Block * a, SharedFBO::Block * b)
 SharedFBO::SharedFBO(Setup * setup)
 :	texture(0)
 {
-	texture = Texture::CreateFBO((uint32)setup->size.x, (uint32)setup->size.y, setup->pixelFormat, setup->depthFormat);
+	/*texture = Texture::CreateFBO((uint32)setup->size.x, (uint32)setup->size.y, setup->pixelFormat, setup->depthFormat);
 	
 	TextureStateData textureState;
 	textureState.SetTexture(0, texture);
@@ -88,6 +88,8 @@ SharedFBO::SharedFBO(Setup * setup)
 		Rect2i * rect = packer.SearchRectForPtr(blocks[i]);
 		blocks[i]->offset = Vector2((float32)rect->x, (float32)rect->y);
 	}
+    
+    */
 }
 
 SharedFBO::~SharedFBO()

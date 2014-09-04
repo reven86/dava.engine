@@ -45,6 +45,8 @@
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 :	SceneSystem(scene)
 ,	customDrawRequestCount(0)
@@ -609,8 +611,13 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
 		//eBlendMode srcBlend = RenderManager::Instance()->GetSrcBlend();
 		//eBlendMode dstBlend = RenderManager::Instance()->GetDestBlend();
 		//RenderManager::Instance()->SetBlendMode(BLEND_ONE, BLEND_ZERO);
-		
-		Image *image = texture->CreateImageFromMemory(noBlendDrawState);
+
+        RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+        Image *image = renderDataReader->ReadTextureData(texture, noBlendDrawState);
+
+        SafeRelease(renderDataReader);
+
 		//RenderManager::Instance()->SetBlendMode(srcBlend, dstBlend);
 
 		if(image)

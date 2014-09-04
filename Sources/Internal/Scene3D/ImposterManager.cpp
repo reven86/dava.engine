@@ -121,7 +121,7 @@ void ImposterManager::Draw()
 
 void ImposterManager::ProcessQueue()
 {
-	if(!queue.empty())
+	/*if(!queue.empty())
 	{
 		Camera * camera = scene->GetCurrentCamera();
 		RenderManager::Instance()->SetRenderTarget(sharedFBO->GetTexture());
@@ -138,7 +138,7 @@ void ImposterManager::ProcessQueue()
 		RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 		camera->SetupDynamicParameters();
-	}
+	}*/
 }
 
 void ImposterManager::Add(ImposterNode * node)

@@ -396,33 +396,7 @@ public:
         \brief Clear stencil buffer with requested value
         \param[in] stencil specifies the index used when the stencil buffer is cleared
      */
-	void ClearStencilBuffer(int32 stencil = 0);
-
-	/** 
-	 \brief Sets the sprite to use as a render target. Sprite should be created with CreateAsRenderTarget method.
-			Call RestoreRenderTarget when you finish drawing to your sprite 
-	 \param[in] renderTarget - Render target sprite. If NULL 0 render manager will draw to the screen.
-	 */
-	void SetRenderTarget(Sprite *renderTarget);
-
-	/** 
-	 \brief Sets the texture to use as a render target. Texture should be created with CreateFBO method.
-			Call RestoreRenderTarget when you finish drawing to your texture 
-	 \param[in] renderTarget - Render target texture.
-	 */
-	void SetRenderTarget(Texture * renderTarget);
-
-	/** 
-        \brief Restores the previous render target
-	 */
-	void RestoreRenderTarget();
-
-	/** 
-	 \brief Checks is render target using for drawing now
-	 \param[out] true if render manager sets to a render targe. false if render manager draws to the screen now
-	 */
-	bool IsRenderTarget();
-       
+	void ClearStencilBuffer(int32 stencil = 0);       
 	
 	/** 
         \brief Sets the effect for the rendering. 

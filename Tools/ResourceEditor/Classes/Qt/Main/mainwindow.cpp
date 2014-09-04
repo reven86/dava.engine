@@ -124,6 +124,8 @@
 
 #include "SceneProcessing/SceneProcessor.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -1978,7 +1980,12 @@ void QtMainWindow::OnSaveTiledTexture()
 			pathToSave.ReplaceExtension(".thumbnail.png");
 		}
 
-		Image *image = landscapeTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+        RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+		Image *image = renderDataReader->ReadTextureData(landscapeTexture, RenderState::RENDERSTATE_2D_OPAQUE);
+
+        SafeRelease(renderDataReader);
+
 		if(image)
 		{
             ImageSystem::Instance()->Save(pathToSave, image);

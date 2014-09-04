@@ -40,7 +40,7 @@ class RenderDataReaderOGL : public RenderDataReader
 {
 public:
 
-    virtual Image* ReadTextureData(Texture* tx);
+    virtual Image* ReadTextureData(Texture* tx, UniqueHandle renderState = RenderState::RENDERSTATE_2D_BLEND);
     virtual Image* ReadColorData(RenderTarget* renderTarget);
     virtual Image* ReadCurrentColorData(PixelFormat pixelFormat, uint32 width, uint32 height);
     virtual bool ReadTextureDataToBuffer(Texture* tx, uint8** outData);

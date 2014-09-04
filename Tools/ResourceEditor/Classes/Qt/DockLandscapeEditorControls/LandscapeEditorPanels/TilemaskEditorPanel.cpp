@@ -354,8 +354,12 @@ void TilemaskEditorPanel::UpdateTileTextures()
 	int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
 	Image** images = new Image*[count];
 
-    Image* image = sceneEditor->tilemaskEditorSystem->GetTileTexture(0)->CreateImageFromMemory(noBlendDrawState);
-    
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+    Image* image = renderDataReader->ReadTextureData(sceneEditor->tilemaskEditorSystem->GetTileTexture(0), noBlendDrawState);
+    SafeRelease(renderDataReader);
+
+    ImageSystem::Instance()->Save("~doc:/tile_tex_images.png", image);
+
     image->ResizeCanvas(iconSize.width(), iconSize.height());
     
     SplitImageToChannels(image, images[0], images[1], images[2], images[3]);

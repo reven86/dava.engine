@@ -30,6 +30,7 @@
 #ifndef __DAVAENGINE_RENDERDATAREADER_H__
 #define __DAVAENGINE_RENDERDATAREADER_H__
 
+#include "Render/RenderState.h"
 #include "Render/Texture.h"
 #include "Render/RenderTarget/RenderTarget.h"
 
@@ -40,7 +41,7 @@ class RenderDataReader : public BaseObject
 {
 public:
 
-    virtual Image* ReadTextureData(Texture* tx);
+    virtual Image* ReadTextureData(Texture* tx, UniqueHandle renderState = RenderState::RENDERSTATE_2D_BLEND);
     virtual bool ReadTextureDataToBuffer(Texture* tx, uint8** outData);
     virtual Image* ReadColorData(RenderTarget* renderTarget);
     virtual Image* ReadCurrentColorData(PixelFormat pixelFormat, uint32 width, uint32 height);

@@ -59,6 +59,8 @@
 #include "Job/JobWaiter.h"
 #include "Math/MathHelpers.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 
 #ifdef __DAVAENGINE_ANDROID__
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
@@ -497,14 +499,18 @@ void Texture::GenerateMipmapsInternal(BaseObject * caller, void * param, void *c
     
     
 #if defined(__DAVAENGINE_OPENGL__)
-    
-	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
+
+    int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
+
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+    Image* image0 = renderDataReader->ReadTextureData(this);
+    Vector<Image *> images = image0->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
+
+    SafeRelease(image0);
+    SafeRelease(renderDataReader);
 	
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
-		
-    Image * image0 = CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-    Vector<Image *> images = image0->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
-    SafeRelease(image0);
 
     for(uint32 i = 1; i < (uint32)images.size(); ++i)
         TexImage((images[i]->mipmapLevel != (uint32)-1) ? images[i]->mipmapLevel : i, images[i]->width, images[i]->height, images[i]->data, images[i]->dataSize, images[i]->cubeFaceID);
@@ -851,134 +857,8 @@ int32 Texture::Release()
 	}
 	return BaseObject::Release();
 }
-	
-Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat _depthFormat)
-{
-	int32 dx = Max((int32)w, 8);
-    EnsurePowerOf2(dx);
-    
-	int32 dy = Max((int32)h, 8);
-    EnsurePowerOf2(dy);
-    
 
 #if defined(__DAVAENGINE_OPENGL__)
-
-	Texture *tx = Texture::CreateFromData(format, NULL, dx, dy, false);
-	DVASSERT(tx);
-
-	tx->depthFormat = _depthFormat;
-
-	tx->HWglCreateFBOBuffers();	
-
-#elif defined(__DAVAENGINE_DIRECTX9__)
-
-	// TODO: Create FBO
-	Texture * tx = new Texture();
-
-	tx->width = dx;
-	tx->height = dy;
-	tx->format = format;
-
-	RenderManager::Instance()->LockNonMain();
-	tx->id = CreateTextureNative(Vector2((float32)tx->width, (float32)tx->height), tx->format, true, 0);
-	RenderManager::Instance()->UnlockNonMain();
-
-	tx->state = STATE_VALID;
-#endif 
-
-
-    tx->isRenderTarget = true;
-    tx->texDescriptor->pathname = Format("FBO texture %d", textureFboCounter);
-	AddToMap(tx);
-	
-	textureFboCounter++;
-	
-	return tx;
-}
-
-#if defined(__DAVAENGINE_OPENGL__)
-void Texture::HWglCreateFBOBuffers()
-{
-	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::HWglCreateFBOBuffersInternal));
-}
-
-void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, void *callerData)
-{
-	GLint saveFBO = RenderManager::Instance()->HWglGetLastFBO();
-	GLint saveTexture = RenderManager::Instance()->HWglGetLastTextureID(textureType);
-
-	RenderManager::Instance()->HWglBindTexture(id, textureType);
-
-	RENDER_VERIFY(glGenFramebuffers(1, &fboID));
-	RenderManager::Instance()->HWglBindFBO(fboID);
-    
-	if(DEPTH_RENDERBUFFER == depthFormat)
-	{
-		RENDER_VERIFY(glGenRenderbuffers(1, &rboID));
-		RENDER_VERIFY(glBindRenderbuffer(GL_RENDERBUFFER, rboID));
-        
-#if defined(__DAVAENGINE_ANDROID__)
-        if (RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
-#endif
-        {
-            RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
-        }
-#if defined(__DAVAENGINE_ANDROID__)
-        else
-        {
-            if (RenderManager::Instance()->GetCaps().isGlDepthNvNonLinearSupported)
-            {
-                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, width, height));
-            }
-            else
-            {
-                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height));
-            }
-
-            if (!RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
-            {
-                RENDER_VERIFY(glGenRenderbuffers(1, &stencilRboID));
-                RENDER_VERIFY(glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID));
-                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height));
-            }
-        }
-#endif
-	}
-
-	RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0));
-
-	if(DEPTH_RENDERBUFFER == depthFormat)
-	{
-		RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboID));
-#if defined(__DAVAENGINE_ANDROID__)
-        if (RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
-#endif
-        {
-            RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboID));
-        }
-#if defined(__DAVAENGINE_ANDROID__)
-        else
-        {
-            RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRboID));
-        }
-#endif
-	}
-
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if(status != GL_FRAMEBUFFER_COMPLETE)
-	{
-		Logger::Error("[Texture::HWglCreateFBOBuffers] glCheckFramebufferStatus: %d", status);
-	}
-
-	RenderManager::Instance()->HWglBindFBO(saveFBO);
-
-	if(saveTexture)
-	{
-		RenderManager::Instance()->HWglBindTexture(saveTexture, textureType);
-	}
-
-	state = STATE_VALID;
-}
 
 GLuint Texture::MapFaceNameToGLName(Texture::CubemapFace faceName)
 {
@@ -1061,74 +941,6 @@ void Texture::Invalidate()
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-Image * Texture::ReadDataToImage()
-{
-	const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
-
-    Image *image = Image::Create(width, height, formatDescriptor.formatID);
-    uint8 *imageData = image->GetData();
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    
-    int32 saveFBO = RenderManager::Instance()->HWglGetLastFBO();
-    int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
-
-	RenderManager::Instance()->HWglBindTexture(id, textureType);
-    
-    if(FORMAT_INVALID != formatDescriptor.formatID)
-    {
-		RENDER_VERIFY(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-        RENDER_VERIFY(glReadPixels(0, 0, width, height, formatDescriptor.format, formatDescriptor.type, (GLvoid *)imageData));
-    }
-
-    RenderManager::Instance()->HWglBindFBO(saveFBO);
-    RenderManager::Instance()->HWglBindTexture(saveId, textureType);
-    
-#endif //#if defined(__DAVAENGINE_OPENGL__)
-    
-    return image; 
-}
-
-
-Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
-{
-    Image *image = NULL;
-    if(isRenderTarget)
-    {
-        Sprite *renderTarget = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height);
-        RenderManager::Instance()->SetRenderTarget(renderTarget);
-        
-        image = ReadDataToImage();
-            
-        RenderManager::Instance()->RestoreRenderTarget();
-        
-        SafeRelease(renderTarget);
-    }
-    else
-    {
-        Sprite *renderTarget = Sprite::CreateAsRenderTarget((float32)width, (float32)height, texDescriptor->format, true);
-        RenderManager::Instance()->SetRenderTarget(renderTarget);
-
-        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
-		Sprite *drawTexture = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height, true);
-
-        Sprite::DrawState drawState;
-        drawState.SetPosition(0, 0);
-        drawState.SetRenderState(renderState);
-        drawTexture->Draw(&drawState);
-
-        RenderManager::Instance()->RestoreRenderTarget();
-        
-        image = renderTarget->GetTexture()->CreateImageFromMemory(renderState);
-
-        SafeRelease(renderTarget);
-        SafeRelease(drawTexture);
-    }
-        
-    return image;
-}
-	
 const TexturesMap & Texture::GetTextureMap()
 {
     return textureMap;

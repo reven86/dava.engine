@@ -429,43 +429,6 @@ void RenderManager::InitFBO(GLuint _viewRenderbuffer, GLuint _viewFramebuffer)
 	fboViewRenderbuffer = _viewRenderbuffer;
 	fboViewFramebuffer = _viewFramebuffer;
 }
-
-void RenderManager::SetRenderTarget(Sprite *renderTarget)
-{
-//	Logger::Info("Set Render target");
-	RenderTarget rt;
-	rt.spr = currentRenderTarget;
-	rt.orientation = renderOrientation;
-	renderTargetStack.push(rt);
-		
-	ClipPush();
-	PushDrawMatrix();
-	PushMappingMatrix();
-	IdentityDrawMatrix();
-	SetHWRenderTargetSprite(renderTarget);
-}
-
-void RenderManager::SetRenderTarget(Texture * renderTarget)
-{
-	SetHWRenderTargetTexture(renderTarget);
-}
-
-void RenderManager::RestoreRenderTarget()
-{
-//	Logger::Info("Restore Render target");
-	RenderTarget rt = renderTargetStack.top();
-	renderTargetStack.pop();
-	SetHWRenderTargetSprite(rt.spr);
-
-	PopDrawMatrix();
-	PopMappingMatrix();
-	ClipPop();
-}
-
-bool RenderManager::IsRenderTarget()
-{
-	return currentRenderTarget != NULL;
-}
     
 /*
 bool RenderManager::IsDepthTestEnabled()

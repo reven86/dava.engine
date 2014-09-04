@@ -37,7 +37,7 @@
 namespace DAVA
 {
 
-Image* RenderDataReaderOGL::ReadTextureData(Texture* tx)
+Image* RenderDataReaderOGL::ReadTextureData(Texture* tx, UniqueHandle renderState)
 {
     RenderTargetDescriptor rtDesc;
     FillTextureDataReaderDescriptor(tx, rtDesc);
@@ -52,7 +52,7 @@ Image* RenderDataReaderOGL::ReadTextureData(Texture* tx)
 
     Sprite::DrawState drawState;
     drawState.SetPosition(0, 0);
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    drawState.SetRenderState(renderState);
     drawSprite->Draw(&drawState);
 
     SafeRelease(drawSprite);
