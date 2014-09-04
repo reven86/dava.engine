@@ -62,29 +62,41 @@ void TransformSystem::Process(float32 timeElapsed)
     passedNodes = 0;
     multipliedNodes = 0;
     
-    uint32 size = updatableEntities.size();
-    for(uint32 i = 0; i < size; ++i)
+    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
     {
-        JobArgument * arg = new JobArgument();
-        arg->entity = updatableEntities[i];
-        arg->forceUpdate = false;
-        arg->recursionDepth = 0;
-        Vector<Entity*> lovalSendEvent;
-        //Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, arg), Thread::GetCurrentThreadId(), 0, 2);
-        //JobScheduler::Instance()->PushJob(j);
+        uint32 size = updatableEntities.size();
+        for(uint32 i = 0; i < size; ++i)
+        {
+            JobArgument * arg = new JobArgument();
+            arg->entity = updatableEntities[i];
+            arg->forceUpdate = false;
+            arg->recursionDepth = 0;
 
-        HierahicFindUpdatableTransform(0, arg, 0);
+            HierahicFindUpdatableTransform(0, arg, 0);
+        }
+
+        TaggedWorkerJobsWaiter waiter(2);
+        waiter.Wait();
+        
+        for(Map<Thread::ThreadId, Vector<Entity*> >::iterator it = eventMap.begin(), itEnd = eventMap.end(); it != itEnd; ++it)
+        {
+            Vector<Entity*> & vector = (*it).second;
+            GlobalEventSystem::Instance()->GroupEvent(GetScene(), vector, EventSystem::WORLD_TRANSFORM_CHANGED);
+            vector.clear();
+        }
+    }
+    else
+    {
+        uint32 size = updatableEntities.size();
+        for(uint32 i = 0; i < size; ++i)
+        {
+            FindNodeThatRequireUpdate(updatableEntities[i]);
+        }
+        
+        GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
+        sendEvent.clear();
     }
 
-    TaggedWorkerJobsWaiter waiter(2);
-    waiter.Wait();
-    
-    for(Map<Thread::ThreadId, Vector<Entity*> >::iterator it = eventMap.begin(), itEnd = eventMap.end(); it != itEnd; ++it)
-    {
-        Vector<Entity*> & vector = (*it).second;
-        GlobalEventSystem::Instance()->GroupEvent(GetScene(), vector, EventSystem::WORLD_TRANSFORM_CHANGED);
-        vector.clear();
-    }
     
     updatableEntities.clear();
     
