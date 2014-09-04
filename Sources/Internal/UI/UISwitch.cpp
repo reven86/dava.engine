@@ -243,7 +243,7 @@ void UISwitch::Input(UIEvent *currentInput)
         return;
     }
 
-    Vector2 touchPos = currentInput->point - GetAbsolutePosition();
+    Vector2 touchPos = currentInput->point;
     if (currentInput->phase == UIEvent::PHASE_BEGAN)
     {
         if (toggle->IsPointInside(touchPos))
