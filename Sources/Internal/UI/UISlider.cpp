@@ -36,6 +36,8 @@
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
+#include "UI/UIEvent.h"
+#include "UI/UIYamlLoader.h"
 
 namespace DAVA 
 {

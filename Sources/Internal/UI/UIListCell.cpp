@@ -31,6 +31,7 @@
 #include "UI/UIListCell.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIAggregatorControl.h"
+#include "UI/UIYamlLoader.h"
 #include "FileSystem/YamlNode.h"
 
 namespace DAVA 

@@ -510,6 +510,25 @@ void UIControlMetadata::SetColorInheritType(int value)
     
     GetActiveUIControl()->GetBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
 }
+
+int UIControlMetadata::GetPerPixelAccuracyType()
+{
+    if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return (int)GetActiveUIControl()->GetBackground()->GetPerPixelAccuracyType();
+}
+void UIControlMetadata::SetPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUIControl()->GetBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+}
     
 int UIControlMetadata::GetAlign()
 {

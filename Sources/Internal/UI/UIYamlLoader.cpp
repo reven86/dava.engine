@@ -157,6 +157,38 @@ String UIYamlLoader::GetColorInheritTypeNodeValue(int32 colorInheritType)
     return ret;
 }
 
+int32 UIYamlLoader::GetPerPixelAccuracyTypeFromNode(const YamlNode *perPixelAccuracyNode)
+{
+	int32 ret = UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+	if(!perPixelAccuracyNode)
+		return ret;
+
+	const String & type = perPixelAccuracyNode->AsString();
+
+	if("PER_PIXEL_ACCURACY_DISABLED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+	if("PER_PIXEL_ACCURACY_ENABLED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_ENABLED;
+	if("PER_PIXEL_ACCURACY_FORCED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_FORCED;
+
+	return ret;
+}
+
+String UIYamlLoader::GetPerPixelAccuracyTypeNodeValue(int32 perPixelAccuracyType)
+{
+	String ret;
+    switch (perPixelAccuracyType) {
+        case UIControlBackground::PER_PIXEL_ACCURACY_DISABLED:
+            ret = "PER_PIXEL_ACCURACY_DISABLED";
+            break;
+        case UIControlBackground::PER_PIXEL_ACCURACY_ENABLED:
+            ret = "PER_PIXEL_ACCURACY_ENABLED";
+            break;
+        case UIControlBackground::PER_PIXEL_ACCURACY_FORCED:
+            ret = "PER_PIXEL_ACCURACY_FORCED";
+            break;
+    }
+    return ret;
+}
+	
 int32 UIYamlLoader::GetAlignFromYamlNode(const YamlNode * alignNode)
 {
     if (!alignNode)return ALIGN_HCENTER | ALIGN_VCENTER;

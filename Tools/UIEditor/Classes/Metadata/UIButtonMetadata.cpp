@@ -602,6 +602,54 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForColorInheritType()
     }
 }
 
+int UIButtonMetadata::GetPerPixelAccuracyType()
+{
+    if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return GetPerPixelAccuracyTypeForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+		GetActiveUIButton()->SetStatePerPixelAccuracyType(this->uiControlStates[i],(UIControlBackground::ePerPixelAccuracyType)value);
+	}
+    UpdatePropertyDirtyFlagForPerPixelAccuracyType();
+}
+
+int UIButtonMetadata::GetPerPixelAccuracyTypeForState(UIControl::eControlState state) const
+{
+    UIControlBackground* background = GetActiveUIButton()->GetStateBackground(state);
+    if (!background)
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return background->GetPerPixelAccuracyType();
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForPerPixelAccuracyType()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetPerPixelAccuracyTypeForState(curState) !=
+                              GetPerPixelAccuracyTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME, curStateDirty);
+    }
+}
+
 int UIButtonMetadata::GetAlign()
 {
     if (!VerifyActiveParamID())
@@ -1055,7 +1103,7 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForFontShadowColorInheritType()
         
         bool curStateDirty = (GetFontShadowColorInheritTypeForState(curState) !=
                               GetFontShadowColorInheritTypeForState(GetReferenceState()));
-        SetStateDirtyForProperty(curState, PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME, curStateDirty);
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME, curStateDirty);
     }
 }
 
@@ -1070,6 +1118,7 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
     
     UpdatePropertyDirtyFlagForDrawType();
     UpdatePropertyDirtyFlagForColorInheritType();
+    UpdatePropertyDirtyFlagForPerPixelAccuracyType();
     UpdatePropertyDirtyFlagForAlign();
     
     UpdatePropertyDirtyFlagForFittingType();

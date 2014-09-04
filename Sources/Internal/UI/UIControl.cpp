@@ -64,13 +64,6 @@ namespace DAVA
         eventDispatcher = NULL;
         clipContents = false;
 
-//		scaleInParent = true;
-
-//		Vector2 relativePosition;
-//		Vector2 size;
-
-
-//		absoluteRect = Rect(0,0,0,0);
         debugDrawEnabled = false;
         debugDrawColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -722,10 +715,10 @@ namespace DAVA
         tempGeometricData.angle = angle;
         if(!parent)
         {
-            tempGeometricData.AddToGeometricData(UIControlSystem::Instance()->GetBaseGeometricData());
+            tempGeometricData.AddGeometricData(UIControlSystem::Instance()->GetBaseGeometricData());
             return tempGeometricData;
         }
-        tempGeometricData.AddToGeometricData(parent->GetGeometricData());
+        tempGeometricData.AddGeometricData(parent->GetGeometricData());
         return tempGeometricData;
     }
 
@@ -1528,7 +1521,7 @@ namespace DAVA
 
         UIControlSystem::Instance()->drawCounter++;
         UIGeometricData drawData = GetLocalGeometricData();
-        drawData.AddToGeometricData(geometricData);
+        drawData.AddGeometricData(geometricData);
 
         const Color &parentColor = parent ? parent->GetBackground()->GetDrawColor() : Color::White;
 
@@ -2192,6 +2185,12 @@ namespace DAVA
             {
                 node->Set("colorInherit", loader->GetColorInheritTypeNodeValue(colorInheritType));
             }
+            // Per pixel accuracy
+            UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType = GetBackground()->GetPerPixelAccuracyType();
+            if (baseBackground->GetPerPixelAccuracyType() != perPixelAccuracyType)
+            {
+                node->Set("perPixelAccuracy", loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
+            }
             // Align
             int32 align = GetBackground()->GetAlign();
             if (baseBackground->GetAlign() != align)
@@ -2368,6 +2367,12 @@ namespace DAVA
             GetBackground()->SetColor(loader->GetColorFromYamlNode(colorNode));
         }
 
+        const YamlNode * perPixelAccuracyTypeNode = node->Get("perPixelAccuracy");
+        if(perPixelAccuracyTypeNode)
+        {
+            GetBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(perPixelAccuracyTypeNode));
+        }
+
         const YamlNode * colorInheritNode = node->Get("colorInherit");
         if (colorInheritNode)
         {
@@ -2399,28 +2404,28 @@ namespace DAVA
         }
     }
 
-    Animation *	UIControl::WaitAnimation(float32 time, int32 track)
+    Animation * UIControl::WaitAnimation(float32 time, int32 track)
     {
         Animation * animation = new Animation(this, time, Interpolation::LINEAR);
         animation->Start(track);
         return animation;
     }
 
-    Animation *	UIControl::PositionAnimation(const Vector2 & _position, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::PositionAnimation(const Vector2 & _position, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &relativePosition, _position, time, interpolationFunc);
         animation->Start(track);
         return animation;
     }
 
-    Animation *	UIControl::SizeAnimation(const Vector2 & _size, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::SizeAnimation(const Vector2 & _size, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &size, _size, time, interpolationFunc);
         animation->Start(track);
         return animation;
     }
 
-    Animation *	UIControl::ScaleAnimation(const Vector2 & newScale, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::ScaleAnimation(const Vector2 & newScale, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &scale, newScale, time, interpolationFunc);
         animation->Start(track);
@@ -2444,7 +2449,7 @@ namespace DAVA
         return animation;
     }
 
-    Animation *	UIControl::ScaledRectAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::ScaledRectAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         Vector2 finalScale(rect.dx / size.x, rect.dy / size.y);
 
@@ -2455,7 +2460,7 @@ namespace DAVA
         return animation;
     }
 
-    Animation *	UIControl::ScaledSizeAnimation(const Vector2 & newSize, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::ScaledSizeAnimation(const Vector2 & newSize, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         Vector2 finalScale(newSize.x / size.x, newSize.y / size.y);
         LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &scale, finalScale, time, interpolationFunc);
@@ -2543,7 +2548,7 @@ namespace DAVA
         }
     }
 
-    Animation *	UIControl::RemoveControlAnimation(int32 track)
+    Animation * UIControl::RemoveControlAnimation(int32 track)
     {
         Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
         animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::RemoveControlAnimationCallback));
@@ -2551,7 +2556,7 @@ namespace DAVA
         return animation;
     }
 
-    Animation *	 UIControl::ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &background->color, finalColor, time, interpolationFunc);
         animation->Start(track);
@@ -2694,8 +2699,7 @@ namespace DAVA
 
     void UIControl::RecalculateChildsSize()
     {
-//		const List<UIControl*>& realChildren = this->GetRealChildren();
-        const List<UIControl*>& realChildren = this->GetChildren();	//YZ recalculate size for all controls
+        const List<UIControl*>& realChildren = this->GetChildren();//YZ recalculate size for all controls
         for(List<UIControl*>::const_iterator iter = realChildren.begin(); iter != realChildren.end(); ++iter)
         {
             UIControl* child = (*iter);

@@ -50,6 +50,7 @@ const char* PropertyNames::STRETCH_VERTICAL_PROPERTY_NAME = "TopBottomStretchCap
 
 const char* PropertyNames::DRAW_TYPE_PROPERTY_NAME = "DrawType";
 const char* PropertyNames::COLOR_INHERIT_TYPE_PROPERTY_NAME = "ColorInheritType";
+const char* PropertyNames::PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME = "PerPixelAccuracyType";
 const char* PropertyNames::ALIGN_PROPERTY_NAME = "Align";
 
 const char* PropertyNames::TEXT_PROPERTY_NAME = "Text";
@@ -73,7 +74,8 @@ const char* PropertyNames::SHADOW_OFFSET_X = "ShadowOffsetX";
 const char* PropertyNames::SHADOW_OFFSET_Y = "ShadowOffsetY";
 const char* PropertyNames::SHADOW_COLOR = "ShadowColor";
 
-const char* PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME = "FontShadowColorInheritType";
+const char* PropertyNames::TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME = "TextColorInheritType";
+const char* PropertyNames::TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME = "TextPerPixelAccuracyType";
 
 // Slider properties
 const char* PropertyNames::SLIDER_VALUE_PROPERTY_NAME = "SliderValue";

@@ -29,6 +29,8 @@
 
 
 #include "UISpinner.h"
+#include "UI/UIEvent.h"
+#include "Animation/Animation.h"
 
 namespace DAVA 
 {

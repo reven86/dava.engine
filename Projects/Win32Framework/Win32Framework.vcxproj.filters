@@ -1572,11 +1572,16 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
       <Filter>Internal\FileSystem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Job\JobScheduler.h">
       <Filter>Internal\Job</Filter>
     </ClInclude>
@@ -2834,8 +2839,12 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp">
+      <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp">
+      <Filter>Internal\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Job\JobScheduler.cpp">
       <Filter>Internal\Job</Filter>
     </ClCompile>

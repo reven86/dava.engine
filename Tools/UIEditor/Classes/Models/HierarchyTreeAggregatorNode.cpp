@@ -50,8 +50,9 @@ HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNo
 }
 
 HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent,
-														 const HierarchyTreeAggregatorNode* base)
-:	HierarchyTreeScreenNode(parent, base),
+														 const HierarchyTreeAggregatorNode* base,
+                                                         bool needLoad/* = true*/)
+:	HierarchyTreeScreenNode(parent, base, needLoad),
     listDelegate(NULL)
 {
 	this->rect = base->GetRect();

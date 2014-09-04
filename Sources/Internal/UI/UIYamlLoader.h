@@ -102,13 +102,15 @@ public:
     Font * GetFontByName(const String & fontName);
 
     int32 GetDrawTypeFromNode(const YamlNode * drawTypeNode);
-    int32 GetColorInheritTypeFromNode(const YamlNode * colorInheritNode);
-    int32 GetAlignFromYamlNode(const YamlNode * align);
+	int32 GetColorInheritTypeFromNode(const YamlNode * colorInheritNode);
+    int32 GetPerPixelAccuracyTypeFromNode(const YamlNode * perPixelAccuracyNode);
+	int32 GetAlignFromYamlNode(const YamlNode * align);
     int32 GetFittingOptionFromYamlNode(const YamlNode * fittingNode) const;
     bool GetBoolFromYamlNode(const YamlNode * node, bool defaultValue);
     Color GetColorFromYamlNode(const YamlNode * node);
 
     String GetColorInheritTypeNodeValue(int32 colorInheritType);
+    String GetPerPixelAccuracyTypeNodeValue(int32 perPixelAccuracyType);
     String GetDrawTypeNodeValue(int32 drawType);
     YamlNode * GetAlignNodeValue(int32 align);
     YamlNode * GetFittingOptionNodeValue(int32 fitting) const;

@@ -98,6 +98,9 @@ protected:
 
     virtual int GetColorInheritType();
     virtual void SetColorInheritType(int value);
+    
+    virtual int GetPerPixelAccuracyType();
+    virtual void SetPerPixelAccuracyType(int value);
 
     virtual int GetAlign();
     virtual void SetAlign(int value);
@@ -163,7 +166,11 @@ protected:
     // Color Inherit Type.
     int GetColorInheritTypeForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForColorInheritType();
-
+    
+    // Per pixel accuracy type
+    int GetPerPixelAccuracyTypeForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForPerPixelAccuracyType();
+    
     // Align Type.
     int GetAlignForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForAlign();

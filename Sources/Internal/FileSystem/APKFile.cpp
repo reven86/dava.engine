@@ -102,7 +102,7 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
         return NULL;
     }
 
-    String assetFileStr = filePath.GetAbsolutePathname();
+    String assetFileStr = "assets/" + filePath.GetAbsolutePathname();
 
     int index = zip_name_locate(package, assetFileStr.c_str(), 0);
     if (-1 == index)

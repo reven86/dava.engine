@@ -415,9 +415,21 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 						QObject::connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
 					}
 
-                    QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
-                    rebuildTangentButton->setEnabled(isSingleSelection);
-                    QObject::connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+                    bool disableRebuildTS = false;
+                    switch (ro->GetType())
+                    {
+                    case RenderObject::TYPE_VEGETATION:
+                        disableRebuildTS = true;
+                        break;
+                    default:
+                        break;
+                    }
+                    if (!disableRebuildTS)
+                    {
+                        QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                        rebuildTangentButton->setEnabled(isSingleSelection);
+                        QObject::connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+                    }
 				}
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::ShadowVolume>() == meta)
