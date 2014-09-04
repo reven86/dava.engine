@@ -411,7 +411,7 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
     return l;
 }
 
-int32 DeviceInfo::GetCpuCount()
+int32 DeviceInfo::GetCPUCoresCount()
 {
 	return sysconf(_SC_NPROCESSORS_CONF);
 }
