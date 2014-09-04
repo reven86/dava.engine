@@ -44,6 +44,9 @@ Image* RenderDataReaderOGL::ReadTextureData(Texture* tx, UniqueHandle renderStat
 
     RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
 
+    RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+    RenderManager::Instance()->FlushState();
+
     renderTarget->BeginRender();
 
     RenderHelper::Instance()->Setup2dCanvas((float32)tx->width, (float32)tx->height);
@@ -77,6 +80,9 @@ bool RenderDataReaderOGL::ReadTextureDataToBuffer(Texture* tx, uint8** outData)
 
     RenderTargetDescriptor rtDesc;
     FillTextureDataReaderDescriptor(tx, rtDesc);
+
+    RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+    RenderManager::Instance()->FlushState();
 
     RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
 

@@ -168,6 +168,7 @@ void TileTexturePreviewWidget::UpdateImage(int32 number)
 	}
 
 	QImage qimg = TextureConvertor::FromDavaImage(image);
+
 	SafeRelease(image);
 
 	QSize size = QSize(TEXTURE_PREVIEW_WIDTH, TEXTURE_PREVIEW_HEIGHT);
@@ -315,6 +316,9 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 {
 	uint32 width = image->GetWidth();
 	uint32 height = image->GetHeight();
+
+    RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+    RenderManager::Instance()->FlushState();
 
 	Texture* srcTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 												  width, height, false);
