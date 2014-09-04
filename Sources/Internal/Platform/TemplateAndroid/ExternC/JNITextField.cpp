@@ -54,4 +54,9 @@ extern "C"
 		return DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
 	}
 
+    void Java_com_dava_framework_JNITextField_TextFieldFocusChanged(JNIEnv* env, jobject classthis, uint32_t id, bool hasFocus)
+    {
+        DAVA::UITextFieldAndroid::TextFieldFocusChanged(id, hasFocus);
+    }
+
 };

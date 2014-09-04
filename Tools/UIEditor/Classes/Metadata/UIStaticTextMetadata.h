@@ -97,8 +97,11 @@ protected:
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);
     
-    virtual int GetFontShadowColorInheritType() const;
-    virtual void SetFontShadowColorInheritType(int value);
+    virtual int GetTextColorInheritType() const;
+    virtual void SetTextColorInheritType(int value);
+    
+    virtual int GetTextPerPixelAccuracyType() const;
+    virtual void SetTextPerPixelAccuracyType(int value);
 };
 
 };

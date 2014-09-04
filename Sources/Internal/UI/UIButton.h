@@ -27,9 +27,6 @@
 =====================================================================================*/
 
 
-
-
-
 #ifndef __DAVAENGINE_UI_BUTTON_H__
 #define __DAVAENGINE_UI_BUTTON_H__
 
@@ -49,6 +46,7 @@ namespace DAVA
         you should use GetStateBackground() and GetStateTextControl().
      */
 class UIStaticText;
+class Font;
 
 class UIButton : public UIControl
 {
@@ -149,6 +147,13 @@ public:
      \param[in] value type of color inheritence.
      */
     virtual void SetStateColorInheritType(int32 state, UIControlBackground::eColorInheritType value);
+    /**
+     \brief Sets Sprite's per pixel accuracy type you want to use for draw for the control UIControlBackground object for the requested state.
+        Method creates UIControlBackground object for the state if this is neccesary.
+     \param[in] state state bit mask to set value for.
+     \param[in] value type of pixel accuracy.
+     */
+    virtual void SetStatePerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType value);
     /**
      \brief Returns background used for drawing of the requested state.
      \param[in] state state to get value for.

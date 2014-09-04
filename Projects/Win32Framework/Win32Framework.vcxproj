@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -601,6 +601,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Scene.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneAnimationMixer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFile.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFileV2.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFile\SerializationContext.h" />
@@ -1044,6 +1045,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Scene.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneAnimationMixer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneCache.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFileV2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFile\SerializationContext.cpp" />

@@ -394,7 +394,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
 	const YamlNode * pivotPointNode = node->Get("pivotPoint");
 	
-
+    SetSprite(NULL);
 	const YamlNode * spriteNode = node->Get("sprite");
 	if (spriteNode && !spriteNode->AsString().empty())
 	{
@@ -407,11 +407,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 		    SetSprite(_sprite);
             SafeRelease(_sprite);
         }
-	}
-	else
-	{
-		SetSprite(NULL);
-	}
+	}	
 	if(pivotPointNode)
 	{
 		Vector2 _pivot = pivotPointNode->AsPoint();

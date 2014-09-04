@@ -31,6 +31,7 @@
 #include "UIAggregatorControl.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
+#include "UI/UIYamlLoader.h"
 
 using namespace DAVA;
 

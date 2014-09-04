@@ -239,6 +239,9 @@ void LandscapeProxy::UpdateDisplayedTexture()
 
 
 	renderTarget->BeginRender();
+
+	RenderManager::Instance()->SetColor(Color::White);
+    RenderHelper::Instance()->FillRect(Rect(0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight), RenderState::RENDERSTATE_2D_BLEND);
 	
     Sprite::DrawState drawState;
     drawState.SetPosition(0.f, 0.f);
@@ -256,7 +259,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 		notPassableSprite->Draw(&drawState);
 	}
 	SafeRelease(notPassableSprite);
-	
+
 	Texture* customColorsTexture = texturesToBlend[TEXTURE_TYPE_CUSTOM_COLORS];
 	Sprite* customColorsSprite = NULL;
 	if (customColorsTexture && texturesEnabled[TEXTURE_TYPE_CUSTOM_COLORS])

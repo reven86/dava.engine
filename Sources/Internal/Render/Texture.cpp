@@ -232,6 +232,11 @@ Texture::Texture()
 
 Texture::~Texture()
 {
+    if(invalidater)
+    {
+        invalidater->RemoveTexture(this);
+        invalidater = NULL;
+    }
     ReleaseTextureData();
 	SafeDelete(texDescriptor);
 }
@@ -791,7 +796,20 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 	return texture;
 }
     
-
+void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, uint32 _height)
+{
+    ReleaseTextureData();
+    
+    Image *image = Image::CreateFromData(_width, _height, format, data);
+	if(!image) return;
+    
+    Vector<Image *> *images = new Vector<Image *>();
+    images->push_back(image);
+	
+    SetParamsFromImages(images);
+	FlushDataToRenderer(images);
+}
+    
 void Texture::Reload()
 {
     ReloadAs(loadedAsFile);
@@ -932,7 +950,15 @@ void Texture::Invalidate()
 	else if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)
 	{
 		if (invalidater)
+        {
 			invalidater->InvalidateTexture(this);
+        }
+        else
+        {
+            // Make it pink, to prevent craches
+            Logger::Debug("[Texture::Invalidate] - invalidater is null");
+            MakePink();
+        }
 	}
 	else if (isPink)
 	{
@@ -1036,7 +1062,15 @@ eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const Textur
 
 void Texture::SetInvalidater(TextureInvalidater* invalidater)
 {
+    if(this->invalidater)
+    {
+        this->invalidater->RemoveTexture(this);
+    }
 	this->invalidater = invalidater;
+    if(invalidater != NULL)
+    {
+        invalidater->AddTexture(this);
+    }
 }
 
 void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames)

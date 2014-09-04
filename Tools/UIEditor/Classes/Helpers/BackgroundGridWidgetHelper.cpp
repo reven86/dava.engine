@@ -54,6 +54,13 @@ const BackgroundGridWidgetHelper::ColorInheritTypesData BackgroundGridWidgetHelp
     {UIControlBackground::COLOR_REPLACE_ALPHA_ONLY,     "Replace Alpha only"}
 };
 
+const BackgroundGridWidgetHelper::PerPixelAccuracyTypesData BackgroundGridWidgetHelper::perPixelAccuracyTypesData[] =
+{
+    {UIControlBackground::PER_PIXEL_ACCURACY_DISABLED,	"Disabled"},
+    {UIControlBackground::PER_PIXEL_ACCURACY_ENABLED,   "Enabled"},
+    {UIControlBackground::PER_PIXEL_ACCURACY_FORCED,    "Forced"}
+};
+
 const BackgroundGridWidgetHelper::SpriteModificationTypesData BackgroundGridWidgetHelper::spriteModificationTypesData[] =
 {
 	{0,						"Original"},
@@ -222,6 +229,47 @@ QString BackgroundGridWidgetHelper::GetColorInheritTypeDescByType(UIControlBackg
     }
     
     Logger::Error("Unknown/unsupported Color Inherit Type %i!", inheritType);
+    return QString();
+}
+
+
+int BackgroundGridWidgetHelper::GetPerPixelAccuracyTypesCount()
+{
+    return sizeof(perPixelAccuracyTypesData)/sizeof(*perPixelAccuracyTypesData);
+}
+
+UIControlBackground::ePerPixelAccuracyType BackgroundGridWidgetHelper::GetPerPixelAccuracyType(int index)
+{
+    if (ValidatePerPixelAccuracyTypeIndex(index) == false)
+    {
+        return  perPixelAccuracyTypesData[0].perPixelAccuracyType;
+    }
+    
+    return perPixelAccuracyTypesData[index].perPixelAccuracyType;
+}
+
+QString BackgroundGridWidgetHelper::GetPerPixelAccuracyTypeDesc(int index)
+{
+    if (ValidatePerPixelAccuracyTypeIndex(index) == false)
+    {
+        return  perPixelAccuracyTypesData[0].perPixelAccuracyTypeDesc;
+    }
+    
+    return perPixelAccuracyTypesData[index].perPixelAccuracyTypeDesc;
+}
+
+QString BackgroundGridWidgetHelper::GetPerPixelAccuracyTypeDescByType(UIControlBackground::ePerPixelAccuracyType pixelAccuracyType)
+{
+    int count = GetPerPixelAccuracyTypesCount();
+    for (int i = 0; i < count; i ++)
+    {
+        if (perPixelAccuracyTypesData[i].perPixelAccuracyType == pixelAccuracyType)
+        {
+            return perPixelAccuracyTypesData[i].perPixelAccuracyTypeDesc;
+        }
+    }
+    
+    Logger::Error("Unknown/unsupported Pixel Accuracy Type %i!", pixelAccuracyType);
     return QString();
 }
 
@@ -612,6 +660,17 @@ bool BackgroundGridWidgetHelper::ValidateColorInheritTypeIndex(int index)
     if (index < 0 || index >= GetColorInheritTypesCount())
     {
         Logger::Error("Color Inherit Type index %i is out of bounds!", index);
+        return false;
+    }
+    
+    return true;
+}
+
+bool BackgroundGridWidgetHelper::ValidatePerPixelAccuracyTypeIndex(int index)
+{
+    if (index < 0 || index >= GetPerPixelAccuracyTypesCount())
+    {
+        Logger::Error("Per Pixel Accuracy Type index %i is out of bounds!", index);
         return false;
     }
     

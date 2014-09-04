@@ -1021,6 +1021,10 @@
 		A6E4FDFB1761D83100B48E41 /* ActionUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6E4FDF91761D83100B48E41 /* ActionUpdateSystem.cpp */; };
 		A6E4FDFC1761D83100B48E41 /* ActionUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E4FDFA1761D83100B48E41 /* ActionUpdateSystem.h */; };
 		AA747D9F0F9514B9006C5449 /* Framework_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */; };
+		B4C29D52199B933F001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D50199B933F001B83FE /* SceneCache.cpp */; };
+		B4C29D53199B933F001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D50199B933F001B83FE /* SceneCache.cpp */; };
+		B4C29D54199B933F001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D51199B933F001B83FE /* SceneCache.h */; };
+		B4C29D55199B933F001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D51199B933F001B83FE /* SceneCache.h */; };
 		C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
 		C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */ = {isa = PBXBuildFile; fileRef = C13E6DB7186861FA00D1B2CE /* DFFont.h */; };
 		C172EC2A18C9F9D4004309CF /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */; };
@@ -1926,6 +1930,8 @@
 		A6E4FDF91761D83100B48E41 /* ActionUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActionUpdateSystem.cpp; sourceTree = "<group>"; };
 		A6E4FDFA1761D83100B48E41 /* ActionUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionUpdateSystem.h; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = SOURCE_ROOT; };
+		B4C29D50199B933F001B83FE /* SceneCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneCache.cpp; sourceTree = "<group>"; };
+		B4C29D51199B933F001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
 		C13E6DB6186861FA00D1B2CE /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C13E6DB7186861FA00D1B2CE /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
 		C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextBlockDistanceRender.cpp; sourceTree = "<group>"; };
@@ -3584,6 +3590,8 @@
 				E8B3C9DB16B9326E002BD35F /* ProxyNode.h */,
 				E8B3C9E216B9326E002BD35F /* Scene.cpp */,
 				E8B3C9E316B9326E002BD35F /* Scene.h */,
+				B4C29D50199B933F001B83FE /* SceneCache.cpp */,
+				B4C29D51199B933F001B83FE /* SceneCache.h */,
 				E8B3C9E416B9326E002BD35F /* SceneAnimationMixer.cpp */,
 				E8B3C9E516B9326E002BD35F /* SceneAnimationMixer.h */,
 				E8B3C9E616B9326E002BD35F /* SceneFile.cpp */,
@@ -4054,6 +4062,7 @@
 				02FD7F8F1924997C007762C0 /* StaticOcclusion.h in Headers */,
 				02FD7F901924997C007762C0 /* WFNetworkConnection.h in Headers */,
 				02FD7F911924997C007762C0 /* Particle.h in Headers */,
+				B4C29D55199B933F001B83FE /* SceneCache.h in Headers */,
 				02FD7F921924997C007762C0 /* ParticleEmitter.h in Headers */,
 				02FD7F931924997C007762C0 /* ParticleLayer.h in Headers */,
 				02FD7F941924997C007762C0 /* ParticlePropertyLine.h in Headers */,
@@ -4729,6 +4738,7 @@
 				CCC7A4A216F1D80C0061EA5D /* Landscape.h in Headers */,
 				CCC7A4A316F1D80C0061EA5D /* RenderFastNames.h in Headers */,
 				CCC7A4A716F1D8200061EA5D /* RenderState.h in Headers */,
+				B4C29D54199B933F001B83FE /* SceneCache.h in Headers */,
 				02FD7EC419237D43007762C0 /* SpeedTreeUpdateSystem.h in Headers */,
 				CCC7A4AB16F1D8480061EA5D /* Entity.h in Headers */,
 				CCC7A4AF16F1D88C0061EA5D /* UpdateSystem.h in Headers */,
@@ -4930,6 +4940,7 @@
 				02FD80C71924997C007762C0 /* KeyedUnarchiver.cpp in Sources */,
 				02E9B4CC19407C68001DBDDF /* WindSystem.cpp in Sources */,
 				02FD80C81924997C007762C0 /* LocalizationIPhone.mm in Sources */,
+				B4C29D53199B933F001B83FE /* SceneCache.cpp in Sources */,
 				02FD80C91924997C007762C0 /* LocalizationSystem.cpp in Sources */,
 				02FD80CA1924997C007762C0 /* Logger.cpp in Sources */,
 				02FD80CC1924997C007762C0 /* IntrospectionDynamic.cpp in Sources */,
@@ -5653,6 +5664,7 @@
 				17D4116B1973E4B700CF6BC0 /* Reachability.mm in Sources */,
 				9A0116F3967F43C036364993 /* GamepadDevice.mm in Sources */,
 				624C87F218C6160F00E1049D /* DateTime.cpp in Sources */,
+				B4C29D52199B933F001B83FE /* SceneCache.cpp in Sources */,
 				9A011FD535036524CA050EF7 /* GamepadManager.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

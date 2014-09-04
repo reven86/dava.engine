@@ -40,10 +40,10 @@ class CopyPasteHelper
 public:
 
 	static QString FormatCopyName(QString baseName, const HierarchyTreeNode* parent);
-    static void UpdateAggregators(HierarchyTreeControlNode* controlNode, HierarchyTreeNode* targetNode);
+    static void UpdateAggregators(HierarchyTreeNode* controlNode, HierarchyTreeNode* targetNode);
     
 private:
-	static void UpdateAggregatorControls(HierarchyTreeControlNode* control, HierarchyTreePlatformNode* activePlatform);
+	static void UpdateAggregatorControls(HierarchyTreeNode* control, HierarchyTreePlatformNode* activePlatform);
 };
 }
 

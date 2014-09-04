@@ -251,6 +251,8 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     const YamlNode * textAlignNode = node->Get("textalign");
     const YamlNode * textColorInheritTypeNode = node->Get("textcolorInheritType");
     const YamlNode * shadowColorInheritTypeNode = node->Get("shadowcolorInheritType");
+    const YamlNode * textPerPixelAccuracyTypeNode = node->Get("textperPixelAccuracyType");
+    const YamlNode * shadowPerPixelAccuracyTypeNode = node->Get("shadowperPixelAccuracyType");
 
     if (fontNode)
     {
@@ -302,6 +304,15 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     {
         GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(shadowColorInheritTypeNode));
     }
+    
+    if (textPerPixelAccuracyTypeNode)
+    {
+    	GetTextBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(textPerPixelAccuracyTypeNode));
+    }
+    if (shadowPerPixelAccuracyTypeNode)
+    {
+        GetShadowBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(shadowPerPixelAccuracyTypeNode));
+    }
 }
 
 YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
@@ -346,6 +357,19 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
     if (baseControl->GetShadowBackground()->GetColorInheritType() != colorInheritType)
     {
         node->Set("shadowcolorInheritType", loader->GetColorInheritTypeNodeValue(colorInheritType));
+    }
+    
+    // Text Per Pixel Accuracy Type
+    int32 perPixelAccuracyType = (int32)GetTextBackground()->GetPerPixelAccuracyType();
+    if (baseControl->GetTextBackground()->GetPerPixelAccuracyType() != perPixelAccuracyType)
+    {
+    	node->Set("textperPixelAccuracyType", loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
+    }
+    // Shadow Per Pixel Accuracy Type
+    perPixelAccuracyType = (int32)GetShadowBackground()->GetPerPixelAccuracyType();
+    if (baseControl->GetShadowBackground()->GetPerPixelAccuracyType() != perPixelAccuracyType)
+    {
+        node->Set("shadowperPixelAccuracyType", loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
     }
 
     // ShadowOffset

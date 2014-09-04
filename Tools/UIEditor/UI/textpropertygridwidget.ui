@@ -328,6 +328,18 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
       </item>
       <item>
        <widget class="QWidget" name="fontColorInheritTypeWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <layout class="QHBoxLayout" name="horizontalLayout_18">
          <property name="margin">
           <number>0</number>
@@ -335,13 +347,37 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Font/Shadow
-Color Inherit Type:</string>
+            <string>Color Inherit Type:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="fontShadowColorInheritTypeCombobox"/>
+          <widget class="QComboBox" name="colorInheritTypeCombobox"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="fontPerPixelAccuracyTypeWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_19">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="perPixelAccuracyLabel">
+           <property name="text">
+            <string>Per Pixel Accuracy Type:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="perPixelAccuracyTypeCombobox"/>
          </item>
         </layout>
        </widget>
@@ -458,15 +494,6 @@ Color Inherit Type:</string>
            </property>
           </widget>
          </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="shadowColorInheritWidget" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_17">
-         <property name="margin">
-          <number>0</number>
-         </property>
         </layout>
        </widget>
       </item>
@@ -736,7 +763,7 @@ Color Inherit Type:</string>
   <tabstop>fontPresetEditButton</tabstop>
   <tabstop>fontSelectButton</tabstop>
   <tabstop>fontSizeSpinBox</tabstop>
-  <tabstop>fontShadowColorInheritTypeCombobox</tabstop>
+  <tabstop>colorInheritTypeCombobox</tabstop>
   <tabstop>shadowOffsetXSpinBox</tabstop>
   <tabstop>shadowOffsetYSpinBox</tabstop>
   <tabstop>alignComboBox</tabstop>

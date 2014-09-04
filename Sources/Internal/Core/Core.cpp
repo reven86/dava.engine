@@ -50,6 +50,7 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
+#include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Platform/Notification.h"
@@ -150,6 +151,8 @@ void Core::CreateSingletons()
 	new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
+    new SceneCache();
+	
 
 #if defined(__DAVAENGINE_ANDROID__)
     new AssetsManager();
@@ -220,6 +223,7 @@ void Core::ReleaseSingletons()
 	AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
     ImageSystem::Instance()->Release();
+    SceneCache::Instance()->Release();
 
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManager::Instance()->Release();

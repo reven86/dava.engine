@@ -120,7 +120,7 @@ FileList::FileList(const FilePath & filepath)
 	}
 #elif defined (__DAVAENGINE_ANDROID__)
 	JniFileList jniFileList;
-	Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsoluteAssetPathnameTruncated());
+	Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
 	FileEntry entry;
 	for (int32 i = 0; i < entrys.size(); ++i)
 	{

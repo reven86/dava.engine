@@ -44,7 +44,7 @@ public:
 	TextBlockRender(TextBlock*);
 	virtual ~TextBlockRender();
 	
-	virtual void Prepare();
+	virtual void Prepare(Texture *texture = NULL);
 	virtual void PreDraw() {};
 	virtual void Draw(const Color& /*textColor*/, const Vector2* /*offset*/){};
 	

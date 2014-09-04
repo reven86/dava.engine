@@ -31,6 +31,7 @@
 #include "UI/UIButton.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIYamlLoader.h"
+#include "UI/UIEvent.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 #include "FileSystem/LocalizationSystem.h"
@@ -207,6 +208,18 @@ void UIButton::SetStateColorInheritType(int32 state, UIControlBackground::eColor
         if(state & 0x01)
         {
             GetOrCreateBackground((eButtonDrawState)i)->SetColorInheritType(value);
+        }
+        state >>= 1;
+    }
+}
+
+void UIButton::SetStatePerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType value)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            GetOrCreateBackground((eButtonDrawState)i)->SetPerPixelAccuracyType(value);
         }
         state >>= 1;
     }
@@ -536,12 +549,13 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * stateDrawTypeNode = node->Get(Format("stateDrawType%s", statePostfix.c_str()));
         const YamlNode * stateAlignNode = node->Get(Format("stateAlign%s", statePostfix.c_str()));
         const YamlNode * colorInheritNode = node->Get(Format("stateColorInherit%s", statePostfix.c_str()));
+        const YamlNode * perPixelAccuracyNode = node->Get(Format("statePerPixelAccuracy%s", statePostfix.c_str()));
         const YamlNode * colorNode = node->Get(Format("stateColor%s", statePostfix.c_str()));
         const YamlNode * leftRightStretchCapNode = node->Get(Format("leftRightStretchCap%s", statePostfix.c_str()));
         const YamlNode * topBottomStretchCapNode = node->Get(Format("topBottomStretchCap%s", statePostfix.c_str()));
 
         if (stateSpriteNode || stateDrawTypeNode || stateAlignNode ||
-            colorInheritNode || colorNode || leftRightStretchCapNode || topBottomStretchCapNode)
+            colorInheritNode || colorNode || perPixelAccuracyNode || leftRightStretchCapNode || topBottomStretchCapNode)
         {
             RefPtr<UIControlBackground> stateBackground;
             if (drawState == DRAW_STATE_UNPRESSED)
@@ -606,6 +620,12 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
             {
                 UIControlBackground::eColorInheritType type = (UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(colorInheritNode);
                 stateBackground->SetColorInheritType(type);
+            }
+            
+            if (perPixelAccuracyNode)
+            {
+                UIControlBackground::ePerPixelAccuracyType type = (UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(perPixelAccuracyNode);
+                stateBackground->SetPerPixelAccuracyType(type);
             }
 
             if(colorNode)
@@ -703,6 +723,7 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
     node->RemoveNodeFromMap("frame");
     node->RemoveNodeFromMap("drawType");
     node->RemoveNodeFromMap("colorInherit");
+    node->RemoveNodeFromMap("perPixelAccuracy");
     node->RemoveNodeFromMap("align");
     node->RemoveNodeFromMap("leftRightStretchCap");
     node->RemoveNodeFromMap("topBottomStretchCap");
@@ -774,6 +795,14 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             if (baseStateBackground->GetColorInheritType() != colorInheritType)
             {
                 node->Set(Format("stateColorInherit%s", statePostfix.c_str()), loader->GetColorInheritTypeNodeValue(colorInheritType));
+            }
+            
+            // State per pixel accuracy
+            UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType = stateBackground->GetPerPixelAccuracyType();
+            if (baseStateBackground->GetPerPixelAccuracyType() != perPixelAccuracyType)
+            {
+                node->Set(Format("statePerPixelAccuracy%s", statePostfix.c_str()),
+                											loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
             }
         }
 

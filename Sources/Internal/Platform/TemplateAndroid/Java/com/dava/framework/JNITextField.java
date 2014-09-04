@@ -202,6 +202,27 @@ public class JNITextField {
 						return true;
 					}
 				});
+
+				text.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+					private final int _id = id;
+
+					@Override
+					public void onFocusChange(View v, boolean hasFocus) {
+						final boolean _hasFocus = hasFocus;
+						JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+							@Override
+							public void run() {
+								JNITextField.TextFieldFocusChanged(_id, _hasFocus);
+							}
+						});
+					}
+				});
+				text.setOnLongClickListener(new View.OnLongClickListener() {
+					@Override
+					public boolean onLongClick(View v) {
+						return !v.hasFocus();
+					}
+				});
 				
 				controls.put(id, nativeEditText);
 				return null;
@@ -728,4 +749,5 @@ public class JNITextField {
 			int replacementLocation,
 			int replacementLength,
 			byte[] byteArray);
+	public static native void TextFieldFocusChanged(int id, final boolean hasFocus);
 }

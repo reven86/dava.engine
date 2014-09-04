@@ -117,8 +117,10 @@ public:
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text);
 	void TextFieldShouldReturn();
+	void FocusChanged(bool hasFocus);
 	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
 	static void TextFieldShouldReturn(uint32_t id);
+	static void TextFieldFocusChanged(uint32_t id, bool hasFocus);
 
 private:
 	static UITextFieldAndroid* GetUITextFieldAndroid(uint32_t id);

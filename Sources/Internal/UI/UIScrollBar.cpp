@@ -29,6 +29,7 @@
 
 
 #include "UI/UIScrollBar.h"
+#include "UI/UIEvent.h"
 #include "Base/ObjectFactory.h"
 #include "FileSystem/YamlNode.h"
 

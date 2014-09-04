@@ -73,6 +73,7 @@ class UIControlMetadata : public BaseMetadata
     
     Q_PROPERTY(int DrawType READ GetDrawType WRITE SetDrawType);
     Q_PROPERTY(int ColorInheritType READ GetColorInheritType WRITE SetColorInheritType);
+    Q_PROPERTY(int PerPixelAccuracyType READ GetPerPixelAccuracyType WRITE SetPerPixelAccuracyType);
     Q_PROPERTY(int Align READ GetAlign WRITE SetAlign);
     
 	Q_PROPERTY(float LeftRightStretchCap READ GetLeftRightStretchCap WRITE SetLeftRightStretchCap);
@@ -161,6 +162,9 @@ protected:
     
     virtual int GetColorInheritType();
     virtual void SetColorInheritType(int value);
+    
+    virtual int GetPerPixelAccuracyType();
+    virtual void SetPerPixelAccuracyType(int value);
     
     virtual int GetAlign();
     virtual void SetAlign(int value);

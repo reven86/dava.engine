@@ -29,6 +29,7 @@
 
 
 #include "UITextFieldAndroid.h"
+#include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
 
@@ -369,7 +370,7 @@ void UITextFieldAndroid::SetText(const WideString & string)
 	{
 		text = string;
 		JniTextField jniTextField(id);
-		String utfText = WStringToString(text);
+		String utfText = UTF8Utils::EncodeToUTF8(text);
 		jniTextField.SetText(utfText.c_str());
 	}
 }
@@ -516,6 +517,24 @@ void UITextFieldAndroid::TextFieldShouldReturn()
 		delegate->TextFieldShouldReturn(textField);
 }
 
+void UITextFieldAndroid::FocusChanged(bool hasFocus)
+{
+	if (hasFocus)
+	{
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
+        {
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
+        }
+	}
+	else
+	{
+		if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
+        {
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(NULL, false);
+        }
+	}
+}
+
 void UITextFieldAndroid::TextFieldShouldReturn(uint32_t id)
 {
 	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
@@ -523,6 +542,15 @@ void UITextFieldAndroid::TextFieldShouldReturn(uint32_t id)
 		return;
 
 	control->TextFieldShouldReturn();
+}
+
+void UITextFieldAndroid::TextFieldFocusChanged(uint32_t id, bool hasFocus)
+{
+	UITextFieldAndroid *control = GetUITextFieldAndroid(id);
+	if (!control)
+		return;
+
+	control->FocusChanged(hasFocus);
 }
 
 UITextFieldAndroid* UITextFieldAndroid::GetUITextFieldAndroid(uint32_t id)

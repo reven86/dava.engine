@@ -184,7 +184,7 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 void WebViewControl::OpenFromBuffer(const String& data, const FilePath& urlToOpen)
 {
 	JniWebView jniWebView;
-	jniWebView.OpenFromBuffer(webViewId, data, urlToOpen.GetAbsoluteAssetPathnameTruncated());
+	jniWebView.OpenFromBuffer(webViewId, data, urlToOpen.GetAbsolutePathname());
 }
 
 void WebViewControl::SetRect(const Rect& rect)
