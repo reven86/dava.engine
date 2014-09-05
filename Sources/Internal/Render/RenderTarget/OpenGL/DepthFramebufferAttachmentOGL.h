@@ -31,6 +31,7 @@
 #define __DAVAENGINE_DEPTHFRAMEBUFFERATTACHMENTOGL_H__
 
 #include "Render/RenderTarget/DepthFramebufferAttachment.h"
+#include "Render/RenderTarget/OpenGL/CommonDefsOGL.h"
 
 namespace DAVA
 {
@@ -60,8 +61,7 @@ protected:
 
 protected:
 
-    GLuint renderbufferId;
-    Texture* resolveTexture;
+    FramebufferAttachmentStrategy impl;
 };
 
 };

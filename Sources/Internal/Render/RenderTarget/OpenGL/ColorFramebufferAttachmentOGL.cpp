@@ -28,7 +28,6 @@
 
 
 #include "Render/RenderTarget/OpenGL/ColorFramebufferAttachmentOGL.h"
-#include "Render/RenderTarget/OpenGL/FramebufferAttachmentHelper.h"
 #include "Render/RenderManager.h"
 
 namespace DAVA
@@ -47,73 +46,48 @@ static GLenum COLOR_ATTACHMENT_ID_MAP[] =
 ColorFramebufferAttachmentOGL::ColorFramebufferAttachmentOGL(FramebufferDescriptor::FramebufferType type,
                                                              GLuint bufferId) :
 ColorFramebufferAttachment(type),
-renderbufferId(bufferId),
-resolveTexture(NULL)
+impl(bufferId)
 {
 }
 
 ColorFramebufferAttachmentOGL::ColorFramebufferAttachmentOGL(FramebufferDescriptor::FramebufferType type, Texture* tx) :
 ColorFramebufferAttachment(type),
-renderbufferId(0)
+impl(tx)
 {
-    resolveTexture = SafeRetain(tx);
 }
 
 ColorFramebufferAttachmentOGL::~ColorFramebufferAttachmentOGL()
 {
-    if(renderbufferId != 0)
-    {
-        RENDER_VERIFY(glDeleteRenderbuffers(1, &renderbufferId));
-    }
-
-    SafeRelease(resolveTexture);
+    impl.DestroyAttachmentData();
 }
 
 Texture* ColorFramebufferAttachmentOGL::Lock()
 {
-    return SafeRetain(resolveTexture);
+    return impl.LockTexture();
 }
 
 void ColorFramebufferAttachmentOGL::Unlock(Texture* tx)
 {
-    SafeRelease(tx);
+    impl.UnlockTexture(tx);
 }
 
 void ColorFramebufferAttachmentOGL::AttachRenderBuffer()
 {
-    if(resolveTexture != NULL)
-    {
-        FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(COLOR_ATTACHMENT_ID_MAP[framebufferType],
-                                                                       resolveTexture,
-                                                                       cubeFace,
-                                                                       mipLevel);
-    }
-    else
-    {
-        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, COLOR_ATTACHMENT_ID_MAP[framebufferType], GL_RENDERBUFFER, renderbufferId));
-    }
+    impl.AttachRenderBuffer(COLOR_ATTACHMENT_ID_MAP[framebufferType], cubeFace, mipLevel);
 }
 
 void ColorFramebufferAttachmentOGL::OnActiveMipLevelChanged()
 {
-    if(resolveTexture != NULL)
-    {
-        FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(COLOR_ATTACHMENT_ID_MAP[framebufferType],
-                                                                       resolveTexture,
-                                                                       cubeFace,
-                                                                       mipLevel);
-    }
+    impl.UpdateTextureProperties(COLOR_ATTACHMENT_ID_MAP[framebufferType],
+                                 cubeFace,
+                                 mipLevel);
 }
 
 void ColorFramebufferAttachmentOGL::OnActiveFaceChanged()
 {
-    if(resolveTexture != NULL)
-    {
-        FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(COLOR_ATTACHMENT_ID_MAP[framebufferType],
-                                                                       resolveTexture,
-                                                                       cubeFace,
-                                                                       mipLevel);
-    }
+    impl.UpdateTextureProperties(COLOR_ATTACHMENT_ID_MAP[framebufferType],
+                                 cubeFace,
+                                 mipLevel);
 }
 
 };

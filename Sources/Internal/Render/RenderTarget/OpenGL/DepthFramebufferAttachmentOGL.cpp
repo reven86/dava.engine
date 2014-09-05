@@ -28,76 +28,55 @@
 
 
 #include "Render/RenderTarget/OpenGL/DepthFramebufferAttachmentOGL.h"
-#include "Render/RenderTarget/OpenGL/FramebufferAttachmentHelper.h"
 #include "Render/RenderManager.h"
 
 namespace DAVA
 {
 
 DepthFramebufferAttachmentOGL::DepthFramebufferAttachmentOGL(GLuint bufferId) :
-renderbufferId(bufferId),
-resolveTexture(NULL)
+impl(bufferId)
 {
 }
 
 DepthFramebufferAttachmentOGL::DepthFramebufferAttachmentOGL(Texture* tx) :
-renderbufferId(0)
+impl(tx)
 {
-    resolveTexture = SafeRetain(tx);
 }
 
 DepthFramebufferAttachmentOGL::~DepthFramebufferAttachmentOGL()
 {
-    if(0 != renderbufferId)
-    {
-        RENDER_VERIFY(glDeleteRenderbuffers(1, &renderbufferId));
-    }
-
-    SafeRelease(resolveTexture);
+    impl.DestroyAttachmentData();
 }
 
 void DepthFramebufferAttachmentOGL::AttachRenderBuffer()
 {
-    if(resolveTexture != NULL)
-    {
-        FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(GL_DEPTH_ATTACHMENT,
-                                                                       resolveTexture,
-                                                                       cubeFace,
-                                                                       mipLevel);
-    }
-    else
-    {
-        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbufferId));
-    }
+    impl.AttachRenderBuffer(GL_DEPTH_ATTACHMENT,
+                            cubeFace,
+                            mipLevel);
 }
 
 Texture* DepthFramebufferAttachmentOGL::Lock()
 {
-    return SafeRetain(resolveTexture);
+    return impl.LockTexture();
 }
 
 void DepthFramebufferAttachmentOGL::Unlock(Texture* tx)
 {
-    SafeRelease(tx);
+    impl.UnlockTexture(tx);
 }
 
 void DepthFramebufferAttachmentOGL::OnActiveMipLevelChanged()
 {
-    if(resolveTexture != NULL)
-    {
-        FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(GL_DEPTH_ATTACHMENT,
-                                                                       resolveTexture,
-                                                                       cubeFace,
-                                                                       mipLevel);
-    }
+    impl.UpdateTextureProperties(GL_DEPTH_ATTACHMENT,
+                                 cubeFace,
+                                 mipLevel);
 }
 
 void DepthFramebufferAttachmentOGL::OnActiveFaceChanged()
 {
-    FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(GL_DEPTH_ATTACHMENT,
-                                                                   resolveTexture,
-                                                                   cubeFace,
-                                                                   mipLevel);
+    impl.UpdateTextureProperties(GL_DEPTH_ATTACHMENT,
+                                 cubeFace,
+                                 mipLevel);
 }
 
 };

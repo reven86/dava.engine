@@ -32,6 +32,7 @@
 
 #include "Render/RenderTarget/StencilFramebufferAttachment.h"
 #include "Render/RenderTarget/OpenGL/DepthFramebufferAttachmentOGL.h"
+#include "Render/RenderTarget/OpenGL/CommonDefsOGL.h"
 
 namespace DAVA
 {
@@ -62,10 +63,9 @@ protected:
 
 protected:
 
-    GLuint renderbufferId;
-    Texture* resolveTexture;
-
     DepthFramebufferAttachmentOGL* depthStencil;
+
+    FramebufferAttachmentStrategy impl;
 };
 
 };

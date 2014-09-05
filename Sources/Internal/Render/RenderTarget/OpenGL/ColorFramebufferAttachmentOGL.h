@@ -33,6 +33,7 @@
 #include "Render/RenderTarget/RenderTextureDescriptor.h"
 #include "Render/RenderTarget/FramebufferDescriptor.h"
 #include "Render/RenderTarget/ColorFramebufferAttachment.h"
+#include "Render/RenderTarget/OpenGL/CommonDefsOGL.h"
 
 namespace DAVA
 {
@@ -59,8 +60,7 @@ protected:
 
 protected:
 
-    GLuint renderbufferId;
-    Texture* resolveTexture;
+    FramebufferAttachmentStrategy impl;
 };
 
 };

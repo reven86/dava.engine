@@ -28,7 +28,6 @@
 
 
 #include "Render/RenderTarget/OpenGL/StencilFramebufferAttachmentOGL.h"
-#include "Render/RenderTarget/OpenGL/FramebufferAttachmentHelper.h"
 
 #include "Render/RenderManager.h"
 
@@ -36,37 +35,26 @@ namespace DAVA
 {
 
 StencilFramebufferAttachmentOGL::StencilFramebufferAttachmentOGL(GLuint bufferId) :
-renderbufferId(bufferId),
-resolveTexture(NULL),
+impl(bufferId),
 depthStencil(NULL)
 {
 }
 
 StencilFramebufferAttachmentOGL::StencilFramebufferAttachmentOGL(Texture* tx) :
-renderbufferId(0),
+impl(tx),
 depthStencil(NULL)
 {
-    resolveTexture = SafeRetain(tx);
 }
 
 StencilFramebufferAttachmentOGL::StencilFramebufferAttachmentOGL(DepthFramebufferAttachmentOGL* sharedDepthStencil) :
-renderbufferId(0),
-resolveTexture(NULL)
+impl()
 {
     depthStencil = SafeRetain(sharedDepthStencil);
 }
 
 StencilFramebufferAttachmentOGL::~StencilFramebufferAttachmentOGL()
 {
-    if(renderbufferId != 0)
-    {
-        RENDER_VERIFY(glDeleteRenderbuffers(1, &renderbufferId));
-    }
-
-    if(resolveTexture != NULL)
-    {
-        SafeRelease(resolveTexture);
-    }
+    impl.DestroyAttachmentData();
 
     if(depthStencil != NULL)
     {
@@ -78,52 +66,32 @@ void StencilFramebufferAttachmentOGL::AttachRenderBuffer()
 {
     if(depthStencil != NULL)
     {
-        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil->renderbufferId));
+        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil->impl.renderbufferId));
     }
-    else if(renderbufferId != 0)
+    else
     {
-        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbufferId));
-    }
-    else if(resolveTexture != NULL)
-    {
-        FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(GL_STENCIL_ATTACHMENT,
-                                                                       resolveTexture,
-                                                                       cubeFace,
-                                                                       mipLevel);
+        impl.AttachRenderBuffer(GL_STENCIL_ATTACHMENT, cubeFace, mipLevel);
     }
 }
 
 Texture* StencilFramebufferAttachmentOGL::Lock()
 {
-    return SafeRetain(resolveTexture);
+    return impl.LockTexture();
 }
 
 void StencilFramebufferAttachmentOGL::Unlock(Texture* tx)
 {
-    SafeRelease(tx);
+    impl.UnlockTexture(tx);
 }
 
 void StencilFramebufferAttachmentOGL::OnActiveMipLevelChanged()
 {
-    if(resolveTexture != NULL)
-    {
-        FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(GL_STENCIL_ATTACHMENT,
-                                                                       resolveTexture,
-                                                                       cubeFace,
-                                                                       mipLevel);
-    }
-
+    impl.UpdateTextureProperties(GL_STENCIL_ATTACHMENT, cubeFace, mipLevel);
 }
 
 void StencilFramebufferAttachmentOGL::OnActiveFaceChanged()
 {
-    if(resolveTexture != NULL)
-    {
-        FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(GL_STENCIL_ATTACHMENT,
-                                                                       resolveTexture,
-                                                                       cubeFace,
-                                                                       mipLevel);
-    }
+    impl.UpdateTextureProperties(GL_STENCIL_ATTACHMENT, cubeFace, mipLevel);
 }
 
 };

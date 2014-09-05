@@ -26,33 +26,18 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "Render/RenderTarget/OpenGL/FramebufferAttachmentHelper.h"
-#include "Render/RenderManager.h"
+
+#ifndef __DAVAENGINE_COMMONDEFSOGL_H__
+#define __DAVAENGINE_COMMONDEFSOGL_H__
+
+#include "DAVAEngine.h"
+#include "Render/RenderTarget/OpenGL/FramebufferAttachmentImplOGL.h"
 
 namespace DAVA
 {
 
-void FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(GLuint target,
-                                                                    Texture* tx,
-                                                                    Texture::CubemapFace face,
-                                                                    uint32 mipLevel)
-{
-    if(Texture::TEXTURE_2D == tx->textureType)
-    {
-        RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER,
-                               target,
-                               GL_TEXTURE_2D,
-                               tx->id,
-                               mipLevel));
-    }
-    else
-    {
-        RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER,
-                               target,
-                               Texture::MapFaceNameToGLName(face),
-                               tx->id,
-                               mipLevel));
-    }
-}
+typedef FramebufferAttachmentImplOGL FramebufferAttachmentStrategy;
 
 };
+
+#endif

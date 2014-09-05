@@ -1066,6 +1066,9 @@
 		A66533E817F98EC100B8906A /* Serializable.h in Headers */ = {isa = PBXBuildFile; fileRef = A66533E717F98EC100B8906A /* Serializable.h */; };
 		A66533E917F98EC100B8906A /* Serializable.h in Headers */ = {isa = PBXBuildFile; fileRef = A66533E717F98EC100B8906A /* Serializable.h */; };
 		A66533EA17F98EC100B8906A /* Serializable.h in Headers */ = {isa = PBXBuildFile; fileRef = A66533E717F98EC100B8906A /* Serializable.h */; };
+		A66BB6CA19B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A66BB6C619B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h */; };
+		A66BB6CB19B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A66BB6C619B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h */; };
+		A66BB6CC19B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A66BB6C619B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h */; };
 		A670F2F11847A99E0030E075 /* TextureStateData.h in Headers */ = {isa = PBXBuildFile; fileRef = A670F2EF1847A99E0030E075 /* TextureStateData.h */; };
 		A670F2F21847A99E0030E075 /* TextureStateData.h in Headers */ = {isa = PBXBuildFile; fileRef = A670F2EF1847A99E0030E075 /* TextureStateData.h */; };
 		A670F2F31847A99E0030E075 /* TextureStateData.h in Headers */ = {isa = PBXBuildFile; fileRef = A670F2EF1847A99E0030E075 /* TextureStateData.h */; };
@@ -1114,12 +1117,6 @@
 		A68B0CA919B8BD47001E092C /* DepthFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B0C7119B8BD47001E092C /* DepthFramebufferAttachmentOGL.h */; };
 		A68B0CAA19B8BD47001E092C /* DepthFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B0C7119B8BD47001E092C /* DepthFramebufferAttachmentOGL.h */; };
 		A68B0CAB19B8BD47001E092C /* DepthFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B0C7119B8BD47001E092C /* DepthFramebufferAttachmentOGL.h */; };
-		A68B0CAC19B8BD47001E092C /* FramebufferAttachmentHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A68B0C7219B8BD47001E092C /* FramebufferAttachmentHelper.cpp */; };
-		A68B0CAD19B8BD47001E092C /* FramebufferAttachmentHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A68B0C7219B8BD47001E092C /* FramebufferAttachmentHelper.cpp */; };
-		A68B0CAE19B8BD47001E092C /* FramebufferAttachmentHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A68B0C7219B8BD47001E092C /* FramebufferAttachmentHelper.cpp */; };
-		A68B0CAF19B8BD47001E092C /* FramebufferAttachmentHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B0C7319B8BD47001E092C /* FramebufferAttachmentHelper.h */; };
-		A68B0CB019B8BD47001E092C /* FramebufferAttachmentHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B0C7319B8BD47001E092C /* FramebufferAttachmentHelper.h */; };
-		A68B0CB119B8BD47001E092C /* FramebufferAttachmentHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B0C7319B8BD47001E092C /* FramebufferAttachmentHelper.h */; };
 		A68B0CB219B8BD47001E092C /* RenderDataReaderOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A68B0C7419B8BD47001E092C /* RenderDataReaderOGL.cpp */; };
 		A68B0CB319B8BD47001E092C /* RenderDataReaderOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A68B0C7419B8BD47001E092C /* RenderDataReaderOGL.cpp */; };
 		A68B0CB419B8BD47001E092C /* RenderDataReaderOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A68B0C7419B8BD47001E092C /* RenderDataReaderOGL.cpp */; };
@@ -1186,6 +1183,9 @@
 		A68B3EF317AA8C4000E129C1 /* SkyboxSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B3EEF17AA8C4000E129C1 /* SkyboxSystem.h */; };
 		A68B3EF417AA8C4000E129C1 /* SkyboxSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B3EEF17AA8C4000E129C1 /* SkyboxSystem.h */; };
 		A68B3EF517AA8C4000E129C1 /* SkyboxSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A68B3EEF17AA8C4000E129C1 /* SkyboxSystem.h */; };
+		A68D923619B9BE93000E48F9 /* CommonDefsOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A68D923519B9BE93000E48F9 /* CommonDefsOGL.h */; };
+		A68D923719B9BE93000E48F9 /* CommonDefsOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A68D923519B9BE93000E48F9 /* CommonDefsOGL.h */; };
+		A68D923819B9BE93000E48F9 /* CommonDefsOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A68D923519B9BE93000E48F9 /* CommonDefsOGL.h */; };
 		A6931ACD1868569D00006294 /* RenderTechnique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6931ACB1868569D00006294 /* RenderTechnique.cpp */; };
 		A6931ACE1868569D00006294 /* RenderTechnique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6931ACB1868569D00006294 /* RenderTechnique.cpp */; };
 		A6931ACF1868569D00006294 /* RenderTechnique.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6931ACB1868569D00006294 /* RenderTechnique.cpp */; };
@@ -2762,6 +2762,7 @@
 		A650F4B61864A10100D3278D /* NMaterialTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialTemplate.cpp; sourceTree = "<group>"; };
 		A650F4B71864A10100D3278D /* NMaterialTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialTemplate.h; sourceTree = "<group>"; };
 		A66533E717F98EC100B8906A /* Serializable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Serializable.h; sourceTree = "<group>"; };
+		A66BB6C619B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FramebufferAttachmentImplOGL.h; sourceTree = "<group>"; };
 		A670F2EF1847A99E0030E075 /* TextureStateData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureStateData.h; sourceTree = "<group>"; };
 		A679101D17B3C71B000AA2F2 /* SkyboxRenderObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkyboxRenderObject.cpp; sourceTree = "<group>"; };
 		A679101E17B3C71B000AA2F2 /* SkyboxRenderObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkyboxRenderObject.h; sourceTree = "<group>"; };
@@ -2778,8 +2779,6 @@
 		A68B0C6F19B8BD47001E092C /* ColorFramebufferAttachmentOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorFramebufferAttachmentOGL.h; sourceTree = "<group>"; };
 		A68B0C7019B8BD47001E092C /* DepthFramebufferAttachmentOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DepthFramebufferAttachmentOGL.cpp; sourceTree = "<group>"; };
 		A68B0C7119B8BD47001E092C /* DepthFramebufferAttachmentOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DepthFramebufferAttachmentOGL.h; sourceTree = "<group>"; };
-		A68B0C7219B8BD47001E092C /* FramebufferAttachmentHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FramebufferAttachmentHelper.cpp; sourceTree = "<group>"; };
-		A68B0C7319B8BD47001E092C /* FramebufferAttachmentHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FramebufferAttachmentHelper.h; sourceTree = "<group>"; };
 		A68B0C7419B8BD47001E092C /* RenderDataReaderOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderDataReaderOGL.cpp; sourceTree = "<group>"; };
 		A68B0C7519B8BD47001E092C /* RenderDataReaderOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderDataReaderOGL.h; sourceTree = "<group>"; };
 		A68B0C7619B8BD47001E092C /* RenderTargetFactoryOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderTargetFactoryOGL.cpp; sourceTree = "<group>"; };
@@ -2802,6 +2801,7 @@
 		A68B0C8719B8BD47001E092C /* StencilFramebufferAttachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StencilFramebufferAttachment.h; sourceTree = "<group>"; };
 		A68B3EEE17AA8C4000E129C1 /* SkyboxSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkyboxSystem.cpp; sourceTree = "<group>"; };
 		A68B3EEF17AA8C4000E129C1 /* SkyboxSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkyboxSystem.h; sourceTree = "<group>"; };
+		A68D923519B9BE93000E48F9 /* CommonDefsOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommonDefsOGL.h; sourceTree = "<group>"; };
 		A6931ACB1868569D00006294 /* RenderTechnique.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderTechnique.cpp; sourceTree = "<group>"; };
 		A6931ACC1868569D00006294 /* RenderTechnique.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderTechnique.h; sourceTree = "<group>"; };
 		A69B7A461834CD640093AF7F /* RenderStateData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderStateData.h; sourceTree = "<group>"; };
@@ -3718,8 +3718,6 @@
 				A68B0C6F19B8BD47001E092C /* ColorFramebufferAttachmentOGL.h */,
 				A68B0C7019B8BD47001E092C /* DepthFramebufferAttachmentOGL.cpp */,
 				A68B0C7119B8BD47001E092C /* DepthFramebufferAttachmentOGL.h */,
-				A68B0C7219B8BD47001E092C /* FramebufferAttachmentHelper.cpp */,
-				A68B0C7319B8BD47001E092C /* FramebufferAttachmentHelper.h */,
 				A68B0C7419B8BD47001E092C /* RenderDataReaderOGL.cpp */,
 				A68B0C7519B8BD47001E092C /* RenderDataReaderOGL.h */,
 				A68B0C7619B8BD47001E092C /* RenderTargetFactoryOGL.cpp */,
@@ -3728,6 +3726,8 @@
 				A68B0C7919B8BD47001E092C /* RenderTargetOGL.h */,
 				A68B0C7A19B8BD47001E092C /* StencilFramebufferAttachmentOGL.cpp */,
 				A68B0C7B19B8BD47001E092C /* StencilFramebufferAttachmentOGL.h */,
+				A66BB6C619B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h */,
+				A68D923519B9BE93000E48F9 /* CommonDefsOGL.h */,
 			);
 			path = OpenGL;
 			sourceTree = "<group>";
@@ -5127,6 +5127,7 @@
 				176DE9D0174B5561007A983B /* ParticleEmitterNode.h in Headers */,
 				176DE9D1174B5561007A983B /* PathManip.h in Headers */,
 				50A3044318575C370082CA8D /* StaticOcclusionRenderPass.h in Headers */,
+				A66BB6CC19B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h in Headers */,
 				176DE9D2174B5561007A983B /* PolygonGroupInstance.h in Headers */,
 				176DE9D3174B5561007A983B /* ProxyNode.h in Headers */,
 				176DE9D4174B5561007A983B /* Scene.h in Headers */,
@@ -5221,6 +5222,7 @@
 				176DEA18174B5561007A983B /* WebViewControlMacOS.h in Headers */,
 				176DEA19174B5561007A983B /* MailSender.h in Headers */,
 				176DEA1A174B5561007A983B /* UserComponent.h in Headers */,
+				A68D923819B9BE93000E48F9 /* CommonDefsOGL.h in Headers */,
 				644C86F019476A7100964F91 /* VegetationPropertyNames.h in Headers */,
 				176DEA1B174B5561007A983B /* UISpinner.h in Headers */,
 				176DEA1C174B5561007A983B /* VectorSpinnerAdapter.h in Headers */,
@@ -5255,7 +5257,6 @@
 				176DEA34174B5561007A983B /* SpriteRenderBatch.h in Headers */,
 				644C86E119476A7100964F91 /* VegetationFixedGeometry.h in Headers */,
 				176DEA35174B5561007A983B /* RenderState.h in Headers */,
-				A68B0CB119B8BD47001E092C /* FramebufferAttachmentHelper.h in Headers */,
 				76199F3C192DF73D008A47E2 /* VersionInfo.h in Headers */,
 				176DEA36174B5561007A983B /* UpdateSystem.h in Headers */,
 				176DEA37174B5561007A983B /* Entity.h in Headers */,
@@ -5526,7 +5527,6 @@
 				A68B0CC719B8BD47001E092C /* StencilFramebufferAttachmentOGL.h in Headers */,
 				E8FC12F91869726A0095D8FE /* QualitySettingsSystem.h in Headers */,
 				E8989F7516BD24E500732C04 /* GameObject.h in Headers */,
-				A68B0CAF19B8BD47001E092C /* FramebufferAttachmentHelper.h in Headers */,
 				E8989F7716BD24E500732C04 /* GameObjectAnimations.h in Headers */,
 				E8989F7916BD24E500732C04 /* GameObjectManager.h in Headers */,
 				E8989F7B16BD24E500732C04 /* TextGameObject.h in Headers */,
@@ -5648,6 +5648,7 @@
 				17F53E2216D36DDE004D5099 /* IWebViewControl.h in Headers */,
 				50A3043E18575C370082CA8D /* StaticOcclusion.h in Headers */,
 				C151B17816D3747E00E09BAF /* DVAssertMessage.h in Headers */,
+				A68D923619B9BE93000E48F9 /* CommonDefsOGL.h in Headers */,
 				C151B17C16D3755000E09BAF /* WebViewControlMacOS.h in Headers */,
 				C151B1B816D4FF6A00E09BAF /* MailSender.h in Headers */,
 				CC24800A16DD174E00183D40 /* UserComponent.h in Headers */,
@@ -5713,6 +5714,7 @@
 				A6E4FE041761D96C00B48E41 /* ActionComponent.h in Headers */,
 				A6E4FE061761D96C00B48E41 /* CustomPropertiesComponent.h in Headers */,
 				A6E4FE0A1761D97C00B48E41 /* ActionUpdateSystem.h in Headers */,
+				A66BB6CA19B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h in Headers */,
 				4FFE5CAF1779DBC700728624 /* MipmapReplacer.h in Headers */,
 				C18577EF17A16DA800331A95 /* MaterialOptimazer.h in Headers */,
 				A68B3EF317AA8C4000E129C1 /* SkyboxSystem.h in Headers */,
@@ -5807,7 +5809,6 @@
 				E898A08416BD265400732C04 /* Collisions.h in Headers */,
 				E898A08516BD265400732C04 /* ApplicationCore.h in Headers */,
 				E898A08616BD265400732C04 /* Core.h in Headers */,
-				A68B0CB019B8BD47001E092C /* FramebufferAttachmentHelper.h in Headers */,
 				E898A08716BD265400732C04 /* CoreMacOS_CarbonWindow.h in Headers */,
 				E898A08816BD265400732C04 /* CoreMacOS_OpenGL.h in Headers */,
 				A6DBFA731887D804006BE11C /* NMaterialNames.h in Headers */,
@@ -6079,11 +6080,13 @@
 				E898A18E16BD265400732C04 /* UIScreenTransition.h in Headers */,
 				A68B0CDA19B8BD47001E092C /* RenderTargetDescriptor.h in Headers */,
 				4F53ED2F19A23BE700D3869D /* DownloadManager.h in Headers */,
+				A68D923719B9BE93000E48F9 /* CommonDefsOGL.h in Headers */,
 				155D77DC197DD22E006AEBCD /* YamlNode.h in Headers */,
 				E898A18F16BD265400732C04 /* UIScrollBar.h in Headers */,
 				0282B87A18BC72C6006F1EE4 /* SoundEvent.h in Headers */,
 				E898A19016BD265400732C04 /* UISlider.h in Headers */,
 				E898A19116BD265400732C04 /* UIStaticText.h in Headers */,
+				A66BB6CB19B9A9FC00D567A5 /* FramebufferAttachmentImplOGL.h in Headers */,
 				E898A19216BD265400732C04 /* UITextField.h in Headers */,
 				E898A19316BD265400732C04 /* UIYamlLoader.h in Headers */,
 				E898A19416BD265400732C04 /* HTTPDownloader.h in Headers */,
@@ -6439,7 +6442,6 @@
 				176DEABF174B5561007A983B /* Material.cpp in Sources */,
 				176DEAC0174B5561007A983B /* RenderBase.cpp in Sources */,
 				A650F4BA1864A10100D3278D /* NMaterialTemplate.cpp in Sources */,
-				A68B0CAE19B8BD47001E092C /* FramebufferAttachmentHelper.cpp in Sources */,
 				176DEAC1174B5561007A983B /* RenderDataObject.cpp in Sources */,
 				176DEAC2174B5561007A983B /* RenderEffect.cpp in Sources */,
 				4F53ED4019A23BEE00D3869D /* PatchFile.cpp in Sources */,
@@ -6680,7 +6682,6 @@
 			files = (
 				A68B0C8E19B8BD47001E092C /* DepthFramebufferAttachment.cpp in Sources */,
 				E8989D9A16BD24E500732C04 /* AnimatedObject.cpp in Sources */,
-				A68B0CAC19B8BD47001E092C /* FramebufferAttachmentHelper.cpp in Sources */,
 				A68B0CDC19B8BD47001E092C /* RenderTargetFactory.cpp in Sources */,
 				A6D82798187716F30006A5DD /* Color.cpp in Sources */,
 				E8989D9C16BD24E500732C04 /* Animation.cpp in Sources */,
@@ -7143,7 +7144,6 @@
 				E898A1C816BD265400732C04 /* DynamicMemoryFile.cpp in Sources */,
 				E898A1C916BD265400732C04 /* File.cpp in Sources */,
 				84E975C2191FCDFA0054CCF9 /* Image.mm in Sources */,
-				A68B0CAD19B8BD47001E092C /* FramebufferAttachmentHelper.cpp in Sources */,
 				E898A1CA16BD265400732C04 /* FileList.cpp in Sources */,
 				E898A1CB16BD265400732C04 /* FilePath.cpp in Sources */,
 				E898A1CC16BD265400732C04 /* FileSystem.cpp in Sources */,
