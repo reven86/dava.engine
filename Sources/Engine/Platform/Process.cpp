@@ -31,6 +31,8 @@
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 
+#include <sys/wait.h>
+
 static const int READ = 0;
 static const int WRITE = 1;
 static const int BUF_SIZE = 512;

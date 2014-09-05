@@ -33,6 +33,9 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
+#include <pthread.h>
+
+
 namespace DAVA
 {
 /**

@@ -29,6 +29,10 @@
 
 #include "Base/FixedSizePoolAllocator.h"
 
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#include <stdlib.h>
+#include <string.h>
+#endif //PLATFORMS
 
 namespace DAVA 
 {

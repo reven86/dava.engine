@@ -1,6 +1,8 @@
 
 if(ANDROID)
     set( ERASE_FILES UIScreenManagerMacOS.cpp UIScreenManagerMacOS.h )
+elseif(APPLE)
+    set( ERASE_FILES UITextFieldAndroid.cpp UITextFieldAndroid.h )
 endif()
 
 # Define source files
