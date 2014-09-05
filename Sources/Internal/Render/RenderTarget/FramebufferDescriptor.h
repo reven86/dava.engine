@@ -64,6 +64,7 @@ public:
         FORMAT_A16,
         FORMAT_RGBA16161616,
         FORMAT_RGB565,
+        FORMAT_RGBA4444,
 
         FORMAT_DEPTH16,
         FORMAT_DEPTH24,
