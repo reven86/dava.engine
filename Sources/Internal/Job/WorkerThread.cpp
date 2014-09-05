@@ -57,12 +57,17 @@ void WorkerThread::ThreadFunc(BaseObject * bo, void * userParam, void * callerPa
             activeJob->SetState(Job::STATUS_DONE);
             scheduler->OnJobCompleted(activeJob);
             activeJob = 0;
+            
             scheduler->PushIdleThread(this);
             scheduler->Schedule();
         }
-        Mutex mutex;
+        
         mutex.Lock();
-        Thread::Wait(&cv, &mutex);
+        if(activeJob == 0)
+        {
+            Thread::Wait(&cv, &mutex);
+        }
+        mutex.Unlock();
     }
 }
 

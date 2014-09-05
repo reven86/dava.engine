@@ -47,6 +47,7 @@ public:
     void SetActiveJob(Job * job);
     void Wake();
     void Stop();
+    Mutex * GetMutex();
     
 private:
     void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
@@ -55,6 +56,7 @@ private:
     JobScheduler * scheduler;
     Thread * thread;
     ConditionalVariable cv;
+    Mutex mutex;
     
     Job * activeJob;
 };
@@ -67,7 +69,14 @@ inline void WorkerThread::SetActiveJob(Job * job)
 
 inline void WorkerThread::Wake()
 {
+    mutex.Lock();
     Thread::Signal(&cv);
+    mutex.Unlock();
+}
+
+inline Mutex * WorkerThread::GetMutex()
+{
+    return &mutex;
 }
     
 }

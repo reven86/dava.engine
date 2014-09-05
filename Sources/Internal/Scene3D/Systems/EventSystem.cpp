@@ -59,8 +59,10 @@ void EventSystem::GroupNotifyAllSystems(Vector<Entity *> & entities, uint32 even
 {
 	Vector<SceneSystem*> & container = registeredSystems[event];
 	uint32 size = container.size();
+    
 	for(uint32 i = 0; i < size; ++i)
 	{
+        
         SceneSystem * system = container[i];
         uint32 requiredComponentFlags = system->GetRequiredComponents();
 

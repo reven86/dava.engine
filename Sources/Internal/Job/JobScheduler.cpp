@@ -113,7 +113,7 @@ WorkerThread * JobScheduler::PopIdleThread()
 
 void JobScheduler::Schedule()
 {
-    LockGuard<Mutex> guard(scheduleMutex);
+    scheduleMutex.Lock();
 
     WorkerThread * idleThread = PopIdleThread();
     if(idleThread)
@@ -122,12 +122,18 @@ void JobScheduler::Schedule()
         if(job)
         {
             idleThread->SetActiveJob(job);
+            scheduleMutex.Unlock();
             idleThread->Wake();
         }
         else
         {
             PushIdleThread(idleThread);
+            scheduleMutex.Unlock();
         }
+    }
+    else
+    {
+        scheduleMutex.Unlock();
     }
 }
 
@@ -139,9 +145,9 @@ void JobScheduler::OnJobCompleted(Job * job)
     SafeRelease(job);
     if(tag >= 0)
     {
-        AtomicDecrement(taggedJobsCount[tag]);
-
+        
         LockGuard<Mutex> guard(waiterMutex);
+        AtomicDecrement(taggedJobsCount[tag]);
         if(taggedJobsCount[tag] == 0)
         {
             //notify that all jobs completed
@@ -169,6 +175,7 @@ JobManager::eWaiterRegistrationResult JobScheduler::RegisterWaiterAndWait(Tagged
     else
     {
         waiter->GetMutex()->Lock();
+        DVASSERT(taggedJobsWaiters.find(waiter->GetTag()) == taggedJobsWaiters.end());
         taggedJobsWaiters[waiter->GetTag()] = waiter;
     }
 
