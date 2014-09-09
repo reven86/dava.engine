@@ -78,7 +78,7 @@ void TransformSystem::Process(float32 timeElapsed)
         TaggedWorkerJobsWaiter waiter(2);
         waiter.Wait();
         
-        for(Map<Thread::ThreadId, Vector<Entity*> >::iterator it = eventMap.begin(), itEnd = eventMap.end(); it != itEnd; ++it)
+        for(Map<Thread::Id, Vector<Entity*> >::iterator it = eventMap.begin(), itEnd = eventMap.end(); it != itEnd; ++it)
         {
             Vector<Entity*> & vector = (*it).second;
             GlobalEventSystem::Instance()->GroupEvent(GetScene(), vector, EventSystem::WORLD_TRANSFORM_CHANGED);
@@ -202,7 +202,7 @@ void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * use
 		if(transform->parentMatrix)
 		{
 			transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            eventMap[Thread::GetCurrentThreadId()].push_back(entity);
+            eventMap[Thread::GetCurrentId()].push_back(entity);
 		}
 	}
 
@@ -217,7 +217,7 @@ void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * use
             arg->recursionDepth = recursionDepth+1;
             if(arg->recursionDepth == 1)
             {
-                Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, arg), Thread::GetCurrentThreadId(), 0, 2);
+                Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, arg), Thread::GetCurrentId(), 0, 2);
                 JobScheduler::Instance()->PushJob(j);
                 j->Release();
             }

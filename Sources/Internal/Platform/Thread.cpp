@@ -34,151 +34,250 @@
 #include <errno.h>
 #endif
 
+#include "Thread/LockGuard.h"
+
 namespace DAVA
 {
 
 Set<Thread *> Thread::threadList;
 Mutex Thread::threadListMutex;
+Map<Thread::NativeId, Thread::Id> Thread::threadIdList;
+Mutex Thread::threadIdListMutex;
+
+Thread::Id Thread::mainThreadId = 0;
+Thread::Id Thread::glThreadId = 0;
 
 ConditionalVariable::ConditionalVariable()
 {
     int32 ret = pthread_cond_init(&cv, 0);
-    if(ret)
+    if (ret)
+    {
         Logger::FrameworkDebug("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
+    }
 }
 
 ConditionalVariable::~ConditionalVariable()
 {
     int32 ret = pthread_cond_destroy(&cv);
-    if(ret)
+    if (ret)
+    {
         Logger::FrameworkDebug("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
+    }
+}
+
+void Thread::InitMainThread()
+{
+    mainThreadId = GetCurrentId();
+}
+
+void Thread::InitGLThread()
+{
+	glThreadId = GetCurrentId();
+}
+
+bool Thread::IsMainThread()
+{
+    if (mainThreadId == 0)
+    {
+        Logger::Error("Main thread not initialized");
+    }
+
+    //Not an any thread which calls IsMainThread is DAVA::Thread, so it sould not contain nativeId
+    Id currentId = GetCurrentId();
+
+    return currentId == mainThreadId || currentId == glThreadId;
+}
+
+Thread::Id Thread::GetCurrentId()
+{
+    // try to find in map
+    // if not found - create new id
+    Id retId;
+    
+    LockGuard<Mutex> locker(threadIdListMutex);
+    NativeId threadNativeIdentifier = GetCurrentNativeId();
+    Map<NativeId, Id>::iterator it = threadIdList.find(threadNativeIdentifier);
+    if (it == threadIdList.end())
+    {
+        static Id newId = 1;
+        retId = newId;
+        threadIdList[threadNativeIdentifier] = newId;
+        ++newId;
+    }
+    else
+    {
+        retId = it->second;
+    }
+
+    return retId;
 }
 
 Thread * Thread::Create(const Message& msg)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-	InitMacOS();
-#endif //defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-
 	Thread * t = new Thread(msg);
-	t->state = STATE_CREATED;
-	
-	return t;
+    t->state = STATE_CREATED;
+
+    return t;
+}
+
+void Thread::Kill()
+{
+    // it is possible to kill thread just after creating or starting and the problem is - thred changes state
+    // to STATE_RUNNING insite threaded function - so that could not happens in that case. Need some time.
+    DVASSERT(STATE_CREATED != state);
+
+    // Important - DO NOT try to wait RUNNING state because that state wll not appear if thread is not started!!!
+    // You can wait RUNNING state, but not from thred which should call Start() for created Thread.
+
+    // not a LockGuard because Mutex could be destroyed before than LockGuard (ad Release()).
+    releaseKillMutex.Lock();
+    if (STATE_RUNNING == state)
+    {
+        KillNative();
+        state = STATE_KILLED;
+        threadIdListMutex.Lock();
+        threadIdList.erase(nativeId);
+        threadIdListMutex.Unlock();
+
+        if (0 == Release())
+        {
+            return;
+        }
+        // if Release will destroy the object - we cannot call t->f().
+        releaseKillMutex.Unlock();
+    }
 }
 
 void Thread::KillAll()
 {
-    threadListMutex.Lock();
-    Set<Thread *>::iterator i = threadList.begin();
+    LockGuard<Mutex> locker(threadListMutex);
     Set<Thread *>::iterator end = threadList.end();
-    for(; i != end; ++i)
+    for (Set<Thread *>::iterator i = threadList.begin(); i != end; ++i)
     {
         (*i)->Kill();
     }
-    threadListMutex.Unlock();
 }
 
+void Thread::Cancel()
+{
+    // it is possible to cancel thread just after creating or starting and the problem is - thred changes state
+    // to STATE_RUNNING insite threaded function - so that could not happens in that case. Need some time.
+    DVASSERT(STATE_CREATED != state);
+
+    // Important - DO NOT try to wait RUNNING state because that state wll not appear if thread is not started!!!
+    // You can wait RUNNING state, but not from thred which should call Start() for created Thread.
+    if (STATE_RUNNING == state)
+    {
+        state = STATE_CANCELLING;
+    }
+}
+
+void Thread::CancelAll()
+{
+	LockGuard<Mutex> locker(threadListMutex);
+    Set<Thread *>::iterator end = threadList.end();
+    for (Set<Thread *>::iterator i = threadList.begin(); i != end; ++i)
+    {
+        (*i)->Cancel();
+    }
+}
+
+
 Thread::Thread(const Message& _msg)
+    : msg(_msg)
+    , state(STATE_CREATED)
+    , id(0)
+	, nativeId(0)
 {
     threadListMutex.Lock();
     threadList.insert(this);
     threadListMutex.Unlock();
 
-    msg = _msg;
+    Init();
 }
 
 Thread::~Thread()
 {
+    Shutdown();
+    threadIdListMutex.Lock();
+    threadIdList.erase(nativeId);
+    threadIdListMutex.Unlock();
     threadListMutex.Lock();
     threadList.erase(this);
     threadListMutex.Unlock();
 }
 
-void Thread::Start()
-{
-	Retain();
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-	StartMacOS();
-#elif defined(__DAVAENGINE_WIN32__) 
-	StartWin32();
-#elif defined(__DAVAENGINE_ANDROID__)
-	StartAndroid();
-#else //PLATFORMS
-	//other platforms
-#endif //PLATFORMS
-}
-
-Thread::eThreadState Thread::GetState()
-{
-	return state;
-}
-
-
-#ifndef __DAVAENGINE_WIN32__
-void Thread::Join()
-{
-    if (pthread_join(GetThreadId().internalTid, NULL) != 0)
-        DAVA::Logger::Error("Thread::Join() failed in pthread_join");
-
-}
-#endif
-
-#ifndef __DAVAENGINE_WIN32__
-void Thread::Kill()
-{
-    if(state != STATE_ENDED && state != STATE_KILLED)
-    {
-        pthread_kill(GetThreadId().internalTid, SIGKILL);
-        state = STATE_KILLED;
-    }
-}
-#endif
-
 void Thread::Wait(ConditionalVariable * cv, Mutex * mutex)
 {
     int32 ret = 0;
-    
-    if((ret = pthread_cond_wait(&cv->cv, &mutex->mutex)))
+
+    if ((ret = pthread_cond_wait(&cv->cv, (pthread_mutex_t*)(&mutex->mutex))))
+    {
         Logger::FrameworkDebug("[Thread::Wait]: pthread_cond_wait error code %d", ret);
+    }
 }
 
 void Thread::Signal(ConditionalVariable * cv)
 {
     int32 ret = pthread_cond_signal(&cv->cv);
-    if(ret)
+    if (ret)
+    {
         Logger::FrameworkDebug("[Thread::Signal]: pthread_cond_signal error code %d", ret);
+    }
 }
-
+    
 void Thread::Broadcast(ConditionalVariable * cv)
 {
     int32 ret = pthread_cond_broadcast(&cv->cv);
-    if(ret)
-        Logger::FrameworkDebug("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
-}
-
-void Thread::SetThreadId(const ThreadId & _threadId)
-{
-	threadId = _threadId;
-}
-
-Thread::ThreadId Thread::GetThreadId()
-{
-	return threadId;
-}
-    
-#ifndef __DAVAENGINE_WIN32__
-void Thread::SleepThread(uint32 timeMS)
-{
-    timespec req, rem;
-    req.tv_sec = timeMS / 1000;
-    req.tv_nsec = (timeMS % 1000) * 1000000L;
-    int32 ret = EINTR;
-    while(ret == EINTR)
+    if (ret)
     {
-        ret = nanosleep(&req, &rem);
-        req = rem;
+        Logger::FrameworkDebug("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
     }
 }
-#endif
 
+void Thread::SetId(const Id &threadId)
+{
+    id = threadId;
+    nativeId = GetCurrentNativeId();
+}
+    
+void Thread::ThreadFunction(void *param)
+{
+    Thread * t = (Thread *)param;
+    t->SetId(GetCurrentId());
+
+    if (STATE_CREATED == t->state)
+    {
+        t->state = STATE_RUNNING;
+        t->msg(t);
+    }
+
+    switch(t->state)
+    {
+    case STATE_CANCELLING:
+        t->state = STATE_CANCELLED;
+        break;
+    case STATE_RUNNING:
+        t->state = STATE_ENDED;
+        break;
+    default:
+        break;
+    }
+
+    // thread is finishing so we need to unregister it
+    threadIdListMutex.Lock();
+    threadIdList.erase(t->nativeId);
+    threadIdListMutex.Unlock();
+
+    // kill could be called around this place. It will produce 2 Release instead of 1.
+    // So we use mutex to avoid that.
+    t->releaseKillMutex.Lock();
+    if (0 == t->Release())
+    {
+        return;
+    }
+    // if Release will destroy the object - we cannot call t->f().
+    t->releaseKillMutex.Unlock();
+}
+    
 };

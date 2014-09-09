@@ -148,7 +148,7 @@ void ApplicationCore::BackgroundTickerHandler(BaseObject * caller, void * caller
 {
 	while(!backgroundTickerFinishing)
 	{
-		Thread::SleepThread(backgroundTickTimeMs);
+		Thread::Sleep(backgroundTickTimeMs);
 		OnBackgroundTick();
 	}
 }

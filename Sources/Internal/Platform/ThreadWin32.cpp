@@ -34,91 +34,73 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_WIN32__)
 
-Thread::ThreadId Thread::mainThreadId;
-HDC Thread::currentDC = 0;
-HGLRC Thread::secondaryContext = 0;
-
-void Thread::InitMainThread()
+void Thread::Init()
 {
-	mainThreadId = GetCurrentThreadId();
+    handle = NULL;
 }
 
-bool Thread::IsMainThread()
+void Thread::Shutdown()
 {
-	if (mainThreadId.internalTid == 0)
-	{
-		Logger::Error("Main thread not initialized");
-	}
-	return (mainThreadId == GetCurrentThreadId());
+    DVASSERT(STATE_ENDED == state || STATE_CANCELLED == state || STATE_KILLED == state);
+    if (handle)
+    {
+        CloseHandle(handle);
+        handle = NULL;
+    }
 }
 
-void Thread::SleepThread(uint32 timeMS)
+void Thread::Start()
 {
-    Sleep(timeMS);
+    Retain();
+    DVASSERT(STATE_CREATED == state);
+    handle = CreateThread 
+        (
+        0, // Security attributes
+        0, // Stack size
+        ThreadFunc,
+        this,
+        CREATE_SUSPENDED,
+        0);
+
+    if(!SetThreadPriority(handle, THREAD_PRIORITY_ABOVE_NORMAL))
+    {
+        Logger::Error("Thread::StartWin32 error %d", (int32)GetLastError());
+    }
+    ResumeThread(handle);
+}
+
+void Thread::Sleep(uint32 timeMS)
+{
+    ::Sleep(timeMS);
 }
 
 DWORD WINAPI ThreadFunc(void* param)
 {	
-	Thread * t = (Thread*)param;
-	t->SetThreadId(Thread::GetCurrentThreadId());
-
-	t->state = Thread::STATE_RUNNING;
-	t->msg(t);
-
-	t->state = Thread::STATE_ENDED;
-	t->Release();
-	
+    Thread::ThreadFunction(param);
 	return 0;
 }
 
-
-void Thread::StartWin32()
+void Thread::Yield()
 {
-	HANDLE handle;
-	handle = CreateThread 
-		(
-		0, // Security attributes
-		0, // Stack size
-		ThreadFunc,
-		this,
-		CREATE_SUSPENDED,
-		0);
-
-    threadHandle = handle;
-	
-	if(!SetThreadPriority(handle, THREAD_PRIORITY_ABOVE_NORMAL))
-	{
-		Logger::Error("Thread::StartWin32 error %d", (int32)GetLastError());
-	}
-	ResumeThread(handle);
-}
-
-void Thread::YieldThread()
-{
-    SwitchToThread();
-}
-
-Thread::ThreadId Thread::GetCurrentThreadId()
-{
-	ThreadId ret;
-	ret.internalTid = ::GetCurrentThreadId();
-
-	return ret;
+    ::SwitchToThread();
 }
 
 void Thread::Join()
 {
-    if (WaitForSingleObject(threadHandle, INFINITE) != WAIT_OBJECT_0)
+    if (WaitForSingleObject(handle, INFINITE) != WAIT_OBJECT_0)
+    {
         DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObject");
+    }
 }
 
-void Thread::Kill()
+void Thread::KillNative()
 {
-    if(state != STATE_ENDED && state != STATE_KILLED)
-    {
-        TerminateThread(threadHandle, 0);
-        state = STATE_KILLED;
-    }
+    TerminateThread(handle, 0);
+}
+
+Thread::NativeId Thread::GetCurrentNativeId()
+{
+    return ::GetCurrentThreadId();
 }
 
 #endif 

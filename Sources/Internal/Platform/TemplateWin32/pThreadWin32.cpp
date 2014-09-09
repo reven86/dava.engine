@@ -176,7 +176,7 @@ int pthread_mutex_lock(pthread_mutex_t *mutex)
 
 int pthread_mutex_unlock(pthread_mutex_t *mutex)
 {
-    if(ReleaseMutex(*mutex))
+    if(!ReleaseMutex(*mutex))
         return GetLastError();
     return 0;
 }

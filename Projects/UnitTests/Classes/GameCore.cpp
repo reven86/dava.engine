@@ -98,6 +98,7 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
+    new ThreadSyncTest();
     new DLCDownloadTest();
 
 	new ImageSizeTest();
@@ -148,7 +149,7 @@ void GameCore::OnAppStarted()
  	new UIListTest();
  	new UIScrollViewTest();
  
-    new ThreadSyncTest();
+
     new SceneSystemTest();
     
     errors.reserve(TestCount());

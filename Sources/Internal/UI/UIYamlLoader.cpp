@@ -39,6 +39,7 @@
 #include "Render/2D/DFFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
+#include "Render/2D/FTFont.h"
 
 namespace DAVA
 {
@@ -356,7 +357,7 @@ Color UIYamlLoader::GetColorFromYamlNode(const YamlNode * node)
 }
 
 
-Font * UIYamlLoader::GetFontByName(const String & fontName)
+Font * UIYamlLoader::GetFontByName(const String & fontName) const
 {
     return FontManager::Instance()->GetFont(fontName);
 }

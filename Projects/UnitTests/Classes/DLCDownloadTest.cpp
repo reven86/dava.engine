@@ -80,7 +80,7 @@ void DLCDownloadTest::WaitForTaskState(const uint32 &taskId, const DownloadStatu
     while (taskIdToWait != taskId && statusToWait != status)
     {
         DownloadManager::Instance()->Update();
-        Thread::SleepThread(1);
+        Thread::Sleep(1);
         uint64 delta = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if (delta >= timeout)
             return;

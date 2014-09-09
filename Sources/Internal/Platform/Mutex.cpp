@@ -37,27 +37,47 @@ namespace DAVA
 
 Mutex::Mutex()
 {
-	InitializeCriticalSection(&criticalSection);
+    mutex = CreateMutex(NULL, false, NULL);
+    if(mutex == NULL)
+    {
+        Logger::Error("Mutex::Mutex() error");
+    }
 }
 
 Mutex::~Mutex()
 {
-	DeleteCriticalSection(&criticalSection);
+    if(!CloseHandle(mutex))
+    {
+        Logger::Error("Mutex::~Mutex() error");
+    }
 }
 
 void Mutex::Lock()
 {
-	EnterCriticalSection(&criticalSection); 
+    int32 ret = WaitForSingleObject(mutex, INFINITE);
+    if(ret == -1)
+    {
+        Logger::Error("Mutex::Lock() error");
+    }
 }
 
 bool Mutex::TryLock()
 {
-    return (0 != TryEnterCriticalSection(&criticalSection)); 
+    int32 ret = WaitForSingleObject(mutex, 0);
+    if(ret == -1)
+    {
+        Logger::Error("Mutex::Lock() error");
+    }
+
+    return (WAIT_TIMEOUT != ret);
 }
 
 void Mutex::Unlock()
 {
-	LeaveCriticalSection(&criticalSection);
+    if(!ReleaseMutex(mutex))
+    {
+        return Logger::Error("Mutex::Unlock() error");
+    }
 }
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)

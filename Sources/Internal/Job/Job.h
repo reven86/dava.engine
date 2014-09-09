@@ -61,7 +61,7 @@ public:
 
     static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
 
-	Job(const Message & message, const Thread::ThreadId & creatorThreadId, uint32 flags, int32 tag = -1);
+	Job(const Message & message, const Thread::Id & creatorThreadId, uint32 flags, int32 tag = -1);
 	eState GetState();
     void SetState(eState newState);
 	ePerformedWhere PerformedWhere();
@@ -76,7 +76,7 @@ protected:
 	void SetPerformedOn(ePerformedWhere performedWhere);
 
 	Message message;
-	Thread::ThreadId creatorThreadId;
+	Thread::Id creatorThreadId;
 
 	eState state;
 	ePerformedWhere performedWhere;

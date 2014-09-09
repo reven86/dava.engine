@@ -86,6 +86,7 @@
 #undef DrawState
 #undef GetCommandLine
 #undef GetClassName
+#undef Yield
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) // Mac & iPhone
 #define __DAVASOUND_AL__

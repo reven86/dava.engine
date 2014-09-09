@@ -80,9 +80,9 @@ protected:
 	MainThreadJobQueue * mainQueue;
 	void UpdateMainQueue();
 
-	Map<Thread::ThreadId, uint32> jobsPerCreatorThread;
-	Map<Thread::ThreadId, ThreadIdJobWaiter *> waitersPerCreatorThread;
-	void CheckAndCallWaiterForThreadId(const Thread::ThreadId & threadId);
+	Map<Thread::Id, uint32> jobsPerCreatorThread;
+	Map<Thread::Id, ThreadIdJobWaiter *> waitersPerCreatorThread;
+	void CheckAndCallWaiterForThreadId(const Thread::Id & threadId);
 	
 	
 	void CheckAndCallWaiterForJobInstance(Job * job);

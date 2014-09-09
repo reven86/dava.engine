@@ -71,7 +71,7 @@ public:
 	void Unlock();
 
 #if defined(__DAVAENGINE_WIN32__)
-	CRITICAL_SECTION criticalSection;
+	HANDLE mutex;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 	pthread_mutex_t mutex;
 #endif //PLATFORMS

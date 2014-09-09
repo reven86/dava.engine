@@ -76,6 +76,12 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
     List<DeviceInfo::StorageInfo> l;
     return l;
 }
+
+int32 DeviceInfo::GetCPUCoresCount()
+{
+    return 4;
+}
+
 #endif
 
 
