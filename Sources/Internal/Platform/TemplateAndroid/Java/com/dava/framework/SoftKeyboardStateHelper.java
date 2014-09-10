@@ -30,7 +30,7 @@ public class SoftKeyboardStateHelper implements ViewTreeObserver.OnGlobalLayoutL
 
     @Override
     public void onGlobalLayout() {
-        final int KEYBOARD_DETECTION_HEIGHT = 50;
+        final int KEYBOARD_DETECTION_HEIGHT = 150;
         Rect r = new Rect();
         activityRootView.getWindowVisibleDisplayFrame(r);
         final int heightDiff = activityRootView.getRootView().getHeight() - (r.bottom - r.top);

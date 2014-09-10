@@ -1,6 +1,5 @@
 package com.dava.framework;
 
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -162,6 +161,9 @@ public class JNITextField {
         
         FrameLayout keyboardLayout = new FrameLayout(JNIActivity.GetActivity());
         manager.addView(keyboardLayout, params);
+        
+        // Set UI flags for detect correct size when navigation bar hided
+        JNIActivity.HideNavigationBar(keyboardLayout);
         
         // Initialize detecting keyboard height listener
         JNITextField.InitializeKeyboardHelper(keyboardLayout);

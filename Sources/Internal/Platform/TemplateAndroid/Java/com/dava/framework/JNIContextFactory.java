@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
-//import android.util.Log;
 import android.util.Log;
 
 public class JNIContextFactory implements GLSurfaceView.EGLContextFactory 

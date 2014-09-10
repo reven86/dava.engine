@@ -20,6 +20,17 @@ import com.bda.controller.Controller;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
 {
+	/**
+	 * Current version of API
+	 */
+	public static final int SDK_VERSION = android.os.Build.VERSION.SDK_INT;
+	
+	/**
+	 * Minimal SDK version support immersive mode
+	 */
+	private static final int MIN_SDK_VERSION_FOR_HIDING_NAVIGATION_BAR = 19;
+			
+	
 	private static int errorState = 0;
 
 	private JNIAccelerometer accelerometer = null;
@@ -72,6 +83,21 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().requestFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        
+        // Try hide navigation bar
+        if(SDK_VERSION >= MIN_SDK_VERSION_FOR_HIDING_NAVIGATION_BAR) {
+        	final View decorView =getWindow().getDecorView();
+    		// Try hide navigation bar for detect correct GL view size
+	        HideNavigationBar(decorView);
+	        // Subscribe listener on UI changing for hiding navigation bar after keyboard hiding
+	        decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+				@Override
+				public void onSystemUiVisibilityChange(int visibility) {
+					HideNavigationBar(decorView);
+				}
+			});
+    	}
         
         // initialize GL VIEW
         glView = GetSurfaceView();
@@ -284,5 +310,36 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	public void InitNotification(Builder builder) {
 		Log.e("JNIActivity", "Need to implement InitNotification");
+	}
+	
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+    	super.onWindowFocusChanged(hasFocus);
+    	if(hasFocus) {
+    		// Try hide navigation bar on API 19
+    		HideNavigationBar(getWindow().getDecorView());
+    	}
+    }
+	
+	/**
+	 * Since API 19 we can hide Navigation bar (Immersive Full-Screen Mode)
+	 */
+	public static void HideNavigationBar(View view) {
+		if (SDK_VERSION >= MIN_SDK_VERSION_FOR_HIDING_NAVIGATION_BAR) {
+	    	// Flags from View class from API 19. Needs for hiding navigation bar
+			final int SYSTEM_UI_FLAG_FULLSCREEN = 4;
+		    final int SYSTEM_UI_FLAG_LAYOUT_STABLE = 256;
+		    final int SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION = 512;
+		    final int SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN = 1024;
+		    final int SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096;
+	    
+		    view.setSystemUiVisibility(
+    				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | SYSTEM_UI_FLAG_FULLSCREEN
+                    | SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
 	}
 }
