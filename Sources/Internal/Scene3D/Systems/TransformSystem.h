@@ -78,7 +78,7 @@ private:
         bool forceUpdate;
         Vector<Entity*>  localSendEvent;
     };
-    Map<Thread::Id, Vector<Entity*> > eventMap;
+    Vector<Vector<Entity*> > eventsVector;
 
 	int32 passedNodes;
 	int32 multipliedNodes;

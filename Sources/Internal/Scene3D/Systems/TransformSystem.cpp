@@ -45,6 +45,7 @@ namespace DAVA
 TransformSystem::TransformSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    eventsVector.resize(100);
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
 }
@@ -78,11 +79,14 @@ void TransformSystem::Process(float32 timeElapsed)
         TaggedWorkerJobsWaiter waiter(2);
         waiter.Wait();
         
-        for(Map<Thread::Id, Vector<Entity*> >::iterator it = eventMap.begin(), itEnd = eventMap.end(); it != itEnd; ++it)
+        int32 eventsSize = eventsVector.size();
+        for(int32 i = 0; i < eventsSize; ++i)
         {
-            Vector<Entity*> & vector = (*it).second;
-            GlobalEventSystem::Instance()->GroupEvent(GetScene(), vector, EventSystem::WORLD_TRANSFORM_CHANGED);
-            vector.clear();
+            if(!eventsVector[i].empty())
+            {
+                GlobalEventSystem::Instance()->GroupEvent(GetScene(), eventsVector[i], EventSystem::WORLD_TRANSFORM_CHANGED);
+                eventsVector[i].clear();
+            }
         }
     }
     else
@@ -202,7 +206,8 @@ void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * use
 		if(transform->parentMatrix)
 		{
 			transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            eventMap[Thread::GetCurrentId()].push_back(entity);
+
+            eventsVector[Thread::GetCurrentId()].push_back(entity);
 		}
 	}
 

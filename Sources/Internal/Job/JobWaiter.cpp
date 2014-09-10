@@ -28,6 +28,7 @@
 
 #include "Job/JobWaiter.h"
 #include "Job/JobManager.h"
+#include "Job/JobScheduler.h"
 
 namespace DAVA
 {
@@ -83,12 +84,12 @@ TaggedWorkerJobsWaiter::TaggedWorkerJobsWaiter(int32 _tag)
 
 TaggedWorkerJobsWaiter::~TaggedWorkerJobsWaiter()
 {
-//    JobScheduler::Instance()->UnregisterWaiter(this);
+    JobScheduler::Instance()->UnregisterWaiter(this);
 }
 
 void TaggedWorkerJobsWaiter::Wait()
 {
-//    if(JobManager::WAITER_WILL_WAIT == JobScheduler::Instance()->RegisterWaiterAndWait(this))
+    if(JobManager::WAITER_WILL_WAIT == JobScheduler::Instance()->RegisterWaiterAndWait(this))
     {
         Thread::Wait(&cv, &mutex);
         mutex.Unlock();
