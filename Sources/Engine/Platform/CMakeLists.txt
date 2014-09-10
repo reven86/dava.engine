@@ -1,10 +1,10 @@
 
-if(ANDROID)
+if( ANDROID )
     set( ADDED_CPP_PATTERNS TemplateAndroid/*.cpp  TemplateAndroid/ExternC/*.cpp ) 	
     set( ADDED_H_PATTERNS   TemplateAndroid/*.h    TemplateAndroid/ExternC/*.h   )
     set(INCLUDES_DIR  ${INCLUDES_DIR} "${CMAKE_CURRENT_LIST_DIR}/TemplateAndroid" PARENT_SCOPE)
-elseif(APPLE) 
-	if(IOS)
+elseif( APPLE ) 
+    if( IOS )
     	set( ADDED_CPP_PATTERNS TemplateiOS/*.cpp TemplateiOS/*.mm )
     	set( ADDED_H_PATTERNS TemplateiOS/*.h )
 
@@ -14,7 +14,6 @@ elseif(APPLE)
         set( ADDED_CPP_PATTERNS TemplateMacOS/*.cpp )
     	set( ADDED_H_PATTERNS TemplateMacOS/*.h )
     endif()
-
 else()
     set( ADDED_CPP_PATTERNS TemplateWin32/*.cpp )
     set( ADDED_H_PATTERNS TemplateWin32/*.h )

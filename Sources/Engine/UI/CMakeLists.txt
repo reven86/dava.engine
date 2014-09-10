@@ -1,5 +1,8 @@
 
-if(ANDROID)
+
+if(WIN32)
+    set( ERASE_FILES UITextFieldAndroid.cpp UITextFieldAndroid.h UIScreenManagerMacOS.cpp UIScreenManagerMacOS.h )
+elseif(ANDROID)
     set( ERASE_FILES UIScreenManagerMacOS.cpp UIScreenManagerMacOS.h )
 elseif(APPLE)
     set( ERASE_FILES UITextFieldAndroid.cpp UITextFieldAndroid.h )

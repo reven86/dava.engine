@@ -1,16 +1,22 @@
-#cmake_minimum_required (VERSION 2.8.6)
 cmake_minimum_required (VERSION 3.0)
 
 project (DavaFramework)
 
+set ( LIBRARIE_TYPE STATIC )
 set ( INCLUDES_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Libs/include" )
+set ( LIBRARIES_DIR )
+
+find_package(ZLIB )
+if( ZLIB_FOUND )
+    list (APPEND INCLUDES_DIR  ${ZLIB_INCLUDE_DIR} )
+    list (APPEND LIBRARIES_DIR ${ZLIB_LIBRARY}     )
+endif()
 
 if( ANDROID )
     set ( LIBRARIE_TYPE SHARED )
 
     link_directories( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib/android/armeabi-v7a" )
-
-    set ( LIBRARIES_DIR 
+    list (APPEND LIBRARIES_DIR
         "libxml_android.a"
         "libpng_android.a"
         "libfreetype_android.a"
@@ -35,16 +41,12 @@ if( ANDROID )
         "-lGLESv2"
         "-lstdc++"
         )
-
 elseif( IOS ) 
-    set( CMAKE_C_FLAGS    "-mno-thumb"  )
-    set( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden"  )
+    set ( CMAKE_C_FLAGS    "-mno-thumb"  )
+    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden"  )
 else()
-    set ( LIBRARIES_DIR  "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib")
-    set ( LIBRARIE_TYPE STATIC )
+    list (APPEND LIBRARIES_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib")
 endif()
-
-set ( LIBRARY_OUTPUT_PATH ${LIBRARIES_DIR} PARENT_SCOPE )
 
 # Define source files
 #define_source_files (PARENT_SCOPE)
@@ -66,19 +68,16 @@ foreach (SOURCE ${SOURCES})
     list (APPEND ENGINE_INCLUDE_DIRS_ONLY ${SOURCE})
 endforeach ()
 
-define_source_files (PARENT_SCOPE)
-list (APPEND ENGINE_SOURCE_FILES ${CPP_FILES} ${H_FILES})
-
-find_package(ZLIB REQUIRED)
+define_source_files ( PARENT_SCOPE )
+list ( APPEND ENGINE_SOURCE_FILES ${CPP_FILES} ${H_FILES} )
 
 include_directories   (.)
-include_directories   ( ${ZLIB_INCLUDE_DIR} )
 include_directories   ( ${INCLUDES_DIR} ) 
                                              
-add_definitions ( ${FRAMEWORK_DEFINITIONS} )
-add_library ( DavaFramework ${LIBRARIE_TYPE} ${ENGINE_SOURCE_FILES} )
+add_definitions       ( ${FRAMEWORK_DEFINITIONS} )
+add_library           ( DavaFramework ${LIBRARIE_TYPE} ${ENGINE_SOURCE_FILES} )
 
-target_link_libraries (DavaFramework ${LIBRARIES_DIR} ${ZLIB_LIBRARY} )  
+target_link_libraries (DavaFramework ${LIBRARIES_DIR} )  
 
 install(
     TARGETS

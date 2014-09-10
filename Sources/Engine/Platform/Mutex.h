@@ -33,7 +33,10 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 #include <pthread.h>
+#endif
 
 
 namespace DAVA
