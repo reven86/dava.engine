@@ -1,0 +1,56 @@
+﻿Build started 20.08.2014 12:43:44.
+     1>Project "D:\work\dava.framework_NEW\Source\Projects\TestBed\TestBedVS2010.vcxproj" on node 2 (rebuild target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\TemplateProjectWin32.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I./../../Sources/Internal /I./../../Sources/External /I/include /I./../../Libs/glew/include /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Classes\AnimationTestScreen.cpp Classes\Box2DGameObjectTestScreen.cpp Classes\ClipTestScreen.cpp Classes\CollisionTestScreen.cpp Classes\FontUsageScreen.cpp Classes\FrameworkMain.cpp Classes\GameCore.cpp Classes\GameObjectTestScreen.cpp Classes\ImageUsageScreen.cpp Classes\LandscapeTestScreen.cpp Classes\MainMenuScreen.cpp Classes\ParticleTestScreen.cpp Classes\PropertyLineEditControl.cpp Classes\RenderTargetTestScreen.cpp Classes\SpriteBasicsScreen.cpp Classes\SpritePerfScreen.cpp Classes\StaticTextScreen.cpp Classes\TestScreen.cpp Classes\TextinputTestScreen.cpp Classes\TouchEffectsControl.cpp Win32Specific\main.cpp
+         main.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\win32specific\main.cpp(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         TouchEffectsControl.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\toucheffectscontrol.h(33): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         TextinputTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\textinputtestscreen.h(34): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         TestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\testscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         StaticTextScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\statictextscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         SpritePerfScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\spriteperfscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         SpriteBasicsScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\spritebasicsscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         RenderTargetTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\rendertargettestscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         PropertyLineEditControl.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\propertylineeditcontrol.h(41): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         ParticleTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\particletestscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         MainMenuScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\mainmenuscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         LandscapeTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\landscapetestscreen.h(33): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         ImageUsageScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\imageusagescreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         GameObjectTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\gameobjecttestscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         GameCore.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\gamecore.h(33): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         FrameworkMain.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\frameworkmain.cpp(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         FontUsageScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\fontusagescreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         CollisionTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\collisiontestscreen.h(33): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         ClipTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\cliptestscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         Box2DGameObjectTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\box2dgameobjecttestscreen.h(30): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         Generating Code...
+         Compiling...
+         AnimationTestScreen.cpp
+     1>d:\work\dava.framework_new\source\projects\testbed\classes\animationtestscreen.h(33): fatal error C1083: Cannot open include file: 'DAVAEngine.h': No such file or directory
+         Generating Code...
+     1>Done Building Project "D:\work\dava.framework_NEW\Source\Projects\TestBed\TestBedVS2010.vcxproj" (rebuild target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.99
