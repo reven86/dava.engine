@@ -31,8 +31,8 @@
 #ifndef __DAVAENGINE_FMODUTILS_H__
 #define __DAVAENGINE_FMODUTILS_H__
 
-#include "fmod_event.hpp"
-#include "fmod_errors.h"
+#include "fmod/fmod_event.hpp"
+#include "fmod/fmod_errors.h"
 
 namespace DAVA
 {

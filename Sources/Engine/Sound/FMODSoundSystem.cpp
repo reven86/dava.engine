@@ -38,7 +38,7 @@
 #include "FileSystem/YamlParser.h"
 
 #ifdef __DAVAENGINE_IPHONE__
-#include "fmodiphone.h"
+#include "fmod/fmodiphone.h"
 #include "musicios.h"
 #endif
 

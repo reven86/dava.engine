@@ -17,7 +17,7 @@
 #include "DAVAEngine.h"
 
 #import <UIKit/UIKit.h>
-#import <HelperAppDelegate.h>
+#include "HelperAppDelegate.h"
 
 @interface WebViewURLDelegate : NSObject<UIWebViewDelegate>
 {

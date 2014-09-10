@@ -5,10 +5,10 @@ project (DavaFramework)
 
 set ( INCLUDES_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Libs/include" )
 
-if(ANDROID)
+if( ANDROID )
     set ( LIBRARIE_TYPE SHARED )
 
-    link_directories( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib/android/armeabi-v7a"...)
+    link_directories( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib/android/armeabi-v7a" )
 
     set ( LIBRARIES_DIR 
         "libxml_android.a"
@@ -35,6 +35,10 @@ if(ANDROID)
         "-lGLESv2"
         "-lstdc++"
         )
+
+elseif( IOS ) 
+    set( CMAKE_C_FLAGS    "-mno-thumb"  )
+    set( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden"  )
 else()
     set ( LIBRARIES_DIR  "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib")
     set ( LIBRARIE_TYPE STATIC )

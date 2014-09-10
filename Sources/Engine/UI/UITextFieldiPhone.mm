@@ -14,7 +14,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "BaseTypes.h"
+#include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -23,7 +23,7 @@
 #include "UI/UITextFieldiPhone.h"
 #include "Core/Core.h"
 
-#import <HelperAppDelegate.h>
+#include "Platform/TemplateiOS/HelperAppDelegate.h"
 
 float GetUITextViewSizeDivider()
 {
