@@ -34,6 +34,7 @@
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "FileSystem/YamlNode.h"
+#include "UIYamlLoader.h"
 
 namespace DAVA
 {
@@ -780,6 +781,11 @@ List<UIControl* >& UIList::GetRealChildren()
 void UIList::ScrollToPosition( float32 position, float32 timeSec /*= 0.3f*/ )
 {
     scroll->ScrollToPosition(-position);
+}
+
+const String UIList::GetDelegateControlPath() const
+{
+    return UIYamlLoader::GetControlPath(this);
 }
 
 };

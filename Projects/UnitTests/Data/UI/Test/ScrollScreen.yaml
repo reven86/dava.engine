@@ -24,6 +24,7 @@ Scrollview:
                 type: "UIControl"
 
 VerticalScrollbar:
+    UIScrollBarDelegate: "Scrollview"
     baseType: "UIControl"
     bottomAlign: 20
     drawType: "DRAW_ALIGNED"
@@ -33,6 +34,7 @@ VerticalScrollbar:
     type: "UIScrollBar"
 
 HorizontalScrollbar:
+    UIScrollBarDelegate: "Scrollview"
     baseType: "UIControl"
     bottomAlign: 0
     drawType: "DRAW_ALIGNED"

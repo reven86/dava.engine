@@ -68,8 +68,8 @@ void UIStaticTextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     
     // All these properties are state-aware.
     RegisterColorWidgetForProperty(propertiesMap, PropertyNames::FONT_COLOR_PROPERTY_NAME, ui->textColorWidget, false, true);
-    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME, ui->colorInheritTypeCombobox, false, true);
-    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME,
+    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_COLOR_INHERIT_TYPE_PROPERTY_NAME, ui->colorInheritTypeCombobox, false, true);
+    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME,
     													ui->perPixelAccuracyTypeCombobox, false, true);
 
     // Localized Text Key is handled through generic Property mechanism, but we need to update the

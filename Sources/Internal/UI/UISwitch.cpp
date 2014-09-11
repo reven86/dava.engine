@@ -116,7 +116,7 @@ void UISwitch::InitControls()
     buttonRight->SetInputEnabled(false);
     toggle->SetInputEnabled(false);
     BringChildFront(toggle);
-    CheckToggleSideChange();
+    CheckToggleSideChange(false);
     float32 toggleXPosition = GetToggleUttermostPosition();
     toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
     ChangeVisualState();//forcing visual state change cause it can be skipped in CheckToggleSideChange()
@@ -261,7 +261,7 @@ void UISwitch::Input(UIEvent *currentInput)
     {
         if (dragAnchorX < ANCHOR_UNDEFINED)
         {
-            CheckToggleSideChange();
+            CheckToggleSideChange(true);
 
             float32 newToggleX = touchPos.x - dragAnchorX;
             float32 newToggleLeftEdge = newToggleX - toggle->pivotPoint.x;
@@ -282,12 +282,12 @@ void UISwitch::Input(UIEvent *currentInput)
     {
         if (dragAnchorX < ANCHOR_UNDEFINED)
         {
-            CheckToggleSideChange();
+            CheckToggleSideChange(true);
             toggle->SetSelected(false);
         }
         else if (switchOnTapBesideToggle)
         {
-            InternalSetIsLeftSelected(!isLeftSelected, false); //switch logical state immediately, 
+            InternalSetIsLeftSelected(!isLeftSelected, false, true); //switch logical state immediately,
         }       
         float32 toggleX = GetToggleUttermostPosition();
 
@@ -301,12 +301,12 @@ void UISwitch::Input(UIEvent *currentInput)
 
 void UISwitch::SetIsLeftSelected(bool aIsLeftSelected)
 {
-    InternalSetIsLeftSelected(aIsLeftSelected, true);
+    InternalSetIsLeftSelected(aIsLeftSelected, true, false);
     float32 toggleXPosition = GetToggleUttermostPosition();
     toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
 }
 
-void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState)
+void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, bool isFromUI)
 {
     bool prevIsLeftSelected = isLeftSelected;
     isLeftSelected = aIsLeftSelected;
@@ -316,7 +316,15 @@ void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisual
         {
             ChangeVisualState();
         }
-        PerformEvent(EVENT_VALUE_CHANGED);
+
+        if (isFromUI)
+        {
+            PerformEvent(EVENT_VALUE_CHANGED);
+        }
+        else
+        {
+            PerformEventWithData(EVENT_VALUE_CHANGED, (void*)true);
+        }
     }
 }
 
@@ -336,13 +344,13 @@ float32 UISwitch::GetToggleUttermostPosition()
     return result;
 }
 
-void UISwitch::CheckToggleSideChange()
+void UISwitch::CheckToggleSideChange(bool isFromUI)
 {
     float32 leftBound = buttonLeft->relativePosition.x;
     float32 rightBound = buttonRight->relativePosition.x;
     float32 toggleCenter = toggle->relativePosition.x - toggle->pivotPoint.x + toggle->size.dx / 2;
     float32 toggleSpaceCenter = (leftBound + rightBound) / 2;
-    InternalSetIsLeftSelected(toggleCenter < toggleSpaceCenter, true);
+    InternalSetIsLeftSelected(toggleCenter < toggleSpaceCenter, true, isFromUI);
 }
 
 }

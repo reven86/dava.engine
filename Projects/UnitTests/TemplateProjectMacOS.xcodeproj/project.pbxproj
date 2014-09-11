@@ -391,13 +391,13 @@
 			name = RectSpriteTest;
 			sourceTree = "<group>";
 		};
-		49B774CA16B1889A00A80FA3 /* DLCTest */ = {
+		49B774CA16B1889A00A80FA3 /* DLCDownloadTest */ = {
 			isa = PBXGroup;
 			children = (
 				D7E6C5BB1982562C00B96D1A /* DLCDownloadTest.cpp */,
 				D7E6C5BC1982562C00B96D1A /* DLCDownloadTest.h */,
 			);
-			name = DLCTest;
+			name = DLCDownloadTest;
 			sourceTree = "<group>";
 		};
 		49C2B8F416F75A2A006E24CB /* DeviceInfoTest */ = {
@@ -446,7 +446,7 @@
 				C151B1BC16D50BD000E09BAF /* eMailTest */,
 				C177F27C16D2279B0036F02B /* InputTest */,
 				E81F2AEA16BFA49100C4545E /* MaterialCompilerTest */,
-				49B774CA16B1889A00A80FA3 /* DLCTest */,
+				49B774CA16B1889A00A80FA3 /* DLCDownloadTest */,
 				E8EF77FE1669248300DA7BD2 /* CloneTest */,
 				E83604EC163FEB370061A636 /* KeyedArchiveTest */,
 				49C432051675E35E000EA877 /* DXTTests */,

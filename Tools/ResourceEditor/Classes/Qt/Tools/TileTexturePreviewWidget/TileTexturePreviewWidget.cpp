@@ -4,10 +4,10 @@
 #include "StringConstants.h"
 
 #include "TileTexturePreviewWidgetItemDelegate.h"
+#include "Tools/ColorPicker/ColorPicker.h"
 
 #include <QHeaderView>
 #include <QLabel>
-#include <QColorDialog>
 #include <QEvent>
 
 TileTexturePreviewWidget::TileTexturePreviewWidget(QWidget* parent)
@@ -264,12 +264,16 @@ bool TileTexturePreviewWidget::eventFilter(QObject *obj, QEvent *ev)
 		{
 			if (ev->type() == QEvent::MouseButtonRelease)
 			{
-				QColor curColor = ColorToQColor(colors[i]);
-				QColor color = QColorDialog::getColor(curColor, this, tr("Tile color"), 0);
+                const QColor oldColor = ColorToQColor(colors[i]);
+                ColorPicker cp(this);
+                cp.setWindowTitle("Tile color");
+                cp.SetColor(oldColor);
+                const bool result = cp.Exec();
+                const QColor newColor = cp.GetColor();
 
-				if (color.isValid() && color != curColor)
+				if (result && newColor.isValid() && newColor != oldColor)
 				{
-					SetColor(i, QColorToColor(color));
+					SetColor(i, QColorToColor(newColor));
 				}
 
 				return true;

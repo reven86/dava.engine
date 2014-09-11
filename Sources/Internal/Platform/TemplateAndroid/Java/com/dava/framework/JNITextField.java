@@ -14,7 +14,6 @@ import android.os.Looper;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
-import android.text.method.PasswordTransformationMethod;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -327,42 +326,12 @@ public class JNITextField {
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-				class PswTransformationMethod extends
-						PasswordTransformationMethod {
-					@Override
-					public CharSequence getTransformation(CharSequence source,
-							View view) {
-						return new PasswordCharSequence(source);
-					}
-
-					class PasswordCharSequence implements CharSequence {
-						private CharSequence source;
-
-						public PasswordCharSequence(CharSequence source) {
-							this.source = source;
-						}
-
-						public char charAt(int index) {
-							return '*';
-						}
-
-						public int length() {
-							return source.length();
-						}
-
-						public CharSequence subSequence(int start, int end) {
-							return source.subSequence(start, end);
-						}
-					}
-				};
-				
 				if (isPassword) {
-					text.setTransformationMethod(new PswTransformationMethod());
-					text.setInputType(EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+					text.setInputType(EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_PASSWORD);
 				}
 				else
 				{
-					text.setInputType(text.getInputType() & ~(EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD));
+					text.setInputType(text.getInputType() & ~(EditorInfo.TYPE_TEXT_VARIATION_PASSWORD));
 				}
 
 				return null;

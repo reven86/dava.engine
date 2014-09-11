@@ -32,8 +32,8 @@
 #include "QtPropertyDataDavaVariant.h"
 #include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Tools/QtPropertyEditor/QtPropertyWidgets/FlagSelectorCombo.h"
+#include "Tools/ColorPicker/ColorPicker.h"
 
-#include <QColorDialog>
 #include <QListWidget>
 #include <QDoubleSpinBox>
 #include <QComboBox>
@@ -1057,11 +1057,16 @@ bool QtPropertyDataDavaVariant::EditorDoneInternal(QWidget *editor)
 
 void QtPropertyDataDavaVariant::ColorOWPressed()
 {
-	QColor c = QColorDialog::getColor(ColorToQColor(curVariantValue.AsColor()), GetOWViewport(), "Select color", QColorDialog::ShowAlphaChannel);
-	if(c.isValid())
+    const QColor& oldColor = ColorToQColor(curVariantValue.AsColor());
+    ColorPicker cp(GetOWViewport());
+    cp.SetColor(oldColor);
+    const bool result = cp.Exec();
+
+    const QColor& newColor = cp.GetColor();
+    if (result && newColor!=oldColor)
 	{
         QString str;
-        str.sprintf(FLOAT_PRINTF_FORMAT4, c.redF(), c.greenF(), c.blueF(), c.alphaF());
+        str.sprintf(FLOAT_PRINTF_FORMAT4, newColor.redF(), newColor.greenF(), newColor.blueF(), newColor.alphaF());
 
 		SetValue(str, QtPropertyData::VALUE_EDITED);
 		SetColorIcon();

@@ -122,8 +122,12 @@ protected:
 	virtual void SetTopBottomStretchCap(float value);
 
     // Color Inherit Type.
-    virtual int GetFontShadowColorInheritType() const;
-    virtual void SetFontShadowColorInheritType(int value);
+    virtual int GetFontColorInheritType() const;
+    virtual void SetFontColorInheritType(int value);
+	
+    // Per pixel accuracy type
+	virtual int GetFontPerPixelAccuracyType() const;
+	virtual void SetFontPerPixelAccuracyType(int value);
 
     // For UI Button localized text depends on state, so overriding this function.
     virtual UIControl::eControlState GetCurrentStateForLocalizedText() const;
@@ -196,8 +200,12 @@ protected:
     QColor GetShadowColorForState(UIControl::eControlState state) const;
 
     // Font/shadow color inherit type.
-    int GetFontShadowColorInheritTypeForState(UIControl::eControlState state) const;
-    void UpdatePropertyDirtyFlagForFontShadowColorInheritType();
+    int GetFontColorInheritTypeForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForFontColorInheritType();
+    
+    // Font/shadow per pixel accuracy type.
+    int GetFontPerPixelAccuracyTypeForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForFontPerPixelAccuracyType();
     
     void UpdatePropertyDirtyFlagForShadowOffsetX();
     void UpdatePropertyDirtyFlagForShadowOffsetY();

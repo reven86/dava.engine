@@ -172,6 +172,7 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
+
 	Thread::InitMainThread();
 
     new DownloadManager();
@@ -630,7 +631,11 @@ void Core::SystemAppStarted()
 	if (core)core->OnAppStarted();
     
 #ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->OnAppStarted();
+    FilePath file = "~res:/Autotesting/id.yaml";
+    if (file.Exists())
+    {
+        AutotestingSystem::Instance()->OnAppStarted();
+    }
 #endif //__DAVAENGINE_AUTOTESTING__
 }
 	

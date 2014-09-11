@@ -95,7 +95,9 @@ public:
     virtual float32 TotalAreaSize(UIScrollBar *forScrollBar);
     virtual float32 ViewPosition(UIScrollBar *forScrollBar);
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
-	
+
+    virtual const String GetDelegateControlPath() const;
+
 protected:
 	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual void LoadFromYamlNodeCompleted();

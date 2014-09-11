@@ -1017,6 +1017,10 @@ void NMaterial::SetMaterialGroup(const FastName &group)
 		{
 			SetQuality(curQuality->qualityName);
 		}
+        else
+        {
+            Logger::Error("Material \"%s\" uses quality group \"%s\", that isn't exist in quality system.", materialName.c_str(), group.c_str());
+        }
 	}
 }
 

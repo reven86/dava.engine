@@ -179,7 +179,6 @@ private:
 	Thread(const Message &msg);
     void Init();
     void Shutdown();
-    void SetId(const Id &threadId);
 
     /**
     \brief Get unique native identifier of the thread which calls this method.
@@ -232,8 +231,6 @@ private:
     */
     static Map<NativeId, Id> threadIdList;
     static Mutex threadIdListMutex;
-
-    Mutex releaseKillMutex;
 };
 
 

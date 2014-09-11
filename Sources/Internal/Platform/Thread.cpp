@@ -50,7 +50,7 @@ Thread::Id Thread::glThreadId = 0;
 ConditionalVariable::ConditionalVariable()
 {
     int32 ret = pthread_cond_init(&cv, 0);
-    if (ret)
+    if (0 != ret)
     {
         Logger::FrameworkDebug("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
     }
@@ -59,7 +59,7 @@ ConditionalVariable::ConditionalVariable()
 ConditionalVariable::~ConditionalVariable()
 {
     int32 ret = pthread_cond_destroy(&cv);
-    if (ret)
+    if (0 != ret)
     {
         Logger::FrameworkDebug("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
     }
@@ -77,7 +77,7 @@ void Thread::InitGLThread()
 
 bool Thread::IsMainThread()
 {
-    if (mainThreadId == 0)
+    if (0 == mainThreadId)
     {
         Logger::Error("Main thread not initialized");
     }
@@ -129,8 +129,6 @@ void Thread::Kill()
     // Important - DO NOT try to wait RUNNING state because that state wll not appear if thread is not started!!!
     // You can wait RUNNING state, but not from thred which should call Start() for created Thread.
 
-    // not a LockGuard because Mutex could be destroyed before than LockGuard (ad Release()).
-    releaseKillMutex.Lock();
     if (STATE_RUNNING == state)
     {
         KillNative();
@@ -138,13 +136,6 @@ void Thread::Kill()
         threadIdListMutex.Lock();
         threadIdList.erase(nativeId);
         threadIdListMutex.Unlock();
-
-        if (0 == Release())
-        {
-            return;
-        }
-        // if Release will destroy the object - we cannot call t->f().
-        releaseKillMutex.Unlock();
     }
 }
 
@@ -184,7 +175,8 @@ void Thread::CancelAll()
 
 
 Thread::Thread(const Message& _msg)
-    : msg(_msg)
+    : BaseObject()
+    , msg(_msg)
     , state(STATE_CREATED)
     , id(0)
 	, nativeId(0)
@@ -234,17 +226,12 @@ void Thread::Broadcast(ConditionalVariable * cv)
         Logger::FrameworkDebug("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
     }
 }
-
-void Thread::SetId(const Id &threadId)
-{
-    id = threadId;
-    nativeId = GetCurrentNativeId();
-}
     
 void Thread::ThreadFunction(void *param)
 {
     Thread * t = (Thread *)param;
-    t->SetId(GetCurrentId());
+    t->id = GetCurrentId();
+    t->nativeId = GetCurrentNativeId();
 
     if (STATE_CREATED == t->state)
     {
@@ -268,16 +255,6 @@ void Thread::ThreadFunction(void *param)
     threadIdListMutex.Lock();
     threadIdList.erase(t->nativeId);
     threadIdListMutex.Unlock();
-
-    // kill could be called around this place. It will produce 2 Release instead of 1.
-    // So we use mutex to avoid that.
-    t->releaseKillMutex.Lock();
-    if (0 == t->Release())
-    {
-        return;
-    }
-    // if Release will destroy the object - we cannot call t->f().
-    t->releaseKillMutex.Unlock();
 }
     
 };

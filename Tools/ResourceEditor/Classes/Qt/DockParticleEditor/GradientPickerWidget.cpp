@@ -31,8 +31,9 @@
 #include "GradientPickerWidget.h"
 #include <QPainter>
 #include <QPaintEvent>
-#include <QColorDialog>
+
 #include "Main/QtUtils.h"
+#include "Tools/ColorPicker/ColorPicker.h"
 
 #define BACKGROUND_COLOR (Color(0x80, 0x80, 0x80, 0xff) / 255.f)
 #define BORDER_COLOR Color::Black
@@ -243,11 +244,16 @@ void GradientPickerWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 	if(pointId != -1 && event->button() == Qt::LeftButton)
 	{
-		QColor curColor = ColorToQColor(points[pointId].second);
-		QColor color = QColorDialog::getColor(curColor, 0, tr("Marker color"), QColorDialog::ShowAlphaChannel);
-		if(color.isValid())
+        const QColor& oldColor = ColorToQColor(points[pointId].second);
+        ColorPicker cp(this);
+        cp.setWindowTitle("Marker color");
+        cp.SetColor(oldColor);
+        const bool result = cp.Exec();
+        const QColor& newColor = cp.GetColor();
+
+        if(result && newColor.isValid() && newColor != oldColor)
 		{
-			SetCurrentPointColor(QColorToColor(color));
+			SetCurrentPointColor(QColorToColor(newColor));
 			update();
 			
 			emit ValueChanged();

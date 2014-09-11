@@ -536,10 +536,24 @@
     <ClCompile Include="Classes\Qt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog.cpp" />
     <ClCompile Include="Classes\Qt\Tools\AddSwitchEntityDialog\SwitchEntityCreator.cpp" />
     <ClCompile Include="Classes\Qt\Tools\BaseAddEntityDialog\BaseAddEntityDialog.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\AbstractColorPicker.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorCell.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorComponentSlider.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorPicker.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorPickerHSV.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorPickerRGBAM.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorPreview.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\CustomPalette.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\DropperShade.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\EyeDropper.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\GradientSlider.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\PaletteHSV.cpp" />
     <ClCompile Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.cpp" />
     <ClCompile Include="Classes\Qt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox.cpp" />
     <ClCompile Include="Classes\Qt\Tools\HangingObjectsHeight\HangingObjectsHeight.cpp" />
     <ClCompile Include="Classes\Qt\Tools\HeightDeltaTool\HeightDeltaTool.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\Helpers\MouseHelper.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\Helpers\PaintingHelper.cpp" />
     <ClCompile Include="Classes\Qt\Tools\LabeledSlider\LabeledSlider.cpp" />
     <ClCompile Include="Classes\Qt\Tools\LandscapeDialog\LandscapeDialog.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">false</ExcludedFromBuild>
@@ -580,6 +594,8 @@
     <ClCompile Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate.cpp" />
     <ClCompile Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.cpp" />
     <ClCompile Include="Classes\SceneProcessing\SceneProcessor.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\Widgets\AbstractSlider.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\Widgets\ValueSlider.cpp" />
     <ClCompile Include="Classes\SpritesPacker.cpp" />
     <ClCompile Include="_GeneratedQt\BeastDialog\BeastDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\CubemapEditor\ClickableQLabel_moc.cpp" />
@@ -715,10 +731,25 @@
     <ClCompile Include="_GeneratedQt\Tools\AddSkyboxDialog\AddSkyboxDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\BaseAddEntityDialog\BaseAddEntityDialog_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\AbstractColorPicker_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorCell_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorComponentSlider_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorPickerHSV_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorPickerRGBAM_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorPicker_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorPreview_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\CustomPalette_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\DropperShade_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\EyeDropper_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\GradientSlider_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\PaletteHSV_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\DeveloperTools\DeveloperTools_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\GuiTypes_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\HangingObjectsHeight\HangingObjectsHeight_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\HeightDeltaTool\HeightDeltaTool_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\Helpers\MouseHelper_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\Helpers\PaintingHelper_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\LabeledSlider\LabeledSlider_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\LandscapeDialog\LandscapeDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\MimeDataHelper\MimeDataHelper_moc.cpp" />
@@ -751,6 +782,8 @@
     <ClCompile Include="_GeneratedQt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\ToolButtonWithWidget\ToolButtonWithWidget_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\Widgets\AbstractSlider_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\Widgets\ValueSlider_moc.cpp" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastDebug.h" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastLight.h" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastManager.h" />
@@ -1194,10 +1227,25 @@
     <ClInclude Include="Classes\Qt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog.h" />
     <ClInclude Include="Classes\Qt\Tools\AddSwitchEntityDialog\SwitchEntityCreator.h" />
     <ClInclude Include="Classes\Qt\Tools\BaseAddEntityDialog\BaseAddEntityDialog.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\AbstractColorPicker.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorCell.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorComponentSlider.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorPicker.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorPickerHSV.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorPickerRGBAM.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorPreview.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\CustomPalette.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\DropperShade.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\EyeDropper.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\GradientSlider.h" />
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\PaletteHSV.h" />
     <ClInclude Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.h" />
     <ClInclude Include="Classes\Qt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox.h" />
+    <ClInclude Include="Classes\Qt\Tools\GuiTypes.h" />
     <ClInclude Include="Classes\Qt\Tools\HangingObjectsHeight\HangingObjectsHeight.h" />
     <ClInclude Include="Classes\Qt\Tools\HeightDeltaTool\HeightDeltaTool.h" />
+    <ClInclude Include="Classes\Qt\Tools\Helpers\MouseHelper.h" />
+    <ClInclude Include="Classes\Qt\Tools\Helpers\PaintingHelper.h" />
     <ClInclude Include="Classes\Qt\Tools\LabeledSlider\LabeledSlider.h" />
     <ClInclude Include="Classes\Qt\Tools\LandscapeDialog\LandscapeDialog.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">false</ExcludedFromBuild>
@@ -1240,6 +1288,8 @@
     <ClInclude Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate.h" />
     <ClInclude Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.h" />
     <ClInclude Include="Classes\SceneProcessing\SceneProcessor.h" />
+    <ClInclude Include="Classes\Qt\Tools\Widgets\AbstractSlider.h" />
+    <ClInclude Include="Classes\Qt\Tools\Widgets\ValueSlider.h" />
     <ClInclude Include="Classes\SpritesPacker.h" />
     <ClInclude Include="Classes\StringConstants.h" />
     <ClInclude Include="resource.h" />
@@ -1266,6 +1316,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="DataQt\BeastDialog.ui" />
+    <None Include="DataQt\ColorPicker.ui" />
     <None Include="DataQt\CubemapEditorDialog.ui" />
     <None Include="DataQt\CubeMapTextureBrowser.ui" />
     <None Include="DataQt\HeightDeltaTool.ui" />
@@ -1281,6 +1332,7 @@
     </None>
     <None Include="DataQt\ModificationWidget.ui" />
     <None Include="DataQt\ParticleProperty.ui" />
+    <None Include="DataQt\QtIcons.qrc" />
     <None Include="DataQt\RunActionEventWidget.ui" />
     <None Include="DataQt\soundbrowser.ui" />
     <None Include="DataQt\soundcomponenteditor.ui" />

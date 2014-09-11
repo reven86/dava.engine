@@ -79,6 +79,9 @@ public:
     void SetScreenScaleChangedFlag();
     void SetScreenPositionChangedFlag();
 
+signals:
+    void DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodesList);
+    
 private:
 	enum InputState
 	{

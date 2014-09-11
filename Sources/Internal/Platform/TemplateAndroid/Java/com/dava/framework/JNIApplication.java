@@ -1,5 +1,7 @@
 package com.dava.framework;
 
+import java.util.Locale;
+
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
@@ -17,7 +19,9 @@ public class JNIApplication extends Application
 	
 	private String externalDocumentsDir;
 	private String internalDocumentsDir; 
-	
+
+	private Locale launchLocale;
+
 	@Override
 	public void onCreate()
 	{
@@ -32,7 +36,9 @@ public class JNIApplication extends Application
 		
 		externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath();
 		internalDocumentsDir = this.getFilesDir().getAbsolutePath();
-		
+
+		launchLocale = Locale.getDefault();
+
 		Log.w(JNIConst.LOG_TAG, String.format("[Application::onCreate] apkFilePath is %s", info.publicSourceDir)); 
 		OnCreateApplication(externalDocumentsDir, internalDocumentsDir, info.publicSourceDir, JNIConst.LOG_TAG, info.packageName);
 
@@ -49,8 +55,11 @@ public class JNIApplication extends Application
 
 		OnConfigurationChanged();
 
-		Log.w(JNIConst.LOG_TAG, String.format("[Application::onConfigurationChanged] Application should now be closed"));
-		System.exit(0);
+		if (IsApplicationShouldBeRestarted())
+		{
+			Log.w(JNIConst.LOG_TAG, String.format("[Application::onConfigurationChanged] Application should now be closed"));
+			System.exit(0);
+		}
 	}
 
 	@Override
@@ -85,6 +94,16 @@ public class JNIApplication extends Application
 	public String GetDocumentPath()
 	{
 		return externalDocumentsDir;
+	}
+
+	private boolean IsApplicationShouldBeRestarted()
+	{
+		if (!launchLocale.equals(Locale.getDefault()))
+		{
+			return true;
+		}
+
+		return false;
 	}
 	
 	static {

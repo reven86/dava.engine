@@ -79,6 +79,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			setPreserveEGLContextOnPause(true);
 		}
 		
+		setDebugFlags(0);
+		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
 	}
 	
