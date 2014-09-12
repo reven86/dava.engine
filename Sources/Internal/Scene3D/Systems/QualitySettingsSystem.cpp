@@ -50,7 +50,7 @@ QualitySettingsSystem::QualitySettingsSystem()
 
 void QualitySettingsSystem::Load(const FilePath &path)
 {
-    Logger::Info("Trying to loading QUALITY from: %s", path.GetAbsolutePathname().c_str());
+    Logger::Info("Trying to load QUALITY from: %s", path.GetAbsolutePathname().c_str());
 
     if(path.Exists())
     {

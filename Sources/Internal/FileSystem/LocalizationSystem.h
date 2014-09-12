@@ -40,7 +40,9 @@ namespace DAVA
 
 class LocalizationSystem : public Singleton<LocalizationSystem>
 {
-public:	
+public:
+    static const char* DEFAULT_LOCALE;
+    
 	LocalizationSystem();
 	virtual ~LocalizationSystem();
 	
