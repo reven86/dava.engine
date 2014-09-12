@@ -1138,6 +1138,15 @@ void MainWindow::FileMenuTriggered(QAction *resentScene)
 
 bool MainWindow::CheckAndUnlockProject(const QString& projectPath)
 {
+    if (!FileSystem::Instance()->IsFile(projectPath.toStdString()))
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString(tr("The project file %1 does not exist").arg(projectPath)));
+        msgBox.addButton(tr("Ok"), QMessageBox::YesRole);
+        msgBox.exec();
+        return false;
+    }
+    
     if (!FileSystem::Instance()->IsFileLocked(projectPath.toStdString()))
     {
         // Nothing to unlock.

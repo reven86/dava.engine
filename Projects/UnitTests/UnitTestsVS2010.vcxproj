@@ -28,6 +28,7 @@
     <ClInclude Include="Classes\FilePathTest.h" />
     <ClInclude Include="Classes\FileSystemTest.h" />
     <ClInclude Include="Classes\FormatsTest.h" />
+    <ClInclude Include="Classes\FunctionBindSingalTest.h" />
     <ClInclude Include="Classes\ImageSizeTest.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
@@ -75,6 +76,7 @@
     <ClCompile Include="Classes\FilePathTest.cpp" />
     <ClCompile Include="Classes\FileSystemTest.cpp" />
     <ClCompile Include="Classes\FormatsTest.cpp" />
+    <ClCompile Include="Classes\FunctionBindSingalTest.cpp" />
     <ClCompile Include="Classes\ImageSizeTest.cpp" />
     <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />

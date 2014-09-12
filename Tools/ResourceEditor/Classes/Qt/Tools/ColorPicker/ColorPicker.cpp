@@ -152,7 +152,7 @@ void ColorPicker::OnDropper()
     connect(dropper, SIGNAL( picked( const QColor& ) ), SLOT( show() ));
     connect(dropper, SIGNAL( canceled() ), SLOT( show() ));
     const qreal opacity = windowOpacity();
-    setWindowOpacity(0.0);
+    setWindowOpacity(0.0);      // Removes OS-specific animations on window hide
     hide();
     dropper->Exec();
     setWindowOpacity(opacity);

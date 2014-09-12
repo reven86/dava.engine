@@ -407,28 +407,32 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 				if(NULL != introData)
 				{
 					DAVA::RenderBatch *batch = (DAVA::RenderBatch *) introData->object;
-					DAVA::RenderObject *ro = batch->GetRenderObject();
-					if(ConvertToShadowCommand::CanConvertBatchToShadow(batch) && (ro->GetType() == RenderObject::TYPE_MESH))
-					{
-						QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
-                        convertButton->setEnabled(isSingleSelection);
-						QObject::connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
-					}
 
-                    bool disableRebuildTS = false;
-                    switch (ro->GetType())
+                    if (batch != NULL)
                     {
-                    case RenderObject::TYPE_VEGETATION:
-                        disableRebuildTS = true;
-                        break;
-                    default:
-                        break;
-                    }
-                    if (!disableRebuildTS)
-                    {
-                        QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
-                        rebuildTangentButton->setEnabled(isSingleSelection);
-                        QObject::connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+					    DAVA::RenderObject *ro = batch->GetRenderObject();
+					    if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch) && (ro->GetType() == RenderObject::TYPE_MESH))
+					    {
+						    QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
+                            convertButton->setEnabled(isSingleSelection);
+						    connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
+					    }
+
+                        PolygonGroup* group = batch->GetPolygonGroup();
+                        if (group != NULL)
+                        {
+                            bool isRebuildTsEnabled = true;
+                            const int32 requiredVertexFormat = (EVF_TEXCOORD0 | EVF_NORMAL);
+                            isRebuildTsEnabled &= (group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST);
+                            isRebuildTsEnabled &= ((group->GetFormat() & requiredVertexFormat) == requiredVertexFormat);
+
+                            if (isRebuildTsEnabled)
+                            {
+                                QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                                rebuildTangentButton->setEnabled(isSingleSelection);
+                                connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+                            }
+                        }
                     }
 				}
 			}

@@ -9,11 +9,11 @@ class AbstractColorPicker
 {
     Q_OBJECT
 
-    signals:
-    void begin();
-    void changing(const QColor& c);
-    void changed(const QColor& c);
-    void canceled();
+signals:
+    void begin();                       // Sends, when user starts color modification (click on color editor).
+    void changing(const QColor& c);     // Sends, when user modifying color, but doesn't complete action. Used for editors that supports mouse dragging.
+    void changed(const QColor& c);      // Sends, when user accepts editing. For example - release mouse button.
+    void canceled();                    // Sends, when user calcels editing. For expample - picked same color, as been before.
 
 public:
     explicit AbstractColorPicker(QWidget* parent);
