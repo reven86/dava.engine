@@ -2,11 +2,13 @@ package com.dava.framework;
 
 import org.fmod.FMODAudioDevice;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat.Builder;
@@ -20,17 +22,6 @@ import com.bda.controller.Controller;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
 {
-	/**
-	 * Current version of API
-	 */
-	public static final int SDK_VERSION = android.os.Build.VERSION.SDK_INT;
-	
-	/**
-	 * Minimal SDK version support immersive mode
-	 */
-	private static final int MIN_SDK_VERSION_FOR_HIDING_NAVIGATION_BAR = 19;
-			
-	
 	private static int errorState = 0;
 
 	private JNIAccelerometer accelerometer = null;
@@ -86,15 +77,18 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         
         // Try hide navigation bar
-        if(SDK_VERSION >= MIN_SDK_VERSION_FOR_HIDING_NAVIGATION_BAR) {
-        	final View decorView =getWindow().getDecorView();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        	final View decorView = getWindow().getDecorView();
     		// Try hide navigation bar for detect correct GL view size
 	        HideNavigationBar(decorView);
 	        // Subscribe listener on UI changing for hiding navigation bar after keyboard hiding
 	        decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+	        	@TargetApi(Build.VERSION_CODES.KITKAT)
 				@Override
 				public void onSystemUiVisibilityChange(int visibility) {
-					HideNavigationBar(decorView);
+					if((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+						HideNavigationBar(decorView);
+					}
 				}
 			});
     	}
@@ -324,22 +318,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	/**
 	 * Since API 19 we can hide Navigation bar (Immersive Full-Screen Mode)
 	 */
-	public static void HideNavigationBar(View view) {
-		if (SDK_VERSION >= MIN_SDK_VERSION_FOR_HIDING_NAVIGATION_BAR) {
-	    	// Flags from View class from API 19. Needs for hiding navigation bar
-			final int SYSTEM_UI_FLAG_FULLSCREEN = 4;
-		    final int SYSTEM_UI_FLAG_LAYOUT_STABLE = 256;
-		    final int SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION = 512;
-		    final int SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN = 1024;
-		    final int SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096;
-	    
-		    view.setSystemUiVisibility(
-    				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | SYSTEM_UI_FLAG_FULLSCREEN
-                    | SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static void HideNavigationBar(View view) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+	    	view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
 	}
 }
