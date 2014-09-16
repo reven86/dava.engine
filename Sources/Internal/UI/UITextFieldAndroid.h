@@ -117,9 +117,13 @@ public:
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text);
 	void TextFieldShouldReturn();
-	void FocusChanged(bool hasFocus);
+	void TextFieldKeyboardShown(const Rect& rect);
+	void TextFieldKeyboardHidden();
+	void TextFieldFocusChanged(bool hasFocus);
 	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
 	static void TextFieldShouldReturn(uint32_t id);
+	static void TextFieldKeyboardShown(uint32_t id, const Rect& rect);
+	static void TextFieldKeyboardHidden(uint32_t id);
 	static void TextFieldFocusChanged(uint32_t id, bool hasFocus);
 
 private:

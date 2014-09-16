@@ -43,10 +43,13 @@ public:
 
 protected:
     
-    virtual void ConvertFromSceToSc2() const;
+    void ConvertFromSceToSc2() const;
+    void FixLODFarDistance(DAVA::Scene *scene) const;
     
     DAVA::Scene * CreateSceneFromSce() const;
-
+    
+    DAVA::int32 FindMaxLodLevel(DAVA::Entity *entity) const;
+    
 protected:
 	DAVA::FilePath daePath;
 };

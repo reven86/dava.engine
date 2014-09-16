@@ -42,7 +42,6 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(ParticleEffectComponent)
 
 ParticleEffectComponent::ParticleEffectComponent()
 {

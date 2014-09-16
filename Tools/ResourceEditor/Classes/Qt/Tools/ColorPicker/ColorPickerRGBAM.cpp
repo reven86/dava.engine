@@ -4,8 +4,12 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
+#include "Settings/SettingsManager.h"
+
+
 #include "ColorComponentSlider.h"
 #include "../Helpers/PaintingHelper.h"
+
 
 
 ColorPickerRGBAM::ColorPickerRGBAM(QWidget* parent)
@@ -16,6 +20,10 @@ ColorPickerRGBAM::ColorPickerRGBAM(QWidget* parent)
     b = new ColorComponentSlider();
     a = new ColorComponentSlider();
     m = new ColorComponentSlider();
+
+    const double maxMul = SettingsManager::Instance()->GetValue(Settings::General_ColorMultiplyMax).AsFloat();
+    m->SetValueRange(0.0, maxMul);
+    m->SetValue(1.0);
 
     ColorComponentSlider* sliders[] = { r, g, b, a, m, };
     const QString labels[] = { "Red", "Green", "Blue", "Alpha", "Multiply" };

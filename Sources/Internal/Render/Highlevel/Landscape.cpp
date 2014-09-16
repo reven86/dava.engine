@@ -1684,6 +1684,21 @@ Texture * Landscape::CreateLandscapeTexture()
 
     NMaterial* tmpLandscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material_TMP"), FastName("~res:/Materials/TileMask.material"), NMaterial::DEFAULT_QUALITY_NAME);
     NMaterial* tmpTileMaskMaterial = tileMaskMaterial->Clone();
+    
+
+    //MAGIC: This magic code is workaround for situation when fbo textures are present in tileMaskMaterial with pathname. Because NMaterial::Clone() use pathnames for cloning textures.
+    const uint32 texturesCount = tileMaskMaterial->GetTextureCount();
+    for(uint32 t = 0; t < texturesCount; ++t)
+    {
+        FastName tName = tileMaskMaterial->GetTextureName(t);
+        Texture *tex = tileMaskMaterial->GetTexture(t);
+        if(tex->isRenderTarget)
+        {
+            tmpTileMaskMaterial->SetTexture(tName, tex);
+        }
+    }
+    //END of MAGIC
+    
     tmpTileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
     tmpTileMaskMaterial->SetParent(tmpLandscapeParent);
     tmpTileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, NULL);

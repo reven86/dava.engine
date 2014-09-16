@@ -27,6 +27,7 @@ public:
     void SetColorRange(const QColor& c1, const QColor& c2);
     void SetValue(double val);
     double GetValue() const;
+    void SetValueRange(double min, double max);
 
 private:
     QPointer<ValueSlider> value;

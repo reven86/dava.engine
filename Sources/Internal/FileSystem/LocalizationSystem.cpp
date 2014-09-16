@@ -61,9 +61,12 @@ const LocalizationSystem::LanguageLocalePair LocalizationSystem::languageLocaleM
     { "uk", "uk_UA" }
 };
 
+const char* LocalizationSystem::DEFAULT_LOCALE = "en";
+
+
 LocalizationSystem::LocalizationSystem()
 {
-	langId = "en";
+	langId = DEFAULT_LOCALE;
 
 	dataHolder = new YamlParser::YamlDataHolder();
 	dataHolder->data = 0;
@@ -90,7 +93,7 @@ void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
 #elif defined(__DAVAENGINE_ANDROID__)
     LocalizationAndroid::SelectPreferedLocalization();
 #else
-    SetCurrentLocale(Core::Instance()->GetOptions()->GetString("locale", "ru"));
+    SetCurrentLocale(Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE));
 #endif
 }
 
@@ -99,8 +102,6 @@ void LocalizationSystem::Init()
 	LoadStringFile(langId, directoryPath + (langId + ".yaml"));
 }
 
-    
-    
 const char * LocalizationSystem::GetDeviceLocale()
 {
 #if defined(__DAVAENGINE_IPHONE__)
@@ -108,7 +109,7 @@ const char * LocalizationSystem::GetDeviceLocale()
 #elif defined(__DAVAENGINE_ANDROID__)
     return LocalizationAndroid::GetDeviceLang().c_str();
 #else
-    return "ru";
+    return DEFAULT_LOCALE;
 #endif
 }
     
@@ -126,34 +127,31 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
 {
     String actualLangId;
     
-    Logger::Info("LocalizationSystem::SetCurrentLocale requestedLangId = %s", requestedLangId.c_str());
-    File *fl = File::Create(directoryPath + (requestedLangId + ".yaml"), File::OPEN|File::READ);
-    if(fl)
+    Logger::FrameworkDebug("LocalizationSystem::SetCurrentLocale requestedLangId = %s", requestedLangId.c_str());
+    
+    FilePath localeFilePath(directoryPath + (requestedLangId + ".yaml"));
+    if(localeFilePath.Exists())
     {
         actualLangId = requestedLangId;
-        SafeRelease(fl);
     }
     else if(requestedLangId.size() > 2)
     {
         String langPart = requestedLangId.substr(0, 2);
-        Logger::Info("LocalizationSystem::SetCurrentLocale requestedLangId = %s is not found, trying to check language part %s", requestedLangId.c_str(), langPart.c_str());
-        File *fl1 = File::Create(directoryPath + (langPart + ".yaml"), File::OPEN|File::READ);
-        if(fl1)
+        Logger::FrameworkDebug("LocalizationSystem::SetCurrentLocale requestedLangId = %s is not found, trying to check language part %s", requestedLangId.c_str(), langPart.c_str());
+        
+        localeFilePath = directoryPath + (langPart + ".yaml");
+        if(localeFilePath.Exists())
         {
             actualLangId = langPart;
-            SafeRelease(fl1);
         }
     }
     
     if(actualLangId.empty())
     {
-        Logger::Info("LocalizationSystem::SetCurrentLocale requestedLangId = %s is not supported, default language will be set", requestedLangId.c_str());
-        
-        File *fl2 = File::Create(directoryPath + ("en.yaml"), File::OPEN|File::READ);
-        if(fl2)
+        localeFilePath = directoryPath + (String(DEFAULT_LOCALE) + ".yaml");
+        if(localeFilePath.Exists())
         {
-            actualLangId = "en";
-            SafeRelease(fl2);
+            actualLangId = DEFAULT_LOCALE;
         }
         else
         {
@@ -163,7 +161,7 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
     }
     
     //TODO: add reloading strings data on langId changing
-    Logger::Info("LocalizationSystem::SetCurrentLocale actualLangId = %s", actualLangId.c_str());
+    Logger::FrameworkDebug("LocalizationSystem::SetCurrentLocale actualLangId = %s", actualLangId.c_str());
     langId = actualLangId;
     SoundSystem::Instance()->SetCurrentLocale(langId);
 }

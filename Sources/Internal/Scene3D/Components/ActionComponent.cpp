@@ -49,9 +49,6 @@ namespace DAVA
         actualDelay = static_cast<float32>( delay + Random::Instance()->RandFloat(delayVariation) );
     }
 
-
-	REGISTER_CLASS(ActionComponent)
-
     const FastName ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME("*** Self ***");
 
 	ActionComponent::ActionComponent()

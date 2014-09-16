@@ -55,3 +55,8 @@ double ColorComponentSlider::GetValue() const
 {
     return value->GetValue();
 }
+
+void ColorComponentSlider::SetValueRange(double min, double max)
+{
+    value->SetRange(min, max);
+}

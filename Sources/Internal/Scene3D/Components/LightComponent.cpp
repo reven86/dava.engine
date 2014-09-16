@@ -35,7 +35,6 @@
 namespace DAVA 
 {
     
-REGISTER_CLASS(LightComponent)
 
 LightComponent::LightComponent(Light * _light)
 {
