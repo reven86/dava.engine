@@ -63,8 +63,9 @@ void TransformSystem::Process(float32 timeElapsed)
     passedNodes = 0;
     multipliedNodes = 0;
     
-    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
+    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE) && updatableEntities.size() > 1)
     {
+        /*
         uint32 size = updatableEntities.size();
         for(uint32 i = 0; i < size; ++i)
         {
@@ -88,13 +89,82 @@ void TransformSystem::Process(float32 timeElapsed)
                 eventsVector[i].clear();
             }
         }
+        */
+
+        const uint32 entitiesCount = updatableEntities.size();
+        const uint32 jobsCount = JobScheduler::Instance()->GetThreadsCount();
+        const uint32 entitiesPerJobCount = entitiesCount / jobsCount;
+
+        {
+            uint32 firstIndex = 0;
+            uint32 rest = entitiesCount - (jobsCount * entitiesPerJobCount);
+
+            Vector<JobArgument2 *> jobArguments;
+            jobArguments.reserve(jobsCount);
+
+            for(uint32 i = 0; i < jobsCount; ++i)
+            {
+                uint32 count = entitiesPerJobCount;
+
+                if(rest > 0)
+                {
+                    count++;
+                    rest--;
+                }
+
+                JobArgument2 *args = new JobArgument2();
+                args->first = firstIndex;
+                args->count = count;
+
+                jobArguments.push_back(args);
+                firstIndex += count;
+
+                Job * j = new Job(Message(this, &TransformSystem::HierahicFindUpdatableTransform, args), Thread::GetCurrentId(), 0, 2);
+                JobScheduler::Instance()->PushJob(j);
+                j->Release();
+            }
+
+            TaggedWorkerJobsWaiter waiter(2);
+            waiter.Wait();
+
+            for(uint32 i = 0; i < jobsCount; ++i)
+            {
+                GlobalEventSystem::Instance()->GroupEvent(GetScene(), jobArguments[i]->entities , EventSystem::WORLD_TRANSFORM_CHANGED);
+                delete jobArguments[i];
+            }
+        }
+
+        /*
+        uint32 size = updatableEntities.size();
+
+        for(uint32 i = 0; i < jobsCount; ++i)
+        {
+            JobArgument * arg = new JobArgument();
+            arg->entity = updatableEntities[i];
+            arg->forceUpdate = false;
+            arg->recursionDepth = 0;
+
+            HierahicFindUpdatableTransform(0, arg, 0);
+        }
+        */
     }
     else
     {
+        /*
         uint32 size = updatableEntities.size();
         for(uint32 i = 0; i < size; ++i)
         {
             FindNodeThatRequireUpdate(updatableEntities[i]);
+        }
+        
+        GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
+        sendEvent.clear();
+        */
+
+        uint32 size = updatableEntities.size();
+        for(uint32 i = 0; i < size; ++i)
+        {
+            UpdateHierarchy(updatableEntities[i], &sendEvent);
         }
         
         GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
@@ -191,6 +261,14 @@ void TransformSystem::TransformAllChildEntities(Entity * entity)
 
 void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * userData, void * callerData)
 {
+    JobArgument2 * args = (JobArgument2*) userData;
+
+    for(uint32 i = 0; i < args->count; ++i)
+    {
+        UpdateHierarchy(updatableEntities[args->first + i], &args->entities);
+    }
+
+#if 0
     JobArgument * arg = (JobArgument*)userData;
     Entity * entity = arg->entity;
     bool & forcedUpdate = arg->forceUpdate;
@@ -237,6 +315,32 @@ void TransformSystem::HierahicFindUpdatableTransform(BaseObject * bo, void * use
 	entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
 
     delete arg;
+#endif
+}
+
+void TransformSystem::UpdateHierarchy(Entity *entity, Vector<Entity*> *updatedEntities, bool force)
+{
+    if(force || entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
+    {
+		TransformComponent * transform = (TransformComponent*) entity->GetComponent(Component::TRANSFORM_COMPONENT);
+		if(transform->parentMatrix)
+		{
+			transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
+            updatedEntities->push_back(entity);
+
+            AtomicIncrement(multipliedNodes);
+            force = true;
+        }
+    }
+
+	uint32 size = entity->GetChildrenCount();
+	for(uint32 i = 0; i < size; ++i)
+	{
+        UpdateHierarchy(entity->GetChild(i), updatedEntities, force);
+    }
+
+	entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE);
+	entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
 }
 
 void TransformSystem::ImmediateEvent(Entity * entity, uint32 event)

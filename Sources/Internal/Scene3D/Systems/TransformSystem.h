@@ -58,7 +58,6 @@ public:
     virtual void Process(float32 timeElapsed);
 
 private:
-    
 	Vector<Entity*> updatableEntities;
     Vector<Entity*> sendEvent;
     
@@ -67,10 +66,11 @@ private:
 
     void FindNodeThatRequireUpdate(Entity * entity);
     void TransformAllChildEntities(Entity * entity);
-    void RecursiveTransformCheck(Entity * entity);
 
+    void UpdateHierarchy(Entity *entity, Vector<Entity*> *updatedEntities, bool force = false);
 
-	void HierahicFindUpdatableTransform(BaseObject * bo, void * userData, void * callerData);
+    void HierahicFindUpdatableTransform(BaseObject * bo, void * userData, void * callerData);
+
     struct JobArgument
     {
         int32 recursionDepth;
@@ -78,6 +78,14 @@ private:
         bool forceUpdate;
         Vector<Entity*>  localSendEvent;
     };
+
+    struct JobArgument2
+    {
+        uint32 first;
+        uint32 count;
+        Vector<Entity*> entities;
+    };
+
     Vector<Vector<Entity*> > eventsVector;
 
 	int32 passedNodes;
