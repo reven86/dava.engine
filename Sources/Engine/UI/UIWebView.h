@@ -40,7 +40,7 @@ namespace DAVA {
 class UIWebView : public UIControl
 {
 protected:
-	virtual ~UIWebView();
+	virtual ~UIWebView(); 
 public:
     // Data detector types. May be a combination of several flags.
     enum eDataDetectorType

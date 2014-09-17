@@ -14,18 +14,18 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if defined(__DAVAENGINE_MACOS__)
+
 #include "Utils/HTTPDownloader.h"
 #include "Utils/Utils.h"
 #include "FileSystem/FileSystem.h"
 
-#if defined(__DAVAENGINE_MACOS__)
 #import <Foundation/NSObject.h>
 #import <Foundation/NSURLConnection.h>
 #import <Foundation/NSData.h>
 #import <Foundation/NSString.h>
 #import <Foundation/NSURLRequest.h>
 #import <Foundation/NSURL.h>
-#endif //#if defined(__DAVAENGINE_MACOS__)
 
 namespace DAVA 
 {
@@ -44,3 +44,5 @@ bool DownloadFileFromURLToDocuments(const String & url, const FilePath & documen
     return false;
 }
 };
+
+#endif //#if defined(__DAVAENGINE_MACOS__)

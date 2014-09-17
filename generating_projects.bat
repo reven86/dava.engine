@@ -10,12 +10,12 @@ echo on
 
 cmake -E make_directory %dava_path%
 cmake -E chdir %dava_path% cmake -G "Visual Studio %version%%arch%" %* ..\..\Sources
-cmake -E chdir %dava_path% cmake --build . 
+::cmake -E chdir %dava_path% cmake --build . 
 ::--target install
 
-cmake -E make_directory %dava_path_android%
-cmake -E chdir %dava_path_android% cmake %OPT% -G"Eclipse CDT4 - MinGW Makefiles" -DCMAKE_MAKE_PROGRAM="%ANDROID_NDK%\prebuilt\windows\bin\make.exe" -DANDROID_NATIVE_API_LEVEL=android-14 -DCMAKE_TOOLCHAIN_FILE="%mydir%\Sources\CMake\Toolchains\android.toolchain.cmake" ..\..\Sources
-cmake -E chdir %dava_path_android% cmake --build . 
+::cmake -E make_directory %dava_path_android%
+::cmake -E chdir %dava_path_android% cmake %OPT% -G"Eclipse CDT4 - MinGW Makefiles" -DCMAKE_MAKE_PROGRAM="%ANDROID_NDK%\prebuilt\windows\bin\make.exe" -DANDROID_NATIVE_API_LEVEL=android-14 -DCMAKE_TOOLCHAIN_FILE="%mydir%\Sources\CMake\Toolchains\android.toolchain.cmake" ..\..\Sources
+::cmake -E chdir %dava_path_android% cmake --build . 
 ::--target install
 
 @popd

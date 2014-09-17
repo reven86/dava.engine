@@ -1,22 +1,36 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 2.8.6)
 
 project (DavaFramework)
 
+set ( FRAMEWORK_DEFINITIONS 
+#-D_DEBUG
+#-DDAVA_DEBUG
+-D_UNICODE 
+-DUNICODE 
+-D_CRT_SECURE_NO_DEPRECATE 
+-D_CRT_SECURE_NO_DEPRECATE
+-D_CRT_NON_CONFORMING_SWPRINTFS
+-DCURL_STATICLIB
+-DDAVA_FMOD
+)
+
 set ( LIBRARIE_TYPE STATIC )
-set ( INCLUDES_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Libs/include" )
-set ( LIBRARIES_DIR )
+set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" ) 
+set ( THIRD_PARTY_INCLUDES_PATH   "${CMAKE_CURRENT_LIST_DIR}/../../Libs/include" )
+set ( THIRD_PARTY_LIBRARIES_PATH  "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib" ) 
+set ( LIST_SHARED_LIBRARIES )
 
 find_package(ZLIB )
 if( ZLIB_FOUND )
-    list (APPEND INCLUDES_DIR  ${ZLIB_INCLUDE_DIR} )
-    list (APPEND LIBRARIES_DIR ${ZLIB_LIBRARY}     )
+    list (APPEND THIRD_PARTY_INCLUDES_PATH  ${ZLIB_INCLUDE_DIR} )
+    list (APPEND LIST_SHARED_LIBRARIES ${ZLIB_LIBRARY}     )
 endif()
 
 if( ANDROID )
     set ( LIBRARIE_TYPE SHARED )
 
     link_directories( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib/android/armeabi-v7a" )
-    list (APPEND LIBRARIES_DIR
+    list (APPEND LIST_SHARED_LIBRARIES
         "libxml_android.a"
         "libpng_android.a"
         "libfreetype_android.a"
@@ -41,57 +55,58 @@ if( ANDROID )
         "-lGLESv2"
         "-lstdc++"
         )
+        
+    set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D___ANDROID__ -DDAVA_FMOD )
+    set ( THIRD_PARTY_LIBRARIES_PATH  "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib/android/${ANDROID_NDK_ABI_NAME}" ) 
+    set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
+    
 elseif( IOS ) 
     set ( CMAKE_C_FLAGS    "-mno-thumb"  )
-    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden"  )
+    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" "libcd.lib" )
+    
 else()
-    list (APPEND LIBRARIES_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Libs/lib")
+    if (MSVC)
+       set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+       set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+       add_definitions       ( -D_ITERATOR_DEBUG_LEVEL=0 )
+    endif()
+
+    file ( GLOB LIB_LIST "${THIRD_PARTY_LIBRARIES_PATH}/win/*.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )
+    list ( APPEND LIST_SHARED_LIBRARIES "opengl32.lib" )
+
 endif()
 
-# Define source files
-#define_source_files (PARENT_SCOPE)
-FILE(GLOB SOURCE_FOLDERS "*" )
-FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
-    IF( IS_DIRECTORY "${FOLDER_ITEM}" )
-        FILE(GLOB FIND_CMAKELIST "${FOLDER_ITEM}/CMakeLists.txt")
-	IF( FIND_CMAKELIST )
-            get_filename_component ( FOLDER_NAME ${FOLDER_ITEM} NAME ) 
-            set ( SOURCES ${SOURCES} ${FOLDER_NAME} )
-	ENDIF()
-    ENDIF()
-ENDFOREACH()
+include ( CMake-common )
 
-foreach (SOURCE ${SOURCES})
-    add_subdirectory (${SOURCE})
-    source_group ("${SOURCE}" FILES ${${SOURCE}_H_FILES} FILES ${${SOURCE}_CPP_FILES} )
-    list (APPEND ENGINE_SOURCE_FILES ${${SOURCE}_CPP_FILES} ${${SOURCE}_H_FILES})
-    list (APPEND ENGINE_INCLUDE_DIRS_ONLY ${SOURCE})
-endforeach ()
-
-define_source_files ( PARENT_SCOPE )
-list ( APPEND ENGINE_SOURCE_FILES ${CPP_FILES} ${H_FILES} )
+# Define source 
+define_source_folders  ()
+generate_source_groups_project ()
 
 include_directories   (.)
-include_directories   ( ${INCLUDES_DIR} ) 
-                                             
+include_directories   ( ${THIRD_PARTY_INCLUDES_PATH} ) 
+                                          
 add_definitions       ( ${FRAMEWORK_DEFINITIONS} )
-add_library           ( DavaFramework ${LIBRARIE_TYPE} ${ENGINE_SOURCE_FILES} )
 
-target_link_libraries (DavaFramework ${LIBRARIES_DIR} )  
+add_library           ( DavaFramework ${LIBRARIE_TYPE} ${PROJECT_SOURCE_FILES} )
 
-install(
-    TARGETS
-    DavaFramework
-    DESTINATION
-    ${THIRD_PARTY_LIBS_PATH}/
-)
+target_link_libraries ( DavaFramework ${LIST_SHARED_LIBRARIES} )  
+MERGE_STATIC_LIBRARIES( DavaFramework ALL ${LIB_LIST} )
 
-install(
-    DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION
-    ${THIRD_PARTY_INCLUDE_PATH}/DavaFramework
-    FILES_MATCHING
-    PATTERN
-    "*.h"
-)
+
+#install(
+#    TARGETS
+#    DavaFramework
+#    DESTINATION
+#    ${THIRD_PARTY_LIBRARIES_PATH}/
+#)
+
+#install(
+#    DIRECTORY
+#    ${CMAKE_CURRENT_SOURCE_DIR}/
+#    DESTINATION
+#    ${THIRD_PARTY_INCLUDE_PATH}/DavaFramework
+#    FILES_MATCHING
+#    PATTERN
+#    "*.h"
+#)

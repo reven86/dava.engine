@@ -14,9 +14,9 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#import "UI/UIScreenManageriPhoneImpl.h"
-
 #if defined(__DAVAENGINE_IPHONE__)
+
+#import "UI/UIScreenManageriPhoneImpl.h"
 
 @interface ScreenManagerImpl()
 - (void) notimerSetViewController: (UIViewController*)viewController;

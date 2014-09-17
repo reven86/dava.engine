@@ -26,7 +26,6 @@ macro (enable_pch)
 endmacro ()
 
 # Macro for defining source files with optional arguments as follows:
-#  GROUP <value> - Group source files into a sub-group folder in VS and Xcode (only works in curent scope context)
 #  GLOB_CPP_PATTERNS <list> - Use the provided globbing patterns for CPP_FILES instead of the default *.cpp
 #  GLOB_H_PATTERNS <list> - Use the provided globbing patterns for H_FILES instead of the default *.h
 #  EXTRA_CPP_FILES <list> - Include the provided list of files into CPP_FILES result
@@ -39,7 +38,7 @@ macro (define_source_files)
 
     # Source files are defined by globbing source files in current source directory and also by including the extra source files if provided
     if (NOT ARG_GLOB_CPP_PATTERNS)
-        set (ARG_GLOB_CPP_PATTERNS *.cpp)    # Default glob pattern
+        set (ARG_GLOB_CPP_PATTERNS *.cpp *.mm)    # Default glob pattern
     endif ()
     if (NOT ARG_GLOB_H_PATTERNS)
         set (ARG_GLOB_H_PATTERNS *.h)
@@ -86,49 +85,148 @@ macro (define_source_files)
         set (${DIR_NAME}_CPP_FILES ${CPP_FILES} PARENT_SCOPE)
         set (${DIR_NAME}_H_FILES ${H_FILES} PARENT_SCOPE)
     # Optionally put source files into further sub-group (only works for current scope due to CMake limitation)
-    elseif (ARG_GROUP)
-        source_group ("Source Files\\${ARG_GROUP}" FILES ${CPP_FILES})
-        source_group ("Header Files\\${ARG_GROUP}" FILES ${H_FILES})
     endif ()
+        
+endmacro ()
+
+#
+macro (define_source_folders )
+
+    unset( PROJECT_SOURCE_FILES CACHE ) 
+    cmake_parse_arguments (ARG "" "" "GLOB_FOLDER;GLOB_ERASE_FOLDERS" ${ARGN})
+
+    IF( ARG_GLOB_FOLDER)
+        define_source_files ( GLOB_CPP_PATTERNS ${ARG_GLOB_FOLDER}/*.cpp ${ARG_GLOB_FOLDER}/*.mm 
+                              GLOB_H_PATTERNS   ${ARG_GLOB_FOLDER}/*.h )
+        FILE( GLOB SOURCE_FOLDERS "${ARG_GLOB_FOLDER}/*" )
+    ELSE()
+        define_source_files ( )
+        FILE( GLOB SOURCE_FOLDERS "*" )
+    ENDIF()
+    
+    list ( APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES} )
+             
+    FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
+        IF( IS_DIRECTORY "${FOLDER_ITEM}" )
+            get_filename_component ( FOLDER_NAME ${FOLDER_ITEM} NAME ) 
+            set( NOT_FIND_ERASE_ITEM 1 )
+            FOREACH( ERASE_ITEM ${ARG_GLOB_ERASE_FOLDERS} )
+                IF( ${FOLDER_NAME} STREQUAL ${ERASE_ITEM} )
+                    set( NOT_FIND_ERASE_ITEM 0 )
+                    break()     
+                ENDIF()
+            ENDFOREACH()
+        
+            IF( ${NOT_FIND_ERASE_ITEM} )
+                FILE(GLOB FIND_CMAKELIST "${FOLDER_ITEM}/CMakeLists.txt")
+                IF( FIND_CMAKELIST )
+                    add_subdirectory (${FOLDER_NAME})
+                    list ( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_CPP_FILES} ${${FOLDER_NAME}_H_FILES} )    
+                ELSE()
+                    list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
+                    define_source_folders( GLOB_FOLDER ${FOLDER_ITEM} )
+                ENDIF()
+            ENDIF()
+        ENDIF()
+    ENDFOREACH()
 
 endmacro ()
 
-MACRO(copy_file_if_changed in_file out_file target)
-    IF(${in_file} IS_NEWER_THAN ${out_file})    
-message("COpying file: ${in_file} to: ${out_file}")
-    	ADD_CUSTOM_COMMAND (
-    		TARGET      ${target}
-    		PRE_BUILD
-    		COMMAND    ${CMAKE_COMMAND}
-    		ARGS       -E copy ${in_file} ${out_file}
-    	)
-	ENDIF(${in_file} IS_NEWER_THAN ${out_file})
-ENDMACRO(copy_file_if_changed)
+#
+macro ( generate_source_groups_project )
 
-MACRO(copy_file_into_directory_if_changed in_file out_dir target)
-	GET_FILENAME_COMPONENT(file_name ${in_file} NAME)
-	copy_file_if_changed(${in_file} ${out_dir}/${file_name}
-${target})	
-ENDMACRO(copy_file_into_directory_if_changed)
+    file (GLOB_RECURSE FILE_LIST "*" )
+    
+    FOREACH( ITEM ${FILE_LIST} )
+        get_filename_component ( FILE_PATH ${ITEM} PATH ) 
 
-#Copies all the files from in_file_list into the out_dir. 
-# sub-trees are ignored (files are stored in same out_dir)
-MACRO(copy_files_into_directory_if_changed in_file_list out_dir target)
-    FOREACH(in_file ${in_file_list})
-		copy_file_into_directory_if_changed(${in_file}
-${out_dir} ${target})
-	ENDFOREACH(in_file)	
-ENDMACRO(copy_files_into_directory_if_changed)
+        IF( "${FILE_PATH}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}" )
+            STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}" "" FILE_GROUP ${FILE_PATH} )
+        ELSE()
+            STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" FILE_GROUP ${FILE_PATH} )
+            STRING(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
+        ENDIF()
 
-#Copy all files and directories in in_dir to out_dir. 
-# Subtrees remain intact.
-MACRO(copy_directory_if_changed in_dir out_dir target)
-message("Copying directory ${in_dir}")
-    FILE(GLOB_RECURSE in_file_list ${in_dir}/*)
-	FOREACH(in_file ${in_file_list})
-	    if(NOT ${in_file} MATCHES ".*/CVS.*")
-    		STRING(REGEX REPLACE ${in_dir} ${out_dir} out_file ${in_file} )
-    		COPY_FILE_IF_CHANGED(${in_file} ${out_file} ${target})
-    	endif(NOT ${in_file} MATCHES ".*/CVS.*")
-	ENDFOREACH(in_file)	
-ENDMACRO(copy_directory_if_changed)
+        source_group( "${FILE_GROUP}" FILES ${ITEM} )
+    ENDFOREACH()
+    
+endmacro ()
+
+  
+# This macro creates a true static library bundle with debug and release configurations
+# TARGET - the output library, or target, that you wish to contain all of the object files
+# CONFIGURATION - DEBUG, RELEASE or ALL
+# LIBRARIES - a list of all of the static libraries you want merged into the TARGET
+#
+# Example use:
+#   MERGE_STATIC_LIBRARIES (mytarget ALL "${MY_STATIC_LIBRARIES}")
+#
+# NOTE: When you call this script, make sure you quote the argument to LIBRARIES if it is a list!
+macro (MERGE_STATIC_LIBRARIES TARGET CONFIGURATION LIBRARIES)
+	if (WIN32)
+		# On Windows you must add aditional formatting to the LIBRARIES variable as a single string for the windows libtool
+		# with each library path wrapped in "" in case it contains spaces
+		string (REPLACE ";" "\" \"" LIBS "${LIBRARIES}")
+		set (LIBS \"${LIBS}\")
+
+		if(${CONFIGURATION} STREQUAL "DEBUG")
+			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_DEBUG "${LIBS}")
+		elseif (${CONFIGURATION} STREQUAL "RELEASE")
+			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_RELEASE "${LIBS}")
+		elseif (${CONFIGURATION} STREQUAL "RELWITHDEBINFO")
+			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_RELWITHDEBINFO "${LIBS}")
+		elseif (${CONFIGURATION} STREQUAL "ALL")
+			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS "${LIBS}")
+		else (${CONFIGURATION} STREQUAL "DEBUG")
+			message (FATAL_ERROR "Be sure to set the CONFIGURATION argument to DEBUG, RELEASE or ALL")
+		endif(${CONFIGURATION} STREQUAL "DEBUG")
+	elseif (APPLE AND ${CMAKE_GENERATOR} STREQUAL "Xcode")
+		# iOS and OSX platforms with Xcode need slighly less formatting
+		string (REPLACE ";" " " LIBS "${LIBRARIES}")
+
+		if(${CONFIGURATION} STREQUAL "DEBUG")
+			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_DEBUG "${LIBS}")
+		elseif (${CONFIGURATION} STREQUAL "RELEASE")
+			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_RELEASE "${LIBS}")
+		elseif (${CONFIGURATION} STREQUAL "RELWITHDEBINFO")
+			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_RELWITHDEBINFO "${LIBS}")
+		elseif (${CONFIGURATION} STREQUAL "ALL")
+			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS "${LIBS}")
+		else (${CONFIGURATION} STREQUAL "DEBUG")
+			message (FATAL_ERROR "Be sure to set the CONFIGURATION argument to DEBUG, RELEASE or ALL")
+		endif(${CONFIGURATION} STREQUAL "DEBUG")
+	elseif (UNIX)
+		# Posix platforms, including Android, require manual merging of static libraries via a special script
+		set (LIBRARIES ${LIBRARIES})
+
+		if (NOT CMAKE_BUILD_TYPE)
+			message (FATAL_ERROR "To use the MergeStaticLibraries script on Posix systems, you MUST define your CMAKE_BUILD_TYPE")
+		endif (NOT CMAKE_BUILD_TYPE)
+		
+		set (MERGE OFF)
+
+		# We need the debug postfix on posix systems for the merge script
+		string (TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
+		if (${BUILD_TYPE} STREQUAL ${CONFIGURATION} OR ${CONFIGURATION} STREQUAL "ALL")
+			if (${BUILD_TYPE} STREQUAL "DEBUG")
+				get_target_property (TARGETLOC ${TARGET} LOCATION_DEBUG)
+			else (${BUILD_TYPE} STREQUAL "DEBUG")
+				get_target_property (TARGETLOC ${TARGET} LOCATION)
+			endif (${BUILD_TYPE} STREQUAL "DEBUG")
+			set (MERGE ON)
+		endif (${BUILD_TYPE} STREQUAL ${CONFIGURATION} OR ${CONFIGURATION} STREQUAL "ALL")
+
+		# Setup the static library merge script
+		if (NOT MERGE)
+			message (STATUS "MergeStaticLibraries ignores mismatch betwen BUILD_TYPE=${BUILD_TYPE} and CONFIGURATION=${CONFIGURATION}")
+		else (NOT MERGE)
+			configure_file (
+				${PROJECT_SOURCE_DIR}/cmake/Modules/PosixMergeStaticLibraries.cmake.in 
+				${CMAKE_CURRENT_BINARY_DIR}/PosixMergeStaticLibraries-${TARGET}.cmake @ONLY
+			)
+			add_custom_command (TARGET ${TARGET} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/PosixMergeStaticLibraries-${TARGET}.cmake
+			)
+		endif (NOT MERGE)
+	endif (WIN32)
+endmacro (MERGE_STATIC_LIBRARIES)

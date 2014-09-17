@@ -15,6 +15,8 @@
 =====================================================================================*/
 #include "Utils/Utils.h"
 
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+
 #ifdef __DAVAENGINE_IPHONE__
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -28,10 +30,7 @@
 
 namespace DAVA
 {
-	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-
-	
+		
 	WideString GetDeviceName()
 	{
 #if defined(__DAVAENGINE_IPHONE__)
@@ -80,11 +79,12 @@ void EnableSleepTimer()
 	app.idleTimerDisabled = NO;
 }
 	
-	uint64 EglGetCurrentContext()
-	{
-		return (uint64)[EAGLContext currentContext];
-	}
+uint64 EglGetCurrentContext()
+{
+    return (uint64)[EAGLContext currentContext];
+}
 	
-#endif
     
 }; // end of namespace DAVA
+
+#endif
