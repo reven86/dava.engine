@@ -35,6 +35,9 @@
 
 namespace DAVA
 {
+    
+#define USE_LOCAL_RESOURCES_PATH "/mnt/sdcard/DavaProject/"
+    
 /**
 	\ingroup filesystem
 	\brief class to work with file pathname

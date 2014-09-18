@@ -443,7 +443,9 @@ void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background
 
     if (spriteNode)
     {
-        background->SetSprite(Sprite::Create(spriteNode->AsString()), 0);
+        Sprite* sprite = Sprite::Create(spriteNode->AsString());
+        background->SetSprite(sprite, 0);
+        SafeRelease(sprite);
     }
     
     if (frameNode)

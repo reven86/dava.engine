@@ -325,6 +325,14 @@ void JniTextField::SetCursorPos(uint32 pos)
 	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, pos);
 }
 
+void JniTextField::SetMaxLength(int32_t value)
+{
+	jmethodID mid = GetMethodID("SetMaxLength", "(II)V");
+	if (!mid)
+		return;
+	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, value);
+}
+
 uint32_t UITextFieldAndroid::sId = 0;
 DAVA::Map<uint32_t, UITextFieldAndroid*> UITextFieldAndroid::controls;
 
@@ -480,6 +488,12 @@ void UITextFieldAndroid::SetCursorPos(uint32 pos)
 {
 	JniTextField jniTextField(id);
 	return jniTextField.SetCursorPos(pos);
+}
+
+void UITextFieldAndroid::SetMaxLength(DAVA::int32 value)
+{
+	JniTextField jniTextField(id);
+	return jniTextField.SetMaxLength(value);
 }
 
 bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)

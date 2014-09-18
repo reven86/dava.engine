@@ -70,4 +70,5 @@ void ScreenManager::OnSelectedScreenChanged(const HierarchyTreeScreenNode* node)
 	}
     
     defaultScreen->SetScreenControl(activeScreenControl);
+    HierarchyTreeController::Instance()->UpdateControlsData();
 }
