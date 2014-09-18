@@ -60,6 +60,19 @@ public:
 		,	TYPE_GRAPHICAL	//!< sprite-based
 		,	TYPE_DISTANCE	//!< distance-based
 	};
+
+	/**
+		\brief Structure with sizes of string
+		Contents draw rect (buffer, sprite bounds), height, baseline, width.
+	*/
+	struct StringMetrics
+	{
+        inline StringMetrics(): drawRect(), height(0), width(0), baseline(0) {}
+		Rect2i drawRect;
+		int32 height;
+		int32 width;
+		int32 baseline;
+	};
 protected:
 	virtual ~Font();
 public:
@@ -142,7 +155,15 @@ public:
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
 		\returns bounding rect for string in pixels
 	*/
-	virtual Size2i GetStringSize(const WideString & str, Vector<float32> *charSizes = 0) const = 0;
+	virtual Size2i GetStringSize(const WideString & str, Vector<float32> *charSizes = 0);
+	
+	/**
+	 \brief Get string metrics.
+	 \param[in] str - processed string
+	 \param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
+	 \returns StringMetrics structure
+	 */
+	virtual StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = 0) const = 0;
 
 	/**
 		\brief Checks if symbol is present in font.

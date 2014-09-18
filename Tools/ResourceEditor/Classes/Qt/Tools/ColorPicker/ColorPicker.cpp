@@ -95,6 +95,66 @@ void ColorPicker::SetMultiplierValue(double val)
     }
 }
 
+void ColorPicker::SetDavaColor(const DAVA::Color& color)
+{
+    const QColor c = ColorToQColor(color);
+    const double mul = CalculateMultiplier(color.r, color.g, color.b);
+
+    SetColor(c);
+    if (mul > 1.0)
+    {
+        SetMultiplierValue(mul);
+    }
+}
+
+DAVA::Color ColorPicker::GetDavaColor() const
+{
+    const QColor c = GetColor();
+    DAVA::Color newColor = QColorToColor(c);
+    const double mul = GetMultiplierValue();
+    ApplyMultiplier(newColor.r, newColor.g, newColor.b, mul);
+
+    return newColor;
+}
+
+double ColorPicker::CalculateMultiplier(float r, float g, float b)
+{
+    const double components[] = { r, g, b };
+    const size_t n = sizeof(components) / sizeof(*components);
+    size_t iMax = 0;
+    for (int i = 1; i < n; i++)
+    {
+        if (components[i] > components[iMax])
+        {
+            iMax = i;
+        }
+    }
+
+    const double multiplier = qMax(components[iMax], 1.0);
+    return multiplier;
+}
+
+bool ColorPicker::RemoveMultiplier(float& r, float& g, float& b)
+{
+    const double multiplier = CalculateMultiplier(r, g, b);
+    if (multiplier > 1.0)
+    {
+        r /= multiplier;
+        g /= multiplier;
+        b /= multiplier;
+        return true;
+    }
+
+    return false;
+}
+
+void ColorPicker::ApplyMultiplier(float& r, float& g, float& b, double mul)
+{
+    r *= mul;
+    g *= mul;
+    b *= mul;
+}
+
 void ColorPicker::RegisterPicker(QString const& key, AbstractColorPicker* picker)
 {
     delete pickers[key];

@@ -128,7 +128,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	{
 		xOffset += (int32)(textBlock->rectSize.dx - renderRect.dx);
 	}
-	else if (align & ALIGN_HCENTER)
+	else if ((align & ALIGN_HCENTER) || (align & ALIGN_HJUSTIFY))
 	{
 		xOffset += (int32)((textBlock->rectSize.dx - renderRect.dx) * 0.5f);
 	}
@@ -141,20 +141,6 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	{
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
-    
-    bool needClipPop = false;
-    if (textBlock->requestedSize.dx == 0 && textBlock->requestedSize.dy == 0)
-    {
-        RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect((float32)xOffset, (float32)yOffset, textBlock->rectSize.dx, textBlock->rectSize.dy));
-        needClipPop = true;
-    }
-    else if (textBlock->requestedSize.dx > 0 && textBlock->requestedSize.dy > 0)
-    {
-        RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect((float32)xOffset, (float32)yOffset, textBlock->requestedSize.dx, textBlock->requestedSize.dy));
-        needClipPop = true;
-    }
     RenderManager::Instance()->PushDrawMatrix();
     RenderManager::Instance()->SetDrawTranslate(Vector2((float32)xOffset, (float32)yOffset));
 
@@ -176,18 +162,14 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
     RenderManager::Instance()->PopDrawMatrix();
-    if (needClipPop)
-    {
-        RenderManager::Instance()->ClipPop();
-    }
 }
 	
-Size2i TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
+Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
 	return InternalDrawText(drawText, 0, 0, 0, 0);
 }
 		
-Size2i TextBlockDistanceRender::DrawTextML(const WideString& drawText,
+Font::StringMetrics TextBlockDistanceRender::DrawTextML(const WideString& drawText,
 										   int32 x, int32 y, int32 w,
 										   int32 xOffset, uint32 yOffset,
 										   int32 lineSize)
@@ -195,20 +177,20 @@ Size2i TextBlockDistanceRender::DrawTextML(const WideString& drawText,
 	return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w), lineSize);
 }
 	
-Size2i TextBlockDistanceRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)
+Font::StringMetrics TextBlockDistanceRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)
 {
 	if (drawText.empty())
-		return Size2i(0, 0);
+		return Font::StringMetrics();
 	
 	int32 lastDrawed = 0;
 	
-	Size2i drawRect = dfFont->DrawStringToBuffer(drawText, x, y, &vertexBuffer[0] + (charDrawed * 4), lastDrawed, NULL, w, lineSize);
-	if (drawRect.dx <= 0 && drawRect.dy <= 0)
-		return drawRect;
+	Font::StringMetrics metrics = dfFont->DrawStringToBuffer(drawText, x, y, &vertexBuffer[0] + (charDrawed * 4), lastDrawed, NULL, w, lineSize);
+	if (metrics.drawRect.dx <= 0 && metrics.drawRect.dy <= 0)
+		return metrics;
 	
-	renderRect = renderRect.Combine(Rect(0.f, 0.f, (float32)drawRect.dx, (float32)drawRect.dy));
+	renderRect = renderRect.Combine(Rect((float32)metrics.drawRect.x, (float)metrics.drawRect.y, (float32)metrics.drawRect.dx, (float32)metrics.drawRect.dy));
 	this->charDrawed += lastDrawed;
-	return drawRect;
+	return metrics;
 }
 	
 };

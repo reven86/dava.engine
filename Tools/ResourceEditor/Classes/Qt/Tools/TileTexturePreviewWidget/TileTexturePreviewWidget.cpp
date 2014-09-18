@@ -264,16 +264,16 @@ bool TileTexturePreviewWidget::eventFilter(QObject *obj, QEvent *ev)
 		{
 			if (ev->type() == QEvent::MouseButtonRelease)
 			{
-                const QColor oldColor = ColorToQColor(colors[i]);
+                const Color oldColor = colors[i];
                 ColorPicker cp(this);
                 cp.setWindowTitle("Tile color");
-                cp.SetColor(oldColor);
+                cp.SetDavaColor(oldColor);
                 const bool result = cp.Exec();
-                const QColor newColor = cp.GetColor();
+                const Color newColor = cp.GetDavaColor();
 
-				if (result && newColor.isValid() && newColor != oldColor)
+				if (result && newColor != oldColor)
 				{
-					SetColor(i, QColorToColor(newColor));
+					SetColor(i, newColor);
 				}
 
 				return true;

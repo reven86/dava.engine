@@ -47,6 +47,7 @@ DFFontInternalData::DFFontInternalData()
     baseSize = 0;
     paddingLeft = paddingRight = paddingTop = paddingBottom = 0;
     lineHeight = 0;
+	baselineHeight = 0;
     spread = 1.f;
 }
     
@@ -113,6 +114,9 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
     const YamlNode* lineHeight = configNode->Get("lineHeight");
     if (lineHeight)
         this->lineHeight = lineHeight->AsFloat();
+	const YamlNode* baselineHeight = configNode->Get("baselineHeight");
+	if (baselineHeight)
+		this->baselineHeight = baselineHeight->AsFloat();
     const YamlNode* spread = configNode->Get("spread");
     if (spread)
         this->spread = spread->AsFloat();
@@ -194,7 +198,7 @@ DFFont* DFFont::Create(const FilePath & path)
     return font;
 }
     
-Size2i DFFont::GetStringSize(const WideString & str, Vector<float32> *charSizes/* = 0*/) const
+Font::StringMetrics DFFont::GetStringMetrics(const WideString & str, Vector<float32> *charSizes/* = 0*/) const
 { 
     int32 charDrawed = 0;
     return DrawStringToBuffer(str, 0, 0, NULL, charDrawed, charSizes);
@@ -236,7 +240,7 @@ bool DFFont::IsEqual(const Font *font) const
     return true;
 }
 
-Size2i DFFont::DrawStringToBuffer(const WideString & str,
+Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
                                   int32 xOffset,
                                   int32 yOffset,
                                   DFFontVertex* vertexBuffer,
@@ -273,6 +277,8 @@ Size2i DFFont::DrawStringToBuffer(const WideString & str,
     DFFontInternalData::CharsMap::const_iterator notDef = fontInternal->chars.find(NOT_DEF_CHAR);
     bool notDefExists = (notDef != fontInternal->chars.end());
 
+	Font::StringMetrics metrics;
+	metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, 0);
     
     for (uint32 charPos = 0; charPos < strLength; ++charPos)
     {
@@ -312,8 +318,13 @@ Size2i DFFont::DrawStringToBuffer(const WideString & str,
         startHeight += yOffset;
         fullHeight += yOffset;
 
+		metrics.drawRect.x = Min(metrics.drawRect.x, (int32)startX);
+		metrics.drawRect.y = Min(metrics.drawRect.y, (int32)startHeight);
+		metrics.drawRect.dx = Max(metrics.drawRect.dx, (int32)(startX + width));
+		metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight));
+
         if (vertexBuffer)
-        {
+        {	
             vertexBuffer[vertexAdded].position.x = startX;
             vertexBuffer[vertexAdded].position.y = startHeight;
             vertexBuffer[vertexAdded].position.z = 0;
@@ -358,7 +369,12 @@ Size2i DFFont::DrawStringToBuffer(const WideString & str,
     }
     lastY += yOffset + GetFontHeight();
 
-    return Size2i((int32)ceilf(lastX), (int32)ceilf(lastY));
+	metrics.drawRect.dx -= metrics.drawRect.x;
+	metrics.drawRect.dy -= metrics.drawRect.y;
+	metrics.height = (int32)ceilf(lastY);
+	metrics.width = (int32)ceilf(lastX);
+	metrics.baseline = yOffset + (int32)fontInternal->baselineHeight;
+	return metrics;
 }
 
 float32 DFFont::GetSpread() const

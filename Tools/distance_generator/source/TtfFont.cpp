@@ -91,7 +91,7 @@ void TtfFont::SetSize(int size)
     this->size = size;
 }
 
-int TtfFont::GetSize()
+int TtfFont::GetSize() const
 {
     return size;
 }
@@ -104,6 +104,11 @@ FT_Face& TtfFont::GetFace()
 float TtfFont::GetLineHeight()
 {
     return FT_MulFix(face->bbox.yMax - face->bbox.yMin, face->size->metrics.y_scale) / 64.f;
+}
+
+float TtfFont::GetBaseline() const
+{
+	return FT_MulFix(face->bbox.yMax, face->size->metrics.y_scale) / 64.f;
 }
 
 bool TtfFont::SetCharMap(int charmap)
@@ -120,7 +125,7 @@ bool TtfFont::SetCharMap(int charmap)
     return false;
 }
 
-int TtfFont::GetCharMap()
+int TtfFont::GetCharMap() const
 {
     for (int i = 0; i < face->num_charmaps; ++i)
     {

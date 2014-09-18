@@ -94,12 +94,8 @@ void EMailTest::LoadResources()
 	SafeRelease(staticText);
 	
 	address = new UITextField(Rect(100, 10, 600, 30));
-#ifdef __DAVAENGINE_IPHONE__
-	//address->SetFontColor(1.f, 1.f, 1.f, 1.f);
-#else
 	address->SetFont(font);
     address->SetTextColor(Color::White);
-#endif
 
 	address->SetText(L"test@test.com");
 	address->SetDebugDraw(true);
@@ -108,12 +104,8 @@ void EMailTest::LoadResources()
 	AddControl(address);
 
 	subject = new UITextField(Rect(100, 50, 600, 30));
-#ifdef __DAVAENGINE_IPHONE__
-	//subject->SetFontColor(1.f, 1.f, 1.f, 1.f);
-#else
 	subject->SetFont(font);
     subject->SetTextColor(Color::White);
-#endif
 
 	subject->SetText(L"test subject");
 	subject->SetDebugDraw(true);
@@ -121,12 +113,8 @@ void EMailTest::LoadResources()
 	AddControl(subject);
 
 	text = new UITextField(Rect(100, 90, 600, 200));
-#ifdef __DAVAENGINE_IPHONE__
-	//text->SetFontColor(1.f, 1.f, 1.f, 1.f);
-#else
 	text->SetFont(font);
     text->SetTextColor(Color::White);
-#endif
 
 	text->SetText(L"test text");
 	text->SetDebugDraw(true);

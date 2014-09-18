@@ -7,6 +7,9 @@
 #include <QEventLoop>
 #include <QPointer>
 
+#include "Main/QtUtils.h"
+
+
 namespace Ui
 {
     class ColorPicker;
@@ -35,6 +38,13 @@ public:
 
     double GetMultiplierValue() const;
     void SetMultiplierValue(double val);
+
+    void SetDavaColor(const DAVA::Color& color);
+    DAVA::Color GetDavaColor() const;
+
+    static double CalculateMultiplier( float r, float g, float b );
+    static bool RemoveMultiplier( float& r, float& g, float& b );
+    static void ApplyMultiplier( float& r, float& g, float& b, double mul );
 
 protected:
     void RegisterPicker(const QString& key, AbstractColorPicker* picker);

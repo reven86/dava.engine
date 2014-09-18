@@ -137,18 +137,24 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
 	SafeDeleteArray(buf);
 }
 	
-Size2i TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
+Font::StringMetrics TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
-	return ftFont->DrawStringToBuffer(buf, x, y, 0, 0, 0, 0, drawText, true);
+	return ftFont->DrawStringToBuffer(buf, x, y, 
+										-textBlock->cacheOx, 
+										-textBlock->cacheOy, 
+										0, 
+										0, 
+										drawText, 
+										true);
 }
 	
-Size2i TextBlockSoftwareRender::DrawTextML(const WideString& drawText, int32 x, int32 y, int32 w, int32 xOffset, uint32 yOffset, int32 lineSize)
+Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawText, int32 x, int32 y, int32 w, int32 xOffset, uint32 yOffset, int32 lineSize)
 {
 	if (textBlock->cacheUseJustify)
 	{
 		return ftFont->DrawStringToBuffer(buf, x, y,
-										  (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
-										  (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
+										  -textBlock->cacheOx + (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
+										  -textBlock->cacheOy + (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
 										  (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w),
 										  (int32)ceilf(Core::GetVirtualToPhysicalFactor() * lineSize),
 										  drawText,
@@ -156,8 +162,8 @@ Size2i TextBlockSoftwareRender::DrawTextML(const WideString& drawText, int32 x, 
 	}
 
 	return ftFont->DrawStringToBuffer(buf, x, y,
-								     (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
-								     (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
+								     -textBlock->cacheOx + (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
+								     -textBlock->cacheOy + (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
 									 0,
 									 0,
 									 drawText,

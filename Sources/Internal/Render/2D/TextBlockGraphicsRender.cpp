@@ -71,7 +71,7 @@ void TextBlockGraphicsRender::PreDraw()
 	RenderManager::Instance()->RestoreRenderTarget();
 }
 	
-Size2i TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
+Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
 	if (textBlock->cacheUseJustify)
 	{
@@ -81,7 +81,7 @@ Size2i TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, 
 	return grFont->DrawString(0, 0, drawText);
 }
 
-Size2i TextBlockGraphicsRender::DrawTextML(const WideString& drawText,
+Font::StringMetrics TextBlockGraphicsRender::DrawTextML(const WideString& drawText,
 										   int32 x, int32 y, int32 w,
 										   int32 xOffset, uint32 yOffset,
 										   int32 lineSize)

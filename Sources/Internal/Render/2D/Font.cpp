@@ -129,7 +129,11 @@ int32 Font::GetVerticalSpacing() const
 	return verticalSpacing;
 }
 
-    
+Size2i Font::GetStringSize(const WideString &str, Vector<float32> *charSizes)
+{
+	Font::StringMetrics metrics = GetStringMetrics(str, charSizes);
+	return Size2i(metrics.width, metrics.height);
+}
     
 void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
