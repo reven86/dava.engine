@@ -774,7 +774,10 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     DownloadManager::Instance()->GetTotal(httpId, total);
     file = File::Create(dstHttps, File::OPEN | File::READ);
     TEST_VERIFY(NULL != file);
-    filesize = file->GetSize();
+    if (NULL != file)
+    {
+        filesize = file->GetSize();
+    }
     TEST_VERIFY(filesize == progress);
     TEST_VERIFY(total > progress);
     SafeRelease(file);

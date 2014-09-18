@@ -102,48 +102,37 @@ void UIListTest::LoadResources()
     DVASSERT(font);
 	font->SetSize(14);
 
-	YamlParser * parser = YamlParser::Create("~res:/TestData/ListTest/ListData.yaml");
-	UIYamlLoader * loader = new UIYamlLoader();
-
+    UIYamlLoader::Load(this, "~res:/TestData/ListTest/ListData.yaml");
+    
 	bool scrollBarAddedToFirstList = false;
-
-	if (parser && parser->GetRootNode())
-	{
-		for (MultiMap<String, YamlNode*>::const_iterator t = parser->GetRootNode()->AsMap().begin(); t != parser->GetRootNode()->AsMap().end(); ++t)
-		{
-			YamlNode * listNode = t->second;
-			// Skip empty list node
-			if (!listNode) continue;
-		
-			UIList *list = NULL;
-			list = new UIList();
-			list->SetDebugDraw(true);
-			list->LoadFromYamlNode(listNode, loader);
-			
-			// Set delegate for list
-			UIListTestDelegate *listDelegate = NULL;
-			listDelegate = new UIListTestDelegate(list->GetRect());
-			list->SetDelegate(listDelegate);
-			
-			AddControl(list);
-			
-			if (!scrollBarAddedToFirstList)
-			{
-				UIScrollBar *verticalScrollbar = new UIScrollBar(Rect(940, 0, 20, 620));
-				verticalScrollbar->GetSlider()->SetSprite("~res:/Gfx/UI/VerticalScroll", 0);
-				verticalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_VERTICAL);
-				verticalScrollbar->GetSlider()->GetBackground()->SetTopBottomStretchCap(10);
-				verticalScrollbar->SetOrientation( UIScrollBar::ORIENTATION_VERTICAL );
-				verticalScrollbar->SetDelegate(list);
-				AddControl(verticalScrollbar);
-
-				scrollBarAddedToFirstList = true;
-			}
-		}
-	}
-
-	SafeRelease(loader);
-	SafeRelease(parser);
+    const uint32 controlsCount = (uint32)GetChildren().size();
+    for(uint32 i = 0; i < controlsCount; ++i)
+    {
+        UIList *list = dynamic_cast<UIList *>(FindByName(Format("UIList%d", i + 1)));
+        if(!list)
+        {
+            continue;
+        }
+        
+        // Set delegate for list
+        UIListTestDelegate *listDelegate = new UIListTestDelegate(list->GetRect());
+        list->SetDelegate(listDelegate);
+        
+        if (!scrollBarAddedToFirstList)
+        {
+            UIScrollBar *verticalScrollbar = new UIScrollBar(Rect(940, 0, 20, 620));
+            verticalScrollbar->GetSlider()->SetSprite("~res:/Gfx/UI/VerticalScroll", 0);
+            verticalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_VERTICAL);
+            verticalScrollbar->GetSlider()->GetBackground()->SetTopBottomStretchCap(10);
+            verticalScrollbar->SetOrientation( UIScrollBar::ORIENTATION_VERTICAL );
+            verticalScrollbar->SetDelegate(list);
+            AddControl(verticalScrollbar);
+            SafeRelease(verticalScrollbar);
+            
+            scrollBarAddedToFirstList = true;
+        }
+    }
+    
 
 	finishTestBtn = new UIButton(Rect(10, 250, 300, 30));
 	finishTestBtn->SetStateFont(0xFF, font);
@@ -159,6 +148,22 @@ void UIListTest::LoadResources()
 
 void UIListTest::UnloadResources()
 {
+    const uint32 controlsCount = (uint32)GetChildren().size();
+    for(uint32 i = 0; i < controlsCount; ++i)
+    {
+        UIList *list = dynamic_cast<UIList *>(FindByName(Format("UIList%d", i + 1)));
+        if(!list)
+        {
+            continue;
+        }
+        
+        // Set delegate for list
+        UIListTestDelegate * delegate = (UIListTestDelegate *)list->GetDelegate();
+        SafeRelease(delegate);
+        list->SetDelegate(NULL);
+    }
+    
+    
 	RemoveAllControls();
 	SafeRelease(finishTestBtn);
 }

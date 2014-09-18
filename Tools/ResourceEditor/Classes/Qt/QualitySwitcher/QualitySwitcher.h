@@ -49,6 +49,7 @@ protected:
 protected slots:
     void OnTxQualitySelect(int index);
     void OnMaQualitySelect(int index);
+    void OnOptionClick(bool);
 };
 
 #endif // __QUALITY_SWITCHER_H__

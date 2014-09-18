@@ -48,6 +48,10 @@ PropertyGridContainerWidget::PropertyGridContainerWidget(QWidget *parent) :
 
 PropertyGridContainerWidget::~PropertyGridContainerWidget()
 {
+    disconnect(PropertiesGridController::Instance(), SIGNAL(PropertiesGridUpdated()),
+    this, SLOT(OnPropertiesGridUpdated()));
+    disconnect(PropertiesGridController::Instance(), SIGNAL(UIControlsDeselected()),
+    this, SLOT(OnUIControlsDeselected()));
     delete ui;
 }
 

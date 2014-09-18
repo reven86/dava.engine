@@ -164,7 +164,7 @@ protected:
 												const double value);
 
     // Set the combobox selected item by the item text.
-    void SetComboboxSelectedItem(QComboBox* comboBoxWidget, const QString& selectedItemText);
+    void SetComboboxSelectedItem(QComboBox* comboBoxWidget, const QString& selectedItemText, bool byToolTip = false);
 
     // Handle Line Edit Editing finished.
     virtual void HandleLineEditEditingFinished(QLineEdit* senderWidget);

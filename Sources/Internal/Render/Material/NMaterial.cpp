@@ -1017,6 +1017,10 @@ void NMaterial::SetMaterialGroup(const FastName &group)
 		{
 			SetQuality(curQuality->qualityName);
 		}
+        else
+        {
+            Logger::Error("Material \"%s\" uses quality group \"%s\", that isn't exist in quality system.", materialName.c_str(), group.c_str());
+        }
 	}
 }
 
@@ -1240,6 +1244,17 @@ void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
 	}
 
     SetTexturesDirty();
+}
+    
+void NMaterial::BuildTextureParamsCache()
+{
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
+    while(it != endIt)
+    {
+        BuildTextureParamsCache(it->second);
+        ++it;
+    }
 }
     
 void NMaterial::BuildActiveUniformsCacheParamsCache()

@@ -36,15 +36,29 @@
 namespace DAVA
 {
 
+class TextBlockSoftwareTexInvalidater: public TextureInvalidater
+{
+public:
+    TextBlockSoftwareTexInvalidater(TextBlock *textBlock);
+    ~TextBlockSoftwareTexInvalidater();
+    virtual void InvalidateTexture(Texture * texture);
+    virtual void AddTexture(Texture *tex);
+    virtual void RemoveTexture(Texture *tex);
+
+private:
+    TextBlock *textBlock;
+    Set<Texture*> textureSet;
+};
+    
 class TextBlockSoftwareRender: public TextBlockRender
 {
 public:
 	TextBlockSoftwareRender(TextBlock*);
-	virtual void Prepare();
+	virtual void Prepare(Texture *texture = NULL);
 	
 protected:
-	virtual Size2i DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
-	virtual Size2i DrawTextML(const WideString& drawText,
+	virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
+	virtual Font::StringMetrics DrawTextML(const WideString& drawText,
 							  int32 x, int32 y, int32 w,
 							  int32 xOffset, uint32 yOffset,
 							  int32 lineSize);

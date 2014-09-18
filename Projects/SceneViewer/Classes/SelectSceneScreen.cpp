@@ -31,11 +31,14 @@
 #include "GameCore.h"
 
 
+#define SETTINGS_PATH "~doc:/SceneViewerSettings.bin"
+
 SelectSceneScreen::SelectSceneScreen()
     : BaseScreen()
     , fileNameText(NULL)
     , fileSystemDialog(NULL)
 {
+    LoadSettings();
 }
 
 void SelectSceneScreen::LoadResources()
@@ -45,7 +48,7 @@ void SelectSceneScreen::LoadResources()
     const Rect screenRect = GetRect();
     const float32 buttonSize = 30.f;
     
-    fileNameText = new UIStaticText(Rect(0, 0, screenRect.dx - buttonSize * 2, buttonSize));
+    fileNameText = new UIStaticText(Rect(0, 0, screenRect.dx - buttonSize * 7, buttonSize));
     fileNameText->SetTextColor(Color::White);
     fileNameText->SetFont(font);
     
@@ -54,18 +57,23 @@ void SelectSceneScreen::LoadResources()
     else
         fileNameText->SetText(StringToWString(scenePath.GetStringValue()));
     
-    ScopedPtr<UIButton> selectButton(CreateButton(Rect(screenRect.dx - buttonSize * 2, 0, buttonSize, buttonSize), L"..."));
-    selectButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnSelectPath));
+    ScopedPtr<UIButton> selectButtonRes(CreateButton(Rect(screenRect.dx - buttonSize * 7, 0, buttonSize * 3, buttonSize), L"~res:/"));
+    selectButtonRes->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnSelectResourcesPath));
+
+    ScopedPtr<UIButton> selectButtonDoc(CreateButton(Rect(screenRect.dx - buttonSize * 4, 0, buttonSize * 3, buttonSize), L"~doc:/"));
+    selectButtonDoc->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnSelectDocumentsPath));
+
     
     ScopedPtr<UIButton> clearPathButton(CreateButton(Rect(screenRect.dx - buttonSize, 0, buttonSize, buttonSize), L"X"));
-    selectButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnClearPath));
+    clearPathButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnClearPath));
 
     ScopedPtr<UIButton> startButton(CreateButton(Rect(0, buttonSize, screenRect.dx, buttonSize), L"Start"));
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnStart));
 
     
     AddControl(fileNameText);
-    AddControl(selectButton);
+    AddControl(selectButtonRes);
+    AddControl(selectButtonDoc);
     AddControl(clearPathButton);
     AddControl(startButton);
     
@@ -86,7 +94,7 @@ void SelectSceneScreen::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void SelectSceneScreen::OnSelectPath(BaseObject *caller, void *param, void *callerData)
+void SelectSceneScreen::OnSelectResourcesPath(BaseObject *caller, void *param, void *callerData)
 {
     DVASSERT(fileSystemDialog);
     fileSystemDialog->SetCurrentDir("~res:/3d/");
@@ -94,9 +102,19 @@ void SelectSceneScreen::OnSelectPath(BaseObject *caller, void *param, void *call
     fileSystemDialog->Show(this);
 }
 
+void SelectSceneScreen::OnSelectDocumentsPath(BaseObject *caller, void *param, void *callerData)
+{
+    DVASSERT(fileSystemDialog);
+    fileSystemDialog->SetCurrentDir("~doc:/");
+    
+    fileSystemDialog->Show(this);
+}
+
+
 void SelectSceneScreen::OnClearPath(BaseObject *caller, void *param, void *callerData)
 {
-    scenePath = FilePath();
+    SetScenePath(FilePath());
+    
     fileNameText->SetText(L"Select scene file");
 }
 
@@ -114,7 +132,7 @@ void SelectSceneScreen::OnStart(BaseObject *caller, void *param, void *callerDat
 
 void SelectSceneScreen::OnFileSelected(UIFileSystemDialog *forDialog, const FilePath &pathToFile)
 {
-    scenePath = pathToFile;
+    SetScenePath(pathToFile);
     fileNameText->SetText(StringToWString(scenePath.GetStringValue()));
 }
 
@@ -122,4 +140,23 @@ void SelectSceneScreen::OnFileSytemDialogCanceled(UIFileSystemDialog *forDialog)
 {
 }
 
+void SelectSceneScreen::SetScenePath(const DAVA::FilePath &path)
+{
+    scenePath = path;
+    SaveSettings();
+}
+
+void SelectSceneScreen::LoadSettings()
+{
+    ScopedPtr<KeyedArchive> settings(new KeyedArchive());
+    settings->Load(SETTINGS_PATH);
+    scenePath = settings->GetString("ScenePath", "");
+}
+
+void SelectSceneScreen::SaveSettings()
+{
+    ScopedPtr<KeyedArchive> settings(new KeyedArchive());
+    settings->SetString("ScenePath", scenePath.GetStringValue());
+    settings->Save(SETTINGS_PATH);
+}
 

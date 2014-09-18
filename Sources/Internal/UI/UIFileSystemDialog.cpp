@@ -35,6 +35,7 @@
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
 #include <algorithm>
+#include "Render/2D/FTFont.h"
 
 namespace DAVA
 {

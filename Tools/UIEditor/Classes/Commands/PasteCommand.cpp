@@ -260,15 +260,17 @@ int PasteCommand::PasteScreens(HierarchyTreeNode::HIERARCHYTREENODESLIST* newScr
 
 		if (!screen && !aggregator)
 			continue;
+        
+        CopyPasteHelper::UpdateAggregators(screen, parent);
 
 		HierarchyTreeNode* copy;
 		if (aggregator)
 		{
-			copy = new HierarchyTreeAggregatorNode(parent, aggregator);
+			copy = new HierarchyTreeAggregatorNode(parent, aggregator, false);
 		}
 		else
 		{
-			copy = new HierarchyTreeScreenNode(parent, screen);
+			copy = new HierarchyTreeScreenNode(parent, screen, false);
 		}
 		copy->SetMarked(true);
         UpdateControlName(parent, copy, parent->IsAggregatorOrScreenNamePresent(copy->GetName()));

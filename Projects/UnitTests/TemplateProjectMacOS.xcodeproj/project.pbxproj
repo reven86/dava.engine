@@ -21,6 +21,7 @@
 		49637DFA18B20D79008A3398 /* RectSpriteTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49637DF818B20D79008A3398 /* RectSpriteTest.cpp */; };
 		49C2B8F816F75A39006E24CB /* DeviceInfoTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */; };
 		49C432081675E370000EA877 /* DXTTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C432061675E370000EA877 /* DXTTest.cpp */; };
+		4F25831919BF237800C28926 /* FunctionBindSingalTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */; };
 		50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50353034194A46C4006B66DB /* SceneSystemTest.cpp */; };
 		5C44737715B5A0FD00028948 /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C44737515B5A0FD00028948 /* SoundTest.cpp */; };
 		5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA2461B158F46D600465879 /* EntityTest.cpp */; };
@@ -142,6 +143,8 @@
 		49C2B8F716F75A39006E24CB /* DeviceInfoTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DeviceInfoTest.h; path = Classes/DeviceInfoTest.h; sourceTree = "<group>"; };
 		49C432061675E370000EA877 /* DXTTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DXTTest.cpp; path = Classes/DXTTest.cpp; sourceTree = "<group>"; };
 		49C432071675E370000EA877 /* DXTTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DXTTest.h; path = Classes/DXTTest.h; sourceTree = "<group>"; };
+		4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FunctionBindSingalTest.cpp; path = Classes/FunctionBindSingalTest.cpp; sourceTree = "<group>"; };
+		4F25831819BF237800C28926 /* FunctionBindSingalTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FunctionBindSingalTest.h; path = Classes/FunctionBindSingalTest.h; sourceTree = "<group>"; };
 		50353033194A46C4006B66DB /* SceneSystemTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneSystemTest.h; path = Classes/SceneSystemTest.h; sourceTree = "<group>"; };
 		50353034194A46C4006B66DB /* SceneSystemTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SceneSystemTest.cpp; path = Classes/SceneSystemTest.cpp; sourceTree = "<group>"; };
 		5C44737515B5A0FD00028948 /* SoundTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SoundTest.cpp; path = Classes/SoundTest.cpp; sourceTree = "<group>"; };
@@ -391,13 +394,13 @@
 			name = RectSpriteTest;
 			sourceTree = "<group>";
 		};
-		49B774CA16B1889A00A80FA3 /* DLCTest */ = {
+		49B774CA16B1889A00A80FA3 /* DLCDownloadTest */ = {
 			isa = PBXGroup;
 			children = (
 				D7E6C5BB1982562C00B96D1A /* DLCDownloadTest.cpp */,
 				D7E6C5BC1982562C00B96D1A /* DLCDownloadTest.h */,
 			);
-			name = DLCTest;
+			name = DLCDownloadTest;
 			sourceTree = "<group>";
 		};
 		49C2B8F416F75A2A006E24CB /* DeviceInfoTest */ = {
@@ -421,6 +424,8 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */,
+				4F25831819BF237800C28926 /* FunctionBindSingalTest.h */,
 				C172EC1418C9F406004309CF /* DFFont */,
 				E8B47D2C196D4F4800D8ADF6 /* ImageSizeTest */,
 				E8490AA51923864A00C07E36 /* ParseTextTest */,
@@ -446,7 +451,7 @@
 				C151B1BC16D50BD000E09BAF /* eMailTest */,
 				C177F27C16D2279B0036F02B /* InputTest */,
 				E81F2AEA16BFA49100C4545E /* MaterialCompilerTest */,
-				49B774CA16B1889A00A80FA3 /* DLCTest */,
+				49B774CA16B1889A00A80FA3 /* DLCDownloadTest */,
 				E8EF77FE1669248300DA7BD2 /* CloneTest */,
 				E83604EC163FEB370061A636 /* KeyedArchiveTest */,
 				49C432051675E35E000EA877 /* DXTTests */,
@@ -869,6 +874,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FEA30C331231362D00E691CC /* main.mm in Sources */,
+				4F25831919BF237800C28926 /* FunctionBindSingalTest.cpp in Sources */,
 				15CBB0B818D30B870038ABA3 /* StringFormatTest.cpp in Sources */,
 				FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,

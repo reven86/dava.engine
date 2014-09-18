@@ -83,7 +83,6 @@ public slots:
 	void OnCollapsed(const QModelIndex & index);
 
 signals:
-	// void PropertyChanged(const QModelIndex &index); // SZ: not implemented because is never used. will be implemented on request
 	void PropertyEdited(const QModelIndex &index);
 
 protected:

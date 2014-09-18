@@ -61,9 +61,9 @@ String JniLocalization::GetLocale()
 	return "en";
 }
 
-void LocalizationAndroid::SelecePreferedLocalization()
+void LocalizationAndroid::SelectPreferedLocalization()
 {
-	LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
+    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
 }
 
 String LocalizationAndroid::GetDeviceLang(void)

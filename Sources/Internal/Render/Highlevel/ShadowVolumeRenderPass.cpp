@@ -32,6 +32,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/ShadowRect.h"
 #include "Render/Highlevel/RenderBatchArray.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -84,6 +85,11 @@ void ShadowVolumeRenderLayer::SetBlendMode(ShadowPassBlendMode::eBlend _blendMod
 
 void ShadowVolumeRenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
 {	
+    if(!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
+    {
+        return;
+    }
+
     if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW)&&renderLayerBatchArray->GetRenderBatchCount())
     {
         if (!shadowRect)

@@ -44,7 +44,7 @@ TextBlockRender::~TextBlockRender()
 	SafeRelease(sprite);
 }
 	
-void TextBlockRender::Prepare()
+void TextBlockRender::Prepare(Texture *texture /*= NULL*/)
 {
 	SafeRelease(sprite);
 }
@@ -79,7 +79,6 @@ void TextBlockRender::DrawText()
 			int32 xOffset = 0;
 			if (textBlock->align & ALIGN_RIGHT)
 			{
-				//xOffset = (int32)(textBlock->cacheFinalW - textBlock->stringSizes[line]);
                 xOffset = (int32)(textBlock->cacheFinalSize.dx - textBlock->stringSizes[line]);
 				if(xOffset < 0)
 				{
@@ -88,7 +87,6 @@ void TextBlockRender::DrawText()
 			}
 			else if(textBlock->align & ALIGN_HCENTER)
 			{
-				//xOffset = (int32)(textBlock->cacheFinalW - textBlock->stringSizes[line]) / 2;
                 xOffset = (int32)(textBlock->cacheFinalSize.dx - textBlock->stringSizes[line]) / 2;
 				if(xOffset < 0)
 				{

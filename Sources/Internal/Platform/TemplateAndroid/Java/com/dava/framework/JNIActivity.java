@@ -1,5 +1,7 @@
 package com.dava.framework;
 
+import org.fmod.FMODAudioDevice;
+
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.SensorManager;
@@ -10,9 +12,9 @@ import android.os.Handler;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import com.dava.framework.JNINotificationProvider;
-
-import org.fmod.FMODAudioDevice;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.bda.controller.Controller;
 
@@ -22,7 +24,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
 	private JNIAccelerometer accelerometer = null;
 	protected JNIGLSurfaceView glView = null;
-
+	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
 	private Controller mController;
@@ -66,6 +68,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         accelerometer = new JNIAccelerometer(this, sensorManager);
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().requestFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+        
         // initialize GL VIEW
         glView = GetSurfaceView();
         assert(glView != null);
@@ -73,7 +80,21 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setClickable(true);
         glView.setFocusable(true);
         glView.requestFocus();
-
+        
+        glView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener()
+        {
+            @Override
+            public void onViewDetachedFromWindow(View v)
+            {
+            }
+            
+            @Override
+            public void onViewAttachedToWindow(View v)
+            {
+                JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+            }
+        });
+        
         mController = Controller.getInstance(this);
         if(mController != null)
         {

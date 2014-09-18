@@ -11,6 +11,7 @@ import android.util.Log;
 public class JNIConfigChooser implements GLSurfaceView.EGLConfigChooser {
 	private static final int EGL_RENDERABLE_TYPE = 0x3040;
 	private static final int EGL_OPENGL_ES2_BIT = 0x0004;
+	
 	private static final int EGL_DEPTH_ENCODING_NV = 0x30E2;
 	private static final int EGL_DEPTH_ENCODING_NONLINEAR_NV = 0x30E3;
 

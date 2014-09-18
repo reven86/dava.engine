@@ -1126,6 +1126,12 @@
 		A6E4FE141761D9E100B48E41 /* ActionUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6E4FE071761D97C00B48E41 /* ActionUpdateSystem.cpp */; };
 		A6E4FE151761D9E500B48E41 /* ActionUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E4FE081761D97C00B48E41 /* ActionUpdateSystem.h */; };
 		A6E4FE161761D9E700B48E41 /* ActionUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E4FE081761D97C00B48E41 /* ActionUpdateSystem.h */; };
+		B4C29D3F199B592D001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D3D199B592D001B83FE /* SceneCache.cpp */; };
+		B4C29D40199B592D001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D3D199B592D001B83FE /* SceneCache.cpp */; };
+		B4C29D41199B592D001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D3D199B592D001B83FE /* SceneCache.cpp */; };
+		B4C29D42199B592D001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D3E199B592D001B83FE /* SceneCache.h */; };
+		B4C29D43199B592D001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D3E199B592D001B83FE /* SceneCache.h */; };
+		B4C29D44199B592D001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D3E199B592D001B83FE /* SceneCache.h */; };
 		C151B17716D3747E00E09BAF /* DVAssertMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */; };
 		C151B17816D3747E00E09BAF /* DVAssertMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B17516D3747E00E09BAF /* DVAssertMessage.h */; };
 		C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */; };
@@ -2622,7 +2628,7 @@
 		7A16934A180EE75A005F1FBC /* AutotestingDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingDB.h; sourceTree = "<group>"; };
 		7A16934B180EE75A005F1FBC /* GameAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameAPI.cpp; sourceTree = "<group>"; };
 		7A16934C180EE75A005F1FBC /* GameAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameAPI.h; sourceTree = "<group>"; };
-		840D24201703311400267C58 /* DeviceInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceInfo.cpp; sourceTree = "<group>"; };
+		840D24201703311400267C58 /* DeviceInfo.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = DeviceInfo.cpp; sourceTree = "<group>"; };
 		840D24211703311400267C58 /* DeviceInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceInfo.h; sourceTree = "<group>"; };
 		840ED3E016D5089E00D2BA6C /* DPIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPIHelper.h; sourceTree = "<group>"; };
 		840ED3E216D5095000D2BA6C /* DPIHelperMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DPIHelperMacOS.mm; sourceTree = "<group>"; };
@@ -2674,6 +2680,8 @@
 		A6E4FE021761D96C00B48E41 /* CustomPropertiesComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomPropertiesComponent.h; sourceTree = "<group>"; };
 		A6E4FE071761D97C00B48E41 /* ActionUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActionUpdateSystem.cpp; sourceTree = "<group>"; };
 		A6E4FE081761D97C00B48E41 /* ActionUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionUpdateSystem.h; sourceTree = "<group>"; };
+		B4C29D3D199B592D001B83FE /* SceneCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneCache.cpp; sourceTree = "<group>"; };
+		B4C29D3E199B592D001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
 		C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DVAssertMessage.cpp; sourceTree = "<group>"; };
 		C151B17516D3747E00E09BAF /* DVAssertMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DVAssertMessage.h; sourceTree = "<group>"; };
 		C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DVAssertMessageApple.mm; sourceTree = "<group>"; };
@@ -4366,6 +4374,8 @@
 				E8989CF716BD24E500732C04 /* ProxyNode.h */,
 				E8989CFE16BD24E500732C04 /* Scene.cpp */,
 				E8989CFF16BD24E500732C04 /* Scene.h */,
+				B4C29D3D199B592D001B83FE /* SceneCache.cpp */,
+				B4C29D3E199B592D001B83FE /* SceneCache.h */,
 				E8989D0016BD24E500732C04 /* SceneAnimationMixer.cpp */,
 				E8989D0116BD24E500732C04 /* SceneAnimationMixer.h */,
 				E8989D0216BD24E500732C04 /* SceneFile.cpp */,
@@ -5000,6 +5010,7 @@
 				176DEA11174B5561007A983B /* GlobalEventSystem.h in Headers */,
 				176DEA12174B5561007A983B /* ComponentHelpers.h in Headers */,
 				176DEA13174B5561007A983B /* ParticleForce.h in Headers */,
+				B4C29D44199B592D001B83FE /* SceneCache.h in Headers */,
 				176DEA14174B5561007A983B /* DPIHelper.h in Headers */,
 				7A169344180EE619005F1FBC /* AutotestingSystemLua.h in Headers */,
 				176DEA15174B5561007A983B /* UIWebView.h in Headers */,
@@ -5289,6 +5300,7 @@
 				E89C58E418B2458E002C25FE /* Atomic.h in Headers */,
 				E8989F5D16BD24E500732C04 /* SharedFBO.h in Headers */,
 				E8989F6316BD24E500732C04 /* Texture.h in Headers */,
+				B4C29D42199B592D001B83FE /* SceneCache.h in Headers */,
 				E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
 				E8989F6516BD24E500732C04 /* TextureDescriptor.h in Headers */,
 				E8989F6816BD24E500732C04 /* UberShader.h in Headers */,
@@ -5598,6 +5610,7 @@
 				E898A09B16BD265400732C04 /* Bitstream.h in Headers */,
 				647EFC4D195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				E898A09C16BD265400732C04 /* DynamicMemoryFile.h in Headers */,
+				B4C29D43199B592D001B83FE /* SceneCache.h in Headers */,
 				E898A09D16BD265400732C04 /* File.h in Headers */,
 				0214140B181984D600925E51 /* DAVAClassRegistrator.h in Headers */,
 				5013F6951859EB0400FB3C51 /* StaticOcclusionSystem.h in Headers */,
@@ -6052,6 +6065,7 @@
 				176DEA50174B5561007A983B /* BaseObjectChecker.cpp in Sources */,
 				176DEA51174B5561007A983B /* Data.cpp in Sources */,
 				176DEA52174B5561007A983B /* DynamicObjectCache.cpp in Sources */,
+				B4C29D41199B592D001B83FE /* SceneCache.cpp in Sources */,
 				176DEA53174B5561007A983B /* EventDispatcher.cpp in Sources */,
 				176DEA54174B5561007A983B /* FastName.cpp in Sources */,
 				176DEA55174B5561007A983B /* FixedSizePoolAllocator.cpp in Sources */,
@@ -6533,6 +6547,7 @@
 				E8989EDF16BD24E500732C04 /* GraphicsFont.cpp in Sources */,
 				E8989EE216BD24E500732C04 /* Sprite.cpp in Sources */,
 				84CB671B191FC8850086483D /* Image.mm in Sources */,
+				B4C29D3F199B592D001B83FE /* SceneCache.cpp in Sources */,
 				E8989EE416BD24E500732C04 /* TextBlock.cpp in Sources */,
 				E8989EE616BD24E500732C04 /* AnimatedMesh.cpp in Sources */,
 				E8989EE816BD24E500732C04 /* EdgeAdjacency.cpp in Sources */,
@@ -6968,6 +6983,7 @@
 				E898A24216BD265400732C04 /* TextureDescriptor.cpp in Sources */,
 				E8F43E25186C3D02006796CB /* MaterialSystem.cpp in Sources */,
 				E8FC12F71869726A0095D8FE /* QualitySettingsSystem.cpp in Sources */,
+				B4C29D40199B592D001B83FE /* SceneCache.cpp in Sources */,
 				E898A24316BD265400732C04 /* UberShader.cpp in Sources */,
 				E898A24416BD265400732C04 /* Box2DDebugDraw.cpp in Sources */,
 				E898A24516BD265400732C04 /* Box2DGameObject.cpp in Sources */,

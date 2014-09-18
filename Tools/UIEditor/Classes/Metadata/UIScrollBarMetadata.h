@@ -40,6 +40,8 @@ class UIScrollBarMetadata : public UIControlMetadata
 	
 	// Scrollbar orientation
     Q_PROPERTY(int ScrollOrientation READ GetScrollOrientation WRITE SetScrollOrientation);
+    //UIScrollBarDelegateName
+    Q_PROPERTY(QString UIScrollBarDelegateName READ GetUIScrollBarDelegateName WRITE SetUIScrollBarDelegateName);
 	
 public:
     UIScrollBarMetadata(QObject* parent = 0);
@@ -58,6 +60,8 @@ protected:
     // Getters/setters.
 	int GetScrollOrientation();
 	void SetScrollOrientation(int value);
+    QString GetUIScrollBarDelegateName();
+	void SetUIScrollBarDelegateName(const QString& value);
 };
 
 };

@@ -235,6 +235,15 @@
     <Filter Include="Classes\SceneProcessing">
       <UniqueIdentifier>{2bf6f948-d61d-4b65-b129-1da84f9d082c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Qt\Tools\Helpers">
+      <UniqueIdentifier>{1c7edffa-7943-4f32-8454-673d0a171c80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\Widgets">
+      <UniqueIdentifier>{c97bac75-5247-45f5-b394-9242c71b15fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\ColorPicker">
+      <UniqueIdentifier>{3dacba69-c0f7-4b98-ac0d-4b37dbe010fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\Collada\ColladaAnimatedMesh.cpp">
@@ -2019,6 +2028,105 @@
     <ClCompile Include="Classes\SceneProcessing\SceneProcessor.cpp">
       <Filter>Classes\SceneProcessing</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\Helpers\MouseHelper.cpp">
+      <Filter>Classes\Qt\Tools\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\Helpers\PaintingHelper.cpp">
+      <Filter>Classes\Qt\Tools\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\Widgets\AbstractSlider.cpp">
+      <Filter>Classes\Qt\Tools\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\Widgets\ValueSlider.cpp">
+      <Filter>Classes\Qt\Tools\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\AbstractColorPicker.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorComponentSlider.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorPicker.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorPickerHSV.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorPickerRGBAM.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorPreview.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\EyeDropper.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\GradientSlider.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\PaletteHSV.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\Helpers\MouseHelper_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\Helpers\PaintingHelper_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\Widgets\AbstractSlider_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\Widgets\ValueSlider_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\GuiTypes_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\AbstractColorPicker_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorComponentSlider_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorPicker_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorPickerHSV_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorPickerRGBAM_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorPreview_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\EyeDropper_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\GradientSlider_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\PaletteHSV_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\DropperShade.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\DropperShade_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\CustomPalette.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\CustomPalette_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ColorPicker\ColorCell.cpp">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ColorPicker\ColorCell_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Collada\ColladaAnimatedMesh.h">
@@ -3551,6 +3659,57 @@
     <ClInclude Include="Classes\SceneProcessing\SceneProcessor.h">
       <Filter>Classes\SceneProcessing</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\Helpers\MouseHelper.h">
+      <Filter>Classes\Qt\Tools\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\Helpers\PaintingHelper.h">
+      <Filter>Classes\Qt\Tools\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\Widgets\AbstractSlider.h">
+      <Filter>Classes\Qt\Tools\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\Widgets\ValueSlider.h">
+      <Filter>Classes\Qt\Tools\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\AbstractColorPicker.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorComponentSlider.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorPicker.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorPickerHSV.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorPickerRGBAM.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorPreview.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\EyeDropper.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\GradientSlider.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\PaletteHSV.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\GuiTypes.h">
+      <Filter>Classes\Qt\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\DropperShade.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\CustomPalette.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ColorPicker\ColorCell.h">
+      <Filter>Classes\Qt\Tools\ColorPicker</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DataQt\mainwindow.ui">
@@ -3620,6 +3779,12 @@
       <Filter>QtData</Filter>
     </None>
     <None Include="DataQt\HeightDeltaTool.ui">
+      <Filter>QtData</Filter>
+    </None>
+    <None Include="DataQt\ColorPicker.ui">
+      <Filter>QtData</Filter>
+    </None>
+    <None Include="DataQt\QtIcons.qrc">
       <Filter>QtData</Filter>
     </None>
   </ItemGroup>

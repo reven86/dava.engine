@@ -186,8 +186,18 @@ public class JNIWebView {
 					Log.d(TAG, String.format("Unknown view id %d", id));
 					return;
 				}
+				
 				WebView webView = views.get(id);
-				webView.loadDataWithBaseURL(baseUrl, data, "text/html", "utf-8", null);
+				
+				if(baseUrl.startsWith("/"))
+				{
+					webView.loadDataWithBaseURL("file://" + baseUrl, data, "text/html", "utf-8", null);
+				}
+				else
+				{
+					webView.loadDataWithBaseURL("file:///android_asset/" + baseUrl, data, "text/html", "utf-8", null);
+				}
+				
 			}
 		});
 	}

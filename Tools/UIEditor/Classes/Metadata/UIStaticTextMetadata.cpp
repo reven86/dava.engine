@@ -349,7 +349,7 @@ int UIStaticTextMetadata::GetFittingType() const
     return GetActiveStaticText()->GetFittingOption();
 }
 
-int UIStaticTextMetadata::GetFontShadowColorInheritType() const
+int UIStaticTextMetadata::GetFontColorInheritType() const
 {
     if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
     {
@@ -360,7 +360,7 @@ int UIStaticTextMetadata::GetFontShadowColorInheritType() const
     return GetActiveStaticText()->GetTextBackground()->GetColorInheritType();
 }
 
-void UIStaticTextMetadata::SetFontShadowColorInheritType(int value)
+void UIStaticTextMetadata::SetFontColorInheritType(int value)
 {
     if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
     {
@@ -368,5 +368,32 @@ void UIStaticTextMetadata::SetFontShadowColorInheritType(int value)
     }
 
     GetActiveStaticText()->GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
-    GetActiveStaticText()->GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+    if (GetActiveStaticText()->GetShadowBackground())
+    {
+    	GetActiveStaticText()->GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+    }
+}
+
+int UIStaticTextMetadata::GetFontPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return GetActiveStaticText()->GetTextBackground()->GetPerPixelAccuracyType();
+}
+
+void UIStaticTextMetadata::SetFontPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return;
+    }
+    
+    GetActiveStaticText()->GetTextBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+    if (GetActiveStaticText()->GetShadowBackground())
+    {
+    	GetActiveStaticText()->GetShadowBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+    }
 }

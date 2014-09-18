@@ -602,6 +602,54 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForColorInheritType()
     }
 }
 
+int UIButtonMetadata::GetPerPixelAccuracyType()
+{
+    if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return GetPerPixelAccuracyTypeForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+		GetActiveUIButton()->SetStatePerPixelAccuracyType(this->uiControlStates[i],(UIControlBackground::ePerPixelAccuracyType)value);
+	}
+    UpdatePropertyDirtyFlagForPerPixelAccuracyType();
+}
+
+int UIButtonMetadata::GetPerPixelAccuracyTypeForState(UIControl::eControlState state) const
+{
+    UIControlBackground* background = GetActiveUIButton()->GetStateBackground(state);
+    if (!background)
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return background->GetPerPixelAccuracyType();
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForPerPixelAccuracyType()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetPerPixelAccuracyTypeForState(curState) !=
+                              GetPerPixelAccuracyTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME, curStateDirty);
+    }
+}
+
 int UIButtonMetadata::GetAlign()
 {
     if (!VerifyActiveParamID())
@@ -1008,17 +1056,17 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowColor()
     }
 }
 
-int UIButtonMetadata::GetFontShadowColorInheritType() const
+int UIButtonMetadata::GetFontColorInheritType() const
 {
     if (!VerifyActiveParamID())
     {
         return UIControlBackground::COLOR_IGNORE_PARENT;
     }
     
-    return GetFontShadowColorInheritTypeForState(uiControlStates[GetActiveStateIndex()]);
+    return GetFontColorInheritTypeForState(uiControlStates[GetActiveStateIndex()]);
 }
 
-void UIButtonMetadata::SetFontShadowColorInheritType(int value)
+void UIButtonMetadata::SetFontColorInheritType(int value)
 {
     if (!VerifyActiveParamID())
     {
@@ -1032,10 +1080,10 @@ void UIButtonMetadata::SetFontShadowColorInheritType(int value)
     }
 
     UpdateExtraDataLocalizationKey();
-    UpdatePropertyDirtyFlagForFontShadowColorInheritType();
+    UpdatePropertyDirtyFlagForFontColorInheritType();
 }
 
-int UIButtonMetadata::GetFontShadowColorInheritTypeForState(UIControl::eControlState state) const
+int UIButtonMetadata::GetFontColorInheritTypeForState(UIControl::eControlState state) const
 {
     UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
     if (textControl)
@@ -1046,16 +1094,67 @@ int UIButtonMetadata::GetFontShadowColorInheritTypeForState(UIControl::eControlS
     return UIControlBackground::COLOR_IGNORE_PARENT;
 }
 
-void UIButtonMetadata::UpdatePropertyDirtyFlagForFontShadowColorInheritType()
+void UIButtonMetadata::UpdatePropertyDirtyFlagForFontColorInheritType()
 {
     int statesCount = UIControlStateHelper::GetUIControlStatesCount();
     for (int i = 0; i < statesCount; i ++)
     {
         UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
         
-        bool curStateDirty = (GetFontShadowColorInheritTypeForState(curState) !=
-                              GetFontShadowColorInheritTypeForState(GetReferenceState()));
-        SetStateDirtyForProperty(curState, PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME, curStateDirty);
+        bool curStateDirty = (GetFontColorInheritTypeForState(curState) !=
+                              GetFontColorInheritTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::FONT_COLOR_INHERIT_TYPE_PROPERTY_NAME, curStateDirty);
+    }
+}
+
+int UIButtonMetadata::GetFontPerPixelAccuracyType() const
+{
+   if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return GetFontPerPixelAccuracyTypeForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetFontPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        GetActiveUIButton()->SetStateFontPerPixelAccuracyType(state, (UIControlBackground::ePerPixelAccuracyType)value);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForFontPerPixelAccuracyType();
+}
+
+int UIButtonMetadata::GetFontPerPixelAccuracyTypeForState(UIControl::eControlState state) const
+{
+    UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
+    if (textControl)
+    {
+        return textControl->GetTextBackground()->GetPerPixelAccuracyType();
+    }
+    
+    return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForFontPerPixelAccuracyType()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetFontPerPixelAccuracyTypeForState(curState) !=
+                              GetFontPerPixelAccuracyTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::FONT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME, curStateDirty);
     }
 }
 
@@ -1070,10 +1169,12 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
     
     UpdatePropertyDirtyFlagForDrawType();
     UpdatePropertyDirtyFlagForColorInheritType();
+    UpdatePropertyDirtyFlagForPerPixelAccuracyType();
     UpdatePropertyDirtyFlagForAlign();
     
     UpdatePropertyDirtyFlagForFittingType();
-    UpdatePropertyDirtyFlagForFontShadowColorInheritType();
+    UpdatePropertyDirtyFlagForFontColorInheritType();
+    UpdatePropertyDirtyFlagForFontPerPixelAccuracyType();
     
     UpdatePropertyDirtyFlagForLeftRightStretchCap();
     UpdatePropertyDirtyFlagForTopBottomStretchCap();

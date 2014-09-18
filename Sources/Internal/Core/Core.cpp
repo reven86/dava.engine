@@ -50,6 +50,7 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
+#include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Platform/Notification.h"
@@ -150,6 +151,8 @@ void Core::CreateSingletons()
 	new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
+    new SceneCache();
+	
 
 #if defined(__DAVAENGINE_ANDROID__)
     new AssetsManager();
@@ -220,6 +223,7 @@ void Core::ReleaseSingletons()
 	AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
     ImageSystem::Instance()->Release();
+    SceneCache::Instance()->Release();
 
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManager::Instance()->Release();
@@ -350,6 +354,8 @@ void Core::CalculateScaleMultipliers()
 	
 	drawOffset.y = floorf(drawOffset.y);
 	drawOffset.x = floorf(drawOffset.x);
+	virtualScreenHeight = ceilf(virtualScreenHeight);
+	virtualScreenWidth = ceilf(virtualScreenWidth);
 
 	UIControlSystem::Instance()->CalculateScaleMultipliers();
 
@@ -625,7 +631,11 @@ void Core::SystemAppStarted()
 	if (core)core->OnAppStarted();
     
 #ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->OnAppStarted();
+    FilePath file = "~res:/Autotesting/id.yaml";
+    if (file.Exists())
+    {
+        AutotestingSystem::Instance()->OnAppStarted();
+    }
 #endif //__DAVAENGINE_AUTOTESTING__
 }
 	

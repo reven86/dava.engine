@@ -91,6 +91,7 @@ public:
 	
 	Sprite * GetSprite();
 	bool IsSpriteReady();
+	const Vector2& GetSpriteOffset();
     
     const Vector2 & GetTextSize();
 
@@ -101,12 +102,15 @@ public:
 
 	const Vector<int32> & GetStringSizes() const;
     
+    void ForcePrepare(Texture *texture);
+    
 protected:
 	TextBlock();
 	~TextBlock();
 	
-	void Prepare();
+	void Prepare(Texture *texture = NULL);
 	void PrepareInternal(BaseObject * caller, void * param, void *callerData);
+    
 	void CalculateCacheParams();
 
 	void DrawToBuffer(Font *font, uint8 *buf);
@@ -119,12 +123,15 @@ protected:
 	Vector2 requestedSize;
 
     Vector2 cacheFinalSize;
+	Vector2 cacheSpriteOffset;
 
 	float32 originalFontSize;
     
 	int32 cacheDx;
 	int32 cacheDy;
 	int32 cacheW;
+	int32 cacheOx;
+	int32 cacheOy;
 
     int32 fittingType;
 	Vector2 position;
@@ -150,6 +157,7 @@ protected:
 	friend class TextBlockGraphicsRender;
 	friend class TextBlockDistanceRender;
 	TextBlockRender* textBlockRender;
+    TextureInvalidater *textureInvalidater;
 };
 
 }; //end of namespace

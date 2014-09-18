@@ -54,9 +54,17 @@ public:
     static int GetColorInheritTypesCount();
     static UIControlBackground::eColorInheritType GetColorInheritType(int index);
     static QString GetColorInheritTypeDesc(int index);
-
+    
     // Get the Color Inherit Type Description by the Value.
     static QString GetColorInheritTypeDescByType(UIControlBackground::eColorInheritType inheritType);
+    
+    // Per Pixer Accuracy.
+    static int GetPerPixelAccuracyTypesCount();
+    static UIControlBackground::ePerPixelAccuracyType GetPerPixelAccuracyType(int index);
+    static QString GetPerPixelAccuracyTypeDesc(int index);
+    
+    // Get the Pixer Accuracy Type Description by the Value.
+    static QString GetPerPixelAccuracyTypeDescByType(UIControlBackground::ePerPixelAccuracyType pixelAccuracyType);
 
     //Align.
     static int GetAlignTypesCount();
@@ -126,6 +134,7 @@ protected:
     // Validate the indexes.
     static bool ValidateDrawTypeIndex(int index);
     static bool ValidateColorInheritTypeIndex(int index);
+    static bool ValidatePerPixelAccuracyTypeIndex(int index);
     static bool ValidateAlginTypeIndex(int index);
 	static bool ValidateSpriteModificationIndex(int index);
 
@@ -149,6 +158,12 @@ protected:
     {
         UIControlBackground::eColorInheritType colorInheritType;
         const char* colorInheritTypeDesc;
+    };
+    
+    struct PerPixelAccuracyTypesData
+    {
+        UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType;
+        const char* perPixelAccuracyTypeDesc;
     };
 
     struct AlignTypesData
@@ -207,6 +222,7 @@ protected:
 
     static const DrawTypesData drawTypesData[];
     static const ColorInheritTypesData colorInheritTypesData[];
+    static const PerPixelAccuracyTypesData perPixelAccuracyTypesData[];
     static const AlignTypesData alignTypesData[];
 	static const SpriteModificationTypesData spriteModificationTypesData[];
 	

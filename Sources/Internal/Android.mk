@@ -96,7 +96,7 @@ endif
 endif
 
 # set build flags
-LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1 -Wno-psabi
+LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 LOCAL_CFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
 

@@ -55,7 +55,7 @@ public:
 class LocalizationAndroid
 {
 public:
-	static void SelecePreferedLocalization();
+	static void SelectPreferedLocalization();
     static String GetDeviceLang(void);
 };
 	

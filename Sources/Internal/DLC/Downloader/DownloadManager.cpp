@@ -51,7 +51,6 @@ DownloadManager::DownloadManager()
     , isThreadStarted(false)
     , currentTask(NULL)
     , downloader(0)
-    , callNotify(NULL)
     , remoteFileSize(0)
     , downloadedTotal(0)
 {

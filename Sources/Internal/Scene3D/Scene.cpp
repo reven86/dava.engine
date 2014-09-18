@@ -80,6 +80,7 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/SceneCache.h"
 
 //#include "Entity/Entity.h"
 //#include "Entity/EntityManager.h"
@@ -128,6 +129,8 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 
     // this will force scene to create hidden global material
     SetGlobalMaterial(NULL);
+    
+    SceneCache::Instance()->InsertScene(this);
 }
 
 void Scene::CreateComponents()
@@ -356,6 +359,8 @@ void Scene::CreateSystems()
 
 Scene::~Scene()
 {
+    SceneCache::Instance()->RemoveScene(this);
+    
 	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
 	{
 		AnimatedMesh * obj = *t;

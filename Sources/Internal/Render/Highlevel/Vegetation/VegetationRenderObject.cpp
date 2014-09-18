@@ -291,10 +291,10 @@ void VegetationRenderObject::Save(KeyedArchive *archive, SerializationContext *s
     archive->SetVector4("vro.layersAnimationDrug", GetLayerAnimationDragCoefficient());
     
     uint32 bitCount = densityMap.size();
-    archive->SetUInt32("vro.densityBitCount", bitCount);
+    archive->SetUInt32("vro.flippedDensityBitCount", bitCount);
     for(uint32 i = 0; i < bitCount; ++i)
     {
-        archive->SetBool(Format("vro.densityBit.%d", i), densityMap[i]);
+        archive->SetBool(Format("vro.flippedDensityBit.%d", i), densityMap[i]);
     }
     
     const Vector3& savingLodRanges = GetLodRange();
@@ -398,13 +398,13 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
         SetLayersAnimationSpring(archive->GetVector4("vro.layersAnimationSpring", GetLayersAnimationSpring()));
         
         Vector<bool> densityBits;
-        if(archive->IsKeyExists("vro.densityBitCount"))
+        if(archive->IsKeyExists("vro.flippedDensityBitCount"))
         {
-            uint32 bitCount = archive->GetUInt32("vro.densityBitCount");
+            uint32 bitCount = archive->GetUInt32("vro.flippedDensityBitCount");
             densityBits.resize(bitCount);
             for(uint32 i = 0; i < bitCount; ++i)
             {
-                densityBits[i] = archive->GetBool(Format("vro.densityBit.%d", i));
+                densityBits[i] = archive->GetBool(Format("vro.flippedDensityBit.%d", i));
             }
         }
         else
@@ -415,10 +415,17 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
             }
         }
         
-        if(densityBits.size() > 0)
+        if(densityBits.size() == 0)
         {
-            SetDensityMap(densityBits);
+            densityBits.resize(DENSITY_MAP_SIZE * DENSITY_MAP_SIZE);
+            uint32 bitCount = densityBits.size();
+            for(size_t bitIndex = 0; bitIndex < bitCount; ++bitIndex)
+            {
+                densityBits[bitIndex] = true;
+            }
         }
+
+        SetDensityMap(densityBits);
         
         if(archive->IsKeyExists("vro.layersAnimationDrug"))
         {
@@ -1495,9 +1502,14 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(FilePath lig
                 {
                     for(uint32 x = 0; x < DENSITY_MAP_SIZE; ++x)
                     {
-                        float32 meanAlpha = GetMeanAlpha(x, y,
-                                                             ratio, stride,
-                                                             lightmapImage);
+                        //VI: flip Y in order to match landscape and vegetation light mask
+                        uint32 flippedY = DENSITY_MAP_SIZE - y - 1;
+
+                        float32 meanAlpha = GetMeanAlpha(x,
+                                                         flippedY,
+                                                         ratio,
+                                                         stride,
+                                                         lightmapImage);
                         
                         
                         uint32 bitIndex = x + y * DENSITY_MAP_SIZE;
