@@ -112,6 +112,11 @@ Thread::Id Thread::GetCurrentId()
     return retId;
 }
 
+Thread::Id Thread::GetMainId()
+{
+    return mainThreadId;
+}
+
 Thread * Thread::Create(const Message& msg)
 {
 	Thread * t = new Thread(msg);

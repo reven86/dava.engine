@@ -101,15 +101,20 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
                                             fragmentShaderDataStart,
                                             fragmentShaderDataSize,
                                             defines);
-	
-        CompiledShaderData * shaderData = new CompiledShaderData();
-        shaderData->shader = shader;
-        shaderData->defines = defines;
 
-        ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
-                                                               Message(this, &ShaderAsset::CompileShaderInternal, shaderData));
-        JobInstanceWaiter waiter(job);
-        waiter.Wait();
+// ##job##
+//         CompiledShaderData * shaderData = new CompiledShaderData();
+//         shaderData->shader = shader;
+//         shaderData->defines = defines;
+// 
+//         ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
+//                                                                Message(this, &ShaderAsset::CompileShaderInternal, shaderData));
+//         JobInstanceWaiter waiter(job);
+//         waiter.Wait();
+    
+        Function<void ()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::CompileShaderInternal), shader, defines);
+        JobManager2::Instance()->CreateMainJob(fn);
+        JobManager2::Instance()->WaitMainJobs();
     }
     
 	compileShaderMutex.Unlock();
@@ -124,34 +129,30 @@ void ShaderAsset::ReloadShaders()
 	for( ; it != endIt; ++it)
 	{
 		Shader *shader = it->second;
-
 		shader->Reload(vertexShaderData, fragmentShaderData, vertexShaderDataStart, vertexShaderDataSize, fragmentShaderDataStart, fragmentShaderDataSize);
-		ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &ShaderAsset::ReloadShaderInternal, shader));
 
-        JobInstanceWaiter waiter(job);
-        waiter.Wait();
+        // ##job##
+        // ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &ShaderAsset::ReloadShaderInternal, shader));
+        // 
+        // JobInstanceWaiter waiter(job);
+        // waiter.Wait();
+        Function<void ()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::ReloadShaderInternal), shader);
+        JobManager2::Instance()->CreateMainJob(fn);
+        JobManager2::Instance()->WaitMainJobs();
 	}
 }
 
-void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void *callerData )
+void ShaderAsset::CompileShaderInternal(Shader *shader, FastNameSet defines)
 {
-	CompiledShaderData *shaderData = (CompiledShaderData*)param;
-	DVASSERT(shaderData);
-
-	shaderData->shader->Recompile();
-
-	BindShaderDefaults(shaderData->shader);
-	compiledShaders.insert(shaderData->defines, shaderData->shader);
-
-	delete shaderData;
-}
-
-
-void ShaderAsset::ReloadShaderInternal(BaseObject * caller, void * param, void *callerData)
-{
-	Shader *shader = (Shader*)param;
 	shader->Recompile();
 
+	BindShaderDefaults(shader);
+	compiledShaders.insert(defines, shader);
+}
+
+void ShaderAsset::ReloadShaderInternal(Shader *shader)
+{
+	shader->Recompile();
 	BindShaderDefaults(shader);
 }
 

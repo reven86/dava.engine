@@ -88,7 +88,7 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
     bool isDirectory = FileSystem::Instance()->IsDirectory(filePath);
     if(isDirectory)
     {
-        Logger::Error("[APKFile::CreateFromAssets] Can't create file because of it is directory (%s)", filePath.GetAbsolutePathname().c_str());
+        //Logger::FrameworkDebug("[APKFile::CreateFromAssets] Can't create file because it is a directory (%s)", filePath.GetAbsolutePathname().c_str());
         return NULL;
     }
     
@@ -107,7 +107,7 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
     int index = zip_name_locate(package, assetFileStr.c_str(), 0);
     if (-1 == index)
     {
-        Logger::Error("[APKFile::CreateFromAssets] Can't locate file in the archive: %s", assetFileStr.c_str());
+        //Logger::Error("[APKFile::CreateFromAssets] Can't locate file in the archive: %s", assetFileStr.c_str());
         return NULL;
     }
 
@@ -116,14 +116,14 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
     int32 error = zip_stat_index(package, index, 0, &stat);
     if (-1 == error)
     {
-        Logger::Error("[APKFile::CreateFromAssets] Can't get file info: %s", assetFileStr.c_str());
+        Logger::FrameworkDebug("[APKFile::CreateFromAssets] Can't get file info: %s", assetFileStr.c_str());
         return NULL;
     }
 
     zip_file* file = zip_fopen_index(package, index, 0);
     if (NULL == file)
     {
-        Logger::Error("[APKFile::CreateFromAssets] Can't open file in the archive: %s", assetFileStr.c_str());
+        Logger::FrameworkDebug("[APKFile::CreateFromAssets] Can't open file in the archive: %s", assetFileStr.c_str());
         return NULL;
     }
 
@@ -132,7 +132,7 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
 
     if (zip_fread(file, data, stat.size) != stat.size)
     {
-        Logger::Error("[APKFile::CreateFromAssets] Error reading file: %s", assetFileStr.c_str());
+        Logger::FrameworkDebug("[APKFile::CreateFromAssets] Error reading file: %s", assetFileStr.c_str());
         SafeDeleteArray(data);
         zip_fclose(file);
         return NULL;

@@ -104,23 +104,24 @@ RenderDataObject::~RenderDataObject()
     //streamArray.clear();
     //streamMap.clear();
     
-	DestructorContainer * container = new DestructorContainer();
-	container->vboBuffer = vboBuffer;
-	container->indexBuffer = indexBuffer;
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::DeleteBuffersInternal, container), Job::NO_FLAGS);
+    // ##job##
+	//DestructorContainer * container = new DestructorContainer();
+	//container->vboBuffer = vboBuffer;
+	//container->indexBuffer = indexBuffer;
+	//ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::DeleteBuffersInternal, container), Job::NO_FLAGS);
+
+    Function<void ()> fn = Bind(MakeFunction(this, &RenderDataObject::DeleteBuffersInternal), vboBuffer, indexBuffer);
+    JobManager2::Instance()->CreateMainJob(fn);
 }
 
-void RenderDataObject::DeleteBuffersInternal(BaseObject * caller, void * param, void *callerData)
+void RenderDataObject::DeleteBuffersInternal(uint32 vboBuffer, uint32 indexBuffer)
 {
-	DestructorContainer * container = (DestructorContainer*)param;
-	DVASSERT(container);
 #if defined(__DAVAENGINE_OPENGL__)
-	if (container->vboBuffer)
-		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &container->vboBuffer));
-	if (container->indexBuffer)
-		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &container->indexBuffer));
+	if (vboBuffer)
+		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &vboBuffer));
+	if (indexBuffer)
+		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &indexBuffer));
 #endif
-	SafeDelete(container);
 }
 
 RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer)
@@ -183,16 +184,22 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
 {
     DVASSERT(!vertexAttachmentActive);
     
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildVertexBufferInternal, reinterpret_cast<void*>(vertexCount)));
-    
-    if(synchronously)
-    {
-        JobInstanceWaiter waiter(job);
-        waiter.Wait();
-    }
+    // ##job##
+	//ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildVertexBufferInternal, reinterpret_cast<void*>(vertexCount)));
+    //if(synchronously)
+    //{
+    //    JobInstanceWaiter waiter(job);
+    //    waiter.Wait();
+    //}
+
+    Function<void ()> fn = Bind(MakeFunction(this, &RenderDataObject::BuildVertexBufferInternal), vertexCount);
+    JobManager2::Instance()->CreateMainJob(fn);
+
+    if(synchronously) 
+        JobManager2::Instance()->WaitMainJobs();
 }
 
-void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * param, void *callerData)
+void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount)
 {
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
@@ -222,7 +229,6 @@ void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * par
     RENDER_VERIFY(glGenBuffers(1, &vboBuffer));
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vboBuffer));
 
-	int32 vertexCount = (int32)((int64)param);
 #if defined (__DAVAENGINE_ANDROID__)
     savedVertexCount = vertexCount;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
@@ -252,16 +258,21 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
 
 void RenderDataObject::BuildIndexBuffer(bool synchronously)
 {
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildIndexBufferInternal));
+// 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildIndexBufferInternal));
+//     
+//     if(synchronously)
+//     {
+//         JobInstanceWaiter waiter(job);
+//         waiter.Wait();
+//     }
+
+    JobManager2::Instance()->CreateMainJob(MakeFunction(this, &RenderDataObject::BuildIndexBufferInternal));
     
     if(synchronously)
-    {
-        JobInstanceWaiter waiter(job);
-        waiter.Wait();
-    }
+        JobManager2::Instance()->WaitMainJobs();
 }
 
-void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * param, void *callerData)
+void RenderDataObject::BuildIndexBufferInternal()
 {
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)

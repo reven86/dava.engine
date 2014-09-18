@@ -123,6 +123,7 @@ void Core::CreateSingletons()
 	new Logger();
 	new AllocatorFactory();
 	new JobManager();
+	new JobManager2();
     new JobScheduler(DeviceInfo::GetCPUCoresCount());
 	new FileSystem();
     FilePath::InitializeBundleName();
@@ -221,6 +222,7 @@ void Core::ReleaseSingletons()
 	InputSystem::Instance()->Release();
     JobScheduler::Instance()->Release();
 	JobManager::Instance()->Release();
+	JobManager2::Instance()->Release();
     VersionInfo::Instance()->Release();
 	AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
@@ -727,6 +729,7 @@ void Core::SystemProcessFrame()
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
+        JobManager2::Instance()->Update();
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
 		core->Draw();

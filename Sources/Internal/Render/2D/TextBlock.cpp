@@ -348,13 +348,18 @@ bool TextBlock::IsSpriteReady()
 void TextBlock::Prepare(Texture *texture /*=NULL*/)
 {
 	Retain();
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal,
-                                                                                            SafeRetain(texture)));
+
+// ##job##
+// 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal,
+//                                                                                             SafeRetain(texture)));
+
+    Function<void ()> fn = DAVA::Bind(MakeFunction(this, &TextBlock::PrepareInternal), SafeRetain(texture));
+    JobManager2::Instance()->CreateMainJob(fn);
+    JobManager2::Instance()->WaitMainJobs();
 }
 
-void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
+void TextBlock::PrepareInternal(Texture * texture)
 {
-    Texture * texture = (Texture *)param;
 	if(!font)
 	{
         Release();

@@ -219,4 +219,134 @@ void JobManager::CheckAndCallWaiterForJobInstance(Job * job)
 	}
 }
 
+JobManager2::JobManager2()
+{
+
+}
+
+JobManager2::~JobManager2()
+{
+
+}
+
+void JobManager2::Update()
+{
+    RunMain();
+}
+
+void JobManager2::CreateMainJob(const Function<void()>& mainFn, eMainJobType mainJobType)
+{
+    if(Thread::IsMainThread())
+    {
+        mainFn();
+    }
+    else
+    {
+        mainMutex.Lock();
+
+        MainJob job;
+        job.fn = mainFn;
+        job.invokerThreadId = Thread::GetCurrentId();
+        job.type = mainJobType;
+        mainJobs.push_back(job);
+
+        mainMutex.Unlock();
+    }
+}
+
+void JobManager2::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
+{
+    Mutex mutex;
+    mutex.Lock();
+
+    while(HasMainJobs(invokerThreadId))
+    {
+        Thread::Wait(&mainCV, &mutex);
+    }
+}
+
+bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
+{
+    bool ret = false;
+
+    if(0 == invokerThreadId)
+    {
+        invokerThreadId = Thread::GetCurrentId();
+    }
+
+    if(invokerThreadId != Thread::GetMainId())
+    {
+        mainMutex.Lock();
+
+        if(curMainJob.invokerThreadId == invokerThreadId)
+        {
+            ret = true;
+        }
+        else
+        {
+            Deque<MainJob>::iterator i = mainJobs.begin();
+            Deque<MainJob>::iterator end = mainJobs.end();
+            for(; i != end; ++i)
+            {
+                if(i->invokerThreadId == invokerThreadId)
+                {
+                    ret = true;
+                    break;
+                }
+            }
+        }
+
+        mainMutex.Unlock();
+    }
+
+    return ret;
+}
+
+void JobManager2::CreateWorkerJob(FastName workerJobTag, const Function<void()>& workerFn)
+{
+
+}
+
+void JobManager2::WaitWorkerJobs(FastName workerJobTag)
+{
+
+}
+
+bool JobManager2::HasWorkerJobs(FastName workerJobTag)
+{
+    return false;
+}
+
+void JobManager2::RunMain()
+{
+    // extract current job from queue
+    mainMutex.Lock();
+    if(!mainJobs.empty())
+    {
+        // TODO:
+        // extract depending on type MAIN or MAINBG
+        curMainJob = mainJobs.front();
+        mainJobs.pop_front();
+    }
+    mainMutex.Unlock();
+
+    if(curMainJob.invokerThreadId != 0 && curMainJob.fn != NULL)
+    {
+        // run job
+        curMainJob.fn();
+    }
+
+    // current job done, set it to default value
+    mainMutex.Lock();
+    curMainJob = MainJob();
+    mainMutex.Unlock();
+
+    Thread::Signal(&mainCV);
+}
+
+void JobManager2::RunWorker()
+{
+
+}
+
 }

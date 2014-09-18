@@ -163,6 +163,8 @@ public:
     */
     static Id GetCurrentId();
 
+    static Id GetMainId();
+
     /**
      \returns returns Id of current Thread Object.
      */

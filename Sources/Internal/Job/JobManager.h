@@ -37,6 +37,10 @@
 #include "Base/ScopedPtr.h"
 #include "Job/Job.h"
 
+#include "Base/Function.h"
+#include "Base/Bind.h"
+#include "Base/FastName.h"
+
 namespace DAVA
 {
 
@@ -84,9 +88,64 @@ protected:
 	Map<Thread::Id, ThreadIdJobWaiter *> waitersPerCreatorThread;
 	void CheckAndCallWaiterForThreadId(const Thread::Id & threadId);
 	
-	
 	void CheckAndCallWaiterForJobInstance(Job * job);
 	Map<Job *, JobInstanceWaiter *> waitersPerJob;
+};
+
+class JobManager2 : public Singleton<JobManager2>
+{
+public:
+    JobManager2();
+    virtual ~JobManager2();
+
+	enum eMainJobType
+	{
+		JOB_MAIN = 0,       // run only in main thread
+		JOB_MAINBG,         // run in main or background thread
+	};
+
+    void Update();
+
+    void CreateMainJob(const Function<void ()>& mainFn, eMainJobType mainJobType = JOB_MAIN);
+    void WaitMainJobs(Thread::Id invokerThreadId = 0);
+    bool HasMainJobs(Thread::Id invokerThreadId = 0);
+
+    void CreateWorkerJob(FastName workerJobTag, const Function<void ()>& workerFn);
+    void WaitWorkerJobs(FastName workerJobTag);
+    bool HasWorkerJobs(FastName workerJobTag);
+
+    // done signal
+    // Signal<void (FastName workerJobTag)> workerJobFinished;
+
+protected:
+    struct MainJob
+    {
+        MainJob() : type(JOB_MAIN), invokerThreadId(0) {}
+
+        eMainJobType type;
+        Thread::Id invokerThreadId;
+        Function<void ()> fn;
+    };
+
+    struct WorkerJob
+    {
+        FastName tag;
+        Function<void ()> fn;
+    };
+
+    Mutex mainMutex;
+    Mutex mainMutexCV;
+    Deque<MainJob> mainJobs;
+    ConditionalVariable mainCV;
+    MainJob curMainJob;
+
+    Mutex workerMutex;
+    Mutex workerMutexCV;
+    Deque<WorkerJob> workerJobs;
+    ConditionalVariable workerCV;
+
+    void RunMain();
+    void RunWorker();
 };
 
 }

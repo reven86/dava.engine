@@ -101,7 +101,7 @@ public:
     const Vector<int32> & GetStringSizes() const;
 
 protected:
-    void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
+    void PrepareSpriteInternal();
 
 
 protected:
