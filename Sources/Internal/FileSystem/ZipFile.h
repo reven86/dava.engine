@@ -41,20 +41,28 @@ namespace DAVA
 
 class Mutex;
 
-class APKFile: public DynamicMemoryFile
+class ZipFile: public DynamicMemoryFile
 {
 
 public:
-    static File * CreateFromAssets(const FilePath &filePath, uint32 attributes);
+    static File* CreateFromAPK(const FilePath &filePath, uint32 attributes);
+#ifdef USE_LOCAL_RESOURCES
+    static File* CreateFromZip(const FilePath &filePath, uint32 attributes);
+#endif
 
 private:
     
-    APKFile();
-    virtual ~APKFile();
+    ZipFile();
+    virtual ~ZipFile();
 
-    static APKFile * CreateFromData(const FilePath &filePath, const uint8 * data, int32 dataSize, uint32 attributes);
+    static ZipFile* CreateFromPath(zip* package, const FilePath &filePath, const String &path, uint32 attributes);
+    static ZipFile* CreateFromData(const FilePath &filePath, const uint8 * data, int32 dataSize, uint32 attributes);
 
     static Mutex mutex;
+
+#ifdef USE_LOCAL_RESOURCES
+    static zip* exZipPackage;
+#endif
 };
 
 

@@ -1,6 +1,5 @@
 package com.dava.framework;
 
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -38,6 +37,7 @@ public class JNITextField {
 	static class NativeEditText {
 		public EditText editText;
 		public int id;
+		public InputFilter maxLengthFilter = null;
 	}
 	static Map<Integer, NativeEditText> controls = new HashMap<Integer, NativeEditText>();
 	
@@ -272,13 +272,23 @@ public class JNITextField {
 					private final int _id = id;
 					
 					@Override
-					public CharSequence filter(final CharSequence source, final int start, final int end,
+					public CharSequence filter(CharSequence source, final int start, final int end,
 							Spanned dest, final int dstart, final int dend) {
 						
+						NativeEditText editText = GetNativeEditText(_id);
+						if (editText != null && editText.maxLengthFilter != null) {
+							CharSequence res = editText.maxLengthFilter.filter(source, start, end, dest, dstart, dend);
+							if (res != null && res.toString().isEmpty())
+								return res;
+							if (res != null)
+								source = res;
+						}
+						
+						final CharSequence sourceToProcess = source;
 						FutureTask<Boolean> t = new FutureTask<Boolean>(new Callable<Boolean>() {
 							@Override
 							public Boolean call() throws Exception {
-								byte []bytes = source.toString().getBytes("UTF-8");
+								byte []bytes = sourceToProcess.toString().getBytes("UTF-8");
 								return TextFieldKeyPressed(_id, dstart, dend - dstart, bytes);
 							}
 						});
@@ -818,6 +828,25 @@ public class JNITextField {
 			}
 		});
 		task.AsyncRun();
+	}
+	
+	public static void SetMaxLength(int id, final int maxLength) {
+		final NativeEditText nativeEditText = GetNativeEditText(id);
+		if (nativeEditText == null)
+			return;
+		
+		Runnable inTask = new Runnable() {
+			
+			@Override
+			public void run() {
+				if (maxLength < 0)
+					nativeEditText.maxLengthFilter = null;	//not limited
+				else
+					nativeEditText.maxLengthFilter = new InputFilter.LengthFilter(maxLength);
+			}
+		};
+
+		JNIActivity.GetActivity().runOnUiThread(inTask);
 	}
 	
 	static protected void RelinkNativeControls() {

@@ -32,7 +32,6 @@
 
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "FileSystem/File.h"
-
 #include <dlfcn.h>
 #include <unistd.h>
 
@@ -102,7 +101,15 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 }
 
 //libcorkscrew definition
-typedef struct map_info_t map_info_t;
+typedef struct map_info {
+    struct map_info* next;
+    uintptr_t start;
+    uintptr_t end;
+    bool is_readable;
+    bool is_executable;
+    void* data; // arbitrary data associated with the map by the user, initially NULL
+    char name[];
+} map_info_t;
 
 typedef struct {
     uintptr_t absolute_pc;
@@ -183,27 +190,62 @@ void AndroidCrashReport::Init()
 	}
 }
 
+const map_info_t* find_map_info(const map_info_t* milist, uintptr_t addr) {
+    const map_info_t* mi = milist;
+    while (mi && !(addr >= mi->start && addr < mi->end)) {
+        mi = mi->next;
+    }
+    return mi;
+}
+
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
+	alarm(30);
+	//kill the app if it freezes
+
 	Vector<JniCrashReporter::CrashStep> crashSteps;
+#ifdef TEAMCITY_BUILD_TYPE_ID
+	JniCrashReporter::CrashStep buildId;
+	buildId.module = TEAMCITY_BUILD_TYPE_ID;
+	crashSteps.push_back(buildId);
+#endif
 	if (unwind_backtrace_signal_arch != NULL)
 	{
 		map_info_t *map_info = acquire_my_map_info_list();
 		backtrace_frame_t frames[256] = {0};
-		backtrace_symbol_t symbols[256] = {0};
 
 		const ssize_t size = unwind_backtrace_signal_arch(siginfo, sigcontext, map_info, frames, 0, 255);
-		get_backtrace_symbols(frames, size, symbols);
+
+
 		for (int i = 0; i < size; ++i)
 		{
 			JniCrashReporter::CrashStep step;
-			step.module = symbols[i].map_name;
-			if (symbols[i].demangled_name)
-				step.function = symbols[i].demangled_name;
-			else if (symbols[i].symbol_name)
-				step.function = symbols[i].symbol_name;
+			const map_info_t* mi = find_map_info(map_info, frames[i].absolute_pc);
+			if (mi)
+			{
+				char s[256];
+				const backtrace_frame_t* frame = &frames[i];
+				sprintf(s, "0x%08x", (frame->absolute_pc - mi->start));
+				step.function = std::string(s);
+				if (mi->name[0])
+				{
+					step.module = std::string(strdup(mi->name)) + " ";
+				}
+				/*Dl_info info;
+				if (dladdr((const void*)frame->absolute_pc, &info) && info.dli_sname)
+				{
+				    symbol->relative_symbol_addr = (uintptr_t)info.dli_saddr
+				    - (uintptr_t)info.dli_fbase;*/
+					//step.function = strdup(info.dli_sname);
+				    /*symbol->demangled_name = demangle_symbol_name(symbol->symbol_name);
+				}*/
+				//relative_pc frame->absolute_pc - mi->start;
+			}
 
-			step.fileLine = symbols[i].relative_pc;
+
+			;
+
+			step.fileLine = 0;
 
 			crashSteps.push_back(step);
 		}

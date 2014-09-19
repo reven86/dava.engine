@@ -189,9 +189,10 @@ void InputTest::LoadResources()
     
     textField->SetTextColor(Color::White);
 
-	textField->SetText(L"textField");
+	textField->SetText(L"Length lim 12");
 	textField->SetDebugDraw(true);
 	textField->SetDelegate(new UITextFieldDelegate());
+    textField->SetMaxLength(12);
 	AddControl(textField);
 
 	removeFromParentButton = new UIButton(Rect(320, 300, 300, 30));

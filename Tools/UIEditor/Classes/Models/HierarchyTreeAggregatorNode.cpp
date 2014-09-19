@@ -259,7 +259,7 @@ void HierarchyTreeAggregatorNode::ReplaceAggregator(HierarchyTreeControlNode *no
 	if (list && list->GetAggregatorPath() == path)
 	{
         SafeRelease(listDelegate);
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		// If loaded delegate has aggregator path - pass its id to delegate
 		listDelegate->SetAggregatorID(GetId());
 		// Always set a delegate for loaded UIList

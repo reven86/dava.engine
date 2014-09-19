@@ -675,6 +675,11 @@ void HierarchyTreeController::UpdateControlsData()
 	 hierarchyTree.UpdateControlsData();
 }
 
+void HierarchyTreeController::UpdateControlsData(const HierarchyTreeScreenNode* screenNode)
+{
+    hierarchyTree.UpdateControlsData(screenNode);
+}
+
 void HierarchyTreeController::UpdateLocalization(bool takePathFromLocalizationSystem)
 {
     // Update the Active Platform.

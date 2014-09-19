@@ -43,6 +43,7 @@ class UIWebViewMetadata : public UIControlMetadata
 public:
     UIWebViewMetadata(QObject* parent = 0);
     Q_PROPERTY(int DataDetectorTypes READ GetDataDetectorTypes WRITE SetDataDetectorTypes);
+    virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
 
 protected:
     virtual bool GetInitialInputEnabled() const {return true;};

@@ -75,6 +75,13 @@ public:
     uint32 GetCursorPos();
     void SetCursorPos(uint32 pos);
 
+    // Max text length.
+    void SetMaxLength(int maxLength);
+
+protected:
+    // Truncate the text to maxLength characters.
+    void* TruncateText(void* text, int maxLength);
+
 private:
 	void * objcClassPtr;
 };

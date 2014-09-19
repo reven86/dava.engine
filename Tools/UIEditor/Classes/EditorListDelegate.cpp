@@ -40,15 +40,17 @@
 
 namespace DAVA
 {
-	EditorListDelegate::EditorListDelegate(const Rect &rect, UIList::eListOrientation orientation /*ORIENTATION_VERTICAL*/
-																			, bool rectInAbsoluteCoordinates/* = FALSE*/)
-	: UIControl(rect, rectInAbsoluteCoordinates),
+	EditorListDelegate::EditorListDelegate(UIList* list, bool rectInAbsoluteCoordinates/* = false*/)
+	: UIControl(list->GetRect(), rectInAbsoluteCoordinates),
 		aggregatorID(DEFAULT_AGGREGATOR_ID),
 		cellsCount(CELL_COUNT),
 		isElementsCountNeedUpdate(false)
 	{
+        currentList = list;
+        
+        const Rect& rect = list->GetRect();
 		DVASSERT(cellsCount > 0);
-		if (orientation == UIList::ORIENTATION_VERTICAL)
+		if (UIList::ORIENTATION_VERTICAL == list->GetOrientation())
 		{
 			cellSize = Vector2(rect.dx, (rect.dy <= DEFAULT_CELL_HEIGHT) ? rect.dy : (rect.dy / cellsCount));
 		}
@@ -60,6 +62,7 @@ namespace DAVA
 	
 	EditorListDelegate::~EditorListDelegate()
 	{
+        currentList->SetDelegate(NULL);
 	}
 	
 	void EditorListDelegate::SetAggregatorID(int32 agId)
