@@ -30,7 +30,7 @@
 
 #include "ImageSplitterTool.h"
 #include "ImageTools/ImageTools.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 
 using namespace DAVA;
 

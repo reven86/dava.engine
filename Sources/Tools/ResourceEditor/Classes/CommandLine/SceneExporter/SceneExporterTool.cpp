@@ -31,7 +31,7 @@
 #include "SceneExporterTool.h"
 #include "SceneExporter.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 
 using namespace DAVA;
 

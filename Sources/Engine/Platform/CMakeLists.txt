@@ -15,8 +15,8 @@ elseif( APPLE )
     	set( ADDED_H_PATTERNS TemplateMacOS/*.h )
     endif()
 else()
-    set( ADDED_CPP_PATTERNS TemplateWin32/*.cpp )
-    set( ADDED_H_PATTERNS TemplateWin32/*.h )
+    set( ADDED_CPP_PATTERNS TemplateWin32/*.cpp Qt/*.cpp Qt/Win32/*.cpp )
+    set( ADDED_H_PATTERNS   TemplateWin32/*.h   Qt/*.h   Qt/Win32/*.h   )
 endif()
 
 define_source_files (

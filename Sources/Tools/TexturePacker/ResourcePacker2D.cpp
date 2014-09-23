@@ -30,7 +30,7 @@
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TexturePacker/DefinitionFile.h"
 #include "TexturePacker/TexturePacker.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Core/Core.h"

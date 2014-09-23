@@ -29,7 +29,7 @@
 
 #include "TexturePacker/ImagePacker.h"
 #include "Base/BaseTypes.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 
 namespace DAVA
 {

@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
+#include "Utils/CommandLineParser.h"
 #include "TexturePacker/DefinitionFile.h"
-#include "TexturePacker/CommandLineParser.h"
 #include "TexturePacker/PngImage.h"
 #include <sys/types.h>
 #include <sys/stat.h>

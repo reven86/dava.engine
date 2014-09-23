@@ -30,7 +30,7 @@
 
 #include "SpritesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 
 SpritesPacker::~SpritesPacker()
 {

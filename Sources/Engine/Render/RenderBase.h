@@ -82,7 +82,7 @@
 		#define D3D_DEBUG_INFO
 		#include <d3d9.h>
 		#include <dxerr.h>
-#endif 
+    #endif 
 #elif defined(__DAVAENGINE_ANDROID__)
 	#define __DAVAENGINE_OPENGL__
     #include <android/api-level.h>

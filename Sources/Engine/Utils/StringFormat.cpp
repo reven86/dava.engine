@@ -48,7 +48,7 @@ static const int32 FORMAT_STRING_MAX_LEN = 512;
 String Format(const char8 * text, ...)
 {
 	String str;
-	char8 buffer[FORMAT_STRING_MAX_LEN];
+	static char8 buffer[FORMAT_STRING_MAX_LEN];
 
 	va_list ll;
 	va_start(ll, text);
@@ -810,7 +810,7 @@ int32 do_div(int64 &n, int32 base)
 //! formatting function (use printf syntax (%ls for WideString))
 WideString Format(const char16 * text, ...)
 {
-	WideString str;
+	static WideString str;
     
     va_list ll;
 	va_start(ll, text);

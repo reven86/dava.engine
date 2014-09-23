@@ -30,7 +30,7 @@
 
 #include "CleanFolderTool.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 
 using namespace DAVA;
 

@@ -26,9 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Utils/CommandLineParser.h"
 #include "TexturePacker/TexturePacker.h"
-#include "TexturePacker/CommandLineParser.h"
 #include "TexturePacker/ImagePacker.h"
 #include "TexturePacker/PngImage.h"
 #include "TexturePacker/DefinitionFile.h"

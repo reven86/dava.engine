@@ -31,7 +31,7 @@
 #include "SceneSaverTool.h"
 #include "SceneSaver.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 
 using namespace DAVA;
 

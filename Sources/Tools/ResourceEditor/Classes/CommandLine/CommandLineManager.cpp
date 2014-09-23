@@ -40,7 +40,7 @@
 #include "Beast/BeastCommandLineTool.h"
 #include "TextureDescriptor/TextureDescriptorTool.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 
 #include "../Qt/Main/QtUtils.h"
 

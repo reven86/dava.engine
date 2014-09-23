@@ -38,7 +38,7 @@
 
 #include "mainwindow.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "Utils/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "DAVAEngine.h"

@@ -1,5 +1,7 @@
-include (CMakeDependentOption)
-include (CMakeParseArguments)
+include ( CMakeDependentOption )
+include ( CMakeParseArguments  )
+include ( GlobalVariables      )
+include ( MergeStaticLibrarees )
 
 # Macro for precompiled headers
 macro (enable_pch)
@@ -38,7 +40,7 @@ macro (define_source_files)
 
     # Source files are defined by globbing source files in current source directory and also by including the extra source files if provided
     if (NOT ARG_GLOB_CPP_PATTERNS)
-        set (ARG_GLOB_CPP_PATTERNS *.cpp *.mm)    # Default glob pattern
+        set (ARG_GLOB_CPP_PATTERNS *.c *.cpp *.mm )    # Default glob pattern
     endif ()
     if (NOT ARG_GLOB_H_PATTERNS)
         set (ARG_GLOB_H_PATTERNS *.h)
@@ -92,11 +94,18 @@ endmacro ()
 #
 macro (define_source_folders )
 
-    unset( PROJECT_SOURCE_FILES CACHE ) 
-    cmake_parse_arguments (ARG "" "" "GLOB_FOLDER;GLOB_ERASE_FOLDERS" ${ARGN})
-
+    cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "GLOB_FOLDER;GLOB_ERASE_FOLDERS" ${ARGN})
+    
+    IF( NOT ARG_RECURSIVE_CALL )
+        set( PROJECT_SOURCE_FILES  ) 
+        set( PROJECT_SOURCE_FILES_CPP  ) 
+        set( PROJECT_SOURCE_FILES_HPP  ) 
+    ENDIF()
+    
+    set( SOURCE_FOLDERS  )
+    
     IF( ARG_GLOB_FOLDER)
-        define_source_files ( GLOB_CPP_PATTERNS ${ARG_GLOB_FOLDER}/*.cpp ${ARG_GLOB_FOLDER}/*.mm 
+        define_source_files ( GLOB_CPP_PATTERNS ${ARG_GLOB_FOLDER}/*.c ${ARG_GLOB_FOLDER}/*.cpp ${ARG_GLOB_FOLDER}/*.mm 
                               GLOB_H_PATTERNS   ${ARG_GLOB_FOLDER}/*.h )
         FILE( GLOB SOURCE_FOLDERS "${ARG_GLOB_FOLDER}/*" )
     ELSE()
@@ -104,7 +113,9 @@ macro (define_source_folders )
         FILE( GLOB SOURCE_FOLDERS "*" )
     ENDIF()
     
-    list ( APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES} )
+    list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} ) 
+    list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   ) 
+    list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
              
     FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
         IF( IS_DIRECTORY "${FOLDER_ITEM}" )
@@ -122,9 +133,11 @@ macro (define_source_folders )
                 IF( FIND_CMAKELIST )
                     add_subdirectory (${FOLDER_NAME})
                     list ( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_CPP_FILES} ${${FOLDER_NAME}_H_FILES} )    
+    		    list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
+                    list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
                 ELSE()
                     list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
-                    define_source_folders( GLOB_FOLDER ${FOLDER_ITEM} )
+                    define_source_folders( GLOB_FOLDER ${FOLDER_ITEM} GLOB_ERASE_FOLDERS ${ARG_GLOB_ERASE_FOLDERS} RECURSIVE_CALL )
                 ENDIF()
             ENDIF()
         ENDIF()
@@ -152,81 +165,39 @@ macro ( generate_source_groups_project )
     
 endmacro ()
 
+
+#
+macro ( install_libraries TARGET_NAME )
+install(
+        TARGETS
+        ${TARGET_NAME}
+        DESTINATION
+        ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
+
+install(
+        DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+        DESTINATION
+        "D:/Dava/dava.framework/Libs/include/${TARGET_NAME}"
+        FILES_MATCHING
+        PATTERN
+        "*.h")
+endmacro ()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
-# This macro creates a true static library bundle with debug and release configurations
-# TARGET - the output library, or target, that you wish to contain all of the object files
-# CONFIGURATION - DEBUG, RELEASE or ALL
-# LIBRARIES - a list of all of the static libraries you want merged into the TARGET
-#
-# Example use:
-#   MERGE_STATIC_LIBRARIES (mytarget ALL "${MY_STATIC_LIBRARIES}")
-#
-# NOTE: When you call this script, make sure you quote the argument to LIBRARIES if it is a list!
-macro (MERGE_STATIC_LIBRARIES TARGET CONFIGURATION LIBRARIES)
-	if (WIN32)
-		# On Windows you must add aditional formatting to the LIBRARIES variable as a single string for the windows libtool
-		# with each library path wrapped in "" in case it contains spaces
-		string (REPLACE ";" "\" \"" LIBS "${LIBRARIES}")
-		set (LIBS \"${LIBS}\")
-
-		if(${CONFIGURATION} STREQUAL "DEBUG")
-			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_DEBUG "${LIBS}")
-		elseif (${CONFIGURATION} STREQUAL "RELEASE")
-			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_RELEASE "${LIBS}")
-		elseif (${CONFIGURATION} STREQUAL "RELWITHDEBINFO")
-			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_RELWITHDEBINFO "${LIBS}")
-		elseif (${CONFIGURATION} STREQUAL "ALL")
-			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS "${LIBS}")
-		else (${CONFIGURATION} STREQUAL "DEBUG")
-			message (FATAL_ERROR "Be sure to set the CONFIGURATION argument to DEBUG, RELEASE or ALL")
-		endif(${CONFIGURATION} STREQUAL "DEBUG")
-	elseif (APPLE AND ${CMAKE_GENERATOR} STREQUAL "Xcode")
-		# iOS and OSX platforms with Xcode need slighly less formatting
-		string (REPLACE ";" " " LIBS "${LIBRARIES}")
-
-		if(${CONFIGURATION} STREQUAL "DEBUG")
-			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_DEBUG "${LIBS}")
-		elseif (${CONFIGURATION} STREQUAL "RELEASE")
-			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_RELEASE "${LIBS}")
-		elseif (${CONFIGURATION} STREQUAL "RELWITHDEBINFO")
-			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS_RELWITHDEBINFO "${LIBS}")
-		elseif (${CONFIGURATION} STREQUAL "ALL")
-			set_property (TARGET ${TARGET} APPEND PROPERTY STATIC_LIBRARY_FLAGS "${LIBS}")
-		else (${CONFIGURATION} STREQUAL "DEBUG")
-			message (FATAL_ERROR "Be sure to set the CONFIGURATION argument to DEBUG, RELEASE or ALL")
-		endif(${CONFIGURATION} STREQUAL "DEBUG")
-	elseif (UNIX)
-		# Posix platforms, including Android, require manual merging of static libraries via a special script
-		set (LIBRARIES ${LIBRARIES})
-
-		if (NOT CMAKE_BUILD_TYPE)
-			message (FATAL_ERROR "To use the MergeStaticLibraries script on Posix systems, you MUST define your CMAKE_BUILD_TYPE")
-		endif (NOT CMAKE_BUILD_TYPE)
-		
-		set (MERGE OFF)
-
-		# We need the debug postfix on posix systems for the merge script
-		string (TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
-		if (${BUILD_TYPE} STREQUAL ${CONFIGURATION} OR ${CONFIGURATION} STREQUAL "ALL")
-			if (${BUILD_TYPE} STREQUAL "DEBUG")
-				get_target_property (TARGETLOC ${TARGET} LOCATION_DEBUG)
-			else (${BUILD_TYPE} STREQUAL "DEBUG")
-				get_target_property (TARGETLOC ${TARGET} LOCATION)
-			endif (${BUILD_TYPE} STREQUAL "DEBUG")
-			set (MERGE ON)
-		endif (${BUILD_TYPE} STREQUAL ${CONFIGURATION} OR ${CONFIGURATION} STREQUAL "ALL")
-
-		# Setup the static library merge script
-		if (NOT MERGE)
-			message (STATUS "MergeStaticLibraries ignores mismatch betwen BUILD_TYPE=${BUILD_TYPE} and CONFIGURATION=${CONFIGURATION}")
-		else (NOT MERGE)
-			configure_file (
-				${PROJECT_SOURCE_DIR}/cmake/Modules/PosixMergeStaticLibraries.cmake.in 
-				${CMAKE_CURRENT_BINARY_DIR}/PosixMergeStaticLibraries-${TARGET}.cmake @ONLY
-			)
-			add_custom_command (TARGET ${TARGET} POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/PosixMergeStaticLibraries-${TARGET}.cmake
-			)
-		endif (NOT MERGE)
-	endif (WIN32)
-endmacro (MERGE_STATIC_LIBRARIES)

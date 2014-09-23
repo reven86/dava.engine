@@ -30,8 +30,7 @@
 
 #include "BeastCommandLineTool.h"
 
-#include "TexturePacker/CommandLineParser.h"
-
+#include "Utils/CommandLineParser.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
 #include "Commands2/BeastAction.h"
