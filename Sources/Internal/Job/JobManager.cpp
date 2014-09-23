@@ -33,6 +33,7 @@
 #include "Base/ScopedPtr.h"
 #include "Platform/Thread.h"
 #include "Job/JobWaiter.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
@@ -242,26 +243,23 @@ void JobManager2::CreateMainJob(const Function<void()>& mainFn, eMainJobType mai
     }
     else
     {
-        mainMutex.Lock();
+        LockGuard<Mutex> guard(mainQueueMutex);
 
         MainJob job;
         job.fn = mainFn;
         job.invokerThreadId = Thread::GetCurrentId();
         job.type = mainJobType;
         mainJobs.push_back(job);
-
-        mainMutex.Unlock();
     }
 }
 
 void JobManager2::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 {
-    Mutex mutex;
-    mutex.Lock();
+    LockGuard<Mutex> guard(mainCVMutex);
 
     while(HasMainJobs(invokerThreadId))
     {
-        Thread::Wait(&mainCV, &mutex);
+        Thread::Wait(&mainCV, &mainCVMutex);
     }
 }
 
@@ -276,7 +274,7 @@ bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
     if(invokerThreadId != Thread::GetMainId())
     {
-        mainMutex.Lock();
+        LockGuard<Mutex> guard(mainQueueMutex);
 
         if(curMainJob.invokerThreadId == invokerThreadId)
         {
@@ -295,8 +293,6 @@ bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
                 }
             }
         }
-
-        mainMutex.Unlock();
     }
 
     return ret;
@@ -319,29 +315,33 @@ bool JobManager2::HasWorkerJobs(FastName workerJobTag)
 
 void JobManager2::RunMain()
 {
-    // extract current job from queue
-    mainMutex.Lock();
-    if(!mainJobs.empty())
+    LockGuard<Mutex> guard(mainQueueMutex);
+
+    // TODO:
+    // extract depending on type MAIN or MAINBG
+    // ...
+
+    // extract all jobs from queue
+    while(!mainJobs.empty())
     {
-        // TODO:
-        // extract depending on type MAIN or MAINBG
         curMainJob = mainJobs.front();
         mainJobs.pop_front();
+        
+        if(curMainJob.invokerThreadId != 0 && curMainJob.fn != NULL)
+        {
+            // unlock queue mutex until function execution finished
+            mainQueueMutex.Unlock();
+            curMainJob.fn();
+            mainQueueMutex.Lock();
+        }
+
+        curMainJob = MainJob();
     }
-    mainMutex.Unlock();
 
-    if(curMainJob.invokerThreadId != 0 && curMainJob.fn != NULL)
-    {
-        // run job
-        curMainJob.fn();
-    }
-
-    // current job done, set it to default value
-    mainMutex.Lock();
-    curMainJob = MainJob();
-    mainMutex.Unlock();
-
+    // signal that jobs are finished
+    mainCVMutex.Lock();
     Thread::Signal(&mainCV);
+    mainCVMutex.Unlock();
 }
 
 void JobManager2::RunWorker()

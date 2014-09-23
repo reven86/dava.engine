@@ -133,14 +133,14 @@ protected:
         Function<void ()> fn;
     };
 
-    Mutex mainMutex;
-    Mutex mainMutexCV;
+    Mutex mainQueueMutex;
+    Mutex mainCVMutex;
     Deque<MainJob> mainJobs;
     ConditionalVariable mainCV;
     MainJob curMainJob;
 
-    Mutex workerMutex;
-    Mutex workerMutexCV;
+    Mutex workerQueueMutex;
+    Mutex workerCVMutex;
     Deque<WorkerJob> workerJobs;
     ConditionalVariable workerCV;
 
