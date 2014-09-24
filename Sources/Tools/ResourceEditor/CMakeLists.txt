@@ -24,7 +24,7 @@ include_directories   ( "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/wrapper" 
 include_directories   ( "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/beast/include" )
 include_directories   ( "${DAVA_THIRD_PARTY_INCLUDES_PATH}/FCollada" )
 include_directories   (.)
-include_directories   ( "../" )
+include_directories   ( "../TextureTools" )
 include_directories   ( "Classes" )
 include_directories   ( "Classes/bullet" )
 include_directories   ( "Classes/Qt" )
@@ -71,8 +71,7 @@ qt4_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
-add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../TextureCompression" ${CMAKE_CURRENT_BINARY_DIR}/TextureCompression )
-add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../TexturePacker" ${CMAKE_CURRENT_BINARY_DIR}/TexturePacker )
+add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../TextureTools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 generate_source_groups_project ()
 

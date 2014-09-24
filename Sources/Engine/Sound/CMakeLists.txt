@@ -4,7 +4,7 @@ set( INCLUDES_DIR  ${INCLUDES_DIR} "${PROJECT_SOURCE_DIR}/../../Libs/include/fmo
 if( IOS )
     set( ADDED_CPP_PATTERNS  IOS/*.mm ) 	
     set( ADDED_H_PATTERNS    *.hpp IOS/*.h  )
-    set( INCLUDES_DIR  ${INCLUDES_DIR} "${PROJECT_SOURCE_DIR}/Sound/iOS" PARENT_SCOPE )    
+    set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR} "${PROJECT_SOURCE_DIR}/Sound/iOS" PARENT_SCOPE )    
 endif()
 
 define_source_files (

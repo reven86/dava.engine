@@ -3,6 +3,7 @@ include ( CMakeParseArguments  )
 include ( GlobalVariables      )
 include ( MergeStaticLibrarees )
 
+
 # Macro for precompiled headers
 macro (enable_pch)
     if (MSVC)
@@ -40,8 +41,12 @@ macro (define_source_files)
 
     # Source files are defined by globbing source files in current source directory and also by including the extra source files if provided
     if (NOT ARG_GLOB_CPP_PATTERNS)
-        set (ARG_GLOB_CPP_PATTERNS *.c *.cpp *.mm )    # Default glob pattern
+        set (ARG_GLOB_CPP_PATTERNS *.c *.cpp )    # Default glob pattern
+        if( NOT ANDROID )  
+            list ( APPEND ARG_GLOB_CPP_PATTERNS *.mm )
+        endif  ()
     endif ()
+    
     if (NOT ARG_GLOB_H_PATTERNS)
         set (ARG_GLOB_H_PATTERNS *.h)
     endif ()
@@ -105,8 +110,15 @@ macro (define_source_folders )
     set( SOURCE_FOLDERS  )
     
     IF( ARG_GLOB_FOLDER)
-        define_source_files ( GLOB_CPP_PATTERNS ${ARG_GLOB_FOLDER}/*.c ${ARG_GLOB_FOLDER}/*.cpp ${ARG_GLOB_FOLDER}/*.mm 
+    
+        set ( CPP_PATTERNS ${ARG_GLOB_FOLDER}/*.c ${ARG_GLOB_FOLDER}/*.cpp )    
+        if( NOT ANDROID )  
+            list ( APPEND CPP_PATTERNS ${ARG_GLOB_FOLDER}/*.mm  )
+        endif  ()
+    
+        define_source_files ( GLOB_CPP_PATTERNS ${CPP_PATTERNS}
                               GLOB_H_PATTERNS   ${ARG_GLOB_FOLDER}/*.h )
+                              
         FILE( GLOB SOURCE_FOLDERS "${ARG_GLOB_FOLDER}/*" )
     ELSE()
         define_source_files ( )

@@ -1,4 +1,10 @@
 
+if ( GLOBAL_VAR_FOUND )
+    return ()
+endif ()
+set ( GLOBAL_VAR_FOUND 1 )
+
+
 set ( DAVA_LIBRARY                     "DavaFramework" )
 set ( DAVA_ROOT_DIR                    "${CMAKE_CURRENT_LIST_DIR}/../../.." )
 set ( DAVA_ENGINE_DIR                  "${CMAKE_CURRENT_LIST_DIR}/../../Engine" )
@@ -16,8 +22,7 @@ else   ()
     
 endif  ()
 
-
-set ( DAVA_INCLUDE_DIR            "${DAVA_ENGINE_DIR}" "${DAVA_THIRD_PARTY_INCLUDES_PATH}"  )
+set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
 
 set ( DAVA_IMAGE_MAGICK_INCLUDES_PATH  

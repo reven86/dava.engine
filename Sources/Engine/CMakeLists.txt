@@ -18,19 +18,24 @@ set ( FRAMEWORK_DEFINITIONS
 -DDAVA_FMOD
 )
 
-find_package(ZLIB )
-if( ZLIB_FOUND )
-    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH  ${ZLIB_INCLUDE_DIR} )
-    list (APPEND LIST_SHARED_LIBRARIES      ${ZLIB_LIBRARY}     )
-endif()
-
 file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*" )
 list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )
          
 if( ANDROID )
     set ( LIBRARY_TYPE SHARED )
-    list( APPEND LIST_SHARED_LIBRARIES "-lGLESv2" "-lstdc++" )
-    set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D___ANDROID__ -DDAVA_FMOD )
+    
+    link_directories( "${DAVA_THIRD_PARTY_LIBRARIES_PATH}" )
+    list (APPEND LIST_SHARED_LIBRARIES
+        "libcrypto_android.a"
+        "libEGL.so"
+        "libGLESv1_CM.so"
+        "liblog.so"
+        "libandroid.so"
+        "-lGLESv2"
+        "-lstdc++" )
+
+    set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D___ANDROID__ -DDAVA_FMOD )        
+    set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
     
 elseif( IOS ) 
     set ( LIBRARY_TYPE STATIC )
@@ -41,21 +46,29 @@ elseif( IOS )
 else()
     set ( LIBRARY_TYPE STATIC ) 
     
-    if (MSVC)
+    if ( MSVC )
        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-       add_definitions       ( -D_ITERATOR_DEBUG_LEVEL=0 )
+       add_definitions( -D_ITERATOR_DEBUG_LEVEL=0 )
+       list ( APPEND LIST_SHARED_LIBRARIES "opengl32.lib" )
     endif()
 
-    list ( APPEND LIST_SHARED_LIBRARIES "opengl32.lib" )
-
 endif()
+
+find_package(ZLIB )
+if( ZLIB_FOUND )
+    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH  ${ZLIB_INCLUDE_DIR} )
+    list (APPEND LIST_SHARED_LIBRARIES      ${ZLIB_LIBRARY}     )
+endif()
+
 
 # Define source 
 define_source_folders  ()
 generate_source_groups_project ()
 
 include_directories    (.)
+include_directories    ( ${DAVA_INCLUDE_DIR} )
+include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} ) 
 include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
                                           
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
@@ -63,8 +76,6 @@ add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
 add_library            ( DavaFramework ${LIBRARY_TYPE} ${PROJECT_SOURCE_FILES} )
 
 target_link_libraries  ( DavaFramework ${LIST_SHARED_LIBRARIES} )  
-MERGE_STATIC_LIBRARIES ( DavaFramework ALL ${LIST_SHARED_LIBRARIES} )
-
 
 #install(
 #    TARGETS
