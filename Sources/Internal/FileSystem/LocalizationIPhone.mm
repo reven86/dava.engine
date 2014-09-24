@@ -24,17 +24,7 @@ namespace DAVA
 {
 void LocalizationIPhone::SelectPreferedLocalizationForPath(const FilePath &directoryPath)
 {
-    NSString * lang = [[NSUserDefaults standardUserDefaults] stringForKey:@"lang"];
-    String lid;
-    if(lang)
-    {
-        lid = [lang UTF8String];
-    }
-    else
-    {
-        lid = GetDeviceLang();
-    }
-    LocalizationSystem::Instance()->SetCurrentLocale(lid);
+    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
 }
     
 const char * LocalizationIPhone::GetDeviceLang(void)

@@ -22,7 +22,7 @@
 #include <UIKit/UIDevice.h>
 
 #define NO_DPI_INFO_FOUND   0
-#define INFO_LIST_SIZE      5
+#define INFO_LIST_SIZE      7
 
 namespace DAVA
 {
@@ -44,20 +44,22 @@ namespace DAVA
     enum eIOS_DPI
     {
         IPHONE_3_IPAD_MINI      = 163,
-        IPHONE_4_5              = 326,
+        IPHONE_4_5_6            = 326,
         IPAD_1_2                = 132,
-        IPAD_3_4                = 264
+        IPAD_3_4                = 264,
+        IPHONE_6_PLUS           = 460
     };
     
         
     const static DeviceScreenInfo devicesInfoList[INFO_LIST_SIZE] =
     {
         DeviceScreenInfo(320, IPHONE_3_IPAD_MINI,  ""),
-        DeviceScreenInfo(640, IPHONE_4_5,""),
+        DeviceScreenInfo(640, IPHONE_4_5_6,""),
+        DeviceScreenInfo(750, IPHONE_4_5_6, ""),
         DeviceScreenInfo(768, IPAD_1_2,  ""),
         DeviceScreenInfo(768, IPHONE_3_IPAD_MINI, "mini"),
+        DeviceScreenInfo(1242, IPHONE_6_PLUS, ""),
         DeviceScreenInfo(1536, IPAD_3_4, ""),
-
     };
     
     uint32 GetDPIInfoListByDimension(uint32 minDimension,  List<const DeviceScreenInfo*> & outputList)

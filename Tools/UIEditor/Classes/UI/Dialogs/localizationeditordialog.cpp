@@ -721,10 +721,11 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
     {
         FilePath localizationFilePath(localizationDirectory.toStdString());
         localizationFilePath.MakeDirectoryPathname();
-
+        
+		LocalizationSystem::Instance()->SetDirectory(localizationFilePath);
         Logger::Debug("HierarchyTreeController::ReinitializeLocalizationSystem LocalizationSystem::Instance()->SetCurrentLocale(%s);", languageId.c_str());
         LocalizationSystem::Instance()->SetCurrentLocale(languageId);
-        LocalizationSystem::Instance()->InitWithDirectory(localizationFilePath);
+        LocalizationSystem::Instance()->Init();
     }
     
 	stringsTable->ReloadTable();
