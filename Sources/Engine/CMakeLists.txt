@@ -20,12 +20,15 @@ set ( FRAMEWORK_DEFINITIONS
 
 file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*" )
 list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )
+
+file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*" )
+list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
          
 if( ANDROID )
     set ( LIBRARY_TYPE SHARED )
     
     link_directories( "${DAVA_THIRD_PARTY_LIBRARIES_PATH}" )
-    list (APPEND LIST_SHARED_LIBRARIES
+    set ( LIST_LIBRARIES
         "libcrypto_android.a"
         "libEGL.so"
         "libGLESv1_CM.so"
@@ -33,6 +36,9 @@ if( ANDROID )
         "libandroid.so"
         "-lGLESv2"
         "-lstdc++" )
+        
+    list ( APPEND LIST_SHARED_LIBRARIES        ${LIST_LIBRARIES} )
+    list ( APPEND LIST_SHARED_LIBRARIES_DEBUG  ${LIST_LIBRARIES} )
 
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D___ANDROID__ -DDAVA_FMOD )        
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
@@ -50,15 +56,19 @@ else()
        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
        add_definitions( -D_ITERATOR_DEBUG_LEVEL=0 )
-       list ( APPEND LIST_SHARED_LIBRARIES "opengl32.lib" )
+       
+       list ( APPEND LIST_SHARED_LIBRARIES        "opengl32.lib" )
+       list ( APPEND LIST_SHARED_LIBRARIES_DEBUG  "opengl32.lib" )
+       
     endif()
 
 endif()
 
 find_package(ZLIB )
 if( ZLIB_FOUND )
-    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH  ${ZLIB_INCLUDE_DIR} )
-    list (APPEND LIST_SHARED_LIBRARIES      ${ZLIB_LIBRARY}     )
+    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH ${ZLIB_INCLUDE_DIR} )
+    list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
+    list (APPEND LIST_SHARED_LIBRARIES_DEBUG    ${ZLIB_LIBRARY}     )
 endif()
 
 
@@ -75,7 +85,10 @@ add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
 
 add_library            ( DavaFramework ${LIBRARY_TYPE} ${PROJECT_SOURCE_FILES} )
 
-target_link_libraries  ( DavaFramework ${LIST_SHARED_LIBRARIES} )  
+target_link_libraries  ( DavaFramework 
+    debug   ${LIST_SHARED_LIBRARIES_DEBUG} 
+    general ${LIST_SHARED_LIBRARIES} 
+)  
 
 #install(
 #    TARGETS
