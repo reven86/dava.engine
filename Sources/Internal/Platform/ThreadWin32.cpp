@@ -34,6 +34,19 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_WIN32__)
 
+#include <windows.h>
+const DWORD MS_VC_EXCEPTION=0x406D1388;
+
+#pragma pack(push,8)
+typedef struct tagTHREADNAME_INFO
+{
+    DWORD dwType; // Must be 0x1000.
+    LPCSTR szName; // Pointer to name (in user addr space).
+    DWORD dwThreadID; // Thread ID
+    DWORD dwFlags; // Reserved for future use, must be zero.
+} THREADNAME_INFO;
+#pragma pack(pop)
+
 void Thread::Init()
 {
     handle = NULL;
@@ -76,6 +89,24 @@ void Thread::Sleep(uint32 timeMS)
 
 DWORD WINAPI ThreadFunc(void* param)
 {	
+#if defined(__DAVAENGINE_DEBUG__)
+    Thread *t = static_cast<Thread *>(param);
+
+    THREADNAME_INFO info;
+    info.dwType = 0x1000;
+    info.szName = t->name.c_str();
+    info.dwThreadID = ::GetCurrentThreadId();
+    info.dwFlags = 0;
+
+    __try
+    {
+        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(DWORD), (DWORD*)&info );
+    }
+    __except(EXCEPTION_CONTINUE_EXECUTION)
+    {
+    }
+#endif
+
     Thread::ThreadFunction(param);
 	return 0;
 }
@@ -98,7 +129,7 @@ void Thread::KillNative()
     TerminateThread(handle, 0);
 }
 
-Thread::NativeId Thread::GetCurrentNativeId()
+Thread::Id Thread::GetCurrentId()
 {
     return ::GetCurrentThreadId();
 }
