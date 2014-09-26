@@ -54,7 +54,9 @@ namespace DAVA
                 TYPE_SOUND_START,
                 TYPE_WAVE,
                 TYPE_PARTICLE_EFFECT_STOP,
-                TYPE_SOUND_STOP
+                TYPE_SOUND_STOP,
+                TYPE_ANIMATION_START,
+                TYPE_ANIMATION_STOP
 			};
 
 			enum eEvent
@@ -133,6 +135,8 @@ namespace DAVA
 		
 		void OnActionParticleEffectStart(const Action& action);
         void OnActionParticleEffectStop(const Action& action);
+        void OnActionAnimationStart(const Action& action);
+        void OnActionAnimationStop(const Action& action);
 		void OnActionSoundStart(const Action& action);
         void OnActionSoundStop(const Action& action);
         void OnActionWave(const Action& action);

@@ -203,14 +203,14 @@ public:
      \param[in] state state bit mask to set value for.
      \param[in] color font used for text draw of the states.
      */
-    void SetStateFontColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType);
+    void SetStateTextColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType);
 
     /**
      \brief Sets the per pixel accuracy type of the text and shadow for particular state.
      \param[in] state state bit mask to set value for.
      \param[in] color font used for text draw of the states.
      */
-    void SetStateFontPerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType pixelAccuracyType);
+    void SetStateTextPerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType pixelAccuracyType);
 
     /**
      \brief Sets the color of the shadow for particular state.

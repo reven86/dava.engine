@@ -201,7 +201,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -635,15 +635,6 @@
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockConsole">
-   <property name="windowTitle">
-    <string>Console</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="ConsoleWidget" name="dockConsoleContents"/>
   </widget>
   <widget class="QDockWidget" name="dockLODEditor">
    <property name="windowTitle">
@@ -2003,12 +1994,6 @@
    <class>LibraryWidget</class>
    <extends>QWidget</extends>
    <header>DockLibrary/LibraryWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ConsoleWidget</class>
-   <extends>QWidget</extends>
-   <header>DockConsole/ConsoleWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

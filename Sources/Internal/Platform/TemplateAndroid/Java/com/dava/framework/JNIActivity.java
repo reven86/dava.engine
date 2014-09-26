@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -68,7 +67,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         accelerometer = new JNIAccelerometer(this, sensorManager);
 
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().requestFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
@@ -80,20 +79,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setClickable(true);
         glView.setFocusable(true);
         glView.requestFocus();
-        
-        glView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener()
-        {
-            @Override
-            public void onViewDetachedFromWindow(View v)
-            {
-            }
-            
-            @Override
-            public void onViewAttachedToWindow(View v)
-            {
-                JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
-            }
-        });
         
         mController = Controller.getInstance(this);
         if(mController != null)
@@ -236,7 +221,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         //call native method
         nativeOnStop();
-
+        
+        // Destroy keyboard layout if its hasn't been destroyed by lost focus (samsung lock workaround)
+        JNITextField.DestroyKeyboardLayout(getWindowManager());
+        
         Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
         
         super.onStop();
@@ -271,6 +259,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     @Override
     public void onBackPressed() {
+    }
+    
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+    	super.onWindowFocusChanged(hasFocus);
+    	if(hasFocus) {
+    		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+    	} else {
+    		JNITextField.DestroyKeyboardLayout(getWindowManager());
+    	}
     }
     
     public void onAccelerationChanged(float x, float y, float z)

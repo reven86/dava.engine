@@ -106,7 +106,6 @@ public slots:
 	void OnSceneSaveToFolder();
 	void OnRecentTriggered(QAction *recentAction);
 	void ExportMenuTriggered(QAction *exportAsAction);
-
     void OnImportSpeedTreeXML();
 
 	void OnUndo();
@@ -258,6 +257,7 @@ private:
 	QtWaitDialog *waitDialog;
 	QtWaitDialog *beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;
+    QPointer<QDockWidget> dockConsole;
 
 	QtPosSaver posSaver;
 	bool globalInvalidate;

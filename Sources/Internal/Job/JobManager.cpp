@@ -76,6 +76,12 @@ ScopedPtr<Job> JobManager::CreateJob(eThreadType threadType, const Message & mes
 			mainQueue->AddJob(job);
 		}
 	}
+    else if(threadType == THREAD_MAIN_FORCE_ENQUEUE)
+    {
+        job->SetPerformedOn(Job::PERFORMED_ON_MAIN_THREAD);
+        OnJobCreated(job);
+        mainQueue->AddJob(job);
+    }
 	else
 	{
 		DVASSERT(0);

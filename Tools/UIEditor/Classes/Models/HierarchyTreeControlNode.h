@@ -74,6 +74,7 @@ public:
 private:
 	void AddControlToParent();
     void UpdateUIObject();
+    void RestoreParentControl(UIControl* parentControl);
 	
 private:
 	HierarchyTreeNode* parent;

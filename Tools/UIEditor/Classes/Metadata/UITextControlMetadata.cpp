@@ -132,21 +132,21 @@ Vector2 UITextControlMetadata::GetOffsetY(const Vector2& currentOffset, float of
 	return offset;
 }
 
-int UITextControlMetadata::GetFontColorInheritType() const
+int UITextControlMetadata::GetTextColorInheritType() const
 {
     return UIControlBackground::COLOR_IGNORE_PARENT;
 }
 
-void UITextControlMetadata::SetFontColorInheritType(int /*value*/)
+void UITextControlMetadata::SetTextColorInheritType(int /*value*/)
 {
 }
 
-int UITextControlMetadata::GetFontPerPixelAccuracyType() const
+int UITextControlMetadata::GetTextPerPixelAccuracyType() const
 {
     return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
 }
 
-void UITextControlMetadata::SetFontPerPixelAccuracyType(int /*value*/)
+void UITextControlMetadata::SetTextPerPixelAccuracyType(int /*value*/)
 {
 }
 

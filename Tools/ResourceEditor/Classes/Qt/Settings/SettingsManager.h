@@ -93,6 +93,8 @@ namespace Settings
     static const DAVA::FastName Internal_ImageSplitterPathSpecular("Internal/ImageSplitterPath_specular");
 
     static const DAVA::FastName Internal_CustomPalette("Internal/CustomPalette");
+    static const DAVA::FastName Internal_LogLevelFilter("Internal/LogLevelFilter");
+    static const DAVA::FastName Internal_LogTextFilter("Internal/LogTextFilter");
 };
 
 struct SettingsNode

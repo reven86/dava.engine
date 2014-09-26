@@ -10,6 +10,7 @@
 		029E4D8A15D403BA004A4167 /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029E4D8915D403BA004A4167 /* SplitTest.cpp */; };
 		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; };
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; };
+		1146E0F919D00477009E5FAB /* MathTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E0F719D00477009E5FAB /* MathTest.cpp */; };
 		15CBB0C018D30BF70038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0BE18D30BF70038ABA3 /* StringFormatTest.cpp */; };
 		174A8D55174BB597004CE8AB /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 174A8D54174BB597004CE8AB /* QuartzCore.framework */; };
 		17F687E0174B612D000783FD /* libFrameworkNPAPI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17373726174B596100974815 /* libFrameworkNPAPI.a */; };
@@ -87,6 +88,8 @@
 		02E9E45C173A43A900C501BC /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		02E9E45D173A43A900C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		1146E0F719D00477009E5FAB /* MathTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MathTest.cpp; path = Classes/MathTest.cpp; sourceTree = "<group>"; };
+		1146E0F819D00477009E5FAB /* MathTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MathTest.h; path = Classes/MathTest.h; sourceTree = "<group>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		15CBB0BE18D30BF70038ABA3 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringFormatTest.cpp; path = Classes/StringFormatTest.cpp; sourceTree = "<group>"; };
 		15CBB0BF18D30BF70038ABA3 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringFormatTest.h; path = Classes/StringFormatTest.h; sourceTree = "<group>"; };
@@ -211,6 +214,15 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
+		1146E0FC19D0047C009E5FAB /* MathTest */ = {
+			isa = PBXGroup;
+			children = (
+				1146E0F719D00477009E5FAB /* MathTest.cpp */,
+				1146E0F819D00477009E5FAB /* MathTest.h */,
+			);
+			name = MathTest;
+			sourceTree = "<group>";
+		};
 		15CBB0BB18D30BDB0038ABA3 /* StringFormatTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -308,6 +320,7 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				1146E0FC19D0047C009E5FAB /* MathTest */,
 				15CBB0BB18D30BDB0038ABA3 /* StringFormatTest */,
 				E87402CF172582C900A4A75A /* FileSystemTests */,
 				7410E82E17146CB70028AAAA /* UIListTest */,
@@ -630,6 +643,7 @@
 				FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
+				1146E0F919D00477009E5FAB /* MathTest.cpp in Sources */,
 				5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,

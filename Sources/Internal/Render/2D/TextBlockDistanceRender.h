@@ -44,7 +44,7 @@ public:
 	TextBlockDistanceRender(TextBlock*);
 	~TextBlockDistanceRender();
 	
-	virtual void Prepare();
+	virtual void Prepare(Texture *texture = NULL);
 	virtual void Draw(const Color& textColor, const Vector2* offset);
 	
 protected:

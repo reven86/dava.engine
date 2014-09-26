@@ -119,7 +119,7 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
-    SetBundleName(FilePath(USE_LOCAL_RESOURCES_PATH));
+    SetBundleName(FilePath(localResourcesPath));
     FilePath zipDataPath;
     zipDataPath.pathType = PATH_IN_RESOURCES;
     resourceFolders.push_back(zipDataPath);

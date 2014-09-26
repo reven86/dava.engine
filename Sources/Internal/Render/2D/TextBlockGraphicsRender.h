@@ -40,7 +40,7 @@ class TextBlockGraphicsRender: public TextBlockRender
 {
 public:
 	TextBlockGraphicsRender(TextBlock*);
-	virtual void Prepare();
+	virtual void Prepare(Texture* texture = NULL);
 	virtual void PreDraw();
 	
 protected:

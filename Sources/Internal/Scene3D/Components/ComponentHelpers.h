@@ -59,8 +59,10 @@ class SpeedTreeComponent;
 class WindComponent;
 class WaveComponent;
 class SpeedTreeObject;
+class AnimationComponent;
 
 ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
+AnimationComponent * GetAnimationComponent(Entity *fromEntity);
 TransformComponent * GetTransformComponent(Entity * fromEntity);
 RenderComponent * GetRenderComponent(const Entity *fromEntity);
 RenderObject * GetRenderObject(const Entity * fromEntity);

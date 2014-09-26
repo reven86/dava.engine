@@ -74,8 +74,8 @@ const char* PropertyNames::SHADOW_OFFSET_X = "ShadowOffsetX";
 const char* PropertyNames::SHADOW_OFFSET_Y = "ShadowOffsetY";
 const char* PropertyNames::SHADOW_COLOR = "ShadowColor";
 
-const char* PropertyNames::FONT_COLOR_INHERIT_TYPE_PROPERTY_NAME = "FontColorInheritType";
-const char* PropertyNames::FONT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME = "FontPerPixelAccuracyType";
+const char* PropertyNames::TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME = "TextColorInheritType";
+const char* PropertyNames::TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME = "TextPerPixelAccuracyType";
 
 // Slider properties
 const char* PropertyNames::SLIDER_VALUE_PROPERTY_NAME = "SliderValue";

@@ -772,9 +772,13 @@ ResizeType DefaultScreen::GetResizeType(const HierarchyTreeControlNode* selected
         horLeft = true;
     }
 
-    // If at least one coord is less than zero and more than SIZE_CURSOR_DELTA - we are outside the control.
-    if ((distancesToBounds.x < 0 || distancesToBounds.y < 0 || distancesToBounds.z < 0 || distancesToBounds.w < 0) &&
-        (verTop || verBottom || horLeft || horRight))
+    // Check whether the cursor is out of the control but within SIZE_CURSOR_DELTA value.
+    // Separate check for all sides to avoid side effects like "resize on X allowed while
+    // cursor is in X bounds but out of Y bounds".
+    if (((distancesToBounds.x < -SIZE_CURSOR_DELTA || distancesToBounds.z < -SIZE_CURSOR_DELTA) &&
+         !(horRight && horLeft)) ||
+        ((distancesToBounds.y < -SIZE_CURSOR_DELTA || distancesToBounds.w < -SIZE_CURSOR_DELTA) &&
+         !(verTop && verBottom)))
     {
         return ResizeTypeNoResize;
     }

@@ -78,7 +78,7 @@ TextBlockDistanceRender::~TextBlockDistanceRender()
 	SafeRelease(renderObject);
 }
 	
-void TextBlockDistanceRender::Prepare()
+void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
 {
 	charDrawed = 0;
 	renderRect = Rect(0, 0, 0, 0);
