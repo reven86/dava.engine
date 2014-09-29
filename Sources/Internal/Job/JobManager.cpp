@@ -237,7 +237,7 @@ void JobManager2::Update()
 
 void JobManager2::CreateMainJob(const Function<void()>& mainFn, eMainJobType mainJobType)
 {
-    if(Thread::IsMainThread())
+    if(Thread::IsMainThread() && mainJobType != JOB_MAINLAZY)
     {
         mainFn();
     }
@@ -255,12 +255,18 @@ void JobManager2::CreateMainJob(const Function<void()>& mainFn, eMainJobType mai
 
 void JobManager2::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 {
-    LockGuard<Mutex> guard(mainCVMutex);
-
-    while(HasMainJobs(invokerThreadId))
-    {
-        Thread::Wait(&mainCV, &mainCVMutex);
-    }
+ 	if(Thread::IsMainThread())
+ 	{
+ 		RunMain();
+ 	}
+ 	else
+ 	{
+		LockGuard<Mutex> guard(mainCVMutex);
+		while (HasMainJobs(invokerThreadId))
+		{
+			Thread::Wait(&mainCV, &mainCVMutex);
+		}
+	}
 }
 
 bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)

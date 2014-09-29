@@ -100,8 +100,9 @@ public:
 
 	enum eMainJobType
 	{
-		JOB_MAIN = 0,       // run only in main thread
-		JOB_MAINBG,         // run in main or background thread
+		JOB_MAIN = 0,       // Run only in the main thread. If job is created from the main thread, function will be run immediately.
+		JOB_MAINLAZY,		// Run only in the main thread. If job is created from the main thread, function will be run on next update.
+		JOB_MAINBG,         // Run in the main or background thread.
 	};
 
     void Update();
