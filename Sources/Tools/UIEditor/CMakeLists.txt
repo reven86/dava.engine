@@ -29,7 +29,6 @@ include_directories   ( "Classes/UI/PropertyGridWidgets" )
 
 
 add_definitions       ( 
--DDAVA_DEBUG
 -D_CRT_SECURE_NO_DEPRECATE
 -DDAVA_QT
 -DQT_HAVE_MMX
@@ -41,16 +40,15 @@ add_definitions       (
 -DQT_THREAD_SUPPORT
 )
 
-if (MSVC)
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-    add_definitions( -D_ITERATOR_DEBUG_LEVEL=0 )
-    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
- 
-    set( LIBRARIES  "gdi32.lib"  "opengl32.lib" "glu32.lib" "winmm.lib" )                            
-    set( LIBRARIES_DEBUG ${LIBRARIES}  "msvcrtd.lib"  )    
-    set( LIBRARIES       ${LIBRARIES}  "msvcrt.lib"   )     
+set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 
+if (MSVC)
+    set ( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP"  )
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP /fp:fast /Zi /GS- /D _SECURE_SCL=0" )
+
+    set( LIBRARIES         "opengl32.lib" "winmm.lib" )                            
+    set( LIBRARIES_DEBUG   "msvcrtd.lib"  )    
+    set( LIBRARIES_RELEASE "msvcrt.lib"   )     
 endif()
 
 file              ( GLOB_RECURSE QT_LIST "Classes/*.h"  )
@@ -82,7 +80,18 @@ target_link_libraries( UIEditor
     ${QT_LIBRARIES} 
     TextureCompression 
     TexturePacker 
-    debug   ${LIBRARIES_DEBUG} 
-    general ${LIBRARIES} 
+    ${LIBRARIES}
 )
+
+foreach ( FILE ${LIBRARIES_DEBUG} )
+    target_link_libraries  ( UIEditor debug ${FILE} )
+endforeach ()
+
+foreach ( FILE ${LIBRARIES_RELEASE} )
+    target_link_libraries  ( UIEditor optimized ${FILE} )
+endforeach ()
+
+
+
+
 

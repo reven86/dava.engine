@@ -7,8 +7,6 @@ set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake
 include ( CMake-common )
 
 set ( FRAMEWORK_DEFINITIONS 
-#-D_DEBUG
--DDAVA_DEBUG
 -D_UNICODE 
 -DUNICODE 
 -D_CRT_SECURE_NO_DEPRECATE 
@@ -18,15 +16,20 @@ set ( FRAMEWORK_DEFINITIONS
 -DDAVA_FMOD
 )
 
-file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*" )
-list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
 
-file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*" )
-list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
-         
+find_package(ZLIB )
+if( ZLIB_FOUND )
+    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH ${ZLIB_INCLUDE_DIR} )
+    list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
+endif()
+      
 if( ANDROID )
     set ( LIBRARY_TYPE SHARED )
     
+    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*" )
+    list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )
+
     link_directories( "${DAVA_THIRD_PARTY_LIBRARIES_PATH}" )
     set ( LIST_LIBRARIES
         "libcrypto_android.a"
@@ -37,8 +40,7 @@ if( ANDROID )
         "-lGLESv2"
         "-lstdc++" )
         
-    list ( APPEND LIST_SHARED_LIBRARIES        ${LIST_LIBRARIES} )
-    list ( APPEND LIST_SHARED_LIBRARIES_DEBUG  ${LIST_LIBRARIES} )
+    list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
 
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D___ANDROID__ -DDAVA_FMOD )        
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
@@ -47,28 +49,25 @@ elseif( IOS )
     set ( LIBRARY_TYPE STATIC )
     
     set ( CMAKE_C_FLAGS    "-mno-thumb"  )
-    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" "libcd.lib" )
+    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" "libcd.lib " )
     
 else()
     set ( LIBRARY_TYPE STATIC ) 
     
     if ( MSVC )
-       set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-       set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-       add_definitions( -D_ITERATOR_DEBUG_LEVEL=0 )
-       
-       list ( APPEND LIST_SHARED_LIBRARIES        "opengl32.lib" )
-       list ( APPEND LIST_SHARED_LIBRARIES_DEBUG  "opengl32.lib" )
-       
+        file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
+        list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
+
+        file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*" )
+        list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
+
+        set  ( LIST_SHARED_LIBRARIES "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib"  )
+
+        set( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP"  )
+        set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP /fp:fast /Zi /GS- /D _SECURE_SCL=0" )
+
     endif()
 
-endif()
-
-find_package(ZLIB )
-if( ZLIB_FOUND )
-    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH ${ZLIB_INCLUDE_DIR} )
-    list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
-    list (APPEND LIST_SHARED_LIBRARIES_DEBUG    ${ZLIB_LIBRARY}     )
 endif()
 
 
@@ -82,13 +81,19 @@ include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} )
 include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
                                           
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
-
 add_library            ( DavaFramework ${LIBRARY_TYPE} ${PROJECT_SOURCE_FILES} )
 
-target_link_libraries  ( DavaFramework 
-    debug   ${LIST_SHARED_LIBRARIES_DEBUG} 
-    general ${LIST_SHARED_LIBRARIES} 
-)  
+
+target_link_libraries  ( DavaFramework ${LIST_SHARED_LIBRARIES} )  
+
+foreach ( FILE ${LIST_SHARED_LIBRARIES_DEBUG} )
+    target_link_libraries  ( DavaFramework debug ${FILE} )
+endforeach ()
+
+foreach ( FILE ${LIST_SHARED_LIBRARIES_RELEASE} )
+    target_link_libraries  ( DavaFramework optimized ${FILE} )
+endforeach ()
+
 
 #install(
 #    TARGETS

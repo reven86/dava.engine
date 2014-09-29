@@ -33,7 +33,6 @@ include_directories   ( "Classes/Collada" )
 
 add_definitions       ( 
 -D__DAVAENGINE_SPEEDTREE__ 
--DDAVA_DEBUG
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
 -DQT_NETWORK_LIB
@@ -49,14 +48,19 @@ add_definitions       (
 -DDAVA_QT
 -D__DAVAENGINE_BEAST__
 -DDAVA_FMOD
+-DDAVA_DEBUG
 )
 
 if (MSVC)
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-    add_definitions( -D_ITERATOR_DEBUG_LEVEL=0 )
-    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
-    set( DAVA_LIBRARY ${DAVA_LIBRARY}  "msvcmrt.lib" "msvcrt.lib" "gdi32.lib" "opengl32.lib" "glu32.lib" "winmm.lib" )
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP /fp:fast /Zi /GS- /D _SECURE_SCL=0" )
+    
+    set( LIBRARIES "gdi32.lib" "glu32.lib" #"winmm.lib" "opengl32.lib"
+                   "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/beast/lib/beast32.lib"  )
+
+    set( LIBRARIES_DEBUG   "msvcrtd.lib"  )    
+    set( LIBRARIES_RELEASE "msvcrt.lib"   ) 
+
 endif()
 
 set ( PROJECT_SOURCE_FILES ${PROJECT_SOURCE_FILES} "${DAVA_ROOT_DIR}/../dava.speedtree/Sources/SpeedTreeImporter.h" 
@@ -82,23 +86,28 @@ add_executable  ( ResourceEditor
     ${MOC_APP_SRCS} 
     ${UI_APP_HDRS} 
     ${RCC_APP_SRCS} 
-    ${PROJECT_SOURCE_FILES_HPP} 
-    ${PROJECT_SOURCE_FILES_CPP}  
+    ${PROJECT_SOURCE_FILES} 
     "${DAVA_ROOT_DIR}/../dava.speedtree/Sources/SpeedTreeImporter.cpp"
     ${BEAST_LIST}
 )
 
 if (MSVC)
-    set_target_properties ( ResourceEditor PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"") #libc.lib;
+    set_target_properties ( ResourceEditor PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")
 endif()
 
 target_link_libraries ( ResourceEditor
-    ${DAVA_IMAGE_MAGICK_LIBRARIES_PATH} 
+    ${DAVA_LIBRARY}
     ${QT_LIBRARIES} 
-    ${DAVA_LIBRARY} 
+    ${LIBRARIES} 
     TextureCompression 
     TexturePacker 
-    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/FCollada.lib" 
-    "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/beast/lib/beast32.lib"
   )
+  
+foreach ( FILE ${LIBRARIES_DEBUG} )
+    target_link_libraries  ( ResourceEditor debug ${FILE} )
+endforeach ()
+
+foreach ( FILE ${LIBRARIES_RELEASE} )
+    target_link_libraries  ( ResourceEditor optimized ${FILE} )
+endforeach ()
 

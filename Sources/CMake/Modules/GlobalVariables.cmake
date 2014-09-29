@@ -23,12 +23,10 @@ else   ()
 endif  ()
 
 set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
-
-
 set ( DAVA_IMAGE_MAGICK_INCLUDES_PATH  
      "${CMAKE_CURRENT_LIST_DIR}/../../ThirdParty/ImageMagick-6.7.4-Windows"
      "${CMAKE_CURRENT_LIST_DIR}/../../ThirdParty/ImageMagick-6.7.4-Windows/Magick++/lib" )
 
-file ( GLOB DAVA_IMAGE_MAGICK_LIBRARIES_PATH "${CMAKE_CURRENT_LIST_DIR}/../../ThirdParty/ImageMagick-6.7.4-Windows/VisualMagick/lib/CORE_RL_*.lib" )
-
+set ( DAVA_IMAGE_MAGICK_LIBRARIES_PATH  
+     "${CMAKE_CURRENT_LIST_DIR}/../../ThirdParty/ImageMagick-6.7.4-Windows/VisualMagick/lib" )  
 

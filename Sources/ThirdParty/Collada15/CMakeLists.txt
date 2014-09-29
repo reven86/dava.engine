@@ -11,7 +11,6 @@ set              ( LIBRARY_XML_INCLUDES         "${CMAKE_CURRENT_LIST_DIR}/FColl
 if (MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-    add_definitions( -D_ITERATOR_DEBUG_LEVEL=0 )
 endif()
 
 
