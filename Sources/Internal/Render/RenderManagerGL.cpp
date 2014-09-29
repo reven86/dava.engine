@@ -277,6 +277,8 @@ void RenderManager::EndFrame()
 	
 	RENDER_VERIFY(;);	// verify at the end of the frame
     
+	Logger::Debug("Sprites count: %d, chunks count: %d", stats.spriteDrawCount, stats.chunkCount);
+
     if(needGLScreenShot)
     {
         needGLScreenShot = false;
