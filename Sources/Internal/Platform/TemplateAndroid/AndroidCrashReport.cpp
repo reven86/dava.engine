@@ -198,17 +198,13 @@ const map_info_t* find_map_info(const map_info_t* milist, uintptr_t addr) {
     return mi;
 }
 
+
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
 	alarm(30);
 	//kill the app if it freezes
 
 	Vector<JniCrashReporter::CrashStep> crashSteps;
-#ifdef TEAMCITY_BUILD_TYPE_ID
-	JniCrashReporter::CrashStep buildId;
-	buildId.module = TEAMCITY_BUILD_TYPE_ID;
-	crashSteps.push_back(buildId);
-#endif
 	if (unwind_backtrace_signal_arch != NULL)
 	{
 		map_info_t *map_info = acquire_my_map_info_list();
@@ -231,6 +227,17 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 				{
 					step.module = std::string(strdup(mi->name)) + " ";
 				}
+#ifdef TEAMCITY_BUILD_TYPE_ID				
+				if (i == 0)
+				{
+					JniCrashReporter::CrashStep buildId;
+					buildId.module = TEAMCITY_BUILD_TYPE_ID;
+					buildId.function = "Crash::AppCrashed()";
+					buildId.fileLine = (frame->absolute_pc - mi->start);
+					crashSteps.push_back(buildId);
+				}
+#endif				
+				
 				/*Dl_info info;
 				if (dladdr((const void*)frame->absolute_pc, &info) && info.dli_sname)
 				{
@@ -242,11 +249,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 				//relative_pc frame->absolute_pc - mi->start;
 			}
 
-
-			;
-
 			step.fileLine = 0;
-
 			crashSteps.push_back(step);
 		}
 		//free_backtrace_symbols(symbols, size);

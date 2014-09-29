@@ -116,7 +116,16 @@ void *PthreadMain(void *param)
 #if defined (__DAVAENGINE_ANDROID__)
     Thread::AttachToJVM();
 #endif
-    
+
+#if defined(__DAVAENGINE_DEBUG__) 
+    Thread *t = static_cast<Thread *>(param);    
+#if defined (__DAVAENGINE_ANDROID__)
+    pthread_setname_np(t->handle, t->name.c_str());
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+    pthread_setname_np(t->name.c_str());
+#endif
+#endif
+
     Thread::ThreadFunction(param);
 
 #if defined (__DAVAENGINE_ANDROID__)
@@ -135,7 +144,7 @@ void Thread::Start()
     Retain();
     pthread_create(&handle, 0, PthreadMain, (void *)this);
 }
-
+    
 void Thread::Yield()
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
@@ -150,7 +159,7 @@ void Thread::Join()
     pthread_join(handle, NULL);
 }
 
-Thread::NativeId Thread::GetCurrentNativeId()
+Thread::Id Thread::GetCurrentId()
 {
     return pthread_self();
 }

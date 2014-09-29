@@ -42,9 +42,9 @@ TextBlockGraphicsRender::TextBlockGraphicsRender(TextBlock* textBlock) :
 	isPredrawed = true;
 }
 	
-void TextBlockGraphicsRender::Prepare()
+void TextBlockGraphicsRender::Prepare(Texture *texture /*= NULL*/)
 {
-	TextBlockRender::Prepare();
+	TextBlockRender::Prepare(texture);
 	
 	isPredrawed = false;
 	sprite = Sprite::CreateAsRenderTarget((float32)textBlock->cacheDx, (float32)textBlock->cacheDy, FORMAT_RGBA8888);

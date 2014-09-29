@@ -50,7 +50,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	UIList *list = dynamic_cast<UIList*>(uiObject);
 	if (list)
 	{
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		list->SetDelegate(listDelegate);
 	}
 
@@ -72,7 +72,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	UIList *srcList = dynamic_cast<UIList*>(node->GetUIObject());
 	if (list)
 	{
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		EditorListDelegate *srcListDelegate = dynamic_cast<EditorListDelegate*>(srcList->GetDelegate());
 		if (srcListDelegate)
 		{
@@ -146,8 +146,6 @@ HierarchyTreeControlNode::~HierarchyTreeControlNode()
 		SafeRelease(uiObject);
 		SafeRelease(parentUIObject);
 	}
-
-    SafeRelease(listDelegate);
 }
 
 HierarchyTreeScreenNode* HierarchyTreeControlNode::GetScreenNode() const

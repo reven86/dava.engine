@@ -151,20 +151,46 @@ void UISlider::SetValue(float32 value)
 void UISlider::SetMinValue(float32 value)
 {
     minValue = value;
-    RecalcButtonPos();
+    if (currentValue < minValue)
+    {
+        SetValue(minValue);
+    }
+    else
+    {
+        RecalcButtonPos();
+    }
 }
     
 void UISlider::SetMaxValue(float32 value)
 {
     maxValue = value;
-    RecalcButtonPos();
+    if (currentValue > maxValue)
+    {
+        SetValue(maxValue);
+    }
+    else
+    {
+        RecalcButtonPos();
+    }
 }
     
 void UISlider::SetMinMaxValue(float32 _minValue, float32 _maxValue)
 {
 	minValue = _minValue;
 	maxValue = _maxValue;
-	SetValue((minValue + maxValue) / 2.0f);
+
+    if (currentValue < minValue)
+    {
+        SetValue(minValue);
+    }
+    else if (currentValue > maxValue)
+    {
+        SetValue(maxValue);
+    }
+    else
+    {
+        RecalcButtonPos();
+    }
 }
 
 void UISlider::AddControl(UIControl *control)

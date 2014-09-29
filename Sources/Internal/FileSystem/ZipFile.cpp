@@ -116,7 +116,7 @@ File * ZipFile::CreateFromZip(const FilePath &filePath, uint32 attributes)
 	if (!exZipPackage)
 	{
 		int32 res = 0;
-		String zipPath(USE_LOCAL_RESOURCES_PATH);
+		String zipPath(useLocalResourcesPath);
 		zipPath += "Data.zip";
 		exZipPackage = zip_open(zipPath.c_str(), ZIP_CHECKCONS, &res);
 		if (NULL == exZipPackage)

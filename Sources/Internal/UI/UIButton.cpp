@@ -296,7 +296,7 @@ void UIButton::SetStateFontColor(int32 state, const Color& fontColor)
     }
 }
 
-void UIButton::SetStateFontColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType)
+void UIButton::SetStateTextColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType)
 {
     for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
     {
@@ -311,7 +311,7 @@ void UIButton::SetStateFontColorInheritType(int32 state, UIControlBackground::eC
     }
 }
 
-void UIButton::SetStateFontPerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType pixelAccuracyType)
+void UIButton::SetStateTextPerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType pixelAccuracyType)
 {
     for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
     {

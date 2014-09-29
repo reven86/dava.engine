@@ -52,7 +52,7 @@ void UIListMetadata::InitializeControl(const String& controlName, const Vector2&
     {
 		// Initialize UIList
         UIList* list = static_cast<UIList*>(this->treeNodeParams[i].GetUIControl());
-        EditorListDelegate *editorList = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+        EditorListDelegate *editorList = new EditorListDelegate(list);
         list->SetDelegate(editorList);
         list->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }	

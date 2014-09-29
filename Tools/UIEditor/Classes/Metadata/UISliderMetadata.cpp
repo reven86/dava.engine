@@ -431,7 +431,7 @@ void UISliderMetadata::SetMaxColorInheritType(int value)
 
 int UISliderMetadata::GetMaxPerPixelAccuracyType() const
 {
-    if (!VerifyActiveParamIDAndMinBackground())
+    if (!VerifyActiveParamIDAndMaxBackground())
     {
         return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
     }
@@ -441,7 +441,7 @@ int UISliderMetadata::GetMaxPerPixelAccuracyType() const
 
 void UISliderMetadata::SetMaxPerPixelAccuracyType(int value)
 {
-    if (!VerifyActiveParamIDAndMinBackground())
+    if (!VerifyActiveParamIDAndMaxBackground())
     {
         return;
     }

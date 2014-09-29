@@ -25,7 +25,19 @@ public class SoftKeyboardStateHelper implements ViewTreeObserver.OnGlobalLayoutL
     public SoftKeyboardStateHelper(View activityRootView, boolean isSoftKeyboardOpened) {
         this.activityRootView     = activityRootView;
         this.isSoftKeyboardOpened = isSoftKeyboardOpened;
-        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        subscribe();
+    }
+    
+    public void subscribe() {
+    	if(activityRootView != null) {
+    		activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+    	}
+    }
+    
+    public void unsubscribe() {
+    	if(activityRootView != null) {
+        	activityRootView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+    	}
     }
 
     @Override

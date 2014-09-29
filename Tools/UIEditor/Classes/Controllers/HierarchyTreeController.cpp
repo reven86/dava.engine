@@ -675,6 +675,11 @@ void HierarchyTreeController::UpdateControlsData()
 	 hierarchyTree.UpdateControlsData();
 }
 
+void HierarchyTreeController::UpdateControlsData(const HierarchyTreeScreenNode* screenNode)
+{
+    hierarchyTree.UpdateControlsData(screenNode);
+}
+
 void HierarchyTreeController::UpdateLocalization(bool takePathFromLocalizationSystem)
 {
     // Update the Active Platform.
@@ -704,8 +709,9 @@ void HierarchyTreeController::UpdateLocalization(bool takePathFromLocalizationSy
         else
         {
             // Re-setup the Localization System with the values stored on Platform level.
+            LocalizationSystem::Instance()->SetDirectory(localizationPath);
             LocalizationSystem::Instance()->SetCurrentLocale(locale);
-            LocalizationSystem::Instance()->InitWithDirectory(localizationPath);
+            LocalizationSystem::Instance()->Init();
         }
     }
     

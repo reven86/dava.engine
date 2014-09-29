@@ -68,7 +68,8 @@ protected:
     
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
-    
+    DAVA::FilePath qualityConfigPath;
+
     DAVA::String gpu;
 	bool optimizeOnExport;
 

@@ -169,6 +169,7 @@ public:
 
 	// Loock through all controls and update their values
 	void UpdateControlsData();
+    void UpdateControlsData(const HierarchyTreeScreenNode* screenNode);
 
     // Look through all controls and update their localized texts.
     void UpdateLocalization(bool takePathFromLocalizationSystem);
