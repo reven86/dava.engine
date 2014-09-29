@@ -62,6 +62,9 @@ protected:
     
     DownloadError CurlStatusToDownloadStatus(const CURLcode &status);
     DownloadError HttpCodeToError(uint32 code);
+
+private:
+    void SetTimeout(int32 _timeout);
     
 private:
     static bool isCURLInit;

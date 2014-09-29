@@ -87,7 +87,9 @@ DownloadError CurlDownloader::Download(const String &url, const uint64 &loadFrom
     curl_easy_setopt(currentCurlHandle, CURLOPT_VERBOSE, 0);
     curl_easy_setopt(currentCurlHandle, CURLOPT_NOPROGRESS, 1);
     curl_easy_setopt(currentCurlHandle, CURLOPT_WRITEDATA, static_cast<void *>(this));
-    curl_easy_setopt(currentCurlHandle, CURLOPT_CONNECTTIMEOUT, (-1 >= _timeout) ? this->timeout : _timeout);
+    
+    // set all timeouts
+    SetTimeout(_timeout);
     
     /* get it! */ 
     CURLcode curlStatus = curl_easy_perform(currentCurlHandle);
@@ -124,7 +126,10 @@ DownloadError CurlDownloader::GetSize(const String &url, int64 &retSize, int32 _
 
     curl_easy_setopt(currentCurlHandle, CURLOPT_NOBODY, 1);
     curl_easy_setopt(currentCurlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(currentCurlHandle, CURLOPT_CONNECTTIMEOUT, (-1 >= _timeout) ? this->timeout : _timeout);
+    
+    // set all timeouts
+    SetTimeout(_timeout);
+
     curl_easy_setopt(currentCurlHandle, CURLOPT_VERBOSE, 0);
     curl_easy_setopt(currentCurlHandle, CURLOPT_NOPROGRESS, 1);
     CURLcode curlStatus = curl_easy_perform(currentCurlHandle);
@@ -196,4 +201,14 @@ DownloadError CurlDownloader::HttpCodeToError(uint32 code)
     }
 }
 
+void CurlDownloader::SetTimeout(int _timeout)
+{
+    int32 operationsTimeout = (-1 >= _timeout) ? this->timeout : _timeout;
+
+    curl_easy_setopt(currentCurlHandle, CURLOPT_CONNECTTIMEOUT, operationsTimeout);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_TIMEOUT, operationsTimeout);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationsTimeout);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationsTimeout);
+}
+    
 }
