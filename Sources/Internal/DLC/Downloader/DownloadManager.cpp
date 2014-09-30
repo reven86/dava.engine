@@ -190,7 +190,7 @@ void DownloadManager::Retry(const uint32 &taskId)
     if (taskToRetry)
     {
         taskToRetry->error = DLE_NO_ERROR;
-        //taskToRetry->type = RESUMED;
+        taskToRetry->type = RESUMED;
         SetTaskStatus(taskToRetry, DL_PENDING);
         PlaceToQueue(pendingTaskQueue, taskToRetry);
     }
@@ -576,6 +576,8 @@ DownloadError DownloadManager::Download()
 
         if (DLE_CONTENT_NOT_FOUND == error || DLE_CANCELLED == error)
             break;
+        
+        currentTask->type = RESUMED;
 
     }while (0 < currentTask->retriesLeft-- && DLE_NO_ERROR != error);
 
