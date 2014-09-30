@@ -90,7 +90,6 @@ public:
     bool GetTotal(const uint32 &taskId, uint64 &total);
     bool GetProgress(const uint32 &taskId, uint64 &progress);
     bool GetError(const uint32 &taskId, DownloadError &error);
-    bool SetOperationTimeout(const uint32 operationTimeout);
 
 private:
     struct CallbackData

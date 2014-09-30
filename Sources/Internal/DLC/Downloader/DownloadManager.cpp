@@ -460,15 +460,6 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
     return true;
 }
 
-bool DownloadManager::SetOperationTimeout(const uint32 operationTimeout)
-{
-    if (NULL == downloader)
-        return false;
-
-    downloader->timeout = operationTimeout;
-    return true;
-}
-
 void DownloadManager::ClearQueue(Deque<DownloadTaskDescription *> &queue)
 {
     if (!queue.empty())
@@ -653,7 +644,7 @@ DownloadError DownloadManager::TryDownload()
     {
         loadFrom = 0;
         MakeFullDownload(currentTask);
-        error = downloader->Download(currentTask->url, loadFrom);
+        error = downloader->Download(currentTask->url, loadFrom, currentTask->timeout);
     }
 
     currentTask->error = error;

@@ -34,9 +34,8 @@ namespace DAVA
 bool CurlDownloader::isCURLInit = false;
 CURL *CurlDownloader::currentCurlHandle = NULL;
 
-CurlDownloader::CurlDownloader(uint32 operationTimeout)
-    : Downloader(operationTimeout)
-    , isDownloadInterrupting(false)
+CurlDownloader::CurlDownloader()
+    : isDownloadInterrupting(false)
 {
     if (!isCURLInit && CURLE_OK == curl_global_init(CURL_GLOBAL_ALL))
         isCURLInit = true;
@@ -203,14 +202,11 @@ DownloadError CurlDownloader::HttpCodeToError(uint32 code)
 
 void CurlDownloader::SetTimeout(int _timeout)
 {
-    int32 operationsTimeout = (-1 >= _timeout) ? this->timeout : _timeout;
-
-    curl_easy_setopt(currentCurlHandle, CURLOPT_CONNECTTIMEOUT, operationsTimeout);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_CONNECTTIMEOUT, _timeout);
     // we could set operation time limit which produce timeout if operation takes setted time.
-    // disabled because we don't know how long it could performs
-//    curl_easy_setopt(currentCurlHandle, CURLOPT_TIMEOUT, 10*60);
-    curl_easy_setopt(currentCurlHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationsTimeout);
-    curl_easy_setopt(currentCurlHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationsTimeout);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_TIMEOUT, 15);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_DNS_CACHE_TIMEOUT, _timeout);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, _timeout);
 }
     
 }
