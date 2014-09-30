@@ -56,6 +56,7 @@ public:
 	UIWebView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 		
 	// Open the URL.
+    void OpenFile(const FilePath &path);
 	void OpenURL(const String& urlToOpen);
     
     void OpenFromBuffer(const String& string, const FilePath& basePath);

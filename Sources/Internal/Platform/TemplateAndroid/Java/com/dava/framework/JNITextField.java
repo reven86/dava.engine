@@ -803,7 +803,7 @@ public class JNITextField {
 	
 	public static void OpenKeyboard(final int id) {
 		final EditText text = GetEditText(id);
-		if (text == null)
+		if (text == null || text.hasFocus())
 			return;
 		
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
@@ -819,7 +819,7 @@ public class JNITextField {
 	
 	public static void CloseKeyboard(int id) {
 		final EditText text = GetEditText(id);
-		if (text == null)
+		if (text == null || !text.hasFocus())
 			return;
 		
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {

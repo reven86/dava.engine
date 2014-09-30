@@ -814,5 +814,28 @@ int32 FilePath::Compare( const FilePath &right ) const
 	return 0;
 }
 
+const String FilePath::AsURL() const
+{
+#if defined(__DAVAENGINE_ANDROID__)
+    String path = GetAbsolutePathname();
+
+    if(!path.empty())
+    {
+        if(path[0] == '/')
+        {
+            return ("file://" + path);
+        }
+        else
+        {
+            return ("file:///android_asset/" + path);
+        }
+    }
+#else //#if defined(__DAVAENGINE_ANDROID__)
+    return GetAbsolutePathname();
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+    return "";
+}
+
     
 }

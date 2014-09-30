@@ -1142,7 +1142,7 @@ bool MainWindow::CheckAndUnlockProject(const QString& projectPath)
     {
         QMessageBox msgBox;
         msgBox.setText(QString(tr("The project file %1 does not exist").arg(projectPath)));
-        msgBox.addButton(tr("Ok"), QMessageBox::YesRole);
+        msgBox.addButton(tr("OK"), QMessageBox::YesRole);
         msgBox.exec();
         return false;
     }

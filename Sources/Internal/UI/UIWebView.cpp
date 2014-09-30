@@ -69,14 +69,19 @@ void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 	webViewControl->SetDelegate(delegate, this);
 }
 
+void UIWebView::OpenFile(const FilePath &path)
+{
+    webViewControl->OpenURL(path.AsURL());
+}
+
 void UIWebView::OpenURL(const String& urlToOpen)
 {
-	this->webViewControl->OpenURL(urlToOpen);
+	webViewControl->OpenURL(urlToOpen);
 }
 
 void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
-    this->webViewControl->OpenFromBuffer(string, basePath);
+    webViewControl->OpenFromBuffer(string, basePath);
 }
 
 void UIWebView::WillBecomeVisible()
