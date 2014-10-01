@@ -95,8 +95,10 @@ protected:
 
 class JobManager2 : public Singleton<JobManager2>
 {
+	friend struct WorkerThread2;
+
 public:
-    JobManager2();
+    JobManager2(uint32 cpuCoresCount);
     virtual ~JobManager2();
 
 	enum eMainJobType
@@ -126,14 +128,36 @@ protected:
 
         eMainJobType type;
         Thread::Id invokerThreadId;
+
         Function<void ()> fn;
     };
 
     struct WorkerJob
     {
-        FastName tag;
-        Function<void ()> fn;
-    };
+		FastName tag;
+		Function<void()> fn;
+	};
+
+	struct WorkerThread2
+	{
+		WorkerThread2(ConditionalVariable *doneCV);
+		~WorkerThread2();
+
+		bool Run(FastName tag, Function<void()> fn);
+		bool HasTag(FastName tag);
+
+	protected:
+		Thread *thread;
+		ConditionalVariable *doneCV;
+
+		Function<void()> fn;
+		FastName tag;
+
+		Mutex mutex;
+		ConditionalVariable cv;
+
+		void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
+	};
 
     Mutex mainQueueMutex;
     Mutex mainCVMutex;
@@ -142,9 +166,11 @@ protected:
     MainJob curMainJob;
 
     Mutex workerQueueMutex;
-    Mutex workerCVMutex;
-    Deque<WorkerJob> workerJobs;
-    ConditionalVariable workerCV;
+    Mutex workerThreadsMutex;
+	Mutex workerCVMutex;
+	Deque<WorkerJob> workerJobs;
+	Vector<WorkerThread2*> workerThreads;
+	ConditionalVariable workerCV;
 
     void RunMain();
     void RunWorker();

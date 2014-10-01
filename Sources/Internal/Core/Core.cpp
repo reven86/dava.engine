@@ -123,7 +123,7 @@ void Core::CreateSingletons()
 	new Logger();
 	new AllocatorFactory();
 	new JobManager();
-	new JobManager2();
+	new JobManager2(DeviceInfo::GetCPUCoresCount());
     new JobScheduler(DeviceInfo::GetCPUCoresCount());
 	new FileSystem();
     FilePath::InitializeBundleName();

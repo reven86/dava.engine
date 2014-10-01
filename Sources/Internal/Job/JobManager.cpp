@@ -226,19 +226,31 @@ void JobManager::CheckAndCallWaiterForJobInstance(Job * job)
 	}
 }
 
-JobManager2::JobManager2()
+JobManager2::JobManager2(uint32 cpuCoresCount)
 {
+	workerThreads.reserve(cpuCoresCount);
 
+	for (uint32 i = 0; i < cpuCoresCount; ++i)
+	{
+		WorkerThread2 * thread = new WorkerThread2(&workerCV);
+		workerThreads.push_back(thread);
+	}
 }
 
 JobManager2::~JobManager2()
 {
+	for (uint32 i = 0; i < workerThreads.size(); ++i)
+	{
+		SafeDelete(workerThreads[i]);
+	}
 
+	workerThreads.clear();
 }
 
 void JobManager2::Update()
 {
     RunMain();
+	RunWorker();
 }
 
 void JobManager2::CreateMainJob(const Function<void()>& mainFn, eMainJobType mainJobType)
@@ -284,25 +296,22 @@ bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
         invokerThreadId = Thread::GetCurrentId();
     }
 
-    if(invokerThreadId != Thread::GetMainId())
-    {
-        LockGuard<Mutex> guard(mainQueueMutex);
+    LockGuard<Mutex> guard(mainQueueMutex);
 
-        if(curMainJob.invokerThreadId == invokerThreadId)
+	if(curMainJob.invokerThreadId == invokerThreadId)
+    {
+        ret = true;
+    }
+    else
+    {
+        Deque<MainJob>::iterator i = mainJobs.begin();
+        Deque<MainJob>::iterator end = mainJobs.end();
+        for(; i != end; ++i)
         {
-            ret = true;
-        }
-        else
-        {
-            Deque<MainJob>::iterator i = mainJobs.begin();
-            Deque<MainJob>::iterator end = mainJobs.end();
-            for(; i != end; ++i)
+            if(i->invokerThreadId == invokerThreadId)
             {
-                if(i->invokerThreadId == invokerThreadId)
-                {
-                    ret = true;
-                    break;
-                }
+                ret = true;
+                break;
             }
         }
     }
@@ -312,53 +321,175 @@ bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
 void JobManager2::CreateWorkerJob(FastName workerJobTag, const Function<void()>& workerFn)
 {
+	LockGuard<Mutex> quard(workerQueueMutex);
 
+	WorkerJob job;
+	job.fn = workerFn;
+	job.tag = workerJobTag;
+	workerJobs.push_back(job);
+
+	RunWorker();
 }
 
 void JobManager2::WaitWorkerJobs(FastName workerJobTag)
 {
-
+	LockGuard<Mutex> guard(workerCVMutex);
+	while(HasWorkerJobs(workerJobTag))
+	{
+		Thread::Wait(&workerCV, &workerCVMutex);
+	}
 }
 
 bool JobManager2::HasWorkerJobs(FastName workerJobTag)
 {
-    return false;
+    bool ret = false;
+	LockGuard<Mutex> guard(workerQueueMutex);
+
+	Deque<WorkerJob>::iterator i = workerJobs.begin();
+	Deque<WorkerJob>::iterator end = workerJobs.end();
+	for(; i != end; ++i)
+	{
+		if(i->tag == workerJobTag)
+		{
+			ret = true;
+			break;
+		}
+	}
+
+	if(!ret)
+	{
+		for(uint32 j = 0; j < workerThreads.size(); ++j)
+		{
+			if(workerThreads[j]->HasTag(workerJobTag))
+			{
+				ret = true;
+				break;
+			}
+		}
+	}
+
+	return ret;
 }
 
 void JobManager2::RunMain()
 {
     LockGuard<Mutex> guard(mainQueueMutex);
 
-    // TODO:
-    // extract depending on type MAIN or MAINBG
-    // ...
+	if(!mainJobs.empty())
+	{
+		// TODO:
+		// extract depending on type MAIN or MAINBG
+		// ...
 
-    // extract all jobs from queue
-    while(!mainJobs.empty())
-    {
-        curMainJob = mainJobs.front();
-        mainJobs.pop_front();
+		// extract all jobs from queue
+		while(!mainJobs.empty())
+		{
+			curMainJob = mainJobs.front();
+			mainJobs.pop_front();
         
-        if(curMainJob.invokerThreadId != 0 && curMainJob.fn != NULL)
-        {
-            // unlock queue mutex until function execution finished
-            mainQueueMutex.Unlock();
-            curMainJob.fn();
-            mainQueueMutex.Lock();
-        }
+			if(curMainJob.invokerThreadId != 0 && curMainJob.fn != NULL)
+			{
+				// unlock queue mutex until function execution finished
+				mainQueueMutex.Unlock();
+				curMainJob.fn();
+				mainQueueMutex.Lock();
+			}
 
-        curMainJob = MainJob();
-    }
+			curMainJob = MainJob();
+		}
 
-    // signal that jobs are finished
-    mainCVMutex.Lock();
-    Thread::Signal(&mainCV);
-    mainCVMutex.Unlock();
+		// signal that jobs are finished
+		mainCVMutex.Lock();
+		Thread::Signal(&mainCV);
+		mainCVMutex.Unlock();
+	}
 }
 
 void JobManager2::RunWorker()
 {
+	bool next = true;
+	LockGuard<Mutex> guard(workerQueueMutex);
+	
+	if(!workerJobs.empty() && next)
+	{
+		next = false;
 
+		WorkerJob jobToRun = workerJobs.front();
+		for(uint32 i = 0; i < workerThreads.size(); ++i)
+		{
+			if(workerThreads[i]->Run(jobToRun.tag, jobToRun.fn))
+			{
+				workerJobs.pop_front();
+				next = true;
+				break;
+			}
+		}
+	}
+}
+
+JobManager2::WorkerThread2::WorkerThread2(ConditionalVariable *_doneCV)
+{
+	doneCV = _doneCV;
+
+	thread = Thread::Create(Message(this, &WorkerThread2::ThreadFunc));
+	thread->Start();
+}
+
+JobManager2::WorkerThread2::~WorkerThread2()
+{
+	thread->Cancel();
+	thread->Join();
+	SafeRelease(thread);
+}
+
+void JobManager2::WorkerThread2::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
+{
+	mutex.Lock();
+
+	while(thread->GetState() != Thread::STATE_CANCELLING)
+	{
+		Thread::Wait(&cv, &mutex);
+
+		mutex.Unlock();
+		fn();
+		mutex.Lock();
+
+		fn = NULL;
+		tag = FastName();
+		Thread::Signal(doneCV);
+	}
+
+	mutex.Unlock();
+}
+
+bool JobManager2::WorkerThread2::Run(FastName _tag, Function<void()> _fn)
+{
+	bool ret = false;
+
+	LockGuard<Mutex> guard(mutex);
+	if(fn == NULL)
+	{
+		fn = _fn;
+		tag = _tag;
+		ret = true;
+
+		Thread::Signal(&cv);
+	}
+
+	return ret;
+}
+
+bool JobManager2::WorkerThread2::HasTag(FastName _tag)
+{
+	bool ret = false;
+
+	LockGuard<Mutex> guard(mutex);
+	if(tag == _tag)
+	{
+		ret = true;
+	}
+
+	return ret;
 }
 
 }

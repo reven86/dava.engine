@@ -80,21 +80,6 @@ inline Mutex * WorkerThread::GetMutex()
     return &mutex;
 }
 
-class WorkerThread2
-{
-public:
-    WorkerThread2();
-    ~WorkerThread2();
-
-    void Run(Function<void ()> fn);
-
-protected:
-    Thread *thread;
-    Function<void ()> job;
-
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
-};
-
 }
 
 #endif //__DAVAENGINE_WORKER_THREAD_H__

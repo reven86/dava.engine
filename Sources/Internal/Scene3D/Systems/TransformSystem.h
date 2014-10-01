@@ -58,33 +58,17 @@ public:
     virtual void Process(float32 timeElapsed);
 
 private:
+	static const uint32 maxProcessingThreads = 8;
+	static const FastName processingTag;
+
 	Vector<Entity*> updatableEntities;
-    Vector<Entity*> sendEvent;
+	Vector<Entity*> sendEvent[maxProcessingThreads];
     
 	void EntityNeedUpdate(Entity * entity);
 	void HierahicAddToUpdate(Entity * entity);
 
-    void FindNodeThatRequireUpdate(Entity * entity);
-    void TransformAllChildEntities(Entity * entity);
-
-    void UpdateHierarchy(Entity *entity, Vector<Entity*> *updatedEntities, bool force = false);
-
-    void HierahicFindUpdatableTransform(BaseObject * bo, void * userData, void * callerData);
-
-    struct JobArgument
-    {
-        int32 recursionDepth;
-        Entity * entity;
-        bool forceUpdate;
-        Vector<Entity*>  localSendEvent;
-    };
-
-    struct JobArgument2
-    {
-        uint32 first;
-        uint32 count;
-        Vector<Entity*> entities;
-    };
+	void UpdateHierarchyPart(uint32 from, uint32 count, Vector<Entity*> *updatedEntities);
+	void UpdateHierarchy(Entity *entity, Vector<Entity*> *updatedEntities, bool force = false);
 
     Vector<Vector<Entity*> > eventsVector;
 

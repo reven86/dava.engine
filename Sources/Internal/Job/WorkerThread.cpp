@@ -76,30 +76,4 @@ void WorkerThread::Stop()
     needStop = true;
 }
 
-// ====================================================================================================================================
-// 
-// ====================================================================================================================================
-
-WorkerThread2::WorkerThread2()
-{
-    thread = Thread::Create(Message(this, &WorkerThread2::ThreadFunc));
-    thread->Start();
-}
-
-WorkerThread2::~WorkerThread2()
-{
-    thread->Join();
-    SafeRelease(thread);
-}
-
-void WorkerThread2::Run(Function<void()> fn)
-{
-
-}
-
-void WorkerThread2::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
-{
-
-}
-
 }

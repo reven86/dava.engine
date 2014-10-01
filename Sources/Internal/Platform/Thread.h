@@ -142,7 +142,7 @@ public:
     void Kill();
     static void KillAll();
 
-    /** Ask to cancel thred. User should to check state variable
+    /** Ask to cancel thread. User should to check state variable
     */
     void Cancel();
     static void CancelAll();
