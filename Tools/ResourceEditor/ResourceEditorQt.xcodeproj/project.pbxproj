@@ -63,6 +63,10 @@
 		76524BE61992208B00F805AB /* HeightDeltaTool.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76524BE41992208B00F805AB /* HeightDeltaTool.cpp */; };
 		76524BE91992212200F805AB /* HeightDeltaTool_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76524BE81992212200F805AB /* HeightDeltaTool_moc.cpp */; };
 		765A0ADB18CE0C7F0044516F /* MaterialTemplateModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765A0AD918CE0C7F0044516F /* MaterialTemplateModel.cpp */; };
+		765AA64619DBEDCD0092A488 /* FilePathBrowser.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765AA64219DBEDCD0092A488 /* FilePathBrowser.cpp */; };
+		765AA64719DBEDCD0092A488 /* LineEditStyle.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765AA64419DBEDCD0092A488 /* LineEditStyle.cpp */; };
+		765AA65119DBEE0C0092A488 /* FilePathBrowser_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765AA64F19DBEE0C0092A488 /* FilePathBrowser_moc.cpp */; };
+		765AA65219DBEE0C0092A488 /* LineEditStyle_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765AA65019DBEE0C0092A488 /* LineEditStyle_moc.cpp */; };
 		765BA22F19406A9E005D6B4E /* BeastDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765BA22B19406A9E005D6B4E /* BeastDialog.cpp */; };
 		765BA23D19406B0B005D6B4E /* BeastDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765BA23C19406B0B005D6B4E /* BeastDialog_moc.cpp */; };
 		76741C8818A3BDE20044A0BF /* CacheRequest.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76741C8618A3BDE20044A0BF /* CacheRequest.cpp */; };
@@ -795,6 +799,12 @@
 		76524BE81992212200F805AB /* HeightDeltaTool_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HeightDeltaTool_moc.cpp; sourceTree = "<group>"; };
 		765A0AD918CE0C7F0044516F /* MaterialTemplateModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialTemplateModel.cpp; sourceTree = "<group>"; };
 		765A0ADA18CE0C7F0044516F /* MaterialTemplateModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialTemplateModel.h; sourceTree = "<group>"; };
+		765AA64219DBEDCD0092A488 /* FilePathBrowser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FilePathBrowser.cpp; sourceTree = "<group>"; };
+		765AA64319DBEDCD0092A488 /* FilePathBrowser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilePathBrowser.h; sourceTree = "<group>"; };
+		765AA64419DBEDCD0092A488 /* LineEditStyle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LineEditStyle.cpp; sourceTree = "<group>"; };
+		765AA64519DBEDCD0092A488 /* LineEditStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineEditStyle.h; sourceTree = "<group>"; };
+		765AA64F19DBEE0C0092A488 /* FilePathBrowser_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FilePathBrowser_moc.cpp; sourceTree = "<group>"; };
+		765AA65019DBEE0C0092A488 /* LineEditStyle_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LineEditStyle_moc.cpp; sourceTree = "<group>"; };
 		765BA22B19406A9E005D6B4E /* BeastDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BeastDialog.cpp; sourceTree = "<group>"; };
 		765BA22C19406A9E005D6B4E /* BeastDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BeastDialog.h; sourceTree = "<group>"; };
 		765BA23C19406B0B005D6B4E /* BeastDialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BeastDialog_moc.cpp; path = _GeneratedQt/BeastDialog/BeastDialog_moc.cpp; sourceTree = "<group>"; };
@@ -2086,6 +2096,10 @@
 		76E5FFC219ADE80D004AC39F /* Widgets */ = {
 			isa = PBXGroup;
 			children = (
+				765AA64219DBEDCD0092A488 /* FilePathBrowser.cpp */,
+				765AA64319DBEDCD0092A488 /* FilePathBrowser.h */,
+				765AA64419DBEDCD0092A488 /* LineEditStyle.cpp */,
+				765AA64519DBEDCD0092A488 /* LineEditStyle.h */,
 				76405EAC19D1D052000E470B /* CheckableComboBox.cpp */,
 				76405EAD19D1D052000E470B /* CheckableComboBox.h */,
 				76405EAE19D1D052000E470B /* LineEditEx.cpp */,
@@ -2129,6 +2143,8 @@
 		76E5FFE819ADE9AB004AC39F /* Widgets */ = {
 			isa = PBXGroup;
 			children = (
+				765AA64F19DBEE0C0092A488 /* FilePathBrowser_moc.cpp */,
+				765AA65019DBEE0C0092A488 /* LineEditStyle_moc.cpp */,
 				76E5FFE919ADE9AB004AC39F /* AbstractSlider_moc.cpp */,
 				76E5FFEA19ADE9AB004AC39F /* ValueSlider_moc.cpp */,
 			);
@@ -4567,6 +4583,7 @@
 				76E5FFEB19ADE9AB004AC39F /* AbstractColorPicker_moc.cpp in Build Sources */,
 				E8C99256184CD0EC00AFBF3F /* btRigidBody.cpp in Build Sources */,
 				76E5FFF619ADE9AB004AC39F /* AbstractSlider_moc.cpp in Build Sources */,
+				765AA65219DBEE0C0092A488 /* LineEditStyle_moc.cpp in Build Sources */,
 				76405ED019D1D0ED000E470B /* LineEditEx_moc.cpp in Build Sources */,
 				76405EC219D1D068000E470B /* LogFilterModel.cpp in Build Sources */,
 				E8EA8DBF185C38040064906E /* MaterialTree.cpp in Build Sources */,
@@ -4888,6 +4905,7 @@
 				E8BAD6FF1859F50300C98C8D /* ScaleHood_moc.cpp in Build Sources */,
 				E8BAD6EA1859F50300C98C8D /* SceneTabWidget_moc.cpp in Build Sources */,
 				E8C991F9184CD0EC00AFBF3F /* btBoxBoxDetector.cpp in Build Sources */,
+				765AA64619DBEDCD0092A488 /* FilePathBrowser.cpp in Build Sources */,
 				E8C9925C184CD0EC00AFBF3F /* btConvexHull.cpp in Build Sources */,
 				E8C99202184CD0EC00AFBF3F /* btDefaultCollisionConfiguration.cpp in Build Sources */,
 				E8C9927A184CD0EC00AFBF3F /* CleanFolderTool.cpp in Build Sources */,
@@ -4909,6 +4927,7 @@
 				E8BAD72B1859F50300C98C8D /* QtLabelWithActions_moc.cpp in Build Sources */,
 				E8C99293184CD0EC00AFBF3F /* LandscapeSetTexturesCommands.cpp in Build Sources */,
 				E8BAD6F71859F50300C98C8D /* EditorParticlesSystem_moc.cpp in Build Sources */,
+				765AA64719DBEDCD0092A488 /* LineEditStyle.cpp in Build Sources */,
 				E8C992F6184CD0EC00AFBF3F /* BeastSystem.cpp in Build Sources */,
 				E8C99339184CD0EC00AFBF3F /* QtPropertyDataIntrospection.cpp in Build Sources */,
 				E8BAD6CE1859F50300C98C8D /* DockProperties_moc.cpp in Build Sources */,
@@ -5066,6 +5085,7 @@
 				E8C99297184CD0EC00AFBF3F /* ParticleForceMoveCommand.cpp in Build Sources */,
 				E8BAD71D1859F50300C98C8D /* TextureScrollArea_moc.cpp in Build Sources */,
 				E8C9933F184CD0EC00AFBF3F /* QtPropertyItem.cpp in Build Sources */,
+				765AA65119DBEE0C0092A488 /* FilePathBrowser_moc.cpp in Build Sources */,
 				E8C992D3184CD0EC00AFBF3F /* GradientPickerWidget.cpp in Build Sources */,
 				E8BAD6C11859F50300C98C8D /* LODEditor_moc.cpp in Build Sources */,
 				E8BAD6C31859F50300C98C8D /* EmitterLayerWidget_moc.cpp in Build Sources */,

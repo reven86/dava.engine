@@ -13,6 +13,7 @@ namespace Ui
 };
 
 
+class QTimer;
 class LogModel;
 class LogFilterModel;
 
@@ -42,7 +43,9 @@ private:
     QScopedPointer<Ui::LogWidget> ui;
     QPointer<LogModel> logModel;
     QPointer<LogFilterModel> logFilterModel;
-    bool m_doAutoScroll;
+    QPointer<QTimer> eventSkipper;
+    bool doAutoScroll;
+    bool scrollStateDetected;
 };
 
 

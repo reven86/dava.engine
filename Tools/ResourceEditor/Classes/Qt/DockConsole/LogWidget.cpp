@@ -10,6 +10,7 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <QScrollBar>
+#include <QTimer>
 
 #include "Settings/SettingsManager.h"
 
@@ -18,12 +19,23 @@
 #include "LogDelegate.h"
 
 
+namespace
+{
+    const int scrollDelay = 50;
+}
+
+
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LogWidget())
-    , m_doAutoScroll(true)
+    , doAutoScroll(true)
+    , eventSkipper(new QTimer(this))
+    , scrollStateDetected(false)
 {
     ui->setupUi(this);
+
+    eventSkipper->setInterval(scrollDelay);
+    eventSkipper->setSingleShot(true);
 
     LogDelegate* delegate = new LogDelegate(ui->log, this);
     logModel = new LogModel(this);
@@ -44,8 +56,10 @@ LogWidget::LogWidget(QWidget* parent)
     connect(ui->log->model(), SIGNAL( rowsAboutToBeInserted(const QModelIndex&, int, int) ), SLOT( DetectAutoScroll() ));
     connect(ui->log->model(), SIGNAL( rowsAboutToBeRemoved(const QModelIndex&, int, int) ), SLOT( DetectAutoScroll() ));
     connect(ui->log->model(), SIGNAL( modelAboutToBeReset() ), SLOT( DetectAutoScroll() ));
-    connect(ui->log->model(), SIGNAL( rowsInserted(const QModelIndex&, int, int) ), SLOT( DoAutoScroll() ));
-    connect(ui->log->model(), SIGNAL( modelReset() ), SLOT( DoAutoScroll() ));
+
+    connect(ui->log->model(), SIGNAL( rowsInserted(const QModelIndex&, int, int) ), eventSkipper, SLOT( start() ));
+    connect(ui->log->model(), SIGNAL( modelReset() ), eventSkipper, SLOT( start() ));
+    connect(eventSkipper, SIGNAL( timeout() ), SLOT( DoAutoScroll() ) );
 
     DAVA::Logger::AddCustomOutput(logModel);
     LoadSettings();
@@ -192,14 +206,19 @@ void LogWidget::OnClear()
 
 void LogWidget::DetectAutoScroll()
 {
+    if (scrollStateDetected)
+        return;
+
+    scrollStateDetected = true;
     QScrollBar *scroll = ui->log->verticalScrollBar();
-    m_doAutoScroll = scroll->value() == scroll->maximum();
+    doAutoScroll = (scroll->value() == scroll->maximum());
 }
 
 void LogWidget::DoAutoScroll()
 {
-    if (!m_doAutoScroll)
+    if (!doAutoScroll)
         return ;
 
     ui->log->scrollToBottom();
+    scrollStateDetected = false;
 }

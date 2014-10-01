@@ -40,7 +40,7 @@ bool LogFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_
     if (!filterText.isEmpty())
     {
         const QString text = source.data(Qt::DisplayRole).toString();
-        if (!text.contains(filterText))
+        if (!text.contains(filterText, Qt::CaseInsensitive))
         {
             isAcceptedByText = false;
         }

@@ -596,6 +596,8 @@
     <ClCompile Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.cpp" />
     <ClCompile Include="Classes\Qt\Tools\Widgets\CheckableComboBox.cpp" />
     <ClCompile Include="Classes\Qt\Tools\Widgets\LineEditEx.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\Widgets\LineEditStyle.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\Widgets\FilePathBrowser.cpp" />
     <ClCompile Include="Classes\SceneProcessing\SceneProcessor.cpp" />
     <ClCompile Include="Classes\Qt\Tools\Widgets\AbstractSlider.cpp" />
     <ClCompile Include="Classes\Qt\Tools\Widgets\ValueSlider.cpp" />
@@ -788,6 +790,7 @@
     <ClCompile Include="_GeneratedQt\Tools\ToolButtonWithWidget\ToolButtonWithWidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\Widgets\AbstractSlider_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\Widgets\CheckableComboBox_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\Widgets\FilePathBrowser_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\Widgets\LineEditEx_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\Widgets\ValueSlider_moc.cpp" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastDebug.h" />
@@ -1296,6 +1299,8 @@
     <ClInclude Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.h" />
     <ClInclude Include="Classes\Qt\Tools\Widgets\CheckableComboBox.h" />
     <ClInclude Include="Classes\Qt\Tools\Widgets\LineEditEx.h" />
+    <ClInclude Include="Classes\Qt\Tools\Widgets\LineEditStyle.h" />
+    <ClInclude Include="Classes\Qt\Tools\Widgets\FilePathBrowser.h" />
     <ClInclude Include="Classes\SceneProcessing\SceneProcessor.h" />
     <ClInclude Include="Classes\Qt\Tools\Widgets\AbstractSlider.h" />
     <ClInclude Include="Classes\Qt\Tools\Widgets\ValueSlider.h" />
