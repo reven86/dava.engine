@@ -65,7 +65,7 @@ public:
     void Update();
 
     // Schedule download content or get content size (handles by DwonloadMode)
-    uint32 Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode = RESUMED, int32 timeout = 2, int32 retriesCount = 1);
+    uint32 Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode = RESUMED, int32 timeout = 4, int32 retriesCount = 3);
     
     // Retry finished download
     void Retry(const uint32 &taskId);
@@ -90,7 +90,6 @@ public:
     bool GetTotal(const uint32 &taskId, uint64 &total);
     bool GetProgress(const uint32 &taskId, uint64 &progress);
     bool GetError(const uint32 &taskId, DownloadError &error);
-    bool SetOperationTimeout(const uint32 operationTimeout);
 
 private:
     struct CallbackData
