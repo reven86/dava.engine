@@ -164,7 +164,7 @@ String JniDeviceInfo::GetHTTPProxyHost()
 	if (mid)
 	{
 		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
-		CreateStringFromJni(env, jstring(obj), returnStr);
+		CreateStringFromJni(GetEnvironment(), jstring(obj), returnStr);
 	}
 
 	return returnStr;
@@ -178,7 +178,7 @@ String JniDeviceInfo::GetHTTPNonProxyHosts()
 	if (mid)
 	{
 		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
-		CreateStringFromJni(env, jstring(obj), returnStr);
+		CreateStringFromJni(GetEnvironment(), jstring(obj), returnStr);
 	}
 
 	return returnStr;
