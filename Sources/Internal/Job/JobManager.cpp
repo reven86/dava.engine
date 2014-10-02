@@ -321,13 +321,14 @@ bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
 void JobManager2::CreateWorkerJob(FastName workerJobTag, const Function<void()>& workerFn)
 {
-	LockGuard<Mutex> quard(workerQueueMutex);
+	workerQueueMutex.Lock();
 
 	WorkerJob job;
 	job.fn = workerFn;
 	job.tag = workerJobTag;
 	workerJobs.push_back(job);
 
+	workerQueueMutex.Unlock();
 	RunWorker();
 }
 

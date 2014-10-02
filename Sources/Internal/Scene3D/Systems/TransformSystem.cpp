@@ -61,10 +61,11 @@ void TransformSystem::Process(float32 timeElapsed)
     passedNodes = 0;
     multipliedNodes = 0;
 
-	if( /* updatableEntities.size() > (jobsCount * 2) && */
-		RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE) && updatableEntities.size() > 1)
+	// calculate optimal jobs count for current number of entities should be processed
+	const uint32 jobsCount = Min(maxProcessingThreads, updatableEntities.size() / (uint32)JobScheduler::Instance()->GetThreadsCount());
+
+	if(jobsCount > 0 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
     {
-		const uint32 jobsCount = Min(maxProcessingThreads, (uint32)JobScheduler::Instance()->GetThreadsCount());
 		const uint32 entitiesCount = updatableEntities.size();
 		const uint32 entitiesPerJobCount = entitiesCount / jobsCount;
 
@@ -129,6 +130,8 @@ void TransformSystem::UpdateHierarchyPart(uint32 from, uint32 count, Vector<Enti
 
 void TransformSystem::UpdateHierarchy(Entity *entity, Vector<Entity*> *updatedEntities, bool force)
 {
+	AtomicIncrement(passedNodes);
+
     if(force || entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
     {
 		TransformComponent * transform = (TransformComponent*) entity->GetComponent(Component::TRANSFORM_COMPONENT);
