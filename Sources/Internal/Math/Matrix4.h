@@ -55,6 +55,8 @@ namespace DAVA
 	\brief Class to work with 4 x 4 matrices.
  */
 	
+class Quaternion;
+
 struct Matrix4
 {
 	union
@@ -75,7 +77,7 @@ struct Matrix4
 					float32 _D20, float32 _D21, float32 _D22, float32 _D23,
 					float32 _D30, float32 _D31, float32 _D32, float32 _D33);
 
-	//inline Matrix4(const Matrix3 & m);
+	inline explicit Matrix4(const Matrix3 & m);
 	inline Matrix4(const Matrix4 & m);
     
     void Dump();
@@ -110,6 +112,7 @@ struct Matrix4
 	inline bool	Inverse();
 	inline bool GetInverse(Matrix4 & out) const;
 	inline bool Decomposition(Vector3& position, Vector3& scale, Vector3& orientation) const;
+	void Decomposition(Vector3& position, Vector3& scale, Quaternion& orientation) const;
 
     //! 
     inline static Matrix4 MakeTranslation(const Vector3 & translationVector);
@@ -191,6 +194,15 @@ inline Matrix4::Matrix4(const Matrix4 & m)
 // 	_20 = m._20; _21 = m._21; _22 = m._22; _23 = m._23;
 // 	_30 = m._30; _31 = m._31; _32 = m._32; _33 = m._33;
     *this = m;
+}
+
+
+inline Matrix4::Matrix4( const Matrix3 & m )
+{
+    _00 = m._00; _01 = m._01; _02 = m._02; _03 = 0.0f;
+    _10 = m._10; _11 = m._11; _12 = m._12; _13 = 0.0f;
+    _20 = m._20; _21 = m._21; _22 = m._22; _23 = 0.0f;
+    _30 = 0.0f;  _31 = 0.0f;  _32 = 0.0f;  _33 = 1.0f;
 }
 
 inline Matrix4 & Matrix4::operator= (const Matrix4 & m)

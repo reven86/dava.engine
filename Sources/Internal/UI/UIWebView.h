@@ -56,6 +56,7 @@ public:
 	UIWebView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 		
 	// Open the URL.
+    void OpenFile(const FilePath &path);
 	void OpenURL(const String& urlToOpen);
 	// Load html page
 	void LoadHtmlString(const WideString& htmlString);
@@ -73,7 +74,6 @@ public:
 	// Overloaded virtual methods.
 	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);
 	virtual void SetSize(const Vector2 &newSize);
-	virtual void SetVisible(bool isVisible);
 
 	// Page scale property change
 	void SetScalesPageToFit(bool isScalesToFit);

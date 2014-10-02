@@ -187,7 +187,7 @@ void ScreenWrapper::SetCursor(const Vector2& position, Qt::CursorShape cursor)
 {
 	cursorPosition = position;
 	if (qtScreen)
-		qtScreen->setCursor(cursor);
+		qtScreen->setCursor(cursorsManager.GetCursor(cursor));
 }
 
 Vector2 ScreenWrapper::GetCursorPosition()

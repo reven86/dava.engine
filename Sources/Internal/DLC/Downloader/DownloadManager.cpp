@@ -51,7 +51,6 @@ DownloadManager::DownloadManager()
     , isThreadStarted(false)
     , currentTask(NULL)
     , downloader(0)
-    , callNotify(NULL)
     , remoteFileSize(0)
     , downloadedTotal(0)
 {
@@ -75,7 +74,6 @@ DownloadManager::~DownloadManager()
 
 void DownloadManager::SetDownloader(Downloader *_downloader)
 {
-    DVASSERT(true == Thread::IsMainThread());
     DVASSERT(NULL != _downloader);
     
     while(NULL != currentTask)
@@ -95,15 +93,11 @@ Downloader *DownloadManager::GetDownloader()
 
 void DownloadManager::SetNotificationCallback(DownloadManager::NotifyFunctor callbackFn)
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     callNotify = callbackFn;
 }
 
 DownloadManager::NotifyFunctor DownloadManager::GetNotificationCallback() const
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     return callNotify;
 }
 
@@ -120,8 +114,6 @@ void DownloadManager::StartProcessingThread()
 
 void DownloadManager::StopProcessingThread()
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     isThreadStarted = false;
     thisThread->Join();
 
@@ -130,9 +122,6 @@ void DownloadManager::StopProcessingThread()
 
 void DownloadManager::Update()
 {
-    // use it only from Main thread
-    DVASSERT(true == Thread::IsMainThread());
-
     if (!currentTask)
     {
         if (!pendingTaskQueue.empty())
@@ -178,8 +167,6 @@ void DownloadManager::Update()
 
 uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 timeout, int32 retriesCount)
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     int32 fullTimeout = timeout;
     if (GET_SIZE == downloadMode && timeout >= 2)
         fullTimeout /= 2;
@@ -198,13 +185,11 @@ uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFi
 
 void DownloadManager::Retry(const uint32 &taskId)
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     DownloadTaskDescription *taskToRetry = ExtractFromQueue(doneTaskQueue, taskId);
     if (taskToRetry)
     {
         taskToRetry->error = DLE_NO_ERROR;
-        //taskToRetry->type = RESUMED;
+        taskToRetry->type = RESUMED;
         SetTaskStatus(taskToRetry, DL_PENDING);
         PlaceToQueue(pendingTaskQueue, taskToRetry);
     }
@@ -212,8 +197,6 @@ void DownloadManager::Retry(const uint32 &taskId)
 
 void DownloadManager::Cancel(const uint32 &taskId)
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     DownloadTaskDescription * curTaskToDelete = currentTask;
 
     if (curTaskToDelete && taskId == curTaskToDelete->id)
@@ -236,8 +219,6 @@ void DownloadManager::Cancel(const uint32 &taskId)
 
 void DownloadManager::CancelCurrent()
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     DownloadTaskDescription * curTaskToCancel = currentTask;
     if (!curTaskToCancel)
         return;
@@ -248,9 +229,6 @@ void DownloadManager::CancelCurrent()
 
 void DownloadManager::CancelAll()
 {
-    //queues changing allowed only from main thread
-    DVASSERT(true == Thread::IsMainThread());
-
     if (!pendingTaskQueue.empty())
     {
         Deque<DownloadTaskDescription *>::iterator it;
@@ -273,9 +251,6 @@ void DownloadManager::CancelAll()
 
 void DownloadManager::Clear(const uint32 &taskId)
 {
-    //queues changing allowed only from main thread
-    DVASSERT(true == Thread::IsMainThread());
-
     // cancel task if possible
     Cancel(taskId);
 
@@ -344,8 +319,6 @@ void DownloadManager::ClearDone()
 
 void DownloadManager::Wait(const uint32 &taskId)
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     // if you called it from other thread than main - you should be sured that Update() method calls periodically from Main Thread.
 
     DownloadTaskDescription *waitTask = NULL;
@@ -382,7 +355,6 @@ void DownloadManager::Wait(const uint32 &taskId)
 
 void DownloadManager::WaitAll()
 {
-    DVASSERT(true == Thread::IsMainThread());
     while (true)
     {
         bool needToWait = currentTask || !pendingTaskQueue.empty();
@@ -487,19 +459,8 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
     return true;
 }
 
-bool DownloadManager::SetOperationTimeout(const uint32 operationTimeout)
-{
-    if (NULL == downloader)
-        return false;
-
-    downloader->timeout = operationTimeout;
-    return true;
-}
-
 void DownloadManager::ClearQueue(Deque<DownloadTaskDescription *> &queue)
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     if (!queue.empty())
     {
         for (Deque<DownloadTaskDescription *>::iterator it = queue.begin(); it != queue.end();)
@@ -540,8 +501,6 @@ void DownloadManager::PlaceToQueue(Deque<DownloadTaskDescription *> &queue, Down
 
 DownloadTaskDescription *DownloadManager::GetTaskForId(const uint32 &taskId)
 {
-    DVASSERT(true == Thread::IsMainThread());
-
     DownloadTaskDescription *retPointer = NULL;
 
     if (currentTask && taskId == currentTask->id)
@@ -607,6 +566,8 @@ DownloadError DownloadManager::Download()
 
         if (DLE_CONTENT_NOT_FOUND == error || DLE_CANCELLED == error)
             break;
+        
+        currentTask->type = RESUMED;
 
     }while (0 < currentTask->retriesLeft-- && DLE_NO_ERROR != error);
 
@@ -682,7 +643,7 @@ DownloadError DownloadManager::TryDownload()
     {
         loadFrom = 0;
         MakeFullDownload(currentTask);
-        error = downloader->Download(currentTask->url, loadFrom);
+        error = downloader->Download(currentTask->url, loadFrom, currentTask->timeout);
     }
 
     currentTask->error = error;

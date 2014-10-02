@@ -87,7 +87,7 @@ protected:
 
     // Sprite getter/setter.
     virtual void SetSprite(const QString& value);
-    virtual QString GetSprite();
+    virtual QString GetSprite() const;
     
     virtual void SetSpriteFrame(int value);
     virtual int GetSpriteFrame();
@@ -98,6 +98,9 @@ protected:
 
     virtual int GetColorInheritType();
     virtual void SetColorInheritType(int value);
+    
+    virtual int GetPerPixelAccuracyType();
+    virtual void SetPerPixelAccuracyType(int value);
 
     virtual int GetAlign();
     virtual void SetAlign(int value);
@@ -117,6 +120,14 @@ protected:
     
     virtual float GetTopBottomStretchCap();
 	virtual void SetTopBottomStretchCap(float value);
+
+    // Color Inherit Type.
+    virtual int GetTextColorInheritType() const;
+    virtual void SetTextColorInheritType(int value);
+	
+    // Per pixel accuracy type
+	virtual int GetTextPerPixelAccuracyType() const;
+	virtual void SetTextPerPixelAccuracyType(int value);
 
     // For UI Button localized text depends on state, so overriding this function.
     virtual UIControl::eControlState GetCurrentStateForLocalizedText() const;
@@ -159,7 +170,11 @@ protected:
     // Color Inherit Type.
     int GetColorInheritTypeForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForColorInheritType();
-
+    
+    // Per pixel accuracy type
+    int GetPerPixelAccuracyTypeForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForPerPixelAccuracyType();
+    
     // Align Type.
     int GetAlignForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForAlign();
@@ -179,8 +194,28 @@ protected:
     float GetTopBottomStretchCapForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForTopBottomStretchCap();
 
+    // Shadow offset&color.
+    float GetShadowOffsetXForState(UIControl::eControlState state) const;
+    float GetShadowOffsetYForState(UIControl::eControlState state) const;
+    QColor GetShadowColorForState(UIControl::eControlState state) const;
+
+    // Font/shadow color inherit type.
+    int GetTextColorInheritTypeForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForTextColorInheritType();
+    
+    // Font/shadow per pixel accuracy type.
+    int GetTextPerPixelAccuracyTypeForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForTextPerPixelAccuracyType();
+    
+    void UpdatePropertyDirtyFlagForShadowOffsetX();
+    void UpdatePropertyDirtyFlagForShadowOffsetY();
+    void UpdatePropertyDirtyFlagForShadowColor();
+
     // Recover dirty flags.
     void RecoverPropertyDirtyFlags();
+
+    // Update the localization key.
+    void UpdateExtraDataLocalizationKey();
 };
 
 };

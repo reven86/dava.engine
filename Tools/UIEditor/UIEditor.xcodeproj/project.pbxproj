@@ -190,6 +190,7 @@
 		17C8578B18C497E400FBB5EF /* previewsettingswidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17C8578A18C497E400FBB5EF /* previewsettingswidget.ui */; };
 		17CED76C163ABD3B00F9B02D /* propertygridcontainerwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17CED76B163ABD3B00F9B02D /* propertygridcontainerwidget.cpp */; };
 		17CED79C163E829600F9B02D /* statepropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17CED79A163E829600F9B02D /* statepropertygridwidget.cpp */; };
+		17D0029919D408B700CE8539 /* CursorsManager.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17D0029719D408B700CE8539 /* CursorsManager.cpp */; };
 		17DF04D916368040001F7ED2 /* PlatformMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17DF04D51636803F001F7ED2 /* PlatformMetadata.cpp */; };
 		17DF04DA16368040001F7ED2 /* ScreenMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17DF04D716368040001F7ED2 /* ScreenMetadata.cpp */; };
 		17DF04EB1636850C001F7ED2 /* platformpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17DF04E71636850C001F7ED2 /* platformpropertygridwidget.cpp */; };
@@ -667,6 +668,8 @@
 		17CED76B163ABD3B00F9B02D /* propertygridcontainerwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = propertygridcontainerwidget.cpp; path = PropertyGridWidgets/propertygridcontainerwidget.cpp; sourceTree = "<group>"; };
 		17CED79A163E829600F9B02D /* statepropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = statepropertygridwidget.cpp; path = PropertyGridWidgets/statepropertygridwidget.cpp; sourceTree = "<group>"; };
 		17CED79B163E829600F9B02D /* statepropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = statepropertygridwidget.h; path = PropertyGridWidgets/statepropertygridwidget.h; sourceTree = "<group>"; };
+		17D0029719D408B700CE8539 /* CursorsManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CursorsManager.cpp; sourceTree = "<group>"; };
+		17D0029819D408B700CE8539 /* CursorsManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CursorsManager.h; sourceTree = "<group>"; };
 		17DF04D51636803F001F7ED2 /* PlatformMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlatformMetadata.cpp; path = Metadata/PlatformMetadata.cpp; sourceTree = "<group>"; };
 		17DF04D61636803F001F7ED2 /* PlatformMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlatformMetadata.h; path = Metadata/PlatformMetadata.h; sourceTree = "<group>"; };
 		17DF04D716368040001F7ED2 /* ScreenMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ScreenMetadata.cpp; path = Metadata/ScreenMetadata.cpp; sourceTree = "<group>"; };
@@ -1693,6 +1696,8 @@
 				176D3958162C3C8C0099AACF /* Metadata */,
 				176D3941162C2F5D0099AACF /* Models */,
 				C15C2FE8162AD6E400818631 /* UI */,
+				17D0029719D408B700CE8539 /* CursorsManager.cpp */,
+				17D0029819D408B700CE8539 /* CursorsManager.h */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -2029,6 +2034,7 @@
 				C17246121637E18900709AAF /* EditorFontManager.cpp in Build Sources */,
 				7492E0EA1639445D00DF883A /* fontmanagerdialog.cpp in Build Sources */,
 				17112B45163920BC0017E713 /* CommandsController.cpp in Build Sources */,
+				17D0029919D408B700CE8539 /* CursorsManager.cpp in Build Sources */,
 				17A4F58418A3E1C000182E44 /* particleeffectpropertygridwidget.cpp in Build Sources */,
 				17112B481639214D0017E713 /* BaseCommand.cpp in Build Sources */,
 				17112B5916392EA80017E713 /* WidgetSignalsBlocker.cpp in Build Sources */,

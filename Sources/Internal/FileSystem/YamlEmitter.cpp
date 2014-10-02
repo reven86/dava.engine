@@ -130,7 +130,7 @@ bool YamlEmitter::Emit(const YamlNode * node, File *outFile)
 {
     yaml_emitter_t emitter;
 
-    DVASSERT(yaml_emitter_initialize(&emitter));
+    DVVERIFY(yaml_emitter_initialize(&emitter));
     yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
     yaml_emitter_set_break   (&emitter, YAML_CRLN_BREAK);
     yaml_emitter_set_unicode (&emitter, UNESCAPED_UNICODE_CHARACTERS_ALLOWED);
@@ -174,7 +174,7 @@ bool YamlEmitter::Emit(const YamlNode * node, File *outFile)
         }
     }
 
-    DVASSERT(yaml_emitter_flush(&emitter));
+    DVVERIFY(yaml_emitter_flush(&emitter));
     yaml_emitter_delete(&emitter);
 
     return true;

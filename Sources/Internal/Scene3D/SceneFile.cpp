@@ -45,6 +45,8 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/3D/MeshUtils.h"
+#include "Scene3D/Components/AnimationComponent.h"
+#include "Scene3D/AnimationData.h"
 
 namespace DAVA
 {
@@ -100,7 +102,6 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
 //	staticMeshIndexOffset = scene->GetStaticMeshCount();
 	animatedMeshIndexOffset = scene->GetAnimatedMeshCount();
 	cameraIndexOffset = scene->GetCameraCount();
-	animationIndexOffset = scene->GetAnimationCount();
     
 
 	sceneFP = File::Create(filename, File::OPEN | File::READ);
@@ -188,7 +189,7 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
 	// Binding of animations to scene nodes 
 	for (int32 animationIndex = 0; animationIndex < (int32)header.nodeAnimationsCount; ++animationIndex)
 	{
-		SceneNodeAnimationList * aList = scene->GetAnimation(animationIndex + animationIndexOffset);
+		SceneNodeAnimationList * aList = animations[animationIndex];
 		for (int32 k = 0; k < (int32)aList->animations.size(); ++k)
 		{
 			SceneNodeAnimation * anim = aList->animations[k];
@@ -203,6 +204,27 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
 			if (!bindNode)
 			{
 				if (debugLogEnabled)Logger::Error("*** ERROR: animation: %d can't find bind node: %s\n", animationIndex, name.c_str());
+			}
+			else
+			{
+				if (bindNode->GetParent() && dynamic_cast< LodNode* >(bindNode->GetParent()))
+					bindNode = bindNode->GetParent();
+
+				if (!bindNode->GetComponent(Component::ANIMATION_COMPONENT))
+				{
+					AnimationComponent* animComp = new AnimationComponent();
+
+					AnimationData* animData = new AnimationData();
+					for (int32 keyIndex = 0; keyIndex < anim->GetKeyCount(); ++keyIndex)
+					{
+						animData->AddKey(anim->keys[keyIndex]);
+					}
+					animData->SetInvPose(anim->GetInvPose());
+					animData->SetDuration(anim->GetDuration());
+
+					animComp->SetAnimation(animData);
+					bindNode->AddComponent(animComp);
+				}
 			}
 		}
 	}
@@ -221,6 +243,13 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
         SafeRelease(staticMeshes[mi]);
     }
     staticMeshes.clear();
+
+    for (size_t animationIndex = 0; animationIndex < animations.size(); ++animationIndex)
+    {
+        SafeRelease(animations[animationIndex]);
+    }
+    animations.clear();
+
     return true;
 }
 
@@ -724,12 +753,14 @@ bool SceneFile::ReadAnimation()
 		anim->SetDuration(duration); 
 		if (debugLogEnabled)Logger::FrameworkDebug("-- scene node %d anim: %s keyCount: %d duration: %f seconds\n", nodeIndex, name, keyCount, duration); 
 
+		sceneFP->Read(anim->invPose.data, sizeof(anim->invPose.data));
 		for (int k = 0; k < keyCount; ++k)
 		{
 			SceneNodeAnimationKey key;
-            sceneFP->Read(&key.time, sizeof(float32));
-            sceneFP->Read(&key.translation, sizeof(Vector3));
-            sceneFP->Read(&key.rotation, sizeof(Quaternion));
+			sceneFP->Read(&key.time, sizeof(float32));
+			sceneFP->Read(&key.translation, sizeof(Vector3));
+			sceneFP->Read(&key.rotation, sizeof(Quaternion));
+			sceneFP->Read(&key.scale, sizeof(Vector3));
 			anim->SetKey(k, key);
 			//printf("---- key: %f tr: %f %f %f q: %f %f %f %f\n", key.time, key.translation.x, key.translation.y, key.translation.z
 			//	   , key.rotation.x, key.rotation.y, key.rotation.z, key.rotation.w); 
@@ -737,8 +768,7 @@ bool SceneFile::ReadAnimation()
 		animationList->AddAnimation(anim);
 		SafeRelease(anim);
 	}
-	scene->AddAnimation(animationList);
-	SafeRelease(animationList);
+	animations.push_back(animationList);
 	return true;
 }
 	

@@ -33,34 +33,90 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Base/Function.h"
+#include "Platform/NotificationAndroid.h"
+#include "Platform/NotificationNotImplemented.h"
 
-namespace DAVA {
+namespace DAVA
+{
 
-class Notification : public Singleton<Notification>
+class LocalNotification
+		: public BaseObject
+#if defined(__DAVAENGINE_ANDROID__)
+		, public JniLocalNotification
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+        , public LocalNotificationNotImplemented
+#endif
 {
 public:
-    typedef Function<void (void)> ForegroundUpdateCallback;
+	LocalNotification();
+    virtual ~LocalNotification();
 
-    Notification();
-    virtual ~Notification();
-    
-    // Callback function for update progress and status in hide state
-    void SetForegroundUpdateCallback(ForegroundUpdateCallback callback);
-    ForegroundUpdateCallback GetForegroundUpdateCallback() const;
-    
-    static void ShowNotifitaion(uint32 id,
-			const WideString& title,
-			const WideString& text);
-    static void ShowNotifitaionWithProgress(uint32 id,
+    bool IsChanged();
+
+	void SetTitle(const WideString &_title);
+	void SetText(const WideString &_text);
+    virtual void Hide();
+    virtual void Update();
+
+protected:
+    bool isChanged;
+
+    uint32 id;
+    WideString title;
+    WideString text;
+};
+
+class LocalNotificationProgress : public LocalNotification
+{
+public:
+	LocalNotificationProgress();
+	virtual ~LocalNotificationProgress();
+
+	void SetProgressCurrent(uint32 _currentProgress);
+	void SetProgressTotal(uint32 _total);
+
+	void Update();
+
+	virtual void Hide();
+
+private:
+	void ShowNotifitaionWithProgress(uint32 id,
 			const WideString& title,
 			const WideString& text,
 			int32 maxValue,
 			int32 value);
-    static void HideNotification(uint32 id);
-    
+
 private:
-    ForegroundUpdateCallback foregroundUpdateCallback;
+	uint32 total;
+	uint32 progress;
+};
+
+class LocalNotificationText : public LocalNotification
+{
+public:
+	virtual void Update();
+
+private:
+	void ShowNotificationWithText(uint32 id,
+			const WideString& title,
+			const WideString& text);
+};
+
+class LocalNotificationController : public Singleton<LocalNotificationController>
+{
+	friend class LocalNotification;
+public:
+    virtual ~LocalNotificationController();
+	LocalNotificationProgress *CreateNotificationProgress(const WideString &title = L"", const WideString &text = L"", uint32 max = 0, uint32 current = 0);
+    LocalNotificationText *CreateNotificationText(const WideString &title = L"", const WideString &text = L"");
+	void Update();
+
+protected:
+	bool Remove(LocalNotification *notification);
+
+private:
+	Mutex notificationsListMutex;
+	List<LocalNotification *> notificationsList;
 };
 
 }

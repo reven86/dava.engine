@@ -73,11 +73,11 @@ void UIScreenTransition::CreateRenderTargets()
     Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
     Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
 	
-	renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height);
-	renderTargetPrevScreen->SetDefaultPivotPoint(-Core::Instance()->GetVirtualScreenXMin(), -Core::Instance()->GetVirtualScreenYMin());
-	
-	renderTargetNextScreen = Sprite::CreateFromTexture(tex2, 0, 0, (float32)width, (float32)height);
-	renderTargetNextScreen->SetDefaultPivotPoint(-Core::Instance()->GetVirtualScreenXMin(), -Core::Instance()->GetVirtualScreenYMin());
+    renderTargetPrevScreen = Sprite::Create("");
+	renderTargetPrevScreen->InitFromTexture(tex1, 0, 0, (float32)width, (float32)height, -1, -1, true);
+
+    renderTargetNextScreen = Sprite::Create("");
+    renderTargetNextScreen->InitFromTexture(tex1, 0, 0, (float32)width, (float32)height, -1, -1, true);
 
     SafeRelease(tex1);
     SafeRelease(tex2);

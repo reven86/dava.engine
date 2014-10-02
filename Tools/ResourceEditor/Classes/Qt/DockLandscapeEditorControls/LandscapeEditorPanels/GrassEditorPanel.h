@@ -1,7 +1,11 @@
 #ifndef __RESOURCEEDITORQT__GRASSEDITORPANEL__
 #define __RESOURCEEDITORQT__GRASSEDITORPANEL__
 
-#include <QtGui>
+#include <QWidget>
+#include <QTableWidget>
+#include <QCheckBox>
+#include <QToolButton>
+
 #include "DAVAEngine.h"
 
 #include "LandscapeEditorBasePanel.h"

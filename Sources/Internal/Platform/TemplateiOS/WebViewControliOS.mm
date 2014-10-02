@@ -232,7 +232,7 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
 	NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
-    NSString* baseUrl = [NSString stringWithUTF8String:basePath.GetAbsolutePathname().c_str()];
+    NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
     
     UIWebView* innerWebView = (UIWebView*)webViewPtr;
     [innerWebView stopLoading];

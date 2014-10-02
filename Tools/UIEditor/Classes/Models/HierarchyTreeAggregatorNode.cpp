@@ -50,8 +50,9 @@ HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNo
 }
 
 HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent,
-														 const HierarchyTreeAggregatorNode* base)
-:	HierarchyTreeScreenNode(parent, base),
+														 const HierarchyTreeAggregatorNode* base,
+                                                         bool needLoad/* = true*/)
+:	HierarchyTreeScreenNode(parent, base, needLoad),
     listDelegate(NULL)
 {
 	this->rect = base->GetRect();
@@ -258,7 +259,7 @@ void HierarchyTreeAggregatorNode::ReplaceAggregator(HierarchyTreeControlNode *no
 	if (list && list->GetAggregatorPath() == path)
 	{
         SafeRelease(listDelegate);
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		// If loaded delegate has aggregator path - pass its id to delegate
 		listDelegate->SetAggregatorID(GetId());
 		// Always set a delegate for loaded UIList

@@ -374,7 +374,7 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
             currList = newList;
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             SmartGetSelectedControl(currList, node, point);
         }
@@ -441,7 +441,7 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
                 list.push_back(node);
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             GetSelectedControl(list, rect, node);
         }
@@ -450,7 +450,7 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
 
 HierarchyTreeController::SELECTEDCONTROLNODES DefaultScreen::GetActiveMoveControls() const
 {
-	HierarchyTreeController::SELECTEDCONTROLNODES list = HierarchyTreeController::Instance()->GetActiveControlNodes();
+	const HierarchyTreeController::SELECTEDCONTROLNODES &list = HierarchyTreeController::Instance()->GetActiveControlNodes();
 	
 	//YZ we need apply only for parent object
 	HierarchyTreeController::SELECTEDCONTROLNODES selectedList;
@@ -670,39 +670,19 @@ void DefaultScreen::MoveControl(const Vector2& delta, bool alignControlToInteger
 void DefaultScreen::DeleteSelectedControls()
 {
 	const HierarchyTreeController::SELECTEDCONTROLNODES& selectedControls = HierarchyTreeController::Instance()->GetActiveControlNodes();
-	HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter;
-	HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator innerIter;
-	HierarchyTreeNode::HIERARCHYTREENODESLIST nodes;
-	HierarchyTreeController::SELECTEDCONTROLNODES parentNodes(selectedControls);
-	
-	// DF-1273 - remove all child nodes of selected controls - we don't have to remove them here
-	for (iter = selectedControls.begin(); iter != selectedControls.end(); ++iter)
-	{
-		HierarchyTreeNode *node = (*iter);
-		for (innerIter = selectedControls.begin(); innerIter != selectedControls.end(); ++innerIter)
-		{			
-			if (node->IsHasChild(*innerIter))
-			{
-				HierarchyTreeController::SELECTEDCONTROLNODES::iterator parentNodeIter =
-					std::find(parentNodes.begin(), parentNodes.end(), *innerIter);
-				if (parentNodeIter != parentNodes.end())
-				{
-					parentNodes.erase(parentNodeIter);
-				}
-			}
-		}
-	}
+    if (selectedControls.empty())
+    {
+        return;
+    }
 
-	// DF-1273 - put only "parent" nodes to delete
-	for (iter = parentNodes.begin(); iter != parentNodes.end(); ++iter)
-		nodes.push_back(*iter);
+    HierarchyTreeNode::HIERARCHYTREENODESLIST nodesList;
+    for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedControls.begin(); iter != selectedControls.end(); iter ++)
+    {
+        nodesList.push_back(*iter);
+    }
 
-	if (!nodes.size())
-		return;
-	
-	DeleteSelectedNodeCommand* cmd = new DeleteSelectedNodeCommand(nodes);
-	CommandsController::Instance()->ExecuteCommand(cmd);
-	SafeRelease(cmd);
+    // HierarchyTreeWidget is subscribed to this signal and will handle deletion.
+    emit DeleteNodes(nodesList);
 }
 
 void DefaultScreen::MoveGuide(HierarchyTreeScreenNode* screenNode)
@@ -792,9 +772,13 @@ ResizeType DefaultScreen::GetResizeType(const HierarchyTreeControlNode* selected
         horLeft = true;
     }
 
-    // If at least one coord is less than zero and more than SIZE_CURSOR_DELTA - we are outside the control.
-    if ((distancesToBounds.x < 0 || distancesToBounds.y < 0 || distancesToBounds.z < 0 || distancesToBounds.w < 0) &&
-        (verTop || verBottom || horLeft || horRight))
+    // Check whether the cursor is out of the control but within SIZE_CURSOR_DELTA value.
+    // Separate check for all sides to avoid side effects like "resize on X allowed while
+    // cursor is in X bounds but out of Y bounds".
+    if (((distancesToBounds.x < -SIZE_CURSOR_DELTA || distancesToBounds.z < -SIZE_CURSOR_DELTA) &&
+         !(horRight && horLeft)) ||
+        ((distancesToBounds.y < -SIZE_CURSOR_DELTA || distancesToBounds.w < -SIZE_CURSOR_DELTA) &&
+         !(verTop && verBottom)))
     {
         return ResizeTypeNoResize;
     }
@@ -1349,8 +1333,8 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 		{
 			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
 			{
-                HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
-                if (selectedList.size() == 0)
+                const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
+                if (selectedList.empty())
                 {
                     // No controls selected - paste to screen.
                     HierarchyTreeScreenNode* activeScreenNode = HierarchyTreeController::Instance()->GetActiveScreen();
@@ -1463,7 +1447,7 @@ int32 DefaultScreen::CalculateStickToGuidesDrag(Vector2& offset) const
     }
 
     // Build the list of selected controls' rects and send it to the alignment.
-    HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
+    const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
     List<Rect> controlRects;
     for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedList.begin(); iter != selectedList.end(); ++iter)
     {
@@ -1643,8 +1627,8 @@ bool DefaultScreen::NeedCalculateStickMode(HierarchyTreeScreenNode* screenNode) 
         return false;
     }
     
-    HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
-    if (selectedList.size() == 0)
+    const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
+    if (selectedList.empty())
     {
         return false;
     }
@@ -1787,31 +1771,6 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 bool DefaultScreen::IsControlVisible(const UIControl* uiControl) const
 {
     return (uiControl->GetVisibleForUIEditor() && uiControl->GetVisible());
-}
-
-bool DefaultScreen::IsControlContentVisible( const UIControl *control ) const
-{
-    const List<UIControl*>& children = control->GetChildren();
-    if( children.empty() )
-        return false;
-
-    List<UIControl*>::const_iterator iter = children.begin();
-    List<UIControl*>::const_iterator end = children.end();
-    for(; iter != end; ++iter)
-    {
-        if (!control->GetVisible())
-        {
-            continue;
-        }
-
-        if (IsControlVisible(*iter))
-            return true;
-
-        if (IsControlContentVisible(*iter))
-            return true;
-    }
-
-    return false;
 }
 
 void DefaultScreen::SetScreenControl(ScreenControl* control)

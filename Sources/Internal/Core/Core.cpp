@@ -50,8 +50,14 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
+#include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "Platform/Notification.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#endif
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Input/AccelerometeriPhone.h"
@@ -145,6 +151,12 @@ void Core::CreateSingletons()
 	new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
+    new SceneCache();
+	
+
+#if defined(__DAVAENGINE_ANDROID__)
+    new AssetsManager();
+#endif
 	
 #if defined __DAVAENGINE_IPHONE__
 	new AccelerometeriPhoneImpl();
@@ -165,6 +177,8 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
     
+    new LocalNotificationController();
+
 	Sprite::CreateRenderObject();
 	UIControlBackground::CreateRenderObject();
 
@@ -185,6 +199,7 @@ void Core::ReleaseSingletons()
 	UIControlBackground::ReleaseRenderObject();
 	Sprite::ReleaseRenderObject();
 
+	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
 	RenderHelper::Instance()->Release();
@@ -214,6 +229,11 @@ void Core::ReleaseSingletons()
 	AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
     ImageSystem::Instance()->Release();
+    SceneCache::Instance()->Release();
+
+#if defined(__DAVAENGINE_ANDROID__)
+    AssetsManager::Instance()->Release();
+#endif
 }
 
 void Core::SetOptions(KeyedArchive * archiveOfOptions)
@@ -340,6 +360,8 @@ void Core::CalculateScaleMultipliers()
 	
 	drawOffset.y = floorf(drawOffset.y);
 	drawOffset.x = floorf(drawOffset.x);
+	virtualScreenHeight = ceilf(virtualScreenHeight);
+	virtualScreenWidth = ceilf(virtualScreenWidth);
 
 	UIControlSystem::Instance()->CalculateScaleMultipliers();
 
@@ -615,7 +637,15 @@ void Core::SystemAppStarted()
 	if (core)core->OnAppStarted();
     
 #ifdef __DAVAENGINE_AUTOTESTING__
+    FilePath file = "~res:/Autotesting/id.yaml";
+    if (file.Exists())
+    {
     AutotestingSystem::Instance()->OnAppStarted();
+    }
+    else
+    {
+        Logger::FrameworkDebug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
+    }
 #endif //__DAVAENGINE_AUTOTESTING__
 }
 	
@@ -704,6 +734,7 @@ void Core::SystemProcessFrame()
 			}
 		}
 		
+		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
 		core->Update(frameDelta);

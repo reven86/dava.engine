@@ -37,8 +37,6 @@ using namespace DAVA;
 
 class CurlTestDownloader : public CurlDownloader
 {
-public:
-    CurlTestDownloader(uint32 operationTimeout = 1000);
 protected:
     virtual size_t SaveData(void *ptr, size_t size, size_t nmemb);
 };

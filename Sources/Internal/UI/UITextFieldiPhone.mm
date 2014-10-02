@@ -146,27 +146,45 @@ float GetUITextViewSizeDivider()
 
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-	if (cppTextField)
-	{
-		if (cppTextField->GetDelegate() != 0)
-		{
-			DAVA::WideString repString;
-            const char * cstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
-            DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), repString);
-            // TODO convert range?
-            
-            /*
-            int length = [string length];
-			repString.resize(length); 
-			for (int i = 0; i < length; i++) 
-			{
-				unichar uchar = [string characterAtIndex:i];
-				repString[i] = (wchar_t)uchar;
-			}
-             */
-			return cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, range.location, range.length, repString);
-		}
+	if (cppTextField && (cppTextField->GetDelegate() != 0))
+    {
+        // Check length limits.
+        BOOL needIgnoreDelegateResult = FALSE;
+        int maxLength = cppTextField->GetMaxLength();
+        if (maxLength >= 0)
+        {
+            NSUInteger curLength = [textField.text length];
+            NSUInteger newLength = curLength - range.length + [string length];
+            if (newLength > (NSUInteger)maxLength)
+            {
+                NSUInteger charsToInsert = 0;
+                if (range.length == 0)
+                {
+                    // Inserting without replace.
+                    charsToInsert = (NSUInteger)maxLength - curLength;
+                }
+                else
+                {
+                    // Inserting with replace.
+                    charsToInsert = range.length;
+                }
+
+                string = [string substringToIndex:charsToInsert];
+                [textField setText: [textField.text stringByReplacingCharactersInRange:range withString:string]];
+
+                needIgnoreDelegateResult = TRUE;
+            }
+        }
+
+        // Length check OK, continue with the delegate.
+        DAVA::WideString repString;
+        const char * cstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
+        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), repString);
+
+        BOOL delegateResult = cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, (DAVA::int32)range.location, (DAVA::int32)range.length, repString);
+        return needIgnoreDelegateResult ? FALSE : delegateResult;
 	}
+
 	return TRUE;
 }
 
@@ -641,11 +659,11 @@ namespace DAVA
     void UITextFieldiPhone::SetText(std::wstring & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder->textField.text = [[ [ NSString alloc ]  
-                                            initWithBytes : (char*)string.data()   
-                                            length : string.size() * sizeof(wchar_t)   
-                                            encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
-        
+        NSString* text = [[ [ NSString alloc ] initWithBytes : (char*)string.data()
+                                                         length : string.size() * sizeof(wchar_t)
+                                                       encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
+
+        textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
         [textFieldHolder->textField.undoManager removeAllActions];
     }
 	
@@ -777,6 +795,28 @@ namespace DAVA
             ::UITextField* textField = textFieldHolder->textField;
             [textField setHidden: value == false];
         }
+    }
+
+    void UITextFieldiPhone::SetMaxLength(int maxLength)
+    {
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        if (textFieldHolder)
+        {
+            ::UITextField* textField = textFieldHolder->textField;
+            [textField setText: (NSString*)TruncateText([textField text], maxLength)];
+        }
+    }
+
+    void* UITextFieldiPhone::TruncateText(void* text, int maxLength)
+    {
+        if (maxLength >= 0)
+        {
+            NSString* textString = (NSString*)text;
+            NSUInteger textLimit = MIN([textString length], (NSUInteger)maxLength);
+            return [textString substringToIndex: textLimit];
+        }
+
+        return text;
     }
 }
 

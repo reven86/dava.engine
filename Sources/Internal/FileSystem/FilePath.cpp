@@ -32,13 +32,6 @@
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-    #ifdef USE_LOCAL_RESOURCES
-        #define USE_LOCAL_RESOURCES_PATH "/mnt/sdcard/DavaProject/"
-    #endif //USE_LOCAL_RESOURCES
-#endif //__DAVAENGINE_ANDROID__
-
-
 
 namespace DAVA
 {
@@ -126,7 +119,10 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
-    SetBundleName(FilePath(USE_LOCAL_RESOURCES_PATH));
+    SetBundleName(FilePath(localResourcesPath));
+    FilePath zipDataPath;
+    zipDataPath.pathType = PATH_IN_RESOURCES;
+    resourceFolders.push_back(zipDataPath);
 #else
     SetBundleName(FilePath());
 #endif
@@ -234,6 +230,10 @@ void FilePath::Initialize(const String &_pathname)
     else if(pathType == PATH_IN_RESOURCES || pathType == PATH_IN_MEMORY)
     {
         absolutePathname = pathname;
+#if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)
+        if(0 == pathname.find("~zip:"))
+            absolutePathname = "Data" + absolutePathname.substr(5);
+#endif
     }
     else if(pathType == PATH_IN_DOCUMENTS)
     {
@@ -766,6 +766,13 @@ FilePath::ePathType FilePath::GetPathType(const String &pathname)
     {
         return PATH_IN_RESOURCES;
     }
+    
+#if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)
+    if(0 == pathname.find("~zip:"))
+    {
+        return PATH_IN_RESOURCES;
+    }
+#endif
 
     find = pathname.find("~doc:");
     if(find == 0)
@@ -805,6 +812,29 @@ int32 FilePath::Compare( const FilePath &right ) const
 	if(absolutePathname > right.absolutePathname) return 1;
 
 	return 0;
+}
+
+const String FilePath::AsURL() const
+{
+#if defined(__DAVAENGINE_ANDROID__)
+    String path = GetAbsolutePathname();
+
+    if(!path.empty())
+    {
+        if(path[0] == '/')
+        {
+            return ("file://" + path);
+        }
+        else
+        {
+            return ("file:///android_asset/" + path);
+        }
+    }
+#else //#if defined(__DAVAENGINE_ANDROID__)
+    return GetAbsolutePathname();
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+    return "";
 }
 
     

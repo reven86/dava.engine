@@ -771,7 +771,7 @@ bool WebBrowserContainer::DoOpenBuffer()
 
     ScopedComPtr<HtmlMoniker> moniker(new HtmlMoniker());
     moniker->SetHtml(bufferToOpen);
-    moniker->SetBaseUrl(StringToWString(bufferToOpenPath.GetAbsolutePathname()));
+    moniker->SetBaseUrl(StringToWString(bufferToOpenPath.AsURL()));
 
     ScopedComPtr<IDispatch> docDispatch;
     HRESULT hr = webBrowser->get_Document(&docDispatch);

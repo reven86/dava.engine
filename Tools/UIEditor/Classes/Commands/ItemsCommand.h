@@ -199,7 +199,7 @@ private:
 class ChangeNodeHeirarchy: public UndoableHierarchyTreeNodeCommand
 {
 public:
-	ChangeNodeHeirarchy(HierarchyTreeNode::HIERARCHYTREENODEID targetNodeID, HierarchyTreeNode::HIERARCHYTREENODEID afterNodeID, HierarchyTreeNode::HIERARCHYTREENODESIDLIST items);
+	ChangeNodeHeirarchy(HierarchyTreeNode::HIERARCHYTREENODEID targetNodeID, HierarchyTreeNode::HIERARCHYTREENODEID afterNodeID, const HierarchyTreeNode::HIERARCHYTREENODESIDLIST &items);
 
 	virtual void Execute();
 	virtual void Rollback();

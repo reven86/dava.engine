@@ -36,6 +36,7 @@
 #include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
@@ -118,6 +119,16 @@ ParticleEffectComponent * GetEffectComponent(Entity *fromEntity)
 
 	return NULL;
 }
+
+AnimationComponent * GetAnimationComponent(Entity *fromEntity)
+{
+    if(fromEntity)
+    {
+        return static_cast<AnimationComponent*>(fromEntity->GetComponent(Component::ANIMATION_COMPONENT));
+    }
+    return NULL;
+}
+
 
 LightComponent *GetLightComponent(Entity * fromEntity)
 {

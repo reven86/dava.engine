@@ -38,6 +38,8 @@
 #include "HierarchyTreeControlNode.h"
 #include "HierarchyTreeController.h"
 
+#include "CursorsManager.h"
+
 using namespace DAVA;
 
 class DefaultScreen;
@@ -101,6 +103,9 @@ private:
     // The rect and color of background frame (around the screen control).
     Rect backgroundFrameRect;
     Color backgroundFrameColor;
+    
+    // Cursors manager.
+    CursorsManager cursorsManager;
 };
 
 #endif /* defined(__UIEditor__ScreenWrapper__) */

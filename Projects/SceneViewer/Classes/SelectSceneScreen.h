@@ -49,10 +49,16 @@ public:
 
 protected:
   
-    void OnSelectPath(BaseObject *caller, void *param, void *callerData);
+    void OnSelectDocumentsPath(BaseObject *caller, void *param, void *callerData);
+    void OnSelectResourcesPath(BaseObject *caller, void *param, void *callerData);
     void OnClearPath(BaseObject *caller, void *param, void *callerData);
     void OnStart(BaseObject *caller, void *param, void *callerData);
 
+    
+    void SetScenePath(const FilePath & path);
+    void LoadSettings();
+    void SaveSettings();
+    
     
     UIStaticText *fileNameText;
     UIFileSystemDialog * fileSystemDialog;

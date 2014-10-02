@@ -64,13 +64,6 @@ namespace DAVA
         eventDispatcher = NULL;
         clipContents = false;
 
-//		scaleInParent = true;
-
-//		Vector2 relativePosition;
-//		Vector2 size;
-
-
-//		absoluteRect = Rect(0,0,0,0);
         debugDrawEnabled = false;
         debugDrawColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -254,24 +247,6 @@ namespace DAVA
         return false;
     }
 
-    String UIControl::GetSpriteFrameworkPath( const Sprite* sprite)
-    {
-        if (!sprite)
-        {
-            return "";
-        }
-
-        FilePath path(sprite->GetRelativePathname());
-        String pathName = "";
-        if (!path.IsEmpty())
-        {
-            path.TruncateExtension();
-            pathName = path.GetFrameworkPath();
-        }
-
-        return pathName;
-    }
-
     void UIControl::SetName(const String & _name)
     {
         name = _name;
@@ -305,7 +280,7 @@ namespace DAVA
         controlState = state;
     }
 
-    Sprite* UIControl::GetSprite()
+    Sprite* UIControl::GetSprite() const
     {
         return background->GetSprite();
     }
@@ -730,7 +705,7 @@ namespace DAVA
         background = newBg->Clone();
     }
 
-    UIControlBackground *UIControl::GetBackground()
+    UIControlBackground *UIControl::GetBackground() const
     {
         return background;
     }
@@ -744,10 +719,10 @@ namespace DAVA
         tempGeometricData.angle = angle;
         if(!parent)
         {
-            tempGeometricData.AddToGeometricData(UIControlSystem::Instance()->GetBaseGeometricData());
+            tempGeometricData.AddGeometricData(UIControlSystem::Instance()->GetBaseGeometricData());
             return tempGeometricData;
         }
-        tempGeometricData.AddToGeometricData(parent->GetGeometricData());
+        tempGeometricData.AddGeometricData(parent->GetGeometricData());
         return tempGeometricData;
     }
 
@@ -863,6 +838,7 @@ namespace DAVA
         if (!parent)
         {
             SetRect(rect);
+            return;
         }
 
         Rect localRect = rect;
@@ -903,28 +879,48 @@ namespace DAVA
     void UIControl::SetVisible(bool isVisible)
     {
         if (visible == isVisible)
-            return;
-
-        visible = isVisible;
-
-        if (parent && parent->IsOnScreen())
         {
-            if (visible)
-                SystemWillBecomeVisible();
-            else
-                SystemWillBecomeInvisible();
+            return;
         }
+
+        bool oldSystemVisible = GetSystemVisible();
+        visible = isVisible;
+        if (GetSystemVisible() == oldSystemVisible)
+        {
+            return;
+        }
+
+        SystemNotifyVisibilityChanged();
     }
 
-    void UIControl::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
+    void UIControl::SetVisibleForUIEditor(bool value)
     {
-        visibleForUIEditor = value;
-        if(hierarchic)
+        if (visibleForUIEditor == value)
         {
-            List<UIControl*>::iterator it = childs.begin();
-            for(; it != childs.end(); ++it)
+            return;
+        }
+
+        bool oldSystemVisible = GetSystemVisible();
+        visibleForUIEditor = value;
+        if (GetSystemVisible() == oldSystemVisible)
+        {
+            return;
+        }
+
+        SystemNotifyVisibilityChanged();
+    }
+
+    void UIControl::SystemNotifyVisibilityChanged()
+    {
+        if (parent && parent->IsOnScreen())
+        {
+            if (GetSystemVisible())
             {
-                (*it)->SetVisibleForUIEditor(value, hierarchic);
+                SystemWillBecomeVisible();
+            }
+            else
+            {
+                SystemWillBecomeInvisible();
             }
         }
     }
@@ -1041,7 +1037,7 @@ namespace DAVA
             control->SystemDidAppear();
         }
 
-        if (IsOnScreen() && control->GetVisible())
+        if (IsOnScreen() && control->GetSystemVisible())
             control->SystemWillBecomeVisible();
 
         isIteratorCorrupted = true;
@@ -1059,7 +1055,7 @@ namespace DAVA
         {
             if((*it) == control)
             {
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeInvisible();
 
                 bool inHierarchy = InViewHierarchy();
@@ -1147,7 +1143,7 @@ namespace DAVA
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1179,7 +1175,7 @@ namespace DAVA
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1346,10 +1342,10 @@ namespace DAVA
         if(UIControlSystem::Instance()->GetScreen() == this ||
            UIControlSystem::Instance()->GetPopupContainer() == this)
         {
-            return GetVisible();
+            return GetSystemVisible();
         }
 
-        if( !GetVisible() || !parent )
+        if( !GetSystemVisible() || !parent )
             return false;
 
         return parent->IsOnScreen();
@@ -1520,12 +1516,12 @@ namespace DAVA
 
     void UIControl::SystemDraw(const UIGeometricData &geometricData)
     {
-        if( !visible )
+        if (!GetSystemVisible())
             return;
 
         UIControlSystem::Instance()->drawCounter++;
         UIGeometricData drawData = GetLocalGeometricData();
-        drawData.AddToGeometricData(geometricData);
+        drawData.AddGeometricData(geometricData);
 
         const Color &parentColor = parent ? parent->GetBackground()->GetDrawColor() : Color::White;
 
@@ -1539,10 +1535,7 @@ namespace DAVA
             RenderManager::Instance()->ClipRect(unrotatedRect);
         }
 
-        if(visible && visibleForUIEditor)
-        {
-            Draw(drawData);
-        }
+        Draw(drawData);
 
         isIteratorCorrupted = false;
         List<UIControl*>::iterator it = childs.begin();
@@ -1553,10 +1546,7 @@ namespace DAVA
             DVASSERT(!isIteratorCorrupted);
         }
 
-        if(visible && visibleForUIEditor)
-        {
-            DrawAfterChilds(drawData);
-        }
+        DrawAfterChilds(drawData);
 
         if(clipContents)
         {
@@ -1681,7 +1671,7 @@ namespace DAVA
 
     bool UIControl::SystemProcessInput(UIEvent *currentInput)
     {
-        if(!inputEnabled || !visible || controlState & STATE_DISABLED)
+        if(!inputEnabled || !GetSystemVisible() || controlState & STATE_DISABLED)
         {
             return false;
         }
@@ -1878,7 +1868,7 @@ namespace DAVA
         UIControlSystem::Instance()->inputCounter++;
         isUpdated = true;
 
-        if( !visible )
+        if( !GetSystemVisible() )
             return false;
 
         //if(currentInput->touchLocker != this)
@@ -2014,7 +2004,7 @@ namespace DAVA
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetVisible())
+            if ((*it)->GetSystemVisible())
                 (*it)->SystemWillBecomeVisible();
         }
     }
@@ -2038,7 +2028,7 @@ namespace DAVA
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetVisible())
+            if ((*it)->GetSystemVisible())
                 (*it)->SystemWillBecomeInvisible();
         }
 
@@ -2055,266 +2045,276 @@ namespace DAVA
 
     YamlNode* UIControl::SaveToYamlNode(UIYamlLoader * loader)
     {
-        // Temp variables
-        String stringValue;
-        VariantType *nodeValue = new VariantType();
         // Return node
         YamlNode *node = YamlNode::CreateMapNode(false);
         // Model UIControl to be used in comparing
         UIControl *baseControl = new UIControl();
 
         // Control name
-        //node->Set("name", this->GetName());
+        SetPreferredNodeType(node, GetClassName());
+
+        // Transform data
+        // Position
+        const Vector2 &position = GetPosition();
+        if (baseControl->GetPosition() != position)
+        {
+            node->Set("position", position);
+        }
+        // Size
+        const Vector2 &size = GetSize();
+        if (baseControl->GetSize() != size)
+        {
+            node->Set("size", size);
+        }
+        // Pivot
+        if (baseControl->GetPivotPoint() != GetPivotPoint())
+        {
+            node->Set("pivot", GetPivotPoint());
+        }
+        // Angle
+        if (baseControl->GetAngle() != GetAngle())
+        {
+            node->Set("angle", GetAngle());
+        }
         // Visible
         if (baseControl->GetVisible() != GetVisible())
         {
             node->Set("visible", GetVisible());
         }
         // Enabled
-        if (baseControl->GetDisabled() != this->GetDisabled())
+        if (baseControl->GetDisabled() != GetDisabled())
         {
-            node->Set("enabled", !this->GetDisabled());
+            node->Set("enabled", !GetDisabled());
         }
         // Clip contents
-        if (baseControl->GetClipContents() != this->GetClipContents())
+        if (baseControl->GetClipContents() != GetClipContents())
         {
-            node->Set("clip", this->GetClipContents());
+            node->Set("clip", GetClipContents());
         }
         // Input
-        if (baseControl->GetInputEnabled() != this->GetInputEnabled())
+        if (baseControl->GetInputEnabled() != GetInputEnabled())
         {
-            node->Set("noInput", !this->GetInputEnabled());
-        }
-        // Sprite
-        Sprite *sprite =  this->GetSprite();
-        if (sprite)
-        {
-            node->Set("sprite", GetSpriteFrameworkPath(sprite));
-        }
-
-        // Color
-        const Color &color =  this->GetBackground()->GetColor();
-        if (baseControl->GetBackground()->color != color)
-        {
-            nodeValue->SetColor(color);
-            node->Set("color", nodeValue);
-        }
-        // Frame
-        if (baseControl->GetFrame() != this->GetFrame())
-        {
-            node->Set("frame", this->GetFrame());
-        }
-        // Rect
-        Rect rect = this->GetRect();
-        if (baseControl->GetRect() != rect)
-        {
-            Vector4 rectVector4(rect.x + pivotPoint.x, rect.y + pivotPoint.y, rect.dx, rect.dy);
-            nodeValue->SetVector4(rectVector4);
-            node->Set("rect", nodeValue);
-        }
-        // Align
-        int32 align = this->GetSpriteAlign();
-        if (baseControl->GetSpriteAlign() != align)
-        {
-            node->AddNodeToMap("align", loader->GetAlignNodeValue(align));
-        }
-        // Left Align
-        if (this->GetLeftAlignEnabled())
-        {
-            node->Set("leftAlign", this->GetLeftAlign());
-        }
-        // Horizontal Center Align
-        if (this->GetHCenterAlignEnabled())
-        {
-            node->Set("hcenterAlign", this->GetHCenterAlign());
-        }
-        // Right Align
-        if (this->GetRightAlignEnabled())
-        {
-            node->Set("rightAlign", this->GetRightAlign());
-        }
-        // Top Align
-        if (this->GetTopAlignEnabled())
-        {
-            node->Set("topAlign", this->GetTopAlign());
-        }
-        // Vertical Center Align
-        if (this->GetVCenterAlignEnabled())
-        {
-            node->Set("vcenterAlign", this->GetVCenterAlign());
-        }
-        // Bottom Align
-        if (this->GetBottomAlignEnabled())
-        {
-            node->Set("bottomAlign", this->GetBottomAlign());
-        }
-
-        // Pivot
-        if (baseControl->pivotPoint != this->pivotPoint)
-        {
-            nodeValue->SetVector2(this->pivotPoint);
-            node->Set("pivot", nodeValue);
-        }
-        // Color inherit
-        UIControlBackground::eColorInheritType colorInheritType =  this->GetBackground()->GetColorInheritType();
-        if (baseControl->GetBackground()->GetColorInheritType() != colorInheritType)
-        {
-            node->Set("colorInherit", loader->GetColorInheritTypeNodeValue(colorInheritType));
-        }
-        // Draw type, obligatory for UI controls.
-        UIControlBackground::eDrawType drawType =  this->GetBackground()->GetDrawType();
-        node->Set("drawType", loader->GetDrawTypeNodeValue(drawType));
-
-        // LeftRightStretchCapNode
-        if (baseControl->GetBackground()->GetLeftRightStretchCap() != this->GetBackground()->GetLeftRightStretchCap())
-        {
-            node->Set("leftRightStretchCap", this->GetBackground()->GetLeftRightStretchCap());
-        }
-        // topBottomStretchCap
-        if (baseControl->GetBackground()->GetTopBottomStretchCap() != this->GetBackground()->GetTopBottomStretchCap())
-        {
-            node->Set("topBottomStretchCap", this->GetBackground()->GetTopBottomStretchCap());
-        }
-        // Angle
-        if (baseControl->angle != this->angle)
-        {
-            node->Set("angle", this->angle);
+            node->Set("noInput", !GetInputEnabled());
         }
         // Tag
-        if (baseControl->tag != this->tag)
+        if (baseControl->GetTag() != GetTag())
         {
-            node->Set("tag", this->tag);
+            node->Set("tag", GetTag());
         }
-        // spriteModification
-        if (baseControl->GetBackground()->GetModification() != this->GetBackground()->GetModification())
-        {
-            node->Set("spriteModification", this->GetBackground()->GetModification());
-        }
-
         // Initial state.
-        if (baseControl->GetInitialState() != this->initialState)
+        if (baseControl->GetInitialState() != GetInitialState())
         {
-            node->Set("initialState", this->initialState);
+            node->Set("initialState", GetInitialState());
         }
 
-        // Release variantType variable
-        SafeDelete(nodeValue);
+        // Anchor data
+        // Left Align
+        if (GetLeftAlignEnabled())
+        {
+            node->Set("leftAlign", GetLeftAlign());
+        }
+        // Horizontal Center Align
+        if (GetHCenterAlignEnabled())
+        {
+            node->Set("hcenterAlign", GetHCenterAlign());
+        }
+        // Right Align
+        if (GetRightAlignEnabled())
+        {
+            node->Set("rightAlign", GetRightAlign());
+        }
+        // Top Align
+        if (GetTopAlignEnabled())
+        {
+            node->Set("topAlign", GetTopAlign());
+        }
+        // Vertical Center Align
+        if (GetVCenterAlignEnabled())
+        {
+            node->Set("vcenterAlign", GetVCenterAlign());
+        }
+        // Bottom Align
+        if (GetBottomAlignEnabled())
+        {
+            node->Set("bottomAlign", GetBottomAlign());
+        }
+        // Anchor data
+
+        UIControlBackground *baseBackground = baseControl->GetBackground();
+        if (!baseBackground->IsEqualTo(GetBackground()))
+        {
+            // Draw type, obligatory for UI controls.
+            UIControlBackground::eDrawType drawType =  GetBackground()->GetDrawType();
+            if (baseBackground->GetDrawType() != drawType)
+            {
+                node->Set("drawType", loader->GetDrawTypeNodeValue(drawType));
+            }
+            // Sprite
+            String spritePath = Sprite::GetPathString(GetBackground()->GetSprite());
+            if (Sprite::GetPathString(baseBackground->GetSprite()) != spritePath)
+            {
+                node->Set("sprite", spritePath);
+            }
+            // Frame
+            if (baseBackground->GetFrame() != GetBackground()->GetFrame())
+            {
+                node->Set("frame", GetFrame());
+            }
+            // Color
+            const Color &color =  GetBackground()->GetColor();
+            if (baseBackground->GetColor() != color)
+            {
+                node->Set("color", VariantType(color));
+            }
+            // Color inherit
+            UIControlBackground::eColorInheritType colorInheritType =  GetBackground()->GetColorInheritType();
+            if (baseBackground->GetColorInheritType() != colorInheritType)
+            {
+                node->Set("colorInherit", loader->GetColorInheritTypeNodeValue(colorInheritType));
+            }
+            // Per pixel accuracy
+            UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType = GetBackground()->GetPerPixelAccuracyType();
+            if (baseBackground->GetPerPixelAccuracyType() != perPixelAccuracyType)
+            {
+                node->Set("perPixelAccuracy", loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
+            }
+            // Align
+            int32 align = GetBackground()->GetAlign();
+            if (baseBackground->GetAlign() != align)
+            {
+                node->AddNodeToMap("align", loader->GetAlignNodeValue(align));
+            }
+            // LeftRightStretchCapNode
+            if (baseBackground->GetLeftRightStretchCap() != GetBackground()->GetLeftRightStretchCap())
+            {
+                node->Set("leftRightStretchCap", GetBackground()->GetLeftRightStretchCap());
+            }
+            // topBottomStretchCap
+            if (baseBackground->GetTopBottomStretchCap() != GetBackground()->GetTopBottomStretchCap())
+            {
+                node->Set("topBottomStretchCap", GetBackground()->GetTopBottomStretchCap());
+            }
+            // spriteModification
+            if (baseBackground->GetModification() != GetBackground()->GetModification())
+            {
+                node->Set("spriteModification", GetBackground()->GetModification());
+            }
+        }
         // Release model variable
         SafeRelease(baseControl);
-
-        SetPreferredNodeType(node, GetClassName());
         return node;
     }
 
     void UIControl::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     {
-        const YamlNode * spriteNode = node->Get("sprite");
-        const YamlNode * colorNode = node->Get("color");
-        const YamlNode * frameNode = node->Get("frame");
         const YamlNode * rectNode = node->Get("rect");
-        const YamlNode * alignNode = node->Get("align");
-        const YamlNode * leftAlignNode = node->Get("leftAlign");
-        const YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
-        const YamlNode * rightAlignNode = node->Get("rightAlign");
-        const YamlNode * topAlignNode = node->Get("topAlign");
-        const YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
-        const YamlNode * bottomAlignNode = node->Get("bottomAlign");
-        const YamlNode * pivotNode = node->Get("pivot");
-        const YamlNode * colorInheritNode = node->Get("colorInherit");
-
-        const YamlNode * drawTypeNode = node->Get("drawType");
-        const YamlNode * leftRightStretchCapNode = node->Get("leftRightStretchCap");
-        const YamlNode * topBottomStretchCapNode = node->Get("topBottomStretchCap");
-
-        const YamlNode * angleNode = node->Get("angle");
-        const YamlNode * tagNode = node->Get("tag");
-
-        const YamlNode * spriteModificationNode = node->Get("spriteModification");
-        const YamlNode * initialStateNode = node->Get("initialState");
-
-        Rect rect = GetRect();
         if (rectNode)
         {
-            rect = rectNode->AsRect();
+            Rect rect = rectNode->AsRect();
+            SetRect(rect);
         }
-
-        Sprite * sprite = 0;
-        if(spriteNode)
+        else
         {
-            sprite = Sprite::Create(spriteNode->AsString());
-            if (rect.dx == -1.0f)rect.dx = (float32)sprite->GetWidth();
-            if (rect.dy == -1.0f)rect.dy = (float32)sprite->GetHeight();
+            const YamlNode * positionNode = node->Get("position");
+            if (positionNode)
+                SetPosition(positionNode->AsVector2());
+
+            const YamlNode * sizeNode = node->Get("size");
+            if (sizeNode)
+                SetSize(sizeNode->AsVector2());
         }
 
-        if(colorNode)
+        const YamlNode * pivotNode = node->Get("pivot");
+        if (pivotNode)
         {
-            GetBackground()->SetColor( loader->GetColorFromYamlNode(colorNode) );
-            if(!spriteNode)
-            {
-                GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-            }
+            DVASSERT(pivotNode->GetType() == YamlNode::TYPE_ARRAY);
+            SetPivotPoint(pivotNode->AsPoint());
         }
-        SetRect(rect);
 
-        int frame = 0;
-        if (frameNode)frame = frameNode->AsInt32();
-
-        if(spriteNode)
+        const YamlNode * angleNode = node->Get("angle");
+        if (angleNode)
         {
-            GetBackground()->SetSprite(sprite, frame);
-            SafeRelease(sprite);
+            SetAngle(angleNode->AsFloat());
         }
 
-        if (alignNode)
+        const YamlNode * enabledNode = node->Get("enabled");
+        if (enabledNode)
         {
-            int32 align = loader->GetAlignFromYamlNode(alignNode);
-            SetSpriteAlign(align);
-            //GetBackground()->SetAlign(align);
+            SetDisabled(!enabledNode->AsBool());
         }
 
+        const YamlNode * clipNode = node->Get("clip");
+        if (clipNode)
+        {
+            SetClipContents(clipNode->AsBool());
+        }
+
+        const YamlNode * inputNode = node->Get("noInput");
+        if (inputNode)
+        {
+            SetInputEnabled(!inputNode->AsBool(), false);
+        }
+
+        const YamlNode * tagNode = node->Get("tag");
+        if (tagNode)
+        {
+            SetTag(tagNode->AsInt32());
+        }
+
+        const YamlNode * initialStateNode = node->Get("initialState");
+        if (initialStateNode)
+        {
+            int32 newInitialState = initialStateNode->AsInt32();
+            SetInitialState(newInitialState);
+            SetState(newInitialState);
+        }
+
+        const YamlNode * leftAlignNode = node->Get("leftAlign");
         if (leftAlignNode)
         {
             int32 leftAlign = leftAlignNode->AsInt32();
             SetLeftAlignEnabled(true);
             SetLeftAlign(leftAlign);
         }
+
+        const YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
         if (hcenterAlignNode)
         {
             int32 hcenterAlign = hcenterAlignNode->AsInt32();
             SetHCenterAlignEnabled(true);
             SetHCenterAlign(hcenterAlign);
-
         }
+
+        const YamlNode * rightAlignNode = node->Get("rightAlign");
         if (rightAlignNode)
         {
             int32 rightAlign = rightAlignNode->AsInt32();
             SetRightAlignEnabled(true);
             SetRightAlign(rightAlign);
         }
+
+        const YamlNode * topAlignNode = node->Get("topAlign");
         if (topAlignNode)
         {
             int32 topAlign = topAlignNode->AsInt32();
             SetTopAlignEnabled(true);
             SetTopAlign(topAlign);
         }
+
+        const YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
         if (vcenterAlignNode)
         {
             int32 vcenterAlign = vcenterAlignNode->AsInt32();
             SetVCenterAlignEnabled(true);
             SetVCenterAlign(vcenterAlign);
         }
+
+        const YamlNode * bottomAlignNode = node->Get("bottomAlign");
         if (bottomAlignNode)
         {
             int32 bottomAlign = bottomAlignNode->AsInt32();
             SetBottomAlignEnabled(true);
             SetBottomAlign(bottomAlign);
-        }
-
-        const YamlNode * clipNode = node->Get("clip");
-        if (clipNode)
-        {
-            bool clipContents = loader->GetBoolFromYamlNode(clipNode, false);
-            SetClipContents(clipContents);
         }
 
         const YamlNode * visibleNode = node->Get("visible");
@@ -2331,100 +2331,90 @@ namespace DAVA
 
         SetVisible(visibilityFlag);
 
-        if (pivotNode)
-        {
-            if (pivotNode->GetType() == YamlNode::TYPE_STRING)
-            {
-                if (pivotNode->AsString() == "center")
-                {
-                    pivotPoint.x = floor(rect.dx / 2.f);
-                    pivotPoint.y = floor(rect.dy / 2.f);
-                }
-            }
-            else
-            {
-                pivotPoint = pivotNode->AsPoint();
-            }
-        }
-
-        const YamlNode * inputNode = node->Get("noInput");
-
-        if (inputNode)
-        {
-            bool inputDis = loader->GetBoolFromYamlNode(inputNode, false);
-            SetInputEnabled(!inputDis, false);
-        }
-
-        if(colorInheritNode)
-        {
-            UIControlBackground::eColorInheritType type = (UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(colorInheritNode);
-            GetBackground()->SetColorInheritType(type);
-        }
-
-        if(drawTypeNode)
+        const YamlNode * drawTypeNode = node->Get("drawType");
+        if (drawTypeNode)
         {
             UIControlBackground::eDrawType type = (UIControlBackground::eDrawType)loader->GetDrawTypeFromNode(drawTypeNode);
             GetBackground()->SetDrawType(type);
-
-            if(leftRightStretchCapNode)
-            {
-                float32 leftStretchCap = leftRightStretchCapNode->AsFloat();
-                GetBackground()->SetLeftRightStretchCap(leftStretchCap);
-            }
-
-            if(topBottomStretchCapNode)
-            {
-                float32 topStretchCap = topBottomStretchCapNode->AsFloat();
-                GetBackground()->SetTopBottomStretchCap(topStretchCap);
-            }
         }
 
-        if(angleNode)
+        const YamlNode * spriteNode = node->Get("sprite");
+        if (spriteNode)
         {
-            angle = angleNode->AsFloat();
+            GetBackground()->SetSprite(spriteNode->AsString(), GetFrame());
         }
 
-        if(tagNode)
+        const YamlNode * frameNode = node->Get("frame");
+        if (frameNode)
         {
-            tag = tagNode->AsInt32();
+            GetBackground()->SetFrame(frameNode->AsInt32());
         }
 
-        if(spriteModificationNode)
+        const YamlNode * colorNode = node->Get("color");
+        if (colorNode)
         {
-            int32 spriteModification = spriteModificationNode->AsInt32();
-            GetBackground()->SetModification(spriteModification);
+            GetBackground()->SetColor(loader->GetColorFromYamlNode(colorNode));
         }
 
-        if (initialStateNode)
+        const YamlNode * perPixelAccuracyTypeNode = node->Get("perPixelAccuracy");
+        if(perPixelAccuracyTypeNode)
         {
-            int32 newInitialState = initialStateNode->AsInt32();
-            SetInitialState(newInitialState);
-            SetState(newInitialState);
+            GetBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(perPixelAccuracyTypeNode));
+        }
+
+        const YamlNode * colorInheritNode = node->Get("colorInherit");
+        if (colorInheritNode)
+        {
+            GetBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(colorInheritNode));
+        }
+
+        const YamlNode * alignNode = node->Get("align");
+        if (alignNode)
+        {
+            GetBackground()->SetAlign(loader->GetAlignFromYamlNode(alignNode));
+        }
+
+        const YamlNode * leftRightStretchCapNode = node->Get("leftRightStretchCap");
+        if (leftRightStretchCapNode)
+        {
+            GetBackground()->SetLeftRightStretchCap(leftRightStretchCapNode->AsFloat());
+        }
+
+        const YamlNode * topBottomStretchCapNode = node->Get("topBottomStretchCap");
+        if (topBottomStretchCapNode)
+        {
+            GetBackground()->SetTopBottomStretchCap(topBottomStretchCapNode->AsFloat());
+        }
+
+        const YamlNode * spriteModificationNode = node->Get("spriteModification");
+        if (spriteModificationNode)
+        {
+            GetBackground()->SetModification(spriteModificationNode->AsInt32());
         }
     }
 
-    Animation *	UIControl::WaitAnimation(float32 time, int32 track)
+    Animation * UIControl::WaitAnimation(float32 time, int32 track)
     {
         Animation * animation = new Animation(this, time, Interpolation::LINEAR);
         animation->Start(track);
         return animation;
     }
 
-    Animation *	UIControl::PositionAnimation(const Vector2 & _position, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::PositionAnimation(const Vector2 & _position, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &relativePosition, _position, time, interpolationFunc);
         animation->Start(track);
         return animation;
     }
 
-    Animation *	UIControl::SizeAnimation(const Vector2 & _size, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::SizeAnimation(const Vector2 & _size, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &size, _size, time, interpolationFunc);
         animation->Start(track);
         return animation;
     }
 
-    Animation *	UIControl::ScaleAnimation(const Vector2 & newScale, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::ScaleAnimation(const Vector2 & newScale, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &scale, newScale, time, interpolationFunc);
         animation->Start(track);
@@ -2448,7 +2438,7 @@ namespace DAVA
         return animation;
     }
 
-    Animation *	UIControl::ScaledRectAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::ScaledRectAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         Vector2 finalScale(rect.dx / size.x, rect.dy / size.y);
 
@@ -2459,7 +2449,7 @@ namespace DAVA
         return animation;
     }
 
-    Animation *	UIControl::ScaledSizeAnimation(const Vector2 & newSize, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::ScaledSizeAnimation(const Vector2 & newSize, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         Vector2 finalScale(newSize.x / size.x, newSize.y / size.y);
         LinearAnimation<Vector2> * animation = new LinearAnimation<Vector2>(this, &scale, finalScale, time, interpolationFunc);
@@ -2528,7 +2518,7 @@ namespace DAVA
         }
     }
 
-    Animation *	UIControl::RemoveControlAnimation(int32 track)
+    Animation * UIControl::RemoveControlAnimation(int32 track)
     {
         Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
         animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::RemoveControlAnimationCallback));
@@ -2536,7 +2526,7 @@ namespace DAVA
         return animation;
     }
 
-    Animation *	 UIControl::ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+    Animation * UIControl::ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
     {
         LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &background->color, finalColor, time, interpolationFunc);
         animation->Start(track);
@@ -2684,8 +2674,7 @@ namespace DAVA
 
     void UIControl::RecalculateChildsSize()
     {
-//		const List<UIControl*>& realChildren = this->GetRealChildren();
-        const List<UIControl*>& realChildren = this->GetChildren();	//YZ recalculate size for all controls
+        const List<UIControl*>& realChildren = this->GetChildren();//YZ recalculate size for all controls
         for(List<UIControl*>::const_iterator iter = realChildren.begin(); iter != realChildren.end(); ++iter)
         {
             UIControl* child = (*iter);

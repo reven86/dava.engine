@@ -40,7 +40,9 @@ namespace DAVA
 
 class LocalizationSystem : public Singleton<LocalizationSystem>
 {
-public:	
+public:
+    static const char* DEFAULT_LOCALE;
+    
 	LocalizationSystem();
 	virtual ~LocalizationSystem();
 	
@@ -51,7 +53,7 @@ public:
 	const String &GetCurrentLocale();
 	void SetCurrentLocale(const String &newLangId);
     
-    const char * GetDeviceLocale();
+    String GetDeviceLocale();
     
     String GetCountryCode() const;
 	

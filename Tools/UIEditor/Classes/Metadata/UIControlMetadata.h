@@ -73,6 +73,7 @@ class UIControlMetadata : public BaseMetadata
     
     Q_PROPERTY(int DrawType READ GetDrawType WRITE SetDrawType);
     Q_PROPERTY(int ColorInheritType READ GetColorInheritType WRITE SetColorInheritType);
+    Q_PROPERTY(int PerPixelAccuracyType READ GetPerPixelAccuracyType WRITE SetPerPixelAccuracyType);
     Q_PROPERTY(int Align READ GetAlign WRITE SetAlign);
     
 	Q_PROPERTY(float LeftRightStretchCap READ GetLeftRightStretchCap WRITE SetLeftRightStretchCap);
@@ -161,6 +162,9 @@ protected:
     virtual int GetColorInheritType();
     virtual void SetColorInheritType(int value);
     
+    virtual int GetPerPixelAccuracyType();
+    virtual void SetPerPixelAccuracyType(int value);
+    
     virtual int GetAlign();
     virtual void SetAlign(int value);
 
@@ -177,7 +181,7 @@ protected:
     // Sprite getter/setter. Also virtual one - its implementation is different
     // for different control types.
     virtual void SetSprite(const QString& value);
-    virtual QString GetSprite();
+    virtual QString GetSprite() const;
 
     virtual void SetSpriteFrame(int value);
     virtual int GetSpriteFrame();
@@ -247,9 +251,6 @@ protected:
 
     // Refresh the thumb size for UISlider.
     void UpdateThumbSizeForUIControlThumb();
-
-    // Verify whether UIControl exists and set its visible flag.
-    void SetUIControlVisible(const bool isVisible);
 
 private:
 	void ResizeScrollViewContent(UIControl *control);

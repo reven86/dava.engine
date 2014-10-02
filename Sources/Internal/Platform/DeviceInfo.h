@@ -85,6 +85,7 @@ public:
 		NETWORK_TYPE_WIMAX,
 		NETWORK_TYPE_ETHERNET,
 		NETWORK_TYPE_BLUETOOTH,
+        NETWORK_TYPES_COUNT
 	};
 
     static const int32 SIGNAL_STRENGTH_UNKNOWN = -1;
@@ -149,6 +150,7 @@ public:
     static NetworkInfo GetNetworkInfo();
 
     static List<StorageInfo> GetStoragesList();
+    static int32 GetCpuCount();
 };
 
 };

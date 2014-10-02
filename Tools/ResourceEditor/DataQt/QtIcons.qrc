@@ -161,5 +161,6 @@
         <file>QtLibraryIcons/orientation.png</file>
         <file>QtLibraryIcons/lodmaterial.png</file>
         <file>QtIcons/so.png</file>
+        <file>QtIcons/dropper.png</file>
     </qresource>
 </RCC>

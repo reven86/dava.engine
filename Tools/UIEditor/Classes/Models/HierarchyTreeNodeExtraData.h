@@ -47,6 +47,7 @@ public:
     HierarchyTreeNodeExtraData();
     
     // Access to Localization Key.
+    bool IsLocalizationKeyExist(UIControl::eControlState state) const;
     void SetLocalizationKey(const WideString& localizationKey, UIControl::eControlState state);
     WideString GetLocalizationKey(UIControl::eControlState state) const;
 

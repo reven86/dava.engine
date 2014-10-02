@@ -320,7 +320,7 @@ int32 WebViewControl::ExecuteJScript(const String& scriptString)
 void WebViewControl::OpenFromBuffer(const String& data, const FilePath& urlToOpen)
 {
 	JniWebView jniWebView;
-	jniWebView.OpenFromBuffer(webViewId, data, urlToOpen.GetAbsolutePathname());
+	jniWebView.OpenFromBuffer(webViewId, data, urlToOpen.AsURL());
 }
 
 void WebViewControl::SetRect(const Rect& rect)

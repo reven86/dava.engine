@@ -34,6 +34,7 @@
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
+#include "Utils/Utils.h"
 
 namespace DAVA 
 {
@@ -71,7 +72,16 @@ protected:
     
 inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extension) const
 {
-    return std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end();
+    for (auto it = supportedExtensions.begin(); it != supportedExtensions.end(); ++it)
+    {
+        const bool isEqual = (CompareCaseInsensitive(*it, extension) == 0);
+        if (isEqual)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 };

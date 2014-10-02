@@ -33,6 +33,7 @@
 #include "Sound/SoundEvent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -48,9 +49,6 @@ namespace DAVA
     {
         actualDelay = static_cast<float32>( delay + Random::Instance()->RandFloat(delayVariation) );
     }
-
-
-	REGISTER_CLASS(ActionComponent)
 
     const FastName ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME("*** Self ***");
 
@@ -461,6 +459,12 @@ namespace DAVA
         case Action::TYPE_PARTICLE_EFFECT_STOP:
             OnActionParticleEffectStop( action );
             break;
+        case Action::TYPE_ANIMATION_START:
+            OnActionAnimationStart( action );
+            break;
+        case Action::TYPE_ANIMATION_STOP:
+            OnActionAnimationStop( action );
+            break;
         case Action::TYPE_SOUND_START:
             OnActionSoundStart( action );
             break;
@@ -506,7 +510,36 @@ namespace DAVA
             }
         }
     }
-	
+
+    void ActionComponent::OnActionAnimationStart(const Action& action)
+    {
+        Entity* target = GetTargetEntity( action.entityName, entity );
+        if ( target != NULL )
+        {
+            AnimationComponent* component = GetAnimationComponent(target);
+            if ( component )
+            {
+                component->StopAfterNRepeats(action.stopAfterNRepeats);
+                component->Stop();
+                component->Start();
+            }
+        }
+    }
+
+    void ActionComponent::OnActionAnimationStop(const Action& action)
+    {
+        Entity* target = GetTargetEntity( action.entityName, entity );
+        if ( target != NULL )
+        {
+            AnimationComponent* component = GetAnimationComponent(target);
+            if ( component )
+            {
+                component->StopAfterNRepeats(action.stopAfterNRepeats);
+                component->Stop();
+            }
+        }
+    }
+
 	void ActionComponent::OnActionSoundStart(const Action& action)
 	{
 		Entity* target = GetTargetEntity(action.entityName, entity);

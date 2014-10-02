@@ -47,7 +47,7 @@ class CurlDownloader : public Downloader
     };
 
 public:
-    CurlDownloader(uint32 operationTimeout = 2);
+    CurlDownloader();
     virtual ~CurlDownloader();
 
 protected:
@@ -55,13 +55,16 @@ protected:
 
     CURL *CurlSimpleInit();
 
-    virtual DownloadError GetSize(const String &url, int64 &retSize, int32 timeout = -1);
-    virtual DownloadError Download(const String &url, const uint64 &loadFrom, int32 timeout = -1);
+    virtual DownloadError GetSize(const String &url, int64 &retSize, int32 timeout);
+    virtual DownloadError Download(const String &url, const uint64 &loadFrom, int32 timeout);
     
     static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *fileDownloader);
     
     DownloadError CurlStatusToDownloadStatus(const CURLcode &status);
     DownloadError HttpCodeToError(uint32 code);
+
+private:
+    void SetTimeout(int32 _timeout);
     
 private:
     static bool isCURLInit;

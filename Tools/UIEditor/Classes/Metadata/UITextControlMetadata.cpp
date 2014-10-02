@@ -132,6 +132,24 @@ Vector2 UITextControlMetadata::GetOffsetY(const Vector2& currentOffset, float of
 	return offset;
 }
 
+int UITextControlMetadata::GetTextColorInheritType() const
+{
+    return UIControlBackground::COLOR_IGNORE_PARENT;
+}
+
+void UITextControlMetadata::SetTextColorInheritType(int /*value*/)
+{
+}
+
+int UITextControlMetadata::GetTextPerPixelAccuracyType() const
+{
+    return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+}
+
+void UITextControlMetadata::SetTextPerPixelAccuracyType(int /*value*/)
+{
+}
+
 int UITextControlMetadata::GetFittingType() const
 {
     return TextBlock::FITTING_DISABLED;

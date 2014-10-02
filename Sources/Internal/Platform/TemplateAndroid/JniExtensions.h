@@ -35,6 +35,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include <jni.h>
+#include "Platform/Mutex.h"
 
 namespace DAVA
 {
@@ -53,15 +54,11 @@ protected:
 	virtual jclass GetJavaClass() const = 0;
 	virtual const char* GetJavaClassName() const = 0;
 	jmethodID GetMethodID(const char *methodName, const char *paramCode) const;
-	JNIEnv* GetEnvironment() {return env;};
+	JNIEnv* GetEnvironment() const;
 	Rect V2P(const Rect& rect) const;
 
 protected:
-	JNIEnv* env;
 	JavaVM* vm;
-
-private:
-	bool isAttached;
 };
 
 }

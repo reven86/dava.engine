@@ -73,7 +73,6 @@ void UIScrollViewTest::LoadResources()
         horizontalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_HORIZONTAL);
 		horizontalScrollbar->GetSlider()->GetBackground()->SetLeftRightStretchCap(10);
         horizontalScrollbar->SetOrientation( UIScrollBar::ORIENTATION_HORIZONTAL );
-        horizontalScrollbar->SetDelegate(scrollView);
     }
 	
     control = FindByName("VerticalScrollbar");
@@ -84,7 +83,6 @@ void UIScrollViewTest::LoadResources()
         verticalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_VERTICAL);
         verticalScrollbar->GetSlider()->GetBackground()->SetTopBottomStretchCap(10);
         verticalScrollbar->SetOrientation( UIScrollBar::ORIENTATION_VERTICAL );
-        verticalScrollbar->SetDelegate(scrollView);
     }
 	
 	UIControl *testControl4 = new UIControl(Rect(1200, 1400, 250, 250));
