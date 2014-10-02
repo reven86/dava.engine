@@ -127,7 +127,7 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 		jstring jName = GetEnvironment()->NewStringUTF(cookieName.c_str());
 		jobject item = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL, jName);
 
-		CreateStringFromJni(env, jstring(item), returnStr);
+		CreateStringFromJni(GetEnvironment(), jstring(item), returnStr);
 
 		GetEnvironment()->DeleteLocalRef(jTargetURL);
 		GetEnvironment()->DeleteLocalRef(jName);
@@ -153,7 +153,7 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 			{
 				jobject item = GetEnvironment()->GetObjectArrayElement(jArray, i);
 				String cookiesString = "";
-				CreateStringFromJni(env, jstring(item), cookiesString);
+				CreateStringFromJni(GetEnvironment(), jstring(item), cookiesString);
 
 				Vector<String> cookieEntry;
 				Split(cookiesString, "=", cookieEntry);
