@@ -168,11 +168,7 @@ void DownloadManager::Update()
 
 uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 timeout, int32 retriesCount)
 {
-    int32 fullTimeout = timeout;
-    if (GET_SIZE == downloadMode && timeout >= 2)
-        fullTimeout /= 2;
-
-    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, fullTimeout, retriesCount);
+    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount);
  
     static uint32 prevId = 1;
     task->id = prevId++;

@@ -474,6 +474,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
             }
             else
             {
+            	Logger::FrameworkDebug("DLC: error %d", downloadError);
                 if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
                 {
                     // connection problem
