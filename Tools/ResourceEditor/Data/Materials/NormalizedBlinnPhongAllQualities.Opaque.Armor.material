@@ -1,0 +1,4 @@
+MaterialTemplate:
+    HIGH : "~res:/Materials/NormalizedBlinnPhongPerPixel.Opaque.Armor.material"
+    MEDIUM: "~res:/Materials/NormalizedBlinnPhongPerPixelFast.Opaque.Armor.material"
+    LOW : "~res:/Materials/NormalizedBlinnPhongPerVertex.Opaque.Armor.material"

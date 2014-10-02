@@ -145,6 +145,9 @@
 -
  name: "Normalized BlinnPhong With All Qualities Opaque"
  path: NormalizedBlinnPhongAllQualities.Opaque.material
+ -
+ name: "Normalized BlinnPhong With All Qualities Opaque Armor"
+ path: NormalizedBlinnPhongAllQualities.Opaque.Armor.material
 -
  name: "Normalized BlinnPhong With All Qualities Alphatest"
  path: NormalizedBlinnPhongAllQualities.Alphatest.material

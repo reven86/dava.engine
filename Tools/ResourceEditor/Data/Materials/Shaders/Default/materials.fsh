@@ -147,6 +147,10 @@ varying lowp float varLightmapSize;
 varying lowp vec4 varVertexColor;
 #endif
 
+#if defined(ARMOR)
+varying lowp vec4 varArmorColor;
+#endif
+
 #if defined(FRAME_BLEND)
 varying lowp float varTime;
 #endif
@@ -489,7 +493,10 @@ void main()
 #if defined(FLATCOLOR)
     gl_FragColor *= flatColor;
 #endif
-    
+
+#if defined(ARMOR)
+    gl_FragColor += varArmorColor;
+#endif
     
 #if defined(REFLECTION)
 #if defined(VERTEX_LIT)

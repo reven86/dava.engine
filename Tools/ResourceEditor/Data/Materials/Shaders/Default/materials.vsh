@@ -1,5 +1,13 @@
 <CONFIG>
 uniform vec2 decalTileCoordScale = vec2(1.0, 1.0);
+uniform float piercingPower = 0.0;
+uniform float ricochetAngleCos = 0.0;
+uniform float normalizationAngle = 0.0;
+uniform float caliber = 0.0;
+uniform float additionalThickness = 0.0;
+
+uniform float heDamage = 0.0;
+uniform float baseShellDamage = 0.0;
 <VERTEX_SHADER>
 
 #ifdef GL_ES
@@ -14,7 +22,7 @@ precision highp float;
 // INPUT ATTRIBUTES
 attribute vec4 inPosition;
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(MATERIAL_GRASS_TRANSFORM)
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(MATERIAL_GRASS_TRANSFORM) || defined(ARMOR)
 attribute vec3 inNormal;
 #endif 
 
@@ -24,7 +32,7 @@ attribute vec3 inTexCoord0;
 attribute vec2 inTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ARMOR)
 attribute vec2 inTexCoord1;
 #endif
 
@@ -208,8 +216,11 @@ uniform mediump vec2 texture0Shift;
 uniform vec3 cameraPosition;
 uniform mat4 worldMatrix;
 
-#if defined(REFLECTION) // works now only with VERTEX_LIT
+#if defined(REFLECTION) || defined(ARMOR)
 uniform mat3 worldInvTransposeMatrix;
+#endif
+
+#if defined(REFLECTION) // works now only with VERTEX_LIT
 #if defined(VERTEX_LIT)
 varying mediump vec3 reflectionDirectionInWorldSpace;
 #elif defined(PIXEL_LIT)
@@ -248,6 +259,20 @@ varying lowp vec3 varVegetationColor;
 
 #endif
 
+#endif
+
+#if defined(ARMOR)
+uniform mediump float piercingPower;
+uniform mediump float ricochetAngleCos;
+uniform mediump float normalizationAngle;
+uniform mediump float caliber;
+uniform mediump float additionalThickness;
+varying lowp vec4 varArmorColor;
+#endif
+
+#if defined(ARMOR_HE)
+uniform mediump float heDamage;
+uniform mediump float baseShellDamage;
 #endif
 
 const float _PI = 3.141592654;
@@ -722,6 +747,70 @@ void main()
 	
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
     varVertexColor.rgb = varVertexColor.rgb * treeLeafColorMul * treeLeafOcclusionMul + vec3(treeLeafOcclusionOffset);
+#endif
+
+#if defined(ARMOR)
+#if !defined(VERTEX_FOG) || !(defined(FOG_HALFSPACE) || defined(FOG_ATMOSPHERE_MAP))
+    vec3 viewDirectionInWorldSpace = vec3(worldMatrix * inPosition) - cameraPosition;
+#endif
+#if !defined(REFLECTION)
+    vec3 normalDirectionInWorldSpace = vec3(worldInvTransposeMatrix * inNormal);
+#endif
+
+    float hitAngleCos = abs(dot(normalDirectionInWorldSpace, viewDirectionInWorldSpace)) / (length(normalDirectionInWorldSpace) * length(viewDirectionInWorldSpace));
+    float armorThickness = (inTexCoord1.x + additionalThickness) * step(0.000001, inTexCoord1.y);
+    const float piercingPowerDispersion = 0.11;
+
+#if !defined(ARMOR_HE)
+    float normalizationAngleCoeff = 1.0 + (1.4 * caliber / (armorThickness * 2.0) - 1.0) * step(armorThickness * 2.0, caliber);
+    float normalizedHitAngleCos = cos(max(0.0, acos(hitAngleCos) - normalizationAngle * normalizationAngleCoeff));
+    float normalizedArmorThickness = armorThickness / normalizedHitAngleCos;
+
+    varArmorColor = vec4(
+        max(
+            clamp(
+                (normalizedArmorThickness - piercingPower * (1.0 - piercingPowerDispersion)) / (piercingPower * piercingPowerDispersion * 2.0), 
+                0.0, 
+                1.0
+            ),
+            1.0 - clamp((hitAngleCos - ricochetAngleCos * 0.95) / (ricochetAngleCos * 0.1), 0.0, 1.0) - step(armorThickness * 3.0, caliber) // ricochet works only if (caliber <= armorThickness * 3)
+        ), 0.0, 0.0, 0.0);
+#else
+    float normalizedArmorThickness = armorThickness / hitAngleCos;
+    float damage = (0.5 * heDamage - 1.3 * armorThickness) / min(baseShellDamage, 0.75 * heDamage);
+    float hasDamageCoeff = max(step(0.0, damage), step(normalizedArmorThickness, piercingPower));
+    const float piercingPowerDispersionHE = 0.05;
+    float hePiercingCoeff = clamp((normalizedArmorThickness - piercingPower * (1.0 - piercingPowerDispersionHE)) / (piercingPower * piercingPowerDispersionHE * 2.0), 
+          0.0, 
+          1.0
+        );
+#ifdef ARMOR_HE_DONT_PAINT_THICK_PARTS
+    varArmorColor = 
+        (hasDamageCoeff) * vec4(0.0, 0.8, 0.0, 0.0) * (1.0 - hePiercingCoeff)
+        +
+        (1.0 - hasDamageCoeff) * vec4(0.8, 0.0, 0.0, 0.0);
+#else
+#ifdef ARMOR_HE_INVERSE_PAINT
+    float heDamagePaint = max(
+                1.0 - hePiercingCoeff,
+                damage
+            );
+    varArmorColor = 
+        (hasDamageCoeff) * vec4(0.0, 0.8, 0.0, 0.0) * heDamagePaint
+        +
+        (1.0 - hasDamageCoeff) * vec4(0.8, 0.0, 0.0, 0.0);
+#else
+    float heDamagePaint = min(
+                hePiercingCoeff,
+                1.0 - damage * hasDamageCoeff
+            );
+    varArmorColor = 
+        (hasDamageCoeff) * vec4(0.8, 0.4, 0.0, 0.0) * heDamagePaint
+        +
+        (1.0 - hasDamageCoeff) * vec4(0.8, 0.0, 0.0, 0.0) * step(0.000001, inTexCoord1.y);
+#endif
+#endif
+#endif
 #endif
     
 	varTexCoord0 = inTexCoord0;
