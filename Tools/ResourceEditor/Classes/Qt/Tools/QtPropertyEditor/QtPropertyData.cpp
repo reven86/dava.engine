@@ -926,6 +926,12 @@ void QtPropertyData::SetValueInternal(const QVariant &value)
 	curValue = value;
 }
 
+void QtPropertyData::SetValueIntermediate(QVariant const& value)
+{
+    // should be re-implemented by sub-class
+    Q_UNUSED(value);
+}
+
 QWidget* QtPropertyData::CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option) const
 {
 	// should be re-implemented by sub-class

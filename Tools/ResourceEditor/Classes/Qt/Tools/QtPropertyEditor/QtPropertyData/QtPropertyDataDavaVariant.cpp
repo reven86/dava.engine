@@ -1062,6 +1062,8 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
     ColorPicker cp(GetOWViewport());
     cp.SetDavaColor(oldColor);
 
+    connect( &cp, SIGNAL( changing( (const QColor& ) ) ), SLOT( OnColorChanging() ) );
+
     const bool result = cp.Exec();
     const DAVA::Color newColor = cp.GetDavaColor();
 
@@ -1073,6 +1075,19 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
 		SetValue(str, QtPropertyData::VALUE_EDITED);
 		SetColorIcon();
 	}
+}
+
+void QtPropertyDataDavaVariant::OnColorChanging()
+{
+    ColorPicker *cp = qobject_cast<ColorPicker *>( sender() );
+    if (cp == NULL)
+        return;
+
+    const DAVA::Color newColor = cp->GetDavaColor();
+    QString str;
+    str.sprintf(FLOAT_PRINTF_FORMAT4, newColor.r, newColor.g, newColor.b, newColor.a);
+
+	SetValueIntermediate(str);
 }
 
 void QtPropertyDataDavaVariant::FilePathOWPressed()

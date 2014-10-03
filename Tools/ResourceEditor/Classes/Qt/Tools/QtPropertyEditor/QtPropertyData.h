@@ -234,6 +234,7 @@ protected:
 	virtual QVariant GetValueInternal() const;
 	virtual QVariant GetValueAlias() const;
 	virtual void SetValueInternal(const QVariant &value);
+    virtual void SetValueIntermediate(const QVariant &value);
 	virtual bool UpdateValueInternal();
 	virtual QWidget* CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option) const;
 	virtual bool EditorDoneInternal(QWidget *editor);

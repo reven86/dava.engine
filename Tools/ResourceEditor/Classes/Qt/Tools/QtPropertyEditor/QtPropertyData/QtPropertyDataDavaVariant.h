@@ -36,8 +36,11 @@
 
 #include "../QtPropertyData.h"
 
+
 class QtComboFake;
-class QtPropertyDataDavaVariant : public QtPropertyData
+
+class QtPropertyDataDavaVariant
+    : public QtPropertyData
 {
 	Q_OBJECT
 
@@ -90,6 +93,7 @@ protected slots:
 	void FilePathOWPressed();
 	void AllowedOWPressed();
 	void AllowedSelected(int index);
+    void OnColorChanging();
 
 protected:
 	struct AllowedValue
@@ -97,15 +101,6 @@ protected:
 		DAVA::VariantType realValue;
 		QVariant visibleValue;
 	};
-
-	QVector<AllowedValue> allowedValues;
-	mutable bool allowedValuesLocked;
-	QtPropertyToolButton *allowedButton;
-    AllowedValueType allowedValueType;
-    
-    QString openDialogFilter;
-    QString defaultOpenDialogPath;
-    bool isSettingMeFromChilds;
 
 	void InitFlags();
 	void ChildsCreate();
@@ -147,6 +142,15 @@ protected:
 	void ApplyAllowedValueFromEditor(QWidget *editorWidget);
 
     QStringList GetFlagsList() const;
+
+	QVector<AllowedValue> allowedValues;
+	mutable bool allowedValuesLocked;
+	QtPropertyToolButton *allowedButton;
+    AllowedValueType allowedValueType;
+    
+    QString openDialogFilter;
+    QString defaultOpenDialogPath;
+    bool isSettingMeFromChilds;
 };
 
 class QtPropertyDataDavaVariantSubValue
