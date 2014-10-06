@@ -444,6 +444,7 @@ void DLC::StepCheckInfoBegin()
     if(!dlcContext.forceFullUpdate)
     {
         ReadUint32(dlcContext.localVerStorePath, dlcContext.localVer);
+        Logger::Info("DLC: local version is %u", dlcContext.localVer);
     }
 
     Logger::Info("DLC: Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
@@ -466,6 +467,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
             {
                 if(ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer))
                 {
+                    Logger::Info("DLC: got remote version %u", dlcContext.remoteVer);
                     PostEvent(EVENT_CHECK_OK);
                 }
                 else
