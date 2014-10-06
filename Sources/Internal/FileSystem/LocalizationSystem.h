@@ -53,7 +53,7 @@ public:
 	const String &GetCurrentLocale();
 	void SetCurrentLocale(const String &newLangId);
     
-    const char * GetDeviceLocale();
+    String GetDeviceLocale();
     
     String GetCountryCode() const;
 	

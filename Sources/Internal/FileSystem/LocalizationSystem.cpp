@@ -102,12 +102,12 @@ void LocalizationSystem::Init()
 	LoadStringFile(langId, directoryPath + (langId + ".yaml"));
 }
 
-const char * LocalizationSystem::GetDeviceLocale()
+String LocalizationSystem::GetDeviceLocale()
 {
 #if defined(__DAVAENGINE_IPHONE__)
-	return LocalizationIPhone::GetDeviceLang();
+	return String(LocalizationIPhone::GetDeviceLang());
 #elif defined(__DAVAENGINE_ANDROID__)
-    return LocalizationAndroid::GetDeviceLang().c_str();
+    return LocalizationAndroid::GetDeviceLang();
 #else
     return DEFAULT_LOCALE;
 #endif

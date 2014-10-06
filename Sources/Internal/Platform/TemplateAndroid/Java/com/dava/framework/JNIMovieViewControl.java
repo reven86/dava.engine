@@ -199,6 +199,12 @@ public class JNIMovieViewControl {
 				int videoWidth = control.player.getVideoWidth();
 				int videoHeight = control.player.getVideoHeight();
 				
+				if (videoHeight == 0 || videoWidth == 0)
+				{
+					control.setPlayerState(playerStateErrorData);
+					return;
+				}
+				
 				//update scaling
 				RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(0, 0);
 				switch (control.scalingMode) {

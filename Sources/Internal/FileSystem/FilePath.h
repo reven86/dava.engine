@@ -36,7 +36,7 @@
 namespace DAVA
 {
 
-static const char* useLocalResourcesPath = "/mnt/sdcard/DavaProject/";
+static const char* localResourcesPath = "/mnt/sdcard/DavaProject/";
     
 /**
 	\ingroup filesystem
@@ -143,10 +143,17 @@ public:
     String GetRelativePathname(const char * forDirectory) const;
     
     /**
-     \brief Function to retrieve string path value, passed in constructor
-     \returns relative string path value
+        \brief Function to retrieve string path value, passed in constructor
+        \returns relative string path value
 	 */
     const String & GetStringValue() const;
+    
+    /**
+        \brief Function to retrieve string path value as URL for Web Browser
+        \returns path as URL
+     */
+    const String AsURL() const;
+    
     
 	/**
         \brief Function for replacement of original filename

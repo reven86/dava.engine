@@ -165,18 +165,19 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 
 FilePath Sprite::GetScaledName(const FilePath &spriteName)
 {
-	String::size_type pos = spriteName.GetAbsolutePathname().find(Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()));
+    String pathname;
+    if(FilePath::PATH_IN_RESOURCES == spriteName.GetType())
+        pathname = spriteName.GetFrameworkPath();//as we can have several res folders we should work with 'FrameworkPath' instead of 'AbsolutePathname'
+    else
+        pathname = spriteName.GetAbsolutePathname();
+
+    const String &baseGfxFolderName = Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex());
+	String::size_type pos = pathname.find(baseGfxFolderName);
 	if(String::npos != pos)
 	{
-		String pathname = spriteName.GetAbsolutePathname();
-
-		String subStrPath = pathname.substr(0, pos);
-		String resFolder = Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex());
-		String footer = pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
-
-		return pathname.substr(0, pos)
-						+ Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex())
-						+ pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
+        const String &desirableGfxFolderName = Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex());
+        pathname.replace(pos, baseGfxFolderName.length(), desirableGfxFolderName);
+		return pathname;
 	}
 
 	return spriteName;
@@ -620,7 +621,8 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 	}
 
 	// DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
-	this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    if (this->relativePathname.IsEmpty())
+        this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
 
     spriteMapMutex.Lock();
 	spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;

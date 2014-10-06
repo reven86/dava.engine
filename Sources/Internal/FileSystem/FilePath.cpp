@@ -119,7 +119,7 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
-    SetBundleName(FilePath(useLocalResourcesPath));
+    SetBundleName(FilePath(localResourcesPath));
     FilePath zipDataPath;
     zipDataPath.pathType = PATH_IN_RESOURCES;
     resourceFolders.push_back(zipDataPath);
@@ -812,6 +812,29 @@ int32 FilePath::Compare( const FilePath &right ) const
 	if(absolutePathname > right.absolutePathname) return 1;
 
 	return 0;
+}
+
+const String FilePath::AsURL() const
+{
+#if defined(__DAVAENGINE_ANDROID__)
+    String path = GetAbsolutePathname();
+
+    if(!path.empty())
+    {
+        if(path[0] == '/')
+        {
+            return ("file://" + path);
+        }
+        else
+        {
+            return ("file:///android_asset/" + path);
+        }
+    }
+#else //#if defined(__DAVAENGINE_ANDROID__)
+    return GetAbsolutePathname();
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+    return "";
 }
 
     

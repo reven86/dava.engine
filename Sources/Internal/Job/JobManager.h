@@ -50,7 +50,8 @@ public:
 	enum eThreadType
 	{
 		THREAD_MAIN = 0,
-		THREAD_WORKER
+		THREAD_WORKER,
+        THREAD_MAIN_FORCE_ENQUEUE
 	};
 
 	enum eWaiterRegistrationResult

@@ -126,14 +126,6 @@ public class JNITextField {
 		}
 	}
 
-	private static float GetScaledDensity()
-	{
-		DisplayMetrics dm = new DisplayMetrics();
-		JNIActivity.GetActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
-
-		return Math.min(2.0f, dm.scaledDensity);
-	}
-	
 	public static void InitializeKeyboardLayout(WindowManager manager, IBinder windowToken)
 	{
 		if(keyboardLayout == null) {
@@ -244,6 +236,20 @@ public class JNITextField {
 			}
 			activeTextField = NO_ACTIVE_TEXTFIELD;
 		}
+		// Workaround: Send close keyboard event if text field lost focus and activity 
+		// lost focus too before keyboard was hidden (animation not finished)
+		else if(lastClosedTextField != NO_ACTIVE_TEXTFIELD) {
+            JNIActivity.GetActivity().PostEventToGL(new Runnable()
+            {
+                final int localId = lastClosedTextField;
+                @Override
+                public void run()
+                {
+                    KeyboardClosed(localId);
+                }
+            });
+            lastClosedTextField = NO_ACTIVE_TEXTFIELD;
+		}
 	}
 	
 	public static int GetLastKeyboardIMEOptions() {
@@ -287,8 +293,6 @@ public class JNITextField {
 				params.gravity = Gravity.LEFT | Gravity.TOP;
 				text.setPadding(0, 0, 0, 0);
 				text.setSingleLine(true);
-				int fontSize = (int) (20 * GetScaledDensity());
-				text.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize);
 				text.setBackgroundColor(Color.TRANSPARENT);
 				text.setTextColor(Color.WHITE);
 				text.setVisibility(View.GONE);
@@ -418,13 +422,15 @@ public class JNITextField {
                             readyToClose = true;
                             handler.postDelayed(new Runnable()
                             {
+                                // Store windowToken if text field will be detached from window
+                                final private IBinder windowToken = text.getWindowToken();
                                 @Override
                                 public void run()
                                 {
                                     if(readyToClose) // Closing keyboard didn't aborted
                                     {
                                         InputMethodManager imm = (InputMethodManager) JNIActivity.GetActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                        imm.hideSoftInputFromWindow(text.getWindowToken(), 0);
+                                        imm.hideSoftInputFromWindow(windowToken, 0);
                                         activeTextField = NO_ACTIVE_TEXTFIELD;
                                         readyToClose = false;
                                     }
@@ -449,6 +455,7 @@ public class JNITextField {
 		InternalTask<Void> task = new InternalTask<Void>(editText, new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
+                editText.clearFocus(); // Clear focus before destroying to try to close keyboard
 				ViewGroup parent = (ViewGroup) editText.getParent();
 				if (parent != null)
 					parent.removeView(editText);
@@ -522,7 +529,7 @@ public class JNITextField {
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-				text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(size * GetScaledDensity()));
+				text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)size);
 				return null;
 			}
 		});
@@ -786,6 +793,9 @@ public class JNITextField {
 				InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 					@Override
 					public Void call() throws Exception {
+					    if (!visible) {
+					        text.clearFocus(); // Clear focus before hiding to try to close keyboard
+					    }
 						text.setVisibility(visible ? View.VISIBLE : View.GONE);
 						return null;
 					}
@@ -797,7 +807,7 @@ public class JNITextField {
 	
 	public static void OpenKeyboard(final int id) {
 		final EditText text = GetEditText(id);
-		if (text == null)
+		if (text == null || text.hasFocus())
 			return;
 		
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
@@ -813,7 +823,7 @@ public class JNITextField {
 	
 	public static void CloseKeyboard(int id) {
 		final EditText text = GetEditText(id);
-		if (text == null)
+		if (text == null || !text.hasFocus())
 			return;
 		
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {

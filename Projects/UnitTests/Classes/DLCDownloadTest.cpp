@@ -29,11 +29,6 @@
 #include "DLCDownloadTest.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/Downloader.h"
-CurlTestDownloader::CurlTestDownloader(uint32 operationTimeout)
-    : CurlDownloader(operationTimeout)
-{
-    
-}
 
 size_t CurlTestDownloader::SaveData(void *ptr, size_t size, size_t nmemb)
 {
