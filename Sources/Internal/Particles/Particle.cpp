@@ -34,5 +34,5 @@
 
 namespace DAVA 
 {
-
+	//IMPLEMENT_MULTITHREAD_POOL_ALLOCATOR(Particle);
 };
