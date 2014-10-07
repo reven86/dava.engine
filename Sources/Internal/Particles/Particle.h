@@ -39,7 +39,7 @@ namespace DAVA
 	
 struct Particle
 {
-	//DEFINE_MULTITHREAD_POOL_ALLOCATOR(Particle, 1000);	
+	IMPLEMENT_POOL_ALLOCATOR(Particle, 1000);	
 		
 	Particle * next;
 
