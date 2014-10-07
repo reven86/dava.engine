@@ -64,6 +64,8 @@ public:
     inline const Map<uint32, NMaterial *> & GetMaterialInstances() const;
     
 protected:
+	void ProcessComponentsPart(uint32 from, uint32 to, float32 timeElapsed, float32 shortEffectTime);
+
 	void RunEffect(ParticleEffectComponent *effect);	
     void AddToActive(ParticleEffectComponent *effect);
 	void RemoveFromActive(ParticleEffectComponent *effect);
@@ -88,6 +90,7 @@ private: //materials stuff
 	NMaterial *particleRegularMaterial, *particleFrameBlendMaterial;
 	Map<uint32, NMaterial *> materialMap;
 	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor);
+	void CreateMaterial(NMaterial **outMaterial, uint32 materialKey, Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor);
     bool forceDisableDepthTest;
     bool allowLodDegrade;
 };

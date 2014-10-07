@@ -42,6 +42,9 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
 #include "Debug/Stats.h"
+#include "Job/JobManager.h"
+#include "Job/JobScheduler.h"
+#include "Job/JobWaiter.h"
 
 
 namespace DAVA
@@ -67,28 +70,39 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 	}
 	else //create new
 	{
-		NMaterial *material = NMaterial::CreateMaterialInstance();
-		if (enableFrameBlend)
-			material->SetParent(particleFrameBlendMaterial);
-		else
-			material->SetParent(particleRegularMaterial);		
-		material->SetTexture(NMaterial::TEXTURE_ALBEDO, texture);
-        if (forceDisableDepthTest)
-            NMaterialHelper::DisableStateFlags(PASS_FORWARD, material, RenderStateData::STATE_DEPTH_TEST);
-		NMaterialHelper::SetBlendMode(PASS_FORWARD, material, srcFactor, dstFactor);
-		materialMap[materialKey] = material;
+		NMaterial *material = NULL;
 
-        // if fog is disabled for this material - we also shouldn't inherit fog from global material
-        // so force set fog flag to OFF in this instance
-        if(!enableFog)
-        {
-            material->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
-        }
+		Function<void()> fn = Bind(MakeFunction(this, &ParticleEffectSystem::CreateMaterial), &material, materialKey, texture, enableFog, enableFrameBlend, srcFactor, dstFactor);
+		JobManager2::Instance()->CreateMainJob(fn);
+		JobManager2::Instance()->WaitMainJobs();
 
 		return material;
 	}
 }
 
+void ParticleEffectSystem::CreateMaterial(NMaterial **outMaterial, uint32 materialKey, Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor)
+{
+	NMaterial *material = NMaterial::CreateMaterialInstance();
+
+	if(enableFrameBlend)
+		material->SetParent(particleFrameBlendMaterial);
+	else
+		material->SetParent(particleRegularMaterial);
+	material->SetTexture(NMaterial::TEXTURE_ALBEDO, texture);
+	if(forceDisableDepthTest)
+		NMaterialHelper::DisableStateFlags(PASS_FORWARD, material, RenderStateData::STATE_DEPTH_TEST);
+	NMaterialHelper::SetBlendMode(PASS_FORWARD, material, srcFactor, dstFactor);
+	materialMap[materialKey] = material;
+
+	// if fog is disabled for this material - we also shouldn't inherit fog from global material
+	// so force set fog flag to OFF in this instance
+	if(!enableFog)
+	{
+		material->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
+	}
+
+	*outMaterial = material;
+}
 
 ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDepthTest) :	SceneSystem(scene), forceDisableDepthTest(_forceDisableDepthTest), allowLodDegrade(false)	
 {	
@@ -230,6 +244,9 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
 void ParticleEffectSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("ParticleEffectSystem::Process");
+
+	static int iii = 0;
+	uint64 ttt = SystemTimer::Instance()->GetAbsoluteNano();
     
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
 		return;		
@@ -240,59 +257,112 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	float32 speedMult = 1.0f+(PerformanceSettings::Instance()->GetPsPerformanceSpeedMult()-1.0f)*(1-currPSValue);
 	float32 shortEffectTime = timeElapsed*speedMult;
 	
-	int componentsCount = activeComponents.size();
-	for(int i=0; i<componentsCount; i++) 
+	uint32 componentsCount = activeComponents.size();
+
+	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
+	{
+		ProcessComponentsPart(0, componentsCount, timeElapsed, shortEffectTime);
+	}
+	else
+	{
+		const uint32 jobsCount = (uint32) JobScheduler::Instance()->GetThreadsCount();
+		const uint32 componentsPerJobCount = componentsCount / jobsCount;
+
+		uint32 firstIndex = 0;
+		uint32 rest = componentsCount - (jobsCount * componentsPerJobCount);
+
+		for(uint32 i = 0; i < jobsCount; ++i)
+		{
+			// entities = 90, jobsCount = 4, so "rest" will be (100 - 22 * 4) = 2
+			// count per step will be: 23, 23, 22, 22
+			uint32 count = componentsPerJobCount;
+			if(rest > 0)
+			{
+				count++;
+				rest--;
+			}
+
+			// run jobs
+			Function<void()> fn = Bind(MakeFunction(this, &ParticleEffectSystem::ProcessComponentsPart), firstIndex, count, timeElapsed, shortEffectTime);
+			JobManager2::Instance()->CreateWorkerJob(FastName("ParticleSystemUpdate"), fn);
+
+			// move to next part of entities
+			firstIndex += count;
+		}
+
+		JobManager2::Instance()->WaitWorkerJobs(FastName("ParticleSystemUpdate"));
+	}
+
+	if(iii == 60)
+	{
+		Logger::Info("part update1 = %llu\n", SystemTimer::Instance()->GetAbsoluteNano() - ttt);
+		ttt = SystemTimer::Instance()->GetAbsoluteNano();
+	}
+
+	for(uint32 i = 0; i < componentsCount; ++i)
 	{
 		ParticleEffectComponent * effect = activeComponents[i];
-        if (effect->activeLodLevel!=effect->desiredLodLevel)
-            UpdateActiveLod(effect);
-        if (effect->state == ParticleEffectComponent::STATE_STARTING)  
-        {            
-            RunEffect(effect);
-        }
-        
-		if (effect->isPaused) 
-			continue;
-		UpdateEffect(effect, timeElapsed*effect->playbackSpeed, shortEffectTime*effect->playbackSpeed);	
 
-		bool effectEnded = effect->stopWhenEmpty?effect->effectData.groups.empty():(effect->time>effect->effectDuration);
-		if (effectEnded)
-		{
-			effect->currRepeatsCont++;
-			if (((effect->repeatsCount==0)||(effect->currRepeatsCont<effect->repeatsCount))&&(effect->state != ParticleEffectComponent::STATE_STOPPING)) //0 means infinite repeats
-			{
-				if (effect->clearOnRestart)
-					effect->ClearCurrentGroups();
-				RunEffect(effect);
-			}
-			else
-			{
-				effect->state = ParticleEffectComponent::STATE_STOPPING;
-                effect->SetGroupsFinishing();
-			}
-		}
-		/*finish restart criteria*/		
-		if ((effect->state == ParticleEffectComponent::STATE_STOPPING)&&effect->effectData.groups.empty())
+		/*finish restart criteria*/
+		if((effect->state == ParticleEffectComponent::STATE_STOPPING) && effect->effectData.groups.empty())
 		{
 			effect->effectData.infoSources.resize(1);
 			RemoveFromActive(effect);
 			componentsCount--;
 			i--;
 			effect->state = ParticleEffectComponent::STATE_STOPPED;
-			if (!effect->playbackComplete.IsEmpty())
+			if(!effect->playbackComplete.IsEmpty())
 				effect->playbackComplete(effect->GetEntity(), 0);
 		}
 		else
 		{
-            Scene *scene = GetScene();
-            if (scene)
-			    scene->GetRenderSystem()->MarkForUpdate(effect->effectRenderObject);
+			Scene *scene = GetScene();
+			if(scene)
+				scene->GetRenderSystem()->MarkForUpdate(effect->effectRenderObject);
 		}
-		
-		
+	}
+
+	if(iii++ == 60)
+	{
+		Logger::Info("part update2 = %llu\n", SystemTimer::Instance()->GetAbsoluteNano() - ttt);
+		iii = 0;
 	}
 }
 
+void ParticleEffectSystem::ProcessComponentsPart(uint32 from, uint32 count, float32 timeElapsed, float32 shortEffectTime)
+{
+	for(uint32 i = from; i < (from + count); i++)
+	{
+		ParticleEffectComponent * effect = activeComponents[i];
+		if(effect->activeLodLevel != effect->desiredLodLevel)
+			UpdateActiveLod(effect);
+		if(effect->state == ParticleEffectComponent::STATE_STARTING)
+		{
+			RunEffect(effect);
+		}
+
+		if(effect->isPaused)
+			continue;
+		UpdateEffect(effect, timeElapsed * effect->playbackSpeed, shortEffectTime*effect->playbackSpeed);
+
+		bool effectEnded = effect->stopWhenEmpty ? effect->effectData.groups.empty() : (effect->time>effect->effectDuration);
+		if(effectEnded)
+		{
+			effect->currRepeatsCont++;
+			if(((effect->repeatsCount == 0) || (effect->currRepeatsCont<effect->repeatsCount)) && (effect->state != ParticleEffectComponent::STATE_STOPPING)) //0 means infinite repeats
+			{
+				if(effect->clearOnRestart)
+					effect->ClearCurrentGroups();
+				RunEffect(effect);
+			}
+			else
+			{
+				effect->state = ParticleEffectComponent::STATE_STOPPING;
+				effect->SetGroupsFinishing();
+			}
+		}
+	}
+}
 
 void ParticleEffectSystem::UpdateActiveLod(ParticleEffectComponent *effect)
 {
@@ -380,7 +450,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
 		}			
 		
 		//prepare forces as they will now actually change in time even for already generated particles
-		static Vector<Vector3> currForceValues;
+		Vector<Vector3> currForceValues;
 		int32 forcesCount;
 		if (group.head)
 		{
