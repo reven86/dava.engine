@@ -54,7 +54,8 @@ namespace DAVA
 		typedef P8 ParamType8;
 
 		// incoming class type
-		typedef typename PointerTraits<P1>::PointerType C;
+		typedef typename PointerTraits<P1>::PointerType tryC;
+		typedef typename Select<TypeTraits<tryC>::isPointer, NullType, tryC>::Result C;
 
 		// evaluating best functor argument types
 		typedef typename TypeTraits<P1>::ParamType ParamRefType1;

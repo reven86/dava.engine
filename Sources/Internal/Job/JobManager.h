@@ -140,7 +140,7 @@ protected:
 
 	struct WorkerThread2
 	{
-		WorkerThread2(ConditionalVariable *doneCV);
+		WorkerThread2(ConditionalVariable *doneCV, Mutex *doneMutex);
 		~WorkerThread2();
 
 		bool Run(FastName tag, Function<void()> fn);
@@ -149,11 +149,13 @@ protected:
 	protected:
 		Thread *thread;
 		ConditionalVariable *doneCV;
+		Mutex *doneMutex;
 
 		Function<void()> fn;
 		FastName tag;
 
 		Mutex mutex;
+		Mutex mutexCV;
 		ConditionalVariable cv;
 
 		void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);

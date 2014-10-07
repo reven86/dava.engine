@@ -232,7 +232,7 @@ JobManager2::JobManager2(uint32 cpuCoresCount)
 
 	for (uint32 i = 0; i < cpuCoresCount; ++i)
 	{
-		WorkerThread2 * thread = new WorkerThread2(&workerCV);
+		WorkerThread2 * thread = new WorkerThread2(&workerCV, &workerCVMutex);
 		workerThreads.push_back(thread);
 	}
 }
@@ -279,6 +279,10 @@ void JobManager2::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
  	}
  	else
  	{
+		workerCVMutex.Lock();
+		Thread::Signal(&workerCV);
+		workerCVMutex.Unlock();
+
 		LockGuard<Mutex> guard(mainCVMutex);
 		while (HasMainJobs(invokerThreadId))
 		{
@@ -337,6 +341,7 @@ void JobManager2::WaitWorkerJobs(FastName workerJobTag)
 	LockGuard<Mutex> guard(workerCVMutex);
 	while(HasWorkerJobs(workerJobTag))
 	{
+		RunMain();
 		Thread::Wait(&workerCV, &workerCVMutex);
 	}
 }
@@ -401,7 +406,7 @@ void JobManager2::RunMain()
 
 		// signal that jobs are finished
 		mainCVMutex.Lock();
-		Thread::Signal(&mainCV);
+		Thread::Broadcast(&mainCV);
 		mainCVMutex.Unlock();
 	}
 }
@@ -428,9 +433,10 @@ void JobManager2::RunWorker()
 	}
 }
 
-JobManager2::WorkerThread2::WorkerThread2(ConditionalVariable *_doneCV)
+JobManager2::WorkerThread2::WorkerThread2(ConditionalVariable *_doneCV, Mutex *_doneMutex)
 {
 	doneCV = _doneCV;
+	doneMutex = _doneMutex;
 
 	thread = Thread::Create(Message(this, &WorkerThread2::ThreadFunc));
 	thread->Start();
@@ -439,28 +445,35 @@ JobManager2::WorkerThread2::WorkerThread2(ConditionalVariable *_doneCV)
 JobManager2::WorkerThread2::~WorkerThread2()
 {
 	thread->Cancel();
+	Thread::Signal(&cv);
 	thread->Join();
 	SafeRelease(thread);
 }
 
 void JobManager2::WorkerThread2::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
 {
-	mutex.Lock();
+	mutexCV.Lock();
 
 	while(thread->GetState() != Thread::STATE_CANCELLING)
 	{
-		Thread::Wait(&cv, &mutex);
+		Thread::Wait(&cv, &mutexCV);
 
-		mutex.Unlock();
-		fn();
-		mutex.Lock();
+		if(fn != NULL)
+		{
+			fn();
 
-		fn = NULL;
-		tag = FastName();
-		Thread::Signal(doneCV);
+			mutex.Lock();
+			fn = NULL;
+			tag = FastName();
+			mutex.Unlock();
+
+			doneMutex->Lock();
+			Thread::Signal(doneCV);
+			doneMutex->Unlock();
+		}
 	}
 
-	mutex.Unlock();
+	mutexCV.Unlock();
 }
 
 bool JobManager2::WorkerThread2::Run(FastName _tag, Function<void()> _fn)
@@ -474,7 +487,9 @@ bool JobManager2::WorkerThread2::Run(FastName _tag, Function<void()> _fn)
 		tag = _tag;
 		ret = true;
 
+		mutexCV.Lock();
 		Thread::Signal(&cv);
+		mutexCV.Unlock();
 	}
 
 	return ret;
