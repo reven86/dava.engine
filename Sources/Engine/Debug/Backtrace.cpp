@@ -37,7 +37,7 @@
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")
 #endif
-
+#include <stdlib.h>
 
 namespace DAVA 
 {

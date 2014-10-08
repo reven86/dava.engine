@@ -17,9 +17,14 @@
 #import "NPAPIPluginMacOS.h"
 
 #include "NPAPICorePlatformMacOS.h"
-#include "RenderManager.h"
+#include "Render/RenderManager.h"
 
 #include <pwd.h>
+
+#import <AppKit/AppKit.h>
+
+#include "FrameworkMain.h"
+
 
 // Relative path to NPAPI Internet Plugins for MacOS.
 #define PATH_TO_INTERNET_PLUGINS @"Library/Internet Plug-Ins"
@@ -28,9 +33,6 @@
 #define NPAPI_PLUGIN_ARGUMENT_WIDTH @"width"
 #define NPAPI_PLUGIN_ARGUMENT_HEIGHT @"height"
 #define NPAPI_PLUGIN_ARGUMENT_BUNDLE_NAME @"bundlename"
-
-extern void FrameworkDidLaunched();
-extern void FrameworkWillTerminate();
 
 @implementation NPAPIPluginMacOS
 
@@ -469,7 +471,7 @@ extern void FrameworkWillTerminate();
 	DAVA::FilePath::InitializeBundleNameNPAPI([bundlePath UTF8String]);
 	#endif // #if defined (__DAVAENGINE_NPAPI__)
 
-	FrameworkDidLaunched();
+    FrameworkMain::GetHandle()->DidLaunched();
     DAVA::RenderManager::Create(DAVA::Core::RENDERER_OPENGL);
 
 	appCore = DAVA::Core::GetApplicationCore();
@@ -492,7 +494,7 @@ extern void FrameworkWillTerminate();
 
 -(void) terminateFramework
 {
-	FrameworkWillTerminate();	
+    FrameworkMain::GetHandle()->WillTerminate();
 }
 
 #pragma mark Event Handlers

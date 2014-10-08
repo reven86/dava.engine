@@ -15,9 +15,7 @@
 =====================================================================================*/
 #import "MainWindowController.h"
 #include "CorePlatformMacOS.h"
-
-extern void FrameworkDidLaunched();
-extern void FrameworkWillTerminate();
+#include "FrameworkMain.h"
 
 
 namespace DAVA 
@@ -54,8 +52,8 @@ namespace DAVA
 		
         Logger::Instance()->EnableConsoleMode();
         
-		FrameworkDidLaunched();
-		FrameworkWillTerminate();
+        FrameworkMain::GetHandle()->DidLaunched();
+        FrameworkMain::GetHandle()->WillTerminate();
 		
 		core->ReleaseSingletons();
 #ifdef ENABLE_MEMORY_MANAGER
@@ -149,7 +147,7 @@ namespace DAVA
 	
 	// launch framework and setup all preferences
     //TODO: maybe we need reorder calls 
-	FrameworkDidLaunched();
+    FrameworkMain::GetHandle()->DidLaunched();
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     
 	
@@ -803,7 +801,8 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
 	Core::Instance()->SystemAppFinished();
-	FrameworkWillTerminate();
+    FrameworkMain::GetHandle()->WillTerminate();
+
     Core::Instance()->ReleaseSingletons();
 #ifdef ENABLE_MEMORY_MANAGER
     if (DAVA::MemoryManager::Instance() != 0)

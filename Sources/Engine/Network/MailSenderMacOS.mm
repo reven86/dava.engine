@@ -20,9 +20,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "MailComposeDelegate.h"
-#import "UIAlertView_Modal.h"
-#include "UIScreenManageriPhone.h"
-#include "EAGLViewController.h"
+#import "debug/UIAlertView_Modal.h"
+#include "Ui/UIScreenManageriPhone.h"
+#include "Platform/TemplateIOS/EAGLViewController.h"
 
 #elif defined(__DAVAENGINE_MACOS__)
 #import <Foundation/Foundation.h>

@@ -11,6 +11,7 @@
 #ifndef __XML_STRING_H__
 #define __XML_STRING_H__
 
+#include <stdint.h>
 #include <stdarg.h>
 #include <libxml/xmlversion.h>
 

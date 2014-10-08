@@ -35,9 +35,7 @@
 #if defined(__DAVAENGINE_MACOS__)
 
 #include <ApplicationServices/ApplicationServices.h>
-
-extern void FrameworkDidLaunched();
-extern void FrameworkWillTerminate();
+#include "Platform/TemplateMacOS/FrameworkMain.h"
 
 
 namespace DAVA 
@@ -61,8 +59,8 @@ int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
 
     Logger::Instance()->EnableConsoleMode();
 
-    FrameworkDidLaunched();
-    FrameworkWillTerminate();
+    FrameworkMain::GetHandle()->DidLaunched();
+    FrameworkMain::GetHandle()->WillTerminate();
 
     core->ReleaseSingletons();
 #ifdef ENABLE_MEMORY_MANAGER

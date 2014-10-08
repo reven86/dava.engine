@@ -31,10 +31,26 @@
 #include "DAVAEngine.h"
 #include "GameCore.h"
 #include "version.h"
+#include "Platform/TemplateMacOS/FrameworkMain.h"
 
 using namespace DAVA;
 
-void FrameworkDidLaunched()
+
+class FrameworkMainMAC : public FrameworkMain
+{
+public:
+    void DidLaunched()  ;
+    void WillTerminate();
+    
+    FrameworkMainMAC()
+    {
+        FrameworkMain::SetHandle( this );
+    }
+};
+
+static FrameworkMainMAC  _FrameworkMainMAC;
+
+void FrameworkMainMAC::DidLaunched()
 {
     KeyedArchive * appOptions = new KeyedArchive();
 
@@ -56,8 +72,10 @@ void FrameworkDidLaunched()
     Core::SetApplicationCore(core);
 }
 
-void FrameworkWillTerminate()
+void FrameworkMainMAC::WillTerminate()
 {
     ApplicationCore* core = Core::GetApplicationCore();
     SafeRelease(core);
 }
+
+

@@ -13,22 +13,27 @@ include      ( CMake-common )
 include      ( ${QT_USE_FILE} )
 
 define_source_folders ( GLOB_FOLDER "Classes" GLOB_ERASE_FOLDERS "_build" "VersionInfoWidget" )
+generate_source_groups_project ()
 
+include_directories   ( "${DAVA_ROOT_DIR}/../dava.speedtree/Sources" )
+include_directories   ( "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/wrapper" )
+include_directories   ( "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/beast/include" )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   ( ${DAVA_IMAGE_MAGICK_INCLUDES_PATH} ) 
 include_directories   ( "${DAVA_ROOT_DIR}/dava.speedtree" )
-include_directories   ( "${DAVA_ROOT_DIR}/../dava.speedtree/Sources" )
-include_directories   ( "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/wrapper" )
-include_directories   ( "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/beast/include" )
 include_directories   ( "${DAVA_THIRD_PARTY_INCLUDES_PATH}/FCollada" )
 include_directories   (.)
 include_directories   ( "../TextureTools" )
 include_directories   ( "Classes" )
 include_directories   ( "Classes/bullet" )
 include_directories   ( "Classes/Qt" )
+include_directories   ( "Classes/Qt/CubemapEditor" )
+include_directories   ( "Classes/Qt/TextureBrowser" )
+
 include_directories   ( "Classes/Collada" )
+include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH}/FCollada )
 
 
 add_definitions       ( 
@@ -46,7 +51,7 @@ add_definitions       (
 -D_CRT_SECURE_NO_DEPRECATE
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
--D__DAVAENGINE_BEAST__
+#-D__DAVAENGINE_BEAST__
 -DDAVA_FMOD
 -DDAVA_DEBUG
 )
@@ -77,23 +82,60 @@ qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../TextureTools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
-generate_source_groups_project ()
 
-file ( GLOB_RECURSE BEAST_LIST "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/wrapper/*.cpp"  
-                               "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/wrapper/*.h"  )
+if( APPLE )
+
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
+
+    file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
+    foreach ( FILE ${RESOURCES_LIST} )
+
+        get_filename_component ( FILE_PATH ${FILE} PATH ) 
+        STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" FILE_GROUP ${FILE_PATH} )
+
+        set_source_files_properties( ${FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${FILE_GROUP} )
+    endforeach ()
+
+
+    file ( GLOB DYLIB_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
+
+    set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
+
+
+    list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
+    list ( APPEND LIBRARIES       ${DYLIB_FILES} )
+    
+else()
+    file ( GLOB_RECURSE BEAST_LIST "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/wrapper/*.cpp"  
+                                   "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast/wrapper/*.h" 
+                                  )
+endif()
+
                                
-add_executable  ( ResourceEditor 
+add_executable  ( ResourceEditor MACOSX_BUNDLE
     ${MOC_APP_SRCS} 
     ${UI_APP_HDRS} 
     ${RCC_APP_SRCS} 
     ${PROJECT_SOURCE_FILES} 
     "${DAVA_ROOT_DIR}/../dava.speedtree/Sources/SpeedTreeImporter.cpp"
     ${BEAST_LIST}
+    ${RESOURCES_LIST} 
 )
+
+if( APPLE )
+    ADD_CUSTOM_COMMAND(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+            COMMAND install_name_tool -change ./libfmodex.dylib 
+            @executable_path/../Frameworks/libfmodex.dylib 
+            ${CMAKE_BINARY_DIR}/Debug/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}
+           )
+endif()
 
 if (MSVC)
     set_target_properties ( ResourceEditor PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")
 endif()
+
 
 target_link_libraries ( ResourceEditor
     ${DAVA_LIBRARY}
@@ -102,7 +144,7 @@ target_link_libraries ( ResourceEditor
     TextureCompression 
     TexturePacker 
   )
-  
+ 
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ResourceEditor debug ${FILE} )
 endforeach ()

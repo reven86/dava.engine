@@ -90,7 +90,7 @@ void BeastAction::Redo()
 			}
 		}
 
-		Sleep(15);
+		sleep(15);
 	}
 
 	if(NULL != waitDialog)

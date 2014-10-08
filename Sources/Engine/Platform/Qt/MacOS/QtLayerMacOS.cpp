@@ -28,10 +28,10 @@
 
 
 #include "QtLayerMacOS.h"
+#include "Platform/TemplateMacOS/FrameworkMain.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
-extern void FrameworkDidLaunched();
 
 namespace DAVA 
 {
@@ -55,8 +55,9 @@ void QtLayerMacOS::WidgetCreated()
 //	
 	// launch framework and setup all preferences
     //TODO: maybe we need reorder calls 
-    RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-    FrameworkDidLaunched();
+    RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);    
+    FrameworkMain::GetHandle()->DidLaunched();
+
 }
 
 void QtLayerMacOS::WidgetDestroyed()

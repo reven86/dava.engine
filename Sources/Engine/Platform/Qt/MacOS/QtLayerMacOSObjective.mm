@@ -19,9 +19,8 @@
 #if defined(__DAVAENGINE_MACOS__)
 
 #import "AppKit/NSView.h"
-#include "OpenGLView.h"
-
-extern void FrameworkWillTerminate();
+#include "OpenGLViewQT.h"
+#include "Platform/TemplateMacOS/FrameworkMain.h"
 
 
 namespace DAVA 
@@ -77,7 +76,7 @@ void QtLayerMacOS::AppFinished()
     [openGLView removeFromSuperview];
 
     Core::Instance()->SystemAppFinished();
-    FrameworkWillTerminate();
+    FrameworkMain::GetHandle()->WillTerminate();
     Core::Instance()->ReleaseSingletons();
 #ifdef ENABLE_MEMORY_MANAGER
     if (DAVA::MemoryManager::Instance() != 0)

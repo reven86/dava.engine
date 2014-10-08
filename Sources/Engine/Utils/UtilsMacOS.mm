@@ -83,8 +83,7 @@ uint64 EglGetCurrentContext()
 {
     return (uint64)[EAGLContext currentContext];
 }
-	
+#endif
     
 }; // end of namespace DAVA
 
-#endif

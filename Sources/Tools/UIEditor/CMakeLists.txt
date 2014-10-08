@@ -3,6 +3,8 @@ project      ( UIEditor )
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../CMake/Modules/" ) 
 
+#LINK_LIBRARIES( FrameworkMain )
+
 find_package ( DavaFramework REQUIRED )
 find_package ( Qt4           REQUIRED )
 
@@ -49,9 +51,32 @@ if (MSVC)
     set( LIBRARIES         "opengl32.lib" "winmm.lib" )                            
     set( LIBRARIES_DEBUG   "msvcrtd.lib"  )    
     set( LIBRARIES_RELEASE "msvcrt.lib"   )     
+
+elseif( APPLE )
+
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
+
+    file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
+    foreach ( FILE ${RESOURCES_LIST} )
+
+        get_filename_component ( FILE_PATH ${FILE} PATH ) 
+        STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" FILE_GROUP ${FILE_PATH} )
+
+        set_source_files_properties( ${FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${FILE_GROUP} )
+    endforeach ()
+
+
+    file ( GLOB DYLIB_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
+
+    set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
+
+
+    list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
+    list ( APPEND LIBRARIES       ${DYLIB_FILES} )
+
 endif()
 
-file              ( GLOB_RECURSE QT_LIST "Classes/*.h"  )
+file              ( GLOB_RECURSE QT_LIST "Classes/*.h" )
 qt4_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
 file              ( GLOB UI_LIST "Ui/*.ui" )
@@ -64,11 +89,12 @@ add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../TextureTools" ${CMAKE_CURRENT_
 
 generate_source_groups_project ()
                                
-add_executable  ( UIEditor 
+add_executable  ( UIEditor MACOSX_BUNDLE
     ${MOC_APP_SRCS} 
     ${UI_APP_HDRS} 
     ${RCC_APP_SRCS} 
     ${PROJECT_SOURCE_FILES} 
+    ${RESOURCES_LIST}
 )
 
 if (MSVC)

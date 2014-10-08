@@ -47,8 +47,6 @@ public:
 	virtual void SwitchScreenToMode(eScreenMode screenMode);
 	virtual void ToggleFullscreen();
 
-	virtual DisplayMode GetCurrentDisplayMode();
-
 	virtual void* GetOpenGLView();
 };
 

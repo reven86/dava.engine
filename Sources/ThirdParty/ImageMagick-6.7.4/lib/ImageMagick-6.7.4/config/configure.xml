@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuremap [
+<!ELEMENT configuremap (configure)+>
+<!ELEMENT configure (#PCDATA)>
+<!ATTLIST configure name CDATA #REQUIRED>
+<!ATTLIST configure value CDATA #REQUIRED>
+]>
+<configuremap>
+  <configure name="NAME" value="ImageMagick"/>
+  <configure name="VERSION" value="6.7.4"/>
+  <configure name="LIB_VERSION" value="0x674"/>
+  <configure name="LIB_VERSION_NUMBER" value="6,7,4,10"/>
+  <configure name="SVN_REVISION" value="6593" />
+  <configure name="RELEASE_DATE" value="2014-09-30"/>
+  <configure name="CONFIGURE" value="./configure  'CXXFLAGS=-stdlib=libstdc++' '--prefix=/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4' '--disable-shared' '--without-dps' '--without-djvu' '--without-tiff' '--without-jpeg' '--without-fontconfig' '--without-gslib' '--without-gvc' '--without-lcms' '--without-lcms2' '--without-lqr' '--without-lzma' '--without-openexr' '--without-rsvg' '--without-webp' '--without-wmf' '--without-xml' '--disable-openmp' '--disable-opencl' '--with-x=no' '--with-png=yes' 'CPPFLAGS=-I/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/delegates/include' 'LDFLAGS=-L/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/delegates/lib'"/>
+  <configure name="PREFIX" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4"/>
+  <configure name="EXEC-PREFIX" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4"/>
+  <configure name="INCLUDE_PATH" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/include/ImageMagick"/>
+  <configure name="CONFIGURE_PATH" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/etc/ImageMagick/"/>
+  <configure name="SHARE_PATH" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/share/ImageMagick-6.7.4"/>
+  <configure name="DOCUMENTATION_PATH" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/share/doc/ImageMagick/"/>
+  <configure name="EXECUTABLE_PATH" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/bin"/>
+  <configure name="LIBRARY_PATH" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/lib/ImageMagick-6.7.4"/>
+  <configure name="CODER_PATH" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/lib/ImageMagick-6.7.4/modules-Q16/coders"/>
+  <configure name="FILTER_PATH" value="/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/lib/ImageMagick-6.7.4/modules-Q16/filters"/>
+  <configure name="CC" value="gcc"/>
+  <configure name="CFLAGS" value="-g -O2 -Wall -D_THREAD_SAFE -pthread"/>
+  <configure name="CPPFLAGS" value="-I/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/include/ImageMagick"/>
+  <configure name="PCFLAGS" value=""/>
+  <configure name="DEFS" value="-DHAVE_CONFIG_H"/>
+  <configure name="LDFLAGS" value="-L/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/lib -L/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/delegates/lib"/>
+  <configure name="LIBS" value="-lMagickCore -lbz2 -lz -lm -lpthread "/>
+  <configure name="CXX" value="g++"/>
+  <configure name="CXXFLAGS" value="-stdlib=libstdc++ -D_THREAD_SAFE -pthread"/>
+  <configure name="DISTCHECK_CONFIG_FLAGS" value="'CPPFLAGS=-I/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/delegates/include' 'LDFLAGS=-L/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.7.4/delegates/lib' --disable-deprecated --with-quantum-depth=16 --with-umem=no --with-autotrace=no --with-dps=no --with-djvu=no --with-fontconfig=no --with-gslib=no --with-fontpath= --with-gvc=no --with-jpeg=no --with-lcms=no --with-lcms2=no --with-lqr=no --with-lzma=no --with-openexr=no --with-pango=no --with-rsvg=no --with-tiff=no --with-webp=no --with-wmf=no --with-xml=no --with-perl=no"/>
+  <configure name="TARGET_CPU" value="x86_64"/>
+  <configure name="TARGET_VENDOR" value="apple"/>
+  <configure name="TARGET_OS" value="darwin13.4.0"/>
+  <configure name="HOST" value="x86_64-apple-darwin13.4.0"/>
+  <configure name="FEATURES" value=""/>
+  <configure name="DELEGATES" value="bzlib zlib"/>
+  <configure name="COPYRIGHT" value="Copyright (C) 1999-2012 ImageMagick Studio LLC"/>
+  <configure name="WEBSITE" value="http://www.imagemagick.org"/>
+  <configure name="QuantumDepth" value="16"/>
+</configuremap>

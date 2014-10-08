@@ -23,7 +23,7 @@ if( ZLIB_FOUND )
     list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH ${ZLIB_INCLUDE_DIR} )
     list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
 endif()
-      
+      #include "TargetConditionals.h"
 if( ANDROID )
     set ( LIBRARY_TYPE SHARED )
     
@@ -44,13 +44,50 @@ if( ANDROID )
 
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D___ANDROID__ -DDAVA_FMOD )        
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
-    
-elseif( IOS ) 
+
+elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+
+    set ( LIBRARY_TYPE STATIC )
+
+    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
+    list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )   
+
+    INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
+
+    FIND_LIBRARY( COCOA_LIBRARY Cocoa)
+    FIND_LIBRARY( GLUT_LIBRARY GLUT )
+    FIND_LIBRARY( OpenGL_LIBRARY OpenGL )
+    FIND_LIBRARY( AppKit_LIBRARY AppKit )
+    FIND_LIBRARY( AVFoundation_LIBRARY AVFoundation )
+    FIND_LIBRARY( SecurityFramework_LIBRARY Security ) 
+    FIND_LIBRARY( QuartzCore_LIBRARY QuartzCore ) 
+    FIND_LIBRARY( CoreMedia_LIBRARY CoreMedia ) 
+    FIND_LIBRARY( WebKit_LIBRARY WebKit ) 
+
+
+    SET( LIST_LIBRARIES 
+        ${AVFoundation_LIBRARY} 
+        ${AppKit_LIBRARY} 
+        ${COCOA_LIBRARY} 
+        ${GLUT_LIBRARY} 
+        ${OpenGL_LIBRARY} 
+        ${SecurityFramework_LIBRARY} 
+        ${QuartzCore_LIBRARY} 
+        ${CoreMedia_LIBRARY}
+        ${WebKit_LIBRARY}
+        )  
+
+    list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )                           
+
+elseif( IOS )  
+  
     set ( LIBRARY_TYPE STATIC )
     
     set ( CMAKE_C_FLAGS    "-mno-thumb"  )
-    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" "libcd.lib " )
-    
+    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
+    set ( LIST_SHARED_LIBRARIES "libcd.lib" )
+
+
 else()
     set ( LIBRARY_TYPE STATIC ) 
     
@@ -79,7 +116,8 @@ include_directories    (.)
 include_directories    ( ${DAVA_INCLUDE_DIR} )
 include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} ) 
 include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
-                                          
+include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH}/FCollada )
+
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
 add_library            ( DavaFramework ${LIBRARY_TYPE} ${PROJECT_SOURCE_FILES} )
 

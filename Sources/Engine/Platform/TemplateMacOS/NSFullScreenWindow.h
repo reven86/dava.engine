@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __NSFULL_SCREEN_WINDOW__H__
+    #define __NSFULL_SCREEN_WINDOW__H__
 
 
 #import <Foundation/Foundation.h>
@@ -39,3 +41,5 @@
 - (BOOL)canBecomeKeyWindow;
 
 @end
+
+#endif //__NSFULL_SCREEN_WINDOW__H__

@@ -48,7 +48,7 @@ macro (define_source_files)
     endif ()
     
     if (NOT ARG_GLOB_H_PATTERNS)
-        set (ARG_GLOB_H_PATTERNS *.h)
+        set (ARG_GLOB_H_PATTERNS *.h *.hpp)
     endif ()
 
     file (GLOB CPP_FILES ${ARG_GLOB_CPP_PATTERNS} )
@@ -117,7 +117,7 @@ macro (define_source_folders )
         endif  ()
     
         define_source_files ( GLOB_CPP_PATTERNS ${CPP_PATTERNS}
-                              GLOB_H_PATTERNS   ${ARG_GLOB_FOLDER}/*.h )
+                              GLOB_H_PATTERNS   ${ARG_GLOB_FOLDER}/*.h ${ARG_GLOB_FOLDER}/*.hpp )
                               
         FILE( GLOB SOURCE_FOLDERS "${ARG_GLOB_FOLDER}/*" )
     ELSE()
@@ -193,7 +193,18 @@ install(
         "D:/Dava/dava.framework/Libs/include/${TARGET_NAME}"
         FILES_MATCHING
         PATTERN
-        "*.h")
+        "*.h" )
+
+install(
+        DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/
+        DESTINATION
+        "D:/Dava/dava.framework/Libs/include/${TARGET_NAME}"
+        FILES_MATCHING
+        PATTERN
+        "*.hpp" )
+
+
 endmacro ()
 
 

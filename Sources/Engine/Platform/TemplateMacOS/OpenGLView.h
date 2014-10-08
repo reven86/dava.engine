@@ -26,6 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __OPEN_GLVIEW__H__
+    #define __OPEN_GLVIEW__H__
+
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
@@ -52,3 +55,6 @@ using namespace DAVA;
 - (void) disableTrackingArea;
 
 @end
+
+#endif //__OPEN_GLVIEW__H__
+

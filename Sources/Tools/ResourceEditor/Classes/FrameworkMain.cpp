@@ -32,8 +32,24 @@
 #include "GameCore.h"
 #include "version.h"
 #include "Config.h"
+#include "Platform/TemplateMacOS/FrameworkMain.h"
 
-void FrameworkDidLaunched()
+class FrameworkMainMAC : public FrameworkMain
+{
+public:
+    void DidLaunched()  ;
+    void WillTerminate();
+    
+    FrameworkMainMAC()
+    {
+        FrameworkMain::SetHandle( this );
+    }
+};
+
+static FrameworkMainMAC  _FrameworkMainMAC;
+
+
+void FrameworkMainMAC::DidLaunched()
 {
 	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
 
@@ -50,5 +66,7 @@ void FrameworkDidLaunched()
 }
 
 
-void FrameworkWillTerminate()
-{ }
+void FrameworkMainMAC::WillTerminate()
+{
+
+}
