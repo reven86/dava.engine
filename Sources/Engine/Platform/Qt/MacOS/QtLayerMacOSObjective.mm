@@ -20,7 +20,7 @@
 
 #import "AppKit/NSView.h"
 #include "OpenGLViewQT.h"
-#include "Platform/TemplateMacOS/FrameworkMain.h"
+#include "Platform/FrameworkMain.h"
 
 
 namespace DAVA 

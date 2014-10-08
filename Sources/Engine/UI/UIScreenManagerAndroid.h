@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if defined(__DAVAENGINE_ANDROID__)
 
 #ifndef __DAVAENGINE_ANDROID_SCREENMANAGER_C_H__
 #define __DAVAENGINE_ANDROID_SCREENMANAGER_C_H__
@@ -80,3 +81,4 @@ private:
 };
 
 #endif // __DAVAENGINE_ANDROID_SCREENMANAGER_C_H__
+#endif

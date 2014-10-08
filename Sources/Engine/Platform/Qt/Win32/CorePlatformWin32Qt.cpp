@@ -29,13 +29,12 @@
 #include "CorePlatformWin32Qt.h"
 #include "Platform/Thread.h"
 #include "Utils/Utils.h"
+#include "Platform/FrameworkMain.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
 
-extern void FrameworkDidLaunched();
-extern void FrameworkWillTerminate();
 
 namespace DAVA 
 {
@@ -59,8 +58,8 @@ int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 
 	Logger::Instance()->EnableConsoleMode();
 
-	FrameworkDidLaunched();
-	FrameworkWillTerminate();
+	FrameworkMain::GetHandle()->DidLaunched();
+	FrameworkMain::GetHandle()->WillTerminate();
 	core->ReleaseSingletons();
 #ifdef ENABLE_MEMORY_MANAGER
 	if (DAVA::MemoryManager::Instance() != 0)

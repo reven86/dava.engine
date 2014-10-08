@@ -28,7 +28,7 @@
 
 
 #include "QtLayerMacOS.h"
-#include "Platform/TemplateMacOS/FrameworkMain.h"
+#include "Platform/FrameworkMain.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 

@@ -28,14 +28,12 @@
 
 
 #include "QtLayerWin32.h"
+#include "Platform/FrameworkMain.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
 
-
-extern void FrameworkDidLaunched();
-extern void FrameworkWillTerminate();
 
 namespace DAVA 
 {
@@ -82,7 +80,7 @@ void QtLayerWin32::AppStarted()
 void QtLayerWin32::AppFinished()
 {
     Core::Instance()->SystemAppFinished();
-    FrameworkWillTerminate();
+	FrameworkMain::GetHandle()->WillTerminate();
     Core::Instance()->ReleaseSingletons();
 #ifdef ENABLE_MEMORY_MANAGER
     if (DAVA::MemoryManager::Instance() != 0)
@@ -102,7 +100,7 @@ void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int
 	RenderManager::Create(Core::RENDERER_OPENGL);		
 	RenderManager::Instance()->Create(hInstance, hWindow);
 
-	FrameworkDidLaunched();
+	FrameworkMain::GetHandle()->DidLaunched();
 
 	Resize(width, height);
 	AppStarted();

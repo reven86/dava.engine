@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#if defined(__DAVAENGINE_IPHONE__)
 
 #ifndef __DAVAENGINE_IPHONEAPP_SCREENMANAGER_C_H__
 #define __DAVAENGINE_IPHONEAPP_SCREENMANAGER_C_H__
@@ -98,3 +98,5 @@ private:
 };
 
 #endif // __DAVAENGINE_IPHONEAPP_SCREENMANAGER_C_H__
+
+#endif

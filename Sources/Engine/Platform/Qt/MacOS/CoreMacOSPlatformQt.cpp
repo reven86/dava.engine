@@ -35,7 +35,7 @@
 #if defined(__DAVAENGINE_MACOS__)
 
 #include <ApplicationServices/ApplicationServices.h>
-#include "Platform/TemplateMacOS/FrameworkMain.h"
+#include "Platform/FrameworkMain.h"
 
 
 namespace DAVA 

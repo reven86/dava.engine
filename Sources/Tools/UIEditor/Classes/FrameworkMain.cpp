@@ -31,7 +31,7 @@
 #include "DAVAEngine.h"
 #include "GameCore.h"
 #include "version.h"
-#include "Platform/TemplateMacOS/FrameworkMain.h"
+#include "Platform/FrameworkMain.h"
 
 using namespace DAVA;
 

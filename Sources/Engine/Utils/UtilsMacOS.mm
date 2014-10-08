@@ -64,7 +64,7 @@ namespace DAVA
 #endif
     }
 
-#endif
+
 	
 #if defined(__DAVAENGINE_IPHONE__)
 void DisableSleepTimer()
@@ -87,3 +87,4 @@ uint64 EglGetCurrentContext()
     
 }; // end of namespace DAVA
 
+#endif

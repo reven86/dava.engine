@@ -32,7 +32,7 @@
 #include "GameCore.h"
 #include "version.h"
 #include "Config.h"
-#include "Platform/TemplateMacOS/FrameworkMain.h"
+#include "Platform/FrameworkMain.h"
 
 class FrameworkMainMAC : public FrameworkMain
 {

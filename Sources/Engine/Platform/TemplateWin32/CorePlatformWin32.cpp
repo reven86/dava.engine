@@ -29,15 +29,13 @@
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/TemplateWin32/WindowsSpecifics.h"
+#include "Platform/FrameworkMain.h"
 #include "Platform/Thread.h"
 #include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
-
-extern void FrameworkDidLaunched();
-extern void FrameworkWillTerminate();
 
 namespace DAVA 
 {
@@ -86,8 +84,8 @@ namespace DAVA
 
 		Logger::Instance()->EnableConsoleMode();
 		
-		FrameworkDidLaunched();
-		FrameworkWillTerminate();
+		FrameworkMain::GetHandle()->DidLaunched();
+		FrameworkMain::GetHandle()->WillTerminate();
 		core->ReleaseSingletons();
 #ifdef ENABLE_MEMORY_MANAGER
 		if (DAVA::MemoryManager::Instance() != 0)
@@ -197,7 +195,7 @@ namespace DAVA
 #endif
 		RenderManager::Instance()->Create(hInstance, hWindow);
 
-		FrameworkDidLaunched();
+		FrameworkMain::GetHandle()->DidLaunched();
 		KeyedArchive * options = Core::GetOptions();
 
 		//fullscreenMode = GetCurrentDisplayMode();
@@ -316,7 +314,7 @@ namespace DAVA
 		}
 
 		Core::Instance()->SystemAppFinished();
-		FrameworkWillTerminate();
+		FrameworkMain::GetHandle()->WillTerminate();
 	}
 
 /*	void CoreWin32Platform::InitOpenGL()
