@@ -325,23 +325,26 @@ bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
 void JobManager2::CreateWorkerJob(FastName workerJobTag, const Function<void()>& workerFn)
 {
-	workerQueueMutex.Lock();
+	LockGuard<Mutex> guard(workerQueueMutex);
 
 	WorkerJob job;
 	job.fn = workerFn;
 	job.tag = workerJobTag;
 	workerJobs.push_back(job);
-
-	workerQueueMutex.Unlock();
-	RunWorker();
 }
 
 void JobManager2::WaitWorkerJobs(FastName workerJobTag)
 {
+	RunWorker();
+
 	LockGuard<Mutex> guard(workerCVMutex);
 	while(HasWorkerJobs(workerJobTag))
 	{
-		RunMain();
+		if(Thread::IsMainThread())
+		{
+			RunMain();
+		}
+
 		Thread::Wait(&workerCV, &workerCVMutex);
 	}
 }
@@ -416,7 +419,7 @@ void JobManager2::RunWorker()
 	bool next = true;
 	LockGuard<Mutex> guard(workerQueueMutex);
 	
-	if(!workerJobs.empty() && next)
+	while(!workerJobs.empty() && next)
 	{
 		next = false;
 
