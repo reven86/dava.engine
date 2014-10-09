@@ -167,26 +167,26 @@ void RenderLayerBatchArray::Sort(Camera * camera)
     
     // Need sort
 	flags |= SORT_REQUIRED;
-	
+	uint32 distanceMask = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::PROCESS_CLIPPING)?0x0fff:0;
+    //distanceMask = 0x0fff;
     if ((flags & SORT_THIS_FRAME) == SORT_THIS_FRAME)
     {
         uint32 renderBatchCount = (uint32)renderBatchArray.size();
         if (flags & SORT_BY_MATERIAL)
         {
-            //Vector3 cameraPosition = camera->GetPosition();
+            /**/Vector3 cameraPosition = camera->GetPosition();
 
             for (uint32 k = 0; k < renderBatchCount; ++k)
             {
                 RenderBatch * batch = renderBatchArray[k];
-				//pointer_size renderObjectId = (pointer_size)batch->GetRenderObject();
-                //RenderObject * renderObject = batch->GetRenderObject();
-                //Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
-                //float32 distance = (position - cameraPosition).Length();
-                //uint32 distanceBits = (0xFFFF - ((uint32)distance) & 0xFFFF);
-                uint32 materialIndex = batch->GetMaterial()->GetSortingKey();
-				//VI: sorting key has the following layout: (m:8)(s:4)(d:20)
-                //batch->layerSortingKey = (pointer_size)((materialIndex << 20) | (batch->GetSortingKey() << 28) | (distanceBits));
-				batch->layerSortingKey = (pointer_size)(materialIndex | (batch->GetSortingKey() << 28));
+                /**/
+                RenderObject * renderObject = batch->GetRenderObject();
+                Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
+                uint32 distance = (((uint32)((position - cameraPosition).Length())) + 31 - batch->GetSortingOffset());
+                uint32 distanceBits = distanceMask - distance & distanceMask;
+                /**/
+                uint16 materialIndex = batch->GetMaterial()->GetSortingKey();				
+				batch->layerSortingKey = (pointer_size)(distanceBits | (materialIndex<<12) | (batch->GetSortingKey() << 28));
 				//batch->layerSortingKey = (pointer_size)((batch->GetMaterial()->GetSortingKey() << 20) | (batch->GetSortingKey() << 28) | (renderObjectId & 0x000FFFFF));
             }
             
