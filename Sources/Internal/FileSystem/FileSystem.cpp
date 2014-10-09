@@ -710,8 +710,16 @@ int32 FileSystem::Spawn(const String& command)
 	{
 		Logger::Warning("[FileSystem::Spawn] command (%s) has return code (%d)", command.c_str(), retCode);
 	}
+    return retCode;
+}
 
-	return retCode;
+void FileSystem::MarkFolderAsNoMedia(const FilePath &folder)
+{
+#if defined(__DAVAENGINE_ANDROID__)
+	// for android we create .nomedia file to say to the OS that this directory have no media content and exclude it from index
+    File *nomedia = FileSystem::Instance()->CreateFileForFrameworkPath(folder + ".nomedia", File::WRITE | File::CREATE);
+    SafeRelease(nomedia);
+#endif
 }
 
 #if defined(__DAVAENGINE_ANDROID__)

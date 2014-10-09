@@ -170,9 +170,7 @@ void Core::CreateSingletons()
     new AutotestingSystem();
 #endif
 
-#if defined(__DAVAENGINE_WIN32__)
 	Thread::InitMainThread();
-#endif
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());

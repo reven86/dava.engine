@@ -26,75 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_H__
-#define __DAVAENGINE_JOB_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Base/Message.h"
-#include "Platform/Thread.h"
-
-namespace DAVA
-{
-
-
-class Job : public BaseObject
-{
-public:
-	enum eState
-	{
-		STATUS_UNDONE,
-		STATUS_DONE
-	};
-
-	enum ePerformedWhere
-	{
-		PERFORMED_ON_CREATOR_THREAD,
-		PERFORMED_ON_MAIN_THREAD
-	};
-
-    enum eCreationFlags
-    {
-        NO_FLAGS = 0,
-        RETAIN_WHILE_NOT_COMPLETED = 1 << 0, //<! job will retain underlying BaseObject if one is found in Message, and release when job is done
-    };
-
-    static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
-
-	Job(const Message & message, const Thread::Id & creatorThreadId, uint32 flags);	eState GetState();
-	ePerformedWhere PerformedWhere();
-    const Message & GetMessage();
-
-    uint32 GetFlags() const;
-
-protected:
-	void Perform();
-	void SetState(eState newState);
-	void SetPerformedOn(ePerformedWhere performedWhere);
-
-	Message message;
-	Thread::Id creatorThreadId;
-
-	eState state;
-	ePerformedWhere performedWhere;
-
-    uint32 flags;
-
-	friend class MainThreadJobQueue;
-	friend class JobManager;
-};
-
-inline 
-const Message & Job::GetMessage()
-{
-    return message;
-}
-
-inline uint32 Job::GetFlags() const
-{
-    return flags;
-}
-
-}
-
-#endif //__DAVAENGINE_JOB_H__
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Polygon2_wrap.cxx"
+#endif

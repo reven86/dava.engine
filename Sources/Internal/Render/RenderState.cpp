@@ -233,6 +233,8 @@ void RenderState::Flush(RenderState * hardwareState) const
     if(textureState != hardwareState->textureState &&
        textureState != InvalidUniqueHandle)
     {
+        DVASSERT(InvalidUniqueHandle != hardwareState->textureState);
+        
         const TextureStateData& currentTextureData = RenderManager::Instance()->GetTextureState(textureState);
         const TextureStateData& hardwareTextureData = RenderManager::Instance()->GetTextureState(hardwareState->textureState);
         

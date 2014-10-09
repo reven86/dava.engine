@@ -26,75 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_H__
-#define __DAVAENGINE_JOB_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Base/Message.h"
-#include "Platform/Thread.h"
+#ifndef __STATIC_OCCLUSION_TOOL_H__
+#define __STATIC_OCCLUSION_TOOL_H__
 
-namespace DAVA
+#include "../CommandLineTool.h"
+
+class StaticOcclusionTool: public CommandLineTool
 {
-
-
-class Job : public BaseObject
-{
-public:
-	enum eState
-	{
-		STATUS_UNDONE,
-		STATUS_DONE
-	};
-
-	enum ePerformedWhere
-	{
-		PERFORMED_ON_CREATOR_THREAD,
-		PERFORMED_ON_MAIN_THREAD
-	};
-
-    enum eCreationFlags
+    enum eAction
     {
-        NO_FLAGS = 0,
-        RETAIN_WHILE_NOT_COMPLETED = 1 << 0, //<! job will retain underlying BaseObject if one is found in Message, and release when job is done
+        ACTION_NONE = -1,
+        
+        ACTION_BUILD,
     };
 
-    static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
+public:
 
-	Job(const Message & message, const Thread::Id & creatorThreadId, uint32 flags);	eState GetState();
-	ePerformedWhere PerformedWhere();
-    const Message & GetMessage();
+    virtual DAVA::String GetCommandLineKey();
+    virtual bool InitializeFromCommandLine();
+    virtual void Process();
+    virtual void PrintUsage();
+    virtual void DumpParams();
 
-    uint32 GetFlags() const;
-
+ 
 protected:
-	void Perform();
-	void SetState(eState newState);
-	void SetPerformedOn(ePerformedWhere performedWhere);
 
-	Message message;
-	Thread::Id creatorThreadId;
-
-	eState state;
-	ePerformedWhere performedWhere;
-
-    uint32 flags;
-
-	friend class MainThreadJobQueue;
-	friend class JobManager;
+    eAction commandAction;
+    DAVA::FilePath scenePathname;
 };
 
-inline 
-const Message & Job::GetMessage()
-{
-    return message;
-}
 
-inline uint32 Job::GetFlags() const
-{
-    return flags;
-}
-
-}
-
-#endif //__DAVAENGINE_JOB_H__
+#endif // __STATIC_OCCLUSION_TOOL_H__

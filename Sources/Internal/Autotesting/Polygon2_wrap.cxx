@@ -1645,55 +1645,54 @@ SWIG_Lua_dostring(lua_State *L, const char* str) {
 /* -------- TYPES TABLE (BEGIN) -------- */
 
 #define SWIGTYPE_p_DAVA__Polygon2 swig_types[0]
-#define SWIGTYPE_p_DAVA__Rect swig_types[1]
-#define SWIGTYPE_p_DAVA__UIControl swig_types[2]
-#define SWIGTYPE_p_DAVA__UIGeometricData swig_types[3]
-#define SWIGTYPE_p_DAVA__Vector2 swig_types[4]
-#define SWIGTYPE_p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result swig_types[5]
-#define SWIGTYPE_p_char swig_types[6]
-#define SWIGTYPE_p_double swig_types[7]
-#define SWIGTYPE_p_float swig_types[8]
-#define SWIGTYPE_p_int swig_types[9]
-#define SWIGTYPE_p_long_long swig_types[10]
-#define SWIGTYPE_p_short swig_types[11]
-#define SWIGTYPE_p_signed_char swig_types[12]
-#define SWIGTYPE_p_std__string swig_types[13]
-#define SWIGTYPE_p_std__wstring swig_types[14]
-#define SWIGTYPE_p_unsigned_char swig_types[15]
-#define SWIGTYPE_p_unsigned_int swig_types[16]
-#define SWIGTYPE_p_unsigned_long_long swig_types[17]
-#define SWIGTYPE_p_unsigned_short swig_types[18]
-#define SWIGTYPE_p_wchar_t swig_types[19]
-static swig_type_info *swig_types[21];
-static swig_module_info swig_module = {swig_types, 20, 0, 0, 0, 0};
+#define SWIGTYPE_p_DAVA__Vector2 swig_types[1]
+#define SWIGTYPE_p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result swig_types[2]
+#define SWIGTYPE_p_char swig_types[3]
+#define SWIGTYPE_p_double swig_types[4]
+#define SWIGTYPE_p_float swig_types[5]
+#define SWIGTYPE_p_int swig_types[6]
+#define SWIGTYPE_p_long_long swig_types[7]
+#define SWIGTYPE_p_short swig_types[8]
+#define SWIGTYPE_p_signed_char swig_types[9]
+#define SWIGTYPE_p_std__string swig_types[10]
+#define SWIGTYPE_p_std__wstring swig_types[11]
+#define SWIGTYPE_p_unsigned_char swig_types[12]
+#define SWIGTYPE_p_unsigned_int swig_types[13]
+#define SWIGTYPE_p_unsigned_long_long swig_types[14]
+#define SWIGTYPE_p_unsigned_short swig_types[15]
+#define SWIGTYPE_p_wchar_t swig_types[16]
+static swig_type_info *swig_types[18];
+static swig_module_info swig_module = {swig_types, 17, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
 /* -------- TYPES TABLE (END) -------- */
 
-#define SWIG_name      "UIControl"
-#define SWIG_init      luaopen_UIControl
-#define SWIG_init_user luaopen_UIControl_user
+#define SWIG_name      "Polygon2"
+#define SWIG_init      luaopen_Polygon2
+#define SWIG_init_user luaopen_Polygon2_user
 
-#define SWIG_LUACODE   luaopen_UIControl_luacode
+#define SWIG_LUACODE   luaopen_Polygon2_luacode
 
 namespace swig {
 typedef struct{} LANGUAGE_OBJ;
 }
 
 
-#include "UI/UIControl.h"
+#include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
+#include "Math/Vector.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-static int _wrap_new_UIGeometricData(lua_State* L) {
+static int _wrap_new_Polygon2__SWIG_0(lua_State* L) {
   int SWIG_arg = 0;
-  DAVA::UIGeometricData *result = 0 ;
+  DAVA::Polygon2 *result = 0 ;
   
-  SWIG_check_num_args("DAVA::UIGeometricData::UIGeometricData",0,0)
-  result = (DAVA::UIGeometricData *)new DAVA::UIGeometricData();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIGeometricData,1); SWIG_arg++; 
+  SWIG_check_num_args("DAVA::Polygon2::Polygon2",0,0)
+  result = (DAVA::Polygon2 *)new DAVA::Polygon2();
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Polygon2,1); SWIG_arg++; 
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -1704,26 +1703,20 @@ fail:
 }
 
 
-static int _wrap_UIGeometricData_position_set(lua_State* L) {
+static int _wrap_new_Polygon2__SWIG_1(lua_State* L) {
   int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Vector2 *arg2 = (DAVA::Vector2 *) 0 ;
+  DAVA::Polygon2 *arg1 = 0 ;
+  DAVA::Polygon2 *result = 0 ;
   
-  SWIG_check_num_args("DAVA::UIGeometricData::position",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::position",1,"DAVA::UIGeometricData *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::position",2,"DAVA::Vector2 *");
+  SWIG_check_num_args("DAVA::Polygon2::Polygon2",1,1)
+  if(!lua_isuserdata(L,1)) SWIG_fail_arg("DAVA::Polygon2::Polygon2",1,"DAVA::Polygon2 const &");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_position_set",1,SWIGTYPE_p_DAVA__UIGeometricData);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("new_Polygon2",1,SWIGTYPE_p_DAVA__Polygon2);
   }
   
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
-    SWIG_fail_ptr("UIGeometricData_position_set",2,SWIGTYPE_p_DAVA__Vector2);
-  }
-  
-  if (arg1) (arg1)->position = *arg2;
-  
+  result = (DAVA::Polygon2 *)new DAVA::Polygon2((DAVA::Polygon2 const &)*arg1);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Polygon2,1); SWIG_arg++; 
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -1734,580 +1727,52 @@ fail:
 }
 
 
-static int _wrap_UIGeometricData_position_get(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Vector2 *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::position",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::position",1,"DAVA::UIGeometricData *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_position_get",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  result = (DAVA::Vector2 *)& ((arg1)->position);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Vector2,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_size_set(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Vector2 *arg2 = (DAVA::Vector2 *) 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::size",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::size",1,"DAVA::UIGeometricData *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::size",2,"DAVA::Vector2 *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_size_set",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
-    SWIG_fail_ptr("UIGeometricData_size_set",2,SWIGTYPE_p_DAVA__Vector2);
-  }
-  
-  if (arg1) (arg1)->size = *arg2;
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_size_get(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Vector2 *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::size",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::size",1,"DAVA::UIGeometricData *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_size_get",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  result = (DAVA::Vector2 *)& ((arg1)->size);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Vector2,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_pivotPoint_set(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Vector2 *arg2 = (DAVA::Vector2 *) 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::pivotPoint",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::pivotPoint",1,"DAVA::UIGeometricData *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::pivotPoint",2,"DAVA::Vector2 *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_pivotPoint_set",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
-    SWIG_fail_ptr("UIGeometricData_pivotPoint_set",2,SWIGTYPE_p_DAVA__Vector2);
-  }
-  
-  if (arg1) (arg1)->pivotPoint = *arg2;
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_pivotPoint_get(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Vector2 *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::pivotPoint",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::pivotPoint",1,"DAVA::UIGeometricData *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_pivotPoint_get",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  result = (DAVA::Vector2 *)& ((arg1)->pivotPoint);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Vector2,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_scale_set(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Vector2 *arg2 = (DAVA::Vector2 *) 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::scale",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::scale",1,"DAVA::UIGeometricData *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::scale",2,"DAVA::Vector2 *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_scale_set",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
-    SWIG_fail_ptr("UIGeometricData_scale_set",2,SWIGTYPE_p_DAVA__Vector2);
-  }
-  
-  if (arg1) (arg1)->scale = *arg2;
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_scale_get(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Vector2 *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::scale",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::scale",1,"DAVA::UIGeometricData *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_scale_get",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  result = (DAVA::Vector2 *)& ((arg1)->scale);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Vector2,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_angle_set(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::float32 arg2 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::angle",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::angle",1,"DAVA::UIGeometricData *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::angle",2,"DAVA::float32");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_angle_set",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  arg2 = (DAVA::float32)lua_tonumber(L, 2);
-  if (arg1) (arg1)->angle = arg2;
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_angle_get(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::float32 result;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::angle",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::angle",1,"DAVA::UIGeometricData *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_angle_get",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  result = (DAVA::float32) ((arg1)->angle);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_cosA_set(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::float32 arg2 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::cosA",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::cosA",1,"DAVA::UIGeometricData *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::cosA",2,"DAVA::float32");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_cosA_set",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  arg2 = (DAVA::float32)lua_tonumber(L, 2);
-  if (arg1) (arg1)->cosA = arg2;
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_cosA_get(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::float32 result;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::cosA",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::cosA",1,"DAVA::UIGeometricData *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_cosA_get",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  result = (DAVA::float32) ((arg1)->cosA);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_sinA_set(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::float32 arg2 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::sinA",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::sinA",1,"DAVA::UIGeometricData *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::sinA",2,"DAVA::float32");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_sinA_set",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  arg2 = (DAVA::float32)lua_tonumber(L, 2);
-  if (arg1) (arg1)->sinA = arg2;
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_sinA_get(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::float32 result;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::sinA",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::sinA",1,"DAVA::UIGeometricData *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_sinA_get",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  result = (DAVA::float32) ((arg1)->sinA);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_GetPolygon(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Polygon2 *arg2 = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::GetPolygon",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::GetPolygon",1,"DAVA::UIGeometricData const *");
-  if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::GetPolygon",2,"DAVA::Polygon2 &");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_GetPolygon",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Polygon2,0))){
-    SWIG_fail_ptr("UIGeometricData_GetPolygon",2,SWIGTYPE_p_DAVA__Polygon2);
-  }
-  
-  ((DAVA::UIGeometricData const *)arg1)->GetPolygon(*arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIGeometricData_GetUnrotatedRect(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
-  DAVA::Rect *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIGeometricData::GetUnrotatedRect",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::GetUnrotatedRect",1,"DAVA::UIGeometricData const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
-    SWIG_fail_ptr("UIGeometricData_GetUnrotatedRect",1,SWIGTYPE_p_DAVA__UIGeometricData);
-  }
-  
-  result = (DAVA::Rect *) &((DAVA::UIGeometricData const *)arg1)->GetUnrotatedRect();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Rect,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static void swig_delete_UIGeometricData(void *obj) {
-DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) obj;
-delete arg1;
-}
-static swig_lua_method swig_DAVA_UIGeometricData_methods[] = {
-    {"GetPolygon", _wrap_UIGeometricData_GetPolygon}, 
-    {"GetUnrotatedRect", _wrap_UIGeometricData_GetUnrotatedRect}, 
-    {0,0}
-};
-static swig_lua_attribute swig_DAVA_UIGeometricData_attributes[] = {
-    { "position", _wrap_UIGeometricData_position_get, _wrap_UIGeometricData_position_set},
-    { "size", _wrap_UIGeometricData_size_get, _wrap_UIGeometricData_size_set},
-    { "pivotPoint", _wrap_UIGeometricData_pivotPoint_get, _wrap_UIGeometricData_pivotPoint_set},
-    { "scale", _wrap_UIGeometricData_scale_get, _wrap_UIGeometricData_scale_set},
-    { "angle", _wrap_UIGeometricData_angle_get, _wrap_UIGeometricData_angle_set},
-    { "cosA", _wrap_UIGeometricData_cosA_get, _wrap_UIGeometricData_cosA_set},
-    { "sinA", _wrap_UIGeometricData_sinA_get, _wrap_UIGeometricData_sinA_set},
-    {0,0,0}
-};
-static swig_lua_class *swig_DAVA_UIGeometricData_bases[] = {0};
-static const char *swig_DAVA_UIGeometricData_base_names[] = {0};
-static swig_lua_class _wrap_class_DAVA_UIGeometricData = { "UIGeometricData", &SWIGTYPE_p_DAVA__UIGeometricData,_wrap_new_UIGeometricData, swig_delete_UIGeometricData, swig_DAVA_UIGeometricData_methods, swig_DAVA_UIGeometricData_attributes, swig_DAVA_UIGeometricData_bases, swig_DAVA_UIGeometricData_base_names };
-
-static int _wrap_new_UIControl__SWIG_0(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::Rect *arg1 = 0 ;
-  bool arg2 ;
-  DAVA::UIControl *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::UIControl",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("DAVA::UIControl::UIControl",1,"DAVA::Rect const &");
-  if(!lua_isboolean(L,2)) SWIG_fail_arg("DAVA::UIControl::UIControl",2,"bool");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Rect,0))){
-    SWIG_fail_ptr("new_UIControl",1,SWIGTYPE_p_DAVA__Rect);
-  }
-  
-  arg2 = (lua_toboolean(L, 2)!=0);
-  result = (DAVA::UIControl *)new DAVA::UIControl((DAVA::Rect const &)*arg1,arg2);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,1); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_new_UIControl__SWIG_1(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::Rect *arg1 = 0 ;
-  DAVA::UIControl *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::UIControl",1,1)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("DAVA::UIControl::UIControl",1,"DAVA::Rect const &");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Rect,0))){
-    SWIG_fail_ptr("new_UIControl",1,SWIGTYPE_p_DAVA__Rect);
-  }
-  
-  result = (DAVA::UIControl *)new DAVA::UIControl((DAVA::Rect const &)*arg1);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,1); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_new_UIControl__SWIG_2(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::UIControl",0,0)
-  result = (DAVA::UIControl *)new DAVA::UIControl();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,1); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_new_UIControl(lua_State* L) {
+static int _wrap_new_Polygon2(lua_State* L) {
   int argc;
-  int argv[3]={
-    1,2,3
+  int argv[2]={
+    1,2
   };
   
   argc = lua_gettop(L);
   if (argc == 0) {
-    return _wrap_new_UIControl__SWIG_2(L);
+    return _wrap_new_Polygon2__SWIG_0(L);
   }
   if (argc == 1) {
     int _v;
     {
       void *ptr;
-      if (lua_isuserdata(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__Rect, 0)) {
+      if (lua_isuserdata(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__Polygon2, 0)) {
         _v = 0;
       } else {
         _v = 1;
       }
     }
     if (_v) {
-      return _wrap_new_UIControl__SWIG_1(L);
-    }
-  }
-  if (argc == 2) {
-    int _v;
-    {
-      void *ptr;
-      if (lua_isuserdata(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__Rect, 0)) {
-        _v = 0;
-      } else {
-        _v = 1;
-      }
-    }
-    if (_v) {
-      {
-        _v = lua_isboolean(L,argv[1]);
-      }
-      if (_v) {
-        return _wrap_new_UIControl__SWIG_0(L);
-      }
+      return _wrap_new_Polygon2__SWIG_1(L);
     }
   }
   
-  lua_pushstring(L,"Wrong arguments for overloaded function 'new_UIControl'\n"
+  lua_pushstring(L,"Wrong arguments for overloaded function 'new_Polygon2'\n"
     "  Possible C/C++ prototypes are:\n"
-    "    DAVA::UIControl::UIControl(DAVA::Rect const &,bool)\n"
-    "    DAVA::UIControl::UIControl(DAVA::Rect const &)\n"
-    "    DAVA::UIControl::UIControl()\n");
+    "    DAVA::Polygon2::Polygon2()\n"
+    "    DAVA::Polygon2::Polygon2(DAVA::Polygon2 const &)\n");
   lua_error(L);return 0;
 }
 
 
-static int _wrap_UIControl_GetRect(lua_State* L) {
+static int _wrap_Polygon2_GetPoints__SWIG_0(lua_State* L) {
   int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  DAVA::Rect result;
-  
-  SWIG_check_num_args("DAVA::UIControl::GetRect",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetRect",1,"DAVA::UIControl const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetRect",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = ((DAVA::UIControl const *)arg1)->GetRect();
-  {
-    DAVA::Rect * resultptr = new DAVA::Rect((const DAVA::Rect &) result);
-    SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_DAVA__Rect,1); SWIG_arg++;
-  }
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_GetPosition(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
+  DAVA::Polygon2 *arg1 = (DAVA::Polygon2 *) 0 ;
   DAVA::Vector2 *result = 0 ;
   
-  SWIG_check_num_args("DAVA::UIControl::GetPosition",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetPosition",1,"DAVA::UIControl const *");
+  SWIG_check_num_args("DAVA::Polygon2::GetPoints",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::Polygon2::GetPoints",1,"DAVA::Polygon2 *");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetPosition",1,SWIGTYPE_p_DAVA__UIControl);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_GetPoints",1,SWIGTYPE_p_DAVA__Polygon2);
   }
   
-  result = (DAVA::Vector2 *) &((DAVA::UIControl const *)arg1)->GetPosition();
+  result = (DAVA::Vector2 *)(arg1)->GetPoints();
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Vector2,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -2319,19 +1784,19 @@ fail:
 }
 
 
-static int _wrap_UIControl_GetSize(lua_State* L) {
+static int _wrap_Polygon2_GetPoints__SWIG_1(lua_State* L) {
   int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
+  DAVA::Polygon2 *arg1 = (DAVA::Polygon2 *) 0 ;
   DAVA::Vector2 *result = 0 ;
   
-  SWIG_check_num_args("DAVA::UIControl::GetSize",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetSize",1,"DAVA::UIControl const *");
+  SWIG_check_num_args("DAVA::Polygon2::GetPoints",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::Polygon2::GetPoints",1,"DAVA::Polygon2 const *");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetSize",1,SWIGTYPE_p_DAVA__UIControl);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_GetPoints",1,SWIGTYPE_p_DAVA__Polygon2);
   }
   
-  result = (DAVA::Vector2 *) &((DAVA::UIControl const *)arg1)->GetSize();
+  result = (DAVA::Vector2 *)((DAVA::Polygon2 const *)arg1)->GetPoints();
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Vector2,0); SWIG_arg++; 
   return SWIG_arg;
   
@@ -2343,301 +1808,63 @@ fail:
 }
 
 
-static int _wrap_UIControl_GetGeometricData(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  DAVA::UIGeometricData *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::GetGeometricData",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetGeometricData",1,"DAVA::UIControl *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetGeometricData",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = (DAVA::UIGeometricData *) &(arg1)->GetGeometricData();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIGeometricData,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_GetVisible(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  bool result;
-  
-  SWIG_check_num_args("DAVA::UIControl::GetVisible",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetVisible",1,"DAVA::UIControl const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetVisible",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = (bool)((DAVA::UIControl const *)arg1)->GetVisible();
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_GetInputEnabled(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  bool result;
-  
-  SWIG_check_num_args("DAVA::UIControl::GetInputEnabled",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetInputEnabled",1,"DAVA::UIControl const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetInputEnabled",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = (bool)((DAVA::UIControl const *)arg1)->GetInputEnabled();
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_SetInputEnabled__SWIG_0(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  bool arg2 ;
-  bool arg3 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::SetInputEnabled",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::SetInputEnabled",1,"DAVA::UIControl *");
-  if(!lua_isboolean(L,2)) SWIG_fail_arg("DAVA::UIControl::SetInputEnabled",2,"bool");
-  if(!lua_isboolean(L,3)) SWIG_fail_arg("DAVA::UIControl::SetInputEnabled",3,"bool");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_SetInputEnabled",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  arg2 = (lua_toboolean(L, 2)!=0);
-  arg3 = (lua_toboolean(L, 3)!=0);
-  (arg1)->SetInputEnabled(arg2,arg3);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_SetInputEnabled__SWIG_1(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  bool arg2 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::SetInputEnabled",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::SetInputEnabled",1,"DAVA::UIControl *");
-  if(!lua_isboolean(L,2)) SWIG_fail_arg("DAVA::UIControl::SetInputEnabled",2,"bool");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_SetInputEnabled",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  arg2 = (lua_toboolean(L, 2)!=0);
-  (arg1)->SetInputEnabled(arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_SetInputEnabled(lua_State* L) {
+static int _wrap_Polygon2_GetPoints(lua_State* L) {
   int argc;
-  int argv[4]={
-    1,2,3,4
+  int argv[2]={
+    1,2
   };
   
   argc = lua_gettop(L);
-  if (argc == 2) {
+  if (argc == 1) {
     int _v;
     {
       void *ptr;
-      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__UIControl, 0)) {
+      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__Polygon2, 0)) {
         _v = 0;
       } else {
         _v = 1;
       }
     }
     if (_v) {
-      {
-        _v = lua_isboolean(L,argv[1]);
-      }
-      if (_v) {
-        return _wrap_UIControl_SetInputEnabled__SWIG_1(L);
-      }
+      return _wrap_Polygon2_GetPoints__SWIG_0(L);
     }
   }
-  if (argc == 3) {
+  if (argc == 1) {
     int _v;
     {
       void *ptr;
-      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__UIControl, 0)) {
+      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__Polygon2, 0)) {
         _v = 0;
       } else {
         _v = 1;
       }
     }
     if (_v) {
-      {
-        _v = lua_isboolean(L,argv[1]);
-      }
-      if (_v) {
-        {
-          _v = lua_isboolean(L,argv[2]);
-        }
-        if (_v) {
-          return _wrap_UIControl_SetInputEnabled__SWIG_0(L);
-        }
-      }
+      return _wrap_Polygon2_GetPoints__SWIG_1(L);
     }
   }
   
-  lua_pushstring(L,"Wrong arguments for overloaded function 'UIControl_SetInputEnabled'\n"
+  lua_pushstring(L,"Wrong arguments for overloaded function 'Polygon2_GetPoints'\n"
     "  Possible C/C++ prototypes are:\n"
-    "    DAVA::UIControl::SetInputEnabled(bool,bool)\n"
-    "    DAVA::UIControl::SetInputEnabled(bool)\n");
+    "    DAVA::Polygon2::GetPoints()\n"
+    "    DAVA::Polygon2::GetPoints() const\n");
   lua_error(L);return 0;
 }
 
 
-static int _wrap_UIControl_GetDisabled(lua_State* L) {
+static int _wrap_Polygon2_GetPointCount(lua_State* L) {
   int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  bool result;
-  
-  SWIG_check_num_args("DAVA::UIControl::GetDisabled",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetDisabled",1,"DAVA::UIControl const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetDisabled",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = (bool)((DAVA::UIControl const *)arg1)->GetDisabled();
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_GetSelected(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  bool result;
-  
-  SWIG_check_num_args("DAVA::UIControl::GetSelected",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetSelected",1,"DAVA::UIControl const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetSelected",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = (bool)((DAVA::UIControl const *)arg1)->GetSelected();
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_GetName(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  DAVA::String *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::GetName",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetName",1,"DAVA::UIControl const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetName",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = (DAVA::String *) &((DAVA::UIControl const *)arg1)->GetName();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_std__string,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_IsOnScreen(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  bool result;
-  
-  SWIG_check_num_args("DAVA::UIControl::IsOnScreen",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::IsOnScreen",1,"DAVA::UIControl const *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_IsOnScreen",1,SWIGTYPE_p_DAVA__UIControl);
-  }
-  
-  result = (bool)((DAVA::UIControl const *)arg1)->IsOnScreen();
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_UIControl_GetTag(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
+  DAVA::Polygon2 *arg1 = (DAVA::Polygon2 *) 0 ;
   DAVA::int32 result;
   
-  SWIG_check_num_args("DAVA::UIControl::GetTag",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetTag",1,"DAVA::UIControl const *");
+  SWIG_check_num_args("DAVA::Polygon2::GetPointCount",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::Polygon2::GetPointCount",1,"DAVA::Polygon2 const *");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetTag",1,SWIGTYPE_p_DAVA__UIControl);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_GetPointCount",1,SWIGTYPE_p_DAVA__Polygon2);
   }
   
-  result = (DAVA::int32)((DAVA::UIControl const *)arg1)->GetTag();
+  result = (DAVA::int32)((DAVA::Polygon2 const *)arg1)->GetPointCount();
   lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
@@ -2649,20 +1876,27 @@ fail:
 }
 
 
-static int _wrap_UIControl_GetParent(lua_State* L) {
+static int _wrap_Polygon2_IsPointInside(lua_State* L) {
   int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  DAVA::UIControl *result = 0 ;
+  DAVA::Polygon2 *arg1 = (DAVA::Polygon2 *) 0 ;
+  DAVA::Vector2 *arg2 = 0 ;
+  bool result;
   
-  SWIG_check_num_args("DAVA::UIControl::GetParent",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetParent",1,"DAVA::UIControl *");
+  SWIG_check_num_args("DAVA::Polygon2::IsPointInside",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::Polygon2::IsPointInside",1,"DAVA::Polygon2 const *");
+  if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::Polygon2::IsPointInside",2,"DAVA::Vector2 const &");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetParent",1,SWIGTYPE_p_DAVA__UIControl);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_IsPointInside",1,SWIGTYPE_p_DAVA__Polygon2);
   }
   
-  result = (DAVA::UIControl *)(arg1)->GetParent();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,0); SWIG_arg++; 
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
+    SWIG_fail_ptr("Polygon2_IsPointInside",2,SWIGTYPE_p_DAVA__Vector2);
+  }
+  
+  result = (bool)((DAVA::Polygon2 const *)arg1)->IsPointInside((DAVA::Vector2 const &)*arg2);
+  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -2673,19 +1907,86 @@ fail:
 }
 
 
-static int _wrap_UIControl_GetState(lua_State* L) {
+static int _wrap_Polygon2_CalculateCenterPoint(lua_State* L) {
   int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  DAVA::int32 result;
+  DAVA::Polygon2 *arg1 = (DAVA::Polygon2 *) 0 ;
+  DAVA::Vector2 *arg2 = 0 ;
   
-  SWIG_check_num_args("DAVA::UIControl::GetState",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetState",1,"DAVA::UIControl const *");
+  SWIG_check_num_args("DAVA::Polygon2::CalculateCenterPoint",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::Polygon2::CalculateCenterPoint",1,"DAVA::Polygon2 const *");
+  if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::Polygon2::CalculateCenterPoint",2,"DAVA::Vector2 &");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetState",1,SWIGTYPE_p_DAVA__UIControl);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_CalculateCenterPoint",1,SWIGTYPE_p_DAVA__Polygon2);
   }
   
-  result = (DAVA::int32)((DAVA::UIControl const *)arg1)->GetState();
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
+    SWIG_fail_ptr("Polygon2_CalculateCenterPoint",2,SWIGTYPE_p_DAVA__Vector2);
+  }
+  
+  ((DAVA::Polygon2 const *)arg1)->CalculateCenterPoint(*arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Polygon2_CalculateSizeRect(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::Polygon2 *arg1 = (DAVA::Polygon2 *) 0 ;
+  DAVA::Vector2 *arg2 = 0 ;
+  
+  SWIG_check_num_args("DAVA::Polygon2::CalculateSizeRect",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::Polygon2::CalculateSizeRect",1,"DAVA::Polygon2 const *");
+  if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::Polygon2::CalculateSizeRect",2,"DAVA::Vector2 &");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_CalculateSizeRect",1,SWIGTYPE_p_DAVA__Polygon2);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
+    SWIG_fail_ptr("Polygon2_CalculateSizeRect",2,SWIGTYPE_p_DAVA__Vector2);
+  }
+  
+  ((DAVA::Polygon2 const *)arg1)->CalculateSizeRect(*arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_Polygon2_CalculateSquareRadius(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::Polygon2 *arg1 = (DAVA::Polygon2 *) 0 ;
+  DAVA::Vector2 *arg2 = 0 ;
+  DAVA::float32 result;
+  
+  SWIG_check_num_args("DAVA::Polygon2::CalculateSquareRadius",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::Polygon2::CalculateSquareRadius",1,"DAVA::Polygon2 const *");
+  if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::Polygon2::CalculateSquareRadius",2,"DAVA::Vector2 const &");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_CalculateSquareRadius",1,SWIGTYPE_p_DAVA__Polygon2);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
+    SWIG_fail_ptr("Polygon2_CalculateSquareRadius",2,SWIGTYPE_p_DAVA__Vector2);
+  }
+  
+  result = (DAVA::float32)((DAVA::Polygon2 const *)arg1)->CalculateSquareRadius((DAVA::Vector2 const &)*arg2);
   lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
@@ -2697,20 +1998,29 @@ fail:
 }
 
 
-static int _wrap_UIControl_GetFrame(lua_State* L) {
+static int _wrap_Polygon2_MergeFlatPolygonSegments(lua_State* L) {
   int SWIG_arg = 0;
-  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  DAVA::int32 result;
+  DAVA::Polygon2 *arg1 = 0 ;
+  DAVA::Polygon2 *arg2 = 0 ;
+  DAVA::float32 arg3 ;
   
-  SWIG_check_num_args("DAVA::UIControl::GetFrame",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetFrame",1,"DAVA::UIControl const *");
+  SWIG_check_num_args("DAVA::Polygon2::MergeFlatPolygonSegments",3,3)
+  if(!lua_isuserdata(L,1)) SWIG_fail_arg("DAVA::Polygon2::MergeFlatPolygonSegments",1,"DAVA::Polygon2 const &");
+  if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::Polygon2::MergeFlatPolygonSegments",2,"DAVA::Polygon2 &");
+  if(!lua_isnumber(L,3)) SWIG_fail_arg("DAVA::Polygon2::MergeFlatPolygonSegments",3,"DAVA::float32");
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
-    SWIG_fail_ptr("UIControl_GetFrame",1,SWIGTYPE_p_DAVA__UIControl);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_MergeFlatPolygonSegments",1,SWIGTYPE_p_DAVA__Polygon2);
   }
   
-  result = (DAVA::int32)((DAVA::UIControl const *)arg1)->GetFrame();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("Polygon2_MergeFlatPolygonSegments",2,SWIGTYPE_p_DAVA__Polygon2);
+  }
+  
+  arg3 = (DAVA::float32)lua_tonumber(L, 3);
+  DAVA::Polygon2::MergeFlatPolygonSegments((DAVA::Polygon2 const &)*arg1,*arg2,arg3);
+  
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -2721,36 +2031,32 @@ fail:
 }
 
 
-static swig_lua_method swig_DAVA_UIControl_methods[] = {
-    {"GetRect", _wrap_UIControl_GetRect}, 
-    {"GetPosition", _wrap_UIControl_GetPosition}, 
-    {"GetSize", _wrap_UIControl_GetSize}, 
-    {"GetGeometricData", _wrap_UIControl_GetGeometricData}, 
-    {"GetVisible", _wrap_UIControl_GetVisible}, 
-    {"GetInputEnabled", _wrap_UIControl_GetInputEnabled}, 
-    {"SetInputEnabled", _wrap_UIControl_SetInputEnabled}, 
-    {"GetDisabled", _wrap_UIControl_GetDisabled}, 
-    {"GetSelected", _wrap_UIControl_GetSelected}, 
-    {"GetName", _wrap_UIControl_GetName}, 
-    {"IsOnScreen", _wrap_UIControl_IsOnScreen}, 
-    {"GetTag", _wrap_UIControl_GetTag}, 
-    {"GetParent", _wrap_UIControl_GetParent}, 
-    {"GetState", _wrap_UIControl_GetState}, 
-    {"GetFrame", _wrap_UIControl_GetFrame}, 
+static void swig_delete_Polygon2(void *obj) {
+DAVA::Polygon2 *arg1 = (DAVA::Polygon2 *) obj;
+delete arg1;
+}
+static swig_lua_method swig_DAVA_Polygon2_methods[] = {
+    {"GetPoints", _wrap_Polygon2_GetPoints}, 
+    {"GetPointCount", _wrap_Polygon2_GetPointCount}, 
+    {"IsPointInside", _wrap_Polygon2_IsPointInside}, 
+    {"CalculateCenterPoint", _wrap_Polygon2_CalculateCenterPoint}, 
+    {"CalculateSizeRect", _wrap_Polygon2_CalculateSizeRect}, 
+    {"CalculateSquareRadius", _wrap_Polygon2_CalculateSquareRadius}, 
     {0,0}
 };
-static swig_lua_attribute swig_DAVA_UIControl_attributes[] = {
+static swig_lua_attribute swig_DAVA_Polygon2_attributes[] = {
     {0,0,0}
 };
-static swig_lua_class *swig_DAVA_UIControl_bases[] = {0};
-static const char *swig_DAVA_UIControl_base_names[] = {0};
-static swig_lua_class _wrap_class_DAVA_UIControl = { "UIControl", &SWIGTYPE_p_DAVA__UIControl,_wrap_new_UIControl,0, swig_DAVA_UIControl_methods, swig_DAVA_UIControl_attributes, swig_DAVA_UIControl_bases, swig_DAVA_UIControl_base_names };
+static swig_lua_class *swig_DAVA_Polygon2_bases[] = {0};
+static const char *swig_DAVA_Polygon2_base_names[] = {0};
+static swig_lua_class _wrap_class_DAVA_Polygon2 = { "Polygon2", &SWIGTYPE_p_DAVA__Polygon2,_wrap_new_Polygon2, swig_delete_Polygon2, swig_DAVA_Polygon2_methods, swig_DAVA_Polygon2_attributes, swig_DAVA_Polygon2_bases, swig_DAVA_Polygon2_base_names };
 
 #ifdef __cplusplus
 }
 #endif
 
 static const struct luaL_Reg swig_commands[] = {
+    { "Polygon2_MergeFlatPolygonSegments", _wrap_Polygon2_MergeFlatPolygonSegments},
     {0,0}
 };
 
@@ -2764,10 +2070,7 @@ static swig_lua_const_info swig_constants[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static swig_type_info _swigt__p_DAVA__Polygon2 = {"_p_DAVA__Polygon2", "DAVA::Polygon2 *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_DAVA__Rect = {"_p_DAVA__Rect", "DAVA::Rect *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_DAVA__UIControl = {"_p_DAVA__UIControl", "DAVA::UIControl *", 0, 0, (void*)&_wrap_class_DAVA_UIControl, 0};
-static swig_type_info _swigt__p_DAVA__UIGeometricData = {"_p_DAVA__UIGeometricData", "DAVA::UIGeometricData *", 0, 0, (void*)&_wrap_class_DAVA_UIGeometricData, 0};
+static swig_type_info _swigt__p_DAVA__Polygon2 = {"_p_DAVA__Polygon2", "DAVA::Polygon2 *", 0, 0, (void*)&_wrap_class_DAVA_Polygon2, 0};
 static swig_type_info _swigt__p_DAVA__Vector2 = {"_p_DAVA__Vector2", "DAVA::Vector2 *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result = {"_p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result", "DAVA::pointer_size *|Select< sizeof(void *)==4,DAVA::uint32,DAVA::uint64 >::Result *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *|DAVA::char8 *", 0, 0, (void*)0, 0};
@@ -2787,9 +2090,6 @@ static swig_type_info _swigt__p_wchar_t = {"_p_wchar_t", "DAVA::char16 *|wchar_t
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_DAVA__Polygon2,
-  &_swigt__p_DAVA__Rect,
-  &_swigt__p_DAVA__UIControl,
-  &_swigt__p_DAVA__UIGeometricData,
   &_swigt__p_DAVA__Vector2,
   &_swigt__p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result,
   &_swigt__p_char,
@@ -2809,9 +2109,6 @@ static swig_type_info *swig_type_initial[] = {
 };
 
 static swig_cast_info _swigc__p_DAVA__Polygon2[] = {  {&_swigt__p_DAVA__Polygon2, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_DAVA__Rect[] = {  {&_swigt__p_DAVA__Rect, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_DAVA__UIControl[] = {  {&_swigt__p_DAVA__UIControl, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_DAVA__UIGeometricData[] = {  {&_swigt__p_DAVA__UIGeometricData, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_DAVA__Vector2[] = {  {&_swigt__p_DAVA__Vector2, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result[] = {  {&_swigt__p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
@@ -2831,9 +2128,6 @@ static swig_cast_info _swigc__p_wchar_t[] = {  {&_swigt__p_wchar_t, 0, 0, 0},{0,
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_DAVA__Polygon2,
-  _swigc__p_DAVA__Rect,
-  _swigc__p_DAVA__UIControl,
-  _swigc__p_DAVA__UIGeometricData,
   _swigc__p_DAVA__Vector2,
   _swigc__p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result,
   _swigc__p_char,

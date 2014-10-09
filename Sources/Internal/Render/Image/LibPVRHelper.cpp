@@ -120,7 +120,7 @@ eErrorCode LibPVRHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
     return ERROR_READ_FAIL;
 }
     
-eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     //not implemented due to external tool
     DVASSERT(0);

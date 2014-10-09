@@ -161,6 +161,9 @@ void StaticOcclusionBuildSystem::Cancel()
 {
     activeIndex = -1;
     SafeDelete(staticOcclusion);
+    
+    StaticOcclusionSystem *sos = GetScene()->staticOcclusionSystem;
+    sos->InvalidateOcclusion();
 }
     
 void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData)

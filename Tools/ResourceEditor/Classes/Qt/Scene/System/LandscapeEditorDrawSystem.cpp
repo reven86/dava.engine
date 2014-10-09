@@ -338,6 +338,8 @@ void LandscapeEditorDrawSystem::UpdateBaseLandscapeHeightmap()
 	baseLandscape->SetHeightmap(h);
 	
 	SafeRelease(h);
+    
+    GetScene()->foliageSystem->SyncFoliageWithLandscape();
 }
 
 float32 LandscapeEditorDrawSystem::GetTextureSize(Landscape::eTextureLevel level)

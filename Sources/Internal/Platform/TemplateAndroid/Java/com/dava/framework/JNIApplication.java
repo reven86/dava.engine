@@ -19,40 +19,49 @@ public class JNIApplication extends Application
 	
 	private String externalDocumentsDir;
 	private String internalDocumentsDir; 
-
 	private Locale launchLocale;
+	private boolean firstLaunch = true;
+
+	/**
+	 * Initialize native framework core in first time.
+	 * Should be called on activity starting.
+	 */
+	public void InitFramework()
+	{
+	    if (firstLaunch) {
+            ApplicationInfo info = getApplicationInfo();
+            Log.w(JNIConst.LOG_TAG, String.format("[Application::InitFramework] Create Application. apkFilePath is %s", info.publicSourceDir)); 
+            OnCreateApplication(externalDocumentsDir, internalDocumentsDir, info.publicSourceDir, JNIConst.LOG_TAG, info.packageName);
+            firstLaunch = false;
+        }
+	}
 
 	@Override
 	public void onCreate()
 	{
 		app = this;
 		super.onCreate();
-	
-        JNINotificationProvider.Init();
-
-		ApplicationInfo info = getApplicationInfo();
-		
 		Log.i(JNIConst.LOG_TAG, "[Application::onCreate] start"); 
+        
+		/*
+		 * Core initialization moved to JNIActivity
+		 */
+	    JNINotificationProvider.Init();
+	    
+        externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath();
+        internalDocumentsDir = this.getFilesDir().getAbsolutePath();
+        launchLocale = Locale.getDefault();
 		
-		externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath();
-		internalDocumentsDir = this.getFilesDir().getAbsolutePath();
-
-		launchLocale = Locale.getDefault();
-
-		Log.w(JNIConst.LOG_TAG, String.format("[Application::onCreate] apkFilePath is %s", info.publicSourceDir)); 
-		OnCreateApplication(externalDocumentsDir, internalDocumentsDir, info.publicSourceDir, JNIConst.LOG_TAG, info.packageName);
-
-
 		Log.i(JNIConst.LOG_TAG, "[Application::onCreate] finish"); 
 	}
-
+	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
 	{
-		Log.w(JNIConst.LOG_TAG, String.format("[Application::onConfigurationChanged]")); 
+		Log.i(JNIConst.LOG_TAG, String.format("[Application::onConfigurationChanged]")); 
 
 		super.onConfigurationChanged(newConfig);
-
+		
 		OnConfigurationChanged();
 
 		if (IsApplicationShouldBeRestarted())

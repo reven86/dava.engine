@@ -65,7 +65,7 @@ public:
     void Update();
 
     // Schedule download content or get content size (handles by DwonloadMode)
-    uint32 Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode = RESUMED, int32 timeout = 4, int32 retriesCount = 3);
+    uint32 Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode = RESUMED, int32 timeout = 30, int32 retriesCount = 3);
     
     // Retry finished download
     void Retry(const uint32 &taskId);

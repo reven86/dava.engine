@@ -101,7 +101,9 @@ void GameCore::OnAppStarted()
 
 	new MathTest();
 	new FunctionBindSignalTest();
-	new DLCDownloadTest();
+    new ThreadSyncTest();
+    new DLCDownloadTest();
+
 
 	new ImageSizeTest();
     new DeviceInfoTest();
@@ -151,7 +153,7 @@ void GameCore::OnAppStarted()
  	new UIListTest();
  	new UIScrollViewTest();
  
-    new ThreadSyncTest();
+
     new SceneSystemTest();
     
     errors.reserve(TestCount());

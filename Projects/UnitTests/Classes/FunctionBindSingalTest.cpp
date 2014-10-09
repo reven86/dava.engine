@@ -437,7 +437,7 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		//std::function<int()> c11_bound_f0 = std::bind(std::mem_fn(&A::classFn0), &a);
 		//std::function<int(int, int, int, int, int, int, int)> c11_bound_f7 = std::bind(std::mem_fn(&A::classFn7), &a, std::placeholders::_7, std::placeholders::_6, std::placeholders::_5, std::placeholders::_4, std::placeholders::_3, std::placeholders::_2, std::placeholders::_1);
 
-		int st_count = 100000000;
+		int st_count = 1000000;
 		uint64 time_ms;
 
 		functionBindSignalResultString += Format("\n\nEach invoke test will be run %u times:\n\n", st_count);

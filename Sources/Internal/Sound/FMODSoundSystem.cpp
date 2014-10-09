@@ -77,7 +77,9 @@ SoundSystem::SoundSystem()
     
 	FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
 	FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
-    
+#ifdef __DAVAENGINE_ANDROID__
+	FMOD_VERIFY(fmodSystem->setOutput(FMOD_OUTPUTTYPE_AUDIOTRACK));
+#endif
     FMOD_VERIFY(fmodSystem->setSoftwareChannels(MAX_SOUND_CHANNELS));
     
 #ifdef DAVA_FMOD_PROFILE

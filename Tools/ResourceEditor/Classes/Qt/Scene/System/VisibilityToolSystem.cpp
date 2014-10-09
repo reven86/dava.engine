@@ -38,7 +38,10 @@
 #include "LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "Deprecated/EditorConfig.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/SceneHelper.h"
 #include "Commands2/VisibilityToolActions.h"
+
+#include "Render/Material/NMaterialNames.h"
 
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
@@ -442,8 +445,11 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 
 				target.z = targetTmp.z;
 
-				const EntityGroup* entityGroup = collisionSystem->ObjectsRayTest(sourcePoint, target);
-				bool wasIntersection = (entityGroup->Size() == 0) ? false : true;
+				const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint, target);
+                EntityGroup entityGroup(*intersectedObjects);
+                ExcludeEntities(&entityGroup);
+                
+				bool wasIntersection = (entityGroup.Size() == 0) ? false : true;
 
 				if (!wasIntersection)
 				{
@@ -486,6 +492,61 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 		}
 	}
 }
+
+void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
+{
+    if (!entities || (entities->Size() == 0)) return;
+    
+    uint32 count = entities->Size();
+    while(count)
+    {
+        Entity *object = entities->GetEntity(count - 1);
+        bool needToExclude = false;
+
+        KeyedArchive * customProps = GetCustomPropertiesArchieve(object);
+        if(customProps)
+        {   // exclude not collised by bullet objects
+            const int32 collisiontype = customProps->GetInt32( "CollisionType", 0 );
+            if(     (ResourceEditor::ESOT_TREE == collisiontype)
+                ||  (ResourceEditor::ESOT_BUSH == collisiontype)
+                ||  (ResourceEditor::ESOT_FRAGILE_PROJ_INV == collisiontype)
+                ||  (ResourceEditor::ESOT_FALLING == collisiontype)
+                ||  (ResourceEditor::ESOT_SPEED_TREE == collisiontype)
+                )
+            {
+                needToExclude = true;
+            }
+        }
+        if(!needToExclude)
+        {   // exclude sky
+            
+            Vector<NMaterial *> materials;
+            SceneHelper::EnumerateMaterialInstances(object, materials);
+            
+            const uint32 matCount = materials.size();
+            for(uint32 m = 0; m < matCount; ++m)
+            {
+                const NMaterialTemplate *matTemplate = materials[m]->GetMaterialTemplate();
+                if((NMaterialName::SKYOBJECT == matTemplate->name)  || (NMaterialName::SKYBOX == matTemplate->name))
+                {
+                    needToExclude = true;
+                    break;
+                }
+            }
+        }
+        
+
+        if(needToExclude)
+        {
+            entities->Rem(object);
+        }
+        
+        --count;
+    }
+}
+
+
+
 
 bool VisibilityToolSystem::IsCircleContainsPoint(const Vector2& circleCenter, float32 circleRadius, const Vector2& point)
 {

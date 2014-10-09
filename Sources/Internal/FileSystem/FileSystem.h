@@ -247,6 +247,11 @@ public:
 	 \returns platform-dependent
 	 */
 	int32 Spawn(const String& command);
+
+	/**
+	 \brief Marks folder as contains no media files to exclude it from index
+	 */
+	void MarkFolderAsNoMedia(const FilePath &folder);
     
     
 private:
