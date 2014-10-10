@@ -16,6 +16,9 @@
 
 #include "QtPropertyDataInspDynamic.h"
 
+#include <QDebug>
+
+
 QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(void *_object, DAVA::InspInfoDynamic *_dynamicInfo, DAVA::FastName _name)
 	: QtPropertyDataDavaVariant(DAVA::VariantType())
 	, object(_object)
@@ -65,21 +68,24 @@ QVariant QtPropertyDataInspDynamic::GetValueAlias() const
 
 void QtPropertyDataInspDynamic::SetValueInternal(const QVariant &value)
 {
-	QtPropertyDataDavaVariant::SetValueInternal(value);
-	DAVA::VariantType newValue;
-	
-	if(!value.isNull())
-	{
-		newValue = QtPropertyDataDavaVariant::GetVariantValue();
-	}
+    SetTempValueInternal(value);
 
 	// also save value to meta-object
 	if(NULL != dynamicInfo)
 	{
 		DAVA::SafeDelete(lastCommand);
+        DAVA::VariantType newValue = GetVariantValue();
 		lastCommand = new InspDynamicModifyCommand(dynamicInfo, object, name, newValue);
+	}
+}
 
-		dynamicInfo->MemberValueSet(object, name, newValue);
+void QtPropertyDataInspDynamic::SetTempValueInternal(const QVariant& value)
+{
+	QtPropertyDataDavaVariant::SetValueInternal(value);
+
+    if(NULL != dynamicInfo)
+	{
+        dynamicInfo->MemberValueSet(object, name, curVariantValue);
 	}
 }
 
@@ -97,7 +103,7 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
 		// we should update current variant value
 		if(v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
 		{
-			QtPropertyDataDavaVariant::SetVariantValue(v);
+			SetVariantValue(v);
 			ret = true;
 		}
 	}

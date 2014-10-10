@@ -45,7 +45,7 @@ const DAVA::MetaInfo * QtPropertyDataInspMember::MetaInfo() const
 
 void QtPropertyDataInspMember::SetValueInternal(const QVariant &value)
 {
-    SetValueIntermediate(value);
+    SetTempValueInternal(value);
     DAVA::VariantType newValue = GetVariantValue();
 
 	// also save value to meta-object
@@ -56,13 +56,12 @@ void QtPropertyDataInspMember::SetValueInternal(const QVariant &value)
 	}
 }
 
-void QtPropertyDataInspMember::SetValueIntermediate(const QVariant& value)
+void QtPropertyDataInspMember::SetTempValueInternal(const QVariant& value)
 {
 	QtPropertyDataDavaVariant::SetValueInternal(value);
-	DAVA::VariantType newValue = GetVariantValue();
 	if(NULL != member)
 	{
-		member->SetValue(object, newValue);
+		member->SetValue(object, curVariantValue);
 	}
 }
 
