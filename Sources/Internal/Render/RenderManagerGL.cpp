@@ -78,10 +78,6 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 
 	renderContextId = (uint64)hRC;
 	
-	Thread::secondaryContext = wglCreateContext(hDC);
-	Thread::currentDC = hDC;
-
-	wglShareLists(Thread::secondaryContext, hRC);
 	wglMakeCurrent(hDC, hRC);
 
 	glewInit();

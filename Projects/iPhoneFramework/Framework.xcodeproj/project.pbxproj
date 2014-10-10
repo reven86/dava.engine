@@ -542,7 +542,6 @@
 		02FD80F41924997C007762C0 /* ES2Renderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8E116B9326D002BD35F /* ES2Renderer.mm */; };
 		02FD80F51924997C007762C0 /* HelperAppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8E416B9326D002BD35F /* HelperAppDelegate.mm */; };
 		02FD80F61924997C007762C0 /* Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8F416B9326D002BD35F /* Thread.cpp */; };
-		02FD80F71924997C007762C0 /* ThreadMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8F716B9326D002BD35F /* ThreadMacOS.mm */; };
 		02FD80F81924997C007762C0 /* Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8FB16B9326D002BD35F /* Font.cpp */; };
 		02FD80F91924997C007762C0 /* FontManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8FD16B9326D002BD35F /* FontManager.cpp */; };
 		02FD80FA1924997C007762C0 /* FTFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8FF16B9326D002BD35F /* FTFont.cpp */; };
@@ -957,6 +956,7 @@
 		8402ABA619BA033E00111F35 /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
 		840ED3C916D506F900D2BA6C /* DPIHelperiOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 840ED3C816D506F900D2BA6C /* DPIHelperiOS.mm */; };
 		840ED3CB16D5070400D2BA6C /* DPIHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 840ED3CA16D5070400D2BA6C /* DPIHelper.h */; };
+		842D49CE19E43B8800098682 /* Polygon2Swig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 842D49CD19E43B8800098682 /* Polygon2Swig.cpp */; };
 		84D18BFB19201BEF009E3E90 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BEC19201BEF009E3E90 /* Image.cpp */; };
 		84D18BFC19201BEF009E3E90 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BED19201BEF009E3E90 /* Image.h */; };
 		84D18BFD19201BEF009E3E90 /* Image.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BEE19201BEF009E3E90 /* Image.mm */; };
@@ -1087,6 +1087,8 @@
 		CCEB543D1886FF0C0018491F /* LodToLod2Converter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB54391886FF0C0018491F /* LodToLod2Converter.h */; };
 		CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */; };
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
+		D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
+		D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D7B50F2D19ACB28900F8C0C9 /* Notification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2719ACB28900F8C0C9 /* Notification.cpp */; };
 		D7B50F2E19ACB28900F8C0C9 /* Notification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2719ACB28900F8C0C9 /* Notification.cpp */; };
 		D7B50F2F19ACB28900F8C0C9 /* Notification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2819ACB28900F8C0C9 /* Notification.h */; };
@@ -1374,7 +1376,6 @@
 		E8B3CBAA16B9326E002BD35F /* HelperAppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8E416B9326D002BD35F /* HelperAppDelegate.mm */; };
 		E8B3CBB816B9326E002BD35F /* Thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8F416B9326D002BD35F /* Thread.cpp */; };
 		E8B3CBB916B9326E002BD35F /* Thread.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8F516B9326D002BD35F /* Thread.h */; };
-		E8B3CBBB16B9326E002BD35F /* ThreadMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8F716B9326D002BD35F /* ThreadMacOS.mm */; };
 		E8B3CBBD16B9326E002BD35F /* Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8FB16B9326D002BD35F /* Font.cpp */; };
 		E8B3CBBE16B9326E002BD35F /* Font.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8FC16B9326D002BD35F /* Font.h */; };
 		E8B3CBBF16B9326E002BD35F /* FontManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8FD16B9326D002BD35F /* FontManager.cpp */; };
@@ -1875,6 +1876,7 @@
 		647EFC6E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
 		840ED3C816D506F900D2BA6C /* DPIHelperiOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DPIHelperiOS.mm; sourceTree = "<group>"; };
 		840ED3CA16D5070400D2BA6C /* DPIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPIHelper.h; sourceTree = "<group>"; };
+		842D49CD19E43B8800098682 /* Polygon2Swig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Polygon2Swig.cpp; sourceTree = "<group>"; };
 		84D18BEC19201BEF009E3E90 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Image.cpp; path = Image/Image.cpp; sourceTree = "<group>"; };
 		84D18BED19201BEF009E3E90 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Image.h; path = Image/Image.h; sourceTree = "<group>"; };
 		84D18BEE19201BEF009E3E90 /* Image.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Image.mm; path = Image/Image.mm; sourceTree = "<group>"; };
@@ -2004,6 +2006,7 @@
 		CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SwitchToRenerObjectConverter.cpp; sourceTree = "<group>"; };
 		CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchToRenerObjectConverter.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D751821719BF03E400BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
 		D7B50F2719ACB28900F8C0C9 /* Notification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Notification.cpp; sourceTree = "<group>"; };
 		D7B50F2819ACB28900F8C0C9 /* Notification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Notification.h; sourceTree = "<group>"; };
 		D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NotificationAndroid.cpp; sourceTree = "<group>"; };
@@ -2271,7 +2274,6 @@
 		E8B3C8E416B9326D002BD35F /* HelperAppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HelperAppDelegate.mm; sourceTree = "<group>"; };
 		E8B3C8F416B9326D002BD35F /* Thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Thread.cpp; sourceTree = "<group>"; };
 		E8B3C8F516B9326D002BD35F /* Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thread.h; sourceTree = "<group>"; };
-		E8B3C8F716B9326D002BD35F /* ThreadMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ThreadMacOS.mm; sourceTree = "<group>"; };
 		E8B3C8FB16B9326D002BD35F /* Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Font.cpp; sourceTree = "<group>"; };
 		E8B3C8FC16B9326D002BD35F /* Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Font.h; sourceTree = "<group>"; };
 		E8B3C8FD16B9326D002BD35F /* FontManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FontManager.cpp; sourceTree = "<group>"; };
@@ -2910,6 +2912,7 @@
 		E8B3C7B116B9326D002BD35F /* Autotesting */ = {
 			isa = PBXGroup;
 			children = (
+				842D49CD19E43B8800098682 /* Polygon2Swig.cpp */,
 				02C85172181032EA002B7E1C /* AutotestingDB.cpp */,
 				02C85173181032EA002B7E1C /* AutotestingDB.h */,
 				02C85174181032EA002B7E1C /* GameAPI.cpp */,
@@ -3257,6 +3260,7 @@
 		E8B3C8BB16B9326D002BD35F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				D751821719BF03E400BB88E0 /* ThreadPosix.cpp */,
 				D7B50F2719ACB28900F8C0C9 /* Notification.cpp */,
 				D7B50F2819ACB28900F8C0C9 /* Notification.h */,
 				D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */,
@@ -3278,7 +3282,6 @@
 				E8B3C8D916B9326D002BD35F /* TemplateiOS */,
 				E8B3C8F416B9326D002BD35F /* Thread.cpp */,
 				E8B3C8F516B9326D002BD35F /* Thread.h */,
-				E8B3C8F716B9326D002BD35F /* ThreadMacOS.mm */,
 			);
 			path = Platform;
 			sourceTree = "<group>";
@@ -4964,6 +4967,7 @@
 				02FD80C21924997C007762C0 /* FilePath.cpp in Sources */,
 				155D77E9197DD265006AEBCD /* YamlNode.cpp in Sources */,
 				02FD80C31924997C007762C0 /* FileSystem.cpp in Sources */,
+				D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */,
 				17D4116C1973E7BE00CF6BC0 /* Reachability.mm in Sources */,
 				D7FEF15219864E5C00B2C7AF /* bs_diff.c in Sources */,
 				02FD80C41924997C007762C0 /* FileSystemObjective.mm in Sources */,
@@ -5028,7 +5032,6 @@
 				02FD80F41924997C007762C0 /* ES2Renderer.mm in Sources */,
 				02FD80F51924997C007762C0 /* HelperAppDelegate.mm in Sources */,
 				02FD80F61924997C007762C0 /* Thread.cpp in Sources */,
-				02FD80F71924997C007762C0 /* ThreadMacOS.mm in Sources */,
 				02FD80F81924997C007762C0 /* Font.cpp in Sources */,
 				02FD80F91924997C007762C0 /* FontManager.cpp in Sources */,
 				02FD80FA1924997C007762C0 /* FTFont.cpp in Sources */,
@@ -5356,6 +5359,7 @@
 				E8B3CB1416B9326E002BD35F /* File.cpp in Sources */,
 				E8B3CB1616B9326E002BD35F /* FileList.cpp in Sources */,
 				D7FEF15519864E5C00B2C7AF /* BSDiff.cpp in Sources */,
+				D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */,
 				E8B3CB1816B9326E002BD35F /* FilePath.cpp in Sources */,
 				E8B3CB1A16B9326E002BD35F /* FileSystem.cpp in Sources */,
 				E8B3CB1C16B9326E002BD35F /* FileSystemObjective.mm in Sources */,
@@ -5417,7 +5421,6 @@
 				E8B3CBAA16B9326E002BD35F /* HelperAppDelegate.mm in Sources */,
 				C172EC2E18C9F9D4004309CF /* TextBlockRender.cpp in Sources */,
 				E8B3CBB816B9326E002BD35F /* Thread.cpp in Sources */,
-				E8B3CBBB16B9326E002BD35F /* ThreadMacOS.mm in Sources */,
 				E8B3CBBD16B9326E002BD35F /* Font.cpp in Sources */,
 				E8B3CBBF16B9326E002BD35F /* FontManager.cpp in Sources */,
 				E8B3CBC116B9326E002BD35F /* FTFont.cpp in Sources */,
@@ -5698,6 +5701,7 @@
 				17D4116B1973E4B700CF6BC0 /* Reachability.mm in Sources */,
 				9A0116F3967F43C036364993 /* GamepadDevice.mm in Sources */,
 				624C87F218C6160F00E1049D /* DateTime.cpp in Sources */,
+				842D49CE19E43B8800098682 /* Polygon2Swig.cpp in Sources */,
 				B4C29D52199B933F001B83FE /* SceneCache.cpp in Sources */,
 				9A011FD535036524CA050EF7 /* GamepadManager.mm in Sources */,
 			);

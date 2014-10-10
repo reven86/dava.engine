@@ -91,7 +91,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
     return properWrapper->ReadFile(file, imageSet, baseMipmap);
 }
 
-eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if(!properWrapper)

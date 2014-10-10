@@ -188,3 +188,4 @@ void LineEditEx::actionEvent(QActionEvent* event)
         break;
     }
 }
+

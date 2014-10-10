@@ -130,8 +130,29 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
 				inputImages[i]->ResizeImage(compression->compressToWidth, compression->compressToHeight);
 			}
         }
+        
+        //generate mipmaps for every face
+        Vector<Vector<Image *> > cubeFaceImages;
+        cubeFaceImages.resize(DAVA::Texture::CUBE_FACE_MAX_COUNT);
+        for(uint32 i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+        {
+            if(descriptor.dataSettings.GetGenerateMipMaps())
+            {
+                cubeFaceImages[i] = inputImages[i]->CreateMipMapsImages();
+            }
+            else
+            {
+                cubeFaceImages[i].push_back(SafeRetain(inputImages[i]));
+            }
+        }
 		
-        eErrorCode retCode = ImageSystem::Instance()->SaveAsCubeMap(outputName, inputImages, (PixelFormat) descriptor.compression[gpuFamily].format);
+        eErrorCode retCode = ImageSystem::Instance()->SaveAsCubeMap(outputName, cubeFaceImages, (PixelFormat) descriptor.compression[gpuFamily].format);
+        
+        for(uint32 i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+        {
+            for_each(cubeFaceImages[i].begin(), cubeFaceImages[i].end(), SafeRelease<Image>);
+        }
+
         if(SUCCESS == retCode)
         {
             for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);

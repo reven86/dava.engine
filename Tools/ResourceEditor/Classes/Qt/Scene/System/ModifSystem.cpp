@@ -799,6 +799,15 @@ void EntityModificationSystem::CloneBegin()
 			DAVA::Entity *newEntity = origEntity->Clone();
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
 
+            Scene *scene = origEntity->GetScene();
+            if(scene)
+            {
+                StaticOcclusionSystem *sosystem = scene->staticOcclusionSystem;
+                DVASSERT(sosystem);
+                
+                sosystem->InvalidateOcclusionIndicesRecursively(newEntity);
+            }
+
 			origEntity->GetParent()->AddNode(newEntity);
 
 			clonedEntities.push_back(newEntity);

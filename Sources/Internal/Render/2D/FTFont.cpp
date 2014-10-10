@@ -413,9 +413,6 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
 		FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
 
-		pen.x += advances[i].x;
-		pen.y += advances[i].y;
-
  		error = FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
 		if(!error)
 		{
@@ -433,9 +430,11 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 				{
                     if(str[i] == L' ')
                     {
-						int32 spaceWidth = (int32)advances[i].x >> ftToPixelShift;
-                        charSizes->push_back((float32)spaceWidth);
-                        lastRight += spaceWidth;
+						int32 spaceWidth = advances[i].x >> ftToPixelShift;
+                        int32 spaceLeft = (pen.x >> ftToPixelShift) + 1;
+                        int32 value = spaceLeft + spaceWidth - lastRight;
+					    lastRight += value;
+                        charSizes->push_back((float32)value);
                     }
                     else
                     {
@@ -486,6 +485,10 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 					DVASSERT((writeBuf-resultBuf-(bufWidth-realW)) <= (bufWidth*bufHeight));
 				}
 			}
+
+            pen.x += advances[i].x;
+            pen.y += advances[i].y;
+
 		}
 		
 		FT_Done_Glyph(image);

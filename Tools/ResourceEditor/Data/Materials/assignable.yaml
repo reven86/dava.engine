@@ -65,6 +65,9 @@
  name: "TextureLightmap Opaque"
  path: TextureLightmap.Opaque.material
 -
+ name: "TextureLightmap AllQualities Opaque"
+ path: TextureLightmapAllQualities.Opaque.material
+-
  name: "VertexColor Alphablend"
  path: VertexColor.Alphablend.material
 -

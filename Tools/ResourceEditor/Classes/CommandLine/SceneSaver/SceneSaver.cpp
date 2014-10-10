@@ -124,7 +124,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
 		}
 
 		//scene->Update(0.f);
-        scene->Save(sc2Filename);
+        scene->Save(sc2Filename, false);
 	}
 	else
 	{
@@ -187,7 +187,7 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     tempSceneName.ReplaceExtension(".saved.sc2");
     
     sceneUtils.CopyFiles(errorLog);
-    scene->Save(tempSceneName, true);
+    scene->Save(tempSceneName, false);
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
 	if(!moved)

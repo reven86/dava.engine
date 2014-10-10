@@ -633,6 +633,7 @@
 		E8D417C5188160C800A76E21 /* EditorMaterialSystem.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8D417C3188160C800A76E21 /* EditorMaterialSystem.cpp */; };
 		E8EA8DBF185C38040064906E /* MaterialTree.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8EA8DBD185C38040064906E /* MaterialTree.cpp */; };
 		E8EA8DC1185C38170064906E /* MaterialTree_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8EA8DC0185C38170064906E /* MaterialTree_moc.cpp */; };
+		E8F0651E19DEC75000470565 /* StaticOcclusionTool.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8F0651C19DEC75000470565 /* StaticOcclusionTool.cpp */; };
 		EAAC98921937335F00549BAD /* RebuildTangentSpaceCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = EAAC98901937335F00549BAD /* RebuildTangentSpaceCommand.cpp */; };
 		EAADA00E189FB59E001E1AA2 /* ParticleEmitterMoveCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = EAADA00C189FB59E001E1AA2 /* ParticleEmitterMoveCommands.cpp */; };
 /* End PBXBuildFile section */
@@ -1853,6 +1854,8 @@
 		E8EA8DBD185C38040064906E /* MaterialTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialTree.cpp; sourceTree = "<group>"; };
 		E8EA8DBE185C38040064906E /* MaterialTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialTree.h; sourceTree = "<group>"; };
 		E8EA8DC0185C38170064906E /* MaterialTree_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialTree_moc.cpp; sourceTree = "<group>"; };
+		E8F0651C19DEC75000470565 /* StaticOcclusionTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionTool.cpp; sourceTree = "<group>"; };
+		E8F0651D19DEC75000470565 /* StaticOcclusionTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionTool.h; sourceTree = "<group>"; };
 		EAAC98901937335F00549BAD /* RebuildTangentSpaceCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RebuildTangentSpaceCommand.cpp; sourceTree = "<group>"; };
 		EAAC98911937335F00549BAD /* RebuildTangentSpaceCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RebuildTangentSpaceCommand.h; sourceTree = "<group>"; };
 		EAADA00C189FB59E001E1AA2 /* ParticleEmitterMoveCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleEmitterMoveCommands.cpp; sourceTree = "<group>"; };
@@ -3343,6 +3346,7 @@
 		E8C98FE7184CD0EB00AFBF3F /* CommandLine */ = {
 			isa = PBXGroup;
 			children = (
+				E8F0651B19DEC75000470565 /* StaticOcclusion */,
 				A6796CD71885702800EB254C /* DDSExtractor */,
 				E8C98FE8184CD0EB00AFBF3F /* Beast */,
 				E8C98FEB184CD0EB00AFBF3F /* CommandLineManager.cpp */,
@@ -4298,6 +4302,15 @@
 			name = SpeedTree;
 			sourceTree = "<group>";
 		};
+		E8F0651B19DEC75000470565 /* StaticOcclusion */ = {
+			isa = PBXGroup;
+			children = (
+				E8F0651C19DEC75000470565 /* StaticOcclusionTool.cpp */,
+				E8F0651D19DEC75000470565 /* StaticOcclusionTool.h */,
+			);
+			path = StaticOcclusion;
+			sourceTree = "<group>";
+		};
 		ED1E82605DD74B483AF3C982 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -4692,6 +4705,7 @@
 				E8C99317184CD0EC00AFBF3F /* TextDrawSystem.cpp in Build Sources */,
 				E8C99252184CD0EC00AFBF3F /* btSolve2LinearConstraint.cpp in Build Sources */,
 				E8BAD6AF1859F50300C98C8D /* CubeMapTextureBrowser_moc.cpp in Build Sources */,
+				E8F0651E19DEC75000470565 /* StaticOcclusionTool.cpp in Build Sources */,
 				E8C9930B184CD0EC00AFBF3F /* CustomLandscape.cpp in Build Sources */,
 				E8C99288184CD0EC00AFBF3F /* CustomColorsCommands2.cpp in Build Sources */,
 				E8C9920C184CD0EC00AFBF3F /* SphereTriangleDetector.cpp in Build Sources */,

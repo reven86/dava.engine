@@ -130,26 +130,6 @@ public:
 	virtual int32 GetVerticalSpacing() const;
     
 	/**
-		\brief Split string into substrings.
-		If one word(letters without separators) is longer than targetRectSize.dx, word will not be splitted.
-		Separator symbols:
-		1. '\n', "\n"(two symbols) - forced split.
-		3. ' '(space) - soft split. If substring is longer than targetRectSize.dx, it will be limited to the last found space symbol. 
-		\param[in] text - string to be splitted
-		\param[in] targetRectSize - targetRectSize.dx sets desirable maximum substring width
-		\param[in, out] resultVector - contains resulting substrings
-	*/
-	void SplitTextToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector);
-
-	/**
-     \brief Split string into substrings by characters.
-     \param[in] text - string to be splitted
-     \param[in] targetRectSize - targetRectSize.dx sets desirable maximum substring width
-     \param[in, out] resultVector - contains resulting substrings
-     */
-	void SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector);    
-    
-	/**
 		\brief Get string size(rect).
 		\param[in] str - processed string
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
@@ -202,33 +182,9 @@ public:
 	virtual uint32 GetHashCode();
 
 protected:
-
-    struct SeparatorPositions
-    {
-        SeparatorPositions() { Reset(); }
-
-        void Reset();
-        
-        bool IsLineInitialized() const;
-        
-        int32 lastWordStart;
-        int32 lastWordEnd;
-        int32 currentLineStart;
-        int32 currentLineEnd;
-    };
-
-    
-    void AddCurrentLine(const WideString & text, const int32 pos, SeparatorPositions & separatorPosition, Vector<WideString> & resultVector) const;
-	
-    
     // Get the raw hash string (identical for identical fonts).
 	virtual String GetRawHashString();
     
-    inline bool IsLineEnd(char16 t) const;
-    inline bool IsSpace(char16 t) const;
-    
-    bool IsWordSeparator(char16 t) const;
-
 	static int32 globalFontDPI;
 	
 	float32	size;
@@ -239,16 +195,6 @@ protected:
 	eFontType fontType;
 };
     
-inline bool Font::IsLineEnd(char16 t) const
-{
-    return (t == L'\n');
-}
-    
-inline bool Font::IsSpace(char16 t) const
-{
-    return (t == L' ');
-}
-
 };
 
 #endif // __DAVAENGINE_FONT_H__
