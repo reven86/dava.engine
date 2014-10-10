@@ -699,7 +699,7 @@ void DownloadManager::DownloadByParts()
 {
 if (DLE_NO_ERROR == currentTask->error)
     {
-        downloader->Download(currentTask->url, 0, currentTask->timeout);
+        downloader->Download(currentTask->url, 0, currentTask->timeout, currentTask->partsCount);
     }
 }
 

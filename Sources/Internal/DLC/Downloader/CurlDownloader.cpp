@@ -71,7 +71,7 @@ CURL *CurlDownloader::CurlSimpleInit()
     return curl_handle;
 }
 
-DownloadError CurlDownloader::Download(const String &url, const uint64 &loadFrom, int32 _timeout)
+DownloadError CurlDownloader::Download(const String &url, const uint64 &loadFrom, const char8 partsCount, int32 _timeout)
 {
     /* init the curl session */
     currentCurlHandle = CurlSimpleInit();
