@@ -55,7 +55,7 @@ protected:
 
     CURL *CurlSimpleInit();
 
-    virtual DownloadError GetSize(const String &url, int64 &retSize, int32 timeout);
+    virtual DownloadError GetSize(const String &url, uint64 &retSize, int32 timeout);
     virtual DownloadError Download(const String &url, const uint64 &loadFrom, int32 timeout);
     
     static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *fileDownloader);

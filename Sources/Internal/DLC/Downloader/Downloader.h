@@ -53,7 +53,7 @@ public:
 /* all methods putted into protected section because they should be used only from DownloadManager. */
 protected: 
     /* Get content size in bytes for remote Url. Place result to retSize, timeout - for operation cancelling */
-    virtual DownloadError GetSize(const String &url, int64 &retSize, int32 _timeout) = 0;
+    virtual DownloadError GetSize(const String &url, uint64 &retSize, int32 _timeout) = 0;
     /* Main downloading operation. Should call SaveData to store data. */
     virtual DownloadError Download(const String &url, const uint64 &loadFrom, int32 _timeout) = 0;
     /* Interrupt download process. We expects that you will save last data chunk came before */

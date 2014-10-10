@@ -167,7 +167,8 @@ void DownloadManager::Update()
 
 uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 timeout, int32 retriesCount)
 {
-    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount);
+    const char8 partsCount = 2;
+    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, partsCount);
  
     static uint32 prevId = 1;
     task->id = prevId++;
@@ -573,92 +574,133 @@ DownloadError DownloadManager::Download()
 
 DownloadError DownloadManager::TryDownload()
 {
-    int64 loadFrom = 0;
-
     // retrieve remote file size
-    DownloadError error = downloader->GetSize(currentTask->url, remoteFileSize, currentTask->timeout);
-    if (DLE_NO_ERROR != error)
-    {
-        currentTask->error = error;
-        return error;
+    currentTask->error = downloader->GetSize(currentTask->url, currentTask->downloadTotal, currentTask->timeout);
+    if (DLE_NO_ERROR != currentTask->error)
+    {        
+        return currentTask->error;
     }
 
     if (GET_SIZE == currentTask->type)
     {
-        currentTask->downloadTotal = remoteFileSize;
-        currentTask->error = error;
-        return error;
+        return currentTask->error;
     }
 
     DVASSERT(GET_SIZE != currentTask->type);
 
-    // get downloaded part of file size
     if (RESUMED == currentTask->type)
     {
-        // if file is particulary downloaded, we will try to download rest part of it        
-        File *fileToGetSize = File::Create(currentTask->storePath, File::OPEN | File::READ);
-        if (!fileToGetSize)
-        {
-            // create new file if there is no file.
-            SafeRelease(fileToGetSize);
-            fileToGetSize = File::Create(currentTask->storePath, File::CREATE | File::WRITE | File::READ);
-            if (!fileToGetSize)
-                return DLE_FILE_ERROR;
-        }
-
-        loadFrom = fileToGetSize->GetSize();
-        currentTask->downloadProgress = loadFrom;
-        SafeRelease(fileToGetSize);
+        MakeResumedDownload();
     }
-    else
+    else    
     {
-        MakeFullDownload(currentTask);
+        MakeFullDownload();
     }
 
-    currentTask->downloadTotal = remoteFileSize;
-    
-    downloadedTotal = loadFrom;
 
-    // if downloaded part of file is larger or equals to expected size
-    if (loadFrom > remoteFileSize)
-    {        
-        // here we can interrupt download or reload file for example
-        MakeFullDownload(currentTask);
-        loadFrom = 0;
-    }
-    else if (loadFrom == remoteFileSize)
+
+    if (DLE_NO_ERROR != currentTask->error)
     {
-        currentTask->error = DLE_NO_ERROR;
         return currentTask->error;
     }
 
-    error = downloader->Download(currentTask->url, loadFrom, currentTask->timeout);
+    currentTask->downloadTotal = remoteFileSize;
+    //currentTask->downloadProgress = file->GetSize();
+
+    DownloadByParts();
 
     // seems server doesn't supports download resuming. So we need to download whole file.
-    if (DLE_CANNOT_RESUME == error)
+    if (DLE_CANNOT_RESUME == currentTask->error)
     {
-        loadFrom = 0;
-        MakeFullDownload(currentTask);
-        error = downloader->Download(currentTask->url, loadFrom, currentTask->timeout);
+        MakeFullDownload();
+        DownloadByParts();
     }
 
-    currentTask->error = error;
-
-    return error;
+    return currentTask->error;
 }
 
-void DownloadManager::MakeFullDownload(DownloadTaskDescription *task)
+void DownloadManager::MakeFullDownload()
 {
-    task->type = FULL;
-    FileSystem::Instance()->DeleteFile(task->storePath);
-    File *file = File::Create(task->storePath, File::CREATE | File::WRITE);
-    SafeRelease(file);
-    task->downloadProgress = 0;
+    currentTask->type = FULL;
+    FileSystem::Instance()->DeleteFile(currentTask->storePath);
+    // create new file if there is no file.
+    if (!CreateEmptyFile(currentTask->storePath, currentTask->downloadTotal))
+    {
+        currentTask->error = DLE_FILE_ERROR;
+        return;
+    }
+
+    currentTask->downloadProgress = 0;
+}
+
+void DownloadManager::MakeResumedDownload()
+{
+    currentTask->type = RESUMED;
+
+    // if file is particulary downloaded, we will try to download rest part of it        
+    ScopedPtr<File> file(File::Create(currentTask->storePath, File::OPEN | File::READ));
+    if (NULL == static_cast<File *>(file))
+    {
+        // create new file if there is no file.
+        if (!CreateEmptyFile(currentTask->storePath, currentTask->downloadTotal))
+        {
+            currentTask->error = DLE_FILE_ERROR;
+            return;
+        }
+    }
+    else
+    {
+        // if downloaded part of file is larger or equals to expected size
+        ScopedPtr<File> file(File::Create(currentTask->storePath, File::OPEN | File::READ));
+        if (NULL == (File*)(file))
+        {
+            currentTask->error = DLE_FILE_ERROR;
+            return;
+        }
+
+        uint64 currentFileSize = file->GetSize();
+
+        if (currentFileSize > currentTask->downloadTotal)
+        {
+            // here we can interrupt download or reload file for example
+            MakeFullDownload();
+        }
+    }
 }
 
 void DownloadManager::ResetRetriesCount()
 {
     currentTask->retriesLeft = currentTask->retriesCount;
+}
+
+bool DownloadManager::CreateEmptyFile(FilePath filePath, uint64 fileSize)
+{
+    File *file = File::Create(filePath, File::CREATE | File::WRITE);
+    
+    if (NULL == file)
+        return false;
+
+    // fill created file by NULL values.
+    char8 nullValue = 0;
+    for (int i = 0; i < fileSize; i++)
+    if (0 == file->Write(&nullValue, 1))
+    {
+        SafeRelease(file);
+        FileSystem::Instance()->DeleteFile(filePath);
+        
+        return false;
+    }
+
+    SafeRelease(file);
+    return true;
+}
+
+void DownloadManager::DownloadByParts()
+{
+if (DLE_NO_ERROR == currentTask->error)
+    {
+        downloader->Download(currentTask->url, 0, currentTask->timeout);
+    }
 }
 
 }

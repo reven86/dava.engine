@@ -30,7 +30,7 @@
 
 namespace DAVA
 {
-DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount)
+    DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, char8 _partsCount)
     : id(0)
     , url(srcUrl)
     , storePath(storeToFilePath)
@@ -42,6 +42,7 @@ DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const Fil
     , error(DLE_NO_ERROR)
     , downloadTotal(0)
     , downloadProgress(0)
+    , partsCount(_partsCount)
 {
 
 }

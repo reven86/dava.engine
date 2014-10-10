@@ -32,6 +32,7 @@
 
 #include "TestTemplate.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "DLC/Downloader/CurlMultiDownloader.h"
 
 using namespace DAVA;
 

@@ -67,7 +67,7 @@ enum DownloadError
 
 struct DownloadTaskDescription
 {
-    DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount);
+    DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, char8 _partsCount);
 
     uint32 id;
     String url;
@@ -80,6 +80,24 @@ struct DownloadTaskDescription
     DownloadError error;
     uint64 downloadTotal;
     uint64 downloadProgress;
+    char8 partsCount;
+};
+
+class PartInfo
+{
+//    bool WriteTo(File *file, uint64 pos);
+
+
+    uint64 seekPos;
+    uint64 size;
+    uint64 progress;
+};
+
+struct CurrentDownloadInfo
+{
+
+    char8 partsCount;
+    Vector<PartInfo *> parts;
 };
 
 }

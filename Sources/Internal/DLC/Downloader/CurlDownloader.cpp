@@ -110,7 +110,7 @@ DownloadError CurlDownloader::Download(const String &url, const uint64 &loadFrom
     return CurlStatusToDownloadStatus(curlStatus);
 }
 
-DownloadError CurlDownloader::GetSize(const String &url, int64 &retSize, int32 _timeout)
+DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, int32 _timeout)
 {
     float64 sizeToDownload = 0.0;
     currentCurlHandle = CurlSimpleInit();
@@ -157,10 +157,11 @@ DownloadError CurlDownloader::GetSize(const String &url, int64 &retSize, int32 _
     if (DLE_NO_ERROR != httpError)
     {
         retError = httpError;
-        sizeToDownload = -1;
     }
     else
+    {
         retError = CurlStatusToDownloadStatus(curlStatus);
+    }
 
     retSize = static_cast<int64>(sizeToDownload);
   

@@ -29,6 +29,7 @@
 #include "DLCDownloadTest.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/Downloader.h"
+#include "DLC/Downloader/CurlMultiDownloader.h"
 
 size_t CurlTestDownloader::SaveData(void *ptr, size_t size, size_t nmemb)
 {
@@ -46,8 +47,8 @@ size_t CurlTestDownloader::SaveData(void *ptr, size_t size, size_t nmemb)
 DLCDownloadTest::DLCDownloadTest()
     : TestTemplate<DLCDownloadTest>("DLCDownloadTest")
     , serverUrl("by2-badava-mac-11.corp.wargaming.local")
-    , testFileEmpty("/UnitTest/Downloader/empty.file")
-    , testFileOne("/UnitTest/Downloader/r0-1.patch")
+    , testFileEmpty("/UnitTests/Downloader/empty.file")
+    , testFileOne("/UnitTests/testFile.patch")
 {
     RegisterFunction(this, &DLCDownloadTest::TestFunction, String("DLCDownloadTest TestFunction"), NULL);
 }
@@ -150,8 +151,17 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     // change downloader to full featured Curl downloader.
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
+
+    // change downloader to full featured CurlMulti downloader.
+    DownloadManager::Instance()->SetDownloader(new CurlMultiDownloader());
+
     // POSITIVE CHECK 
     {
+        FileSystem::Instance()->DeleteFile(dstHttp);
+        uint32 multiHttpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 1);
+        DownloadManager::Instance()->Wait(multiHttpID);
+
+
         // FULL DOWNLOAD
         // Make sure that file is missing
         FileSystem::Instance()->DeleteFile(dstHttp); 

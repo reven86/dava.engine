@@ -99,11 +99,10 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
+    new DLCDownloadTest();
 	new MathTest();
 	new FunctionBindSignalTest();
     new ThreadSyncTest();
-    new DLCDownloadTest();
-
 
 	new ImageSizeTest();
     new DeviceInfoTest();

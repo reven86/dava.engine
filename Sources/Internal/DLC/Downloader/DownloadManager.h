@@ -100,6 +100,8 @@ private:
         DownloadStatus status;
     };
 
+
+
 private:
     void SetTaskStatus(DownloadTaskDescription *task, const DownloadStatus &status);
 
@@ -122,8 +124,13 @@ private:
     DownloadError TryDownload();
     void Interrupt();
     bool IsInterrupting();
-    void MakeFullDownload(DownloadTaskDescription *task);
+    void MakeFullDownload();
+    void MakeResumedDownload();
     void ResetRetriesCount();
+
+    bool CreateEmptyFile(FilePath filePath, uint64 fileSize);
+
+    void DownloadByParts();
 
 private:
     Thread *thisThread;
