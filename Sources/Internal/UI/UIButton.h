@@ -248,6 +248,18 @@ public:
      */
     virtual void SetStateTextAlign(int32 state, int32 align);
     /**
+     \brief Sets background margins for the requested states.
+     \param[in] state state text bit mask to set value for.
+     \param[in] margins the margins.
+     */
+    virtual void SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins);
+    /**
+     \brief Sets text margins for the requested states.
+     \param[in] state state text bit mask to set value for.
+     \param[in] margins the margins.
+     */
+    virtual void SetStateTextMargins(int32 state, const UIControlBackground::UIMargins* margins);
+    /**
      \brief Sets text control what will be used for the requested states.
         UIStaticText is cloned inside button.
      \param[in] state state bit mask to set value for.

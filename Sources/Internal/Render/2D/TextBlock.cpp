@@ -885,17 +885,18 @@ void TextBlock::SplitTextToStrings(WideString const& text, Vector2 const& target
             continue;
         }
 
-        if(IsWordSeparator(ch) | IsSpace(ch))
+        bool isSpace = IsSpace(ch);
+        if(IsWordSeparator(ch) || isSpace)
         {
             prevSeparatorPos = lastSeparatorPos;
             lastSeparatorPos = currentLine.length();
-            lastSeparatorIsSpace = IsSpace(ch);
+            lastSeparatorIsSpace = isSpace;
         }
 
         currentLine.push_back(ch);
         currentWidth += sizes[pos] * p2v;
 
-        if(0 == targetWidth || currentWidth <= targetWidth)
+        if(0 == targetWidth || currentWidth <= targetWidth || isSpace)
         {
             continue;
         }
@@ -933,14 +934,9 @@ void TextBlock::SplitTextToStrings(WideString const& text, Vector2 const& target
             else
             {
                 pos -= revert;
-                if(lastSeparatorIsSpace)
-                {
-                    currentLine.resize(lastSeparatorPos);
-                }
-                else
-                {
-                    currentLine.resize(lastSeparatorPos + 1);
-                }                
+                WideString::iterator it = currentLine.begin() + lastSeparatorPos;
+                while(it != currentLine.begin() && IsSpace(*it)) --it;
+                currentLine.erase(it + 1, currentLine.end());
             }
         }
 
@@ -984,7 +980,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString & text, const Vecto
         
         currentLineEnd = pos;
         
-        if(t == '\n')
+        if(t == L'\n')
         {
             WideString currentLine = text.substr(currentLineStart, currentLineEnd - currentLineStart);
             resultVector.push_back(currentLine);
@@ -992,7 +988,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString & text, const Vecto
             currentLineStart = pos + 1;
             currentLineDx = 0;
         }
-        if(t == '\\' && tNext == 'n')
+        if(t == L'\\' && tNext == L'n')
         {
             WideString currentLine = text.substr(currentLineStart, currentLineEnd - currentLineStart);
             resultVector.push_back(currentLine);
@@ -1188,10 +1184,11 @@ bool TextBlock::IsWordSeparator(char16 t) const
     return false;
 }
 
-WideString TextBlock::Trim(WideString const& str) const
+WideString TextBlock::Trim(const WideString& str) const
 {
+    const WideString::const_iterator eit = str.end();
     WideString::const_iterator it = str.begin();
-    while(it != str.end() && IsSpace(*it)) ++it;
+    while(it != eit && IsSpace(*it)) ++it;
     WideString::const_reverse_iterator rit = str.rbegin();
     while(rit.base() != it && IsSpace(*rit)) ++rit;
     return WideString(it,rit.base());

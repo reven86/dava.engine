@@ -96,6 +96,36 @@ public:
     /**
      \brief Constructor.
      */
+    struct UIMargins
+    {
+        UIMargins() :
+            top(0.0f), right(0.0f), bottom(0.0f), left(0.0f)
+        {
+        }
+
+        UIMargins(const Vector4& value)
+        {
+            left = value.x;
+            top = value.y;
+            right = value.z;
+            bottom = value.w;
+        }
+    
+        inline bool operator == (const UIMargins & value) const;
+        inline bool operator != (const UIMargins & value) const;
+        inline bool empty() const;
+
+        inline Vector4 AsVector4() const;
+        
+        float32 top;
+        float32 right;
+        float32 bottom;
+        float32 left;
+    };
+
+    /**
+     \brief Constructor.
+     */
     UIControlBackground();
 
     virtual bool IsEqualTo(const UIControlBackground *back) const;
@@ -261,6 +291,17 @@ public:
 
     void SetShader(Shader *shader);
     
+    /**
+     \brief Sets the margins for drawing background. Positive values means inner
+     offset, negative ones - outer.
+     */
+    void SetMargins(const UIMargins* uiMargins);
+    
+    /**
+     \brief Returns the margins for drawing background. Can be NULL.
+     */
+    inline const UIMargins* GetMargins() const;
+
     void SetRenderState(UniqueHandle renderState);
     UniqueHandle GetRenderState() const;
 
@@ -305,6 +346,8 @@ private:
     };
 
     TiledDrawData *tiledData;
+    UIMargins* margins;
+
 public:
     void ReleaseDrawData(); // Delete all spec draw data
 
@@ -336,6 +379,33 @@ inline void UIControlBackground::SetRenderState(UniqueHandle _renderState)
 inline UniqueHandle UIControlBackground::GetRenderState() const
 {
     return renderState;
+}
+
+inline const UIControlBackground::UIMargins* UIControlBackground::GetMargins() const
+{
+    return margins;
+}
+
+inline bool UIControlBackground::UIMargins::operator == (const UIControlBackground::UIMargins& value) const
+{
+    return FLOAT_EQUAL(left, value.left) && FLOAT_EQUAL(top, value.top) &&
+    FLOAT_EQUAL(right, value.right) && FLOAT_EQUAL(bottom, value.bottom);
+}
+
+inline bool UIControlBackground::UIMargins::operator != (const UIControlBackground::UIMargins& value) const
+{
+    return !UIControlBackground::UIMargins::operator == (value);
+}
+
+inline bool UIControlBackground::UIMargins::empty() const
+{
+    return FLOAT_EQUAL(left, 0.0f)  && FLOAT_EQUAL(top, 0.0f) &&
+    FLOAT_EQUAL(right, 0.0f) && FLOAT_EQUAL(bottom, 0.0f);
+}
+
+inline Vector4 UIControlBackground::UIMargins::AsVector4() const
+{
+    return Vector4(left, top, right, bottom);
 }
 
 };

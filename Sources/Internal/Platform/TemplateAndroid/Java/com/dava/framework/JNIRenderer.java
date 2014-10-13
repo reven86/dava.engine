@@ -57,27 +57,25 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged");
-		if (isRenderRecreated || width != w || height != h)
-		{
-			width = w;
-			height = h;
-
+		if (isRenderRecreated || width != w || height != h) {
+			if (width != w || height != h) {
+				skipFirstFrame = true;
+				width = w;
+				height = h;
+			}
 			nativeResize(width, height);
 			isRenderRecreated = false;
 		}
 		OnResume();
-		skipFirstFrame = true;
 		showTextFields = true;
 
 		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged__DONE___");
 	}
 
-	public boolean isFirstDraw = true;
-
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		if (skipFirstFrame) {
-			skipFirstFrame = false;
+			skipFirstFrame = false; //skip first frame for correct unlock device in landscape mode, after unlock device in first frame draw in portrait mode
 			return;
 		}
 

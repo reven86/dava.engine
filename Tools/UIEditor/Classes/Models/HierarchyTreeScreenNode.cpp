@@ -204,7 +204,7 @@ bool HierarchyTreeScreenNode::Load(const QString& path)
 {
     if(!loaded)
     {
-        UIYamlLoader::Load(screen, path.toStdString());
+        UIYamlLoader::Load(screen, path.toStdString(), false);
         guides.Load(path.toStdString());
         
         BuildHierarchyTree(this, screen->GetChildren());

@@ -26,55 +26,57 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#ifndef UIMARGINSPROPERTYGRIDWIDGET_H
+#define UIMARGINSPROPERTYGRIDWIDGET_H
 
-#ifndef BACKGROUNDEPROPERTYGRIDWIDGET_H
-#define BACKGROUNDEPROPERTYGRIDWIDGET_H
-
-#include "basepropertygridwidget.h"
 #include <QWidget>
+#include "basepropertygridwidget.h"
 
 namespace Ui {
-class BackgroundPropertyGridWidget;
+class UIMarginsPropertyGridWidget;
 }
 
-class BackgroundPropertyGridWidget : public BasePropertyGridWidget
+class UIMarginsPropertyGridWidget : public BasePropertyGridWidget
 {
     Q_OBJECT
 
 public:
-    explicit BackgroundPropertyGridWidget(const QString& controlName, const QString& propPrefix = QString(), QWidget *parent = 0);
-    ~BackgroundPropertyGridWidget();
+    explicit UIMarginsPropertyGridWidget(QWidget *parent = 0);
+    ~UIMarginsPropertyGridWidget();
+
+    void SetPropertyPrefix(const String& prefix);
 
     virtual void Initialize(BaseMetadata* activeMetadata);
     virtual void Cleanup();
 
-    void ForceExpand(bool value);
-    
-protected slots:
-    void OnExpandButtonPressed();
-    void OnOpenSpriteDialog();
-    void OnRemoveSprite();
-
 protected:
-    void ProcessComboboxValueChanged(QComboBox* senderWidget, const PROPERTYGRIDWIDGETSITER& iter, const QString& value);
-    void UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty);
-
-    void FillComboboxes();
-    void UpdateDetailsWidget();
-    
-    void SetStretchCapMaxValues();
-    void HandleDrawTypeComboBox();
-
-    void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
-
-    // Get the property name with the prefix specified for this widget.
     String GetPrefixedPropertyName(const char* propertyName) const;
 
-private:
-    Ui::BackgroundPropertyGridWidget *ui;
+	virtual void HandleChangePropertySucceeded(const QString& propertyName);
+    virtual void HandleChangePropertyFailed(const QString& propertyName);
 
-    bool isDetailsVisible;
+    virtual void UpdateDoubleSpinBoxWidgetWithPropertyValue(QDoubleSpinBox *spinBoxWidget,
+                                                            const QMetaProperty& curProperty);
+    virtual void ProcessDoubleSpinBoxValueChanged(QDoubleSpinBox *doubleSpinBox,
+                                                  const PROPERTYGRIDWIDGETSITER &iter,
+                                                  const double value);
+
+    // Update the UI.
+    void UpdateUI();
+    
+    // Update the maximum margin values depending on current ones and size.
+    void UpdateMaxMarginValues();
+
+    // The "Reset Margins" button is visible only if at least one of the
+    // margins is not zero.
+    void UpdateResetMarginsButtonVisible();
+
+protected slots:
+	void OnResetUIMarginsClicked();
+
+private:
+    Ui::UIMarginsPropertyGridWidget *ui;
     String propertyPrefix;
 };
 
-#endif // BACKGROUNDEPROPERTYGRIDWIDGET_H
+#endif // UIMARGINSPROPERTYGRIDWIDGET_H
