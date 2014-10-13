@@ -200,7 +200,7 @@ void AndroidCrashReport::Init()
 		
 		if (sigaction(fatalSignals[i], &sa, &sa_old[fatalSignals[i]]) != 0)
 		{
-			LOGEr("Signal registration for failed:");
+			LOGE("Signal registration for failed:");
 		}
 	}
 }
