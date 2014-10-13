@@ -167,7 +167,7 @@ void RenderLayerBatchArray::Sort(Camera * camera)
     
     // Need sort
 	flags |= SORT_REQUIRED;
-	uint32 distanceMask = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::PROCESS_CLIPPING)?0x0fff:0;
+	uint32 distanceMask = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION)?0x0fff:0;
     //distanceMask = 0x0fff;
     if ((flags & SORT_THIS_FRAME) == SORT_THIS_FRAME)
     {
