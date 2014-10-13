@@ -40,9 +40,9 @@ materials:
   default: "HIGH"
 
  -
-  group: "Landscap"
-  quality: ["HIGH", "LOW"]
-  default: "HIGH"
+  group: "Landscape"
+  quality: ["HIGH", "MEDIUM", "LOW"]
+  default: "MEDIUM"
 
  -
   group: "Particle"

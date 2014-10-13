@@ -147,7 +147,7 @@ void ViewSceneScreen::Update(float32 timeElapsed)
     
     updateTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
 
-//    UpdateCamera(timeElapsed);
+    UpdateCamera(timeElapsed);
     UpdateInfo(timeElapsed);
 }
 

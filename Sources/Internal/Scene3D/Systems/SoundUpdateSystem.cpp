@@ -149,17 +149,25 @@ void SoundUpdateSystem::RemoveEntity(Entity * entity)
 
 void SoundUpdateSystem::AddAutoTriggerSound(Entity * soundOwner, SoundEvent * sound)
 {
+    int32 soundsCount = autoTriggerSounds.size();
+    for(int32 i = 0; i < soundsCount; ++i)
+    {
+        if(autoTriggerSounds[i].owner == soundOwner && autoTriggerSounds[i].soundEvent == sound)
+        {
+            return;
+        }
+    }
+
     autoTriggerSounds.push_back(AutoTriggerSound(soundOwner, sound));
 }
 
 void SoundUpdateSystem::RemoveAutoTriggerSound(Entity * soundOwner, SoundEvent * sound /* = 0 */)
 {
-    for(int32 i = 0; i < (int32)autoTriggerSounds.size(); ++i)
+    for(int32 i = autoTriggerSounds.size() - 1; i >= 0; --i)
     {
         if(autoTriggerSounds[i].owner == soundOwner && (sound == 0 || autoTriggerSounds[i].soundEvent == sound))
         {
             RemoveExchangingWithLast(autoTriggerSounds, i);
-            --i;
         }
     }
 }

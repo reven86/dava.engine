@@ -159,6 +159,9 @@
 		178D10EE188405F800529DA8 /* QtColorLineEdit.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 178D10EC188405F800529DA8 /* QtColorLineEdit.cpp */; };
 		178D10F0188406A100529DA8 /* QtColorLineEdit_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 178D10EF188406A100529DA8 /* QtColorLineEdit_moc.cpp */; };
 		178F303E165677BF008678AD /* StringUtils.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 178F303C165677BF008678AD /* StringUtils.cpp */; };
+		17942DAD199B5A0E00462A41 /* uimarginspropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17942DAC199B5A0E00462A41 /* uimarginspropertygridwidget.ui */; };
+		17942E06199B5A4300462A41 /* uimarginspropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17942E04199B5A4300462A41 /* uimarginspropertygridwidget.cpp */; };
+		17942E08199B5AA600462A41 /* uimarginspropertygridwidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17942E07199B5AA600462A41 /* uimarginspropertygridwidget_moc.cpp */; };
 		179BCD45189AA3DC003EA256 /* PreviewController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 179BCD43189AA3DC003EA256 /* PreviewController.cpp */; };
 		179DCD9D1918DFD800BE6F43 /* UI3DViewMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 179DCD9B1918DFD800BE6F43 /* UI3DViewMetadata.cpp */; };
 		179DCDA41918E2C700BE6F43 /* UI3DViewMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 179DCDA31918E2C700BE6F43 /* UI3DViewMetadata_moc.cpp */; };
@@ -613,6 +616,11 @@
 		178D10EF188406A100529DA8 /* QtColorLineEdit_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtColorLineEdit_moc.cpp; sourceTree = "<group>"; };
 		178F303C165677BF008678AD /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
 		178F303D165677BF008678AD /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
+		17942DAC199B5A0E00462A41 /* uimarginspropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = uimarginspropertygridwidget.ui; sourceTree = "<group>"; };
+		17942E04199B5A4300462A41 /* uimarginspropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = uimarginspropertygridwidget.cpp; path = PropertyGridWidgets/uimarginspropertygridwidget.cpp; sourceTree = "<group>"; };
+		17942E05199B5A4300462A41 /* uimarginspropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uimarginspropertygridwidget.h; path = PropertyGridWidgets/uimarginspropertygridwidget.h; sourceTree = "<group>"; };
+		17942E07199B5AA600462A41 /* uimarginspropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uimarginspropertygridwidget_moc.cpp; sourceTree = "<group>"; };
+		17942E09199B5AE000462A41 /* ui_uimarginspropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_uimarginspropertygridwidget.h; sourceTree = "<group>"; };
 		179BCD43189AA3DC003EA256 /* PreviewController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PreviewController.cpp; path = Controllers/PreviewController.cpp; sourceTree = "<group>"; };
 		179BCD44189AA3DC003EA256 /* PreviewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PreviewController.h; path = Controllers/PreviewController.h; sourceTree = "<group>"; };
 		179D0ECB17C5F65B006F59CA /* AlignDistributeEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AlignDistributeEnums.h; path = AlignDistribute/AlignDistributeEnums.h; sourceTree = "<group>"; };
@@ -888,7 +896,6 @@
 		C737D1EC18D9B855005B4C8F /* uistatictextpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uistatictextpropertygridwidget.h; path = PropertyGridWidgets/uistatictextpropertygridwidget.h; sourceTree = "<group>"; };
 		C737D1F318D9C200005B4C8F /* uistatictextpropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uistatictextpropertygridwidget_moc.cpp; sourceTree = "<group>"; };
 		C737D1F518D9C283005B4C8F /* ui_textpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_textpropertygridwidget.h; path = GeneratedFiles/ui_textpropertygridwidget.h; sourceTree = SOURCE_ROOT; };
-		C737D1F618D9C310005B4C8F /* ui_localizationfontseditordialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_localizationfontseditordialog.h; path = GeneratedFiles/ui_localizationfontseditordialog.h; sourceTree = SOURCE_ROOT; };
 		C737D1F718D9C3AD005B4C8F /* textpropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = textpropertygridwidget.ui; sourceTree = "<group>"; };
 		C746392118DCE8640045C57B /* editfontdialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = editfontdialog.cpp; path = Dialogs/editfontdialog.cpp; sourceTree = "<group>"; };
 		C746392218DCE8640045C57B /* editfontdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = editfontdialog.h; path = Dialogs/editfontdialog.h; sourceTree = "<group>"; };
@@ -1059,10 +1066,6 @@
 		02D69C7616F08CED00F3803F /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
-				155D77C6197DBAAE006AEBCD /* UIListCellPropertyGridWidget_moc.cpp */,
-				170A18B1190F8FD700252A1F /* webviewpropertygridwidget_moc.cpp */,
-				17C411B118CA0B1E002BA05F /* joypadpropertygridwidget_moc.cpp */,
-				17A1226718F44AC800780837 /* Custom */,
 				C737D1F318D9C200005B4C8F /* uistatictextpropertygridwidget_moc.cpp */,
 				7426F56418D85918003D3D25 /* rootpropertygridwidget_moc.cpp */,
 				1746932718A3E99D0089EFF5 /* particleeffectpropertygridwidget_moc.cpp */,
@@ -1086,6 +1089,11 @@
 				02D69C8216F08CED00F3803F /* sliderpropertygridwidget_moc.cpp */,
 				02D69C8316F08CED00F3803F /* statepropertygridwidget_moc.cpp */,
 				02D69C8516F08CED00F3803F /* uitextfieldpropertygridwidget_moc.cpp */,
+				17942E07199B5AA600462A41 /* uimarginspropertygridwidget_moc.cpp */,
+				155D77C6197DBAAE006AEBCD /* UIListCellPropertyGridWidget_moc.cpp */,
+				170A18B1190F8FD700252A1F /* webviewpropertygridwidget_moc.cpp */,
+				17C411B118CA0B1E002BA05F /* joypadpropertygridwidget_moc.cpp */,
+				17A1226718F44AC800780837 /* Custom */,
 			);
 			path = PropertyGridWidgets;
 			sourceTree = "<group>";
@@ -1118,12 +1126,6 @@
 		1700E40B162EAD760069650D /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
-				155D77C2197DB65D006AEBCD /* UIListCellPropertyGridWidget.cpp */,
-				155D77C3197DB65D006AEBCD /* UIListCellPropertyGridWidget.h */,
-				170A18AC190F8EF300252A1F /* webviewpropertygridwidget.cpp */,
-				170A18AD190F8EF300252A1F /* webviewpropertygridwidget.h */,
-				17C411AE18CA0966002BA05F /* joypadpropertygridwidget.cpp */,
-				17C411AF18CA0966002BA05F /* joypadpropertygridwidget.h */,
 				17A1226318F4498500780837 /* Custom */,
 				17A4F58218A3E1C000182E44 /* particleeffectpropertygridwidget.cpp */,
 				17A4F58318A3E1C000182E44 /* particleeffectpropertygridwidget.h */,
@@ -1171,6 +1173,14 @@
 				C737D1EC18D9B855005B4C8F /* uistatictextpropertygridwidget.h */,
 				176834A916510910004800D7 /* uitextfieldpropertygridwidget.cpp */,
 				176834AA16510910004800D7 /* uitextfieldpropertygridwidget.h */,
+				155D77C2197DB65D006AEBCD /* UIListCellPropertyGridWidget.cpp */,
+				155D77C3197DB65D006AEBCD /* UIListCellPropertyGridWidget.h */,
+				170A18AC190F8EF300252A1F /* webviewpropertygridwidget.cpp */,
+				170A18AD190F8EF300252A1F /* webviewpropertygridwidget.h */,
+				17C411AE18CA0966002BA05F /* joypadpropertygridwidget.cpp */,
+				17C411AF18CA0966002BA05F /* joypadpropertygridwidget.h */,
+				17942E04199B5A4300462A41 /* uimarginspropertygridwidget.cpp */,
+				17942E05199B5A4300462A41 /* uimarginspropertygridwidget.h */,
 			);
 			name = PropertyGridWidgets;
 			sourceTree = "<group>";
@@ -1474,8 +1484,6 @@
 		17FF15E316400207001B130F /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
-				170A18A5190F8EBE00252A1F /* webviewpropertygridwidget.ui */,
-				17C4116918CA0933002BA05F /* joypadpropertygridwidget.ui */,
 				17C1FD1E18F54A5D00CEA911 /* Custom */,
 				17A4F58518A3E1ED00182E44 /* particleeffectpropertygridwidget.ui */,
 				74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */,
@@ -1495,6 +1503,9 @@
 				17C5CCD416F31E5300FB90B4 /* spinnerpropertygridwidget.ui */,
 				02D69A5316F0783000F3803F /* statepropertygridwidget.ui */,
 				C737D1F718D9C3AD005B4C8F /* textpropertygridwidget.ui */,
+				170A18A5190F8EBE00252A1F /* webviewpropertygridwidget.ui */,
+				17C4116918CA0933002BA05F /* joypadpropertygridwidget.ui */,
+				17942DAC199B5A0E00462A41 /* uimarginspropertygridwidget.ui */,
 			);
 			name = PropertyGridWidgets;
 			sourceTree = "<group>";
@@ -1589,8 +1600,6 @@
 		C15C2FC9162AD5DD00818631 /* GeneratedFiles */ = {
 			isa = PBXGroup;
 			children = (
-				155D77CD197DCB9F006AEBCD /* ui_UIListCellPropertyGridWidget.h */,
-				17A1226A18F4515400780837 /* ui_guidepropertygridwidget.h */,
 				17716B5518A90DB0005BA215 /* Guides */,
 				17660BBD186B21EF00CF7A14 /* Ruler */,
 				02D69C2D16F08CED00F3803F /* Commands */,
@@ -1630,7 +1639,6 @@
 				C18593FF16F31C1C005D30E2 /* ui_aggregatorpropertygridwidget.h */,
 				C18593F716F314DF005D30E2 /* ui_createaggregatordlg.h */,
 				748A9428170C5C3E0087E18A /* ui_listpropertygridwidget.h */,
-				C737D1F618D9C310005B4C8F /* ui_localizationfontseditordialog.h */,
 				02D69C8916F08CED00F3803F /* ui_backgroundpropertygridwidget.h */,
 				02D69C8A16F08CED00F3803F /* ui_basepropertygridwidget.h */,
 				02D69C8B16F08CED00F3803F /* ui_controlpropertygridwidget.h */,
@@ -1655,6 +1663,9 @@
 				C737D1F518D9C283005B4C8F /* ui_textpropertygridwidget.h */,
 				17C411E018CA0B55002BA05F /* ui_joypadpropertygridwidget.h */,
 				17C411E118CA0B55002BA05F /* ui_previewsettingswidget.h */,
+				17942E09199B5AE000462A41 /* ui_uimarginspropertygridwidget.h */,
+				155D77CD197DCB9F006AEBCD /* ui_UIListCellPropertyGridWidget.h */,
+				17A1226A18F4515400780837 /* ui_guidepropertygridwidget.h */,
 			);
 			path = GeneratedFiles;
 			sourceTree = "<group>";
@@ -1906,6 +1917,7 @@
 				C746392A18DCECBA0045C57B /* editfontdialog.ui in Bundle Resources */,
 				17FF15E016400160001B130F /* createplatformdlg.ui in Bundle Resources */,
 				17FC132E189F8F45009D83A8 /* previewsettingsdialog.ui in Bundle Resources */,
+				17942DAD199B5A0E00462A41 /* uimarginspropertygridwidget.ui in Bundle Resources */,
 				17FF15E116400160001B130F /* createscreendlg.ui in Bundle Resources */,
 				17FF15E216400160001B130F /* fontmanagerdialog.ui in Bundle Resources */,
 				17FF15F91640069E001B130F /* localizationeditordialog.ui in Bundle Resources */,
@@ -1997,10 +2009,12 @@
 				176D394A162C2FAE0099AACF /* HierarchyTreePlatformNode.cpp in Build Sources */,
 				176D3950162C2FE50099AACF /* HierarchyTreeControlNode.cpp in Build Sources */,
 				176D3954162C396A0099AACF /* HierarchyTreeController.cpp in Build Sources */,
+				17942E08199B5AA600462A41 /* uimarginspropertygridwidget_moc.cpp in Build Sources */,
 				176D3957162C397F0099AACF /* HierarchyTree.cpp in Build Sources */,
 				176D395B162C3CAA0099AACF /* BaseMetadata.cpp in Build Sources */,
 				176D395E162C3DF90099AACF /* UIButtonMetadata.cpp in Build Sources */,
 				176D3961162C3E890099AACF /* UIControlMetadata.cpp in Build Sources */,
+				17942E06199B5A4300462A41 /* uimarginspropertygridwidget.cpp in Build Sources */,
 				C1C62A24162C33FC000C1B32 /* ScreenWrapper.cpp in Build Sources */,
 				C1C62A39162D370E000C1B32 /* HierarchyTreeScreenNode.cpp in Build Sources */,
 				C1C62A3C162D371E000C1B32 /* DefaultScreen.cpp in Build Sources */,

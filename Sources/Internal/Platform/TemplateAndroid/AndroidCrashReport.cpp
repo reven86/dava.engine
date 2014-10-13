@@ -37,6 +37,9 @@
 
 #include "ExternC/AndroidLayer.h"
 
+/* Maximum value of a caught signal. */
+#define SIG_NUMBER_MAX 32
+
 namespace DAVA
 {
 
@@ -141,8 +144,19 @@ typedef void (*t_free_backtrace_symbols)(backtrace_symbol_t* symbols, size_t fra
 static t_free_backtrace_symbols free_backtrace_symbols;
 //libcorkscrew definition
 
+static struct sigaction *sa_old;
+
 void AndroidCrashReport::Init()
 {
+	/*
+	 * define USE_NDKSTACK_TOOL for desybolicating callstack with ndk-stack tool
+	 * adb logcat | ./ndk-stack -sym
+	 *
+	 * define DESYM_STACK for desybolicating callstack with libcorkscrew
+	 */
+#if defined(DAVA_DEBUG) && defined(USE_NDKSTACK_TOOL)
+	return;
+#endif
 	void* libcorkscrew = dlopen("/system/lib/libcorkscrew.so", RTLD_NOW);
 	if (libcorkscrew)
 	{
@@ -169,12 +183,13 @@ void AndroidCrashReport::Init()
 	s_sigstk.ss_size = 64 * 1024;
 	s_sigstk.ss_sp = malloc(s_sigstk.ss_size);
 	s_sigstk.ss_flags = 0;
-	
+
 	if (sigaltstack(&s_sigstk, 0) < 0)
 	{
-		Logger::Error("Could not initialize alternative signal stack");
+		LOGE("Could not initialize alternative signal stack");
 	}
-	
+	sa_old = (struct sigaction*)::malloc(sizeof(struct sigaction)*SIG_NUMBER_MAX);
+
 	for (int i = 0; i < fatalSignalsCount; i++)
 	{
 		struct sigaction sa;
@@ -183,9 +198,9 @@ void AndroidCrashReport::Init()
 		sigemptyset(&sa.sa_mask);
 		sa.sa_sigaction = &SignalHandler;
 		
-		if (sigaction(fatalSignals[i], &sa, NULL) != 0)
+		if (sigaction(fatalSignals[i], &sa, &sa_old[fatalSignals[i]]) != 0)
 		{
-			Logger::Error("Signal registration for failed:");
+			LOGEr("Signal registration for failed:");
 		}
 	}
 }
@@ -201,6 +216,11 @@ const map_info_t* find_map_info(const map_info_t* milist, uintptr_t addr) {
 
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
+	if(signal<SIG_NUMBER_MAX)
+	{
+		sa_old[signal].sa_sigaction(signal, siginfo, sigcontext);
+	}
+
 	alarm(30);
 	//kill the app if it freezes
 
@@ -211,11 +231,22 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 		backtrace_frame_t frames[256] = {0};
 
 		const ssize_t size = unwind_backtrace_signal_arch(siginfo, sigcontext, map_info, frames, 0, 255);
-
+#ifdef DESYM_STACK
+		backtrace_symbol_t symbols[256] = {0};
+		get_backtrace_symbols(frames, size, symbols);
+#endif
 
 		for (int i = 0; i < size; ++i)
 		{
 			JniCrashReporter::CrashStep step;
+#ifdef DESYM_STACK
+			step.module = symbols[i].map_name;
+			if (symbols[i].demangled_name)
+				step.function = symbols[i].demangled_name;
+			else if (symbols[i].symbol_name)
+				step.function = symbols[i].symbol_name;
+			step.fileLine = symbols[i].relative_pc;
+#else
 			const map_info_t* mi = find_map_info(map_info, frames[i].absolute_pc);
 			if (mi)
 			{
@@ -237,19 +268,11 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 					crashSteps.push_back(buildId);
 				}
 #endif				
-				
-				/*Dl_info info;
-				if (dladdr((const void*)frame->absolute_pc, &info) && info.dli_sname)
-				{
-				    symbol->relative_symbol_addr = (uintptr_t)info.dli_saddr
-				    - (uintptr_t)info.dli_fbase;*/
-					//step.function = strdup(info.dli_sname);
-				    /*symbol->demangled_name = demangle_symbol_name(symbol->symbol_name);
-				}*/
-				//relative_pc frame->absolute_pc - mi->start;
+
 			}
 
 			step.fileLine = 0;
+#endif
 			crashSteps.push_back(step);
 		}
 		//free_backtrace_symbols(symbols, size);

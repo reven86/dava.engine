@@ -164,6 +164,8 @@ void StaticOcclusionBuildSystem::Cancel()
     
     StaticOcclusionSystem *sos = GetScene()->staticOcclusionSystem;
     sos->InvalidateOcclusion();
+    SceneForceLod(LodComponent::INVALID_LOD_LAYER);
+    RestoreOcclusionMaterials();
 }
     
 void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData)

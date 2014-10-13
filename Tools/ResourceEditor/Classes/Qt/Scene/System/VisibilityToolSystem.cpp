@@ -394,103 +394,91 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 
 	sourcePoint.z = spectatorCoords.z;
 
-	uint32	hight = heightValues.size();
-	uint32	sideLength = (circleRadius * 2) / density;
+	const uint32	height = heightValues.size();
+	const uint32	sideLength = (circleRadius * 2) / density;
 
-	Vector< Vector< Vector< Vector3 > > > points;
-    points.reserve(hight);
+    Vector< Vector< Vector< Vector3 > > > points;
+    points.resize(sideLength);
 
-	for(uint32 layerIndex = 0; layerIndex < hight; ++layerIndex)
-	{
-		Vector<Vector<Vector3> > xLine;
-        xLine.reserve(sideLength);
-		for(uint32 x = 0; x < sideLength; ++x)
-		{
-			Vector<Vector3> yLine;
-            yLine.reserve(sideLength);
+    //detect points for ray test
+    for(uint32 y = 0; y < sideLength; ++y)
+    {
+        points[y].resize(sideLength);
+        
+        const float32 yOfPoint = startOfCounting.y + density * y;
+        for(uint32 x = 0; x < sideLength; ++x)
+        {
+            points[y][x].resize(height);
             
-            float32 xOfPoint = startOfCounting.x + density * x;
-			for(uint32 y = 0; y < sideLength; ++y)
-			{
-				float32 yOfPoint = startOfCounting.y + density * y;
-				float32 zOfPoint = drawSystem->GetHeightAtTexturePoint(textureLevel, Vector2(xOfPoint, yOfPoint));
-				zOfPoint += heightValues[layerIndex];
-				Vector3 pointToInsert(xOfPoint, yOfPoint, zOfPoint);
-				yLine.push_back(pointToInsert);
-			}
-			xLine.push_back(yLine);
-		}
-		points.push_back(xLine);
-	}
-
-	colorizedPoints->clear();
-
-	float32 textureSize = drawSystem->GetTextureSize(textureLevel);
-	Rect textureRect(Vector2(0.f, 0.f), Vector2(textureSize, textureSize));
-	for(uint32 x = 0; x < sideLength; ++x)
-	{
-		for(uint32 y = 0; y < sideLength; ++y)
-		{
-			Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, Vector2(points[0][x][y].x, points[0][x][y].y)));
-
-			bool prevWasIntersection = true;
-			for(int32 layerIndex = hight - 1; layerIndex >= 0; --layerIndex)
-			{
-				Vector3 targetTmp = points[layerIndex][x][y];
-				if (!IsCircleContainsPoint(circleCenter, circleRadius, Vector2(targetTmp.x, targetTmp.y)) ||
-					!textureRect.PointInside(Vector2(targetTmp.x, targetTmp.y)))
-				{
-					break;
-				}
-
-				target.z = targetTmp.z;
-
-				const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint, target);
+            const float32 xOfPoint = startOfCounting.x + density * x;
+            const float32 zOfPoint = drawSystem->GetHeightAtTexturePoint(textureLevel, Vector2(xOfPoint, yOfPoint));
+            
+            for(uint32 layerIndex = 0; layerIndex < height; ++layerIndex)
+            {
+                points[y][x][layerIndex] = Vector3(xOfPoint, yOfPoint, zOfPoint + heightValues[layerIndex]);
+            }
+        }
+    }
+    
+    //Detect intersections in cursor area with landscape and objects
+    const float32 textureSize = drawSystem->GetTextureSize(textureLevel);
+    const Rect textureRect(Vector2(0.f, 0.f), Vector2(textureSize, textureSize));
+    
+    Vector<Vector<int32> > colorIndex;
+    colorIndex.resize(sideLength);
+    
+    for(uint32 y = 0; y < sideLength; ++y)
+    {
+        colorIndex[y].resize(sideLength, 0); //mark all points as intersectable
+        for(uint32 x = 0; x < sideLength; ++x)
+        {
+            const Vector2 xyPoint(points[y][x][0].x, points[y][x][0].y);
+            
+            if (!IsCircleContainsPoint(circleCenter, circleRadius, xyPoint) || !textureRect.PointInside(xyPoint))
+            {
+                colorIndex[y][x] = -1; //exclude point from cursor
+                continue;
+            }
+            
+            Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, xyPoint));
+            for(uint32 layerIndex = 0; layerIndex < height; ++layerIndex)
+            {
+                target.z = points[y][x][layerIndex].z;
+                
+                const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint, target);
                 EntityGroup entityGroup(*intersectedObjects);
                 ExcludeEntities(&entityGroup);
                 
 				bool wasIntersection = (entityGroup.Size() == 0) ? false : true;
-
 				if (!wasIntersection)
 				{
 					Vector3 p;
-					wasIntersection = collisionSystem->LandRayTest(sourcePoint, target, p);
+                    wasIntersection = collisionSystem->LandRayTest(sourcePoint, target, p);
 				}
 
-				float32 colorIndex = 0;
-				if(prevWasIntersection == false)
-				{
-					if(wasIntersection)
-					{
-						colorIndex = (float)layerIndex + 2; // +1 - because need layer from prev loop, and +1 - 'cause the first color reserved for  "death zone"
-						Vector3 exportData(targetTmp.x, targetTmp.y, colorIndex);
-						colorizedPoints->push_back(exportData);
-						break;
-					}
-					else
-					{
-						if(layerIndex == 0)
-						{
-							colorIndex = 1;
-							Vector3 exportData(targetTmp.x, targetTmp.y, colorIndex);
-							colorizedPoints->push_back(exportData);
-						}
-					}
-				}
-				else
-				{
-					if(layerIndex == hight - 1 && wasIntersection)
-					{
-						colorIndex = 0;
-						Vector3 exportData(targetTmp.x, targetTmp.y, colorIndex );
-						colorizedPoints->push_back(exportData);
-						break;
-					}
-				}
-				prevWasIntersection = wasIntersection;
-			}
-		}
-	}
+                if(!wasIntersection)
+                {
+                    colorIndex[y][x] = 1 + layerIndex;
+                    break;
+                }
+            }
+        }
+    }
+    
+    colorizedPoints->clear();
+    for(uint32 y = 0; y < sideLength; ++y)
+    {
+        for(uint32 x = 0; x < sideLength; ++x)
+        {
+            if(colorIndex[y][x] != -1)
+            {
+                Vector3 targetTmp = points[y][x][0];
+                targetTmp.z = colorIndex[y][x];
+                
+                colorizedPoints->push_back(targetTmp);
+            }
+        }
+    }
 }
 
 void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
@@ -517,6 +505,29 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
                 needToExclude = true;
             }
         }
+        
+        if(!needToExclude)
+        {
+            RenderObject *ro = GetRenderObject(object);
+            if(ro)
+            {
+                switch (ro->GetType())
+                {
+                    case RenderObject::TYPE_LANDSCAPE:
+                    case RenderObject::TYPE_SKYBOX:
+                    case RenderObject::TYPE_SPEED_TREE:
+                    case RenderObject::TYPE_SPRITE:
+                    case RenderObject::TYPE_VEGETATION:
+                    case RenderObject::TYPE_PARTICLE_EMTITTER:
+                        needToExclude = true;
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
+        }
+
         if(!needToExclude)
         {   // exclude sky
             
@@ -534,7 +545,6 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
                 }
             }
         }
-        
 
         if(needToExclude)
         {

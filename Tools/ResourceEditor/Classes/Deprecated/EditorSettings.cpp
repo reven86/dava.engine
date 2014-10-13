@@ -61,10 +61,7 @@ void EditorSettings::Save()
 
 void EditorSettings::ApplyOptions()
 {
-    if(RenderManager::Instance())
-    {
-        RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::IMPOSTERS_ENABLE, settings->GetBool("enableImposters", true));
-    }
+
 }
 
 
@@ -239,17 +236,6 @@ void EditorSettings::SetDrawGrid(bool drawGrid)
 bool EditorSettings::GetDrawGrid()
 {
     return settings->GetBool("DrawGrid", true);
-}
-
-void EditorSettings::SetEnableImposters(bool enableImposters)
-{
-	RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::IMPOSTERS_ENABLE, enableImposters);
-	settings->SetBool("enableImposters", enableImposters);
-}
-
-bool EditorSettings::GetEnableImposters()
-{
-	return settings->GetBool("enableImposters", true);
 }
 
 void EditorSettings::SetTextureViewGPU(int32 gpu)

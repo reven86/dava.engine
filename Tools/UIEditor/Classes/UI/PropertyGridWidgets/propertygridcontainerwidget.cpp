@@ -30,6 +30,8 @@
 #include "propertygridcontainerwidget.h"
 #include "ui_propertygridcontainerwidget.h"
 
+#include "statepropertygridwidget.h"
+
 #include "MetadataFactory.h"
 #include "EditorSettings.h"
 

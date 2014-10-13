@@ -69,7 +69,7 @@ protected:
     QString GetText() const;
     void SetText(const QString& text);
     
-    virtual Font * GetFont();
+    virtual Font * GetFont() const;
     virtual void SetFont(Font* font);
 
     virtual float GetFontSize() const;
@@ -90,7 +90,7 @@ protected:
 	virtual QColor GetShadowColor() const;
 	virtual void SetShadowColor(const QColor& value);
 
-	virtual int GetTextAlign();
+	virtual int GetTextAlign() const;
     virtual void SetTextAlign(int align);
 	
 	bool GetIsPassword() const;
