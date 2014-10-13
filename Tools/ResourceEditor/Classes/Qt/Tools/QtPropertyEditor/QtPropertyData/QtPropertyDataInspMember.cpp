@@ -45,23 +45,28 @@ const DAVA::MetaInfo * QtPropertyDataInspMember::MetaInfo() const
 
 void QtPropertyDataInspMember::SetValueInternal(const QVariant &value)
 {
-    SetTempValueInternal(value);
-    DAVA::VariantType newValue = GetVariantValue();
+	QtPropertyDataDavaVariant::SetValueInternal(value);
+	DAVA::VariantType newValue = QtPropertyDataDavaVariant::GetVariantValue();
 
 	// also save value to meta-object
 	if(NULL != member)
 	{
 		DAVA::SafeDelete(lastCommand);
 		lastCommand = new InspMemberModifyCommand(member, object, newValue);
+
+		member->SetValue(object, newValue);
 	}
 }
 
 void QtPropertyDataInspMember::SetTempValueInternal(const QVariant& value)
 {
 	QtPropertyDataDavaVariant::SetValueInternal(value);
+	DAVA::VariantType newValue = QtPropertyDataDavaVariant::GetVariantValue();
+
+	// also save value to meta-object
 	if(NULL != member)
 	{
-		member->SetValue(object, curVariantValue);
+		member->SetValue(object, newValue);
 	}
 }
 
@@ -79,7 +84,7 @@ bool QtPropertyDataInspMember::UpdateValueInternal()
 		// we should update current variant value
 		if(v != GetVariantValue())
 		{
-			SetVariantValue(v);
+			QtPropertyDataDavaVariant::SetVariantValue(v);
 			ret = true;
 		}
 	}
