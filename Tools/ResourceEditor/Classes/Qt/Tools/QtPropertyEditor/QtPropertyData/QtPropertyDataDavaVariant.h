@@ -133,7 +133,8 @@ protected:
 	int ParseFloatList(const QString &str, int maxCount, DAVA::float32 *dest);
 
 	void SubValueAdd(const QString &key, const DAVA::VariantType &subvalue);
-	void SubValueSet(const QString &key, const QVariant &subvalue);
+	void SubValueSetToMe(const QString &key, const QVariant &subvalue);
+	void SubValueSetFromMe(const QString &key, const QVariant &subvalue);
 	QVariant SubValueGet(const QString &key);
 
 	QWidget* CreateAllowedValuesEditor(QWidget *parent) const;
