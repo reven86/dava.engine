@@ -1077,14 +1077,19 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
     const bool result = cp.Exec();
     const DAVA::Color newColor = cp.GetDavaColor();
 
+    QString str;
     if (result && newColor != oldColor)
 	{
-        QString str;
         str.sprintf(FLOAT_PRINTF_FORMAT4, newColor.r, newColor.g, newColor.b, newColor.a);
-
-		SetValue(str, VALUE_EDITED);
-		SetColorIcon();
+	    SetValue(str, VALUE_EDITED);
 	}
+    else
+    {
+        str.sprintf(FLOAT_PRINTF_FORMAT4, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+	    SetTempValue(str);
+    }
+
+    SetColorIcon();
 }
 
 void QtPropertyDataDavaVariant::OnColorChanging()
