@@ -350,7 +350,6 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 	FT_Vector * advances = new FT_Vector[strLen];
 	Prepare(advances);
 
-    int32 lastRight = 0; //charSizes helper
     int32 justifyOffset = 0;
     int32 fixJustifyOffset = 0;
     if (countSpace > 0 && justifyWidth > 0 && spaceAddon > 0)
@@ -414,41 +413,20 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 				int32 width = bitmap->width;
 				//int32 height = bitmap->rows;
 
-				if(0 == width && ' ' == str[i])
+				if(0 == width)
 				{
-					width = advances[i].x >> 6;
+					width = (advances[i].x + 63) >> 6;
 					left = pen.x >> 6;
 				}
 				
 				if(charSizes)
 				{
-					if(0 == width)
-					{
-                        if(str[i] == ' ')
-                        {
-                            charSizes->push_back((float32)width);
-                            lastRight += width;
-                        }
-                        else
-                        {
-                            charSizes->push_back(0);
-                        }
-					}
-					else if(charSizes->empty())
-					{
-						charSizes->push_back((float32)width);
-						lastRight = width;
-					}
-					else
-					{
-						int32 value = left+width-lastRight;
-						lastRight += value;
-						charSizes->push_back((float32)value);
-					}
+					charSizes->push_back((float32)advances[i].x / 64.f);
 				}
 
-				maxWidth = Max(maxWidth, left+width);
-
+                int32 localMax = Max(left + width, int32(pen.x + advances[i].x + 63) >> 6);
+                maxWidth = Max(maxWidth, localMax);
+                
 				if(realDraw)
 				{
 					int32 realH = Min((int32)bitmap->rows, (int32)(bufHeight - top));
@@ -535,9 +513,16 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 	{
 		Glyph & glyph = glyphs[i];
 
-		advances[i] = glyph.image->advance;
-		advances[i].x >>= 10;
-		advances[i].y >>= 10;
+		if(glyph.index != 0)
+		{
+			advances[i] = glyph.image->advance;
+			advances[i].x >>= 10;
+			advances[i].y >>= 10;
+		}
+		else
+		{
+			advances[i].x = advances[i].y = 0;
+		}
 
 		if(prevAdvance)
 		{
