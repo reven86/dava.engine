@@ -863,8 +863,10 @@ bool DLC::ReadUint32(const FilePath &path, uint32 &value)
         tmp[0] = 0;
         if(f->ReadLine(tmp, sizeof(tmp)) > 0)
         {
-            value = atoi(tmp);
-            ret = true;
+			if(sscanf(tmp, "%u", &value) > 0)
+			{
+				ret = true;
+			}
         }
         SafeRelease(f);
     }
