@@ -44,20 +44,19 @@ public:
 
 	void AddRef()
 	{
-		refCount++;
+		AtomicIncrement(refCount);
 	}
 
 	void RemRef()
 	{
-		refCount--;
-		if (0 == refCount)
+		if(0 == AtomicDecrement(refCount))
 		{
 			delete this;
 		}
 	}
 
 private:
-	uint32 refCount;
+	int32 refCount;
 };
 
 // ====================================================================================================================================================
