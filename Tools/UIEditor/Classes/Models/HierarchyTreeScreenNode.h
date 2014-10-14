@@ -49,7 +49,7 @@ public:
 	static const float32 POSITION_UNDEFINED;
 
 	HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const QString& name);
-	HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base);
+	HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base, bool needLoad = true);
 	~HierarchyTreeScreenNode();
 	
 	HierarchyTreePlatformNode* GetPlatform() const {return parent;};

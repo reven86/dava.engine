@@ -35,6 +35,7 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
+#include "Debug/Stats.h"
 #include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
@@ -298,6 +299,8 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
+	TIME_PROFILE("UIControlSystem::Update");
+
     updateCounter = 0;
 	ProcessScreenLogic();
 	
@@ -319,6 +322,8 @@ void UIControlSystem::Update()
 	
 void UIControlSystem::Draw()
 {
+    TIME_PROFILE("UIControlSystem::Draw");
+
     drawCounter = 0;
     if (!ui3DViewCount)
     {

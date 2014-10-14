@@ -189,6 +189,26 @@ void UISliderMetadata::SetMinColorInheritType(int value)
     GetActiveUISlider()->GetBgMin()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
 }
 
+int UISliderMetadata::GetMinPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return (int)GetActiveUISlider()->GetBgMin()->GetPerPixelAccuracyType();
+}
+
+void UISliderMetadata::SetMinPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMin()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+}
+
 int UISliderMetadata::GetMinAlign() const
 {
     if (!VerifyActiveParamIDAndMinBackground())
@@ -407,6 +427,26 @@ void UISliderMetadata::SetMaxColorInheritType(int value)
     }
     
     GetActiveUISlider()->GetBgMax()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+}
+
+int UISliderMetadata::GetMaxPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return (int)GetActiveUISlider()->GetBgMax()->GetPerPixelAccuracyType();
+}
+
+void UISliderMetadata::SetMaxPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMax()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
 }
 
 int UISliderMetadata::GetMaxAlign() const

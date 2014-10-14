@@ -48,6 +48,7 @@ public:
     virtual float32 TotalAreaSize(UIScrollBar *forScrollBar) = 0;
     virtual float32 ViewPosition(UIScrollBar *forScrollBar) = 0;
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition) = 0;
+    virtual const String GetDelegateControlPath() const {return String(); }; // TODO!! TEMP SOLUTION, CHECK WITH AUTHOR!
 };
 
 
@@ -67,6 +68,7 @@ public:
 				bool rectInAbsoluteCoordinates = false);
 
     void SetDelegate(UIScrollBarDelegate *newDelegate);
+    const String GetDelegatePath() const;
     UIControl *GetSlider();
     
     virtual void Draw(const UIGeometricData &geometricData);

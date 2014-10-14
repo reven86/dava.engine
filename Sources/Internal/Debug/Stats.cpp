@@ -46,7 +46,7 @@ ImmediateTimeMeasure::ImmediateTimeMeasure(const FastName & _name)
 ImmediateTimeMeasure::~ImmediateTimeMeasure()
 {
     time = SystemTimer::Instance()->GetAbsoluteNano() - time;
-    Logger::FrameworkDebug("%s %s %0.9llf seconds", name.c_str(), (double)time / 1e+9);
+    Logger::Info("%s %0.9llf seconds", name.c_str(), (double)time / 1e+9);
 }
     
 // TimeMeasure class
@@ -119,7 +119,7 @@ void TimeMeasure::Dump(FunctionMeasure * function, uint32 level)
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
     if (level == 0)
     {
-        Logger::FrameworkDebug("Stats for frame: %d", Core::Instance()->GetGlobalFrameIndex());
+        Logger::Info("Stats for frame: %d", Core::Instance()->GetGlobalFrameIndex());
     
         for (List<FunctionMeasure*>::iterator it = mainThread.topFunctions.begin(); it != mainThread.topFunctions.end(); ++it)
         {
@@ -129,7 +129,7 @@ void TimeMeasure::Dump(FunctionMeasure * function, uint32 level)
         }
     }else
     {
-        Logger::FrameworkDebug("%s %s %0.9llf seconds", GetIndentString('-', level + 1).c_str(), function->name.c_str(), (double)function->timeSpent / 1e+9);
+        Logger::Info("%s %s %0.9llf seconds", GetIndentString('-', level + 1).c_str(), function->name.c_str(), (double)function->timeSpent / 1e+9);
         for (HashMap<FunctionMeasure *, FunctionMeasure *>::iterator it = function->children.begin();
              it != function->children.end(); ++it)
         {

@@ -30,6 +30,7 @@
 #include "Animation/AnimationManager.h"
 #include "FileSystem/Logger.h"
 #include "Render/RenderManager.h"
+#include "Debug/Stats.h"
 
 #include <typeinfo>
 
@@ -179,6 +180,8 @@ Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32
 
 void AnimationManager::Update(float32 timeElapsed)
 {
+	TIME_PROFILE("AnimationManager::Update");
+
     DVASSERT(Thread::IsMainThread());
 
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATIONS))

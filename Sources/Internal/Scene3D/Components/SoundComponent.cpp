@@ -32,14 +32,15 @@
 #include "Sound/SoundEvent.h"
 #include "Base/FastName.h"
 #include "ComponentHelpers.h"
+#include "Scene3D/Entity.h"
+#include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
 {
-
-REGISTER_CLASS(SoundComponent)
 
 SoundComponent::SoundComponent()
 {}
@@ -91,12 +92,53 @@ void SoundComponent::RemoveAllEvents()
     GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
 }
 
+void SoundComponent::Trigger()
+{
+    uint32 eventsCount = events.size();
+    for(uint32 i = 0; i < eventsCount; ++i)
+        Trigger(i);
+}
+
+void SoundComponent::Stop()
+{
+    uint32 eventsCount = events.size();
+    for(uint32 i = 0; i < eventsCount; ++i)
+        Stop(i);
+}
+
+void SoundComponent::Trigger(uint32 index)
+{
+    DVASSERT(index < events.size());
+
+    SoundComponentElement & sound = events[index];
+    sound.soundEvent->Trigger();
+
+    if((sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) && entity && entity->GetScene())
+    {
+        entity->GetScene()->soundSystem->AddAutoTriggerSound(entity, sound.soundEvent);
+    }
+}
+
+void SoundComponent::Stop(uint32 index)
+{
+    DVASSERT(index < events.size());
+
+    SoundComponentElement & sound = events[index];
+    sound.soundEvent->Stop();
+
+    if((sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) && entity && entity->GetScene())
+    {
+        entity->GetScene()->soundSystem->RemoveAutoTriggerSound(entity, sound.soundEvent);
+    }
+}
+
 void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
 {
-    DVASSERT(index >= 0 && index < (uint32)events.size());
+    DVASSERT(index < (uint32)events.size());
 
     if(events[index].flags != flags)
     {
+        Stop(index);
         events[index].flags = flags;
 
         GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
@@ -105,7 +147,7 @@ void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
 
 void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3 & direction)
 {
-    DVASSERT(eventIndex >= 0 && eventIndex < (uint32)events.size());
+    DVASSERT(eventIndex < (uint32)events.size());
     events[eventIndex].localDirection = direction;
 }
 

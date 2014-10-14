@@ -89,7 +89,7 @@ static FastName TILEMASK_TILING_PROPS_NAMES[] =
 	FastName("texture2Tiling"),
 	FastName("texture3Tiling"),
 	INVALID_PROPERTY_NAME,
-    INVALID_PROPERTY_NAME
+	INVALID_PROPERTY_NAME
 };
 
 static FastName TILEMASK_COLOR_PROPS_NAMES[] =
@@ -101,7 +101,7 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 	FastName("tileColor2"),
 	FastName("tileColor3"),
 	INVALID_PROPERTY_NAME,
-    INVALID_PROPERTY_NAME
+	INVALID_PROPERTY_NAME
 };
 
 	
@@ -109,7 +109,9 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 // const float32 LandscapeNode::TEXTURE_TILE_FULL_SIZE = 2048;
 
 Landscape::Landscape()
-    : indices(0), foliageSystem(NULL)//,
+    : indices(0)
+    , foliageSystem(NULL)
+    , tileMaskMaterial(NULL)
 	  //currentMaterial(NULL)
 {
 	drawIndices = 0;
@@ -125,31 +127,7 @@ Landscape::Landscape()
 	cursor = 0;
     
     heightmap = new Heightmap();
-        
     prevLodLayer = -1;
-    
-	NMaterial* landscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material"),
-                                                            NMaterialName::TILE_MASK,
-                                                            NMaterial::DEFAULT_QUALITY_NAME);
-
-	tileMaskMaterial = 	NMaterial::CreateMaterialInstance();
-	landscapeParent->AddNodeFlags(DataNode::NodeRuntimeFlag);
-	tileMaskMaterial->AddNodeFlags(DataNode::NodeRuntimeFlag);
-	tileMaskMaterial->SetParent(landscapeParent);
-	
-	
-#ifdef LANDSCAPE_SPECULAR_LIT
-	tileMaskMaterial->AddMaterialDefine(FastName("SPECULAR_LAND"));
-#endif
-	
-	LandscapeChunk * chunk = new LandscapeChunk(this);
-	chunk->SetMaterial(tileMaskMaterial);
-	chunk->SetSortingKey(10);
-	AddRenderBatch(chunk);
-	SafeRelease(chunk);
-	SafeRelease(landscapeParent);
-
-	SetDefaultValues();
 }
 
 Landscape::~Landscape()
@@ -176,7 +154,7 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
         for (int32 x = quad->x; x < quad->x + quad->size + 1; ++x)
         {
             landscapeVertices[index].position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
-            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size() - 1), (float32)(y) / (float32)(heightmap->Size() - 1));           
+            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(heightmap->Size() - 1));
 
             landscapeVertices[index].texCoord = texCoord;
             //landscapeVertices[index].texCoord -= Vector2(0.5f, 0.5f);
@@ -184,7 +162,6 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 			
 			
 #ifdef LANDSCAPE_SPECULAR_LIT
-
 			//VI: calculate normal for the point.
 			uint32 xx = 0;
 			uint32 yy = 0;
@@ -209,7 +186,7 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 			Vector3 normalAverage = normal0 + normal1 + normal2 + normal3;
 			normalAverage.Normalize();
 			landscapeVertices[index].normal = normalAverage;
-            LandscapeVertices[index].tangent = Normalize(right - position);
+            landscapeVertices[index].tangent = Normalize(right - position);
             
             /*
                 VS: Algorithm
@@ -242,7 +219,7 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 	
 #ifdef LANDSCAPE_SPECULAR_LIT
 	landscapeRDO->SetStream(EVF_NORMAL, TYPE_FLOAT, 3, sizeof(LandscapeVertex), &landscapeVertices[0].normal);
-    LandscapeRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(LandscapeVertex), &landscapeVertices[0].tangent);
+    landscapeRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(LandscapeVertex), &landscapeVertices[0].tangent);
 #endif
 	
     landscapeRDO->BuildVertexBuffer((quad->size + 1) * (quad->size + 1));
@@ -951,7 +928,7 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippi
     
     if (currentNode->data.size >= 2)
 		if (clippingFlags)
-			frustumRes = frustum->Classify(currentNode->data.bbox, clippingFlags, currentNode->data.startClipPlane);
+			frustumRes = frustum->Classify(currentNode->data.bbox, clippingFlags, currentNode->data.startClipPlane);		
     
     if (frustumRes == Frustum::EFR_OUTSIDE)return;
     
@@ -1345,7 +1322,7 @@ void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 		for (int32 x = quad->x; x < quad->x + quad->size + 1; ++x)
 		{
 			landscapeVertices[index].position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
-			landscapeVertices[index].texCoord = Vector2((float32)x / (float32)(heightmap->Size() - 1), (float32)y / (float32)(heightmap->Size() - 1));           
+			landscapeVertices[index].texCoord = Vector2((float32)x / (float32)(heightmap->Size() - 1), 1.0f - (float32)y / (float32)(heightmap->Size() - 1));
 			index++;
 		}
 	}
@@ -1444,40 +1421,46 @@ void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
         foliageSystem->SyncFoliageWithLandscape();
     }
 }
+
+void Landscape::Create(NMaterial *fromMaterial/* = NULL */)
+{
+    DVASSERT(NULL == tileMaskMaterial);
+    DVASSERT(0 == GetRenderBatchCount());
+
+    if(NULL == fromMaterial)
+    {
+        NMaterial* landscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material"), NMaterialName::TILE_MASK, NMaterial::DEFAULT_QUALITY_NAME);
+	    tileMaskMaterial = NMaterial::CreateMaterialInstance();
+	    tileMaskMaterial->SetParent(landscapeParent);
+    	SafeRelease(landscapeParent);
+
+    	SetDefaultValues();
+    }
+    else
+    {
+        tileMaskMaterial = fromMaterial->Clone();
+    }
+	
+	LandscapeChunk * chunk = new LandscapeChunk(this);
+	chunk->SetMaterial(tileMaskMaterial);
+	chunk->SetSortingKey(10);
+	AddRenderBatch(chunk);
+	SafeRelease(chunk);
+}
     
 void Landscape::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     RenderObject::Save(archive, serializationContext);
-        
+
     //TODO: remove code in future. Need for transition from *.png to *.heightmap
     if(!heightmapPath.IsEqualToExtension(Heightmap::FileExtension()))
     {
         heightmapPath.ReplaceExtension(Heightmap::FileExtension());
     }
-    //
 
 	heightmap->Save(heightmapPath);
-
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
-    
     archive->SetByteArrayAsType("bbox", bbox);
-    for (int32 k = 0; k < TEXTURE_COUNT; ++k)
-    {
-        if(TEXTURE_DETAIL == k) continue;
-
-        
-        String relPath  = tileMaskMaterial->GetEffectiveTexturePath(TILEMASK_TEXTURE_PROPS_NAMES[k]).GetRelativePathname(serializationContext->GetScenePath());
-        
-        //if(serializationContext->IsDebugLogEnabled())
-        //   Logger::FrameworkDebug("landscape tex save: %s rel: %s", textureNames[k].GetAbsolutePathname().c_str(), relPath.c_str());
-        
-        archive->SetString(Format("tex_%d", k), relPath);
-        Vector2 tilingValue = GetTextureTiling((eTextureLevel)k);
-        archive->SetByteArrayAsType(Format("tiling_%d", k), tilingValue);
-        
-        Color tileColorValue = GetTileColor((eTextureLevel)k);
-		archive->SetByteArrayAsType(Format("tilecolor_%d", k), tileColorValue);
-    }
     
     DVASSERT(GetRenderBatch(0));
     IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
@@ -1496,46 +1479,33 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
 	
     DVASSERT(serializationContext->GetVersion() >= 4);
 		
-#ifdef LANDSCAPE_SPECULAR_LIT
-		tileMaskMaterial->AddMaterialDefine("SPECULAR_LAND");
-#endif
-
     AABBox3 boxDef;
     boxDef = archive->GetByteArrayAsType("bbox", boxDef);
-
     LoadFog(archive, serializationContext);
+
+    // check if this landscape was saved in old format, when all material properties
+    // were saved as part of landscape object
+    if(0 == GetRenderBatchCount())
+    {
+        // create landscape render object and load material properties
+        // from current serialization context
+        Create();
+        LoadMaterialProps(archive, serializationContext);
+    }
+    else
+    {
+        LandscapeChunk *landCunk = dynamic_cast<LandscapeChunk *>(GetRenderBatch(0));
+        DVASSERT(NULL != landCunk);
+        
+        // remember pointer on loaded landscape material
+        tileMaskMaterial = SafeRetain(landCunk->GetMaterial());
+
+        // remember this landscape in createad landscapeChunk
+        landCunk->landscape = this;
+    }
 	
 	FilePath heightmapPath = serializationContext->GetScenePath() + archive->GetString("hmap");
     BuildLandscapeFromHeightmapImage(heightmapPath, boxDef);
-        
-    for (int32 k = 0; k < TEXTURE_COUNT; ++k)
-    {
-        if(TEXTURE_DETAIL == k) continue;
-        
-		if(TEXTURE_TILE_FULL == k)
-			continue;
-
-        // load textures
-		if(!(TEXTURE_TILE1 == k || TEXTURE_TILE2 == k || TEXTURE_TILE3 == k))
-		{
-			String textureName = archive->GetString(Format("tex_%d", k));
-			if(!textureName.empty())
-			{
-				FilePath absPath = serializationContext->GetScenePath() + textureName;
-                SetTexture((eTextureLevel)k, absPath);
-			}
-		}
-
-        Vector2 tilingValue;
-        tilingValue = archive->GetByteArrayAsType(Format("tiling_%d", k), tilingValue);
-        SetTextureTiling((eTextureLevel)k, tilingValue);
-            
-        Color colorValue;
-        colorValue = archive->GetByteArrayAsType(Format("tilecolor_%d", k), colorValue);
-        SetTileColor((eTextureLevel)k, colorValue);
-    }
-	
-	SetupMaterialProperties();
 
     if(archive->IsKeyExists("illumination.isUsed"))
     {
@@ -1573,6 +1543,38 @@ void Landscape::LoadFog(KeyedArchive * archive, SerializationContext * serializa
             globalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &fogDensityValue);
         }
     }
+}
+
+void Landscape::LoadMaterialProps(KeyedArchive * archive, SerializationContext * serializationContext)
+{
+    for (int32 k = 0; k < TEXTURE_COUNT; ++k)
+    {
+        if(TEXTURE_DETAIL == k) continue;
+        
+		if(TEXTURE_TILE_FULL == k)
+			continue;
+
+        // load textures
+		if(!(TEXTURE_TILE1 == k || TEXTURE_TILE2 == k || TEXTURE_TILE3 == k))
+		{
+			String textureName = archive->GetString(Format("tex_%d", k));
+			if(!textureName.empty())
+			{
+				FilePath absPath = serializationContext->GetScenePath() + textureName;
+                SetTexture((eTextureLevel)k, absPath);
+			}
+		}
+
+        Vector2 tilingValue;
+        tilingValue = archive->GetByteArrayAsType(Format("tiling_%d", k), tilingValue);
+        SetTextureTiling((eTextureLevel)k, tilingValue);
+            
+        Color colorValue;
+        colorValue = archive->GetByteArrayAsType(Format("tilecolor_%d", k), colorValue);
+        SetTileColor((eTextureLevel)k, colorValue);
+    }
+	
+	SetupMaterialProperties();
 }
 
 const FilePath & Landscape::GetTextureName(DAVA::Landscape::eTextureLevel level)
@@ -1667,37 +1669,42 @@ Texture * Landscape::CreateLandscapeTexture()
     RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()));
 
 
-	RenderManager::Instance()->ClearWithColor(1.f, 1.f, 1.f, 1.f);
+	RenderManager::Instance()->ClearWithColor(1.f, 0.f, 1.f, 1.f);
  
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Matrix4 projection;
-    projection.glOrtho(0.f, TEXTURE_TILE_FULL_SIZE,
-                       0.f, TEXTURE_TILE_FULL_SIZE, -1.f, 1.f);
+    projection.glOrtho(0.f, (float32)TEXTURE_TILE_FULL_SIZE,
+                       0.f, (float32)TEXTURE_TILE_FULL_SIZE, -1.f, 1.f);
     
     Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
     RenderManager::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);
     
     prevLodLayer = -1;
 
-    int32 fogFlag = tileMaskMaterial->GetFlagValue(NMaterial::FLAG_VERTEXFOG);
-    tileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
+    NMaterial* tmpLandscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material_TMP"), FastName("~res:/Materials/TileMask.material"), NMaterial::DEFAULT_QUALITY_NAME);
+    NMaterial* tmpTileMaskMaterial = tileMaskMaterial->Clone();
+    
 
-	BindMaterial(0, NULL);
+    //MAGIC: This magic code is workaround for situation when fbo textures are present in tileMaskMaterial with pathname. Because NMaterial::Clone() use pathnames for cloning textures.
+    const uint32 texturesCount = tileMaskMaterial->GetTextureCount();
+    for(uint32 t = 0; t < texturesCount; ++t)
+    {
+        FastName tName = tileMaskMaterial->GetTextureName(t);
+        Texture *tex = tileMaskMaterial->GetTexture(t);
+        if(tex->isRenderTarget)
+        {
+            tmpTileMaskMaterial->SetTexture(tName, tex);
+        }
+    }
+    //END of MAGIC
+    
+    tmpTileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
+    tmpTileMaskMaterial->SetParent(tmpLandscapeParent);
+    tmpTileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, NULL);
 
 	RenderManager::Instance()->SetRenderData(ftRenderData);
 	RenderManager::Instance()->AttachRenderData();
-
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
-    UnbindMaterial();
-
-    if(fogFlag & NMaterial::FlagInherited)
-    {
-        tileMaskMaterial->ResetFlag(NMaterial::FLAG_VERTEXFOG);
-    }
-    else
-    {
-        tileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, (NMaterial::eFlagValue) (fogFlag & NMaterial::FlagOn));
-    }
 
 #ifdef __DAVAENGINE_OPENGL__
 	RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
@@ -1706,6 +1713,9 @@ Texture * Landscape::CreateLandscapeTexture()
     RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
 	RenderManager::Instance()->SetViewport(oldViewport);
     SafeRelease(ftRenderData);
+
+    SafeRelease(tmpTileMaskMaterial);
+    SafeRelease(tmpLandscapeParent);
     
     return fullTiled;
 }
@@ -1748,7 +1758,7 @@ Texture * Landscape::CreateLandscapeTexture()
 //        SafeRelease(t);
 //    }
 //}
-
+    
 LandscapeCursor * Landscape::GetCursor()
 {
     return cursor;
@@ -1764,33 +1774,10 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
 	}
     
     Landscape *newLandscape = static_cast<Landscape *>(newObject);
+    newLandscape->Create(tileMaskMaterial);
 
     newLandscape->flags = flags;
-	
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
-    
-    for (int32 k = 0; k < TEXTURE_COUNT; ++k)
-    {
-        //newLandscape->textureNames[k] = textureNames[k];
-		Texture* tex = GetTexture((eTextureLevel)k);
-        if(tex != NULL)
-        {
-            newLandscape->SetTexture((eTextureLevel)k, GetTexture((eTextureLevel)k));
-        }
-        
-        const FilePath& textureName = GetTextureName((eTextureLevel)k);
-        if(!textureName.IsEmpty())
-        {
-            newLandscape->SetTextureName((eTextureLevel)k, textureName);
-        }
-        
-        Vector2 tilingValue = GetTextureTiling((eTextureLevel)k);
-        newLandscape->SetTextureTiling((eTextureLevel)k, tilingValue);
-        
-        Color colorValue = GetTileColor((eTextureLevel)k);
-        newLandscape->SetTileColor((eTextureLevel)k, colorValue);
-    }
-	
 	newLandscape->SetupMaterialProperties();
 
     IlluminationParams * params = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
@@ -1827,80 +1814,10 @@ void Landscape::SetupMaterialProperties()
 		tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
 	}
 }
-
+	
 void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 {
     foliageSystem = _foliageSystem;
 }
 
-#ifdef LANDSCAPE_SPECULAR_LIT
-	
-void Landscape::SetSpecularColor(const Color& color)
-{
-	tileMaskMaterial->SetPropertyValue(Landscape::PARAM_PROP_SPECULAR_COLOR, Shader::UT_FLOAT_VEC4, 1, &color);
-}
-	
-Color Landscape::GetSpecularColor()
-{
-	Color specularColor = Color(1, 1, 1, 1);
-	NMaterialProperty* specularColorProp = tileMaskMaterial->GetMaterialProperty(Landscape::PARAM_PROP_SPECULAR_COLOR);
-	
-	if(specularColorProp)
-	{
-		memcpy(&specularColor, specularColorProp->data, sizeof(Color));
-	}
-	
-	return specularColor;
-}
-	
-void Landscape::SetSpecularShininess(const float32& shininess)
-{
-	tileMaskMaterial->SetPropertyValue(Landscape::PARAM_SPECULAR_SHININESS, Shader::UT_FLOAT, 1, &shininess);
-}
-	
-float32 Landscape::GetSpecularShininess()
-{
-	float32 shininess = 1.0f;
-	NMaterialProperty* shininessProp = tileMaskMaterial->GetMaterialProperty(Landscape::PARAM_SPECULAR_SHININESS);
-	
-	if(shininessProp)
-	{
-		memcpy(&shininess, shininessProp->data, sizeof(float32));
-	}
-	
-	return shininess;
-}
-	
-void Landscape::SetSpecularMapPath(const FilePath& path)
-{
-	bool needReload = true;
-	Texture* specularMapTexture = tileMaskMaterial->GetTexture(TEXTURE_SPECULAR_MAP);
-	if(specularMapTexture)
-	{
-		needReload = (specularMapTexture->GetPathname() != path);
-	}
-	
-	if(needReload && path.Exists())
-	{
-		Texture* specularMapTexture = Texture::CreateFromFile(path);
-		if(specularMapTexture)
-		{
-			tileMaskMaterial->SetTexture(TEXTURE_SPECULAR_MAP, specularMapTexture);
-		}
-	}
-}
-	
-FilePath Landscape::GetSpecularMapPath()
-{
-	FilePath texturePath;
-	Texture* specularMapTexture = tileMaskMaterial->GetTexture("specularMap");
-	if(specularMapTexture)
-	{
-		texturePath = specularMapTexture->GetPathname();
-	}
-	
-	return texturePath;
-}
-#endif
-	
 };

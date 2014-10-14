@@ -63,6 +63,7 @@ SliderPropertyGridWidget::SliderPropertyGridWidget(QWidget *parent) :
 
 SliderPropertyGridWidget::~SliderPropertyGridWidget()
 {
+    disconnect(ui->valuePosition, SIGNAL(valueChanged(int)), this, SLOT(OnSliderValueChanged(int)));
     delete ui;
 }
 

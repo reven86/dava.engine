@@ -1158,11 +1158,6 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState,
 
 void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::MATERIAL_DRAW))
-	{
-		return;
-	}
-
 	if(isTranslucent && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TRANSPARENT_DRAW))
 	{
 		return;
@@ -1172,11 +1167,6 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 	{
 		return;
 	}
-
-    if(type == MATERIAL_SPEED_TREE_LEAF && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPEEDTREE_LEAFS_DRAW))
-    {
-        return;
-    }
 
 	//Dizz: uniformFogDensity != -1 is a check if fog is inabled in shader
 	if(isFogEnabled && (uniformFogDensity != -1) && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))

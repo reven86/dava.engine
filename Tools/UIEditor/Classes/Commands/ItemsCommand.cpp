@@ -454,7 +454,7 @@ void DeleteSelectedNodeCommand::DecrementUnsavedChanges()
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ChangeNodeHeirarchy::ChangeNodeHeirarchy(HierarchyTreeNode::HIERARCHYTREENODEID targetNodeID, HierarchyTreeNode::HIERARCHYTREENODEID afterNodeID, HierarchyTreeNode::HIERARCHYTREENODESIDLIST items)
+ChangeNodeHeirarchy::ChangeNodeHeirarchy(HierarchyTreeNode::HIERARCHYTREENODEID targetNodeID, HierarchyTreeNode::HIERARCHYTREENODEID afterNodeID, const HierarchyTreeNode::HIERARCHYTREENODESIDLIST &items)
 {
 	this->targetNodeID = targetNodeID;
 	this->afterNodeID = afterNodeID;

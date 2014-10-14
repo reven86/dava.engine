@@ -143,7 +143,7 @@ public:
     
     virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
     
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const;
     
     virtual uint32 GetDataSize(File *infile) const;
 
@@ -158,7 +158,7 @@ protected:
     
     static PVRFile * ReadFile(const FilePath &filePathname, bool readMetaData = false, bool readData = false);
     static PVRFile * ReadFile(File *file, bool readMetaData = false, bool readData = false);
-    static bool LoadImages(const PVRFile *pvrFile, Vector<Image *> &imageSet, uint32 fromMipMap);
+    static bool LoadImages(const PVRFile *pvrFile, Vector<Image *> &imageSet, int32 fromMipMap);
     
     static bool WriteFile(const PVRFile * pvrFile, File * outFile);
 
@@ -169,7 +169,7 @@ protected:
     
     static void ReadMetaData(File *file, PVRFile *pvrFile, const bool swapBytes);
     
-    static bool LoadMipMapLevel(const PVRFile *pvrFile, const uint32 mipMapLevel, const uint32 baseMipMap, Vector<Image *> &imageSet);
+    static bool LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipMapLevel, const uint32 imageMipMapLevel, Vector<Image *> &imageSet);
     static uint32 GetCubemapLayout(const PVRFile *pvrFile);
     static const MetaDataBlock * GetCubemapMetadata(const PVRFile *pvrFile);
     

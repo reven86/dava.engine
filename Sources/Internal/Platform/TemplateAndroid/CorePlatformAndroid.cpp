@@ -39,6 +39,8 @@ extern void FrameworkWillTerminate();
 #include "Platform/Thread.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
+#include "Scene3D/SceneCache.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
 namespace DAVA
 {
@@ -158,12 +160,15 @@ namespace DAVA
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
 	}
 
-	void CorePlatformAndroid::CreateAndroidWindow(const char8 *docPath, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate)
+	void CorePlatformAndroid::CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate)
 	{
 		androidDelegate = sysDelegate;
-		externalStorage = docPath;
-
+		externalStorage = docPathEx;
+		internalStorage = docPathIn;
+	
 		Core::CreateSingletons();
+
+		AssetsManager::Instance()->Init(assets);
 
 		Logger::SetTag(logTag);
 	}
@@ -186,6 +191,8 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
+			
+			SceneCache::Instance()->InvalidateSceneMaterials();
 		}
 		else
 		{
@@ -343,16 +350,6 @@ namespace DAVA
 		newEvent.timestamp = time;
 
 		return newEvent;
-	}
-
-	AAssetManager * CorePlatformAndroid::GetAssetManager()
-	{
-		return assetMngr;
-	}
-
-	void CorePlatformAndroid::SetAssetManager(AAssetManager * mngr)
-	{
-		assetMngr = mngr;
 	}
 
 	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)

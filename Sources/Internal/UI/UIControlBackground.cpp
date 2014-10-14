@@ -45,8 +45,8 @@ UIControlBackground::UIControlBackground()
 ,	frame(0)
 ,	align(ALIGN_HCENTER|ALIGN_VCENTER)
 ,	type(DRAW_ALIGNED)
-,	color(1.0f, 1.0f, 1.0f, 1.0f)
-,	drawColor(1.0f, 1.0f, 1.0f, 1.0f)
+,	color(Color::White)
+,	drawColor(Color::White)
 ,	leftStretchCap(0)
 ,	topStretchCap(0)
 ,	spriteModification(0)
@@ -58,6 +58,7 @@ UIControlBackground::UIControlBackground()
 ,   vertexStream(NULL)
 ,   texCoordStream(NULL)
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
+,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
 }
 
@@ -76,7 +77,7 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
     align = srcBackground->align;
 
     SafeRelease(rdoObject);
-    SetDrawType((eDrawType)srcBackground->type);
+    SetDrawType(srcBackground->type);
 
     color = srcBackground->color;
     spriteModification = srcBackground->spriteModification;
@@ -97,7 +98,23 @@ UIControlBackground::~UIControlBackground()
     ReleaseDrawData();
 }
 
-Sprite*	UIControlBackground::GetSprite()
+bool UIControlBackground::IsEqualTo( const UIControlBackground *back ) const
+{
+    if (GetDrawType() != back->GetDrawType() ||
+        Sprite::GetPathString(GetSprite()) != Sprite::GetPathString(back->GetSprite()) ||
+        GetFrame() != back->GetFrame() ||
+        GetAlign() != back->GetAlign() ||
+        GetColor() != back->GetColor() ||
+        GetColorInheritType() != back->GetColorInheritType() ||
+        GetModification() != back->GetModification() ||
+        GetLeftRightStretchCap() != back->GetLeftRightStretchCap() ||
+        GetTopBottomStretchCap() != back->GetTopBottomStretchCap() ||
+        GetPerPixelAccuracyType() != back->GetPerPixelAccuracyType())
+        return false;
+    return true;
+}
+
+Sprite*	UIControlBackground::GetSprite() const
 {
     return spr;
 }
@@ -123,7 +140,7 @@ UIControlBackground::eColorInheritType UIControlBackground::GetColorInheritType(
 
 UIControlBackground::eDrawType	UIControlBackground::GetDrawType() const
 {
-    return (UIControlBackground::eDrawType)type;
+    return type;
 }
 
 
@@ -175,6 +192,9 @@ void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
                 //rdoObject->SetStream()
             }
         }
+        break;
+    default:
+        break;
     }
     ReleaseDrawData();
 }
@@ -262,7 +282,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND); // set state explicitly
+    drawState.SetRenderState(renderState);
     if (spr)
     {
         drawState.SetShader(shader);
@@ -493,6 +513,8 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
         case DRAW_TILED:
             DrawTiled(geometricData, drawState.GetRenderState());
         break;
+        default:
+            break;
     }
 
     RenderManager::Instance()->ResetColor();
@@ -630,6 +652,7 @@ void UIControlBackground::DrawStretched(const Rect &drawRect, UniqueHandle rende
             texCoords[25] = texCoords[27] = texCoords[29] = texCoords[31] = (texY + texDy) / textureHeight;
         }
         break;
+        default: break;
     }
 
 //	if (Core::GetContentScaleFactor() != 1.0 && RenderManager::IsRenderTarget())

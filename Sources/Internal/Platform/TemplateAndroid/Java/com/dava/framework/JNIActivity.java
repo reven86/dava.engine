@@ -1,5 +1,7 @@
 package com.dava.framework;
 
+import org.fmod.FMODAudioDevice;
+
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.SensorManager;
@@ -10,7 +12,9 @@ import android.os.Handler;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import org.fmod.FMODAudioDevice;
+import android.view.Window;
+import android.view.WindowManager;
+
 import com.bda.controller.Controller;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
@@ -19,7 +23,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
 	private JNIAccelerometer accelerometer = null;
 	protected JNIGLSurfaceView glView = null;
-
+	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
 	private Controller mController;
@@ -49,6 +53,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	activity = this;
         super.onCreate(savedInstanceState);
         
+        // Initialize native framework core         
+        JNIApplication.GetApplication().InitFramework();
+        
+        JNINotificationProvider.AttachToActivity();
+        
         if(null != savedInstanceState)
         {
         	isFirstRun = savedInstanceState.getBoolean("isFirstRun");
@@ -56,11 +65,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
     	// The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate]");
-
+        
         // initialize accelerometer
         SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         accelerometer = new JNIAccelerometer(this, sensorManager);
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().requestFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+        
         // initialize GL VIEW
         glView = GetSurfaceView();
         assert(glView != null);
@@ -68,14 +82,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setClickable(true);
         glView.setFocusable(true);
         glView.requestFocus();
-
+        
         mController = Controller.getInstance(this);
         if(mController != null)
         {
         	mController.init();
         	mController.setListener(glView.mogaListener, new Handler());
         }
-
+        
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
         
@@ -94,8 +108,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		} catch (Exception e) {
 			Log.d("", "no singalStrengthListner");
 		}
-        
-        JNINotification.Init();
     }
     
     @Override
@@ -141,6 +153,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // The activity has become visible (it is now "resumed").
 		Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
 
+		
+		JNITextField.HideAllTextFields();
+		
 		if(mController != null)
 		{
 			mController.onResume();
@@ -212,7 +227,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         //call native method
         nativeOnStop();
-
+        
+        // Destroy keyboard layout if its hasn't been destroyed by lost focus (samsung lock workaround)
+        JNITextField.DestroyKeyboardLayout(getWindowManager());
+        
         Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
         
         super.onStop();
@@ -247,7 +265,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     @Override
     public void onBackPressed() {
-    	
+    }
+    
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+    	super.onWindowFocusChanged(hasFocus);
+    	if(hasFocus) {
+    		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+    	} else {
+    		JNITextField.DestroyKeyboardLayout(getWindowManager());
+    	}
     }
     
     public void onAccelerationChanged(float x, float y, float z)

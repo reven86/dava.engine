@@ -57,7 +57,10 @@ class Texture;
 class TextureInvalidater
 {
 public:
+    virtual ~TextureInvalidater() {};
 	virtual void InvalidateTexture(Texture * texure) = 0;
+    virtual void AddTexture(Texture * texure) = 0;
+    virtual void RemoveTexture(Texture * texure) = 0;
 };
 	
 #ifdef USE_FILEPATH_IN_MAP
@@ -221,6 +224,7 @@ public:
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
 	void SetInvalidater(TextureInvalidater* invalidater);
+    void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
 
 	inline TextureState GetState() const;
 

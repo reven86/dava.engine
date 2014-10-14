@@ -36,16 +36,7 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="leftMargin">
-     <number>1</number>
-    </property>
-    <property name="topMargin">
-     <number>1</number>
-    </property>
-    <property name="rightMargin">
-     <number>1</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>1</number>
     </property>
     <item>
@@ -78,16 +69,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -114,16 +96,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -162,16 +135,7 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -237,7 +201,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -463,6 +427,7 @@
      <string>Debug Functions</string>
     </property>
     <addaction name="actionGridCopy"/>
+    <addaction name="actionBatchProcess"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -547,16 +512,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -602,16 +558,7 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="leftMargin">
-      <number>1</number>
-     </property>
-     <property name="topMargin">
-      <number>1</number>
-     </property>
-     <property name="rightMargin">
-      <number>1</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>1</number>
      </property>
      <item>
@@ -643,16 +590,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -697,15 +635,6 @@
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockConsole">
-   <property name="windowTitle">
-    <string>Console</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="ConsoleWidget" name="dockConsoleContents"/>
   </widget>
   <widget class="QDockWidget" name="dockLODEditor">
    <property name="windowTitle">
@@ -1994,6 +1923,14 @@
     <string>Height Delta Tool</string>
    </property>
   </action>
+  <action name="actionBatchProcess">
+   <property name="text">
+    <string>BatchProcess</string>
+   </property>
+   <property name="toolTip">
+    <string>BatchProcess</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -2057,12 +1994,6 @@
    <class>LibraryWidget</class>
    <extends>QWidget</extends>
    <header>DockLibrary/LibraryWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ConsoleWidget</class>
-   <extends>QWidget</extends>
-   <header>DockConsole/ConsoleWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

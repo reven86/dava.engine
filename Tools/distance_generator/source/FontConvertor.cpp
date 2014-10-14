@@ -193,6 +193,7 @@ void FontConvertor::StoreDf()
     outFile << "  spread: " << params.spread << endl;
 
     outFile << "  lineHeight: " << (int)ceil(font.GetLineHeight()) << endl;
+    outFile << "  baselineHeight: " << (int)ceil(font.GetBaseline()) << endl;
     outFile << "  scaleW: " << params.textureSize << endl;
     outFile << "  scaleH: " << params.textureSize << endl;
 
@@ -251,6 +252,7 @@ void FontConvertor::StoreFnt()
 
     outFile << "info face=" << "" << " size=" << params.fontSize << " spread=" << params.spread << endl;
     outFile << "common lineHeight=" << (int)ceil(font.GetLineHeight());
+    outFile << " baselineHeight=" << (int)ceil(font.GetBaseline());
     outFile << " scaleW=" << params.textureSize << " scaleH=" << params.textureSize << endl;
     outFile << "chars count=" << chars.size() << endl;
 

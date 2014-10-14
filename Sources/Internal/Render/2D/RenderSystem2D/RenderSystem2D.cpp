@@ -412,7 +412,7 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
         spriteClippedTexCoords.reserve(sprite->clipPolygon->GetPointCount());
         
         Texture * t = sprite->GetTexture(frame);
-        Vector2 virtualTexSize = VirtualCoordinates::ConvertResourceToVirtual(Vector2(t->width, t->height), sprite->GetResourceSizeIndex()) ;
+        Vector2 virtualTexSize = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)t->width, (float32)t->height), sprite->GetResourceSizeIndex());
         float32 adjWidth = 1.f / virtualTexSize.x;
         float32 adjHeight = 1.f / virtualTexSize.y;
         

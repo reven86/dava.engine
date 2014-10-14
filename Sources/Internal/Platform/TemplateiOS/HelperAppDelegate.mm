@@ -118,6 +118,14 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
+#if defined(__DAVAENGINE_OPENGL__)
+//    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
+//  see Background Apps May Not Execute Commands on the Graphics Hardware
+    
+    glFinish();
+#endif
+    
+    
     DAVA::ApplicationCore * core = DAVA::Core::Instance()->GetApplicationCore();
     if(core)
     {

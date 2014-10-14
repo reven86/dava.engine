@@ -35,6 +35,54 @@
 namespace DAVA 
 {
     
+TextBlockSoftwareTexInvalidater::TextBlockSoftwareTexInvalidater(TextBlock *textBlock) :
+  textBlock(textBlock)
+{
+}
+    
+TextBlockSoftwareTexInvalidater::~TextBlockSoftwareTexInvalidater()
+{
+    // Create a copy of textureSet here, as textureSet will be cleaned by texture itself inside the SetInvalidater call.
+    Set<Texture*> setCopy = textureSet;
+    Set<Texture*>::iterator it = setCopy.begin();
+    for(; it != setCopy.end(); ++it)
+    {
+        (*it)->SetInvalidater(NULL);
+    }
+    DVASSERT(textureSet.size() == 0);
+}
+    
+void TextBlockSoftwareTexInvalidater::InvalidateTexture(DAVA::Texture *texture)
+{
+    textBlock->ForcePrepare(texture);
+}
+
+void TextBlockSoftwareTexInvalidater::RemoveTexture(Texture *tex)
+{
+    Set<Texture*>::iterator it = textureSet.find(tex);
+    if(it != textureSet.end())
+    {
+        textureSet.erase(it);
+    }
+    else
+    {
+        Logger::Error("[TextBlockSoftwareTexInvalidater::RemoveTexToSet] trying to remove texture not in set");
+    }
+}
+    
+void TextBlockSoftwareTexInvalidater::AddTexture(Texture *tex)
+{
+    Set<Texture*>::iterator it = textureSet.find(tex);
+    if(it == textureSet.end())
+    {
+        textureSet.insert(tex);
+    }
+    else
+    {
+        Logger::Error("[TextBlockSoftwareTexInvalidater::AddTexToSet] trying to add texture already in set");
+    }
+}
+    
 TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock) :
 	TextBlockRender(textBlock)
 {
@@ -42,11 +90,15 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock) :
 	ftFont = (FTFont*)textBlock->font;
 }
 	
-void TextBlockSoftwareRender::Prepare()
+void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
 {
-	TextBlockRender::Prepare();
+    // Prevent releasing sprite when texture is invalidated
+    if(!texture)
+    {
+        TextBlockRender::Prepare(NULL);
+    }
 	
-	int bsz = textBlock->cacheDx * textBlock->cacheDy;
+	int32 bsz = textBlock->cacheDx * textBlock->cacheDy;
 	buf = new int16[bsz];
     memset(buf, 0, bsz * sizeof(int16));
 	
@@ -68,25 +120,42 @@ void TextBlockSoftwareRender::Prepare()
 		}
 	}
 	
-	Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, textBlock->cacheDx, textBlock->cacheDy, false, addInfo.c_str());
-    sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
+    if(!texture)
+    {
+        Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, textBlock->cacheDx, textBlock->cacheDy, false, addInfo.c_str());
+        if(textBlock->textureInvalidater)
+        {
+            tex->SetInvalidater(textBlock->textureInvalidater);
+        }
+        sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
+        SafeRelease(tex);
+    }
+    else
+    {
+        texture->ReloadFromData(FORMAT_A8, (uint8*)buf, textBlock->cacheDx, textBlock->cacheDy);
+    }
     
 	SafeDeleteArray(buf);
-	SafeRelease(tex);
 }
 	
-Size2i TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
+Font::StringMetrics TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
-	return ftFont->DrawStringToBuffer(buf, x, y, 0, 0, 0, 0, drawText, true);
+	return ftFont->DrawStringToBuffer(buf, x, y, 
+										-textBlock->cacheOx, 
+										-textBlock->cacheOy, 
+										0, 
+										0, 
+										drawText, 
+										true);
 }
 	
-Size2i TextBlockSoftwareRender::DrawTextML(const WideString& drawText, int32 x, int32 y, int32 w, int32 xOffset, uint32 yOffset, int32 lineSize)
+Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawText, int32 x, int32 y, int32 w, int32 xOffset, uint32 yOffset, int32 lineSize)
 {
 	if (textBlock->cacheUseJustify)
 	{
 		return ftFont->DrawStringToBuffer(buf, x, y,
-										  (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * xOffset),
-										  (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * yOffset),
+										  -textBlock->cacheOx + (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * xOffset),
+										  -textBlock->cacheOy + (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * yOffset),
 										  (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * w),
 										  (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * lineSize),
 										  drawText,
@@ -94,8 +163,8 @@ Size2i TextBlockSoftwareRender::DrawTextML(const WideString& drawText, int32 x, 
 	}
 
 	return ftFont->DrawStringToBuffer(buf, x, y,
-								     (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * xOffset),
-								     (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * yOffset),
+								     -textBlock->cacheOx + (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * xOffset),
+								     -textBlock->cacheOy + (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * yOffset),
 									 0,
 									 0,
 									 drawText,

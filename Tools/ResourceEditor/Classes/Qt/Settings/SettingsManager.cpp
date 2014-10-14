@@ -33,6 +33,9 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 
+#include <QColor>
+#include <QDebug>
+
 // framework
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/VariantType.h"
@@ -103,6 +106,22 @@ void SettingsManager::Init()
 	CreateValue(Settings::Internal_LODEditorMode, DAVA::VariantType((bool) false));
     CreateValue(DAVA::FastName("Internal/RunActionEventWidget/CurrentType"), DAVA::VariantType((DAVA::uint32)0));
     CreateValue(DAVA::FastName("Internal/Beast/LightmapsDefaultDir"), DAVA::VariantType(DAVA::String("lightmaps")));
+    CreateValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(DAVA::String("")));
+    CreateValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(DAVA::String("")));
+
+    const DAVA::int32 nColors = Qt::darkYellow - Qt::black + 1;
+    DAVA::uint32 colors[nColors];   // Init from Qt::GlobalColor
+    for (int i = 0; i < nColors; i++)
+    {
+        colors[i] = QColor(Qt::GlobalColor(i + Qt::black)).rgba();
+    }
+    CreateValue(Settings::Internal_CustomPalette, DAVA::VariantType( (DAVA::uint8 *)colors, nColors * sizeof(*colors) ));
+    CreateValue(Settings::General_ColorMultiplyMax, DAVA::VariantType((DAVA::float32)2.0));
+
+    const DAVA::uint32 levels[] = { DAVA::Logger::LEVEL_FRAMEWORK, DAVA::Logger::LEVEL_DEBUG, DAVA::Logger::LEVEL_INFO, DAVA::Logger::LEVEL_WARNING, DAVA::Logger::LEVEL_ERROR };
+    const int nLevels = sizeof(levels) / sizeof(*levels);
+    CreateValue(Settings::Internal_LogLevelFilter, DAVA::VariantType((DAVA::uint8 *)levels, sizeof(levels)));
+    CreateValue(Settings::Internal_LogTextFilter, DAVA::VariantType(DAVA::String()));
 }
 
 DAVA::VariantType SettingsManager::GetValue(const DAVA::FastName& path)

@@ -48,15 +48,14 @@ class Downloader
 friend class DownloadManager;
 
 public:
-    Downloader(uint32 operationTimeout = 2);
     virtual ~Downloader(){};
 
 /* all methods putted into protected section because they should be used only from DownloadManager. */
 protected: 
     /* Get content size in bytes for remote Url. Place result to retSize, timeout - for operation cancelling */
-    virtual DownloadError GetSize(const String &url, int64 &retSize, int32 _timeout = -1) = 0;
+    virtual DownloadError GetSize(const String &url, int64 &retSize, int32 _timeout) = 0;
     /* Main downloading operation. Should call SaveData to store data. */
-    virtual DownloadError Download(const String &url, const uint64 &loadFrom, int32 _timeout = -1) = 0;
+    virtual DownloadError Download(const String &url, const uint64 &loadFrom, int32 _timeout) = 0;
     /* Interrupt download process. We expects that you will save last data chunk came before */
     virtual void Interrupt() = 0;
     /* 
@@ -64,9 +63,6 @@ protected:
         Take a look on CurlDownloader::CurlDataRecvHandler(...) for example.
     */
     virtual size_t SaveData(void *ptr, size_t size, size_t nmemb);
-
-protected:
-    uint32 timeout;
 };
 
 }

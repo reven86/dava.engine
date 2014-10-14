@@ -82,7 +82,6 @@ private:
     EditorListDelegate *listDelegate;
 
 	UIControl* parentUIObject;
-	UIControl* childUIObjectAbove;
 	bool needReleaseUIObjects;
 };
 

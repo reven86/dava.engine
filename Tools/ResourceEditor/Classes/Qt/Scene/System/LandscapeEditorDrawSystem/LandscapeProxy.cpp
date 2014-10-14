@@ -62,6 +62,7 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
 
 	customLandscape = new CustomLandscape();
+    customLandscape->Create();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, baseLandscape->GetTexture(Landscape::TEXTURE_TILE_FULL));
 	customLandscape->SetAABBox(baseLandscape->GetBoundingBox());
 }
@@ -116,7 +117,7 @@ void LandscapeProxy::SetDisplayingTexture(DAVA::Texture *texture)
 	displayingTexture = SafeRetain(texture);
 }
 
-AABBox3 LandscapeProxy::GetLandscapeBoundingBox()
+const AABBox3 & LandscapeProxy::GetLandscapeBoundingBox()
 {
 	return baseLandscape->GetBoundingBox();
 }
@@ -211,8 +212,12 @@ void LandscapeProxy::UpdateDisplayedTexture()
 														(float32)fullTiledWidth, (float32)fullTiledHeight, true);
 
 	Sprite *dstSprite = Sprite::CreateAsRenderTarget((float32)fullTiledWidth, (float32)fullTiledHeight, FORMAT_RGBA8888, true);
+
 	RenderManager::Instance()->SetRenderTarget(dstSprite);
-	
+
+    RenderManager::Instance()->SetColor(Color::White);
+    RenderHelper::Instance()->FillRect(Rect(0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight), RenderState::RENDERSTATE_2D_BLEND);
+
     Sprite::DrawState drawState;
     drawState.SetPosition(0.f, 0.f);
 	fullTiledSprite->Draw(&drawState);
@@ -229,7 +234,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 		notPassableSprite->Draw(&drawState);
 	}
 	SafeRelease(notPassableSprite);
-	
+
 	Texture* customColorsTexture = texturesToBlend[TEXTURE_TYPE_CUSTOM_COLORS];
 	Sprite* customColorsSprite = NULL;
 	if (customColorsTexture && texturesEnabled[TEXTURE_TYPE_CUSTOM_COLORS])

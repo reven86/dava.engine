@@ -106,7 +106,6 @@ public slots:
 	void OnSceneSaveToFolder();
 	void OnRecentTriggered(QAction *recentAction);
 	void ExportMenuTriggered(QAction *exportAsAction);
-
     void OnImportSpeedTreeXML();
 
 	void OnUndo();
@@ -208,6 +207,8 @@ public slots:
     void OnSwitchWithDifferentLODs(bool checked);
 
     void OnGenerateHeightDelta();
+
+    void OnBatchProcessScene();
     
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
@@ -249,12 +250,14 @@ private slots:
 	void UnmodalDialogFinished(int);
 
     void DebugVersionInfo();
+    void DebugColorPicker();
 
 private:
 	Ui::MainWindow *ui;
 	QtWaitDialog *waitDialog;
 	QtWaitDialog *beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;
+    QPointer<QDockWidget> dockConsole;
 
 	QtPosSaver posSaver;
 	bool globalInvalidate;

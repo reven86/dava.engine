@@ -42,10 +42,12 @@
     <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\ParseTextTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
-	<ClCompile Include="Classes\DFFontTest.cpp" />
+    <ClCompile Include="Classes\DFFontTest.cpp" />
     <ClCompile Include="Classes\ImageSizeTest.cpp" />
     <ClCompile Include="Classes\SceneSystemTest.cpp" />
     <ClCompile Include="Classes\DLCDownloadTest.cpp" />
+    <ClCompile Include="Classes\FunctionBindSingalTest.cpp" />
+    <ClCompile Include="Classes\MathTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\BaseScreen.h" />
@@ -95,5 +97,7 @@
     <ClInclude Include="Classes\ImageSizeTest.h" />
     <ClInclude Include="Classes\SceneSystemTest.h" />
     <ClInclude Include="Classes\DLCDownloadTest.h" />
+    <ClInclude Include="Classes\FunctionBindSingalTest.h" />
+    <ClInclude Include="Classes\MathTest.h" />
   </ItemGroup>
 </Project>

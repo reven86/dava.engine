@@ -29,6 +29,8 @@
 
 #include "SizeDialog.h"
 
+#include <QLabel>
+
 SizeDialog::SizeDialog(QWidget *parent) :
 QDialog(parent)
 {

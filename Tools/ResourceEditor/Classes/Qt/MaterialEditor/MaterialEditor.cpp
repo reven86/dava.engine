@@ -31,6 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QTextStream>
 #include <QAction>
 #include <QVariant>
+#include <QFileDialog>
+#include <QGroupBox>
+#include <QDialogButtonBox>
 
 #include "MaterialEditor.h"
 #include "ui_materialeditor.h"

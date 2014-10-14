@@ -30,7 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __MATERIAL_EDITOR_H__
 
 #include <QDialog>
-#include <QtGui>
 #include <QPointer>
 #include <QStandardItemModel>
 

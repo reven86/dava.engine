@@ -39,7 +39,9 @@ namespace DAVA
 class LocalizationIPhone 
 {
 public:
-	static void SelecePreferedLocalizationForPath(const FilePath &directoryPath);
+	static void SelectPreferedLocalizationForPath(const FilePath &directoryPath);
+    
+    static const char * GetDeviceLang(void);
 };
 	
 };

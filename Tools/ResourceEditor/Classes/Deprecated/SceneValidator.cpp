@@ -312,6 +312,31 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
                     }
                 }
             }
+
+            if((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
+            {
+                bool qualityGroupIsOk = false;
+                DAVA::FastName materialGroup = (*it)->GetMaterialGroup();
+
+                // if some group is set in material we should check it exists in quality system
+                if(materialGroup.IsValid())
+                {
+                    size_t qcount = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount();
+                    for(size_t q = 0; q < qcount; ++q)
+                    {
+                        if(materialGroup == DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(q))
+                        {
+                            qualityGroupIsOk = true;
+                            break;
+                        }
+                    }
+
+                    if(!qualityGroupIsOk)
+                    {
+                        errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
+                    }
+                }
+            }
         }
 	}
 

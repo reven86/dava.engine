@@ -85,11 +85,11 @@ void CopyPasteController::Copy(const HierarchyTreeNode::HIERARCHYTREENODESLIST& 
 		}
 		else if (curCopy == CopyTypeAggregator && aggregator)
 		{
-			copy = new HierarchyTreeAggregatorNode(NULL, aggregator);
+			copy = new HierarchyTreeAggregatorNode(NULL, aggregator, false);
 		}
 		else if (curCopy == CopyTypeScreen && screen)
 		{
-			copy = new HierarchyTreeScreenNode(NULL, screen);
+			copy = new HierarchyTreeScreenNode(NULL, screen, false);
 		}
 		
 		if (copy)

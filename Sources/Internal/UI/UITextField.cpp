@@ -100,6 +100,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	keyboardType(KEYBOARD_TYPE_DEFAULT)
 ,	returnKeyType(RETURN_KEY_DEFAULT)
 ,	enableReturnKeyAutomatically(false)
+,   maxLength(-1)
 {
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
@@ -134,6 +135,7 @@ UITextField::UITextField()
 ,	keyboardType(KEYBOARD_TYPE_DEFAULT)
 ,	returnKeyType(RETURN_KEY_DEFAULT)
 ,	enableReturnKeyAutomatically(false)
+,   maxLength(-1)
 {
 #if defined (__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
@@ -252,8 +254,6 @@ void UITextField::DidAppear()
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->ShowField();
-#elif defined(__DAVAENGINE_ANDROID__)
-    textFieldAndroid->ShowField();
 #endif
 }
 
@@ -261,8 +261,6 @@ void UITextField::WillDisappear()
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->HideField();
-#elif defined(__DAVAENGINE_ANDROID__)
-    textFieldAndroid->HideField();
 #endif
 }
     
@@ -955,6 +953,22 @@ void UITextField::SetCursorPos(uint32 pos)
 	textFieldAndroid->SetCursorPos(pos);
 #endif
     // TODO! implement for other OS!
+}
+
+void UITextField::SetMaxLength(int32 maxLength)
+{
+    this->maxLength = maxLength;
+#ifdef __DAVAENGINE_IPHONE__
+    textFieldiPhone->SetMaxLength(maxLength);
+#elif defined(__DAVAENGINE_ANDROID__)
+	textFieldAndroid->SetMaxLength(maxLength);
+#endif
+	// TODO! implement for other OS!
+}
+    
+int32 UITextField::GetMaxLength() const
+{
+    return maxLength;
 }
 
 void UITextField::SetVisible(bool isVisible, bool hierarchic)

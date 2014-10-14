@@ -44,18 +44,18 @@ public:
 	TextBlockDistanceRender(TextBlock*);
 	~TextBlockDistanceRender();
 	
-	virtual void Prepare();
+	virtual void Prepare(Texture *texture = NULL);
 	virtual void Draw(const Color& textColor, const Vector2* offset);
 	
 protected:
-	virtual Size2i DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
-	virtual Size2i DrawTextML(const WideString& drawText,
+	virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
+	virtual Font::StringMetrics DrawTextML(const WideString& drawText,
 							  int32 x, int32 y, int32 w,
 							  int32 xOffset, uint32 yOffset,
 							  int32 lineSize);
 	
 private:
-	Size2i InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize);
+	Font::StringMetrics InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize);
 	
 private:
 	RenderDataObject* renderObject;

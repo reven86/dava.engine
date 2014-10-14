@@ -38,45 +38,28 @@
 #include "LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "Deprecated/EditorConfig.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/SceneHelper.h"
 #include "Commands2/VisibilityToolActions.h"
 
+#include "Render/Material/NMaterialNames.h"
+
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
-:	SceneSystem(scene)
-,	enabled(false)
+:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	cursorSize(120)
-,	prevCursorPos(Vector2(-1.f, -1.f))
 ,	originalImage(NULL)
 ,	state(VT_STATE_NORMAL)
 ,	textureLevel(Landscape::TEXTURE_TILE_FULL)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    cursorSize = 120;
 
 	crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
 	crossTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
 }
 
 VisibilityToolSystem::~VisibilityToolSystem()
 {
-	SafeRelease(cursorTexture);
 	SafeRelease(crossTexture);
-}
-
-bool VisibilityToolSystem::IsLandscapeEditingEnabled() const
-{
-	return enabled;
-}
-
-LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::IsCanBeEnabled()
-{
-	return drawSystem->VerifyLandscape();
 }
 
 LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditing()
@@ -162,7 +145,7 @@ void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 		return;
 	}
 
-	UpdateCursorPosition(landscapeSize);
+	UpdateCursorPosition();
 
 	if (state != VT_STATE_SET_AREA && state != VT_STATE_SET_POINT)
 	{
@@ -178,8 +161,6 @@ void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 	}
 	else if (event->tid == UIEvent::BUTTON_1)
 	{
-		Vector3 point;
-
 		switch(event->phase)
 		{
 			case UIEvent::PHASE_BEGAN:
@@ -198,7 +179,7 @@ void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 				{
 					if (state == VT_STATE_SET_POINT)
 					{
-						SetVisibilityPointInternal(cursorPosition);
+						SetVisibilityPointInternal();
 					}
 					else if (state == VT_STATE_SET_AREA)
 					{
@@ -213,33 +194,6 @@ void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 	}
 }
 
-void VisibilityToolSystem::UpdateCursorPosition(int32 landscapeSize)
-{
-	Vector3 landPos;
-	isIntersectsLandscape = false;
-	if (collisionSystem->LandRayTestFromCamera(landPos))
-	{
-		isIntersectsLandscape = true;
-		Vector2 point(landPos.x, landPos.y);
-
-		point.x = (float32)((int32)point.x);
-		point.y = (float32)((int32)point.y);
-
-		AABBox3 box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-
-		cursorPosition.x = (point.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (point.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = (int32)cursorPosition.y;
-
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
-	{
-		// hide cursor
-		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
-	}
-}
 
 void VisibilityToolSystem::ResetAccumulatorRect()
 {
@@ -355,7 +309,7 @@ void VisibilityToolSystem::SetVisibilityArea()
 	SetState(VT_STATE_SET_AREA);
 }
 
-void VisibilityToolSystem::SetVisibilityPointInternal(const Vector2& point)
+void VisibilityToolSystem::SetVisibilityPointInternal()
 {
 	Sprite* sprite = Sprite::CreateAsRenderTarget(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE, FORMAT_RGBA8888);
 
@@ -452,13 +406,13 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
         xLine.reserve(sideLength);
 		for(uint32 x = 0; x < sideLength; ++x)
 		{
-			float xOfPoint = startOfCounting.x + density * x;
 			Vector<Vector3> yLine;
             yLine.reserve(sideLength);
             
+            float32 xOfPoint = startOfCounting.x + density * x;
 			for(uint32 y = 0; y < sideLength; ++y)
 			{
-				float yOfPoint = startOfCounting.y + density * y;
+				float32 yOfPoint = startOfCounting.y + density * y;
 				float32 zOfPoint = drawSystem->GetHeightAtTexturePoint(textureLevel, Vector2(xOfPoint, yOfPoint));
 				zOfPoint += heightValues[layerIndex];
 				Vector3 pointToInsert(xOfPoint, yOfPoint, zOfPoint);
@@ -491,8 +445,11 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 
 				target.z = targetTmp.z;
 
-				const EntityGroup* entityGroup = collisionSystem->ObjectsRayTest(sourcePoint, target);
-				bool wasIntersection = (entityGroup->Size() == 0) ? false : true;
+				const EntityGroup* intersectedObjects = collisionSystem->ObjectsRayTest(sourcePoint, target);
+                EntityGroup entityGroup(*intersectedObjects);
+                ExcludeEntities(&entityGroup);
+                
+				bool wasIntersection = (entityGroup.Size() == 0) ? false : true;
 
 				if (!wasIntersection)
 				{
@@ -500,7 +457,7 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 					wasIntersection = collisionSystem->LandRayTest(sourcePoint, target, p);
 				}
 
-				float colorIndex = 0;
+				float32 colorIndex = 0;
 				if(prevWasIntersection == false)
 				{
 					if(wasIntersection)
@@ -535,6 +492,61 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 		}
 	}
 }
+
+void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
+{
+    if (!entities || (entities->Size() == 0)) return;
+    
+    uint32 count = entities->Size();
+    while(count)
+    {
+        Entity *object = entities->GetEntity(count - 1);
+        bool needToExclude = false;
+
+        KeyedArchive * customProps = GetCustomPropertiesArchieve(object);
+        if(customProps)
+        {   // exclude not collised by bullet objects
+            const int32 collisiontype = customProps->GetInt32( "CollisionType", 0 );
+            if(     (ResourceEditor::ESOT_TREE == collisiontype)
+                ||  (ResourceEditor::ESOT_BUSH == collisiontype)
+                ||  (ResourceEditor::ESOT_FRAGILE_PROJ_INV == collisiontype)
+                ||  (ResourceEditor::ESOT_FALLING == collisiontype)
+                ||  (ResourceEditor::ESOT_SPEED_TREE == collisiontype)
+                )
+            {
+                needToExclude = true;
+            }
+        }
+        if(!needToExclude)
+        {   // exclude sky
+            
+            Vector<NMaterial *> materials;
+            SceneHelper::EnumerateMaterialInstances(object, materials);
+            
+            const uint32 matCount = materials.size();
+            for(uint32 m = 0; m < matCount; ++m)
+            {
+                const NMaterialTemplate *matTemplate = materials[m]->GetMaterialTemplate();
+                if((NMaterialName::SKYOBJECT == matTemplate->name)  || (NMaterialName::SKYBOX == matTemplate->name))
+                {
+                    needToExclude = true;
+                    break;
+                }
+            }
+        }
+        
+
+        if(needToExclude)
+        {
+            entities->Rem(object);
+        }
+        
+        --count;
+    }
+}
+
+
+
 
 bool VisibilityToolSystem::IsCircleContainsPoint(const Vector2& circleCenter, float32 circleRadius, const Vector2& point)
 {

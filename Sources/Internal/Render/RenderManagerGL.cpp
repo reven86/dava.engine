@@ -78,10 +78,6 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 
 	renderContextId = (uint64)hRC;
 	
-	Thread::secondaryContext = wglCreateContext(hDC);
-	Thread::currentDC = hDC;
-
-	wglShareLists(Thread::secondaryContext, hRC);
 	wglMakeCurrent(hDC, hRC);
 
 	glewInit();
@@ -317,13 +313,13 @@ void RenderManager::SetViewport(const Rect & rect)
     {
         if (currentRenderTarget)
         {
-            viewport.dx = currentRenderTarget->GetTexture()->GetWidth();
-            viewport.dy = currentRenderTarget->GetTexture()->GetHeight();
+            viewport.dx = (float32)currentRenderTarget->GetTexture()->GetWidth();
+            viewport.dy = (float32)currentRenderTarget->GetTexture()->GetHeight();
         }
         else
         {
-            viewport.dx = frameBufferWidth;
-            viewport.dy = frameBufferHeight;
+            viewport.dx = (float32)frameBufferWidth;
+            viewport.dy = (float32)frameBufferHeight;
         }
     }
     else if (renderOrientation != Core::SCREEN_ORIENTATION_TEXTURE)

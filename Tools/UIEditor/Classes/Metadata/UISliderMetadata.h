@@ -53,6 +53,7 @@ class UISliderMetadata : public UIControlMetadata
 	Q_PROPERTY(int MinSpriteModification READ GetMinSpriteModification WRITE SetMinSpriteModification);
     Q_PROPERTY(int MinDrawType READ GetMinDrawType WRITE SetMinDrawType);
     Q_PROPERTY(int MinColorInheritType READ GetMinColorInheritType WRITE SetMinColorInheritType);
+    Q_PROPERTY(int MinPerPixelAccuracyType READ GetMinPerPixelAccuracyType WRITE SetMinPerPixelAccuracyType);
     Q_PROPERTY(int MinAlign READ GetMinAlign WRITE SetMinAlign);
     
 	Q_PROPERTY(float MinLeftRightStretchCap READ GetMinLeftRightStretchCap WRITE SetMinLeftRightStretchCap);
@@ -67,6 +68,7 @@ class UISliderMetadata : public UIControlMetadata
     
     Q_PROPERTY(int MaxDrawType READ GetMaxDrawType WRITE SetMaxDrawType);
     Q_PROPERTY(int MaxColorInheritType READ GetMaxColorInheritType WRITE SetMaxColorInheritType);
+    Q_PROPERTY(int MaxPerPixelAccuracyType READ GetMaxPerPixelAccuracyType WRITE SetMaxPerPixelAccuracyType);
     Q_PROPERTY(int MaxAlign READ GetMaxAlign WRITE SetMaxAlign);
     
 	Q_PROPERTY(float MaxLeftRightStretchCap READ GetMaxLeftRightStretchCap WRITE SetMaxLeftRightStretchCap);
@@ -111,6 +113,9 @@ protected:
     virtual int GetMinColorInheritType() const;
     virtual void SetMinColorInheritType(int value);
     
+    virtual int GetMinPerPixelAccuracyType() const;
+    virtual void SetMinPerPixelAccuracyType(int value);
+
     virtual int GetMinAlign() const;
     virtual void SetMinAlign(int value);
     
@@ -138,6 +143,9 @@ protected:
     
     virtual int GetMaxColorInheritType() const;
     virtual void SetMaxColorInheritType(int value);
+    
+    virtual int GetMaxPerPixelAccuracyType() const;
+    virtual void SetMaxPerPixelAccuracyType(int value);
     
     virtual int GetMaxAlign() const;
     virtual void SetMaxAlign(int value);

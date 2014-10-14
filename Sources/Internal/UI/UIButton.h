@@ -27,9 +27,6 @@
 =====================================================================================*/
 
 
-
-
-
 #ifndef __DAVAENGINE_UI_BUTTON_H__
 #define __DAVAENGINE_UI_BUTTON_H__
 
@@ -49,6 +46,7 @@ namespace DAVA
         you should use GetStateBackground() and GetStateTextControl().
      */
 class UIStaticText;
+class Font;
 
 class UIButton : public UIControl
 {
@@ -150,6 +148,13 @@ public:
      */
     virtual void SetStateColorInheritType(int32 state, UIControlBackground::eColorInheritType value);
     /**
+     \brief Sets Sprite's per pixel accuracy type you want to use for draw for the control UIControlBackground object for the requested state.
+        Method creates UIControlBackground object for the state if this is neccesary.
+     \param[in] state state bit mask to set value for.
+     \param[in] value type of pixel accuracy.
+     */
+    virtual void SetStatePerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType value);
+    /**
      \brief Returns background used for drawing of the requested state.
      \param[in] state state to get value for.
      \returns background used for state draw.
@@ -176,7 +181,7 @@ public:
      \brief Returns UIControlBackground object actual for the current button state.
      \returns background used currently for draw.
      */
-    virtual UIControlBackground * GetBackground();
+    virtual UIControlBackground * GetBackground() const;
 
     /**
      \brief Sets background what will be used for draw of the requested states.
@@ -192,6 +197,20 @@ public:
      \param[in] color font used for text draw of the states.
      */
     virtual void SetStateFontColor(int32 state, const Color& fontColor);
+
+    /**
+     \brief Sets the color inherit type of the text and shadow for particular state.
+     \param[in] state state bit mask to set value for.
+     \param[in] color font used for text draw of the states.
+     */
+    void SetStateTextColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType);
+
+    /**
+     \brief Sets the per pixel accuracy type of the text and shadow for particular state.
+     \param[in] state state bit mask to set value for.
+     \param[in] color font used for text draw of the states.
+     */
+    void SetStateTextPerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType pixelAccuracyType);
 
     /**
      \brief Sets the color of the shadow for particular state.
@@ -260,8 +279,8 @@ protected:
     enum eButtonDrawState
     {
             DRAW_STATE_UNPRESSED = 0
-        ,	DRAW_STATE_PRESSED_INSIDE
         ,	DRAW_STATE_PRESSED_OUTSIDE
+        ,	DRAW_STATE_PRESSED_INSIDE
         ,	DRAW_STATE_DISABLED
         ,	DRAW_STATE_SELECTED
         ,	DRAW_STATE_HOVERED
@@ -289,6 +308,7 @@ private:
     UIControlBackground *GetActualBackground(eButtonDrawState drawState) const  { return stateBacks[GetActualBackgroundState(drawState)]; }
     UIControlBackground *GetOrCreateBackground(eButtonDrawState drawState);
     void SetBackground(eButtonDrawState drawState, UIControlBackground * newBackground);
+    UIControlBackground *CreateDefaultBackground() const{ return new UIControlBackground(); }
 
     eButtonDrawState GetActualTextBlockState(eButtonDrawState drawState) const;
     UIStaticText *GetActualTextBlockForState(int32 state) const;
@@ -296,6 +316,7 @@ private:
     UIStaticText *GetActualTextBlock(eButtonDrawState drawState) const  { return stateTexts[GetActualTextBlockState(drawState)]; }
     UIStaticText *GetOrCreateTextBlock(eButtonDrawState drawState);
     void SetTextBlock(eButtonDrawState drawState, UIStaticText * newTextBlock);
+    UIStaticText *CreateDefaultTextBlock() const;
 
     void UpdateStateTextControlSize();
 };

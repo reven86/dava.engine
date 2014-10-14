@@ -161,21 +161,20 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 
 FilePath Sprite::GetScaledName(const FilePath &spriteName)
 {
+    String pathname;
+    if(FilePath::PATH_IN_RESOURCES == spriteName.GetType())
+        pathname = spriteName.GetFrameworkPath();//as we can have several res folders we should work with 'FrameworkPath' instead of 'AbsolutePathname'
+    else
+        pathname = spriteName.GetAbsolutePathname();
+
     VirtualCoordinatesSystem * virtualCoordsSystem = VirtualCoordinatesSystem::Instance();
-    String baseResourceFolder = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetBaseResourceIndex());
-    
-	String::size_type pos = spriteName.GetAbsolutePathname().find(baseResourceFolder);
+    const String baseGfxFolderName = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetBaseResourceIndex());
+    String::size_type pos = pathname.find(baseGfxFolderName);
 	if(String::npos != pos)
 	{
-		String pathname = spriteName.GetAbsolutePathname();
-
-		String subStrPath = pathname.substr(0, pos);
-		String resFolder = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetDesirableResourceIndex());
-        String footer = pathname.substr(pos + baseResourceFolder.length());
-
-		return pathname.substr(0, pos)
-						+ resFolder
-						+ pathname.substr(pos + baseResourceFolder.length());
+        const String &desirableGfxFolderName = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetDesirableResourceIndex());
+        pathname.replace(pos, baseGfxFolderName.length(), desirableGfxFolderName);
+		return pathname;
 	}
 
 	return spriteName;
@@ -235,7 +234,7 @@ void Sprite::InitFromFile(File *file)
 	int32 width, height;
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d %d", &width, &height);
-    size = VirtualCoordinates::ConvertResourceToVirtual(Vector2(width, height), resourceSizeIndex);
+    size = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)width, (float32)height), resourceSizeIndex);
     
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d", &frameCount);
@@ -260,10 +259,10 @@ void Sprite::InitFromFile(File *file)
 		rectsAndOffsets[i][0] = (float32)x;
 		rectsAndOffsets[i][1] = (float32)y;
 
-        Vector2 vx1 = VirtualCoordinates::ConvertResourceToVirtual(Vector2(xOff, yOff), resourceSizeIndex);
-        Vector2 vx2 = VirtualCoordinates::ConvertResourceToVirtual(Vector2(xOff + dx, yOff), resourceSizeIndex);
-        Vector2 vx3 = VirtualCoordinates::ConvertResourceToVirtual(Vector2(xOff, yOff + dy), resourceSizeIndex);
-        Vector2 vx4 = VirtualCoordinates::ConvertResourceToVirtual(Vector2(xOff + dx, yOff + dy), resourceSizeIndex);
+        Vector2 vx1 = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)xOff, (float32)yOff), resourceSizeIndex);
+        Vector2 vx2 = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)(xOff + dx), (float32)yOff), resourceSizeIndex);
+        Vector2 vx3 = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)xOff, (float32)yOff + dy), resourceSizeIndex);
+        Vector2 vx4 = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)(xOff + dx), (float32)(yOff + dy)), resourceSizeIndex);
         
 		frameVertices[i][0] = vx1.x;
 		frameVertices[i][1] = vx1.y;
@@ -290,7 +289,7 @@ void Sprite::InitFromFile(File *file)
 			}
 		}
 
-        Rect rect = VirtualCoordinates::ConvertResourceToVirtual(Rect(dx, dy, xOff, yOff), resourceSizeIndex);
+        Rect rect = VirtualCoordinates::ConvertResourceToVirtual(Rect((float32)dx, (float32)dy, (float32)xOff, (float32)yOff), resourceSizeIndex);
 		rectsAndOffsets[i][2] = rect.x;
 		rectsAndOffsets[i][3] = rect.y;
 		rectsAndOffsets[i][4] = rect.dx;
@@ -400,7 +399,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     Sprite* sprite = NULL;
     if (texture)
     {
-        Vector2 sprSize(width, height);
+        Vector2 sprSize((float32)width, (float32)height);
         if(inVirtualSpace)
         {
             sprSize = VirtualCoordinates::ConvertPhysicalToVirtual(sprSize);
@@ -448,6 +447,24 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
     return sprite;
 }
 
+String Sprite::GetPathString( const Sprite *sprite )
+{
+    if (!sprite)
+    {
+        return "";
+    }
+
+    FilePath path(sprite->GetRelativePathname());
+    String pathName = "";
+    if (!path.IsEmpty())
+    {
+        path.TruncateExtension();
+        pathName = path.GetFrameworkPath();
+    }
+
+    return pathName;
+}
+
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
     Vector<Image*> images;
@@ -466,7 +483,7 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
 {
-    Vector2 offset(xOffset, yOffset);
+    Vector2 offset((float32)xOffset, (float32)yOffset);
     size = Vector2(sprWidth, sprHeight);
 	if (!contentScaleIncluded)
 	{
@@ -547,7 +564,8 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 	}
 
 	// DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
-	this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    if (this->relativePathname.IsEmpty())
+        this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
 
     spriteMapMutex.Lock();
 	spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;

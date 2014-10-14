@@ -65,7 +65,7 @@ namespace DAVA
 	{\
 		DVASSERT(0 && "Application tried to call GL or DX in separate thread");\
 	}\
-	if(Thread::IsMainThread())\
+	else\
 	{\
 		RenderManager::Instance()->VerifyRenderContext();\
 	}\

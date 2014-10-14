@@ -235,6 +235,7 @@
 #include "Render/Highlevel/Vegetation/TextureSheet.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
+#include "Scene3D/AnimationData.h"
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Scene3D/LodNode.h"
 #include "Scene3D/ImposterNode.h"
@@ -255,6 +256,7 @@
 
 //Components
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/BulletComponent.h"
 #include "Scene3D/Components/CameraComponent.h"
 #include "Scene3D/Components/DebugRenderComponent.h"

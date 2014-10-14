@@ -480,7 +480,7 @@ bool WebBrowserContainer::DoOpenBuffer()
 
     ScopedComPtr<HtmlMoniker> moniker(new HtmlMoniker());
     moniker->SetHtml(bufferToOpen);
-    moniker->SetBaseUrl(StringToWString(bufferToOpenPath.GetAbsolutePathname()));
+    moniker->SetBaseUrl(StringToWString(bufferToOpenPath.AsURL()));
 
     ScopedComPtr<IDispatch> docDispatch;
     HRESULT hr = webBrowser->get_Document(&docDispatch);
@@ -626,13 +626,13 @@ void WebViewControl::SetRect(const Rect& rect)
 	RECT browserRect = {0};
 	::GetWindowRect(this->browserWindow, &browserRect);
 
-	browserRect.left = (LONG)(rect.x * Core::GetVirtualToPhysicalFactor());
-	browserRect.top  = (LONG)(rect.y * Core::GetVirtualToPhysicalFactor());
-	browserRect.left  += (LONG)Core::Instance()->GetPhysicalDrawOffset().x;
-	browserRect.top += (LONG)Core::Instance()->GetPhysicalDrawOffset().y;
+	browserRect.left = (LONG)(rect.x * VirtualCoordinates::GetVirtualToPhysicalFactor());
+    browserRect.top = (LONG)(rect.y * VirtualCoordinates::GetVirtualToPhysicalFactor());
+	browserRect.left  += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+    browserRect.top += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
 
-	browserRect.right = (LONG)(browserRect.left + rect.dx * Core::GetVirtualToPhysicalFactor());
-	browserRect.bottom = (LONG)(browserRect.top + rect.dy * Core::GetVirtualToPhysicalFactor());
+    browserRect.right = (LONG)(browserRect.left + rect.dx * VirtualCoordinates::GetVirtualToPhysicalFactor());
+    browserRect.bottom = (LONG)(browserRect.top + rect.dy * VirtualCoordinates::GetVirtualToPhysicalFactor());
 
 	::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
 		browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );

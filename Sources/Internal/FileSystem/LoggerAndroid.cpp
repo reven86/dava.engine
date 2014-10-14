@@ -46,6 +46,7 @@ int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 	int32 androidLL = ANDROID_LOG_DEFAULT;
 	switch (ll)
 	{
+		case Logger::LEVEL_FRAMEWORK:
 		case Logger::LEVEL_DEBUG:
 			androidLL = ANDROID_LOG_DEBUG;
 			break;

@@ -399,4 +399,57 @@ bool Image::Save(const FilePath &path) const
     return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == SUCCESS;
 }
     
+
+void Image::FlipHorizontal()
+{
+	switch(format)
+	{
+	case FORMAT_A8:
+		FlipHorizontal((uint8 *)data, width, height);
+		break;
+
+	case FORMAT_A16:
+	case FORMAT_RGBA5551:
+	case FORMAT_RGBA4444:
+	case FORMAT_RGB565:
+		FlipHorizontal((uint16 *)data, width, height);
+		break;
+
+	case FORMAT_RGBA8888:
+		FlipHorizontal((uint32 *)data, width, height);
+		break;
+
+	default:
+		DVASSERT(false && "Not implemented");
+		break;
+	}
+}
+
+void Image::FlipVertical()
+{
+	switch(format)
+	{
+	case FORMAT_A8:
+		FlipVertical((uint8 *)data, width, height);
+		break;
+
+	case FORMAT_A16:
+	case FORMAT_RGBA5551:
+	case FORMAT_RGBA4444:
+	case FORMAT_RGB565:
+		FlipVertical((uint16 *)data, width, height);
+		break;
+
+	case FORMAT_RGBA8888:
+		FlipVertical((uint32 *)data, width, height);
+		break;
+
+	default:
+		DVASSERT(false && "Not implemented");
+		break;
+	}
+}
+
+    
+    
 };

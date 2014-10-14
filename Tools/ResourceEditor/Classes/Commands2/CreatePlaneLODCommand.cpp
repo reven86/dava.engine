@@ -131,10 +131,12 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
 
 	RenderManager::Instance()->SetViewport(newViewport, true);
 
-    if(clearTarget)
-        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
     Scene * tempScene = new Scene();
+    if(clearTarget)
+        tempScene->SetClearBuffers(RenderManager::ALL_BUFFERS);
+    else
+        tempScene->SetClearBuffers(0);
+
     NMaterial * globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if(globalMaterial)
         tempScene->SetGlobalMaterial(globalMaterial->Clone());
@@ -146,7 +148,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     if(treeObejct)
     {
         Vector<Vector3> fakeSH(9, Vector3());
-        fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f/0.564188; //fake SH value to make original object color
+        fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f/0.564188f; //fake SH value to make original object color
         treeObejct->SetSphericalHarmonics(fakeSH);
     }
 

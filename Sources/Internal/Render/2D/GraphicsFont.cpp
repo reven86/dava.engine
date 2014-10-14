@@ -359,15 +359,15 @@ float32 GraphicsFont::GetDistanceFromAtoB(int32 prevChIndex, int32 chIndex) cons
 	return currentX * fontScaleCoeff;
 }
 
-Size2i GraphicsFont::GetStringSize(const WideString& str, Vector<float32> *charSizes) const
+Font::StringMetrics GraphicsFont::GetStringMetrics(const WideString& str, Vector<float32> *charSizes) const
 {
 	return DrawString(0.f, 0.f, str, 0, 0, charSizes, false);
 }
 
-Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth, int32 spaceAddon, Vector<float32> *charSizes, bool draw) const
+Font::StringMetrics GraphicsFont::DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth, int32 spaceAddon, Vector<float32> *charSizes, bool draw) const
 {
 	const uint32 length = string.length();
-	if(length == 0) return Size2i();
+	if(length == 0) return Font::StringMetrics();
 
 	uint32 countSpace = 0;
 	for(uint32 i = 0; i < length; ++i)
@@ -459,7 +459,12 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 		prevChIndex = chIndex;
 	}
 
-	return Size2i((int32)(ceilf(currentX + sizeFix - x)), GetFontHeight());
+	Font::StringMetrics metrics;
+	metrics.drawRect = Rect2i(0, 0, (int32)(ceilf(currentX + sizeFix - x)), GetFontHeight());
+    metrics.width = metrics.drawRect.dx;
+	metrics.height = metrics.drawRect.dy;
+	metrics.baseline = 0;
+	return metrics;
 }
 
 };

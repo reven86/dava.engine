@@ -36,7 +36,6 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(SwitchComponent)
 
 
 SwitchComponent::SwitchComponent()

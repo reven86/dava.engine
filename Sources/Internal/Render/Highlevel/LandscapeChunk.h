@@ -54,7 +54,6 @@ public:
 
 	virtual ShadowVolume * CreateShadow();
 
-private:
     Landscape * landscape;
     
 public:

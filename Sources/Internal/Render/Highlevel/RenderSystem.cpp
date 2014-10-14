@@ -258,8 +258,7 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
     {
         RenderBatch * batch = renderObject->GetRenderBatch(k);
         NMaterial * material = batch->GetMaterial();
-        uint8 bindFlags = material->GetDynamicBindFlags();
-        if (material && (bindFlags & NMaterial::DYNAMIC_BIND_LIGHT))
+        if (material)
         {
 			needUpdate = true;
 			break;
@@ -292,7 +291,7 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
 			const Vector3 & lightPosition = light->GetPosition();
 			
 			float32 squareDistanceToLight = (position - lightPosition).SquareLength();
-			if (squareDistanceToLight < squareMinDistance)
+			if ((!nearestLight) || (squareDistanceToLight < squareMinDistance))
 			{
 				squareMinDistance = squareDistanceToLight;
 				nearestLight = light;

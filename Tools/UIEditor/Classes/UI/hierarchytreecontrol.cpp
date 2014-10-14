@@ -107,7 +107,7 @@ bool HierarchyTreeControlMimeData::IsDropEnable(const HierarchyTreeNode *parentI
 	return true;
 }
 
-HierarchyTreeNode::HIERARCHYTREENODESIDLIST HierarchyTreeControlMimeData::GetItems() const
+const HierarchyTreeNode::HIERARCHYTREENODESIDLIST &HierarchyTreeControlMimeData::GetItems() const
 {
 	return items;
 }
@@ -311,12 +311,12 @@ void HierarchyTreeControl::HandleDropHierarchyMimeData(QDropEvent *event, const 
 	}
 	else //Otherwise move item(s)
 	{
-		HierarchyTreeNode::HIERARCHYTREENODESIDLIST items = mimeData->GetItems();
+		const HierarchyTreeNode::HIERARCHYTREENODESIDLIST &items = mimeData->GetItems();
         
         // Perform the validation - in case at least one item coincides with insertInto
         // or insertAfter items, block the move. This may happen under MacOS
         // because of Qt defect https://bugreports.qt-project.org/browse/QTBUG-4075
-        for (HierarchyTreeNode::HIERARCHYTREENODESIDLIST::iterator iter = items.begin();
+        for (HierarchyTreeNode::HIERARCHYTREENODESIDLIST::const_iterator iter = items.begin();
              iter != items.end(); iter ++)
         {
             if ((*iter) == insertInTo || (*iter) == insertAfter)

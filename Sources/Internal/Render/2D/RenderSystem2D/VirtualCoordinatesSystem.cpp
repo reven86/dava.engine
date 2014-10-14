@@ -71,7 +71,7 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
         }
         else
         {
-            virtualScreenSize.dy = physicalScreenSize.dy * physicalToVirtual;
+            virtualScreenSize.dy = (int32)(physicalScreenSize.dy * physicalToVirtual);
         }
         for (int i = 0; i < (int)allowedSizes.size(); i++)
         {
@@ -94,7 +94,7 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
         }
         else
         {
-            virtualScreenSize.dx = physicalScreenSize.dx * physicalToVirtual;
+            virtualScreenSize.dx = (int32)(physicalScreenSize.dx * physicalToVirtual);
         }
         for (int i = 0; i < (int)allowedSizes.size(); i++)
         {
@@ -154,8 +154,8 @@ void VirtualCoordinatesSystem::SetPhysicalScreenSize(int32 width, int32 height)
 
 void VirtualCoordinatesSystem::SetVirtualScreenSize(int32 width, int32 height)
 {
-    requestedVirtualScreenSize.dx = virtualScreenSize.dx = (float32)width;
-    requestedVirtualScreenSize.dy = virtualScreenSize.dy = (float32)height;
+    requestedVirtualScreenSize.dx = virtualScreenSize.dx = width;
+    requestedVirtualScreenSize.dy = virtualScreenSize.dy = height;
     wasScreenResized = true;
 }
 

@@ -37,6 +37,8 @@
 #include "Sound/FMODSoundEvent.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
+#include "Debug/Stats.h"
+
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"
@@ -75,7 +77,9 @@ SoundSystem::SoundSystem()
     
 	FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
 	FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
-    
+#ifdef __DAVAENGINE_ANDROID__
+	FMOD_VERIFY(fmodSystem->setOutput(FMOD_OUTPUTTYPE_AUDIOTRACK));
+#endif
     FMOD_VERIFY(fmodSystem->setSoftwareChannels(MAX_SOUND_CHANNELS));
     
 #ifdef DAVA_FMOD_PROFILE
@@ -342,6 +346,8 @@ void SoundSystem::UnloadFMODProjects()
 
 void SoundSystem::Update(float32 timeElapsed)
 {
+	TIME_PROFILE("SoundSystem::Update");
+
 	fmodEventSystem->update();
     
 	uint32 size = soundsToReleaseOnUpdate.size();

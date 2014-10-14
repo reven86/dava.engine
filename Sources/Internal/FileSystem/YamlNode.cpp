@@ -678,7 +678,6 @@ void YamlNode::InternalSetKeyedArchive(KeyedArchive* archive)
 {
     //creation array with variables
     const Map<String, VariantType*> & innerArchiveMap =  archive->GetArchieveData();
-    objectArray->array.reserve(innerArchiveMap.size());
     for (Map<String, VariantType*>::const_iterator it = innerArchiveMap.begin(); it != innerArchiveMap.end(); ++it)
     {
         YamlNode* arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);

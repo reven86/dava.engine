@@ -43,4 +43,10 @@ namespace DAVA
 		ReleaseDC(NULL, screen);
 		return hDPI;
 	}
+
+    float64 DPIHelper::GetDpiScaleFactor(int32 screenId)
+    {
+        return 1.0;
+    }
+
 }

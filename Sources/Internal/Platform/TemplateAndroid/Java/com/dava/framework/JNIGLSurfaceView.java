@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bda.controller.ControllerListener;
-import com.bda.controller.StateEvent;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -15,6 +13,11 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+
+import com.bda.controller.ControllerListener;
+import com.bda.controller.StateEvent;
 
 public class JNIGLSurfaceView extends GLSurfaceView
 {
@@ -79,9 +82,19 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			setPreserveEGLContextOnPause(true);
 		}
 		
+		setDebugFlags(0);
+		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
 	}
 	
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        // Fix lag when text field lost focus, but keyboard not closed yet. 
+        outAttrs.imeOptions = JNITextField.GetLastKeyboardIMEOptions();
+        outAttrs.inputType = JNITextField.GetLastKeyboardInputType();
+        return super.onCreateInputConnection(outAttrs);
+    }
+    
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		//YZ rewrite size parameter from fill parent to fixed size

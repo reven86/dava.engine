@@ -42,7 +42,7 @@ namespace DAVA
 {
     
     static const uint32 RENDER_TARGET_WIDTH = 1024;// / 4;
-    static const uint32 RENDER_TARGET_HEIGHT = 512;// / 4;
+    static const uint32 RENDER_TARGET_HEIGHT = 1024;// / 4;
     
     
     StaticOcclusion::StaticOcclusion()
@@ -381,13 +381,13 @@ namespace DAVA
                             recordedBatches.clear();
                         }
                         
-                        //                    if (/*(stepX == 0) && (stepY == 0) &&*/ effectiveSides[side][realSideIndex] == side)
-                        //                    {
-                        //                        Image * image = renderTargetTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
-                        //                        ImageSystem::Instance()->Save(FilePath(Format("~doc:/renderimage_b%d_s_%d_es_%d_%d_%d.png", blockIndex, side, effectiveSides[side][realSideIndex] ,stepX, stepY)),
-                        //                                                      image);
-                        //                        SafeRelease(image);
-                        //                    }
+//                                             if (/*(stepX == 0) && (stepY == 0) &&*/ effectiveSides[side][realSideIndex] == side)                                            
+//                                             {
+//                                                 Image * image = renderTargetTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+//                                                 ImageSystem::Instance()->Save(FilePath(Format("~doc:/renderimage_b%d_s_%d_es_%d_%d_%d.png", blockIndex, side, effectiveSides[side][realSideIndex] ,stepX, stepY)),
+//                                                                               image);
+//                                                 SafeRelease(image);
+//                                             }
                     }
             
         }

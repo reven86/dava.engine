@@ -100,7 +100,16 @@ ParticleRenderObject::~ParticleRenderObject()
 
 void ParticleRenderObject::PrepareToRender(Camera *camera)
 {
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_PREPARE_BUFFERS))
+		return;
+    
 	PrepareRenderData(camera);
+    
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_DRAW))
+    {
+        activeRenderBatchArray.clear();
+		return;
+    }
 }
 
 void ParticleRenderObject::SetEffectMatrix(Matrix4 *matrix)
