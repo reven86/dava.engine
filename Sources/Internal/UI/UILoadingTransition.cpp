@@ -129,9 +129,7 @@ void UILoadingTransition::Update(float32 timeElapsed)
 {
 	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
 	{
-		ThreadIdJobWaiter waiter(thread->GetId());
-		waiter.Wait();
-
+		JobManager2::Instance()->WaitMainJobs(thread->GetId());
 		UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
         if (!inTransition) 
         {

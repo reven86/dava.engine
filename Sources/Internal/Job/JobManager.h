@@ -32,73 +32,22 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
-#include "Platform/Thread.h"
-#include "Platform/Mutex.h"
 #include "Base/ScopedPtr.h"
-#include "Job/Job.h"
-
 #include "Base/Function.h"
 #include "Base/Bind.h"
 #include "Base/FastName.h"
+#include "Platform/Thread.h"
+#include "Platform/Mutex.h"
+#include "JobQueue.h"
 
 namespace DAVA
 {
-
-class MainThreadJobQueue;
-class ThreadIdJobWaiter;
-class JobInstanceWaiter;
-
-class JobManager : public Singleton<JobManager>
-{
-public:
-	enum eThreadType
-	{
-		THREAD_MAIN = 0,
-		THREAD_WORKER,
-        THREAD_MAIN_FORCE_ENQUEUE
-	};
-
-	enum eWaiterRegistrationResult
-	{
-		WAITER_WILL_WAIT,
-		WAITER_RETURN_IMMEDIATELY
-	};
-
-	JobManager();
-	virtual ~JobManager();
-
-	ScopedPtr<Job> CreateJob(eThreadType threadType, const Message & message, uint32 flags = Job::DEFAULT_FLAGS);
-
-	void Update();
-	
-	void OnJobCreated(Job * job);
-	void OnJobCompleted(Job * job);
-
-	eWaiterRegistrationResult RegisterWaiterForCreatorThread(ThreadIdJobWaiter * waiter);
-	void UnregisterWaiterForCreatorThread(ThreadIdJobWaiter * waiter);
-
-	eWaiterRegistrationResult RegisterWaiterForJobInstance(JobInstanceWaiter * waiter);
-	void UnregisterWaiterForJobInstance(JobInstanceWaiter * waiter);
-
-protected:
-	Mutex jobsDoneMutex;
-	MainThreadJobQueue * mainQueue;
-	void UpdateMainQueue();
-
-	Map<Thread::Id, uint32> jobsPerCreatorThread;
-	Map<Thread::Id, ThreadIdJobWaiter *> waitersPerCreatorThread;
-	void CheckAndCallWaiterForThreadId(const Thread::Id & threadId);
-	
-	void CheckAndCallWaiterForJobInstance(Job * job);
-	Map<Job *, JobInstanceWaiter *> waitersPerJob;
-};
-
 class JobManager2 : public Singleton<JobManager2>
 {
 	friend struct WorkerThread2;
 
 public:
-    JobManager2(uint32 cpuCoresCount);
+    JobManager2();
     virtual ~JobManager2();
 
 	enum eMainJobType
@@ -110,13 +59,13 @@ public:
 
     void Update();
 
-    void CreateMainJob(const Function<void ()>& mainFn, eMainJobType mainJobType = JOB_MAIN);
+    void CreateMainJob(const Function<void ()>& fn, eMainJobType mainJobType = JOB_MAIN);
     void WaitMainJobs(Thread::Id invokerThreadId = 0);
     bool HasMainJobs(Thread::Id invokerThreadId = 0);
 
-    void CreateWorkerJob(FastName workerJobTag, const Function<void ()>& workerFn);
-    void WaitWorkerJobs(FastName workerJobTag);
-    bool HasWorkerJobs(FastName workerJobTag);
+    void CreateWorkerJob(const Function<void ()>& fn);
+    void WaitWorkerJobs();
+    bool HasWorkerJobs();
 
     // done signal
     // Signal<void (FastName workerJobTag)> workerJobFinished;
@@ -132,31 +81,17 @@ protected:
         Function<void ()> fn;
     };
 
-    struct WorkerJob
-    {
-		FastName tag;
-		Function<void()> fn;
-	};
-
 	struct WorkerThread2
 	{
-		WorkerThread2(ConditionalVariable *doneCV, Mutex *doneMutex);
+		WorkerThread2(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
 		~WorkerThread2();
 
-		bool Run(FastName tag, Function<void()> fn);
-		bool HasTag(FastName tag);
+		void Cancel();
 
 	protected:
 		Thread *thread;
-		ConditionalVariable *doneCV;
-		Mutex *doneMutex;
-
-		Function<void()> fn;
-		FastName tag;
-
-		Mutex mutex;
-		Mutex mutexCV;
-		ConditionalVariable cv;
+		JobQueueWorker *workerQueue;
+		Semaphore *workerDoneSem;
 
 		void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
 	};
@@ -167,15 +102,11 @@ protected:
     ConditionalVariable mainCV;
     MainJob curMainJob;
 
-    Mutex workerQueueMutex;
-    Mutex workerThreadsMutex;
-	Mutex workerCVMutex;
-	Deque<WorkerJob> workerJobs;
+	Semaphore workerDoneSem;
+	JobQueueWorker workerQueue;
 	Vector<WorkerThread2*> workerThreads;
-	ConditionalVariable workerCV;
 
     void RunMain();
-    void RunWorker();
 };
 
 }

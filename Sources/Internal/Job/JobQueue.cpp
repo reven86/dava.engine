@@ -29,53 +29,87 @@
 #include "Job/JobQueue.h"
 #include "Job/Job.h"
 #include "Job/JobManager.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
 
-void MainThreadJobQueue::Update()
+JobQueueWorker::JobQueueWorker(uint32 maxCount /* = 1024 */)
+: jobsMaxCount(maxCount)
+, jobsInQueue(0)
+, nextPopIndex(0)
+, nextPushIndex(0)
+, processingCount(0)
 {
-	mutex.Lock();
+	jobs = new Function<void()>[jobsMaxCount];
+}
 
-	while(!queue.empty())
+JobQueueWorker::~JobQueueWorker()
+{
+	SafeDeleteArray(jobs);
+}
+
+void JobQueueWorker::Push(const Function<void()> &fn)
+{
+	if(fn != NULL)
 	{
-		Job * job = queue.front();
-		mutex.Unlock();
+		{
+			LockGuard<Spinlock> guard(lock);
+			//LockGuard<Mutex> guard(lock1);
+			if(nextPopIndex == nextPopIndex && 0 == processingCount)
+			{
+				nextPushIndex = 0;
+				nextPopIndex = 0;
+			}
 
-		job->Perform();
-        JobManager::Instance()->OnJobCompleted(job);
+			DVASSERT(nextPushIndex < jobsMaxCount);
 
-        if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
-        {
-            BaseObject * bo = job->GetMessage().GetBaseObject();
-            if(bo)
-            {
-                bo->Release();
-            }
-        }
+			jobs[nextPushIndex++] = fn;
+			processingCount++;
+		}
 
-		mutex.Lock();
-		queue.pop_front();
-		job->Release();
+		jobsInQueue.Post();
+	}
+}
+
+bool JobQueueWorker::PopAndExec()
+{
+	bool ret = false;
+	Function<void()> fn;
+
+	{
+		LockGuard<Spinlock> guard(lock);
+		//LockGuard<Mutex> guard(lock1);
+		if(nextPopIndex < nextPushIndex)
+		{
+			fn = jobs[nextPopIndex++];
+			//jobs[nextPopIndex++] = NULL;
+		}
 	}
 
-	mutex.Unlock();
+	if(fn != NULL)
+	{
+		fn();
+
+		{
+			LockGuard<Spinlock> guard(lock);
+			//LockGuard<Mutex> guard(lock1);
+			DVASSERT(processingCount > 0);
+			processingCount--;
+		}
+
+		ret = true;
+	}
+
+	return ret;
 }
 
-void MainThreadJobQueue::AddJob(Job * job)
+bool JobQueueWorker::IsEmpty()
 {
-    if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
-    {
-        SafeRetain(job->GetMessage().GetBaseObject());
-    }
-
-	mutex.Lock();
-
-	job->Retain();
-	queue.push_back(job);
-
-	mutex.Unlock();
+	LockGuard<Spinlock> guard(lock);
+	//LockGuard<Mutex> guard(lock1);
+	return (nextPopIndex == nextPushIndex && 0 == processingCount);
 }
 
+};
 
-}

@@ -53,7 +53,6 @@
 #include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Job/JobScheduler.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/Notification.h"
 
@@ -122,9 +121,7 @@ void Core::CreateSingletons()
     // check types size
 	new Logger();
 	new AllocatorFactory();
-	new JobManager();
-	new JobManager2(DeviceInfo::GetCPUCoresCount());
-    new JobScheduler(DeviceInfo::GetCPUCoresCount());
+	new JobManager2();
 	new FileSystem();
     FilePath::InitializeBundleName();
 	
@@ -220,8 +217,6 @@ void Core::ReleaseSingletons()
 #endif
 
 	InputSystem::Instance()->Release();
-    JobScheduler::Instance()->Release();
-	JobManager::Instance()->Release();
 	JobManager2::Instance()->Release();
     VersionInfo::Instance()->Release();
 	AllocatorFactory::Instance()->Release();
@@ -732,7 +727,6 @@ void Core::SystemProcessFrame()
 		
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-		JobManager::Instance()->Update();
         JobManager2::Instance()->Update();
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();

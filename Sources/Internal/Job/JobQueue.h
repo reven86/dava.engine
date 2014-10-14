@@ -30,22 +30,44 @@
 #define __DAVAENGINE_JOB_QUEUE_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Atomic.h"
+#include "Base/Function.h"
+#include "Platform/Spinlock.h"
+#include "Platform/Semaphore.h"
 #include "Platform/Mutex.h"
 
 namespace DAVA
 {
 
-class Job;
+class JobQueueMain
+{
+	
+};
 
-class MainThreadJobQueue
+class JobQueueWorker
 {
 public:
-	void Update();
-	void AddJob(Job * job);
+	JobQueueWorker(uint32 maxCount = 1024);
+	virtual ~JobQueueWorker();
+
+	void Push(const Function<void ()> &fn);
+	bool PopAndExec();
+	bool IsEmpty();
+
+	Semaphore jobsInQueue;
 
 protected:
-	Mutex mutex;
-	Deque<Job*> queue;
+	uint32 jobsMaxCount;
+	Function<void()> *jobs;
+
+	uint32 nextPushIndex;
+	uint32 nextPopIndex;
+	int32 processingCount;
+
+	Spinlock lock;
+	Mutex lock1;
+
+	void UpdateIndexes();
 };
 
 }

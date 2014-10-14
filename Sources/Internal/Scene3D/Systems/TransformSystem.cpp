@@ -36,13 +36,11 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Debug/Stats.h"
-#include "Job/JobScheduler.h"
-#include "Job/JobWaiter.h"
+#include "Job/JobManager.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
-
-const FastName TransformSystem::processingTag = FastName("TransformSystemUpdate");
 
 TransformSystem::TransformSystem(Scene * scene)
 :	SceneSystem(scene)
@@ -62,7 +60,7 @@ void TransformSystem::Process(float32 timeElapsed)
     multipliedNodes = 0;
 
 	// calculate optimal jobs count for current number of entities should be processed
-	const uint32 jobsCount = Min(maxProcessingThreads, updatableEntities.size() / (uint32)JobScheduler::Instance()->GetThreadsCount());
+	uint32 jobsCount = Min(maxProcessingThreads, updatableEntities.size() / (uint32) DeviceInfo::GetCPUCoresCount());
 
 	if(jobsCount > 0 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
     {
@@ -85,13 +83,13 @@ void TransformSystem::Process(float32 timeElapsed)
 
 			// run jobs
 			Function<void()> fn = Bind(MakeFunction(this, &TransformSystem::UpdateHierarchyPart), firstIndex, count, &sendEvent[i]);
-			JobManager2::Instance()->CreateWorkerJob(processingTag, fn);
+			JobManager2::Instance()->CreateWorkerJob(fn);
 
 			// move to next part of entities
 			firstIndex += count;
 		}
 
-		JobManager2::Instance()->WaitWorkerJobs(processingTag);
+		JobManager2::Instance()->WaitWorkerJobs();
 
 		for(uint32 i = 0; i < jobsCount; ++i)
 		{

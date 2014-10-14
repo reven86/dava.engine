@@ -59,7 +59,6 @@ public:
 
 private:
 	static const uint32 maxProcessingThreads = 8;
-	static const FastName processingTag;
 
 	Vector<Entity*> updatableEntities;
 	Vector<Entity*> sendEvent[maxProcessingThreads];
