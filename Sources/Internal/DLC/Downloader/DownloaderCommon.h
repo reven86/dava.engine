@@ -83,21 +83,13 @@ struct DownloadTaskDescription
     char8 partsCount;
 };
 
-class PartInfo
+class Downloader;
+struct PartInfo
 {
-//    bool WriteTo(File *file, uint64 pos);
-
-
+    Downloader *downloader;
     uint64 seekPos;
     uint64 size;
     uint64 progress;
-};
-
-struct CurrentDownloadInfo
-{
-
-    char8 partsCount;
-    Vector<PartInfo *> parts;
 };
 
 }

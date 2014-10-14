@@ -32,14 +32,14 @@
 
 #include "TestTemplate.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "DLC/Downloader/CurlMultiDownloader.h"
+//#include "DLC/Downloader/CurlMultiDownloader.h"
 
 using namespace DAVA;
 
 class CurlTestDownloader : public CurlDownloader
 {
 protected:
-    virtual size_t SaveData(void *ptr, size_t size, size_t nmemb);
+    virtual size_t SaveData(void *ptr, uint64 size);
 };
 
 

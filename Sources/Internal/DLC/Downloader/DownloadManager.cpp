@@ -51,7 +51,6 @@ DownloadManager::DownloadManager()
     , isThreadStarted(false)
     , currentTask(NULL)
     , downloader(0)
-    , remoteFileSize(0)
     , downloadedTotal(0)
 {
 }
@@ -165,9 +164,8 @@ void DownloadManager::Update()
     callbackMutex.Unlock();
 }
 
-uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 timeout, int32 retriesCount)
+uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode, const char8 partsCount, const int32 timeout, int32 retriesCount)
 {
-    const char8 partsCount = 2;
     DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, partsCount);
  
     static uint32 prevId = 1;
@@ -597,23 +595,26 @@ DownloadError DownloadManager::TryDownload()
         MakeFullDownload();
     }
 
-
-
     if (DLE_NO_ERROR != currentTask->error)
     {
         return currentTask->error;
     }
 
-    currentTask->downloadTotal = remoteFileSize;
-    //currentTask->downloadProgress = file->GetSize();
+    currentTask->downloadProgress = 0;
 
-    DownloadByParts();
+    if (DLE_NO_ERROR == currentTask->error)
+    {
+        downloader->Download(currentTask->url, currentTask->partsCount, currentTask->timeout);
+    }
 
     // seems server doesn't supports download resuming. So we need to download whole file.
     if (DLE_CANNOT_RESUME == currentTask->error)
     {
         MakeFullDownload();
-        DownloadByParts();
+        if (DLE_NO_ERROR == currentTask->error)
+        {
+            downloader->Download(currentTask->url, currentTask->partsCount, currentTask->timeout);
+        }
     }
 
     return currentTask->error;
@@ -630,6 +631,7 @@ void DownloadManager::MakeFullDownload()
         return;
     }
 
+    currentTask->error = DLE_NO_ERROR;
     currentTask->downloadProgress = 0;
 }
 
@@ -645,24 +647,13 @@ void DownloadManager::MakeResumedDownload()
         if (!CreateEmptyFile(currentTask->storePath, currentTask->downloadTotal))
         {
             currentTask->error = DLE_FILE_ERROR;
-            return;
         }
     }
     else
     {
-        // if downloaded part of file is larger or equals to expected size
-        ScopedPtr<File> file(File::Create(currentTask->storePath, File::OPEN | File::READ));
-        if (NULL == (File*)(file))
+        // if exsisted file have not the same size as downloading file
+        if (file->GetSize() != currentTask->downloadTotal)
         {
-            currentTask->error = DLE_FILE_ERROR;
-            return;
-        }
-
-        uint64 currentFileSize = file->GetSize();
-
-        if (currentFileSize > currentTask->downloadTotal)
-        {
-            // here we can interrupt download or reload file for example
             MakeFullDownload();
         }
     }
@@ -694,14 +685,5 @@ bool DownloadManager::CreateEmptyFile(FilePath filePath, uint64 fileSize)
     SafeRelease(file);
     return true;
 }
-
-void DownloadManager::DownloadByParts()
-{
-if (DLE_NO_ERROR == currentTask->error)
-    {
-        downloader->Download(currentTask->url, 0, currentTask->timeout, currentTask->partsCount);
-    }
+    
 }
-
-}
-

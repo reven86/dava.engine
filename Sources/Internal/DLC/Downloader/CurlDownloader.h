@@ -56,20 +56,25 @@ protected:
     CURL *CurlSimpleInit();
 
     virtual DownloadError GetSize(const String &url, uint64 &retSize, int32 timeout);
-    virtual DownloadError Download(const String &url, const uint64 &loadFrom, const char8 partsCount, int32 timeout);
+    virtual DownloadError Download(const String &url, const char8 partsCount, int32 timeout);
     
-    static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *fileDownloader);
+    static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part);
     
     DownloadError CurlStatusToDownloadStatus(const CURLcode &status);
     DownloadError HttpCodeToError(uint32 code);
 
 private:
-    void SetTimeout(int32 _timeout);
+    CURL *CreateEasyHandle(const String &url, PartInfo *part, int32 _timeout);
+    void CleanupDownload();
+    void WaitForDone(CURLM *multiHandle);
+    void SetTimeout(CURL *handle, int32 _timeout);
     
 private:
     static bool isCURLInit;
-    static CURL *currentCurlHandle;
     bool isDownloadInterrupting;
+    Vector<PartInfo *> downloadParts;
+    Vector<CURL *> easyHandles;
+    CURLM *multiHandle;
 };
 
 }

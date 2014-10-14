@@ -29,9 +29,8 @@
 #include "DLCDownloadTest.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/Downloader.h"
-#include "DLC/Downloader/CurlMultiDownloader.h"
 
-size_t CurlTestDownloader::SaveData(void *ptr, size_t size, size_t nmemb)
+size_t CurlTestDownloader::SaveData(void *ptr, uint64 size)
 {
     static int8 i = 0;
     if (0 < i++)
@@ -41,7 +40,7 @@ size_t CurlTestDownloader::SaveData(void *ptr, size_t size, size_t nmemb)
         return 0;
     }
     
-    return CurlDownloader::SaveData(ptr, size, nmemb);
+    return CurlDownloader::SaveData(ptr, size, 0);
 }
 
 DLCDownloadTest::DLCDownloadTest()
@@ -152,13 +151,10 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
 
-    // change downloader to full featured CurlMulti downloader.
-    DownloadManager::Instance()->SetDownloader(new CurlMultiDownloader());
-
     // POSITIVE CHECK 
     {
         FileSystem::Instance()->DeleteFile(dstHttp);
-        uint32 multiHttpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 1);
+        uint32 multiHttpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 10, 1);
         DownloadManager::Instance()->Wait(multiHttpID);
 
 

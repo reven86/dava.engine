@@ -32,7 +32,7 @@
 namespace DAVA
 {
 
-size_t Downloader::SaveData(void *ptr, size_t size, size_t nmemb)
+size_t Downloader::SaveData(void *ptr, uint64 size, uint64 seek)
 {
     DownloadManager *mgr = DownloadManager::Instance();
     
@@ -42,10 +42,11 @@ size_t Downloader::SaveData(void *ptr, size_t size, size_t nmemb)
     FilePath storePath = mgr->currentTask->storePath;
 
     size_t written = 0;
-    File *destFile = File::Create(storePath, File::APPEND | File::WRITE);
+    File *destFile = File::Create(storePath, File::OPEN | File::READ | File::WRITE);
     if (destFile)
     {
-        written = destFile->Write(ptr, size * nmemb);
+        destFile->Seek(seek, File::SEEK_FROM_START);
+        written = destFile->Write(ptr, size);
         mgr->currentTask->downloadProgress += written;
         SafeRelease(destFile);
     }
