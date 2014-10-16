@@ -144,10 +144,10 @@ const FilePath & File::GetFilename()
 	return filename;
 }
 
-uint32 File::Write(const void * pointerToData, uint32 dataSize)
+uint32 File::Write(const void * pointerToData, uint64 dataSize)
 {
 	//! Do not change order fread return not bytes -- items
-	uint32 lSize = (uint32) fwrite(pointerToData, 1, dataSize, file);
+	uint32 lSize = (uint32) fwrite(pointerToData, 1, (uint32)(dataSize), file);
 	size += lSize;
 	return lSize;
 }
@@ -253,7 +253,7 @@ uint32	File::GetSize()
 	return size;
 }
 
-bool File::Seek(int32 position, uint32 seekType) 
+bool File::Seek(int64 position, uint32 seekType) 
 {
 	if (!file)return false;
 	
@@ -273,7 +273,7 @@ bool File::Seek(int32 position, uint32 seekType)
 			return false;
 			break;
 	}
-	if (0 == fseek( file, position, realSeekType))
+	if (0 == fseek( file, (int32)(position), realSeekType))
 	{
 		return true;
 	}

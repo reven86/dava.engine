@@ -48,7 +48,7 @@ CurlDownloader::~CurlDownloader()
 
 size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part)
 {
-    bool isFinished;
+    bool isFinished = false;
     
     PartInfo *thisPart = static_cast<PartInfo *>(part);
     CurlDownloader *thisDownloader = static_cast<CurlDownloader *>(thisPart->downloader);
@@ -134,59 +134,83 @@ void CurlDownloader::CleanupDownload()
     multiHandle = NULL;
 }
     
-void CurlDownloader::WaitForDone(CURLM *multiHandle)
+CURLMcode CurlDownloader::Perform(CURLM *multiHandle)
 {
-    int still_running;
+    CURLMcode ret;
+    int handlesRunning = 0;
+    ret = curl_multi_perform(multiHandle, &handlesRunning);
+
     do
     {
         struct timeval timeout;
-        int rc; /* select() return code */
-        
+        int rc = -1; /* select() return code */
+
         fd_set fdread;
         fd_set fdwrite;
         fd_set fdexcep;
-        int maxfd = -1;
-        
-        long curl_timeo = -1;
-        
+        int32 maxfd = -1;
+        long curlTimeout = -1;
+
         FD_ZERO(&fdread);
         FD_ZERO(&fdwrite);
         FD_ZERO(&fdexcep);
-        
+
         /* set a suitable timeout to play around with */
         timeout.tv_sec = 1;
         timeout.tv_usec = 0;
-        
-        curl_multi_timeout(multiHandle, &curl_timeo);
-        if(curl_timeo >= 0) {
-            timeout.tv_sec = curl_timeo / 1000;
-            if(timeout.tv_sec > 1)
-                timeout.tv_sec = 1;
-            else
-                timeout.tv_usec = (curl_timeo % 1000) * 1000;
+
+        ret = curl_multi_timeout(multiHandle, &curlTimeout);
+        if (CURLM_OK != ret)
+            break;
+
+        if (curlTimeout != 0)
+        {
+            if (curlTimeout >= 0)
+            {
+                timeout.tv_sec = curlTimeout / 1000;
+                if (timeout.tv_sec > 1)
+                {
+                    timeout.tv_sec = 1;
+                }
+                else
+                {
+                    timeout.tv_usec = (curlTimeout % 1000) * 1000;
+                }
+            }
         }
-        
         /* get file descriptors from the transfers */
-        curl_multi_fdset(multiHandle, &fdread, &fdwrite, &fdexcep, &maxfd);
-        
+        ret = curl_multi_fdset(multiHandle, &fdread, &fdwrite, &fdexcep, &maxfd);
+        if (CURLM_OK != ret)
+            break;
+
         /* In a real-world program you OF COURSE check the return code of the
-         function calls.  On success, the value of maxfd is guaranteed to be
-         greater or equal than -1.  We call select(maxfd + 1, ...), specially in
-         case of (maxfd == -1), we call select(0, ...), which is basically equal
-         to sleep. */
-        
-        rc = select(maxfd+1, &fdread, &fdwrite, &fdexcep, &timeout);
-        
-        switch(rc) {
-            case -1:
-                /* select error */ 
-                break;
-            case 0: /* timeout */ 
-            default: /* action */ 
-                curl_multi_perform(multiHandle, &still_running);
-                break;
+        function calls.  On success, the value of maxfd is guaranteed to be
+        greater or equal than -1.  We call select(maxfd + 1, ...), specially in
+        case of (maxfd == -1), we call select(0, ...), which is basically equal
+        to sleep. */
+        if (maxfd >= 0)
+        {
+            rc = select(maxfd + 1, &fdread, &fdwrite, &fdexcep, &timeout);
         }
-    } while(still_running);
+        else
+        {
+            Thread::Sleep(200);
+            rc = 0;
+        }
+
+        switch (rc)
+        {
+        case -1:
+            /* select error */
+            break;
+        case 0: /* timeout */
+        default: /* action */
+            ret = curl_multi_perform(multiHandle, &handlesRunning);
+            break;
+        }
+    } while (handlesRunning);
+
+    return ret;
 }
 
 
@@ -198,14 +222,17 @@ DownloadError CurlDownloader::Download(const String &url, const char8 partsCount
     if (DLE_NO_ERROR != err)
         return err;
     
+    Logger::FrameworkDebug("CURL version %s", curl_version());
     uint64 partSize = remoteFileSize/partsCount;
     
     multiHandle = curl_multi_init();
+
     if (NULL == multiHandle)
     {
         return DLE_INIT_ERROR;
     }
     
+    CURLMcode ret;
     for (int i = 0; i < partsCount; i++)
     {
         PartInfo *part;
@@ -219,29 +246,32 @@ DownloadError CurlDownloader::Download(const String &url, const char8 partsCount
         CURL *easyHandle = CreateEasyHandle(url, part,  _timeout);
         if (NULL == easyHandle)
         {
-            // cleanup curl stuff
             CleanupDownload();
             return DLE_INIT_ERROR;
         }
         
         easyHandles.push_back(easyHandle);
-        
-        curl_multi_add_handle(multiHandle, easyHandle);
+       
+        ret = curl_multi_add_handle(multiHandle, easyHandle);
+        if (CURLM_OK != ret)
+        {
+            Logger::FrameworkDebug("Curl multi add handle error %d: ", ret);
+            CleanupDownload();
+            return DLE_INIT_ERROR;
+        }
     }
 
     // we cannot divide without errors, so we will compensate that
     uint64 lastPartIncrement = remoteFileSize - partSize*partsCount;
     downloadParts.at(partsCount-1)->size += lastPartIncrement;
     
-    int handlesToExecute;
-    CURLMcode ret = curl_multi_perform(multiHandle, &handlesToExecute);
+    ret = Perform(multiHandle);
 
-    WaitForDone(multiHandle);
+
 
     // cleanup curl stuff
     CleanupDownload();
 
-    
     CURLcode curlStatus;
     
     Logger::FrameworkDebug("Download");

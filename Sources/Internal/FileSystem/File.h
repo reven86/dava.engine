@@ -110,7 +110,7 @@ public:
 		\param[in] dataSize size of data we want to write
 		\returns number of bytes actually written
 	 */
-	virtual uint32 Write(const void * sourceBuffer, uint32 dataSize);
+	virtual uint32 Write(const void * sourceBuffer, uint64 dataSize);
 
 	/**
 		\brief Write [sizeof(T)] bytes to this file from [value]
@@ -199,7 +199,7 @@ public:
 		\param seekType \ref IO::eFileSeek flag to set type of positioning
 		\return true if successful otherwise false.
 	*/
-	virtual bool Seek(int32 position, uint32 seekType);
+	virtual bool Seek(int64 position, uint32 seekType);
 	
 	//! return true if end of file reached and false in another case
 	virtual bool IsEof();

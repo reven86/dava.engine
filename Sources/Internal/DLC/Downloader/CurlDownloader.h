@@ -66,7 +66,7 @@ protected:
 private:
     CURL *CreateEasyHandle(const String &url, PartInfo *part, int32 _timeout);
     void CleanupDownload();
-    void WaitForDone(CURLM *multiHandle);
+    CURLMcode Perform(CURLM *multiHandle);
     void SetTimeout(CURL *handle, int32 _timeout);
     
 private:

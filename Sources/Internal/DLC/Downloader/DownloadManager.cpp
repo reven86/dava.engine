@@ -164,7 +164,7 @@ void DownloadManager::Update()
     callbackMutex.Unlock();
 }
 
-uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode, const char8 partsCount, const int32 timeout, int32 retriesCount)
+uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode, const char8 partsCount , int32 timeout, int32 retriesCount)
 {
     DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, partsCount);
  
@@ -674,12 +674,14 @@ bool DownloadManager::CreateEmptyFile(FilePath filePath, uint64 fileSize)
     // fill created file by NULL values.
     char8 nullValue = 0;
     for (int i = 0; i < fileSize; i++)
-    if (0 == file->Write(&nullValue, 1))
     {
-        SafeRelease(file);
-        FileSystem::Instance()->DeleteFile(filePath);
-        
-        return false;
+        if (0 == file->Write(&nullValue, 1))
+        {
+            SafeRelease(file);
+            FileSystem::Instance()->DeleteFile(filePath);
+
+            return false;
+        }
     }
 
     SafeRelease(file);
