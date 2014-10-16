@@ -56,7 +56,6 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Job/JobManager.h"
-#include "Job/JobWaiter.h"
 #include "Math/MathHelpers.h"
 
 
@@ -243,8 +242,8 @@ void Texture::ReleaseTextureData()
 {
 	state = STATE_INVALID;
 
-    uint32 androidStencilRboID = 0;
 #if defined(__DAVAENGINE_ANDROID__)
+    uint32 androidStencilRboID = 0;
     androidStencilRboID = stencilRboID;
 #endif
 

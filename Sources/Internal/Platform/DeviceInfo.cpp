@@ -65,7 +65,7 @@ String DeviceInfo::GetPlatformString()
     return GlobalEnumMap<ePlatform>::Instance()->ToString(GetPlatform());
 }
 
-#ifndef __DAVAENGINE_ANDROID__
+#ifdef __DAVAENGINE_WIN32__
 int DeviceInfo::GetZBufferSize()
 {
 	return 24;

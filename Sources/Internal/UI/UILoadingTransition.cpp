@@ -33,7 +33,6 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Debug/Replay.h"
-#include "Job/JobWaiter.h"
 
 namespace DAVA 
 {

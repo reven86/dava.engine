@@ -33,6 +33,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/BaseTypes.h"
 #include "Base/Atomic.h"
 
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#include "semaphore.h"
+#endif //PLATFORMS
+
 namespace DAVA
 {
 	class Semaphore

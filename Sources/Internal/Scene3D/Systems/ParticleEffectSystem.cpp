@@ -42,10 +42,8 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
 #include "Debug/Stats.h"
+#include "Platform/DeviceInfo.h"
 #include "Job/JobManager.h"
-#include "Job/JobScheduler.h"
-#include "Job/JobWaiter.h"
-
 
 namespace DAVA
 {
@@ -265,7 +263,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	}
 	else
 	{
-		const uint32 jobsCount = (uint32) JobScheduler::Instance()->GetThreadsCount();
+		const uint32 jobsCount = (uint32) DeviceInfo::GetCPUCoresCount();
 		const uint32 componentsPerJobCount = componentsCount / jobsCount;
 
 		uint32 firstIndex = 0;
@@ -284,13 +282,13 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 
 			// run jobs
 			Function<void()> fn = Bind(MakeFunction(this, &ParticleEffectSystem::ProcessComponentsPart), firstIndex, count, timeElapsed, shortEffectTime);
-			JobManager2::Instance()->CreateWorkerJob(FastName("ParticleSystemUpdate"), fn);
+			JobManager2::Instance()->CreateWorkerJob(fn);
 
 			// move to next part of entities
 			firstIndex += count;
 		}
 
-		JobManager2::Instance()->WaitWorkerJobs(FastName("ParticleSystemUpdate"));
+		JobManager2::Instance()->WaitWorkerJobs();
 	}
 
 	if(iii == 60)

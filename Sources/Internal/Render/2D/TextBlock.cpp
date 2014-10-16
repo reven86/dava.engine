@@ -37,7 +37,6 @@
 #include "Render/2D/TextBlock.h"
 #include "Core/Core.h"
 #include "Job/JobManager.h"
-#include "Job/JobWaiter.h"
 
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"

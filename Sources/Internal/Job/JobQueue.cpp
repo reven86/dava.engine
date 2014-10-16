@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "Job/JobQueue.h"
-#include "Job/Job.h"
 #include "Job/JobManager.h"
 #include "Thread/LockGuard.h"
 
@@ -55,8 +54,7 @@ void JobQueueWorker::Push(const Function<void()> &fn)
 	{
 		{
 			LockGuard<Spinlock> guard(lock);
-			//LockGuard<Mutex> guard(lock1);
-			if(nextPopIndex == nextPopIndex && 0 == processingCount)
+			if(nextPushIndex == nextPopIndex && 0 == processingCount)
 			{
 				nextPushIndex = 0;
 				nextPopIndex = 0;
@@ -79,11 +77,9 @@ bool JobQueueWorker::PopAndExec()
 
 	{
 		LockGuard<Spinlock> guard(lock);
-		//LockGuard<Mutex> guard(lock1);
 		if(nextPopIndex < nextPushIndex)
 		{
 			fn = jobs[nextPopIndex++];
-			//jobs[nextPopIndex++] = NULL;
 		}
 	}
 
@@ -93,7 +89,6 @@ bool JobQueueWorker::PopAndExec()
 
 		{
 			LockGuard<Spinlock> guard(lock);
-			//LockGuard<Mutex> guard(lock1);
 			DVASSERT(processingCount > 0);
 			processingCount--;
 		}
@@ -107,7 +102,6 @@ bool JobQueueWorker::PopAndExec()
 bool JobQueueWorker::IsEmpty()
 {
 	LockGuard<Spinlock> guard(lock);
-	//LockGuard<Mutex> guard(lock1);
 	return (nextPopIndex == nextPushIndex && 0 == processingCount);
 }
 

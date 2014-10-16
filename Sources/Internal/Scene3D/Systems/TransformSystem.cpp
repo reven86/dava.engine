@@ -60,7 +60,7 @@ void TransformSystem::Process(float32 timeElapsed)
     multipliedNodes = 0;
 
 	// calculate optimal jobs count for current number of entities should be processed
-	uint32 jobsCount = Min(maxProcessingThreads, updatableEntities.size() / (uint32) DeviceInfo::GetCPUCoresCount());
+	uint32 jobsCount = Min(maxProcessingThreads, (uint32) updatableEntities.size() / DeviceInfo::GetCPUCoresCount());
 
 	if(jobsCount > 0 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
     {

@@ -26,26 +26,57 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Spinlock.h"
+#include "FWSemaphore.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 
-Spinlock::Spinlock() : isFree(1)
-{ }
+#if defined(__DAVAENGINE_WIN32__)
 
-Spinlock::~Spinlock()
-{ }
-
-void Spinlock::Lock()
+Semaphore::Semaphore(uint32 value)
 {
-	while(!AtomicCompareAndSwap(1, 0, isFree))
-	{ }
+	semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
+	DVASSERT(NULL != semaphore);
 }
 
-void Spinlock::Unlock()
+Semaphore::~Semaphore()
 {
-	AtomicCompareAndSwap(0, 1, isFree);
+	CloseHandle(semaphore);
 }
+
+void Semaphore::Post()
+{
+	ReleaseSemaphore(semaphore, 1, NULL);
+}
+
+void Semaphore::Wait()
+{
+	WaitForSingleObject(semaphore, INFINITE);
+}
+
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+    
+Semaphore::Semaphore(uint32 value)
+{
+    sem_init(&semaphore, 0, value);
+}
+    
+Semaphore::~Semaphore()
+{
+    sem_destroy(&semaphore);
+}
+    
+void Semaphore::Post()
+{
+    sem_post(&semaphore);
+}
+    
+void Semaphore::Wait()
+{
+    sem_wait(&semaphore);
+}
+    
+#endif
 
 };

@@ -32,8 +32,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/Atomic.h"
 #include "Base/Function.h"
-#include "Platform/Spinlock.h"
-#include "Platform/Semaphore.h"
+#include "Platform/FWSpinlock.h"
+#include "Platform/FWSemaphore.h"
 #include "Platform/Mutex.h"
 
 namespace DAVA
@@ -65,7 +65,6 @@ protected:
 	int32 processingCount;
 
 	Spinlock lock;
-	Mutex lock1;
 
 	void UpdateIndexes();
 };

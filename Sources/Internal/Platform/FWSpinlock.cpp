@@ -26,32 +26,69 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_SPINLOCK_H__
-#define __DAVAENGINE_SPINLOCK_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/Atomic.h"
+#include "FWSpinlock.h"
+#include "Thread.h"
 
 namespace DAVA
 {
-	/**
-	\ingroup threads
-	\brief wrapper spinlock class compatible with Thread class. Now is supports Win32, MacOS, iPhone platforms.
-	*/
-	class Spinlock
-	{
-	public:
-		Spinlock();
-		~Spinlock();
+    
+#if defined(__DAVAENGINE_WIN32__)
+    Spinlock::Spinlock() : spin(0)
+    { }
+    
+    Spinlock::~Spinlock()
+    { }
+    
+    void Spinlock::Lock()
+    {
+        while(!AtomicCompareAndSwap(0, 1, spin))
+        {
+        	ProcessorYield();
+        }
+    }
+    
+    void Spinlock::Unlock()
+    {
+        AtomicCompareAndSwap(1, 0, spin);
+    }
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+    Spinlock::Spinlock() : spin(0)
+    { }
+    
+    Spinlock::~Spinlock()
+    { }
+    
+    void Spinlock::Lock()
+    {
+        OSSpinLockLock(&spin);
+    }
+    
+    void Spinlock::Unlock()
+    {
+        OSSpinLockUnlock(&spin);
+    }
 
-		void Lock();
-		void Unlock();
+#elif defined(__DAVAENGINE_ANDROID__)
+    Spinlock::Spinlock() : spin(0)
+    { }
 
-	protected:
-		int32 isFree;
-	};
+    Spinlock::~Spinlock()
+    { }
+
+    void Spinlock::Lock()
+    {
+    	static int volatile a = 0;
+        while(!AtomicCompareAndSwap(0, 1, spin))
+        {
+        	a = a | a;
+        }
+    }
+
+    void Spinlock::Unlock()
+    {
+    	AtomicCompareAndSwap(1, 0, spin);
+    }
+#endif //PLATFORMS
+
 
 };
-
-#endif // __DAVAENGINE_SPINLOCK_H__

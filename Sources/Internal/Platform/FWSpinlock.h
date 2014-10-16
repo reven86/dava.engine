@@ -26,36 +26,40 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Semaphore.h"
-#include "Debug/DVAssert.h"
+
+#ifndef __DAVAENGINE_SPINLOCK_H__
+#define __DAVAENGINE_SPINLOCK_H__
+
+#include "Base/BaseTypes.h"
+#include "Base/Atomic.h"
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#include <libkern/OSAtomic.h>
+#endif //PLATFORMS
 
 namespace DAVA
 {
+	/**
+	\ingroup threads
+	\brief wrapper spinlock class compatible with Thread class. Now is supports Win32, MacOS, iPhone platforms.
+	*/
+	class Spinlock
+	{
+	public:
+		Spinlock();
+		~Spinlock();
 
-#if defined(__DAVAENGINE_WIN32__)
+		void Lock();
+		void Unlock();
 
-Semaphore::Semaphore(uint32 value)
-{
-	semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
-	DVASSERT(NULL != semaphore);
-}
-
-Semaphore::~Semaphore()
-{
-	CloseHandle(semaphore);
-}
-
-void Semaphore::Post()
-{
-	ReleaseSemaphore(semaphore, 1, NULL);
-}
-
-void Semaphore::Wait()
-{
-	WaitForSingleObject(semaphore, INFINITE);
-}
-
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-#endif
+	protected:
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
+		int32 spin;
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+        OSSpinLock spin;
+#endif //PLATFORMS
+	};
 
 };
+
+#endif // __DAVAENGINE_SPINLOCK_H__

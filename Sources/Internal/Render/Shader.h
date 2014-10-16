@@ -39,7 +39,6 @@
 #include "Base/FastNameMap.h"
 #include "FileSystem/FilePath.h"
 #include "Job/JobManager.h"
-#include "Job/JobWaiter.h"
 
 //#define USE_CRC_COMPARE
 

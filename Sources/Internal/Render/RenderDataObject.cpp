@@ -31,7 +31,6 @@
 #include "Render/RenderDataObject.h"
 #include "Render/RenderManager.h"
 #include "Job/JobManager.h"
-#include "Job/JobWaiter.h"
 
 namespace DAVA 
 {
