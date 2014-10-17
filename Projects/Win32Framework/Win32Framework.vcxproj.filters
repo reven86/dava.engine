@@ -429,30 +429,6 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h">
       <Filter>Internal\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\BaseNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\BTNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnectionIPhone.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkDelegate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkPacket.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPServer.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\WFNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Particles\Particle.h">
       <Filter>Internal\Particles</Filter>
     </ClInclude>
@@ -1534,9 +1510,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Function.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Functor.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
       <Filter>Internal\DLC</Filter>
     </ClInclude>
@@ -1777,15 +1750,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp">
       <Filter>Internal\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkConnection.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkDelegate.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkPacket.cpp">
-      <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp">
       <Filter>Internal\Particles</Filter>
@@ -2849,5 +2813,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\AnimationData.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
   </ItemGroup>
 </Project>

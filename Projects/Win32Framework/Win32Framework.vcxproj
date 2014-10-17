@@ -261,7 +261,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\FastNameMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Function.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Functor.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Hash.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\HashMap.h" />
@@ -387,15 +386,7 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\BaseNetworkConnection.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\BTNetworkConnection.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnection.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnectionIPhone.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkDelegate.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkPacket.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPServer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\WFNetworkConnection.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\Particle.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleEmitter.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleForce.h" />
@@ -849,9 +840,6 @@
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkConnection.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkDelegate.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkPacket.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleForce.cpp" />
