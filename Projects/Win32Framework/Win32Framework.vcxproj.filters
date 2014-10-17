@@ -1567,11 +1567,11 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h" />
-    	<Filter>Internal\Platform</Filter>
+    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h">
+      <Filter>Internal\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h" />
-    	<Filter>Internal\Platform</Filter>
+    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h">
+      <Filter>Internal\Platform</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -2833,10 +2833,10 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.cpp">
@@ -2856,6 +2856,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\FWSpinlock.cpp">
       <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp">
+      <Filter>Internal\Autotesting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
