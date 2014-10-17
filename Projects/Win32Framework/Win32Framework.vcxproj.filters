@@ -1560,6 +1560,45 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\AnimationData.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocket.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketBase.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketBase.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketFwd.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketTemplate.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketTemplate.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocket.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketFwd.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2814,5 +2853,17 @@
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\TCPSocketBase.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\UDPSocketBase.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

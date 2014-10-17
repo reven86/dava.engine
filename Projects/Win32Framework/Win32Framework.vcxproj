@@ -120,9 +120,11 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_wind.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_wind.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libuvd.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
@@ -160,7 +162,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_win.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_win.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -386,7 +388,20 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocket.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketBase.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketFwd.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketTemplate.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocket.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketBase.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketFwd.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\Particle.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleEmitter.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleForce.h" />
@@ -839,7 +854,11 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\TCPSocketBase.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\UDPSocketBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleForce.cpp" />

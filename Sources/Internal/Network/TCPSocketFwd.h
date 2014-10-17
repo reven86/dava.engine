@@ -1,0 +1,11 @@
+#ifndef __DAVAENGINE_TCPSOCKETFWD_H__
+#define __DAVAENGINE_TCPSOCKETFWD_H__
+
+namespace DAVA
+{
+
+class TCPSocket;
+
+}
+
+#endif  // __DAVAENGINE_TCPSOCKETFWD_H__
