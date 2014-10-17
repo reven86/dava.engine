@@ -32,7 +32,7 @@
 namespace DAVA
 {
 
-size_t Downloader::SaveData(void *ptr, uint64 size, uint64 seek)
+size_t Downloader::SaveData(const void *ptr, const uint64 size, const uint64 seek)
 {
     DownloadManager *mgr = DownloadManager::Instance();
     

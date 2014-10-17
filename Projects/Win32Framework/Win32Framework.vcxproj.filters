@@ -1587,9 +1587,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\AnimationData.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\CurlMultiDownloader.h">
-      <Filter>Internal\DLC\Downloader</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2851,9 +2848,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\AnimationData.cpp">
       <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\CurlMultiDownloader.cpp">
-      <Filter>Internal\DLC\Downloader</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

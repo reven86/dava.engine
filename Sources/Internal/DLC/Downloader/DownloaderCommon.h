@@ -86,6 +86,7 @@ struct DownloadTaskDescription
 class Downloader;
 struct PartInfo
 {
+    char8 number;
     Downloader *downloader;
     uint64 seekPos;
     uint64 size;

@@ -33,6 +33,18 @@ namespace DAVA
 
 bool CurlDownloader::isCURLInit = false;
 
+CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
+    { DLE_INIT_ERROR, 0 },
+    { DLE_FILE_ERROR, 1 },
+    { DLE_COULDNT_RESOLVE_HOST, 2 },
+    { DLE_CANNOT_CONNECT, 3 },
+    { DLE_CONTENT_NOT_FOUND, 4 },
+    { DLE_COMMON_ERROR, 5 },
+    { DLE_UNKNOWN, 6 },
+    { DLE_CANCELLED, 7 },
+    { DLE_NO_ERROR, 8 },
+};
+
 CurlDownloader::CurlDownloader()
     : isDownloadInterrupting(false)
     , multiHandle(NULL)
@@ -48,35 +60,38 @@ CurlDownloader::~CurlDownloader()
 
 size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part)
 {
-    bool isFinished = false;
-    
     PartInfo *thisPart = static_cast<PartInfo *>(part);
     CurlDownloader *thisDownloader = static_cast<CurlDownloader *>(thisPart->downloader);
     
     uint64 seekPos = thisPart->seekPos + thisPart->progress;
     uint64 dataLeft = thisPart->size - thisPart->progress;
-    uint64 dataSize = size*nmemb;
+    size_t dataSizeCame = size*nmemb;
 
-    if (dataLeft <= dataSize)
-    {
-        dataSize = dataLeft; // don't write more than part.size
-        isFinished = true; // download is finished
-    }
-    
+    DVASSERT(dataLeft >= dataSizeCame);
+
     static Mutex writeLock;
     writeLock.Lock();
-    size_t bytesWritten = thisDownloader->SaveData(ptr, dataSize, seekPos);
+    size_t bytesWritten = thisDownloader->SaveData(ptr, dataSizeCame, seekPos);
     writeLock.Unlock();
-    
-    thisPart->progress += bytesWritten; // if SaveData not performes - then we have not stored chunk of data and it is not a finished download.
-    
-    if (thisDownloader->isDownloadInterrupting)
-        return -1; // download is interrupted
 
-    if (isFinished && thisPart->progress == thisPart->size)
-        return 0; // download is finished
-        
-    return bytesWritten;
+    thisPart->progress += bytesWritten; // if SaveData not performes - then we have not stored chunk of data and it is not a finished download.
+
+    if (thisDownloader->isDownloadInterrupting)
+    {
+        return 0; // download is interrupted
+    }
+
+    // actually we should to return same amount of data as came, 
+    // but if we have write error - we should to know it.
+    if (bytesWritten != dataSizeCame)
+    {
+        Logger::FrameworkDebug("[CurlDownloader::CurlDataRecvHandler] SaveData failed");
+        return bytesWritten; // this case means that not all data which we wants to save is saved. So we produce file system error.
+    }
+    else
+    {
+        return dataSizeCame; // this case means that all data we want was saved. But we could save not all the data came.
+    }
 }
 
 void CurlDownloader::Interrupt()
@@ -92,6 +107,7 @@ CURL *CurlDownloader::CurlSimpleInit()
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1);
     return curl_handle;
 }
+
 CURL *CurlDownloader::CreateEasyHandle(const String &url, PartInfo *part, int32 _timeout)
 {
     /* init the curl session */
@@ -99,9 +115,10 @@ CURL *CurlDownloader::CreateEasyHandle(const String &url, PartInfo *part, int32 
     
     curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, CurlDownloader::CurlDataRecvHandler);
-    curl_easy_setopt(handle, CURLOPT_RESUME_FROM_LARGE, part->seekPos);
-    //if (0 != part->size)
-    //    curl_easy_setopt(handle, CURLOPT_MAXFILESIZE_LARGE, part->size);
+    //curl_easy_setopt(handle, CURLOPT_RESUME_FROM_LARGE, part->seekPos);
+    char8 rangeStr[80];
+    sprintf(rangeStr, "%lld-%lld", part->seekPos, part->size + part->seekPos - 1);
+    curl_easy_setopt(handle, CURLOPT_RANGE, rangeStr);
     curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(handle, CURLOPT_VERBOSE, 0);
     curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
@@ -113,33 +130,69 @@ CURL *CurlDownloader::CreateEasyHandle(const String &url, PartInfo *part, int32 
     return handle;
 }
     
-void CurlDownloader::CleanupDownload()
+DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &url, const char8 partsCount, int32 timeout)
 {
-    
-    while (false == downloadParts.empty())
+    uint64 remoteFileSize;
+    DownloadError err = GetSize(url, remoteFileSize, timeout);
+
+    if (DLE_NO_ERROR != err)
+        return err;
+
+    uint64 partSize = remoteFileSize / partsCount;
+
+    *multiHandle = curl_multi_init();
+
+    if (NULL == *multiHandle)
     {
-        Vector<PartInfo *>::iterator it = downloadParts.begin();
-        SafeDelete((*it));
-        downloadParts.erase(it);
+        return DLE_INIT_ERROR;
     }
 
-    while (false == easyHandles.empty())
+    CURLMcode ret;
+    for (int i = 0; i < partsCount; i++)
     {
-        Vector<CURL *>::iterator it = easyHandles.begin();
-        curl_easy_cleanup((*it));
-        easyHandles.erase(it);
+        PartInfo *part;
+
+        part = new PartInfo();
+        part->seekPos = partSize * i;
+        part->size = partSize;
+        part->downloader = this;
+        part->number = i;
+        downloadParts.push_back(part);
+
+        if (i == partsCount - 1)
+        {
+            // we cannot divide without errors, so we will compensate that
+            part->size += remoteFileSize - partSize*partsCount;
+        }
+
+        CURL *easyHandle = CreateEasyHandle(url, part, timeout);
+        if (NULL == easyHandle)
+        {
+            CleanupDownload();
+            return DLE_INIT_ERROR;
+        }
+
+        easyHandles.push_back(easyHandle);
+
+        ret = curl_multi_add_handle(*multiHandle, easyHandle);
+        if (CURLM_OK != ret)
+        {
+            Logger::FrameworkDebug("Curl multi add handle error %d: ", ret);
+            CleanupDownload();
+            return DLE_INIT_ERROR;
+        }
     }
-    
-    curl_multi_cleanup(multiHandle);
-    multiHandle = NULL;
+
+    return DLE_NO_ERROR;
 }
-    
+
 CURLMcode CurlDownloader::Perform(CURLM *multiHandle)
 {
     CURLMcode ret;
     int handlesRunning = 0;
     ret = curl_multi_perform(multiHandle, &handlesRunning);
-
+    if (CURLM_OK != ret)
+        return ret;
     do
     {
         struct timeval timeout;
@@ -213,70 +266,63 @@ CURLMcode CurlDownloader::Perform(CURLM *multiHandle)
     return ret;
 }
 
+void CurlDownloader::CleanupDownload()
+{
+
+    while (false == downloadParts.empty())
+    {
+        Vector<PartInfo *>::iterator it = downloadParts.begin();
+        SafeDelete((*it));
+        downloadParts.erase(it);
+    }
+
+    while (false == easyHandles.empty())
+    {
+        Vector<CURL *>::iterator it = easyHandles.begin();
+        curl_easy_cleanup((*it));
+        easyHandles.erase(it);
+    }
+
+    curl_multi_cleanup(multiHandle);
+    multiHandle = NULL;
+}
 
 DownloadError CurlDownloader::Download(const String &url, const char8 partsCount, int32 _timeout)
 {
-    uint64 remoteFileSize;
-    DownloadError err = GetSize(url, remoteFileSize, _timeout);
-    
-    if (DLE_NO_ERROR != err)
-        return err;
-    
-    Logger::FrameworkDebug("CURL version %s", curl_version());
-    uint64 partSize = remoteFileSize/partsCount;
-    
-    multiHandle = curl_multi_init();
 
-    if (NULL == multiHandle)
+    CURLM *multiHandle = NULL;
+    DownloadError retCreate = CreateDownload(&multiHandle, url, partsCount, _timeout);
+    if (DLE_NO_ERROR != retCreate)
+        return retCreate;
+    
+    Logger::FrameworkDebug("CurlDownloader: Download");
+    CURLMcode retPerform = Perform(multiHandle);
+    
+    DVASSERT(CURLM_CALL_MULTI_PERFORM != retPerform); // should not be used in curl 7.20.0 and later.    
+
+    // handle easy handles states
+    Vector<DownloadError> results;
+    if (CURLM_OK == retPerform)
     {
-        return DLE_INIT_ERROR;
-    }
-    
-    CURLMcode ret;
-    for (int i = 0; i < partsCount; i++)
-    {
-        PartInfo *part;
 
-        part = new PartInfo();
-        part->seekPos = partSize * i;
-        part->size = partSize;
-        part->downloader = this;
-        downloadParts.push_back(part);
-        
-        CURL *easyHandle = CreateEasyHandle(url, part,  _timeout);
-        if (NULL == easyHandle)
+        int32 messagesRest;
+        do
         {
-            CleanupDownload();
-            return DLE_INIT_ERROR;
-        }
-        
-        easyHandles.push_back(easyHandle);
-       
-        ret = curl_multi_add_handle(multiHandle, easyHandle);
-        if (CURLM_OK != ret)
-        {
-            Logger::FrameworkDebug("Curl multi add handle error %d: ", ret);
-            CleanupDownload();
-            return DLE_INIT_ERROR;
-        }
+            CURLMsg *message = curl_multi_info_read(multiHandle, &messagesRest);
+            if (NULL == message)
+                break;
+
+            results.push_back(ErrorForEasyHandle(message->easy_handle, message->data.result));
+        } while (0 != messagesRest);
     }
-
-    // we cannot divide without errors, so we will compensate that
-    uint64 lastPartIncrement = remoteFileSize - partSize*partsCount;
-    downloadParts.at(partsCount-1)->size += lastPartIncrement;
-    
-    ret = Perform(multiHandle);
-
-
 
     // cleanup curl stuff
     CleanupDownload();
 
-    CURLcode curlStatus;
-    
-    Logger::FrameworkDebug("Download");
-    Logger::FrameworkDebug("CURL: download status = %d", ret);
-    Logger::FrameworkDebug("Downloader: download status %d", CurlStatusToDownloadStatus(curlStatus));
+
+
+    CURLcode curlStatus = TakeMostImportantReturnValue(results);
+  
     if (isDownloadInterrupting)
     {
         isDownloadInterrupting = false;
@@ -287,7 +333,7 @@ DownloadError CurlDownloader::Download(const String &url, const char8 partsCount
     return CurlStatusToDownloadStatus(curlStatus);
 }
 
-DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, int32 _timeout)
+DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, const int32 _timeout)
 {
     float64 sizeToDownload = 0.0;
     CURL *currentCurlHandle = CurlSimpleInit();
@@ -314,34 +360,16 @@ DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, int32 
     CURLcode curlStatus = curl_easy_perform(currentCurlHandle);
     curl_easy_getinfo(currentCurlHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
 
-    char8 *contentType = new char8[80];
-    curl_easy_getinfo(currentCurlHandle, CURLINFO_CONTENT_TYPE, &contentType);
     uint32 httpCode;
     curl_easy_getinfo(currentCurlHandle, CURLINFO_HTTP_CODE, &httpCode);
+
+    retSize = static_cast<int64>(sizeToDownload);
+
+    DownloadError retError = ErrorForEasyHandle(currentCurlHandle, curlStatus);
 
     /* cleanup curl stuff */ 
     curl_easy_cleanup(currentCurlHandle);
 
-    currentCurlHandle = NULL;
-    Logger::FrameworkDebug("GetSize");
-    Logger::FrameworkDebug("CURL: download status = %d", curlStatus);
-    Logger::FrameworkDebug("Downloader: download status %d", CurlStatusToDownloadStatus(curlStatus));
-    DownloadError retError;
-
-    // to discuss. It is ideal to place it to DownloadManager because in that case we need to use same code inside each downloader.
-    DownloadError httpError = HttpCodeToError(httpCode);
-    Logger::FrameworkDebug("Downloader: download HTTP Code %d", CurlStatusToDownloadStatus(curlStatus));
-    if (DLE_NO_ERROR != httpError)
-    {
-        retError = httpError;
-    }
-    else
-    {
-        retError = CurlStatusToDownloadStatus(curlStatus);
-    }
-
-    retSize = static_cast<int64>(sizeToDownload);
-  
     return retError;
 }
     
@@ -370,7 +398,6 @@ DownloadError CurlDownloader::CurlStatusToDownloadStatus(const CURLcode &status)
     }
 }
 
-
 DownloadError CurlDownloader::HttpCodeToError(uint32 code)
 {
     HttpCodeClass code_class = static_cast<HttpCodeClass>(code/100);
@@ -392,5 +419,45 @@ void CurlDownloader::SetTimeout(CURL *handle, int _timeout)
     curl_easy_setopt(handle, CURLOPT_DNS_CACHE_TIMEOUT, _timeout);
     curl_easy_setopt(handle, CURLOPT_SERVER_RESPONSE_TIMEOUT, _timeout);
 }
+
+DownloadError CurlDownloader::ErrorForEasyHandle(CURL *easyHandle, const CURLcode status)
+{
+    DownloadError retError;
+
+    uint32 httpCode;
+    curl_easy_getinfo(easyHandle, CURLINFO_HTTP_CODE, &httpCode);
+
+    // to discuss. It is ideal to place it to DownloadManager because in that case we need to use same code inside each downloader.
     
+    DownloadError httpError = HttpCodeToError(httpCode);
+    if (DLE_NO_ERROR != httpError)
+    {
+        retError = httpError;
+    }
+    else
+    {
+        retError = CurlStatusToDownloadStatus(status);
+    }
+
+    return retError;
+}
+
+DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<DownloadError> &errorList)
+{
+    DownloadError mostImportantError = DLE_NO_ERROR;
+
+    Vector<DownloadError>::const_iterator end = errorList.end();
+    for (Vector<DownloadError>::const_iterator it = errorList.begin(); it != end; ++it)
+    {
+        DownloadError currentError = (*it);
+      //  if ()
+
+    }
+}
+
+char8 CurlDownloader::GetErrorPriority(DownloadError err)
+{
+    //for (int i = )
+}
+
 }
