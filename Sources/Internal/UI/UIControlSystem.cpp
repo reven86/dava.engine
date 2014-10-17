@@ -455,7 +455,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 							(*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
 						}
 						
-						(*it).phase = (*wit).phase;
+						//(*it).phase = (*wit).phase;
 						(*it).timestamp = (*wit).timestamp;
 						(*it).physPoint = (*wit).physPoint;
 						(*it).point = (*wit).point;

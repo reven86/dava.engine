@@ -87,7 +87,7 @@ public:
 	void KeyUp(int32 keyCode);
 	void KeyDown(int32 keyCode);
 
-	void OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount);
+    void OnInput(int32 action, const DAVA::Vector< UIEvent >& activeInputs, const DAVA::Vector< UIEvent >& allInputs, float64 time);
 
 	bool DownloadHttpFile(const String & url, const String & documentsPathname);
 

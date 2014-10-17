@@ -16,6 +16,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import android.util.Log;
+
 import com.bda.controller.ControllerListener;
 import com.bda.controller.StateEvent;
 
@@ -23,7 +25,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 {
 	private JNIRenderer mRenderer = null;
 
-	private native void nativeOnInput(int action, int id, float x, float y, double time, int source, int tapCount);
+	//private native void nativeOnInput(int action, int id, float x, float y, double time, int source, int tapCount);
+    private native void nativeOnInput(int action, ArrayList<InputRunnable.InputEvent> activeInputs, ArrayList<InputRunnable.InputEvent> allInputs, double time);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	
@@ -122,28 +125,31 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	Map<Integer, Integer> tIdMap = new HashMap<Integer, Integer>();
 	int nexttId = 1;
 	
-	class InputRunnable implements Runnable
+	public class InputRunnable implements Runnable
 	{
-		class InputEvent
+		public class InputEvent
 		{
 			int id;
+            int tid;
 			float x;
 			float y;
 			int source;
 			int tapCount;
 			
-			InputEvent(int id, float x, float y, int source)
+			InputEvent(int id, int tid, float x, float y, int source)
 			{
 				this.id = id;
+                this.tid = tid;
 				this.x = x;
 				this.y = y;
 				this.source = source;
 				this.tapCount = 1;
 			}
 			
-			InputEvent(int id, float x, float y, int source, int tapCount)
+			InputEvent(int id, int tid, float x, float y, int source, int tapCount)
 			{
 				this.id = id;
+                this.tid = tid;
 				this.x = x;
 				this.y = y;
 				this.source = source;
@@ -151,84 +157,165 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			}
 		}
 
-		ArrayList<InputEvent> events;
+		ArrayList<InputEvent> activeEvents;
+        ArrayList<InputEvent> allEvents;
+
 		double time;
 		int action;
 
 		public InputRunnable(final android.view.MotionEvent event, int tapCount)
 		{
-			events = new ArrayList<InputEvent>();
+			activeEvents = new ArrayList<InputEvent>();
+            allEvents = new ArrayList<InputEvent>();
+
 			action = event.getActionMasked();
-			if(action == MotionEvent.ACTION_MOVE)
-			{
+			//if(action == MotionEvent.ACTION_MOVE)
+			//{
+
+/*
+                if (event.source == InputDevice.SOURCE_CLASS_JOYSTICK) {
+                    nativeOnInput(action, event.id + 1, event.x, event.y, time, event.source, event.tapCount);
+                } else {
+                    if (action != MotionEvent.ACTION_MOVE) {
+                        Log.d("DAVA", "InputRunnable.run id: " + event.id + " tid: " + GetTId(event.id) + " action: " + action);
+                    }
+
+                    nativeOnInput(action, GetTId(event.id), event.x, event.y, time, event.source, event.tapCount);
+                    
+
+                    */
 				int pointerCount = event.getPointerCount();
 				for (int i = 0; i < pointerCount; ++i)
 				{
 					if((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) > 0)
 					{
-						events.add(new InputEvent(event.getPointerId(i), event.getX(i), event.getY(i), event.getSource(), tapCount));
+                        int pointerIdx = event.getPointerId(i);
+                        InputEvent ev = new InputEvent(pointerIdx, GetTId(pointerIdx), event.getX(i), event.getY(i), event.getSource(), tapCount);
+						allEvents.add(ev);
+                        if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
 					}
 					if((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
 					{
 						//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-						events.add(new InputEvent(0, event.getAxisValue(MotionEvent.AXIS_X, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(1, event.getAxisValue(MotionEvent.AXIS_Y, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(2, event.getAxisValue(MotionEvent.AXIS_Z, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(3, event.getAxisValue(MotionEvent.AXIS_RX, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(4, event.getAxisValue(MotionEvent.AXIS_RY, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(5, event.getAxisValue(MotionEvent.AXIS_RZ, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(6, event.getAxisValue(MotionEvent.AXIS_LTRIGGER, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(7, event.getAxisValue(MotionEvent.AXIS_RTRIGGER, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(8, event.getAxisValue(MotionEvent.AXIS_HAT_X, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(9, event.getAxisValue(MotionEvent.AXIS_HAT_Y, i), 0, event.getSource(), tapCount));
+                        InputEvent ev = new InputEvent(0, 1, event.getAxisValue(MotionEvent.AXIS_X, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+                        ev = new InputEvent(1, 2, event.getAxisValue(MotionEvent.AXIS_Y, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+                        ev = new InputEvent(2, 3, event.getAxisValue(MotionEvent.AXIS_Z, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+                        ev = new InputEvent(3, 4, event.getAxisValue(MotionEvent.AXIS_RX, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+                        ev = new InputEvent(4, 5, event.getAxisValue(MotionEvent.AXIS_RY, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+                        ev = new InputEvent(5, 6, event.getAxisValue(MotionEvent.AXIS_RZ, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+						ev = new InputEvent(6, 7, event.getAxisValue(MotionEvent.AXIS_LTRIGGER, i), 0, event.getSource(), tapCount);
+                        if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+                        ev = new InputEvent(7, 8, event.getAxisValue(MotionEvent.AXIS_RTRIGGER, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+                        ev = new InputEvent(8, 9, event.getAxisValue(MotionEvent.AXIS_HAT_X, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
+
+                        ev = new InputEvent(9, 10, event.getAxisValue(MotionEvent.AXIS_HAT_Y, i), 0, event.getSource(), tapCount);
+						if(action == MotionEvent.ACTION_MOVE) activeEvents.add(ev);
+                        allEvents.add(ev);
 	    			}
 	    		}
-    		}
-    		else
-    		{
+    		//}
+    		//else
+    		//{
+            if(action != MotionEvent.ACTION_MOVE) {
     			int actionIdx = event.getActionIndex();
+                int pointerIdx = event.getPointerId(actionIdx);
     			assert(actionIdx <= event.getPointerCount());
-    			events.add(new InputEvent(event.getPointerId(actionIdx), event.getX(actionIdx), event.getY(actionIdx), event.getSource(), tapCount));
-    		}
+    			activeEvents.add(new InputEvent(pointerIdx, GetTId(pointerIdx), event.getX(actionIdx), event.getY(actionIdx), event.getSource(), tapCount));
+            }
+
+    		//}
     	}
     	public InputRunnable(final com.bda.controller.MotionEvent event)
     	{
+            activeEvents = new ArrayList<InputEvent>();
+            allEvents = new ArrayList<InputEvent>();
     		action = MotionEvent.ACTION_MOVE;
-    		events = new ArrayList<InputEvent>();
+    		// events = new ArrayList<InputEvent>();
         	int pointerCount = event.getPointerCount();
 	    	for (int i = 0; i < pointerCount; ++i)
 	    	{
 	    		//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-	        	events.add(new InputEvent(0, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_X, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(1, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Y, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(2, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Z, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(5, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RZ, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(6, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_LTRIGGER, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(7, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RTRIGGER, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
+                InputEvent ev = new InputEvent(0, 1, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_X, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK);
+	        	allEvents.add(ev);
+                activeEvents.add(ev);
+
+                ev = new InputEvent(1, 2, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Y, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK);
+	        	allEvents.add(ev);
+                activeEvents.add(ev);
+
+                ev = new InputEvent(2, 3, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Z, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK);
+                allEvents.add(ev);
+	        	activeEvents.add(ev);
+
+                ev = new InputEvent(5, 6, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RZ, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK);
+	        	allEvents.add(ev);
+                activeEvents.add(ev);
+
+	        	ev = new InputEvent(6, 7, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_LTRIGGER, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK);
+                allEvents.add(ev);
+                activeEvents.add(ev);
+
+                ev = new InputEvent(7, 8, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RTRIGGER, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK);
+	        	allEvents.add(ev);
+                activeEvents.add(ev);
     		}
     	}
     	
     	int GetTId(int id) {
-    		if (tIdMap.containsKey(id))
+    		if (tIdMap.containsKey(id)) 
     			return tIdMap.get(id);
     		
     		int tId = nexttId++;
     		tIdMap.put(id, tId);
+
+            Log.d("DAVA", "InputRunnable.GetTId tid: " +  tIdMap.get(id) + " id: " + id);
+
     		return tId;
     	}
     	
     	void RemoveTId(int id) {
+            Log.d("DAVA", "InputRunnable.RemoveTId tid: " +  tIdMap.get(id) + " id: " + id);
     		tIdMap.remove(id);
     	}
 
 		@Override
 		public void run() {
-			for (int i = 0; i < events.size(); ++i) {
+            nativeOnInput(action, activeEvents, allEvents, time);
+			/*for (int i = 0; i < events.size(); ++i) {
 				InputEvent event = events.get(i);
 				
 				if (event.source == InputDevice.SOURCE_CLASS_JOYSTICK) {
 					nativeOnInput(action, event.id + 1, event.x, event.y, time, event.source, event.tapCount);
 				} else {
+                    if (action != MotionEvent.ACTION_MOVE) {
+                        Log.d("DAVA", "InputRunnable.run id: " + event.id + " tid: " + GetTId(event.id) + " action: " + action);
+                    }
+
 					nativeOnInput(action, GetTId(event.id), event.x, event.y, time, event.source, event.tapCount);
 					
 					if (action == MotionEvent.ACTION_CANCEL ||
@@ -239,7 +326,29 @@ public class JNIGLSurfaceView extends GLSurfaceView
 						RemoveTId(event.id);
 					}
 				}
-			}
+			}*/
+            if (action == MotionEvent.ACTION_CANCEL ||
+                        action == MotionEvent.ACTION_UP ||
+                        action == MotionEvent.ACTION_POINTER_1_UP ||
+                        action == MotionEvent.ACTION_POINTER_2_UP ||
+                        action == MotionEvent.ACTION_POINTER_3_UP) {
+
+                Log.d("DAVA", "UP --- begin");
+                for (int i = 0; i < activeEvents.size(); ++i) {
+                    InputEvent event = activeEvents.get(i);
+                    Log.d("DAVA", "event id " + event.id);
+                    RemoveTId(event.id);
+                }
+
+                Log.d("DAVA", "UP --- all");
+
+                for (int i = 0; i < allEvents.size(); ++i) {
+                    InputEvent event = allEvents.get(i);
+                    Log.d("DAVA", "event id " + event.id);
+                }
+
+                Log.d("DAVA", "UP --- end");
+            }
 		}
     }
 
@@ -277,6 +386,14 @@ public class JNIGLSurfaceView extends GLSurfaceView
     @Override
     public boolean onTouchEvent(MotionEvent event) 
     {
+        int action = event.getActionMasked();
+        if (action != MotionEvent.ACTION_MOVE) {
+            int pointerCount = event.getPointerCount();
+            for (int i = 0; i < pointerCount; ++i) {
+                Log.d("DAVA", "JNIGLSurfaceView.onTouchEvent id: " +  event.getPointerId(i) + " action: " + action);
+            }
+        }
+
         boolean isDoubleTap = doubleTapDetector.onTouchEvent(event);
         if (lastDoubleActionIdx >= 0 &&
         	lastDoubleActionIdx == event.getActionIndex() &&
