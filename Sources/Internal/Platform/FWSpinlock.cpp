@@ -43,7 +43,7 @@ namespace DAVA
     {
         while(!AtomicCompareAndSwap(0, 1, spin))
         {
-        	ProcessorYield();
+			YieldProcessor();
         }
     }
     

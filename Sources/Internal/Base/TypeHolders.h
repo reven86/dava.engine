@@ -99,7 +99,7 @@ struct FunctionPointerHolder
 		return *reinterpret_cast<F const *>(buf);
 	}
 
-	bool operator==(const FunctionPointerHolder &f)
+	bool operator==(const FunctionPointerHolder &f) const
 	{
 		return (0 == memcmp(buf, f.buf, FuncHolderMaxSize));
 	}

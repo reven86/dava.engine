@@ -62,7 +62,7 @@ void TransformSystem::Process(float32 timeElapsed)
 	// calculate optimal jobs count for current number of entities should be processed
 	uint32 jobsCount = Min(maxProcessingThreads, (uint32) updatableEntities.size() / DeviceInfo::GetCPUCoresCount());
 
-	if(jobsCount > 0 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
+	if(jobsCount > 0 && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
     {
 		const uint32 entitiesCount = updatableEntities.size();
 		const uint32 entitiesPerJobCount = entitiesCount / jobsCount;

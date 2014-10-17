@@ -257,7 +257,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	
 	uint32 componentsCount = activeComponents.size();
 
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
+	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
 	{
 		ProcessComponentsPart(0, componentsCount, timeElapsed, shortEffectTime);
 	}
