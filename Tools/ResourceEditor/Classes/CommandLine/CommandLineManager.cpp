@@ -36,6 +36,7 @@
 #include "SceneSaver/SceneSaverTool.h"
 #include "SceneExporter/SceneExporterTool.h"
 #include "DDSExtractor/DDSExtractorTool.h"
+#include "StaticOcclusion/StaticOcclusionTool.h"
 
 #include "Beast/BeastCommandLineTool.h"
 #include "TextureDescriptor/TextureDescriptorTool.h"
@@ -93,6 +94,7 @@ CommandLineManager::CommandLineManager()
     AddCommandLineTool(new SceneExporterTool());
     AddCommandLineTool(new SceneSaverTool());
 	AddCommandLineTool(new DDSExtractorTool());
+    AddCommandLineTool(new StaticOcclusionTool());
 
 #if defined (__DAVAENGINE_BEAST__)
 	AddCommandLineTool(new BeastCommandLineTool());

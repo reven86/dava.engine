@@ -637,7 +637,7 @@ void Core::SystemAppStarted()
     }
     else
     {
-        Logger::FrameworkDebug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
+        Logger::Debug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
     }
 #endif //__DAVAENGINE_AUTOTESTING__
 }

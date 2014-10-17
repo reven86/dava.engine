@@ -230,6 +230,9 @@ void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true
             for (int32 groupId = 1, groupSz = groups.size(); groupId<groupSz; ++groupId)
             {
                 verticesOrigin.push_back(verticesOrigin[i]);
+                
+                verticesOrigin.back().tangent = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]].tangent;
+                verticesOrigin.back().binormal = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]].binormal;
                 groups[groupId] = verticesOrigin.size()-1;
                 verticesOrigin[groups[groupId]].refIndex = i;
             }

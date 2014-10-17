@@ -61,6 +61,9 @@ public:
     void SetLightSmoothing(const float32 & smooth);
     const float32 & GetLightSmoothing() const;
 
+    void SetSHValue(const float32 & value);
+    const float32 & GetSHValue() const;
+
 protected:
     static const FastName FLAG_WIND_ANIMATION;
 
@@ -74,10 +77,12 @@ protected:
 
     Vector<Vector3> sphericalHarmonics;
     float32 lightSmoothing;
+    float32 harmonicsValue;
 
 public:
     INTROSPECTION_EXTEND(SpeedTreeObject, RenderObject,
         PROPERTY("lightSmoothing", "Light Smoothing", GetLightSmoothing, SetLightSmoothing, I_SAVE | I_EDIT | I_VIEW)
+        PROPERTY("harmonicsValue", "Harmonics Value", GetSHValue, SetSHValue, I_SAVE | I_EDIT | I_VIEW)
         );
 
 friend class SpeedTreeUpdateSystem;

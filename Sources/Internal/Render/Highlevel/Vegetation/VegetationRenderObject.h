@@ -177,6 +177,7 @@ public:
     inline void SetLayerAnimationDragCoefficient(const Vector4& drag);
     inline const Vector4& GetLayerAnimationDragCoefficient() const;
     
+    static bool IsHardwareCapableToRenderVegetation();
 private:
     
     bool IsValidGeometryData() const;
@@ -305,8 +306,6 @@ private:
     Vector<bool> densityMap;
     
     Vector<VegetationLayerParams> layerParams;
-    
-    bool isHardwareCapableToRenderVegetation;
     
     
 public:

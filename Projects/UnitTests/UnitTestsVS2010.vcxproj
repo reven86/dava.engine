@@ -31,6 +31,7 @@
     <ClInclude Include="Classes\FunctionBindSingalTest.h" />
     <ClInclude Include="Classes\ImageSizeTest.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
+    <ClInclude Include="Classes\MathTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
     <ClInclude Include="Classes\ParseTextTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
@@ -79,6 +80,7 @@
     <ClCompile Include="Classes\FunctionBindSingalTest.cpp" />
     <ClCompile Include="Classes\ImageSizeTest.cpp" />
     <ClCompile Include="Classes\JPEGTest.cpp" />
+    <ClCompile Include="Classes\MathTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
     <ClCompile Include="Classes\ParseTextTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />

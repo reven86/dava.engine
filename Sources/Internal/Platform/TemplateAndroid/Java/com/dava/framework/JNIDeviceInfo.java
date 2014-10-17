@@ -295,6 +295,7 @@ public class JNIDeviceInfo {
 						&& !line.contains("/mnt/asec")
 						&& !line.contains("/mnt/obb")
 						&& !line.contains("/dev/mapper")
+						&& !line.contains("emulated")
 						&& !line.contains("tmpfs"))
 					{
 						paths.add(mountPoint);

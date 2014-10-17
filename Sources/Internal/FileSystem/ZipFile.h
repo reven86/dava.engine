@@ -48,6 +48,8 @@ public:
     static File* CreateFromAPK(const FilePath &filePath, uint32 attributes);
 #ifdef USE_LOCAL_RESOURCES
     static File* CreateFromZip(const FilePath &filePath, uint32 attributes);
+    static void SetZipFileName(const String& fileName);
+    static const String& GetZipFileName() { return zipFileName;};
 #endif
 
 private:
@@ -62,6 +64,7 @@ private:
 
 #ifdef USE_LOCAL_RESOURCES
     static zip* exZipPackage;
+    static String zipFileName;
 #endif
 };
 

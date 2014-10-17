@@ -188,16 +188,7 @@ public class JNIWebView {
 				}
 				
 				WebView webView = views.get(id);
-				
-				if(baseUrl.startsWith("/"))
-				{
-					webView.loadDataWithBaseURL("file://" + baseUrl, data, "text/html", "utf-8", null);
-				}
-				else
-				{
-					webView.loadDataWithBaseURL("file:///android_asset/" + baseUrl, data, "text/html", "utf-8", null);
-				}
-				
+                webView.loadDataWithBaseURL(baseUrl, data, "text/html", "utf-8", null);
 			}
 		});
 	}

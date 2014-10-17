@@ -36,6 +36,7 @@
 
 using namespace DAVA;
 
+class EntityGroup;
 class VisibilityToolSystem: public LandscapeEditorSystem
 {
 public:
@@ -100,7 +101,7 @@ protected:
 	void PrepareConfig();
 	void SetState(eVisibilityToolState newState);
 
-	void SetVisibilityPointInternal(const Vector2& point);
+	void SetVisibilityPointInternal();
 	void SetVisibilityAreaInternal();
 
 	
@@ -114,6 +115,9 @@ protected:
 							   float32 circleRadius,
 							   const Vector2& point);
 	void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points);
+
+    void ExcludeEntities(EntityGroup *entities) const;
+    
 };
 
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__) */

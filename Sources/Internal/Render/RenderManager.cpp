@@ -148,8 +148,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     SetDynamicParam(PARAM_PROJ, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    
-    GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, false);
 }
 	
 RenderManager::~RenderManager()

@@ -32,6 +32,10 @@
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 
+#if defined(__DAVAENGINE_MACOS__)
+#include <pwd.h>
+#endif
+
 
 namespace DAVA
 {
@@ -119,7 +123,7 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
-    SetBundleName(FilePath(useLocalResourcesPath));
+    SetBundleName(FilePath(localResourcesPath));
     FilePath zipDataPath;
     zipDataPath.pathType = PATH_IN_RESOURCES;
     resourceFolders.push_back(zipDataPath);
@@ -241,7 +245,24 @@ void FilePath::Initialize(const String &_pathname)
     }
     else if(IsAbsolutePathname(pathname))
     {
-        absolutePathname = pathname;
+#if defined(__DAVAENGINE_MACOS__)
+        if(IsGlobbing(pathname))
+        {
+            char *value = getenv("HOME");
+            if(!value)
+            {
+                // No $HOME variable, check the password database.
+                passwd *pw = getpwuid(getuid());
+                value = pw->pw_dir;
+            }
+            
+            absolutePathname = value + pathname.substr(1, -1);
+        }
+        else
+#endif
+        {
+            absolutePathname = pathname;
+        }
     }
     else
     {
@@ -714,13 +735,27 @@ String FilePath::AbsoluteToRelative(const FilePath &directoryPathname, const Fil
 }
     
     
+bool FilePath::IsGlobbing(const String &pathname)
+{
+    if(pathname.empty() || pathname.length() < 2)
+    {
+        return false;
+    }
+    
+    if(pathname[0] == '~' && pathname[1] == '/')
+    {
+        return true;
+    }
+    return false;
+}
+    
 bool FilePath::IsAbsolutePathname(const String &pathname)
 {
     if(pathname.empty())
         return false;
     
     //Unix style
-    if(pathname[0] == '/')
+    if((pathname[0] == '/') || IsGlobbing(pathname))
         return true;
     
     //Win or DAVA style (c:/, ~res:/, ~doc:/)
@@ -812,6 +847,20 @@ int32 FilePath::Compare( const FilePath &right ) const
 	if(absolutePathname > right.absolutePathname) return 1;
 
 	return 0;
+}
+
+const String FilePath::AsURL() const
+{
+    String path = GetAbsolutePathname();
+    
+#if defined(__DAVAENGINE_ANDROID__)
+    if(!path.empty() && (path[0] != '/'))
+    {
+        return ("file:///android_asset/" + path);
+    }
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+    return ("file://" + path);
 }
 
     

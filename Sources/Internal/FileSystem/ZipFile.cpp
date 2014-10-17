@@ -46,6 +46,7 @@ Mutex ZipFile::mutex = Mutex();
 
 #ifdef USE_LOCAL_RESOURCES
 zip* ZipFile::exZipPackage = NULL;
+String ZipFile::zipFileName = "Data.zip";
 #endif
 
 ZipFile::ZipFile()
@@ -116,8 +117,8 @@ File * ZipFile::CreateFromZip(const FilePath &filePath, uint32 attributes)
 	if (!exZipPackage)
 	{
 		int32 res = 0;
-		String zipPath(useLocalResourcesPath);
-		zipPath += "Data.zip";
+		String zipPath(localResourcesPath);
+		zipPath += zipFileName;
 		exZipPackage = zip_open(zipPath.c_str(), ZIP_CHECKCONS, &res);
 		if (NULL == exZipPackage)
 		{
@@ -129,6 +130,17 @@ File * ZipFile::CreateFromZip(const FilePath &filePath, uint32 attributes)
 	String path = filePath.GetAbsolutePathname();
 	return CreateFromPath(exZipPackage, filePath, path, attributes);
 }
+
+void ZipFile::SetZipFileName(const String& fileName)
+{
+	if (exZipPackage)
+	{
+		zip_close(exZipPackage);
+		exZipPackage = NULL;
+	}
+	zipFileName = fileName;
+}
+
 #endif
 
 ZipFile* ZipFile::CreateFromPath(zip* package, const FilePath &filePath, const String &path, uint32 attributes)

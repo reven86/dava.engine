@@ -357,7 +357,6 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 	int32 baseSize = (int32)ceilf(bboxSize * virtualToPhysicalFactor); 
 	int32 multilineOffsetY = baseSize + offsetY*2;
 
-	int32 lastRight = 0; //charSizes helper
     int32 justifyOffset = 0;
     int32 fixJustifyOffset = 0;
     if (countSpace > 0 && justifyWidth > 0 && spaceAddon > 0)
@@ -365,6 +364,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
         int32 diff= justifyWidth - spaceAddon;
         justifyOffset = diff / countSpace;
         fixJustifyOffset = diff - justifyOffset*countSpace;
+        
     }
 
 	Font::StringMetrics metrics;
@@ -413,9 +413,6 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
 		FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
 
-		pen.x += advances[i].x;
-		pen.y += advances[i].y;
-
  		error = FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
 		if(!error)
 		{
@@ -429,30 +426,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
 			if(charSizes)
 			{
-				if(0 == width)
-				{
-                    if(str[i] == L' ')
-                    {
-						int32 spaceWidth = (int32)advances[i].x >> ftToPixelShift;
-                        charSizes->push_back((float32)spaceWidth);
-                        lastRight += spaceWidth;
-                    }
-                    else
-                    {
-                        charSizes->push_back(0);
-                    }
-				}
-				else if(charSizes->empty())
-				{
-					charSizes->push_back((float32)width);
-					lastRight = width;
-				}
-				else
-				{
-					int32 value = left + width - lastRight;
-					lastRight += value;
-					charSizes->push_back((float32)value);
-				}
+				charSizes->push_back((float32)advances[i].x / 64.f);
 			}
 
 			layoutWidth += advances[i].x;
@@ -486,6 +460,10 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 					DVASSERT((writeBuf-resultBuf-(bufWidth-realW)) <= (bufWidth*bufHeight));
 				}
 			}
+
+            pen.x += advances[i].x;
+            pen.y += advances[i].y;
+
 		}
 		
 		FT_Done_Glyph(image);
@@ -555,9 +533,16 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 	{
 		Glyph & glyph = glyphs[i];
 
-		advances[i] = glyph.image->advance;
-		advances[i].x >>= 10;
-		advances[i].y >>= 10;
+		if(glyph.index != 0)
+		{
+			advances[i] = glyph.image->advance;
+			advances[i].x >>= 10;
+			advances[i].y >>= 10;
+		}
+		else
+		{
+			advances[i].x = advances[i].y = 0;
+		}
 
 		if(prevAdvance)
 		{

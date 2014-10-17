@@ -42,7 +42,6 @@
 #include "mainwindow.h"
 #include "QtUtils.h"
 #include "Project/ProjectManager.h"
-#include "DockConsole/Console.h"
 #include "Scene/SceneHelper.h"
 #include "SpritesPacker/SpritePackerHelper.h"
 
@@ -117,6 +116,7 @@
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
 #include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
+#include "Classes/Qt/DockConsole/LogWidget.h"
 
 #include "Classes/Commands2/PaintHeightDeltaAction.h"
 
@@ -137,7 +137,6 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     , modificationWidget(NULL)
     , developerTools(new DeveloperTools(this))
 {
-	new Console();
 	new ProjectManager();
 	new RecentFilesManager();
 	ui->setupUi(this);
@@ -203,7 +202,6 @@ QtMainWindow::~QtMainWindow()
 	ui = NULL;
 
 	ProjectManager::Instance()->Release();
-	Console::Instance()->Release();
 	RecentFilesManager::Instance()->Release();
 }
 
@@ -437,11 +435,11 @@ void QtMainWindow::SetupMainMenu()
 	ui->menuDockWindows->addAction(ui->dockParticleEditor->toggleViewAction());
 	ui->menuDockWindows->addAction(ui->dockParticleEditorTimeLine->toggleViewAction());
 	ui->menuDockWindows->addAction(ui->dockSceneTree->toggleViewAction());
-	ui->menuDockWindows->addAction(ui->dockConsole->toggleViewAction());
 	ui->menuDockWindows->addAction(ui->dockLODEditor->toggleViewAction());
 	ui->menuDockWindows->addAction(ui->dockLandscapeEditorControls->toggleViewAction());
 
     ui->menuDockWindows->addAction(dockActionEvent->toggleViewAction());
+    ui->menuDockWindows->addAction(dockConsole->toggleViewAction());
 
 	InitRecent();
 }
@@ -590,6 +588,14 @@ void QtMainWindow::SetupDocks()
         dockActionEvent->setObjectName(QString( "dock_%1" ).arg(dockActionEvent->widget()->objectName()));
         addDockWidget(Qt::RightDockWidgetArea, dockActionEvent);
     }
+    // Console dock
+	{
+        LogWidget *logWidget = new LogWidget();
+        dockConsole = new QDockWidget(logWidget->windowTitle(), this);
+        dockConsole->setWidget(logWidget);
+        dockConsole->setObjectName(QString( "dock_%1" ).arg(dockConsole->widget()->objectName()));
+        addDockWidget(Qt::RightDockWidgetArea, dockConsole);
+	}
     
 	ui->dockProperties->Init();
 }
@@ -2478,6 +2484,7 @@ void QtMainWindow::OnBuildStaticOcclusion()
     if(sceneWasChanged)
     {
         scene->MarkAsChanged();
+        ui->propertyEditor->ResetProperties();
     }
 
     delete waitOcclusionDlg;
@@ -2914,6 +2921,8 @@ void QtMainWindow::OnReloadShaders()
             if(particleIt->second->GetParent())
                 materialList.insert(particleIt->second->GetParent());
         }
+
+        scene->foliageSystem->CollectFoliageMaterials(materialList);
 
         DAVA::Set<DAVA::NMaterial *>::iterator it = materialList.begin();
         DAVA::Set<DAVA::NMaterial *>::iterator endIt = materialList.end();

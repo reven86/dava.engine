@@ -144,6 +144,20 @@ public:
     // UI Web View properties.
     static const char* WEBVIEW_DATA_DETECTOR_TYPES_PROPERTY_NAME;
 
+    // UI Margins properties.
+    static const char* MARGINS_PROPERTY_NAME;
+    static const char* LEFT_MARGIN_PROPERTY_NAME;
+    static const char* TOP_MARGIN_PROPERTY_NAME;
+    static const char* RIGHT_MARGIN_PROPERTY_NAME;
+    static const char* BOTTOM_MARGIN_PROPERTY_NAME;
+
+    // UI Text Margins properties.
+    static const char* TEXT_MARGINS_PROPERTY_NAME;
+    static const char* TEXT_LEFT_MARGIN_PROPERTY_NAME;
+    static const char* TEXT_TOP_MARGIN_PROPERTY_NAME;
+    static const char* TEXT_RIGHT_MARGIN_PROPERTY_NAME;
+    static const char* TEXT_BOTTOM_MARGIN_PROPERTY_NAME;
+
 	// Custom Control properties.
 	static const char* CUSTOM_CONTROL_NAME;
 };

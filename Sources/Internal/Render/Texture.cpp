@@ -190,6 +190,7 @@ void Texture::AddToMap(Texture *tex)
     if(!tex->texDescriptor->pathname.IsEmpty())
     {
         textureMapMutex.Lock();
+        DVASSERT(textureMap.find(FILEPATH_MAP_KEY(tex->texDescriptor->pathname)) == textureMap.end());
 		textureMap[FILEPATH_MAP_KEY(tex->texDescriptor->pathname)] = tex;
         textureMapMutex.Unlock();
     }
@@ -630,7 +631,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	{
 		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(texDescriptor, gpu);
 
-        ImageSystem::Instance()->Load(imagePathname, *images,baseMipMap);
+        ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
+        ImageSystem::Instance()->EnsurePowerOf2Images(*images);
         if(images->size() == 1 && gpu == GPU_PNG && texDescriptor->GetGenerateMipMaps())
         {
             Image * img = *images->begin();
@@ -1293,6 +1295,19 @@ void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<Stri
 const FilePath & Texture::GetPathname() const
 {
     return texDescriptor->pathname;
+}
+    
+void Texture::SetPathname(const FilePath& path)
+{
+    textureMapMutex.Lock();
+    textureMap.erase(FILEPATH_MAP_KEY(texDescriptor->pathname));
+    texDescriptor->pathname = path;
+    if (!texDescriptor->pathname.IsEmpty())
+    {
+        DVASSERT(textureMap.find(FILEPATH_MAP_KEY(texDescriptor->pathname)) == textureMap.end());
+        textureMap[FILEPATH_MAP_KEY(texDescriptor->pathname)] = this;
+    }
+    textureMapMutex.Unlock();
 }
 
 PixelFormat Texture::GetFormat() const

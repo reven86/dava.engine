@@ -68,7 +68,7 @@ protected:
     void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
 
     // Get the property name with the prefix specified for this widget.
-    String GetPrefixedPropertyName(const char* propertyName);
+    String GetPrefixedPropertyName(const char* propertyName) const;
 
 private:
     Ui::BackgroundPropertyGridWidget *ui;

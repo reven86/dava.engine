@@ -50,7 +50,7 @@ public:
     ~ImageSplitterDialog();
 
 private slots:
-    void PathSelected(DAVA::String path);
+    void PathSelected(const QString& path);
     void ImageAreaChanged();
     void OnRestoreClicked();
     void OnSaveAsClicked(bool saveSplittedImages = false);

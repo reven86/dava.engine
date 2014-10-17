@@ -167,11 +167,7 @@ void DownloadManager::Update()
 
 uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 timeout, int32 retriesCount)
 {
-    int32 fullTimeout = timeout;
-    if (GET_SIZE == downloadMode && timeout >= 2)
-        fullTimeout /= 2;
-
-    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, fullTimeout, retriesCount);
+    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount);
  
     static uint32 prevId = 1;
     task->id = prevId++;
@@ -189,7 +185,7 @@ void DownloadManager::Retry(const uint32 &taskId)
     if (taskToRetry)
     {
         taskToRetry->error = DLE_NO_ERROR;
-        //taskToRetry->type = RESUMED;
+        taskToRetry->type = RESUMED;
         SetTaskStatus(taskToRetry, DL_PENDING);
         PlaceToQueue(pendingTaskQueue, taskToRetry);
     }
@@ -459,15 +455,6 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
     return true;
 }
 
-bool DownloadManager::SetOperationTimeout(const uint32 operationTimeout)
-{
-    if (NULL == downloader)
-        return false;
-
-    downloader->timeout = operationTimeout;
-    return true;
-}
-
 void DownloadManager::ClearQueue(Deque<DownloadTaskDescription *> &queue)
 {
     if (!queue.empty())
@@ -575,6 +562,8 @@ DownloadError DownloadManager::Download()
 
         if (DLE_CONTENT_NOT_FOUND == error || DLE_CANCELLED == error)
             break;
+        
+        currentTask->type = RESUMED;
 
     }while (0 < currentTask->retriesLeft-- && DLE_NO_ERROR != error);
 
@@ -650,7 +639,7 @@ DownloadError DownloadManager::TryDownload()
     {
         loadFrom = 0;
         MakeFullDownload(currentTask);
-        error = downloader->Download(currentTask->url, loadFrom);
+        error = downloader->Download(currentTask->url, loadFrom, currentTask->timeout);
     }
 
     currentTask->error = error;

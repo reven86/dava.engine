@@ -769,6 +769,7 @@ void HierarchyTreeWidget::DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODE
     bool needConfirm = false;
     bool needDeleteFiles = false;
     HierarchyTreeNode::HIERARCHYTREENODESLIST nodes;
+    HierarchyTreeNode::HIERARCHYTREENODESLIST agregatorNodes;
     for (HierarchyTreeNode::HIERARCHYTREENODESITER iter = parentNodes.begin(); iter != parentNodes.end(); ++iter)
     {
         HierarchyTreeNode* node = (*iter);
@@ -780,7 +781,7 @@ void HierarchyTreeWidget::DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODE
             needConfirm |= (childs.size() > 0);
             for (HierarchyTreeAggregatorNode::CHILDS::const_iterator innerIter = childs.begin(); innerIter != childs.end(); ++innerIter)
             {
-                nodes.push_back((*innerIter));
+                agregatorNodes.push_back((*innerIter));
             }
         }
 
@@ -817,8 +818,9 @@ void HierarchyTreeWidget::DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODE
             }
         }
 
-        nodes.push_front(node);
+        nodes.push_back(node);
     }
+    nodes.insert(nodes.end(), agregatorNodes.begin(), agregatorNodes.end());
 
     if (needConfirm)
     {
