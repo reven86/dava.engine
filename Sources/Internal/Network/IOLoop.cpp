@@ -1,5 +1,7 @@
 #include <cstring>
 
+#include <Debug/DVAssert.h>
+
 #include "IOLoop.h"
 
 namespace DAVA {
@@ -19,10 +21,8 @@ IOLoop::IOLoop (bool useDefaultIOLoop) : actualLoop (NULL), useDefaultLoop (useD
 
 IOLoop::~IOLoop ()
 {
-    //if (!useDefaultLoop)
-    //    LIBNETWOT_VERIFY (0 == uv_loop_close (actualLoop));
-	if (!useDefaultLoop)
-        uv_loop_close (actualLoop);
+    if (!useDefaultLoop)
+        DVVERIFY (0 == uv_loop_close (actualLoop));
 }
 
 int IOLoop::Run (eRunMode runMode)
