@@ -51,7 +51,7 @@ public:
 
     int RemoteEndpoint (Endpoint& endpoint)
     {
-        int size = endpoint.size ();
+        int size = endpoint.Size ();
         return uv_tcp_getpeername (Handle (), endpoint.CastToSockaddr (), &size);
     }
 

@@ -18,21 +18,21 @@ public:
     {
         data.sin_family = AF_INET;
         data.sin_port   = 0;
-		set_sockaddr_addr (INADDR_ANY);
+		SetSockaddrAddr (INADDR_ANY);
     }
 
     Endpoint (unsigned short port) : data ()
     {
         data.sin_family = AF_INET;
         data.sin_port   = htons (port);
-        set_sockaddr_addr (INADDR_ANY);
+        SetSockaddrAddr (INADDR_ANY);
     }
 
     Endpoint (const IPAddress& address, unsigned short port)
     {
         data.sin_family = AF_INET;
         data.sin_port   = htons (port);
-		set_sockaddr_addr (address.ToULong ());
+		SetSockaddrAddr (address.ToULong ());
     }
 
     Endpoint (const sockaddr* sa)
@@ -49,7 +49,7 @@ public:
 
     IPAddress Address () const
     {
-        return IPAddress (get_sockaddr_addr ());
+        return IPAddress (GetSockaddrAddr ());
     }
 
     unsigned short Port () const
@@ -57,7 +57,7 @@ public:
         return ntohs (data.sin_port);
     }
 
-    std::size_t size () const
+    std::size_t Size () const
     {
         return sizeof (data);
     }
@@ -83,7 +83,7 @@ public:
     }
 
 private:
-	void set_sockaddr_addr (unsigned long addr)
+	void SetSockaddrAddr (unsigned long addr)
 	{
 #ifdef WIN32
 		data.sin_addr.S_un.S_addr = htonl (addr);
@@ -92,7 +92,7 @@ private:
 #endif
 	}
 	
-	unsigned long get_sockaddr_addr () const
+	unsigned long GetSockaddrAddr () const
 	{
 #ifdef WIN32
 		return ntohl (data.sin_addr.S_un.S_addr);
