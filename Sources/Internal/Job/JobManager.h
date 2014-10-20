@@ -58,6 +58,7 @@ public:
 	};
 
     void Update();
+	uint32 GetWorkersCount() const;
 
     void CreateMainJob(const Function<void ()>& fn, eMainJobType mainJobType = JOB_MAIN);
     void WaitMainJobs(Thread::Id invokerThreadId = 0);

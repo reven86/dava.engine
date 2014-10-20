@@ -42,7 +42,6 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
 #include "Debug/Stats.h"
-#include "Platform/DeviceInfo.h"
 #include "Job/JobManager.h"
 
 namespace DAVA
@@ -257,13 +256,13 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	
 	uint32 componentsCount = activeComponents.size();
 
-	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
+	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
 	{
 		ProcessComponentsPart(0, componentsCount, timeElapsed, shortEffectTime);
 	}
 	else
 	{
-		const uint32 jobsCount = (uint32) DeviceInfo::GetCPUCoresCount();
+		const uint32 jobsCount = (uint32) JobManager2::Instance()->GetWorkersCount();
 		const uint32 componentsPerJobCount = componentsCount / jobsCount;
 
 		uint32 firstIndex = 0;

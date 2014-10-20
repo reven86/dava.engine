@@ -31,6 +31,7 @@
 #include "Scene3D/Systems/TransformSystem.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/AnimationComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Entity.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/Systems/EventSystem.h"
@@ -61,9 +62,9 @@ void TransformSystem::Process(float32 timeElapsed)
     multipliedNodes = 0;
 
 	// calculate optimal jobs count for current number of entities should be processed
-	uint32 jobsCount = Min(maxProcessingThreads, (uint32) updatableEntities.size() / DeviceInfo::GetCPUCoresCount());
+	uint32 jobsCount = Min(maxProcessingThreads, (uint32) updatableEntities.size() / JobManager2::Instance()->GetWorkersCount());
 
-	if(jobsCount > 0 && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
+	if(jobsCount > 0 && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
     {
 		const uint32 entitiesCount = updatableEntities.size();
 		const uint32 entitiesPerJobCount = entitiesCount / jobsCount;

@@ -64,6 +64,11 @@ void JobManager2::Update()
     RunMain();
 }
 
+uint32 JobManager2::GetWorkersCount() const
+{
+	return workerThreads.size();
+}
+
 void JobManager2::CreateMainJob(const Function<void()>& fn, eMainJobType mainJobType)
 {
     if(Thread::IsMainThread() && mainJobType != JOB_MAINLAZY)
