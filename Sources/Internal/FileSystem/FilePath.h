@@ -290,6 +290,8 @@ protected:
 
     static ePathType GetPathType(const String &pathname);
     
+    static bool IsGlobbing(const String &pathname);
+    
 public:
     static String AddPath(const FilePath &folder, const String & addition);
 

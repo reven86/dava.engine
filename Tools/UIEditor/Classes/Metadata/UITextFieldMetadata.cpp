@@ -66,7 +66,7 @@ void UITextFieldMetadata::SetText(const QString& text)
     GetActiveUITextField()->SetText(QStrint2WideString(text));
 }
 
-Font * UITextFieldMetadata::GetFont()
+Font * UITextFieldMetadata::GetFont() const
 {
     if (VerifyActiveParamID())
     {
@@ -221,7 +221,7 @@ void UITextFieldMetadata::SetShadowColor(const QColor& value)
 	GetActiveUITextField()->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
 }
 
-int UITextFieldMetadata::GetTextAlign()
+int UITextFieldMetadata::GetTextAlign() const
 {
 	if (!VerifyActiveParamID())
 	{

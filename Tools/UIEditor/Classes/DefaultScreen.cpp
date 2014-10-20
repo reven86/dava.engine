@@ -960,6 +960,11 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 
     Vector2 localPoint = event->point;
 	Vector2 point = LocalToInternal(localPoint);
+    
+	if (event->tid == UIEvent::BUTTON_1 && CheckEnterScreenMoveState())
+	{
+		return;
+	}
 
     HierarchyTreeScreenNode* screenNode = HierarchyTreeController::Instance()->GetActiveScreen();
 	if (screenNode && event->tid == UIEvent::BUTTON_1 && screenNode->AreGuidesEnabled() && screenNode->StartMoveGuide(point))

@@ -108,12 +108,12 @@ void SoundComponent::Stop()
 
 void SoundComponent::Trigger(uint32 index)
 {
-    DVASSERT(index >= 0 && index < events.size());
+    DVASSERT(index < events.size());
 
     SoundComponentElement & sound = events[index];
     sound.soundEvent->Trigger();
 
-    if(sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER && entity && entity->GetScene())
+    if((sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) && entity && entity->GetScene())
     {
         entity->GetScene()->soundSystem->AddAutoTriggerSound(entity, sound.soundEvent);
     }
@@ -121,12 +121,12 @@ void SoundComponent::Trigger(uint32 index)
 
 void SoundComponent::Stop(uint32 index)
 {
-    DVASSERT(index >= 0 && index < events.size());
+    DVASSERT(index < events.size());
 
     SoundComponentElement & sound = events[index];
     sound.soundEvent->Stop();
 
-    if(sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER && entity && entity->GetScene())
+    if((sound.flags & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) && entity && entity->GetScene())
     {
         entity->GetScene()->soundSystem->RemoveAutoTriggerSound(entity, sound.soundEvent);
     }
@@ -134,7 +134,7 @@ void SoundComponent::Stop(uint32 index)
 
 void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
 {
-    DVASSERT(index >= 0 && index < (uint32)events.size());
+    DVASSERT(index < (uint32)events.size());
 
     if(events[index].flags != flags)
     {
@@ -147,7 +147,7 @@ void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
 
 void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3 & direction)
 {
-    DVASSERT(eventIndex >= 0 && eventIndex < (uint32)events.size());
+    DVASSERT(eventIndex < (uint32)events.size());
     events[eventIndex].localDirection = direction;
 }
 

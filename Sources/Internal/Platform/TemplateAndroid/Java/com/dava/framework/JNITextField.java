@@ -341,11 +341,24 @@ public class JNITextField {
 						}
 						
 						final CharSequence sourceToProcess = source;
+						final String text = editText.editText.getText().toString();
 						FutureTask<Boolean> t = new FutureTask<Boolean>(new Callable<Boolean>() {
 							@Override
 							public Boolean call() throws Exception {
 								byte []bytes = sourceToProcess.toString().getBytes("UTF-8");
-								return TextFieldKeyPressed(_id, dstart, dend - dstart, bytes);
+								int curPos = 0;
+								int finalStart = dstart;
+								while(curPos < dstart)
+								{
+									int codePoint = text.codePointAt(curPos);
+									if(codePoint > 0xFFFF)
+									{
+										curPos++;
+										finalStart--;
+									}
+									curPos++;
+								}
+								return TextFieldKeyPressed(_id, finalStart, dend - dstart, bytes);
 							}
 						});
 						JNIActivity.GetActivity().PostEventToGL(t);

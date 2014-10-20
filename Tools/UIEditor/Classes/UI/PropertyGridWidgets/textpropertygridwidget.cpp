@@ -45,12 +45,15 @@
 #include "editfontdialog.h"
 
 static const QString TEXTFIELD_PROPERTY_BLOCK_NAME = "Text";
+static const String TEXT_MARGINS_PROPERTY_PREFIX = "Text";
 
 TextPropertyGridWidget::TextPropertyGridWidget(QWidget *parent) :
 BasePropertyGridWidget(parent),
 ui(new Ui::TextPropertyGridWidget)
 {
     ui->setupUi(this);
+    ui->marginsWidget->SetPropertyPrefix(TEXT_MARGINS_PROPERTY_PREFIX);
+
 	SetPropertyBlockName(TEXTFIELD_PROPERTY_BLOCK_NAME);
 	BasePropertyGridWidget::InstallEventFiltersForWidgets(this);
 }
@@ -63,6 +66,8 @@ TextPropertyGridWidget::~TextPropertyGridWidget()
 void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 {
     BasePropertyGridWidget::Initialize(activeMetadata);
+    ui->marginsWidget->Initialize(activeMetadata);
+
 	FillComboboxes();
     
     PROPERTIESMAP propertiesMap = BuildMetadataPropertiesMap();
@@ -98,6 +103,8 @@ void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 
 void TextPropertyGridWidget::Cleanup()
 {
+    ui->marginsWidget->Cleanup();
+
     UnregisterPushButtonWidget(ui->fontSelectButton);
     UnregisterSpinBoxWidget(ui->fontSizeSpinBox);
     
