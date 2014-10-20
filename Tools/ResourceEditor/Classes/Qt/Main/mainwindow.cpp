@@ -749,11 +749,8 @@ void QtMainWindow::SetupActions()
         connect(act, SIGNAL(triggered()), SLOT(DebugVersionInfo()));
 #endif
 	}
-    // Debug colorpicker
-	{
-        QAction *act = ui->menuDebug_Functions->addAction("Color picker");
-        connect(act, SIGNAL(triggered()), SLOT(DebugColorPicker()));
-	}
+
+    QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
     
  	//Collision Box Types
     objectTypesLabel = new QtLabelWithActions();

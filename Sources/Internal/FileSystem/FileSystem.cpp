@@ -605,13 +605,13 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 const FilePath FileSystem::GetUserDocumentsPath()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-    return core->GetInternalStoragePathname() + String("/");
+    return core->GetInternalStoragePathname();
 }
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-    return core->GetExternalStoragePathname() + String("/");
+    return core->GetExternalStoragePathname();
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
     

@@ -28,30 +28,43 @@
 
 
 
-#ifndef __DAVAENGINE_RENDER_HIGHLEVEL_SHADOW_VOLUME_H__
-#define __DAVAENGINE_RENDER_HIGHLEVEL_SHADOW_VOLUME_H__
+#ifndef __DAVAENGINE_SKELETON_SYSTEM_H__
+#define __DAVAENGINE_SKELETON_SYSTEM_H__
 
-#include "Render/3D/PolygonGroup.h"
-#include "Render/Shader.h"
-#include "Render/3D/EdgeAdjacency.h"
-#include "Render/Highlevel/RenderBatch.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
+#include "Base/BaseTypes.h"
+#include "Scene3D/Systems/BaseProcessSystem.h"
+#include "Scene3D/Components/SkeletonComponent.h"
 
 namespace DAVA
 {
 
-class PolygonGroup;
-class Light;
-    
-class ShadowVolume : public RenderBatch
+class Component;
+class SkinnedMesh;
+
+class SkeletonSystem : public SceneSystem
 {
-protected:
-	virtual ~ShadowVolume();
 
 public:
-    ShadowVolume();
+    SkeletonSystem(Scene * scene);
+    ~SkeletonSystem();
+
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    
+    virtual void Process(float32 timeElapsed);		
+    virtual void ImmediateEvent(Entity * entity, uint32 event);
+
+private:
+    void UpdatePose(SkeletonComponent *component);
+    void UpdateSkinnedMesh(SkeletonComponent *component, SkinnedMesh *skinnedMeshObject);
+
+    
+    void RebuildSkeleton(Entity *entity);    
+
+    Vector<Entity*> entities;
+
 };
 
-}
+} //ns
 
-#endif //__DAVAENGINE_RENDER_HIGHLEVEL_SHADOW_VOLUME_H__
+#endif

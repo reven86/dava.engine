@@ -27,62 +27,45 @@
 =====================================================================================*/
 
 
+#include "Render/Highlevel/SkinnedMesh.h"
+#include "Render/Highlevel/RenderBatch.h"
+#include "Render/3D/PolygonGroup.h"
+#include "Render/Highlevel/ShadowVolume.h"
+#include "Render/Material/NMaterial.h"
 
-
-#ifndef __UIEditor__HierarchyTreeControlNode__
-#define __UIEditor__HierarchyTreeControlNode__
-
-#include "DAVAEngine.h"
-#include "HierarchyTreeNode.h"
-#include "HierarchyTreeScreenNode.h"
-#include "EditorListDelegate.h"
-
-using namespace DAVA;
-
-// "Control" node for the Hierarchy Tree.
-class HierarchyTreeControlNode: public HierarchyTreeNode
+namespace DAVA
 {
-public:
-	HierarchyTreeControlNode(HierarchyTreeNode* parent, UIControl* uiObject, const QString& name);
-	HierarchyTreeControlNode(HierarchyTreeNode* parent, const HierarchyTreeControlNode* node);
-	~HierarchyTreeControlNode();
 
-	HierarchyTreeScreenNode* GetScreenNode() const;
-	HierarchyTreeControlNode* GetControlNode() const;
-	UIControl* GetUIObject() const {return uiObject;};
-	
-	virtual void SetParent(HierarchyTreeNode* node, HierarchyTreeNode* insertAfter);
-	virtual HierarchyTreeNode* GetParent() {return parent;};
-	
-	virtual HierarchyTreeControlNode* CreateControlCopy(HierarchyTreeNode* parent) const;
-	
-	Vector2 GetParentDelta(bool skipControl = false) const;
 
-	// Remove/return Tree Node from the scene.
-	virtual void RemoveTreeNodeFromScene();
-	virtual void ReturnTreeNodeToScene();
-	
-	Rect GetRect(bool checkAngle = false) const;
+SkinnedMesh::SkinnedMesh()
+{
+    type = TYPE_SKINNED_MESH;
+    bbox = AABBox3(Vector3(0,0,0), Vector3(0,0,0));
+    jointsCount = 0;
+    positionArray = NULL;
+    quaternionArray = NULL;
+}
 
-	void SetVisibleFlag(bool value);
-	bool GetVisibleFlag() const;
 
-    // Screen scale/position changed.
-    virtual void OnScreenScaleChanged();
-    virtual void OnScreenPositionChanged();
+RenderObject * SkinnedMesh::Clone(RenderObject *newObject)
+{
 
-private:
-	void AddControlToParent();
-    void UpdateUIObject();
-	
-private:
-	HierarchyTreeNode* parent;
+    if(!newObject)
+    {
+        DVASSERT_MSG(IsPointerToExactClass<SkinnedMesh>(this), "Can clone only SkinnedMesh");
+        newObject = new SkinnedMesh();
+    }
+    RenderObject::Clone(newObject);   
+    return newObject;
+}
 
-	UIControl* uiObject;
-    EditorListDelegate *listDelegate;
+void SkinnedMesh::BindDynamicParameters(Camera * camera)
+{
+    RenderManager::SetDynamicParam(PARAM_JOINTS_COUNT, &jointsCount, (pointer_size)(&jointsCount));
+    RenderManager::SetDynamicParam(PARAM_JOINT_POSITIONS, &positionArray[0], (pointer_size)positionArray);
+    RenderManager::SetDynamicParam(PARAM_JOINT_QUATERNIONS, &quaternionArray[0], (pointer_size)quaternionArray);
 
-	UIControl* parentUIObject;
-	bool needReleaseUIObjects;
-};
+    RenderObject::BindDynamicParameters(camera);
+}
 
-#endif /* defined(__UIEditor__HierarchyTreeControlNode__) */
+}

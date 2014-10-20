@@ -488,7 +488,7 @@ bool SceneFile::ReadAnimatedMesh()
 		if (debugLogEnabled)Logger::FrameworkDebug("--- index count: %d\n", indexCount);
 		
 		
-		polygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL | EVF_COLOR | EVF_TEXCOORD0 | EVF_JOINTWEIGHT, vertexCount, indexCount);
+		polygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL | EVF_COLOR | EVF_TEXCOORD0 | EVF_JOINTINDEX | EVF_JOINTWEIGHT, vertexCount, indexCount);
 		
 		for (int v = 0; v < vertexCount; ++v)
 		{
@@ -509,7 +509,7 @@ bool SceneFile::ReadAnimatedMesh()
 				sceneFP->Read(&jointIdx, sizeof(int32));
 				sceneFP->Read(&weight, sizeof(float32));
 				polygonGroup->SetJointIndex(v, k, jointIdx);
-				polygonGroup->SetWeight(v, k, weight);
+				polygonGroup->SetJointWeight(v, k, weight);
 			}
 			
 			polygonGroup->SetCoord(v, position);

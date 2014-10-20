@@ -706,13 +706,21 @@ namespace DAVA
         return background;
     }
 
-    const UIGeometricData &UIControl::GetGeometricData()
+    const UIGeometricData &UIControl::GetGeometricData(bool absoluteCoordinates /*true*/)
     {
         tempGeometricData.position = relativePosition;
         tempGeometricData.size = size;
         tempGeometricData.pivotPoint = pivotPoint;
         tempGeometricData.scale = scale;
         tempGeometricData.angle = angle;
+        tempGeometricData.unrotatedRect.x = relativePosition.x - relativePosition.x * scale.x;
+        tempGeometricData.unrotatedRect.y = relativePosition.y - pivotPoint.y * scale.y;
+        tempGeometricData.unrotatedRect.dx = size.x * scale.x;
+        tempGeometricData.unrotatedRect.dy = size.y * scale.y;
+        if(!absoluteCoordinates)
+        {
+            return tempGeometricData;
+        }
         if(!parent)
         {
             tempGeometricData.AddGeometricData(UIControlSystem::Instance()->GetBaseGeometricData());
@@ -784,20 +792,6 @@ namespace DAVA
         size = newSize;
         // Update size and align of childs
         RecalculateChildsSize();
-    }
-
-    float32 UIControl::GetParentsTotalAngle(bool includeOwn)
-    {
-        float32 angle = 0;
-        if(includeOwn)
-        {
-            angle += this->angle;
-        }
-        if(this->GetParent())
-        {
-            angle += parent->GetParentsTotalAngle(true);
-        }
-        return angle;
     }
 
     void UIControl::SetAngle(float32 angleInRad)
@@ -1532,7 +1526,7 @@ namespace DAVA
         if(clipContents)
         {//WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
             RenderManager::Instance()->ClipPush();
-            RenderManager::Instance()->ClipRect(unrotatedRect);
+            RenderManager::Instance()->ClipRect(drawData.GetAABBox());
         }
 
         if(visible && visibleForUIEditor)

@@ -101,6 +101,7 @@ public slots:
     void OnAddSoundComponent();
     void OnAddWaveComponent();
     void OnAddModelTypeComponent();
+    void OnAddSkeletonComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
 	

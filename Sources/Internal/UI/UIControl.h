@@ -52,6 +52,7 @@ class Message;
 
 class UIGeometricData
 {
+    friend class UIControl;
 
 public:
     UIGeometricData()
@@ -145,6 +146,20 @@ public:
     const Rect &GetUnrotatedRect() const
     {
         return unrotatedRect;
+    }
+    
+    Rect GetAABBox() const
+    {
+        Polygon2 polygon;
+        GetPolygon(polygon);
+
+        AABBox2 aabbox;
+        for(int32 i = 0; i < polygon.GetPointCount(); ++i)
+        {
+            aabbox.AddPoint(polygon.GetPoints()[i]);
+        }
+        Rect bboxRect = Rect(aabbox.min, aabbox.max - aabbox.min);
+        return bboxRect;
     }
 
 private:
@@ -560,7 +575,7 @@ public:
      \brief Returns actual control transformation and metrics.
      \returns control geometric data.
      */
-    const UIGeometricData &GetGeometricData();
+    virtual const UIGeometricData &GetGeometricData(bool absoluteCoordinates = true);
 
     /**
      \brief Returns actual control local transformation and metrics.
@@ -582,12 +597,6 @@ public:
      */
     inline float32 GetAngle() const;
     
-    /**
-     \brief Returns control's parents total rotation angle in radians.
-     \returns control's parents total angle in radians.
-     */
-    virtual float32 GetParentsTotalAngle(bool includeOwn);
-
     /**
      \brief Sets contol rotation angle in radians.
         Control rotates around the pivot point.

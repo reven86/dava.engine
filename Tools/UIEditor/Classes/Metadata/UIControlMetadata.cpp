@@ -415,7 +415,7 @@ void UIControlMetadata::ApplyMove(const Vector2& moveDelta, bool alignControlsTo
         return;
     }
     
-    float32 parentsTotalAngle = GetActiveUIControl()->GetParentsTotalAngle(false);
+    float32 parentsTotalAngle = GetActiveUIControl()->GetParent()->GetGeometricData().angle;
     Vector2 controlPosition = GetActiveUIControl()->GetPosition();
     if(parentsTotalAngle != 0)
     {
