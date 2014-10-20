@@ -181,6 +181,8 @@ namespace DAVA
 
 		Thread::InitGLThread();
 
+		totalTouches.clear();
+
 		if(wasCreated)
 		{
 			RenderManager::Instance()->Lost();

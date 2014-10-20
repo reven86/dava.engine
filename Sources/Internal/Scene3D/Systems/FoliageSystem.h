@@ -60,6 +60,8 @@ public:
     
     void SetPerturbation(const Vector3& point, const Vector3& force, float32 distance);
     
+    void CollectFoliageMaterials(Set<NMaterial *> & materials);
+
     void SetFoliageVisible(bool show);
     bool IsFoliageVisible() const;
     

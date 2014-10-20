@@ -42,6 +42,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "Render/Texturedescriptor.h"
 
 #define NEW_PPA
 
@@ -416,20 +417,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
     
-    int32 size = (int32)Max(width, height);
-    
-    Image *img = NULL;
-    if(IsPowerOf2(width) && IsPowerOf2(height))
-    {
-        img = SafeRetain(image);
-    }
-    else
-    {
-        EnsurePowerOf2(size);
-
-        img = Image::Create((uint32)size, (uint32)size, image->GetPixelFormat());
-        img->InsertImage(image, 0, 0);
-    }
+    Image *img = ImageSystem::Instance()->EnsurePowerOf2Image(image);
 
     Texture* texture = Texture::CreateFromData(img, false);
 
@@ -514,6 +502,10 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
     }
 
     Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
+    if (sprite)
+    {
+        sprite->SetRelativePathname(path);
+    }
 
     for_each(images.begin(), images.end(), SafeRelease<Image>);
 
@@ -1688,6 +1680,16 @@ void Sprite::ReloadExistingTextures()
             Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
         }
     }
+}
+    
+void Sprite::SetRelativePathname(const FilePath& path)
+{
+    spriteMapMutex.Lock();
+    spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
+    relativePathname = path;
+    spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
+    spriteMapMutex.Unlock();
+    GetTexture()->SetPathname(path);
 }
 
 };
