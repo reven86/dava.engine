@@ -12,10 +12,10 @@ find_package ( DavaFramework REQUIRED )
 
 include      ( CMake-common )
 
-find_package ( Qt5Core )
-find_package ( Qt5Concurrent )
-find_package ( Qt5Gui )
-find_package ( Qt5Widgets )
+find_package ( Qt5Core REQUIRED )
+find_package ( Qt5Concurrent REQUIRED )
+find_package ( Qt5Gui REQUIRED )
+find_package ( Qt5Widgets REQUIRED )
 
 define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 generate_source_groups_project ()
@@ -168,6 +168,7 @@ endforeach ()
 foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
+
 
 target_link_libraries ( ResourceEditor Qt5::Core )
 target_link_libraries ( ResourceEditor Qt5::Gui )

@@ -37,9 +37,6 @@
 
 #include "Platform/Qt/QtLayer.h"
 
-namespace Ui {
-class DavaGLWidget;
-}
 
 class DavaGLWidget : public QWidget, public DAVA::QtLayerDelegate
 {
@@ -69,13 +66,13 @@ public:
 	virtual void dragMoveEvent(QDragMoveEvent *);
 	virtual void dragEnterEvent(QDragEnterEvent *);
     
-#if defined (Q_WS_MAC)
+#if defined (Q_OS_MAC)
     virtual void mouseMoveEvent(QMouseEvent *);
-#endif //#if defined (Q_WS_MAC)
+#endif //#if defined (Q_OS_MAC)
     
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 	virtual bool winEvent(MSG *message, long *result);
-#endif //#if defined(Q_WS_WIN)
+#endif //#if defined(Q_OS_WIN)
 
 signals:
 	void OnDrop(const QMimeData *mimeData);
@@ -91,8 +88,6 @@ private:
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
 private:
-    
-	Ui::DavaGLWidget *ui;
 
 	int maxFPS;
     int minFrameTimeMs;

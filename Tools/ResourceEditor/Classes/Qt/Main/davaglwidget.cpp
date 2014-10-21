@@ -33,7 +33,6 @@
 #include "UI/UIControlSystem.h"
 
 #include "davaglwidget.h"
-#include "ui_davaglwidget.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -56,15 +55,12 @@
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
 	: QWidget(parent)
-    , ui(new Ui::DavaGLWidget)
 	, maxFPS(60)
 	, fps(0)
 	, fpsCountTime(0)
 	, fpsCount(0)
 	, minFrameTimeMs(0)
 {
-	ui->setupUi(this);
-
 	// Widget will try to expand to maximum available size
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
@@ -101,7 +97,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 DavaGLWidget::~DavaGLWidget()
 {
-    delete ui;
 }
 
 QPaintEngine *DavaGLWidget::paintEngine() const
@@ -191,7 +186,7 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 	emit OnDrop(mimeData);
 }
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 bool DavaGLWidget::winEvent(MSG *message, long *result)
 {
 	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
@@ -208,9 +203,11 @@ bool DavaGLWidget::winEvent(MSG *message, long *result)
 	return core->WinEvent(message, result);
 }
 
-#endif //#if defined(Q_WS_WIN)
+#endif //#if defined(Q_OS_WIN)
 
-#if defined (Q_WS_MAC)
+// TODO: http://qt-project.org/doc/qt-5/qwidget.html#nativeEvent !!!!
+
+#if defined (Q_OS_MAC)
 void DavaGLWidget::mouseMoveEvent(QMouseEvent *e)
 {
     DAVA::QtLayerMacOS *qtLayer = dynamic_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
@@ -223,7 +220,7 @@ void DavaGLWidget::mouseMoveEvent(QMouseEvent *e)
 
     QWidget::mouseMoveEvent(e);
 }
-#endif //#if defined (Q_WS_MAC)
+#endif //#if defined (Q_OS_MAC)
 
 void DavaGLWidget::SetMaxFPS(int fps)
 {
@@ -235,6 +232,11 @@ void DavaGLWidget::SetMaxFPS(int fps)
 	}
 
 	DAVA::RenderManager::Instance()->SetFPS(maxFPS);
+}
+
+int DavaGLWidget::GetMaxFPS()
+{
+	return maxFPS;
 }
 
 int DavaGLWidget::GetFPS() const
@@ -286,6 +288,7 @@ void DavaGLWidget::EnableCustomPaintFlags(bool enable)
 	setAttribute(Qt::WA_OpaquePaintEvent, enable);
 	setAttribute(Qt::WA_NoSystemBackground, enable);
 	setAttribute(Qt::WA_PaintOnScreen, enable);
+	setAttribute( Qt::WA_TranslucentBackground, enable );
 }
 
 void DavaGLWidget::ShowAssertMessage(const char * message)
