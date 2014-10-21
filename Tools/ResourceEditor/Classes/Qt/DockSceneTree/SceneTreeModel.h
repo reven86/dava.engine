@@ -42,7 +42,8 @@
 // framework
 #include "Scene3D/Scene.h"
 
-class SceneTreeModel : public QStandardItemModel
+class SceneTreeModel
+	: public QStandardItemModel
 {
 	Q_OBJECT
 
@@ -119,6 +120,9 @@ protected:
 
 protected slots:
 	void ItemChanged(QStandardItem * item);
+
+private:
+	Qt::DropActions supportedDragActions() const;
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel

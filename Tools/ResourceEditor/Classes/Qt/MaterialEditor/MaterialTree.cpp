@@ -54,7 +54,7 @@ MaterialTree::MaterialTree(QWidget *parent /* = 0 */)
 
     header()->setSortIndicator(0, Qt::AscendingOrder);
     header()->setStretchLastSection(false);
-    header()->setResizeMode(0, QHeaderView::Stretch);
+    header()->setSectionResizeMode(0, QHeaderView::Stretch);
     header()->resizeSection(1, 25);
     header()->resizeSection(2, 25);
 }

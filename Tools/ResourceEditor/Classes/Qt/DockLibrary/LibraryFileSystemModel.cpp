@@ -35,7 +35,6 @@
 #include <QDir>
 #include <QFileInfoList>
 #include <QString>
-#include <QtConcurrentRun>
 
 LibraryFileSystemModel::LibraryFileSystemModel(QObject *parent /* = NULL */)
     : QFileSystemModel(parent)
@@ -88,7 +87,7 @@ void LibraryFileSystemModel::DirectoryLoaded(const QString &path)
 void LibraryFileSystemModel::Load(const QString & pathname)
 {
 	acceptionMap.clear();
-	reset();
+	//reset();
     
 	loadingCounter = 1;
 	

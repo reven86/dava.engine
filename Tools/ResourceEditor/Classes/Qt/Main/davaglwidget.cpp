@@ -78,7 +78,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 #elif defined (__DAVAENGINE_WIN32__)
 		DAVA::QtLayerWin32 *qtLayer = (DAVA::QtLayerWin32 *) DAVA::QtLayer::Instance();
 		HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
-		qtLayer->SetWindow(hInstance, this->winId(), this->size().width(), this->size().height());
+		qtLayer->SetWindow(hInstance, (HWND)this->winId(), this->size().width(), this->size().height());
 		qtLayer->OnResume();
 #else
 		DVASSERT(false && "Wrong platform");

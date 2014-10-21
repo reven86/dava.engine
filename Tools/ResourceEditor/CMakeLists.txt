@@ -5,12 +5,17 @@ set          ( CMakeHelloWorld_VERSION_MAJOR 1 )
 set          ( CMakeHelloWorld_VERSION_MINOR 0 )
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set ( QT_FOUND 1 )
 
-find_package ( Qt4           REQUIRED )
+
 find_package ( DavaFramework REQUIRED )
 
 include      ( CMake-common )
-include      ( ${QT_USE_FILE} )
+
+find_package ( Qt5Core )
+find_package ( Qt5Concurrent )
+find_package ( Qt5Gui )
+find_package ( Qt5Widgets )
 
 define_source_folders ( GLOB_FOLDER "Classes" GLOB_ERASE_FOLDERS "_build" )
 generate_source_groups_project ()
@@ -71,13 +76,13 @@ set ( PROJECT_SOURCE_FILES ${PROJECT_SOURCE_FILES} "${DAVA_ROOT_DIR}/../dava.spe
                                                    "${DAVA_ROOT_DIR}/../dava.speedtree/Sources/SpeedTreeImporter.cpp" )
 
 file              ( GLOB_RECURSE QT_LIST "Classes/Qt/*.h"  )
-qt4_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
+qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
-qt4_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
+qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
-qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
+qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
@@ -163,3 +168,7 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ResourceEditor optimized ${FILE} )
 endforeach ()
 
+target_link_libraries ( ResourceEditor Qt5::Core )
+target_link_libraries ( ResourceEditor Qt5::Gui )
+target_link_libraries ( ResourceEditor Qt5::Widgets )
+target_link_libraries ( ResourceEditor Qt5::Concurrent )
