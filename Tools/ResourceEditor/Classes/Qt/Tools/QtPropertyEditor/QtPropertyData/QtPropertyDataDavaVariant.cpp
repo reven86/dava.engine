@@ -1073,6 +1073,7 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
     cp.SetDavaColor(oldColor);
 
     connect( &cp, SIGNAL( changing( const QColor& ) ), SLOT( OnColorChanging() ) );
+    connect( &cp, SIGNAL( changed( const QColor& ) ), SLOT( OnColorChanging() ) );
 
     const bool result = cp.Exec();
     const DAVA::Color newColor = cp.GetDavaColor();
