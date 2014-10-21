@@ -554,6 +554,8 @@ DownloadError DownloadManager::Download()
     DownloadError error = DLE_NO_ERROR;
     SetTaskStatus(currentTask, DL_IN_PROGRESS);
     downloadedTotal = 0;
+    
+    downloader->SetProgressNotificator(Downloader::ProgressNotifyFunctor(this, &DownloadManager::OnCurrentTaskProgressChanged));
 
     do
     {
@@ -654,5 +656,9 @@ void DownloadManager::ResetRetriesCount()
     currentTask->retriesLeft = currentTask->retriesCount;
 }
 
+void DownloadManager::OnCurrentTaskProgressChanged(const uint64 &progressDelta)
+{
+    currentTask->downloadProgress += progressDelta;
+}
     
 }

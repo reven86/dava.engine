@@ -34,18 +34,13 @@ namespace DAVA
 
 size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, const uint64 size, const uint64 seek)
 {
-    DownloadManager *mgr = DownloadManager::Instance();
-    
-    // SaveData performs when task is in IN_PROCESS state, so currentTask should be NOT NULL.
-    DVASSERT(mgr->currentTask);
-
     size_t written = 0;
     File *destFile = File::Create(storePath, File::OPEN | File::READ | File::WRITE);
     if (destFile)
     {
         destFile->Seek(seek, File::SEEK_FROM_START);
         written = destFile->Write(ptr, size);
-        mgr->currentTask->downloadProgress += written;
+        notifyProgress(written);
         SafeRelease(destFile);
     }
 
@@ -54,6 +49,11 @@ size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, const ui
         DownloadManager::Instance()->ResetRetriesCount();
 
     return written;
+}
+    
+void Downloader::SetProgressNotificator(ProgressNotifyFunctor progressNotifier)
+{
+    notifyProgress = progressNotifier;
 }
 
 }

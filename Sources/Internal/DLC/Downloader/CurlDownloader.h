@@ -57,7 +57,7 @@ protected:
 
     virtual DownloadError GetSize(const String &url, uint64 &retSize, const int32 timeout);
     virtual DownloadError Download(const String &url, const FilePath &savePath, const uint8 partsCount, const int32 timeout);
-    
+
     static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part);
     
     DownloadError CurlStatusToDownloadStatus(const CURLcode &status);

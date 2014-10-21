@@ -730,16 +730,31 @@ bool FileSystem::CreateEmptyFile(const FilePath &path, const uint64 size)
         return false;
     
     // fill created file by NULL values.
-    char8 nullValue = 0;
-    for (int i = 0; i < size; i++)
+    uint32 blockSize = 4096;
+    char8 nullValue[blockSize];
+    Memset(nullValue, blockSize, blockSize);
+    
+    uint32 written = 0;
+    do
     {
-        if (sizeof(nullValue) != file->Write(&nullValue, sizeof(nullValue)))
+        uint32 blockSizeToWrite;
+
+        if (written + blockSize < size)
+            blockSizeToWrite = blockSize;
+        else
+            blockSizeToWrite = size - written;
+
+        uint64 writtenNow = file->Write(nullValue, blockSizeToWrite);
+        if (blockSizeToWrite != writtenNow)
         {
             FileSystem::Instance()->DeleteFile(path);
             
             return false;
         }
-    }
+        
+        written += writtenNow;
+
+    }while (written < size);
 
     return true;
 }

@@ -227,6 +227,7 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
         else
         {
             part = downloadParts.at(i);
+            notifyProgress(part->info.progress);
         }
 
         part->downloader = this;

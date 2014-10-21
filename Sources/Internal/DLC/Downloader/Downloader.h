@@ -35,6 +35,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "DownloaderCommon.h"
+#include "Base/Function.h"
 
 namespace DAVA
 {
@@ -49,6 +50,9 @@ friend class DownloadManager;
 
 public:
     virtual ~Downloader(){};
+    
+protected:
+    typedef Function<void (const uint64 &)> ProgressNotifyFunctor;
 
 /* all methods putted into protected section because they should be used only from DownloadManager. */
 protected: 
@@ -63,6 +67,10 @@ protected:
         Take a look on CurlDownloader::CurlDataRecvHandler(...) for example.
     */
     virtual size_t SaveData(const void *ptr, const FilePath& storePath, const uint64 size, const uint64 seek);
+    virtual void SetProgressNotificator(ProgressNotifyFunctor progressNotifier);
+    
+protected:
+    ProgressNotifyFunctor notifyProgress;
 };
 
 }
