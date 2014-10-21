@@ -35,36 +35,60 @@
 namespace DAVA
 {
 
+/*
+    Task type
+ */
 enum DownloadType
 {
-    RESUMED = 0,
-    FULL,
-    GET_SIZE,
+    RESUMED = 0, // try to resume downllad
+    FULL,        // download data even if there was a downloaded part
+    GET_SIZE,    // just get size of remote file
 };
 
-
+/*
+    Download task states
+ */
 enum DownloadStatus
 {
-    DL_PENDING = 0,
-    DL_IN_PROGRESS,
-    DL_FINISHED,
-    DL_UNKNOWN,
+    DL_PENDING = 0, // task is in pending queue
+    DL_IN_PROGRESS, // task is performs now (means DownloadManager::currentTask is only one the task on that state)
+    DL_FINISHED,    // task is in finished queue
+    DL_UNKNOWN,     // unknow download status (means that task is just created)
 };
-        
+    
+/*
+    All download errors which we handles
+*/
 enum DownloadError
 {
-    DLE_NO_ERROR = 0,
-    DLE_CANCELLED,
-    DLE_CANNOT_RESUME,
-    DLE_COULDNT_RESOLVE_HOST,
-    DLE_CANNOT_CONNECT,
-    DLE_CONTENT_NOT_FOUND,
-    DLE_COMMON_ERROR,
-    DLE_INIT_ERROR,        
-    DLE_FILE_ERROR,
-    DLE_UNKNOWN,
+    DLE_NO_ERROR = 0,           // there is no errors
+    DLE_CANCELLED,              // download was cancelled by our side
+    DLE_COULDNT_RESUME,         // seems server doesn't supports download resuming
+    DLE_COULDNT_RESOLVE_HOST,   // DNS request failed and we cannot to take IP from full qualified domain name
+    DLE_COULDNT_CONNECT,        // we cannot connect to given adress at given port
+    DLE_CONTENT_NOT_FOUND,      // server replies that there is no requested content
+    DLE_COMMON_ERROR,           // some common error which is rare and requires to debug the reason
+    DLE_INIT_ERROR,             // any handles initialisation was unsuccessful
+    DLE_FILE_ERROR,             // file read and write errors
+    DLE_UNKNOWN,                // we cannot determine the error
 };
 
+/*
+    HTTP code classes which should be handles by any application which works with HTTP
+    You can take more information here https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+ */
+enum HttpCodeClass
+{
+    HTTP_INFO = 1,
+    HTTP_SUCCESS,
+    HTTP_REDIRECTION,
+    HTTP_CLIENT_ERROR,
+    HTTP_SERVER_ERROR,
+};
+
+/*
+    Download task information which contains all necessery data to perform download and handle any download states
+ */
 struct DownloadTaskDescription
 {
     DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount);
@@ -82,16 +106,47 @@ struct DownloadTaskDescription
     uint64 downloadProgress;
     uint8 partsCount;
 };
+    
+/*
+    Contains all info which we need to know at download restore
+*/
+struct DownloadInfoHeader
+{
+    uint8 partsCount;
+};
 
 class Downloader;
 struct DownloadPart
 {
+    /**
+        \brief Fills a given downloadParts list by readed download parts state from .dlinfo file
+        \param[in] infoFilePath - file with stored download info (not necessery to be created)
+        \param[out] downloadParts - restored download parts
+        \param[out] true if all is fine and false if there is any file read error
+     */
     static bool RestoreDownload(const FilePath &infoFilePath, Vector<DownloadPart*> &downloadParts);
+    /**
+        \brief Save current part info into given file
+        \param[in] infoFilePath - file which already should be created and have Header
+        \param[out] true if all is fine and false if there is any file write or read error
+     */
     bool SaveDownload(const FilePath &infoFilePath);
+    /**
+        \brief Creaites info file for current download and puts a header in that file.
+        \param[in] infoFilePath - file path to download info file to store the header
+        \param[in] partsCount - planed quantity of download parts
+        \param[out] true if all is fine and false if there is any file write or read error
+     */
     static bool CreateDownload(const FilePath &infoFilePath, const uint8 partsCount);
-    
+
+    /*
+        Used to pass a pointer to current Downloader into DataReceive handler
+     */
     Downloader *downloader;
     
+    /*
+        All the data which we store to save and thed resume download part
+     */
     struct StoreData
     {
         uint8 number;

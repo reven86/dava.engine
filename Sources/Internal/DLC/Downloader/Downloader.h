@@ -45,7 +45,7 @@ namespace DAVA
 */
 class Downloader
 {
-
+/* only Download manager could use Downloader and it's childs*/
 friend class DownloadManager;
 
 public:
@@ -56,17 +56,37 @@ protected:
 
 /* all methods putted into protected section because they should be used only from DownloadManager. */
 protected: 
-    /* Get content size in bytes for remote Url. Place result to retSize, timeout - for operation cancelling */
+    /**
+        \brief Get content size in bytes for remote Url.
+        \param[in] url - destination fie Url
+        \param[in] _timeout - operation timeout
+        \param[out] retSize - place result to
+     */
     virtual DownloadError GetSize(const String &url, uint64 &retSize, const int32 _timeout) = 0;
-    /* Main downloading operation. Should call SaveData to store data. */
+    /**
+        \brief Main downloading operation. Should call SaveData to store data.
+        \param[in] url - destination file Url
+        \param[in] savePath - path to save location of remote file
+        \param[in] partsCount - quantity of download threads
+        \param[in] _timeout - operation timeout
+    */
     virtual DownloadError Download(const String &url, const FilePath &savePath, const uint8 partsCount, const int32 _timeout) = 0;
-    /* Interrupt download process. We expects that you will save last data chunk came before */
+    /**
+        \brief Interrupt download process. We expects that you will save last data chunk came before 
+     */
     virtual void Interrupt() = 0;
-    /* 
-        Main save method. Should be preferred way to store any downloaded data. If not - you can reimplement it, but it is not recommended. 
+    /**
+        \brief Main save method. Should be preferred way to store any downloaded data. If not - you can reimplement it, but it is not recommended.
         Take a look on CurlDownloader::CurlDataRecvHandler(...) for example.
+        \param[in] ptr - pointer to data
+        \param[in] storePath - path to save location of remote file
+        \param[in] size - amout of data
+        \param[in] seek - position in file when data should be stored
     */
     virtual size_t SaveData(const void *ptr, const FilePath& storePath, const uint64 size, const uint64 seek);
+    /**
+        \brief Used to report about saved data size to download manager. Used to calculate total download progress.
+     */
     virtual void SetProgressNotificator(ProgressNotifyFunctor progressNotifier);
     
 protected:

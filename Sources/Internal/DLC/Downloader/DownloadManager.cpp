@@ -610,7 +610,7 @@ DownloadError DownloadManager::TryDownload()
     }
 
     // seems server doesn't supports download resuming. So we need to download whole file.
-    if (DLE_CANNOT_RESUME == currentTask->error)
+    if (DLE_COULDNT_RESUME == currentTask->error)
     {
         MakeFullDownload();
         if (DLE_NO_ERROR == currentTask->error)
@@ -659,6 +659,8 @@ void DownloadManager::ResetRetriesCount()
 void DownloadManager::OnCurrentTaskProgressChanged(const uint64 &progressDelta)
 {
     currentTask->downloadProgress += progressDelta;
+    if (0 < progressDelta)
+        ResetRetriesCount();
 }
     
 }

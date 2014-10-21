@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "Downloader.h"
-#include "DownloadManager.h"
 
 namespace DAVA
 {
@@ -43,10 +42,6 @@ size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, const ui
         notifyProgress(written);
         SafeRelease(destFile);
     }
-
-    // maybee not ideal, but only Manager can use Downloader, so maybee callback is not required.
-    if (written != 0)
-        DownloadManager::Instance()->ResetRetriesCount();
 
     return written;
 }

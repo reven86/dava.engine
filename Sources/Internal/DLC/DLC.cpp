@@ -476,7 +476,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
             else
             {
             	Logger::FrameworkDebug("DLC: error %d", downloadError);
-                if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
+                if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
                 {
                     // connection problem
                     PostError(DE_CONNECT_ERROR);
@@ -549,7 +549,7 @@ void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
                 }
                 else
                 {
-                    if(DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_CANNOT_CONNECT == downloadErrorFull)
+                    if(DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_COULDNT_CONNECT == downloadErrorFull)
                     {
                         // connection problem
                         PostError(DE_CONNECT_ERROR);
@@ -596,7 +596,7 @@ void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
             DownloadError downloadError;
             DownloadManager::Instance()->GetError(dlcContext.remoteMetaDownloadId, downloadError);
 
-            if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
+            if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
             {
                 // connection problem
                 PostError(DE_CONNECT_ERROR);
@@ -703,7 +703,7 @@ void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status
                     break;
 
                 case DAVA::DLE_COULDNT_RESOLVE_HOST:
-                case DAVA::DLE_CANNOT_CONNECT:
+                case DAVA::DLE_COULDNT_CONNECT:
                     // connection problem
                     PostError(DE_CONNECT_ERROR);
                     break;

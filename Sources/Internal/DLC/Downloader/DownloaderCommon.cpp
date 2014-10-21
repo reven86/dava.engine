@@ -53,25 +53,25 @@ bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<Download
 {
     ScopedPtr<File> infoFile(File::Create(infoFilePath, File::OPEN | File::READ));
     if (NULL == static_cast<File *>(infoFile))
+    {
         return false;
+    }
     
     bool eof = false;
     
-    uint8 partsCount;
-    
-    
-    eof &= sizeof(partsCount) != infoFile->Read(&partsCount, sizeof(partsCount));
+    DownloadInfoHeader downloadHeader;
+    eof &= sizeof(DownloadInfoHeader) != infoFile->Read(&downloadHeader, sizeof(DownloadInfoHeader));
     
     uint8 partsRead = 0;
     uint64 readPartSize = sizeof(DownloadPart::StoreData);
     
-    while (!eof && partsRead < partsCount)
+    while (!eof && partsRead < downloadHeader.partsCount)
     {
         DownloadPart *part = new DownloadPart();
 
         eof &= sizeof(part->info.number) != infoFile->Read(&part->info.number, sizeof(part->info.number));
      
-        infoFile->Seek(sizeof(partsCount) + part->info.number * readPartSize, File::SEEK_FROM_START);
+        infoFile->Seek(sizeof(downloadHeader.partsCount) + part->info.number * readPartSize, File::SEEK_FROM_START);
         eof &= sizeof(part->info) != infoFile->Read(&part->info, sizeof(part->info));
         
         if (eof)
@@ -80,7 +80,9 @@ bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<Download
             return false;
         }
 
+        // progress should not be gigger than expected download size
         DVASSERT(part->info.progress <= part->info.size);
+
         if (part->info.size == part->info.progress)
         {
             SafeDelete(part);
@@ -98,38 +100,45 @@ bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<Download
 
 bool DownloadPart::SaveDownload(const FilePath &infoFilePath)
 {
-    uint64 seekPos = sizeof(uint8) + info.number*sizeof(DownloadPart::StoreData);
-
     ScopedPtr<File> file(File::Create(infoFilePath, File::OPEN | File::READ | File::WRITE));
     if (NULL != static_cast<File*>(file))
     {
+        // we should to write pert data in it's place inside info file
+        uint64 seekPos = sizeof(DownloadInfoHeader) + info.number*sizeof(DownloadPart::StoreData);
         file->Seek(seekPos, File::SEEK_FROM_START);
-        uint32 written = file->Write(&info, sizeof(info));
 
-        if (written < sizeof(info))
+        if (sizeof(info) != file->Write(&info, sizeof(info)))
+        {
             return  false;
+        }
     }
     else
     {
         return false;
     }
+
     return true;
 }
 
 bool DownloadPart::CreateDownload(const FilePath &infoFilePath, const uint8 partsCount)
 {
-    uint64 infoFileSize = sizeof(partsCount) + partsCount*sizeof(DownloadPart::StoreData);
+    // Create info file and allocate space for it
+    uint64 infoFileSize = sizeof(DownloadInfoHeader) + partsCount*sizeof(DownloadPart::StoreData);
     if (!FileSystem::CreateEmptyFile(infoFilePath, infoFileSize))
+    {
         return false;
+    }
 
+    // write download header into info file
     ScopedPtr<File> file(File::Create(infoFilePath, File::OPEN | File::READ | File::WRITE));
     if (NULL != static_cast<File*>(file))
     {
-        file->Seek(0, File::SEEK_FROM_START);
-        uint32 written = file->Write(&partsCount, sizeof(partsCount));
-        
-        if (written < sizeof(partsCount))
+        DownloadInfoHeader header;
+        header.partsCount = partsCount;
+        if (sizeof(DownloadInfoHeader) != file->Write(&header, sizeof(DownloadInfoHeader)))
+        {
             return  false;
+        }
     }
     else
     {

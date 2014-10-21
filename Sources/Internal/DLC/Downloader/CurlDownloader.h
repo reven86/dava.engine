@@ -37,40 +37,102 @@ namespace DAVA
 
 class CurlDownloader : public Downloader
 {
-    enum HttpCodeClass
-    {
-        HTTP_INFO = 1,
-        HTTP_SUCCESS,
-        HTTP_REDIRECTION,
-        HTTP_CLIENT_ERROR,
-        HTTP_SERVER_ERROR,
-    };
-
 public:
     CurlDownloader();
     virtual ~CurlDownloader();
 
 protected:
+    /**
+        \brief Interrupts current download.
+     */
     virtual void Interrupt();
-
+    /**
+        \brief Init an easy handle for use it later for any Curl operation. Setups all common paramaters.
+        Returns a pointer to CURL easy handle. NULL if there was an init error.
+     */
     CURL *CurlSimpleInit();
-
+    /**
+     \brief Get content size in bytes for remote Url.
+     \param[in] url - destination fie Url
+     \param[in] _timeout - operation timeout
+     \param[out] retSize - place result to
+     */
     virtual DownloadError GetSize(const String &url, uint64 &retSize, const int32 timeout);
+    /**
+     \brief Main downloading operation. Should call SaveData to store data.
+     \param[in] url - destination file Url
+     \param[in] savePath - path to save location of remote file
+     \param[in] partsCount - quantity of download threads
+     \param[in] _timeout - operation timeout
+     */
     virtual DownloadError Download(const String &url, const FilePath &savePath, const uint8 partsCount, const int32 timeout);
 
-    static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part);
-    
-    DownloadError CurlStatusToDownloadStatus(const CURLcode &status);
-    DownloadError HttpCodeToError(uint32 code);
-
 private:
-    CURL *CreateEasyHandle(const String &url, DownloadPart *part, int32 _timeout);
-    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, const uint8 partsCount, int32 timeout);
+    /**
+        \brief Data receive handler for all easy handles which downloads a data
+        \param[in] ptr - pointer to incoming data chunk
+        \param[in] size - one data buffer size
+        \param[in] nmemb - quantity of came data buffers
+        \param[in] part - pointer to download part which contains data for current download thread
+     */
+    static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part);
+    /**
+        \brief Convert Curl easy interface error to Download error
+        \param[in] status - Curl easy interface operation status status
+     */
+    DownloadError CurlStatusToDownloadStatus(const CURLcode &status) const;
+    /**
+       \brief Convert Curl multi interface error to Download error
+       \param[in] curMultiCode - Curl multi interface operation status
+     */
+    DownloadError CurlmCodeToDownloadError(const CURLMcode curlMultiCode) const;
+    /**
+        \brief Convert HTTP code to Download error
+        \param[in] code HTTP code
+     */
+    DownloadError HttpCodeToDownloadError(const uint32 code) const;
+    /**
+        \brief Create one of easy handles to download content. Returns a pointer to new created curl easy handle
+        \param[in] url - remote file Url
+        \param[in] part - pointer to download part which contains data for current download thread
+        \param[in] _timeout - operation timeout
+     */
+    CURL *CreateEasyHandle(const String &url, DownloadPart *part, const int32 _timeout);
+    /**
+        \brief Prepare all we need to start or resume download
+        \param[in] multiHandle - pointer to Curl multi interface handle
+        \param[in] url - destination file Url
+        \param[in] savePath - path to save location of remote file
+        \param[in] partsCount - quantity of download threads
+        \param[in] _timeout - operation timeout
+    */
+    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, const uint8 partsCount, const int32 timeout);
+    /**
+        \brief Do a prepared download. Do nothing and returnes DLE_NO_ERROR if there is no easy handles.
+        \param[in] multiHandle - pointer to Curl multi interface handle
+     */
     CURLMcode Perform(CURLM *multiHandle);
+    /**
+        \brief Cleanup all used Curl resurces when they are not needed anymore
+     */
     void CleanupDownload();
-    void SetTimeout(CURL *handle, int32 _timeout);
-    DownloadError ErrorForEasyHandle(CURL *easyHandle, const CURLcode status);
-    DownloadError TakeMostImportantReturnValue(const Vector<DownloadError> &errorList);
+    /**
+        \brief Set up Curl timeouts
+        \param[in] handle - Curl easy handle to set options
+        \param[in] _timeout - operations timeout
+     */
+    void SetTimeout(CURL *easyHandle, const int32 _timeout);
+    /**
+        \brief Returns actual error state for given easy handle with it's ststus
+        \param[in] easyHandle - Curl easy handle to set options
+        \param[in] status - status of current easyHandle
+     */
+    DownloadError ErrorForEasyHandle(CURL *easyHandle, const CURLcode status) const;
+    /**
+        \brief Take more importand error from all download results. Returns DLE_NO_ERROR if there is no errors or all is fine.
+        \param[in] errorList - a lis of DownloadErrors to take the more important
+     */
+    DownloadError TakeMostImportantReturnValue(const Vector<DownloadError> &errorList) const;
 
 private:
     static bool isCURLInit;
