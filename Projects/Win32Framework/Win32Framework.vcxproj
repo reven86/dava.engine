@@ -388,10 +388,12 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Detail\Noncopyable.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\SampleEchoServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPSocket.h" />
@@ -857,6 +859,7 @@
     <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\SampleEchoServer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPSocketBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\UDPSocketBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp" />

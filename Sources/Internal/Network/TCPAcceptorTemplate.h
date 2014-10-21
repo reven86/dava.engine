@@ -10,6 +10,16 @@ namespace DAVA {
 
 class IOLoop;
 
+/*
+ Template class TCPAcceptorTemplate accepts incoming TCP connections.
+ Template parameter T specifies type that inherits TCPAcceptorTemplate (CRTP idiom)
+ Type specified by T should implement methods:
+    void HandleConnect (int error)
+        This method is called on recieving new incoming TCP connection.
+        Parameter error is non zero on error
+    void HandleClose () - optional
+        This method is called after underlying socket has been closed by libuv
+*/
 template <typename T>
 class TCPAcceptorTemplate : public TCPSocketBase
 {

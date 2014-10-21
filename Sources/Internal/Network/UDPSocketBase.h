@@ -3,6 +3,8 @@
 
 #include <libuv/uv.h>
 
+#include "Detail/Noncopyable.h"
+
 namespace DAVA {
 
 class IOLoop;
@@ -11,7 +13,7 @@ class Endpoint;
 /*
  Class UDPSocketBase - base class for UDP sockets
 */
-class UDPSocketBase
+class UDPSocketBase : private DAVA::Noncopyable
 {
 public:
     explicit UDPSocketBase (IOLoop* ioLoop);
@@ -26,11 +28,15 @@ public:
 
     bool IsClosed () const;
 
-    int Bind (const Endpoint& endpoint);
+    int Bind (const Endpoint& endpoint, bool reuseAddrOption = false);
 
-    int Bind (const char* ipaddr, unsigned short port);
+    int Bind (const char* ipaddr, unsigned short port, bool reuseAddrOption = false);
 
-    int Bind (unsigned short port);
+    int Bind (unsigned short port, bool reuseAddrOption = false);
+
+    int JoinMulticastGroup (const char* multicastAddr, const char* interfaceAddr = NULL);
+
+    int LeaveMulticastGroup (const char* multicastAddr, const char* interfaceAddr = NULL);
 
 protected:
     void InternalClose (uv_close_cb callback)

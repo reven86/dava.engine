@@ -3,6 +3,8 @@
 
 #include <libuv/uv.h>
 
+#include "Detail/Noncopyable.h"
+
 namespace DAVA {
 
 class IOLoop;
@@ -11,7 +13,7 @@ class Endpoint;
 /*
  Class TCPSocketBase - base class for TCP sockets
 */
-class TCPSocketBase
+class TCPSocketBase : private DAVA::Noncopyable
 {
 public:
     explicit TCPSocketBase (IOLoop* ioLoop);

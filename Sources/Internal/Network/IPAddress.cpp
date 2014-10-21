@@ -26,7 +26,7 @@ IPAddress IPAddress::FromString (const char* addr)
     DVASSERT (addr);
 
     Endpoint endp;
-    if (uv_ip4_addr (addr, 0, endp.CastToSockaddrIn ()))
+    if (0 == uv_ip4_addr (addr, 0, endp.CastToSockaddrIn ()))
         return endp.Address ();
     return IPAddress ();
 }

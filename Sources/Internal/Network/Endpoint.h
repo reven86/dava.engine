@@ -62,25 +62,11 @@ public:
         return sizeof (data);
     }
 
-    sockaddr* CastToSockaddr ()
-    {
-        return reinterpret_cast<sockaddr*> (&data);
-    }
+          sockaddr* CastToSockaddr ()       { return reinterpret_cast<sockaddr*> (&data); }
+    const sockaddr* CastToSockaddr () const { return reinterpret_cast<const sockaddr*> (&data); }
     
-    const sockaddr* CastToSockaddr () const
-    {
-        return reinterpret_cast<const sockaddr*> (&data);
-    }
-    
-    sockaddr_in* CastToSockaddrIn ()
-    {
-        return reinterpret_cast<sockaddr_in*> (&data);
-    }
-    
-    const sockaddr_in* CastToSockaddrIn () const
-    {
-        return reinterpret_cast<const sockaddr_in*> (&data);
-    }
+          sockaddr_in* CastToSockaddrIn ()       { return reinterpret_cast<sockaddr_in*> (&data); }
+    const sockaddr_in* CastToSockaddrIn () const { return reinterpret_cast<const sockaddr_in*> (&data); }
 
 private:
 	void SetSockaddrAddr (unsigned long addr)

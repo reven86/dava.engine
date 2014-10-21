@@ -151,6 +151,9 @@
     <Filter Include="Internal\DLC\Downloader">
       <UniqueIdentifier>{56f56b47-79c3-4bbc-adef-7d96d2c55443}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Network\Detail">
+      <UniqueIdentifier>{807598a7-8b1b-4a21-a541-3e0c2836538c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1599,6 +1602,12 @@
     <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketFwd.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Detail\Noncopyable.h">
+      <Filter>Internal\Network\Detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\SampleEchoServer.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2863,6 +2872,9 @@
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\SampleEchoServer.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>

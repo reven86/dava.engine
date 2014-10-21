@@ -35,7 +35,7 @@ public:
 
     int LocalEndpoint (Endpoint& endpoint)
     {
-        int size = endpoint.size ();
+        int size = endpoint.Size ();
         return uv_udp_getsockname (Handle (), endpoint.CastToSockaddr (), &size);
     }
 

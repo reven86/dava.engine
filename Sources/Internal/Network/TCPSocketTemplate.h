@@ -14,6 +14,22 @@ namespace DAVA {
 
 class IOLoop;
 
+/*
+ Template class TCPSocketTemplate provides basic capabilities: reading from and sending to socket
+ Template parameter T specifies type that inherits TCPSocketTemplate (CRTP idiom)
+ Type specified by T should implement methods:
+    void HandleConnect (int error)
+        This method is called after connection to TCP server has been established
+        Parameter error is non zero on error
+    void HandleRead (int error, std::size_t nread, const uv_buf_t* buffer)
+        This method is called after data with length of nread bytes has been arrived
+        Parameter error is non zero on error, UV_EOF when remote peer has closed connection or 0 on no error
+    template<typename WriteRequestType>
+    void HandleWrite (WriteRequestType* request, int error)
+        This method is called after data has been written to
+    void HandleClose ()
+        This method is called after underlying socket has been closed by libuv
+*/
 template <typename T>
 class TCPSocketTemplate : public TCPSocketBase
 {
@@ -45,7 +61,7 @@ public:
 
     int LocalEndpoint (Endpoint& endpoint)
     {
-        int size = endpoint.size ();
+        int size = endpoint.Size ();
         return uv_tcp_getsockname (Handle (), endpoint.CastToSockaddr (), &size);
     }
 
@@ -90,7 +106,7 @@ private:
         *buffer = uv_buf_init (static_cast<char*> (externalReadBuffer), externalReadBufferSize);
     }
     void HandleConnect (int /*error*/) {}
-    void HandleRead (int /*error*/, std::size_t /*bytes_transferred*/, const uv_buf_t* /*buffer*/) {}
+    void HandleRead (int /*error*/, std::size_t /*nread*/, const uv_buf_t* /*buffer*/) {}
 
     template<typename WriteRequestType>
     void HandleWrite (WriteRequestType* /*request*/, int /*error*/) {}
