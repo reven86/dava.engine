@@ -43,7 +43,6 @@ namespace DAVA
 QtLayerWin32::QtLayerWin32()
 {
     WidgetCreated();
-    AppStarted();
 }
 
 QtLayerWin32::~QtLayerWin32()

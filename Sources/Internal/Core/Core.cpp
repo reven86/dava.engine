@@ -54,6 +54,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Platform/Notification.h"
+#include "Render/OcclusionQuery.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -152,6 +153,7 @@ void Core::CreateSingletons()
     new VersionInfo();
     new ImageSystem();
     new SceneCache();
+    new FrameOcclusionQueryManager();
 	
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -176,7 +178,7 @@ void Core::CreateSingletons()
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
     new LocalNotificationController();
-    
+
     RegisterDAVAClasses();
     CheckDataTypeSizes();
 }
@@ -210,6 +212,7 @@ void Core::ReleaseSingletons()
     SoundSystem::Instance()->Release();
 	Random::Instance()->Release();
 	RenderLayerManager::Instance()->Release();
+    FrameOcclusionQueryManager::Instance()->Release();
 	RenderManager::Instance()->Release();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();
@@ -625,6 +628,8 @@ void Core::SystemAppStarted()
             RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
          */
 	}
+
+    FrameOcclusionQueryManager::Instance()->Init();
 
 	if (core)core->OnAppStarted();
     

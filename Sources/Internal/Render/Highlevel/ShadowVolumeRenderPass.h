@@ -45,7 +45,7 @@ class ShadowVolumeRenderLayer : public RenderLayer
 {
 public:
 
-    ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
+    ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id, FrameOcclusionQueryManager::eFrameOcclusionQuery statsOcclusionQuery = FrameOcclusionQueryManager::FRAME_QUERY_COUNT);
     virtual ~ShadowVolumeRenderLayer();
     
     virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);

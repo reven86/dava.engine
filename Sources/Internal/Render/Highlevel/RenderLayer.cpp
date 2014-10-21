@@ -37,20 +37,17 @@
 
 namespace DAVA
 {
-RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags, RenderLayerID _id)
+RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags, RenderLayerID _id, FrameOcclusionQueryManager::eFrameOcclusionQuery statsOcclusionQuery /* = FrameOcclusionQueryManager::FRAME_QUERY_COUNT */)
     :	name(_name)
     ,   flags(sortingFlags)
     ,   id(_id)
-    ,   queryPending(false)
-    ,   lastFragmentsRenderedValue(0)
-    ,   occlusionQuery(NULL)
+    ,   occlusionQueryName(statsOcclusionQuery)
 {
     
 }
     
 RenderLayer::~RenderLayer()
 {
-    SafeRelease(occlusionQuery);
 }
 
 void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
@@ -72,16 +69,7 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
     
     if(layerOcclustionStatsEnabled)
     {
-        if(NULL == occlusionQuery)
-        {
-            occlusionQuery = new OcclusionQuery();
-            occlusionQuery->Init();
-        }
-    
-        if(false == queryPending)
-        {
-            occlusionQuery->BeginQuery();
-        }
+        FrameOcclusionQueryManager::Instance()->BeginQuery(occlusionQueryName);
     }
     
     for (uint32 k = 0; k < size; ++k)
@@ -107,18 +95,7 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
     
     if(layerOcclustionStatsEnabled)
     {
-        if(false == queryPending)
-        {
-            occlusionQuery->EndQuery();
-            queryPending = true;
-        }
-        
-        if((true == queryPending) &&
-           occlusionQuery->IsResultAvailable())
-        {
-            occlusionQuery->GetQuery(&lastFragmentsRenderedValue);
-            queryPending = false;
-        }
+        FrameOcclusionQueryManager::Instance()->EndQuery(occlusionQueryName);
     }
     
 #if CAN_INSTANCE_CHECK

@@ -34,6 +34,7 @@
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderFastNames.h"
+#include "Render/OcclusionQuery.h"
 
 namespace DAVA
 {
@@ -45,25 +46,23 @@ class OcclusionQuery;
 class RenderLayer
 {
 public:
-    RenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
+    RenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id, FrameOcclusionQueryManager::eFrameOcclusionQuery statsOcclusionQuery = FrameOcclusionQueryManager::FRAME_QUERY_COUNT);
     virtual ~RenderLayer();
     
     inline RenderLayerID GetRenderLayerID() const;
 	inline const FastName & GetName() const;
 	inline uint32 GetFlags() const;
 
+    inline FrameOcclusionQueryManager::eFrameOcclusionQuery GetOcclusionQueryName() const;
+
     virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
-    
-    inline uint32 GetFragmentStats() const;
     
 protected:
     FastName name;
     uint32 flags;
     RenderLayerID id;
     
-    OcclusionQuery* occlusionQuery;
-    uint32 lastFragmentsRenderedValue;
-    bool queryPending;
+    FrameOcclusionQueryManager::eFrameOcclusionQuery occlusionQueryName;
     
 public:
     INTROSPECTION(RenderLayer,
@@ -87,11 +86,11 @@ inline uint32 RenderLayer::GetFlags() const
     return flags;
 }
 
-inline uint32 RenderLayer::GetFragmentStats() const
+inline FrameOcclusionQueryManager::eFrameOcclusionQuery RenderLayer::GetOcclusionQueryName() const
 {
-    return lastFragmentsRenderedValue;
+    return occlusionQueryName;
 }
-    
+
 } // ns
 
 #endif	/* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */

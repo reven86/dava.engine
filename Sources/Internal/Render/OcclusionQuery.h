@@ -40,6 +40,8 @@
 namespace DAVA
 {
 
+class ApplicationCore;
+    
 class OcclusionQuery
 {
 public:
@@ -77,19 +79,19 @@ public:
     uint32 salt: M;
 };
     
-typedef SmartHandle<32, 32> OcclusionQueryManagerHandle;
+typedef SmartHandle<32, 32> OcclusionQueryPoolHandle;
     
-class OcclusionQueryManager
+class OcclusionQueryPool
 {
 public:
     static const uint32 INVALID_INDEX = 0xFFFFFFFF;
     
-    OcclusionQueryManager(uint32 occlusionQueryCount);
-    ~OcclusionQueryManager();
+    OcclusionQueryPool(uint32 occlusionQueryCount);
+    ~OcclusionQueryPool();
     
-    OcclusionQueryManagerHandle CreateQueryObject();
-    OcclusionQuery & Get(OcclusionQueryManagerHandle handle);
-    void ReleaseQueryObject(OcclusionQueryManagerHandle handle);
+    OcclusionQueryPoolHandle CreateQueryObject();
+    OcclusionQuery & Get(OcclusionQueryPoolHandle handle);
+    void ReleaseQueryObject(OcclusionQueryPoolHandle handle);
     
 private:
     uint32 createdCounter;
@@ -104,11 +106,73 @@ private:
     Vector<OcclusionQueryItem> queries;
 };
     
-inline OcclusionQuery & OcclusionQueryManager::Get(OcclusionQueryManagerHandle handle)
+inline OcclusionQuery & OcclusionQueryPool::Get(OcclusionQueryPoolHandle handle)
 {
     return queries[handle.index].query;
 }
 
+#define FRAME_QUERY_POOL_SIZE 20
+
+class FrameOcclusionQueryManager : public Singleton<FrameOcclusionQueryManager>
+{
+    struct FrameQuery
+    {
+        OcclusionQueryPool queryPool;
+        Vector<OcclusionQueryPoolHandle> activeQueries;
+        uint32 drawedFrameStats;
+        bool isQueryOpen;
+
+        FrameQuery() : 
+            queryPool(FRAME_QUERY_POOL_SIZE),
+            drawedFrameStats(0),
+            isQueryOpen(false)
+            {}
+    };
+
+public:
+    enum eRetrieveBehavior
+    {
+        BEHAVIOR_WAIT,
+        BEHAVIOR_SKIP,
+        BEHAVIOR_RETRIEVE_ON_NEXT_FRAME
+    };
+    enum eFrameOcclusionQuery
+    {
+        FRAME_QUERY_RENDER_LAYER_OPAQUE = 0,
+        FRAME_QUERY_RENDER_LAYER_AFTER_OPAQUE,
+        FRAME_QUERY_RENDER_LAYER_ALPHA_TEST,
+        FRAME_QUERY_RENDER_LAYER_WATER,
+        FRAME_QUERY_RENDER_LAYER_TRANSLUCENT,
+        FRAME_QUERY_RENDER_LAYER_AFTER_TRANSLUCENT,
+        FRAME_QUERY_RENDER_LAYER_SHADOW_VOLUME,
+        FRAME_QUERY_RENDER_LAYER_VEGETATION,
+        FRAME_QUERY_RENDER_LAYER_DEBUG_DRAW,
+        FRAME_QUERY_UI_DRAW,
+
+        FRAME_QUERY_COUNT
+    };
+    FrameOcclusionQueryManager();
+    virtual ~FrameOcclusionQueryManager();
+
+    void Init();
+
+    void BeginQuery(eFrameOcclusionQuery query);
+    void EndQuery(eFrameOcclusionQuery query);
+    uint32 GetFrameStats(eFrameOcclusionQuery query) const;
+
+    void SetRetrieveBehavior(eRetrieveBehavior _behavior) { behavior = _behavior; };
+
+private:
+    void ResetFrameStats();
+    void ProccesDrawedFrame();
+
+    FrameQuery * frameQueries;
+
+    eRetrieveBehavior behavior;
+    bool frameBegan;
+
+friend class ApplicationCore;
+};
     
 /*
     id queryId = occlusionQuery->CreateQueryObject();

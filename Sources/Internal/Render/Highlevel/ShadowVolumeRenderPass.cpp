@@ -37,8 +37,8 @@
 namespace DAVA
 {
     
-ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id)
-    :   RenderLayer(name, sortingFlags, id), shadowRect(NULL)
+ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id, FrameOcclusionQueryManager::eFrameOcclusionQuery statsOcclusionQuery)
+    :   RenderLayer(name, sortingFlags, id, statsOcclusionQuery), shadowRect(NULL)
 {
     
 	blendMode = ShadowPassBlendMode::MODE_BLEND_MULTIPLY;

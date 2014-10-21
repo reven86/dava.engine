@@ -985,7 +985,7 @@ void SceneInfo::RefreshLayersSection()
         for(uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
         {
             RenderLayer* layer = renderPass->GetRenderLayer(layerIndex);
-            uint32 fragmentStats = layer->GetFragmentStats();
+            uint32 fragmentStats = FrameOcclusionQueryManager::Instance()->GetFrameStats(layer->GetOcclusionQueryName());
             
             String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0f) / viewportSize);
             

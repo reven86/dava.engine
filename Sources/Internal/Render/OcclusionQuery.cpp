@@ -27,10 +27,15 @@
 =====================================================================================*/
 #include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
 #if defined(__DAVAENGINE_OPENGL__)
+
+/////////////////////////////////////////////////////////////////////
+///////////OcclusionQuery
+
 OcclusionQuery::OcclusionQuery()
 {
     id = 0;
@@ -58,8 +63,11 @@ void OcclusionQuery::Release()
 
 OcclusionQuery::~OcclusionQuery()
 {
-    Release();
-    id = 0;
+    if(id != 0)
+    {
+        Release();
+        id = 0;
+    }
 }
 
 void OcclusionQuery::BeginQuery()
@@ -114,9 +122,11 @@ void OcclusionQuery::GetQuery(uint32 * resultValue)
     RENDER_VERIFY(glGetQueryObjectuivEXT(id, GL_QUERY_RESULT_EXT, resultValue));
 #endif
 }
+   
+/////////////////////////////////////////////////////////////////////
+///////////OcclusionQueryPool
     
-    
-OcclusionQueryManager::OcclusionQueryManager(uint32 _occlusionQueryCount)
+OcclusionQueryPool::OcclusionQueryPool(uint32 _occlusionQueryCount)
 {
     createdCounter = 0;
     nextFree = 0;
@@ -131,7 +141,7 @@ OcclusionQueryManager::OcclusionQueryManager(uint32 _occlusionQueryCount)
     }
 }
     
-OcclusionQueryManager::~OcclusionQueryManager()
+OcclusionQueryPool::~OcclusionQueryPool()
 {
     for (uint32 k = 0; k < occlusionQueryCount; ++k)
     {
@@ -140,7 +150,7 @@ OcclusionQueryManager::~OcclusionQueryManager()
     queries.clear();
 }
 
-OcclusionQueryManagerHandle OcclusionQueryManager::CreateQueryObject()
+OcclusionQueryPoolHandle OcclusionQueryPool::CreateQueryObject()
 {
     if (nextFree == INVALID_INDEX)
     {
@@ -157,14 +167,14 @@ OcclusionQueryManagerHandle OcclusionQueryManager::CreateQueryObject()
         }
     }
     createdCounter++;
-    OcclusionQueryManagerHandle handle;
+    OcclusionQueryPoolHandle handle;
     handle.index = nextFree;
     handle.salt = queries[nextFree].salt;
     nextFree = queries[nextFree].next;
     return handle;
 }
     
-void OcclusionQueryManager::ReleaseQueryObject(OcclusionQueryManagerHandle handle)
+void OcclusionQueryPool::ReleaseQueryObject(OcclusionQueryPoolHandle handle)
 {
     createdCounter--;
     DVASSERT(handle.salt == queries[handle.index].salt);
@@ -173,6 +183,118 @@ void OcclusionQueryManager::ReleaseQueryObject(OcclusionQueryManagerHandle handl
     nextFree = handle.index;
 }
 
+/////////////////////////////////////////////////////////////////////
+///////////FrameOcclusionQueryManager
+
+FrameOcclusionQueryManager::FrameOcclusionQueryManager() :
+behavior(BEHAVIOR_WAIT),
+frameBegan(false),
+frameQueries(0)
+{}
+
+
+FrameOcclusionQueryManager::~FrameOcclusionQueryManager()
+{
+    SafeDeleteArray(frameQueries);
+}
+
+void FrameOcclusionQueryManager::Init()
+{
+    SafeDeleteArray(frameQueries);
+    frameQueries = new FrameQuery[FRAME_QUERY_COUNT];
+}
+
+void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
+{
+    frameBegan = true;
+
+    for(int32 i = 0; i < (int32)FRAME_QUERY_COUNT; ++i)
+    {
+        frameQueries[i].drawedFrameStats = 0;
+    }
+}
+
+void FrameOcclusionQueryManager::ProccesDrawedFrame() //OnEndFrame
+{
+    frameBegan = false;
+
+    for(int32 i = 0; i < (int32)FRAME_QUERY_COUNT; ++i)
+    {
+        FrameQuery & frameQuery = frameQueries[i];
+        for(int32 q = frameQuery.activeQueries.size() - 1; q >= 0; --q)
+        {
+            OcclusionQueryPoolHandle queryHandle = frameQuery.activeQueries[q];
+            OcclusionQuery & query = frameQuery.queryPool.Get(queryHandle);
+
+            bool needRetrieve = false;
+            bool needRemove = false;
+
+            if(behavior == BEHAVIOR_WAIT)
+            {
+                while(!query.IsResultAvailable()) {}
+
+                needRetrieve = true;
+                needRemove = true;
+            }
+            else if(behavior == BEHAVIOR_SKIP)
+            {
+                needRemove = true;
+                needRetrieve = query.IsResultAvailable();
+            }
+            else if(behavior == BEHAVIOR_RETRIEVE_ON_NEXT_FRAME)
+            {
+                needRetrieve = needRemove = query.IsResultAvailable();
+            }
+
+            if(needRetrieve)
+            {
+                uint32 result = 0;
+                query.GetQuery(&result);
+                frameQuery.drawedFrameStats += result;
+            }
+
+            if(needRemove)
+            {
+                frameQuery.queryPool.ReleaseQueryObject(queryHandle);
+                RemoveExchangingWithLast(frameQuery.activeQueries, q);
+            }
+        }
+    }
+}
+
+void FrameOcclusionQueryManager::BeginQuery(eFrameOcclusionQuery query)
+{
+    if(query >= FRAME_QUERY_COUNT)
+        return;
+
+    DVASSERT(!frameQueries[(uint32)query].isQueryOpen);
+
+    FrameQuery & frameQuery = frameQueries[(uint32)query];
+    OcclusionQueryPoolHandle handle = frameQuery.queryPool.CreateQueryObject();
+    frameQuery.queryPool.Get(handle).BeginQuery();
+    frameQuery.activeQueries.push_back(handle);
+    frameQuery.isQueryOpen = true;
+}
+
+void FrameOcclusionQueryManager::EndQuery(eFrameOcclusionQuery query)
+{
+    if(query >= FRAME_QUERY_COUNT)
+        return;
+
+    DVASSERT(frameQueries[(uint32)query].isQueryOpen);
+
+    FrameQuery & frameQuery = frameQueries[(uint32)query];
+    OcclusionQueryPoolHandle handle = frameQuery.activeQueries.back();
+    frameQuery.queryPool.Get(handle).EndQuery();
+    frameQuery.isQueryOpen = false;
+}
+
+uint32 FrameOcclusionQueryManager::GetFrameStats(eFrameOcclusionQuery query) const
+{
+    DVASSERT(!frameBegan); //should be called on after EndFrame() and before BeginFrame()
+
+    return frameQueries[(uint32)query].drawedFrameStats;
+}
 
 #else
 #error "Require Occlusion Queries Implementation"
