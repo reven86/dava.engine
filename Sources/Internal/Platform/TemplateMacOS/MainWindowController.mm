@@ -415,6 +415,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	RenderManager::Instance()->Init(currentMode.width, currentMode.height);
 	UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
 	Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+    FrameOcclusionQueryManager::Instance()->Init();
 	
 	
 	RENDER_VERIFY(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));

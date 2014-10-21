@@ -136,6 +136,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 	UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
 	Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+    FrameOcclusionQueryManager::Instance()->Init();
 	
 	sizeChanged = YES;
 	[super reshape];

@@ -485,6 +485,7 @@ extern void FrameworkWillTerminate();
 	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
 	DAVA::Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
     DAVA::Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
+    DAVA::FrameOcclusionQueryManager::Instance()->Init();
 	
 	NSLog(@"[NPAPICoreMacOSPlatform] SystemAppStarted");
 	DAVA::Core::Instance()->SystemAppStarted();

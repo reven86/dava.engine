@@ -148,7 +148,10 @@
     NSRect boundRect = [self convertRectToBacking: rect];
     
     if(RenderManager::Instance())
+    {
         RenderManager::Instance()->Init(boundRect.size.width, boundRect.size.height);
+        FrameOcclusionQueryManager::Instance()->Init();
+    }
     
     if(UIControlSystem::Instance())
         UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
