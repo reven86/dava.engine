@@ -68,12 +68,20 @@ QVariant QtPropertyDataInspDynamic::GetValueAlias() const
 
 void QtPropertyDataInspDynamic::SetValueInternal(const QVariant &value)
 {
-    SetTempValueInternal(value);
+	QtPropertyDataDavaVariant::SetValueInternal(value);
+	DAVA::VariantType newValue;
+	
+	if(!value.isNull())
+	{
+		newValue = GetVariantValue();
+	}
 
+	// save value to meta-object
 	if(NULL != dynamicInfo)
 	{
 		DAVA::SafeDelete(lastCommand);
 		lastCommand = new InspDynamicModifyCommand(dynamicInfo, object, name, curVariantValue);
+		dynamicInfo->MemberValueSet(object, name, newValue);
 	}
 }
 
@@ -87,7 +95,7 @@ void QtPropertyDataInspDynamic::SetTempValueInternal(const QVariant& value)
 		newValue = GetVariantValue();
 	}
 
-	// also save value to meta-object
+	// save value to meta-object
 	if(NULL != dynamicInfo)
 	{
 		dynamicInfo->MemberValueSet(object, name, newValue);

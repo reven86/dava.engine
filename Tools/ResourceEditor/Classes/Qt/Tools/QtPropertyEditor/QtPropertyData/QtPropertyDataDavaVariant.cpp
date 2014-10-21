@@ -1078,16 +1078,15 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
     const DAVA::Color newColor = cp.GetDavaColor();
 
     QString str;
+
+    str.sprintf(FLOAT_PRINTF_FORMAT4, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+    SetTempValue(str);  // Restore original value, need for undo/redo
+
     if (result && newColor != oldColor)
 	{
         str.sprintf(FLOAT_PRINTF_FORMAT4, newColor.r, newColor.g, newColor.b, newColor.a);
 	    SetValue(str, VALUE_EDITED);
 	}
-    else
-    {
-        str.sprintf(FLOAT_PRINTF_FORMAT4, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
-	    SetTempValue(str);
-    }
 
     SetColorIcon();
 }
