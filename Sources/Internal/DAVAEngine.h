@@ -283,10 +283,7 @@
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
 
-// Networking
-#include "Network/NetworkConnection.h"
-#include "Network/NetworkDelegate.h"
-#include "Network/NetworkPacket.h"
+
 
 #endif // __DAVAENGINE_H__
 

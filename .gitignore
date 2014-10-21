@@ -38,3 +38,4 @@ fmod.log
 *.user
 /Tools/ResourceEditor/_build
 /Tools/UIEditor/_build
+/Projects/UnitTests/_build

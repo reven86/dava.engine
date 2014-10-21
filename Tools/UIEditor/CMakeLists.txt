@@ -9,7 +9,7 @@ find_package ( DavaFramework REQUIRED )
 include      ( CMake-common )
 include      ( ${QT_USE_FILE} )
 
-define_source_folders ( GLOB_FOLDER "Classes" GLOB_ERASE_FOLDERS "_build" )
+define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
@@ -114,12 +114,12 @@ if( APPLE )
 
 elseif ( MSVC )
 
-    set_target_properties ( UIEditor PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")    
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.vcxproj.user_
-                    ${CMAKE_CURRENT_BINARY_DIR}/UIEditor.vcxproj.user @ONLY )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")    
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 endif()
 
-target_link_libraries( UIEditor
+target_link_libraries( ${PROJECT_NAME}
     ${DAVA_LIBRARY}
     ${QT_LIBRARIES} 
     ${LIBRARIES}
@@ -127,11 +127,11 @@ target_link_libraries( UIEditor
 )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
-    target_link_libraries  ( UIEditor debug ${FILE} )
+    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
 endforeach ()
 
 foreach ( FILE ${LIBRARIES_RELEASE} )
-    target_link_libraries  ( UIEditor optimized ${FILE} )
+    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
 
 

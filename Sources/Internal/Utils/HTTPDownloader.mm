@@ -22,10 +22,11 @@
 #import <Foundation/NSObject.h>
 #import <Foundation/NSURLConnection.h>
 #import <Foundation/NSData.h>
-#import <Foundation/NSString.h>
 #import <Foundation/NSURLRequest.h>
 #import <Foundation/NSURL.h>
 #endif //#if defined(__DAVAENGINE_MACOS__)
+
+#import <Foundation/NSString.h>
 
 namespace DAVA 
 {

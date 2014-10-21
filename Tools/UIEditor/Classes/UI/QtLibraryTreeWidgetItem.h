@@ -32,7 +32,7 @@
 #include <QTreeWidgetItem>
 #include "HierarchyTreeNode.h"
 
-class QtLibraryTreeWidgetItem : public QObject, public QTreeWidgetItem
+class QtLibraryTreeWidgetItem : public QTreeWidgetItem
 {
 
 public:

@@ -9,11 +9,12 @@ elseif( APPLE )
 
     if( IOS )
 
-    	set( ADDED_CPP_PATTERNS TemplateiOS/*.cpp TemplateiOS/*.mm )
+    	set( ADDED_CPP_PATTERNS *.mm *.m TemplateiOS/*.cpp TemplateiOS/*.mm )
     	set( ADDED_H_PATTERNS TemplateiOS/*.h )
 
-        set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR} "${CMAKE_CURRENT_LIST_DIR}/TemplateiOS/" PARENT_SCOPE)
-        set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR} "${CMAKE_CURRENT_LIST_DIR}/" PARENT_SCOPE)
+        set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR}
+            "${CMAKE_CURRENT_LIST_DIR}/"
+            "${CMAKE_CURRENT_LIST_DIR}/TemplateiOS/" PARENT_SCOPE )
 
     else()
 
@@ -24,11 +25,8 @@ elseif( APPLE )
             list ( APPEND ADDED_CPP_PATTERNS Qt/*.cpp Qt/MacOS/*.cpp Qt/MacOS/*.mm )
             list ( APPEND ADDED_H_PATTERNS   Qt/*.h   Qt/MacOS/*.h   )        
             list ( APPEND ERASE_FILES    NPAPICorePlatformMacOS.cpp NPAPICorePlatformMacOS.h ) #NPAPIPluginMacOS.h NPAPIPluginMacOS.mm
-            #set( ERASE_FILES  MainWindowController.h MainWindowController.mm OpenGLView.h OpenGLView.mm )
-
         else()
-            set( ERASE_FILES   )
-
+            list ( APPEND ERASE_FILES    NPAPICorePlatformMacOS.cpp NPAPICorePlatformMacOS.h ) #NPAPIPluginMacOS.h NPAPIPluginMacOS.mm
         endif()
 
         set(CMAKE_C_FLAGS  ${CMAKE_C_FLAGS} "-x objective-c")
@@ -37,7 +35,7 @@ elseif( APPLE )
 
     endif()
 
-else()
+elseif( WIN32 ) 
 
     set( ADDED_CPP_PATTERNS TemplateWin32/*.cpp  )
     set( ADDED_H_PATTERNS   TemplateWin32/*.h    )

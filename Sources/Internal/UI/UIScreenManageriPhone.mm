@@ -18,7 +18,7 @@
 
 #include "UI/UIScreenManager.h"
 #include "UI/UIScreenManageriPhoneImpl.h"
-#include "BaseObject.h"
+#include "Base/BaseObject.h"
 //#include "EAGLViewController.h"
 //#include "EAGLView.h"
 

@@ -11,8 +11,8 @@ add_definitions       (
 )
 
 include_directories            ( ${DAVA_IMAGE_MAGICK_INCLUDES_PATH} ) 
-include_directories            ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
-                                                                   
+include_directories            ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
+
 define_source_folders          ( GLOB_ERASE_FOLDERS "_build"  )
 generate_source_groups_project ()
 

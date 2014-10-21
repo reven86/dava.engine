@@ -43,7 +43,7 @@ macro (define_source_files)
     if (NOT ARG_GLOB_CPP_PATTERNS)
         set (ARG_GLOB_CPP_PATTERNS *.c *.cpp )    # Default glob pattern
         if( APPLE )  
-            list ( APPEND ARG_GLOB_CPP_PATTERNS *.mm )
+            list ( APPEND ARG_GLOB_CPP_PATTERNS *.m *.mm )
         endif  ()
     endif ()
     
@@ -99,7 +99,7 @@ endmacro ()
 #
 macro (define_source_folders )
 
-    cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "GLOB_FOLDER;GLOB_ERASE_FOLDERS" ${ARGN})
+    cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "SRC_ROOT;GLOB_ERASE_FOLDERS" ${ARGN})
     
     IF( NOT ARG_RECURSIVE_CALL )
         set( PROJECT_SOURCE_FILES  ) 
@@ -109,25 +109,36 @@ macro (define_source_folders )
     
     set( SOURCE_FOLDERS  )
     
-    IF( ARG_GLOB_FOLDER)
+    IF( ARG_SRC_ROOT )
     
-        set ( CPP_PATTERNS ${ARG_GLOB_FOLDER}/*.c ${ARG_GLOB_FOLDER}/*.cpp )    
-        if( APPLE )  
-            list ( APPEND CPP_PATTERNS ${ARG_GLOB_FOLDER}/*.mm  )
-        endif  ()
-    
-        define_source_files ( GLOB_CPP_PATTERNS ${CPP_PATTERNS}
-                              GLOB_H_PATTERNS   ${ARG_GLOB_FOLDER}/*.h ${ARG_GLOB_FOLDER}/*.hpp )
-                              
-        FILE( GLOB SOURCE_FOLDERS "${ARG_GLOB_FOLDER}/*" )
+        FOREACH( FOLDER_ITEM ${ARG_SRC_ROOT} )
+
+            set ( CPP_PATTERNS ${FOLDER_ITEM}/*.c ${FOLDER_ITEM}/*.cpp )    
+            if( APPLE )  
+                list ( APPEND CPP_PATTERNS ${FOLDER_ITEM}/*.m  ${FOLDER_ITEM}/*.mm )
+            endif  ()
+        
+            define_source_files ( GLOB_CPP_PATTERNS ${CPP_PATTERNS}
+                                  GLOB_H_PATTERNS   ${FOLDER_ITEM}/*.h ${FOLDER_ITEM}/*.hpp )
+                                  
+            FILE( GLOB SOURCE_FOLDERS "${FOLDER_ITEM}/*" )
+            list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} ) 
+            list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   ) 
+            list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
+
+        ENDFOREACH()
+
     ELSE()
         define_source_files ( )
         FILE( GLOB SOURCE_FOLDERS "*" )
+
+        list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} ) 
+        list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   ) 
+        list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
+
     ENDIF()
     
-    list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} ) 
-    list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   ) 
-    list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
+
              
     FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
         IF( IS_DIRECTORY "${FOLDER_ITEM}" )
@@ -149,7 +160,7 @@ macro (define_source_folders )
                     list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
                 ELSE()
                     list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
-                    define_source_folders( GLOB_FOLDER ${FOLDER_ITEM} GLOB_ERASE_FOLDERS ${ARG_GLOB_ERASE_FOLDERS} RECURSIVE_CALL )
+                    define_source_folders( SRC_ROOT ${FOLDER_ITEM} GLOB_ERASE_FOLDERS ${ARG_GLOB_ERASE_FOLDERS} RECURSIVE_CALL )
                 ENDIF()
             ENDIF()
         ENDIF()
@@ -190,7 +201,7 @@ install(
         DIRECTORY
         ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION
-        "D:/Dava/dava.framework/Libs/include/${TARGET_NAME}"
+        "${DAVA_THIRD_PARTY_ROOT_PATH}/include/${TARGET_NAME}"
         FILES_MATCHING
         PATTERN
         "*.h" )
@@ -199,7 +210,7 @@ install(
         DIRECTORY
         ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION
-        "D:/Dava/dava.framework/Libs/include/${TARGET_NAME}"
+        "${DAVA_THIRD_PARTY_ROOT_PATH}/include/${TARGET_NAME}"
         FILES_MATCHING
         PATTERN
         "*.hpp" )
