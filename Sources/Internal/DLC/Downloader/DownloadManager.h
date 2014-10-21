@@ -65,7 +65,7 @@ public:
     void Update();
 
     // Schedule download content or get content size (handles by DwonloadMode)
-    uint32 Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode = RESUMED, const char8 partsCount = 4, int32 timeout = 30, int32 retriesCount = 3);
+    uint32 Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode = RESUMED, const uint8 partsCount = 4, int32 timeout = 30, int32 retriesCount = 3);
     
     // Retry finished download
     void Retry(const uint32 &taskId);
@@ -127,8 +127,6 @@ private:
     void MakeFullDownload();
     void MakeResumedDownload();
     void ResetRetriesCount();
-
-    bool CreateEmptyFile(FilePath filePath, uint64 fileSize);
 
 private:
     Thread *thisThread;

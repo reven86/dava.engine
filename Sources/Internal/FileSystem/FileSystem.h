@@ -252,8 +252,12 @@ public:
 	 \brief Marks folder as contains no media files to exclude it from index
 	 */
 	void MarkFolderAsNoMedia(const FilePath &folder);
-    
-    
+
+    /**
+     \brief Makes new file with given size and fill it by "0".
+     */
+    static bool CreateEmptyFile(const FilePath &path, const uint64 size);
+
 private:
     
 	virtual eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);

@@ -721,6 +721,28 @@ void FileSystem::MarkFolderAsNoMedia(const FilePath &folder)
     SafeRelease(nomedia);
 #endif
 }
+    
+bool FileSystem::CreateEmptyFile(const FilePath &path, const uint64 size)
+{
+    ScopedPtr<File> file(File::Create(path, File::CREATE | File::WRITE));
+    
+    if (NULL == static_cast<File*>(file))
+        return false;
+    
+    // fill created file by NULL values.
+    char8 nullValue = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if (sizeof(nullValue) != file->Write(&nullValue, sizeof(nullValue)))
+        {
+            FileSystem::Instance()->DeleteFile(path);
+            
+            return false;
+        }
+    }
+
+    return true;
+}
 
 #if defined(__DAVAENGINE_ANDROID__)
 

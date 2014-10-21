@@ -48,6 +48,9 @@ CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
 CurlDownloader::CurlDownloader()
     : isDownloadInterrupting(false)
     , multiHandle(NULL)
+    , storePath("")
+    , dlInfoStorePath("")
+    , dlinfoExt(".dlinfo")
 {
     if (!isCURLInit && CURLE_OK == curl_global_init(CURL_GLOBAL_ALL))
         isCURLInit = true;
@@ -60,21 +63,23 @@ CurlDownloader::~CurlDownloader()
 
 size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part)
 {
-    PartInfo *thisPart = static_cast<PartInfo *>(part);
+    DownloadPart *thisPart = static_cast<DownloadPart *>(part);
     CurlDownloader *thisDownloader = static_cast<CurlDownloader *>(thisPart->downloader);
     
-    uint64 seekPos = thisPart->seekPos + thisPart->progress;
-    uint64 dataLeft = thisPart->size - thisPart->progress;
+    uint64 seekPos = thisPart->info.seekPos + thisPart->info.progress;
+    uint64 dataLeft = thisPart->info.size - thisPart->info.progress;
     size_t dataSizeCame = size*nmemb;
 
     DVASSERT(dataLeft >= dataSizeCame);
+    
+    size_t bytesWritten = thisDownloader->SaveData(ptr, thisDownloader->storePath, dataSizeCame, seekPos);
+    thisPart->info.progress += bytesWritten; // if SaveData not performes - then we have not stored chunk of data and it is not a finished download.
 
-    static Mutex writeLock;
-    writeLock.Lock();
-    size_t bytesWritten = thisDownloader->SaveData(ptr, dataSizeCame, seekPos);
-    writeLock.Unlock();
-
-    thisPart->progress += bytesWritten; // if SaveData not performes - then we have not stored chunk of data and it is not a finished download.
+    if (!thisPart->SaveDownload(thisDownloader->storePath + ".dlinfo"))
+    {
+        Logger::FrameworkDebug("[CurlDownloader::CurlDataRecvHandler] Couldn't save download part info");
+        return 0;
+    }
 
     if (thisDownloader->isDownloadInterrupting)
     {
@@ -105,23 +110,23 @@ CURL *CurlDownloader::CurlSimpleInit()
     CURL *curl_handle = curl_easy_init();
 
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1);
+    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11");
+    curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1);
     return curl_handle;
 }
 
-CURL *CurlDownloader::CreateEasyHandle(const String &url, PartInfo *part, int32 _timeout)
+CURL *CurlDownloader::CreateEasyHandle(const String &url, DownloadPart *part, int32 _timeout)
 {
     /* init the curl session */
     CURL *handle = CurlSimpleInit();
     
     curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, CurlDownloader::CurlDataRecvHandler);
-    //curl_easy_setopt(handle, CURLOPT_RESUME_FROM_LARGE, part->seekPos);
     char8 rangeStr[80];
-    sprintf(rangeStr, "%lld-%lld", part->seekPos, part->size + part->seekPos - 1);
+    sprintf(rangeStr, "%lld-%lld", part->info.seekPos + part->info.progress, part->info.size + part->info.seekPos - 1);
     curl_easy_setopt(handle, CURLOPT_RANGE, rangeStr);
-    curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(handle, CURLOPT_VERBOSE, 0);
-    curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, static_cast<void *>(part));
     
     // set all timeouts
@@ -130,7 +135,7 @@ CURL *CurlDownloader::CreateEasyHandle(const String &url, PartInfo *part, int32 
     return handle;
 }
     
-DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &url, const char8 partsCount, int32 timeout)
+DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, const uint8 partsCount, int32 timeout)
 {
     uint64 remoteFileSize;
     DownloadError err = GetSize(url, remoteFileSize, timeout);
@@ -138,7 +143,52 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
     if (DLE_NO_ERROR != err)
         return err;
 
-    uint64 partSize = remoteFileSize / partsCount;
+    // save it for static SaveData function.
+    storePath = savePath;
+    dlInfoStorePath = storePath + dlinfoExt;
+
+    uint64 partSize;
+    uint8 downloadPartsCount;
+    
+    File *downloadFile = File::Create(savePath, File::OPEN | File::READ);
+    if (NULL == downloadFile)
+    {
+        File *dlInfoFile = File::Create(dlInfoStorePath, File::OPEN | File::READ);
+        if (NULL != dlInfoFile)
+        {
+            SafeRelease(dlInfoFile);
+            if (!FileSystem::Instance()->DeleteFile(dlInfoStorePath))
+            {
+                return DLE_FILE_ERROR;
+            }
+        }
+
+        // create new file if there is no file.
+        if (!FileSystem::CreateEmptyFile(savePath, remoteFileSize))
+        {
+            return DLE_FILE_ERROR;
+        }
+    }
+    else
+    {
+        SafeRelease(downloadFile);
+    }
+
+    const bool isRestoredDownlaod = DownloadPart::RestoreDownload(dlInfoStorePath, downloadParts);
+    if (!isRestoredDownlaod)
+    {
+        downloadPartsCount = partsCount;
+        partSize = remoteFileSize / downloadPartsCount;
+        if (!DownloadPart::CreateDownload(dlInfoStorePath, partsCount))
+        {
+            return DLE_FILE_ERROR;
+        }
+    }
+    else
+    {
+        // restored parts count could be not equal with
+        downloadPartsCount = downloadParts.size();
+    }
 
     *multiHandle = curl_multi_init();
 
@@ -148,24 +198,41 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
     }
 
     CURLMcode ret;
-    for (int i = 0; i < partsCount; i++)
+    for (uint8 i = 0; i < downloadPartsCount; i++)
     {
-        PartInfo *part;
-
-        part = new PartInfo();
-        part->seekPos = partSize * i;
-        part->size = partSize;
-        part->downloader = this;
-        part->number = i;
-        downloadParts.push_back(part);
-
-        if (i == partsCount - 1)
+        DownloadPart *part;
+        
+        if (!isRestoredDownlaod)
         {
-            // we cannot divide without errors, so we will compensate that
-            part->size += remoteFileSize - partSize*partsCount;
+            part = new DownloadPart();
+            part->info.seekPos = partSize * i;
+            part->info.size = partSize;
+            part->info.number = i;
+            part->info.progress = 0;
+
+            if (!part->SaveDownload(dlInfoStorePath))
+            {
+                CleanupDownload();
+                return DLE_FILE_ERROR;
+            }
+
+            if (i == partsCount - 1)
+            {
+                // we cannot divide without errors, so we will compensate that
+                part->info.size += remoteFileSize - partSize*downloadPartsCount;
+            }
+
+            downloadParts.push_back(part);
+        }
+        else
+        {
+            part = downloadParts.at(i);
         }
 
+        part->downloader = this;
+
         CURL *easyHandle = CreateEasyHandle(url, part, timeout);
+
         if (NULL == easyHandle)
         {
             CleanupDownload();
@@ -271,7 +338,7 @@ void CurlDownloader::CleanupDownload()
 
     while (false == downloadParts.empty())
     {
-        Vector<PartInfo *>::iterator it = downloadParts.begin();
+        Vector<DownloadPart *>::iterator it = downloadParts.begin();
         SafeDelete((*it));
         downloadParts.erase(it);
     }
@@ -287,11 +354,11 @@ void CurlDownloader::CleanupDownload()
     multiHandle = NULL;
 }
 
-DownloadError CurlDownloader::Download(const String &url, const char8 partsCount, int32 _timeout)
+DownloadError CurlDownloader::Download(const String &url, const FilePath &savePath, const uint8 partsCount, int32 _timeout)
 {
-
     CURLM *multiHandle = NULL;
-    DownloadError retCreate = CreateDownload(&multiHandle, url, partsCount, _timeout);
+
+    DownloadError retCreate = CreateDownload(&multiHandle, url, savePath, partsCount, _timeout);
     if (DLE_NO_ERROR != retCreate)
         return retCreate;
     
@@ -304,7 +371,6 @@ DownloadError CurlDownloader::Download(const String &url, const char8 partsCount
     Vector<DownloadError> results;
     if (CURLM_OK == retPerform)
     {
-
         int32 messagesRest;
         do
         {
@@ -319,10 +385,6 @@ DownloadError CurlDownloader::Download(const String &url, const char8 partsCount
     // cleanup curl stuff
     CleanupDownload();
 
-
-
-    CURLcode curlStatus = TakeMostImportantReturnValue(results);
-  
     if (isDownloadInterrupting)
     {
         isDownloadInterrupting = false;
@@ -330,7 +392,14 @@ DownloadError CurlDownloader::Download(const String &url, const char8 partsCount
         return DLE_CANCELLED;
     }
 
-    return CurlStatusToDownloadStatus(curlStatus);
+    DownloadError retCode = TakeMostImportantReturnValue(results);
+
+    if (DLE_NO_ERROR == retCode)
+    {
+        FileSystem::Instance()->DeleteFile(dlInfoStorePath);
+    }
+    
+    return retCode;
 }
 
 DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, const int32 _timeout)
@@ -341,25 +410,25 @@ DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, const 
     if (!currentCurlHandle)
         return DLE_INIT_ERROR;
 
+    curl_easy_setopt(currentCurlHandle, CURLOPT_HEADER, 0);
     curl_easy_setopt(currentCurlHandle, CURLOPT_URL, url.c_str());
 
-    // Set a valid user agent
-    curl_easy_setopt(currentCurlHandle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11");
-
+    
     // Don't return the header (we'll use curl_getinfo();
     curl_easy_setopt(currentCurlHandle, CURLOPT_HEADER, 1);
-    curl_easy_setopt(currentCurlHandle, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(currentCurlHandle, CURLOPT_NOBODY, 1);
-    curl_easy_setopt(currentCurlHandle, CURLOPT_SSL_VERIFYPEER, 0);
-    
+
+
     // set all timeouts
     SetTimeout(currentCurlHandle, _timeout);
 
-    curl_easy_setopt(currentCurlHandle, CURLOPT_VERBOSE, 0);
-    curl_easy_setopt(currentCurlHandle, CURLOPT_NOPROGRESS, 1);
     CURLcode curlStatus = curl_easy_perform(currentCurlHandle);
     curl_easy_getinfo(currentCurlHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
-
+    if (0 > sizeToDownload)
+    {
+        sizeToDownload = 0.;
+    }
+    
     uint32 httpCode;
     curl_easy_getinfo(currentCurlHandle, CURLINFO_HTTP_CODE, &httpCode);
 
@@ -444,20 +513,34 @@ DownloadError CurlDownloader::ErrorForEasyHandle(CURL *easyHandle, const CURLcod
 
 DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<DownloadError> &errorList)
 {
-    DownloadError mostImportantError = DLE_NO_ERROR;
-
+    char8 errorCount = sizeof(errorsByPriority)/sizeof(ErrorWithPriority);
+    char8 retIndex = errorCount - 1; // last error in the list is the less important.
+    char8 priority = errorsByPriority[retIndex].priority; //priority of less important error
+    
+    // iterate over download results
     Vector<DownloadError>::const_iterator end = errorList.end();
     for (Vector<DownloadError>::const_iterator it = errorList.begin(); it != end; ++it)
     {
-        DownloadError currentError = (*it);
-      //  if ()
-
+        // find error in the priority map
+        for (char8 i = 0; i < errorCount; ++i)
+        {
+            // yes, that is the error
+            if (errorsByPriority[i].error == (*it))
+            {
+                // is found error priority is less that current more important error?
+                // less priority is more important
+                if (priority > errorsByPriority[i].priority)
+                {
+                    //yes, so save more important priority and it's index
+                    priority = errorsByPriority[i].priority;
+                    retIndex = i;
+                }
+            }
+        }
     }
-}
-
-char8 CurlDownloader::GetErrorPriority(DownloadError err)
-{
-    //for (int i = )
+    
+    //return more important error by index
+    return errorsByPriority[retIndex].error;
 }
 
 }

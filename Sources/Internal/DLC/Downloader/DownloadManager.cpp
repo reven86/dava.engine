@@ -164,7 +164,7 @@ void DownloadManager::Update()
     callbackMutex.Unlock();
 }
 
-uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode, const char8 partsCount , int32 timeout, int32 retriesCount)
+uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode, const uint8 partsCount , int32 timeout, int32 retriesCount)
 {
     DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, partsCount);
  
@@ -604,7 +604,7 @@ DownloadError DownloadManager::TryDownload()
 
     if (DLE_NO_ERROR == currentTask->error)
     {
-        downloader->Download(currentTask->url, currentTask->partsCount, currentTask->timeout);
+        downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
     }
 
     // seems server doesn't supports download resuming. So we need to download whole file.
@@ -613,7 +613,7 @@ DownloadError DownloadManager::TryDownload()
         MakeFullDownload();
         if (DLE_NO_ERROR == currentTask->error)
         {
-            downloader->Download(currentTask->url, currentTask->partsCount, currentTask->timeout);
+            downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
         }
     }
 
@@ -624,13 +624,6 @@ void DownloadManager::MakeFullDownload()
 {
     currentTask->type = FULL;
     FileSystem::Instance()->DeleteFile(currentTask->storePath);
-    // create new file if there is no file.
-    if (!CreateEmptyFile(currentTask->storePath, currentTask->downloadTotal))
-    {
-        currentTask->error = DLE_FILE_ERROR;
-        return;
-    }
-
     currentTask->error = DLE_NO_ERROR;
     currentTask->downloadProgress = 0;
 }
@@ -643,11 +636,8 @@ void DownloadManager::MakeResumedDownload()
     ScopedPtr<File> file(File::Create(currentTask->storePath, File::OPEN | File::READ));
     if (NULL == static_cast<File *>(file))
     {
-        // create new file if there is no file.
-        if (!CreateEmptyFile(currentTask->storePath, currentTask->downloadTotal))
-        {
-            currentTask->error = DLE_FILE_ERROR;
-        }
+        // download fully if there is no file.
+        MakeFullDownload();
     }
     else
     {
@@ -664,28 +654,5 @@ void DownloadManager::ResetRetriesCount()
     currentTask->retriesLeft = currentTask->retriesCount;
 }
 
-bool DownloadManager::CreateEmptyFile(FilePath filePath, uint64 fileSize)
-{
-    File *file = File::Create(filePath, File::CREATE | File::WRITE);
-    
-    if (NULL == file)
-        return false;
-
-    // fill created file by NULL values.
-    char8 nullValue = 0;
-    for (int i = 0; i < fileSize; i++)
-    {
-        if (0 == file->Write(&nullValue, 1))
-        {
-            SafeRelease(file);
-            FileSystem::Instance()->DeleteFile(filePath);
-
-            return false;
-        }
-    }
-
-    SafeRelease(file);
-    return true;
-}
     
 }

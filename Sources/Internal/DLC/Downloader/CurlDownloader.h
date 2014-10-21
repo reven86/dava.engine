@@ -56,7 +56,7 @@ protected:
     CURL *CurlSimpleInit();
 
     virtual DownloadError GetSize(const String &url, uint64 &retSize, const int32 timeout);
-    virtual DownloadError Download(const String &url, const char8 partsCount, const int32 timeout);
+    virtual DownloadError Download(const String &url, const FilePath &savePath, const uint8 partsCount, const int32 timeout);
     
     static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part);
     
@@ -64,21 +64,24 @@ protected:
     DownloadError HttpCodeToError(uint32 code);
 
 private:
-    CURL *CreateEasyHandle(const String &url, PartInfo *part, int32 _timeout);
-    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const char8 partsCount, int32 timeout);
+    CURL *CreateEasyHandle(const String &url, DownloadPart *part, int32 _timeout);
+    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, const uint8 partsCount, int32 timeout);
     CURLMcode Perform(CURLM *multiHandle);
     void CleanupDownload();
     void SetTimeout(CURL *handle, int32 _timeout);
     DownloadError ErrorForEasyHandle(CURL *easyHandle, const CURLcode status);
     DownloadError TakeMostImportantReturnValue(const Vector<DownloadError> &errorList);
-    
+
 private:
     static bool isCURLInit;
     bool isDownloadInterrupting;
-    Vector<PartInfo *> downloadParts;
+    Vector<DownloadPart *> downloadParts;
     Vector<CURL *> easyHandles;
     CURLM *multiHandle;
-
+    FilePath storePath;
+    FilePath dlInfoStorePath;
+    const String dlinfoExt;
+    
     struct ErrorWithPriority
     {
         DownloadError error;

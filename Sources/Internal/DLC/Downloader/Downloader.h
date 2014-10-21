@@ -55,14 +55,14 @@ protected:
     /* Get content size in bytes for remote Url. Place result to retSize, timeout - for operation cancelling */
     virtual DownloadError GetSize(const String &url, uint64 &retSize, const int32 _timeout) = 0;
     /* Main downloading operation. Should call SaveData to store data. */
-    virtual DownloadError Download(const String &url, const char8 partsCount, const int32 _timeout) = 0;
+    virtual DownloadError Download(const String &url, const FilePath &savePath, const uint8 partsCount, const int32 _timeout) = 0;
     /* Interrupt download process. We expects that you will save last data chunk came before */
     virtual void Interrupt() = 0;
     /* 
         Main save method. Should be preferred way to store any downloaded data. If not - you can reimplement it, but it is not recommended. 
         Take a look on CurlDownloader::CurlDataRecvHandler(...) for example.
     */
-    virtual size_t SaveData(const void *ptr, const uint64 size, const uint64 seek);
+    virtual size_t SaveData(const void *ptr, const FilePath& storePath, const uint64 size, const uint64 seek);
 };
 
 }

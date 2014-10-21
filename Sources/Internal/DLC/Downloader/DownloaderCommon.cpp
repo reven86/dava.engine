@@ -27,10 +27,12 @@
 =====================================================================================*/
 
 #include "DownloaderCommon.h"
+#include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
-    DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, char8 _partsCount)
+DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 _timeout, int32 _retriesCount, uint8 _partsCount)
     : id(0)
     , url(srcUrl)
     , storePath(storeToFilePath)
@@ -45,6 +47,95 @@ namespace DAVA
     , partsCount(_partsCount)
 {
 
+}
+
+bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<DownloadPart*> &downloadParts)
+{
+    ScopedPtr<File> infoFile(File::Create(infoFilePath, File::OPEN | File::READ));
+    if (NULL == static_cast<File *>(infoFile))
+        return false;
+    
+    bool eof = false;
+    
+    uint8 partsCount;
+    
+    
+    eof &= sizeof(partsCount) != infoFile->Read(&partsCount, sizeof(partsCount));
+    
+    uint8 partsRead = 0;
+    uint64 readPartSize = sizeof(DownloadPart::StoreData);
+    
+    while (!eof && partsRead < partsCount)
+    {
+        DownloadPart *part = new DownloadPart();
+
+        eof &= sizeof(part->info.number) != infoFile->Read(&part->info.number, sizeof(part->info.number));
+     
+        infoFile->Seek(sizeof(partsCount) + part->info.number * readPartSize, File::SEEK_FROM_START);
+        eof &= sizeof(part->info) != infoFile->Read(&part->info, sizeof(part->info));
+        
+        if (eof)
+        {
+            SafeDelete(part);
+            return false;
+        }
+
+        DVASSERT(part->info.progress <= part->info.size);
+        if (part->info.size == part->info.progress)
+        {
+            SafeDelete(part);
+        }
+        else
+        {
+            downloadParts.push_back(part);
+        }
+
+        ++partsRead;
+    }
+
+    return !eof;
+}
+
+bool DownloadPart::SaveDownload(const FilePath &infoFilePath)
+{
+    uint64 seekPos = sizeof(uint8) + info.number*sizeof(DownloadPart::StoreData);
+
+    ScopedPtr<File> file(File::Create(infoFilePath, File::OPEN | File::READ | File::WRITE));
+    if (NULL != static_cast<File*>(file))
+    {
+        file->Seek(seekPos, File::SEEK_FROM_START);
+        uint32 written = file->Write(&info, sizeof(info));
+
+        if (written < sizeof(info))
+            return  false;
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
+bool DownloadPart::CreateDownload(const FilePath &infoFilePath, const uint8 partsCount)
+{
+    uint64 infoFileSize = sizeof(partsCount) + partsCount*sizeof(DownloadPart::StoreData);
+    if (!FileSystem::CreateEmptyFile(infoFilePath, infoFileSize))
+        return false;
+
+    ScopedPtr<File> file(File::Create(infoFilePath, File::OPEN | File::READ | File::WRITE));
+    if (NULL != static_cast<File*>(file))
+    {
+        file->Seek(0, File::SEEK_FROM_START);
+        uint32 written = file->Write(&partsCount, sizeof(partsCount));
+        
+        if (written < sizeof(partsCount))
+            return  false;
+    }
+    else
+    {
+        return false;
+    }
+    return true;
 }
 
 }
