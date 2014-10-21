@@ -35,6 +35,7 @@
 #include "Platform/FWSpinlock.h"
 #include "Platform/FWSemaphore.h"
 #include "Platform/Mutex.h"
+#include "Platform/Thread.h"
 
 namespace DAVA
 {
@@ -54,7 +55,9 @@ public:
 	bool PopAndExec();
 	bool IsEmpty();
 
-	Semaphore jobsInQueue;
+	void Signal();
+	void Broadcast();
+	void Wait();
 
 protected:
 	uint32 jobsMaxCount;
@@ -65,6 +68,11 @@ protected:
 	int32 processingCount;
 
 	Spinlock lock;
+
+	// primitives, used for Signal, Broadcast, Wait methods
+	Semaphore jobsInQueue;
+	ConditionalVariable jobsInQueueCV;
+	Mutex jobsInQueueMutex;
 
 	void UpdateIndexes();
 };

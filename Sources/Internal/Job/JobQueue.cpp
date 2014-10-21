@@ -52,21 +52,17 @@ void JobQueueWorker::Push(const Function<void()> &fn)
 {
 	if(fn != NULL)
 	{
+		LockGuard<Spinlock> guard(lock);
+		if(nextPushIndex == nextPopIndex && 0 == processingCount)
 		{
-			LockGuard<Spinlock> guard(lock);
-			if(nextPushIndex == nextPopIndex && 0 == processingCount)
-			{
-				nextPushIndex = 0;
-				nextPopIndex = 0;
-			}
-
-			DVASSERT(nextPushIndex < jobsMaxCount);
-
-			jobs[nextPushIndex++] = fn;
-			processingCount++;
+			nextPushIndex = 0;
+			nextPopIndex = 0;
 		}
 
-		jobsInQueue.Post();
+		DVASSERT(nextPushIndex < jobsMaxCount);
+
+		jobs[nextPushIndex++] = fn;
+		processingCount++;
 	}
 }
 
@@ -103,6 +99,29 @@ bool JobQueueWorker::IsEmpty()
 {
 	LockGuard<Spinlock> guard(lock);
 	return (nextPopIndex == nextPushIndex && 0 == processingCount);
+}
+
+void JobQueueWorker::Signal()
+{
+	jobsInQueue.Post();
+	//jobsInQueueMutex.Lock();
+	//Thread::Signal(&jobsInQueueCV);
+	//jobsInQueueMutex.Unlock();
+}
+
+void JobQueueWorker::Broadcast()
+{
+	//jobsInQueueMutex.Lock();
+	//Thread::Broadcast(&jobsInQueueCV);
+	//jobsInQueueMutex.Unlock();
+}
+
+void JobQueueWorker::Wait()
+{
+	jobsInQueue.Wait();
+	//jobsInQueueMutex.Lock();
+	//Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
+	//jobsInQueueMutex.Unlock();
 }
 
 };

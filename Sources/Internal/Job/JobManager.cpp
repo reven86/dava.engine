@@ -176,6 +176,7 @@ void JobManager2::RunMain()
 void JobManager2::CreateWorkerJob(const Function<void()>& fn)
 {
 	workerQueue.Push(fn);
+	workerQueue.Signal();
 }
 
 void JobManager2::WaitWorkerJobs()
@@ -207,7 +208,7 @@ JobManager2::WorkerThread2::WorkerThread2(JobQueueWorker *_workerQueue, Semaphor
 JobManager2::WorkerThread2::~WorkerThread2()
 {
 	thread->Cancel();
-	workerQueue->jobsInQueue.Post();
+	workerQueue->Broadcast();
 	thread->Join();
 	SafeRelease(thread);
 }
@@ -216,7 +217,7 @@ void JobManager2::WorkerThread2::ThreadFunc(BaseObject * bo, void * userParam, v
 {
 	while(thread->GetState() != Thread::STATE_CANCELLING)
 	{
-		workerQueue->jobsInQueue.Wait();
+		workerQueue->Wait();
 
 		while(workerQueue->PopAndExec())
 		{ }

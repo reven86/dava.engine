@@ -243,8 +243,14 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
     TIME_PROFILE("ParticleEffectSystem::Process");
 
 	static int iii = 0;
-	uint64 ttt = SystemTimer::Instance()->GetAbsoluteNano();
-    
+	uint64 _sss1;
+	uint64 _sss2;
+	uint64 _sss3;
+	static uint64 ttt0 = 0;
+	static uint64 ttt1 = 0;
+	static uint64 ttt2 = 0;
+	static uint64 ttt3 = 0;
+
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
 		return;		
 	/*shortEffectTime*/
@@ -256,7 +262,10 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	
 	uint32 componentsCount = activeComponents.size();
 
-	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
+	ttt0 += componentsCount;
+
+	_sss1 = SystemTimer::Instance()->GetAbsoluteNano();
+	if(0 /*RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION)*/)
 	{
 		ProcessComponentsPart(0, componentsCount, timeElapsed, shortEffectTime);
 	}
@@ -268,6 +277,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 		uint32 firstIndex = 0;
 		uint32 rest = componentsCount - (jobsCount * componentsPerJobCount);
 
+		_sss2 = SystemTimer::Instance()->GetAbsoluteNano();
 		for(uint32 i = 0; i < jobsCount; ++i)
 		{
 			// entities = 90, jobsCount = 4, so "rest" will be (100 - 22 * 4) = 2
@@ -286,14 +296,23 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 			// move to next part of entities
 			firstIndex += count;
 		}
+		ttt2 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss2);
 
+		_sss3 = SystemTimer::Instance()->GetAbsoluteNano();
 		JobManager2::Instance()->WaitWorkerJobs();
+		ttt3 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss3);
 	}
+	ttt1 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss1);
 
-	if(iii == 60)
+	if(++iii == 64)
 	{
-		Logger::Info("part update1 = %llu\n", SystemTimer::Instance()->GetAbsoluteNano() - ttt);
-		ttt = SystemTimer::Instance()->GetAbsoluteNano();
+		iii = 0;
+
+		Logger::Info("av_comp_count: %2llu, av_whole_upd1 = %8llu, av_jobs_cr = %8llu, av_jobs_wait = %8llu", ttt0 / 64, ttt1 / 64, ttt2 / 64, ttt3 / 64);
+		ttt0 = 0;
+		ttt1 = 0;
+		ttt2 = 0;
+		ttt3 = 0;
 	}
 
 	for(uint32 i = 0; i < componentsCount; ++i)
@@ -317,12 +336,6 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 			if(scene)
 				scene->GetRenderSystem()->MarkForUpdate(effect->effectRenderObject);
 		}
-	}
-
-	if(iii++ == 60)
-	{
-		Logger::Info("part update2 = %llu\n", SystemTimer::Instance()->GetAbsoluteNano() - ttt);
-		iii = 0;
 	}
 }
 

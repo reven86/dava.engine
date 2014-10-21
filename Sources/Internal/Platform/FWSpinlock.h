@@ -53,8 +53,11 @@ namespace DAVA
 		void Unlock();
 
 	protected:
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_WIN32__)
 		int32 spin;
+#elif defined(__DAVAENGINE_ANDROID__)
+		int32 spin;
+		pthread_mutex_t spinMutex;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
         OSSpinLock spin;
 #endif //PLATFORMS
