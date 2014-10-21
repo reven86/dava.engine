@@ -629,8 +629,6 @@ void Core::SystemAppStarted()
          */
 	}
 
-    FrameOcclusionQueryManager::Instance()->Init();
-
 	if (core)core->OnAppStarted();
     
 #ifdef __DAVAENGINE_AUTOTESTING__
