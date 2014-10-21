@@ -31,6 +31,7 @@
 #include "UI/UIParticles.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "Core/Core.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
@@ -216,6 +217,8 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
 {
     if ((!effect)||(effect->state == ParticleEffectComponent::STATE_STOPPED)) 
         return;
+
+    RenderSystem2D::Instance()->Flush();
 
     matrix.CreateRotation(Vector3(0,0,1), -geometricData.angle);
     matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));

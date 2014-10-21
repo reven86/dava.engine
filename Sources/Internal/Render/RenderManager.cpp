@@ -45,6 +45,9 @@ Shader * RenderManager::FLAT_COLOR = 0;
 Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR = 0;
 Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
 Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
+Shader * RenderManager::TEXTURE_MUL_COLOR = 0;
+Shader * RenderManager::TEXTURE_MUL_COLOR_ALPHA_TEST = 0;
+Shader * RenderManager::TEXTURE_MUL_COLOR_IMAGE_A8 = 0;
 
 AutobindVariableData RenderManager::dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
 uint32  RenderManager::dynamicParamersRequireUpdate;
@@ -121,6 +124,9 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     TEXTURE_MUL_FLAT_COLOR = 0;
     TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
     TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
+    TEXTURE_MUL_COLOR = 0;
+    TEXTURE_MUL_COLOR_ALPHA_TEST = 0;
+    TEXTURE_MUL_COLOR_IMAGE_A8 = 0;
 	
 	renderContextId = 0;
     
@@ -189,7 +195,6 @@ void RenderManager::InitFBSize(int32 _frameBufferWidth, int32 _frameBufferHeight
 FastName RenderManager::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
 FastName RenderManager::TEXTURE_MUL_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
 
-
 void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 {
     DetectRenderingCapabilities();
@@ -218,6 +223,30 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
         set.Insert(FastName("IMAGE_A8"));
         TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
     }
+
+    if (!TEXTURE_MUL_COLOR)
+    {
+        FastNameSet set;
+        set.Insert(FastName("VERTEX_COLOR"));
+        TEXTURE_MUL_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+
+}
+    if (!TEXTURE_MUL_COLOR_ALPHA_TEST)
+    {
+        FastNameSet set;
+        set.Insert(FastName("VERTEX_COLOR"));
+        set.Insert(FastName("ALPHA_TEST_ENABLED"));
+        TEXTURE_MUL_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+    }
+
+    if (!TEXTURE_MUL_COLOR_IMAGE_A8)
+    {
+        FastNameSet set;
+        set.Insert(FastName("VERTEX_COLOR"));
+        set.Insert(FastName("IMAGE_A8"));
+        TEXTURE_MUL_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+    }
+
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 	currentState.direct3DDevice = GetD3DDevice();
@@ -546,6 +575,7 @@ void RenderManager::ProcessStats()
         Logger::FrameworkDebug("== Frame stats: DrawArraysCount: %d DrawElementCount: %d ==", stats.drawArraysCalls, stats.drawElementsCalls);
         for (int32 k = 0; k < PRIMITIVETYPE_COUNT; ++k)
             Logger::FrameworkDebug("== Primitive Stats: %d ==", stats.primitiveCount[k]);
+        Logger::FrameworkDebug("== SpriteDrawCount: %d  ==", stats.spriteDrawCount);
     }
 }
     

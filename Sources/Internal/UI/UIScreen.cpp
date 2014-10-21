@@ -32,6 +32,7 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
+#include <Render/2D/RenderSystem2D/RenderSystem2D.h>
 
 namespace DAVA 
 {
@@ -94,10 +95,12 @@ void UIScreen::SystemDraw(const UIGeometricData &geometricData)
 	{
 		FillScreenBorders(geometricData);
 		UIControl::SystemDraw(geometricData);
+        RenderSystem2D::Instance()->Flush();
 	}
 	else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
 	{
 		UIControl::SystemDraw(geometricData);
+        RenderSystem2D::Instance()->Flush();
 		FillScreenBorders(geometricData);
 	}
 	else 

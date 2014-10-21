@@ -35,6 +35,10 @@
 #include "Render/RenderBase.h"
 #include "Render/2D/Sprite.h"
 
+#include "UI/UIControlBackground.h"
+
+#define MAX_VERTEXES 4096
+
 namespace DAVA
 {
 
@@ -43,6 +47,47 @@ class Sprite;
 class TextBlock;
 class RenderDataObject;
 class RenderDataStream;
+class UIGeometricData;
+
+struct RenderBatch2D
+{
+    explicit RenderBatch2D() { Reset(); }
+    inline void Reset()
+    {
+        renderState = 0;
+        textureHandle = 0;
+        shader = 0;
+        clipRect = Rect(0,0,-1,-1);
+        count = 0;
+        indeces = 0;
+    }
+
+    UniqueHandle renderState;
+    UniqueHandle textureHandle;
+    Shader* shader;
+    Rect clipRect;
+    uint32 count;
+    uint32 indeces;
+};
+
+struct TiledDrawData
+{
+    Vector< Vector2 > vertices;
+    Vector< Vector2 > texCoords;
+    Vector< uint32  > indeces;
+    void GenerateTileData();
+    void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
+
+    Vector< Vector2 > transformedVertices;
+    void GenerateTransformData();
+
+    Sprite *sprite;
+    int32 frame;
+    Vector2 size;
+    Vector2 stretchCap;
+    Matrix3 transformMatr;
+};
+
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
@@ -50,10 +95,13 @@ public:
     virtual ~RenderSystem2D();
     
     void Draw(Sprite * sprite, Sprite::DrawState * state);
-    void Draw(TextBlock * textblock);
-    void Draw(Font * font);
+	void DrawStretched(Sprite * sprite, Sprite::DrawState * state, Vector2 streatchCap, Rect drawRect, UIControlBackground::eDrawType type);
+    void DrawTiled(Sprite * sprite, Sprite::DrawState * state, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
+    void DrawFilled(Sprite * sprite, Sprite::DrawState * state, const UIGeometricData& gd);
+
     
     void Reset();
+    void Flush();
     
     void SetClip(const Rect &rect);
 	void ClipRect(const Rect &rect);
@@ -71,18 +119,36 @@ private:
 	std::stack<Rect> clipStack;
 	Rect currentClip;
     
-    //sprite draw
-    void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
-    
-	float32 spriteTempVertices[8];
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;
 	RenderDataStream * spriteTexCoordStream;
-	ePrimitiveType spritePrimitiveToDraw;
-	int32 spriteVertexCount;
-    
+    RenderDataStream * spriteColorStream;
+
+    float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;
 	Vector<Vector2> spriteClippedVertices;
+    ePrimitiveType spritePrimitiveToDraw;
+    int32 spriteVertexCount;
+    int32 spriteIndexCount;
+
+    float32 vertexBuffer[MAX_VERTEXES * 2];
+    float32 colorBuffer[MAX_VERTEXES * 4];
+    float32 texBuffer[MAX_VERTEXES * 2];
+    uint32 indexBuffer[MAX_VERTEXES * 3 / 2];
+
+    Vector<float32> vertexBuffer2;
+    Vector<uint16> indexBuffer2;
+
+    Vector<RenderBatch2D> batches;
+    RenderBatch2D currentBatch;
+    uint32 vertexIndex;
+    uint32 indexIndex;
+
+    uint32 vboIDs[3];
+
+    bool useBatching;
+    bool useVBO;
+
 };
     
 } // ns

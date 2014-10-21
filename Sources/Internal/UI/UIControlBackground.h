@@ -37,11 +37,13 @@
 #include "Render/2D/Sprite.h"
 #include "FileSystem/FilePath.h"
 
+
 namespace DAVA
 {
 
 class UIControl;
 class UIGeometricData;
+struct TiledDrawData;
 
     /**
      \ingroup controlsystem
@@ -265,9 +267,6 @@ public:
     UniqueHandle GetRenderState() const;
 
 protected:
-    void DrawStretched(const Rect &drawRect, UniqueHandle renderState);
-    void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);
-    void DrawFilled(const UIGeometricData &geometricData, UniqueHandle renderState);
 
     Sprite *spr;
     int32 align;
@@ -279,32 +278,12 @@ protected:
     int32 frame;
 
     Vector2 lastDrawPos;
-    RenderDataObject * rdoObject;
-    RenderDataStream * vertexStream;
-    RenderDataStream * texCoordStream;
 
     ePerPixelAccuracyType perPixelAccuracyType;//!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
 private:
-    struct TiledDrawData
-    {
-        Vector< Vector2 > vertices;
-        Vector< Vector2 > texCoords;
-        Vector< uint16  > indeces;
-        void GenerateTileData();
-        void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
+	TiledDrawData *tiledData;
 
-        Vector< Vector2 > transformedVertices;
-        void GenerateTransformData();
-
-        Sprite *sprite;
-        int32 frame;
-        Vector2 size;
-        Vector2 stretchCap;
-        Matrix3 transformMatr;
-    };
-
-    TiledDrawData *tiledData;
 public:
     void ReleaseDrawData(); // Delete all spec draw data
 

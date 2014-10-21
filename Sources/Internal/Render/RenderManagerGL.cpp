@@ -226,6 +226,8 @@ void RenderManager::BeginFrame()
 
 void RenderManager::EndFrame()
 {
+    RenderSystem2D::Instance()->Flush();
+
 	isInsideDraw = false;
 #if defined(__DAVAENGINE_WIN32__)
 	::SwapBuffers(hDC);

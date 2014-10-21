@@ -97,6 +97,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	CreateRenderTargets();
 	nextScreen = _nextScreen;
 	prevScreen = _prevScreen;
+
+    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->Reset();
 	
 	RenderManager::Instance()->SetRenderTarget(renderTargetPrevScreen);
 //	RenderManager::Instance()->SetVirtualViewOffset();
@@ -120,6 +123,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 		
 		SafeRelease(prevScreen);
 	}
+
+    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->Reset();
     
     /*clear alpha*/
     RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
@@ -135,7 +141,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	nextScreen->SystemWillAppear();
 	
 	//
-	
+
 	RenderManager::Instance()->SetRenderTarget(renderTargetNextScreen);
 //	RenderManager::Instance()->SetVirtualViewOffset();
     RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -146,6 +152,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	float32 timeElapsed = SystemTimer::FrameDelta();
 	nextScreen->SystemUpdate(timeElapsed);
 	nextScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+
+    RenderSystem2D::Instance()->Flush();
+    RenderSystem2D::Instance()->Reset();
 
 //    RenderManager::Instance()->SetColor(0.0, 1.0, 0.0, 1.0);
 //    RenderHelper::Instance()->FillRect(Rect(screenRect.x, screenRect.y, screenRect.dx / 2, screenRect.dy));
