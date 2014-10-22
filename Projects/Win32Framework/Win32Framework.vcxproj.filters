@@ -1605,9 +1605,6 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Detail\Noncopyable.h">
       <Filter>Internal\Network\Detail</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\SampleEchoServer.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
@@ -2881,9 +2878,6 @@
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\SampleEchoServer.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Endpoint.cpp">

@@ -396,7 +396,6 @@
     <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\SampleEchoServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPSocket.h" />
@@ -865,7 +864,6 @@
     <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\SampleEchoServer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPAcceptor.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPSocket.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPSocketBase.cpp" />
