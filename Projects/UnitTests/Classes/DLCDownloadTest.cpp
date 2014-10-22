@@ -154,9 +154,11 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     // POSITIVE CHECK 
     {
         FileSystem::Instance()->DeleteFile(dstHttp);
-        uint32 multiHttpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 10, 1);
+        uint32 multiHttpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 2, 2);
         DownloadManager::Instance()->Wait(multiHttpID);
 
+        DownloadManager::Instance()->GetError(multiHttpID, error);
+        DownloadManager::Instance()->GetTotal(multiHttpID, total);
 
         // FULL DOWNLOAD
         // Make sure that file is missing
@@ -228,7 +230,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 
 // MISSING FILE ON EXISTENT SERVER
 
-    uint32 missingFileId = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, RESUMED, 1, 0);
+    uint32 missingFileId = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, RESUMED, 1, 1, 0);
     DownloadManager::Instance()->Wait(missingFileId);
 
     DownloadManager::Instance()->GetError(missingFileId, error);
@@ -256,7 +258,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     
 // FOLDER INSTEAD OF FILE 
 
-    uint32 folderId = DownloadManager::Instance()->Download(srcUrlFolder, dstHttpFolder, RESUMED, 1, 0);
+    uint32 folderId = DownloadManager::Instance()->Download(srcUrlFolder, dstHttpFolder, RESUMED, 1, 1, 0);
     DownloadManager::Instance()->Wait(folderId);
 
     DownloadManager::Instance()->GetError(folderId, error);
@@ -270,7 +272,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 
 // EMPTY FILE
 
-    uint32 emptyFileId = DownloadManager::Instance()->Download(srcUrlEmptyFile, dstHttpEmptyFile, RESUMED, 1, 1);
+    uint32 emptyFileId = DownloadManager::Instance()->Download(srcUrlEmptyFile, dstHttpEmptyFile, RESUMED, 1, 1, 1);
     DownloadManager::Instance()->Wait(emptyFileId);
     TEST_VERIFY(DownloadManager::Instance()->GetProgress(emptyFileId, progress));
     TEST_VERIFY(DownloadManager::Instance()->GetTotal(emptyFileId, total));
@@ -295,7 +297,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     {
         // remote size < local size 
 
-        uint32 getSmallerFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1);
+        uint32 getSmallerFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1, 1);
         DownloadManager::Instance()->Wait(getSmallerFileSizeId);
 
         if (DownloadManager::Instance()->GetTotal(getSmallerFileSizeId, remoteFileSize))
@@ -309,7 +311,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
                 f->Write(buf, remoteFileSize + 1);
                 SafeRelease(f);
 
-                uint32 smallerFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 1);
+                uint32 smallerFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 1, 1);
                 DownloadManager::Instance()->Wait(smallerFileId);
 
                 DownloadManager::Instance()->GetTotal(smallerFileId, total);
@@ -330,7 +332,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 
         // remote size > local size 
 
-        uint32 getLargerFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1);
+        uint32 getLargerFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1, 1);
         DownloadManager::Instance()->Wait(getLargerFileSizeId);
 
         if (DownloadManager::Instance()->GetTotal(getLargerFileSizeId, remoteFileSize))
@@ -344,7 +346,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
                 f->Write(buf, remoteFileSize - 1);
                 SafeRelease(f);
 
-                uint32 largerFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 1);
+                uint32 largerFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 1, 1);
                 DownloadManager::Instance()->Wait(largerFileId);
 
                 DownloadManager::Instance()->GetTotal(largerFileId, total);
@@ -365,7 +367,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 
         // remote size == local size
 
-        uint32 getEqualFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1);
+        uint32 getEqualFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1, 1);
         DownloadManager::Instance()->Wait(getEqualFileSizeId);
 
         if (DownloadManager::Instance()->GetTotal(getEqualFileSizeId, remoteFileSize))
@@ -379,7 +381,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
                 f->Write(buf, remoteFileSize);
                 SafeRelease(f);
 
-                uint32 equalFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 1);
+                uint32 equalFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 1, 1);
                 DownloadManager::Instance()->Wait(equalFileId);
 
                 DownloadManager::Instance()->GetTotal(equalFileId, total);
@@ -401,7 +403,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 
     // FULL RELOAD
     {
-        uint32 getSmallerFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1);
+        uint32 getSmallerFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1, 1);
         DownloadManager::Instance()->Wait(getSmallerFileSizeId);
 
         if (DownloadManager::Instance()->GetTotal(getSmallerFileSizeId, remoteFileSize))
@@ -415,7 +417,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
                 f->Write(buf, remoteFileSize + 1);
                 SafeRelease(f);
 
-                uint32 smallerFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, FULL, 1, 1);
+                uint32 smallerFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, FULL, 1, 1, 1);
                 DownloadManager::Instance()->Wait(smallerFileId);
 
                 DownloadManager::Instance()->GetTotal(smallerFileId, total);
@@ -436,7 +438,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 
         // remote size > local size
 
-        uint32 getLargerFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1);
+        uint32 getLargerFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1, 1);
         DownloadManager::Instance()->Wait(getLargerFileSizeId);
 
         if (DownloadManager::Instance()->GetTotal(getLargerFileSizeId, remoteFileSize))
@@ -450,7 +452,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
                 f->Write(buf, remoteFileSize - 1);
                 SafeRelease(f);
 
-                uint32 largerFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, FULL, 1, 1);
+                uint32 largerFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, FULL, 1, 1, 1);
                 DownloadManager::Instance()->Wait(largerFileId);
 
                 DownloadManager::Instance()->GetTotal(largerFileId, total);
@@ -471,7 +473,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 
         // remote size == local size
 
-        uint32 getEqualFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1);
+        uint32 getEqualFileSizeId = DownloadManager::Instance()->Download(srcUrl, "", GET_SIZE, 1, 1, 1);
         DownloadManager::Instance()->Wait(getEqualFileSizeId);
 
         if (DownloadManager::Instance()->GetTotal(getEqualFileSizeId, remoteFileSize))
@@ -485,7 +487,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
                 f->Write(buf, remoteFileSize);
                 SafeRelease(f);
 
-                uint32 equalFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, FULL, 1, 1);
+                uint32 equalFileId = DownloadManager::Instance()->Download(srcUrl, dstHttp, FULL, 1, 1, 1);
                 DownloadManager::Instance()->Wait(equalFileId);
 
                 DownloadManager::Instance()->GetTotal(equalFileId, total);
@@ -519,7 +521,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     timeout = 2;
     retries = 1;
 
-    uint32 missingServerNameID = DownloadManager::Instance()->Download(srcUrlMissingServerName, dstMissingServer, RESUMED, timeout, retries);
+    uint32 missingServerNameID = DownloadManager::Instance()->Download(srcUrlMissingServerName, dstMissingServer, RESUMED, 1, timeout, retries);
     DownloadManager::Instance()->Wait(missingServerNameID);
 
     DownloadManager::Instance()->GetError(missingServerNameID, error);
@@ -531,7 +533,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     timeout = 1;
     retries = 0;
 
-    uint32 missingServerAddressID = DownloadManager::Instance()->Download(srcUrlMissingServerAddress, dstMissingServer, RESUMED, timeout, retries);
+    uint32 missingServerAddressID = DownloadManager::Instance()->Download(srcUrlMissingServerAddress, dstMissingServer, RESUMED, 1, timeout, retries);
 
     startTime = SystemTimer::Instance()->AbsoluteMS();
     DownloadManager::Instance()->Wait(missingServerAddressID);
@@ -539,7 +541,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 
     TEST_VERIFY(delta >= timeout*(retries+1));
     DownloadManager::Instance()->GetError(missingServerAddressID, error);
-    TEST_VERIFY(DLE_CANNOT_CONNECT == error);
+    TEST_VERIFY(DLE_COULDNT_CONNECT == error);
     DownloadManager::Instance()->GetStatus(missingServerAddressID, status);
     TEST_VERIFY(DL_FINISHED == status);
 
@@ -548,7 +550,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     timeout = 1;
     retries = 1;
 
-    uint32 missingID = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, FULL, timeout, retries);
+    uint32 missingID = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, FULL, 1, timeout, retries);
     DownloadManager::Instance()->Wait(missingID);
     TEST_VERIFY(DownloadManager::Instance()->GetProgress(missingID, progress));
     TEST_VERIFY(DownloadManager::Instance()->GetTotal(missingID, total));
@@ -565,7 +567,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
         f->Write(&t, sizeof(t));
         SafeRelease(f);
 
-        uint32 missingID = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, RESUMED, timeout, retries);
+        uint32 missingID = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, RESUMED, 1, timeout, retries);
         DownloadManager::Instance()->Wait(missingID);
         TEST_VERIFY(DownloadManager::Instance()->GetProgress(missingID, progress));
         TEST_VERIFY(DownloadManager::Instance()->GetTotal(missingID, total));
@@ -588,10 +590,10 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 // DOWNLOAD QUEUES
 
 {
-    uint32 httpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 2, 2);
-    uint32 missingFileId = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, RESUMED, 2, 2);
-    uint32 folderId = DownloadManager::Instance()->Download(srcUrlFolder, dstHttpFolder, RESUMED, 2, 2);
-    uint32 emptyFileId = DownloadManager::Instance()->Download(srcUrlEmptyFile, dstHttpEmptyFile, RESUMED, 2, 2);
+    uint32 httpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 2, 2);
+    uint32 missingFileId = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, RESUMED, 1, 2, 2);
+    uint32 folderId = DownloadManager::Instance()->Download(srcUrlFolder, dstHttpFolder, RESUMED, 1, 2, 2);
+    uint32 emptyFileId = DownloadManager::Instance()->Download(srcUrlEmptyFile, dstHttpEmptyFile, RESUMED, 1, 2, 2);
 
 
 
@@ -664,7 +666,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     //Check Cancel All
 
     // finished task
-    uint32 httpFinishedID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 2, 2);
+    uint32 httpFinishedID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 2, 2);
     DownloadManager::Instance()->Wait(httpFinishedID);
     FileSystem::Instance()->DeleteFile(dstHttp);
 
@@ -674,15 +676,15 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     TEST_VERIFY(DLE_NO_ERROR == error);
 
     // error result task
-    uint32 missingFileId = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, RESUMED, 2, 2);
+    uint32 missingFileId = DownloadManager::Instance()->Download(srcUrlMissingFile, dstMissingFile, RESUMED, 1, 2, 2);
     DownloadManager::Instance()->Wait(missingFileId);
 
-    uint32 httpCancelledID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 2, 2);
+    uint32 httpCancelledID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 2, 2);
     WaitForTaskState(httpCancelledID, DL_IN_PROGRESS, 1000);
     DownloadManager::Instance()->Cancel(httpCancelledID);
     FileSystem::Instance()->DeleteFile(dstHttp);
 
-    uint32 httpInProcessID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 2, 2);
+    uint32 httpInProcessID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 1, 2, 2);
     WaitForTaskState(httpInProcessID, DL_IN_PROGRESS, 1000);
 
     DownloadManager::Instance()->CancelAll();
@@ -717,7 +719,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
 // GET SIZE
     {
     // finished task
-    uint32 httpFinishedID = DownloadManager::Instance()->Download(srcUrl, dstHttp, GET_SIZE, 2, 2);
+    uint32 httpFinishedID = DownloadManager::Instance()->Download(srcUrl, dstHttp, GET_SIZE, 1, 2, 2);
     DownloadManager::Instance()->Wait(httpFinishedID);
 
     DownloadManager::Instance()->GetStatus(httpFinishedID, status);
@@ -726,7 +728,7 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     TEST_VERIFY(DLE_NO_ERROR == error);
 
     // error result task
-    uint32 missingServerId = DownloadManager::Instance()->Download(srcUrlMissingServerAddress, dstMissingServer, GET_SIZE, 4, 2);
+    uint32 missingServerId = DownloadManager::Instance()->Download(srcUrlMissingServerAddress, dstMissingServer, GET_SIZE, 1, 4, 2);
 
     WaitForTaskState(missingServerId, DL_IN_PROGRESS, 1000);
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
@@ -746,9 +748,9 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     DownloadManager::Instance()->GetStatus(missingServerId, status);
     TEST_VERIFY(DL_FINISHED == status);
     DownloadManager::Instance()->GetError(missingServerId, error);
-    TEST_VERIFY(DLE_CANNOT_CONNECT == error);
+    TEST_VERIFY(DLE_COULDNT_CONNECT == error);
 
-    uint32 emptyFileId = DownloadManager::Instance()->Download(srcUrlEmptyFile, dstHttpEmptyFile, GET_SIZE, 2, 2);
+    uint32 emptyFileId = DownloadManager::Instance()->Download(srcUrlEmptyFile, dstHttpEmptyFile, GET_SIZE, 1, 2, 2);
     DownloadManager::Instance()->Wait(emptyFileId);
 
     DownloadManager::Instance()->GetTotal(emptyFileId, total);
