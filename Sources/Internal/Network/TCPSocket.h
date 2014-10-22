@@ -8,29 +8,37 @@
 
 namespace DAVA {
 
-class TCPSocket : public TCPSocketTemplate<TCPSocket>
+/*
+ Class TCPSocket - fully functional TCP socket implementation which can be used in most cases.
+ Can connect to remote socket, read and write data.
+ User can provide functional object which is called on completion.
+ Functional objects prototypes:
+    ConnectHandlerType - called on connect operation completion
+        void f (TCPSocket* socket, int error);
+    ReadHandlerType - called on read operation completion
+        void f (TCPSocket* socket, int error, std::size_t nread, void* buffer);
+    WriteHandlerType - called on write operation completion
+        void f (TCPSocket* socket, int error, const void* buffer);
+ User is responsible for error processing.
+*/
+class TCPSocket : public TCPSocketTemplate<TCPSocket, false>
 {
 public:
-    typedef TCPSocketTemplate<TCPSocket> BaseClassType;
-    typedef TCPSocket                    ThisClassType;
+    typedef TCPSocketTemplate<TCPSocket, false> BaseClassType;
+    typedef TCPSocket                           ThisClassType;
 
     typedef DAVA::Function<void (ThisClassType* socket, int error)>                                  ConnectHandlerType;
     typedef DAVA::Function<void (ThisClassType* socket, int error, std::size_t nread, void* buffer)> ReadHandlerType;
     typedef DAVA::Function<void (ThisClassType* socket, int error, const void* buffer)>              WriteHandlerType;
 
-    struct WriteRequest
+    struct WriteRequest : public BaseClassType::WriteRequestBase
     {
-        DerivedClassType* pthis;
-        uv_write_t        request;
-        uv_buf_t          buffer;
-        WriteHandlerType  writeHandler;
+        WriteRequest (WriteHandlerType handler) : BaseClassType::WriteRequestBase (), writeHandler (handler) {}
+        WriteHandlerType writeHandler;
     };
 
 public:
-    explicit TCPSocket (IOLoop* ioLoop, bool oneShotReadFlag, bool autoDeleteOnCloseFlag) : BaseClassType (ioLoop, oneShotReadFlag), autoDeleteOnClose (autoDeleteOnClose)
-    {
-        DVASSERT (ioLoop);
-    }
+    explicit TCPSocket (IOLoop* ioLoop, bool autoDeleteOnCloseFlag = false);
 
     ~TCPSocket () {}
 
@@ -40,7 +48,7 @@ public:
         DVASSERT (!(handler == 0));
 
         connectHandler = handler;
-        InternalAsyncConnect (endpoint);
+        BaseClassType::InternalAsyncConnect (endpoint);
     }
 
     template <typename Handler>
@@ -49,7 +57,7 @@ public:
         DVASSERT (buffer && size && !(handler == 0));
 
         readHandler = handler;
-        InternalAsyncRead (buffer, size);
+        BaseClassType::InternalAsyncRead (buffer, size);
     }
 
     template <typename Handler>
@@ -57,32 +65,22 @@ public:
     {
         DVASSERT (buffer && size && !(handler == 0));
 
-        writeRequest.writeHandler = handler;
-        InternalAsyncWrite (&writeRequest, buffer, size);
+        WriteRequest* request = new WriteRequest (handler);
+        BaseClassType::InternalAsyncWrite (request, buffer, size);
     }
 
-    void HandleClose ()
-    {
-        if (autoDeleteOnClose)
-            delete this;
-    }
+    void HandleClose ();
 
-    void HandleRead (int error, size_t nread, const uv_buf_t* buffer)
-    {
-        readHandler (this, error, nread, buffer->base);
-    }
+    void HandleConnect (int error);
 
-    template<typename RequestType>
-    void HandleWrite (RequestType* request, int error)
-    {
-        request->writeHandler (this, error, request->buffer.base);
-    }
+    void HandleRead (int error, size_t nread, const uv_buf_t* buffer);
+
+    void HandleWrite (WriteRequest* request, int error);
 
 private:
     bool               autoDeleteOnClose;   // TODO: do I really need this flag?
     ConnectHandlerType connectHandler;
     ReadHandlerType    readHandler;
-    WriteRequest       writeRequest;
 };
 
 }	// namespace DAVA

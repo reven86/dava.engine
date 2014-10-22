@@ -1,5 +1,3 @@
-#include <cstring>
-
 #include <Debug/DVAssert.h>
 
 #include "IOLoop.h"
@@ -8,11 +6,10 @@
 
 namespace DAVA {
 
-UDPSocketBase::UDPSocketBase (IOLoop* ioLoop) : loop (ioLoop)
+UDPSocketBase::UDPSocketBase (IOLoop* ioLoop) : loop (ioLoop), handle ()
 {
     DVASSERT (ioLoop);
 
-    memset (&handle, 0, sizeof (handle));
     uv_udp_init (loop->Handle (), &handle);
 }
 
@@ -39,7 +36,7 @@ int UDPSocketBase::Bind (const char* ipaddr, unsigned short port, bool reuseAddr
 
 int UDPSocketBase::Bind (unsigned short port, bool reuseAddrOption)
 {
-    return Bind ("0.0.0.0", port, reuseAddrOption);
+    return Bind (Endpoint (port), reuseAddrOption);
 }
 
 int UDPSocketBase::JoinMulticastGroup (const char* multicastAddr, const char* interfaceAddr)
@@ -52,6 +49,12 @@ int UDPSocketBase::LeaveMulticastGroup (const char* multicastAddr, const char* i
 {
     DVASSERT (multicastAddr);
     return uv_udp_set_membership (Handle (), multicastAddr, interfaceAddr, UV_LEAVE_GROUP);
+}
+
+void UDPSocketBase::InternalClose (uv_close_cb callback)
+{
+    if (!IsClosed ())
+        uv_close (HandleAsHandle (), callback);
 }
 
 }	// namespace DAVA

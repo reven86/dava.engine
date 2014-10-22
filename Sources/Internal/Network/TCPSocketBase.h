@@ -38,11 +38,7 @@ public:
     int Bind (unsigned short port);
 
 protected:
-    void InternalClose (uv_close_cb callback)
-    {
-        if (!IsClosed ())
-            uv_close (HandleAsHandle (), callback);
-    }
+    void InternalClose (uv_close_cb callback);
 
     // Protected destructor to prevent deletion through this type
     ~TCPSocketBase () {}

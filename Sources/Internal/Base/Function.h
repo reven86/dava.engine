@@ -54,8 +54,7 @@ namespace DAVA
 		typedef P8 ParamType8;
 
 		// incoming class type
-		typedef typename PointerTraits<P1>::PointerType tryC;
-		typedef typename Select<TypeTraits<tryC>::isPointer, NullType, tryC>::Result C;
+		typedef typename PointerTraits<P1>::PointerType C;
 
 		// evaluating best functor argument types
 		typedef typename TypeTraits<P1>::ParamType ParamRefType1;
@@ -236,20 +235,20 @@ namespace DAVA
 		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType8 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker8 = &ObjectInvokerImpl8<O>; }
 
 		// operators
-		bool operator==(const FunctionBase &f) const { return (fnPointerHolder == f.fnPointerHolder && objPointerHolder.object == f.objPointerHolder.object);	}
-		bool operator!=(const FunctionBase &f) const { return !operator==(f); }
+		bool operator==(const FunctionBase &f) { return (fnPointerHolder == f.fnPointerHolder && objPointerHolder.object == f.objPointerHolder.object);	}
+		bool operator!=(const FunctionBase &f) { return !operator==(f);	}
 
-		bool operator==(int ptr) const { return (0 == ptr && objPointerHolder.object == NULL && fnPointerHolder.IsNull()); }
-		bool operator!=(int ptr) const { return !operator==(ptr); }
+		bool operator==(int ptr) { return (0 == ptr && objPointerHolder.object == NULL && fnPointerHolder.IsNull()); }
+		bool operator!=(int ptr) { return !operator==(ptr); }
 
 		template<typename CR, typename CP1, typename CP2, typename CP3, typename CP4, typename CP5, typename CP6, typename CP7, typename CP8>
-		bool operator==(const FunctionBase<CR, CP1, CP2, CP3, CP4, CP5, CP6, CP7, CP8> &f) const
+		bool operator==(const FunctionBase<CR, CP1, CP2, CP3, CP4, CP5, CP6, CP7, CP8> &f)
 		{
 			return false;
 		}
 
 		template<typename CR, typename CP1, typename CP2, typename CP3, typename CP4, typename CP5, typename CP6, typename CP7, typename CP8>
-		bool operator!=(const FunctionBase<CR, CP1, CP2, CP3, CP4, CP5, CP6, CP7, CP8> &f) const
+		bool operator!=(const FunctionBase<CR, CP1, CP2, CP3, CP4, CP5, CP6, CP7, CP8> &f)
 		{
 			return true;
 		}

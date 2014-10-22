@@ -4,6 +4,7 @@
 namespace DAVA
 {
 
+// Forward declaration of UDPSocket
 class UDPSocket;
 
 }

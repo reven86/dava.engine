@@ -1,12 +1,6 @@
 #ifndef __DAVAENGINE_ENDPOINT_H__
 #define __DAVAENGINE_ENDPOINT_H__
 
-#include <cstring>
-
-#include <Debug/DVAssert.h>
-
-#include <libuv/uv.h>
-
 #include "IPAddress.h"
 
 namespace DAVA {
@@ -14,38 +8,21 @@ namespace DAVA {
 class Endpoint
 {
 public:
-    Endpoint () : data ()
+    explicit Endpoint (unsigned short port = 0) : data ()
     {
-        data.sin_family = AF_INET;
-        data.sin_port   = 0;
-		SetSockaddrAddr (INADDR_ANY);
+        InitSockaddrIn (INADDR_ANY, port);
     }
 
-    Endpoint (unsigned short port) : data ()
+    Endpoint (const IPAddress& address, unsigned short port) : data ()
     {
-        data.sin_family = AF_INET;
-        data.sin_port   = htons (port);
-        SetSockaddrAddr (INADDR_ANY);
+        InitSockaddrIn (address.ToULong (), port);
     }
 
-    Endpoint (const IPAddress& address, unsigned short port)
-    {
-        data.sin_family = AF_INET;
-        data.sin_port   = htons (port);
-		SetSockaddrAddr (address.ToULong ());
-    }
+    Endpoint (const char* address, unsigned short port);
 
-    Endpoint (const sockaddr* sa)
-    {
-        DVASSERT (sa);
-        memcpy (&data, sa, sizeof (data));
-    }
+    Endpoint (const sockaddr* sa);
 
-    Endpoint (const sockaddr_in* sin)
-    {
-        DVASSERT (sin);
-        memcpy (&data, sin, sizeof (data));
-    }
+    Endpoint (const sockaddr_in* sin);
 
     IPAddress Address () const
     {
@@ -62,6 +39,10 @@ public:
         return sizeof (data);
     }
 
+    bool ToString (char* buffer, std::size_t size) const;
+
+    String ToString () const;
+
           sockaddr* CastToSockaddr ()       { return reinterpret_cast<sockaddr*> (&data); }
     const sockaddr* CastToSockaddr () const { return reinterpret_cast<const sockaddr*> (&data); }
     
@@ -69,23 +50,9 @@ public:
     const sockaddr_in* CastToSockaddrIn () const { return reinterpret_cast<const sockaddr_in*> (&data); }
 
 private:
-	void SetSockaddrAddr (unsigned long addr)
-	{
-#ifdef WIN32
-		data.sin_addr.S_un.S_addr = htonl (addr);
-#else
-        data.sin_addr.s_addr      = htonl (addr);
-#endif
-	}
-	
-	unsigned long GetSockaddrAddr () const
-	{
-#ifdef WIN32
-		return ntohl (data.sin_addr.S_un.S_addr);
-#else
-        return ntohl (data.sin_addr.s_addr);
-#endif
-	}
+    void InitSockaddrIn (unsigned long addr, unsigned short port);
+
+	unsigned long GetSockaddrAddr () const;
 	
 private:
     sockaddr_in data;

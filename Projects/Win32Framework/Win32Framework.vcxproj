@@ -388,6 +388,9 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerBase.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Detail\Noncopyable.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h" />
@@ -856,11 +859,17 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\DeadlineTimer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\DeadlineTimerBase.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Endpoint.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\SampleEchoServer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\TCPAcceptor.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\TCPSocket.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPSocketBase.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\UDPSocket.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\UDPSocketBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp" />

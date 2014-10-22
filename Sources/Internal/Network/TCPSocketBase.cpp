@@ -1,5 +1,3 @@
-#include <cstring>
-
 #include <Debug/DVAssert.h>
 
 #include "IOLoop.h"
@@ -8,11 +6,10 @@
 
 namespace DAVA {
 
-TCPSocketBase::TCPSocketBase (IOLoop* ioLoop) : loop (ioLoop)
+TCPSocketBase::TCPSocketBase (IOLoop* ioLoop) : loop (ioLoop), handle ()
 {
     DVASSERT (ioLoop);
 
-    memset (&handle, 0, sizeof (handle));
     uv_tcp_init (loop->Handle (), &handle);
 }
 
@@ -39,7 +36,13 @@ int TCPSocketBase::Bind (const char* ipaddr, unsigned short port)
 
 int TCPSocketBase::Bind (unsigned short port)
 {
-    return Bind ("0.0.0.0", port);
+    return Bind (Endpoint (port));
+}
+
+void TCPSocketBase::InternalClose (uv_close_cb callback)
+{
+    if (!IsClosed ())
+        uv_close (HandleAsHandle (), callback);
 }
 
 }	// namespace DAVA

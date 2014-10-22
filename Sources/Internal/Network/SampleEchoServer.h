@@ -23,7 +23,7 @@ private:
     void HandleRead (TCPSocket* socket, int error, std::size_t nread, void* buffer);
     void HandleWrite (TCPSocket* socket, int error, const void* buffer);
 
-    void HandleReceive (UDPSocket* socket, int error, std::size_t nread, void* buffer, const Endpoint& endpoint, unsigned int flags);
+    void HandleReceive (UDPSocket* socket, int error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial);
     void HandleSend (UDPSocket* socket, int error, const void* buffer);
 
     char* DuplicateInput (char* input, std::size_t nread);

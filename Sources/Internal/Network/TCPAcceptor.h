@@ -9,14 +9,10 @@
 namespace DAVA {
 
 /*
- Class TCPAcceptor
+ Class TCPAcceptor - fully functional implementation which can be used in most cases.
  This class provides ability to call user-specified functional object on incoming TCP connection event
- Handler should have prototype:
-    void ConnectHandler (TCPAcceptor* acceptor, int error)
-    where
-        acceptor - pointer to TCPAcceptor object which listens incoming TCP connections
-        error    - non zero on error
- Handler can be free-standing C function, static member function, or functional object created by DAVA::Function and DAVA::Bind
+ Functional objects prototypes:
+    void ConnectHandlerType (TCPAcceptor* acceptor, int error)
 */
 class TCPAcceptor : public TCPAcceptorTemplate<TCPAcceptor>
 {
@@ -27,7 +23,7 @@ public:
 	typedef DAVA::Function<void (ThisClassType* acceptor, int error)> ConnectHandlerType;
 
 public:
-    explicit TCPAcceptor (IOLoop* ioLoop) : BaseClassType (ioLoop) {}
+    explicit TCPAcceptor (IOLoop* ioLoop);
 
     ~TCPAcceptor () {}
 
@@ -40,10 +36,7 @@ public:
         return InternalAsyncListen (backlog);
     }
 
-    void HandleConnect (int error)
-    {
-        connectHandler (this, error);
-    }
+    void HandleConnect (int error);
 
 private:
     ConnectHandlerType connectHandler;

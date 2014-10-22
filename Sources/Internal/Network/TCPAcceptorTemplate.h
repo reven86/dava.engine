@@ -3,7 +3,6 @@
 
 #include <Debug/DVAssert.h>
 
-#include "Endpoint.h"
 #include "TCPSocketBase.h"
 
 namespace DAVA {
@@ -11,19 +10,25 @@ namespace DAVA {
 class IOLoop;
 
 /*
- Template class TCPAcceptorTemplate accepts incoming TCP connections.
+ Template class TCPAcceptorTemplate provides basic capabilities: accepting incoming TCP connections.
  Template parameter T specifies type that inherits TCPAcceptorTemplate (CRTP idiom)
+
  Type specified by T should implement methods:
     void HandleConnect (int error)
         This method is called on recieving new incoming TCP connection.
         Parameter error is non zero on error
     void HandleClose () - optional
         This method is called after underlying socket has been closed by libuv
+
+ Summary of methods that should be implemented by T:
+    void HandleConnect (int error);
+    void HandleClose ();
 */
 template <typename T>
 class TCPAcceptorTemplate : public TCPSocketBase
 {
 public:
+    typedef TCPSocketBase          BaseClassType;
     typedef TCPAcceptorTemplate<T> ThisClassType;
     typedef T                      DerivedClassType;
 
@@ -37,7 +42,7 @@ public:
 
     void Close ()
     {
-        InternalClose (&HandleCloseThunk);
+        BaseClassType::InternalClose (&HandleCloseThunk);
     }
 
     int Accept (TCPSocketBase* socket)

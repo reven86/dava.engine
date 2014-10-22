@@ -1,8 +1,6 @@
 #ifndef __DAVAENGINE_IPADDRESS_H__
 #define __DAVAENGINE_IPADDRESS_H__
 
-#include <cstring>
-
 #include <libuv/uv.h>
 
 namespace DAVA {
@@ -10,12 +8,16 @@ namespace DAVA {
 class IPAddress
 {
 public:
-    IPAddress () : addr (0) {}
-    IPAddress (unsigned long address) : addr (htonl (address)) {}
+    IPAddress (unsigned long address = 0) : addr (htonl (address)) {}
 
     unsigned long ToULong () const
     {
         return ntohl (addr);
+    }
+
+    bool IsUnspecified () const
+    {
+        return 0 == addr;
     }
 
     bool ToString (char* buffer, std::size_t size) const;

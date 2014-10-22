@@ -8,29 +8,35 @@
 
 namespace DAVA {
 
-class UDPSocket : public UDPSocketTemplate<UDPSocket>
+/*
+ Class UDPSocket - fully functional UDP socket implementation which can be used in most cases.
+ Can receiev from and send data t socket.
+ User can provide functional object which is called on completion.
+ Functional objects prototypes:
+    ReceiveHandlerType - called on read operation completion
+        void f (UDPSocket* socket, int error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial);
+    SendHandlerType - called on write operation completion
+        void f (UDPSocket* socket, int error, const void* buffer);
+ User is responsible for error processing.
+*/
+
+class UDPSocket : public UDPSocketTemplate<UDPSocket, false>
 {
 public:
-    typedef UDPSocketTemplate<UDPSocket> BaseClassType;
-    typedef UDPSocket                    ThisClassType;
+    typedef UDPSocketTemplate<UDPSocket, false> BaseClassType;
+    typedef UDPSocket                           ThisClassType;
 
-    //typedef DAVA::Function<void (ThisClassType* socket, int error)>                                                                                ConnectHandlerType;
-    typedef DAVA::Function<void (ThisClassType* socket, int error, std::size_t nread, void* buffer, const Endpoint& endpoint, unsigned int flags)> ReceiveHandlerType;
-    typedef DAVA::Function<void (ThisClassType* socket, int error, const void* buffer)>                                                            SendHandlerType;
+    typedef DAVA::Function<void (ThisClassType* socket, int error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial)> ReceiveHandlerType;
+    typedef DAVA::Function<void (ThisClassType* socket, int error, const void* buffer)>                                                      SendHandlerType;
 
-    struct SendRequest
+    struct SendRequest : public BaseClassType::SendRequestBase
     {
-        DerivedClassType* pthis;
-        uv_udp_send_t     request;
-        uv_buf_t          buffer;
-        SendHandlerType   sendHandler;
+        SendRequest (SendHandlerType handler) : BaseClassType::SendRequestBase (), sendHandler (handler) {}
+        SendHandlerType sendHandler;
     };
 
 public:
-    explicit UDPSocket (IOLoop* ioLoop, bool oneShotReadFlag, bool autoDeleteOnCloseFlag) : BaseClassType (ioLoop, oneShotReadFlag), autoDeleteOnClose (autoDeleteOnClose)
-    {
-        DVASSERT (ioLoop);
-    }
+    explicit UDPSocket (IOLoop* ioLoop, bool autoDeleteOnCloseFlag = false);
 
     ~UDPSocket () {}
 
@@ -40,7 +46,7 @@ public:
         DVASSERT (buffer && size && !(handler == 0));
 
         receiveHandler = handler;
-        InternalAsyncReceive (buffer, size);
+        BaseClassType::InternalAsyncReceive (buffer, size);
     }
 
     template <typename Handler>
@@ -48,26 +54,17 @@ public:
     {
         DVASSERT (buffer && size && !(handler == 0));
 
-        sendRequest.sendHandler = handler;
-        InternalAsyncSend (&sendRequest, buffer, size, endpoint);
+        SendRequest* request = new SendRequest (handler);
+        BaseClassType::InternalAsyncSend (request, buffer, size, endpoint);
     }
 
-    void HandleReceive (int error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, unsigned int flags)
-    {
-        receiveHandler (this, error, nread, buffer->base, endpoint, flags);
-    }
+    void HandleReceive (int error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial);
 
-    template<typename SendRequestType>
-    void HandleSend (SendRequestType* request, int error)
-    {
-        request->sendHandler (this, error, request->buffer.base);
-    }
+    void HandleSend (SendRequest* request, int error);
 
 private:
     bool               autoDeleteOnClose;   // TODO: do I really need this flag?
-    //ConnectHandlerType connectHandler;
     ReceiveHandlerType receiveHandler;
-    SendRequest        sendRequest;
 };
 
 }   // namespace DAVA

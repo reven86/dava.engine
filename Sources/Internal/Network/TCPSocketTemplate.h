@@ -1,8 +1,6 @@
 #ifndef __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 #define __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 
-#include <cstring>
-
 #include <libuv/uv.h>
 
 #include <Debug/DVAssert.h>
@@ -15,8 +13,13 @@ namespace DAVA {
 class IOLoop;
 
 /*
- Template class TCPSocketTemplate provides basic capabilities: reading from and sending to socket
+ Template class TCPSocketTemplate provides basic capabilities: reading from and sending to stream socket
  Template parameter T specifies type that inherits TCPSocketTemplate (CRTP idiom)
+ Bool template parameter autoRead specifies read behaviour:
+    when autoRead is true libuv automatically issues next read operations until StopAsyncRead is called
+    when autoRead is false user should explicitly issue next read operation
+ Multiple simultaneous read operations lead to undefined behaviour.
+
  Type specified by T should implement methods:
     void HandleConnect (int error)
         This method is called after connection to TCP server has been established
@@ -29,20 +32,37 @@ class IOLoop;
         This method is called after data has been written to
     void HandleClose ()
         This method is called after underlying socket has been closed by libuv
+
+ Summary of methods that should be implemented by T:
+    void HandleConnect (int error);
+    void HandleRead (int error, std::size_t nread, const uv_buf_t* buffer);
+    template<typename WriteRequestType>
+    void HandleWrite (WriteRequestType* request, int error);
+    void HandleClose ();
 */
-template <typename T>
+template <typename T, bool autoRead = false>
 class TCPSocketTemplate : public TCPSocketBase
 {
 public:
-    typedef TCPSocketTemplate<T> ThisClassType;
-    typedef T                    DerivedClassType;
+    typedef TCPSocketBase                  BaseClassType;
+    typedef TCPSocketTemplate<T, autoRead> ThisClassType;
+    typedef T                              DerivedClassType;
+
+    static const bool autoReadFlag = autoRead;
+
+protected:
+    struct WriteRequestBase
+    {
+        DerivedClassType* pthis;
+        uv_buf_t          buffer;
+        uv_write_t        request;
+    };
 
 public:
-    TCPSocketTemplate (IOLoop* ioLoop, bool oneShotReadFlag) : TCPSocketBase (ioLoop), oneShotRead (oneShotReadFlag), externalReadBuffer (NULL), externalReadBufferSize (0)
+    TCPSocketTemplate (IOLoop* ioLoop) : TCPSocketBase (ioLoop), connectRequest (), externalReadBuffer (NULL), externalReadBufferSize (0)
     {
         DVASSERT (ioLoop);
 
-        memset (&connectRequest, 0, sizeof (connectRequest));
         handle.data         = static_cast<DerivedClassType*> (this);
         connectRequest.data = static_cast<DerivedClassType*> (this);
     }
@@ -51,7 +71,7 @@ public:
 
     void Close ()
     {
-        InternalClose (&HandleCloseThunk);
+        BaseClassType::InternalClose (&HandleCloseThunk);
     }
 
     void StopAsyncRead ()
@@ -74,7 +94,7 @@ public:
 protected:
     int InternalAsyncConnect (const Endpoint& endpoint)
     {
-        return uv_tcp_connect (0, Handle (), endpoint.CastToSockaddr (), &HandleConnectThunk);
+        return uv_tcp_connect (&connectRequest, Handle (), endpoint.CastToSockaddr (), &HandleConnectThunk);
     }
 
     void InternalAsyncRead (void* buffer, std::size_t size)
@@ -89,9 +109,14 @@ protected:
     template<typename WriteRequestType>
     void InternalAsyncWrite (WriteRequestType* request, const void* buffer, std::size_t size)
     {
+        /*
+         WriteRequestType should have following public members:
+            DerivedClassType* pthis   - pointer to DerivedClassType instance (can be pointer to void)
+            uv_buf_t          buffer  - libuv buffer to write
+            uv_write_t        request - libuv write request
+        */
         DVASSERT (request && buffer && size > 0);
 
-        memset (&request->request, 0, sizeof (request->request));
         request->pthis        = static_cast<DerivedClassType*> (this);
         request->buffer       = uv_buf_init (static_cast<char*> (const_cast<void*> (buffer)), size);    // uv_buf_init doesn't modify buffer
         request->request.data = request;
@@ -101,11 +126,14 @@ protected:
 
 private:
     void HandleClose () {}
+
     void HandleAlloc (std::size_t /*suggested_size*/, uv_buf_t* buffer)
     {
         *buffer = uv_buf_init (static_cast<char*> (externalReadBuffer), externalReadBufferSize);
     }
+
     void HandleConnect (int /*error*/) {}
+
     void HandleRead (int /*error*/, std::size_t /*nread*/, const uv_buf_t* /*buffer*/) {}
 
     template<typename WriteRequestType>
@@ -123,9 +151,9 @@ private:
         pthis->HandleAlloc (suggested_size, buffer);
     }
 
-    static void HandleConnectThunk (uv_connect_t* request, int error)
+    static void HandleConnectThunk (uv_connect_t* connectRequest, int error)
     {
-        DerivedClassType* pthis = static_cast<DerivedClassType*> (request->data);
+        DerivedClassType* pthis = static_cast<DerivedClassType*> (connectRequest->data);
         pthis->HandleConnect (error);
     }
 
@@ -139,19 +167,18 @@ private:
         }
         DerivedClassType* pthis = static_cast<DerivedClassType*> (handle->data);
         pthis->HandleRead (error, nread, buffer);
-        if (pthis->oneShotRead && 0 == error)
+        if (!autoReadFlag && 0 == error)
             pthis->StopAsyncRead ();
     }
 
     template<typename WriteRequestType>
-    static void HandleWriteThunk (uv_write_t* request, int error)
+    static void HandleWriteThunk (uv_write_t* writeRequest, int error)
     {
-        WriteRequestType* req = static_cast<WriteRequestType*> (request->data);
-        req->pthis->HandleWrite (req, error);
+        WriteRequestType* request = static_cast<WriteRequestType*> (writeRequest->data);
+        request->pthis->HandleWrite (request, error);
     }
 
 protected:
-    bool         oneShotRead;
     uv_connect_t connectRequest;
     void*        externalReadBuffer;
     std::size_t  externalReadBufferSize;

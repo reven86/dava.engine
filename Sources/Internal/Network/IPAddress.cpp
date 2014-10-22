@@ -1,5 +1,4 @@
-#include <libuv/uv.h>
-
+#include <Base/BaseTypes.h>
 #include <Debug/DVAssert.h>
 
 #include "Endpoint.h"
@@ -16,7 +15,7 @@ bool IPAddress::ToString (char* buffer, std::size_t size) const
 String IPAddress::ToString () const
 {
     char buf[50];
-    if (ToString (buf, sizeof (buf)))
+    if (ToString (buf, COUNT_OF (buf)))
         return String (buf);
     return String ();
 }

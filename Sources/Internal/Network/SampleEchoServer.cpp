@@ -7,7 +7,7 @@
 
 namespace DAVA {
 
-SampleEchoServer::SampleEchoServer (IOLoop* ioLoop) : acceptor (ioLoop), udpSocket (ioLoop, true, false)
+SampleEchoServer::SampleEchoServer (IOLoop* ioLoop) : acceptor (ioLoop), udpSocket (ioLoop, false)
 {
 
 }
@@ -50,7 +50,7 @@ char* SampleEchoServer::DuplicateInput (char* input, std::size_t nread)
 
 void SampleEchoServer::HandleConnect (TCPAcceptor* acceptor, int error)
 {
-    TCPSocket* socket = new TCPSocket (acceptor->Loop (), true, true);
+    TCPSocket* socket = new TCPSocket (acceptor->Loop (), true);
     acceptor->Accept (socket);
 
     socket->AsyncRead (tcpInbuf, sizeof (tcpInbuf) - 1, Bind (MakeFunction (this, &SampleEchoServer::HandleRead),
@@ -82,7 +82,7 @@ void SampleEchoServer::HandleWrite (TCPSocket* socket, int error, const void* bu
     delete [] static_cast<const char*> (buffer);
 }
 
-void SampleEchoServer::HandleReceive (UDPSocket* socket, int error, std::size_t nread, void* buffer, const Endpoint& endpoint, unsigned int flags)
+void SampleEchoServer::HandleReceive (UDPSocket* socket, int error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial)
 {
     if (error == 0)
     {
