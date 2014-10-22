@@ -38,7 +38,9 @@
 #include "Platform/Qt/QtLayer.h"
 
 
-class DavaGLWidget : public QWidget, public DAVA::QtLayerDelegate
+class DavaGLWidget
+	: public QWidget
+	, public DAVA::QtLayerDelegate
 {
     Q_OBJECT
     
@@ -50,8 +52,17 @@ public:
 	int GetMaxFPS();
 	int GetFPS() const;
     
-	virtual QPaintEngine *paintEngine() const;
+	//virtual QPaintEngine *paintEngine() const;
 	
+   
+signals:
+	void OnDrop(const QMimeData *mimeData);
+	void Resized(int width, int height);
+
+private slots:
+	void Render();
+
+private:
 	virtual void paintEvent(QPaintEvent *);
 	virtual void resizeEvent(QResizeEvent *);
 	virtual void changeEvent(QEvent * event);
@@ -69,25 +80,11 @@ public:
 #if defined (Q_OS_MAC)
     virtual void mouseMoveEvent(QMouseEvent *);
 #endif //#if defined (Q_OS_MAC)
-    
-#if defined(Q_OS_WIN)
-	virtual bool winEvent(MSG *message, long *result);
-#endif //#if defined(Q_OS_WIN)
 
-signals:
-	void OnDrop(const QMimeData *mimeData);
-	void Resized(int width, int height);
-
-
-protected slots:
-	void Render();
-
-private:
-    
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
-private:
+	bool nativeEvent(const QByteArray & eventType, void * message, long * result);
 
 	int maxFPS;
     int minFrameTimeMs;

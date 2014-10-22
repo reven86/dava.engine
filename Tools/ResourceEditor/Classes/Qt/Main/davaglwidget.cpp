@@ -44,6 +44,7 @@
 #include <QMouseEvent>
 #include <QFocusEvent>
 #include <QDateTime>
+#include <QDebug>
 
 #if defined (__DAVAENGINE_MACOS__)
 	#include "Platform/Qt/MacOS/QtLayerMacOS.h"
@@ -61,7 +62,17 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	, fpsCount(0)
 	, minFrameTimeMs(0)
 {
-	// Widget will try to expand to maximum available size
+	setAttribute(Qt::WA_OpaquePaintEvent, true);
+	setAttribute(Qt::WA_NoSystemBackground, true);
+	setAttribute(Qt::WA_PaintOnScreen, true);
+	setAttribute(Qt::WA_TranslucentBackground, true);
+	setAttribute(Qt::WA_NativeWindow, true);
+
+#ifdef Q_OS_WIN
+	//setWindowFlags(windowFlags() | Qt::MSWindowsOwnDC);
+#endif
+
+	setFocusPolicy( Qt::ClickFocus );
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
 	// Init OS-specific layer
@@ -85,32 +96,33 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 	}
 
-	EnableCustomPaintFlags(true);
+	//EnableCustomPaintFlags(true);
 	setAcceptDrops(true);
 
 	// Setup FPS
 	SetMaxFPS(maxFPS);
 
-	// start render in 1 ms
-	QTimer::singleShot(1, this, SLOT(Render()));
+	// start render
+	QTimer::singleShot(0, this, SLOT(Render()));
 }
 
 DavaGLWidget::~DavaGLWidget()
 {
 }
-
-QPaintEngine *DavaGLWidget::paintEngine() const
-{
-	return NULL;
-}
+//
+//QPaintEngine *DavaGLWidget::paintEngine() const
+//{
+//	return NULL;
+//}
 
 void DavaGLWidget::paintEvent(QPaintEvent *event)
 {
+	Q_UNUSED(event);
 	// We have custom rendering (by timer), so draw only if control is disabled
-	if(!isEnabled())
-	{
-		QWidget::paintEvent(event);
-	}
+	//if(!isEnabled())
+	//{
+	//	QWidget::paintEvent(event);
+	//}
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent *e)
@@ -123,10 +135,11 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 
 void DavaGLWidget::changeEvent(QEvent * event)
 {
-	if(event->type() == QEvent::EnabledChange)
-	{
-		EnableCustomPaintFlags(isEnabled());
-	}
+	//if(event->type() == QEvent::EnabledChange)
+	//{
+	//	EnableCustomPaintFlags(isEnabled());
+	//}
+	QWidget::changeEvent( event );
 }
 
 void DavaGLWidget::showEvent(QShowEvent *e)
@@ -148,6 +161,7 @@ void DavaGLWidget::focusInEvent(QFocusEvent *e)
 	QWidget::focusInEvent(e);
 
 	DAVA::QtLayer::Instance()->LockKeyboardInput(true);
+	qDebug() << "focusInEvent";
 }
 
 void DavaGLWidget::focusOutEvent(QFocusEvent *e)
@@ -156,6 +170,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 
 	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
+	qDebug() << "focusOutEvent";
 }
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -186,9 +201,12 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 	emit OnDrop(mimeData);
 }
 
-#if defined(Q_OS_WIN)
-bool DavaGLWidget::winEvent(MSG *message, long *result)
+bool DavaGLWidget::nativeEvent(const QByteArray& eventType, void* msg, long* result)
 {
+#if defined(Q_OS_WIN)
+
+	MSG *message = static_cast<MSG *>(msg);
+
 	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
 	DVASSERT(core);
 
@@ -200,17 +218,26 @@ bool DavaGLWidget::winEvent(MSG *message, long *result)
 		core->SetFocused(true);
 	}
 
+	switch ( message->message )
+	{
+	default:
+		qDebug() << message->message;
+		break;
+	}
+
 	return core->WinEvent(message, result);
+
+#else
+
+	return QWidget::nativeEvent(eventType, msg, result);
+
+#endif
 }
-
-#endif //#if defined(Q_OS_WIN)
-
-// TODO: http://qt-project.org/doc/qt-5/qwidget.html#nativeEvent !!!!
 
 #if defined (Q_OS_MAC)
 void DavaGLWidget::mouseMoveEvent(QMouseEvent *e)
 {
-    DAVA::QtLayerMacOS *qtLayer = dynamic_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
+    DAVA::QtLayerMacOS *qtLayer = static_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
     if(qtLayer)
     {
         //const QRect geometry = this->geometry();
