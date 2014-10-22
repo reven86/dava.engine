@@ -155,7 +155,6 @@ namespace DAVA
 
 		RenderManager::Instance()->InitFBSize(width, height);
         RenderManager::Instance()->Init(width, height);
-        FrameOcclusionQueryManager::Instance()->Init();
 
 		Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", width, height);
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");

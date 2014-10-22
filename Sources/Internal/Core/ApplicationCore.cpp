@@ -83,7 +83,7 @@ void ApplicationCore::Draw()
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
-    FrameOcclusionQueryManager::Instance()->ProccesDrawedFrame();
+    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
 }
 
 void ApplicationCore::BeginFrame()

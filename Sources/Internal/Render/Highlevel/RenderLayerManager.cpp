@@ -74,20 +74,17 @@ RenderLayerManager::RenderLayerManager()
 {
     RenderLayer * renderLayerOpaque = new RenderLayer(LAYER_OPAQUE,
                                                       RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
-                                                      RENDER_LAYER_OPAQUE_ID,
-                                                      FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_OPAQUE);
+                                                      RENDER_LAYER_OPAQUE_ID);
     InsertLayer(renderLayerOpaque);
 
     RenderLayer * renderLayerAfterOpaque = new RenderLayer(LAYER_AFTER_OPAQUE,
                                                            RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
-                                                           RENDER_LAYER_AFTER_OPAQUE_ID,
-                                                           FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_AFTER_OPAQUE);
+                                                           RENDER_LAYER_AFTER_OPAQUE_ID);
     InsertLayer(renderLayerAfterOpaque);
     
     RenderLayer * renderLayerAlphaTest = new RenderLayer(LAYER_ALPHA_TEST_LAYER,
                                                            RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
-                                                           RENDER_LAYER_ALPHA_TEST_LAYER_ID,
-                                                           FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_ALPHA_TEST);
+                                                           RENDER_LAYER_ALPHA_TEST_LAYER_ID);
     InsertLayer(renderLayerAlphaTest);
 
     RenderLayer * renderLayerWater = new RenderLayer(LAYER_WATER, 0, RENDER_LAYER_WATER_ID);
@@ -95,29 +92,25 @@ RenderLayerManager::RenderLayerManager()
     
     RenderLayer * renderLayerTranslucent = new RenderLayer(LAYER_TRANSLUCENT,
                                                          RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT,
-                                                         RENDER_LAYER_TRANSLUCENT_ID,
-                                                         FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_TRANSLUCENT);
+                                                         RENDER_LAYER_TRANSLUCENT_ID);
     InsertLayer(renderLayerTranslucent);
     
     RenderLayer * renderLayerAfterTranslucent = new RenderLayer(LAYER_AFTER_TRANSLUCENT,
                                                            RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
-                                                           RENDER_LAYER_AFTER_TRANSLUCENT_ID,
-                                                           FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_AFTER_TRANSLUCENT);
+                                                           RENDER_LAYER_AFTER_TRANSLUCENT_ID);
     InsertLayer(renderLayerAfterTranslucent);
 
     RenderLayer * renderLayerShadowVolume = new ShadowVolumeRenderLayer(LAYER_SHADOW_VOLUME,
                                                             0,
-                                                            RENDER_LAYER_SHADOW_VOLUME_ID,
-                                                            FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_SHADOW_VOLUME);
+                                                            RENDER_LAYER_SHADOW_VOLUME_ID);
     InsertLayer(renderLayerShadowVolume);
     
     RenderLayer * renderLayerVegetation = new RenderLayer(LAYER_VEGETATION,
                                                           0,
-                                                          RENDER_LAYER_VEGETATION_ID,
-                                                          FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_VEGETATION);
+                                                          RENDER_LAYER_VEGETATION_ID);
     InsertLayer(renderLayerVegetation);
 
-    RenderLayer * renderLayerDebugDraw = new RenderLayer(LAYER_DEBUG_DRAW, 0, RENDER_LAYER_DEBUG_DRAW_ID, FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_DEBUG_DRAW);
+    RenderLayer * renderLayerDebugDraw = new RenderLayer(LAYER_DEBUG_DRAW, 0, RENDER_LAYER_DEBUG_DRAW_ID);
     InsertLayer(renderLayerDebugDraw);
     
 }

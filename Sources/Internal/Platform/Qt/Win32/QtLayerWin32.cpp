@@ -112,7 +112,6 @@ void QtLayerWin32::Resize(int32 width, int32 height)
 {
 	RenderManager::Instance()->Init(width, height);
 	UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-    FrameOcclusionQueryManager::Instance()->Init();
 
 	Core::Instance()->UnregisterAllAvailableResourceSizes();
 	Core::Instance()->RegisterAvailableResourceSize(width, height, "Gfx");

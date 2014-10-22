@@ -37,11 +37,10 @@
 
 namespace DAVA
 {
-RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags, RenderLayerID _id, FrameOcclusionQueryManager::eFrameOcclusionQuery statsOcclusionQuery /* = FrameOcclusionQueryManager::FRAME_QUERY_COUNT */)
+RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags, RenderLayerID _id)
     :	name(_name)
     ,   flags(sortingFlags)
     ,   id(_id)
-    ,   occlusionQueryName(statsOcclusionQuery)
 {
     
 }
@@ -63,14 +62,8 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
     Vector<int32> chain;
 #endif
     uint32 size = (uint32)renderLayerBatchArray->GetRenderBatchCount();
-    
-    RenderOptions* options = RenderManager::Instance()->GetOptions();
-    bool layerOcclustionStatsEnabled = options->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS);
-    
-    if(layerOcclustionStatsEnabled)
-    {
-        FrameOcclusionQueryManager::Instance()->BeginQuery(occlusionQueryName);
-    }
+
+    FrameOcclusionQueryManager::Instance()->BeginQuery(name);
     
     for (uint32 k = 0; k < size; ++k)
     {
@@ -93,10 +86,7 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
 #endif
     }
     
-    if(layerOcclustionStatsEnabled)
-    {
-        FrameOcclusionQueryManager::Instance()->EndQuery(occlusionQueryName);
-    }
+    FrameOcclusionQueryManager::Instance()->EndQuery(name);
     
 #if CAN_INSTANCE_CHECK
     int32 realDrawEconomy = 0;

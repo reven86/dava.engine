@@ -34,6 +34,7 @@
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
+#include "Base/Observer.h"
 
 #if defined(__DAVAENGINE_OPENGL__)
 
@@ -120,53 +121,51 @@ class FrameOcclusionQueryManager : public Singleton<FrameOcclusionQueryManager>
         OcclusionQueryPool queryPool;
         Vector<OcclusionQueryPoolHandle> activeQueries;
         uint32 drawedFrameStats;
+        FastName queryName;
         bool isQueryOpen;
 
-        FrameQuery() : 
+        FrameQuery(const FastName & name) : 
             queryPool(FRAME_QUERY_POOL_SIZE),
             drawedFrameStats(0),
-            isQueryOpen(false)
+            isQueryOpen(false),
+            queryName(name)
             {}
     };
 
 public:
+    static const FastName FRAME_QUERY_RENDER_LAYER_OPAQUE;
+    static const FastName FRAME_QUERY_RENDER_LAYER_AFTER_OPAQUE;
+    static const FastName FRAME_QUERY_RENDER_LAYER_ALPHA_TEST;
+    static const FastName FRAME_QUERY_RENDER_LAYER_WATER;
+    static const FastName FRAME_QUERY_RENDER_LAYER_TRANSLUCENT;
+    static const FastName FRAME_QUERY_RENDER_LAYER_AFTER_TRANSLUCENT;
+    static const FastName FRAME_QUERY_RENDER_LAYER_SHADOW_VOLUME;
+    static const FastName FRAME_QUERY_RENDER_LAYER_VEGETATION;
+    static const FastName FRAME_QUERY_RENDER_LAYER_DEBUG_DRAW;
+    static const FastName FRAME_QUERY_UI_DRAW;
+
     enum eRetrieveBehavior
     {
         BEHAVIOR_WAIT,
         BEHAVIOR_SKIP,
         BEHAVIOR_RETRIEVE_ON_NEXT_FRAME
     };
-    enum eFrameOcclusionQuery
-    {
-        FRAME_QUERY_RENDER_LAYER_OPAQUE = 0,
-        FRAME_QUERY_RENDER_LAYER_AFTER_OPAQUE,
-        FRAME_QUERY_RENDER_LAYER_ALPHA_TEST,
-        FRAME_QUERY_RENDER_LAYER_WATER,
-        FRAME_QUERY_RENDER_LAYER_TRANSLUCENT,
-        FRAME_QUERY_RENDER_LAYER_AFTER_TRANSLUCENT,
-        FRAME_QUERY_RENDER_LAYER_SHADOW_VOLUME,
-        FRAME_QUERY_RENDER_LAYER_VEGETATION,
-        FRAME_QUERY_RENDER_LAYER_DEBUG_DRAW,
-        FRAME_QUERY_UI_DRAW,
 
-        FRAME_QUERY_COUNT
-    };
     FrameOcclusionQueryManager();
     virtual ~FrameOcclusionQueryManager();
 
-    void Init();
-
-    void BeginQuery(eFrameOcclusionQuery query);
-    void EndQuery(eFrameOcclusionQuery query);
-    uint32 GetFrameStats(eFrameOcclusionQuery query) const;
+    void BeginQuery(const FastName & queryName);
+    void EndQuery(const FastName & queryName);
+    uint32 GetFrameStats(const FastName & queryName) const;
 
     void SetRetrieveBehavior(eRetrieveBehavior _behavior) { behavior = _behavior; };
 
 private:
     void ResetFrameStats();
-    void ProccesDrawedFrame();
+    void ProccesRenderedFrame();
+    FrameOcclusionQueryManager::FrameQuery * GetQuery(const FastName & queryName) const;
 
-    FrameQuery * frameQueries;
+    Vector<FrameQuery *> frameQueries;
 
     eRetrieveBehavior behavior;
     bool frameBegan;
