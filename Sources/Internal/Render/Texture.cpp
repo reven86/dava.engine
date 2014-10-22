@@ -278,7 +278,7 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 	//issue when cubemap texture was deleted while being binded to the state
 	if(RenderManager::Instance()->lastBindedTexture[container->textureType] == container->id)
 	{
-		RenderManager::Instance()->HWglForceBindTexture(0, container->textureType);
+		RenderManager::Instance()->HWglBindTexture(0, container->textureType);
 	}
     
 	if(container->fboID != (uint32)-1)
