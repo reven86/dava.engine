@@ -54,27 +54,29 @@ struct RenderBatch2D
     explicit RenderBatch2D() { Reset(); }
     inline void Reset()
     {
+        primitiveType = PRIMITIVETYPE_TRIANGLELIST;
         renderState = 0;
         textureHandle = 0;
         shader = 0;
         clipRect = Rect(0,0,-1,-1);
         count = 0;
-        indeces = 0;
+        indexOffset = 0;
     }
 
     UniqueHandle renderState;
     UniqueHandle textureHandle;
     Shader* shader;
     Rect clipRect;
+    ePrimitiveType primitiveType;
     uint32 count;
-    uint32 indeces;
+    uint32 indexOffset;
 };
 
 struct TiledDrawData
 {
     Vector< Vector2 > vertices;
     Vector< Vector2 > texCoords;
-    Vector< uint32  > indeces;
+    Vector< uint16  > indeces;
     void GenerateTileData();
     void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
 
@@ -99,6 +101,7 @@ public:
     void DrawTiled(Sprite * sprite, Sprite::DrawState * state, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
     void DrawFilled(Sprite * sprite, Sprite::DrawState * state, const UIGeometricData& gd);
 
+    void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip);
     
     void Reset();
     void Flush();
@@ -130,11 +133,6 @@ private:
     ePrimitiveType spritePrimitiveToDraw;
     int32 spriteVertexCount;
     int32 spriteIndexCount;
-
-    float32 vertexBuffer[MAX_VERTEXES * 2];
-    float32 colorBuffer[MAX_VERTEXES * 4];
-    float32 texBuffer[MAX_VERTEXES * 2];
-    uint32 indexBuffer[MAX_VERTEXES * 3 / 2];
 
     Vector<float32> vertexBuffer2;
     Vector<uint16> indexBuffer2;

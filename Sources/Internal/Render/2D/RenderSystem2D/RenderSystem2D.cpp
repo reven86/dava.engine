@@ -46,8 +46,8 @@ RenderSystem2D::RenderSystem2D()
     spriteTexCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
     spriteColorStream = spriteRenderObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, 0, 0);
 
-    //vertexBuffer2.reserve(2048 * (2 + 2 + 4)); //2048 points (XY UV RGBA)
-    //indexBuffer2.reserve(2048);
+    vertexBuffer2.reserve(2048 * (2 + 2 + 4)); //2048 points (XY UV RGBA)
+    indexBuffer2.reserve(2048);
 }
 
 RenderSystem2D::~RenderSystem2D()
@@ -67,8 +67,9 @@ void RenderSystem2D::Reset()
     batches.clear();
     batches.reserve(1024);
     currentBatch.Reset();
-    //indexBuffer2.clear();
-    //vertexBuffer2.clear();
+
+    indexBuffer2.clear();
+    vertexBuffer2.clear();
     vertexIndex = 0;
     indexIndex = 0;
 }
@@ -159,16 +160,15 @@ void RenderSystem2D::Flush()
         return;
     }
 
-    spriteVertexStream->Set(TYPE_FLOAT, 2, 0, vertexBuffer);
-    spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, texBuffer);
-    spriteColorStream->Set(TYPE_FLOAT, 4, 0, colorBuffer);
+    int32 stride = sizeof(float32) * 8;
+    spriteVertexStream->Set(TYPE_FLOAT, 2, stride, &vertexBuffer2[0]);
+    spriteTexCoordStream->Set(TYPE_FLOAT, 2, stride, &vertexBuffer2[0] + 2);
+    spriteColorStream->Set(TYPE_FLOAT, 4, stride, &vertexBuffer2[0] + 4);
     spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLELIST; 
     RenderManager::Instance()->SetRenderData(spriteRenderObject);
 
-    Vector<RenderBatch2D> copy;
-    batches.swap(copy);
-    Vector<RenderBatch2D>::iterator it = copy.begin();
-    Vector<RenderBatch2D>::iterator eit = copy.end();
+    Vector<RenderBatch2D>::iterator it = batches.begin();
+    Vector<RenderBatch2D>::iterator eit = batches.end();
     for (; it != eit; ++it)
     {
         const RenderBatch2D& batch = *it;
@@ -185,14 +185,57 @@ void RenderSystem2D::Flush()
         RenderManager::Instance()->SetRenderState(batch.renderState);
         RenderManager::Instance()->SetTextureState(batch.textureHandle);
         RenderManager::Instance()->SetRenderEffect(batch.shader);
-        RenderManager::Instance()->DrawElements(spritePrimitiveToDraw, batch.count, EIF_32, &indexBuffer[batch.indeces]);
+        RenderManager::Instance()->DrawElements(spritePrimitiveToDraw, batch.count, EIF_16, &indexBuffer2[batch.indexOffset]);
 
         if (clip)
         {
             ClipPop();
         }
     }
+
+    batches.clear();
 }
+
+void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader* shader, Rect const& clip)
+{
+    Shader * convShader = shader;
+
+    if (RenderManager::TEXTURE_MUL_FLAT_COLOR == shader)
+    {
+        convShader = RenderManager::TEXTURE_MUL_COLOR;
+    }
+    else if (RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST == shader)
+    {
+        convShader = RenderManager::TEXTURE_MUL_COLOR_ALPHA_TEST;
+    }
+    else if (RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 == shader)
+    {
+        convShader = RenderManager::TEXTURE_MUL_COLOR_IMAGE_A8;
+    }
+
+    if (currentBatch.renderState != state
+        || currentBatch.textureHandle != texture
+        || currentBatch.shader != convShader
+        || currentBatch.clipRect != currentClip)
+    {
+        if (currentBatch.count > 0)
+        {
+            batches.push_back(currentBatch);
+        }
+        currentBatch.Reset();
+
+        currentBatch.renderState = state;
+        currentBatch.textureHandle = texture;
+        currentBatch.shader = convShader;
+        currentBatch.clipRect = currentClip;
+        currentBatch.indexOffset = indexIndex;
+    }
+
+    currentBatch.count += spriteIndexCount;
+    indexIndex += spriteIndexCount;
+    vertexIndex += spriteVertexCount;
+}
+
 
 void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 {
@@ -416,25 +459,31 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
             }
         }
         
+        spriteVertexCount = 4;
+
         if (useBatching)
         {
-            for (uint8 i = 0; i < 8; ++i)
-            {
-                vertexBuffer[vertexIndex * 2 + i] = spriteTempVertices[i];
-                texBuffer[vertexIndex * 2 + i] = sprite->texCoords[frame][i];
-            }
-            const Color c = RenderManager::Instance()->GetColor();
-            for (uint8 i = 0; i < 16; ++i)
-            {
-                colorBuffer[vertexIndex * 4 + i] = c.color[i % 4];
-            }
-            static uint32 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
-            DVASSERT((indexIndex + 6) < (MAX_VERTEXES * 3 / 2));
-            for (uint8 i = 0; i < 6; ++i)
-            {
-                indexBuffer[indexIndex + i] = vertexIndex + spriteIndeces[i];
-            }
             spriteIndexCount = 6;
+
+            const Color c = RenderManager::Instance()->GetColor();
+            for (int32 i = 0; i < spriteVertexCount; ++i)
+            {
+                vertexBuffer2.push_back(spriteTempVertices[i * 2]);
+                vertexBuffer2.push_back(spriteTempVertices[i * 2 + 1]);
+                vertexBuffer2.push_back(sprite->texCoords[frame][i * 2]);
+                vertexBuffer2.push_back(sprite->texCoords[frame][i * 2 + 1]);
+                vertexBuffer2.push_back(c.r);
+                vertexBuffer2.push_back(c.g);
+                vertexBuffer2.push_back(c.b);
+                vertexBuffer2.push_back(c.a);
+            }
+
+            static uint32 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
+            for (int32 i = 0; i < spriteIndexCount; ++i)
+            {
+                indexBuffer2.push_back(vertexIndex + spriteIndeces[i]);
+            }
+            
         }
         else
         {
@@ -444,7 +493,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 			DVASSERT(spriteVertexStream->pointer != 0);
 			DVASSERT(spriteTexCoordStream->pointer != 0);
         }
-        spriteVertexCount = 4;
+        
     }
     else
     {
@@ -460,56 +509,40 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
         
         if (useBatching)
         {
-            int32 count = sprite->clipPolygon->GetPointCount();
+            spriteVertexCount = sprite->clipPolygon->GetPointCount();
+            spriteIndexCount = spriteVertexCount * 3;
 
-            if (sprite->flags & Sprite::EST_SCALE)
-            {
-                for (int32 i = 0; i < count; ++i)
-                {
-                    const Vector2 &point = sprite->clipPolygon->GetPoints()[i];
-                    vertexBuffer[vertexIndex * 2 + i * 2 + 0] = point.x*scaleX + x;
-                    vertexBuffer[vertexIndex * 2 + i * 2 + 1] = point.y*scaleY + y;
-                }
-            }
-            else
-            {
-                //Vector2 pos(x, y);
-                for (int32 i = 0; i < count; ++i)
-                {
-                    const Vector2 &point = sprite->clipPolygon->GetPoints()[i];
-                    vertexBuffer[vertexIndex * 2 + i * 2 + 0] = point.x + x;
-                    vertexBuffer[vertexIndex * 2 + i * 2 + 1] = point.y + y;
-                }
-            }
-
-            for (int32 i = 0; i < count; ++i)
+            const Color c = RenderManager::Instance()->GetColor();
+            for (int32 i = 0; i < spriteVertexCount; ++i)
             {
                 const Vector2 &point = sprite->clipPolygon->GetPoints()[i];
                 Vector2 texCoord((point.x - frameVertices[frame][0]) * adjWidth, (point.y - frameVertices[frame][1]) * adjHeight);
-                texBuffer[vertexIndex * 2 + i * 2 + 0] = sprite->texCoords[frame][0] + texCoord.x;
-                texBuffer[vertexIndex * 2 + i * 2 + 1] = sprite->texCoords[frame][1] + texCoord.y;
+                if (sprite->flags & Sprite::EST_SCALE)
+                {
+                    vertexBuffer2.push_back(point.x * scaleX + x);
+                    vertexBuffer2.push_back(point.y * scaleY + y);
+                }
+                else
+                {
+                    vertexBuffer2.push_back(point.x + x);
+                    vertexBuffer2.push_back(point.y + y);
+                }
+                vertexBuffer2.push_back(sprite->texCoords[frame][0] + texCoord.x);
+                vertexBuffer2.push_back(sprite->texCoords[frame][1] + texCoord.y);
+                vertexBuffer2.push_back(c.r);
+                vertexBuffer2.push_back(c.g);
+                vertexBuffer2.push_back(c.b);
+                vertexBuffer2.push_back(c.a);
             }
-
-            const Color c = RenderManager::Instance()->GetColor();
-            for (int32 i = 0; i < count; ++i)
+            
+            for (int32 i = 2; i < spriteVertexCount; ++i)
             {
-                colorBuffer[(vertexIndex + i) * 4 + 0] = c.r;
-                colorBuffer[(vertexIndex + i) * 4 + 1] = c.g;
-                colorBuffer[(vertexIndex + i) * 4 + 2] = c.b;
-                colorBuffer[(vertexIndex + i) * 4 + 3] = c.a;
+                indexBuffer2.push_back(vertexIndex + 0);
+                indexBuffer2.push_back(vertexIndex + i - 1);
+                indexBuffer2.push_back(vertexIndex + i);
             }
 
-            DVASSERT((indexIndex + count * 3) < (MAX_VERTEXES * 3 / 2));
-            uint32 idx = 0;
-            for (int32 i = 2; i < count; ++i)
-            {
-                indexBuffer[indexIndex + idx + 0] = vertexIndex + 0;
-                indexBuffer[indexIndex + idx + 1] = vertexIndex + i - 1;
-                indexBuffer[indexIndex + idx + 2] = vertexIndex + i;
-                idx += 3;
-            }
-
-            spriteIndexCount = idx;
+            
         }
         else
         {
@@ -550,7 +583,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
     Rect clipRect(0,0,-1,-1);
 	if(sprite->clipPolygon)
 	{
-		
 		if( sprite->flags & Sprite::EST_SCALE )
 		{
 			float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
@@ -577,46 +609,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 
     if (useBatching)
     {
-        Shader * shader = state->shader;
-
-        if (RenderManager::TEXTURE_MUL_FLAT_COLOR == shader)
-        {
-            shader = RenderManager::TEXTURE_MUL_COLOR;
-        }
-        else if (RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST == shader)
-        {
-            shader = RenderManager::TEXTURE_MUL_COLOR_ALPHA_TEST;
-        }
-        else if (RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 == shader)
-        {
-            shader = RenderManager::TEXTURE_MUL_COLOR_IMAGE_A8;
-        }
-
-        if (currentBatch.renderState != state->renderState
-            || currentBatch.textureHandle != sprite->GetTextureHandle(state->frame)
-            || currentBatch.shader != shader
-            || currentBatch.clipRect != clipRect)
-        {
-            if (currentBatch.count > 0)
-            {
-                batches.push_back(currentBatch);
-            }
-            currentBatch.Reset();
-        
-            currentBatch.renderState = state->renderState;
-            currentBatch.textureHandle = sprite->GetTextureHandle(state->frame);
-            currentBatch.shader = shader;
-            currentBatch.clipRect = clipRect;
-            currentBatch.indeces = indexIndex;
-        }
-        
-        currentBatch.count += spriteIndexCount;
-        indexIndex += spriteIndexCount;
-        vertexIndex += spriteVertexCount;
-
-        DVASSERT(indexIndex < (MAX_VERTEXES * 3 / 2));
-        DVASSERT(vertexIndex < MAX_VERTEXES);
-
+        PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), state->shader, clipRect);
     }
     else
     {
@@ -804,50 +797,28 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 
 	if (useBatching)
 	{
-		for(uint8 i = 0; i < 32; ++i)
+        spriteVertexCount = 16;
+        spriteIndexCount = 54;
+        
+        const Color c = RenderManager::Instance()->GetColor();
+        for (int32 i = 0; i < spriteVertexCount; ++i)
 		{
-			vertexBuffer[vertexIndex * 2 + i] = vertices[i];
-			texBuffer[vertexIndex * 2 + i] = texCoords[i];
+            vertexBuffer2.push_back(vertices[i * 2]);
+            vertexBuffer2.push_back(vertices[i * 2 + 1]);
+            vertexBuffer2.push_back(texCoords[i * 2]);
+            vertexBuffer2.push_back(texCoords[i * 2 + 1]);
+            vertexBuffer2.push_back(c.r);
+            vertexBuffer2.push_back(c.g);
+            vertexBuffer2.push_back(c.b);
+            vertexBuffer2.push_back(c.a);
 		}
-		spriteVertexCount = 16;
 
-		const Color c = RenderManager::Instance()->GetColor();
-        for (uint8 i = 0; i < 64; ++i)
-        {
-            colorBuffer[vertexIndex * 4 + i] = c.color[i % 4];
-        }
-
-        DVASSERT(indexIndex + 54 < (MAX_VERTEXES * 3 / 2));
-        for(uint8 i = 0; i < 54; ++i)
+        for (int32 i = 0; i < spriteIndexCount; ++i)
 		{
-			indexBuffer[indexIndex + i] = vertexIndex + indeces[i];
+			indexBuffer2.push_back(vertexIndex + indeces[i]);
 		}
-		spriteIndexCount = 54;
 		
-		if (currentBatch.renderState != state->renderState
-            || currentBatch.textureHandle != sprite->GetTextureHandle(state->frame)
-            || currentBatch.shader != RenderManager::TEXTURE_MUL_COLOR
-            || currentBatch.clipRect != currentClip)
-        {
-            if (currentBatch.count > 0)
-            {
-                batches.push_back(currentBatch);
-            }
-            currentBatch.Reset();
-        
-            currentBatch.renderState = state->renderState;
-            currentBatch.textureHandle = sprite->GetTextureHandle(state->frame);
-            currentBatch.shader = RenderManager::TEXTURE_MUL_COLOR;
-            currentBatch.clipRect = currentClip;
-            currentBatch.indeces = indexIndex;
-        }
-        
-        currentBatch.count += spriteIndexCount;
-        indexIndex += spriteIndexCount;
-        vertexIndex += spriteVertexCount;
-
-        DVASSERT(indexIndex < (MAX_VERTEXES * 3 / 2));
-        DVASSERT(vertexIndex < MAX_VERTEXES);
+        PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), RenderManager::TEXTURE_MUL_FLAT_COLOR, currentClip);
 	}
 	else
 	{
@@ -931,45 +902,27 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
 	if (useBatching)
 	{
 		spriteVertexCount = td.transformedVertices.size();
-		Memcpy(&vertexBuffer[vertexIndex * 2], &td.transformedVertices[0], sizeof(float32) * spriteVertexCount * 2);
-		Memcpy(&texBuffer[vertexIndex * 2], &td.texCoords[0], sizeof(float32) * spriteVertexCount * 2);
+        spriteIndexCount = td.indeces.size();
 
-		const Color c = RenderManager::Instance()->GetColor();
+        const Color c = RenderManager::Instance()->GetColor();
         for (int32 i = 0; i < spriteVertexCount; ++i)
         {
-            Memcpy(&colorBuffer[(vertexIndex + i) * 4], c.color, sizeof(float32) * 4);
+            vertexBuffer2.push_back(td.transformedVertices[i].x);
+            vertexBuffer2.push_back(td.transformedVertices[i].y);
+            vertexBuffer2.push_back(td.texCoords[i].x);
+            vertexBuffer2.push_back(td.texCoords[i].y);
+            vertexBuffer2.push_back(c.r);
+            vertexBuffer2.push_back(c.g);
+            vertexBuffer2.push_back(c.b);
+            vertexBuffer2.push_back(c.a);
         }
 
-        spriteIndexCount = td.indeces.size();
-        for (int32 i = 0; i < spriteIndexCount; ++i)
+		for (int32 i = 0; i < spriteIndexCount; ++i)
         {
-            indexBuffer[indexIndex + i] = vertexIndex + td.indeces[i];
+            indexBuffer2.push_back(vertexIndex + td.indeces[i]);
         }
 		
-		if (currentBatch.renderState != state->renderState
-            || currentBatch.textureHandle != sprite->GetTextureHandle(state->frame)
-            || currentBatch.shader != RenderManager::TEXTURE_MUL_COLOR
-            || currentBatch.clipRect != currentClip)
-        {
-            if (currentBatch.count > 0)
-            {
-                batches.push_back(currentBatch);
-            }
-            currentBatch.Reset();
-        
-            currentBatch.renderState = state->renderState;
-            currentBatch.textureHandle = sprite->GetTextureHandle(state->frame);
-            currentBatch.shader = RenderManager::TEXTURE_MUL_COLOR;
-            currentBatch.clipRect = currentClip;
-            currentBatch.indeces = indexIndex;
-        }
-        
-        currentBatch.count += spriteIndexCount;
-        indexIndex += spriteIndexCount;
-        vertexIndex += spriteVertexCount;
-
-        DVASSERT(indexIndex < (MAX_VERTEXES * 3 / 2));
-        DVASSERT(vertexIndex < MAX_VERTEXES);
+        PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), RenderManager::TEXTURE_MUL_FLAT_COLOR, currentClip);
 
 	}
 	else
@@ -983,7 +936,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
 		RenderManager::Instance()->SetRenderState(state->renderState);
 		RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(spriteRenderObject);
-		RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_32, &td.indeces[0]);
+		RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 	}
 }
 
@@ -1002,7 +955,6 @@ void RenderSystem2D::DrawFilled(Sprite * sprite, Sprite::DrawState * state, cons
         RenderHelper::Instance()->FillRect( gd.GetUnrotatedRect(), state->renderState );
     }
 }
-
 
 void TiledDrawData::GenerateTileData()
 {
