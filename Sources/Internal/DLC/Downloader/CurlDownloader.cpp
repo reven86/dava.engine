@@ -53,7 +53,9 @@ CurlDownloader::CurlDownloader()
     , dlinfoExt(".dlinfo")
 {
     if (!isCURLInit && CURLE_OK == curl_global_init(CURL_GLOBAL_ALL))
+    {
         isCURLInit = true;
+    }
 }
 
 CurlDownloader::~CurlDownloader()
@@ -69,15 +71,30 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     uint64 seekPos = thisPart->info.seekPos + thisPart->info.progress;
     uint64 dataLeft = thisPart->info.size - thisPart->info.progress;
     size_t dataSizeCame = size*nmemb;
-
-    DVASSERT(dataLeft >= dataSizeCame);
+    size_t dataSizeToWrite = 0;
     
-    size_t bytesWritten = thisDownloader->SaveData(ptr, thisDownloader->storePath, dataSizeCame, seekPos);
+    if (dataLeft < dataSizeCame)
+    {
+        Logger::Error("dataLeft >= dataSizeCame");
+        dataSizeToWrite = dataLeft; // don't write more than part.size
+    }
+    else
+    {
+        dataSizeToWrite = dataSizeCame;
+    }
+    
+    size_t bytesWritten = thisDownloader->SaveData(ptr, thisDownloader->storePath, dataSizeToWrite, seekPos);
+    if (bytesWritten != dataSizeToWrite)
+    {
+        Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk");
+        return bytesWritten; // this case means that not all data which we wants to save is saved. So we produce file system error.
+    }
+    
     thisPart->info.progress += bytesWritten; // if SaveData not performes - then we have not stored chunk of data and it is not a finished download.
 
     if (!thisPart->SaveDownload(thisDownloader->dlInfoStorePath))
     {
-        Logger::FrameworkDebug("[CurlDownloader::CurlDataRecvHandler] Couldn't save download part info");
+        Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save download part info");
         return 0;
     }
 
@@ -86,16 +103,17 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
         return 0; // download is interrupted
     }
 
-    // actually we should to return same amount of data as came, 
-    // but if we have write error - we should to know it.
+    // actually we should to return same amount of data as came,
     if (bytesWritten != dataSizeCame)
     {
-        Logger::FrameworkDebug("[CurlDownloader::CurlDataRecvHandler] SaveData failed");
-        return bytesWritten; // this case means that not all data which we wants to save is saved. So we produce file system error.
+        // if there was more data came than expected and we saved only expected part of that data
+        Logger::Error("[CurlDownloader::CurlDataRecvHandler] SaveData failed");
+        return dataSizeCame;
     }
     else
     {
-        return dataSizeCame; // this case means that all data we want was saved. But we could save not all the data came.
+        // if all data came is written
+        return bytesWritten;
     }
 }
 
@@ -137,6 +155,8 @@ CURL *CurlDownloader::CreateEasyHandle(const String &url, DownloadPart *part, co
     
 DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, const uint8 partsCount, const int32 timeout)
 {
+    DVASSERT(0 < partsCount);
+
     uint64 remoteFileSize;
     DownloadError err = GetSize(url, remoteFileSize, timeout);
 
@@ -150,13 +170,11 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
     uint64 partSize;
     uint8 downloadPartsCount;
     
-    File *downloadFile = File::Create(savePath, File::OPEN | File::READ);
-    if (NULL == downloadFile)
+    
+    if (!savePath.Exists())
     {
-        File *dlInfoFile = File::Create(dlInfoStorePath, File::OPEN | File::READ);
-        if (NULL != dlInfoFile)
+        if (dlInfoStorePath.Exists())
         {
-            SafeRelease(dlInfoFile);
             if (!FileSystem::Instance()->DeleteFile(dlInfoStorePath))
             {
                 return DLE_FILE_ERROR;
@@ -164,14 +182,10 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
         }
 
         // create new file if there is no file and allocate space for it
-        if (!FileSystem::CreateEmptyFile(savePath, remoteFileSize))
+        if (!FileSystem::CreateZeroFilledFile(savePath, remoteFileSize))
         {
             return DLE_FILE_ERROR;
         }
-    }
-    else
-    {
-        SafeRelease(downloadFile);
     }
 
     // try to restore interrupted download
@@ -237,7 +251,7 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
 
         if (NULL == easyHandle)
         {
-            Logger::FrameworkDebug("Curl easy handle init error");
+            Logger::Error("Curl easy handle init error");
             CleanupDownload();
             return DLE_INIT_ERROR;
         }
@@ -247,7 +261,7 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
         ret = curl_multi_add_handle(*multiHandle, easyHandle);
         if (CURLM_OK != ret)
         {
-            Logger::FrameworkDebug("Curl multi add handle error %d: ", ret);
+            Logger::Error("Curl multi add handle error %d: ", ret);
             CleanupDownload();
             return DLE_INIT_ERROR;
         }
@@ -368,7 +382,7 @@ void CurlDownloader::CleanupDownload()
 
 DownloadError CurlDownloader::Download(const String &url, const FilePath &savePath, const uint8 partsCount, const int32 _timeout)
 {
-    Logger::FrameworkDebug("CurlDownloader: Download");
+    Logger::Info("CurlDownloader: Download");
     DownloadError retCode;
 
     CURLM *multiHandle = NULL;
@@ -418,7 +432,14 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
 
     if (DLE_NO_ERROR == retCode)
     {
-        FileSystem::Instance()->DeleteFile(dlInfoStorePath);
+        if (dlInfoStorePath.Exists())
+        {
+            if (!FileSystem::Instance()->DeleteFile(dlInfoStorePath))
+            {
+                Logger::Error("[CurlDownloader::Download] Error at .dlinfo file deletion");
+                // there is no return because it is not matter for download.
+            }
+        }
     }
     
     return retCode;

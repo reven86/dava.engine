@@ -50,17 +50,14 @@ friend class DownloadManager;
 
 public:
     virtual ~Downloader(){};
-    
-protected:
-    typedef Function<void (const uint64 &)> ProgressNotifyFunctor;
 
 /* all methods putted into protected section because they should be used only from DownloadManager. */
 protected: 
     /**
         \brief Get content size in bytes for remote Url.
         \param[in] url - destination fie Url
-        \param[in] _timeout - operation timeout
         \param[out] retSize - place result to
+        \param[in] _timeout - operation timeout
      */
     virtual DownloadError GetSize(const String &url, uint64 &retSize, const int32 _timeout) = 0;
     /**
@@ -81,16 +78,16 @@ protected:
         \param[in] ptr - pointer to data
         \param[in] storePath - path to save location of remote file
         \param[in] size - amout of data
-        \param[in] seek - position in file when data should be stored
+        \param[in] seek - position in file where data should be stored
     */
     virtual size_t SaveData(const void *ptr, const FilePath& storePath, const uint64 size, const uint64 seek);
     /**
         \brief Used to report about saved data size to download manager. Used to calculate total download progress.
      */
-    virtual void SetProgressNotificator(ProgressNotifyFunctor progressNotifier);
+    virtual void SetProgressNotificator(Function<void (const uint64 &)> progressNotifier);
     
 protected:
-    ProgressNotifyFunctor notifyProgress;
+    Function<void (const uint64 &)> notifyProgress;
 };
 
 }

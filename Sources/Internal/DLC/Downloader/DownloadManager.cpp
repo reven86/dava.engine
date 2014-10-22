@@ -83,6 +83,7 @@ void DownloadManager::SetDownloader(Downloader *_downloader)
 
     SafeDelete(downloader);
     downloader = _downloader;
+    downloader->SetProgressNotificator(Function<void (const uint64 &)>(this, &DownloadManager::OnCurrentTaskProgressChanged));
 }
 
 Downloader *DownloadManager::GetDownloader()
@@ -554,8 +555,6 @@ DownloadError DownloadManager::Download()
     DownloadError error = DLE_NO_ERROR;
     SetTaskStatus(currentTask, DL_IN_PROGRESS);
     downloadedTotal = 0;
-    
-    downloader->SetProgressNotificator(Downloader::ProgressNotifyFunctor(this, &DownloadManager::OnCurrentTaskProgressChanged));
 
     do
     {

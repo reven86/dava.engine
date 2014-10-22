@@ -57,30 +57,29 @@ bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<Download
         return false;
     }
     
-    bool eof = false;
-    
     DownloadInfoHeader downloadHeader;
-    eof &= sizeof(DownloadInfoHeader) != infoFile->Read(&downloadHeader, sizeof(DownloadInfoHeader));
-    
     uint8 partsRead = 0;
-    uint64 readPartSize = sizeof(DownloadPart::StoreData);
+    const uint64 readPartSize = sizeof(DownloadPart::StoreData);
     
+    bool eof = sizeof(DownloadInfoHeader) != infoFile->Read(&downloadHeader);
+
     while (!eof && partsRead < downloadHeader.partsCount)
     {
         DownloadPart *part = new DownloadPart();
 
-        eof &= sizeof(part->info.number) != infoFile->Read(&part->info.number, sizeof(part->info.number));
+        eof &= sizeof(part->info.number) != infoFile->Read(&part->info.number);
      
-        infoFile->Seek(sizeof(downloadHeader.partsCount) + part->info.number * readPartSize, File::SEEK_FROM_START);
-        eof &= sizeof(part->info) != infoFile->Read(&part->info, sizeof(part->info));
+        infoFile->Seek(sizeof(DownloadInfoHeader) + part->info.number * readPartSize, File::SEEK_FROM_START);
+        eof &= sizeof(part->info) != infoFile->Read(&part->info);
         
         if (eof)
         {
+            Logger::Error("[DownloadPart::RestoreDownload] Unexpected end of file");
             SafeDelete(part);
             return false;
         }
 
-        // progress should not be gigger than expected download size
+        // progress should not be bigger than expected download size
         DVASSERT(part->info.progress <= part->info.size);
 
         if (part->info.size == part->info.progress)
@@ -107,24 +106,17 @@ bool DownloadPart::SaveDownload(const FilePath &infoFilePath)
         uint64 seekPos = sizeof(DownloadInfoHeader) + info.number*sizeof(DownloadPart::StoreData);
         file->Seek(seekPos, File::SEEK_FROM_START);
 
-        if (sizeof(info) != file->Write(&info, sizeof(info)))
-        {
-            return  false;
-        }
-    }
-    else
-    {
-        return false;
+        return sizeof(info) == file->Write(&info, sizeof(info));
     }
 
-    return true;
+    return false;
 }
 
 bool DownloadPart::CreateDownload(const FilePath &infoFilePath, const uint8 partsCount)
 {
     // Create info file and allocate space for it
     uint64 infoFileSize = sizeof(DownloadInfoHeader) + partsCount*sizeof(DownloadPart::StoreData);
-    if (!FileSystem::CreateEmptyFile(infoFilePath, infoFileSize))
+    if (!FileSystem::CreateZeroFilledFile(infoFilePath, infoFileSize))
     {
         return false;
     }
@@ -135,16 +127,10 @@ bool DownloadPart::CreateDownload(const FilePath &infoFilePath, const uint8 part
     {
         DownloadInfoHeader header;
         header.partsCount = partsCount;
-        if (sizeof(DownloadInfoHeader) != file->Write(&header, sizeof(DownloadInfoHeader)))
-        {
-            return  false;
-        }
+        return (sizeof(DownloadInfoHeader) == file->Write(&header));
     }
-    else
-    {
-        return false;
-    }
-    return true;
+
+    return false;
 }
 
 }

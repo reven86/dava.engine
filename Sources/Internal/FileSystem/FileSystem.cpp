@@ -722,33 +722,31 @@ void FileSystem::MarkFolderAsNoMedia(const FilePath &folder)
 #endif
 }
     
-bool FileSystem::CreateEmptyFile(const FilePath &path, const uint64 size)
+bool FileSystem::CreateZeroFilledFile(const FilePath &path, const uint64 size)
 {
     ScopedPtr<File> file(File::Create(path, File::CREATE | File::WRITE));
     
     if (NULL == static_cast<File*>(file))
+    {
+        Logger::Error("[FileSystem::CreateZeroFilledFile] Cannot create a file.");
         return false;
+    }
     
     // fill created file by NULL values.
-    uint32 blockSize = 4096;
+    const uint32 blockSize = Min<uint32>(4096, size);
     char8 nullValue[blockSize];
-    Memset(nullValue, blockSize, blockSize);
+    Memset(nullValue, 0, blockSize);
     
     uint32 written = 0;
     do
     {
-        uint32 blockSizeToWrite;
+        const uint32 blockSizeToWrite = Min<uint32>(blockSize, size - written);
 
-        if (written + blockSize < size)
-            blockSizeToWrite = blockSize;
-        else
-            blockSizeToWrite = size - written;
-
-        uint64 writtenNow = file->Write(nullValue, blockSizeToWrite);
+        const uint64 writtenNow = file->Write(nullValue, blockSizeToWrite);
         if (blockSizeToWrite != writtenNow)
         {
             FileSystem::Instance()->DeleteFile(path);
-            
+            Logger::Error("[FileSystem::CreateZeroFilledFile] Cannot write to file.");
             return false;
         }
         

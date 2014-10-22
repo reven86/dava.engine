@@ -256,7 +256,7 @@ public:
     /**
      \brief Makes new file with given size and fill it by "0".
      */
-    static bool CreateEmptyFile(const FilePath &path, const uint64 size);
+    static bool CreateZeroFilledFile(const FilePath &path, const uint64 size);
 
 private:
     

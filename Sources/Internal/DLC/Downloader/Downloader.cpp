@@ -42,11 +42,15 @@ size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, const ui
         notifyProgress(written);
         SafeRelease(destFile);
     }
+    else
+    {
+        Logger::Error("[Downloader::SaveData] Cannot open file to save data");
+    }
 
     return written;
 }
     
-void Downloader::SetProgressNotificator(ProgressNotifyFunctor progressNotifier)
+void Downloader::SetProgressNotificator(Function<void (const uint64 &)> progressNotifier)
 {
     notifyProgress = progressNotifier;
 }
