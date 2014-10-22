@@ -94,6 +94,7 @@ float GetUITextViewSizeDivider()
 									 , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
 									 , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor());
         
+        
 		textField.delegate = self;
 		
 		[self setupTraits];
@@ -511,14 +512,13 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         [textFieldHolder removeFromSuperview];
         [textFieldHolder release];
-        textFieldHolder = 0;
+        objcClassPtr = 0;
     }
 	
     void UITextFieldiPhone::SetTextColor(const DAVA::Color &color)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.textColor = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
-        
     }
     void UITextFieldiPhone::SetFontSize(float size)
     {
@@ -616,6 +616,9 @@ namespace DAVA
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+
+        DVASSERT([textFieldHolder superview] == nil);
+        
         [[appDelegate glController].backgroundView addSubview:textFieldHolder];
         
         // Attach to "keyboard shown/keyboard hidden" notifications.
@@ -624,11 +627,7 @@ namespace DAVA
 					   name:UIKeyboardDidShowNotification object:nil];
 		[center addObserver:textFieldHolder selector:@selector(keyboardWillHide:)
 					   name:UIKeyboardWillHideNotification object:nil];
-        
 		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
-					   name:UIKeyboardDidChangeFrameNotification object:nil];
-
-        [center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
 					   name:UIKeyboardDidChangeFrameNotification object:nil];
     }
     
