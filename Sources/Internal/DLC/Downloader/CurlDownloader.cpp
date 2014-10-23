@@ -75,7 +75,7 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     
     if (dataLeft < dataSizeCame)
     {
-        Logger::Error("dataLeft >= dataSizeCame");
+        Logger::Error("[CurlDownloader::CurlDataRecvHandler] dataLeft < dataSizeCame");
         dataSizeToWrite = dataLeft; // don't write more than part.size
     }
     else
@@ -102,19 +102,9 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     {
         return 0; // download is interrupted
     }
-
-    // actually we should to return same amount of data as came,
-    if (bytesWritten != dataSizeCame)
-    {
-        // if there was more data came than expected and we saved only expected part of that data
-        Logger::Error("[CurlDownloader::CurlDataRecvHandler] SaveData failed");
-        return dataSizeCame;
-    }
-    else
-    {
-        // if all data came is written
-        return bytesWritten;
-    }
+    
+    // no errors was found
+    return dataSizeCame;
 }
 
 void CurlDownloader::Interrupt()
@@ -142,10 +132,20 @@ CURL *CurlDownloader::CreateEasyHandle(const String &url, DownloadPart *part, co
     
     curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, CurlDownloader::CurlDataRecvHandler);
-    char8 rangeStr[80];
-    sprintf(rangeStr, "%lld-%lld", part->info.seekPos + part->info.progress, part->info.size + part->info.seekPos - 1);
-    curl_easy_setopt(handle, CURLOPT_RANGE, rangeStr);
+    if (0 < part->info.size)
+    {
+        char8 rangeStr[80];
+        sprintf(rangeStr, "%lld-%lld", part->info.seekPos + part->info.progress, part->info.size + part->info.seekPos - 1);
+        curl_easy_setopt(handle, CURLOPT_RANGE, rangeStr);
+        curl_easy_setopt(handle, CURLOPT_NOBODY, 0);
+    }
+    else
+    {
+        // we don't need to receive any data when it is unexpected
+        curl_easy_setopt(handle, CURLOPT_NOBODY, 1);
+    }
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, static_cast<void *>(part));
+
     
     // set all timeouts
     SetTimeout(handle, _timeout);
@@ -251,7 +251,7 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
 
         if (NULL == easyHandle)
         {
-            Logger::Error("Curl easy handle init error");
+            Logger::Error("[CurlDownloader::CreateDownload] Curl easy handle init error");
             CleanupDownload();
             return DLE_INIT_ERROR;
         }
@@ -261,7 +261,7 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
         ret = curl_multi_add_handle(*multiHandle, easyHandle);
         if (CURLM_OK != ret)
         {
-            Logger::Error("Curl multi add handle error %d: ", ret);
+            Logger::Error("[CurlDownloader::CreateDownload] Curl multi add handle error %d: ", ret);
             CleanupDownload();
             return DLE_INIT_ERROR;
         }
@@ -382,7 +382,7 @@ void CurlDownloader::CleanupDownload()
 
 DownloadError CurlDownloader::Download(const String &url, const FilePath &savePath, const uint8 partsCount, const int32 _timeout)
 {
-    Logger::Info("CurlDownloader: Download");
+    Logger::FrameworkDebug("[CurlDownloader::Download]");
     DownloadError retCode;
 
     CURLM *multiHandle = NULL;
@@ -459,7 +459,6 @@ DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, const 
     curl_easy_setopt(currentCurlHandle, CURLOPT_URL, url.c_str());
     
     // Don't return the header (we'll use curl_getinfo();
-    curl_easy_setopt(currentCurlHandle, CURLOPT_HEADER, 1);
     curl_easy_setopt(currentCurlHandle, CURLOPT_NOBODY, 1);
 
     // set all timeouts

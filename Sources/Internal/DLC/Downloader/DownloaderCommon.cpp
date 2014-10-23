@@ -61,18 +61,21 @@ bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<Download
     uint8 partsRead = 0;
     const uint64 readPartSize = sizeof(DownloadPart::StoreData);
     
-    bool eof = sizeof(DownloadInfoHeader) != infoFile->Read(&downloadHeader);
+    bool readOk = sizeof(DownloadInfoHeader) == infoFile->Read(&downloadHeader);
 
-    while (!eof && partsRead < downloadHeader.partsCount)
+    while (readOk && partsRead < downloadHeader.partsCount)
     {
         DownloadPart *part = new DownloadPart();
 
-        eof &= sizeof(part->info.number) != infoFile->Read(&part->info.number);
+        readOk = sizeof(part->info.number) == infoFile->Read(&part->info.number);
      
-        infoFile->Seek(sizeof(DownloadInfoHeader) + part->info.number * readPartSize, File::SEEK_FROM_START);
-        eof &= sizeof(part->info) != infoFile->Read(&part->info);
+        if (readOk)
+        {
+            infoFile->Seek(sizeof(DownloadInfoHeader) + part->info.number * readPartSize, File::SEEK_FROM_START);
+            readOk = sizeof(part->info) == infoFile->Read(&part->info);
+        }
         
-        if (eof)
+        if (!readOk)
         {
             Logger::Error("[DownloadPart::RestoreDownload] Unexpected end of file");
             SafeDelete(part);
@@ -94,7 +97,7 @@ bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<Download
         ++partsRead;
     }
 
-    return !eof;
+    return readOk;
 }
 
 bool DownloadPart::SaveDownload(const FilePath &infoFilePath)
