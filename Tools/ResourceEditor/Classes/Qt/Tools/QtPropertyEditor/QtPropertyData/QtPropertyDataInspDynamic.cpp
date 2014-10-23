@@ -73,17 +73,19 @@ void QtPropertyDataInspDynamic::SetValueInternal(const QVariant &value)
 	
 	if(!value.isNull())
 	{
-		newValue = GetVariantValue();
+		newValue = QtPropertyDataDavaVariant::GetVariantValue();
 	}
 
-	// save value to meta-object
+	// also save value to meta-object
 	if(NULL != dynamicInfo)
 	{
 		DAVA::SafeDelete(lastCommand);
-		lastCommand = new InspDynamicModifyCommand(dynamicInfo, object, name, curVariantValue);
+		lastCommand = new InspDynamicModifyCommand(dynamicInfo, object, name, newValue);
+
 		dynamicInfo->MemberValueSet(object, name, newValue);
 	}
 }
+
 
 void QtPropertyDataInspDynamic::SetTempValueInternal(const QVariant& value)
 {
@@ -92,7 +94,7 @@ void QtPropertyDataInspDynamic::SetTempValueInternal(const QVariant& value)
 	
 	if(!value.isNull())
 	{
-		newValue = GetVariantValue();
+		newValue = QtPropertyDataDavaVariant::GetVariantValue();
 	}
 
 	// save value to meta-object
@@ -116,7 +118,7 @@ bool QtPropertyDataInspDynamic::UpdateValueInternal()
 		// we should update current variant value
 		if(v.GetType() != DAVA::VariantType::TYPE_NONE && v != GetVariantValue())
 		{
-			SetVariantValue(v);
+			QtPropertyDataDavaVariant::SetVariantValue(v);
 			ret = true;
 		}
 	}
@@ -132,7 +134,7 @@ bool QtPropertyDataInspDynamic::EditorDoneInternal(QWidget *editor)
 	// we should save them into meta-object
 	if(ret && NULL != dynamicInfo)
 	{
-		dynamicInfo->MemberValueSet(object, name, GetVariantValue());
+		dynamicInfo->MemberValueSet(object, name, QtPropertyDataDavaVariant::GetVariantValue());
 	}
 
 	return ret;
