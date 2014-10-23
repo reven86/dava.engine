@@ -30,7 +30,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/Downloader.h"
 
-size_t CurlTestDownloader::SaveData(void *ptr, uint64 size)
+size_t CurlTestDownloader::SaveData(const void *ptr, const FilePath& storePath, const uint64 size, const uint64 seek)
 {
     static int8 i = 0;
     if (0 < i++)
@@ -40,7 +40,7 @@ size_t CurlTestDownloader::SaveData(void *ptr, uint64 size)
         return 0;
     }
     
-    return CurlDownloader::SaveData(ptr, size, 0);
+    return CurlDownloader::SaveData(ptr, storePath, size, seek);
 }
 
 DLCDownloadTest::DLCDownloadTest()
