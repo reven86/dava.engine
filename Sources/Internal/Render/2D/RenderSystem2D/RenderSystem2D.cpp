@@ -38,7 +38,81 @@
 namespace DAVA
 {
 
+VboPool::VboPool(uint32 size, uint8 count)
+{
+    vertexFormat = EVF_VERTEX | EVF_TEXCOORD0;// | EVF_COLOR;
+    vertexStride = 32;// GetVertexSize(vertexFormat);
+    for (int i = 0; i < count; ++i)
+    {
+        RenderDataObject* obj = new RenderDataObject();
+        dataObjects.push_back(obj);
+    }
+    currentDataObjectIndex = 0;
+    currentDataObject = dataObjects[currentDataObjectIndex];
+}
+
+void VboPool::Next()
+{
+    currentDataObjectIndex = (currentDataObjectIndex + 1) % dataObjects.size();
+    currentDataObject = dataObjects[currentDataObjectIndex];
+}
+
+void VboPool::SetVertexData(uint32 count, float32* data)
+{
+    currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, data);
+    currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, data + 2);
+    currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, data + 4);
+    currentDataObject->BuildVertexBuffer(count, true);
+    currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
+    currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
+    currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
+}
+
+void VboPool::SetIndexData(uint32 count, uint8* data)
+{
+    currentDataObject->SetIndices(EIF_16, data, count);
+    currentDataObject->BuildIndexBuffer(true);
+}
+
+void VboPool::MapBuffers()
+{
+}
+
+void VboPool::UnmapBuffers()
+{
+}
+
+void VboPool::RenewBuffers(uint32 size)
+{
+}
+
+RenderDataObject* VboPool::GetDataObject() const
+{
+    return currentDataObject;
+}
+
+float32* VboPool::GetVertexBufferPointer() const
+{
+    return currentVertexBufferPointer;
+}
+
+uint16* VboPool::GetIndexBufferPointer() const
+{
+    return currentIndexBufferPointer;
+}
+
+uint32 VboPool::GetVertexBufferSize() const
+{
+    return currentVertexBufferSize;
+}
+
+uint32 VboPool::GetIndexBufferSize() const
+{
+    return currentIndexBufferSize;
+}
+
 RenderSystem2D::RenderSystem2D()
+    : pool(0, 10)
 {
     useBatching = true;
     spriteRenderObject = new RenderDataObject();
@@ -160,12 +234,17 @@ void RenderSystem2D::Flush()
         return;
     }
 
-    int32 stride = sizeof(float32) * 8;
-    spriteVertexStream->Set(TYPE_FLOAT, 2, stride, &vertexBuffer2[0]);
-    spriteTexCoordStream->Set(TYPE_FLOAT, 2, stride, &vertexBuffer2[0] + 2);
-    spriteColorStream->Set(TYPE_FLOAT, 4, stride, &vertexBuffer2[0] + 4);
+//    int32 stride = sizeof(float32) * 8;
+//    spriteVertexStream->Set(TYPE_FLOAT, 2, stride, &vertexBuffer2[0]);
+//    spriteTexCoordStream->Set(TYPE_FLOAT, 2, stride, &vertexBuffer2[0] + 2);
+//    spriteColorStream->Set(TYPE_FLOAT, 4, stride, &vertexBuffer2[0] + 4);
+//    RenderManager::Instance()->SetRenderData(spriteRenderObject);
     spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLELIST; 
-    RenderManager::Instance()->SetRenderData(spriteRenderObject);
+
+    pool.SetVertexData(vertexIndex, &vertexBuffer2[0]);
+    pool.SetIndexData(indexIndex, (uint8*)&indexBuffer2[0]);
+
+    RenderManager::Instance()->SetRenderData(pool.GetDataObject());
 
     Vector<RenderBatch2D>::iterator it = batches.begin();
     Vector<RenderBatch2D>::iterator eit = batches.end();
@@ -185,7 +264,7 @@ void RenderSystem2D::Flush()
         RenderManager::Instance()->SetRenderState(batch.renderState);
         RenderManager::Instance()->SetTextureState(batch.textureHandle);
         RenderManager::Instance()->SetRenderEffect(batch.shader);
-        RenderManager::Instance()->DrawElements(spritePrimitiveToDraw, batch.count, EIF_16, &indexBuffer2[batch.indexOffset]);
+        RenderManager::Instance()->DrawElements(spritePrimitiveToDraw, batch.count, EIF_16, /*&indexBuffer2[batch.indexOffset]*/ (void*)(batch.indexOffset * 2));
 
         if (clip)
         {
@@ -194,6 +273,12 @@ void RenderSystem2D::Flush()
     }
 
     batches.clear();
+
+    vertexBuffer2.clear();
+    vertexIndex = 0;
+    indexBuffer2.clear();
+    indexIndex = 0;
+    pool.Next();
 }
 
 void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader* shader, Rect const& clip)
@@ -476,6 +561,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                 vertexBuffer2.push_back(c.g);
                 vertexBuffer2.push_back(c.b);
                 vertexBuffer2.push_back(c.a);
+                //vertexBuffer2.push_back((float32)0xFFFFFFFF);
             }
 
             static uint32 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
@@ -533,6 +619,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                 vertexBuffer2.push_back(c.g);
                 vertexBuffer2.push_back(c.b);
                 vertexBuffer2.push_back(c.a);
+//                vertexBuffer2.push_back((float32)0xFFFFFFFF);
             }
             
             for (int32 i = 2; i < spriteVertexCount; ++i)
@@ -771,7 +858,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
         default: break;
     }
 
-    static uint32 indeces[18 * 3] =
+    static uint16 indeces[18 * 3] =
     {
         0, 1, 4,
         1, 5, 4,
@@ -798,7 +885,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 	if (useBatching)
 	{
         spriteVertexCount = 16;
-        spriteIndexCount = 54;
+        spriteIndexCount = vertInTriCount;
         
         const Color c = RenderManager::Instance()->GetColor();
         for (int32 i = 0; i < spriteVertexCount; ++i)
@@ -811,6 +898,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
             vertexBuffer2.push_back(c.g);
             vertexBuffer2.push_back(c.b);
             vertexBuffer2.push_back(c.a);
+//            vertexBuffer2.push_back((float32)0xFFFFFFFF);
 		}
 
         for (int32 i = 0; i < spriteIndexCount; ++i)
@@ -830,7 +918,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 		RenderManager::Instance()->SetRenderState(state->renderState);
 		RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(spriteRenderObject);
-		RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, vertInTriCount, EIF_32, indeces);
+		RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, vertInTriCount, EIF_16, indeces);
 	}
 }
 
@@ -915,6 +1003,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
             vertexBuffer2.push_back(c.g);
             vertexBuffer2.push_back(c.b);
             vertexBuffer2.push_back(c.a);
+//            vertexBuffer2.push_back((float32)0xFFFFFFFF);
         }
 
 		for (int32 i = 0; i < spriteIndexCount; ++i)

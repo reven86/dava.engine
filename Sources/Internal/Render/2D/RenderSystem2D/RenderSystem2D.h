@@ -90,6 +90,38 @@ struct TiledDrawData
     Matrix3 transformMatr;
 };
 
+class VboPool
+{
+public:
+    VboPool(uint32 size, uint8 count);
+    void Next();
+
+    void SetVertexData(uint32 count, float32 * data);
+    void SetIndexData(uint32 count, uint8 * data);
+
+    void MapBuffers();
+    void UnmapBuffers();
+    void RenewBuffers(uint32 size);
+
+    RenderDataObject* GetDataObject() const;
+    float32 * GetVertexBufferPointer() const;
+    uint16 * GetIndexBufferPointer() const;
+    uint32 GetVertexBufferSize() const;
+    uint32 GetIndexBufferSize() const;
+
+private:
+    Vector<RenderDataObject*> dataObjects;
+    uint8 currentDataObjectIndex;
+    int32	vertexStride;
+    int32	vertexFormat;
+
+    RenderDataObject * currentDataObject;
+    uint32 currentVertexBufferSize;
+    uint32 currentIndexBufferSize;
+    float32 * currentVertexBufferPointer;
+    uint16 * currentIndexBufferPointer;
+};
+
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
@@ -146,6 +178,8 @@ private:
 
     bool useBatching;
     bool useVBO;
+
+    VboPool pool;
 
 };
     
