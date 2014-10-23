@@ -39,6 +39,7 @@
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Debug/Stats.h"
 #include "Job/JobManager.h"
+#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
@@ -54,21 +55,37 @@ TransformSystem::TransformSystem(Scene * scene)
 TransformSystem::~TransformSystem()                                                                                                                                                   
 { }
 
+static void test_fn()
+{
+
+}
+
 void TransformSystem::Process(float32 timeElapsed)
 {
+	static int iii = 0;
+	uint64 _sss1;
+	uint64 _sss2;
+	uint64 _sss3;
+	static uint64 ttt0 = 0;
+	static uint64 ttt1 = 0;
+	static uint64 ttt2 = 0;
+	static uint64 ttt3 = 0;
+	static uint64 ttt4 = 0;
+	static bool _in = false;
+
+	_sss1 = SystemTimer::Instance()->GetAbsoluteNano();
     TIME_PROFILE("TransformSystem::Process");
     
     passedNodes = 0;
     multipliedNodes = 0;
 
 	// calculate optimal jobs count for current number of entities should be processed
-	uint32 jobsCount = Min(maxProcessingThreads, (uint32) updatableEntities.size() / JobManager2::Instance()->GetWorkersCount());
+	uint32 entitiesCount = updatableEntities.size();
+	uint32 jobsCount = Min(maxProcessingThreads, Min(1 + entitiesCount / 4, JobManager2::Instance()->GetWorkersCount()));
+	uint32 entitiesPerJobCount = entitiesCount / jobsCount;
 
-	if(jobsCount > 0 && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
+	if(_in && jobsCount > 1 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
     {
-		const uint32 entitiesCount = updatableEntities.size();
-		const uint32 entitiesPerJobCount = entitiesCount / jobsCount;
-
 		uint32 firstIndex = 0;
 		uint32 rest = entitiesCount - (jobsCount * entitiesPerJobCount);
 
@@ -84,15 +101,18 @@ void TransformSystem::Process(float32 timeElapsed)
 			}
 
 			// run jobs
-			Function<void()> fn = Bind(MakeFunction(this, &TransformSystem::UpdateHierarchyPart), firstIndex, count, &sendEvent[i]);
-			JobManager2::Instance()->CreateWorkerJob(fn);
+			//Function<void()> fn = Bind(MakeFunction(this, &TransformSystem::UpdateHierarchyPart), firstIndex, count, &sendEvent[i]);
+			//JobManager2::Instance()->CreateWorkerJob(fn);
+			JobManager2::Instance()->CreateWorkerJob(&test_fn);
 
 			// move to next part of entities
 			firstIndex += count;
 		}
 
+		_sss2 = SystemTimer::Instance()->GetAbsoluteNano();
 		JobManager2::Instance()->WaitWorkerJobs();
 
+		_sss3 = SystemTimer::Instance()->GetAbsoluteNano();
 		for(uint32 i = 0; i < jobsCount; ++i)
 		{
 			GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent[i], EventSystem::WORLD_TRANSFORM_CHANGED);
@@ -101,6 +121,8 @@ void TransformSystem::Process(float32 timeElapsed)
     }
     else
     {
+		_sss2 = SystemTimer::Instance()->GetAbsoluteNano();
+
 		// single thread processing
         uint32 size = updatableEntities.size();
         for(uint32 i = 0; i < size; ++i)
@@ -108,11 +130,64 @@ void TransformSystem::Process(float32 timeElapsed)
             UpdateHierarchy(updatableEntities[i], &sendEvent[0]);
         }
         
+		_sss3 = SystemTimer::Instance()->GetAbsoluteNano();
         GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent[0], EventSystem::WORLD_TRANSFORM_CHANGED);
         sendEvent[0].clear();
     }
     
-    updatableEntities.clear();
+	if(_in)
+	{
+		ttt0 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss1); // whole
+		ttt1 += (_sss3 - _sss1); // cr_wait
+		ttt2 += (_sss2 - _sss1); // cr
+		ttt3 += (_sss3 - _sss2); // wait
+		ttt4 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss3); // events
+	}
+	else if(jobsCount > 1)
+	{
+		const uint64 ccc = 256;
+		if(++iii == ccc)
+		{
+			iii = 0;
+
+			_in = true;
+			
+			ttt0 = 0; ttt1 = 0; ttt2 = 0; ttt3 = 0;
+			ttt0 = ttt0 / ccc;
+			ttt1 = ttt1 / ccc;
+			ttt2 = ttt2 / ccc;
+			ttt3 = ttt3 / ccc;
+			ttt4 = ttt4 / ccc;
+			RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::TEST_OPTION, true);
+			for(size_t i = 0; i < 100; i++)
+			{
+				Process((float32) i);
+			}
+
+			Logger::Warning("TRAN_N: whole %8llu, cr_wait = %8llu, cr = %8llu, wait = %8llu, events = %8llu", ttt0, ttt1, ttt2, ttt3, ttt4);
+
+			ttt0 = 0; ttt1 = 0; ttt2 = 0; ttt3 = 0;
+			ttt0 = ttt0 / ccc;
+			ttt1 = ttt1 / ccc;
+			ttt2 = ttt2 / ccc;
+			ttt3 = ttt3 / ccc;
+			ttt4 = ttt4 / ccc;
+			RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::TEST_OPTION, false);
+			for(size_t i = 0; i < 100; i++)
+			{
+				Process((float32)i);
+			}
+
+			Logger::Warning("TRAN_1: whole %8llu, cr_wait = %8llu, cr = %8llu, wait = %8llu, events = %8llu", ttt0, ttt1, ttt2, ttt3, ttt4);
+
+			_in = false;
+		}
+
+		updatableEntities.clear();
+	}
+
+	// TODO: uncomment
+	//updatableEntities.clear();
     
     if(passedNodes)
     {

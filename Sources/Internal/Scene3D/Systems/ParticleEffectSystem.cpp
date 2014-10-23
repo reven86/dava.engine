@@ -262,14 +262,8 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	
 	uint32 componentsCount = activeComponents.size();
 
-	ttt0 += componentsCount;
-
 	_sss1 = SystemTimer::Instance()->GetAbsoluteNano();
-	if(0 /*RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION)*/)
-	{
-		ProcessComponentsPart(0, componentsCount, timeElapsed, shortEffectTime);
-	}
-	else
+	if(0 && componentsCount > 4 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
 	{
 		const uint32 jobsCount = (uint32) JobManager2::Instance()->GetWorkersCount();
 		const uint32 componentsPerJobCount = componentsCount / jobsCount;
@@ -302,18 +296,12 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 		JobManager2::Instance()->WaitWorkerJobs();
 		ttt3 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss3);
 	}
-	ttt1 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss1);
-
-	if(++iii == 64)
+	else
 	{
-		iii = 0;
-
-		Logger::Info("av_comp_count: %2llu, av_whole_upd1 = %8llu, av_jobs_cr = %8llu, av_jobs_wait = %8llu", ttt0 / 64, ttt1 / 64, ttt2 / 64, ttt3 / 64);
-		ttt0 = 0;
-		ttt1 = 0;
-		ttt2 = 0;
-		ttt3 = 0;
+		ProcessComponentsPart(0, componentsCount, timeElapsed, shortEffectTime);
 	}
+
+	ttt1 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss1);
 
 	for(uint32 i = 0; i < componentsCount; ++i)
 	{
@@ -336,6 +324,21 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 			if(scene)
 				scene->GetRenderSystem()->MarkForUpdate(effect->effectRenderObject);
 		}
+	}
+
+	ttt0 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss1);
+
+	const uint64 ccc = 64;
+	if(++iii == ccc)
+	{
+		iii = 0;
+		ttt0 = ttt0 / ccc;
+		ttt1 = ttt1 / ccc;
+		//Logger::Warning("PART: whole %8llu, part = %8llu (%3u\%), job_cr = %8llu, job_wait = %8llu", ttt0, ttt1, (ttt1 * 100 / ttt0), ttt2 / ccc, ttt3 / ccc);
+		ttt0 = 0;
+		ttt1 = 0;
+		ttt2 = 0;
+		ttt3 = 0;
 	}
 }
 
