@@ -30,6 +30,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Platform/Thread.h"
 #include "Platform/Mutex.h"
+#include "Base/FunctionTraits.h"
 
 #include "DownloadManager.h"
 #include "Downloader.h"
@@ -83,7 +84,7 @@ void DownloadManager::SetDownloader(Downloader *_downloader)
 
     SafeDelete(downloader);
     downloader = _downloader;
-    downloader->SetProgressNotificator(Function<void (const uint64 &)>(this, &DownloadManager::OnCurrentTaskProgressChanged));
+    downloader->SetProgressNotificator(MakeFunction(this, &DownloadManager::OnCurrentTaskProgressChanged));
 }
 
 Downloader *DownloadManager::GetDownloader()
