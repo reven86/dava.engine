@@ -133,16 +133,6 @@ class FrameOcclusionQueryManager : public Singleton<FrameOcclusionQueryManager>
     };
 
 public:
-    static const FastName FRAME_QUERY_RENDER_LAYER_OPAQUE;
-    static const FastName FRAME_QUERY_RENDER_LAYER_AFTER_OPAQUE;
-    static const FastName FRAME_QUERY_RENDER_LAYER_ALPHA_TEST;
-    static const FastName FRAME_QUERY_RENDER_LAYER_WATER;
-    static const FastName FRAME_QUERY_RENDER_LAYER_TRANSLUCENT;
-    static const FastName FRAME_QUERY_RENDER_LAYER_AFTER_TRANSLUCENT;
-    static const FastName FRAME_QUERY_RENDER_LAYER_SHADOW_VOLUME;
-    static const FastName FRAME_QUERY_RENDER_LAYER_VEGETATION;
-    static const FastName FRAME_QUERY_RENDER_LAYER_DEBUG_DRAW;
-    static const FastName FRAME_QUERY_UI_DRAW;
 
     enum eRetrieveBehavior
     {
@@ -157,6 +147,7 @@ public:
     void BeginQuery(const FastName & queryName);
     void EndQuery(const FastName & queryName);
     uint32 GetFrameStats(const FastName & queryName) const;
+    void GetQueriesNames(Vector<FastName> & names) const;
 
     void SetRetrieveBehavior(eRetrieveBehavior _behavior) { behavior = _behavior; };
 

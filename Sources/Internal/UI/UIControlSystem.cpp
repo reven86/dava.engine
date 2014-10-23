@@ -40,6 +40,9 @@
 
 namespace DAVA 
 {
+
+const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
+
 UIControlSystem::~UIControlSystem()
 {
 	SafeRelease(currentScreen); 
@@ -324,7 +327,7 @@ void UIControlSystem::Draw()
 {
     TIME_PROFILE("UIControlSystem::Draw");
 
-    FrameOcclusionQueryManager::Instance()->BeginQuery(FrameOcclusionQueryManager::FRAME_QUERY_UI_DRAW);
+    FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
     if (!ui3DViewCount)
@@ -350,7 +353,7 @@ void UIControlSystem::Draw()
 	}
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 
-    FrameOcclusionQueryManager::Instance()->EndQuery(FrameOcclusionQueryManager::FRAME_QUERY_UI_DRAW);
+    FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)

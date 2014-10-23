@@ -187,17 +187,6 @@ void OcclusionQueryPool::ReleaseQueryObject(OcclusionQueryPoolHandle handle)
 /////////////////////////////////////////////////////////////////////
 ///////////FrameOcclusionQueryManager
 
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_OPAQUE = LAYER_OPAQUE;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_AFTER_OPAQUE = LAYER_AFTER_OPAQUE;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_ALPHA_TEST = LAYER_ALPHA_TEST_LAYER;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_WATER = LAYER_WATER;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_TRANSLUCENT = LAYER_TRANSLUCENT;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_AFTER_TRANSLUCENT = LAYER_AFTER_TRANSLUCENT;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_SHADOW_VOLUME = LAYER_SHADOW_VOLUME;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_VEGETATION = LAYER_VEGETATION;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_RENDER_LAYER_DEBUG_DRAW = LAYER_DEBUG_DRAW;
-const FastName FrameOcclusionQueryManager::FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
-
 FrameOcclusionQueryManager::FrameOcclusionQueryManager() :
 behavior(BEHAVIOR_WAIT),
 frameBegan(false)
@@ -337,6 +326,15 @@ uint32 FrameOcclusionQueryManager::GetFrameStats(const FastName & queryName) con
         return frameQuery->drawedFrameStats;
 
     return 0;
+}
+
+void FrameOcclusionQueryManager::GetQueriesNames(Vector<FastName> & names) const
+{
+    int32 frameQueriesCount = frameQueries.size();
+    for(int32 i = 0; i < frameQueriesCount; ++i)
+    {
+        names.push_back(frameQueries[i]->queryName);
+    }
 }
 
 #else
