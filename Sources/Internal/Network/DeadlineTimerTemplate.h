@@ -76,7 +76,7 @@ private:
         DerivedClassType* pthis = static_cast<DerivedClassType*> (handle->data);
         pthis->HandleTimer ();
         if (!autoRepeatFlag)
-            pthis->AsyncStop ();
+            pthis->AsyncStopWait ();
     }
 };
 

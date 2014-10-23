@@ -1,4 +1,5 @@
 #include <cstring>
+#include <cstdio>
 
 #include <libuv/uv.h>
 
@@ -31,7 +32,11 @@ bool Endpoint::ToString (char* buffer, std::size_t size) const
     if (Address ().ToString (buffer, size))
     {
         char port[20];
-        _snprintf (port, COUNT_OF (port), ":%hu", Port ());
+#ifdef WIN32
+        _snprintf_s (port, COUNT_OF (port), _TRUNCATE, ":%hu", Port ());
+#else
+        snprintf (port, COUNT_OF (port), ":%hu", Port ());
+#endif
 
         std::size_t addrLen = strlen (buffer);
         std::size_t portLen = strlen (port);

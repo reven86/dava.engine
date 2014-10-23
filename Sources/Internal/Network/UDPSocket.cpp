@@ -3,7 +3,7 @@
 namespace DAVA {
 
 UDPSocket::UDPSocket (IOLoop* ioLoop, bool autoDeleteOnCloseFlag) : BaseClassType (ioLoop)
-                                                                  , autoDeleteOnClose (autoDeleteOnClose)
+                                                                  , autoDeleteOnClose (autoDeleteOnCloseFlag)
                                                                   , receiveHandler ()
 {
 

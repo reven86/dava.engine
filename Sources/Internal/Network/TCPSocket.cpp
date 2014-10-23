@@ -3,7 +3,7 @@
 namespace DAVA {
 
 TCPSocket::TCPSocket (IOLoop* ioLoop, bool autoDeleteOnCloseFlag) : BaseClassType (ioLoop)
-                                                                  , autoDeleteOnClose (autoDeleteOnClose)
+                                                                  , autoDeleteOnClose (autoDeleteOnCloseFlag)
                                                                   , connectHandler ()
                                                                   , readHandler ()
 {

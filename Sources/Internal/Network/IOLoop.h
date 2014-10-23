@@ -3,6 +3,8 @@
 
 #include <libuv/uv.h>
 
+#include "Detail/Noncopyable.h"
+
 namespace DAVA {
 
 /*
@@ -10,7 +12,7 @@ namespace DAVA {
  IOLoop's responsibility is to gather event from operating system and call corresponding user callbacks.
  Run is a core method of IOLoop, must be called from at most one thread.
 */
-class IOLoop
+class IOLoop : private Noncopyable
 {
 public:
     enum eRunMode
