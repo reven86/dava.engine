@@ -87,7 +87,10 @@ protected:
     void ProcessTests();
     void FinishTests();
     void FlushTestResults();
-    
+
+	DAVA::String WriteReportFile();
+
+
     int32 TestCount();
     
     void CreateDocumentsFolder();

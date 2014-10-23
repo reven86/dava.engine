@@ -75,6 +75,9 @@
 #include "FunctionBindSingalTest.h"
 #include "MathTest.h"
 
+#include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/TcpSocket.hpp"
+
 using namespace DAVA;
 
 GameCore::GameCore()
@@ -99,62 +102,62 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
-	new MathTest();
-	new FunctionBindSignalTest();
-    new ThreadSyncTest();
-    new DLCDownloadTest();
+	//new MathTest();
+	//new FunctionBindSignalTest();
+ //   new ThreadSyncTest();
+ //   new DLCDownloadTest();
 
 
-	new ImageSizeTest();
-    new DeviceInfoTest();
+	//new ImageSizeTest();
+ //   new DeviceInfoTest();
 
-    new PVRTest();
- 	new DXTTest();
-    new JPEGTest();
+ //   new PVRTest();
+ //	new DXTTest();
+ //   new JPEGTest();
 
-    new ParseTextTest(Font::TYPE_FT);
-    new ParseTextTest(Font::TYPE_GRAPHICAL);
-    new OpenGLES30FormatTest();
-    new SaveImageTest();
-    
-    new OpenGLES30FormatTest();
-    new StringFormatTest();
-    new RectSpriteTest();
+ //   new ParseTextTest(Font::TYPE_FT);
+ //   new ParseTextTest(Font::TYPE_GRAPHICAL);
+ //   new OpenGLES30FormatTest();
+ //   new SaveImageTest();
+ //   
+ //   new OpenGLES30FormatTest();
+ //   new StringFormatTest();
+ //   new RectSpriteTest();
 
-	new ComponentsTest();
-    new FilePathTest();
-    new FileListTest();
-    new FileSystemTest();
+	//new ComponentsTest();
+ //   new FilePathTest();
+ //   new FileListTest();
+ //   new FileSystemTest();
     
  	new UIMovieTest();
- 	new InputTest();
-    new FormatsTest();
+ 	//new InputTest();
+  //  new FormatsTest();
  
- 	new DateTimeTest();
- 	new TransparentWebViewTest();
-    new LocalizationTest();
+ 	//new DateTimeTest();
+ 	//new TransparentWebViewTest();
+  //  new LocalizationTest();
  
- 	new SampleTest();
- 	new EntityTest(); 
- 	new MemoryAllocatorsTest();
- 	new HashMapTest();
- 	new SoundTest();
- 	new SplitTest();
- 	new AlignTest();
- 	new EMailTest();
- 	new DPITest();
- 	new MaterialCompilerTest();
- 	new CloneTest();
+ 	//new SampleTest();
+ 	//new EntityTest(); 
+ 	//new MemoryAllocatorsTest();
+ 	//new HashMapTest();
+ 	//new SoundTest();
+ 	//new SplitTest();
+ 	//new AlignTest();
+ 	//new EMailTest();
+ 	//new DPITest();
+ 	//new MaterialCompilerTest();
+ 	//new CloneTest();
 
- 	new EntityTest();	
- 	new MemoryAllocatorsTest();
- 	new HashMapTest();
- 	new KeyedArchiveYamlTest();
- 	new UIListTest();
- 	new UIScrollViewTest();
+ 	//new EntityTest();	
+ 	//new MemoryAllocatorsTest();
+ 	//new HashMapTest();
+ 	//new KeyedArchiveYamlTest();
+ 	//new UIListTest();
+ 	//new UIScrollViewTest();
  
 
-    new SceneSystemTest();
+  //  new SceneSystemTest();
     
     errors.reserve(TestCount());
 
@@ -351,6 +354,34 @@ void GameCore::ProcessTests()
 
 void GameCore::FlushTestResults()
 {
+#define SEND_TEST_DATA_BACK_TO_PC
+#ifdef  SEND_TEST_DATA_BACK_TO_PC
+
+	String report_content = WriteReportFile();
+	String host = "127.0.0.1";
+	unsigned short port = 50007;
+
+	{
+		sf::TcpSocket socket;
+		sf::Socket::Status status = socket.connect(host, port);
+		if (status != sf::Socket::Done)
+		{
+			LogMessage("can't connect to server");
+			return;
+		}
+
+		const String& data = report_content;
+
+		if (socket.send(data.c_str(), data.size()) != sf::Socket::Done)
+		{
+			LogMessage("can't send data to server\n");
+			return;
+		}
+
+		socket.disconnect();
+	}
+
+#else
     bool connected = ConnectToDB();
     if(!connected)
     {
@@ -402,6 +433,7 @@ void GameCore::FlushTestResults()
 
     dbClient->Disconnect();
     SafeRelease(dbClient);
+#endif
 }
 
 
@@ -530,6 +562,55 @@ MongodbObject * GameCore::CreateSubObject(const String &objectName, MongodbObjec
     
     subObject->SetObjectName(objectName);
     return subObject;
+}
+
+DAVA::String GameCore::WriteReportFile()
+{
+	String reportContent;
+
+	time_t logStartTime = time(0);
+	String testTimeString = Format("%lld", logStartTime);
+
+	tm* utcTime = localtime(&logStartTime);
+	String runTime = Format("%04d.%02d.%02d:%02d:%02d:%02d",   
+		utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday, 
+		utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
+
+	int32 errorCount = (int32)errors.size();
+	String errorFileName("Errors.txt");
+	File *reportFile = CreateDocumentsFile(errorFileName);
+	if(reportFile)
+	{
+		reportFile->WriteLine(String("Run Time: ") + runTime);
+		if(0 < errorCount)
+		{
+			reportFile->WriteLine(String("Failed tests:"));
+			for(int32 i = 0; i < errorCount; ++i)
+			{
+				String errorString = GetErrorText(errors[i]);
+
+				reportFile->WriteLine(String(Format("Error[%06d]: ", i+1)) + errorString);
+			}
+		}
+		else 
+		{
+			String successString = String("All test passed.");
+			reportFile->WriteLine(successString);
+		}
+
+		SafeRelease(reportFile);
+	}
+
+	{
+		FilePath workingFilepathname = FilePath::FilepathInDocuments(errorFileName);
+		File *retFile = File::Create(workingFilepathname, File::OPEN | File::READ);
+
+		retFile->ReadString(reportContent); // ReadString - not cool func -> rewrite
+
+		SafeRelease(retFile);
+	}
+
+	return reportContent;
 }
 
 
