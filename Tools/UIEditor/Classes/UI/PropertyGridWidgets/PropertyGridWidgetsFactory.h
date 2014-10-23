@@ -26,9 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-
 #ifndef __UIEditor__PropertyGridWidgetsFactory__
 #define __UIEditor__PropertyGridWidgetsFactory__
 
@@ -40,30 +37,27 @@
 #include "screenpropertygridwidget.h"
 #include "aggregatorpropertygridwidget.h"
 
-#include "alignspropertygridwidget.h"
-#include "backgroundpropertygridwidget.h"
-#include "basepropertygridwidget.h"
-#include "controlpropertygridwidget.h"
-#include "flagspropertygridwidget.h"
-#include "listpropertygridwidget.h"
-#include "rectpropertygridwidget.h"
-#include "scrollviewpropertygridwidget.h"
-#include "scrollcontrolpropertygridwidget.h"
-#include "sliderpropertygridwidget.h"
-#include "spinnerpropertygridwidget.h"
-#include "statepropertygridwidget.h"
-#include "textpropertygridwidget.h"
-#include "uitextfieldpropertygridwidget.h"
-#include "uistatictextpropertygridwidget.h"
-#include "particleeffectpropertygridwidget.h"
-#include "joypadpropertygridwidget.h"
-#include "webviewpropertygridwidget.h"
-#include "UIListCellPropertyGridWidget.h"
-
-#include "Custom/guidepropertygridwidget.h"
+class ControlPropertyGridWidget;
+class RectPropertyGridWidget;
+class FlagsPropertyGridWidget;
+class StatePropertyGridWidget;
+class TextPropertyGridWidget;
+class UITextFieldPropertyGridWidget;
+class BackgroundPropertyGridWidget;
+class SliderPropertyGridWidget;
+class AlignsPropertyGridWidget;
+class SpinnerPropertyGridWidget;
+class ListPropertyGridWidget;
+class ScrollControlPropertyGridWidget;
+class ScrollViewPropertyGridWidget;
+class ParticleEffectPropertyGridWidget;
+class JoypadPropertyGridWidget;
+class WebViewPropertyGridWidget;
+class UIListCellPropertyGridWidget;
+class GuidePropertyGridWidget;
 
 namespace DAVA {
-    
+
 // Property Grid Widgets Factory - a class which stores pointers to all existing
 // PropertyGridWidgets and returns the set needed for particular UI Control.
 class PropertyGridWidgetsFactory

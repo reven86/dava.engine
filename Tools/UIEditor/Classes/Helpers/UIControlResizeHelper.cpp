@@ -106,7 +106,7 @@ Rect UIControlResizeHelper::GetResizeRect(ResizeType unrotatedResizeType, UICont
         return Rect();
     }
 
-    eRotationQuadrant quadrant = GetRotationQuadant(uiControl->GetParentsTotalAngle(true));
+    eRotationQuadrant quadrant = GetRotationQuadant(uiControl->GetGeometricData().angle);
     switch (quadrant)
     {
         case QUADRANT_MINUS_PI_4_TO_PI_4:

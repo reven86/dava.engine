@@ -118,11 +118,13 @@ FastName attributeStrings[VERTEX_FORMAT_STREAM_MAX_COUNT] =
     FastName("inTexCoord3"),
     FastName("inTangent"),
     FastName("inBinormal"),
-    FastName("inJointWeight"),
+    FastName(""),               // nine bit of vertex format skipped cause legacy; for now it unused
     FastName("inTime"),
     FastName("inPivot"),
     FastName("inFlexibility"),
-    FastName("inAngleSinCos")
+    FastName("inAngleSinCos"),
+    FastName("inJointIndex"),
+    FastName("inJointWeight")
 };
 
 eShaderSemantic Shader::GetShaderSemanticByName(const FastName & name)
@@ -693,7 +695,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, eUniformType uniformType
     int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * currentUniform->size;
     if(currentUniform->ValidateCache(data, size) == false)
 #else
-    if(currentUniform->ValidateCache(data, currentUniform->cacheValueSize) == false)
+    int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * arraySize;
+    if(currentUniform->ValidateCache(data, size) == false)
 #endif
     {
         switch(uniformType)
@@ -832,7 +835,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType unif
     int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * currentUniform->size;
     if(currentUniform->ValidateCache(data, size) == false)
 #else
-    if(currentUniform->ValidateCache(data, currentUniform->cacheValueSize) == false)
+    int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * arraySize;
+    if(currentUniform->ValidateCache(data, size) == false)
 #endif
     {
         switch(uniformType)
@@ -1279,6 +1283,31 @@ void Shader::BindDynamicParameters()
                 }
                 break;
             }
+
+            case PARAM_JOINT_POSITIONS:
+                {
+                    int32 count = *((int32*)RenderManager::GetDynamicParam(PARAM_JOINTS_COUNT));
+                    pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_JOINT_POSITIONS);
+                    if (_updateSemantic != currentUniform->updateSemantic)
+                    {
+                        Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(PARAM_JOINT_POSITIONS);
+                        SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC4, count, param);
+                        currentUniform->updateSemantic = _updateSemantic;
+                    }
+                    break;
+                }
+            case PARAM_JOINT_QUATERNIONS:
+                {
+                    int32 count = *((int32*)RenderManager::GetDynamicParam(PARAM_JOINTS_COUNT));
+                    pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_JOINT_QUATERNIONS);
+                    if (_updateSemantic != currentUniform->updateSemantic)
+                    {
+                        Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(PARAM_JOINT_QUATERNIONS);
+                        SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC4, count, param);
+                        currentUniform->updateSemantic = _updateSemantic;
+                    }
+                    break;
+                }
             case PARAM_COLOR:
             {
                 const Color & c = RenderManager::Instance()->GetColor();
@@ -1665,7 +1694,7 @@ bool Shader::Uniform::ValidateCache(const void* value, uint16 valueSize)
         crc = crc32;
     }
 #else
-    DVASSERT(valueSize >= cacheValueSize);
+    DVASSERT(valueSize <= cacheValueSize);
     
     bool result = false;
     if(cacheValueSize == valueSize)

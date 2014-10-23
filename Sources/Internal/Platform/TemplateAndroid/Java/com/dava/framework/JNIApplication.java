@@ -48,8 +48,8 @@ public class JNIApplication extends Application
 		 */
 	    JNINotificationProvider.Init();
 	    
-        externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath();
-        internalDocumentsDir = this.getFilesDir().getAbsolutePath();
+        externalDocumentsDir = this.getExternalFilesDir(null).getAbsolutePath() + "/"; 
+        internalDocumentsDir = this.getFilesDir().getAbsolutePath() + "/";
         launchLocale = Locale.getDefault();
 		
 		Log.i(JNIConst.LOG_TAG, "[Application::onCreate] finish"); 

@@ -110,7 +110,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
     textFieldiPhone->SetVisible(true);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
-    staticText->SetRecursiveVisible(false);
+    staticText->SetVisible(false);
     AddControl(staticText);
     
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
@@ -145,7 +145,7 @@ UITextField::UITextField()
     textFieldiPhone->SetVisible(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
-    staticText->SetRecursiveVisible(false);
+    staticText->SetVisible(false);
     AddControl(staticText);
     
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
@@ -965,23 +965,10 @@ void UITextField::SetMaxLength(int32 maxLength)
 #endif
 	// TODO! implement for other OS!
 }
-    
+
 int32 UITextField::GetMaxLength() const
 {
     return maxLength;
-}
-
-void UITextField::SetVisible(bool isVisible, bool hierarchic)
-{
-    UIControl::SetVisible(isVisible, hierarchic);
-
-#ifdef __DAVAENGINE_IPHONE__
-	textFieldiPhone->SetVisible(isVisible);
-#elif defined(__DAVAENGINE_ANDROID__)
-	textFieldAndroid->SetVisible(isVisible);
-#else
-    staticText->SetRecursiveVisible(isVisible);
-#endif
 }
 
 void UITextField::WillBecomeVisible()
@@ -993,7 +980,7 @@ void UITextField::WillBecomeVisible()
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetVisible(visible);
 #else
-    staticText->SetRecursiveVisible(visible);
+    staticText->SetVisible(visible);
 #endif
 }
 
@@ -1006,7 +993,7 @@ void UITextField::WillBecomeInvisible()
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetVisible(false);
 #else
-    staticText->SetRecursiveVisible(false);
+    staticText->SetVisible(false);
 #endif
 }
 

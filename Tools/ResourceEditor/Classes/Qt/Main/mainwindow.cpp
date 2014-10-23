@@ -749,11 +749,8 @@ void QtMainWindow::SetupActions()
         connect(act, SIGNAL(triggered()), SLOT(DebugVersionInfo()));
 #endif
 	}
-    // Debug colorpicker
-	{
-        QAction *act = ui->menuDebug_Functions->addAction("Color picker");
-        connect(act, SIGNAL(triggered()), SLOT(DebugColorPicker()));
-	}
+
+    QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
     
  	//Collision Box Types
     objectTypesLabel = new QtLabelWithActions();
@@ -2484,6 +2481,7 @@ void QtMainWindow::OnBuildStaticOcclusion()
     if(sceneWasChanged)
     {
         scene->MarkAsChanged();
+        ui->propertyEditor->ResetProperties();
     }
 
     delete waitOcclusionDlg;
@@ -2920,6 +2918,8 @@ void QtMainWindow::OnReloadShaders()
             if(particleIt->second->GetParent())
                 materialList.insert(particleIt->second->GetParent());
         }
+
+        scene->foliageSystem->CollectFoliageMaterials(materialList);
 
         DAVA::Set<DAVA::NMaterial *>::iterator it = materialList.begin();
         DAVA::Set<DAVA::NMaterial *>::iterator endIt = materialList.end();

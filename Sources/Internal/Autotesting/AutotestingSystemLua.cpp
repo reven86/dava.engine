@@ -25,6 +25,7 @@ extern "C" int luaopen_UIControl(lua_State *l);
 extern "C" int luaopen_Rect(lua_State *l);
 extern "C" int luaopen_Vector(lua_State *l);
 extern "C" int luaopen_KeyedArchive(lua_State *l);
+extern "C" int luaopen_Polygon2(lua_State *l);
 
 #define LUA_OK 0
 
@@ -57,7 +58,7 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
     Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
     if(!luaState)
     {
-    	autotestingLocalizationSystem->SetDirectory("~res:/Autotesting/Strings/");
+        autotestingLocalizationSystem->SetDirectory("~res:/Autotesting/Strings/");
         autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
         autotestingLocalizationSystem->Init();
         
@@ -650,6 +651,8 @@ bool AutotestingSystemLua::LoadWrappedLuaObjects()
     luaopen_Rect(luaState);	// load the wrappered module
     luaopen_Vector(luaState);	// load the wrappered module
     luaopen_KeyedArchive(luaState);	// load the wrappered module
+    luaopen_Polygon2(luaState);	// load the wrappered module
+
 
     if(delegate)
     {

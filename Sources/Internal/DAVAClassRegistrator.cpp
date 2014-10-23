@@ -29,6 +29,7 @@
 #include "DAVAEngine.h"
 #include "DAVAClassRegistrator.h"
 #include "Render/Highlevel/SpriteRenderBatch.h"
+#include "Render/Highlevel/ShadowVolume.h"
 
 using namespace DAVA;
 
@@ -60,6 +61,7 @@ REGISTER_CLASS(UIAggregatorControl);
 REGISTER_CLASS(AnimationData);
 REGISTER_CLASS(Light);
 REGISTER_CLASS(Mesh);
+REGISTER_CLASS(SkinnedMesh);
 REGISTER_CLASS(SpeedTreeObject);
 REGISTER_CLASS(RenderBatch);
 REGISTER_CLASS(RenderObject);

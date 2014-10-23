@@ -145,6 +145,8 @@ struct FuncTraits<R(P1::*)()>
 {
 	typedef R ReturnType;
 	typedef P1* ParamType1;
+	typedef P1 ObjType;
+    typedef Function<R ()> ObjFunctionType;
 	typedef Function<R (P1*)> FunctionType;
 };
 
@@ -154,6 +156,8 @@ struct FuncTraits<R(P1::*)(P2)>
 	typedef R ReturnType;
 	typedef P1* ParamType1;
 	typedef P2 ParamType2;
+	typedef P1 ObjType;
+    typedef Function<R (P2)> ObjFunctionType;
 	typedef Function<R (P1*, P2)> FunctionType;
 };
 
@@ -164,6 +168,8 @@ struct FuncTraits<R(P1::*)(P2, P3)>
 	typedef P1* ParamType1;
 	typedef P2 ParamType2;
 	typedef P3 ParamType3;
+	typedef P1 ObjType;
+    typedef Function<R (P2, P3)> ObjFunctionType;
 	typedef Function<R (P1*, P2, P3)> FunctionType;
 };
 
@@ -175,6 +181,8 @@ struct FuncTraits<R(P1::*)(P2, P3, P4)>
 	typedef P2 ParamType2;
 	typedef P3 ParamType3;
 	typedef P4 ParamType4;
+	typedef P1 ObjType;
+    typedef Function<R (P2, P3, P4)> ObjFunctionType;
 	typedef Function<R (P1*, P2, P3, P4)> FunctionType;
 };
 
@@ -187,6 +195,8 @@ struct FuncTraits<R(P1::*)(P2, P3, P4, P5)>
 	typedef P3 ParamType3;
 	typedef P4 ParamType4;
 	typedef P5 ParamType5;
+	typedef P1 ObjType;
+    typedef Function<R (P2, P3, P4, P5)> ObjFunctionType;
 	typedef Function<R (P1*, P2, P3, P4, P5)> FunctionType;
 };
 
@@ -200,6 +210,8 @@ struct FuncTraits<R(P1::*)(P2, P3, P4, P5, P6)>
 	typedef P4 ParamType4;
 	typedef P5 ParamType5;
 	typedef P6 ParamType6;
+	typedef P1 ObjType;
+    typedef Function<R (P2, P3, P4, P5, P6)> ObjFunctionType;
 	typedef Function<R (P1*, P2, P3, P4, P5, P6)> FunctionType;
 };
 
@@ -214,6 +226,8 @@ struct FuncTraits<R(P1::*)(P2, P3, P4, P5, P6, P7)>
 	typedef P5 ParamType5;
 	typedef P6 ParamType6;
 	typedef P7 ParamType7;
+	typedef P1 ObjType;
+    typedef Function<R (P2, P3, P4, P5, P6, P7)> ObjFunctionType;
 	typedef Function<R (P1*, P2, P3, P4, P5, P6, P7)> FunctionType;
 };
 
@@ -229,6 +243,8 @@ struct FuncTraits<R(P1::*)(P2, P3, P4, P5, P6, P7, P8)>
 	typedef P6 ParamType6;
 	typedef P7 ParamType7;
 	typedef P8 ParamType8;
+	typedef P1 ObjType;
+    typedef Function<R (P2, P3, P4, P5, P6, P7, P8)> ObjFunctionType;
 	typedef Function<R (P1*, P2, P3, P4, P5, P6, P7, P8)> FunctionType;
 };
 
@@ -339,6 +355,12 @@ typename FuncTraits<F>::FunctionType MakeFunction(const F &fn)
 	return typename FuncTraits<F>::FunctionType(fn);
 }
 
+template<typename F>
+typename FuncTraits<F>::ObjFunctionType MakeFunction(typename FuncTraits<F>::ObjType *obj, const F& fn)
+{
+    return typename FuncTraits<F>::ObjFunctionType(obj, fn);
 }
+
+} // namespace DAVA
 
 #endif // __DAVAENGINE_FUNCTION_TRAITS_H__

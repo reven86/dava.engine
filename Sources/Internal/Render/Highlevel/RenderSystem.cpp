@@ -250,26 +250,7 @@ void RenderSystem::UnregisterFromUpdate(IRenderUpdatable * updatable)
 
     
 void RenderSystem::FindNearestLights(RenderObject * renderObject)
-{
-	//do not calculate nearest lights for non-lit objects
-	bool needUpdate = false;
-	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-    for (uint32 k = 0; k < renderBatchCount; ++k)
-    {
-        RenderBatch * batch = renderObject->GetRenderBatch(k);
-        NMaterial * material = batch->GetMaterial();
-        if (material)
-        {
-			needUpdate = true;
-			break;
-		}
-	}
-	
-	if(!needUpdate)
-	{
-		return;
-	}
-	
+{		
     Light * nearestLight = 0;
     float32 squareMinDistance = 10000000.0f;
     Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
@@ -299,11 +280,7 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
 		}
 	}
     
-    for (uint32 k = 0; k < renderBatchCount; ++k)
-    {
-        RenderBatch * batch = renderObject->GetRenderBatch(k);
-        batch->SetLight(0, nearestLight);
-    }
+    renderObject->SetLight(0, nearestLight);    
 }
 
 void RenderSystem::FindNearestLights()

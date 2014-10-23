@@ -61,6 +61,13 @@ class UITextControlMetadata : public UIControlMetadata
     // Font/Shadow per pixel accuracy types
     Q_PROPERTY(int TextPerPixelAccuracyType READ GetTextPerPixelAccuracyType WRITE SetTextPerPixelAccuracyType);
 
+    // Text margins.
+    Q_PROPERTY(QRectF TextMargins READ GetTextMargins WRITE SetTextMargins);
+    Q_PROPERTY(float TextLeftMargin READ GetTextLeftMargin WRITE SetTextLeftMargin);
+	Q_PROPERTY(float TextTopMargin READ GetTextTopMargin WRITE SetTextTopMargin);
+	Q_PROPERTY(float TextRightMargin READ GetTextRightMargin WRITE SetTextRightMargin);
+	Q_PROPERTY(float TextBottomMargin READ GetTextBottomMargin WRITE SetTextBottomMargin);
+
 public:
     UITextControlMetadata(QObject* parent = 0);
     QString GetLocalizedTextValue();
@@ -70,10 +77,10 @@ protected:
     virtual void SetLocalizedTextKey(const QString& value);
     
     // Getters/setters.
-    virtual Font * GetFont() = 0;
+    virtual Font * GetFont() const = 0;
     virtual void SetFont(Font * font) = 0;
 
-	virtual int GetTextAlign() = 0;
+	virtual int GetTextAlign() const = 0;
     virtual void SetTextAlign(int align) = 0;
     
     virtual float GetFontSize() const = 0;
@@ -91,8 +98,24 @@ protected:
 	virtual QColor GetShadowColor() const = 0;
 	virtual void SetShadowColor(const QColor& value) = 0;
 	
-	Vector2 GetOffsetX(const Vector2& currentOffset, float offsetX);
-	Vector2 GetOffsetY(const Vector2& currentOffset, float offsetY);
+	Vector2 GetOffsetX(const Vector2& currentOffset, float offsetX) const;
+	Vector2 GetOffsetY(const Vector2& currentOffset, float offsetY) const;
+
+    // Text margins. Should be overriden in the derived classes.
+    virtual QRectF GetTextMargins() const;
+    virtual void SetTextMargins(const QRectF& value);
+    
+    virtual float GetTextLeftMargin() const;
+    virtual void SetTextLeftMargin(float value);
+    
+    virtual float GetTextTopMargin() const;
+    virtual void SetTextTopMargin(float value);
+    
+    virtual float GetTextRightMargin() const;
+    virtual void SetTextRightMargin(float value);
+
+    virtual float GetTextBottomMargin() const;
+    virtual void SetTextBottomMargin(float value);
 
     // These methods should not be overriden for the UITextField, that's why not pure virtual.
     virtual int GetTextColorInheritType() const;

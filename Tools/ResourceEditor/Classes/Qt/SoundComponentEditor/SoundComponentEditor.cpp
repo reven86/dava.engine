@@ -174,13 +174,13 @@ void SoundComponentEditor::FillEventParamsFrame()
 void SoundComponentEditor::OnPlay()
 {
     if(selectedEventIndex != -1 && !component->GetSoundEvent(selectedEventIndex)->IsActive())
-        component->GetSoundEvent(selectedEventIndex)->Trigger();
+        component->Trigger(selectedEventIndex);
 }
 
 void SoundComponentEditor::OnStop()
 {
     if(selectedEventIndex != -1)
-        component->GetSoundEvent(selectedEventIndex)->Stop();
+        component->Stop(selectedEventIndex);
 }
 
 void SoundComponentEditor::OnAddEvent()

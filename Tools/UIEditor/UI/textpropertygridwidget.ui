@@ -741,6 +741,9 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
         </layout>
        </widget>
       </item>
+      <item>
+       <widget class="UIMarginsPropertyGridWidget" name="marginsWidget" native="true"/>
+      </item>
      </layout>
     </widget>
    </item>
@@ -751,6 +754,12 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
    <class>QColorWidget</class>
    <extends>QWidget</extends>
    <header>qcolorwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UIMarginsPropertyGridWidget</class>
+   <extends>QWidget</extends>
+   <header>uimarginspropertygridwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>

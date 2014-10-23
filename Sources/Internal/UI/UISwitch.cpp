@@ -317,14 +317,7 @@ void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisual
             ChangeVisualState();
         }
 
-        if (isFromUI)
-        {
-            PerformEvent(EVENT_VALUE_CHANGED);
-        }
-        else
-        {
-            PerformEventWithData(EVENT_VALUE_CHANGED, (void*)true);
-        }
+        PerformEventWithData(EVENT_VALUE_CHANGED, (void*)isFromUI);
     }
 }
 

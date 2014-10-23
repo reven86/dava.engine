@@ -108,7 +108,7 @@ void UIParticles::DoStart()
 
     effect->isPaused = false;
     system->AddToActive(effect);
-    effect->effectRenderObject->SetEffectMatrix(&matrix);
+    effect->effectRenderObject->SetWorldTransformPtr(&matrix);
     system->RunEffect(effect);
 }
 
@@ -253,7 +253,7 @@ void UIParticles::Load(const FilePath& path)
 
     if (effect)
     {
-        effect->effectRenderObject->SetEffectMatrix(&matrix);
+        effect->effectRenderObject->SetWorldTransformPtr(&matrix);
         effect->effectRenderObject->Set2DMode(true);
         effectPath = path;
         

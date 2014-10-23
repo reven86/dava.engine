@@ -204,7 +204,7 @@ bool HierarchyTreeScreenNode::Load(const QString& path)
 {
     if(!loaded)
     {
-        UIYamlLoader::Load(screen, path.toStdString());
+        UIYamlLoader::Load(screen, path.toStdString(), false);
         guides.Load(path.toStdString());
         
         BuildHierarchyTree(this, screen->GetChildren());
@@ -277,11 +277,10 @@ void HierarchyTreeScreenNode::CombineRectWithChild(Rect& rect) const
 	for (HIERARCHYTREENODESLIST::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
 	{
 		const HierarchyTreeControlNode* control = dynamic_cast<const HierarchyTreeControlNode*>(*iter);
-		if (!control)
+		if (!control || !control->GetUIObject())
 			continue;
 		
-		Rect controlRect = control->GetRect();
-		
+		Rect controlRect = control->GetUIObject()->GetGeometricData().GetAABBox();
 		rect = rect.Combine(controlRect);
 	}
 }
@@ -498,7 +497,7 @@ Rect HierarchyTreeScreenNode::GetOwnRect() const
 void HierarchyTreeScreenNode::GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<GuidesManager::StickedRect>& rectsList) const
 {
     // Inner controls aren't forced to be sticked.
-    rectsList.push_back(GuidesManager::StickedRect(rootNode->GetUIObject()->GetRect(true), false));
+    rectsList.push_back(GuidesManager::StickedRect(rootNode->GetUIObject()->GetGeometricData().GetAABBox(), false));
 
     const HierarchyTreeNode::HIERARCHYTREENODESLIST& children = rootNode->GetChildNodes();
     for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER iter = children.begin(); iter != children.end(); iter ++)

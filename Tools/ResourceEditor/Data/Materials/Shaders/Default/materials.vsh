@@ -11,6 +11,9 @@ precision highp float;
 #define mediump
 #endif
 
+
+#define MAX_JOINTS 32
+
 // INPUT ATTRIBUTES
 attribute vec4 inPosition;
 
@@ -39,6 +42,12 @@ attribute vec4 inColor;
 attribute vec3 inTangent;
 attribute vec3 inBinormal;
 #endif
+
+#if defined (SKINNING)
+attribute vec4 inJointIndex;
+attribute vec4 inJointWeight;
+#endif
+
 
 #if defined(SPEED_TREE_LEAF)
 attribute vec3 inPivot;
@@ -74,6 +83,11 @@ uniform float inSpecularity;
 uniform float inGlossiness;
 uniform float physicalFresnelReflectance;
 uniform vec3 metalFresnelReflectance;
+#endif
+
+#if defined (SKINNING)
+    uniform vec4 jointPositions[MAX_JOINTS]; // (x, y, z, scale)
+    uniform vec4 jointQuaternions[MAX_JOINTS];    
 #endif
 
 #if defined(VERTEX_FOG)
@@ -264,6 +278,20 @@ vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
 	return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent));
 }
 
+vec3 JointTransform(vec3 inVec, vec4 jointPosition, vec4 jointQuaternion)
+{
+    vec3 t = 2.0 * cross(jointQuaternion.xyz, inVec);
+    return jointPosition.xyz + (inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t))*jointPosition.w; 
+    //return inVec; 
+}
+
+vec3 JointTransformTangent(vec3 inVec, vec4 jointQuaternion)
+{
+    vec3 t = 2.0 * cross(jointQuaternion.xyz, inVec);
+    return inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t); 
+    //return inVec; 
+}
+
 #if defined(WAVE_ANIMATION)
 uniform float globalTime;
 #endif
@@ -302,7 +330,15 @@ vec4 Wave(float time, vec4 pos, vec2 uv)
 }
 
 void main()
-{	
+{
+
+#if defined (SKINNING)
+    //compute final state - for now just effected by 1 bone - later blend everything here
+    int index = int(inJointIndex);
+    vec4 weightedVertexPosition = jointPositions[index];
+    vec4 weightedVertexQuaternion = jointQuaternions[index];
+#endif
+
 #if defined(MATERIAL_SKYBOX)
 	vec4 vecPos = (worldViewProjMatrix * inPosition);
 	gl_Position = vec4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
@@ -459,7 +495,12 @@ void main()
         gl_Position = worldViewProjMatrix * pos;
     
     #else
-        gl_Position = worldViewProjMatrix * inPosition;
+        #if defined (SKINNING)
+            vec4 skinnedPosition = vec4(JointTransform(inPosition.xyz, weightedVertexPosition, weightedVertexQuaternion), inPosition.w);
+            gl_Position = worldViewProjMatrix * skinnedPosition;
+        #else
+            gl_Position = worldViewProjMatrix * inPosition;
+        #endif
     #endif
 
 #endif //defined(WIND_ANIMATION)
@@ -472,7 +513,11 @@ void main()
     #if defined(MATERIAL_GRASS_TRANSFORM)
         vec3 eyeCoordsPosition = vec3(worldViewMatrix * pos); // view direction in view space
     #else
-        vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition); // view direction in view space
+        #if defined (SKINNING)
+            vec3 eyeCoordsPosition = vec3(worldViewMatrix * skinnedPosition); // view direction in view space
+        #else
+            vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition); // view direction in view space
+        #endif
     #endif
 #endif
 
@@ -521,7 +566,7 @@ void main()
     float Dbp = NdotL;
     float Geo = 1.0 / LdotH * LdotH;
     
-	varDiffuseColor = NdotL / _PI;
+    varDiffuseColor = NdotL / _PI;
     
     varSpecularColor = Dbp * Geo * fresnelOut * specularity;
     varNdotH = NdotH;
@@ -531,23 +576,30 @@ void main()
 #endif
 
 #if defined(PIXEL_LIT)
-	vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
-	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);		
-	vec3 b = normalize (worldViewInvTransposeMatrix * inBinormal);	
+
+    #if defined (SKINNING)
+        vec3 n = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inNormal, weightedVertexQuaternion));
+        vec3 t = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inTangent, weightedVertexQuaternion));
+        vec3 b = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inBinormal, weightedVertexQuaternion));
+    #else
+        vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
+        vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
+        vec3 b = normalize (worldViewInvTransposeMatrix * inBinormal);
+    #endif
     
 #if defined(DISTANCE_ATTENUATION)
     varPerPixelAttenuation = length(toLightDir);
 #endif
     //lightDir = normalize(lightDir);
     
-	// transform light and half angle vectors by tangent basis
-	vec3 v;
-	v.x = dot (toLightDir, t);
-	v.y = dot (toLightDir, b);
-	v.z = dot (toLightDir, n);
+    // transform light and half angle vectors by tangent basis
+    vec3 v;
+    v.x = dot (toLightDir, t);
+    v.y = dot (toLightDir, b);
+    v.z = dot (toLightDir, n);
     
 #if !defined(FAST_NORMALIZATION)
-	varToLightVec = v;
+    varToLightVec = v;
 #else
     varToLightVec = normalize(v);
 #endif
@@ -714,10 +766,12 @@ void main()
 
 #endif
 	
+	sphericalLightFactor *= 2.0;
+	
 	#if defined(VERTEX_COLOR)
-		varVertexColor *= vec4(sphericalLightFactor * 2.0, 1.0);
+		varVertexColor *= vec4(sphericalLightFactor, 1.0);
 	#else
-		varVertexColor = vec4(sphericalLightFactor * 2.0, 1.0);
+		varVertexColor = vec4(sphericalLightFactor, 1.0);
 	#endif
 	
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting

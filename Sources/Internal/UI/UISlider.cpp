@@ -144,7 +144,7 @@ void UISlider::SetValue(float32 value)
     
     if (needSendEvent)
     {
-        PerformEventWithData(EVENT_VALUE_CHANGED, (void*)true);
+        PerformEvent(EVENT_VALUE_CHANGED);
     }
 }
 
@@ -440,15 +440,6 @@ List<UIControl*> UISlider::GetSubcontrols()
 	return subControls;
 }
 
-void UISlider::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
-{
-    UIControl::SetVisibleForUIEditor(value, hierarchic);
-    if (thumbButton)
-    {
-        thumbButton->SetVisibleForUIEditor(value, hierarchic);
-    }
-}
-
 void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, UIYamlLoader* loader)
 {
     const YamlNode * colorNode = rootNode->Get(Format("%scolor", prefix));
@@ -461,6 +452,7 @@ void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background
     const YamlNode * leftRightStretchCapNode = rootNode->Get(Format("%sleftRightStretchCap", prefix));
     const YamlNode * topBottomStretchCapNode = rootNode->Get(Format("%stopBottomStretchCap", prefix));
     const YamlNode * spriteModificationNode = rootNode->Get(Format("%sspriteModification", prefix));
+    const YamlNode * marginsNode = rootNode->Get(Format("%smargins", prefix));
 
     if (colorNode)
     {
@@ -512,6 +504,12 @@ void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background
     if (spriteModificationNode)
     {
         background->SetModification(spriteModificationNode->AsInt32());
+    }
+    
+    if (marginsNode)
+    {
+        UIControlBackground::UIMargins margins(marginsNode->AsVector4());
+        background->SetMargins(&margins);
     }
 }
 
@@ -589,6 +587,13 @@ void UISlider::SaveBackground(const char* prefix, UIControlBackground* backgroun
     if (baseBackground->GetModification() != modification)
     {
         rootNode->Set(Format("%sspriteModification", prefix), modification);
+    }
+
+    // margins.
+    const UIControlBackground::UIMargins* margins = background->GetMargins();
+    if (margins)
+    {
+        rootNode->Set(Format("%smargins", prefix), margins->AsVector4());
     }
 }
 

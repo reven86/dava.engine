@@ -186,10 +186,8 @@ void WebViewPropertyGridWidget::DataDetectorTypesToCheckboxes(int value)
 
 void WebViewPropertyGridWidget::ReadDataDetectorTypes()
 {
-	bool isPropertyValueDiffers = false;
     int value = PropertiesHelper::GetAllPropertyValues<int>(this->activeMetadata,
-                                                            PropertyNames::WEBVIEW_DATA_DETECTOR_TYPES_PROPERTY_NAME,
-                                                            isPropertyValueDiffers);
+                                                            PropertyNames::WEBVIEW_DATA_DETECTOR_TYPES_PROPERTY_NAME);
     DataDetectorTypesToCheckboxes(value);
 }
 

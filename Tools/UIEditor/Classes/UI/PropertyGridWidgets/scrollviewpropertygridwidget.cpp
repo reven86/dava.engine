@@ -166,10 +166,9 @@ void ScrollViewPropertyGridWidget::UpdateDoubleSpinBoxWidgetWithPropertyValue(QD
         return;
     }
 
-    bool isPropertyValueDiffers = false;
     double propertyValue = PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata,
-                                                                         curProperty.name(),
-                                                                         isPropertyValueDiffers);
+                                                                         curProperty.name());
+
     WidgetSignalsBlocker blocker(doubleSpinBoxWidget);
     doubleSpinBoxWidget->setValue(propertyValue);
     UpdateWidgetPalette(doubleSpinBoxWidget, curProperty.name());

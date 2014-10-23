@@ -311,6 +311,8 @@ protected:
     static File* GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex);
 
     void ReloadExistingTextures();
+    
+    void SetRelativePathname(const FilePath& path);
 //private:
 
     static Mutex spriteMapMutex;
@@ -323,9 +325,6 @@ protected:
 	};
 
 	float32 tempVertices[8];
-
-
-	FilePath  relativePathname;
 
 	Texture ** textures;
 	FilePath *textureNames;
@@ -387,6 +386,9 @@ protected:
 
 	//static bool batchingEnabled;
 	//static Vector<Vector2>
+    
+private:
+    FilePath  relativePathname;
 };
 
 
