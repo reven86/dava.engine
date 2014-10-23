@@ -423,6 +423,7 @@ namespace DAVA
 		if (deviceArchive)
 		{
 			deviceArchive->SetString("Started", "1");
+			deviceArchive->SetString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
 		}
 		else
 		{

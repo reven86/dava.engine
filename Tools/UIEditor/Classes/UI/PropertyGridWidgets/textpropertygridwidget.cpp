@@ -77,7 +77,6 @@ void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_PROPERTY_NAME, ui->fontPresetComboBox, false, true);
     RegisterPushButtonWidgetForProperty(propertiesMap, PropertyNames::FONT_PROPERTY_NAME, ui->fontPresetEditButton, false, true);
     
-    RegisterLineEditWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_NAME, ui->textLineEdit);
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::SHADOW_OFFSET_X, ui->shadowOffsetXSpinBox, false, true);
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::SHADOW_OFFSET_Y, ui->shadowOffsetYSpinBox, false, true);
     RegisterColorWidgetForProperty(propertiesMap, PropertyNames::SHADOW_COLOR, ui->shadowColorWidget, false, true);
@@ -108,7 +107,6 @@ void TextPropertyGridWidget::Cleanup()
     UnregisterPushButtonWidget(ui->fontSelectButton);
     UnregisterSpinBoxWidget(ui->fontSizeSpinBox);
     
-    UnregisterLineEditWidget(ui->textLineEdit);
     UnregisterSpinBoxWidget(ui->shadowOffsetXSpinBox);
     UnregisterSpinBoxWidget(ui->shadowOffsetYSpinBox);
     UnregisterColorWidget(ui->shadowColorWidget);

@@ -26,51 +26,46 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __UIEditor__UIScrollViewMetadata__
-#define __UIEditor__UIScrollViewMetadata__
 
-#include "UIControlMetadata.h"
-#include "UI/UIScrollView.h"
+#include "Render/Highlevel/SkinnedMesh.h"
+#include "Render/Highlevel/RenderBatch.h"
+#include "Render/3D/PolygonGroup.h"
+#include "Render/Highlevel/ShadowVolume.h"
+#include "Render/Material/NMaterial.h"
 
-namespace DAVA {
-
-// Metadata class for DAVA UIList control.
-class UIScrollViewMetadata : public UIControlMetadata
+namespace DAVA
 {
-    Q_OBJECT
-	
-    // Horizontal position of scroll
-    Q_PROPERTY(float HorizontalScrollPosition READ GetHorizontalScrollPosition WRITE SetHorizontalScrollPosition);
-    Q_PROPERTY(float VerticalScrollPosition READ GetVerticalScrollPosition WRITE SetVerticalScrollPosition);
-	Q_PROPERTY(float ContentSizeX READ GetContentSizeX WRITE SetContentSizeX);
-	Q_PROPERTY(float ContentSizeY READ GetContentSizeY WRITE SetContentSizeY);
-	
-	
-public:
-    UIScrollViewMetadata(QObject* parent = 0);
 
-protected:
-    virtual bool GetInitialInputEnabled() const {return true;};
 
-    // Initialize the appropriate control.
-    virtual void InitializeControl(const String& controlName, const Vector2& position);
+SkinnedMesh::SkinnedMesh()
+{
+    type = TYPE_SKINNED_MESH;
+    bbox = AABBox3(Vector3(0,0,0), Vector3(0,0,0));
+    jointsCount = 0;
+    positionArray = NULL;
+    quaternionArray = NULL;
+}
 
-    virtual QString GetUIControlClassName() const { return "UIScrollView"; };
-	
-    // Helper to access active UI ScrollView.
-    UIScrollView* GetActiveUIScrollView() const;
-	
-    // Getters/setters.
-    float GetHorizontalScrollPosition() const;
-	void SetHorizontalScrollPosition(float value);
-    float GetVerticalScrollPosition() const;
-	void SetVerticalScrollPosition(float value);
-	float GetContentSizeX() const;
-	void SetContentSizeX(float value);
-	float GetContentSizeY() const;
-	void SetContentSizeY(float value);
-};
 
-};
+RenderObject * SkinnedMesh::Clone(RenderObject *newObject)
+{
 
-#endif /* defined(__UIEditor__UIScrollViewMetadata__) */
+    if(!newObject)
+    {
+        DVASSERT_MSG(IsPointerToExactClass<SkinnedMesh>(this), "Can clone only SkinnedMesh");
+        newObject = new SkinnedMesh();
+    }
+    RenderObject::Clone(newObject);   
+    return newObject;
+}
+
+void SkinnedMesh::BindDynamicParameters(Camera * camera)
+{
+    RenderManager::SetDynamicParam(PARAM_JOINTS_COUNT, &jointsCount, (pointer_size)(&jointsCount));
+    RenderManager::SetDynamicParam(PARAM_JOINT_POSITIONS, &positionArray[0], (pointer_size)positionArray);
+    RenderManager::SetDynamicParam(PARAM_JOINT_QUATERNIONS, &quaternionArray[0], (pointer_size)quaternionArray);
+
+    RenderObject::BindDynamicParameters(camera);
+}
+
+}

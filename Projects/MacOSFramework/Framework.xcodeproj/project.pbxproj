@@ -26,6 +26,24 @@
 		024DF6F617FDE4C400138748 /* FMODSoundSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024DF6E117FDE4C400138748 /* FMODSoundSystem.cpp */; };
 		024DF6F717FDE4C400138748 /* FMODSoundSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024DF6E117FDE4C400138748 /* FMODSoundSystem.cpp */; };
 		0256F3DC185B4CAA00D22ADF /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0256F3DA185B4CAA00D22ADF /* SoundEvent.h */; };
+		026A1DC019DAF09700813AEF /* SkeletonComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DBE19DAF09700813AEF /* SkeletonComponent.cpp */; };
+		026A1DC119DAF09700813AEF /* SkeletonComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DBE19DAF09700813AEF /* SkeletonComponent.cpp */; };
+		026A1DC219DAF09700813AEF /* SkeletonComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DBE19DAF09700813AEF /* SkeletonComponent.cpp */; };
+		026A1DC319DAF09700813AEF /* SkeletonComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DBF19DAF09700813AEF /* SkeletonComponent.h */; };
+		026A1DC419DAF09700813AEF /* SkeletonComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DBF19DAF09700813AEF /* SkeletonComponent.h */; };
+		026A1DC519DAF09700813AEF /* SkeletonComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DBF19DAF09700813AEF /* SkeletonComponent.h */; };
+		026A1DC819DAF0A300813AEF /* SkeletonSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DC619DAF0A300813AEF /* SkeletonSystem.cpp */; };
+		026A1DC919DAF0A300813AEF /* SkeletonSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DC619DAF0A300813AEF /* SkeletonSystem.cpp */; };
+		026A1DCA19DAF0A300813AEF /* SkeletonSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DC619DAF0A300813AEF /* SkeletonSystem.cpp */; };
+		026A1DCB19DAF0A300813AEF /* SkeletonSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DC719DAF0A300813AEF /* SkeletonSystem.h */; };
+		026A1DCC19DAF0A300813AEF /* SkeletonSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DC719DAF0A300813AEF /* SkeletonSystem.h */; };
+		026A1DCD19DAF0A300813AEF /* SkeletonSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DC719DAF0A300813AEF /* SkeletonSystem.h */; };
+		026A1DD019DAF1B700813AEF /* SkinnedMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DCE19DAF1B700813AEF /* SkinnedMesh.cpp */; };
+		026A1DD119DAF1B700813AEF /* SkinnedMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DCE19DAF1B700813AEF /* SkinnedMesh.cpp */; };
+		026A1DD219DAF1B700813AEF /* SkinnedMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DCE19DAF1B700813AEF /* SkinnedMesh.cpp */; };
+		026A1DD319DAF1B700813AEF /* SkinnedMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DCF19DAF1B700813AEF /* SkinnedMesh.h */; };
+		026A1DD419DAF1B700813AEF /* SkinnedMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DCF19DAF1B700813AEF /* SkinnedMesh.h */; };
+		026A1DD519DAF1B700813AEF /* SkinnedMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DCF19DAF1B700813AEF /* SkinnedMesh.h */; };
 		0282B87418BC72BE006F1EE4 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B87218BC72BE006F1EE4 /* FMODFileSoundEvent.cpp */; };
 		0282B87518BC72BE006F1EE4 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B87218BC72BE006F1EE4 /* FMODFileSoundEvent.cpp */; };
 		0282B87618BC72BE006F1EE4 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B87218BC72BE006F1EE4 /* FMODFileSoundEvent.cpp */; };
@@ -2501,6 +2519,12 @@
 		024DF6DE17FDE4C400138748 /* FMODSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODSoundEvent.h; sourceTree = "<group>"; };
 		024DF6E117FDE4C400138748 /* FMODSoundSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODSoundSystem.cpp; sourceTree = "<group>"; };
 		0256F3DA185B4CAA00D22ADF /* SoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundEvent.h; sourceTree = "<group>"; };
+		026A1DBE19DAF09700813AEF /* SkeletonComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkeletonComponent.cpp; sourceTree = "<group>"; };
+		026A1DBF19DAF09700813AEF /* SkeletonComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkeletonComponent.h; sourceTree = "<group>"; };
+		026A1DC619DAF0A300813AEF /* SkeletonSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkeletonSystem.cpp; sourceTree = "<group>"; };
+		026A1DC719DAF0A300813AEF /* SkeletonSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkeletonSystem.h; sourceTree = "<group>"; };
+		026A1DCE19DAF1B700813AEF /* SkinnedMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkinnedMesh.cpp; sourceTree = "<group>"; };
+		026A1DCF19DAF1B700813AEF /* SkinnedMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkinnedMesh.h; sourceTree = "<group>"; };
 		0282B87218BC72BE006F1EE4 /* FMODFileSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODFileSoundEvent.cpp; sourceTree = "<group>"; };
 		0282B87318BC72BE006F1EE4 /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
 		0286451119795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualToPhysicalHelper.cpp; sourceTree = "<group>"; };
@@ -4240,6 +4264,8 @@
 		E8989C3F16BD24E400732C04 /* Highlevel */ = {
 			isa = PBXGroup;
 			children = (
+				026A1DCE19DAF1B700813AEF /* SkinnedMesh.cpp */,
+				026A1DCF19DAF1B700813AEF /* SkinnedMesh.h */,
 				644C86A719476A7100964F91 /* Vegetation */,
 				02A03DA71871C37B00FA72CE /* SpeedTreeObject.cpp */,
 				02A03DA81871C37B00FA72CE /* SpeedTreeObject.h */,
@@ -4436,6 +4462,8 @@
 		E8989CC816BD24E500732C04 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				026A1DBE19DAF09700813AEF /* SkeletonComponent.cpp */,
+				026A1DBF19DAF09700813AEF /* SkeletonComponent.h */,
 				1146E11319D00874009E5FAB /* AnimationComponent.cpp */,
 				1146E11419D00874009E5FAB /* AnimationComponent.h */,
 				02FD826A192A3861007762C0 /* WaveComponent.cpp */,
@@ -4485,6 +4513,8 @@
 		E8989D1916BD24E500732C04 /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				026A1DC619DAF0A300813AEF /* SkeletonSystem.cpp */,
+				026A1DC719DAF0A300813AEF /* SkeletonSystem.h */,
 				1146E11B19D00887009E5FAB /* AnimationSystem.cpp */,
 				1146E11C19D00887009E5FAB /* AnimationSystem.h */,
 				02FD8262192A3859007762C0 /* WaveSystem.cpp */,
@@ -4957,6 +4987,7 @@
 				176DE9C8174B5561007A983B /* DataNode.h in Headers */,
 				176DE9C9174B5561007A983B /* Drawable.h in Headers */,
 				647EFC4E195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
+				026A1DCD19DAF0A300813AEF /* SkeletonSystem.h in Headers */,
 				176DE9CA174B5561007A983B /* ImposterManager.h in Headers */,
 				176DE9CB174B5561007A983B /* ImposterNode.h in Headers */,
 				176DE9CC174B5561007A983B /* LodNode.h in Headers */,
@@ -5047,6 +5078,7 @@
 				176DEA12174B5561007A983B /* ComponentHelpers.h in Headers */,
 				176DEA13174B5561007A983B /* ParticleForce.h in Headers */,
 				B4C29D44199B592D001B83FE /* SceneCache.h in Headers */,
+				026A1DC519DAF09700813AEF /* SkeletonComponent.h in Headers */,
 				176DEA14174B5561007A983B /* DPIHelper.h in Headers */,
 				7A169344180EE619005F1FBC /* AutotestingSystemLua.h in Headers */,
 				176DEA15174B5561007A983B /* UIWebView.h in Headers */,
@@ -5087,6 +5119,7 @@
 				176DEA33174B5561007A983B /* SpriteObject.h in Headers */,
 				17FB4BBC1923B9D900F3E3BC /* MovieViewControlMacOS.h in Headers */,
 				176DEA34174B5561007A983B /* SpriteRenderBatch.h in Headers */,
+				026A1DD519DAF1B700813AEF /* SkinnedMesh.h in Headers */,
 				644C86E119476A7100964F91 /* VegetationFixedGeometry.h in Headers */,
 				176DEA35174B5561007A983B /* RenderState.h in Headers */,
 				76199F3C192DF73D008A47E2 /* VersionInfo.h in Headers */,
@@ -5333,6 +5366,7 @@
 				E8989F5116BD24E500732C04 /* RenderOptions.h in Headers */,
 				644C86FD19476A7100964F91 /* VegetationSpatialData.h in Headers */,
 				E8989F5316BD24E500732C04 /* RenderResource.h in Headers */,
+				026A1DC319DAF09700813AEF /* SkeletonComponent.h in Headers */,
 				E8989F5616BD24E500732C04 /* RGBColor.h in Headers */,
 				E8989F5816BD24E500732C04 /* Shader.h in Headers */,
 				E89C58E418B2458E002C25FE /* Atomic.h in Headers */,
@@ -5389,6 +5423,7 @@
 				50ED334D1858B5A200A917D5 /* StaticOcclusionComponent.h in Headers */,
 				E8989FB216BD24E500732C04 /* ProxyNode.h in Headers */,
 				50B06923186D4C4C00B44A39 /* RenderLayerManager.h in Headers */,
+				026A1DD319DAF1B700813AEF /* SkinnedMesh.h in Headers */,
 				D7E6C5A9198255BF00B96D1A /* CurlDownloader.h in Headers */,
 				E8989FBA16BD24E500732C04 /* Scene.h in Headers */,
 				E8989FBC16BD24E500732C04 /* SceneAnimationMixer.h in Headers */,
@@ -5417,6 +5452,7 @@
 				E8989FE516BD24E500732C04 /* RenderUpdateSystem.h in Headers */,
 				E8989FE716BD24E500732C04 /* SwitchSystem.h in Headers */,
 				E8989FE916BD24E500732C04 /* TransformSystem.h in Headers */,
+				026A1DCB19DAF0A300813AEF /* SkeletonSystem.h in Headers */,
 				E8989FED16BD24E500732C04 /* UserNode.h in Headers */,
 				E898A00016BD24E500732C04 /* SoundSystem.h in Headers */,
 				E898A00416BD24E500732C04 /* ScrollHelper.h in Headers */,
@@ -5775,6 +5811,7 @@
 				E898A11C16BD265400732C04 /* RenderHelper.h in Headers */,
 				E898A11D16BD265400732C04 /* RenderManager.h in Headers */,
 				E898A11F16BD265400732C04 /* RenderOptions.h in Headers */,
+				026A1DCC19DAF0A300813AEF /* SkeletonSystem.h in Headers */,
 				E898A12016BD265400732C04 /* RenderResource.h in Headers */,
 				E898A12216BD265400732C04 /* RGBColor.h in Headers */,
 				E898A12316BD265400732C04 /* Shader.h in Headers */,
@@ -5832,6 +5869,7 @@
 				E898A15416BD265400732C04 /* SceneFile.h in Headers */,
 				CC92A8B3189FBE6900C5DFEF /* ParticleRenderObject.h in Headers */,
 				E898A15516BD265400732C04 /* SceneFileV2.h in Headers */,
+				026A1DC419DAF09700813AEF /* SkeletonComponent.h in Headers */,
 				E898A15616BD265400732C04 /* SceneManager.h in Headers */,
 				E898A15816BD265400732C04 /* SceneNodeAnimation.h in Headers */,
 				E898A15916BD265400732C04 /* SceneNodeAnimationKey.h in Headers */,
@@ -5868,6 +5906,7 @@
 				E898A17E16BD265400732C04 /* UIEvent.h in Headers */,
 				E898A17F16BD265400732C04 /* UIFadeTransition.h in Headers */,
 				E898A18016BD265400732C04 /* UIFileSystemDialog.h in Headers */,
+				026A1DD419DAF1B700813AEF /* SkinnedMesh.h in Headers */,
 				E898A18116BD265400732C04 /* UIHierarchy.h in Headers */,
 				E898A18216BD265400732C04 /* UIHierarchyCell.h in Headers */,
 				E898A18316BD265400732C04 /* UIHierarchyNode.h in Headers */,
@@ -6277,6 +6316,7 @@
 				176DEADF174B5561007A983B /* LightComponent.cpp in Sources */,
 				176DEAE0174B5561007A983B /* LodComponent.cpp in Sources */,
 				E879E2481988EF8D0026191D /* OGLHelpers.cpp in Sources */,
+				026A1DCA19DAF0A300813AEF /* SkeletonSystem.cpp in Sources */,
 				176DEAE1174B5561007A983B /* ParticleEffectComponent.cpp in Sources */,
 				176DEAE2174B5561007A983B /* RenderComponent.cpp in Sources */,
 				176DEAE3174B5561007A983B /* SwitchComponent.cpp in Sources */,
@@ -6397,6 +6437,7 @@
 				176DEB3C174B5561007A983B /* CullingSystem.cpp in Sources */,
 				C172EC5218CA0AEB004309CF /* DFFont.cpp in Sources */,
 				176DEB3D174B5561007A983B /* Frustum.cpp in Sources */,
+				026A1DD219DAF1B700813AEF /* SkinnedMesh.cpp in Sources */,
 				176DEB3E174B5561007A983B /* Heightmap.cpp in Sources */,
 				176DEB3F174B5561007A983B /* Landscape.cpp in Sources */,
 				176DEB40174B5561007A983B /* LandscapeChunk.cpp in Sources */,
@@ -6412,6 +6453,7 @@
 				176DEB49174B5561007A983B /* RenderSystem.cpp in Sources */,
 				76199F3F192DF73D008A47E2 /* VersionInfo.cpp in Sources */,
 				176DEB4A174B5561007A983B /* ShadowRect.cpp in Sources */,
+				026A1DC219DAF09700813AEF /* SkeletonComponent.cpp in Sources */,
 				176DEB4B174B5561007A983B /* ShadowVolume.cpp in Sources */,
 				176DEB4C174B5561007A983B /* ShadowVolumeRenderPass.cpp in Sources */,
 				176DEB4D174B5561007A983B /* SpriteObject.cpp in Sources */,
@@ -6594,6 +6636,7 @@
 				E8989EDF16BD24E500732C04 /* GraphicsFont.cpp in Sources */,
 				E8989EE216BD24E500732C04 /* Sprite.cpp in Sources */,
 				84CB671B191FC8850086483D /* Image.mm in Sources */,
+				026A1DD019DAF1B700813AEF /* SkinnedMesh.cpp in Sources */,
 				B4C29D3F199B592D001B83FE /* SceneCache.cpp in Sources */,
 				E8989EE416BD24E500732C04 /* TextBlock.cpp in Sources */,
 				E8989EE616BD24E500732C04 /* AnimatedMesh.cpp in Sources */,
@@ -6676,6 +6719,7 @@
 				E8989FAB16BD24E500732C04 /* ParticleEmitterNode.cpp in Sources */,
 				E8989FAD16BD24E500732C04 /* PathManip.cpp in Sources */,
 				E8989FAF16BD24E500732C04 /* PolygonGroupInstance.cpp in Sources */,
+				026A1DC019DAF09700813AEF /* SkeletonComponent.cpp in Sources */,
 				E8989FB116BD24E500732C04 /* ProxyNode.cpp in Sources */,
 				E8989FB916BD24E500732C04 /* Scene.cpp in Sources */,
 				E8989FBB16BD24E500732C04 /* SceneAnimationMixer.cpp in Sources */,
@@ -6730,6 +6774,7 @@
 				644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */,
 				E898A01916BD24E500732C04 /* UIHierarchyCell.cpp in Sources */,
 				E898A01B16BD24E500732C04 /* UIHierarchyNode.cpp in Sources */,
+				026A1DC819DAF0A300813AEF /* SkeletonSystem.cpp in Sources */,
 				E898A01D16BD24E500732C04 /* UIHoleTransition.cpp in Sources */,
 				A6DBFA6F1887D804006BE11C /* NMaterialNames.cpp in Sources */,
 				E898A01F16BD24E500732C04 /* UIJoypad.cpp in Sources */,
@@ -6929,6 +6974,7 @@
 				E898A1D116BD265400732C04 /* LocalizationSystem.cpp in Sources */,
 				E8ADAEBA18CA1226000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				7A169354180EE75A005F1FBC /* GameAPI.cpp in Sources */,
+				026A1DD119DAF1B700813AEF /* SkinnedMesh.cpp in Sources */,
 				02FD826D192A3861007762C0 /* WaveComponent.cpp in Sources */,
 				E898A1D216BD265400732C04 /* Logger.cpp in Sources */,
 				E898A1D316BD265400732C04 /* LoggerMacOS.mm in Sources */,
@@ -7042,6 +7088,7 @@
 				02FD7EDA19237D96007762C0 /* WindSystem.cpp in Sources */,
 				E898A24816BD265400732C04 /* Box2DTileCollider.cpp in Sources */,
 				E898A24916BD265400732C04 /* GameObject.cpp in Sources */,
+				026A1DC919DAF0A300813AEF /* SkeletonSystem.cpp in Sources */,
 				15D31181198285C800919AAA /* YamlEmitter.cpp in Sources */,
 				647EFC5A195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */,
 				E898A24A16BD265400732C04 /* GameObjectAnimations.cpp in Sources */,
@@ -7126,6 +7173,7 @@
 				E898A29916BD265400732C04 /* UIHierarchyCell.cpp in Sources */,
 				E898A29A16BD265400732C04 /* UIHierarchyNode.cpp in Sources */,
 				E8ACC88118A29FBA00F26ABC /* ParticleRenderObject.cpp in Sources */,
+				026A1DC119DAF09700813AEF /* SkeletonComponent.cpp in Sources */,
 				E898A29B16BD265400732C04 /* UIHoleTransition.cpp in Sources */,
 				E898A29C16BD265400732C04 /* UIJoypad.cpp in Sources */,
 				E879E2471988EF8D0026191D /* OGLHelpers.cpp in Sources */,

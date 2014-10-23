@@ -306,7 +306,7 @@ public:
     UniqueHandle GetRenderState() const;
 
 protected:
-    void DrawStretched(const Rect &drawRect, UniqueHandle renderState);
+    void DrawStretched(const UIGeometricData &geometricData, UniqueHandle renderState);
     void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);
     void DrawFilled(const UIGeometricData &geometricData, UniqueHandle renderState);
 
@@ -346,6 +346,29 @@ private:
     };
 
     TiledDrawData *tiledData;
+    
+    struct StretchDrawData
+    {
+        Vector<Vector2> vertices;
+        Vector<Vector2> transformedVertices;
+        Vector<Vector2> texCoords;
+        static const uint16 indeces[18 * 3];
+
+        void GenerateStretchData();
+        void GenerateTransformData();
+        uint32 GetVertexInTrianglesCount() const;
+
+        Sprite *sprite;
+        int32 frame;
+        Vector2 size;
+        int32 type;
+        float32 leftStretchCap;
+        float32 topStretchCap;
+        Matrix3 transformMatr;
+    };
+    
+    StretchDrawData *stretchData;
+    
     UIMargins* margins;
 
 public:

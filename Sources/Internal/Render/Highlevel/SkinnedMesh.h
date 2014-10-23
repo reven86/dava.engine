@@ -27,31 +27,58 @@
 =====================================================================================*/
 
 
+#ifndef __DAVAENGINE_SKINNED_MESH_H__
+#define	__DAVAENGINE_SKINNED_MESH_H__
 
-#ifndef __DAVAENGINE_RENDER_HIGHLEVEL_SHADOW_VOLUME_H__
-#define __DAVAENGINE_RENDER_HIGHLEVEL_SHADOW_VOLUME_H__
-
-#include "Render/3D/PolygonGroup.h"
-#include "Render/Shader.h"
-#include "Render/3D/EdgeAdjacency.h"
-#include "Render/Highlevel/RenderBatch.h"
+#include "Base/BaseTypes.h"
+#include "Animation/AnimatedObject.h"
+#include "Base/BaseMath.h"
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/Highlevel/RenderObject.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-namespace DAVA
+namespace DAVA    
 {
 
 class PolygonGroup;
-class Light;
-    
-class ShadowVolume : public RenderBatch
+class RenderBatch;
+class ShadowVolume;
+class NMaterial;
+
+class SkinnedMesh : public RenderObject
 {
-protected:
-	virtual ~ShadowVolume();
 
 public:
-    ShadowVolume();
+    SkinnedMesh();
+    
+    
+    virtual RenderObject * Clone(RenderObject *newObject);
+
+    
+    virtual void RecalcBoundingBox(){}    
+    virtual void BindDynamicParameters(Camera * camera);
+    
+    inline void SetObjectSpaceBoundingBox(const AABBox3& box);
+    inline void SetJointsPtr(Vector4 *positionPtr, Vector4 *quaternoinPtr, int32 count);
+protected:
+    Vector4 *positionArray;
+    Vector4 *quaternionArray;
+    int32 jointsCount;
 };
 
+
+inline void SkinnedMesh::SetJointsPtr(Vector4 *positionPtr, Vector4 *quaternoinPtr, int32 count)
+{
+    positionArray = positionPtr;
+    quaternionArray = quaternoinPtr;
+    jointsCount = count;
 }
 
-#endif //__DAVAENGINE_RENDER_HIGHLEVEL_SHADOW_VOLUME_H__
+inline void SkinnedMesh::SetObjectSpaceBoundingBox(const AABBox3& box)
+{
+    bbox = box;
+}
+
+}//ns
+
+#endif

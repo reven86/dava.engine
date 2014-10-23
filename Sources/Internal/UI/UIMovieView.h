@@ -49,12 +49,11 @@ public:
 	// Overloaded virtual methods.
 	virtual void SetPosition(const Vector2 &position);
 	virtual void SetSize(const Vector2 &newSize);
-	virtual void SetVisible(bool isVisible, bool hierarchic = true);
 
 	virtual void SystemDraw(const UIGeometricData &geometricData);
 
-    virtual void WillAppear();
-    virtual void WillDisappear();
+    virtual void WillBecomeVisible();
+    virtual void WillBecomeInvisible();
 
     virtual UIControl* Clone();
 
