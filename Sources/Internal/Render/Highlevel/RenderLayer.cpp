@@ -58,15 +58,7 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
     TIME_PROFILE("RenderLayer::Draw");
     
     renderLayerBatchArray->Sort(camera);
-    
-#if CAN_INSTANCE_CHECK
-    RenderBatch * prevBatch = 0;
-    uint32 canBeInstanced = 0;
-    
-    Vector<int32> chain;
-#endif
-    uint32 size = (uint32)renderLayerBatchArray->GetRenderBatchCount();
-    
+            
     RenderOptions* options = RenderManager::Instance()->GetOptions();
     bool layerOcclustionStatsEnabled = options->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS);
     
@@ -84,26 +76,7 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
         }
     }
     
-    for (uint32 k = 0; k < size; ++k)
-    {
-        RenderBatch * batch = renderLayerBatchArray->Get(k);
-
-#if CAN_INSTANCE_CHECK
-        if (prevBatch && batch->GetPolygonGroup() == prevBatch->GetPolygonGroup() && batch->GetMaterial()->GetParent() == prevBatch->GetMaterial()->GetParent())
-        {
-            canBeInstanced++;
-        }else
-        {
-            if (canBeInstanced > 0)
-                chain.push_back(canBeInstanced + 1);
-            canBeInstanced = 0;
-        }
-#endif
-        batch->Draw(ownerRenderPass, camera);
-#if CAN_INSTANCE_CHECK
-        prevBatch = batch;
-#endif
-    }
+    DrawRenderBatchArray(ownerRenderPass, camera, renderLayerBatchArray);
     
     if(layerOcclustionStatsEnabled)
     {
@@ -119,22 +92,119 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
             occlusionQuery->GetQuery(&lastFragmentsRenderedValue);
             queryPending = false;
         }
-    }
-    
-#if CAN_INSTANCE_CHECK
-    int32 realDrawEconomy = 0;
-    for (uint32 k = 0; k < chain.size(); ++k)
-    {
-        realDrawEconomy += (chain[k] - 1);
-    }
-    
-    Logger::Debug("Pass: %s Layer: %s Size: %d Can be instanced: %d Econ: %d", ownerRenderPass.c_str(), name.c_str(), size, chain.size(), realDrawEconomy);
-    for (uint32 k = 0; k < chain.size(); ++k)
-    {
-        Logger::Debug("%d - %d", k, chain[k]);
-    }
-#endif
+    }   
 }
+
+void RenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
+{    
+    for (uint32 k = 0, size = (uint32)renderLayerBatchArray->GetRenderBatchCount(); k < size; ++k)
+    {
+        RenderBatch * batch = renderLayerBatchArray->Get(k);
+        batch->Draw(ownerRenderPass, camera);
+    }
+}
+
+void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
+{
+    NMaterial *material = batch->GetMaterial();
+    if (!material->IsInstancingSupported())//just draw and forget
+    {        
+        batch->Draw(ownerRenderPass, camera);            
+        return;
+    }    
+    batch->GetRenderObject()->BindDynamicParameters(camera);
+    material->SetActivePass(ownerRenderPass);
+    Shader *shader = material->GetActivePassShader();
+    shader->Bind();    
+    shader->BindDynamicParameters();
+
+    int32 instancedUniformesCount = shader->GetInstancedUniformsCount();
+    incomingUniformValues.clear();
+    incomingUniformValues.resize(instancedUniformesCount);
+        
+    shader->CollectDinamycParams();
+    for (int32 i=0; i<instancedUniformesCount; i++)
+    {
+        Shader::Uniform* uniform = shader->GetInstancedUniform(i);
+        incomingUniformValues[i].first = uniform;
+        uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type)
+        incomingUniformValues[i].second.resize(uniformDataSize*MAX_INSTANCES_COUNT);
+
+        if (is in dynamic params)
+            get from dynamic params
+        else
+            Memcpy(&incomingUniformValues[i].second[0], material->GetPropertyValue(uniform->name)->data, uniformDataSize);
+    }
+
+    
+
+}
+
+bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
+{
+    if (currInstancesCount==MAX_INSTANCES_COUNT)
+        return false;
+    NMaterial *material = batch->GetMaterial();
+    if (!material->IsInstancingSupported())
+        return false;
+    if ((batch->GetPolygonGroup()!=incomingGroup->GetPolygonGroup())
+        ||((!incomingGroup->GetPolygonGroup())&&(batch->GetRenderDataObject()!=incomingGroup->GetRenderDataObject())))
+    {
+        return false;
+    }
+    material->SetActivePass(ownerRenderPass);
+    NMaterial *incomingMaterial = incomingGroup->GetMaterial();
+    if ((material->GetParent()!=incomingMaterial->GetParent())
+      ||(material->GetActivePassRenderStateHandle()!=incomingMaterial->GetActivePassRenderStateHandle())
+      ||(material->GetActivePassTextureStateHandle()!=incomingMaterial->GetActivePassTextureStateHandle()))
+    {
+        return false;
+    }
+
+    /*try to bind dynamic params*/
+    batch->GetRenderObject()->BindDynamicParameters(camera);
+    Shader *shader = incomingMaterial->GetActivePassShader();
+    bool bindResult = shader->CollectDinamycParams();
+    if (!bindResult)
+        return false;
+
+    /*and finally here we know it can be append to instance group*/
+}
+void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderPass, Camera * camera)
+{
+    Logger::FrameworkDebug("drawing %d instances for material %s", currInstancesCount, incomingGroup->GetMaterial()->GetParent()->GetMaterialName().c_str());
+    //draw instanced;
+
+    incomingGroup = NULL;
+    currInstancesCount = 0;
+}
+
+void InstancedRenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
+{
+       
+    incomingGroup = NULL;
+    currInstancesCount = 0;
+        
+    uint32 size = (uint32)renderLayerBatchArray->GetRenderBatchCount();   
+    for (uint32 k = 0; k < size; ++k)
+    {
+        RenderBatch * batch = renderLayerBatchArray->Get(k);
+        if (!incomingGroup)
+        {   
+            StartInstancingGroup(batch, ownerRenderPass, camera);
+            continue;
+        }
+
+        if (!AppendInstance(batch, ownerRenderPass, camera))
+        {
+            CompleteInstancingGroup(ownerRenderPass, camera);                        
+            StartInstancingGroup(batch, ownerRenderPass, camera);            
+        }
+    }    
+
+    CompleteInstancingGroup(ownerRenderPass, camera);
+
+};
 
 
 };

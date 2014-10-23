@@ -137,7 +137,7 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
     
     
     renderObject->BindDynamicParameters(camera);
-    material->BindMaterialTechnique(ownerRenderPass, camera);
+    material->BindMaterialTechnique(ownerRenderPass);
     
 #if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
     if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))

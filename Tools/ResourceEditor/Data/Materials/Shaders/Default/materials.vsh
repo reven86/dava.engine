@@ -11,8 +11,14 @@ precision highp float;
 #define mediump
 #endif
 
-
 #define MAX_JOINTS 32
+
+#define MAX_INSTANCES 32
+
+#if defined(INSTANCING)
+#version 140
+#endif
+
 
 // INPUT ATTRIBUTES
 attribute vec4 inPosition;
@@ -65,7 +71,13 @@ attribute float inTime;
 #endif
 
 // UNIFORMS
+
+#if defined(INSTANCING)
+uniform mat4 worldViewProjMatrixArray[MAX_INSTANCES];
+#define worldViewProjMatrix worldViewProjMatrixArray[gl_InstanceID]
+#else
 uniform mat4 worldViewProjMatrix;
+#endif
 
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPEED_TREE_LEAF) || defined(SPHERICAL_LIT)
 uniform mat4 worldViewMatrix;

@@ -254,13 +254,6 @@ void RenderManager::PrepareRealMatrix()
             SetDynamicParam(PARAM_VIEW, &renderer2d.viewMatrix, UPDATE_SEMANTIC_ALWAYS);
         }
     }
-    
-    Matrix4 glTranslate, glScale;
-    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-    
-    Matrix4 check = glScale * glTranslate;
-    DVASSERT(check == renderer2d.viewMatrix);
 }
 	
 

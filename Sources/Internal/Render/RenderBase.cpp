@@ -313,6 +313,11 @@ const FastName DYNAMIC_PARAM_NAMES[] =
 //        FastName("objectScale"),
     };
 
+const FastName INSTANCE_PARAM_NAMES[] =
+{
+    FastName("worldViewProjection")
+};
+
 RenderGuard::RenderGuard()
 {
     wrongCall = false;

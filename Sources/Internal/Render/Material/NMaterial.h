@@ -362,11 +362,34 @@ public:
      - shader uniforms will be set
      - textures will be set
      - render state will be set
-     \param[in] passName name of the render pass.
-     \param[in] camera active camera.
+     \param[in] passName name of the render pass.     
 	 */
-	void BindMaterialTechnique(const FastName & passName, Camera* camera);
+	void BindMaterialTechnique(const FastName & passName);
+
+     /**
+	 \brief Set Active pass without binding anything     
+     \param[in] passName name of the render pass.     
+	 */
+    void SetActivePass(const FastName& passName);
+
+    /**
+	 \brief returns Active pass shader     
+	 */
+    Shader* GetActivePassShader() const;
+
+    /**
+	 \brief returns Active pass render state handle     
+	 */
+    UniqueHandle GetActivePassRenderStateHandle() const;
+    /**
+	 \brief returns Active pass texture state handle     
+	 */
+    UniqueHandle GetActivePassTextureStateHandle() const;
     
+    /**
+	 \brief returns false for material instances that have non-instancable params
+	 */
+    inline bool IsInstancingSupported() const;
     /**
 	 \brief Returns set of flags representing vertex format required by the material.
      That set of flags corresponds to shader attributes.
@@ -851,6 +874,8 @@ protected:
 	HashMap<FastName, int32> materialSetFlags; //VI: flags set in the current material only
 	
     uint32                  renderLayerIDsBitmask;
+
+    bool supportsInstancing;
 		
 protected:
 	
@@ -1083,6 +1108,11 @@ inline NMaterial* NMaterial::GetChild(uint32 index) const
 {
     DVASSERT(index >= 0 && index < children.size());
     return children[index];
+}
+
+inline bool NMaterial::IsInstancingSupported() const
+{
+    return supportsInstancing;
 }
 
 inline uint32 NMaterial::GetRequiredVertexFormat() const

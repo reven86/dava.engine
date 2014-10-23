@@ -83,7 +83,7 @@ void ShadowVolumeRenderLayer::SetBlendMode(ShadowPassBlendMode::eBlend _blendMod
 	blendMode = _blendMode;
 }
 
-void ShadowVolumeRenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
+void ShadowVolumeRenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
 {	
     if(!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
     {
@@ -96,7 +96,7 @@ void ShadowVolumeRenderLayer::Draw(const FastName & ownerRenderPass, Camera * ca
         {
             CreateShadowRect();
         }    	
-		RenderLayer::Draw(ownerRenderPass, camera, renderLayerBatchArray);			
+		RenderLayer::DrawRenderBatchArray(ownerRenderPass, camera, renderLayerBatchArray);			
 		RenderManager::Instance()->SetRenderState((ShadowPassBlendMode::MODE_BLEND_ALPHA == blendMode) ? blendAlphaState : blendMultiplyState);									
 		shadowRect->Draw();
 	}	

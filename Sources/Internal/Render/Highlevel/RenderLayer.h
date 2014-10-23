@@ -52,7 +52,7 @@ public:
 	inline const FastName & GetName() const;
 	inline uint32 GetFlags() const;
 
-    virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
+    void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
     
     inline uint32 GetFragmentStats() const;
     
@@ -64,12 +64,33 @@ protected:
     OcclusionQuery* occlusionQuery;
     uint32 lastFragmentsRenderedValue;
     bool queryPending;
+
+    virtual void DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
     
 public:
     INTROSPECTION(RenderLayer,
         MEMBER(name, "Name", I_VIEW )
         //COLLECTION(renderBatchArray, "Render Batch Array", I_VIEW)
     );
+};
+
+
+class InstancedRenderLayer : public RenderLayer
+{
+public:
+    const static int32 MAX_INSTANCES_COUNT = 32;
+
+    virtual void DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
+
+protected:
+    void StartInstancingGroup(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera);
+    bool AppendInstance(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera);
+    void CompleteInstancingGroup(const FastName & ownerRenderPass, Camera * camera);
+    
+private:
+    Vector<std::pair<Shader::Uniform* , Vector<uint8> > > incomingUniformValues; //anyway we are to collect this to data arrays.
+    RenderBatch * incomingGroup;
+    int32 currInstancesCount;
 };
     
 inline RenderLayerID RenderLayer::GetRenderLayerID() const

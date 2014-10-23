@@ -222,7 +222,8 @@ dynamicBindFlags(0),
 materialTemplate(NULL),
 materialProperties(16),
 instancePassRenderStates(4),
-materialSortKey(0)
+materialSortKey(0),
+supportsInstancing(true)
 {
 	memset(lights, 0, sizeof(lights));
 }
@@ -1422,18 +1423,44 @@ void NMaterial::PrepareTextureState(RenderPassInstance* passInstance)
 	passInstance->texturesDirty = false;
 }
 
-void NMaterial::BindMaterialTechnique(const FastName & passName, Camera* camera)
+void NMaterial::SetActivePass(const FastName& passName)
 {
-	if(activePassName != passName)
-	{
-		activePassName = passName;
-		activeRenderPass = baseTechnique->GetPassByName(passName);
-		activePassInstance = instancePasses.at(passName);
-		
-		DVASSERT(activeRenderPass);
-		DVASSERT(activePassInstance);
-	}
+    if(activePassName != passName)
+    {
+        activePassName = passName;
+        activeRenderPass = baseTechnique->GetPassByName(passName);
+        activePassInstance = instancePasses.at(passName);
+
+        DVASSERT(activeRenderPass);
+        DVASSERT(activePassInstance);
+    }
+}
+
+
+Shader* NMaterial::GetActivePassShader() const
+{
+    DVASSERT(activePassInstance);
+    return activePassInstance->GetShader();
+}
+
+
+UniqueHandle NMaterial::GetActivePassRenderStateHandle() const
+{
+    DVASSERT(activePassInstance);
+    return activePassInstance->GetRenderStateHandle();
+}
+
+UniqueHandle NMaterial::GetActivePassTextureStateHandle() const
+{
+    DVASSERT(activePassInstance);
+    return activePassInstance->GetTextureStateHandle();
+}
+
+void NMaterial::BindMaterialTechnique(const FastName & passName)
+{
 	
+	SetActivePass(passName);
+
 	//VI: this call is temporary solution. It will be removed once autobind system and lighting system ready
 	//SetupPerFrameProperties(camera);
 	
