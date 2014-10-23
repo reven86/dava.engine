@@ -106,7 +106,7 @@ void RenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera 
 
 void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
 {
-    NMaterial *material = batch->GetMaterial();
+    /*NMaterial *material = batch->GetMaterial();
     if (!material->IsInstancingSupported())//just draw and forget
     {        
         batch->Draw(ownerRenderPass, camera);            
@@ -134,7 +134,7 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
             get from dynamic params
         else
             Memcpy(&incomingUniformValues[i].second[0], material->GetPropertyValue(uniform->name)->data, uniformDataSize);
-    }
+    }*/
 
     
 
@@ -142,7 +142,7 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
 
 bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
 {
-    if (currInstancesCount==MAX_INSTANCES_COUNT)
+    /*if (currInstancesCount==MAX_INSTANCES_COUNT)
         return false;
     NMaterial *material = batch->GetMaterial();
     if (!material->IsInstancingSupported())
@@ -161,14 +161,16 @@ bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & o
         return false;
     }
 
-    /*try to bind dynamic params*/
+    //try to bind dynamic params
     batch->GetRenderObject()->BindDynamicParameters(camera);
     Shader *shader = incomingMaterial->GetActivePassShader();
     bool bindResult = shader->CollectDinamycParams();
     if (!bindResult)
         return false;
 
-    /*and finally here we know it can be append to instance group*/
+    //and finally here we know it can be append to instance group
+    */
+    return true;
 }
 void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderPass, Camera * camera)
 {

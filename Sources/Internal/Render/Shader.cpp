@@ -829,7 +829,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Matrix3 & m
     }
 }
 
-void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType uniformType, uint32 arraySize, void * data)
+void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType uniformType, uint32 arraySize, const void * data)
 {
 #ifdef USE_CRC_COMPARE
     int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * currentUniform->size;
@@ -842,55 +842,55 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType unif
         switch(uniformType)
         {
             case Shader::UT_FLOAT:
-                RENDER_VERIFY(glUniform1fv(currentUniform->location, arraySize, (float*)data));
+                RENDER_VERIFY(glUniform1fv(currentUniform->location, arraySize, (const float32*)data));
                 break;
             case Shader::UT_FLOAT_VEC2:
-                RENDER_VERIFY(glUniform2fv(currentUniform->location, arraySize, (float*)data));
+                RENDER_VERIFY(glUniform2fv(currentUniform->location, arraySize, (const float32*)data));
                 break;
             case Shader::UT_FLOAT_VEC3:
-                RENDER_VERIFY(glUniform3fv(currentUniform->location, arraySize, (float*)data));
+                RENDER_VERIFY(glUniform3fv(currentUniform->location, arraySize, (float32*)data));
                 break;
             case Shader::UT_FLOAT_VEC4:
-                RENDER_VERIFY(glUniform4fv(currentUniform->location, arraySize, (float*)data));
+                RENDER_VERIFY(glUniform4fv(currentUniform->location, arraySize, (const float32*)data));
                 break;
             case Shader::UT_INT:
-                RENDER_VERIFY(glUniform1iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform1iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_INT_VEC2:
-                RENDER_VERIFY(glUniform2iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform2iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_INT_VEC3:
-                RENDER_VERIFY(glUniform3iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform3iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_INT_VEC4:
-                RENDER_VERIFY(glUniform4iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform4iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_BOOL:
-                RENDER_VERIFY(glUniform1iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform1iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_BOOL_VEC2:
-                RENDER_VERIFY(glUniform2iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform2iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_BOOL_VEC3:
-                RENDER_VERIFY(glUniform3iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform3iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_BOOL_VEC4:
-                RENDER_VERIFY(glUniform4iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform4iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_FLOAT_MAT2:
-                RENDER_VERIFY(glUniformMatrix2fv(currentUniform->location, arraySize, GL_FALSE, (float32*)data));
+                RENDER_VERIFY(glUniformMatrix2fv(currentUniform->location, arraySize, GL_FALSE, (const float32*)data));
                 break;
             case Shader::UT_FLOAT_MAT3:
-                RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, arraySize, GL_FALSE, (float32*)data));
+                RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, arraySize, GL_FALSE, (const float32*)data));
                 break;
             case Shader::UT_FLOAT_MAT4:
-                RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, arraySize, GL_FALSE, (float32*)data));
+                RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, arraySize, GL_FALSE, (const float32*)data));
                 break;
             case Shader::UT_SAMPLER_2D:
-                RENDER_VERIFY(glUniform1iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform1iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
             case Shader::UT_SAMPLER_CUBE:
-                RENDER_VERIFY(glUniform1iv(currentUniform->location, arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform1iv(currentUniform->location, arraySize, (const int32*)data));
                 break;
         }
     }
@@ -1041,292 +1041,17 @@ void Shader::BindDynamicParameters()
     for(uint8 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform* currentUniform = autobindUniforms[k];
-        
-        switch (currentUniform->shaderSemantic)
+        const void *data = RenderManager::GetDynamicParam(currentUniform->shaderSemantic); //as it can recompute param and change update semantic
+        pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
+        if (_updateSemantic != currentUniform->updateSemantic)
         {
-            case PARAM_WORLD_VIEW_PROJ:
-            {
-                RenderManager::ComputeWorldViewProjMatrixIfRequired();
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD_VIEW_PROJ);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    Matrix4 * worldViewProj = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW_PROJ);
-                    SetUniformValueByUniform(currentUniform, *worldViewProj);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-
-//                    Matrix4 * worldViewProj = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW_PROJ);
-//                    Matrix4 * world = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
-//                    Matrix4 * view = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_VIEW);
-//                    Matrix4 * proj = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_PROJ);
-//                    Matrix4 cWorldViewProj = (*world) * ((*view) * (*proj));
-//                    DVASSERT(*worldViewProj == cWorldViewProj);
-                break;
-            }
-            case PARAM_WORLD_VIEW:
-            {
-                RenderManager::Instance()->ComputeWorldViewMatrixIfRequired();
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD_VIEW);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    Matrix4 * worldView = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW);
-                    SetUniformValueByUniform(currentUniform, *worldView);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_WORLD_SCALE:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-
-                    Matrix4 * world = (Matrix4*)RenderManager::GetDynamicParam(PARAM_WORLD);
-                    //TODO: GetScaleVector() is slow
-                    SetUniformValueByUniform(currentUniform, world->GetScaleVector());
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_PROJ:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_PROJ);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    Matrix4 * proj = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
-                    SetUniformValueByUniform(currentUniform, *proj);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_INV_WORLD_VIEW:
-            {
-                RenderManager::Instance()->ComputeInvWorldViewMatrixIfRequired();
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_INV_WORLD_VIEW);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    Matrix4 * proj = (Matrix4*)RenderManager::GetDynamicParam(PARAM_INV_WORLD_VIEW);
-                    SetUniformValueByUniform(currentUniform, *proj);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_WORLD_VIEW_INV_TRANSPOSE:
-            {
-                RenderManager::Instance()->ComputeWorldViewInvTransposeMatrixIfRequired();
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD_VIEW_INV_TRANSPOSE);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-
-                    Matrix3 * normalMatrix = (Matrix3*)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW_INV_TRANSPOSE);
-//                        Matrix3 matrixInside;
-//                        glGetUniformfv(program, currentUniform->location, (GLfloat*)&matrixInside);
-//                        
-//                        if (matrixInside == *normalMatrix)
-//                        {
-//                            int32 k = 0;
-//                        }
-//                        
-                    SetUniformValueByUniform(currentUniform, *normalMatrix);
-                    //RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, 1, GL_FALSE, (GLfloat*)normalMatrix));
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
+            RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
             
-            case PARAM_WORLD_INV_TRANSPOSE:
-            {
-                RenderManager::Instance()->ComputeWorldInvTransposeMatrixIfRequired();
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD_INV_TRANSPOSE);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    
-                    Matrix3 * worldInvTranspose = (Matrix3*)RenderManager::GetDynamicParam(PARAM_WORLD_INV_TRANSPOSE);
-                    SetUniformValueByUniform(currentUniform, *worldInvTranspose);
-                    //RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, 1, GL_FALSE, matrix));
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            
-            case PARAM_INV_VIEW:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_INV_VIEW);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    
-                    Matrix4 * invViewMatrix = (Matrix4*)RenderManager::GetDynamicParam(PARAM_INV_VIEW);
-                    SetUniformValueByUniform(currentUniform, *invViewMatrix);
-                    //RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, invViewMatrix->data));
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            
-            
-            case PARAM_WORLD:
-            case PARAM_VIEW:
-            case PARAM_INV_VIEW_PROJ:
-            case PARAM_VIEW_PROJ:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    Matrix4 * matrix = (Matrix4 *)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-//                        if (currentUniform->shaderSemantic == PARAM_WORLD)
-//                        {
-//                            for (uint32 k = 0; k < 4; ++k)
-//                                Logger::Debug(Format("%f %f %f %f", worldMatrix[k * 4 + 0], worldMatrix[k * 4 + 1], worldMatrix[k * 4 + 2], worldMatrix[k * 4 + 3]).c_str());
-//                            Logger::Debug("");
-//                        }
-                    SetUniformValueByUniform(currentUniform, *matrix);
-                    //RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, worldMatrix));
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            
-            case PARAM_CAMERA_POS:
-            case PARAM_CAMERA_DIR:
-            case PARAM_CAMERA_UP:
-            case PARAM_LIGHT0_COLOR:
-            case PARAM_LIGHT0_AMBIENT_COLOR:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    Vector3 * param = (Vector3*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    SetUniformValueByUniform(currentUniform, *param);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_LIGHT0_POSITION:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    SetUniformValueByUniform(currentUniform, *param);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_WORLD_VIEW_OBJECT_CENTER:
-            {
-                RenderManager::Instance()->ComputeWorldViewMatrixIfRequired();
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD_VIEW);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    AABBox3 * objectBox = (AABBox3*)RenderManager::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
-                    Matrix4 * worldView = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW);
-                    Vector3 param = objectBox->GetCenter() * (*worldView);
-                    SetUniformValueByUniform(currentUniform, param);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_BOUNDING_BOX_SIZE:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_LOCAL_BOUNDING_BOX);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    AABBox3 * objectBox = (AABBox3*)RenderManager::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
-                    Vector3 param = objectBox->GetSize();
-                    SetUniformValueByUniform(currentUniform, param);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_SPEED_TREE_LEAFS_OSCILLATION:
-            case PARAM_SPEED_TREE_TRUNK_OSCILLATION:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    Vector2 * param = (Vector2*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    SetUniformValueByUniform(currentUniform, *param);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_SPEED_TREE_LIGHT_SMOOTHING:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    float32 * param = (float32*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    SetUniformValueByUniform(currentUniform, *param);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-            case PARAM_SPHERICAL_HARMONICS:
-            {
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_SPHERICAL_HARMONICS);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    Vector3 * param = (Vector3*)RenderManager::GetDynamicParam(PARAM_SPHERICAL_HARMONICS);
-                    SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC3, currentUniform->size, param);
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
-
-            case PARAM_JOINT_POSITIONS:
-                {
-                    int32 count = *((int32*)RenderManager::GetDynamicParam(PARAM_JOINTS_COUNT));
-                    pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_JOINT_POSITIONS);
-                    if (_updateSemantic != currentUniform->updateSemantic)
-                    {
-                        Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(PARAM_JOINT_POSITIONS);
-                        SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC4, count, param);
-                        currentUniform->updateSemantic = _updateSemantic;
-                    }
-                    break;
-                }
-            case PARAM_JOINT_QUATERNIONS:
-                {
-                    int32 count = *((int32*)RenderManager::GetDynamicParam(PARAM_JOINTS_COUNT));
-                    pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_JOINT_QUATERNIONS);
-                    if (_updateSemantic != currentUniform->updateSemantic)
-                    {
-                        Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(PARAM_JOINT_QUATERNIONS);
-                        SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC4, count, param);
-                        currentUniform->updateSemantic = _updateSemantic;
-                    }
-                    break;
-                }
-            case PARAM_COLOR:
-            {
-                const Color & c = RenderManager::Instance()->GetColor();
-                SetUniformColor4ByUniform(currentUniform, c);
-                break;
-            }
-            
-            case PARAM_GLOBAL_TIME:
-            {
-                if (currentUniform->updateSemantic != Core::Instance()->GetGlobalFrameIndex())
-                {
-                    float32 globalTime = SystemTimer::Instance()->GetGlobalTime();
-                    SetUniformValueByUniform(currentUniform, globalTime);
-                    currentUniform->updateSemantic = Core::Instance()->GetGlobalFrameIndex();
-                }
-            };
-            default:
-                break;
+            int32 count = RenderManager::GetDynamicParamArraySize(currentUniform->shaderSemantic, currentUniform->size);
+            SetUniformValueByUniform(currentUniform, currentUniform->type, count, data);
+            currentUniform->updateSemantic = _updateSemantic;
         }
+        
     }
     
 }

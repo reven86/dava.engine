@@ -266,7 +266,7 @@ public:
     void SetUniformValueByIndex(int32 uniformIndex, const Matrix4 & matrix);
 	void SetUniformValueByIndex(int32 uniformIndex, const Matrix3 & matrix);
 	
-    void SetUniformValueByUniform(Uniform* uniform, eUniformType uniformType, uint32 arraySize, void * data);
+    void SetUniformValueByUniform(Uniform* uniform, eUniformType uniformType, uint32 arraySize, const void * data);
 	void SetUniformValueByUniform(Uniform* uniform, int32 value);
     void SetUniformValueByUniform(Uniform* uniform, float32 value);
     void SetUniformValueByUniform(Uniform* uniform, const Vector2 & vector);

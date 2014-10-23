@@ -46,6 +46,7 @@
 #include "Render/UniqueStateSet.h"
 #include "Render/RenderStateData.h"
 #include "Render/TextureStateData.h"
+#include "Platform/SystemTimer.h"
 
 #include <stack>
 
@@ -512,16 +513,26 @@ public:
     static Matrix3 normalMatrix;
     static Matrix4 invWorldMatrix;
     static Matrix3 worldInvTransposeMatrix;
+    static Vector3 worldScale;
+    static Vector3 boundingBoxSize;
+    static Vector3 worldViewObjectCenter;
+    static float32 frameGlobalTime;
 
     static inline void SetDynamicParam(eShaderSemantic shaderSemantic, const void * value, pointer_size updateSemantic);
     
-    static inline const void * GetDynamicParam(eShaderSemantic shaderSemantic);
+    static const void * GetDynamicParam(eShaderSemantic shaderSemantic);
+    static int32 GetDynamicParamArraySize(eShaderSemantic shaderSemantic, int32 defaultValue);
+
     static inline const Matrix4 & GetDynamicParamMatrix(eShaderSemantic shaderSemantic);
     static inline void ComputeWorldViewMatrixIfRequired();
+    static inline void ComputeWorldScaleIfRequired();
     static inline void ComputeViewProjMatrixIfRequired();
     static inline void ComputeWorldViewProjMatrixIfRequired();
     static inline void ComputeInvWorldViewMatrixIfRequired();
     static inline void ComputeWorldViewInvTransposeMatrixIfRequired();
+    static inline void ComputeLocalBoundingBoxSizeIfRequired();
+    static inline void ComputeWorldViewObjectCenterIfRequired();
+    static inline void UpdateGlobalTimeIfRequired();
     
     static inline void ComputeInvWorldMatrixIfRequired();
     static inline void ComputeWorldInvTransposeMatrixIfRequired();
@@ -821,7 +832,7 @@ inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const
         {
             case PARAM_WORLD:
                 dynamicParamersRequireUpdate |= ((1 << PARAM_INV_WORLD) | ( 1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW) |  (1 << PARAM_WORLD_VIEW_OBJECT_CENTER)
-                                                 | ( 1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ) | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) | (1 << PARAM_WORLD_INV_TRANSPOSE));
+                                                 | ( 1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ) | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) | (1 << PARAM_WORLD_INV_TRANSPOSE) | (1 << PARAM_WORLD_SCALE));
             break;
             case PARAM_VIEW:
                 dynamicParamersRequireUpdate |= (   (1 << PARAM_INV_VIEW)
@@ -838,6 +849,8 @@ inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const
                 dynamicParamersRequireUpdate |= ((1 << PARAM_INV_PROJ) | (1 << PARAM_VIEW_PROJ) | (1 << PARAM_INV_VIEW_PROJ) |
                                                  (1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ));
             break;
+            case PARAM_LOCAL_BOUNDING_BOX:
+                dynamicParamersRequireUpdate |= (1 << PARAM_BOUNDING_BOX_SIZE) | (1 << PARAM_WORLD_VIEW_OBJECT_CENTER);
             default:
             break;
         }
@@ -856,6 +869,49 @@ inline void RenderManager::ComputeWorldViewMatrixIfRequired()
     {
         worldViewMatrix = GetDynamicParamMatrix(PARAM_WORLD) * GetDynamicParamMatrix(PARAM_VIEW);
         SetDynamicParam(PARAM_WORLD_VIEW, &worldViewMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+
+inline void RenderManager::ComputeWorldViewObjectCenterIfRequired()
+{
+    RenderManager::Instance()->ComputeWorldViewMatrixIfRequired();
+    if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW_OBJECT_CENTER))
+    {
+        AABBox3 * objectBox = (AABBox3*)RenderManager::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
+        Matrix4 * worldView = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW);
+        worldViewObjectCenter = objectBox->GetCenter() * (*worldView);
+        SetDynamicParam(PARAM_WORLD_VIEW_OBJECT_CENTER, &worldViewObjectCenter, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+
+inline void RenderManager::ComputeWorldScaleIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_SCALE))
+    {
+        worldScale = GetDynamicParamMatrix(PARAM_WORLD).GetScaleVector();
+        
+        SetDynamicParam(PARAM_WORLD_SCALE, &worldScale, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+
+inline void RenderManager::UpdateGlobalTimeIfRequired()
+{
+    uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
+    if (dynamicParameters[PARAM_GLOBAL_TIME].updateSemantic!=globalFrameIndex)
+    {
+        frameGlobalTime = SystemTimer::Instance()->GetGlobalTime();
+        SetDynamicParam(PARAM_GLOBAL_TIME, &frameGlobalTime, globalFrameIndex);
+    }                
+}
+
+inline void RenderManager::ComputeLocalBoundingBoxSizeIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_BOUNDING_BOX_SIZE))
+    {
+        AABBox3 * objectBox = (AABBox3*)RenderManager::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
+        boundingBoxSize = objectBox->GetSize();
+
+        SetDynamicParam(PARAM_BOUNDING_BOX_SIZE, &boundingBoxSize, UPDATE_SEMANTIC_ALWAYS);
     }
 }
     
@@ -921,11 +977,7 @@ inline void RenderManager::ComputeWorldInvTransposeMatrixIfRequired()
     }
 }
  
-const void * RenderManager::GetDynamicParam(eShaderSemantic shaderSemantic)
-{
-    DVASSERT(dynamicParameters[shaderSemantic].value != 0);
-    return dynamicParameters[shaderSemantic].value;
-}
+
 
 #define SET_DYNAMIC_PARAM(x, y, z) RenderManager::SetDynamicParam(x, y, z)
 #define GET_DYNAMIC_PARAM(x) RenderManager::dynamicParameters[x]

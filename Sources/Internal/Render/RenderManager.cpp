@@ -55,6 +55,10 @@ Matrix4 RenderManager::invWorldViewMatrix;
 Matrix3 RenderManager::normalMatrix;
 Matrix4 RenderManager::invWorldMatrix;
 Matrix3 RenderManager::worldInvTransposeMatrix;
+Vector3 RenderManager::worldScale;
+Vector3 RenderManager::worldViewObjectCenter;
+Vector3 RenderManager::boundingBoxSize;
+float32 RenderManager::frameGlobalTime;
 
     
 RenderManager::RenderManager(Core::eRenderer _renderer)
@@ -841,5 +845,50 @@ void RenderManager::Setup2DMatrices()
 }
     
 
+int32 RenderManager::GetDynamicParamArraySize(eShaderSemantic shaderSemantic, int32 defaultValue)
+{
+    if ((shaderSemantic==PARAM_JOINT_POSITIONS)||(shaderSemantic ==PARAM_JOINT_QUATERNIONS))
+        return *((int32*)GetDynamicParam(PARAM_JOINTS_COUNT));
+    else
+        return defaultValue;    
+}
+const void * RenderManager::GetDynamicParam(eShaderSemantic shaderSemantic)
+{
+    switch (shaderSemantic)
+    {
+    case PARAM_WORLD_VIEW_PROJ:        
+        ComputeWorldViewProjMatrixIfRequired();                    
+        break;
+    case PARAM_WORLD_VIEW:    
+        ComputeWorldViewMatrixIfRequired();            
+        break;    
+    case PARAM_WORLD_SCALE:        
+        ComputeWorldScaleIfRequired();
+        break;            
+    case PARAM_INV_WORLD_VIEW:        
+        ComputeInvWorldViewMatrixIfRequired();            
+        break;
+    case PARAM_WORLD_VIEW_INV_TRANSPOSE:    
+        ComputeWorldViewInvTransposeMatrixIfRequired();            
+        break;    
+    case PARAM_WORLD_INV_TRANSPOSE:        
+        ComputeWorldInvTransposeMatrixIfRequired();            
+        break;        
+    case PARAM_WORLD_VIEW_OBJECT_CENTER:
+        RenderManager::Instance()->ComputeWorldViewMatrixIfRequired();            
+        break;        
+    case PARAM_BOUNDING_BOX_SIZE:        
+        ComputeLocalBoundingBoxSizeIfRequired();            
+        break;           
+    case PARAM_COLOR:
+        SetDynamicParam(PARAM_COLOR, &RenderManager::Instance()->currentState.color, UPDATE_SEMANTIC_ALWAYS);        
+        break;        
+    case PARAM_GLOBAL_TIME:
+        UpdateGlobalTimeIfRequired();
+        break;        
+    }
+    DVASSERT(dynamicParameters[shaderSemantic].value != 0);
+    return dynamicParameters[shaderSemantic].value;
+}
 	
 };
