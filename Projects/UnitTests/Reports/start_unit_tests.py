@@ -5,9 +5,16 @@ import sys
 
 # TODO start application on device or else where then start server to listen unit test log output
 # some_command_to_start_app_on_device
+
 if sys.platform == 'win32':
     subprocess.Popen(["..\Debug\UnitTestsVS2010.exe",
                       "127.0.0.1", "50007"], cwd="./..")
+elif sys.platform == "darwin":
+    # /Users/user123/Library/Developer/Xcode/DerivedData/TemplateProjectMacOS-bpogfklmgukhlmbnpxhfcjhfiwfq/Build/Products/Debug/UnitTests
+    app_path = "/Users/user123/Library/Developer/Xcode/DerivedData/TemplateProjectMacOS-bpogfklmgukhlmbnpxhfcjhfiwfq/Build/Products/Debug/UnitTests.app"
+    subprocess.Popen(["open", "-a", app_path])  # , "127.0.0.1", "50007"
+    # TODO run on mac os x
+    pass
 
 HOST = 'localhost'        # Symbolic name meaning the local host
 PORT = 50007              # Arbitrary non-privileged port
