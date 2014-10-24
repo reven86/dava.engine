@@ -74,9 +74,9 @@ public:
         BaseClassType::InternalClose (&HandleCloseThunk);
     }
 
-    void StopAsyncRead ()
+    int StopAsyncRead ()
     {
-        uv_read_stop (HandleAsStream ());
+        return uv_read_stop (HandleAsStream ());
     }
 
     int LocalEndpoint (Endpoint& endpoint)
@@ -97,17 +97,17 @@ protected:
         return uv_tcp_connect (&connectRequest, Handle (), endpoint.CastToSockaddr (), &HandleConnectThunk);
     }
 
-    void InternalAsyncRead (void* buffer, std::size_t size)
+    int InternalAsyncRead (void* buffer, std::size_t size)
     {
         DVASSERT (buffer && size > 0);
 
         externalReadBuffer     = buffer;
         externalReadBufferSize = size;
-        uv_read_start (HandleAsStream (), &HandleAllocThunk, &HandleReadThunk);
+        return uv_read_start (HandleAsStream (), &HandleAllocThunk, &HandleReadThunk);
     }
 
     template<typename WriteRequestType>
-    void InternalAsyncWrite (WriteRequestType* request, const void* buffer, std::size_t size)
+    int InternalAsyncWrite (WriteRequestType* request, const void* buffer, std::size_t size)
     {
         /*
          WriteRequestType should have following public members:
@@ -121,7 +121,7 @@ protected:
         request->buffer       = uv_buf_init (static_cast<char*> (const_cast<void*> (buffer)), size);    // uv_buf_init doesn't modify buffer
         request->request.data = request;
 
-        uv_write (&request->request, HandleAsStream (), &request->buffer, 1, &HandleWriteThunk<WriteRequestType>);
+        return uv_write (&request->request, HandleAsStream (), &request->buffer, 1, &HandleWriteThunk<WriteRequestType>);
     }
 
 private:
@@ -142,6 +142,7 @@ private:
     static void HandleCloseThunk (uv_handle_t* handle)
     {
         DerivedClassType* pthis = static_cast<DerivedClassType*> (handle->data);
+        pthis->CleanUpBeforeNextUse ();
         pthis->HandleClose ();
     }
 
@@ -166,9 +167,9 @@ private:
             nread = 0;
         }
         DerivedClassType* pthis = static_cast<DerivedClassType*> (handle->data);
-        pthis->HandleRead (error, nread, buffer);
         if (!autoReadFlag && 0 == error)
             pthis->StopAsyncRead ();
+        pthis->HandleRead (error, nread, buffer);
     }
 
     template<typename WriteRequestType>

@@ -29,7 +29,7 @@ int TCPSocketBase::Bind (const char* ipaddr, unsigned short port)
 
     Endpoint endpoint;
     int result = uv_ip4_addr (ipaddr, port, endpoint.CastToSockaddrIn ());
-    if (result == 0)
+    if (0 == result)
         result = Bind (endpoint);
     return result;
 }
@@ -43,6 +43,12 @@ void TCPSocketBase::InternalClose (uv_close_cb callback)
 {
     if (!IsClosed ())
         uv_close (HandleAsHandle (), callback);
+}
+
+void TCPSocketBase::CleanUpBeforeNextUse ()
+{
+    //DVASSERT (handle.socket == INVALID_SOCKET);
+    uv_tcp_init (loop->Handle (), &handle);
 }
 
 }	// namespace DAVA

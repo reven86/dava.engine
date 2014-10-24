@@ -4,6 +4,7 @@ namespace DAVA {
 
 TCPSocket::TCPSocket (IOLoop* ioLoop, bool autoDeleteOnCloseFlag) : BaseClassType (ioLoop)
                                                                   , autoDeleteOnClose (autoDeleteOnCloseFlag)
+                                                                  , closeHandler ()
                                                                   , connectHandler ()
                                                                   , readHandler ()
 {
@@ -12,6 +13,9 @@ TCPSocket::TCPSocket (IOLoop* ioLoop, bool autoDeleteOnCloseFlag) : BaseClassTyp
 
 void TCPSocket::HandleClose ()
 {
+    if (!(closeHandler == 0))
+        closeHandler (this);
+
     if (autoDeleteOnClose)
         delete this;
 }

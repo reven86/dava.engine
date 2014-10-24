@@ -26,6 +26,7 @@ public:
     typedef UDPSocketTemplate<UDPSocket, false> BaseClassType;
     typedef UDPSocket                           ThisClassType;
 
+    typedef DAVA::Function<void (ThisClassType* socket)>                                                                                     CloseHandlerType;
     typedef DAVA::Function<void (ThisClassType* socket, int error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial)> ReceiveHandlerType;
     typedef DAVA::Function<void (ThisClassType* socket, int error, const void* buffer)>                                                      SendHandlerType;
 
@@ -41,22 +42,30 @@ public:
     ~UDPSocket () {}
 
     template <typename Handler>
-    void AsyncReceive (void* buffer, std::size_t size, Handler handler)
+    void SetCloseHandler (Handler handler)
+    {
+        closeHandler = handler;
+    }
+
+    template <typename Handler>
+    int AsyncReceive (void* buffer, std::size_t size, Handler handler)
     {
         DVASSERT (buffer && size && !(handler == 0));
 
         receiveHandler = handler;
-        BaseClassType::InternalAsyncReceive (buffer, size);
+        return BaseClassType::InternalAsyncReceive (buffer, size);
     }
 
     template <typename Handler>
-    void AsyncSend (const Endpoint& endpoint, const void* buffer, std::size_t size, Handler handler)
+    int AsyncSend (const Endpoint& endpoint, const void* buffer, std::size_t size, Handler handler)
     {
         DVASSERT (buffer && size && !(handler == 0));
 
         SendRequest* request = new SendRequest (handler);
-        BaseClassType::InternalAsyncSend (request, buffer, size, endpoint);
+        return BaseClassType::InternalAsyncSend (request, buffer, size, endpoint);
     }
+
+    void HandleClose ();
 
     void HandleReceive (int error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial);
 
@@ -64,6 +73,7 @@ public:
 
 private:
     bool               autoDeleteOnClose;   // TODO: do I really need this flag?
+    CloseHandlerType   closeHandler;
     ReceiveHandlerType receiveHandler;
 };
 

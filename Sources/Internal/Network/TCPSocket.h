@@ -27,6 +27,7 @@ public:
     typedef TCPSocketTemplate<TCPSocket, false> BaseClassType;
     typedef TCPSocket                           ThisClassType;
 
+    typedef DAVA::Function<void (ThisClassType* socket)>                                             CloseHandlerType;
     typedef DAVA::Function<void (ThisClassType* socket, int error)>                                  ConnectHandlerType;
     typedef DAVA::Function<void (ThisClassType* socket, int error, std::size_t nread, void* buffer)> ReadHandlerType;
     typedef DAVA::Function<void (ThisClassType* socket, int error, const void* buffer)>              WriteHandlerType;
@@ -43,30 +44,36 @@ public:
     ~TCPSocket () {}
 
     template <typename Handler>
-    void AsyncConnect (const Endpoint& endpoint, Handler handler)
+    void SetCloseHandler (Handler handler)
+    {
+        closeHandler = handler;
+    }
+
+    template <typename Handler>
+    int AsyncConnect (const Endpoint& endpoint, Handler handler)
     {
         DVASSERT (!(handler == 0));
 
         connectHandler = handler;
-        BaseClassType::InternalAsyncConnect (endpoint);
+        return BaseClassType::InternalAsyncConnect (endpoint);
     }
 
     template <typename Handler>
-    void AsyncRead (void* buffer, std::size_t size, Handler handler)
+    int AsyncRead (void* buffer, std::size_t size, Handler handler)
     {
         DVASSERT (buffer && size && !(handler == 0));
 
         readHandler = handler;
-        BaseClassType::InternalAsyncRead (buffer, size);
+        return BaseClassType::InternalAsyncRead (buffer, size);
     }
 
     template <typename Handler>
-    void AsyncWrite (const void* buffer, std::size_t size, Handler handler)
+    int AsyncWrite (const void* buffer, std::size_t size, Handler handler)
     {
         DVASSERT (buffer && size && !(handler == 0));
 
         WriteRequest* request = new WriteRequest (handler);
-        BaseClassType::InternalAsyncWrite (request, buffer, size);
+        return BaseClassType::InternalAsyncWrite (request, buffer, size);
     }
 
     void HandleClose ();
@@ -79,6 +86,7 @@ public:
 
 private:
     bool               autoDeleteOnClose;   // TODO: do I really need this flag?
+    CloseHandlerType   closeHandler;
     ConnectHandlerType connectHandler;
     ReadHandlerType    readHandler;
 };

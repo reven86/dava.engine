@@ -57,4 +57,10 @@ void UDPSocketBase::InternalClose (uv_close_cb callback)
         uv_close (HandleAsHandle (), callback);
 }
 
+void UDPSocketBase::CleanUpBeforeNextUse ()
+{
+    //DVASSERT (handle.socket == INVALID_SOCKET);
+    uv_udp_init (loop->Handle (), &handle);
+}
+
 }	// namespace DAVA

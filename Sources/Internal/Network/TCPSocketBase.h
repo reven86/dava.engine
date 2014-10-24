@@ -40,6 +40,8 @@ public:
 protected:
     void InternalClose (uv_close_cb callback);
 
+    void CleanUpBeforeNextUse ();
+
     // Protected destructor to prevent deletion through this type
     ~TCPSocketBase () {}
 

@@ -64,9 +64,9 @@ public:
         BaseClassType::InternalClose (&HandleCloseThunk);
     }
 
-    void StopAsyncReceive ()
+    int StopAsyncReceive ()
     {
-        uv_udp_recv_stop (Handle ());
+        return uv_udp_recv_stop (Handle ());
     }
 
     int LocalEndpoint (Endpoint& endpoint)
@@ -76,17 +76,17 @@ public:
     }
 
 protected:
-    void InternalAsyncReceive (void* buffer, std::size_t size)
+    int InternalAsyncReceive (void* buffer, std::size_t size)
     {
         DVASSERT (buffer && size > 0);
 
         externalReadBuffer     = buffer;
         externalReadBufferSize = size;
-        uv_udp_recv_start (Handle (), &HandleAllocThunk, &HandleReceiveThunk);
+        return uv_udp_recv_start (Handle (), &HandleAllocThunk, &HandleReceiveThunk);
     }
 
     template <typename SendRequestType>
-    void InternalAsyncSend (SendRequestType* request, const void* buffer, std::size_t size, const Endpoint& endpoint)
+    int InternalAsyncSend (SendRequestType* request, const void* buffer, std::size_t size, const Endpoint& endpoint)
     {
         /*
          SendRequestType should have following public members:
@@ -100,7 +100,7 @@ protected:
         request->buffer       = uv_buf_init (static_cast<char*> (const_cast<void*> (buffer)), size);    // uv_buf_init doesn't modify buffer
         request->request.data = request;
 
-        uv_udp_send (&request->request, Handle (), &request->buffer, 1, endpoint.CastToSockaddr (), &HandleSendThunk<SendRequestType>);
+        return uv_udp_send (&request->request, Handle (), &request->buffer, 1, endpoint.CastToSockaddr (), &HandleSendThunk<SendRequestType>);
     }
 
 private:
@@ -119,6 +119,7 @@ private:
     static void HandleCloseThunk (uv_handle_t* handle)
     {
         DerivedClassType* pthis = static_cast<DerivedClassType*> (handle->data);
+        pthis->CleanUpBeforeNextUse ();
         pthis->HandleClose ();
     }
 
@@ -141,9 +142,9 @@ private:
             nread = 0;
         }
         DerivedClassType* pthis = static_cast<DerivedClassType*> (handle->data);
-        pthis->HandleReceive (error, nread, buffer, Endpoint (addr), flags == UV_UDP_PARTIAL);
         if (!autoReadFlag && 0 == error)
             pthis->StopAsyncReceive ();
+        pthis->HandleReceive (error, nread, buffer, Endpoint (addr), flags == UV_UDP_PARTIAL);
     }
 
     template <typename SendRequestType>
