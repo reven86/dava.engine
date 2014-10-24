@@ -49,6 +49,7 @@ public:
 #endif //#if defined(__DAVAENGINE_DIRECTX9__)
 
     void SetFocused(bool focused);
+	bool IsFocused() const;
 
 private:
     bool willQuit;

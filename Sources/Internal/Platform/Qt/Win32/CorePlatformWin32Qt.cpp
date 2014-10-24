@@ -216,9 +216,6 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 
 	case WM_KEYDOWN:
 		{
-			BYTE allKeys[256];
-			GetKeyboardState(allKeys);
-
 			Vector<DAVA::UIEvent> touches;
 			Vector<DAVA::UIEvent> emptyTouches;
 
@@ -271,7 +268,8 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
 			}
 
-			*result = 0;
+			if (result)
+				*result = 0;
 			return true;
 		}
 		break;
@@ -303,10 +301,12 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
     
 void CoreWin32PlatformQt::SetFocused(bool focused)
 {
-	if(isFocused != focused)
-	{
-		isFocused = focused;
-	}
+	isFocused = focused;
+}
+
+bool CoreWin32PlatformQt::IsFocused() const
+{
+	return isFocused;
 }
 
 }

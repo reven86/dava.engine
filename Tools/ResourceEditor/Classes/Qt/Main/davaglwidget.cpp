@@ -44,6 +44,7 @@
 #include <QMouseEvent>
 #include <QFocusEvent>
 #include <QDateTime>
+#include <QAbstractEventDispatcher>
 #include <QDebug>
 
 #if defined (__DAVAENGINE_MACOS__)
@@ -69,7 +70,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	setAttribute(Qt::WA_NativeWindow, true);
 
 #ifdef Q_OS_WIN
-	//setWindowFlags(windowFlags() | Qt::MSWindowsOwnDC);
+	setWindowFlags(windowFlags() | Qt::MSWindowsOwnDC);
 #endif
 
 	setFocusPolicy( Qt::ClickFocus );
@@ -102,27 +103,78 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	// Setup FPS
 	SetMaxFPS(maxFPS);
 
+	QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
+
 	// start render
 	QTimer::singleShot(0, this, SLOT(Render()));
 }
 
 DavaGLWidget::~DavaGLWidget()
 {
+	QAbstractEventDispatcher::instance()->removeNativeEventFilter(this);
 }
-//
-//QPaintEngine *DavaGLWidget::paintEngine() const
-//{
-//	return NULL;
-//}
+
+QPaintEngine *DavaGLWidget::paintEngine() const
+{
+	return NULL;
+}
+
+bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, long* result)
+{
+#if defined(Q_OS_WIN)
+
+	MSG *message = static_cast<MSG *>(msg);
+	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
+	DVASSERT(core);
+
+	bool processMessage = false;
+
+	if ( message->hwnd == reinterpret_cast<HWND>(winId()))
+	{
+		switch ( message->message )
+		{
+		case WM_LBUTTONDOWN:
+		case WM_RBUTTONDOWN:
+		case WM_MBUTTONDOWN:
+			core->SetFocused(true);
+			break;
+
+		default:
+			break;
+		}
+
+		processMessage = true;
+	}
+	else
+	{
+		// Qt5 doesn't pass WM_CHAR, WM_KEY** messages to child QWidget::nativeEvent callback,
+		// so handle this messages globaly
+		switch ( message->message )
+		{
+		case WM_KEYUP:
+		case WM_KEYDOWN:
+		case WM_CHAR:
+			processMessage = core->IsFocused();
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	if (processMessage)
+	{
+		return core->WinEvent(message, result);
+	}
+
+#endif
+
+	return false;
+}
 
 void DavaGLWidget::paintEvent(QPaintEvent *event)
 {
 	Q_UNUSED(event);
-	// We have custom rendering (by timer), so draw only if control is disabled
-	//if(!isEnabled())
-	//{
-	//	QWidget::paintEvent(event);
-	//}
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent *e)
@@ -131,15 +183,6 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 	DAVA::QtLayer::Instance()->Resize(e->size().width(), e->size().height());
 
 	emit Resized(e->size().width(), e->size().height());
-}
-
-void DavaGLWidget::changeEvent(QEvent * event)
-{
-	//if(event->type() == QEvent::EnabledChange)
-	//{
-	//	EnableCustomPaintFlags(isEnabled());
-	//}
-	QWidget::changeEvent( event );
 }
 
 void DavaGLWidget::showEvent(QShowEvent *e)
@@ -161,7 +204,6 @@ void DavaGLWidget::focusInEvent(QFocusEvent *e)
 	QWidget::focusInEvent(e);
 
 	DAVA::QtLayer::Instance()->LockKeyboardInput(true);
-	qDebug() << "focusInEvent";
 }
 
 void DavaGLWidget::focusOutEvent(QFocusEvent *e)
@@ -170,7 +212,6 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 
 	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
-	qDebug() << "focusOutEvent";
 }
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -199,39 +240,6 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 {
 	const QMimeData *mimeData = event->mimeData();
 	emit OnDrop(mimeData);
-}
-
-bool DavaGLWidget::nativeEvent(const QByteArray& eventType, void* msg, long* result)
-{
-#if defined(Q_OS_WIN)
-
-	MSG *message = static_cast<MSG *>(msg);
-
-	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
-	DVASSERT(core);
-
-	if(NULL != message && 
-		(message->message == WM_LBUTTONDOWN ||
-		 message->message == WM_RBUTTONDOWN ||
-		 message->message == WM_MBUTTONDOWN))
-	{
-		core->SetFocused(true);
-	}
-
-	switch ( message->message )
-	{
-	default:
-		qDebug() << message->message;
-		break;
-	}
-
-	return core->WinEvent(message, result);
-
-#else
-
-	return QWidget::nativeEvent(eventType, msg, result);
-
-#endif
 }
 
 #if defined (Q_OS_MAC)

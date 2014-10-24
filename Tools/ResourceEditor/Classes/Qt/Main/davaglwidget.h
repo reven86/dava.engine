@@ -34,6 +34,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <QMimeData>
+#include <QAbstractNativeEventFilter>
 
 #include "Platform/Qt/QtLayer.h"
 
@@ -41,6 +42,7 @@
 class DavaGLWidget
 	: public QWidget
 	, public DAVA::QtLayerDelegate
+    , public QAbstractNativeEventFilter
 {
     Q_OBJECT
     
@@ -52,8 +54,8 @@ public:
 	int GetMaxFPS();
 	int GetFPS() const;
     
-	//virtual QPaintEngine *paintEngine() const;
-	
+	virtual QPaintEngine *paintEngine() const;
+	bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
    
 signals:
 	void OnDrop(const QMimeData *mimeData);
@@ -65,7 +67,6 @@ private slots:
 private:
 	virtual void paintEvent(QPaintEvent *);
 	virtual void resizeEvent(QResizeEvent *);
-	virtual void changeEvent(QEvent * event);
 
 	virtual void showEvent(QShowEvent *);
 	virtual void hideEvent(QHideEvent *);
@@ -83,8 +84,6 @@ private:
 
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
-
-	bool nativeEvent(const QByteArray & eventType, void * message, long * result);
 
 	int maxFPS;
     int minFrameTimeMs;
