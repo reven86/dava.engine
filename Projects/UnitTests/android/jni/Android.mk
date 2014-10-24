@@ -22,9 +22,13 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 
 # set source files
 LOCAL_SRC_FILES := \
-                   $(subst $(LOCAL_PATH)/,, \
-                   $(wildcard $(LOCAL_PATH)/../../Classes/*.cpp) \
-                   $(wildcard $(LOCAL_PATH)/../../../../Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
+	$(subst $(LOCAL_PATH)/,, \
+	$(wildcard $(LOCAL_PATH)/../../Classes/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/../../Classes/SFML/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/../../Classes/SFML/Network/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/../../Classes/SFML/Network/Unix/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/../../Classes/SFML/System/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/../../../../Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
 
 LOCAL_LDLIBS := -lz -lOpenSLES -landroid
 

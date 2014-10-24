@@ -358,7 +358,7 @@ void GameCore::FlushTestResults()
 #ifdef  SEND_TEST_DATA_BACK_TO_PC
 
 	String report_content = WriteReportFile();
-	String host = "127.0.0.1";
+	String host = "10.128.109.24"; //"127.0.0.1";
 	unsigned short port = 50007;
 
 	{
