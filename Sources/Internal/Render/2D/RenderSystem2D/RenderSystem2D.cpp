@@ -94,44 +94,44 @@ void VboPool::MapBuffers()
     RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid);
     RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid);
     
-    currentVertexBufferPointer = (float32*)glMapBufferOES(GL_ARRAY_BUFFER, GL_WRITE_ONLY_OES);
-    currentIndexBufferPointer = (uint16*)glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY_OES);
+    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
+    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_WRITE));
 }
 
 void VboPool::UnmapBuffers()
 {
-    glUnmapBufferOES(GL_ARRAY_BUFFER);
+    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
     currentVertexBufferPointer = 0;
-    glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
+    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
     currentIndexBufferPointer = 0;
 }
     
 void VboPool::MapVertexBuffer()
 {
     uint32 vbid = currentDataObject->GetVertexBufferID();
-    RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid);
-    currentVertexBufferPointer = (float32*)glMapBufferOES(GL_ARRAY_BUFFER, GL_WRITE_ONLY_OES);
+    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid));
+    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE | GL_MAP_UNSYNCHRONIZED_BIT));
 }
 
 void VboPool::UnmapVertexBuffer()
 {
-    glUnmapBufferOES(GL_ARRAY_BUFFER);
+    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
     currentVertexBufferPointer = 0;
-    RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, NULL);
+    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, NULL));
 }
 
 void VboPool::MapIndexBuffer()
 {
     uint32 ibid = currentDataObject->GetIndexBufferID();
-    RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid);
-    currentIndexBufferPointer = (uint16*)glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY_OES);
+    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid));
+    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_WRITE | GL_MAP_UNSYNCHRONIZED_BIT));
 }
 
 void VboPool::UnmapIndexBuffer()
 {
-    glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
+    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
     currentIndexBufferPointer = 0;
-    RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL));
 }
 
 void VboPool::RenewBuffers(uint32 size)
@@ -297,11 +297,19 @@ void RenderSystem2D::Flush()
 //    RenderManager::Instance()->SetRenderData(spriteRenderObject);
     spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLELIST;
 
-//    pool.SetVertexData(vertexIndex, &vertexBuffer2[0]);
-//    pool.SetIndexData(indexIndex, (uint8*)&indexBuffer2[0]);
-//    RenderManager::Instance()->SetRenderData(pool.GetDataObject());
-    
+    pool.SetVertexData(vertexIndex, &vertexBuffer2[0]);
+    pool.SetIndexData(indexIndex, (uint8*)&indexBuffer2[0]);
     RenderManager::Instance()->SetRenderData(pool.GetDataObject());
+
+//    pool.MapVertexBuffer();
+//    float32* vb = pool.GetVertexBufferPointer();
+//    Memcpy(vb, &vertexBuffer2.front(), vertexIndex * 32);
+//    pool.UnmapVertexBuffer();
+//
+//    pool.MapIndexBuffer();
+//    uint16* ib = pool.GetIndexBufferPointer();
+//    Memcpy(ib, &indexBuffer2.front(), indexIndex * 2);
+//    pool.UnmapIndexBuffer();
 
     Vector<RenderBatch2D>::iterator it = batches.begin();
     Vector<RenderBatch2D>::iterator eit = batches.end();
@@ -610,23 +618,15 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
         {
             uint32 vi = vertexIndex * 8;
             uint32 ii = indexIndex;
-            pool.MapVertexBuffer();
-            float32* vb = pool.GetVertexBufferPointer();
+            //pool.MapVertexBuffer();
+            //float32* vb = pool.GetVertexBufferPointer();
+            float32 * vb = &vertexBuffer2.front();
             
             spriteIndexCount = 6;
 
             const Color c = RenderManager::Instance()->GetColor();
             for (int32 i = 0; i < spriteVertexCount; ++i)
             {
-//                vertexBuffer2.push_back(spriteTempVertices[i * 2]);
-//                vertexBuffer2.push_back(spriteTempVertices[i * 2 + 1]);
-//                vertexBuffer2.push_back(sprite->texCoords[frame][i * 2]);
-//                vertexBuffer2.push_back(sprite->texCoords[frame][i * 2 + 1]);
-//                vertexBuffer2.push_back(c.r);
-//                vertexBuffer2.push_back(c.g);
-//                vertexBuffer2.push_back(c.b);
-//                vertexBuffer2.push_back(c.a);
-                //vertexBuffer2.push_back((float32)0xFFFFFFFF);
                 vb[vi++] = spriteTempVertices[i * 2];
                 vb[vi++] = spriteTempVertices[i * 2 + 1];
                 vb[vi++] = sprite->texCoords[frame][i * 2];
@@ -637,9 +637,10 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                 vb[vi++] = c.a;
             }
             
-            pool.UnmapVertexBuffer();
-            pool.MapIndexBuffer();
-            uint16* ib = pool.GetIndexBufferPointer();
+            //pool.UnmapVertexBuffer();
+            //pool.MapIndexBuffer();
+            //uint16* ib = pool.GetIndexBufferPointer();
+            uint16* ib = &indexBuffer2.front();
 
             static uint32 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
             for (int32 i = 0; i < spriteIndexCount; ++i)
@@ -648,7 +649,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                 ib[ii++] = vertexIndex + spriteIndeces[i];
             }
             
-            pool.UnmapIndexBuffer();
+            //pool.UnmapIndexBuffer();
         }
         else
         {
@@ -676,8 +677,9 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
         {
             uint32 vi = vertexIndex * 8;
             uint32 ii = indexIndex;
-            pool.MapVertexBuffer();
-            float32* vb = pool.GetVertexBufferPointer();
+            //pool.MapVertexBuffer();
+            //float32* vb = pool.GetVertexBufferPointer();
+            float32 * vb = &vertexBuffer2.front();
             
             spriteVertexCount = sprite->clipPolygon->GetPointCount();
             DVASSERT(spriteVertexCount >= 2);
@@ -691,27 +693,15 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                 Vector2 texCoord((point.x - frameVertices[frame][0]) * adjWidth, (point.y - frameVertices[frame][1]) * adjHeight);
                 if (sprite->flags & Sprite::EST_SCALE)
                 {
-//                    vertexBuffer2.push_back(point.x * scaleX + x);
-//                    vertexBuffer2.push_back(point.y * scaleY + y);
                     vb[vi++] = point.x * scaleX + x;
                     vb[vi++] = point.y * scaleY + y;
                     
                 }
                 else
                 {
-//                    vertexBuffer2.push_back(point.x + x);
-//                    vertexBuffer2.push_back(point.y + y);
                     vb[vi++] = point.x + x;
                     vb[vi++] = point.y + y;
-                    
                 }
-//                vertexBuffer2.push_back(sprite->texCoords[frame][0] + texCoord.x);
-//                vertexBuffer2.push_back(sprite->texCoords[frame][1] + texCoord.y);
-//                vertexBuffer2.push_back(c.r);
-//                vertexBuffer2.push_back(c.g);
-//                vertexBuffer2.push_back(c.b);
-//                vertexBuffer2.push_back(c.a);
-//                vertexBuffer2.push_back((float32)0xFFFFFFFF);
                 vb[vi++] = sprite->texCoords[frame][0] + texCoord.x;
                 vb[vi++] = sprite->texCoords[frame][1] + texCoord.y;
                 vb[vi++] = c.r;
@@ -720,21 +710,19 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                 vb[vi++] = c.a;
             }
             
-            pool.UnmapVertexBuffer();
-            pool.MapIndexBuffer();
-            uint16* ib = pool.GetIndexBufferPointer();
+            //pool.UnmapVertexBuffer();
+            //pool.MapIndexBuffer();
+            //uint16* ib = pool.GetIndexBufferPointer();
+            uint16* ib = &indexBuffer2.front();
             
             for (int32 i = 2; i < spriteVertexCount; ++i)
             {
-//                indexBuffer2.push_back(vertexIndex + 0);
-//                indexBuffer2.push_back(vertexIndex + i - 1);
-//                indexBuffer2.push_back(vertexIndex + i);
                 ib[ii++] = vertexIndex;
                 ib[ii++] = vertexIndex + i - 1;
                 ib[ii++] = vertexIndex + i;
             }
 
-            pool.UnmapIndexBuffer();
+            //pool.UnmapIndexBuffer();
         }
         else
         {
@@ -991,8 +979,9 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 	{
         uint32 vi = vertexIndex * 8;
         uint32 ii = indexIndex;
-        pool.MapVertexBuffer();
-        float32* vb = pool.GetVertexBufferPointer();
+        //pool.MapVertexBuffer();
+        //float32* vb = pool.GetVertexBufferPointer();
+        float32 * vb = &vertexBuffer2.front();
         
         spriteVertexCount = 16;
         spriteIndexCount = vertInTriCount;
@@ -1008,28 +997,19 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
             vb[vi++] = c.g;
             vb[vi++] = c.b;
             vb[vi++] = c.a;
-//            vertexBuffer2.push_back(vertices[i * 2]);
-//            vertexBuffer2.push_back(vertices[i * 2 + 1]);
-//            vertexBuffer2.push_back(texCoords[i * 2]);
-//            vertexBuffer2.push_back(texCoords[i * 2 + 1]);
-//            vertexBuffer2.push_back(c.r);
-//            vertexBuffer2.push_back(c.g);
-//            vertexBuffer2.push_back(c.b);
-//            vertexBuffer2.push_back(c.a);
-//            vertexBuffer2.push_back((float32)0xFFFFFFFF);
 		}
         
-        pool.UnmapVertexBuffer();
-        pool.MapIndexBuffer();
-        uint16* ib = pool.GetIndexBufferPointer();
+        //pool.UnmapVertexBuffer();
+        //pool.MapIndexBuffer();
+        //uint16* ib = pool.GetIndexBufferPointer();
+        uint16* ib = &indexBuffer2.front();
 
         for (int32 i = 0; i < spriteIndexCount; ++i)
 		{
-//			indexBuffer2.push_back(vertexIndex + indeces[i]);
             ib[ii++] = vertexIndex + indeces[i];
 		}
         
-        pool.UnmapIndexBuffer();
+        //pool.UnmapIndexBuffer();
 		
         PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), RenderManager::TEXTURE_MUL_FLAT_COLOR, currentClip);
 	}
@@ -1116,8 +1096,9 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
 	{
         uint32 vi = vertexIndex * 8;
         uint32 ii = indexIndex;
-        pool.MapVertexBuffer();
-        float32* vb = pool.GetVertexBufferPointer();
+        //pool.MapVertexBuffer();
+        //float32* vb = pool.GetVertexBufferPointer();
+        float32 * vb = &vertexBuffer2.front();
         
 		spriteVertexCount = td.transformedVertices.size();
         spriteIndexCount = td.indeces.size();
@@ -1133,28 +1114,19 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
             vb[vi++] = (c.g);
             vb[vi++] = (c.b);
             vb[vi++] = (c.a);
-//            vertexBuffer2.push_back(td.transformedVertices[i].x);
-//            vertexBuffer2.push_back(td.transformedVertices[i].y);
-//            vertexBuffer2.push_back(td.texCoords[i].x);
-//            vertexBuffer2.push_back(td.texCoords[i].y);
-//            vertexBuffer2.push_back(c.r);
-//            vertexBuffer2.push_back(c.g);
-//            vertexBuffer2.push_back(c.b);
-//            vertexBuffer2.push_back(c.a);
-//            vertexBuffer2.push_back((float32)0xFFFFFFFF);
         }
 
-        pool.UnmapVertexBuffer();
-        pool.MapIndexBuffer();
-        uint16* ib = pool.GetIndexBufferPointer();
+        //pool.UnmapVertexBuffer();
+        //pool.MapIndexBuffer();
+        //uint16* ib = pool.GetIndexBufferPointer();
+        uint16* ib = &indexBuffer2.front();
         
 		for (int32 i = 0; i < spriteIndexCount; ++i)
         {
-//            indexBuffer2.push_back(vertexIndex + td.indeces[i]);
             ib[ii++] = vertexIndex + td.indeces[i];
         }
 		
-        pool.UnmapIndexBuffer();
+        //pool.UnmapIndexBuffer();
         
         PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), RenderManager::TEXTURE_MUL_FLAT_COLOR, currentClip);
 
