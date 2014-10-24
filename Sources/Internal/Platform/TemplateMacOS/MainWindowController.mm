@@ -31,7 +31,7 @@ namespace DAVA
 		core->CreateSingletons();
 
 		[NSApplication sharedApplication];
-		[NSApp setDelegate:[[[MainWindowController alloc] init] autorelease]];
+        [[[MainWindowController alloc] init] autorelease];
 		
 		int retVal = NSApplicationMain(argc,  (const char **) argv);
         // This method never returns, so release code transfered to termination message 
