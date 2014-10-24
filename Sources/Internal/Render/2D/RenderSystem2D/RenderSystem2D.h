@@ -102,7 +102,11 @@ public:
     void MapBuffers();
     void UnmapBuffers();
     void RenewBuffers(uint32 size);
-
+    void MapVertexBuffer();
+    void UnmapVertexBuffer();
+    void MapIndexBuffer();
+    void UnmapIndexBuffer();
+    
     RenderDataObject* GetDataObject() const;
     float32 * GetVertexBufferPointer() const;
     uint16 * GetIndexBufferPointer() const;
