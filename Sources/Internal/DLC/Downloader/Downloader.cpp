@@ -31,7 +31,7 @@
 namespace DAVA
 {
 
-size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, const uint64 size, const uint64 seek)
+size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 size, uint64 seek)
 {
     size_t written = 0;
     File *destFile = File::Create(storePath, File::OPEN | File::READ | File::WRITE);
@@ -50,7 +50,7 @@ size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, const ui
     return written;
 }
     
-void Downloader::SetProgressNotificator(Function<void (const uint64 &)> progressNotifier)
+void Downloader::SetProgressNotificator(Function<void (uint64)> progressNotifier)
 {
     notifyProgress = progressNotifier;
 }

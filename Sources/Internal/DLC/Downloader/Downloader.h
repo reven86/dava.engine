@@ -57,17 +57,17 @@ protected:
         \brief Get content size in bytes for remote Url.
         \param[in] url - destination fie Url
         \param[out] retSize - place result to
-        \param[in] _timeout - operation timeout
+        \param[in] timeout - operation timeout
      */
-    virtual DownloadError GetSize(const String &url, uint64 &retSize, const int32 _timeout) = 0;
+    virtual DownloadError GetSize(const String &url, uint64 &retSize, int32 timeout) = 0;
     /**
         \brief Main downloading operation. Should call SaveData to store data.
         \param[in] url - destination file Url
         \param[in] savePath - path to save location of remote file
         \param[in] partsCount - quantity of download threads
-        \param[in] _timeout - operation timeout
+        \param[in] timeout - operation timeout
     */
-    virtual DownloadError Download(const String &url, const FilePath &savePath, const uint8 partsCount, const int32 _timeout) = 0;
+    virtual DownloadError Download(const String &url, const FilePath &savePath, uint8 partsCount, int32 timeout) = 0;
     /**
         \brief Interrupt download process. We expects that you will save last data chunk came before 
      */
@@ -80,14 +80,14 @@ protected:
         \param[in] size - amout of data
         \param[in] seek - position in file where data should be stored
     */
-    virtual size_t SaveData(const void *ptr, const FilePath& storePath, const uint64 size, const uint64 seek);
+    virtual size_t SaveData(const void *ptr, const FilePath& storePath, uint64 size, uint64 seek);
     /**
         \brief Used to report about saved data size to download manager. Used to calculate total download progress.
      */
-    virtual void SetProgressNotificator(Function<void (const uint64 &)> progressNotifier);
+    virtual void SetProgressNotificator(Function<void (uint64)> progressNotifier);
     
 protected:
-    Function<void (const uint64 &)> notifyProgress;
+    Function<void (uint64)> notifyProgress;
 };
 
 }

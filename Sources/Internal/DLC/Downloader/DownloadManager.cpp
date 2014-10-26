@@ -656,7 +656,7 @@ void DownloadManager::ResetRetriesCount()
     currentTask->retriesLeft = currentTask->retriesCount;
 }
 
-void DownloadManager::OnCurrentTaskProgressChanged(const uint64 &progressDelta)
+void DownloadManager::OnCurrentTaskProgressChanged(uint64 progressDelta)
 {
     currentTask->downloadProgress += progressDelta;
     if (0 < progressDelta)

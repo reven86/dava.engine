@@ -127,7 +127,7 @@ private:
     void MakeFullDownload();
     void MakeResumedDownload();
     void ResetRetriesCount();
-    void OnCurrentTaskProgressChanged(const uint64 &progressDelta);
+    void OnCurrentTaskProgressChanged(uint64 progressDelta);
 
 private:
     Thread *thisThread;

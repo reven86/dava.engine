@@ -115,7 +115,7 @@ bool DownloadPart::SaveDownload(const FilePath &infoFilePath)
     return false;
 }
 
-bool DownloadPart::CreateDownload(const FilePath &infoFilePath, const uint8 partsCount)
+bool DownloadPart::CreateDownload(const FilePath &infoFilePath, uint8 partsCount)
 {
     // Create info file and allocate space for it
     uint64 infoFileSize = sizeof(DownloadInfoHeader) + partsCount*sizeof(DownloadPart::StoreData);

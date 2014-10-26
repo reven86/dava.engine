@@ -137,7 +137,7 @@ struct DownloadPart
         \param[in] partsCount - planed quantity of download parts
         \param[out] true if all is fine and false if there is any file write or read error
      */
-    static bool CreateDownload(const FilePath &infoFilePath, const uint8 partsCount);
+    static bool CreateDownload(const FilePath &infoFilePath, uint8 partsCount);
 
     /*
         Used to pass a pointer to current Downloader into DataReceive handler
