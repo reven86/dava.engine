@@ -66,6 +66,7 @@ private:
     static void HandleCloseThunk (uv_handle_t* handle)
     {
         DerivedClassType* pthis = static_cast<DerivedClassType*> (handle->data);
+        pthis->CleanUpBeforeNextUse ();
         pthis->HandleClose ();
     }
 
