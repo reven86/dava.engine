@@ -36,20 +36,8 @@ namespace DAVA
 
 int WebViewControl::webViewIdCount = 0;
 
-jclass JniWebView::gJavaClass = NULL;
-const char* JniWebView::gJavaClassName = NULL;
+const char* JniWebView::javaClassName = "com/dava/framework/JNIWebView";
 JniWebView::CONTROLS_MAP JniWebView::controls;
-
-
-jclass JniWebView::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniWebView::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
 
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
 {
@@ -58,7 +46,7 @@ void JniWebView::Initialize(WebViewControl* control, int id, const Rect& control
 
 	jmethodID mid = GetMethodID("Initialize", "(IFFFF)V");
 	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, rect.x, rect.y, rect.dx, rect.dy);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniWebView::Deinitialize(int id)
@@ -66,7 +54,7 @@ void JniWebView::Deinitialize(int id)
 	controls.erase(id);
 	jmethodID mid = GetMethodID("Deinitialize", "(I)V");
 	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id);
 }
 
 void JniWebView::OpenURL(int id, const String& urlToOpen)
@@ -75,7 +63,7 @@ void JniWebView::OpenURL(int id, const String& urlToOpen)
 	if (mid)
 	{
 		jstring jUrlToOpen = GetEnvironment()->NewStringUTF(urlToOpen.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jUrlToOpen);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, jUrlToOpen);
 		GetEnvironment()->DeleteLocalRef(jUrlToOpen);
 	}
 }
@@ -87,7 +75,7 @@ void JniWebView::OpenFromBuffer(int id, const String& string, const String& base
 	{
 		jstring jString = GetEnvironment()->NewStringUTF(string.c_str());
 		jstring jBaseUrl = GetEnvironment()->NewStringUTF(baseUrl.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jString, jBaseUrl);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, jString, jBaseUrl);
 		GetEnvironment()->DeleteLocalRef(jString);
 		GetEnvironment()->DeleteLocalRef(jBaseUrl);
 	}
@@ -99,7 +87,7 @@ void JniWebView::SetRect(int id, const Rect& controlRect)
 	jmethodID mid = GetMethodID("SetRect", "(IFFFF)V");
 	if (mid)
 	{
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, rect.x, rect.y, rect.dx, rect.dy);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, rect.x, rect.y, rect.dx, rect.dy);
 	}
 }
 
@@ -108,7 +96,7 @@ void JniWebView::SetVisible(int id, bool isVisible)
 	jmethodID mid = GetMethodID("SetVisible", "(IZ)V");
 	if (mid)
 	{
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, isVisible);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, isVisible);
 	}
 }
 
@@ -117,7 +105,7 @@ void JniWebView::SetBackgroundTransparency(int id, bool enabled)
 	jmethodID mid = GetMethodID("SetBackgroundTransparency", "(IZ)V");
 	if (mid)
 	{
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, enabled);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, enabled);
 	}
 }
 

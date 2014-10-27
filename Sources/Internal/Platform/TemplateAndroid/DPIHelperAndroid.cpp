@@ -33,19 +33,7 @@
 
 namespace DAVA
 {
-
-jclass JniDpiHelper::gJavaClass = NULL;
-const char* JniDpiHelper::gJavaClassName = NULL;
-
-jclass JniDpiHelper::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniDpiHelper::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniDpiHelper::javaClassName = "com/dava/framework/JNIDpiHelper";
 
 uint32 JniDpiHelper::GetScreenDPI()
 {
@@ -53,7 +41,7 @@ uint32 JniDpiHelper::GetScreenDPI()
 	jmethodID mid = GetMethodID("GetScreenDPI", "()I");
 	if (mid)
 	{
-		dpi = GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+		dpi = GetEnvironment()->CallStaticIntMethod(javaClass, mid);
 	}
 	return dpi;
 }

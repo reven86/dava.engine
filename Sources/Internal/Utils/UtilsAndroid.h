@@ -40,17 +40,14 @@ namespace DAVA
 class JniUtils: public JniExtension
 {
 public:
+	static void InitEx(JavaVM *jvm, JNIEnv *env) {}
+
 	bool DisableSleepTimer();
 	bool EnableSleepTimer();
 	void OpenURL(const String& url);
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static const char* javaClassName;
 };
 
 };

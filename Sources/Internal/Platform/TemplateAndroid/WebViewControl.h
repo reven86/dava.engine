@@ -74,6 +74,8 @@ private:
 class JniWebView: public JniExtension
 {
 public:
+	static void InitEx(JavaVM *jvm, JNIEnv *env) {}
+
 	void Initialize(WebViewControl* control, int id, const Rect& rect);
 	void Deinitialize(int id);
 
@@ -88,13 +90,8 @@ public:
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
 	static void PageLoaded(int id);
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static const char* javaClassName;
 
 private:
 	typedef std::map<int, WebViewControl*> CONTROLS_MAP;

@@ -40,25 +40,14 @@
 namespace DAVA
 {
 
-jclass JniLocalNotification::gJavaClass = NULL;
-const char* JniLocalNotification::gJavaClassName = NULL;
-
-jclass JniLocalNotification::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniLocalNotification::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniLocalNotification::javaClassName = "com/dava/framework/JNINotificationProvider";
 
 void LocalNotification::Hide()
 {
 	LockGuard<Mutex> mutexGuard(javaCallMutex);
 
 	GetEnvironment()->CallStaticVoidMethod(
-					GetJavaClass(),
+					javaClass,
 					GetMethodID("HideNotification", "(I)V"),
 					id);
 
@@ -82,7 +71,7 @@ void LocalNotificationProgress::ShowNotifitaionWithProgress(uint32 id,
 	jstring jStrText = CreateJString(env, text);
 
 	env->CallStaticVoidMethod(
-					GetJavaClass(),
+					javaClass,
 					GetMethodID("NotifyProgress", "(ILjava/lang/String;Ljava/lang/String;II)V"),
 					id,
 					jStrTitle,
@@ -107,7 +96,7 @@ void LocalNotificationText::ShowNotificationWithText(uint32 id,
 	jstring jStrText = CreateJString(env, text);
 
 	env->CallStaticVoidMethod(
-					GetJavaClass(),
+					javaClass,
 					GetMethodID("NotifyText", "(ILjava/lang/String;Ljava/lang/String;)V"),
 					id,
 					jStrTitle,

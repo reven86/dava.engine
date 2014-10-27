@@ -33,25 +33,14 @@
 namespace DAVA
 {
 
-jclass JniLocalization::gJavaClass = NULL;
-const char* JniLocalization::gJavaClassName = NULL;
-
-jclass JniLocalization::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniLocalization::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniLocalization::javaClassName = "com/dava/framework/JNILocalization";
 
 String JniLocalization::GetLocale()
 {
 	jmethodID mid = GetMethodID("GetLocale", "()Ljava/lang/String;");
 	if (mid)
 	{
-		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
+		jobject obj = GetEnvironment()->CallStaticObjectMethod(javaClass, mid);
 		char str[256] = {0};
 		CreateStringFromJni(GetEnvironment(), jstring(obj), str);
 		String locale = str;

@@ -35,11 +35,10 @@
 namespace DAVA
 {
 
+JavaVM *JniExtension::vm = NULL;
+jclass JniExtension::javaClass = NULL;
 JniExtension::JniExtension()
 {
-	CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-	AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
-	vm = delegate->GetVM();
 }
 
 JniExtension::~JniExtension()
@@ -55,16 +54,15 @@ void JniExtension::SetJavaClass(JNIEnv* env, const char* className, jclass* gJav
 
 jmethodID JniExtension::GetMethodID(const char *methodName, const char *paramCode) const
 {
-	jclass javaClass = GetJavaClass();
 	DVASSERT(javaClass && "Not initialized Java class");
-	if (!javaClass)
+	if (NULL == javaClass)
 		return 0;
 
 	jmethodID mid = GetEnvironment()->GetStaticMethodID(javaClass, methodName, paramCode);
 
-	if (!mid)
+	if (NULL == mid)
 	{
-		Logger::Error("get method id of %s.%s error ", GetJavaClassName(), methodName);
+		Logger::Error("get method id of %s error ", methodName);
 	}
 
 	return mid;

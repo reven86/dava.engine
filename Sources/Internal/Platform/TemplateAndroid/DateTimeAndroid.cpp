@@ -40,18 +40,7 @@
 namespace DAVA
 {
 
-jclass JniDateTime::gJavaClass = NULL;
-const char* JniDateTime::gJavaClassName = NULL;
-
-jclass JniDateTime::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniDateTime::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniDateTime::javaClassName = "com/dava/framework/JNIDateTime";
 
 WideString JniDateTime::AsWString(const WideString& format, const String& countryCode, long timeStamp, int tzOffset)
 {
@@ -60,7 +49,7 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
 	{
 		jstring jFormat = GetEnvironment()->NewStringUTF(UTF8Utils::EncodeToUTF8(format).c_str());
 		jstring jCountryCode = GetEnvironment()->NewStringUTF(countryCode.c_str());
-        jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jFormat, jCountryCode, (long long)timeStamp, tzOffset);
+        jobject obj = GetEnvironment()->CallStaticObjectMethod(javaClass, mid, jFormat, jCountryCode, (long long)timeStamp, tzOffset);
         GetEnvironment()->DeleteLocalRef(jFormat);
         GetEnvironment()->DeleteLocalRef(jCountryCode);
 		char str[256] = {0};
@@ -77,7 +66,7 @@ int JniDateTime::GetLocalTimeZoneOffset()
 	jmethodID mid = GetMethodID("GetLocalTimeZoneOffset", "()I");
 	if (mid)
 	{
-		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+		return GetEnvironment()->CallStaticIntMethod(javaClass, mid);
 	}
 	return 0;
 }

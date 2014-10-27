@@ -33,18 +33,7 @@
 
 using namespace DAVA;
 
-jclass JniTextField::gJavaClass = NULL;
-const char* JniTextField::gJavaClassName = NULL;
-
-jclass JniTextField::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniTextField::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniTextField::javaClassName = "com/dava/framework/JNITextField";
 
 JniTextField::JniTextField(uint32_t id)
 {
@@ -58,7 +47,7 @@ void JniTextField::Create(Rect controlRect)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				rect.x,
@@ -74,7 +63,7 @@ void JniTextField::Destroy()
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id);
 	}
@@ -87,7 +76,7 @@ void JniTextField::UpdateRect(const Rect & controlRect)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				rect.x,
@@ -104,7 +93,7 @@ void JniTextField::SetText(const char* text)
 	{
 		jstring jStrDefaultText = GetEnvironment()->NewStringUTF(text);
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				jStrDefaultText);
@@ -118,7 +107,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				r,
@@ -135,7 +124,7 @@ void JniTextField::SetFontSize(float size)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				size * v2p);
@@ -148,7 +137,7 @@ void JniTextField::SetIsPassword(bool isPassword)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				isPassword);
@@ -161,7 +150,7 @@ void JniTextField::SetTextAlign(int32_t align)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				align);
@@ -174,7 +163,7 @@ void JniTextField::SetInputEnabled(bool value)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				value);
@@ -187,7 +176,7 @@ void JniTextField::SetAutoCapitalizationType(int32_t value)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				value);
@@ -200,7 +189,7 @@ void JniTextField::SetAutoCorrectionType(int32_t value)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				value);
@@ -213,7 +202,7 @@ void JniTextField::SetSpellCheckingType(int32_t value)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				value);
@@ -226,7 +215,7 @@ void JniTextField::SetKeyboardAppearanceType(int32_t value)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				value);
@@ -239,7 +228,7 @@ void JniTextField::SetKeyboardType(int32_t value)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				value);
@@ -252,7 +241,7 @@ void JniTextField::SetReturnKeyType(int32_t value)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				value);
@@ -265,7 +254,7 @@ void JniTextField::SetEnableReturnKeyAutomatically(bool value)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				value);
@@ -278,7 +267,7 @@ void JniTextField::SetVisible(bool isVisible)
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id,
 				isVisible);
@@ -291,7 +280,7 @@ void JniTextField::OpenKeyboard()
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id);
 	}
@@ -303,7 +292,7 @@ void JniTextField::CloseKeyboard()
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
+				javaClass,
 				mid,
 				id);
 	}
@@ -315,7 +304,7 @@ uint32 JniTextField::GetCursorPos()
 	if (!mid)
 		return 0;
 
-	return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid, id);
+	return GetEnvironment()->CallStaticIntMethod(javaClass, mid, id);
 }
 
 void JniTextField::SetCursorPos(uint32 pos)
@@ -323,7 +312,7 @@ void JniTextField::SetCursorPos(uint32 pos)
 	jmethodID mid = GetMethodID("SetCursorPos", "(II)V");
 	if (!mid)
 		return;
-	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, pos);
+	GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, pos);
 }
 
 void JniTextField::SetMaxLength(int32_t value)
@@ -331,7 +320,7 @@ void JniTextField::SetMaxLength(int32_t value)
 	jmethodID mid = GetMethodID("SetMaxLength", "(II)V");
 	if (!mid)
 		return;
-	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, value);
+	GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, value);
 }
 
 uint32_t UITextFieldAndroid::sId = 0;

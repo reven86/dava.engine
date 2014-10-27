@@ -34,18 +34,7 @@ using namespace DAVA;
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-jclass JniUtils::gJavaClass = NULL;
-const char* JniUtils::gJavaClassName = NULL;
-
-jclass JniUtils::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniUtils::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniUtils::javaClassName = "com/dava/framework/JNIUtils";
 
 bool JniUtils::DisableSleepTimer()
 {
@@ -53,7 +42,7 @@ bool JniUtils::DisableSleepTimer()
 	if (!mid)
 		return false;
 
-	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid);
+	GetEnvironment()->CallStaticVoidMethod(javaClass, mid);
 	return true;
 }
 
@@ -63,7 +52,7 @@ bool JniUtils::EnableSleepTimer()
 	if (!mid)
 		return false;
 
-	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid);
+	GetEnvironment()->CallStaticVoidMethod(javaClass, mid);
 	return true;
 }
 
@@ -73,7 +62,7 @@ void JniUtils::OpenURL(const String& url)
 	if (mid)
 	{
 		jstring jUrl = GetEnvironment()->NewStringUTF(url.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jUrl);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, jUrl);
 		GetEnvironment()->DeleteLocalRef(jUrl);
 	}
 }

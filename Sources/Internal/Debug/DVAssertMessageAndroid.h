@@ -41,14 +41,9 @@ class JniDVAssertMessage: public JniExtension
 {
 public:
 	void ShowMessage(const char* message);
-
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
+	static void InitEx(JavaVM *jvm, JNIEnv *env) {}
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static const char *javaClassName;
 };
 
 };

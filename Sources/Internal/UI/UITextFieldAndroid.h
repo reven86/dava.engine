@@ -45,6 +45,8 @@ class JniTextField: public JniExtension
 public:
 	JniTextField(uint32_t id);
 
+	static void InitEx(JavaVM *jvm, JNIEnv *env) {}
+
 	void Create(Rect rect);
 	void Destroy();
 	void UpdateRect(const Rect & rect);
@@ -68,13 +70,8 @@ public:
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(int32_t value);
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static const char* javaClassName;
 
 private:
 	uint32_t id;

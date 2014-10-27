@@ -65,18 +65,12 @@ static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 
 stack_t AndroidCrashReport::s_sigstk;
 
-jclass JniCrashReporter::gJavaClass = NULL;
-jclass JniCrashReporter::gStringClass = NULL;
-const char* JniCrashReporter::gJavaClassName = NULL;
+jclass JniCrashReporter::stringClass = NULL;
+const char* JniCrashReporter::javaClassName = "com/dava/framework/JNICrashReporter";
 
-jclass JniCrashReporter::GetJavaClass() const
+void JniCrashReporter::InitEx(JavaVM *jvm, JNIEnv *env)
 {
-	return gJavaClass;
-}
-
-const char* JniCrashReporter::GetJavaClassName() const
-{
-	return gJavaClassName;
+	stringClass = (jclass) env->NewGlobalRef(env->FindClass("java/lang/String"));
 }
 
 void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
@@ -84,8 +78,8 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 	jmethodID mid = GetMethodID("ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
 	if (mid)
 	{
-		jobjectArray jModuleArray = GetEnvironment()->NewObjectArray(chashSteps.size(), gStringClass, 0);
-		jobjectArray jFunctionArray = GetEnvironment()->NewObjectArray(chashSteps.size(), gStringClass, 0);
+		jobjectArray jModuleArray = GetEnvironment()->NewObjectArray(chashSteps.size(), stringClass, 0);
+		jobjectArray jFunctionArray = GetEnvironment()->NewObjectArray(chashSteps.size(), stringClass, 0);
 		jintArray jFileLineArray = GetEnvironment()->NewIntArray(chashSteps.size());
 
 		int* fileLines = new int[chashSteps.size()];
@@ -97,7 +91,7 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 		}
 		GetEnvironment()->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
 
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jModuleArray, jFunctionArray, jFileLineArray);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, jModuleArray, jFunctionArray, jFileLineArray);
 
 		delete [] fileLines;
 	}

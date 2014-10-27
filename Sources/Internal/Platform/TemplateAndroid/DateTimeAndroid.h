@@ -40,16 +40,12 @@ namespace DAVA
 class JniDateTime: public JniExtension
 {
 public:
+	static void InitEx(JavaVM *jvm, JNIEnv *env) {}
 	WideString AsWString(const WideString& format, const String& countryCode, long timeStamp, int tzOffset);
 	int GetLocalTimeZoneOffset();
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static const char* javaClassName;
 };
 
 };

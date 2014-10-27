@@ -42,13 +42,11 @@ namespace DAVA
 
 class JniLocalNotification: public JniExtension
 {
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
+public:
+	static void InitEx(JavaVM *jvm, JNIEnv *env) {}
 
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static const char* javaClassName;
 
 protected:
 	Mutex javaCallMutex;

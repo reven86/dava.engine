@@ -44,6 +44,8 @@ namespace DAVA
 class JniDeviceInfo: public JniExtension
 {
 public:
+	static void InitEx(JavaVM *jvm, JNIEnv *env) {}
+
 	String GetVersion();
 	String GetManufacturer();
 	String GetModel();
@@ -63,14 +65,10 @@ public:
 	List<DeviceInfo::StorageInfo> GetSecondaryExternalStoragesList();
 
 protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
 	DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
 
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static const char* javaClassName;
 };
 
 };

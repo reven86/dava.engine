@@ -114,22 +114,21 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 		return -1;
 	}
 
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIAssert", &DAVA::JniDVAssertMessage::gJavaClass, &DAVA::JniDVAssertMessage::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIUtils", &DAVA::JniUtils::gJavaClass, &DAVA::JniUtils::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDeviceInfo", &DAVA::JniDeviceInfo::gJavaClass, &DAVA::JniDeviceInfo::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNISendMail", &DAVA::JniMailSender::gJavaClass, &DAVA::JniMailSender::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNITextField", &DAVA::JniTextField::gJavaClass, &DAVA::JniTextField::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIWebView", &DAVA::JniWebView::gJavaClass, &DAVA::JniWebView::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDpiHelper", &DAVA::JniDpiHelper::gJavaClass, &DAVA::JniDpiHelper::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNICrashReporter", &DAVA::JniCrashReporter::gJavaClass, &DAVA::JniCrashReporter::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "java/lang/String", &DAVA::JniCrashReporter::gStringClass, NULL);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIMovieViewControl", &DAVA::JniMovieViewControl::gJavaClass, &DAVA::JniMovieViewControl::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNILocalization", &DAVA::JniLocalization::gJavaClass, &DAVA::JniLocalization::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIFileList", &DAVA::JniFileList::gJavaClass, &DAVA::JniFileList::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDateTime", &DAVA::JniDateTime::gJavaClass, &DAVA::JniDateTime::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNINotificationProvider", &DAVA::JniLocalNotification::gJavaClass, &DAVA::JniLocalNotification::gJavaClassName);
-	DAVA::Thread::InitMainThread();
+	DAVA::JniExtension::Init<DAVA::JniDVAssertMessage>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniUtils>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniDeviceInfo>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniMailSender>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniTextField>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniWebView>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniDpiHelper>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniCrashReporter>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniMovieViewControl>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniLocalization>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniFileList>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniDateTime>(vm, env);
+	DAVA::JniExtension::Init<DAVA::JniLocalNotification>(vm, env);
 
+	DAVA::Thread::InitMainThread();
 
 	androidDelegate = new AndroidDelegate(vm);
 

@@ -40,19 +40,7 @@
 
 using namespace DAVA;
 
-jclass JniDVAssertMessage::gJavaClass = NULL;
-const char* JniDVAssertMessage::gJavaClassName = NULL;
-
-jclass JniDVAssertMessage::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniDVAssertMessage::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
-
+const char* JniDVAssertMessage::javaClassName = "com/dava/framework/JNIAssert";
 
 void JniDVAssertMessage::ShowMessage(const char* message)
 {
@@ -60,7 +48,7 @@ void JniDVAssertMessage::ShowMessage(const char* message)
 	if (mid)
 	{
 		jstring jStrMessage = GetEnvironment()->NewStringUTF(message);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jStrMessage);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, jStrMessage);
 		GetEnvironment()->DeleteLocalRef(jStrMessage);
 	}
 }

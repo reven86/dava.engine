@@ -48,18 +48,32 @@ public:
 	JniExtension();
 	virtual ~JniExtension();
 
+	template <class T>
+	static void Init(JavaVM *jvm, JNIEnv *env);
+
 	static void SetJavaClass(JNIEnv* env, const char* className, jclass* gJavaClass, const char** gJavaClassName);
 
 protected:
-	virtual jclass GetJavaClass() const = 0;
-	virtual const char* GetJavaClassName() const = 0;
 	jmethodID GetMethodID(const char *methodName, const char *paramCode) const;
 	JNIEnv* GetEnvironment() const;
 	Rect V2P(const Rect& rect) const;
 
 protected:
-	JavaVM* vm;
+	static JavaVM* vm;
+	static jclass javaClass;
 };
+
+template <class T>
+void JniExtension::Init(JavaVM *jvm, JNIEnv *env)
+{
+	vm =jvm;
+	if (T::javaClassName)
+	{
+		javaClass = (jclass) env->NewGlobalRef(env->FindClass(T::javaClassName));
+	}
+
+	T::InitEx(jvm, env);
+}
 
 }
 

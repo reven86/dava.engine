@@ -38,6 +38,8 @@
 namespace DAVA
 {
 
+const unsigned char *javaClassName = "com/dava/framework/JNISendMail";
+
 bool MailSender::SendEmail(const WideString& email, const WideString& subject, const WideString& messageText)
 {
 	// Don't try to send email if recipient is not set
@@ -64,18 +66,7 @@ bool MailSender::SendEmail(const WideString& email, const WideString& subject, c
 namespace DAVA
 {
 
-jclass JniMailSender::gJavaClass = NULL;
-const char* JniMailSender::gJavaClassName = NULL;
-
-jclass JniMailSender::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniMailSender::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniMailSender::javaClassName = NULL;
 
 bool JniMailSender::SendEmail(const String& email, const String& subject, const String& messageText)
 {
@@ -86,7 +77,7 @@ bool JniMailSender::SendEmail(const String& email, const String& subject, const 
 		jstring jEMail = GetEnvironment()->NewStringUTF(email.c_str());
 		jstring jSubject = GetEnvironment()->NewStringUTF(subject.c_str());
 		jstring jMessageText = GetEnvironment()->NewStringUTF(messageText.c_str());
-		res = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, jEMail, jSubject, jMessageText);
+		res = GetEnvironment()->CallStaticBooleanMethod(javaClass, mid, jEMail, jSubject, jMessageText);
 		GetEnvironment()->DeleteLocalRef(jEMail);
 		GetEnvironment()->DeleteLocalRef(jSubject);
 		GetEnvironment()->DeleteLocalRef(jMessageText);

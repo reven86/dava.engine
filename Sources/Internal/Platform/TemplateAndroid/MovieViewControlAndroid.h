@@ -42,6 +42,8 @@ namespace DAVA
 class JniMovieViewControl: public JniExtension
 {
 public:
+	static void InitEx(JavaVM *jvm, JNIEnv *env) {}
+
 	JniMovieViewControl(uint32 id);
 	void Initialize(const Rect& rect);
 	void Uninitialize();
@@ -57,13 +59,8 @@ public:
 	void Resume();
 	bool IsPlaying();
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static const char* javaClassName;
 
 private:
 	uint32 id;

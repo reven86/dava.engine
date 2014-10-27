@@ -31,18 +31,7 @@
 
 namespace DAVA {
 
-jclass JniMovieViewControl::gJavaClass = NULL;
-const char* JniMovieViewControl::gJavaClassName = NULL;
-
-jclass JniMovieViewControl::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniMovieViewControl::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniMovieViewControl::javaClassName = "com/dava/framework/JNIMovieViewControl";
 
 JniMovieViewControl::JniMovieViewControl(uint32 id)
 {
@@ -55,7 +44,7 @@ void JniMovieViewControl::Initialize(const Rect& _rect)
 	if (mid)
 	{
 		Rect rect = V2P(_rect);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, rect.x, rect.y, rect.dx, rect.dy);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, rect.x, rect.y, rect.dx, rect.dy);
 	}
 }
 
@@ -63,7 +52,7 @@ void JniMovieViewControl::Uninitialize()
 {
 	jmethodID mid = GetMethodID("Uninitialize", "(I)V");
 	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id);
 }
 
 void JniMovieViewControl::SetRect(const Rect& _rect)
@@ -72,7 +61,7 @@ void JniMovieViewControl::SetRect(const Rect& _rect)
 	if (mid)
 	{
 		Rect rect = V2P(_rect);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, rect.x, rect.y, rect.dx, rect.dy);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, rect.x, rect.y, rect.dx, rect.dy);
 	}
 }
 
@@ -80,7 +69,7 @@ void JniMovieViewControl::SetVisible(bool isVisible)
 {
 	jmethodID mid = GetMethodID("SetVisible", "(IZ)V");
 	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, isVisible);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, isVisible);
 }
 
 void JniMovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
@@ -89,7 +78,7 @@ void JniMovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMoviePa
 	if (mid)
 	{
 		jstring jMoviePath = GetEnvironment()->NewStringUTF(moviePath.GetAbsolutePathname().c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jMoviePath, params.scalingMode);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id, jMoviePath, params.scalingMode);
 		GetEnvironment()->DeleteLocalRef(jMoviePath);
 	}
 }
@@ -98,35 +87,35 @@ void JniMovieViewControl::Play()
 {
 	jmethodID mid = GetMethodID("Play", "(I)V");
 	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id);
 }
 
 void JniMovieViewControl::Stop()
 {
 	jmethodID mid = GetMethodID("Stop", "(I)V");
 	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id);
 }
 
 void JniMovieViewControl::Pause()
 {
 	jmethodID mid = GetMethodID("Pause", "(I)V");
 	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id);
 }
 
 void JniMovieViewControl::Resume()
 {
 	jmethodID mid = GetMethodID("Resume", "(I)V");
 	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+		GetEnvironment()->CallStaticVoidMethod(javaClass, mid, id);
 }
 
 bool JniMovieViewControl::IsPlaying()
 {
 	jmethodID mid = GetMethodID("IsPlaying", "(I)Z");
 	if (mid)
-		return GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, id);
+		return GetEnvironment()->CallStaticBooleanMethod(javaClass, mid, id);
 	return false;
 }
 

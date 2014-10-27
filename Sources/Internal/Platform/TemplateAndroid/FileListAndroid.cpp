@@ -35,18 +35,7 @@
 namespace DAVA
 {
 
-jclass JniFileList::gJavaClass = NULL;
-const char* JniFileList::gJavaClassName = NULL;
-
-jclass JniFileList::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniFileList::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+const char* JniFileList::javaClassName = "com/dava/framework/JNIFileList";
 
 Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& path)
 {
@@ -57,7 +46,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 	{
 		jstring jPath = GetEnvironment()->NewStringUTF(path.c_str());
 
-		jobjectArray jArray = (jobjectArray) GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jPath);
+		jobjectArray jArray = (jobjectArray) GetEnvironment()->CallStaticObjectMethod(javaClass, mid, jPath);
 		if (jArray)
 		{
 			jsize size = GetEnvironment()->GetArrayLength(jArray);
