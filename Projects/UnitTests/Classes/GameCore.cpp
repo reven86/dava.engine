@@ -351,6 +351,23 @@ void GameCore::ProcessTests()
     }
 }
 
+String GetCommandLineValue(const Vector<String>& cmdLine, const char* key, const String& defaultVal)
+{
+	// format cmdLine: -host 10.128.109.24 -port 50007
+	for (size_t i = 0; i < cmdLine.size(); ++i)
+	{
+		if (key == cmdLine[i])
+		{
+			size_t valueIndex = i + 1;
+			if (valueIndex < cmdLine.size())
+			{
+				return cmdLine[valueIndex];
+			}
+		}
+	}
+	return defaultVal;
+}
+
 
 void GameCore::FlushTestResults()
 {
@@ -358,15 +375,19 @@ void GameCore::FlushTestResults()
 #ifdef  SEND_TEST_DATA_BACK_TO_PC
 
 	String report_content = WriteReportFile();
-	String host = "10.128.109.24"; //"127.0.0.1";
-	unsigned short port = 50007;
 
+	const Vector<String>& cmdLine = DAVA::Core::Instance()->GetCommandLine();
+	String host = GetCommandLineValue(cmdLine, "-host", "");
+	String portStr = GetCommandLineValue(cmdLine, "-port", "50007");
+	unsigned short port = static_cast<unsigned short>(atoi(portStr.c_str()));
+
+	if (!host.empty())
 	{
 		sf::TcpSocket socket;
 		sf::Socket::Status status = socket.connect(host, port);
 		if (status != sf::Socket::Done)
 		{
-			LogMessage("can't connect to server");
+			LogMessage("can't connect to server: " + host + ":" + portStr);
 			return;
 		}
 
@@ -375,9 +396,9 @@ void GameCore::FlushTestResults()
 		if (socket.send(data.c_str(), data.size()) != sf::Socket::Done)
 		{
 			LogMessage("can't send data to server\n");
+			socket.disconnect();
 			return;
 		}
-
 		socket.disconnect();
 	}
 

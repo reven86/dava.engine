@@ -36,8 +36,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private native void nativeOnAccelerometer(float x, float y, float z);
     
     private boolean isFirstRun = true;
+    private static String commandLineParams = null;
     
-    public abstract JNIGLSurfaceView GetSurfaceView();
+	public abstract JNIGLSurfaceView GetSurfaceView();
     
     private static JNIActivity activity = null;
     protected static SingalStrengthListner singalStrengthListner = null;
@@ -53,8 +54,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	activity = this;
         super.onCreate(savedInstanceState);
         
+        commandLineParams = initCommandLineParams();
+
         // Initialize native framework core         
-        JNIApplication.GetApplication().InitFramework();
+        JNIApplication.GetApplication().InitFramework(commandLineParams);
         
         JNINotificationProvider.AttachToActivity();
         
@@ -109,6 +112,20 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			Log.d("", "no singalStrengthListner");
 		}
     }
+	private String initCommandLineParams() {
+		String commandLine = "";
+		Bundle extras = this.getIntent().getExtras();
+		if (extras != null) {
+			commandLine = "";
+			for (String key : extras.keySet()) {
+				String value = extras.getString(key);
+				commandLine += key + " " + value + " ";
+			}
+			commandLine = commandLine.trim();
+		}
+		Log.i("DAVA", "command line params: " + commandLine);
+		return commandLine;
+	}
     
     @Override
     protected void onStart()

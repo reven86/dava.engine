@@ -3,26 +3,34 @@ import socket
 import subprocess
 import sys
 
-# TODO start application on device or else where then start server to listen unit test log output
-# some_command_to_start_app_on_device
+current_host = socket.gethostname()
+current_ip = socket.gethostbyname(current_host)
+print("host ip: " + current_ip)
 
-if sys.platform == 'win32':
+HOST = current_ip
+PORT = 50007
+
+# start application on device or else where then start server to listen unit test log output
+# TODO move to command line param of script
+start_on_android = True
+
+if start_on_android:
+    #start application on android device
+    subprocess.Popen(["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests.UnitTests",
+                      "-e", "-host", str(HOST), "-e", "-port", str(PORT)])
+elif sys.platform == 'win32':
     subprocess.Popen(["..\Debug\UnitTestsVS2010.exe",
                       "127.0.0.1", "50007"], cwd="./..")
 elif sys.platform == "darwin":
-    # /Users/user123/Library/Developer/Xcode/DerivedData/TemplateProjectMacOS-bpogfklmgukhlmbnpxhfcjhfiwfq/Build/Products/Debug/UnitTests
     app_path = "/Users/user123/Library/Developer/Xcode/DerivedData/TemplateProjectMacOS-bpogfklmgukhlmbnpxhfcjhfiwfq/Build/Products/Debug/UnitTests.app"
-    subprocess.Popen(["open", "-a", app_path])  # , "127.0.0.1", "50007"
-    # TODO run on mac os x
-    pass
+    subprocess.Popen(["open", "-a", app_path, "-host", str(HOST), "-port", str(PORT)])
 
-HOST = 'localhost'        # Symbolic name meaning the local host
-PORT = 50007              # Arbitrary non-privileged port
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(1)
+print("start listen")
 conn, addr = s.accept()
-print("connected by:", addr)
+print("connected by:" + str(addr))
 
 file_content = ""
 
