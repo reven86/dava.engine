@@ -130,7 +130,7 @@ Landscape::Landscape()
     prevLodLayer = -1;
     
 	NMaterial* landscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material"),
-                                                            NMaterialName::TILE_MASK_SPECULAR,
+                                                            NMaterialName::TILE_MASK_PIXEL_LIT,
                                                             NMaterial::DEFAULT_QUALITY_NAME);
     
 	tileMaskMaterial = 	NMaterial::CreateMaterialInstance();
