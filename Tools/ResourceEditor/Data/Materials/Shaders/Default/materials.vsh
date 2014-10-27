@@ -765,15 +765,9 @@ void main()
 #endif
 
 #endif
-	
-	sphericalLightFactor *= 2.0;
-	
-	#if defined(VERTEX_COLOR)
-		varVertexColor *= vec4(sphericalLightFactor, 1.0);
-	#else
-		varVertexColor = vec4(sphericalLightFactor, 1.0);
-	#endif
-	
+
+	varVertexColor = vec4(sphericalLightFactor * 2.0, 1.0);
+
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
     varVertexColor.rgb = varVertexColor.rgb * treeLeafColorMul * treeLeafOcclusionMul + vec3(treeLeafOcclusionOffset);
 #endif

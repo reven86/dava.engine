@@ -17,7 +17,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -330,7 +333,27 @@ public class JNITextField {
 					@Override
 					public CharSequence filter(CharSequence source, final int start, final int end,
 							Spanned dest, final int dstart, final int dend) {
-						
+
+						EditText textField = GetEditText(_id);
+						if (0 == (textField.getInputType() & (InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE)))
+						{
+							SpannableStringBuilder s = new SpannableStringBuilder(source);
+							if (source instanceof Spanned || source instanceof Spannable)
+							{
+								Spanned spanned = (Spanned) source;
+								TextUtils.copySpansFrom(spanned, start, end, null, s, 0);
+							}
+
+							for (int i = 0; i < s.length(); ++i)
+							{
+								if ('\n' == s.charAt(i))
+								{
+									s.replace(i, i + 1, " ");
+								}
+							}
+							source = s;
+						}
+
 						NativeEditText editText = GetNativeEditText(_id);
 						if (editText != null && editText.maxLengthFilter != null) {
 							CharSequence res = editText.maxLengthFilter.filter(source, start, end, dest, dstart, dend);
