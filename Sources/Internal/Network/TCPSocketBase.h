@@ -13,7 +13,7 @@ class Endpoint;
 /*
  Class TCPSocketBase - base class for TCP sockets
 */
-class TCPSocketBase : private DAVA::Noncopyable
+class TCPSocketBase : private Noncopyable
 {
 public:
     explicit TCPSocketBase (IOLoop* ioLoop);

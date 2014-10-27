@@ -13,7 +13,7 @@ class Endpoint;
 /*
  Class UDPSocketBase - base class for UDP sockets
 */
-class UDPSocketBase : private DAVA::Noncopyable
+class UDPSocketBase : private Noncopyable
 {
 public:
     explicit UDPSocketBase (IOLoop* ioLoop);

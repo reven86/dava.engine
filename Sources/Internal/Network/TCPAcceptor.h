@@ -20,12 +20,19 @@ public:
     typedef TCPAcceptorTemplate<TCPAcceptor> BaseClassType;
     typedef TCPAcceptor                      ThisClassType;
 
+    typedef DAVA::Function<void (ThisClassType* acceptor)>            CloseHandlerType;
 	typedef DAVA::Function<void (ThisClassType* acceptor, int error)> ConnectHandlerType;
 
 public:
-    explicit TCPAcceptor (IOLoop* ioLoop);
+    explicit TCPAcceptor (IOLoop* ioLoop, bool autoDeleteOnCloseFlag = false);
 
     ~TCPAcceptor () {}
+
+    template <typename Handler>
+    void SetCloseHandler (Handler handler)
+    {
+        closeHandler = handler;
+    }
 
     template <typename Handler>
     int AsyncListen (Handler handler, int backlog = SOMAXCONN)
@@ -36,9 +43,13 @@ public:
         return InternalAsyncListen (backlog);
     }
 
+    void HandleClose ();
+
     void HandleConnect (int error);
 
 private:
+    bool               autoDeleteOnClose;   // TODO: do I really need this flag?
+    CloseHandlerType   closeHandler;
     ConnectHandlerType connectHandler;
 };
 
