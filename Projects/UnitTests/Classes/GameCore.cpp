@@ -387,6 +387,7 @@ void GameCore::FlushTestResults()
 		sf::Socket::Status status = socket.connect(host, port);
 		if (status != sf::Socket::Done)
 		{
+            DAVA::Logger::Info("can't connect to server: %s:%hu", host.c_str(), port);
 			LogMessage("can't connect to server: " + host + ":" + portStr);
 			return;
 		}

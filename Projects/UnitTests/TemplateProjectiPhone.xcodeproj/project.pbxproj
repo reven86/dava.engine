@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0057A1A419FE580F00DFAEEC /* IpAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18119FE580F00DFAEEC /* IpAddress.cpp */; };
+		0057A1A519FE580F00DFAEEC /* Packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18319FE580F00DFAEEC /* Packet.cpp */; };
+		0057A1A619FE580F00DFAEEC /* Socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18519FE580F00DFAEEC /* Socket.cpp */; };
+		0057A1A719FE580F00DFAEEC /* SocketSelector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18919FE580F00DFAEEC /* SocketSelector.cpp */; };
+		0057A1A819FE580F00DFAEEC /* TcpListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18B19FE580F00DFAEEC /* TcpListener.cpp */; };
+		0057A1A919FE580F00DFAEEC /* TcpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18D19FE580F00DFAEEC /* TcpSocket.cpp */; };
+		0057A1AA19FE580F00DFAEEC /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18F19FE580F00DFAEEC /* UdpSocket.cpp */; };
+		0057A1AB19FE580F00DFAEEC /* SocketImpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A19219FE580F00DFAEEC /* SocketImpl.cpp */; };
+		0057A1AD19FE580F00DFAEEC /* Err.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A19919FE580F00DFAEEC /* Err.cpp */; };
+		0057A1AE19FE580F00DFAEEC /* String.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A19D19FE580F00DFAEEC /* String.cpp */; };
+		0057A1AF19FE580F00DFAEEC /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A19F19FE580F00DFAEEC /* Time.cpp */; };
+		0057A1B019FE580F00DFAEEC /* Utf.inl in Resources */ = {isa = PBXBuildFile; fileRef = 0057A1A219FE580F00DFAEEC /* Utf.inl */; };
 		02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B3D3DD159C8D360082111B /* SoundTest.cpp */; };
 		02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC3C0515E6399C0047F67F /* SplitTest.cpp */; };
 		02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */; };
@@ -103,6 +115,38 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0057A17E19FE580F00DFAEEC /* Config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Config.hpp; sourceTree = "<group>"; };
+		0057A18019FE580F00DFAEEC /* Export.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Export.hpp; sourceTree = "<group>"; };
+		0057A18119FE580F00DFAEEC /* IpAddress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IpAddress.cpp; sourceTree = "<group>"; };
+		0057A18219FE580F00DFAEEC /* IpAddress.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IpAddress.hpp; sourceTree = "<group>"; };
+		0057A18319FE580F00DFAEEC /* Packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Packet.cpp; sourceTree = "<group>"; };
+		0057A18419FE580F00DFAEEC /* Packet.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Packet.hpp; sourceTree = "<group>"; };
+		0057A18519FE580F00DFAEEC /* Socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Socket.cpp; sourceTree = "<group>"; };
+		0057A18619FE580F00DFAEEC /* Socket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Socket.hpp; sourceTree = "<group>"; };
+		0057A18719FE580F00DFAEEC /* SocketHandle.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SocketHandle.hpp; sourceTree = "<group>"; };
+		0057A18819FE580F00DFAEEC /* SocketImpl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SocketImpl.hpp; sourceTree = "<group>"; };
+		0057A18919FE580F00DFAEEC /* SocketSelector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SocketSelector.cpp; sourceTree = "<group>"; };
+		0057A18A19FE580F00DFAEEC /* SocketSelector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SocketSelector.hpp; sourceTree = "<group>"; };
+		0057A18B19FE580F00DFAEEC /* TcpListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TcpListener.cpp; sourceTree = "<group>"; };
+		0057A18C19FE580F00DFAEEC /* TcpListener.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TcpListener.hpp; sourceTree = "<group>"; };
+		0057A18D19FE580F00DFAEEC /* TcpSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TcpSocket.cpp; sourceTree = "<group>"; };
+		0057A18E19FE580F00DFAEEC /* TcpSocket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TcpSocket.hpp; sourceTree = "<group>"; };
+		0057A18F19FE580F00DFAEEC /* UdpSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UdpSocket.cpp; sourceTree = "<group>"; };
+		0057A19019FE580F00DFAEEC /* UdpSocket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = UdpSocket.hpp; sourceTree = "<group>"; };
+		0057A19219FE580F00DFAEEC /* SocketImpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SocketImpl.cpp; sourceTree = "<group>"; };
+		0057A19319FE580F00DFAEEC /* SocketImpl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SocketImpl.hpp; sourceTree = "<group>"; };
+		0057A19719FE580F00DFAEEC /* Network.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Network.hpp; sourceTree = "<group>"; };
+		0057A19919FE580F00DFAEEC /* Err.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Err.cpp; sourceTree = "<group>"; };
+		0057A19A19FE580F00DFAEEC /* Err.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Err.hpp; sourceTree = "<group>"; };
+		0057A19B19FE580F00DFAEEC /* Export.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Export.hpp; sourceTree = "<group>"; };
+		0057A19C19FE580F00DFAEEC /* NonCopyable.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NonCopyable.hpp; sourceTree = "<group>"; };
+		0057A19D19FE580F00DFAEEC /* String.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = String.cpp; sourceTree = "<group>"; };
+		0057A19E19FE580F00DFAEEC /* String.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = String.hpp; sourceTree = "<group>"; };
+		0057A19F19FE580F00DFAEEC /* Time.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Time.cpp; sourceTree = "<group>"; };
+		0057A1A019FE580F00DFAEEC /* Time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
+		0057A1A119FE580F00DFAEEC /* Utf.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Utf.hpp; sourceTree = "<group>"; };
+		0057A1A219FE580F00DFAEEC /* Utf.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Utf.inl; sourceTree = "<group>"; };
+		0057A1A319FE580F00DFAEEC /* System.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = System.hpp; sourceTree = "<group>"; };
 		02B3D3DD159C8D360082111B /* SoundTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundTest.cpp; sourceTree = "<group>"; };
 		02B3D3DE159C8D360082111B /* SoundTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundTest.h; sourceTree = "<group>"; };
 		02BC3C0515E6399C0047F67F /* SplitTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SplitTest.cpp; sourceTree = "<group>"; };
@@ -257,9 +301,73 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0057A17D19FE580F00DFAEEC /* SFML */ = {
+			isa = PBXGroup;
+			children = (
+				0057A17E19FE580F00DFAEEC /* Config.hpp */,
+				0057A17F19FE580F00DFAEEC /* Network */,
+				0057A19719FE580F00DFAEEC /* Network.hpp */,
+				0057A19819FE580F00DFAEEC /* System */,
+				0057A1A319FE580F00DFAEEC /* System.hpp */,
+			);
+			path = SFML;
+			sourceTree = "<group>";
+		};
+		0057A17F19FE580F00DFAEEC /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				0057A18019FE580F00DFAEEC /* Export.hpp */,
+				0057A18119FE580F00DFAEEC /* IpAddress.cpp */,
+				0057A18219FE580F00DFAEEC /* IpAddress.hpp */,
+				0057A18319FE580F00DFAEEC /* Packet.cpp */,
+				0057A18419FE580F00DFAEEC /* Packet.hpp */,
+				0057A18519FE580F00DFAEEC /* Socket.cpp */,
+				0057A18619FE580F00DFAEEC /* Socket.hpp */,
+				0057A18719FE580F00DFAEEC /* SocketHandle.hpp */,
+				0057A18819FE580F00DFAEEC /* SocketImpl.hpp */,
+				0057A18919FE580F00DFAEEC /* SocketSelector.cpp */,
+				0057A18A19FE580F00DFAEEC /* SocketSelector.hpp */,
+				0057A18B19FE580F00DFAEEC /* TcpListener.cpp */,
+				0057A18C19FE580F00DFAEEC /* TcpListener.hpp */,
+				0057A18D19FE580F00DFAEEC /* TcpSocket.cpp */,
+				0057A18E19FE580F00DFAEEC /* TcpSocket.hpp */,
+				0057A18F19FE580F00DFAEEC /* UdpSocket.cpp */,
+				0057A19019FE580F00DFAEEC /* UdpSocket.hpp */,
+				0057A19119FE580F00DFAEEC /* Unix */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		0057A19119FE580F00DFAEEC /* Unix */ = {
+			isa = PBXGroup;
+			children = (
+				0057A19219FE580F00DFAEEC /* SocketImpl.cpp */,
+				0057A19319FE580F00DFAEEC /* SocketImpl.hpp */,
+			);
+			path = Unix;
+			sourceTree = "<group>";
+		};
+		0057A19819FE580F00DFAEEC /* System */ = {
+			isa = PBXGroup;
+			children = (
+				0057A19919FE580F00DFAEEC /* Err.cpp */,
+				0057A19A19FE580F00DFAEEC /* Err.hpp */,
+				0057A19B19FE580F00DFAEEC /* Export.hpp */,
+				0057A19C19FE580F00DFAEEC /* NonCopyable.hpp */,
+				0057A19D19FE580F00DFAEEC /* String.cpp */,
+				0057A19E19FE580F00DFAEEC /* String.hpp */,
+				0057A19F19FE580F00DFAEEC /* Time.cpp */,
+				0057A1A019FE580F00DFAEEC /* Time.hpp */,
+				0057A1A119FE580F00DFAEEC /* Utf.hpp */,
+				0057A1A219FE580F00DFAEEC /* Utf.inl */,
+			);
+			path = System;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				0057A17D19FE580F00DFAEEC /* SFML */,
 				E80842B81639147A002A6A77 /* TextureUtils.cpp */,
 				E80842B91639147A002A6A77 /* TextureUtils.h */,
 				5C8D42451580E4ED00441032 /* Config.h */,
@@ -548,6 +656,7 @@
 				FEFCD63412AE78D90060A1A1 /* Data in Resources */,
 				FEC9201113BA2D7D006F347F /* MainWindow.xib in Resources */,
 				5CDC2530156CDED900742348 /* MainWindow-iPad.xib in Resources */,
+				0057A1B019FE580F00DFAEEC /* Utf.inl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -587,24 +696,33 @@
 				5CA2462E158F472100465879 /* EntityTest.cpp in Sources */,
 				02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */,
 				FEC95C7015B409E500588BBF /* HashMapTest.cpp in Sources */,
+				0057A1A819FE580F00DFAEEC /* TcpListener.cpp in Sources */,
+				0057A1A419FE580F00DFAEEC /* IpAddress.cpp in Sources */,
 				627C796D18ED9DA900C05154 /* JPEGTest.cpp in Sources */,
 				FEC95C7115B409E500588BBF /* MemoryAllocatorsTest.cpp in Sources */,
 				02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */,
 				E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */,
+				0057A1A719FE580F00DFAEEC /* SocketSelector.cpp in Sources */,
 				E8F98C48161AE9B900B50BDA /* PVRTest.cpp in Sources */,
 				E801A588183FAB8E00D5B770 /* ComponentsTest.cpp in Sources */,
+				0057A1A919FE580F00DFAEEC /* TcpSocket.cpp in Sources */,
 				E80842BA1639147A002A6A77 /* TextureUtils.cpp in Sources */,
 				CE1AA0781625B8D40005BE5E /* KeyedArchiveTest.cpp in Sources */,
 				CEC6DA17162D95A6009E5F1D /* KeyedArchiveYamlTest.cpp in Sources */,
 				E8C6B12216692E87001EBE09 /* CloneTest.cpp in Sources */,
+				0057A1AD19FE580F00DFAEEC /* Err.cpp in Sources */,
 				49C4331F1675F1A6000EA877 /* DXTTest.cpp in Sources */,
 				E81F2AF516BFA4E600C4545E /* MaterialCompilerTest.cpp in Sources */,
 				C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */,
+				0057A1A519FE580F00DFAEEC /* Packet.cpp in Sources */,
+				0057A1AF19FE580F00DFAEEC /* Time.cpp in Sources */,
 				84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */,
 				E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */,
 				D7FEF1171982839600B2C7AF /* DLCDownloadTest.cpp in Sources */,
 				E8903910196D4FCE003126C8 /* ImageSizeTest.cpp in Sources */,
 				CC24802616DF6CE000183D40 /* InputTest.cpp in Sources */,
+				0057A1AB19FE580F00DFAEEC /* SocketImpl.cpp in Sources */,
+				0057A1AE19FE580F00DFAEEC /* String.cpp in Sources */,
 				4F25830719BDB6B800C28926 /* FunctionBindSingalTest.cpp in Sources */,
 				E81B47DA16F896070025AF23 /* FilePathTest.cpp in Sources */,
 				497BF6EE16F7565B00AC57C6 /* DeviceInfoTest.cpp in Sources */,
@@ -616,10 +734,12 @@
 				4998996B18B238F7007A8DF2 /* RectSpriteTest.cpp in Sources */,
 				E8679179175F607700C5A6A2 /* FormatsTest.cpp in Sources */,
 				5035302F194A4026006B66DB /* SceneSystemTest.cpp in Sources */,
+				0057A1A619FE580F00DFAEEC /* Socket.cpp in Sources */,
 				74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */,
 				74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */,
 				7497447517B3D61800282DAA /* AlignTest.cpp in Sources */,
 				02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */,
+				0057A1AA19FE580F00DFAEEC /* UdpSocket.cpp in Sources */,
 				1770DF4517DF446600000391 /* UIMovieTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -648,6 +768,12 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Libs/include,
+					./Classes,
+				);
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
@@ -676,6 +802,12 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Libs/include,
+					./Classes,
+				);
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
@@ -731,6 +863,12 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Libs/include,
+					./Classes,
+				);
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
