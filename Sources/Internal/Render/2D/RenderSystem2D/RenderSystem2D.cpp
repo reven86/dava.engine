@@ -40,98 +40,98 @@ namespace DAVA
 
 VboPool::VboPool(uint32 size, uint8 count)
 {
-    vertexFormat = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
-    vertexStride = sizeof(float32) * 8; //XYUVRGBA
-    currentVertexBufferSize = size * vertexStride;
-    currentIndexBufferSize = size * 2 * sizeof(uint16);
-    for (int i = 0; i < count; ++i)
-    {
-        RenderDataObject* obj = new RenderDataObject();
-        obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
-        obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
-        obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, 0);
-        obj->BuildVertexBuffer(size, false);
-        obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
-        obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
-        obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
-        obj->SetIndices(EIF_16, 0, size * 2);
-        obj->BuildIndexBuffer(false);
-
-        dataObjects.push_back(obj);
-    }
-    currentDataObjectIndex = 0;
-    currentDataObject = dataObjects[currentDataObjectIndex];
+//    vertexFormat = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
+//    vertexStride = sizeof(float32) * 8; //XYUVRGBA
+//    currentVertexBufferSize = size * vertexStride;
+//    currentIndexBufferSize = size * 2 * sizeof(uint16);
+//    for (int i = 0; i < count; ++i)
+//    {
+//        RenderDataObject* obj = new RenderDataObject();
+//        obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
+//        obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
+//        obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, 0);
+//        obj->BuildVertexBuffer(size, false);
+//        obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
+//        obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
+//        obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
+//        obj->SetIndices(EIF_16, 0, size * 2);
+//        obj->BuildIndexBuffer(false);
+//
+//        dataObjects.push_back(obj);
+//    }
+//    currentDataObjectIndex = 0;
+//    currentDataObject = dataObjects[currentDataObjectIndex];
 }
 
 void VboPool::Next()
 {
-    currentDataObjectIndex = (currentDataObjectIndex + 1) % dataObjects.size();
-    currentDataObject = dataObjects[currentDataObjectIndex];
+//    currentDataObjectIndex = (currentDataObjectIndex + 1) % dataObjects.size();
+//    currentDataObject = dataObjects[currentDataObjectIndex];
 }
 
 void VboPool::SetVertexData(uint32 count, float32* data)
 {
-    currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, data);
-    currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, data + 2);
-    currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, data + 4);
-    currentDataObject->BuildVertexBuffer(count, true);
-    currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
-    currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
-    currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
+//    currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, data);
+//    currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, data + 2);
+//    currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, data + 4);
+//    currentDataObject->BuildVertexBuffer(count, true);
+//    currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
+//    currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
+//    currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
 }
 
 void VboPool::SetIndexData(uint32 count, uint8* data)
 {
-    currentDataObject->SetIndices(EIF_16, data, count);
-    currentDataObject->BuildIndexBuffer(true);
+//    currentDataObject->SetIndices(EIF_16, data, count);
+//    currentDataObject->BuildIndexBuffer(true);
 }
 
 void VboPool::MapBuffers()
 {
-    uint32 vbid = currentDataObject->GetVertexBufferID();
-    uint32 ibid = currentDataObject->GetIndexBufferID();
-    
-    RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid);
-    RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid);
-    
-    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
-    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_WRITE));
+//    uint32 vbid = currentDataObject->GetVertexBufferID();
+//    uint32 ibid = currentDataObject->GetIndexBufferID();
+//
+//    RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid);
+//    RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid);
+//
+//    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
+//    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_WRITE));
 }
 
 void VboPool::UnmapBuffers()
 {
-    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
-    currentVertexBufferPointer = 0;
-    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
-    currentIndexBufferPointer = 0;
+//    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
+//    currentVertexBufferPointer = 0;
+//    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
+//    currentIndexBufferPointer = 0;
 }
     
 void VboPool::MapVertexBuffer()
 {
-    uint32 vbid = currentDataObject->GetVertexBufferID();
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid));
-    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE | GL_MAP_UNSYNCHRONIZED_BIT));
+//    uint32 vbid = currentDataObject->GetVertexBufferID();
+//    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid));
+//    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE | GL_MAP_UNSYNCHRONIZED_BIT));
 }
 
 void VboPool::UnmapVertexBuffer()
 {
-    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
-    currentVertexBufferPointer = 0;
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, NULL));
+//    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
+//    currentVertexBufferPointer = 0;
+//    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, NULL));
 }
 
 void VboPool::MapIndexBuffer()
 {
-    uint32 ibid = currentDataObject->GetIndexBufferID();
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid));
-    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_WRITE | GL_MAP_UNSYNCHRONIZED_BIT));
+//    uint32 ibid = currentDataObject->GetIndexBufferID();
+//    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid));
+//    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_WRITE | GL_MAP_UNSYNCHRONIZED_BIT));
 }
 
 void VboPool::UnmapIndexBuffer()
 {
-    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
-    currentIndexBufferPointer = 0;
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL));
+//    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
+//    currentIndexBufferPointer = 0;
+//    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL));
 }
 
 void VboPool::RenewBuffers(uint32 size)

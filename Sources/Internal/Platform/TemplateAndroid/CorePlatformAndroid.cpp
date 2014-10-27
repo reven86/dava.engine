@@ -58,8 +58,8 @@ namespace DAVA
 
 	Core::eDeviceFamily Core::GetDeviceFamily()
 	{
-		float32 width = GetPhysicalScreenWidth();
-		float32 height = GetPhysicalScreenHeight();
+		float32 width = ScreenSizes::GetPhysicalScreenSize().dx;
+		float32 height = ScreenSizes::GetPhysicalScreenSize().dy;
 		float32 dpi = GetScreenDPI();
 
 		float32 inches = sqrt((width * width) + (height * height)) / dpi;
@@ -150,8 +150,8 @@ namespace DAVA
 	void CorePlatformAndroid::UpdateScreenMode()
 	{
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
-		UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-		Core::Instance()->SetPhysicalScreenSize(width, height);
+		VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+		VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
 
 		RenderManager::Instance()->InitFBSize(width, height);
         RenderManager::Instance()->Init(width, height);

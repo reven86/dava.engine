@@ -86,8 +86,8 @@ JNIEnv *JniExtension::GetEnvironment() const
 
 Rect JniExtension::V2P(const Rect& srcRect) const
 {
-	Vector2 offset = Core::Instance()->GetPhysicalDrawOffset();
-	float32 v2p = Core::Instance()->GetVirtualToPhysicalFactor();
+	Vector2 offset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+	float32 v2p = VirtualCoordinatesSystem::Instance()->GetVirtualToPhysicalFactor();
 	Rect rect = srcRect;
 	rect.x *= v2p;
 	rect.y *= v2p;

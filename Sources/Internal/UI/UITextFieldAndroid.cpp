@@ -130,7 +130,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 
 void JniTextField::SetFontSize(float size)
 {
-	float32 v2p = Core::Instance()->GetVirtualToPhysicalFactor();
+	float32 v2p = VirtualCoordinatesSystem::Instance()->GetVirtualToPhysicalFactor();
 	jmethodID mid = GetMethodID("SetFontSize", "(IF)V");
 	if (mid)
 	{
