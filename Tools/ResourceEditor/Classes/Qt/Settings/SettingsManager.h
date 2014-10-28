@@ -66,6 +66,7 @@ namespace Settings
     static const DAVA::FastName Scene_SelectionSequent("Scene/SelectionSequent");
     static const DAVA::FastName Scene_SelectionDrawMode("Scene/SelectionDrawMode");
     static const DAVA::FastName Scene_CollisionDrawMode("Scene/CollisionDrawMode");
+    static const DAVA::FastName Scene_ModificationByGizmoOnly("Scene/ModificationByGizmoOnly");
     static const DAVA::FastName Scene_GizmoScale("Scene/GizmoScale");
     static const DAVA::FastName Scene_DebugBoxScale("Scene/DebugBoxScale");
     static const DAVA::FastName Scene_DebugBoxUserScale("Scene/DebugBoxUserScale");

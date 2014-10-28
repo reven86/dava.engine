@@ -209,6 +209,13 @@ void SceneTree::dragMoveEvent(QDragMoveEvent *event)
 
 void SceneTree::dragEnterEvent(QDragEnterEvent *event)
 {
+    if((event->keyboardModifiers() & Qt::SHIFT) != Qt::SHIFT)
+    {
+        event->ignore();
+        return;
+    }
+    
+    
 	QTreeView::dragEnterEvent(event);
 
 	{

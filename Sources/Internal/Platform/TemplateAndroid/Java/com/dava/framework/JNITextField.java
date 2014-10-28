@@ -334,6 +334,7 @@ public class JNITextField {
 					public CharSequence filter(CharSequence source, final int start, final int end,
 							Spanned dest, final int dstart, final int dend) {
 
+						// Avoiding the line breaks in the single-line text fields. Line breaks should be replaced with spaces.
 						EditText textField = GetEditText(_id);
 						if (0 == (textField.getInputType() & (InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE)))
 						{

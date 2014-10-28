@@ -483,7 +483,6 @@
 		E8C992A3184CD0EC00AFBF3F /* DraggableDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C99057184CD0EB00AFBF3F /* DraggableDialog.cpp */; };
 		E8C992A4184CD0EC00AFBF3F /* EditorConfig.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C99059184CD0EB00AFBF3F /* EditorConfig.cpp */; };
 		E8C992A5184CD0EC00AFBF3F /* EditorHeightmap.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C9905B184CD0EB00AFBF3F /* EditorHeightmap.cpp */; };
-		E8C992A6184CD0EC00AFBF3F /* EditorSettings.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C9905D184CD0EB00AFBF3F /* EditorSettings.cpp */; };
 		E8C992A7184CD0EC00AFBF3F /* ExtendedDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C9905F184CD0EB00AFBF3F /* ExtendedDialog.cpp */; };
 		E8C992A8184CD0EC00AFBF3F /* LandscapeRenderer.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C99061184CD0EB00AFBF3F /* LandscapeRenderer.cpp */; };
 		E8C992A9184CD0EC00AFBF3F /* ParticlesEditorNodeNameHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C99063184CD0EB00AFBF3F /* ParticlesEditorNodeNameHelper.cpp */; };
@@ -1551,8 +1550,6 @@
 		E8C9905A184CD0EB00AFBF3F /* EditorConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditorConfig.h; sourceTree = "<group>"; };
 		E8C9905B184CD0EB00AFBF3F /* EditorHeightmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditorHeightmap.cpp; sourceTree = "<group>"; };
 		E8C9905C184CD0EB00AFBF3F /* EditorHeightmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditorHeightmap.h; sourceTree = "<group>"; };
-		E8C9905D184CD0EB00AFBF3F /* EditorSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditorSettings.cpp; sourceTree = "<group>"; };
-		E8C9905E184CD0EB00AFBF3F /* EditorSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditorSettings.h; sourceTree = "<group>"; };
 		E8C9905F184CD0EB00AFBF3F /* ExtendedDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExtendedDialog.cpp; sourceTree = "<group>"; };
 		E8C99060184CD0EB00AFBF3F /* ExtendedDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExtendedDialog.h; sourceTree = "<group>"; };
 		E8C99061184CD0EB00AFBF3F /* LandscapeRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeRenderer.cpp; sourceTree = "<group>"; };
@@ -3541,8 +3538,6 @@
 				E8C9905A184CD0EB00AFBF3F /* EditorConfig.h */,
 				E8C9905B184CD0EB00AFBF3F /* EditorHeightmap.cpp */,
 				E8C9905C184CD0EB00AFBF3F /* EditorHeightmap.h */,
-				E8C9905D184CD0EB00AFBF3F /* EditorSettings.cpp */,
-				E8C9905E184CD0EB00AFBF3F /* EditorSettings.h */,
 				E8C9905F184CD0EB00AFBF3F /* ExtendedDialog.cpp */,
 				E8C99060184CD0EB00AFBF3F /* ExtendedDialog.h */,
 				E8C99061184CD0EB00AFBF3F /* LandscapeRenderer.cpp */,
@@ -5112,7 +5107,6 @@
 				E8BAD7231859F50300C98C8D /* HangingObjectsHeight_moc.cpp in Build Sources */,
 				E8BAD6C41859F50300C98C8D /* GradientPickerWidget_moc.cpp in Build Sources */,
 				E8C992F4184CD0EC00AFBF3F /* SceneSignals.cpp in Build Sources */,
-				E8C992A6184CD0EC00AFBF3F /* EditorSettings.cpp in Build Sources */,
 				E86F97CF18DB38F1007330E1 /* CloneLastBatchCommand.cpp in Build Sources */,
 				E8C9932B184CD0EC00AFBF3F /* EventFilterDoubleSpinBox.cpp in Build Sources */,
 				E8C9923B184CD0EC00AFBF3F /* gim_tri_collision.cpp in Build Sources */,

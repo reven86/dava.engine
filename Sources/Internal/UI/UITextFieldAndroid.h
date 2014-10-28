@@ -130,6 +130,10 @@ public:
 private:
 	static UITextFieldAndroid* GetUITextFieldAndroid(uint32_t id);
 
+protected:
+    // Truncate the text to maxLength characters.
+    WideString TruncateText(const WideString& text, int32 maxLength);
+
 private:
 	UITextField* textField;
 	static uint32_t sId;
