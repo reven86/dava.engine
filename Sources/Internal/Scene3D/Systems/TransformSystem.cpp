@@ -55,7 +55,7 @@ TransformSystem::TransformSystem(Scene * scene)
 TransformSystem::~TransformSystem()                                                                                                                                                   
 { }
 
-static void test_fn()
+static void test_fn(uint32 from, uint32 count, Vector<Entity*> *updatedEntities)
 {
 
 }
@@ -84,7 +84,8 @@ void TransformSystem::Process(float32 timeElapsed)
 	uint32 jobsCount = Min(maxProcessingThreads, Min(1 + entitiesCount / 4, JobManager2::Instance()->GetWorkersCount()));
 	uint32 entitiesPerJobCount = entitiesCount / jobsCount;
 
-	if(_in && jobsCount > 1 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
+	if(_in && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
+	//if(jobsCount > 1 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
     {
 		uint32 firstIndex = 0;
 		uint32 rest = entitiesCount - (jobsCount * entitiesPerJobCount);
@@ -102,8 +103,8 @@ void TransformSystem::Process(float32 timeElapsed)
 
 			// run jobs
 			//Function<void()> fn = Bind(MakeFunction(this, &TransformSystem::UpdateHierarchyPart), firstIndex, count, &sendEvent[i]);
-			//JobManager2::Instance()->CreateWorkerJob(fn);
-			JobManager2::Instance()->CreateWorkerJob(&test_fn);
+			Function<void()> fn = Bind(&test_fn, firstIndex, count, &sendEvent[i]);
+			JobManager2::Instance()->CreateWorkerJob(fn);
 
 			// move to next part of entities
 			firstIndex += count;
@@ -123,11 +124,20 @@ void TransformSystem::Process(float32 timeElapsed)
     {
 		_sss2 = SystemTimer::Instance()->GetAbsoluteNano();
 
+		Function<void()> fn = Bind(&test_fn, 0, 0, &sendEvent[0]);
+
 		// single thread processing
         uint32 size = updatableEntities.size();
         for(uint32 i = 0; i < size; ++i)
         {
-            UpdateHierarchy(updatableEntities[i], &sendEvent[0]);
+			if(_in)
+			{
+				fn();
+			}
+			else
+			{
+				UpdateHierarchy(updatableEntities[i], &sendEvent[0]);
+			}
         }
         
 		_sss3 = SystemTimer::Instance()->GetAbsoluteNano();
@@ -135,6 +145,7 @@ void TransformSystem::Process(float32 timeElapsed)
         sendEvent[0].clear();
     }
     
+#if 1
 	if(_in)
 	{
 		ttt0 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss1); // whole
@@ -143,56 +154,57 @@ void TransformSystem::Process(float32 timeElapsed)
 		ttt3 += (_sss3 - _sss2); // wait
 		ttt4 += (SystemTimer::Instance()->GetAbsoluteNano() - _sss3); // events
 	}
-	else if(jobsCount > 1)
+	else
 	{
-		const uint64 ccc = 256;
+		const uint64 ccc = 64;
 		if(++iii == ccc)
 		{
-			iii = 0;
+			uint64 rm0, rm1, rm2, rm3, rm4;
+			uint64 rs0, rs1, rs2, rs3, rs4;
 
+			iii = 0;
 			_in = true;
 			
 			ttt0 = 0; ttt1 = 0; ttt2 = 0; ttt3 = 0;
-			ttt0 = ttt0 / ccc;
-			ttt1 = ttt1 / ccc;
-			ttt2 = ttt2 / ccc;
-			ttt3 = ttt3 / ccc;
-			ttt4 = ttt4 / ccc;
 			RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::TEST_OPTION, true);
 			for(size_t i = 0; i < 100; i++)
 			{
 				Process((float32) i);
 			}
 
-			Logger::Warning("TRAN_N: whole %8llu, cr_wait = %8llu, cr = %8llu, wait = %8llu, events = %8llu", ttt0, ttt1, ttt2, ttt3, ttt4);
+			// to mks
+			rm0 = ttt0 / 100;
+			rm1 = ttt1 / 100;
+			rm2 = ttt2 / 100;
+			rm3 = ttt3 / 100;
+			rm4 = ttt4 / 100;
+			Logger::Info("TRAN_N: whole %8llu, cr_wait = %8llu, cr = %8llu, wait = %8llu, events = %8llu", rm0, rm1, rm2, rm3, rm4);
 
 			ttt0 = 0; ttt1 = 0; ttt2 = 0; ttt3 = 0;
-			ttt0 = ttt0 / ccc;
-			ttt1 = ttt1 / ccc;
-			ttt2 = ttt2 / ccc;
-			ttt3 = ttt3 / ccc;
-			ttt4 = ttt4 / ccc;
 			RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::TEST_OPTION, false);
 			for(size_t i = 0; i < 100; i++)
 			{
 				Process((float32)i);
 			}
 
-			Logger::Warning("TRAN_1: whole %8llu, cr_wait = %8llu, cr = %8llu, wait = %8llu, events = %8llu", ttt0, ttt1, ttt2, ttt3, ttt4);
+			// to mks
+			rs0 = ttt0 / 100;
+			rs1 = ttt1 / 100;
+			rs2 = ttt2 / 100;
+			rs3 = ttt3 / 100;
+			rs4 = ttt4 / 100;
+			Logger::Info("TRAN_1: whole %8llu, cr_wait = %8llu, cr = %8llu, wait = %8llu, events = %8llu", rs0, rs1, rs2, rs3, rs4);
+
+			Logger::Warning("%llu\t%llu", rm0, rs0);
 
 			_in = false;
 		}
 
 		updatableEntities.clear();
 	}
-
-	// TODO: uncomment
-	//updatableEntities.clear();
-    
-    if(passedNodes)
-    {
-        // Logger::Info("TransformSystem %d passed %d multiplied", passedNodes, multipliedNodes);
-    }
+#else
+	updatableEntities.clear();
+#endif
 }
 
 void TransformSystem::UpdateHierarchyPart(uint32 from, uint32 count, Vector<Entity*> *updatedEntities)

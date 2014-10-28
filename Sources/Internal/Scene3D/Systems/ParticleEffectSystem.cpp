@@ -263,7 +263,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	uint32 componentsCount = activeComponents.size();
 
 	_sss1 = SystemTimer::Instance()->GetAbsoluteNano();
-	if(0 && componentsCount > 4 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
+	if(componentsCount > 4 && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
 	{
 		const uint32 jobsCount = (uint32) JobManager2::Instance()->GetWorkersCount();
 		const uint32 componentsPerJobCount = componentsCount / jobsCount;
@@ -334,7 +334,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 		iii = 0;
 		ttt0 = ttt0 / ccc;
 		ttt1 = ttt1 / ccc;
-		//Logger::Warning("PART: whole %8llu, part = %8llu (%3u\%), job_cr = %8llu, job_wait = %8llu", ttt0, ttt1, (ttt1 * 100 / ttt0), ttt2 / ccc, ttt3 / ccc);
+		Logger::Warning("PART: whole %8llu, part = %8llu (%3u\%), job_cr = %8llu, job_wait = %8llu", ttt0, ttt1, (ttt1 * 100 / ttt0), ttt2 / ccc, ttt3 / ccc);
 		ttt0 = 0;
 		ttt1 = 0;
 		ttt2 = 0;
