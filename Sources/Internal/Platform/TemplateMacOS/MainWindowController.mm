@@ -345,7 +345,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
         NSOpenGLPFANoRecovery,	/* disable all failure recovery systems         */
 
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, [openGLView displayBitsPerPixel:kCGDirectMainDisplay], //24,
+        NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([openGLView displayBitsPerPixel:kCGDirectMainDisplay]), //24,
 #else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
         NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay), //24,
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__

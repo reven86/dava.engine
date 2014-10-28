@@ -47,7 +47,6 @@
 #include "KeyedArchiveYamlTest.h"
 #include "CloneTest.h"
 #include "DPITest.h"
-#include "EMailTest.h"
 #include "InputTest.h"
 #include "FilePathTest.h"
 #include "FileListTest.h"
@@ -140,7 +139,6 @@ void GameCore::OnAppStarted()
  	new SoundTest();
  	new SplitTest();
  	new AlignTest();
- 	new EMailTest();
  	new DPITest();
  	new MaterialCompilerTest();
  	new CloneTest();

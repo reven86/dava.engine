@@ -40,6 +40,7 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 
 #include <QTimer>
+#include <QDebug>
 
 
 MaterialFilteringModel::MaterialFilteringModel(MaterialModel *_materialModel, QObject *parent /* = NULL */)
@@ -163,15 +164,54 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
     NMaterial *mRight = materialModel->GetMaterial(right);
     bool swap = QSortFilterProxyModel::lessThan(left, right);
 
-    if ( (mLeft != NULL) && (mRight != NULL) )
+    if ( (mLeft == NULL) || (mRight == NULL) )
+        return swap;
+
+    if (mLeft->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
     {
-        if (mLeft->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
+        swap = (sortOrder() == Qt::AscendingOrder);
+    }
+    else if (mRight->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
+    {
+        swap = (sortOrder() == Qt::DescendingOrder);
+    }
+    else
+    {
+        MaterialItem *lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
+        MaterialItem *rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
+
+        const QString lhsText = QString(mLeft->GetMaterialName().c_str());
+        const QString rhsText = QString(mRight->GetMaterialName().c_str());
+
+        const int textComp = lhsItem->text().compare( rhsItem->text(), Qt::CaseInsensitive );
+        const int lodComp = lhsItem->GetLodIndex() - rhsItem->GetLodIndex();
+        const int switchComp = lhsItem->GetSwitchIndex() - rhsItem->GetSwitchIndex();
+        int compAll = 0;
+
+        switch ( sortColumn() )
         {
-            swap = (sortOrder() == Qt::AscendingOrder);
+        case 0:
+            compAll = textComp;
+            break;
+        case 1:
+            compAll = lodComp;
+            break;
+        case 2:
+            compAll = switchComp;
+            break;
+        default:
+            break;
         }
-        else if (mRight->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
+
+        // If sorting column data is equal then sort by text
+        if ( compAll == 0 )
         {
-            swap = (sortOrder() == Qt::DescendingOrder);
+            compAll = (sortOrder() == Qt::AscendingOrder) ? textComp : -textComp;   // Always sort text in ascending order
+        }
+
+        if (compAll < 0)
+        {
+            swap = true;
         }
     }
 

@@ -57,7 +57,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 		
         // Attributes Common to FullScreen and non-FullScreen
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, [self displayBitsPerPixel:kCGDirectMainDisplay],//24,
+        NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]),//24,
 #else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
         NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay),//24,
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__

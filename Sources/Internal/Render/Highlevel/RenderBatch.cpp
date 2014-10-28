@@ -262,6 +262,7 @@ void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializati
 		archive->SetUInt32("rb.startIndex", startIndex);
 		archive->SetVariant("rb.aabbox", VariantType(aabbox));
 		archive->SetVariant("rb.datasource", VariantType((uint64)dataSource));
+        archive->SetUInt32("rb.sortingKey", sortingKey);
 		
 		NMaterial* material = GetMaterial();
 		if(material)
@@ -286,6 +287,7 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
 		indexCount = archive->GetUInt32("rb.indexCount", indexCount);
 		startIndex = archive->GetUInt32("rb.startIndex", startIndex);
 		aabbox = archive->GetVariant("rb.aabbox")->AsAABBox3();
+        sortingKey = archive->GetUInt32("rb.sortingKey", 0xF8);
 		PolygonGroup *pg = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(archive->GetVariant("rb.datasource")->AsUInt64()));
 		
 		NMaterial * newMaterial = NULL;

@@ -167,6 +167,12 @@ void SceneTree::GetDropParams(const QPoint &pos, QModelIndex &index, int &row, i
 
 void SceneTree::dropEvent(QDropEvent * event)
 {
+    if((event->keyboardModifiers() & Qt::SHIFT) != Qt::SHIFT)
+    {
+        event->ignore();
+        return;
+    }
+    
 	QTreeView::dropEvent(event);
 
 	if(treeModel->DropAccepted())
@@ -209,13 +215,6 @@ void SceneTree::dragMoveEvent(QDragMoveEvent *event)
 
 void SceneTree::dragEnterEvent(QDragEnterEvent *event)
 {
-    if((event->keyboardModifiers() & Qt::SHIFT) != Qt::SHIFT)
-    {
-        event->ignore();
-        return;
-    }
-    
-    
 	QTreeView::dragEnterEvent(event);
 
 	{

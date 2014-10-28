@@ -1,0 +1,14 @@
+prefix=/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.8.9
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ImageMagick-6
+includearchdir=/Users/i_bratchik/Documents/work/dava.framework.original/Libs/ImageMagick-6.8.9/include/ImageMagick-6
+libname=MagickWand-6.Q16
+ 
+Name: MagickWand
+Description: MagickWand - C API for ImageMagick (ABI Q16)
+Version: 6.8.9
+Requires: MagickCore
+Libs: -L${libdir} -l${libname} 
+Libs.private: -L${libdir} -l${libname} -lbz2 -lz -lm -lm
+Cflags: -I${includearchdir} -I${includedir} -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16
