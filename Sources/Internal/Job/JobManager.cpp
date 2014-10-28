@@ -61,7 +61,41 @@ JobManager2::~JobManager2()
 
 void JobManager2::Update()
 {
-    RunMain();
+	LockGuard<Mutex> guard(mainQueueMutex);
+
+	if(!mainJobs.empty())
+	{
+		// extract all jobs from queue
+		while(!mainJobs.empty())
+		{
+			curMainJob = mainJobs.front();
+			mainJobs.pop_front();
+
+			if(curMainJob.type == JOB_MAINBG)
+			{
+				// TODO:
+				// need implementation
+				// ...
+
+				DVASSERT(false);
+			}
+
+			if(curMainJob.invokerThreadId != 0 && curMainJob.fn != NULL)
+			{
+				// unlock queue mutex until function execution finished
+				mainQueueMutex.Unlock();
+				curMainJob.fn();
+				mainQueueMutex.Lock();
+			}
+
+			curMainJob = MainJob();
+		}
+
+		// signal that jobs are finished
+		mainCVMutex.Lock();
+		Thread::Broadcast(&mainCV);
+		mainCVMutex.Unlock();
+	}
 }
 
 uint32 JobManager2::GetWorkersCount() const
@@ -91,7 +125,9 @@ void JobManager2::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 {
  	if(Thread::IsMainThread())
  	{
- 		RunMain();
+		// if wait was invoked from main-thread we should immediately
+		// execute all lazy main-thread jobs
+ 		Update();
  	}
  	else
  	{
@@ -99,6 +135,7 @@ void JobManager2::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 		// main thread, allowing it to perform all scheduled main-thread jobs
 		workerDoneSem.Post();
 
+		// Now check if there are some jobs in the queue and wait for them
 		LockGuard<Mutex> guard(mainCVMutex);
 		while (HasMainJobs(invokerThreadId))
 		{
@@ -137,40 +174,6 @@ bool JobManager2::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
     }
 
     return ret;
-}
-
-void JobManager2::RunMain()
-{
-    LockGuard<Mutex> guard(mainQueueMutex);
-
-	if(!mainJobs.empty())
-	{
-		// TODO:
-		// extract depending on type MAIN or MAINBG
-		// ...
-
-		// extract all jobs from queue
-		while(!mainJobs.empty())
-		{
-			curMainJob = mainJobs.front();
-			mainJobs.pop_front();
-        
-			if(curMainJob.invokerThreadId != 0 && curMainJob.fn != NULL)
-			{
-				// unlock queue mutex until function execution finished
-				mainQueueMutex.Unlock();
-				curMainJob.fn();
-				mainQueueMutex.Lock();
-			}
-
-			curMainJob = MainJob();
-		}
-
-		// signal that jobs are finished
-		mainCVMutex.Lock();
-		Thread::Broadcast(&mainCV);
-		mainCVMutex.Unlock();
-	}
 }
 
 void JobManager2::CreateWorkerJob(const Function<void()>& fn)

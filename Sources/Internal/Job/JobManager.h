@@ -32,7 +32,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
-#include "Base/ScopedPtr.h"
 #include "Base/Function.h"
 #include "Base/Bind.h"
 #include "Base/FastName.h"
@@ -47,29 +46,55 @@ class JobManager2 : public Singleton<JobManager2>
 	friend struct WorkerThread2;
 
 public:
-    JobManager2();
-    virtual ~JobManager2();
-
+	/*! Available types of main-thread job. */
 	enum eMainJobType
 	{
-		JOB_MAIN = 0,       // Run only in the main thread. If job is created from the main thread, function will be run immediately.
-		JOB_MAINLAZY,		// Run only in the main thread. If job is created from the main thread, function will be run on next update.
-		JOB_MAINBG,         // Run in the main or background thread.
+		JOB_MAIN = 0,       ///< Run only in the main thread. If job is created from the main thread, function will be run immediately.
+		JOB_MAINLAZY,		///< Run only in the main thread. If job is created from the main thread, function will be run on next update.
+		JOB_MAINBG,         ///< Run in the main or background thread. !!!!!!! TODO: isn't implemented yet
 	};
 
-    void Update();
-	uint32 GetWorkersCount() const;
+public:
+	JobManager2();
+	virtual ~JobManager2();
 
+	/*! This function should be called periodically from the main thread. All main-thread jobs added to the queue
+		will be performed inside this function. 
+	*/
+	void Update();
+
+	/*! Add function to execute in the main-thread.
+		\param [in] fn Function to execute.
+		\param [in] mainJobType Type of execution. See ::eMainJobType for detailed description.
+	*/
     void CreateMainJob(const Function<void ()>& fn, eMainJobType mainJobType = JOB_MAIN);
+
+	/*! Wait for the main-thread jobs, that were added from other thread with the given ID. 
+		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
+	*/
     void WaitMainJobs(Thread::Id invokerThreadId = 0);
+
+	/*! Check in there are some main-thread jobs in the queue, that were added from thread with the given ID.
+		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
+		\return Return true if there are some jobs, otherwise false.
+	*/
     bool HasMainJobs(Thread::Id invokerThreadId = 0);
 
-    void CreateWorkerJob(const Function<void ()>& fn);
-    void WaitWorkerJobs();
-    bool HasWorkerJobs();
+	/*! Returns the number of available worker-threads. */
+	uint32 GetWorkersCount() const;
 
-    // done signal
-    // Signal<void (FastName workerJobTag)> workerJobFinished;
+	/*! Add function to execute in the worker-thread.
+		\param [in] fn Function to execute.
+	*/
+	void CreateWorkerJob(const Function<void()>& fn);
+
+	/*! Wait until all worker-thread jobs are executed. */
+    void WaitWorkerJobs();
+
+	/*!  Check in there are some not executed worker-thread jobs.
+		\return Return true if there are some jobs, otherwise false.
+	*/
+    bool HasWorkerJobs();
 
 protected:
     struct MainJob

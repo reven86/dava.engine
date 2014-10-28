@@ -52,10 +52,9 @@ JobQueueWorker::~JobQueueWorker()
 
 void JobQueueWorker::Push(const Function<void()> &fn)
 {
-	LockGuard<Spinlock> guard(lock);
-
 	if(fn != NULL)
 	{
+		LockGuard<Spinlock> guard(lock);
 		if(nextPushIndex == nextPopIndex && 0 == processingCount)
 		{
 			nextPushIndex = 0;
@@ -106,28 +105,28 @@ bool JobQueueWorker::IsEmpty()
 
 void JobQueueWorker::Signal()
 {
-	//jobsInQueue.Post();
+	jobsInQueue.Post();
 
 	//jobsInQueueMutex.Lock();
-	Thread::Signal(&jobsInQueueCV);
+	//Thread::Signal(&jobsInQueueCV);
 	//jobsInQueueMutex.Unlock();
 }
 
 void JobQueueWorker::Broadcast()
 {
-	//for(uint32 i = JobManager2::Instance()->GetWorkersCount(); i > 0; i--) jobsInQueue.Post();
+	for(uint32 i = JobManager2::Instance()->GetWorkersCount(); i > 0; i--) jobsInQueue.Post();
 
 	//jobsInQueueMutex.Lock();
-	Thread::Broadcast(&jobsInQueueCV);
+	//Thread::Broadcast(&jobsInQueueCV);
 	//jobsInQueueMutex.Unlock();
 }
 
 void JobQueueWorker::Wait()
 {
-	//jobsInQueue.Wait();
+	jobsInQueue.Wait();
 
 	//jobsInQueueMutex.Lock();
-	Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
+	//Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
 	//jobsInQueueMutex.Unlock();
 }
 
