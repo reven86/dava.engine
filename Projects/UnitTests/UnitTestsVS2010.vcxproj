@@ -217,7 +217,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Classes;./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
