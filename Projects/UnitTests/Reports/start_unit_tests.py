@@ -3,6 +3,7 @@
 import socket
 import subprocess
 import sys
+import os.path
 
 current_host = socket.gethostname()
 current_ip = socket.gethostbyname(current_host)
@@ -35,7 +36,11 @@ elif start_on_android:
     subprocess.Popen(["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests.UnitTests",
                       "-e", "-host", str(HOST), "-e", "-port", str(PORT)])
 elif sys.platform == 'win32':
-    subprocess.Popen(["..\Debug\UnitTestsVS2010.exe", "-host",
+    if os.path.isfile("..\\Release\\app\\UnitTestsVS2010.exe"): # run on build server (TeamCity)
+        subprocess.Popen(["..\\Release\\app\\UnitTestsVS2010.exe", "-host",
+                      str(HOST), "-port", str(PORT)], cwd="./..")
+    else:
+        subprocess.Popen(["..\\Release\\UnitTestsVS2010.exe", "-host", # run on local PC
                       str(HOST), "-port", str(PORT)], cwd="./..")
 elif sys.platform == "darwin":
     app_path = "/Users/user123/Library/Developer/Xcode/DerivedData/TemplateProjectMacOS-bpogfklmgukhlmbnpxhfcjhfiwfq/Build/Products/Debug/UnitTests.app"
@@ -64,7 +69,9 @@ while 1:
 conn.close()
 
 # TODO write output to stdout or some predefined file
+print("Test result ouput:\n")
+print(file_content)
 
-out_file = open("output.xml", "w")
-out_file.write(file_content)
+# out_file = open("output.xml", "w")
+# out_file.write(file_content)
 
