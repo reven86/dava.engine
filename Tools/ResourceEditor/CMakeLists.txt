@@ -1,14 +1,20 @@
 cmake_minimum_required (VERSION 3.0)
 project ( ResourceEditor )
 
-set          ( CMakeHelloWorld_VERSION_MAJOR 1 )
-set          ( CMakeHelloWorld_VERSION_MINOR 0 )
+if( WIN32 )
 
-set ( QT5_PATH $ENV{HOME}/Qt/5.3/clang_64/ CACHE PATH "Path to Qt5")
+    set ( QT5_PATH c:/Qt/5.3/msvc2010_opengl/ CACHE PATH "Path to Qt5")
+
+elseif( MACOS )
+
+    set ( QT5_PATH $ENV{HOME}/Qt/5.3/clang_64/ CACHE PATH "Path to Qt5")
+
+endif()
+
 set ( QT5_MODULE_PATH ${QT5_PATH}/lib/cmake)
 set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
 
-set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 set ( QT_FOUND 1 )
 
 

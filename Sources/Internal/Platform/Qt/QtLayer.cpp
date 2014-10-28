@@ -43,7 +43,6 @@ QtLayer::QtLayer()
     :   delegate(NULL)
     ,   isDAVAEngineEnabled(true)
 {
-    
 }
     
 void QtLayer::Quit()
@@ -52,7 +51,6 @@ void QtLayer::Quit()
     {
         delegate->Quit();
     }
-        
 }
 
 void QtLayer::SetDelegate(QtLayerDelegate *delegate)
@@ -78,4 +76,3 @@ void QtLayer::ShowAsserMessage(const char * message)
 
 
 };
-
