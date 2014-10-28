@@ -1,5 +1,8 @@
 package com.dava.framework;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.fmod.FMODAudioDevice;
 
 import android.app.Activity;
@@ -12,6 +15,7 @@ import android.os.Handler;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -22,7 +26,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private static int errorState = 0;
 
 	private JNIAccelerometer accelerometer = null;
-	protected JNIGLSurfaceView glView = null;
+	public JNIGLSurfaceView glView = null;
+	private View splashView = null;
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
@@ -36,6 +41,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private native void nativeOnAccelerometer(float x, float y, float z);
     
     private boolean isFirstRun = true;
+    private static boolean isRenderDestroy = false;
     
     public abstract JNIGLSurfaceView GetSurfaceView();
     
@@ -83,6 +89,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setFocusable(true);
         glView.requestFocus();
         
+        splashView = GetSplashView();
+        
         mController = Controller.getInstance(this);
         if(mController != null)
         {
@@ -108,6 +116,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		} catch (Exception e) {
 			Log.d("", "no singalStrengthListner");
 		}
+        
+        if (splashView != null && !isRenderDestroy)
+			splashView.setVisibility(View.GONE);
     }
     
     @Override
@@ -171,8 +182,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
         
         // activate GLView 
-        if(null != glView)
-        {
+        if(null != glView && null == splashView) {
         	glView.onResume();
         }
         
@@ -270,6 +280,25 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
     	super.onWindowFocusChanged(hasFocus);
+    	
+    	isRenderDestroy = false;
+    	if (hasFocus) {
+    		new Timer().schedule(new TimerTask() {
+				
+				@Override
+				public void run() {
+					runOnUiThread(new Runnable() {
+						public void run() {
+							if (splashView != null) {
+								glView.setVisibility(View.VISIBLE);
+								JNIActivity.GetActivity().glView.onResume();
+							}
+						}
+					});
+				}
+			}, 300);
+    	}
+    	
     	if(hasFocus) {
     		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
     	} else {
@@ -288,5 +317,35 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	public void InitNotification(Builder builder) {
 		Log.e("JNIActivity", "Need to implement InitNotification");
+	}
+	
+	public View GetSplashView() {
+		return null;
+	}
+	
+	protected void OnRenderDestroyed() {
+		isRenderDestroy = true;
+    	runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				if (splashView != null) {
+					glView.setVisibility(View.GONE);
+					splashView.setVisibility(View.VISIBLE);
+				}
+			}
+		});
+	}
+	
+	protected void OnFirstFrameAfterDraw() {
+		runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				if (splashView != null) {
+					splashView.setVisibility(View.GONE);
+				}
+			}
+		});
 	}
 }
