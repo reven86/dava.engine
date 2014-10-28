@@ -754,8 +754,20 @@ Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &gro
 	Texture * texture = PureCreate(pathName, group);
  	if(!texture)
 	{
-		texture = CreatePink(typeHint);
-        texture->texDescriptor->pathname = (!pathName.IsEmpty()) ? TextureDescriptor::GetDescriptorPathname(pathName) : FilePath();
+        TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(pathName);
+        if(descriptor)
+        {
+            texture = CreatePink(descriptor->IsCubeMap() ? DAVA::Texture::TEXTURE_CUBE : typeHint);
+            texture->texDescriptor->Initialize(descriptor);
+            SafeDelete(descriptor);
+        }
+        else
+        {
+            texture = CreatePink(typeHint);
+            texture->texDescriptor->pathname = (!pathName.IsEmpty()) ? TextureDescriptor::GetDescriptorPathname(pathName) : FilePath();
+        }
+        
+        texture->texDescriptor->SetQualityGroup(group);
         
         AddToMap(texture);
 	}
