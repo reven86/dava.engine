@@ -204,6 +204,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\dava.framework1\Sources\Internal\Platform\FWSemaphore.h" />
+    <ClInclude Include="..\..\..\dava.framework1\Sources\Internal\Platform\FWSpinlock.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2Collision.h" />
@@ -360,10 +362,8 @@
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\Job.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\JobWaiter.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox3.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\BezierSpline.h" />
@@ -691,6 +691,8 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\dava.framework1\Sources\Internal\Platform\FWSemaphore.cpp" />
+    <ClCompile Include="..\..\..\dava.framework1\Sources\Internal\Platform\FWSpinlock.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideCircle.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideEdge.cpp" />
@@ -827,10 +829,8 @@
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\Job.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\JobWaiter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox3.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\BezierSpline.cpp" />

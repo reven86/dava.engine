@@ -56,7 +56,6 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Job/JobManager.h"
-#include "Job/JobWaiter.h"
 #include "Math/MathHelpers.h"
 
 
@@ -242,18 +241,17 @@ Texture::~Texture()
     
 void Texture::ReleaseTextureData()
 {
+#if defined(__DAVAENGINE_ANDROID__)
+	uint32 platformStencilRboID = stencilRboID;
+#else
+	uint32 platformStencilRboID = rboID;
+#endif
+
 	state = STATE_INVALID;
 
-	ReleaseTextureDataContainer * container = new ReleaseTextureDataContainer();
-	container->textureType = textureType;
-	container->id = id;
-	container->fboID = fboID;
-	container->rboID = rboID;
-#if defined(__DAVAENGINE_ANDROID__)
-    container->stencilRboID = stencilRboID;
-#endif
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::ReleaseTextureDataInternal, container), Job::NO_FLAGS);
-    
+	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Texture::ReleaseTextureDataInternal), textureType, id, fboID, rboID, platformStencilRboID);
+	JobManager::Instance()->CreateMainJob(fn);
+
     id = 0;
 	fboID = -1;
 	rboID = -1;
@@ -263,11 +261,8 @@ void Texture::ReleaseTextureData()
     isRenderTarget = false;
 }
 
-void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData)
+void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 id, uint32 fboID, uint32 rboID, uint32 stencilRboID)
 {
-	ReleaseTextureDataContainer * container = (ReleaseTextureDataContainer*) param;
-	DVASSERT(container);
-
 #if defined(__DAVAENGINE_OPENGL__)
 	//if(RenderManager::Instance()->GetTexture() == this)
 	//{//to avoid drawing deleted textures
@@ -276,40 +271,39 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 
 	//VI: reset texture for the current texture type in order to avoid
 	//issue when cubemap texture was deleted while being binded to the state
-	if(RenderManager::Instance()->lastBindedTexture[container->textureType] == container->id)
+	if(RenderManager::Instance()->lastBindedTexture[textureType] == id)
 	{
-		RenderManager::Instance()->HWglBindTexture(0, container->textureType);
+		RenderManager::Instance()->HWglBindTexture(0, textureType);
 	}
     
-	if(container->fboID != (uint32)-1)
+	if(fboID != (uint32)-1)
 	{
-		RENDER_VERIFY(glDeleteFramebuffers(1, &container->fboID));
+		RENDER_VERIFY(glDeleteFramebuffers(1, &fboID));
 	}
     
 #if defined(__DAVAENGINE_ANDROID__)
-    if (container->stencilRboID != (uint32)-1)
+    if (stencilRboID != (uint32)-1)
     {
-        RENDER_VERIFY(glDeleteRenderbuffers(1, &container->stencilRboID));
+        RENDER_VERIFY(glDeleteRenderbuffers(1, &stencilRboID));
     }
 #endif
 
-	if (container->rboID != (uint32)-1)
+	if (rboID != (uint32)-1)
 	{
-		RENDER_VERIFY(glDeleteRenderbuffers(1, &container->rboID));
+		RENDER_VERIFY(glDeleteRenderbuffers(1, &rboID));
 	}
 
-	if(container->id)
+	if(id)
 	{
-		RENDER_VERIFY(glDeleteTextures(1, &container->id));
+		RENDER_VERIFY(glDeleteTextures(1, &id));
 	}
 	
 #elif defined(__DAVAENGINE_DIRECTX9__)
 	D3DSafeRelease(id);
 	D3DSafeRelease(saveTexture);
 #endif //#if defined(__DAVAENGINE_OPENGL__)
-
-	SafeDelete(container);
 }
+
 
 
 Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height, bool generateMipMaps, const char * addInfo)
@@ -488,12 +482,11 @@ void Texture::SetMinMagFilter(TextureFilter minFilter, TextureFilter magFilter)
 	
 void Texture::GenerateMipmaps()
 {
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::GenerateMipmapsInternal));
-	JobInstanceWaiter waiter(job);
-	waiter.Wait();
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::GenerateMipmapsInternal));
+	JobManager::Instance()->WaitMainJobs();
 }
 
-void Texture::GenerateMipmapsInternal(BaseObject * caller, void * param, void *callerData)
+void Texture::GenerateMipmapsInternal()
 {
 	const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
 	if(formatDescriptor.isCompressedFormat)
@@ -535,12 +528,11 @@ void Texture::GenerateMipmapsInternal(BaseObject * caller, void * param, void *c
 
 void Texture::GeneratePixelesation()
 {
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::GeneratePixelesationInternal));
-	JobInstanceWaiter waiter(job);
-	waiter.Wait();
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::GeneratePixelesationInternal));
+	JobManager::Instance()->WaitMainJobs();
 }
 
-void Texture::GeneratePixelesationInternal(BaseObject * caller, void * param, void *callerData)
+void Texture::GeneratePixelesationInternal()
 {
 
 #if defined(__DAVAENGINE_OPENGL__)
@@ -683,13 +675,12 @@ void Texture::SetParamsFromImages(const Vector<Image *> * images)
 
 void Texture::FlushDataToRenderer(Vector<Image *> * images)
 {
-	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::FlushDataToRendererInternal, images));
+	Function<void()> fn = Bind(MakeFunction(this, &Texture::FlushDataToRendererInternal), images);
+	JobManager::Instance()->CreateMainJob(fn);
 }
 
-void Texture::FlushDataToRendererInternal(BaseObject * caller, void * param, void *callerData)
+void Texture::FlushDataToRendererInternal(Vector<Image *> * images)
 {
-    Vector<Image *> * images = static_cast< Vector<Image *> * >(param);
-    
 	DVASSERT(images->size() != 0);
 	DVASSERT(Thread::IsMainThread());
 
@@ -919,10 +910,10 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
 #if defined(__DAVAENGINE_OPENGL__)
 void Texture::HWglCreateFBOBuffers()
 {
-	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::HWglCreateFBOBuffersInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::HWglCreateFBOBuffersInternal));
 }
 
-void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, void *callerData)
+void Texture::HWglCreateFBOBuffersInternal()
 {
 	GLint saveFBO = RenderManager::Instance()->HWglGetLastFBO();
 	GLint saveTexture = RenderManager::Instance()->HWglGetLastTextureID(textureType);

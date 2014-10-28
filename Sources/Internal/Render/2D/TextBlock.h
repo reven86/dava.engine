@@ -109,7 +109,7 @@ protected:
 	~TextBlock();
 	
 	void Prepare(Texture *texture = NULL);
-	void PrepareInternal(BaseObject * caller, void * param, void *callerData);
+	void PrepareInternal(Texture * texture);
     
 	void CalculateCacheParams();
 

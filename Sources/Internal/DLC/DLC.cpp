@@ -151,23 +151,14 @@ FilePath DLC::GetMetaStorePath() const
     
 void DLC::PostEvent(DLCEvent event)
 {
-    JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &DLC::PostEventJob, reinterpret_cast<void*>(event)));
+	Function<void()> fn = Bind(MakeFunction(this, &DLC::FSM), event);
+	JobManager::Instance()->CreateMainJob(fn);
 }
 
 void DLC::PostError(DLCError error)
 {
     dlcError = error;
     PostEvent(EVENT_ERROR);
-}
-    
-void DLC::PostEventJob(BaseObject *caller, void *callerData, void *userData)
-{
-#if UINTPTR_MAX == UINT64_MAX
-    DLCEvent event = (DLCEvent) reinterpret_cast<int64>(callerData);
-#else
-    DLCEvent event = (DLCEvent) reinterpret_cast<int32>(callerData);
-#endif
-    FSM(event);
 }
 
 void DLC::FSM(DLCEvent event)
@@ -757,7 +748,7 @@ void DLC::StepPatchBegin()
     patchingThread->Start();
 }
 
-void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
+void DLC::StepPatchFinish()
 {
     patchingThread->Join();
     SafeRelease(patchingThread);
@@ -828,7 +819,8 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
         dlcContext.patchInProgress = false;
     }
 
-    JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &DLC::StepPatchFinish));
+	Function<void()> fn(this, &DLC::StepPatchFinish);
+	JobManager::Instance()->CreateMainJob(fn);
 }
 
 void DLC::StepClean()

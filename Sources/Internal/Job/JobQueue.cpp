@@ -27,53 +27,111 @@
 =====================================================================================*/
 
 #include "Job/JobQueue.h"
-#include "Job/Job.h"
+#include "Job/JobManager.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
 
-void MainThreadJobQueue::Update()
+JobQueueWorker::JobQueueWorker(uint32 maxCount /* = 1024 */)
+: jobsMaxCount(maxCount)
+, jobsInQueue(0)
+, nextPopIndex(0)
+, nextPushIndex(0)
+, processingCount(0)
 {
-	mutex.Lock();
+	jobs = new Function<void()>[jobsMaxCount];
+	jobsInQueueMutex.Lock();
+}
 
-	while(!queue.empty())
+JobQueueWorker::~JobQueueWorker()
+{
+	jobsInQueueMutex.Unlock();
+	SafeDeleteArray(jobs);
+}
+
+void JobQueueWorker::Push(const Function<void()> &fn)
+{
+	if(fn != NULL)
 	{
-		Job * job = queue.front();
-		mutex.Unlock();
+		LockGuard<Spinlock> guard(lock);
+		if(nextPushIndex == nextPopIndex && 0 == processingCount)
+		{
+			nextPushIndex = 0;
+			nextPopIndex = 0;
+		}
 
-		job->Perform();
+		DVASSERT(nextPushIndex < jobsMaxCount);
 
-        if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
-        {
-            BaseObject * bo = job->GetMessage().GetBaseObject();
-            if(bo)
-            {
-                bo->Release();
-            }
-        }
+		jobs[nextPushIndex++] = fn;
+		processingCount++;
+	}
+}
 
-		mutex.Lock();
-		queue.pop_front();
-		job->Release();
+bool JobQueueWorker::PopAndExec()
+{
+	bool ret = false;
+	Function<void()> fn;
+
+	{
+		LockGuard<Spinlock> guard(lock);
+		if(nextPopIndex < nextPushIndex)
+		{
+			fn = jobs[nextPopIndex++];
+		}
 	}
 
-	mutex.Unlock();
+	if(fn != NULL)
+	{
+		fn();
+
+		{
+			LockGuard<Spinlock> guard(lock);
+			DVASSERT(processingCount > 0);
+			processingCount--;
+		}
+
+		ret = true;
+	}
+
+	return ret;
 }
 
-void MainThreadJobQueue::AddJob(Job * job)
+bool JobQueueWorker::IsEmpty()
 {
-    if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
-    {
-        SafeRetain(job->GetMessage().GetBaseObject());
-    }
-
-	mutex.Lock();
-
-	job->Retain();
-	queue.push_back(job);
-
-	mutex.Unlock();
+	LockGuard<Spinlock> guard(lock);
+	return (nextPopIndex == nextPushIndex && 0 == processingCount);
 }
 
+void JobQueueWorker::Signal()
+{
+	jobsInQueue.Post();
 
+	//jobsInQueueMutex.Lock();
+	//Thread::Signal(&jobsInQueueCV);
+	//jobsInQueueMutex.Unlock();
 }
+
+void JobQueueWorker::Broadcast()
+{
+	for(uint32 i = JobManager::Instance()->GetWorkersCount(); i > 0; i--)
+	{
+		jobsInQueue.Post();
+	}
+
+	//jobsInQueueMutex.Lock();
+	//Thread::Broadcast(&jobsInQueueCV);
+	//jobsInQueueMutex.Unlock();
+}
+
+void JobQueueWorker::Wait()
+{
+	jobsInQueue.Wait();
+
+	//jobsInQueueMutex.Lock();
+	//Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
+	//jobsInQueueMutex.Unlock();
+}
+
+};
+
