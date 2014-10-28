@@ -106,7 +106,7 @@ void RenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera 
 
 void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
 {
-    /*NMaterial *material = batch->GetMaterial();
+    NMaterial *material = batch->GetMaterial();
     if (!material->IsInstancingSupported())//just draw and forget
     {        
         batch->Draw(ownerRenderPass, camera);            
@@ -118,31 +118,28 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
     shader->Bind();    
     shader->BindDynamicParameters();
 
-    int32 instancedUniformesCount = shader->GetInstancedUniformsCount();
+    int32 instancedUniformesCount = shader->GetInstancingUniformCount();
     incomingUniformValues.clear();
     incomingUniformValues.resize(instancedUniformesCount);
         
-    shader->CollectDinamycParams();
+   
     for (int32 i=0; i<instancedUniformesCount; i++)
     {
-        Shader::Uniform* uniform = shader->GetInstancedUniform(i);
+        Shader::Uniform* uniform = shader->GetInstancingUniform(i);
         incomingUniformValues[i].first = uniform;
-        uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type)
+        uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type);
         incomingUniformValues[i].second.resize(uniformDataSize*MAX_INSTANCES_COUNT);
+    }
 
-        if (is in dynamic params)
-            get from dynamic params
-        else
-            Memcpy(&incomingUniformValues[i].second[0], material->GetPropertyValue(uniform->name)->data, uniformDataSize);
-    }*/
-
-    
+    CollectInstanceParams(material);
+    incomingGroup = batch;
+    currInstancesCount = 1;
 
 }
 
 bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
 {
-    /*if (currInstancesCount==MAX_INSTANCES_COUNT)
+    if (currInstancesCount==MAX_INSTANCES_COUNT)
         return false;
     NMaterial *material = batch->GetMaterial();
     if (!material->IsInstancingSupported())
@@ -163,19 +160,49 @@ bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & o
 
     //try to bind dynamic params
     batch->GetRenderObject()->BindDynamicParameters(camera);
-    Shader *shader = incomingMaterial->GetActivePassShader();
-    bool bindResult = shader->CollectDinamycParams();
-    if (!bindResult)
+    Shader *shader = incomingMaterial->GetActivePassShader();    
+    if (!shader->TestDynamicParamsInstancing())
         return false;
 
-    //and finally here we know it can be append to instance group
-    */
+    //and finally here we know it can be append to instance group    
+    CollectInstanceParams(material);
+    currInstancesCount++;
+
     return true;
 }
+
+void InstancedRenderLayer::CollectInstanceParams(NMaterial *material)
+{
+    int32 instancedUniformesCount = incomingUniformValues.size();    
+    for (int32 i=0; i<instancedUniformesCount; i++)
+    {
+        Shader::Uniform* uniform = incomingUniformValues[i].first;        
+        uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type);
+        if (Shader::IsAutobindUniform(uniform->shaderSemantic))
+        {
+            const void *data = RenderManager::GetDynamicParam(uniform->shaderSemantic);
+            DVASSERT(data);
+            Memcpy(&incomingUniformValues[i].second[currInstancesCount], data, uniformDataSize);
+        }
+        else
+        {
+            NMaterialProperty *property = material->GetPropertyValue(uniform->name);
+            DVASSERT(property);
+            Memcpy(&incomingUniformValues[i].second[currInstancesCount], property->data, uniformDataSize);
+        }
+    }
+}
+
+
 void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderPass, Camera * camera)
 {
-    Logger::FrameworkDebug("drawing %d instances for material %s", currInstancesCount, incomingGroup->GetMaterial()->GetParent()->GetMaterialName().c_str());
-    //draw instanced;
+    if (!incomingGroup)
+        return;
+    
+    incomingGroup->Draw(ownerRenderPass, camera);        
+
+    if (currInstancesCount>1)
+        drawQue.push_back(std::make_pair(incomingGroup->GetMaterial()->GetParent()->GetMaterialName(), currInstancesCount));
 
     incomingGroup = NULL;
     currInstancesCount = 0;
@@ -205,6 +232,16 @@ void InstancedRenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass
     }    
 
     CompleteInstancingGroup(ownerRenderPass, camera);
+
+    int32 economy = 0;
+    for (int32 i=0, sz = drawQue.size(); i<sz; ++i)
+    {
+        Logger::FrameworkDebug("instance - %s count %d", drawQue[i].first.c_str(), drawQue[i].second);
+        economy+=drawQue[i].second - 1;
+    }
+
+    Logger::FrameworkDebug("Total economy: %d", economy);
+    drawQue.clear();
 
 };
 

@@ -315,7 +315,20 @@ const FastName DYNAMIC_PARAM_NAMES[] =
 
 const FastName INSTANCE_PARAM_NAMES[] =
 {
-    FastName("worldViewProjection")
+    //lightmaps - may be we should unite them into 1 uniform
+    FastName("uvOffset"),
+    FastName("uvScale"),
+
+    //trees
+    FastName("worldScale"),
+    FastName("leafOscillationParams"),
+    FastName("treeLeafOcclusionMul"),
+    FastName("treeLeafColorMul"),
+
+    //fog - in current maps - on all objects
+    FastName("worldMatrix"),
+    FastName("worldViewMatrix"),
+    FastName("worldViewProjMatrix")
 };
 
 RenderGuard::RenderGuard()

@@ -164,6 +164,7 @@ public:
     struct Uniform
     {
         eShaderSemantic shaderSemantic;
+        bool supportInstancing;
         //eUpdateFreq     updateFreq;
         FastName        name;
         GLint           location;
@@ -232,6 +233,7 @@ public:
 
     void Bind();
     void BindDynamicParameters();
+    bool TestDynamicParamsInstancing();
 
     static void Unbind();
     
@@ -245,6 +247,9 @@ public:
     inline eUniformType GetUniformType(int32 index);
     inline const char * GetUniformName(int32 index);
     inline int32 GetUniformArraySize(int32 index);
+
+    inline int32 GetInstancingUniformCount();
+    inline Uniform * GetInstancingUniform(int32 index);
 
     static int32 GetUniformTypeSize(eUniformType type);
     static const char * GetUniformTypeSLName(eUniformType type);
@@ -311,6 +316,8 @@ private:
 	uint8* uniformData;
 	Uniform** autobindUniforms;
 	uint8 autobindUniformCount;
+    Uniform** instancingUniforms;
+    uint8 instancingUniformCount;
     
     int32 vertexFormatAttribIndeces[VERTEX_FORMAT_STREAM_MAX_COUNT];
     
@@ -330,6 +337,7 @@ private:
 
     eShaderSemantic GetShaderSemanticByName(const FastName &name);
     int32 GetAttributeIndexByName(const FastName &name);
+    bool SupportInstancingByName(const FastName &name);
     
     static GLuint activeProgram;    
     Data * vertexShaderData;
@@ -383,6 +391,15 @@ inline int32 Shader::GetUniformLocationByIndex(int32 index)
 inline int32 Shader::GetUniformArraySize(int32 index)
 {
     return GET_UNIFORM(index)->size;
+}
+
+inline int32 Shader::GetInstancingUniformCount()
+{
+    return instancingUniformCount;
+}
+inline Shader::Uniform * Shader::GetInstancingUniform(int32 index)
+{
+    return instancingUniforms[index];
 }
     
 };
