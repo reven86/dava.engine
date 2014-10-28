@@ -274,6 +274,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionProperty.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Mallocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Noncopyable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
@@ -391,7 +392,6 @@
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerBase.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Detail\Noncopyable.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h" />

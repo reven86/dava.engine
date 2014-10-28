@@ -151,9 +151,6 @@
     <Filter Include="Internal\DLC\Downloader">
       <UniqueIdentifier>{56f56b47-79c3-4bbc-adef-7d96d2c55443}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Network\Detail">
-      <UniqueIdentifier>{807598a7-8b1b-4a21-a541-3e0c2836538c}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1602,9 +1599,6 @@
     <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketFwd.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Detail\Noncopyable.h">
-      <Filter>Internal\Network\Detail</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
@@ -1613,6 +1607,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimer.h">
       <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Noncopyable.h">
+      <Filter>Internal\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
