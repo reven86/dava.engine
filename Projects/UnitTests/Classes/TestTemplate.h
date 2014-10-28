@@ -63,6 +63,10 @@ public:
     
     virtual int32 GetTestCount();
     virtual TestData * GetTestData(int32 iTest);
+	virtual const DAVA::String& GetTestName() const
+	{
+		return screenName;
+	}
 
     virtual bool RunTest(int32 testNum);
     
@@ -76,6 +80,7 @@ private:
     
     static int32 globalScreenId; // 1, on create of screen increment  
     int32 currentScreenId;
+	DAVA::String testName;
     
 	TestTemplate();
 };
@@ -98,7 +103,7 @@ void TestTemplate<T>::RegisterFunction(T * screen, void (T::*func)(PerfFuncData 
 template <class T>
 void TestTemplate<T>::LogError(PerfFuncData * data, const String &errorMessage)
 {
-	GameCore::Instance()->LogMessage(Format("Error %s at test: %s", errorMessage.c_str(), data->testData.name.c_str()));
+	GameCore::Instance()->LogMessage(Format("Error %s at test: %s", errorMessage.c_str(), screenName.c_str()));
 }
 
 
@@ -125,7 +130,6 @@ bool TestTemplate<T>::RunTest(int32 testNum)
     if(0 <= testNum && testNum < testCount)
     {
 		PerfFuncData * data = &(perfFuncs[testNum]);
-
         (data->screen->*data->func)(data);
         return true;
     }

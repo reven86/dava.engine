@@ -31,7 +31,9 @@
 #define __GAMECORE_H__
 
 #include "DAVAEngine.h"
-#include "Database/MongodbClient.h"
+#include "TeamcityOutput/TeamcityOutput.h"
+
+#include <fstream>
 
 using namespace DAVA;
 
@@ -88,7 +90,8 @@ protected:
     void FinishTests();
     void FlushTestResults();
 
-	DAVA::String WriteReportFile();
+	DAVA::String CreateOutputLogFile();
+	DAVA::String ReadLogFile();
 
 
     int32 TestCount();
@@ -96,18 +99,9 @@ protected:
     void CreateDocumentsFolder();
     File * CreateDocumentsFile(const String &filePathname);
     
-    bool ConnectToDB();
-    MongodbObject * CreateSubObject(const String &objectName, MongodbObject *dbObject, bool needFinished);
-    MongodbObject * CreateLogObject(const String &logName, const String &runTime);
-
-    const String GetErrorText(const ErrorData *error);
-    
-    
 protected:
-    
-    File * logFile;
-
-    MongodbClient *dbClient;
+	DAVA::String logFilePath;
+	std::ofstream logFile;
 
     BaseScreen *currentScreen;
 
@@ -115,8 +109,8 @@ protected:
     Vector<BaseScreen *> screens;
     
     int32 currentTestIndex;
-    
-    Vector<ErrorData *> errors;
+
+	TeamcityOutput teamCityOutput;
 };
 
 

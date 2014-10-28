@@ -81,6 +81,9 @@
     <ClCompile Include="Classes\SFML\System\Time.cpp">
       <Filter>SFML\System</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp">
+      <Filter>TeamCityOutput</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\BaseScreen.h" />
@@ -192,6 +195,9 @@
     <ClInclude Include="Classes\SFML\System\Utf.hpp">
       <Filter>SFML\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h">
+      <Filter>TeamCityOutput</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SFML">
@@ -205,6 +211,9 @@
     </Filter>
     <Filter Include="SFML\System">
       <UniqueIdentifier>{68933d4e-7e14-4ca0-b5f5-0ed7ccbee298}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TeamCityOutput">
+      <UniqueIdentifier>{d7622bab-ff09-4ed1-8991-42e786aa7797}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

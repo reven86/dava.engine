@@ -78,18 +78,14 @@
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
+#include <fstream>
+
 using namespace DAVA;
 
-GameCore::GameCore()
+GameCore::GameCore():currentScreen(NULL),
+	currentScreenIndex(0),
+	currentTestIndex(0)
 {
-    logFile = NULL;
-    
-	dbClient = NULL;
-
-    currentScreen = NULL;
-    
-    currentScreenIndex = 0;
-    currentTestIndex = 0;
 }
 
 GameCore::~GameCore()
@@ -98,11 +94,22 @@ GameCore::~GameCore()
 
 void GameCore::OnAppStarted()
 {
+	// redirect std::cout to log file for TeamCityOutput work for us
+	{
+		CreateDocumentsFolder();
+		logFilePath = CreateOutputLogFile();
+
+		logFile.open(logFilePath.c_str());
+
+		DVASSERT(logFile.good());
+		std::cout.rdbuf(logFile.rdbuf());
+
+		DAVA::Logger::Instance()->AddCustomOutput(&teamCityOutput);
+	}
+
 	RenderManager::Instance()->SetFPS(60);
 
-    CreateDocumentsFolder();
-
-	//new MathTest();
+	new MathTest();
 	//new FunctionBindSignalTest();
  //   new ThreadSyncTest();
  //   new DLCDownloadTest();
@@ -158,8 +165,6 @@ void GameCore::OnAppStarted()
  
 
   //  new SceneSystemTest();
-    
-    errors.reserve(TestCount());
 
     RunTests();
 }
@@ -193,12 +198,7 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::OnAppFinished()
 {
-	int32 errorsSize = errors.size();
-    for(int32 i = 0; i < errorsSize; ++i)
-    {
-        SafeDelete(errors[i]);
-    }
-    errors.clear();
+	DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
     
 	int32 screensSize = screens.size();
@@ -207,8 +207,6 @@ void GameCore::OnAppFinished()
         SafeRelease(screens[i]);
     }
     screens.clear();
-
-    SafeRelease(logFile);
 }
 
 void GameCore::OnSuspend()
@@ -282,6 +280,8 @@ void GameCore::RunTests()
     
     if(currentScreen)
     {
+		Logger::Info(("start test: " + currentScreen->GetTestName()).c_str());
+
         UIScreenManager::Instance()->SetFirst(currentScreen->GetScreenId());
     }
     else 
@@ -300,17 +300,7 @@ void GameCore::FinishTests()
 
 void GameCore::LogMessage(const String &message)
 {
-    if(!logFile)
-    {
-        time_t logStartTime = time(0);
-        logFile = CreateDocumentsFile(Format("Reports/%lld.errorlog", logStartTime));
-        DVASSERT(logFile);
-    }
-    
-    if(logFile)
-    {
-        logFile->WriteLine(message);
-    }
+	DAVA::Logger::Error(message.c_str());
 }
 
 int32 GameCore::TestCount()
@@ -338,12 +328,18 @@ void GameCore::ProcessTests()
                 ++currentScreenIndex;
                 if(currentScreenIndex == screens.size())
                 {
+					Logger::Info(("finish test: " + currentScreen->GetTestName()).c_str());
                     FinishTests();
                 }
                 else 
                 {
+					Logger::Info(("finish test: " + currentScreen->GetTestName()).c_str());
+
                     currentScreen = screens[currentScreenIndex];
                     currentTestIndex = 0;
+
+					Logger::Info(("start test: " + currentScreen->GetTestName()).c_str());
+
                     UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
                 }
             }
@@ -371,10 +367,7 @@ String GetCommandLineValue(const Vector<String>& cmdLine, const char* key, const
 
 void GameCore::FlushTestResults()
 {
-#define SEND_TEST_DATA_BACK_TO_PC
-#ifdef  SEND_TEST_DATA_BACK_TO_PC
-
-	String report_content = WriteReportFile();
+	String reportContent = ReadLogFile();
 
 	const Vector<String>& cmdLine = DAVA::Core::Instance()->GetCommandLine();
 	String host = GetCommandLineValue(cmdLine, "-host", "");
@@ -387,252 +380,61 @@ void GameCore::FlushTestResults()
 		sf::Socket::Status status = socket.connect(host, port);
 		if (status != sf::Socket::Done)
 		{
-            DAVA::Logger::Info("can't connect to server: %s:%hu", host.c_str(), port);
-			LogMessage("can't connect to server: " + host + ":" + portStr);
+			DAVA::Logger::Error("can't connect to server: %s:%hu", host.c_str(), port);
 			return;
 		}
 
-		const String& data = report_content;
-
-		if (socket.send(data.c_str(), data.size()) != sf::Socket::Done)
+		if (socket.send(reportContent.c_str(), reportContent.size()) != sf::Socket::Done)
 		{
-			LogMessage("can't send data to server\n");
-			socket.disconnect();
-			return;
+			DAVA::Logger::Error("can't send data to server\n");
 		}
 		socket.disconnect();
 	}
-
-#else
-    bool connected = ConnectToDB();
-    if(!connected)
-    {
-        LogMessage(String("Can't connect to DB"));
-        return;
-    }
-
-//    //TODO: test
-//    dbClient->DropCollection();
-//    dbClient->DropDatabase();
-//    //end of test
-    
-    time_t logStartTime = time(0);
-    String testTimeString = Format("%lld", logStartTime);
-
-    tm* utcTime = localtime(&logStartTime);
-    String runTime = Format("%04d.%02d.%02d:%02d:%02d:%02d",   
-                            utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday, 
-                            utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
-
-    
-    MongodbObject *logObject = CreateLogObject(testTimeString, runTime);
-    if(logObject)
-    {
-        MongodbObject *oldPlatformObject = dbClient->FindObjectByKey(PLATFORM_NAME);
-        MongodbObject *newPlatformObject = new MongodbObject();
-        if(newPlatformObject)
-        {
-            if(oldPlatformObject)
-            {
-//                oldPlatformObject->Print();
-                
-                newPlatformObject->Copy(oldPlatformObject);
-            }
-            else 
-            {
-                newPlatformObject->SetObjectName(PLATFORM_NAME);
-            }
-            
-            newPlatformObject->AddObject(testTimeString, logObject);
-            newPlatformObject->Finish();
-            dbClient->SaveObject(newPlatformObject, oldPlatformObject);
-            SafeRelease(newPlatformObject);
-        }
-        
-        SafeRelease(oldPlatformObject);
-        SafeRelease(logObject);
-    }
-
-    dbClient->Disconnect();
-    SafeRelease(dbClient);
-#endif
 }
 
 
 void GameCore::RegisterError(const String &command, const String &fileName, int32 line, TestData *testData)
 {
-    ErrorData *newError = new ErrorData();
-    
-    newError->command = command;
-    newError->filename = fileName;
-    newError->line = line;
-    
-    if(testData)
-    {
-        newError->testName = testData->name;
-        newError->testMessage = testData->message;
-    }
-    else
-    {
-        newError->testName = String("");
-        newError->testMessage = String("");
-    }
-    
-    errors.push_back(newError);
-    Logger::Error(GetErrorText(newError).c_str());
-}
+	String errorString = String(Format("command: %s at file: %s at line: %d",
+		command.c_str(), fileName.c_str(), line));
 
-bool GameCore::ConnectToDB()
-{
-    DVASSERT(NULL == dbClient);
-    
-    dbClient = MongodbClient::Create(DATABASE_IP, DATAPASE_PORT);
-    if(dbClient)
-    {
-        dbClient->SetDatabaseName(DATABASE_NAME);
-        dbClient->SetCollectionName(DATABASE_COLLECTION);
-    }
-    
-    return (NULL != dbClient);
-}
-
-
-MongodbObject * GameCore::CreateLogObject(const String &logName, const String &runTime)
-{
-    MongodbObject *logObject = new MongodbObject();
-    if(logObject)
-    {
-        logObject->SetObjectName(logName);
-    }
-    
-    int32 errorCount = (int32)errors.size();
-    File *reportFile = CreateDocumentsFile(String("Errors.txt"));
-    if(reportFile)
-    {
-        reportFile->WriteLine(String("Run Time: ") + runTime);
-        if(logObject)
-        {
-            logObject->AddString(String("RunTime"), runTime);
-        }
-
-        
-        if(0 < errorCount)
-        {
-            reportFile->WriteLine(String("Failed tests:"));
-            for(int32 i = 0; i < errorCount; ++i)
-            {
-                String errorString = GetErrorText(errors[i]);
-                
-                reportFile->WriteLine(String(Format("Error[%06d]: ", i+1)) + errorString);
-                if(logObject)
-                {
-                    logObject->AddString(String(Format("Error_%06d", i+1)), errorString);
-                }
-            }
-        }
-        else 
-        {
-            String successString = String("All test passed.");
-            reportFile->WriteLine(successString);
-            if(logObject)
-            {
-                logObject->AddString(String("TestResult"), successString);
-            }
-        }
-        
-        SafeRelease(reportFile);
-    }
-
-    if(logObject)
-    {
-        logObject->Finish();
-    }
-    
-    return logObject;
-}
-
-const String GameCore::GetErrorText(const ErrorData *error)
-{
-    String errorString = String(Format("command: %s at file: %s at line: %d",
-                                       error->command.c_str(), error->filename.c_str(), error->line));
-    
-    if(!error->testName.empty())
-    {
-        errorString += String(Format(", test: %s", error->testName.c_str()));
-    }
-    
-    if(!error->testMessage.empty())
-    {
-        errorString += String(Format(", message: %s", error->testMessage.c_str()));
-    }
-
-    return errorString;
-}
-
-
-MongodbObject * GameCore::CreateSubObject(const String &objectName, MongodbObject *dbObject, bool needFinished)
-{
-    MongodbObject *subObject = new MongodbObject();
-    if(dbObject)
-    {
-        bool ret = dbObject->GetSubObject(subObject, objectName, needFinished);
-        if(ret)
-        {
-            return subObject;
-        }
-    }
-    
-    subObject->SetObjectName(objectName);
-    return subObject;
-}
-
-DAVA::String GameCore::WriteReportFile()
-{
-	String reportContent;
-
-	time_t logStartTime = time(0);
-	String testTimeString = Format("%lld", logStartTime);
-
-	tm* utcTime = localtime(&logStartTime);
-	String runTime = Format("%04d.%02d.%02d:%02d:%02d:%02d",   
-		utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday, 
-		utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
-
-	int32 errorCount = (int32)errors.size();
-	String errorFileName("Errors.txt");
-	File *reportFile = CreateDocumentsFile(errorFileName);
-	if(reportFile)
+	if (testData)
 	{
-		reportFile->WriteLine(String("Run Time: ") + runTime);
-		if(0 < errorCount)
+		if(!testData->name.empty())
 		{
-			reportFile->WriteLine(String("Failed tests:"));
-			for(int32 i = 0; i < errorCount; ++i)
-			{
-				String errorString = GetErrorText(errors[i]);
-
-				reportFile->WriteLine(String(Format("Error[%06d]: ", i+1)) + errorString);
-			}
-		}
-		else 
-		{
-			String successString = String("All test passed.");
-			reportFile->WriteLine(successString);
+			errorString += String(Format(", test: %s", testData->name.c_str()));
 		}
 
-		SafeRelease(reportFile);
+		if(!testData->message.empty())
+		{
+			errorString += String(Format(", message: %s", testData->message.c_str()));
+		}
 	}
+    Logger::Error(errorString.c_str());
+}
 
+DAVA::String GameCore::ReadLogFile()
+{
+	String logContent;
 	{
-		FilePath workingFilepathname = FilePath::FilepathInDocuments(errorFileName);
-		File *retFile = File::Create(workingFilepathname, File::OPEN | File::READ);
-
-		retFile->ReadString(reportContent); // ReadString - not cool func -> rewrite
-
+		File *retFile = File::Create(logFilePath, File::OPEN | File::READ);
+		retFile->ReadString(logContent); // ReadString - not cool func -> rewrite
 		SafeRelease(retFile);
 	}
 
-	return reportContent;
+	return logContent;
+}
+
+DAVA::String GameCore::CreateOutputLogFile()
+{
+	time_t logStartTime = time(0);
+	const String logFileName = Format("Reports/%lld.errorlog", logStartTime);
+	File* logFile = CreateDocumentsFile(logFileName);
+	DVASSERT(logFile);
+	SafeRelease(logFile);
+
+	FilePath workingFilepathname = FilePath::FilepathInDocuments(logFileName);
+	return workingFilepathname.GetAbsolutePathname();
 }
 
 
