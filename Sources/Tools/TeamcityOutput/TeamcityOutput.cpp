@@ -123,12 +123,12 @@ void TeamcityOutput::TestsOutput(const char8 * text, Logger::eLogLevel ll) const
 	if (0 == outStr.find(START_TEST)) // start with
 	{
 		testName = outStr.substr(std::strlen(START_TEST));
-		testName.pop_back(); // remove last \n
+		testName = testName.substr(0, testName.size() - 2); // remove last two chars "|n"
 		output = "##teamcity[testStarted name=\'" + testName + "\']\n";
 	} else if (0 == outStr.find(FINISH_TEST))
 	{
 		testName = outStr.substr(std::strlen(FINISH_TEST));
-		testName.pop_back(); // remove last \n
+		testName = testName.substr(0, testName.size() - 2); // remove last two chars "|n"
 		output = "##teamcity[testFinished name=\'" + testName + "\']\n";
 	} else if (0 == outStr.find(TEST_ERROR))
 	{
