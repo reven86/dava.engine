@@ -82,6 +82,13 @@
 
 using namespace DAVA;
 
+namespace 
+{
+	const char* START_TEST = "start test ";
+	const char* FINISH_TEST = "finish test ";
+	const char* TEST_ERROR = "test error ";
+}
+
 GameCore::GameCore():currentScreen(NULL),
 	currentScreenIndex(0),
 	currentTestIndex(0)
@@ -104,6 +111,7 @@ void GameCore::OnAppStarted()
 		DVASSERT(logFile.good());
 		std::cout.rdbuf(logFile.rdbuf());
 
+		teamCityOutput.SetOutputMode(DAVA::TeamcityOutput::TESTS_MODE);
 		DAVA::Logger::Instance()->AddCustomOutput(&teamCityOutput);
 	}
 
@@ -200,7 +208,6 @@ void GameCore::OnAppFinished()
 {
 	DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
-    
 	int32 screensSize = screens.size();
     for(int32 i = 0; i < screensSize; ++i)
     {
@@ -280,7 +287,7 @@ void GameCore::RunTests()
     
     if(currentScreen)
     {
-		Logger::Info(("start test: " + currentScreen->GetTestName()).c_str());
+		Logger::Info((START_TEST + currentScreen->GetTestName()).c_str());
 
         UIScreenManager::Instance()->SetFirst(currentScreen->GetScreenId());
     }
@@ -328,17 +335,17 @@ void GameCore::ProcessTests()
                 ++currentScreenIndex;
                 if(currentScreenIndex == screens.size())
                 {
-					Logger::Info(("finish test: " + currentScreen->GetTestName()).c_str());
+					Logger::Info((FINISH_TEST + currentScreen->GetTestName()).c_str());
                     FinishTests();
                 }
                 else 
                 {
-					Logger::Info(("finish test: " + currentScreen->GetTestName()).c_str());
+					Logger::Info((FINISH_TEST + currentScreen->GetTestName()).c_str());
 
                     currentScreen = screens[currentScreenIndex];
                     currentTestIndex = 0;
 
-					Logger::Info(("start test: " + currentScreen->GetTestName()).c_str());
+					Logger::Info((START_TEST + currentScreen->GetTestName()).c_str());
 
                     UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
                 }
@@ -395,8 +402,8 @@ void GameCore::FlushTestResults()
 
 void GameCore::RegisterError(const String &command, const String &fileName, int32 line, TestData *testData)
 {
-	String errorString = String(Format("command: %s at file: %s at line: %d",
-		command.c_str(), fileName.c_str(), line));
+	String errorString = String(Format("%s command: %s at file: %s at line: %d",
+		TEST_ERROR, command.c_str(), fileName.c_str(), line));
 
 	if (testData)
 	{
@@ -410,7 +417,7 @@ void GameCore::RegisterError(const String &command, const String &fileName, int3
 			errorString += String(Format(", message: %s", testData->message.c_str()));
 		}
 	}
-    Logger::Error(errorString.c_str());
+    LogMessage(errorString);
 }
 
 DAVA::String GameCore::ReadLogFile()

@@ -42,29 +42,15 @@ namespace DAVA
     
 void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text) const
 {
-    String outStr = NormalizeString(text);
-	String output;
-    String status;
-    
-    switch (ll)
-    {
-    case Logger::LEVEL_ERROR:
-		status = "ERROR";
-        output = "##teamcity[buildProblem description=\'ERROR: " + outStr + "\']";
-        PlatformOutput(output);
-        break;
-
-    case Logger::LEVEL_WARNING:
-		status = "WARNING";
-        break;
-            
-    default:
-        status = "NORMAL";
-        break;
-    }
-
-    output = "##teamcity[message text=\'" + outStr + "\' errorDetails=\'\' status=\'" + status + "\']\n";
-    PlatformOutput(output);
+	switch(outputMode)
+	{
+	case DEFAULT_MODE:
+		DefaultOutput(text, ll);
+		break;
+	case TESTS_MODE:
+		TestsOutput(text, ll);
+		break;
+	}
 }
 
 void TeamcityOutput::Output(Logger::eLogLevel ll, const char16 *text) const
@@ -83,10 +69,6 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
     StringReplace(str, "\n", "|n");
     StringReplace(str, "\r", "|r");
 
-//    StringReplace(str, "\u0085", "|x");
-//     StringReplace(str, "\u2028", "|l");
-//     StringReplace(str, "\u2029", "|p");
-
     StringReplace(str, "[", "|[");
     StringReplace(str, "]", "|]");
     
@@ -95,9 +77,73 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
 
 void TeamcityOutput::PlatformOutput(const String &text) const
 {
-    std::cout << text << std::endl;
+	std::cout << text << std::flush; // not std::endl couse \n already added by Logger
 }
-    
+
+void TeamcityOutput::DefaultOutput(const char8 * text, Logger::eLogLevel ll) const
+{
+	String outStr = NormalizeString(text);
+	String output;
+	String status;
+
+	switch (ll)
+	{
+	case Logger::LEVEL_ERROR:
+		status = "ERROR";
+		output = "##teamcity[buildProblem description=\'ERROR: " + outStr + "\']";
+		PlatformOutput(output);
+		break;
+
+	case Logger::LEVEL_WARNING:
+		status = "WARNING";
+		break;
+
+	default:
+		status = "NORMAL";
+		break;
+	}
+
+	output = "##teamcity[message text=\'" + outStr + "\' errorDetails=\'\' status=\'" + status + "\']\n";
+	PlatformOutput(output);
+}
+
+namespace 
+{
+	const char* START_TEST = "start test ";
+	const char* FINISH_TEST = "finish test ";
+	const char* TEST_ERROR = "test error ";
+}
+
+void TeamcityOutput::TestsOutput(const char8 * text, Logger::eLogLevel ll) const
+{
+	String outStr = NormalizeString(text);
+	String output;
+
+	String testName;
+	if (0 == outStr.find(START_TEST)) // start with
+	{
+		testName = outStr.substr(std::strlen(START_TEST));
+		testName.pop_back(); // remove last \n
+		output = "##teamcity[testStarted name=\'" + testName + "\']\n";
+	} else if (0 == outStr.find(FINISH_TEST))
+	{
+		testName = outStr.substr(std::strlen(FINISH_TEST));
+		testName.pop_back(); // remove last \n
+		output = "##teamcity[testFinished name=\'" + testName + "\']\n";
+	} else if (0 == outStr.find(TEST_ERROR))
+	{
+		outStr = outStr.substr(std::strlen(TEST_ERROR));
+		output = "##teamcity[testFailed message=\'" + outStr + "\']\n";
+	} else
+	{
+		DefaultOutput(text, ll);
+		return;
+	}
+
+	PlatformOutput(output);
+}
+
+
 }; // end of namespace DAVA
 
 #endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)

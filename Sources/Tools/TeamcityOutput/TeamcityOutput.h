@@ -40,19 +40,33 @@
 
 namespace DAVA 
 {
-    
+
+   
 class TeamcityOutput: public LoggerOutput
 {
 public:
+	enum eTeamCityOutputMode
+	{
+		DEFAULT_MODE,
+		TESTS_MODE
+	};
+
+	TeamcityOutput():outputMode(DEFAULT_MODE){}
+
+	void SetOutputMode(eTeamCityOutputMode mode) { outputMode = mode; }
+	eTeamCityOutputMode GetOutputMode() const { return outputMode; }
 
     virtual void Output(Logger::eLogLevel ll, const char8* text) const;
     virtual void Output(Logger::eLogLevel ll, const char16* text) const;
-    
+
 private:
-    
+
+	void TestsOutput(const char8 * text, Logger::eLogLevel ll) const;
+	void DefaultOutput(const char8 * text, Logger::eLogLevel ll) const;
     void PlatformOutput(const String & text) const;
-    
     String NormalizeString(const char8 *text) const;
+
+	eTeamCityOutputMode outputMode;
 };
 
 
