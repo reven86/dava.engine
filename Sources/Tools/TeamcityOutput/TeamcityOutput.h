@@ -51,6 +51,10 @@ public:
 		TESTS_MODE
 	};
 
+	static const char* const START_TEST;
+	static const char* const FINISH_TEST;
+	static const char* const TEST_ERROR;
+
 	TeamcityOutput():outputMode(DEFAULT_MODE){}
 
 	void SetOutputMode(eTeamCityOutputMode mode) { outputMode = mode; }

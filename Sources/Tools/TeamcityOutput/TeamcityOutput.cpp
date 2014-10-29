@@ -40,6 +40,10 @@
 namespace DAVA
 {
     
+const char* const TeamcityOutput::START_TEST = "start test ";
+const char* const TeamcityOutput::FINISH_TEST = "finish test ";
+const char* const TeamcityOutput::TEST_ERROR = "test error ";
+
 void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text) const
 {
 	switch(outputMode)
@@ -107,13 +111,6 @@ void TeamcityOutput::DefaultOutput(const char8 * text, Logger::eLogLevel ll) con
 	PlatformOutput(output);
 }
 
-namespace 
-{
-	const char* START_TEST = "start test ";
-	const char* FINISH_TEST = "finish test ";
-	const char* TEST_ERROR = "test error ";
-}
-
 void TeamcityOutput::TestsOutput(const char8 * text, Logger::eLogLevel ll) const
 {
 	String outStr = NormalizeString(text);
@@ -132,8 +129,10 @@ void TeamcityOutput::TestsOutput(const char8 * text, Logger::eLogLevel ll) const
 		output = "##teamcity[testFinished name=\'" + testName + "\']\n";
 	} else if (0 == outStr.find(TEST_ERROR))
 	{
+		// format for test error: "TEST_ERROR test_name error_info"
 		outStr = outStr.substr(std::strlen(TEST_ERROR));
-		output = "##teamcity[testFailed message=\'" + outStr + "\']\n";
+		testName = outStr.substr(0, outStr.find(' '));
+		output = "##teamcity[testFailed name=\'" + testName + "\' message=\'" + outStr + "\' details=\'\']\n";
 	} else
 	{
 		DefaultOutput(text, ll);

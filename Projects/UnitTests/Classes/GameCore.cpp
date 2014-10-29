@@ -82,13 +82,6 @@
 
 using namespace DAVA;
 
-namespace 
-{
-	const char* START_TEST = "start test ";
-	const char* FINISH_TEST = "finish test ";
-	const char* TEST_ERROR = "test error ";
-}
-
 GameCore::GameCore():currentScreen(NULL),
 	currentScreenIndex(0),
 	currentTestIndex(0)
@@ -287,7 +280,7 @@ void GameCore::RunTests()
     
     if(currentScreen)
     {
-		Logger::Info((START_TEST + currentScreen->GetTestName()).c_str());
+		Logger::Info((TeamcityOutput::START_TEST + currentScreen->GetTestName()).c_str());
 
         UIScreenManager::Instance()->SetFirst(currentScreen->GetScreenId());
     }
@@ -335,17 +328,17 @@ void GameCore::ProcessTests()
                 ++currentScreenIndex;
                 if(currentScreenIndex == screens.size())
                 {
-					Logger::Info((FINISH_TEST + currentScreen->GetTestName()).c_str());
+					Logger::Info((TeamcityOutput::FINISH_TEST + currentScreen->GetTestName()).c_str());
                     FinishTests();
                 }
                 else 
                 {
-					Logger::Info((FINISH_TEST + currentScreen->GetTestName()).c_str());
+					Logger::Info((TeamcityOutput::FINISH_TEST + currentScreen->GetTestName()).c_str());
 
                     currentScreen = screens[currentScreenIndex];
                     currentTestIndex = 0;
 
-					Logger::Info((START_TEST + currentScreen->GetTestName()).c_str());
+					Logger::Info((TeamcityOutput::START_TEST + currentScreen->GetTestName()).c_str());
 
                     UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
                 }
@@ -402,14 +395,16 @@ void GameCore::FlushTestResults()
 
 void GameCore::RegisterError(const String &command, const String &fileName, int32 line, TestData *testData)
 {
-	String errorString = String(Format("%s command: %s at file: %s at line: %d",
-		TEST_ERROR, command.c_str(), fileName.c_str(), line));
+	const char* testName = currentScreen->GetTestName().c_str();
+
+	String errorString = String(Format("%s%s command: %s at file: %s at line: %d",
+		TeamcityOutput::TEST_ERROR, testName, command.c_str(), fileName.c_str(), line));
 
 	if (testData)
 	{
 		if(!testData->name.empty())
 		{
-			errorString += String(Format(", test: %s", testData->name.c_str()));
+			errorString += String(Format(", test: %s", testData->name.c_str())); // test function name
 		}
 
 		if(!testData->message.empty())
