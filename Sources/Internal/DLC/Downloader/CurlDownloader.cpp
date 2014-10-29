@@ -494,6 +494,7 @@ DownloadError CurlDownloader::CurlStatusToDownloadStatus(CURLcode status) const
         case CURLE_COULDNT_RESOLVE_HOST:
             return DLE_COULDNT_RESOLVE_HOST;
 
+        case CURLE_RECV_ERROR:
         case CURLE_COULDNT_CONNECT:
         case CURLE_OPERATION_TIMEDOUT:
             return DLE_COULDNT_CONNECT;

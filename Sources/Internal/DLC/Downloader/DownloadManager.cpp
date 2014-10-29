@@ -606,7 +606,7 @@ DownloadError DownloadManager::TryDownload()
 
     if (DLE_NO_ERROR == currentTask->error)
     {
-        downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+        currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
     }
 
     // seems server doesn't supports download resuming. So we need to download whole file.
@@ -615,7 +615,7 @@ DownloadError DownloadManager::TryDownload()
         MakeFullDownload();
         if (DLE_NO_ERROR == currentTask->error)
         {
-            downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+            currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
         }
     }
 
