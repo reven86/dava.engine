@@ -11,8 +11,8 @@
 
 type -p X &>/dev/null && echo 'X11 is installed' || echo 'WARNING: X11 is not detected. It is strongly recommended that the X11R6 package be installed since this enables ImageMagick X11 support (animate, display, and import will work). Make sure that /usr/X11R6/bin is in your PATH.'
 
-installPath="ImageMagick-6.8.9-Mac"
-imPath="ImageMagick-6.8.9-9"
+installPath="ImageMagick-6.7.4"
+imPath="ImageMagick-6.7.4-10"
 
 rm -rf $imPath
 rm -rf $installPath

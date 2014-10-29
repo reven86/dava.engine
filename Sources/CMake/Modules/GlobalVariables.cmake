@@ -46,7 +46,7 @@ set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 #ImageMagick
 if( MACOS ) 
 
-        set( IMAGE_MAGICK ImageMagick-6.8.9-Mac )
+        set( IMAGE_MAGICK ImageMagick-6.7.4 )
 
 	set ( DAVA_IMAGE_MAGICK_INCLUDES_PATH  
 	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/include/ImageMagick"
@@ -65,7 +65,7 @@ elseif( IOS )
 
 elseif( WIN32 )
 
-        set( IMAGE_MAGICK ImageMagick-6.8.9-Windows )
+        set( IMAGE_MAGICK ImageMagick-6.7.4-Windows )
 
 	set ( DAVA_IMAGE_MAGICK_INCLUDES_PATH  
 	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}"

@@ -2300,15 +2300,15 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
-					"./../../Libs/ImageMagick-6.8.9-Mac/",
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
 				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					/System/Library/Frameworks/,
-					"./../../Libs/ImageMagick-6.8.9-Mac/lib/",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
+					"./../../Libs/ImageMagick-6.7.4/lib/",
+					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
 				OTHER_CFLAGS = (
 					"-pipe",
@@ -2340,9 +2340,9 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore-6.Q16",
-					"-lMagick++-6.Q16",
-					"-lMagickWand-6.Q16",
+					"-lMagickCore",
+					"-lMagick++-6",
+					"-lMagickWand",
 				);
 				PRODUCT_NAME = TemplateProjectQt;
 				SDKROOT = macosx;
@@ -2376,13 +2376,13 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
-					"./../../Libs/ImageMagick-6.8.9-Mac/",
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"../../Libs/ImageMagick-6.8.9-Mac/lib/",
-					"../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
+					"../../Libs/ImageMagick-6.7.4/lib/",
+					"../../Libs/ImageMagick-6.7.4/delegates/lib",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
@@ -2423,13 +2423,13 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
-					"./../../Libs/ImageMagick-6.8.9-Mac/",
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"../../Libs/ImageMagick-6.8.9-Mac/lib/",
-					"../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
+					"../../Libs/ImageMagick-6.7.4/lib/",
+					"../../Libs/ImageMagick-6.7.4/delegates/lib",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
@@ -2472,15 +2472,15 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
-					"./../../Libs/ImageMagick-6.8.9-Mac/",
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
 				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					/System/Library/Frameworks/,
-					"./../../Libs/ImageMagick-6.8.9-Mac/lib/",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
+					"./../../Libs/ImageMagick-6.7.4/lib/",
+					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
 				OTHER_CFLAGS = (
 					"-pipe",
@@ -2512,9 +2512,9 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore-6.Q16",
-					"-lMagick++-6.Q16",
-					"-lMagickWand-6.Q16",
+					"-lMagickCore",
+					"-lMagick++",
+					"-lMagickWand",
 				);
 				PRODUCT_NAME = TemplateProjectQt;
 				SDKROOT = macosx;

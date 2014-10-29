@@ -5171,9 +5171,9 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
-					"./../../Libs/ImageMagick-6.8.9-Mac/",
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
 					./../../Tools/ColladaConverter/Collada15/FCollada,
 					./../../Tools/ColladaConverter/Collada15/FCollada/LibXML/include,
 					./Classes/Qt,
@@ -5185,8 +5185,8 @@
 					../../Libs/libs/,
 					../../Libs/freetype/lib/,
 					../../Libs/oggvorbis/lib/,
-					"./../../Libs/ImageMagick-6.8.9-Mac/lib/",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
+					"./../../Libs/ImageMagick-6.7.4/lib/",
+					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
@@ -5235,9 +5235,9 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore-6.Q16",
-					"-lMagick++-6.Q16",
-					"-lMagickWand-6.Q16",
+					"-lMagickCore",
+					"-lMagick++",
+					"-lMagickWand",
 				);
 			};
 			name = Release;
@@ -5265,9 +5265,9 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore-6.Q16",
-					"-lMagick++-6.Q16",
-					"-lMagickWand-6.Q16",
+					"-lMagickCore",
+					"-lMagick++",
+					"-lMagickWand",
 				);
 			};
 			name = Debug;
@@ -5308,9 +5308,9 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
-					"./../../Libs/ImageMagick-6.8.9-Mac/",
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
 					./../../Tools/ColladaConverter/Collada15/FCollada,
 					./../../Tools/ColladaConverter/Collada15/FCollada/LibXML/include,
 					./Classes/Qt,
@@ -5322,8 +5322,8 @@
 					../../Libs/libs/,
 					../../Libs/freetype/lib/,
 					../../Libs/oggvorbis/lib/,
-					"./../../Libs/ImageMagick-6.8.9-Mac/lib/",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
+					"./../../Libs/ImageMagick-6.7.4/lib/",
+					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (

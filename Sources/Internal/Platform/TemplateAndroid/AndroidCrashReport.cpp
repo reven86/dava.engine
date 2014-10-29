@@ -213,7 +213,6 @@ const map_info_t* find_map_info(const map_info_t* milist, uintptr_t addr) {
     return mi;
 }
 
-
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
 	if(signal<SIG_NUMBER_MAX)
@@ -263,7 +262,9 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 				{
 					JniCrashReporter::CrashStep buildId;
 					buildId.module = TEAMCITY_BUILD_TYPE_ID;
-					buildId.function = "Crash::AppCrashed()";
+					char fakeFunction[64];
+					sprintf(fakeFunction, "Crash::AppCrashed%d()",signal);
+					buildId.function = std::string(fakeFunction);
 					buildId.fileLine = (frame->absolute_pc - mi->start);
 					crashSteps.push_back(buildId);
 				}
