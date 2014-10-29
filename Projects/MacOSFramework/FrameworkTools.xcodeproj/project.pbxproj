@@ -401,7 +401,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
@@ -438,7 +438,6 @@
 					/opt/local/lib,
 					./../../Libs/libs,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -449,7 +448,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
@@ -484,7 +483,6 @@
 					/opt/local/lib,
 					./../../Libs/libs,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -505,7 +503,6 @@
 					"./../../Libs/ImageMagick-6.7.4/delegates/include",
 					"./../../Libs/ImageMagick-6.7.4/",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -526,7 +523,6 @@
 					"./../../Libs/ImageMagick-6.7.4/delegates/include",
 					"./../../Libs/ImageMagick-6.7.4/",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -548,7 +544,6 @@
 					"./../../Libs/ImageMagick-6.7.4/delegates/include",
 					"./../../Libs/ImageMagick-6.7.4/",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsQt;
 			};
 			name = Debug;
@@ -570,7 +565,6 @@
 					"./../../Libs/ImageMagick-6.7.4/delegates/include",
 					"./../../Libs/ImageMagick-6.7.4/",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsQt;
 			};
 			name = Release;
@@ -592,7 +586,6 @@
 					"./../../Libs/ImageMagick-6.7.4/delegates/include",
 					"./../../Libs/ImageMagick-6.7.4/",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsNPAPI;
 			};
 			name = Debug;
@@ -614,7 +607,6 @@
 					"./../../Libs/ImageMagick-6.7.4/delegates/include",
 					"./../../Libs/ImageMagick-6.7.4/",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsNPAPI;
 			};
 			name = Release;

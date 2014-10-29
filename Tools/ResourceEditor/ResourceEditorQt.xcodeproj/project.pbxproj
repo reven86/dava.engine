@@ -5138,7 +5138,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
 				GCC_C_LANGUAGE_STANDARD = c99;
@@ -5188,7 +5188,6 @@
 					"./../../Libs/ImageMagick-6.7.4/lib/",
 					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
 					"-pipe",
 					"-g",
@@ -5277,7 +5276,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
 				GCC_C_LANGUAGE_STANDARD = c99;
@@ -5325,7 +5324,6 @@
 					"./../../Libs/ImageMagick-6.7.4/lib/",
 					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
 					"-pipe",
 					"-g",
