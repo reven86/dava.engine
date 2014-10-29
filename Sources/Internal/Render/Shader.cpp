@@ -926,7 +926,6 @@ void Shader::DeleteShaders()
     
 	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Shader::DeleteShadersInternal), program, vertexShader, fragmentShader);
 	JobManager::Instance()->CreateMainJob(fn);
-	JobManager::Instance()->WaitMainJobs();
 
     vertexShader = 0;
     fragmentShader = 0;
