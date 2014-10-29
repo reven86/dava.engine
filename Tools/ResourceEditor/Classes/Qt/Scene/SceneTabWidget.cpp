@@ -26,8 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Main/mainwindow.h"
 #include "Scene/SceneTabWidget.h"
+
+#include "Main/Request.h"
+#include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
 #include "Tools/QtLabelWithActions/QtLabelWithActions.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
@@ -35,6 +37,8 @@
 #include "MaterialEditor/MaterialAssignSystem.h"
 
 #include "Platform/SystemTimer.h"
+
+#include "Qt/Main/davaglwidget.h"
 
 #include <QVBoxLayout>
 #include <QResizeEvent>

@@ -30,6 +30,10 @@
 
 #include "QtLayer.h"
 
+#include "DAVAEngine.h"
+
+
+
 namespace DAVA 
 {
     

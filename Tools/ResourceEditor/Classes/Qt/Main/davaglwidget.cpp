@@ -70,7 +70,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	setAttribute(Qt::WA_NativeWindow, true);
 
 #ifdef Q_OS_WIN
-	setWindowFlags(windowFlags() | Qt::MSWindowsOwnDC);
+	//setWindowFlags(windowFlags() | Qt::MSWindowsOwnDC);	// TODO: investigate
 #endif
 
 	setFocusPolicy( Qt::ClickFocus );

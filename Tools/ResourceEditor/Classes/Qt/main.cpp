@@ -31,7 +31,6 @@
 #include "DAVAEngine.h"
 #include <QApplication>
 #include <QCryptographicHash>
-#include <QGLWidget>
 
 #include "version.h"
 #include "Main/mainwindow.h"
@@ -74,8 +73,6 @@ int main(int argc, char *argv[])
 	int ret = 0;
 
     QApplication a(argc, argv);
-
-	QGLWidget www;
 
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);

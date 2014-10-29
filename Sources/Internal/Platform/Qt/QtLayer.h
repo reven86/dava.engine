@@ -30,7 +30,8 @@
 #ifndef __DAVAENGINE_QT_LAYER_H__
 #define __DAVAENGINE_QT_LAYER_H__
 
-#include "DAVAEngine.h"
+#include "Base/Singleton.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA 
 {
