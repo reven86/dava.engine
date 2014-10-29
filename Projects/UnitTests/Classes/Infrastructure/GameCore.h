@@ -98,7 +98,9 @@ protected:
     void CreateDocumentsFolder();
     File * CreateDocumentsFile(const String &filePathname);
     
-protected:
+private:
+	void create_log_and_redirect_cout_to_it_for_teamcity_output();
+
 	DAVA::String logFilePath;
 	std::ofstream logFile;
 

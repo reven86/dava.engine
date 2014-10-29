@@ -108,43 +108,25 @@ String GetCommandLineValue(const Vector<String>& cmdLine, const char* key, const
 
 void GameCore::OnAppStarted()
 {
-	// redirect std::cout to log file for TeamCityOutput work for us
-	{
-		CreateDocumentsFolder();
-		logFilePath = CreateOutputLogFile();
-
-		logFile.open(logFilePath.c_str());
-
-		DVASSERT(logFile.good());
-		std::cout.rdbuf(logFile.rdbuf());
-
-		const Vector<String>& cmdLine = Core::Instance()->GetCommandLine();
-		String host = GetCommandLineValue(cmdLine, "-host", "");
-		String portStr = GetCommandLineValue(cmdLine, "-port", "50007");
-		unsigned short port = static_cast<unsigned short>(atoi(portStr.c_str()));
-
-		teamCityOutput.connect(host, port);
-
-		DAVA::Logger::Instance()->AddCustomOutput(&teamCityOutput);
-	}
+	create_log_and_redirect_cout_to_it_for_teamcity_output();
 
 	RenderManager::Instance()->SetFPS(60);
 
 	new MathTest();
-	//new FunctionBindSignalTest();
- //   new ThreadSyncTest();
- //   new DLCDownloadTest();
+	//new FunctionBindSignalTest(); // TODO too long compute?
+    new ThreadSyncTest();
+    //new DLCDownloadTest();
 
 
-	//new ImageSizeTest();
- //   new DeviceInfoTest();
+	new ImageSizeTest();
+    //new DeviceInfoTest();
 
- //   new PVRTest();
- //	new DXTTest();
- //   new JPEGTest();
+    new PVRTest();
+ 	new DXTTest();
+    new JPEGTest();
 
- //   new ParseTextTest(Font::TYPE_FT);
- //   new ParseTextTest(Font::TYPE_GRAPHICAL);
+    new ParseTextTest(Font::TYPE_FT);
+    new ParseTextTest(Font::TYPE_GRAPHICAL);
  //   new OpenGLES30FormatTest();
  //   new SaveImageTest();
  //   
@@ -161,31 +143,29 @@ void GameCore::OnAppStarted()
  	//new InputTest();
   //  new FormatsTest();
  
- 	//new DateTimeTest();
+ 	new DateTimeTest();
  	//new TransparentWebViewTest();
-  //  new LocalizationTest();
+    new LocalizationTest();
  
- 	//new SampleTest();
+ 	new SampleTest();
  	//new EntityTest(); 
- 	//new MemoryAllocatorsTest();
- 	//new HashMapTest();
+ 	new MemoryAllocatorsTest();
+ 	new HashMapTest();
  	//new SoundTest();
- 	//new SplitTest();
- 	//new AlignTest();
+ 	new SplitTest();
+ 	new AlignTest();
  	//new EMailTest();
  	//new DPITest();
- 	//new MaterialCompilerTest();
- 	//new CloneTest();
+ 	new MaterialCompilerTest(); // TODO empty
+ 	new CloneTest(); // TODO empty
 
- 	//new EntityTest();	
- 	//new MemoryAllocatorsTest();
- 	//new HashMapTest();
- 	//new KeyedArchiveYamlTest();
+ 	new EntityTest(); // TODO empty
+ 	new KeyedArchiveYamlTest();
  	//new UIListTest();
  	//new UIScrollViewTest();
  
 
-  //  new SceneSystemTest();
+    new SceneSystemTest();
 
     RunTests();
 }
@@ -399,6 +379,26 @@ DAVA::String GameCore::CreateOutputLogFile()
 
 	FilePath workingFilepathname = FilePath::FilepathInDocuments(logFileName);
 	return workingFilepathname.GetAbsolutePathname();
+}
+
+void GameCore::create_log_and_redirect_cout_to_it_for_teamcity_output()
+{
+	CreateDocumentsFolder();
+	logFilePath = CreateOutputLogFile();
+
+	logFile.open(logFilePath.c_str());
+
+	DVASSERT(logFile.good());
+	std::cout.rdbuf(logFile.rdbuf());
+
+	const Vector<String>& cmdLine = Core::Instance()->GetCommandLine();
+	String host = GetCommandLineValue(cmdLine, "-host", "");
+	String portStr = GetCommandLineValue(cmdLine, "-port", "50007");
+	unsigned short port = static_cast<unsigned short>(atoi(portStr.c_str()));
+
+	teamCityOutput.connect(host, port);
+
+	DAVA::Logger::Instance()->AddCustomOutput(&teamCityOutput);
 }
 
 
