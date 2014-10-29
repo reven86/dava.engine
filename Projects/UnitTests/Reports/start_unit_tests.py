@@ -36,13 +36,12 @@ elif start_on_android:
     subprocess.Popen(["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests.UnitTests",
                       "-e", "-host", str(HOST), "-e", "-port", str(PORT)])
 elif sys.platform == 'win32':
-    pass
-    # if os.path.isfile("..\\Release\\app\\UnitTestsVS2010.exe"): # run on build server (TeamCity)
-    #     subprocess.Popen(["..\\Release\\app\\UnitTestsVS2010.exe", "-host",
-    #                   str(HOST), "-port", str(PORT)], cwd="./..")
-    # else:
-    #     subprocess.Popen(["..\\Release\\UnitTestsVS2010.exe", "-host", # run on local PC
-    #                   str(HOST), "-port", str(PORT)], cwd="./..")
+    if os.path.isfile("..\\Release\\app\\UnitTestsVS2010.exe"): # run on build server (TeamCity)
+        subprocess.Popen(["..\\Release\\app\\UnitTestsVS2010.exe", "-host",
+                      str(HOST), "-port", str(PORT)], cwd="./..")
+    else:
+        subprocess.Popen(["..\\Release\\UnitTestsVS2010.exe", "-host", # run on local PC
+                      str(HOST), "-port", str(PORT)], cwd="./..")
 elif sys.platform == "darwin":
     app_path = "/Users/user123/Library/Developer/Xcode/DerivedData/TemplateProjectMacOS-bpogfklmgukhlmbnpxhfcjhfiwfq/Build/Products/Debug/UnitTests.app"
     subprocess.Popen(["open", "-a", app_path, "--args", "-host", str(HOST), "-port", str(PORT)])
