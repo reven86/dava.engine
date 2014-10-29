@@ -33,6 +33,7 @@
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
 #include <cxxabi.h>
+#include <stdlib.h>
 #elif defined(__DAVAENGINE_WIN32__)
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")

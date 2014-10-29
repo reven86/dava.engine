@@ -36,6 +36,10 @@
 
 #include "Platform/Mutex.h"
 
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#include <stdlib.h>
+#endif
+
 namespace DAVA
 {
 class Mutex;
