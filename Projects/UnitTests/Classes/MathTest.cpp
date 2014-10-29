@@ -74,6 +74,8 @@ void MathTest::MatrixTestFunction(PerfFuncData * data)
 		Matrix4::MakeTranslation(Vector3(10.0f, 0.0f, 0.0f)) *
 		Matrix4::MakeRotation(axis, PI_05 * 0.25f) *
 		Matrix4::MakeScale(Vector3(3.0f, 3.0f, 3.0f))) < 0.0001f);
+
+	TEST_VERIFY(false);
 }
 
 float32 MathTest::TestMatrixDecomposition(const Matrix4& mat)
