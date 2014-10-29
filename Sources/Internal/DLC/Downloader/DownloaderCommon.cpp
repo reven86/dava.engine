@@ -106,7 +106,7 @@ bool DownloadPart::SaveDownload(const FilePath &infoFilePath)
     if (NULL != static_cast<File*>(file))
     {
         // we should to write pert data in it's place inside info file
-        uint64 seekPos = sizeof(DownloadInfoHeader) + info.number*sizeof(DownloadPart::StoreData);
+        uint32 seekPos = sizeof(DownloadInfoHeader) + info.number*sizeof(DownloadPart::StoreData);
         file->Seek(seekPos, File::SEEK_FROM_START);
 
         return sizeof(info) == file->Write(&info, sizeof(info));

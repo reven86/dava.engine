@@ -37,8 +37,8 @@ size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 s
     File *destFile = File::Create(storePath, File::OPEN | File::READ | File::WRITE);
     if (destFile)
     {
-        destFile->Seek(seek, File::SEEK_FROM_START);
-        written = destFile->Write(ptr, size);
+        destFile->Seek(static_cast<uint32>(seek), File::SEEK_FROM_START); // only 32 bit seek is supported
+        written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
         notifyProgress(written);
         SafeRelease(destFile);
     }
