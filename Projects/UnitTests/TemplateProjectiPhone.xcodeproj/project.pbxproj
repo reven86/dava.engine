@@ -60,7 +60,6 @@
 		E8903910196D4FCE003126C8 /* ImageSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E890390E196D4FCE003126C8 /* ImageSizeTest.cpp */; };
 		E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */; };
 		E8B6B3CA1705DED5004F665E /* LocalizationTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */; };
-		E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */; };
 		E8C6B12216692E87001EBE09 /* CloneTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8C6B12016692E87001EBE09 /* CloneTest.cpp */; };
 		E8F98C48161AE9B900B50BDA /* PVRTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F98C46161AE9B900B50BDA /* PVRTest.cpp */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
@@ -199,8 +198,6 @@
 		E8983CC018C89733002FB974 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationTest.cpp; sourceTree = "<group>"; };
 		E8B6B3C91705DED5004F665E /* LocalizationTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationTest.h; sourceTree = "<group>"; };
-		E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = eMailTest.cpp; sourceTree = "<group>"; };
-		E8BD1F0716DE4A7800499E18 /* eMailTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eMailTest.h; sourceTree = "<group>"; };
 		E8C6B12016692E87001EBE09 /* CloneTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CloneTest.cpp; sourceTree = "<group>"; };
 		E8C6B12116692E87001EBE09 /* CloneTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CloneTest.h; sourceTree = "<group>"; };
 		E8F98C46161AE9B900B50BDA /* PVRTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTest.cpp; sourceTree = "<group>"; };
@@ -394,8 +391,6 @@
 				E81B47D916F896070025AF23 /* FilePathTest.h */,
 				CC24802416DF6CE000183D40 /* InputTest.cpp */,
 				CC24802516DF6CE000183D40 /* InputTest.h */,
-				E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */,
-				E8BD1F0716DE4A7800499E18 /* eMailTest.h */,
 				84C8F71316D3D16000FAC7DF /* DPITest.cpp */,
 				84C8F71416D3D16000FAC7DF /* DPITest.h */,
 				E81F2AF316BFA4E600C4545E /* MaterialCompilerTest.cpp */,
@@ -601,7 +596,6 @@
 				E81F2AF516BFA4E600C4545E /* MaterialCompilerTest.cpp in Sources */,
 				C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */,
 				84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */,
-				E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */,
 				D7FEF1171982839600B2C7AF /* DLCDownloadTest.cpp in Sources */,
 				E8903910196D4FCE003126C8 /* ImageSizeTest.cpp in Sources */,
 				CC24802616DF6CE000183D40 /* InputTest.cpp in Sources */,
@@ -639,7 +633,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -647,7 +640,6 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/yuricoder/Work/dava.framework/Libs/libs,
@@ -667,13 +659,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/yuricoder/Work/dava.framework/Libs/libs,
@@ -694,6 +684,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Entitlements.plist;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				GCC_OPTIMIZATION_LEVEL = s;
@@ -705,7 +696,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
@@ -720,13 +711,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/yuricoder/Work/dava.framework/Libs/libs,
@@ -747,6 +736,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
@@ -758,7 +748,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
@@ -774,6 +764,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_THUMB_SUPPORT = NO;
@@ -784,7 +775,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
