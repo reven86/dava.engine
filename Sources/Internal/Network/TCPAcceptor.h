@@ -1,3 +1,31 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+ 
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+ 
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+ 
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
 #ifndef __DAVAENGINE_TCPACCEPTOR_H__
 #define __DAVAENGINE_TCPACCEPTOR_H__
 
@@ -6,52 +34,55 @@
 
 #include "TCPAcceptorTemplate.h"
 
-namespace DAVA {
+namespace DAVA
+{
 
 /*
  Class TCPAcceptor - fully functional implementation which can be used in most cases.
  This class provides ability to call user-specified functional object on incoming TCP connection event
  Functional objects prototypes:
-    void ConnectHandlerType (TCPAcceptor* acceptor, int error)
+    void ConnectHandlerType(TCPAcceptor* acceptor, int32 error)
 */
 class TCPAcceptor : public TCPAcceptorTemplate<TCPAcceptor>
 {
-public:
+private:
     typedef TCPAcceptorTemplate<TCPAcceptor> BaseClassType;
-    typedef TCPAcceptor                      ThisClassType;
-
-    typedef DAVA::Function<void (ThisClassType* acceptor)>            CloseHandlerType;
-	typedef DAVA::Function<void (ThisClassType* acceptor, int error)> ConnectHandlerType;
 
 public:
-    explicit TCPAcceptor (IOLoop* ioLoop, bool autoDeleteOnCloseFlag = false);
+    typedef Function<void(TCPAcceptor* acceptor)>              CloseHandlerType;
+	typedef Function<void(TCPAcceptor* acceptor, int32 error)> ConnectHandlerType;
 
-    ~TCPAcceptor () {}
-
-    template <typename Handler>
-    void SetCloseHandler (Handler handler)
-    {
-        closeHandler = handler;
-    }
+public:
+    explicit TCPAcceptor(IOLoop* ioLoop, bool autoDeleteOnCloseFlag = false);
+    ~TCPAcceptor() {}
 
     template <typename Handler>
-    int AsyncListen (Handler handler, int backlog = SOMAXCONN)
-    {
-        DVASSERT (!(handler == 0));
+    void SetCloseHandler(Handler handler);
+    template <typename Handler>
+    int32 AsyncListen(Handler handler, int32 backlog = SOMAXCONN);
 
-        connectHandler = handler;
-        return InternalAsyncListen (backlog);
-    }
-
-    void HandleClose ();
-
-    void HandleConnect (int error);
+    void HandleClose();
+    void HandleConnect(int32 error);
 
 private:
     bool               autoDeleteOnClose;   // TODO: do I really need this flag?
     CloseHandlerType   closeHandler;
     ConnectHandlerType connectHandler;
 };
+
+//////////////////////////////////////////////////////////////////////////
+template <typename Handler>
+void TCPAcceptor::SetCloseHandler(Handler handler)
+{
+    closeHandler = handler;
+}
+
+template <typename Handler>
+int32 TCPAcceptor::AsyncListen(Handler handler, int32 backlog)
+{
+    connectHandler = handler;
+    return InternalAsyncListen(backlog);
+}
 
 }	// namespace DAVA
 

@@ -394,6 +394,7 @@
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\IOLoopFwd.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h" />

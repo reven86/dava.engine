@@ -26,38 +26,15 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UDPSocket.h"
+#ifndef __DAVAENGINE_IOLOOPFWD_H__
+#define __DAVAENGINE_IOLOOPFWD_H__
 
 namespace DAVA
 {
 
-UDPSocket::UDPSocket(IOLoop* ioLoop, bool autoDeleteOnCloseFlag) : BaseClassType(ioLoop)
-                                                                 , autoDeleteOnClose(autoDeleteOnCloseFlag)
-                                                                 , receiveHandler()
-{
+// Forward declaration of IOLoop
+class IOLoop;
 
 }
 
-void UDPSocket::HandleClose()
-{
-    if(closeHandler != 0)
-    {
-        closeHandler(this);
-    }
-    if(autoDeleteOnClose)
-    {
-        delete this;
-    }
-}
-
-void UDPSocket::HandleReceive(int32 error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial)
-{
-    receiveHandler(this, error, nread, buffer->base, endpoint, partial);
-}
-
-void UDPSocket::HandleSend(SendRequest* request, int32 error)
-{
-    request->sendHandler(this, error, request->buffer.base);
-}
-
-}   // namespace DAVA
+#endif  // __DAVAENGINE_IOLOOPFWD_H__
