@@ -35,6 +35,7 @@
     <ClInclude Include="Classes\Infrastructure\GameCore.h" />
     <ClInclude Include="Classes\Infrastructure\TeamCityTestsOutput.h" />
     <ClInclude Include="Classes\Infrastructure\TestTemplate.h" />
+    <ClInclude Include="Classes\Infrastructure\UITestTemplate.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\MathTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
@@ -80,7 +81,6 @@
     <ClInclude Include="Classes\UIListTest.h" />
     <ClInclude Include="Classes\UIMovieTest.h" />
     <ClInclude Include="Classes\UIScrollViewTest.h" />
-    <ClInclude Include="Classes\UITestTemplate.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp" />

@@ -132,7 +132,6 @@
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
-    <ClInclude Include="Classes\UITestTemplate.h" />
     <ClInclude Include="Classes\ParseTextTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
     <ClInclude Include="Classes\DFFontTest.h" />
@@ -220,6 +219,9 @@
       <Filter>Infrastructure</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Infrastructure\TestTemplate.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\UITestTemplate.h">
       <Filter>Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>

@@ -63,5 +63,6 @@ while 1:
     if not data:
         break
     sys.stdout.write(data)
+    sys.stdout.flush() #  want teamcity show output realtime for every test
 
 conn.close()
