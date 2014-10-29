@@ -38,6 +38,9 @@
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
+#include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/TcpSocket.hpp"
+
 namespace DAVA 
 {
 
@@ -45,11 +48,24 @@ namespace DAVA
 class TeamcityTestOutput: public TeamcityOutput
 {
 public:
+	TeamcityTestOutput():connected(false){}
+
     virtual void Output(Logger::eLogLevel ll, const char8* text) const;
 
 	static String FormatTestStarted(const String& testName);
 	static String FormatTestFinished(const String& testName);
 	static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
+
+	void connect(const String& host, unsigned int port);
+	void sendTestResult(const String& testResult) const;
+	void disconnect();
+
+private:
+
+	void TestOutput(const String& data) const;
+
+	mutable sf::TcpSocket socket;
+	mutable bool connected;
 };
 
 

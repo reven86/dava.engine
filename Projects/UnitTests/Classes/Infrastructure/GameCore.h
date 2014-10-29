@@ -88,7 +88,6 @@ protected:
     void RunTests();
     void ProcessTests();
     void FinishTests();
-    void FlushTestResults();
 
 	DAVA::String CreateOutputLogFile();
 	DAVA::String ReadLogFile();

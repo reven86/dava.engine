@@ -58,14 +58,15 @@ void TeamcityTestOutput::Output(Logger::eLogLevel ll, const char8 *text) const
 
 	String output;
 
+
 	if (START_TEST == lines[0])
 	{
 		String testName = lines.at(1);
-		output = "##teamcity[testStarted name=\'" + testName + "\']";
+		output = "##teamcity[testStarted name=\'" + testName + "\']\n";
 	} else if (FINISH_TEST == lines[0])
 	{
 		String testName = lines.at(1);
-		output = "##teamcity[testFinished name=\'" + testName + "\']";
+		output = "##teamcity[testFinished name=\'" + testName + "\']\n";
 	} else if (ERROR_TEST == lines[0])
 	{
 		String testName = lines.at(1);
@@ -73,14 +74,14 @@ void TeamcityTestOutput::Output(Logger::eLogLevel ll, const char8 *text) const
 		String errorFileLine = NormalizeString(lines.at(3).c_str());
 		output = "##teamcity[testFailed name=\'" + testName 
 			+ "\' message=\'" + condition 
-			+ "\' details=\'" + errorFileLine + "\']";
+			+ "\' details=\'" + errorFileLine + "\']\n";
 	} else
 	{
 		TeamcityOutput::Output(ll, text);
 		return;
 	}
 
-	PlatformOutput(output);
+	TestOutput(output);
 }
 
 String TeamcityTestOutput::FormatTestStarted(const String& testName)
@@ -96,6 +97,47 @@ String TeamcityTestOutput::FormatTestFinished(const String& testName)
 String TeamcityTestOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)
 {
 	return ERROR_TEST + "\n" + testName + "\n" + condition + "\n" + errMsg;
+}
+
+void TeamcityTestOutput::connect(const String& host, unsigned int port)
+{
+	sf::Socket::Status status = socket.connect(host, port, sf::seconds(0.2f));
+	if (status != sf::Socket::Done)
+	{
+		DAVA::Logger::Error("can't connect to server: %s:%hu", host.c_str(), port);
+	} else
+	{
+		connected = true;
+	}
+}
+
+void TeamcityTestOutput::sendTestResult(const String& testResult) const
+{
+	if (connected)
+	{
+		if (socket.send(testResult.c_str(), testResult.size()) != sf::Socket::Done)
+		{
+			connected = false; // prevent recursion
+			DAVA::Logger::Error("can't send data to server\n");
+			socket.disconnect();
+		}
+	}
+}
+
+void TeamcityTestOutput::disconnect()
+{
+	if (connected)
+	{
+		socket.disconnect();
+		connected = false;
+	}
+}
+
+void TeamcityTestOutput::TestOutput(const String& data) const
+{
+	sendTestResult(data);
+
+	TeamcityOutput::PlatformOutput(data);
 }
 
 }; // end of namespace DAVA

@@ -75,9 +75,6 @@
 #include "FunctionBindSingalTest.h"
 #include "MathTest.h"
 
-#include "SFML/Network/IpAddress.hpp"
-#include "SFML/Network/TcpSocket.hpp"
-
 #include <fstream>
 
 using namespace DAVA;
@@ -92,6 +89,23 @@ GameCore::~GameCore()
 {
 }
 
+String GetCommandLineValue(const Vector<String>& cmdLine, const char* key, const String& defaultVal)
+{
+	// format cmdLine: -host 10.128.109.24 -port 50007
+	for (size_t i = 0; i < cmdLine.size(); ++i)
+	{
+		if (key == cmdLine[i])
+		{
+			size_t valueIndex = i + 1;
+			if (valueIndex < cmdLine.size())
+			{
+				return cmdLine[valueIndex];
+			}
+		}
+	}
+	return defaultVal;
+}
+
 void GameCore::OnAppStarted()
 {
 	// redirect std::cout to log file for TeamCityOutput work for us
@@ -103,6 +117,13 @@ void GameCore::OnAppStarted()
 
 		DVASSERT(logFile.good());
 		std::cout.rdbuf(logFile.rdbuf());
+
+		const Vector<String>& cmdLine = Core::Instance()->GetCommandLine();
+		String host = GetCommandLineValue(cmdLine, "-host", "");
+		String portStr = GetCommandLineValue(cmdLine, "-port", "50007");
+		unsigned short port = static_cast<unsigned short>(atoi(portStr.c_str()));
+
+		teamCityOutput.connect(host, port);
 
 		DAVA::Logger::Instance()->AddCustomOutput(&teamCityOutput);
 	}
@@ -198,6 +219,7 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::OnAppFinished()
 {
+	teamCityOutput.disconnect();
 	DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
 	int32 screensSize = screens.size();
@@ -293,7 +315,6 @@ void GameCore::RunTests()
 
 void GameCore::FinishTests()
 {
-    FlushTestResults();
     Core::Instance()->Quit();
 }
 
@@ -346,52 +367,6 @@ void GameCore::ProcessTests()
     }
 }
 
-String GetCommandLineValue(const Vector<String>& cmdLine, const char* key, const String& defaultVal)
-{
-	// format cmdLine: -host 10.128.109.24 -port 50007
-	for (size_t i = 0; i < cmdLine.size(); ++i)
-	{
-		if (key == cmdLine[i])
-		{
-			size_t valueIndex = i + 1;
-			if (valueIndex < cmdLine.size())
-			{
-				return cmdLine[valueIndex];
-			}
-		}
-	}
-	return defaultVal;
-}
-
-
-void GameCore::FlushTestResults()
-{
-	String reportContent = ReadLogFile();
-
-	const Vector<String>& cmdLine = DAVA::Core::Instance()->GetCommandLine();
-	String host = GetCommandLineValue(cmdLine, "-host", "");
-	String portStr = GetCommandLineValue(cmdLine, "-port", "50007");
-	unsigned short port = static_cast<unsigned short>(atoi(portStr.c_str()));
-
-	if (!host.empty())
-	{
-		sf::TcpSocket socket;
-		sf::Socket::Status status = socket.connect(host, port);
-		if (status != sf::Socket::Done)
-		{
-			DAVA::Logger::Error("can't connect to server: %s:%hu", host.c_str(), port);
-			return;
-		}
-
-		if (socket.send(reportContent.c_str(), reportContent.size()) != sf::Socket::Done)
-		{
-			DAVA::Logger::Error("can't send data to server\n");
-		}
-		socket.disconnect();
-	}
-}
-
-
 void GameCore::RegisterError(const String &command, const String &fileName, int32 line, TestData *testData)
 {
 	const char* testName = currentScreen->GetTestName().c_str();
@@ -403,27 +378,15 @@ void GameCore::RegisterError(const String &command, const String &fileName, int3
 	{
 		if(!testData->name.empty())
 		{
-			errorString += String(Format(", test: %s", testData->name.c_str())); // test function name
+			errorString += String(Format(" %s", testData->name.c_str())); // test function name
 		}
 
 		if(!testData->message.empty())
 		{
-			errorString += String(Format(", message: %s", testData->message.c_str()));
+			errorString += String(Format(" %s", testData->message.c_str()));
 		}
 	}
     LogMessage(TeamcityTestOutput::FormatTestFailed(testName, command, errorString));
-}
-
-DAVA::String GameCore::ReadLogFile()
-{
-	String logContent;
-	{
-		File *retFile = File::Create(logFilePath, File::OPEN | File::READ);
-		retFile->ReadString(logContent); // ReadString - not cool func -> rewrite
-		SafeRelease(retFile);
-	}
-
-	return logContent;
 }
 
 DAVA::String GameCore::CreateOutputLogFile()
