@@ -384,10 +384,23 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/Tools,
+					./../../Sources/External,
+					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
+					./../../Libs/include,
+				);
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+				);
+				OTHER_LDFLAGS = (
+					"-lMagickCore-6.Q16",
+					"-lMagick++-6.Q16",
+					"-lMagickWand-6.Q16",
 				);
 				PRODUCT_NAME = ResourcePacker;
 			};
@@ -399,10 +412,23 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/Tools,
+					./../../Sources/External,
+					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
+					./../../Libs/include,
+				);
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+				);
+				OTHER_LDFLAGS = (
+					"-lMagickCore-6.Q16",
+					"-lMagick++-6.Q16",
+					"-lMagickWand-6.Q16",
 				);
 				PRODUCT_NAME = ResourcePacker;
 			};
@@ -425,13 +451,13 @@
 					./../../Sources/Internal,
 					./../../Sources/Tools,
 					./../../Sources/External,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
 					./../../Libs/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
+					"./../../Libs/ImageMagick-6.8.9-Mac/lib/",
+					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -465,13 +491,13 @@
 					./../../Sources/Internal,
 					./../../Sources/Tools,
 					./../../Sources/External,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
 					./../../Libs/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
+					"./../../Libs/ImageMagick-6.8.9-Mac/lib/",
+					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;

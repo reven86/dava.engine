@@ -430,9 +430,9 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
+					"./../../Libs/ImageMagick-6.8.9-Mac/",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/opt/local/lib,
@@ -476,9 +476,9 @@
 					./../../Libs/include,
 					./../../Libs/lua/include,
 					./../../Sources/Tools,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
+					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
+					"./../../Libs/ImageMagick-6.8.9-Mac/",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/opt/local/lib,

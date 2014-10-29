@@ -575,7 +575,7 @@ void StaticOcclusionSystem::RegisterComponent(Entity *entity, Component * compon
     }
 }
     
-void StaticOcclusionSystem::UnregisterEntity(Entity *entity, Component * component)
+void StaticOcclusionSystem::UnregisterComponent(Entity *entity, Component * component)
 {
     if (component->GetType() == Component::RENDER_COMPONENT)
     {

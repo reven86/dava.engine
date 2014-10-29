@@ -48,7 +48,7 @@ namespace DAVA
     
 RenderBatch::RenderBatch()
     :   renderLayerIDsBitmaskFromMaterial(0)
-    ,   sortingKey(0xF8)
+    ,   sortingKey(SORTING_KEY_DEF_VALUE)
     ,   dataSource(0)
     ,   renderDataObject(0)
     ,   material(0)
@@ -184,13 +184,13 @@ const AABBox3 & RenderBatch::GetBoundingBox() const
 void RenderBatch::SetSortingKey(uint32 _key)
 {
     DVASSERT(_key<16);
-    sortingKey = (sortingKey&~0x0f)+_key;
+    sortingKey = (sortingKey&~SORTING_KEY_MASK)+_key;
 }
 
 void RenderBatch::SetSortingOffset(uint32 offset)
 {
     DVASSERT(offset<32);    
-    sortingKey=(sortingKey&~0x1F0)+(offset<<4);
+    sortingKey=(sortingKey&~SORTING_OFFSET_MASK)+(offset<<SORTING_OFFSET_SHIFT);
 }
 
 
@@ -287,7 +287,7 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
 		indexCount = archive->GetUInt32("rb.indexCount", indexCount);
 		startIndex = archive->GetUInt32("rb.startIndex", startIndex);
 		aabbox = archive->GetVariant("rb.aabbox")->AsAABBox3();
-        sortingKey = archive->GetUInt32("rb.sortingKey", 0xF8);
+        sortingKey = archive->GetUInt32("rb.sortingKey", SORTING_KEY_DEF_VALUE);
 		PolygonGroup *pg = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(archive->GetVariant("rb.datasource")->AsUInt64()));
 		
 		NMaterial * newMaterial = NULL;

@@ -180,10 +180,6 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
         MaterialItem *lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
         MaterialItem *rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
 
-        const QString lhsText = QString(mLeft->GetMaterialName().c_str());
-        const QString rhsText = QString(mRight->GetMaterialName().c_str());
-
-        const int textComp = lhsItem->text().compare( rhsItem->text(), Qt::CaseInsensitive );
         const int lodComp = lhsItem->GetLodIndex() - rhsItem->GetLodIndex();
         const int switchComp = lhsItem->GetSwitchIndex() - rhsItem->GetSwitchIndex();
         int compAll = 0;
@@ -191,7 +187,7 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
         switch ( sortColumn() )
         {
         case 0:
-            compAll = textComp;
+            compAll = compareNames(mLeft, mRight);
             break;
         case 1:
             compAll = lodComp;
@@ -204,8 +200,9 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
         }
 
         // If sorting column data is equal then sort by text
-        if ( compAll == 0 )
+        if ( compAll == 0 && sortColumn() == 2 )
         {
+            const int textComp = compareNames(mLeft, mRight);
             compAll = (sortOrder() == Qt::AscendingOrder) ? textComp : -textComp;   // Always sort text in ascending order
         }
 
@@ -225,4 +222,12 @@ bool MaterialFilteringModel::dropMimeData(QMimeData const* data, Qt::DropAction 
         invalidate();
 
     return ret;
+}
+
+int MaterialFilteringModel::compareNames(DAVA::NMaterial* left, DAVA::NMaterial* right) const
+{
+    const QString lhsText = QString(left->GetMaterialName().c_str());
+    const QString rhsText = QString(right->GetMaterialName().c_str());
+    const int textComp = lhsText.compare( rhsText, Qt::CaseInsensitive );
+    return textComp;
 }
