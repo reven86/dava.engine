@@ -27,32 +27,29 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_TEAMCITY_OUTPUT_H__
-#define __DAVAENGINE_TEAMCITY_OUTPUT_H__
+#ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
+#define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
 /**
-    \defgroup utils Utilities
+	\defgroup utils Utilities
  */
 
-#include "FileSystem/Logger.h"
+#include "TeamcityOutput/TeamcityOutput.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
 namespace DAVA 
 {
-    
-class TeamcityOutput: public LoggerOutput
+
+   
+class TeamcityTestOutput: public TeamcityOutput
 {
 public:
-
     virtual void Output(Logger::eLogLevel ll, const char8* text) const;
-    virtual void Output(Logger::eLogLevel ll, const char16* text) const;
-    
-protected:
-    
-    void PlatformOutput(const String & text) const;
-    
-    String NormalizeString(const char8 *text) const;
+
+	static String FormatTestStarted(const String& testName);
+	static String FormatTestFinished(const String& testName);
+	static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
 };
 
 
@@ -61,5 +58,5 @@ protected:
 
 #endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
-#endif // __DAVAENGINE_TEAMCITY_OUTPUT_H__
+#endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 

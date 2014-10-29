@@ -1,10 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Classes\BaseScreen.cpp" />
     <ClCompile Include="Classes\EntityTest.cpp" />
-    <ClCompile Include="Classes\FrameworkMain.cpp" />
-    <ClCompile Include="Classes\GameCore.cpp" />
     <ClCompile Include="Classes\HashMapTest.cpp" />
     <ClCompile Include="Classes\KeyedArchiveTest.cpp" />
     <ClCompile Include="Classes\KeyedArchiveYamlTest.cpp" />
@@ -14,7 +11,6 @@
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
     <ClCompile Include="Classes\TextureUtils.cpp" />
-    <ClCompile Include="Win32Specific\main.cpp" />
     <ClCompile Include="Classes\CloneTest.cpp" />
     <ClCompile Include="Classes\DXTTest.cpp" />
     <ClCompile Include="Classes\MaterialCompilerTest.cpp" />
@@ -84,13 +80,24 @@
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp">
       <Filter>TeamCityOutput</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\BaseScreen.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\FrameworkMain.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\GameCore.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\TeamCityTestsOutput.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32Specific\main.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Classes\BaseScreen.h" />
-    <ClInclude Include="Classes\Config.h" />
     <ClInclude Include="Classes\EntityTest.h" />
-    <ClInclude Include="Classes\FrameworkMain.h" />
-    <ClInclude Include="Classes\GameCore.h" />
     <ClInclude Include="Classes\HashMapTest.h" />
     <ClInclude Include="Classes\KeyedArchiveTest.h" />
     <ClInclude Include="Classes\KeyedArchiveYamlTest.h" />
@@ -99,7 +106,6 @@
     <ClInclude Include="Classes\SampleTest.h" />
     <ClInclude Include="Classes\SoundTest.h" />
     <ClInclude Include="Classes\SplitTest.h" />
-    <ClInclude Include="Classes\TestTemplate.h" />
     <ClInclude Include="Classes\TextureUtils.h" />
     <ClInclude Include="Classes\CloneTest.h" />
     <ClInclude Include="Classes\DXTTest.h" />
@@ -198,6 +204,24 @@
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h">
       <Filter>TeamCityOutput</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\BaseScreen.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\Config.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\FrameworkMain.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\GameCore.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\TeamCityTestsOutput.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\TestTemplate.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="SFML">
@@ -214,6 +238,9 @@
     </Filter>
     <Filter Include="TeamCityOutput">
       <UniqueIdentifier>{d7622bab-ff09-4ed1-8991-42e786aa7797}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Infrastructure">
+      <UniqueIdentifier>{c55c0af8-77fb-4293-a9f6-936995a69a69}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

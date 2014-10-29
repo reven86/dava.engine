@@ -104,7 +104,6 @@ void GameCore::OnAppStarted()
 		DVASSERT(logFile.good());
 		std::cout.rdbuf(logFile.rdbuf());
 
-		teamCityOutput.SetOutputMode(DAVA::TeamcityOutput::TESTS_MODE);
 		DAVA::Logger::Instance()->AddCustomOutput(&teamCityOutput);
 	}
 
@@ -280,7 +279,7 @@ void GameCore::RunTests()
     
     if(currentScreen)
     {
-		Logger::Info((TeamcityOutput::START_TEST + currentScreen->GetTestName()).c_str());
+		Logger::Info(TeamcityTestOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
 
         UIScreenManager::Instance()->SetFirst(currentScreen->GetScreenId());
     }
@@ -328,17 +327,17 @@ void GameCore::ProcessTests()
                 ++currentScreenIndex;
                 if(currentScreenIndex == screens.size())
                 {
-					Logger::Info((TeamcityOutput::FINISH_TEST + currentScreen->GetTestName()).c_str());
+					Logger::Info(TeamcityTestOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
                     FinishTests();
                 }
                 else 
                 {
-					Logger::Info((TeamcityOutput::FINISH_TEST + currentScreen->GetTestName()).c_str());
+					Logger::Info(TeamcityTestOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
 
                     currentScreen = screens[currentScreenIndex];
                     currentTestIndex = 0;
 
-					Logger::Info((TeamcityOutput::START_TEST + currentScreen->GetTestName()).c_str());
+					Logger::Info(TeamcityTestOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
 
                     UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
                 }
@@ -397,8 +396,8 @@ void GameCore::RegisterError(const String &command, const String &fileName, int3
 {
 	const char* testName = currentScreen->GetTestName().c_str();
 
-	String errorString = String(Format("%s%s command: %s at file: %s at line: %d",
-		TeamcityOutput::TEST_ERROR, testName, command.c_str(), fileName.c_str(), line));
+	String errorString = String(Format("%s(%d): ",
+		fileName.c_str(), line));
 
 	if (testData)
 	{
@@ -412,7 +411,7 @@ void GameCore::RegisterError(const String &command, const String &fileName, int3
 			errorString += String(Format(", message: %s", testData->message.c_str()));
 		}
 	}
-    LogMessage(errorString);
+    LogMessage(TeamcityTestOutput::FormatTestFailed(testName, command, errorString));
 }
 
 DAVA::String GameCore::ReadLogFile()

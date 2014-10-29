@@ -13,10 +13,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h" />
     <ClInclude Include="Classes\AlignTest.h" />
-    <ClInclude Include="Classes\BaseScreen.h" />
     <ClInclude Include="Classes\CloneTest.h" />
     <ClInclude Include="Classes\ComponentsTest.h" />
-    <ClInclude Include="Classes\Config.h" />
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\DeviceInfoTest.h" />
     <ClInclude Include="Classes\DFFontTest.h" />
@@ -31,6 +29,12 @@
     <ClInclude Include="Classes\FormatsTest.h" />
     <ClInclude Include="Classes\FunctionBindSingalTest.h" />
     <ClInclude Include="Classes\ImageSizeTest.h" />
+    <ClInclude Include="Classes\Infrastructure\BaseScreen.h" />
+    <ClInclude Include="Classes\Infrastructure\Config.h" />
+    <ClInclude Include="Classes\Infrastructure\FrameworkMain.h" />
+    <ClInclude Include="Classes\Infrastructure\GameCore.h" />
+    <ClInclude Include="Classes\Infrastructure\TeamCityTestsOutput.h" />
+    <ClInclude Include="Classes\Infrastructure\TestTemplate.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\MathTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
@@ -58,8 +62,6 @@
     <ClInclude Include="Classes\SFML\System\Time.hpp" />
     <ClInclude Include="Classes\SFML\System\Utf.hpp" />
     <ClInclude Include="Classes\StringFormatTest.h" />
-    <ClInclude Include="Classes\FrameworkMain.h" />
-    <ClInclude Include="Classes\GameCore.h" />
     <ClInclude Include="Classes\HashMapTest.h" />
     <ClInclude Include="Classes\InputTest.h" />
     <ClInclude Include="Classes\KeyedArchiveTest.h" />
@@ -72,7 +74,6 @@
     <ClInclude Include="Classes\SampleTest.h" />
     <ClInclude Include="Classes\SoundTest.h" />
     <ClInclude Include="Classes\SplitTest.h" />
-    <ClInclude Include="Classes\TestTemplate.h" />
     <ClInclude Include="Classes\TextureUtils.h" />
     <ClInclude Include="Classes\ThreadSyncTest.h" />
     <ClInclude Include="Classes\TransparentWebViewTest.h" />
@@ -84,7 +85,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp" />
     <ClCompile Include="Classes\AlignTest.cpp" />
-    <ClCompile Include="Classes\BaseScreen.cpp" />
     <ClCompile Include="Classes\CloneTest.cpp" />
     <ClCompile Include="Classes\ComponentsTest.cpp" />
     <ClCompile Include="Classes\DateTimeTest.cpp" />
@@ -101,6 +101,10 @@
     <ClCompile Include="Classes\FormatsTest.cpp" />
     <ClCompile Include="Classes\FunctionBindSingalTest.cpp" />
     <ClCompile Include="Classes\ImageSizeTest.cpp" />
+    <ClCompile Include="Classes\Infrastructure\BaseScreen.cpp" />
+    <ClCompile Include="Classes\Infrastructure\FrameworkMain.cpp" />
+    <ClCompile Include="Classes\Infrastructure\GameCore.cpp" />
+    <ClCompile Include="Classes\Infrastructure\TeamCityTestsOutput.cpp" />
     <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\MathTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
@@ -119,8 +123,6 @@
     <ClCompile Include="Classes\SFML\System\String.cpp" />
     <ClCompile Include="Classes\SFML\System\Time.cpp" />
     <ClCompile Include="Classes\StringFormatTest.cpp" />
-    <ClCompile Include="Classes\FrameworkMain.cpp" />
-    <ClCompile Include="Classes\GameCore.cpp" />
     <ClCompile Include="Classes\HashMapTest.cpp" />
     <ClCompile Include="Classes\InputTest.cpp" />
     <ClCompile Include="Classes\KeyedArchiveTest.cpp" />
@@ -195,7 +197,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./Classes;./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Classes/Infrastructure;./Classes;./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;DAVA_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -219,7 +221,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./Classes;./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Classes/Infrastructure;./Classes;./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>

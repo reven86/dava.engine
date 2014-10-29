@@ -27,39 +27,78 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_TEAMCITY_OUTPUT_H__
-#define __DAVAENGINE_TEAMCITY_OUTPUT_H__
 
-/**
-    \defgroup utils Utilities
- */
+#include "TeamcityTestsOutput.h"
 
-#include "FileSystem/Logger.h"
+#include <sstream>
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
-namespace DAVA 
+
+namespace DAVA
 {
-    
-class TeamcityOutput: public LoggerOutput
+
+	namespace 
+	{
+		const String START_TEST = "start test ";
+		const String FINISH_TEST = "finish test ";
+		const String ERROR_TEST = "test error ";
+		const String AT_FILE_TEST = " at file: ";
+	}
+
+void TeamcityTestOutput::Output(Logger::eLogLevel ll, const char8 *text) const
 {
-public:
+	std::stringstream ss(text);
 
-    virtual void Output(Logger::eLogLevel ll, const char8* text) const;
-    virtual void Output(Logger::eLogLevel ll, const char16* text) const;
-    
-protected:
-    
-    void PlatformOutput(const String & text) const;
-    
-    String NormalizeString(const char8 *text) const;
-};
+	Vector<String> lines;
+	String line;
+	while (std::getline(ss, line, '\n')) {
+		lines.push_back(line);
+	}
 
+	String output;
 
-};
+	if (START_TEST == lines[0])
+	{
+		String testName = lines.at(1);
+		output = "##teamcity[testStarted name=\'" + testName + "\']";
+	} else if (FINISH_TEST == lines[0])
+	{
+		String testName = lines.at(1);
+		output = "##teamcity[testFinished name=\'" + testName + "\']";
+	} else if (ERROR_TEST == lines[0])
+	{
+		String testName = lines.at(1);
+		String condition = NormalizeString(lines.at(2).c_str());
+		String errorFileLine = NormalizeString(lines.at(3).c_str());
+		output = "##teamcity[testFailed name=\'" + testName 
+			+ "\' message=\'" + condition 
+			+ "\' details=\'" + errorFileLine + "\']";
+	} else
+	{
+		TeamcityOutput::Output(ll, text);
+		return;
+	}
 
+	PlatformOutput(output);
+}
+
+String TeamcityTestOutput::FormatTestStarted(const String& testName)
+{
+	return START_TEST + "\n" + testName;
+}
+
+String TeamcityTestOutput::FormatTestFinished(const String& testName)
+{
+	return FINISH_TEST + "\n" + testName;
+}
+
+String TeamcityTestOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)
+{
+	return ERROR_TEST + "\n" + testName + "\n" + condition + "\n" + errMsg;
+}
+
+}; // end of namespace DAVA
 
 #endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
-#endif // __DAVAENGINE_TEAMCITY_OUTPUT_H__
 

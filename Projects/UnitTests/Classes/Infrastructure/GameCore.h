@@ -31,7 +31,7 @@
 #define __GAMECORE_H__
 
 #include "DAVAEngine.h"
-#include "TeamcityOutput/TeamcityOutput.h"
+#include "TeamCityTestsOutput.h"
 
 #include <fstream>
 
@@ -110,7 +110,7 @@ protected:
     
     int32 currentTestIndex;
 
-	TeamcityOutput teamCityOutput;
+	TeamcityTestOutput teamCityOutput;
 };
 
 
