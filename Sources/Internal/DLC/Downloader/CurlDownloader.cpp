@@ -71,7 +71,7 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     uint64 seekPos = thisPart->info.seekPos + thisPart->info.progress;
     uint64 dataLeft = thisPart->info.size - thisPart->info.progress;
     size_t dataSizeCame = size*nmemb;
-    size_t dataSizeToWrite = 0;
+    uint64 dataSizeToWrite = 0;
     
     if (dataLeft < dataSizeCame)
     {

@@ -733,20 +733,22 @@ bool FileSystem::CreateZeroFilledFile(const FilePath &path, const uint64 size)
     }
     
     // fill created file by NULL values.
-    const uint32 blockSize = Min<uint32>(4096, size);
-    char8 nullValue[blockSize];
-    Memset(nullValue, 0, blockSize);
+    const uint64 blockSize = Min<uint64>(4096, size);
+    char8 *nullValue = new char8[static_cast<uint32>(blockSize)];
+
+    Memset(nullValue, 0, static_cast<uint32>(blockSize));
     
-    uint32 written = 0;
+    uint64 written = 0;
     do
     {
-        const uint32 blockSizeToWrite = Min<uint32>(blockSize, size - written);
+        const uint64 blockSizeToWrite = Min<uint64>(blockSize, size - written);
 
-        const uint64 writtenNow = file->Write(nullValue, blockSizeToWrite);
+        const uint64 writtenNow = file->Write(nullValue, static_cast<int32>(blockSizeToWrite));
         if (blockSizeToWrite != writtenNow)
         {
             FileSystem::Instance()->DeleteFile(path);
             Logger::Error("[FileSystem::CreateZeroFilledFile] Cannot write to file.");
+            delete [] nullValue;
             return false;
         }
         
@@ -754,6 +756,7 @@ bool FileSystem::CreateZeroFilledFile(const FilePath &path, const uint64 size)
 
     }while (written < size);
 
+    delete [] nullValue;
     return true;
 }
 
