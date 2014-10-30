@@ -26,7 +26,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private static int errorState = 0;
 
 	private JNIAccelerometer accelerometer = null;
-	public JNIGLSurfaceView glView = null;
+	protected JNIGLSurfaceView glView = null;
 	private View splashView = null;
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
