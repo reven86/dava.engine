@@ -143,12 +143,12 @@ void AutotestingSystem::FetchParametersFromIdTxt()
 		ForceQuit("Couldn't open file " + file.GetAbsolutePathname());
 	}
 
-	buildId = option->GetString("buildId");
-	buildDate = option->GetString("date");
-	branch = option->GetString("branch");
-	framework = option->GetString("framework");
-	branchRev = option->GetString("branchRev");
-	frameworkRev = option->GetString("frameworkRev");
+	buildId = option->GetString("BuildId");
+	buildDate = option->GetString("Date");
+	branch = option->GetString("Branch");
+	framework = option->GetString("Framework");
+	branchRev = option->GetString("BranchRev");
+	frameworkRev = option->GetString("FrameworkRev");
 
 	SafeRelease(option);
 }

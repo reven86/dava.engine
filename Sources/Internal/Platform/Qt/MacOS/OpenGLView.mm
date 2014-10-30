@@ -44,7 +44,7 @@
 		
         // Attributes Common to FullScreen and non-FullScreen
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, [self displayBitsPerPixel:kCGDirectMainDisplay],//24,
+        NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]),//24,
 #else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
         NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay),//24,
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
@@ -371,7 +371,7 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
     NSRect sz = [self frame];
     NSEvent *theEvent = [NSEvent mouseEventWithType:NSMouseMoved
                         location:NSMakePoint(x, sz.size.height - y)
-                        modifierFlags:0 timestamp:nil windowNumber:0 context:nil eventNumber:0 clickCount:1 pressure:0];
+                        modifierFlags:0 timestamp:0 windowNumber:0 context:nil eventNumber:0 clickCount:1 pressure:0];
 
 	[self process:DAVA::UIEvent::PHASE_MOVE touch:theEvent];
     

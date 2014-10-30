@@ -90,6 +90,7 @@ Core::Core()
 {
 	globalFrameIndex = 1;
 	isActive = false;
+    isAutotesting = false;
 	firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
@@ -633,6 +634,7 @@ void Core::SystemAppStarted()
     if (file.Exists())
     {
         AutotestingSystem::Instance()->OnAppStarted();
+        isAutotesting = true;
     }
     else
     {

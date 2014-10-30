@@ -194,6 +194,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
+        
+        JNIUtils.onResume();
     }
 
     

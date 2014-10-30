@@ -2089,6 +2089,25 @@ void QtMainWindow::OnBeastAndSave()
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
 
+	if(scene->GetEnabledTools())
+	{
+		if(QMessageBox::Yes == QMessageBox::question(this, "Starting Beast", "Disable landscape editor and start beasting?", (QMessageBox::Yes | QMessageBox::No), QMessageBox::No))
+		{
+			scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+			bool success = !scene->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+			if (!success )
+			{
+				ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+				return;
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
+
     if (!scene->IsLoaded() || scene->IsChanged())
     {
         if (!SaveScene(scene))

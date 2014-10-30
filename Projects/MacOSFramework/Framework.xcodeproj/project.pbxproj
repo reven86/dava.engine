@@ -260,14 +260,6 @@
 		176DE968174B5561007A983B /* Sphere.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BAF16BD24E400732C04 /* Sphere.h */; };
 		176DE969174B5561007A983B /* Spline.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB116BD24E400732C04 /* Spline.h */; };
 		176DE96A174B5561007A983B /* Vector.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB216BD24E400732C04 /* Vector.h */; };
-		176DE96B174B5561007A983B /* BaseNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB416BD24E400732C04 /* BaseNetworkConnection.h */; };
-		176DE96C174B5561007A983B /* BTNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB616BD24E400732C04 /* BTNetworkConnection.h */; };
-		176DE96D174B5561007A983B /* NetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB916BD24E400732C04 /* NetworkConnection.h */; };
-		176DE96E174B5561007A983B /* NetworkConnectionIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBA16BD24E400732C04 /* NetworkConnectionIPhone.h */; };
-		176DE96F174B5561007A983B /* NetworkDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBD16BD24E400732C04 /* NetworkDelegate.h */; };
-		176DE970174B5561007A983B /* NetworkPacket.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBF16BD24E400732C04 /* NetworkPacket.h */; };
-		176DE971174B5561007A983B /* TCPServer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC016BD24E400732C04 /* TCPServer.h */; };
-		176DE972174B5561007A983B /* WFNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC216BD24E400732C04 /* WFNetworkConnection.h */; };
 		176DE973174B5561007A983B /* Particle.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC616BD24E400732C04 /* Particle.h */; };
 		176DE974174B5561007A983B /* ParticleEmitter.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC816BD24E400732C04 /* ParticleEmitter.h */; };
 		176DE977174B5561007A983B /* ParticleLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BCE16BD24E400732C04 /* ParticleLayer.h */; };
@@ -418,7 +410,6 @@
 		176DEA16174B5561007A983B /* IWebViewControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F53E2116D36DDE004D5099 /* IWebViewControl.h */; };
 		176DEA17174B5561007A983B /* DVAssertMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B17516D3747E00E09BAF /* DVAssertMessage.h */; };
 		176DEA18174B5561007A983B /* WebViewControlMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B17A16D3755000E09BAF /* WebViewControlMacOS.h */; };
-		176DEA19174B5561007A983B /* MailSender.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B1B516D4FF6A00E09BAF /* MailSender.h */; };
 		176DEA1A174B5561007A983B /* UserComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24800716DD174E00183D40 /* UserComponent.h */; };
 		176DEA1B174B5561007A983B /* UISpinner.h in Headers */ = {isa = PBXBuildFile; fileRef = E9EA496B16DF93FA00C44B6F /* UISpinner.h */; };
 		176DEA1C174B5561007A983B /* VectorSpinnerAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24804116E0DF2800183D40 /* VectorSpinnerAdapter.h */; };
@@ -524,14 +515,6 @@
 		176DEA8B174B5561007A983B /* Polygon3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BA816BD24E400732C04 /* Polygon3.cpp */; };
 		176DEA8C174B5561007A983B /* RectPacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BAD16BD24E400732C04 /* RectPacker.cpp */; };
 		176DEA8D174B5561007A983B /* Spline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB016BD24E400732C04 /* Spline.cpp */; };
-		176DEA8E174B5561007A983B /* BaseNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB516BD24E400732C04 /* BaseNetworkConnection.mm */; };
-		176DEA8F174B5561007A983B /* BTNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB716BD24E400732C04 /* BTNetworkConnection.mm */; };
-		176DEA90174B5561007A983B /* NetworkConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB816BD24E400732C04 /* NetworkConnection.cpp */; };
-		176DEA91174B5561007A983B /* NetworkConnectionIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBB16BD24E400732C04 /* NetworkConnectionIPhone.mm */; };
-		176DEA92174B5561007A983B /* NetworkDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBC16BD24E400732C04 /* NetworkDelegate.cpp */; };
-		176DEA93174B5561007A983B /* NetworkPacket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBE16BD24E400732C04 /* NetworkPacket.cpp */; };
-		176DEA94174B5561007A983B /* TCPServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC116BD24E400732C04 /* TCPServer.mm */; };
-		176DEA95174B5561007A983B /* WFNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC316BD24E400732C04 /* WFNetworkConnection.mm */; };
 		176DEA96174B5561007A983B /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC516BD24E400732C04 /* Particle.cpp */; };
 		176DEA97174B5561007A983B /* ParticleEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC716BD24E400732C04 /* ParticleEmitter.cpp */; };
 		176DEA9A174B5561007A983B /* ParticleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BCD16BD24E400732C04 /* ParticleLayer.cpp */; };
@@ -675,8 +658,6 @@
 		176DEB32174B5561007A983B /* DVAssertMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */; };
 		176DEB33174B5561007A983B /* DVAssertMessageApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */; };
 		176DEB34174B5561007A983B /* WebViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17B16D3755000E09BAF /* WebViewControlMacOS.mm */; };
-		176DEB35174B5561007A983B /* MailSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1B416D4FF6A00E09BAF /* MailSender.cpp */; };
-		176DEB36174B5561007A983B /* MailSenderMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B1B616D4FF6A00E09BAF /* MailSenderMacOS.mm */; };
 		176DEB37174B5561007A983B /* UserComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24800616DD174E00183D40 /* UserComponent.cpp */; };
 		176DEB38174B5561007A983B /* UISpinner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9EA496A16DF93FA00C44B6F /* UISpinner.cpp */; };
 		176DEB39174B5561007A983B /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
@@ -1173,9 +1154,6 @@
 		C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */; };
 		C151B17C16D3755000E09BAF /* WebViewControlMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B17A16D3755000E09BAF /* WebViewControlMacOS.h */; };
 		C151B17D16D3755000E09BAF /* WebViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17B16D3755000E09BAF /* WebViewControlMacOS.mm */; };
-		C151B1B716D4FF6A00E09BAF /* MailSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1B416D4FF6A00E09BAF /* MailSender.cpp */; };
-		C151B1B816D4FF6A00E09BAF /* MailSender.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B1B516D4FF6A00E09BAF /* MailSender.h */; };
-		C151B1B916D4FF6A00E09BAF /* MailSenderMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B1B616D4FF6A00E09BAF /* MailSenderMacOS.mm */; };
 		C172EC0A18C9F1E9004309CF /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0018C9F1E9004309CF /* DFFont.cpp */; };
 		C172EC0B18C9F1E9004309CF /* DFFont.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC0118C9F1E9004309CF /* DFFont.h */; };
 		C172EC0C18C9F1E9004309CF /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0218C9F1E9004309CF /* TextBlockDistanceRender.cpp */; };
@@ -1587,22 +1565,6 @@
 		E8989E7E16BD24E500732C04 /* Spline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB016BD24E400732C04 /* Spline.cpp */; };
 		E8989E7F16BD24E500732C04 /* Spline.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB116BD24E400732C04 /* Spline.h */; };
 		E8989E8016BD24E500732C04 /* Vector.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB216BD24E400732C04 /* Vector.h */; };
-		E8989E8116BD24E500732C04 /* BaseNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB416BD24E400732C04 /* BaseNetworkConnection.h */; };
-		E8989E8216BD24E500732C04 /* BaseNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB516BD24E400732C04 /* BaseNetworkConnection.mm */; };
-		E8989E8316BD24E500732C04 /* BTNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB616BD24E400732C04 /* BTNetworkConnection.h */; };
-		E8989E8416BD24E500732C04 /* BTNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB716BD24E400732C04 /* BTNetworkConnection.mm */; };
-		E8989E8516BD24E500732C04 /* NetworkConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB816BD24E400732C04 /* NetworkConnection.cpp */; };
-		E8989E8616BD24E500732C04 /* NetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB916BD24E400732C04 /* NetworkConnection.h */; };
-		E8989E8716BD24E500732C04 /* NetworkConnectionIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBA16BD24E400732C04 /* NetworkConnectionIPhone.h */; };
-		E8989E8816BD24E500732C04 /* NetworkConnectionIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBB16BD24E400732C04 /* NetworkConnectionIPhone.mm */; };
-		E8989E8916BD24E500732C04 /* NetworkDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBC16BD24E400732C04 /* NetworkDelegate.cpp */; };
-		E8989E8A16BD24E500732C04 /* NetworkDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBD16BD24E400732C04 /* NetworkDelegate.h */; };
-		E8989E8B16BD24E500732C04 /* NetworkPacket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBE16BD24E400732C04 /* NetworkPacket.cpp */; };
-		E8989E8C16BD24E500732C04 /* NetworkPacket.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBF16BD24E400732C04 /* NetworkPacket.h */; };
-		E8989E8D16BD24E500732C04 /* TCPServer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC016BD24E400732C04 /* TCPServer.h */; };
-		E8989E8E16BD24E500732C04 /* TCPServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC116BD24E400732C04 /* TCPServer.mm */; };
-		E8989E8F16BD24E500732C04 /* WFNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC216BD24E400732C04 /* WFNetworkConnection.h */; };
-		E8989E9016BD24E500732C04 /* WFNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC316BD24E400732C04 /* WFNetworkConnection.mm */; };
 		E8989E9116BD24E500732C04 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC516BD24E400732C04 /* Particle.cpp */; };
 		E8989E9216BD24E500732C04 /* Particle.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC616BD24E400732C04 /* Particle.h */; };
 		E8989E9316BD24E500732C04 /* ParticleEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC716BD24E400732C04 /* ParticleEmitter.cpp */; };
@@ -1987,14 +1949,6 @@
 		E898A0C516BD265400732C04 /* Sphere.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BAF16BD24E400732C04 /* Sphere.h */; };
 		E898A0C616BD265400732C04 /* Spline.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB116BD24E400732C04 /* Spline.h */; };
 		E898A0C716BD265400732C04 /* Vector.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB216BD24E400732C04 /* Vector.h */; };
-		E898A0C816BD265400732C04 /* BaseNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB416BD24E400732C04 /* BaseNetworkConnection.h */; };
-		E898A0C916BD265400732C04 /* BTNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB616BD24E400732C04 /* BTNetworkConnection.h */; };
-		E898A0CA16BD265400732C04 /* NetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BB916BD24E400732C04 /* NetworkConnection.h */; };
-		E898A0CB16BD265400732C04 /* NetworkConnectionIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBA16BD24E400732C04 /* NetworkConnectionIPhone.h */; };
-		E898A0CC16BD265400732C04 /* NetworkDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBD16BD24E400732C04 /* NetworkDelegate.h */; };
-		E898A0CD16BD265400732C04 /* NetworkPacket.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BBF16BD24E400732C04 /* NetworkPacket.h */; };
-		E898A0CE16BD265400732C04 /* TCPServer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC016BD24E400732C04 /* TCPServer.h */; };
-		E898A0CF16BD265400732C04 /* WFNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC216BD24E400732C04 /* WFNetworkConnection.h */; };
 		E898A0D016BD265400732C04 /* Particle.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC616BD24E400732C04 /* Particle.h */; };
 		E898A0D116BD265400732C04 /* ParticleEmitter.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BC816BD24E400732C04 /* ParticleEmitter.h */; };
 		E898A0D416BD265400732C04 /* ParticleLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989BCE16BD24E400732C04 /* ParticleLayer.h */; };
@@ -2206,14 +2160,6 @@
 		E898A1E516BD265400732C04 /* Polygon3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BA816BD24E400732C04 /* Polygon3.cpp */; };
 		E898A1E616BD265400732C04 /* RectPacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BAD16BD24E400732C04 /* RectPacker.cpp */; };
 		E898A1E716BD265400732C04 /* Spline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB016BD24E400732C04 /* Spline.cpp */; };
-		E898A1E816BD265400732C04 /* BaseNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB516BD24E400732C04 /* BaseNetworkConnection.mm */; };
-		E898A1E916BD265400732C04 /* BTNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB716BD24E400732C04 /* BTNetworkConnection.mm */; };
-		E898A1EA16BD265400732C04 /* NetworkConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BB816BD24E400732C04 /* NetworkConnection.cpp */; };
-		E898A1EB16BD265400732C04 /* NetworkConnectionIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBB16BD24E400732C04 /* NetworkConnectionIPhone.mm */; };
-		E898A1EC16BD265400732C04 /* NetworkDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBC16BD24E400732C04 /* NetworkDelegate.cpp */; };
-		E898A1ED16BD265400732C04 /* NetworkPacket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BBE16BD24E400732C04 /* NetworkPacket.cpp */; };
-		E898A1EE16BD265400732C04 /* TCPServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC116BD24E400732C04 /* TCPServer.mm */; };
-		E898A1EF16BD265400732C04 /* WFNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC316BD24E400732C04 /* WFNetworkConnection.mm */; };
 		E898A1F016BD265400732C04 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC516BD24E400732C04 /* Particle.cpp */; };
 		E898A1F116BD265400732C04 /* ParticleEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BC716BD24E400732C04 /* ParticleEmitter.cpp */; };
 		E898A1F416BD265400732C04 /* ParticleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989BCD16BD24E400732C04 /* ParticleLayer.cpp */; };
@@ -2738,9 +2684,6 @@
 		C151B17A16D3755000E09BAF /* WebViewControlMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebViewControlMacOS.h; sourceTree = "<group>"; };
 		C151B17B16D3755000E09BAF /* WebViewControlMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebViewControlMacOS.mm; sourceTree = "<group>"; };
 		C151B18B16D37DD400E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		C151B1B416D4FF6A00E09BAF /* MailSender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MailSender.cpp; sourceTree = "<group>"; };
-		C151B1B516D4FF6A00E09BAF /* MailSender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailSender.h; sourceTree = "<group>"; };
-		C151B1B616D4FF6A00E09BAF /* MailSenderMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MailSenderMacOS.mm; sourceTree = "<group>"; };
 		C172EC0018C9F1E9004309CF /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C172EC0118C9F1E9004309CF /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
 		C172EC0218C9F1E9004309CF /* TextBlockDistanceRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextBlockDistanceRender.cpp; sourceTree = "<group>"; };
@@ -3043,22 +2986,6 @@
 		E8989BB016BD24E400732C04 /* Spline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Spline.cpp; sourceTree = "<group>"; };
 		E8989BB116BD24E400732C04 /* Spline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Spline.h; sourceTree = "<group>"; };
 		E8989BB216BD24E400732C04 /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
-		E8989BB416BD24E400732C04 /* BaseNetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseNetworkConnection.h; sourceTree = "<group>"; };
-		E8989BB516BD24E400732C04 /* BaseNetworkConnection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BaseNetworkConnection.mm; sourceTree = "<group>"; };
-		E8989BB616BD24E400732C04 /* BTNetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BTNetworkConnection.h; sourceTree = "<group>"; };
-		E8989BB716BD24E400732C04 /* BTNetworkConnection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BTNetworkConnection.mm; sourceTree = "<group>"; };
-		E8989BB816BD24E400732C04 /* NetworkConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkConnection.cpp; sourceTree = "<group>"; };
-		E8989BB916BD24E400732C04 /* NetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkConnection.h; sourceTree = "<group>"; };
-		E8989BBA16BD24E400732C04 /* NetworkConnectionIPhone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkConnectionIPhone.h; sourceTree = "<group>"; };
-		E8989BBB16BD24E400732C04 /* NetworkConnectionIPhone.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NetworkConnectionIPhone.mm; sourceTree = "<group>"; };
-		E8989BBC16BD24E400732C04 /* NetworkDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkDelegate.cpp; sourceTree = "<group>"; };
-		E8989BBD16BD24E400732C04 /* NetworkDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkDelegate.h; sourceTree = "<group>"; };
-		E8989BBE16BD24E400732C04 /* NetworkPacket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkPacket.cpp; sourceTree = "<group>"; };
-		E8989BBF16BD24E400732C04 /* NetworkPacket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkPacket.h; sourceTree = "<group>"; };
-		E8989BC016BD24E400732C04 /* TCPServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPServer.h; sourceTree = "<group>"; };
-		E8989BC116BD24E400732C04 /* TCPServer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TCPServer.mm; sourceTree = "<group>"; };
-		E8989BC216BD24E400732C04 /* WFNetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNetworkConnection.h; sourceTree = "<group>"; };
-		E8989BC316BD24E400732C04 /* WFNetworkConnection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WFNetworkConnection.mm; sourceTree = "<group>"; };
 		E8989BC516BD24E400732C04 /* Particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Particle.cpp; sourceTree = "<group>"; };
 		E8989BC616BD24E400732C04 /* Particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Particle.h; sourceTree = "<group>"; };
 		E8989BC716BD24E400732C04 /* ParticleEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleEmitter.cpp; sourceTree = "<group>"; };
@@ -3996,32 +3923,6 @@
 			path = Neon;
 			sourceTree = "<group>";
 		};
-		E8989BB316BD24E400732C04 /* Network */ = {
-			isa = PBXGroup;
-			children = (
-				C151B1B416D4FF6A00E09BAF /* MailSender.cpp */,
-				C151B1B516D4FF6A00E09BAF /* MailSender.h */,
-				C151B1B616D4FF6A00E09BAF /* MailSenderMacOS.mm */,
-				E8989BB416BD24E400732C04 /* BaseNetworkConnection.h */,
-				E8989BB516BD24E400732C04 /* BaseNetworkConnection.mm */,
-				E8989BB616BD24E400732C04 /* BTNetworkConnection.h */,
-				E8989BB716BD24E400732C04 /* BTNetworkConnection.mm */,
-				E8989BB816BD24E400732C04 /* NetworkConnection.cpp */,
-				E8989BB916BD24E400732C04 /* NetworkConnection.h */,
-				E8989BBA16BD24E400732C04 /* NetworkConnectionIPhone.h */,
-				E8989BBB16BD24E400732C04 /* NetworkConnectionIPhone.mm */,
-				E8989BBC16BD24E400732C04 /* NetworkDelegate.cpp */,
-				E8989BBD16BD24E400732C04 /* NetworkDelegate.h */,
-				E8989BBE16BD24E400732C04 /* NetworkPacket.cpp */,
-				E8989BBF16BD24E400732C04 /* NetworkPacket.h */,
-				E8989BC016BD24E400732C04 /* TCPServer.h */,
-				E8989BC116BD24E400732C04 /* TCPServer.mm */,
-				E8989BC216BD24E400732C04 /* WFNetworkConnection.h */,
-				E8989BC316BD24E400732C04 /* WFNetworkConnection.mm */,
-			);
-			path = Network;
-			sourceTree = "<group>";
-		};
 		E8989BC416BD24E400732C04 /* Particles */ = {
 			isa = PBXGroup;
 			children = (
@@ -4717,7 +4618,6 @@
 				E8989B8316BD24E400732C04 /* Input */,
 				CC84B00D18211A5600934482 /* Job */,
 				E8989B8E16BD24E400732C04 /* Math */,
-				E8989BB316BD24E400732C04 /* Network */,
 				E8989BC416BD24E400732C04 /* Particles */,
 				E8989BD716BD24E400732C04 /* Platform */,
 				E8989C1516BD24E400732C04 /* Render */,
@@ -4878,15 +4778,7 @@
 				176DE968174B5561007A983B /* Sphere.h in Headers */,
 				176DE969174B5561007A983B /* Spline.h in Headers */,
 				176DE96A174B5561007A983B /* Vector.h in Headers */,
-				176DE96B174B5561007A983B /* BaseNetworkConnection.h in Headers */,
-				176DE96C174B5561007A983B /* BTNetworkConnection.h in Headers */,
-				176DE96D174B5561007A983B /* NetworkConnection.h in Headers */,
 				7A169352180EE75A005F1FBC /* AutotestingDB.h in Headers */,
-				176DE96E174B5561007A983B /* NetworkConnectionIPhone.h in Headers */,
-				176DE96F174B5561007A983B /* NetworkDelegate.h in Headers */,
-				176DE970174B5561007A983B /* NetworkPacket.h in Headers */,
-				176DE971174B5561007A983B /* TCPServer.h in Headers */,
-				176DE972174B5561007A983B /* WFNetworkConnection.h in Headers */,
 				176DE973174B5561007A983B /* Particle.h in Headers */,
 				176DE974174B5561007A983B /* ParticleEmitter.h in Headers */,
 				176DE977174B5561007A983B /* ParticleLayer.h in Headers */,
@@ -5086,7 +4978,6 @@
 				644C86E719476A7100964F91 /* VegetationGeometry.h in Headers */,
 				176DEA17174B5561007A983B /* DVAssertMessage.h in Headers */,
 				176DEA18174B5561007A983B /* WebViewControlMacOS.h in Headers */,
-				176DEA19174B5561007A983B /* MailSender.h in Headers */,
 				176DEA1A174B5561007A983B /* UserComponent.h in Headers */,
 				644C86F019476A7100964F91 /* VegetationPropertyNames.h in Headers */,
 				176DEA1B174B5561007A983B /* UISpinner.h in Headers */,
@@ -5302,15 +5193,7 @@
 				E8989E7F16BD24E500732C04 /* Spline.h in Headers */,
 				E8989E8016BD24E500732C04 /* Vector.h in Headers */,
 				647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
-				E8989E8116BD24E500732C04 /* BaseNetworkConnection.h in Headers */,
-				E8989E8316BD24E500732C04 /* BTNetworkConnection.h in Headers */,
 				84CB671A191FC8850086483D /* Image.h in Headers */,
-				E8989E8616BD24E500732C04 /* NetworkConnection.h in Headers */,
-				E8989E8716BD24E500732C04 /* NetworkConnectionIPhone.h in Headers */,
-				E8989E8A16BD24E500732C04 /* NetworkDelegate.h in Headers */,
-				E8989E8C16BD24E500732C04 /* NetworkPacket.h in Headers */,
-				E8989E8D16BD24E500732C04 /* TCPServer.h in Headers */,
-				E8989E8F16BD24E500732C04 /* WFNetworkConnection.h in Headers */,
 				E8989E9216BD24E500732C04 /* Particle.h in Headers */,
 				E8989E9416BD24E500732C04 /* ParticleEmitter.h in Headers */,
 				E8989E9A16BD24E500732C04 /* ParticleLayer.h in Headers */,
@@ -5509,7 +5392,6 @@
 				1146E12019D00887009E5FAB /* AnimationSystem.h in Headers */,
 				C151B17816D3747E00E09BAF /* DVAssertMessage.h in Headers */,
 				C151B17C16D3755000E09BAF /* WebViewControlMacOS.h in Headers */,
-				C151B1B816D4FF6A00E09BAF /* MailSender.h in Headers */,
 				CC24800A16DD174E00183D40 /* UserComponent.h in Headers */,
 				EA106064188921FC00CB99A3 /* ParticleRenderObject.h in Headers */,
 				E9EA496E16DF93FA00C44B6F /* UISpinner.h in Headers */,
@@ -5739,15 +5621,7 @@
 				E898A0C616BD265400732C04 /* Spline.h in Headers */,
 				E898A0C716BD265400732C04 /* Vector.h in Headers */,
 				11CB615419C3391B00B48A92 /* AnimationData.h in Headers */,
-				E898A0C816BD265400732C04 /* BaseNetworkConnection.h in Headers */,
 				02FD7EDD19237D96007762C0 /* WindSystem.h in Headers */,
-				E898A0C916BD265400732C04 /* BTNetworkConnection.h in Headers */,
-				E898A0CA16BD265400732C04 /* NetworkConnection.h in Headers */,
-				E898A0CB16BD265400732C04 /* NetworkConnectionIPhone.h in Headers */,
-				E898A0CC16BD265400732C04 /* NetworkDelegate.h in Headers */,
-				E898A0CD16BD265400732C04 /* NetworkPacket.h in Headers */,
-				E898A0CE16BD265400732C04 /* TCPServer.h in Headers */,
-				E898A0CF16BD265400732C04 /* WFNetworkConnection.h in Headers */,
 				E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
 				E898A0D016BD265400732C04 /* Particle.h in Headers */,
 				644C86E619476A7100964F91 /* VegetationGeometry.h in Headers */,
@@ -6219,16 +6093,8 @@
 				176DEA8B174B5561007A983B /* Polygon3.cpp in Sources */,
 				176DEA8C174B5561007A983B /* RectPacker.cpp in Sources */,
 				176DEA8D174B5561007A983B /* Spline.cpp in Sources */,
-				176DEA8E174B5561007A983B /* BaseNetworkConnection.mm in Sources */,
 				4F53ED3619A23BE700D3869D /* DownloadManager.cpp in Sources */,
-				176DEA8F174B5561007A983B /* BTNetworkConnection.mm in Sources */,
-				176DEA90174B5561007A983B /* NetworkConnection.cpp in Sources */,
-				176DEA91174B5561007A983B /* NetworkConnectionIPhone.mm in Sources */,
 				644C86E419476A7100964F91 /* VegetationGeometry.cpp in Sources */,
-				176DEA92174B5561007A983B /* NetworkDelegate.cpp in Sources */,
-				176DEA93174B5561007A983B /* NetworkPacket.cpp in Sources */,
-				176DEA94174B5561007A983B /* TCPServer.mm in Sources */,
-				176DEA95174B5561007A983B /* WFNetworkConnection.mm in Sources */,
 				176DEA96174B5561007A983B /* Particle.cpp in Sources */,
 				176DEA97174B5561007A983B /* ParticleEmitter.cpp in Sources */,
 				176DEA9A174B5561007A983B /* ParticleLayer.cpp in Sources */,
@@ -6427,8 +6293,6 @@
 				176DEB32174B5561007A983B /* DVAssertMessage.cpp in Sources */,
 				176DEB33174B5561007A983B /* DVAssertMessageApple.mm in Sources */,
 				176DEB34174B5561007A983B /* WebViewControlMacOS.mm in Sources */,
-				176DEB35174B5561007A983B /* MailSender.cpp in Sources */,
-				176DEB36174B5561007A983B /* MailSenderMacOS.mm in Sources */,
 				176DEB37174B5561007A983B /* UserComponent.cpp in Sources */,
 				176DEB38174B5561007A983B /* UISpinner.cpp in Sources */,
 				176DEB39174B5561007A983B /* UTF8UtilsMac.mm in Sources */,
@@ -6603,15 +6467,7 @@
 				E8BAD5B0185213F100C98C8D /* IntrospectionDynamic.cpp in Sources */,
 				E8989E7B16BD24E500732C04 /* RectPacker.cpp in Sources */,
 				E8989E7E16BD24E500732C04 /* Spline.cpp in Sources */,
-				E8989E8216BD24E500732C04 /* BaseNetworkConnection.mm in Sources */,
-				E8989E8416BD24E500732C04 /* BTNetworkConnection.mm in Sources */,
-				E8989E8516BD24E500732C04 /* NetworkConnection.cpp in Sources */,
-				E8989E8816BD24E500732C04 /* NetworkConnectionIPhone.mm in Sources */,
-				E8989E8916BD24E500732C04 /* NetworkDelegate.cpp in Sources */,
-				E8989E8B16BD24E500732C04 /* NetworkPacket.cpp in Sources */,
-				E8989E8E16BD24E500732C04 /* TCPServer.mm in Sources */,
 				CC84B02818211A9000934482 /* JobWaiter.cpp in Sources */,
-				E8989E9016BD24E500732C04 /* WFNetworkConnection.mm in Sources */,
 				E8989E9116BD24E500732C04 /* Particle.cpp in Sources */,
 				E8989E9316BD24E500732C04 /* ParticleEmitter.cpp in Sources */,
 				E8989E9916BD24E500732C04 /* ParticleLayer.cpp in Sources */,
@@ -6819,8 +6675,6 @@
 				E8FC12F61869726A0095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */,
 				C151B17D16D3755000E09BAF /* WebViewControlMacOS.mm in Sources */,
-				C151B1B716D4FF6A00E09BAF /* MailSender.cpp in Sources */,
-				C151B1B916D4FF6A00E09BAF /* MailSenderMacOS.mm in Sources */,
 				CC24800816DD174E00183D40 /* UserComponent.cpp in Sources */,
 				E9EA496C16DF93FA00C44B6F /* UISpinner.cpp in Sources */,
 				02141407181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
@@ -6999,19 +6853,11 @@
 				E898A1E516BD265400732C04 /* Polygon3.cpp in Sources */,
 				E898A1E616BD265400732C04 /* RectPacker.cpp in Sources */,
 				E898A1E716BD265400732C04 /* Spline.cpp in Sources */,
-				E898A1E816BD265400732C04 /* BaseNetworkConnection.mm in Sources */,
-				E898A1E916BD265400732C04 /* BTNetworkConnection.mm in Sources */,
 				647EFC52195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				1146E11619D00874009E5FAB /* AnimationComponent.cpp in Sources */,
-				E898A1EA16BD265400732C04 /* NetworkConnection.cpp in Sources */,
-				E898A1EB16BD265400732C04 /* NetworkConnectionIPhone.mm in Sources */,
-				E898A1EC16BD265400732C04 /* NetworkDelegate.cpp in Sources */,
-				E898A1ED16BD265400732C04 /* NetworkPacket.cpp in Sources */,
 				84E975CD191FCE1D0054CCF9 /* LibPVRHelper.cpp in Sources */,
-				E898A1EE16BD265400732C04 /* TCPServer.mm in Sources */,
 				50A3044518575C370082CA8D /* StaticOcclusionRenderPass.cpp in Sources */,
 				4F53ED4519A23BF200D3869D /* bs_diff.c in Sources */,
-				E898A1EF16BD265400732C04 /* WFNetworkConnection.mm in Sources */,
 				E898A1F016BD265400732C04 /* Particle.cpp in Sources */,
 				E898A1F116BD265400732C04 /* ParticleEmitter.cpp in Sources */,
 				E898A1F416BD265400732C04 /* ParticleLayer.cpp in Sources */,
@@ -7477,6 +7323,7 @@
 		1DEB922308733DC00010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -7515,6 +7362,7 @@
 		1DEB922408733DC00010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (

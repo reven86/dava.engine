@@ -47,7 +47,6 @@
 #include "KeyedArchiveYamlTest.h"
 #include "CloneTest.h"
 #include "DPITest.h"
-#include "EMailTest.h"
 #include "InputTest.h"
 #include "FilePathTest.h"
 #include "FileListTest.h"

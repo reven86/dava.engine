@@ -794,27 +794,31 @@ void UIControlBackground::StretchDrawData::GenerateStretchData()
     float32 textureWidth = (float32)texture->GetWidth();
     float32 textureHeight = (float32)texture->GetHeight();
 
+    float32 xOffset = texOffX;
+    float32 yOffset = texOffY;
+
     switch (type)
     {
         case DRAW_STRETCH_HORIZONTAL:
         {
             float32 ddy = (spriteHeight - dy);
-            float32 yOffset = -(ddy * 0.5f);
-            dy += ddy;
+            yOffset -= ddy * 0.5f;
+            dy += ddy - 2 * texOffX;
+            dx -= 2 * texOffX;
             
             vertices.resize(8);
             transformedVertices.resize(8);
             texCoords.resize(8);
             
-            vertices[0] = Vector2(0, yOffset);
-            vertices[1] = Vector2(realLeftStretchCap, yOffset);
-            vertices[2] = Vector2(dx - realRightStretchCap, yOffset);
-            vertices[3] = Vector2(dx, yOffset);
+            vertices[0] = Vector2(xOffset, yOffset);
+            vertices[1] = Vector2(xOffset + realLeftStretchCap, yOffset);
+            vertices[2] = Vector2(xOffset + dx - realRightStretchCap, yOffset);
+            vertices[3] = Vector2(xOffset + dx, yOffset);
             
-            vertices[4] = Vector2(0, yOffset + dy);
-            vertices[5] = Vector2(realLeftStretchCap, yOffset + dy);
-            vertices[6] = Vector2(dx - realRightStretchCap, yOffset + dy);
-            vertices[7] = Vector2(dx, yOffset + dy);
+            vertices[4] = Vector2(xOffset, yOffset + dy);
+            vertices[5] = Vector2(xOffset + realLeftStretchCap, yOffset + dy);
+            vertices[6] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy);
+            vertices[7] = Vector2(xOffset + dx, yOffset + dy);
             
             texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
             texCoords[1] = Vector2((texX + leftCap) / textureWidth, texY / textureHeight);
@@ -830,22 +834,23 @@ void UIControlBackground::StretchDrawData::GenerateStretchData()
         case DRAW_STRETCH_VERTICAL:
         {
             float32 ddx = (spriteWidth - dx);
-            float32 xOffset = -(ddx * 0.5f);
-            dx += ddx;
+            xOffset -= ddx * 0.5f;
+            dx += ddx - 2 * texOffX;
+            dy -= 2 * texOffY;
             
             vertices.resize(8);
             transformedVertices.resize(8);
             texCoords.resize(8);
             
-            vertices[0] = Vector2(xOffset, 0);
-            vertices[1] = Vector2(xOffset, realTopStretchCap);
-            vertices[2] = Vector2(xOffset, dy - realBottomStretchCap);
-            vertices[3] = Vector2(xOffset, dy);
+            vertices[0] = Vector2(xOffset, yOffset);
+            vertices[1] = Vector2(xOffset, yOffset + realTopStretchCap);
+            vertices[2] = Vector2(xOffset, yOffset + dy - realBottomStretchCap);
+            vertices[3] = Vector2(xOffset, yOffset + dy);
             
-            vertices[4] = Vector2(xOffset + dx, 0);
-            vertices[5] = Vector2(xOffset + dx, realTopStretchCap);
-            vertices[6] = Vector2(xOffset + dx, dy - realBottomStretchCap);
-            vertices[7] = Vector2(xOffset + dx, dy);
+            vertices[4] = Vector2(xOffset + dx, yOffset);
+            vertices[5] = Vector2(xOffset + dx, yOffset + realTopStretchCap);
+            vertices[6] = Vector2(xOffset + dx, yOffset + dy - realBottomStretchCap);
+            vertices[7] = Vector2(xOffset + dx, yOffset + dy);
             
             texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
             texCoords[1] = Vector2(texX / textureWidth, (texY + topCap) / textureHeight);
@@ -860,29 +865,32 @@ void UIControlBackground::StretchDrawData::GenerateStretchData()
         break;
         case DRAW_STRETCH_BOTH:
         {
+            dx -= 2 * texOffX;
+            dy -= 2 * texOffY;
+
             vertices.resize(16);
             transformedVertices.resize(16);
             texCoords.resize(16);
             
-            vertices[0] = Vector2(0, 0);
-            vertices[1] = Vector2(realLeftStretchCap, 0);
-            vertices[2] = Vector2(dx - realRightStretchCap, 0);
-            vertices[3] = Vector2(dx, 0);
+            vertices[0] = Vector2(xOffset, yOffset);
+            vertices[1] = Vector2(xOffset + realLeftStretchCap, yOffset);
+            vertices[2] = Vector2(xOffset + dx - realRightStretchCap, yOffset);
+            vertices[3] = Vector2(xOffset + dx, yOffset);
             
-            vertices[4] = Vector2(0, realTopStretchCap);
-            vertices[5] = Vector2(realLeftStretchCap, realTopStretchCap);
-            vertices[6] = Vector2(dx - realRightStretchCap, realTopStretchCap);
-            vertices[7] = Vector2(dx, realTopStretchCap);
+            vertices[4] = Vector2(xOffset, yOffset + realTopStretchCap);
+            vertices[5] = Vector2(xOffset + realLeftStretchCap, yOffset + realTopStretchCap);
+            vertices[6] = Vector2(xOffset + dx - realRightStretchCap, yOffset + realTopStretchCap);
+            vertices[7] = Vector2(xOffset + dx, yOffset + realTopStretchCap);
             
-            vertices[8] = Vector2(0, dy - realBottomStretchCap);
-            vertices[9] = Vector2(realLeftStretchCap, dy - realBottomStretchCap);
-            vertices[10] = Vector2(dx - realRightStretchCap, dy - realBottomStretchCap);
-            vertices[11] = Vector2(dx, dy - realBottomStretchCap);
+            vertices[8] = Vector2(xOffset, yOffset + dy - realBottomStretchCap);
+            vertices[9] = Vector2(xOffset + realLeftStretchCap, yOffset + dy - realBottomStretchCap);
+            vertices[10] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy - realBottomStretchCap);
+            vertices[11] = Vector2(xOffset + dx, yOffset + dy - realBottomStretchCap);
             
-            vertices[12] = Vector2(0, dy);
-            vertices[13] = Vector2(realLeftStretchCap, dy);
-            vertices[14] = Vector2(dx - realRightStretchCap, dy);
-            vertices[15] = Vector2(dx, dy);
+            vertices[12] = Vector2(xOffset, yOffset + dy);
+            vertices[13] = Vector2(xOffset + realLeftStretchCap, yOffset + dy);
+            vertices[14] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy);
+            vertices[15] = Vector2(xOffset + dx, yOffset + dy);
             
             texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
             texCoords[1] = Vector2((texX + leftCap) / textureWidth, texY / textureHeight);
