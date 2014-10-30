@@ -90,14 +90,14 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
     return str;
 }
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
-
 void TeamcityOutput::PlatformOutput(const String &text) const
 {
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
     std::cout << text << std::endl;
+#else
+    NSLog(@"%s", text.c_str());
+#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
 }
     
 }; // end of namespace DAVA
-
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
 
