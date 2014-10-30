@@ -113,7 +113,7 @@ void GameCore::OnAppStarted()
 	RenderManager::Instance()->SetFPS(60);
 
 	new MathTest();
-	//new FunctionBindSignalTest(); // TODO too long compute?
+	new FunctionBindSignalTest();
     //new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
     //new DLCDownloadTest();
 
