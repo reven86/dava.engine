@@ -127,21 +127,21 @@ void GameCore::OnAppStarted()
 
     new ParseTextTest(Font::TYPE_FT);
     new ParseTextTest(Font::TYPE_GRAPHICAL);
- //   new OpenGLES30FormatTest();
- //   new SaveImageTest();
+    //new OpenGLES30FormatTest();
+    new SaveImageTest();
  //   
  //   new OpenGLES30FormatTest();
- //   new StringFormatTest();
+    new StringFormatTest();
  //   new RectSpriteTest();
 
 	//new ComponentsTest();
- //   new FilePathTest();
- //   new FileListTest();
- //   new FileSystemTest();
+    new FilePathTest();
+    new FileListTest();
+    new FileSystemTest();
     
  	new UIMovieTest();
  	//new InputTest();
-  //  new FormatsTest();
+	//new FormatsTest();
  
  	new DateTimeTest();
  	//new TransparentWebViewTest();
