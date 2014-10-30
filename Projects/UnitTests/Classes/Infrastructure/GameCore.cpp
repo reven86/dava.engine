@@ -107,7 +107,7 @@ String GetCommandLineValue(const Vector<String>& cmdLine, const char* key, const
 
 void GameCore::OnAppStarted()
 {
-	create_log_and_redirect_cout_to_it_for_teamcity_output();
+	InitLogging();
 
 	RenderManager::Instance()->SetFPS(60);
 
@@ -380,7 +380,7 @@ DAVA::String GameCore::CreateOutputLogFile()
 	return workingFilepathname.GetAbsolutePathname();
 }
 
-void GameCore::create_log_and_redirect_cout_to_it_for_teamcity_output()
+void GameCore::InitLogging()
 {
 	CreateDocumentsFolder();
 	logFilePath = CreateOutputLogFile();
@@ -388,6 +388,7 @@ void GameCore::create_log_and_redirect_cout_to_it_for_teamcity_output()
 	logFile.open(logFilePath.c_str());
 
 	DVASSERT(logFile.good());
+	// We need redirect cout to our file for TeamcityOutput(CustomOutput) to work
 	std::cout.rdbuf(logFile.rdbuf());
 
 	const Vector<String>& cmdLine = Core::Instance()->GetCommandLine();

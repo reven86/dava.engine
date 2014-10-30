@@ -99,7 +99,7 @@ protected:
     File * CreateDocumentsFile(const String &filePathname);
     
 private:
-	void create_log_and_redirect_cout_to_it_for_teamcity_output();
+	void InitLogging();
 
 	DAVA::String logFilePath;
 	std::ofstream logFile;
