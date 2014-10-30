@@ -29,14 +29,15 @@
 #ifndef __DAVAENGINE_NONCOPYABLE_H__
 #define __DAVAENGINE_NONCOPYABLE_H__
 
-namespace DAVA {
+namespace DAVA
+{
 
 /*
  Class Noncopyable insures that derived classes cannot be copied or copy constructed.
 */
 class Noncopyable
 {
-public:
+protected:
     Noncopyable () {}
     ~Noncopyable () {}
 
