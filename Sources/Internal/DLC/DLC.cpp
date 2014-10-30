@@ -759,6 +759,8 @@ void DLC::StepPatchBegin()
 
 void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
 {
+	bool errors = true;
+
     patchingThread->Join();
     SafeRelease(patchingThread);
 
@@ -768,6 +770,7 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
     switch(dlcContext.patchingError)
     {
         case PatchFileReader::ERROR_NO:
+			errors = false;
             PostEvent(EVENT_PATCH_OK);
             break;
 
@@ -783,6 +786,11 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
             (dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl) ? PostError(DE_PATCH_ERROR_FULL) : PostError(DE_PATCH_ERROR_LITE);
             break;
     }
+
+	if(errors)
+	{
+		Logger::Info("DLC: Error applying patch: %u", dlcContext.patchingError);
+	}
 }
 
 void DLC::StepPatchCancel()
