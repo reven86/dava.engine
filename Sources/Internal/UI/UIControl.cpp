@@ -721,10 +721,7 @@ namespace DAVA
         tempGeometricData.unrotatedRect.y = relativePosition.y - pivotPoint.y * scale.y;
         tempGeometricData.unrotatedRect.dx = size.x * scale.x;
         tempGeometricData.unrotatedRect.dy = size.y * scale.y;
-        if(!absoluteCoordinates)
-        {
-            return tempGeometricData;
-        }
+
         if(!parent)
         {
             tempGeometricData.AddGeometricData(UIControlSystem::Instance()->GetBaseGeometricData());
