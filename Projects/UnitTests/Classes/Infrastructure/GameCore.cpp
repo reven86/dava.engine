@@ -132,9 +132,9 @@ void GameCore::OnAppStarted()
  //   
  //   new OpenGLES30FormatTest(); // TODO duplicate? second run?
     new StringFormatTest();
- //   new RectSpriteTest();
+    //new RectSpriteTest();
 
-	//new ComponentsTest();
+	new ComponentsTest();
     new FilePathTest();
     new FileListTest();
     new FileSystemTest();
