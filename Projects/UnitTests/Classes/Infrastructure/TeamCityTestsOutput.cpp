@@ -32,9 +32,6 @@
 
 #include <sstream>
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
-
 namespace DAVA
 {
 
@@ -141,6 +138,3 @@ void TeamcityTestOutput::TestOutput(const String& data) const
 }
 
 }; // end of namespace DAVA
-
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-

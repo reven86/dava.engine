@@ -36,8 +36,6 @@
 
 #include "FileSystem/Logger.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
 namespace DAVA 
 {
     
@@ -57,9 +55,6 @@ protected:
 
 
 };
-
-
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
 #endif // __DAVAENGINE_TEAMCITY_OUTPUT_H__
 

@@ -34,9 +34,6 @@
 #include <iostream>
 
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
-
 namespace DAVA
 {
     
@@ -93,6 +90,8 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
     return str;
 }
 
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
+
 void TeamcityOutput::PlatformOutput(const String &text) const
 {
     std::cout << text << std::endl;
@@ -100,5 +99,5 @@ void TeamcityOutput::PlatformOutput(const String &text) const
     
 }; // end of namespace DAVA
 
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
 

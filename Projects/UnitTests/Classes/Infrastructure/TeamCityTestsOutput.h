@@ -36,8 +36,6 @@
 
 #include "TeamcityOutput/TeamcityOutput.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
@@ -70,9 +68,6 @@ private:
 
 
 };
-
-
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
 #endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
