@@ -130,7 +130,7 @@ void GameCore::OnAppStarted()
     //new OpenGLES30FormatTest();
     new SaveImageTest();
  //   
- //   new OpenGLES30FormatTest();
+ //   new OpenGLES30FormatTest(); // TODO duplicate? second run?
     new StringFormatTest();
  //   new RectSpriteTest();
 
