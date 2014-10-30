@@ -95,6 +95,9 @@
     <ClCompile Include="Win32Specific\main.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\EntityTest.h" />
@@ -222,6 +225,9 @@
       <Filter>Infrastructure</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Infrastructure\UITestTemplate.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\TextureUtils.h">
       <Filter>Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
