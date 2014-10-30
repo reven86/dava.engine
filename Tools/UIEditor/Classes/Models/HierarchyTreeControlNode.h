@@ -62,7 +62,7 @@ public:
 	virtual void RemoveTreeNodeFromScene();
 	virtual void ReturnTreeNodeToScene();
 	
-	Rect GetRect() const;
+	Rect GetRect(bool checkAngle = false) const;
 
 	void SetVisibleFlag(bool value);
 	bool GetVisibleFlag() const;
@@ -74,7 +74,6 @@ public:
 private:
 	void AddControlToParent();
     void UpdateUIObject();
-    void RestoreParentControl(UIControl* parentControl);
 	
 private:
 	HierarchyTreeNode* parent;
@@ -83,7 +82,6 @@ private:
     EditorListDelegate *listDelegate;
 
 	UIControl* parentUIObject;
-	UIControl* childUIObjectAbove;
 	bool needReleaseUIObjects;
 };
 

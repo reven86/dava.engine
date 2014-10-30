@@ -89,6 +89,7 @@ public:
 
     // Update the localization for all controls.
     void UpdateLocalization();
+    void UpdateLocalization(const HierarchyTreeScreenNode* screenNode);
 
 	bool IsPlatformNamePresent(const QString& name) const ;
 

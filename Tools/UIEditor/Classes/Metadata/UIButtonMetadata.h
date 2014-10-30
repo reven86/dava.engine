@@ -32,6 +32,8 @@
 #ifndef __UIEditor__ButtonNodeMetadata__
 #define __UIEditor__ButtonNodeMetadata__
 
+#include <QRectF>
+
 #include "UITextControlMetadata.h"
 #include "UI/UIButton.h"
 
@@ -65,7 +67,7 @@ protected:
     //virtual void SetFontSize(float fontSize);
     
     // Color getter/setter. Also virtual.
-    virtual Font * GetFont();
+    virtual Font * GetFont() const;
     virtual void SetFont(Font* font);
     
     virtual QColor GetFontColor() const;
@@ -82,7 +84,7 @@ protected:
 	virtual void SetShadowColor(const QColor& value);
 
     // Color getter/setter. Also virtual.
-    virtual QColor GetColor();
+    virtual QColor GetColor() const;
     virtual void SetColor(const QColor& value);
 
     // Sprite getter/setter.
@@ -90,35 +92,35 @@ protected:
     virtual QString GetSprite() const;
     
     virtual void SetSpriteFrame(int value);
-    virtual int GetSpriteFrame();
+    virtual int GetSpriteFrame() const;
     
     // Drawing flags getters/setters.
-    virtual int GetDrawType();
+    virtual int GetDrawType() const;
     virtual void SetDrawType(int value);
 
-    virtual int GetColorInheritType();
+    virtual int GetColorInheritType() const;
     virtual void SetColorInheritType(int value);
     
-    virtual int GetPerPixelAccuracyType();
+    virtual int GetPerPixelAccuracyType() const;
     virtual void SetPerPixelAccuracyType(int value);
 
-    virtual int GetAlign();
+    virtual int GetAlign() const;
     virtual void SetAlign(int value);
 
 	virtual void SetSpriteModification(int value);
-	virtual int GetSpriteModification();
+	virtual int GetSpriteModification() const;
 
-	virtual int GetTextAlign();
+	virtual int GetTextAlign() const;
     virtual void SetTextAlign(int align);
 
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);
 
     // Stretch Cap.
-    virtual float GetLeftRightStretchCap();
+    virtual float GetLeftRightStretchCap() const;
 	virtual void SetLeftRightStretchCap(float value);
     
-    virtual float GetTopBottomStretchCap();
+    virtual float GetTopBottomStretchCap() const;
 	virtual void SetTopBottomStretchCap(float value);
 
     // Color Inherit Type.
@@ -128,6 +130,38 @@ protected:
     // Per pixel accuracy type
 	virtual int GetTextPerPixelAccuracyType() const;
 	virtual void SetTextPerPixelAccuracyType(int value);
+
+    // Background Margins.
+    virtual QRectF GetMargins() const;
+    virtual void SetMargins(const QRectF& value);
+    
+    virtual float GetLeftMargin() const;
+    virtual void SetLeftMargin(float value);
+    
+    virtual float GetTopMargin() const;
+    virtual void SetTopMargin(float value);
+    
+    virtual float GetRightMargin() const;
+    virtual void SetRightMargin(float value);
+    
+    virtual float GetBottomMargin() const;
+    virtual void SetBottomMargin(float value);
+
+    // Text Margins.
+    virtual QRectF GetTextMargins() const;
+    virtual void SetTextMargins(const QRectF& value);
+    
+    virtual float GetTextLeftMargin() const;
+    virtual void SetTextLeftMargin(float value);
+    
+    virtual float GetTextTopMargin() const;
+    virtual void SetTextTopMargin(float value);
+    
+    virtual float GetTextRightMargin() const;
+    virtual void SetTextRightMargin(float value);
+    
+    virtual float GetTextBottomMargin() const;
+    virtual void SetTextBottomMargin(float value);
 
     // For UI Button localized text depends on state, so overriding this function.
     virtual UIControl::eControlState GetCurrentStateForLocalizedText() const;
@@ -194,9 +228,19 @@ protected:
     float GetTopBottomStretchCapForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForTopBottomStretchCap();
 
+    // Margins.
+    QRectF GetMarginsForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForMargins();
+
+    // Text Margins.
+    QRectF GetTextMarginsForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForTextMargins();
+
+    virtual UIControlBackground::UIMargins GetMarginsToUpdate(UIControl::eControlState state) const;
+    virtual UIControlBackground::UIMargins GetTextMarginsToUpdate(UIControl::eControlState state) const;
+
     // Shadow offset&color.
-    float GetShadowOffsetXForState(UIControl::eControlState state) const;
-    float GetShadowOffsetYForState(UIControl::eControlState state) const;
+    Vector2 GetShadowOffsetXYForState(UIControl::eControlState state) const;
     QColor GetShadowColorForState(UIControl::eControlState state) const;
 
     // Font/shadow color inherit type.
@@ -207,8 +251,7 @@ protected:
     int GetTextPerPixelAccuracyTypeForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForTextPerPixelAccuracyType();
     
-    void UpdatePropertyDirtyFlagForShadowOffsetX();
-    void UpdatePropertyDirtyFlagForShadowOffsetY();
+    void UpdatePropertyDirtyFlagForShadowOffsetXY();
     void UpdatePropertyDirtyFlagForShadowColor();
 
     // Recover dirty flags.

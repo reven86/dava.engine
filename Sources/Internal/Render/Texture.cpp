@@ -191,6 +191,7 @@ void Texture::AddToMap(Texture *tex)
     if(!tex->texDescriptor->pathname.IsEmpty())
     {
         textureMapMutex.Lock();
+        DVASSERT(textureMap.find(FILEPATH_MAP_KEY(tex->texDescriptor->pathname)) == textureMap.end());
 		textureMap[FILEPATH_MAP_KEY(tex->texDescriptor->pathname)] = tex;
         textureMapMutex.Unlock();
     }
@@ -277,7 +278,7 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 	//issue when cubemap texture was deleted while being binded to the state
 	if(RenderManager::Instance()->lastBindedTexture[container->textureType] == container->id)
 	{
-		RenderManager::Instance()->HWglForceBindTexture(0, container->textureType);
+		RenderManager::Instance()->HWglBindTexture(0, container->textureType);
 	}
     
 	if(container->fboID != (uint32)-1)
@@ -633,7 +634,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	{
 		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(texDescriptor, gpu);
 
-        ImageSystem::Instance()->Load(imagePathname, *images,baseMipMap);
+        ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
+        ImageSystem::Instance()->EnsurePowerOf2Images(*images);
         if(images->size() == 1 && gpu == GPU_PNG && texDescriptor->GetGenerateMipMaps())
         {
             Image * img = *images->begin();
@@ -752,8 +754,20 @@ Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &gro
 	Texture * texture = PureCreate(pathName, group);
  	if(!texture)
 	{
-		texture = CreatePink(typeHint);
-        texture->texDescriptor->pathname = (!pathName.IsEmpty()) ? TextureDescriptor::GetDescriptorPathname(pathName) : FilePath();
+        TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(pathName);
+        if(descriptor)
+        {
+            texture = CreatePink(descriptor->IsCubeMap() ? DAVA::Texture::TEXTURE_CUBE : typeHint);
+            texture->texDescriptor->Initialize(descriptor);
+            SafeDelete(descriptor);
+        }
+        else
+        {
+            texture = CreatePink(typeHint);
+            texture->texDescriptor->pathname = (!pathName.IsEmpty()) ? TextureDescriptor::GetDescriptorPathname(pathName) : FilePath();
+        }
+        
+        texture->texDescriptor->SetQualityGroup(group);
         
         AddToMap(texture);
 	}
@@ -1291,6 +1305,19 @@ void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<Stri
 const FilePath & Texture::GetPathname() const
 {
     return texDescriptor->pathname;
+}
+    
+void Texture::SetPathname(const FilePath& path)
+{
+    textureMapMutex.Lock();
+    textureMap.erase(FILEPATH_MAP_KEY(texDescriptor->pathname));
+    texDescriptor->pathname = path;
+    if (!texDescriptor->pathname.IsEmpty())
+    {
+        DVASSERT(textureMap.find(FILEPATH_MAP_KEY(texDescriptor->pathname)) == textureMap.end());
+        textureMap[FILEPATH_MAP_KEY(texDescriptor->pathname)] = this;
+    }
+    textureMapMutex.Unlock();
 }
 
 PixelFormat Texture::GetFormat() const

@@ -130,6 +130,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 
 void JniTextField::SetFontSize(float size)
 {
+	float32 v2p = Core::Instance()->GetVirtualToPhysicalFactor();
 	jmethodID mid = GetMethodID("SetFontSize", "(IF)V");
 	if (mid)
 	{
@@ -137,7 +138,7 @@ void JniTextField::SetFontSize(float size)
 				GetJavaClass(),
 				mid,
 				id,
-				size);
+				size * v2p);
 	}
 }
 
@@ -376,7 +377,8 @@ void UITextFieldAndroid::SetText(const WideString & string)
 {
 	if (text.compare(string) != 0)
 	{
-		text = string;
+		text = TruncateText(string, textField->GetMaxLength());
+
 		JniTextField jniTextField(id);
 		String utfText = UTF8Utils::EncodeToUTF8(text);
 		jniTextField.SetText(utfText.c_str());
@@ -493,7 +495,26 @@ void UITextFieldAndroid::SetCursorPos(uint32 pos)
 void UITextFieldAndroid::SetMaxLength(DAVA::int32 value)
 {
 	JniTextField jniTextField(id);
+
+	WideString truncated = TruncateText(text, value);
+	if (truncated != text)
+	{
+		SetText(truncated);
+	}
+
 	return jniTextField.SetMaxLength(value);
+}
+
+WideString UITextFieldAndroid::TruncateText(const WideString& text, int32 maxLength)
+{
+	WideString str = text;
+
+	if (maxLength >= 0 && maxLength < str.length())
+	{
+		str.resize(maxLength);
+	}
+
+	return str;
 }
 
 bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)

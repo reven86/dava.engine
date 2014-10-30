@@ -456,6 +456,8 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 	// we can start modif only if there is no locked entities
 	if(ModifCanStart(selectedEntities))
 	{
+        const bool modificationByGizmoOnly = SettingsManager::GetValue(Settings::Scene_ModificationByGizmoOnly).AsBool();
+        
 		// we can start modification only if mouse is over hood
 		// on mouse is over one of currently selected items
 		if(hoodSystem->GetPassingAxis() != ST_AXIS_NONE)
@@ -463,7 +465,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 			// allow starting modification
 			modifCanStart = true;
 		}
-		else
+		else if(!modificationByGizmoOnly)
 		{
 			// send this ray to collision system and get collision objects
 			const EntityGroup *collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
@@ -798,6 +800,15 @@ void EntityModificationSystem::CloneBegin()
 			DAVA::Entity *origEntity = modifEntities[i].entity;
 			DAVA::Entity *newEntity = origEntity->Clone();
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
+
+            Scene *scene = origEntity->GetScene();
+            if(scene)
+            {
+                StaticOcclusionSystem *sosystem = scene->staticOcclusionSystem;
+                DVASSERT(sosystem);
+                
+                sosystem->InvalidateOcclusionIndicesRecursively(newEntity);
+            }
 
 			origEntity->GetParent()->AddNode(newEntity);
 

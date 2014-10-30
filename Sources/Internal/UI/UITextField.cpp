@@ -971,18 +971,6 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
-void UITextField::SetVisible(bool isVisible)
-{
-    UIControl::SetVisible(isVisible);
-
-#ifdef __DAVAENGINE_IPHONE__
-	textFieldiPhone->SetVisible(isVisible);
-#elif defined(__DAVAENGINE_ANDROID__)
-	textFieldAndroid->SetVisible(isVisible);
-#else
-    staticText->SetVisible(isVisible);
-#endif
-}
 
 void UITextField::WillBecomeVisible()
 {

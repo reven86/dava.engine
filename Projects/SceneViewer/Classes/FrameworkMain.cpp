@@ -64,7 +64,7 @@ void FrameworkDidLaunched()
 	
 	appOptions->SetInt32("fullscreen", 0);
 	appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("Unit Tests"));
+    appOptions->SetString(String("title"), String("Scene Viewer"));
 
 	DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
 	DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");

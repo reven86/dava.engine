@@ -386,10 +386,23 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/Tools,
+					./../../Sources/External,
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					./../../Libs/include,
+				);
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+				);
+				OTHER_LDFLAGS = (
+					"-lMagickCore",
+					"-lMagick++",
+					"-lMagickWand",
 				);
 				PRODUCT_NAME = ResourcePacker;
 			};
@@ -401,10 +414,23 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/Tools,
+					./../../Sources/External,
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					./../../Libs/include,
+				);
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+				);
+				OTHER_LDFLAGS = (
+					"-lMagickCore",
+					"-lMagick++",
+					"-lMagickWand",
 				);
 				PRODUCT_NAME = ResourcePacker;
 			};

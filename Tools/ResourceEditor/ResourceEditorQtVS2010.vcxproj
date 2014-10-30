@@ -337,6 +337,7 @@
     <ClCompile Include="Classes\CommandLine\SceneSaver\SceneSaverTool.cpp" />
     <ClCompile Include="Classes\CommandLine\SceneUtils\CleanFolderTool.cpp" />
     <ClCompile Include="Classes\CommandLine\SceneUtils\SceneUtils.cpp" />
+    <ClCompile Include="Classes\CommandLine\StaticOcclusion\StaticOcclusionTool.cpp" />
     <ClCompile Include="Classes\Commands2\AddComponentCommand.cpp" />
     <ClCompile Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorTool.cpp" />
     <ClCompile Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorUtils.cpp" />
@@ -391,7 +392,6 @@
     <ClCompile Include="Classes\Deprecated\DraggableDialog.cpp" />
     <ClCompile Include="Classes\Deprecated\EditorConfig.cpp" />
     <ClCompile Include="Classes\Deprecated\EditorHeightmap.cpp" />
-    <ClCompile Include="Classes\Deprecated\EditorSettings.cpp" />
     <ClCompile Include="Classes\Deprecated\ExtendedDialog.cpp" />
     <ClCompile Include="Classes\Deprecated\LandscapeRenderer.cpp" />
     <ClCompile Include="Classes\Deprecated\ParticlesEditorNodeNameHelper.cpp" />
@@ -1031,6 +1031,7 @@
     <ClInclude Include="Classes\CommandLine\SceneSaver\SceneSaverTool.h" />
     <ClInclude Include="Classes\CommandLine\SceneUtils\CleanFolderTool.h" />
     <ClInclude Include="Classes\CommandLine\SceneUtils\SceneUtils.h" />
+    <ClInclude Include="Classes\CommandLine\StaticOcclusion\StaticOcclusionTool.h" />
     <ClInclude Include="Classes\Commands2\AddComponentCommand.h" />
     <ClInclude Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorTool.h" />
     <ClInclude Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorUtils.h" />
@@ -1088,7 +1089,6 @@
     <ClInclude Include="Classes\Deprecated\DraggableDialog.h" />
     <ClInclude Include="Classes\Deprecated\EditorConfig.h" />
     <ClInclude Include="Classes\Deprecated\EditorHeightmap.h" />
-    <ClInclude Include="Classes\Deprecated\EditorSettings.h" />
     <ClInclude Include="Classes\Deprecated\ExtendedDialog.h" />
     <ClInclude Include="Classes\Deprecated\LandscapeRenderer.h" />
     <ClInclude Include="Classes\Deprecated\ParticlesEditorNodeNameHelper.h" />

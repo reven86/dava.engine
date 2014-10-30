@@ -75,6 +75,11 @@ public:
     inline uint32 GetEventsCount() const;
     inline SoundEvent * GetSoundEvent(uint32 index) const;
 
+    void Trigger();
+    void Stop();
+    void Trigger(uint32 index);
+    void Stop(uint32 index);
+
     void SetSoundEventFlags(uint32 eventIndex, uint32 flags);
     inline uint32 GetSoundEventFlags(uint32 eventIndex) const;
 

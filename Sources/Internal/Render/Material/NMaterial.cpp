@@ -121,6 +121,8 @@ const FastName NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGE
 
 const FastName NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UNITY_Z_NORMAL");
 
+const FastName NMaterial::FLAG_SKINNING = FastName("SKINNING");
+
 const FastName NMaterial::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterial::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
 const FastName NMaterial::FLAG_SETUPLIGHTMAP = FastName("SETUP_LIGHTMAP");
@@ -144,7 +146,7 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 	NMaterial::FLAG_TEXTUREONLY,
 	NMaterial::FLAG_SETUPLIGHTMAP,
 
-    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,
+    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,    
 	
 	NMaterial::FLAG_VIEWALBEDO,
 	NMaterial::FLAG_VIEWAMBIENT,
@@ -367,23 +369,7 @@ void NMaterial::Save(KeyedArchive * archive,
 		archive->SetString("materialGroup", GetMaterialGroup().c_str());
 	}
 	
-	archive->SetString("materialTemplate", (materialTemplate) ? materialTemplate->name.c_str() : "");
-	
-	if(instancePassRenderStates.size() > 0)
-	{
-		KeyedArchive* materialCustomStates = new KeyedArchive();
-		for(HashMap<FastName, UniqueHandle>::iterator it = instancePassRenderStates.begin();
-			it != instancePassRenderStates.end();
-			++it)
-		{
-			UniqueHandle currentHandle = it->second;
-			
-			const RenderStateData& stateData = RenderManager::Instance()->GetRenderStateData(currentHandle);
-			materialCustomStates->SetByteArray(it->first.c_str(), (uint8*)&stateData, sizeof(RenderStateData));
-		}
-		archive->SetArchive("materialCustomStates", materialCustomStates);
-		SafeRelease(materialCustomStates);
-	}
+	archive->SetString("materialTemplate", (materialTemplate) ? materialTemplate->name.c_str() : "");		
 	
 	KeyedArchive* materialTextures = new KeyedArchive();
 	for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
@@ -472,25 +458,7 @@ void NMaterial::Load(KeyedArchive * archive,
     {
         materialKey = (NMaterial::NMaterialKey)archive->GetUInt64("materialKey");
 	    pointer = materialKey;
-    }
-	
-	if(archive->IsKeyExists("materialCustomStates"))
-	{
-		RenderStateData stateData;
-		const Map<String, VariantType*>& customRenderState = archive->GetArchive("materialCustomStates")->GetArchieveData();
-		for(Map<String, VariantType*>::const_iterator it = customRenderState.begin();
-			it != customRenderState.end();
-			++it)
-		{
-            
-			DVASSERT(it->second->AsByteArraySize() == sizeof(RenderStateData));
-			const uint8* array = it->second->AsByteArray();
-			memcpy(&stateData, array, sizeof(RenderStateData));
-			
-			UniqueHandle currentHandle = RenderManager::Instance()->CreateRenderState(stateData);
-			instancePassRenderStates.insert(FastName(it->first.c_str()), currentHandle);
-		}
-	}
+    }	
 
 	if(archive->IsKeyExists("materialGroup"))
 	{

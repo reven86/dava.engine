@@ -413,7 +413,7 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
     return res;
 }
 
-void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound)
+void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound /* = true */)
 {
     UIYamlLoader * loader = new UIYamlLoader();
     loader->SetAssertIfCustomControlNotFound(assertIfCustomControlNotFound);

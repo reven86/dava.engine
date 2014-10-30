@@ -202,7 +202,7 @@ void RenderLayerBatchArray::Sort(Camera * camera)
             for (uint32 k = 0; k < renderBatchCount; ++k)
             {
                 RenderBatch * batch = renderBatchArray[k];
-                Vector3 delta = batch->GetSortingTransformPtr()->GetTranslationVector() - cameraPosition;                
+                Vector3 delta = batch->GetRenderObject()->GetWorldTransformPtr()->GetTranslationVector() - cameraPosition;                
                 uint32 distance = delta.DotProduct(cameraDirection)<0?0:((uint32)(delta.Length() * 1000.0f)); //x1000.0f is to prevent resorting of nearby objects (still 26 km range)
                 distance = distance + 31 - batch->GetSortingOffset();
                 batch->layerSortingKey = (distance & 0x0fffffff) | (batch->GetSortingKey() << 28);

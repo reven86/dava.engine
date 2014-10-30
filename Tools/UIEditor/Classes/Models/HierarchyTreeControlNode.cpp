@@ -36,8 +36,8 @@
 HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 												   UIControl* uiObject,
 												   const QString& name) :
-	HierarchyTreeNode(name),
-    listDelegate(NULL)
+	HierarchyTreeNode(name)
+    , listDelegate(NULL)
 {
 	this->parent = parent;
 	
@@ -59,8 +59,8 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 
 HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 												   const HierarchyTreeControlNode* node):
-	HierarchyTreeNode(node),
-    listDelegate(NULL)
+	HierarchyTreeNode(node)
+    , listDelegate(NULL)
 {
 	this->parent = parent;
 	this->uiObject = node->GetUIObject()->Clone();
@@ -272,36 +272,9 @@ void HierarchyTreeControlNode::RemoveTreeNodeFromScene()
 	{
 		return;
 	}
-
-    // Don't touch the subcontrol nodes - they are controlled by the parent control itself.
-    List<UIControl*> subControlNodes = uiObject->GetSubcontrols();
-	for (HIERARCHYTREENODESLIST::iterator iter = childNodes.begin(); iter != childNodes.end(); ++iter)
-	{
-		HierarchyTreeControlNode* control = dynamic_cast<HierarchyTreeControlNode*>(*iter);
-		if (!control || std::find(subControlNodes.begin(), subControlNodes.end(), control->GetUIObject())
-            != subControlNodes.end())
-        {
-			continue;
-        }
-
-		control->RemoveTreeNodeFromScene();
-	}
 	
 	this->parentUIObject = uiObject->GetParent();
 	SafeRetain(this->parentUIObject);
-
-	// Determine the "child above" to return node to scene to the correct position.
-	this->childUIObjectAbove = NULL;
-	for (List<UIControl*>::const_iterator iter = parentUIObject->GetChildren().begin();
-		 iter != parentUIObject->GetChildren().end(); iter ++)
-	{
-		if (((*iter) == uiObject) && (iter != parentUIObject->GetChildren().begin()))
-		{
-			iter --;
-			this->childUIObjectAbove = (*iter);
-			break;
-		}
-	}
 
 	SafeRetain(uiObject);
 	this->parentUIObject->RemoveControl(uiObject);
@@ -311,62 +284,47 @@ void HierarchyTreeControlNode::RemoveTreeNodeFromScene()
 	this->needReleaseUIObjects = true;
 }
 
-void HierarchyTreeControlNode::RestoreParentControl(UIControl* parentControl)
-{
-	if (!uiObject || !parentControl)
-    {
-    	return;
-	}
-
-	// Return the object back to the proper position.
-	if (childUIObjectAbove == NULL)
-	{
-		// Set it to the top.
-		int childCount = parentControl->GetChildren().size();
-		if (childCount == 0)
-		{
-			parentControl->AddControl(uiObject);
-		}
-		else
-		{
-			parentControl->InsertChildAbove(uiObject, parentControl->GetChildren().front());
-		}
-	}
-	else
-	{
-		parentControl->InsertChildBelow(uiObject, childUIObjectAbove);
-	}
-    
-    // Restore all childs for current control node
-    for (HIERARCHYTREENODESLIST::iterator iter = childNodes.begin(); iter != childNodes.end(); ++iter)
-	{
-		HierarchyTreeControlNode* childControl = dynamic_cast<HierarchyTreeControlNode*>(*iter);
-		if (!childControl)
-			continue;
-		childControl->RestoreParentControl(uiObject);
-	}
-    
-    uiObject->Release();
-	parentControl->Release();
-	
-	// We just reset extra references to uiObject and parentUIObject - no additional release needed.
-	needReleaseUIObjects = false;
-}
-
 void HierarchyTreeControlNode::ReturnTreeNodeToScene()
 {
-	if (!uiObject || !parentUIObject || !redoParentNode)
+	if (!this->uiObject || !this->parentUIObject || !this->redoParentNode)
 	{
 		return;
 	}
 
 	// Need to recover the node previously deleted, taking position into account.
-	redoParentNode->AddTreeNode(this, redoPreviousNode);
-    // Restore also inner controls hierachy
-    RestoreParentControl(parentUIObject);
+	this->redoParentNode->AddTreeNode(this, redoPreviousNode);
+
+	// Return the object back to the proper position.
+    UIControl* childUIObjectAbove = NULL;
+    HierarchyTreeControlNode* controlRedoPreviousNode = dynamic_cast<HierarchyTreeControlNode*>(redoPreviousNode);
+    if (controlRedoPreviousNode)
+        childUIObjectAbove = controlRedoPreviousNode->GetUIObject();
+    if (childUIObjectAbove == NULL)
+	{
+		// Set it to the top.
+		int childCount = parentUIObject->GetChildren().size();
+		if (childCount == 0)
+		{
+			parentUIObject->AddControl(uiObject);
+		}
+		else
+		{
+			parentUIObject->InsertChildBelow(uiObject, parentUIObject->GetChildren().front());
+		}
+	}
+	else
+	{
+		parentUIObject->InsertChildBelow(uiObject, childUIObjectAbove);
+	}
+
+	uiObject->Release();
+	parentUIObject->Release();
+	
+	// We just reset extra references to uiObject and parentUIObject - no additional release needed.
+	this->needReleaseUIObjects = false;
 }
 
-Rect HierarchyTreeControlNode::GetRect() const
+Rect HierarchyTreeControlNode::GetRect(bool checkAngle/*=false*/) const
 {
 	Rect rect;
     
@@ -379,7 +337,16 @@ Rect HierarchyTreeControlNode::GetRect() const
     }
 
 	if (uiObject)
-		rect = uiObject->GetRect(true);
+    {
+        if(!checkAngle)
+        {
+            rect = uiObject->GetRect(true);
+        }
+        else
+        {
+            rect = uiObject->GetGeometricData().GetAABBox();
+        }
+    }
 
 	const HIERARCHYTREENODESLIST& childs = GetChildNodes();
 	for (HIERARCHYTREENODESLIST::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)

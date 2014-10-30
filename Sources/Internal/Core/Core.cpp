@@ -90,6 +90,7 @@ Core::Core()
 {
 	globalFrameIndex = 1;
 	isActive = false;
+    isAutotesting = false;
 	firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
@@ -170,9 +171,7 @@ void Core::CreateSingletons()
     new AutotestingSystem();
 #endif
 
-#if defined(__DAVAENGINE_WIN32__)
 	Thread::InitMainThread();
-#endif
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
@@ -641,10 +640,11 @@ void Core::SystemAppStarted()
     if (file.Exists())
     {
     AutotestingSystem::Instance()->OnAppStarted();
+        isAutotesting = true;
     }
     else
     {
-        Logger::FrameworkDebug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
+        Logger::Debug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
     }
 #endif //__DAVAENGINE_AUTOTESTING__
 }
@@ -660,8 +660,6 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
-    IMM_TIME_PROFILE(FastName("Core::SystemProcessFrame"));
-    
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	static bool isInit = false;
 	static EGLuint64NV frequency;

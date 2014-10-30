@@ -5,34 +5,34 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>1B2313B4-4653-4F47-9C35-D0528684F6B0</string>
+	<string>CA19811A-7BE0-4C1B-A08E-CDAF94251228</string>
 	<key>IDESourceControlProjectName</key>
 	<string>TemplateProjectMacOS</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>14431874-49FD-4FCE-9794-0B1F4A1CB62D</key>
-		<string>https://github.com/dava/dava.framework.git</string>
+		<key>62289F3C472C02540432B448FB463096A6264DBD</key>
+		<string>https://github.com/dava/dava.framework</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>Projects/UnitTests/TemplateProjectMacOS.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>14431874-49FD-4FCE-9794-0B1F4A1CB62D</key>
+		<key>62289F3C472C02540432B448FB463096A6264DBD</key>
 		<string>../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>https://github.com/dava/dava.framework.git</string>
+	<string>https://github.com/dava/dava.framework</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>14431874-49FD-4FCE-9794-0B1F4A1CB62D</string>
+	<string>62289F3C472C02540432B448FB463096A6264DBD</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>14431874-49FD-4FCE-9794-0B1F4A1CB62D</string>
+			<string>62289F3C472C02540432B448FB463096A6264DBD</string>
 			<key>IDESourceControlWCCName</key>
 			<string>dava.framework</string>
 		</dict>

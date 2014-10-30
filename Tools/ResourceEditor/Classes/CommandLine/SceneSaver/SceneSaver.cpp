@@ -124,7 +124,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
 		}
 
 		//scene->Update(0.f);
-        scene->Save(sc2Filename);
+        scene->Save(sc2Filename, false);
 	}
 	else
 	{
@@ -187,7 +187,7 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     tempSceneName.ReplaceExtension(".saved.sc2");
     
     sceneUtils.CopyFiles(errorLog);
-    scene->Save(tempSceneName, true);
+    scene->Save(tempSceneName, false);
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
 	if(!moved)
@@ -300,6 +300,18 @@ void SceneSaver::CopyEffects(Entity *node)
 	{
 		CopyEffects(node->GetChild(i));
 	}
+    
+    for (auto it = effectFolders.begin(), endIt = effectFolders.end(); it != endIt; ++it)
+    {
+        FilePath flagsTXT = *it + "flags.txt";
+        
+        if(flagsTXT.Exists())
+        {
+            sceneUtils.AddFile(flagsTXT);
+        }
+    }
+    
+    effectFolders.clear();
 }
 
 void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
@@ -330,6 +342,9 @@ void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
 			FilePath psdPath = ReplaceInString(sprite->GetRelativePathname().GetAbsolutePathname(), "/Data/", "/DataSource/");
 			psdPath.ReplaceExtension(".psd");
 			sceneUtils.AddFile(psdPath);
+            
+            
+            effectFolders.insert(psdPath.GetDirectory());
 		}
 	}
 }

@@ -28,7 +28,7 @@ if __name__ == '__main__':
     argParser.add_argument('frameworkRev', type=str)
     argParser.add_argument('-d', '--date', type=str, default=datetime.now().strftime('%Y%m%d'))
     namespace = argParser.parse_args(argv[1:])
-    data = {'buildId': namespace.buildID, 'branch': namespace.branch, 'branchRev': namespace.branchRev,
-            'framework': namespace.framework, 'frameworkRev': namespace.frameworkRev,
-            'date': namespace.date}
+    data = {'BuildId': namespace.buildID, 'Branch': namespace.branch, 'BranchRev': namespace.branchRev,
+            'Framework': namespace.framework, 'FrameworkRev': namespace.frameworkRev,
+            'Date': namespace.date}
     __saveMapAsSimpleYaml(data)

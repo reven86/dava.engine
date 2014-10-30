@@ -78,7 +78,7 @@ void DownloadManager::SetDownloader(Downloader *_downloader)
     
     while(NULL != currentTask)
     {
-        Thread::SleepThread(10);
+        Thread::Sleep(10);
         Update();
     }
 
@@ -167,11 +167,7 @@ void DownloadManager::Update()
 
 uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 timeout, int32 retriesCount)
 {
-    int32 fullTimeout = timeout;
-    if (GET_SIZE == downloadMode && timeout >= 2)
-        fullTimeout /= 2;
-
-    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, fullTimeout, retriesCount);
+    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount);
  
     static uint32 prevId = 1;
     task->id = prevId++;
@@ -274,7 +270,7 @@ void DownloadManager::ThreadFunction(BaseObject *caller, void *callerData, void 
 {
     while(isThreadStarted)
     {
-        Thread::SleepThread(20);
+        Thread::Sleep(20);
 
         currentTaskMutex.Lock();
         if (!currentTask || DL_FINISHED == currentTask->status)
@@ -348,7 +344,7 @@ void DownloadManager::Wait(const uint32 &taskId)
     while (waitTask
        && (waitTask->status == DL_IN_PROGRESS || waitTask->status == DL_PENDING))
     {
-        Thread::SleepThread(20);
+        Thread::Sleep(20);
         Update();
     }
 }
@@ -361,7 +357,7 @@ void DownloadManager::WaitAll()
 
         if (needToWait)
         {
-            Thread::SleepThread(20);
+            Thread::Sleep(20);
             Update();
         }
         else

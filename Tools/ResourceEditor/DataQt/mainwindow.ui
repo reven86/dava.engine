@@ -428,6 +428,7 @@
     </property>
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
+    <addaction name="actionCreateTestSkinnedObject"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1929,6 +1930,19 @@
    </property>
    <property name="toolTip">
     <string>BatchProcess</string>
+   </property>
+  </action>
+  <action name="actionAddSkeletonComponent">
+   <property name="text">
+    <string>Add Skeleton Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Skeleton Component</string>
+   </property>
+  </action>
+  <action name="actionCreateTestSkinnedObject">
+   <property name="text">
+    <string>Create Test Skinned Object</string>
    </property>
   </action>
  </widget>

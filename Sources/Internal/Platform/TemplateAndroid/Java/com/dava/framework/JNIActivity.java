@@ -53,6 +53,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	activity = this;
         super.onCreate(savedInstanceState);
         
+        // Initialize native framework core         
+        JNIApplication.GetApplication().InitFramework();
+        
         JNINotificationProvider.AttachToActivity();
         
         if(null != savedInstanceState)
@@ -150,6 +153,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // The activity has become visible (it is now "resumed").
 		Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
 
+		
+		JNITextField.HideAllTextFields();
+		
 		if(mController != null)
 		{
 			mController.onResume();
@@ -171,6 +177,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
+        
+        JNIUtils.onResume();
     }
 
     

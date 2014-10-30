@@ -1644,27 +1644,28 @@ SWIG_Lua_dostring(lua_State *L, const char* str) {
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_DAVA__Rect swig_types[0]
-#define SWIGTYPE_p_DAVA__UIControl swig_types[1]
-#define SWIGTYPE_p_DAVA__UIGeometricData swig_types[2]
-#define SWIGTYPE_p_DAVA__Vector2 swig_types[3]
-#define SWIGTYPE_p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result swig_types[4]
-#define SWIGTYPE_p_char swig_types[5]
-#define SWIGTYPE_p_double swig_types[6]
-#define SWIGTYPE_p_float swig_types[7]
-#define SWIGTYPE_p_int swig_types[8]
-#define SWIGTYPE_p_long_long swig_types[9]
-#define SWIGTYPE_p_short swig_types[10]
-#define SWIGTYPE_p_signed_char swig_types[11]
-#define SWIGTYPE_p_std__string swig_types[12]
-#define SWIGTYPE_p_std__wstring swig_types[13]
-#define SWIGTYPE_p_unsigned_char swig_types[14]
-#define SWIGTYPE_p_unsigned_int swig_types[15]
-#define SWIGTYPE_p_unsigned_long_long swig_types[16]
-#define SWIGTYPE_p_unsigned_short swig_types[17]
-#define SWIGTYPE_p_wchar_t swig_types[18]
-static swig_type_info *swig_types[20];
-static swig_module_info swig_module = {swig_types, 19, 0, 0, 0, 0};
+#define SWIGTYPE_p_DAVA__Polygon2 swig_types[0]
+#define SWIGTYPE_p_DAVA__Rect swig_types[1]
+#define SWIGTYPE_p_DAVA__UIControl swig_types[2]
+#define SWIGTYPE_p_DAVA__UIGeometricData swig_types[3]
+#define SWIGTYPE_p_DAVA__Vector2 swig_types[4]
+#define SWIGTYPE_p_SelectT_sizeoffvoid_pF__4_DAVA__uint32_DAVA__uint64_t__Result swig_types[5]
+#define SWIGTYPE_p_char swig_types[6]
+#define SWIGTYPE_p_double swig_types[7]
+#define SWIGTYPE_p_float swig_types[8]
+#define SWIGTYPE_p_int swig_types[9]
+#define SWIGTYPE_p_long_long swig_types[10]
+#define SWIGTYPE_p_short swig_types[11]
+#define SWIGTYPE_p_signed_char swig_types[12]
+#define SWIGTYPE_p_std__string swig_types[13]
+#define SWIGTYPE_p_std__wstring swig_types[14]
+#define SWIGTYPE_p_unsigned_char swig_types[15]
+#define SWIGTYPE_p_unsigned_int swig_types[16]
+#define SWIGTYPE_p_unsigned_long_long swig_types[17]
+#define SWIGTYPE_p_unsigned_short swig_types[18]
+#define SWIGTYPE_p_wchar_t swig_types[19]
+static swig_type_info *swig_types[21];
+static swig_module_info swig_module = {swig_types, 20, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -2069,6 +2070,36 @@ fail:
 }
 
 
+static int _wrap_UIGeometricData_GetPolygon(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
+  DAVA::Polygon2 *arg2 = 0 ;
+  
+  SWIG_check_num_args("DAVA::UIGeometricData::GetPolygon",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIGeometricData::GetPolygon",1,"DAVA::UIGeometricData const *");
+  if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::UIGeometricData::GetPolygon",2,"DAVA::Polygon2 &");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIGeometricData,0))){
+    SWIG_fail_ptr("UIGeometricData_GetPolygon",1,SWIGTYPE_p_DAVA__UIGeometricData);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Polygon2,0))){
+    SWIG_fail_ptr("UIGeometricData_GetPolygon",2,SWIGTYPE_p_DAVA__Polygon2);
+  }
+  
+  ((DAVA::UIGeometricData const *)arg1)->GetPolygon(*arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_UIGeometricData_GetUnrotatedRect(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) 0 ;
@@ -2098,6 +2129,7 @@ DAVA::UIGeometricData *arg1 = (DAVA::UIGeometricData *) obj;
 delete arg1;
 }
 static swig_lua_method swig_DAVA_UIGeometricData_methods[] = {
+    {"GetPolygon", _wrap_UIGeometricData_GetPolygon}, 
     {"GetUnrotatedRect", _wrap_UIGeometricData_GetUnrotatedRect}, 
     {0,0}
 };
@@ -2732,6 +2764,7 @@ static swig_lua_const_info swig_constants[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
+static swig_type_info _swigt__p_DAVA__Polygon2 = {"_p_DAVA__Polygon2", "DAVA::Polygon2 *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_DAVA__Rect = {"_p_DAVA__Rect", "DAVA::Rect *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_DAVA__UIControl = {"_p_DAVA__UIControl", "DAVA::UIControl *", 0, 0, (void*)&_wrap_class_DAVA_UIControl, 0};
 static swig_type_info _swigt__p_DAVA__UIGeometricData = {"_p_DAVA__UIGeometricData", "DAVA::UIGeometricData *", 0, 0, (void*)&_wrap_class_DAVA_UIGeometricData, 0};
@@ -2753,6 +2786,7 @@ static swig_type_info _swigt__p_unsigned_short = {"_p_unsigned_short", "DAVA::ui
 static swig_type_info _swigt__p_wchar_t = {"_p_wchar_t", "DAVA::char16 *|wchar_t *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
+  &_swigt__p_DAVA__Polygon2,
   &_swigt__p_DAVA__Rect,
   &_swigt__p_DAVA__UIControl,
   &_swigt__p_DAVA__UIGeometricData,
@@ -2774,6 +2808,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_wchar_t,
 };
 
+static swig_cast_info _swigc__p_DAVA__Polygon2[] = {  {&_swigt__p_DAVA__Polygon2, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_DAVA__Rect[] = {  {&_swigt__p_DAVA__Rect, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_DAVA__UIControl[] = {  {&_swigt__p_DAVA__UIControl, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_DAVA__UIGeometricData[] = {  {&_swigt__p_DAVA__UIGeometricData, 0, 0, 0},{0, 0, 0, 0}};
@@ -2795,6 +2830,7 @@ static swig_cast_info _swigc__p_unsigned_short[] = {  {&_swigt__p_unsigned_short
 static swig_cast_info _swigc__p_wchar_t[] = {  {&_swigt__p_wchar_t, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
+  _swigc__p_DAVA__Polygon2,
   _swigc__p_DAVA__Rect,
   _swigc__p_DAVA__UIControl,
   _swigc__p_DAVA__UIGeometricData,

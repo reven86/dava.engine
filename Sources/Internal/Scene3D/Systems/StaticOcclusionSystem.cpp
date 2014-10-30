@@ -161,6 +161,11 @@ void StaticOcclusionBuildSystem::Cancel()
 {
     activeIndex = -1;
     SafeDelete(staticOcclusion);
+    
+    StaticOcclusionSystem *sos = GetScene()->staticOcclusionSystem;
+    sos->InvalidateOcclusion();
+    SceneForceLod(LodComponent::INVALID_LOD_LAYER);
+    RestoreOcclusionMaterials();
 }
     
 void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData)
@@ -570,7 +575,7 @@ void StaticOcclusionSystem::RegisterComponent(Entity *entity, Component * compon
     }
 }
     
-void StaticOcclusionSystem::UnregisterEntity(Entity *entity, Component * component)
+void StaticOcclusionSystem::UnregisterComponent(Entity *entity, Component * component)
 {
     if (component->GetType() == Component::RENDER_COMPONENT)
     {
@@ -799,7 +804,7 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGrid
             for (uint32 zs = 0; zs < zSubdivisions; ++zs)
             {
                 int32 iBase = (zs + zSubdivisions*(ys + xs * ySubdivisions)) * 24;
-                int32 vBase[2] = {IDX_BY_POS(xs, ys, zs), IDX_BY_POS(xs, ys, zs+1)};
+                int32 vBase[2] = {static_cast<int32>(IDX_BY_POS(xs, ys, zs)), static_cast<int32>(IDX_BY_POS(xs, ys, zs+1))};
                 for (int32 i=0; i<24; i++)
                     res->SetIndex(iBase + i, indexOffsets[i*2] + vBase[indexOffsets[i*2+1]]);
 
@@ -818,7 +823,7 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCove
     int32 xSideIndexCount = xSubdivisions * 6 * 2; 
     int32 ySideIndexCount = ySubdivisions * 6 * 2;
     int32 xySideIndexCount =  xSideIndexCount + ySideIndexCount;
-    int32 zSideIndexCount = xSubdivisions * xSubdivisions * 6 * 2;
+    int32 zSideIndexCount = xSubdivisions * ySubdivisions * 6 * 2;
     int32 totalSideIndexCount = xySideIndexCount+zSideIndexCount;
     int32 xExtraIndexCount = (xSubdivisions-1) * (ySubdivisions) * 6 * 2;
     int32 yExtraIndexCount = (ySubdivisions-1) * (xSubdivisions) * 6 * 2;

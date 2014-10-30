@@ -187,13 +187,15 @@ void TextBlock::SetPivotPoint(const Vector2& pivotPoint)
 void TextBlock::SetText(const WideString & _string, const Vector2 &requestedTextRectSize)
 {
     mutex.Lock();
-    if(text == _string && requestedSize == requestedTextRectSize)
+
+    WideString trimStr = Trim(_string);
+	if(text == trimStr && requestedSize == requestedTextRectSize)
     {
         mutex.Unlock();
 		return;
 	}
 	requestedSize = requestedTextRectSize;
-	text = _string;
+    text = trimStr;
 
     mutex.Unlock();
     Prepare();
@@ -386,11 +388,11 @@ void TextBlock::CalculateCacheParams()
     {
         if(isMultilineBySymbolEnabled)
         {
-            font->SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
+            SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
         }
         else
         {
-            font->SplitTextToStrings(text, drawSize, multilineStrings);
+            SplitTextToStrings(text, drawSize, multilineStrings);
         }
 
         treatMultilineAsSingleLine = multilineStrings.size() == 1;
@@ -566,9 +568,9 @@ void TextBlock::CalculateCacheParams()
         if(fittingType && (requestedSize.dy >= 0/* || requestedSize.dx >= 0*/) && text.size() > 3)
         {
             if(isMultilineBySymbolEnabled)
-                font->SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
+                SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
             else
-                font->SplitTextToStrings(text, drawSize, multilineStrings);
+                SplitTextToStrings(text, drawSize, multilineStrings);
 
             int32 yOffset = font->GetVerticalSpacing();
             int32 fontHeight = font->GetFontHeight() + yOffset;
@@ -638,9 +640,9 @@ void TextBlock::CalculateCacheParams()
                 font->SetRenderSize(finalSize);
 
                 if(isMultilineBySymbolEnabled)
-                    font->SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
+                    SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
                 else
-                    font->SplitTextToStrings(text, drawSize, multilineStrings);
+                    SplitTextToStrings(text, drawSize, multilineStrings);
 
                 yOffset = font->GetVerticalSpacing();
                 fontHeight = font->GetFontHeight() + yOffset;
@@ -651,9 +653,9 @@ void TextBlock::CalculateCacheParams()
         }
 
         if(isMultilineBySymbolEnabled)
-            font->SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
+            SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
         else
-            font->SplitTextToStrings(text, drawSize, multilineStrings);
+            SplitTextToStrings(text, drawSize, multilineStrings);
 
         int32 yOffset = font->GetVerticalSpacing();
         int32 fontHeight = font->GetFontHeight() + yOffset;
@@ -820,6 +822,349 @@ const Vector2& TextBlock::GetSpriteOffset()
     mutex.Unlock();
 
     return cacheSpriteOffset;
+}
+
+void TextBlock::SplitTextToStrings(WideString const& text, Vector2 const& targetRectSize, Vector<WideString>& resultVector)
+{
+    resultVector.clear();
+
+    Vector<float32> sizes;
+    font->GetStringSize(text, &sizes);
+    if(sizes.size() == 0)
+    {
+        return;
+    }
+
+    const float32 p2v = Core::GetPhysicalToVirtualFactor();
+    int32 targetWidth = (int32)targetRectSize.dx;
+    WideString currentLine;
+    int32 lastSeparatorPos = 0;
+    int32 prevSeparatorPos = 0;
+    bool lastSeparatorIsSpace = false;
+    float32 currentWidth = 0;
+    
+    uint32 textLength = text.length();
+    for (uint32 pos = 0; pos < textLength; ++pos)
+    {
+        char16 ch = text[pos];
+        bool isLineEnd = IsLineEnd(ch);
+        
+        if(isLineEnd)
+        {
+            resultVector.push_back(currentLine);
+            currentLine.clear();
+            lastSeparatorPos = 0;
+            currentWidth = 0;
+            continue;
+        }
+
+        bool isSpace = IsSpace(ch);
+        if(IsWordSeparator(ch) || isSpace)
+        {
+            prevSeparatorPos = lastSeparatorPos;
+            lastSeparatorPos = currentLine.length();
+            lastSeparatorIsSpace = isSpace;
+        }
+
+        currentLine.push_back(ch);
+        currentWidth += sizes[pos] * p2v;
+
+        if(0 == targetWidth || currentWidth <= targetWidth || isSpace)
+        {
+            continue;
+        }
+       
+        if(lastSeparatorPos == 0)
+        {
+            pos--;
+            currentLine.resize(currentLine.length() - 1);
+        }
+        else
+        {
+            int32 currentLength = currentLine.length();
+            int32 revert = currentLength - lastSeparatorPos - 1;
+
+            // Check last symbol is special separator and other separator in current line
+            if(revert == 0 && !lastSeparatorIsSpace && prevSeparatorPos > 0)
+            {
+                lastSeparatorPos = prevSeparatorPos;
+                revert = currentLength - lastSeparatorPos - 1;
+                lastSeparatorIsSpace = IsSpace(currentLine[lastSeparatorPos]);
+            }
+
+            if(revert == 0)
+            {
+                if(lastSeparatorIsSpace)
+                {
+                    currentLine.resize(currentLength - 1);
+                }
+                else
+                {
+                    pos -= 2;
+                    currentLine.resize(currentLength - 2);
+                }
+            }
+            else
+            {
+                pos -= revert;
+                WideString::iterator it = currentLine.begin() + lastSeparatorPos;
+                while(it != currentLine.begin() && IsSpace(*it)) --it;
+                currentLine.erase(it + 1, currentLine.end());
+            }
+        }
+
+        resultVector.push_back(currentLine);
+        currentLine.clear();
+        lastSeparatorPos = 0;
+        currentWidth = 0;
+    }
+
+    if(!currentLine.empty())
+    {
+        resultVector.push_back(currentLine);
+    }
+    
+}
+
+void TextBlock::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
+{
+	int32 targetWidth = (int32)(targetRectSize.dx);
+    int32 totalSize = (int)text.length();
+    
+    int32 currentLineStart = 0;
+	int32 currentLineEnd = 0;
+    float32 currentLineDx = 0;
+    
+	resultVector.clear();
+    
+    Vector<float32> sizes;
+	font->GetStringSize(text, &sizes);
+	if(sizes.size() == 0)
+	{
+		return;
+	}
+
+    for(int pos = 0; pos < totalSize; pos++)
+    {
+        char16 t = text[pos];
+        char16 tNext = 0;
+        if(pos+1 < totalSize)
+            tNext = text[pos+1];
+        
+        currentLineEnd = pos;
+        
+        if(t == L'\n')
+        {
+            WideString currentLine = text.substr(currentLineStart, currentLineEnd - currentLineStart);
+            resultVector.push_back(currentLine);
+            
+            currentLineStart = pos + 1;
+            currentLineDx = 0;
+        }
+        if(t == L'\\' && tNext == L'n')
+        {
+            WideString currentLine = text.substr(currentLineStart, currentLineEnd - currentLineStart);
+            resultVector.push_back(currentLine);
+            
+            currentLineStart = pos + 2;
+            currentLineDx = 0;
+        }
+		
+		// Use additional condition to prevent endless loop, when target size is less than
+		// size of one symbol (sizes[pos] > targetWidth)
+		// To keep initial index logic we should always perform action currentLineDx += sizes[pos]
+		// before entering this condition, so currentLineDx > 0.
+        if((currentLineDx > 0) && ((currentLineDx + sizes[pos] * Core::GetPhysicalToVirtualFactor()) > targetWidth))
+        {
+            WideString currentLine = text.substr(currentLineStart, currentLineEnd - currentLineStart);
+            resultVector.push_back(currentLine);
+            
+            currentLineStart = pos;
+            currentLineDx = 0;
+            pos--;
+        }
+        else
+        {
+            currentLineDx += sizes[pos] * Core::GetPhysicalToVirtualFactor();
+        }
+    }
+    
+    WideString currentLine = text.substr(currentLineStart, currentLineEnd - currentLineStart + 1);
+    resultVector.push_back(currentLine);
+}
+
+bool TextBlock::IsWordSeparator(char16 t) const
+{
+    switch(t)
+    {
+        case 183: // interpunkt
+        // japanese characters that cannot start line ヽヾーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻
+        case 12541:
+        case 12542:
+        case 12540:
+        case 12449:
+        case 12451:
+        case 12453:
+        case 12455:
+        case 12457:
+        case 12483:
+        case 12515:
+        case 12517:
+        case 12519:
+        case 12526:
+        case 12533:
+        case 12534:
+        case 12353:
+        case 12355:
+        case 12357:
+        case 12359:
+        case 12361:
+        case 12387:
+        case 12419:
+        case 12421:
+        case 12423:
+        case 12430:
+        case 12437:
+        case 12438:
+        case 12784:
+        case 12785:
+        case 12786:
+        case 12787:
+        case 12788:
+        case 12789:
+        case 12790:
+        case 12791:
+        case 12792:
+        case 12793:
+        case 12794:
+        case 12795:
+        case 12796:
+        case 12797:
+        case 12798:
+        case 12799:
+        case 12293:
+        case 12347:
+        // brackets )]｝〕〉》」』】〙〗〟’”｠»
+        case 41:
+        case 93:
+        case 65373:
+        case 12309:
+        case 12297:
+        case 12299:
+        case 12301:
+        case 12303:
+        case 12305:
+        case 12313:
+        case 12311:
+        case 12319:
+        case 8217:
+        case 8221:
+        case 65376:
+        case 187:
+        // hyphens ‐゠–〜
+        case 8208:
+        case 12448:
+        case 8211:
+        case 12316:
+        // delimeters ?!‼⁇⁈⁉
+        case 63:
+        case 33:
+        case 8252:
+        case 8263:
+        case 8264:
+        case 8265:
+        // punctuation mid ・、:;,
+        case 12539:
+        case 12289: // ideographic comma
+        case 58:
+        case 59:
+        case 44:
+        // punctuation end 。.
+        case 12290:
+        case 46:
+            return true;
+        // chinese simplified and traditional
+        case 37:
+        case 62:
+        case 125: 
+        case 162: 
+        case 168: 
+        case 176:
+        case 711: 
+        case 713: 
+        case 8213: 
+        case 8214:
+        case 8222: 
+        case 8223: 
+        case 8224: 
+        case 8225: 
+        case 8250: 
+        case 8451: 
+        case 8758:
+        case 12291: 
+        case 12294: 
+        case 12296: 
+        case 12298:
+        case 12300:
+        case 12302:
+        case 12318:
+        case 65077:
+        case 65081:
+        case 65085:
+        case 65087:
+        case 65091:
+        case 65112:
+        case 65114:
+        case 65116:
+        case 65281:
+        case 65282:
+        case 65285:
+        case 65287:
+        case 65289:
+        case 65292:
+        case 65294:
+        case 65306:
+        case 65307:
+        case 65311:
+        case 65341:
+        case 65344:
+        case 65372:
+        case 65374:
+        case 8212:
+        case 8226:
+        case 8229:
+        case 8231:
+        case 9588:
+        case 65072:
+        case 65073:
+        case 65074:
+        case 65075:
+        case 65079:
+        case 65083:
+        case 65089:
+        case 65103:
+        case 65104:
+        case 65105:
+        case 65106:
+        case 65107:
+        case 65108:
+        case 65109:
+        case 65110:
+        case 65380:
+            return true;
+    }
+    
+    return false;
+}
+
+WideString TextBlock::Trim(const WideString& str) const
+{
+    const WideString::const_iterator eit = str.end();
+    WideString::const_iterator it = str.begin();
+    while(it != eit && IsSpace(*it)) ++it;
+    WideString::const_reverse_iterator rit = str.rbegin();
+    while(rit.base() != it && IsSpace(*rit)) ++rit;
+    return WideString(it,rit.base());
 }
 
 };

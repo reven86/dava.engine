@@ -117,6 +117,12 @@ protected:
 
 	void ProcessAlign();
 	
+    void SplitTextToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector);
+	void SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector);   
+    inline bool IsLineEnd(char16 t) const;
+    inline bool IsSpace(char16 t) const;
+    bool IsWordSeparator(char16 t) const;
+    WideString Trim(const WideString& str) const;
 
 	Vector2 rectSize;
 	Vector2 requestedSize;
@@ -160,6 +166,16 @@ protected:
     TextureInvalidater *textureInvalidater;
 	Texture *textureForInvalidation;
 };
+
+inline bool TextBlock::IsLineEnd(char16 t) const
+{
+    return (t == L'\n');
+}
+    
+inline bool TextBlock::IsSpace(char16 t) const
+{
+    return (t == L' ');
+}
 
 }; //end of namespace
 

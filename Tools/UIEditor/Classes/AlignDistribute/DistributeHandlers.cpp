@@ -100,13 +100,13 @@ ControlsPositionData BaseDistributeHandler::DistributeLeftTopEdges(const List<UI
 	float32 step = 0.0f;
 	if (isHorizontal)
 	{
-		startPos = firstControl->GetRect(true).x;
-		step = (lastControl->GetRect(true).x - firstControl->GetRect(true).x) / (itemsCount - 1);
+		startPos = firstControl->GetGeometricData().GetAABBox().x;
+		step = (lastControl->GetGeometricData().GetAABBox().x - firstControl->GetGeometricData().GetAABBox().x) / (itemsCount - 1);
 	}
 	else
 	{
-		startPos = firstControl->GetRect(true).y;
-		step = (lastControl->GetRect(true).y - firstControl->GetRect(true).y) / (itemsCount - 1);
+		startPos = firstControl->GetGeometricData().GetAABBox().y;
+		step = (lastControl->GetGeometricData().GetAABBox().y - firstControl->GetGeometricData().GetAABBox().y) / (itemsCount - 1);
 	}
 
 	// Update the controls.
@@ -120,18 +120,23 @@ ControlsPositionData BaseDistributeHandler::DistributeLeftTopEdges(const List<UI
 			continue;
 		}
 		
-		Rect absoluteRect = uiControl->GetRect(true);
+		Rect absoluteRect = uiControl->GetGeometricData().GetAABBox();
+		Vector2 moveDelta;
 		if (isHorizontal)
 		{
-			absoluteRect.x = startPos + step * index;
+			float32 newPosX = startPos + step * index;
+			moveDelta = Vector2(newPosX - absoluteRect.x, 0);
 		}
 		else
 		{
-			absoluteRect.y = startPos + step * index;
+			float32 newPosY = startPos + step * index;
+			moveDelta = Vector2(0, newPosY - absoluteRect.y);
 		}
 
 		index ++;
-		uiControl->SetRect(absoluteRect, true);
+		Vector2 controlPosition = uiControl->GetPosition(true);
+		controlPosition += moveDelta;
+		uiControl->SetPosition(controlPosition, true);
 	}
 
 	return resultData;
@@ -157,13 +162,13 @@ ControlsPositionData BaseDistributeHandler::DistributeXYCenter(const List<UICont
 	
 	if (isHorizontal)
 	{
-		startPos = firstControl->GetRect(true).GetCenter().x;
-		step = (lastControl->GetRect(true).GetCenter().x - firstControl->GetRect(true).GetCenter().x) / (itemsCount - 1);
+		startPos = firstControl->GetGeometricData().GetAABBox().GetCenter().x;
+		step = (lastControl->GetGeometricData().GetAABBox().GetCenter().x - firstControl->GetGeometricData().GetAABBox().GetCenter().x) / (itemsCount - 1);
 	}
 	else
 	{
-		startPos = firstControl->GetRect(true).GetCenter().y;
-		step = (lastControl->GetRect(true).GetCenter().y - firstControl->GetRect(true).GetCenter().y) / (itemsCount - 1);
+		startPos = firstControl->GetGeometricData().GetAABBox().GetCenter().y;
+		step = (lastControl->GetGeometricData().GetAABBox().GetCenter().y - firstControl->GetGeometricData().GetAABBox().GetCenter().y) / (itemsCount - 1);
 	}
 	
 	// Update the controls.
@@ -177,18 +182,23 @@ ControlsPositionData BaseDistributeHandler::DistributeXYCenter(const List<UICont
 			continue;
 		}
 
-		Rect absoluteRect = uiControl->GetRect(true);
+		Rect absoluteRect = uiControl->GetGeometricData().GetAABBox();
+		Vector2 moveDelta;
 		if (isHorizontal)
 		{
-			absoluteRect.x = startPos + step * index - absoluteRect.dx / 2;
+			float32 newPosX = startPos + step * index - absoluteRect.dx / 2;
+			moveDelta = Vector2(newPosX - absoluteRect.x, 0);
 		}
 		else
 		{
-			absoluteRect.y = startPos + step * index - absoluteRect.dy / 2;
+			float32 newPosY = startPos + step * index - absoluteRect.dy / 2;;
+			moveDelta = Vector2(0, newPosY - absoluteRect.y);
 		}
 
 		index ++;
-		uiControl->SetRect(absoluteRect, true);
+		Vector2 controlPosition = uiControl->GetPosition(true);
+		controlPosition += moveDelta;
+		uiControl->SetPosition(controlPosition, true);
 	}
 		
 	return resultData;
@@ -208,8 +218,8 @@ ControlsPositionData BaseDistributeHandler::DistributeRightBottomEdges(const Lis
 	UIControl* firstControl = orderedControlsList.front();
 	UIControl* lastControl = orderedControlsList.back();
 
-	Rect firstControlRect = firstControl->GetRect(true);
-	Rect lastControlRect = lastControl->GetRect(true);
+	Rect firstControlRect = firstControl->GetGeometricData().GetAABBox();
+	Rect lastControlRect = lastControl->GetGeometricData().GetAABBox();
 
 	float32 startPos = 0.0f;
 	float32 endPos = 0.0f;
@@ -239,18 +249,23 @@ ControlsPositionData BaseDistributeHandler::DistributeRightBottomEdges(const Lis
 			continue;
 		}
 
-		Rect absoluteRect = uiControl->GetRect(true);
+		Rect absoluteRect = uiControl->GetGeometricData().GetAABBox();
+		Vector2 moveDelta;
 		if (isHorizontal)
 		{
-			absoluteRect.x = startPos + step * index - absoluteRect.dx;
+			float32 newPosX = startPos + step * index - absoluteRect.dx;
+			moveDelta = Vector2(newPosX - absoluteRect.x, 0);
 		}
 		else
 		{
-			absoluteRect.y = startPos + step * index - absoluteRect.dy;
+			float32 newPosY = startPos + step * index - absoluteRect.dy;
+			moveDelta = Vector2(0, newPosY - absoluteRect.y);
 		}
 
 		index ++;
-		uiControl->SetRect(absoluteRect, true);
+		Vector2 controlPosition = uiControl->GetPosition(true);
+		controlPosition += moveDelta;
+		uiControl->SetPosition(controlPosition, true);
 	}
 
 	return resultData;
@@ -281,8 +296,8 @@ ControlsPositionData BaseDistributeHandler::DistributeXY(const List<UIControl*>&
 			continue;
 		}
 			
-		Rect prevRect = (*prevControlIter)->GetRect(true);
-		Rect curRect = (*iter)->GetRect(true);
+		Rect prevRect = (*prevControlIter)->GetGeometricData().GetAABBox();
+		Rect curRect = (*iter)->GetGeometricData().GetAABBox();
 		
 		if (isHorizontal)
 		{
@@ -308,7 +323,7 @@ ControlsPositionData BaseDistributeHandler::DistributeXY(const List<UIControl*>&
 
 	// Update the controls.
 	UIControl* firstControl = orderedControlsList.front();
-	Rect firstControlRect = firstControl->GetRect(true);
+	Rect firstControlRect = firstControl->GetGeometricData().GetAABBox();
 	float32 curPos = isHorizontal ? firstControlRect.x : firstControlRect.y;
 	for (List<UIControl*>::iterator iter = orderedControlsList.begin(); iter != orderedControlsList.end();
 		 iter ++)
@@ -319,20 +334,25 @@ ControlsPositionData BaseDistributeHandler::DistributeXY(const List<UIControl*>&
 			continue;
 		}
 
-		Rect absoluteRect = uiControl->GetRect(true);
+		Rect absoluteRect = uiControl->GetGeometricData().GetAABBox();
 		
+		Vector2 moveDelta;
 		if (isHorizontal)
 		{
-			absoluteRect.x = curPos;
+			float32 newPosX = curPos;
+			moveDelta = Vector2(newPosX - absoluteRect.x, 0);
 			curPos += (distance + absoluteRect.dx);
 		}
 		else
 		{
-			absoluteRect.y = curPos;
+			float32 newPosY = curPos;
+			moveDelta = Vector2(0, newPosY - absoluteRect.y);
 			curPos += (distance + absoluteRect.dy);
 		}
 
-		uiControl->SetRect(absoluteRect, true);
+		Vector2 controlPosition = uiControl->GetPosition(true);
+		controlPosition += moveDelta;
+		uiControl->SetPosition(controlPosition, true);
 	}
 		
 	return resultData;

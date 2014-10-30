@@ -216,7 +216,7 @@ eErrorCode LibJpegWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int
     return SUCCESS;
 }
 
-eErrorCode LibJpegWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibJpegWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     Logger::Error("[LibJpegWrapper::WriteFileAsCubeMap] For jpeg cubeMaps are not supported");
     return ERROR_WRITE_FAIL;

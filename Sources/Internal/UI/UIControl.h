@@ -52,6 +52,7 @@ class Message;
 
 class UIGeometricData
 {
+    friend class UIControl;
 
 public:
     UIGeometricData()
@@ -146,6 +147,20 @@ public:
     {
         return unrotatedRect;
     }
+    
+    Rect GetAABBox() const
+    {
+        Polygon2 polygon;
+        GetPolygon(polygon);
+
+        AABBox2 aabbox;
+        for(int32 i = 0; i < polygon.GetPointCount(); ++i)
+        {
+            aabbox.AddPoint(polygon.GetPoints()[i]);
+        }
+        Rect bboxRect = Rect(aabbox.min, aabbox.max - aabbox.min);
+        return bboxRect;
+    }
 
 private:
     float32 calculatedAngle;
@@ -227,7 +242,7 @@ public:
     {
         EVENT_TOUCH_DOWN            = 1,//!<Trigger when mouse button or touch comes down inside the control.
         EVENT_TOUCH_UP_INSIDE       = 2,//!<Trigger when mouse pressure or touch processed by the control is released.
-        EVENT_VALUE_CHANGED         = 3,//!<Used only with sliders for now. Trigger when value of the slider is changed.
+        EVENT_VALUE_CHANGED         = 3,//!<Used with sliders, spinners and switches. Trigger when value of the control is changed. Non-NULL callerData means that value is changed from code, not from UI.
         EVENT_HOVERED_SET           = 4,//!<
         EVENT_HOVERED_REMOVED       = 5,//!<
         EVENT_FOCUS_SET             = 6,//!<Trigger when control becomes focused
@@ -588,12 +603,6 @@ public:
      */
     inline float32 GetAngle() const;
     
-    /**
-     \brief Returns control's parents total rotation angle in radians.
-     \returns control's parents total angle in radians.
-     */
-    virtual float32 GetParentsTotalAngle(bool includeOwn);
-
     /**
      \brief Sets contol rotation angle in radians.
         Control rotates around the pivot point.

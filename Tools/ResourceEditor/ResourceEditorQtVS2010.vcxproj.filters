@@ -244,6 +244,9 @@
     <Filter Include="Classes\Qt\Tools\ColorPicker">
       <UniqueIdentifier>{3dacba69-c0f7-4b98-ac0d-4b37dbe010fe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\CommandLine\StaticOcclusion">
+      <UniqueIdentifier>{ba040de8-b094-4b71-b42e-0775ea546e53}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\Collada\ColladaAnimatedMesh.cpp">
@@ -1224,9 +1227,6 @@
     <ClCompile Include="Classes\Deprecated\EditorHeightmap.cpp">
       <Filter>Classes\Deprecated</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Deprecated\EditorSettings.cpp">
-      <Filter>Classes\Deprecated</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Deprecated\ExtendedDialog.cpp">
       <Filter>Classes\Deprecated</Filter>
     </ClCompile>
@@ -2153,6 +2153,9 @@
     </ClCompile>
     <ClCompile Include="_GeneratedQt\Tools\Widgets\FilePathBrowser_moc.cpp">
       <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\CommandLine\StaticOcclusion\StaticOcclusionTool.cpp">
+      <Filter>Classes\CommandLine\StaticOcclusion</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3374,9 +3377,6 @@
     <ClInclude Include="Classes\Deprecated\EditorHeightmap.h">
       <Filter>Classes\Deprecated</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Deprecated\EditorSettings.h">
-      <Filter>Classes\Deprecated</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Deprecated\ExtendedDialog.h">
       <Filter>Classes\Deprecated</Filter>
     </ClInclude>
@@ -3751,6 +3751,9 @@
     </ClInclude>
     <ClInclude Include="Classes\Qt\Tools\Widgets\FilePathBrowser.h">
       <Filter>Classes\Qt\Tools\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\CommandLine\StaticOcclusion\StaticOcclusionTool.h">
+      <Filter>Classes\CommandLine\StaticOcclusion</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

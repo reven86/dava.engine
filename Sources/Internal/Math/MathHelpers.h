@@ -33,7 +33,6 @@
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
 #include "Math/Matrix4.h"
-#include "Math/Quaternion.h"
 #include "Math/MathConstants.h"
 
 namespace DAVA

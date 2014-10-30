@@ -79,7 +79,7 @@ public:
         \param[in] assertIfCustomControlNotFound	if this flag is set to true, ASSERT and stop app execution if the
                                                     custom control can't be loaded.
      */
-    static void Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound = false);
+    static void Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound = true);
 
     /**
      \brief	This function saves the UIControl's hierarchy to the YAML file passed.
@@ -110,6 +110,8 @@ public:
     void AddScrollBarToLink(UIScrollBar* scroll,const String& delegatePath);
     static String GetControlPath(const UIControl* conrol);
     static UIControl* GetControlByPath(const String& controlPath, UIControl* rootControl);
+
+    inline bool GetAssertIfCustomControlNotFound() const;
 
 protected:
     //Internal functions that do actual loading and saving.
@@ -143,6 +145,12 @@ protected:
 
     Map<UIScrollBar*,String> scrollsToLink;    
 };
+    
+inline bool UIYamlLoader::GetAssertIfCustomControlNotFound() const
+{
+    return assertIfCustomControlNotFound;
+}
+
 };
 
 #endif // __DAVAENGINE_YAML_LOADER_H__

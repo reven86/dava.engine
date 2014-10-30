@@ -267,8 +267,6 @@ public:
 
 	void SetTextAlign(int32 align);
 
-    virtual void SetVisible(bool isVisible);
-
     virtual void SetSize(const DAVA::Vector2 &newSize);
 
     /**

@@ -146,6 +146,7 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 	MD5::ForDirectory(pathname, newMD5Digest, isRecursive);
 
 	file = File::Create(md5FileName, File::CREATE | File::WRITE);
+    DVASSERT(file);
     
 	int32 bytes = file->Write(newMD5Digest, 16);
 	DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");

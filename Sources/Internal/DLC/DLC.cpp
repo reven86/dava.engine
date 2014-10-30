@@ -56,6 +56,9 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     DVASSERT(!gameVersion.empty());
 
+    //  we suppose that downloaded data should not be media data and exclude it from index.
+	FileSystem::Instance()->MarkFolderAsNoMedia(destinationDir);
+
     // initial values
     dlcContext.remoteUrl = url;
     dlcContext.localVer = 0;
@@ -446,7 +449,7 @@ void DLC::StepCheckInfoBegin()
     Logger::Info("DLC: Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
 
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckInfoFinish));
-    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL);   
+    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL);
 }
 
 // downloading DLC version file finished. need to read removeVersion
@@ -472,6 +475,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
             }
             else
             {
+            	Logger::FrameworkDebug("DLC: error %d", downloadError);
                 if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
                 {
                     // connection problem
@@ -747,7 +751,7 @@ void DLC::StepPatchBegin()
         }
         while(patchReader.ReadNext());
     }
-
+    
     Logger::Info("DLC: Patching, %d files to patch", dlcContext.patchCount);
     patchingThread = Thread::Create(Message(this, &DLC::PatchingThread));
     patchingThread->Start();
@@ -862,8 +866,10 @@ bool DLC::ReadUint32(const FilePath &path, uint32 &value)
         tmp[0] = 0;
         if(f->ReadLine(tmp, sizeof(tmp)) > 0)
         {
-            value = atoi(tmp);
-            ret = true;
+			if(sscanf(tmp, "%u", &value) > 0)
+			{
+				ret = true;
+			}
         }
         SafeRelease(f);
     }

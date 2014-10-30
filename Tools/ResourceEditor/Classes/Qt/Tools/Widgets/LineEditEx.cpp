@@ -22,6 +22,7 @@ LineEditEx::LineEditEx(QWidget* parent)
 
     QHBoxLayout *l = new QHBoxLayout();
     l->setContentsMargins(QMargins());
+    l->setSpacing(1);
     l->addStretch();
     setLayout(l);
 
@@ -85,6 +86,26 @@ int LineEditEx::ButtonsWidth() const
     return buttonsWidth;
 }
 
+void LineEditEx::AddCustomWidget(QWidget* w)
+{
+    if (widgets.contains(w))
+        return ;
+
+    widgets.insert(w);
+    layout()->addWidget(w);
+    UpdatePadding();
+}
+
+void LineEditEx::RemoveCustomWidget(QWidget* w)
+{
+    if (!widgets.contains(w))
+        return ;
+
+    widgets.remove(w);
+    layout()->removeWidget(w);
+    UpdatePadding();
+}
+
 void LineEditEx::OnTextEdit()
 {
     timer->start();
@@ -99,9 +120,9 @@ void LineEditEx::OnAcceptEdit()
 void LineEditEx::UpdatePadding()
 {
     buttonsWidth = 0;
-    for ( auto it = buttons.constBegin(); it != buttons.constEnd(); ++it )
+    for ( auto it = widgets.constBegin(); it != widgets.constEnd(); ++it )
     {
-        buttonsWidth += it.value()->width();
+        buttonsWidth += (*it)->width();
     }
     if ( buttons.size() > 0 )
     {
@@ -153,12 +174,10 @@ void LineEditEx::AddActionHandler(QAction* action)
 {
     QAbstractButton *btn = CreateButton(action);
     buttons[action] = btn;
-    layout()->addWidget(btn);
+    AddCustomWidget(btn);
 
     connect( action, SIGNAL( changed() ), SLOT( OnActionChanged() ) );
     connect( btn, SIGNAL( clicked() ), action, SLOT( trigger() ) );
-
-    UpdatePadding();
 }
 
 void LineEditEx::RemoveActionHandler(QAction* action)
@@ -166,9 +185,9 @@ void LineEditEx::RemoveActionHandler(QAction* action)
     auto it = buttons.find(action);
     if ( it != buttons.end() )
     {
-        delete it.value();
+        RemoveCustomWidget(it.value());
+        it.value()->deleteLater();
         buttons.erase(it);
-        UpdatePadding();
     }
 }
 

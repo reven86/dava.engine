@@ -111,7 +111,7 @@ public:
     virtual void RegisterEntity(Entity *entity);
     virtual void UnregisterEntity(Entity *entity);
     virtual void RegisterComponent(Entity *entity, Component * component);
-    virtual void UnregisterEntity(Entity *entity, Component * component);
+    virtual void UnregisterComponent(Entity *entity, Component * component);
     
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
