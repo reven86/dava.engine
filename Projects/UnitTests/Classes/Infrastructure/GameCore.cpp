@@ -111,7 +111,7 @@ void GameCore::OnAppStarted()
 	create_log_and_redirect_cout_to_it_for_teamcity_output();
 
 	RenderManager::Instance()->SetFPS(60);
-	// just test message send on test failed
+
 	new MathTest();
 	new FunctionBindSignalTest();
     //new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
