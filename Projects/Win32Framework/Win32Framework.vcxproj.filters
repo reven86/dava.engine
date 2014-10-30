@@ -1581,9 +1581,6 @@
     <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketBase.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketFwd.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
@@ -1594,9 +1591,6 @@
       <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\UDPSocket.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketFwd.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h">
@@ -1610,9 +1604,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Noncopyable.h">
       <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\IOLoopFwd.h">
-      <Filter>Internal\Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
