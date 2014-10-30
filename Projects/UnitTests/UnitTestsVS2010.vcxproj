@@ -76,7 +76,6 @@
     <ClInclude Include="Classes\SampleTest.h" />
     <ClInclude Include="Classes\SoundTest.h" />
     <ClInclude Include="Classes\SplitTest.h" />
-    <ClInclude Include="Classes\TextureUtils.h" />
     <ClInclude Include="Classes\ThreadSyncTest.h" />
     <ClInclude Include="Classes\TransparentWebViewTest.h" />
     <ClInclude Include="Classes\UIListTest.h" />
@@ -137,7 +136,6 @@
     <ClCompile Include="Classes\SampleTest.cpp" />
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
-    <ClCompile Include="Classes\TextureUtils.cpp" />
     <ClCompile Include="Classes\ThreadSyncTest.cpp" />
     <ClCompile Include="Classes\TransparentWebViewTest.cpp" />
     <ClCompile Include="Classes\UIListTest.cpp" />
