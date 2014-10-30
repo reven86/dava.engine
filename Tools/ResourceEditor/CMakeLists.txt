@@ -101,7 +101,13 @@ qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 if( MACOS )
+
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
+  
+    set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
+    set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
+
+
 
     file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
     foreach ( FILE ${RESOURCES_LIST} )
@@ -118,7 +124,10 @@ if( MACOS )
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
 
     list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
+    list ( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
+    list ( APPEND RESOURCES_LIST  ${MACOS_ICO} )
     list ( APPEND LIBRARIES       ${DYLIB_FILES} )
+
     
 elseif( WIN32 )
     file ( GLOB_RECURSE BEAST_LIST "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.cpp"  
@@ -153,6 +162,12 @@ if( APPLE )
         COMMAND   
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
     )
+
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES
+                            MACOSX_BUNDLE_INFO_PLIST ${MACOS_PLIST} 
+                            XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
+                            RESOURCE ${MACOS_ICO}
+                          )
 
 elseif( MSVC )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")
