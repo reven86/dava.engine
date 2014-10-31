@@ -32,6 +32,7 @@
 
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
+#import <AppKit/NSScreen.h>
 #include "Utils/StringFormat.h"
 #include "OpenUDIDMacOS.h"
 
