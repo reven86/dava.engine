@@ -780,7 +780,7 @@ void DLC::StepPatchFinish()
 
 	if(errors)
 	{
-		Logger::Info("DLC: Error applying patch: %u", dlcContext.patchingError);
+		Logger::Error("DLC: Error applying patch: %u", dlcContext.patchingError);
 	}
 }
 

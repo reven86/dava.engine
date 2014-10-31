@@ -117,7 +117,7 @@ bool PatchInfo::ReadString(File* file, String &str)
     uint32 len = 0;
     uint32 rlen = file->Read(&len);
 
-    if(rlen == sizeof(rlen))
+    if(rlen == sizeof(len))
     {
         if(len > 0)
         {
