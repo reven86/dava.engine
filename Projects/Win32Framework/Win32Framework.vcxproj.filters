@@ -1605,6 +1605,9 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Noncopyable.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetworkUtils.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2887,6 +2890,9 @@
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\DeadlineTimerBase.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetworkErrorToString.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>
