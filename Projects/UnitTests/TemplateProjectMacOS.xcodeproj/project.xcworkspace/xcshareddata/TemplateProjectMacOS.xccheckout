@@ -14,7 +14,7 @@
 		<string>https://github.com/dava/dava.framework</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>Projects/UnitTests/TemplateProjectMacOS.xcodeproj/project.xcworkspace</string>
+	<string>Projects/UnitTests/TemplateProjectMacOS.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>62289F3C472C02540432B448FB463096A6264DBD</key>

@@ -161,17 +161,11 @@ namespace DAVA
 	//[NSCursor hide]; 
 	DisplayMode fullscreenMode = Core::Instance()->GetCurrentDisplayMode();
 	
-	//DF-2274 - detecting physical screen size and save this data into DeviceInfo
-	int screenWidth = [[NSScreen mainScreen] frame].size.width;
-	int screenHeight = [[NSScreen mainScreen] frame].size.height;
-	DeviceInfo::SetScreenInfo(screenWidth, screenHeight, 1);
-	
 	// launch framework and setup all preferences
     //TODO: maybe we need reorder calls 
 	FrameworkDidLaunched();
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     
-	
 	//Core::Instance()->Creat();
     
 		// do all ground work & setup window itself according to value specified by user

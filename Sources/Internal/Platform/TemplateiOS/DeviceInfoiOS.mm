@@ -35,6 +35,7 @@
 #include "Utils/StringFormat.h"
 
 #import <UIKit/UIDevice.h>
+#import <UIKit/UIKit.h>
 #import <Foundation/NSLocale.h>
 #import <sys/utsname.h>
 #import <AdSupport/ASIdentifierManager.h>
@@ -314,6 +315,27 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     // No way to determine signal strength under iOS.
     return networkInfo;
 }
+
+
+void DeviceInfo::InitializeScreenInfo()
+{
+    //detecting physical screen size and initing core system with this size
+    ::UIScreen* mainScreen = [::UIScreen mainScreen];
+    screenInfo.width = [mainScreen bounds].size.width;
+    screenInfo.height = [mainScreen bounds].size.height;
+
+    if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+        && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+    {
+        screenInfo.scale = (unsigned int)[[::UIScreen mainScreen] scale];
+    }
+    else
+    {
+        screenInfo.scale = 1;
+    }
+}
+
+
 
 int32 DeviceInfo::GetCpuCount()
 {

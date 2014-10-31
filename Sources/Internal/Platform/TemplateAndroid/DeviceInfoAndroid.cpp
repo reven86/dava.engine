@@ -468,6 +468,15 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
     return l;
 }
 
+void DeviceInfo::InitializeScreenInfo()
+{
+    CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
+    screenInfo.width = core->GetViewWidth();
+    screenInfo.height = core->GetViewHeight();
+    screenInfo.scale = 1;
+}
+
+
 int32 DeviceInfo::GetCpuCount()
 {
 	return sysconf(_SC_NPROCESSORS_CONF);

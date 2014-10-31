@@ -54,6 +54,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Platform/Notification.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -178,6 +179,8 @@ void Core::CreateSingletons()
     
     new LocalNotificationController();
 
+    DeviceInfo::InitializeScreenInfo();
+    
 	Sprite::CreateRenderObject();
 	UIControlBackground::CreateRenderObject();
 

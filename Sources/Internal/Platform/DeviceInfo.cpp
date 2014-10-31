@@ -68,14 +68,9 @@ String DeviceInfo::GetPlatformString()
 }
 
 
-DeviceInfo::ScreenInfo DeviceInfo::GetScreenInfo()
+DeviceInfo::ScreenInfo & DeviceInfo::GetScreenInfo()
 {
 	return screenInfo;
-}
-
-void DeviceInfo::SetScreenInfo(int32 w, int32 h, int32 scale)
-{
-	screenInfo = DeviceInfo::ScreenInfo(w, h, scale);
 }
 
 #ifndef __DAVAENGINE_ANDROID__

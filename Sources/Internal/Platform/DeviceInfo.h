@@ -42,27 +42,25 @@ class DeviceInfo
 public:
 	struct ScreenInfo
 	{
-		int32 scrWidth;
-		int32 scrHeight;
-		int32 scrScale;
+		int32 width;
+		int32 height;
+		int32 scale;
 		
 		ScreenInfo()
 		{
-			scrWidth = 0;
-			scrHeight = 0;
-			scrScale = 1;
+			width = 0;
+			height = 0;
+			scale = 1;
 		}
 		
 		ScreenInfo(int32 w, int32 h, int32 scale)
 		{
-			scrWidth = w;
-			scrHeight = h;
-			scrScale = scale;
+			width = w;
+			height = h;
+			scale = scale;
 		}
 	};
 
-private:
-	static ScreenInfo screenInfo;
 	
 public:
 	enum ePlatform
@@ -142,15 +140,20 @@ public:
 	static String GetHTTPNonProxyHosts();
 	static int GetHTTPProxyPort();
 	
-   	static ScreenInfo GetScreenInfo();
+   	static ScreenInfo & GetScreenInfo();
     //internal?
-    static void SetScreenInfo(int32 w, int32 h, int32 scale);
     static int GetZBufferSize();
     static eGPUFamily GetGPUFamily();
     static NetworkInfo GetNetworkInfo();
 
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
+
+
+    static void InitializeScreenInfo();
+
+private:
+    static ScreenInfo screenInfo;
 };
 
 };

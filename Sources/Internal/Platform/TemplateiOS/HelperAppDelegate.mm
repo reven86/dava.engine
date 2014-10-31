@@ -44,40 +44,35 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	DAVA::Core * core = new DAVA::Core();
 	core->CreateSingletons();
 	
+    FrameworkDidLaunched();
+    
 	//detecting physical screen size and initing core system with this size
-	::UIScreen* mainScreen = [::UIScreen mainScreen];
-	unsigned int width = [mainScreen bounds].size.width;
-	unsigned int height = [mainScreen bounds].size.height;
+    const DeviceInfo::ScreenInfo & screenInfo = DeviceInfo::GetScreenInfo();
+    int32 width = screenInfo.width;
+    int32 height = screenInfo.height;
+    
 	eScreenOrientation orientation = Instance()->GetScreenOrientation();
-
 	if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
 		(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
 		(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
 	{
-		width = [mainScreen bounds].size.height;
-		height = [mainScreen bounds].size.width;
+        width = screenInfo.height;
+        height = screenInfo.width;
 	}
 		
-	unsigned int scale = 1;
-		
-    if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-        && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+	int32 scale = 1;
+    if(DAVA::Core::IsAutodetectContentScaleFactor())
     {
-        scale = (unsigned int)[[::UIScreen mainScreen] scale];
+        scale = screenInfo.scale;
     }
-
-    DeviceInfo::SetScreenInfo(width, height, scale);
-
-	FrameworkDidLaunched();
-
+		
 	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
 	DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
 		
 	int retVal = UIApplicationMain(argc, argv, nil, nil);
 	
 	[pool release];
-	
-	return retVal;		
+	return retVal;
 }
 
 DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()

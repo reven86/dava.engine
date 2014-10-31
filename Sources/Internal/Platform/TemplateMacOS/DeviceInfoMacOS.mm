@@ -26,8 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "Platform/DeviceInfo.h"
 
 #ifdef __DAVAENGINE_MACOS__
@@ -128,6 +126,13 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
 {
     // For now return default network info for MacOS.
     return NetworkInfo();
+}
+
+void DeviceInfo::InitializeScreenInfo()
+{
+	screenInfo.width = [[NSScreen mainScreen] frame].size.width;
+	screenInfo.height = [[NSScreen mainScreen] frame].size.height;
+	screenInfo.scale = 1;
 }
 
 int32 DeviceInfo::GetCpuCount()
