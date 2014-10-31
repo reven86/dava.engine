@@ -6,7 +6,10 @@ import android.net.Uri;
 import android.view.WindowManager;
 
 public class JNIUtils {
+	private static boolean isEnabledSleepTimer = true;
+	
 	public static void DisableSleepTimer() {
+		isEnabledSleepTimer = false;
 		Activity activity = JNIActivity.GetActivity();
 		activity.runOnUiThread(new Runnable() {
 			@Override
@@ -17,6 +20,7 @@ public class JNIUtils {
 	}
 	
 	public static void EnableSleepTimer() {
+		isEnabledSleepTimer = true;
 		Activity activity = JNIActivity.GetActivity();
 		activity.runOnUiThread(new Runnable() {
 			@Override
@@ -24,6 +28,11 @@ public class JNIUtils {
 				JNIActivity.GetActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 			}
 		});
+	}
+	
+	protected static void onResume() {
+		if (!isEnabledSleepTimer)
+			JNIActivity.GetActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 	
 	public static void OpenURL(final String url) {

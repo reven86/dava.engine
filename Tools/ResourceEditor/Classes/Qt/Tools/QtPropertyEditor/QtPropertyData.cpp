@@ -919,11 +919,50 @@ QVariant QtPropertyData::GetValueAlias() const
 	return QVariant();
 }
 
+void QtPropertyData::SetTempValue(const QVariant &value)
+{
+    foreach ( QtPropertyData *merged, mergedData )
+    {
+        QtPropertyDataValidator *mergedValidator = merged->validator;
+        QVariant validatedValue = value;
+
+        if (NULL != mergedValidator)
+        {
+            if(!mergedValidator->Validate(validatedValue))
+            {
+                continue;
+            }
+        }
+
+        merged->SetTempValueInternal(validatedValue);
+    }
+
+    // set value
+    bool valueIsValid = true;
+    QVariant validatedValue = value;
+
+    if (NULL != validator)
+    {
+        valueIsValid = validator->Validate(validatedValue);
+    }
+   
+    if(valueIsValid)
+    {
+        SetTempValueInternal(validatedValue);
+    }
+}
+
 void QtPropertyData::SetValueInternal(const QVariant &value)
 {
 	// should be re-implemented by sub-class
 
 	curValue = value;
+}
+
+void QtPropertyData::SetTempValueInternal(QVariant const& value)
+{
+    // should be re-implemented by sub-class
+    Q_UNUSED(value);
 }
 
 QWidget* QtPropertyData::CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option) const

@@ -26,8 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "BaseTypes.h"
+#include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
 
@@ -57,16 +56,8 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
             width = [mainScreen bounds].size.height;
             height = [mainScreen bounds].size.width;
         }
-		unsigned int scale = 1;
+		unsigned int scale = [HelperAppDelegate GetScale];
 		
-		if (DAVA::Core::IsAutodetectContentScaleFactor())
-		{
-			if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-				&& [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ]) 
-			{
-				scale = (unsigned int)[[::UIScreen mainScreen] scale];
-			}
-		}
 		DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
 		DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
 	}
@@ -205,5 +196,20 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 	NSLog(@"Application termination finished");
 }
 
++ (DAVA::float32) GetScale
+{
+    DAVA::float32 retScale = 1.f;
+    if (DAVA::Core::IsAutodetectContentScaleFactor())
+    {
+        if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+            && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+        {
+            retScale = [[::UIScreen mainScreen] scale];
+        }
+    }
+    
+    return retScale;
+}
+
 @end
-#endif 
+#endif

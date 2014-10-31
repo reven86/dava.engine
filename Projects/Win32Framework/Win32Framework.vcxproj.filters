@@ -52,9 +52,6 @@
     <Filter Include="Internal\Math">
       <UniqueIdentifier>{db136e4a-2d63-4b5c-b6b2-c7e83a7850f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Network">
-      <UniqueIdentifier>{ecc1ae9a-59b4-4d30-a5ae-f3963d830982}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\Particles">
       <UniqueIdentifier>{8f9ce965-d39f-4679-9a1c-8d6228b1a1d4}</UniqueIdentifier>
     </Filter>
@@ -428,30 +425,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h">
       <Filter>Internal\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\BaseNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\BTNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnection.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnectionIPhone.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkDelegate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkPacket.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPServer.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\WFNetworkConnection.h">
-      <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Particles\Particle.h">
       <Filter>Internal\Particles</Filter>
@@ -1146,9 +1119,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UISpinner.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -1787,15 +1757,6 @@
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp">
       <Filter>Internal\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkConnection.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkDelegate.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkPacket.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>
@@ -2420,9 +2381,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -2867,5 +2825,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\AnimationData.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
   </ItemGroup>
 </Project>

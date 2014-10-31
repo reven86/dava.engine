@@ -392,7 +392,6 @@
     <ClCompile Include="Classes\Deprecated\DraggableDialog.cpp" />
     <ClCompile Include="Classes\Deprecated\EditorConfig.cpp" />
     <ClCompile Include="Classes\Deprecated\EditorHeightmap.cpp" />
-    <ClCompile Include="Classes\Deprecated\EditorSettings.cpp" />
     <ClCompile Include="Classes\Deprecated\ExtendedDialog.cpp" />
     <ClCompile Include="Classes\Deprecated\LandscapeRenderer.cpp" />
     <ClCompile Include="Classes\Deprecated\ParticlesEditorNodeNameHelper.cpp" />
@@ -1090,7 +1089,6 @@
     <ClInclude Include="Classes\Deprecated\DraggableDialog.h" />
     <ClInclude Include="Classes\Deprecated\EditorConfig.h" />
     <ClInclude Include="Classes\Deprecated\EditorHeightmap.h" />
-    <ClInclude Include="Classes\Deprecated\EditorSettings.h" />
     <ClInclude Include="Classes\Deprecated\ExtendedDialog.h" />
     <ClInclude Include="Classes\Deprecated\LandscapeRenderer.h" />
     <ClInclude Include="Classes\Deprecated\ParticlesEditorNodeNameHelper.h" />

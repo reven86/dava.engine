@@ -119,8 +119,7 @@ int main(int argc, char *argv[])
         
 		new SceneValidator();
 		DavaGLWidget* davaGL = new DavaGLWidget();
-        RenderManager::Instance()->DetectRenderingCapabilities();
-
+        RenderManager::Instance()->Init(0, 0);
 
 		cmdLine.InitalizeTool();
 		if(!cmdLine.IsToolInitialized())

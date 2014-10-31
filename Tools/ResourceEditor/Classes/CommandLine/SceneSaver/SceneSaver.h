@@ -72,6 +72,8 @@ protected:
     
     TexturesMap texturesForSave;
     bool copyConverted;
+    
+    DAVA::Set<DAVA::FilePath> effectFolders;
 };
 
 

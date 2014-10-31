@@ -144,7 +144,12 @@ protected:
     
 //    ePrimitiveType type; //TODO: waiting for enums at introspection
     uint32 type;
-    uint32 sortingKey; //oooookkkk -where o is offset, k is key        
+    uint32 sortingKey; //oooookkkk -where o is offset, k is key    
+
+    const static uint32 SORTING_KEY_MASK = 0x0f;
+    const static uint32 SORTING_OFFSET_MASK = 0x1f0;
+    const static uint32 SORTING_OFFSET_SHIFT = 4;
+    const static uint32 SORTING_KEY_DEF_VALUE = 0xf8;
     
     
 	AABBox3 aabbox;
@@ -213,12 +218,12 @@ inline void RenderBatch::SetIndexCount(uint32 _indexCount)
     
 inline uint32 RenderBatch::GetSortingKey() const
 {
-    return sortingKey&0x0f;
+    return sortingKey&SORTING_KEY_MASK;
 }
 
 inline uint32 RenderBatch::GetSortingOffset()
 {
-    return ((sortingKey>>4)&0x1f);
+    return ((sortingKey&SORTING_OFFSET_MASK)>>SORTING_OFFSET_SHIFT);
 }
 
     

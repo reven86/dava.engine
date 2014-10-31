@@ -1227,9 +1227,6 @@
     <ClCompile Include="Classes\Deprecated\EditorHeightmap.cpp">
       <Filter>Classes\Deprecated</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Deprecated\EditorSettings.cpp">
-      <Filter>Classes\Deprecated</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Deprecated\ExtendedDialog.cpp">
       <Filter>Classes\Deprecated</Filter>
     </ClCompile>
@@ -3378,9 +3375,6 @@
       <Filter>Classes\Deprecated</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Deprecated\EditorHeightmap.h">
-      <Filter>Classes\Deprecated</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Deprecated\EditorSettings.h">
       <Filter>Classes\Deprecated</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Deprecated\ExtendedDialog.h">

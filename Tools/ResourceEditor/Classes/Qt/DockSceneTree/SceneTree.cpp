@@ -189,6 +189,13 @@ void SceneTree::dragMoveEvent(QDragMoveEvent *event)
 {
 	QTreeView::dragMoveEvent(event);
 
+ 	if(SettingsManager::GetValue(Settings::Scene_DragAndDropWithShift).AsBool() && ((event->keyboardModifiers() & Qt::SHIFT) != Qt::SHIFT))
+	{
+		event->setDropAction(Qt::IgnoreAction);
+		event->accept();
+		return;
+	}
+
 	{
 		int row, col; 
 		QModelIndex parent;
