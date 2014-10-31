@@ -20,7 +20,6 @@
     <ClCompile Include="Classes\MaterialCompilerTest.cpp" />
     <ClCompile Include="Classes\InputTest.cpp" />
     <ClCompile Include="Classes\DPITest.cpp" />
-    <ClCompile Include="Classes\eMailTest.cpp" />
     <ClCompile Include="Classes\DeviceInfoTest.cpp" />
     <ClCompile Include="Classes\LocalizationTest.cpp" />
     <ClCompile Include="Classes\FileListTest.cpp" />
@@ -71,7 +70,6 @@
     <ClInclude Include="Classes\MaterialCompilerTest.h" />
     <ClInclude Include="Classes\InputTest.h" />
     <ClInclude Include="Classes\DPITest.h" />
-    <ClInclude Include="Classes\eMailTest.h" />
     <ClInclude Include="Classes\DeviceInfoTest.h" />
     <ClInclude Include="Classes\LocalizationTest.h" />
     <ClInclude Include="Classes\FileListTest.h" />
