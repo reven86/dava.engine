@@ -50,23 +50,23 @@ class IOLoop;
  Multiple simultaneous read operations lead to undefined behaviour.
 
  Type specified by T should implement methods:
-    void HandleConnect(int error)
+    void HandleConnect(int32 error)
         This method is called after connection to TCP server has been established
         Parameter error is non zero on error
-    void HandleRead(int error, std::size_t nread, const uv_buf_t* buffer)
+    void HandleRead(int32 error, std::size_t nread, const uv_buf_t* buffer)
         This method is called after data with length of nread bytes has been arrived
         Parameter error is non zero on error, UV_EOF when remote peer has closed connection or 0 on no error
     template<typename WriteRequestType>
-    void HandleWrite(WriteRequestType* request, int error)
+    void HandleWrite(WriteRequestType* request, int32 error)
         This method is called after data has been written to
     void HandleClose()
         This method is called after underlying socket has been closed by libuv
 
  Summary of methods that should be implemented by T:
-    void HandleConnect(int error);
-    void HandleRead(int error, std::size_t nread, const uv_buf_t* buffer);
+    void HandleConnect(int32 error);
+    void HandleRead(int32 error, std::size_t nread, const uv_buf_t* buffer);
     template<typename WriteRequestType>
-    void HandleWrite(WriteRequestType* request, int error);
+    void HandleWrite(WriteRequestType* request, int32 error);
     void HandleClose();
 */
 template <typename T, bool autoRead = false>

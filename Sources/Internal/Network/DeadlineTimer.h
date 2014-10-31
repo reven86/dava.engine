@@ -29,11 +29,8 @@
 #ifndef __DAVAENGINE_DEADLINETIMER_H__
 #define __DAVAENGINE_DEADLINETIMER_H__
 
-#include <libuv/uv.h>
-
 #include <Base/BaseTypes.h>
 #include <Base/Function.h>
-#include <Debug/DVAssert.h>
 
 #include "DeadlineTimerTemplate.h"
 
@@ -46,37 +43,35 @@ class IOLoop;
  Class DeadlineTimer - fully functional waitable timer implementation which can be used in most cases.
  User can provide functional object which is called on timer expiration.
  Functional objects prototypes:
-    WaitHandlerType - called on timer expiration
+    CloseHandlerType - called when timer has been closed
+        void f(DeadlineTimer* timer)
+    WaitHandlerType - called when timer has expired
         void f(DeadlineTimer* timer)
 */
 class DeadlineTimer : public DeadlineTimerTemplate<DeadlineTimer, false>
 {
+public:
+    typedef Function<void(DeadlineTimer* timer)> CloseHandlerType;
+    typedef Function<void(DeadlineTimer* timer)> WaitHandlerType;
+
 private:
     typedef DeadlineTimerTemplate<DeadlineTimer, false> BaseClassType;
-
-public:
-    typedef Function<void(DeadlineTimer* timer)> WaitHandlerType;
 
 public:
     explicit DeadlineTimer(IOLoop* loop);
     ~DeadlineTimer() {}
 
-    template <typename Handler>
-    int32 AsyncStartWait(uint32 timeout, uint32 repeat, Handler handler);
+    void SetCloseHandler(CloseHandlerType handler);
 
+    int32 AsyncStartWait(uint32 timeout, WaitHandlerType handler);
+
+    void HandleClose();
     void HandleTimer();
 
 private:
-    WaitHandlerType waitHandler;
+    CloseHandlerType closeHandler;
+    WaitHandlerType  waitHandler;
 };
-
-//////////////////////////////////////////////////////////////////////////
-template <typename Handler>
-int32 DeadlineTimer::AsyncStartWait(uint32 timeout, uint32 repeat, Handler handler)
-{
-    waitHandler = handler;
-    return BaseClassType::InternalAsyncStartWait(timeout, repeat);
-}
 
 }   // namespace DAVA
 

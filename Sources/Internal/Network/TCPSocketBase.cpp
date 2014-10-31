@@ -46,6 +46,11 @@ bool TCPSocketBase::IsClosed() const
     return uv_is_closing(HandleAsHandle()) ? true : false;
 }
 
+std::size_t TCPSocketBase::WriteQueueSize() const
+{
+    return handle.write_queue_size;
+}
+
 int32 TCPSocketBase::Bind(const Endpoint& endpoint)
 {
     return uv_tcp_bind(Handle(), endpoint.CastToSockaddr(), 0);

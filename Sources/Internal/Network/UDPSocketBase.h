@@ -56,6 +56,9 @@ public:
 
     bool IsClosed() const;
 
+    std::size_t SendQueueSize() const;
+    std::size_t SendRequestCount() const;
+
     int32 Bind(const Endpoint& endpoint, bool reuseAddrOption = false);
     int32 Bind(const char8* ipaddr, int16 port, bool reuseAddrOption = false);
     int32 Bind(int16 port, bool reuseAddrOption = false);

@@ -59,6 +59,8 @@ public:
 
     bool IsClosed() const;
 
+    std::size_t WriteQueueSize() const;
+
     int32 Bind(const Endpoint& endpoint);
     int32 Bind(const char8* ipaddr, int16 port);
     int32 Bind(int16 port);

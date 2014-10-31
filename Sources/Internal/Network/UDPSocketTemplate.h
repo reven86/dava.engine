@@ -57,9 +57,9 @@ class IOLoop;
         This method is called after underlying socket has been closed by libuv
 
  Summary of methods that should be implemented by T:
-    void HandleReceive(int error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial);
+    void HandleReceive(int32 error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial);
     template<typename SendRequestType>
-    void HandleSend(SendRequestType* request, int error);
+    void HandleSend(SendRequestType* request, int32 error);
     void HandleClose();
 */
 template <typename T, bool autoRead = false>
@@ -93,8 +93,8 @@ protected:
     int32 InternalAsyncReceive(void* buffer, std::size_t size);
 
     /*
-     SendRequestType should have following public members:
-        DerivedClassType* pthis   - pointer to DerivedClassType instance(can be pointer to void)
+     SendRequestType should have following public members (if it derived from SendRequestBase then everything is ok):
+        DerivedClassType* pthis   - pointer to DerivedClassType instance
         uv_buf_t          buffer  - libuv buffer to write
         uv_udp_send_t     request - libuv UDP send request
     */

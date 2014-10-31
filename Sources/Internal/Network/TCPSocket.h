@@ -52,9 +52,6 @@ namespace DAVA
 */
 class TCPSocket : public TCPSocketTemplate<TCPSocket, false>
 {
-private:
-    typedef TCPSocketTemplate<TCPSocket, false> BaseClassType;
-
 public:
     typedef Function<void(TCPSocket* socket)>                                               CloseHandlerType;
     typedef Function<void(TCPSocket* socket, int32 error)>                                  ConnectHandlerType;
@@ -62,25 +59,23 @@ public:
     typedef Function<void(TCPSocket* socket, int32 error, const void* buffer)>              WriteHandlerType;
 
 private:
+    typedef TCPSocketTemplate<TCPSocket, false> BaseClassType;
+
     struct WriteRequest : public BaseClassType::WriteRequestBase
     {
-        WriteRequest(WriteHandlerType handler) : BaseClassType::WriteRequestBase(), writeHandler(handler) {}
+        WriteRequest () : BaseClassType::WriteRequestBase(), writeHandler() {}
         WriteHandlerType writeHandler;
     };
 
 public:
-    explicit TCPSocket(IOLoop* ioLoop, bool autoDeleteOnCloseFlag = false);
+    explicit TCPSocket(IOLoop* ioLoop);
     ~TCPSocket() {}
 
-    template <typename Handler>
-    void SetCloseHandler(Handler handler);
+    void SetCloseHandler(CloseHandlerType handler);
 
-    template <typename Handler>
-    int32 AsyncConnect(const Endpoint& endpoint, Handler handler);
-    template <typename Handler>
-    int32 AsyncRead(void* buffer, std::size_t size, Handler handler);
-    template <typename Handler>
-    int32 AsyncWrite(const void* buffer, std::size_t size, Handler handler);
+    int32 AsyncConnect(const Endpoint& endpoint, ConnectHandlerType handler);
+    int32 AsyncRead(void* buffer, std::size_t size, ReadHandlerType handler);
+    int32 AsyncWrite(const void* buffer, std::size_t size, WriteHandlerType handler);
 
     void HandleClose();
     void HandleConnect(int32 error);
@@ -88,43 +83,11 @@ public:
     void HandleWrite(WriteRequest* request, int32 error);
 
 private:
-    bool               autoDeleteOnClose;   // TODO: do I really need this flag?
     CloseHandlerType   closeHandler;
     ConnectHandlerType connectHandler;
     ReadHandlerType    readHandler;
+    WriteRequest       writeRequest;
 };
-
-//////////////////////////////////////////////////////////////////////////
-template <typename Handler>
-inline void TCPSocket::SetCloseHandler(Handler handler)
-{
-    closeHandler = handler;
-}
-
-template <typename Handler>
-inline int32 TCPSocket::AsyncConnect(const Endpoint& endpoint, Handler handler)
-{
-    connectHandler = handler;
-    return BaseClassType::InternalAsyncConnect(endpoint);
-}
-
-template <typename Handler>
-inline int32 TCPSocket::AsyncRead(void* buffer, std::size_t size, Handler handler)
-{
-    DVASSERT(buffer != NULL && size > 0);
-
-    readHandler = handler;
-    return BaseClassType::InternalAsyncRead(buffer, size);
-}
-
-template <typename Handler>
-inline int32 TCPSocket::AsyncWrite(const void* buffer, std::size_t size, Handler handler)
-{
-    DVASSERT(buffer != NULL && size > 0);
-
-    WriteRequest* request = new WriteRequest(handler);
-    return BaseClassType::InternalAsyncWrite(request, buffer, size);
-}
 
 }	// namespace DAVA
 

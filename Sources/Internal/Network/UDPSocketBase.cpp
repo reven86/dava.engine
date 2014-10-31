@@ -47,6 +47,16 @@ bool UDPSocketBase::IsClosed() const
     return uv_is_closing(HandleAsHandle()) ? true : false;
 }
 
+std::size_t UDPSocketBase::SendQueueSize() const
+{
+    return handle.send_queue_size;
+}
+
+std::size_t UDPSocketBase::SendRequestCount() const
+{
+    return handle.send_queue_count;
+}
+
 int32 UDPSocketBase::Bind(const Endpoint& endpoint, bool reuseAddrOption)
 {
     return uv_udp_bind(Handle(), endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);

@@ -31,11 +31,33 @@
 namespace DAVA
 {
 
-UDPSocket::UDPSocket(IOLoop* ioLoop, bool autoDeleteOnCloseFlag) : BaseClassType(ioLoop)
-                                                                 , autoDeleteOnClose(autoDeleteOnCloseFlag)
-                                                                 , receiveHandler()
+UDPSocket::UDPSocket(IOLoop* ioLoop) : BaseClassType(ioLoop)
+                                     , closeHandler()
+                                     , receiveHandler()
+                                     , sendRequest()
 {
 
+}
+
+void UDPSocket::SetCloseHandler(CloseHandlerType handler)
+{
+    closeHandler = handler;
+}
+
+int32 UDPSocket::AsyncReceive(void* buffer, std::size_t size, ReceiveHandlerType handler)
+{
+    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+
+    receiveHandler = handler;
+    return BaseClassType::InternalAsyncReceive(buffer, size);
+}
+
+int32 UDPSocket::AsyncSend(const Endpoint& endpoint, const void* buffer, std::size_t size, SendHandlerType handler)
+{
+    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+
+    sendRequest.sendHandler = handler;
+    return BaseClassType::InternalAsyncSend(&sendRequest, buffer, size, endpoint);
 }
 
 void UDPSocket::HandleClose()
@@ -43,10 +65,6 @@ void UDPSocket::HandleClose()
     if(closeHandler != 0)
     {
         closeHandler(this);
-    }
-    if(autoDeleteOnClose)
-    {
-        delete this;
     }
 }
 

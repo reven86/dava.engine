@@ -39,9 +39,11 @@ namespace DAVA
 
 /*
  Class UDPSocket - fully functional UDP socket implementation which can be used in most cases.
- Can receiev from and send data t socket.
+ Can receieve from and send data to socket.
  User can provide functional object which is called on completion.
  Functional objects prototypes:
+    CloseHandlerType - called when socket has been closed
+        void f(UDPSocket* socket)
     ReceiveHandlerType - called on read operation completion
         void f(UDPSocket* socket, int32 error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial);
     SendHandlerType - called on write operation completion
@@ -51,9 +53,6 @@ namespace DAVA
 
 class UDPSocket : public UDPSocketTemplate<UDPSocket, false>
 {
-private:
-    typedef UDPSocketTemplate<UDPSocket, false> BaseClassType;
-
 public:
     typedef Function<void(UDPSocket* socket)>                                      CloseHandlerType;
     typedef Function<void(UDPSocket* socket, int32 error, std::size_t nread,
@@ -61,59 +60,31 @@ public:
     typedef Function<void(UDPSocket* socket, int32 error, const void* buffer)>     SendHandlerType;
 
 private:
+    typedef UDPSocketTemplate<UDPSocket, false> BaseClassType;
+
     struct SendRequest : public BaseClassType::SendRequestBase
     {
-        SendRequest(SendHandlerType handler) : BaseClassType::SendRequestBase(), sendHandler(handler) {}
         SendHandlerType sendHandler;
     };
 
 public:
-    explicit UDPSocket(IOLoop* ioLoop, bool autoDeleteOnCloseFlag = false);
-
+    explicit UDPSocket(IOLoop* ioLoop);
     ~UDPSocket() {}
 
-    template <typename Handler>
-    void SetCloseHandler(Handler handler);
+    void SetCloseHandler(CloseHandlerType handler);
 
-    template <typename Handler>
-    int32 AsyncReceive(void* buffer, std::size_t size, Handler handler);
-    template <typename Handler>
-    int32 AsyncSend(const Endpoint& endpoint, const void* buffer, std::size_t size, Handler handler);
+    int32 AsyncReceive(void* buffer, std::size_t size, ReceiveHandlerType handler);
+    int32 AsyncSend(const Endpoint& endpoint, const void* buffer, std::size_t size, SendHandlerType handler);
 
     void HandleClose();
     void HandleReceive(int32 error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial);
     void HandleSend(SendRequest* request, int32 error);
 
 private:
-    bool               autoDeleteOnClose;   // TODO: do I really need this flag?
     CloseHandlerType   closeHandler;
     ReceiveHandlerType receiveHandler;
+    SendRequest        sendRequest;
 };
-
-//////////////////////////////////////////////////////////////////////////
-template <typename Handler>
-void UDPSocket::SetCloseHandler(Handler handler)
-{
-    closeHandler = handler;
-}
-
-template <typename Handler>
-int32 UDPSocket::AsyncReceive(void* buffer, std::size_t size, Handler handler)
-{
-    DVASSERT(buffer != NULL && size > 0);
-
-    receiveHandler = handler;
-    return BaseClassType::InternalAsyncReceive(buffer, size);
-}
-
-template <typename Handler>
-int32 UDPSocket::AsyncSend(const Endpoint& endpoint, const void* buffer, std::size_t size, Handler handler)
-{
-    DVASSERT(buffer != NULL && size > 0);
-
-    SendRequest* request = new SendRequest(handler);
-    return BaseClassType::InternalAsyncSend(request, buffer, size, endpoint);
-}
 
 }   // namespace DAVA
 

@@ -31,12 +31,23 @@
 namespace DAVA
 {
 
-TCPAcceptor::TCPAcceptor(IOLoop* ioLoop, bool autoDeleteOnCloseFlag) : BaseClassType(ioLoop)
-                                                                     , autoDeleteOnClose(autoDeleteOnCloseFlag)
-                                                                     , closeHandler()
-                                                                     , connectHandler()
+TCPAcceptor::TCPAcceptor(IOLoop* ioLoop) : BaseClassType(ioLoop)
+                                         , closeHandler()
+                                         , connectHandler()
 {
 
+}
+
+void TCPAcceptor::SetCloseHandler(CloseHandlerType handler)
+{
+    closeHandler = handler;
+}
+
+int32 TCPAcceptor::AsyncListen(ConnectHandlerType handler, int32 backlog)
+{
+    DVASSERT(handler != 0);
+    connectHandler = handler;
+    return InternalAsyncListen(backlog);
 }
 
 void TCPAcceptor::HandleClose()
@@ -44,10 +55,6 @@ void TCPAcceptor::HandleClose()
     if(closeHandler != 0)
     {
         closeHandler(this);
-    }
-    if(autoDeleteOnClose)
-    {
-        delete this;
     }
 }
 

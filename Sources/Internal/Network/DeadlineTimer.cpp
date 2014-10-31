@@ -26,12 +26,39 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include <Debug/DVAssert.h>
+
 #include "DeadlineTimer.h"
 
 namespace DAVA
 {
 
-DeadlineTimer::DeadlineTimer(IOLoop* loop) : BaseClassType(loop) {}
+DeadlineTimer::DeadlineTimer(IOLoop* loop) : BaseClassType(loop)
+                                           , closeHandler()
+                                           , waitHandler()
+{
+
+}
+
+void DeadlineTimer::SetCloseHandler(CloseHandlerType handler)
+{
+    closeHandler = handler;
+}
+
+int32 DeadlineTimer::AsyncStartWait(uint32 timeout, WaitHandlerType handler)
+{
+    DVASSERT (handler != 0);
+    waitHandler = handler;
+    return BaseClassType::InternalAsyncStartWait(timeout, 0);
+}
+
+void DeadlineTimer::HandleClose()
+{
+    if (closeHandler != 0)
+    {
+        closeHandler(this);
+    }
+}
 
 void DeadlineTimer::HandleTimer()
 {

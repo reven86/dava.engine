@@ -53,36 +53,20 @@ public:
 	typedef Function<void(TCPAcceptor* acceptor, int32 error)> ConnectHandlerType;
 
 public:
-    explicit TCPAcceptor(IOLoop* ioLoop, bool autoDeleteOnCloseFlag = false);
+    explicit TCPAcceptor(IOLoop* ioLoop);
     ~TCPAcceptor() {}
 
-    template <typename Handler>
-    void SetCloseHandler(Handler handler);
-    template <typename Handler>
-    int32 AsyncListen(Handler handler, int32 backlog = SOMAXCONN);
+    void SetCloseHandler(CloseHandlerType handler);
+
+    int32 AsyncListen(ConnectHandlerType handler, int32 backlog = SOMAXCONN);
 
     void HandleClose();
     void HandleConnect(int32 error);
 
 private:
-    bool               autoDeleteOnClose;   // TODO: do I really need this flag?
     CloseHandlerType   closeHandler;
     ConnectHandlerType connectHandler;
 };
-
-//////////////////////////////////////////////////////////////////////////
-template <typename Handler>
-void TCPAcceptor::SetCloseHandler(Handler handler)
-{
-    closeHandler = handler;
-}
-
-template <typename Handler>
-int32 TCPAcceptor::AsyncListen(Handler handler, int32 backlog)
-{
-    connectHandler = handler;
-    return InternalAsyncListen(backlog);
-}
 
 }	// namespace DAVA
 

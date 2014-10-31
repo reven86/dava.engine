@@ -31,13 +31,41 @@
 namespace DAVA
 {
 
-TCPSocket::TCPSocket(IOLoop* ioLoop, bool autoDeleteOnCloseFlag) : BaseClassType(ioLoop)
-                                                                 , autoDeleteOnClose(autoDeleteOnCloseFlag)
-                                                                 , closeHandler()
-                                                                 , connectHandler()
-                                                                 , readHandler()
+TCPSocket::TCPSocket(IOLoop* ioLoop) : BaseClassType(ioLoop)
+                                     , closeHandler()
+                                     , connectHandler()
+                                     , readHandler()
+                                     , writeRequest()
 {
 
+}
+
+void TCPSocket::SetCloseHandler(CloseHandlerType handler)
+{
+    closeHandler = handler;
+}
+
+int32 TCPSocket::AsyncConnect(const Endpoint& endpoint, ConnectHandlerType handler)
+{
+    DVASSERT (handler != 0);
+    connectHandler = handler;
+    return BaseClassType::InternalAsyncConnect(endpoint);
+}
+
+int32 TCPSocket::AsyncRead(void* buffer, std::size_t size, ReadHandlerType handler)
+{
+    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+
+    readHandler = handler;
+    return BaseClassType::InternalAsyncRead(buffer, size);
+}
+
+int32 TCPSocket::AsyncWrite(const void* buffer, std::size_t size, WriteHandlerType handler)
+{
+    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+
+    writeRequest.writeHandler = handler;
+    return BaseClassType::InternalAsyncWrite(&writeRequest, buffer, size);
 }
 
 void TCPSocket::HandleClose()
@@ -45,10 +73,6 @@ void TCPSocket::HandleClose()
     if(closeHandler != 0)
     {
         closeHandler(this);
-    }
-    if(autoDeleteOnClose)
-    {
-        delete this;
     }
 }
 

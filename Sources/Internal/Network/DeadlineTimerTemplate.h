@@ -49,9 +49,9 @@ class IOLoop;
 
  Type specified by T should implement methods:
     void HandleTimer()
-        This method is called when timeout has been expired
+        This method is called when timeout has expired
     void HandleClose()
-        This method is called after underlying socket has been closed by libuv
+        This method is called after underlying timer has been closed by libuv
 
  Summary of methods that should be implemented by T:
     void HandleTimer();
@@ -71,7 +71,7 @@ public:
     ~DeadlineTimerTemplate() {}
 
     void Close();
-    void AsyncStopWait();
+    void StopAsyncWait();
 
 protected:
     int32 InternalAsyncStartWait(uint32 timeout, uint32 repeat);
@@ -98,7 +98,7 @@ void DeadlineTimerTemplate<T, autoRepeat>::Close()
 }
 
 template<typename T, bool autoRepeat>
-void DeadlineTimerTemplate<T, autoRepeat>::AsyncStopWait()
+void DeadlineTimerTemplate<T, autoRepeat>::StopAsyncWait()
 {
     uv_timer_stop(Handle());
 }
@@ -123,7 +123,7 @@ void DeadlineTimerTemplate<T, autoRepeat>::HandleTimerThunk(uv_timer_t* handle)
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
     if(!autoRepeatFlag)
     {
-        pthis->AsyncStopWait();
+        pthis->StopAsyncWait();
     }
     pthis->HandleTimer();
 }
