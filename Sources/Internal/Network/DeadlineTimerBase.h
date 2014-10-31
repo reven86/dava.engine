@@ -45,14 +45,12 @@ class IOLoop;
 class DeadlineTimerBase : private Noncopyable
 {
 public:
-    explicit DeadlineTimerBase(IOLoop* ioLoop);
-
     IOLoop* Loop() { return loop; }
 
-          uv_timer_t* Handle();
+    uv_timer_t* Handle();
     const uv_timer_t* Handle() const;
 
-          uv_handle_t* HandleAsHandle();
+    uv_handle_t* HandleAsHandle();
     const uv_handle_t* HandleAsHandle() const;
 
     bool IsClosed() const;
@@ -62,7 +60,8 @@ protected:
 
     void CleanUpBeforeNextUse();
 
-    // Protected destructor to prevent deletion through this type
+    // Protected constructor and destructor to prevent creation and deletion through this type
+    DeadlineTimerBase(IOLoop* ioLoop);
     ~DeadlineTimerBase() {}
 
 protected:
@@ -71,10 +70,10 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline       uv_timer_t* DeadlineTimerBase::Handle()       { return &handle; }
+inline uv_timer_t* DeadlineTimerBase::Handle() { return &handle; }
 inline const uv_timer_t* DeadlineTimerBase::Handle() const { return &handle; }
 
-inline       uv_handle_t* DeadlineTimerBase::HandleAsHandle()       { return reinterpret_cast<uv_handle_t*>(&handle); }
+inline uv_handle_t* DeadlineTimerBase::HandleAsHandle() { return reinterpret_cast<uv_handle_t*>(&handle); }
 inline const uv_handle_t* DeadlineTimerBase::HandleAsHandle() const { return reinterpret_cast<const uv_handle_t*>(&handle); }
 
 }   // namespace DAVA

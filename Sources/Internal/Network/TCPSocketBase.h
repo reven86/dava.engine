@@ -46,17 +46,15 @@ class Endpoint;
 class TCPSocketBase : private Noncopyable
 {
 public:
-    explicit TCPSocketBase(IOLoop* ioLoop);
-
     IOLoop* Loop() { return loop; }
 
-          uv_tcp_t* Handle();
+    uv_tcp_t* Handle();
     const uv_tcp_t* Handle() const;
 
-          uv_stream_t* HandleAsStream();
+    uv_stream_t* HandleAsStream();
     const uv_stream_t* HandleAsStream() const;
 
-          uv_handle_t* HandleAsHandle();
+    uv_handle_t* HandleAsHandle();
     const uv_handle_t* HandleAsHandle() const;
 
     bool IsClosed() const;
@@ -70,7 +68,8 @@ protected:
 
     void CleanUpBeforeNextUse();
 
-    // Protected destructor to prevent deletion through this type
+    // Protected constructor and destructor to prevent creation and deletion through this type
+    TCPSocketBase(IOLoop* ioLoop);
     ~TCPSocketBase() {}
 
 protected:
@@ -79,13 +78,13 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline       uv_tcp_t* TCPSocketBase::Handle()       { return &handle; }
+inline uv_tcp_t* TCPSocketBase::Handle() { return &handle; }
 inline const uv_tcp_t* TCPSocketBase::Handle() const { return &handle; }
 
-inline       uv_stream_t* TCPSocketBase::HandleAsStream()       { return reinterpret_cast<uv_stream_t*>(&handle); }
+inline uv_stream_t* TCPSocketBase::HandleAsStream() { return reinterpret_cast<uv_stream_t*>(&handle); }
 inline const uv_stream_t* TCPSocketBase::HandleAsStream() const { return reinterpret_cast<const uv_stream_t*>(&handle); }
 
-inline       uv_handle_t* TCPSocketBase::HandleAsHandle()       { return reinterpret_cast<uv_handle_t*>(&handle); }
+inline uv_handle_t* TCPSocketBase::HandleAsHandle() { return reinterpret_cast<uv_handle_t*>(&handle); }
 inline const uv_handle_t* TCPSocketBase::HandleAsHandle() const { return reinterpret_cast<const uv_handle_t*>(&handle); }
 
 }	// namespace DAVA

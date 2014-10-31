@@ -46,14 +46,12 @@ class Endpoint;
 class UDPSocketBase : private Noncopyable
 {
 public:
-    explicit UDPSocketBase(IOLoop* ioLoop);
-
     IOLoop* Loop() { return loop; }
 
-          uv_udp_t* Handle();
+    uv_udp_t* Handle();
     const uv_udp_t* Handle() const;
 
-          uv_handle_t* HandleAsHandle();
+    uv_handle_t* HandleAsHandle();
     const uv_handle_t* HandleAsHandle() const;
 
     bool IsClosed() const;
@@ -69,7 +67,8 @@ protected:
     void InternalClose(uv_close_cb callback);
     void CleanUpBeforeNextUse();
 
-    // Protected destructor to prevent deletion through this type
+    // Protected constructor and destructor to prevent creation and deletion through this type
+    UDPSocketBase(IOLoop* ioLoop);
     ~UDPSocketBase() {}
 
 protected:
@@ -78,10 +77,10 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline       uv_udp_t* UDPSocketBase::Handle()       { return &handle; }
+inline uv_udp_t* UDPSocketBase::Handle() { return &handle; }
 inline const uv_udp_t* UDPSocketBase::Handle() const { return &handle; }
 
-inline       uv_handle_t* UDPSocketBase::HandleAsHandle()       { return reinterpret_cast<uv_handle_t*>(&handle); }
+inline uv_handle_t* UDPSocketBase::HandleAsHandle() { return reinterpret_cast<uv_handle_t*>(&handle); }
 inline const uv_handle_t* UDPSocketBase::HandleAsHandle() const { return reinterpret_cast<const uv_handle_t*>(&handle); }
 
 }	// namespace DAVA

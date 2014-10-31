@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <cstring>
 #include <cstdio>
 
 #include <libuv/uv.h>
@@ -46,13 +45,13 @@ Endpoint::Endpoint(const char8* address, uint16 port) : data()
 Endpoint::Endpoint(const sockaddr* sa)
 {
     DVASSERT(sa);
-    memcpy(&data, sa, sizeof(data));
+    Memcpy(&data, sa, sizeof(data));
 }
 
 Endpoint::Endpoint(const sockaddr_in* sin)
 {
     DVASSERT(sin);
-    memcpy(&data, sin, sizeof(data));
+    Memcpy(&data, sin, sizeof(data));
 }
 
 bool Endpoint::ToString(char8* buffer, std::size_t size) const
