@@ -32,12 +32,15 @@ print("host ip: " + current_ip + ":" + str(PORT))
 
 start_on_android = False
 start_on_ios = False
+only_test = ""
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "android":
         start_on_android = True
     elif sys.argv[1] == "ios":
         start_on_ios = True
+    elif sys.argv[1] == "-only_test" and len(sys.argv) > 2:
+        only_test = sys.argv[2]
 
 if start_on_ios:
     app_name = "com.davaconsulting.UnitTests"
@@ -53,10 +56,10 @@ elif start_on_android:
 elif sys.platform == 'win32':
     if os.path.isfile("..\\Release\\app\\UnitTestsVS2010.exe"): # run on build server (TeamCity)
         subprocess.Popen(["..\\Release\\app\\UnitTestsVS2010.exe", "-host",
-                      str(HOST), "-port", str(PORT)], cwd="./..")
+                      str(HOST), "-port", str(PORT), "-only_test", only_test], cwd="./..")
     else:
         subprocess.Popen(["..\\Release\\UnitTestsVS2010.exe", "-host", # run on local PC
-                      str(HOST), "-port", str(PORT)], cwd="./..")
+                      str(HOST), "-port", str(PORT), "-only_test", only_test], cwd="./..")
 elif sys.platform == "darwin":
     # TODO set correct path for you
     app_path = "/Users/user123/Library/Developer/Xcode/DerivedData/TemplateProjectMacOS-bpogfklmgukhlmbnpxhfcjhfiwfq/Build/Products/Debug/UnitTests.app"

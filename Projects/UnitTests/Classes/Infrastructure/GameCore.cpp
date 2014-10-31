@@ -75,6 +75,7 @@
 #include "MathTest.h"
 
 #include <fstream>
+#include <algorithm>
 
 using namespace DAVA;
 
@@ -269,7 +270,12 @@ void GameCore::RunTests()
 	int32 screensSize = screens.size();
     for(int32 iScr = 0; iScr < screensSize; ++iScr)
     {
-        int32 count = screens[iScr]->GetTestCount();
+		BaseScreen& screen = *screens[iScr];
+		if (isNeedSkipTest(screen))
+		{
+			continue;
+		}
+        int32 count = screen.GetTestCount();
         if(0 < count)
         {
             currentScreen = screens[iScr];
@@ -335,6 +341,18 @@ void GameCore::ProcessTests()
 					Logger::Info(TeamcityTestOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
 
                     currentScreen = screens[currentScreenIndex];
+
+					while (isNeedSkipTest(*currentScreen))
+					{
+						++currentScreenIndex;
+						if (currentScreenIndex == screens.size())
+						{
+							FinishTests();
+							return;
+						}
+						currentScreen = screens[currentScreenIndex];
+					}
+
                     currentTestIndex = 0;
 
 					Logger::Info(TeamcityTestOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
@@ -399,6 +417,28 @@ void GameCore::InitLogging()
 	teamCityOutput.connect(host, port);
 
 	DAVA::Logger::Instance()->AddCustomOutput(&teamCityOutput);
+
+	runOnlyThisTest = GetCommandLineValue(cmdLine, "-only_test", ""); // empty string means run all tests
+	std::transform(runOnlyThisTest.begin(), runOnlyThisTest.end(), runOnlyThisTest.begin(), ::tolower);
+}
+
+bool GameCore::isNeedSkipTest(const BaseScreen& screen) const
+{
+	if (runOnlyThisTest.empty())
+	{
+		return false;
+	}
+
+	String name = screen.GetTestName();
+	std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+	if (runOnlyThisTest == name)
+	{
+		return false;
+	} else
+	{
+		return true;
+	}
 }
 
 

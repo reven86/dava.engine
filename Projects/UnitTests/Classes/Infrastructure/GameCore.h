@@ -101,7 +101,11 @@ protected:
 private:
 	void InitLogging();
 
-	DAVA::String logFilePath;
+	bool isNeedSkipTest(const BaseScreen& screen) const;
+
+	String runOnlyThisTest;
+
+	String logFilePath;
 	std::ofstream logFile;
 
     BaseScreen *currentScreen;
