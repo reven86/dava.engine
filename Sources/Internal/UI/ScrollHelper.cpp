@@ -36,6 +36,8 @@
 
 namespace DAVA 
 {
+    const float32 ScrollHelper::maxDeltaTime = 0.1f;
+
 	ScrollHelper::ScrollHelper()
 	:	BaseObject()
 	,	position(0.f)
@@ -147,7 +149,7 @@ namespace DAVA
 			moves.push_back(m);
 			totalDeltaTime += timeDelta;
 			totalDeltaMove += positionDelta;
-			if(totalDeltaTime >= 0.4f)
+			if(totalDeltaTime >= maxDeltaTime)
 			{
 				List<MovesDelta>::iterator it = moves.begin();
 				totalDeltaTime -= it->deltaTime;

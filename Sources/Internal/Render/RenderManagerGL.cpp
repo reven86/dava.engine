@@ -44,10 +44,6 @@
 
 #ifdef __DAVAENGINE_OPENGL__
 
-#if defined(__DAVAENGINE_ANDROID__)
-#include <EGL/egl.h>
-#endif
-
 namespace DAVA
 {
 	

@@ -47,7 +47,7 @@ replaceString = "\
 excludeLogFile = open("excludeLog.log", "w");
 includeLogFile = open("includeLog.log", "w");
 
-
+supported_exts = [".cpp", ".h", ".hpp", ".mm"];
 
 def visit_directory(arg, dirname, names):
 	global excludeDirs, includePaths
@@ -75,8 +75,7 @@ def visit_directory(arg, dirname, names):
 			continue;
 		if fullname[0] == '.' or fullname[0] == '$':
 			continue;
-		includePaths[fullname] = os.path.relpath(pathname);		
-		supported_exts = [".cpp", ".h", ".hpp", ".mm"];
+		includePaths[fullname] = os.path.relpath(pathname);
 	return
 	
 def process_contents(content):
@@ -91,7 +90,7 @@ def process_contents(content):
 	return newContent;
 	
 def process_file(fullname):
-	f = open(fullname)
+	f = open(fullname, "rU")
 	contents = "";
 	try:
 		contents = f.read();
@@ -134,7 +133,6 @@ def process_files(arg, dirname, names):
 			continue;
 		
 		(name, ext) = os.path.splitext(fullname); 
-		supported_exts = [".cpp", ".h", ".hpp"];
 		if ext in supported_exts:
 			process_file(pathname);
 			

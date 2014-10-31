@@ -593,6 +593,8 @@ void SoundSystem::AddSoundEventToGroup(const FastName & groupName, SoundEvent * 
     
 void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
 {
+    soundGroupsMutex.Lock();
+
     for(uint32 i = 0; i < (uint32)soundGroups.size(); ++i)
     {
         Vector<SoundEvent *> & events = soundGroups[i].events;
@@ -612,6 +614,8 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
             --i;
         }
     }
+
+    soundGroupsMutex.Unlock();
 }
     
 #ifdef __DAVAENGINE_IPHONE__

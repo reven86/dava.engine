@@ -102,7 +102,8 @@ ENUM_DECLARE(Light::eType)
 	ENUM_ADD_DESCR(Light::TYPE_DIRECTIONAL, "Directional");
 	ENUM_ADD_DESCR(Light::TYPE_SPOT, "Spot");
 	ENUM_ADD_DESCR(Light::TYPE_POINT, "Point");
-	ENUM_ADD_DESCR(Light::TYPE_SKY, "Sky");
+    ENUM_ADD_DESCR(Light::TYPE_SKY, "Sky");
+    ENUM_ADD_DESCR(Light::TYPE_AMBIENT, "Ambient");
 }
 
 ENUM_DECLARE(Entity::EntityFlags)
