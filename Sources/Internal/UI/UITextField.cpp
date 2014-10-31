@@ -117,7 +117,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 #endif
     
     cursorTime = 0;
-    showCursor = true;    
+    showCursor = true;
 }
 
 UITextField::UITextField()
@@ -997,6 +997,7 @@ void UITextField::WillBecomeInvisible()
     staticText->SetVisible(false);
 #endif
 }
+    
 
 }; // namespace
 

@@ -26,40 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_ES3RENDERER_H__
-#define __DAVAENGINE_ES3RENDERER_H__
-
+#ifndef __DAVAENGINE_BACKGROUND_VIEW_H__
+#define __DAVAENGINE_BACKGROUND_VIEW_H__
 
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
-#import "Platform/TemplateiOS/ESRenderer.h"
 
-#import <OpenGLES/ES3/gl.h>
-#import <OpenGLES/ES3/glext.h>
+#import <UIKit/UIKit.h>
+#import "Platform/TemplateiOS/UITextFieldHolder.h"
 
-@interface ES3Renderer : NSObject <ESRenderer>
-{
-@private
-	EAGLContext *context;
-	
-	// The pixel dimensions of the CAEAGLLayer
-	GLint backingWidth;
-	GLint backingHeight;
-	
-	// The OpenGL names for the framebuffer and renderbuffer used to render to this view
-	GLuint defaultFramebuffer, colorRenderbuffer;
-    GLuint depthRenderbuffer;
-}
+@interface BackgroundView : UIView
 
-- (void) startRendering;
-- (void) endRendering;
-- (BOOL) resizeFromLayer:(CAEAGLLayer *)layer;
+- (UIWebView *) CreateWebView;
+- (void) ReleaseWebView: (UIWebView *)webView;
 
-- (void) setCurrentContext;
+- (UITextFieldHolder *) CreateTextField;
+- (void) ReleaseTextField: (UITextFieldHolder *)textField;
 
 
 @end
+
 #endif // #if defined(__DAVAENGINE_IPHONE__)
 
-#endif //__DAVAENGINE_ES3RENDERER_H__
+#endif //__DAVAENGINE_BACKGROUND_VIEW_H__
 
+ 

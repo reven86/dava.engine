@@ -26,40 +26,52 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_ES3RENDERER_H__
-#define __DAVAENGINE_ES3RENDERER_H__
 
+
+#ifndef __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
+#define __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
 
 #include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_IPHONE__)
-#import "Platform/TemplateiOS/ESRenderer.h"
 
-#import <OpenGLES/ES3/gl.h>
-#import <OpenGLES/ES3/glext.h>
+#if defined (__DAVAENGINE_IPHONE__)
 
-@interface ES3Renderer : NSObject <ESRenderer>
+#import <UIKit/UIKit.h>
+#import "UI/UITextField.h"
+
+@interface UITextFieldHolder : UIView < UITextFieldDelegate >
 {
-@private
-	EAGLContext *context;
-	
-	// The pixel dimensions of the CAEAGLLayer
-	GLint backingWidth;
-	GLint backingHeight;
-	
-	// The OpenGL names for the framebuffer and renderbuffer used to render to this view
-	GLuint defaultFramebuffer, colorRenderbuffer;
-    GLuint depthRenderbuffer;
+@public
+    UITextField * textField;
+    DAVA::UITextField * cppTextField;
+    BOOL textInputAllowed;
+    
+    CGRect lastKeyboardFrame;
 }
 
-- (void) startRendering;
-- (void) endRendering;
-- (BOOL) resizeFromLayer:(CAEAGLLayer *)layer;
+@property (nonatomic, setter=setTextField:) DAVA::UITextField * davaTextField;
 
-- (void) setCurrentContext;
+- (void) setTextField:(DAVA::UITextField *) textField;
 
+- (id) init;
+- (void) dealloc;
+- (BOOL)textFieldShouldReturn:(UITextField *)textField;
+- (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
+- (void)setIsPassword:(bool)isPassword;
+- (void)setTextInputAllowed:(bool)value;
+
+- (void)setupTraits;
+
+- (UITextAutocapitalizationType) convertAutoCapitalizationType:(DAVA::UITextField::eAutoCapitalizationType) davaType;
+- (UITextAutocorrectionType) convertAutoCorrectionType:(DAVA::UITextField::eAutoCorrectionType) davaType;
+- (UITextSpellCheckingType) convertSpellCheckingType:(DAVA::UITextField::eSpellCheckingType) davaType;
+- (BOOL) convertEnablesReturnKeyAutomatically:(bool) davaType;
+- (UIKeyboardAppearance) convertKeyboardAppearanceType:(DAVA::UITextField::eKeyboardAppearanceType) davaType;
+- (UIKeyboardType) convertKeyboardType:(DAVA::UITextField::eKeyboardType) davaType;
+- (UIReturnKeyType) convertReturnKeyType:(DAVA::UITextField::eReturnKeyType) davaType;
 
 @end
-#endif // #if defined(__DAVAENGINE_IPHONE__)
 
-#endif //__DAVAENGINE_ES3RENDERER_H__
 
+#endif //#if defined (__DAVAENGINE_IPHONE__)
+
+#endif // __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__

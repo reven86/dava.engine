@@ -202,5 +202,20 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 	NSLog(@"Application termination finished");
 }
 
++ (DAVA::float32) GetScale
+{
+    DAVA::float32 retScale = 1.f;
+    if (DAVA::Core::IsAutodetectContentScaleFactor())
+    {
+        if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+            && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+        {
+            retScale = [[::UIScreen mainScreen] scale];
+        }
+    }
+    
+    return retScale;
+}
+
 @end
-#endif 
+#endif

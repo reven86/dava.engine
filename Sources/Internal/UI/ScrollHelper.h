@@ -54,7 +54,8 @@ class ScrollHelper : public BaseObject
 protected:
     ~ScrollHelper(){}
 public:
-	
+    const static float32 maxDeltaTime;
+    
 	/**
 	 \brief Constructor.
 	 */
