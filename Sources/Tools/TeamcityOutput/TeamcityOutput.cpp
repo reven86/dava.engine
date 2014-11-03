@@ -37,7 +37,7 @@
 namespace DAVA
 {
     
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text) const
+void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {
     String outStr = NormalizeString(text);
 	String output;
@@ -64,7 +64,7 @@ void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text) const
     PlatformOutput(output);
 }
 
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char16 *text) const
+void TeamcityOutput::Output(Logger::eLogLevel ll, const char16 *text)
 {
     WideString wstr = text;
     Output(ll, WStringToString(wstr).c_str());

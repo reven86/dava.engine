@@ -43,27 +43,26 @@ namespace DAVA
 {
 
    
-class TeamcityTestOutput: public TeamcityOutput
+class TeamcityTestsOutput: public TeamcityOutput
 {
 public:
-	TeamcityTestOutput():connected(false){}
+	TeamcityTestsOutput():connected(false){}
 
-    virtual void Output(Logger::eLogLevel ll, const char8* text) const;
+    virtual void Output(Logger::eLogLevel ll, const char8* text);
 
 	static String FormatTestStarted(const String& testName);
 	static String FormatTestFinished(const String& testName);
 	static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
 
-	void connect(const String& host, unsigned int port);
-	void sendTestResult(const String& testResult) const;
-	void disconnect();
+	void Connect(const String& host, uint16 port);
+	void SendTestResult(const String& testResult);
+	void Disconnect();
 
 private:
+	void TestOutput(const String& data);
 
-	void TestOutput(const String& data) const;
-
-	mutable sf::TcpSocket socket;
-	mutable bool connected;
+	sf::TcpSocket socket;
+	bool connected;
 };
 
 

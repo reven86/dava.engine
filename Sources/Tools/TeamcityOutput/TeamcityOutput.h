@@ -43,8 +43,8 @@ class TeamcityOutput: public LoggerOutput
 {
 public:
 
-    virtual void Output(Logger::eLogLevel ll, const char8* text) const;
-    virtual void Output(Logger::eLogLevel ll, const char16* text) const;
+    virtual void Output(Logger::eLogLevel ll, const char8* text);
+    virtual void Output(Logger::eLogLevel ll, const char16* text);
     
 protected:
     

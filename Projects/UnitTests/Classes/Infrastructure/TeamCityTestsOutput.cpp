@@ -35,15 +35,12 @@
 namespace DAVA
 {
 
-	namespace 
-	{
-		const String START_TEST = "start test ";
-		const String FINISH_TEST = "finish test ";
-		const String ERROR_TEST = "test error ";
-		const String AT_FILE_TEST = " at file: ";
-	}
+	static const String START_TEST = "start test ";
+	static const String FINISH_TEST = "finish test ";
+	static const String ERROR_TEST = "test error ";
+	static const String AT_FILE_TEST = " at file: ";
 
-void TeamcityTestOutput::Output(Logger::eLogLevel ll, const char8 *text) const
+void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {
 	std::stringstream ss(text);
 
@@ -81,22 +78,22 @@ void TeamcityTestOutput::Output(Logger::eLogLevel ll, const char8 *text) const
 	TestOutput(output);
 }
 
-String TeamcityTestOutput::FormatTestStarted(const String& testName)
+String TeamcityTestsOutput::FormatTestStarted(const String& testName)
 {
 	return START_TEST + "\n" + testName;
 }
 
-String TeamcityTestOutput::FormatTestFinished(const String& testName)
+String TeamcityTestsOutput::FormatTestFinished(const String& testName)
 {
 	return FINISH_TEST + "\n" + testName;
 }
 
-String TeamcityTestOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)
+String TeamcityTestsOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)
 {
 	return ERROR_TEST + "\n" + testName + "\n" + condition + "\n" + errMsg;
 }
 
-void TeamcityTestOutput::connect(const String& host, unsigned int port)
+void TeamcityTestsOutput::Connect(const String& host, uint16 port)
 {
 	sf::Socket::Status status = socket.connect(host, port, sf::seconds(0.2f));
 	if (status != sf::Socket::Done)
@@ -108,7 +105,7 @@ void TeamcityTestOutput::connect(const String& host, unsigned int port)
 	}
 }
 
-void TeamcityTestOutput::sendTestResult(const String& testResult) const
+void TeamcityTestsOutput::SendTestResult(const String& testResult)
 {
 	if (connected)
 	{
@@ -121,7 +118,7 @@ void TeamcityTestOutput::sendTestResult(const String& testResult) const
 	}
 }
 
-void TeamcityTestOutput::disconnect()
+void TeamcityTestsOutput::Disconnect()
 {
 	if (connected)
 	{
@@ -130,9 +127,9 @@ void TeamcityTestOutput::disconnect()
 	}
 }
 
-void TeamcityTestOutput::TestOutput(const String& data) const
+void TeamcityTestsOutput::TestOutput(const String& data)
 {
-	sendTestResult(data);
+	SendTestResult(data);
 
 	TeamcityOutput::PlatformOutput(data);
 }

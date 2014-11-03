@@ -111,7 +111,7 @@ private:
     
     int32 currentTestIndex;
 
-	TeamcityTestOutput teamCityOutput;
+	TeamcityTestsOutput teamCityOutput;
 };
 
 

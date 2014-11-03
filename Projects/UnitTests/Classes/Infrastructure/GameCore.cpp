@@ -198,7 +198,7 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::OnAppFinished()
 {
-	teamCityOutput.disconnect();
+	teamCityOutput.Disconnect();
 	DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
 	int32 screensSize = screens.size();
@@ -280,7 +280,7 @@ void GameCore::RunTests()
     
     if(currentScreen)
     {
-		Logger::Info(TeamcityTestOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
+		Logger::Info(TeamcityTestsOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
 
         UIScreenManager::Instance()->SetFirst(currentScreen->GetScreenId());
     }
@@ -327,17 +327,17 @@ void GameCore::ProcessTests()
                 ++currentScreenIndex;
                 if(currentScreenIndex == screens.size())
                 {
-					Logger::Info(TeamcityTestOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
+					Logger::Info(TeamcityTestsOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
                     FinishTests();
                 }
                 else 
                 {
-					Logger::Info(TeamcityTestOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
+					Logger::Info(TeamcityTestsOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
 
                     currentScreen = screens[currentScreenIndex];
                     currentTestIndex = 0;
 
-					Logger::Info(TeamcityTestOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
+					Logger::Info(TeamcityTestsOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
 
                     UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
                 }
@@ -365,7 +365,7 @@ void GameCore::RegisterError(const String &command, const String &fileName, int3
 			errorString += String(Format(" %s", testData->message.c_str()));
 		}
 	}
-    LogMessage(TeamcityTestOutput::FormatTestFailed(testName, command, errorString));
+    LogMessage(TeamcityTestsOutput::FormatTestFailed(testName, command, errorString));
 }
 
 DAVA::String GameCore::CreateOutputLogFile()
@@ -394,11 +394,11 @@ void GameCore::InitLogging()
 	const Vector<String>& cmdLine = Core::Instance()->GetCommandLine();
 	String host = GetCommandLineValue(cmdLine, "-host", "");
 	String portStr = GetCommandLineValue(cmdLine, "-port", "50007");
-	unsigned short port = static_cast<unsigned short>(atoi(portStr.c_str()));
+	uint16 port = static_cast<uint16>(atoi(portStr.c_str()));
 
-	teamCityOutput.connect(host, port);
+	teamCityOutput.Connect(host, port);
 
-	DAVA::Logger::Instance()->AddCustomOutput(&teamCityOutput);
+	Logger::Instance()->AddCustomOutput(&teamCityOutput);
 }
 
 
