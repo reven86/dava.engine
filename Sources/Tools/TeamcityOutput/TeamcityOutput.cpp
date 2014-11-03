@@ -96,7 +96,7 @@ void TeamcityOutput::PlatformOutput(const String &text) const
     NSLog(@"%s", text.c_str());
 #else
     std::cout << text << std::endl;
-#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
+#endif
 }
     
 }; // end of namespace DAVA
