@@ -35,6 +35,7 @@
 #include <dlfcn.h>
 #include <unistd.h>
 
+
 #include "ExternC/AndroidLayer.h"
 
 /* Maximum value of a caught signal. */
@@ -251,7 +252,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 			{
 				char s[256];
 				const backtrace_frame_t* frame = &frames[i];
-				sprintf(s, "0x%08x", (frame->absolute_pc - mi->start));
+				snprintf(s,256, "0x%08x", (frame->absolute_pc - mi->start));
 				step.function = std::string(s);
 				if (mi->name[0])
 				{
@@ -263,7 +264,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 					JniCrashReporter::CrashStep buildId;
 					buildId.module = TEAMCITY_BUILD_TYPE_ID;
 					char fakeFunction[64];
-					sprintf(fakeFunction, "Crash::AppCrashed%d()",signal);
+					snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%08x()",signal,siginfo->si_addr);
 					buildId.function = std::string(fakeFunction);
 					buildId.fileLine = (frame->absolute_pc - mi->start);
 					crashSteps.push_back(buildId);

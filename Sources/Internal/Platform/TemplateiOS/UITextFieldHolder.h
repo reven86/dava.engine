@@ -28,67 +28,50 @@
 
 
 
-#ifndef __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
-#define __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
+#ifndef __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
+#define __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
 
-#include "../../UI/IWebViewControl.h"
+#include "Base/BaseTypes.h"
 
-namespace DAVA {
+#if defined (__DAVAENGINE_IPHONE__)
 
-class FilePath;
-    
-// Web View Control - MacOS version.
-class WebViewControl : public IWebViewControl
+#import <UIKit/UIKit.h>
+#import "UI/UITextField.h"
+
+@interface UITextFieldHolder : UIView < UITextFieldDelegate >
 {
-public:
-	WebViewControl();
-	virtual ~WebViewControl();
-	
-	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
-	
-	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
-
-    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
+@public
+    UITextField * textField;
+    DAVA::UITextField * cppTextField;
+    BOOL textInputAllowed;
     
-	// Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
+    CGRect lastKeyboardFrame;
+}
 
-	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
-	virtual void SetBackgroundTransparency(bool enabled);
+@property (nonatomic, setter=setTextField:) DAVA::UITextField * davaTextField;
 
-	// Bounces control.
-	virtual bool GetBounces() const;
-	virtual void SetBounces(bool value);
-    virtual void SetGestures(bool value);
+- (void) setTextField:(DAVA::UITextField *) textField;
 
-    // Data detector types.
-    virtual void SetDataDetectorTypes(int32 value);
-    virtual int32 GetDataDetectorTypes() const;
+- (id) init;
+- (void) dealloc;
+- (BOOL)textFieldShouldReturn:(UITextField *)textField;
+- (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
+- (void)setIsPassword:(bool)isPassword;
+- (void)setTextInputAllowed:(bool)value;
 
-protected:
+- (void)setupTraits;
 
-	//A pointer to iOS WebView.
-	void* webViewPtr;
-	
-	// A pointer to the WebView delegate.
-	void* webViewDelegatePtr;
+- (UITextAutocapitalizationType) convertAutoCapitalizationType:(DAVA::UITextField::eAutoCapitalizationType) davaType;
+- (UITextAutocorrectionType) convertAutoCorrectionType:(DAVA::UITextField::eAutoCorrectionType) davaType;
+- (UITextSpellCheckingType) convertSpellCheckingType:(DAVA::UITextField::eSpellCheckingType) davaType;
+- (BOOL) convertEnablesReturnKeyAutomatically:(bool) davaType;
+- (UIKeyboardAppearance) convertKeyboardAppearanceType:(DAVA::UITextField::eKeyboardAppearanceType) davaType;
+- (UIKeyboardType) convertKeyboardType:(DAVA::UITextField::eKeyboardType) davaType;
+- (UIReturnKeyType) convertReturnKeyType:(DAVA::UITextField::eReturnKeyType) davaType;
 
-	void* webViewURLDelegatePtr;
+@end
 
-    void *rightSwipeGesturePtr;
-    void *leftSwipeGesturePtr;
 
-    
-	Map<void*, bool> subviewVisibilityMap;
+#endif //#if defined (__DAVAENGINE_IPHONE__)
 
-	void HideSubviewImages(void* view);
-	void RestoreSubviewImages();
-    bool gesturesEnabled;
-};
-
-};
-
-#endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_IOS_H__) */
+#endif // __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__

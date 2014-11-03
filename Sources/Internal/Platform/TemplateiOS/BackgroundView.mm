@@ -26,55 +26,64 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "BackgroundView.h"
 
-#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__
-#define __DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__
+#if defined(__DAVAENGINE_IPHONE__)
 
-#include "DAVAEngine.h"
-#include "UI/IMovieViewControl.h"
+#import "Platform/TemplateiOS/NativeViewPool.h"
 
-namespace DAVA
+@implementation BackgroundView
 {
-	
-// Movie View Control - iOS implementation.
-class MovieViewControl : public IMovieViewControl
+    DAVA::NativeViewPool<UIWebView> webViewPool;
+    DAVA::NativeViewPool<UITextFieldHolder> textFieldPool;
+}
+
+- (void)drawRect:(CGRect)rect
 {
-public:
-	MovieViewControl();
-	virtual ~MovieViewControl();
+    // Do nothing to reduce fill usage.
+}
 
-	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
 
-	// Open the Movie.
-	virtual void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
+- (UIView *) PrepareView: (UIView *)view
+{
+    if([view superview] == nil)
+    {
+        [self addSubview:view];
+    }
 
-	// Position/visibility.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible);
+    [view setHidden:YES];
+    return view;
+}
 
-	// Start/stop the video playback.
-	virtual void Play();
-	virtual void Stop();
-	
-	// Pause/resume the playback.
-	virtual void Pause();
-	virtual void Resume();
-	
-	// Whether the movie is being played?
-	virtual bool IsPlaying();
-	
-protected:
-	
-	// Convert the DAVA Scaling Mode to platform-specific (iOS) one.
-	int ConvertScalingModeToPlatform(eMovieScalingMode scalingMode);
 
-private:
-	// Pointer to iOS movie player.
-	void* moviePlayerController;
-};
-	
-	
-};
+- (UIWebView *) CreateWebView
+{
+    return  (UIWebView *) [self PrepareView:webViewPool.GetOrCreateView()];
+}
 
-#endif /* defined(__DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__) */
+- (UITextFieldHolder *) CreateTextField
+{
+    return (UITextFieldHolder *)[self PrepareView:textFieldPool.GetOrCreateView()];
+}
+
+- (void) ReleaseWebView: (UIWebView *)webView
+{
+    [webView setHidden:YES];
+    webViewPool.ReleaseView(webView);
+}
+
+- (void) ReleaseTextField: (UITextFieldHolder *)textField
+{
+    [textField setHidden:YES];
+    textFieldPool.ReleaseView(textField);
+}
+
+
+
+
+
+
+@end
+
+
+#endif // __DAVAENGINE_IPHONE__

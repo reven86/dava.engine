@@ -26,69 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_BACKGROUND_VIEW_H__
+#define __DAVAENGINE_BACKGROUND_VIEW_H__
+
+#include "Base/BaseTypes.h"
+#if defined(__DAVAENGINE_IPHONE__)
+
+#import <UIKit/UIKit.h>
+#import "Platform/TemplateiOS/UITextFieldHolder.h"
+
+@interface BackgroundView : UIView
+
+- (UIWebView *) CreateWebView;
+- (void) ReleaseWebView: (UIWebView *)webView;
+
+- (UITextFieldHolder *) CreateTextField;
+- (void) ReleaseTextField: (UITextFieldHolder *)textField;
 
 
-#ifndef __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
-#define __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
+@end
 
-#include "../../UI/IWebViewControl.h"
+#endif // #if defined(__DAVAENGINE_IPHONE__)
 
-namespace DAVA {
+#endif //__DAVAENGINE_BACKGROUND_VIEW_H__
 
-class FilePath;
-    
-// Web View Control - MacOS version.
-class WebViewControl : public IWebViewControl
-{
-public:
-	WebViewControl();
-	virtual ~WebViewControl();
-	
-	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
-	
-	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
-
-    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
-    
-	// Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
-
-	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
-	virtual void SetBackgroundTransparency(bool enabled);
-
-	// Bounces control.
-	virtual bool GetBounces() const;
-	virtual void SetBounces(bool value);
-    virtual void SetGestures(bool value);
-
-    // Data detector types.
-    virtual void SetDataDetectorTypes(int32 value);
-    virtual int32 GetDataDetectorTypes() const;
-
-protected:
-
-	//A pointer to iOS WebView.
-	void* webViewPtr;
-	
-	// A pointer to the WebView delegate.
-	void* webViewDelegatePtr;
-
-	void* webViewURLDelegatePtr;
-
-    void *rightSwipeGesturePtr;
-    void *leftSwipeGesturePtr;
-
-    
-	Map<void*, bool> subviewVisibilityMap;
-
-	void HideSubviewImages(void* view);
-	void RestoreSubviewImages();
-    bool gesturesEnabled;
-};
-
-};
-
-#endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_IOS_H__) */
+ 
