@@ -89,8 +89,8 @@ protected:
     void ProcessTests();
     void FinishTests();
 
-	DAVA::String CreateOutputLogFile();
-	DAVA::String ReadLogFile();
+	String CreateOutputLogFile();
+	String ReadLogFile();
 
 
     int32 TestCount();
@@ -101,7 +101,7 @@ protected:
 private:
 	void InitLogging();
 
-	DAVA::String logFilePath;
+	String logFilePath;
 	std::ofstream logFile;
 
     BaseScreen *currentScreen;

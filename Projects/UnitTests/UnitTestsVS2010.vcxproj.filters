@@ -75,9 +75,6 @@
     <ClCompile Include="Classes\SFML\System\Time.cpp">
       <Filter>SFML\System</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp">
-      <Filter>TeamCityOutput</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Infrastructure\BaseScreen.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
@@ -199,9 +196,6 @@
     <ClInclude Include="Classes\SFML\System\Utf.hpp">
       <Filter>SFML\System</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h">
-      <Filter>TeamCityOutput</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Infrastructure\BaseScreen.h">
       <Filter>Infrastructure</Filter>
     </ClInclude>
@@ -239,9 +233,6 @@
     </Filter>
     <Filter Include="SFML\System">
       <UniqueIdentifier>{68933d4e-7e14-4ca0-b5f5-0ed7ccbee298}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="TeamCityOutput">
-      <UniqueIdentifier>{d7622bab-ff09-4ed1-8991-42e786aa7797}</UniqueIdentifier>
     </Filter>
     <Filter Include="Infrastructure">
       <UniqueIdentifier>{c55c0af8-77fb-4293-a9f6-936995a69a69}</UniqueIdentifier>

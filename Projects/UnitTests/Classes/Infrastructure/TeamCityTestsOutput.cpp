@@ -29,29 +29,23 @@
 
 
 #include "TeamcityTestsOutput.h"
-
-#include <sstream>
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
 
-	static const String START_TEST = "start test ";
-	static const String FINISH_TEST = "finish test ";
-	static const String ERROR_TEST = "test error ";
-	static const String AT_FILE_TEST = " at file: ";
+static const String START_TEST = "start test ";
+static const String FINISH_TEST = "finish test ";
+static const String ERROR_TEST = "test error ";
+static const String AT_FILE_TEST = " at file: ";
 
 void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {
-	std::stringstream ss(text);
-
-	Vector<String> lines;
-	String line;
-	while (std::getline(ss, line, '\n')) {
-		lines.push_back(line);
-	}
+    String textStr = text;
+    Vector<String> lines;
+    Split(textStr, "\n", lines);
 
 	String output;
-
 
 	if (START_TEST == lines[0])
 	{

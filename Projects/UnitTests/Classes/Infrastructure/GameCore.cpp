@@ -29,8 +29,8 @@
 
 #include "GameCore.h"
 
-#include "Database/MongodbObject.h"
 #include "Platform/DateTime.h"
+#include "TexturePacker/CommandLineParser.h"
 
 #include "Config.h"
 #include "BaseScreen.h"
@@ -86,23 +86,6 @@ GameCore::GameCore():currentScreen(NULL),
 
 GameCore::~GameCore()
 {
-}
-
-String GetCommandLineValue(const Vector<String>& cmdLine, const char* key, const String& defaultVal)
-{
-	// format cmdLine: -host 10.128.109.24 -port 50007
-	for (size_t i = 0; i < cmdLine.size(); ++i)
-	{
-		if (key == cmdLine[i])
-		{
-			size_t valueIndex = i + 1;
-			if (valueIndex < cmdLine.size())
-			{
-				return cmdLine[valueIndex];
-			}
-		}
-	}
-	return defaultVal;
 }
 
 void GameCore::OnAppStarted()
@@ -391,10 +374,17 @@ void GameCore::InitLogging()
 	// We need redirect cout to our file for TeamcityOutput(CustomOutput) to work
 	std::cout.rdbuf(logFile.rdbuf());
 
-	const Vector<String>& cmdLine = Core::Instance()->GetCommandLine();
-	String host = GetCommandLineValue(cmdLine, "-host", "");
-	String portStr = GetCommandLineValue(cmdLine, "-port", "50007");
-	uint16 port = static_cast<uint16>(atoi(portStr.c_str()));
+    String host;
+    if (CommandLineParser::Instance()->CommandIsFound("-host"))
+    {
+        host = CommandLineParser::Instance()->GetCommandParam("-host");
+    }
+    uint16 port = static_cast<uint16>(50007u);
+    if (CommandLineParser::Instance()->CommandIsFound("-port"))
+    {
+        String portStr = CommandLineParser::Instance()->GetCommandParam("-port");
+        port = static_cast<uint16>(atoi(portStr.c_str()));
+    }
 
 	teamCityOutput.Connect(host, port);
 
