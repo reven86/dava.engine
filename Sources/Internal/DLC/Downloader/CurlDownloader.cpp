@@ -68,35 +68,44 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     DownloadPart *thisPart = static_cast<DownloadPart *>(part);
     CurlDownloader *thisDownloader = static_cast<CurlDownloader *>(thisPart->downloader);
     
-    uint64 seekPos = thisPart->info.seekPos + thisPart->info.progress;
     uint64 dataLeft = thisPart->info.size - thisPart->info.progress;
     size_t dataSizeCame = size*nmemb;
-    uint64 dataSizeToWrite = 0;
+    uint64 dataSizeToBuffer = 0;
     
     if (dataLeft < dataSizeCame)
     {
         Logger::Error("[CurlDownloader::CurlDataRecvHandler] dataLeft < dataSizeCame");
-        dataSizeToWrite = dataLeft; // don't write more than part.size
+        dataSizeToBuffer = dataLeft; // don't write more than part.size
     }
     else
     {
-        dataSizeToWrite = dataSizeCame;
+        dataSizeToBuffer = dataSizeCame;
     }
     
-    size_t bytesWritten = thisDownloader->SaveData(ptr, thisDownloader->storePath, dataSizeToWrite, seekPos);
-    if (bytesWritten != dataSizeToWrite)
+    bool saveDataToBuffer = dataSizeToBuffer <= thisPart->dataBufferSize - thisPart->dataBufferProgress;
+    if (saveDataToBuffer)
     {
-        Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk");
-        return bytesWritten; // this case means that not all data which we wants to save is saved. So we produce file system error.
+        Memcpy(thisPart->dataBuffer + thisPart->dataBufferProgress, ptr, dataSizeToBuffer);
+        thisPart->dataBufferProgress += dataSizeToBuffer;
     }
-    
-    thisPart->info.progress += bytesWritten; // if SaveData not performes - then we have not stored chunk of data and it is not a finished download.
 
-    if (!thisPart->SaveDownload(thisDownloader->dlInfoStorePath))
+    bool writeDataToFile = !saveDataToBuffer || (0 == thisPart->info.size - thisPart->info.progress - thisPart->dataBufferProgress);
+    if (writeDataToFile)
     {
-        Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save download part info");
-        return 0;
+        uint64 bufSize = thisPart->dataBufferProgress;
+        size_t bytesWritten = SavePart(thisPart);
+        if (bytesWritten != bufSize)
+        {
+            return bytesWritten;
+        }
+        
+        if (!saveDataToBuffer)
+        {
+            Memcpy(thisPart->dataBuffer + thisPart->dataBufferProgress, ptr, dataSizeToBuffer);
+            thisPart->dataBufferProgress += dataSizeToBuffer;
+        }
     }
+
 
     if (thisDownloader->isDownloadInterrupting)
     {
@@ -104,9 +113,35 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     }
     
     // no errors was found
-    return dataSizeCame;
+    return dataSizeToBuffer;
 }
 
+size_t CurlDownloader::SavePart(DownloadPart *part)
+{
+    CurlDownloader *thisDownloader = static_cast<CurlDownloader *>(part->downloader);
+    uint64 seekPos = part->info.seekPos + part->info.progress;
+
+    size_t bytesWritten = thisDownloader->SaveData(part->dataBuffer, thisDownloader->storePath, part->dataBufferProgress, seekPos);
+    part->info.progress += part->dataBufferProgress; // if SaveData not performes - then we have not stored chunk of data and it is not a finished download.
+    
+
+    
+    if (bytesWritten != part->dataBufferProgress)
+    {
+        Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk");
+        return bytesWritten; // this case means that not all data which we wants to save is saved. So we produce file system error.
+    }
+    
+    part->dataBufferProgress = 0;
+    
+    if (!part->SaveDownload(thisDownloader->dlInfoStorePath))
+    {
+        Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save download part info");
+        return 0;
+    }
+    return bytesWritten;
+}
+    
 void CurlDownloader::Interrupt()
 {
     isDownloadInterrupting = true;
@@ -219,11 +254,10 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
         
         if (!isRestoredDownlaod)
         {
-            part = new DownloadPart();
+            part = new DownloadPart(partSize);
             part->info.seekPos = partSize * i;
             part->info.size = partSize;
             part->info.number = i;
-            part->info.progress = 0;
 
             if (!part->SaveDownload(dlInfoStorePath))
             {

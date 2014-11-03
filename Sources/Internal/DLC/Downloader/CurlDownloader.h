@@ -76,6 +76,8 @@ private:
         \param[in] part - pointer to download part which contains data for current download thread
      */
     static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part);
+    
+    static size_t SavePart(DownloadPart *part);
     /**
         \brief Convert Curl easy interface error to Download error
         \param[in] status - Curl easy interface operation status status

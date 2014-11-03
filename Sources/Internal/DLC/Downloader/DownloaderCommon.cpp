@@ -49,6 +49,19 @@ DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const Fil
 
 }
 
+DownloadPart::DownloadPart(uint64 size)
+    : dataBufferSize(Min<uint64>(PART_CACHE_SIZE, size))
+    , dataBufferProgress(0)
+{
+    info.progress = 0;
+    dataBuffer = new char8[dataBufferSize];
+}
+
+DownloadPart::~DownloadPart()
+{
+    SafeDeleteArray(dataBuffer);
+}
+
 bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<DownloadPart*> &downloadParts)
 {
     ScopedPtr<File> infoFile(File::Create(infoFilePath, File::OPEN | File::READ));

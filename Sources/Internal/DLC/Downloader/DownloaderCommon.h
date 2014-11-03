@@ -115,9 +115,13 @@ struct DownloadInfoHeader
     uint8 partsCount;
 };
 
+#define PART_CACHE_SIZE 256*1024
 class Downloader;
 struct DownloadPart
 {
+    DownloadPart(uint64 size = PART_CACHE_SIZE);
+    ~DownloadPart();
+    
     /**
         \brief Fills a given downloadParts list by readed download parts state from .dlinfo file
         \param[in] infoFilePath - file with stored download info (not necessery to be created)
@@ -154,6 +158,11 @@ struct DownloadPart
         uint64 size;
         uint64 progress;
     } info;
+    
+    char8 *dataBuffer;
+    
+    const uint64 dataBufferSize;
+    uint64 dataBufferProgress;
 };
 
 }
