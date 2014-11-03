@@ -92,10 +92,10 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
 
 void TeamcityOutput::PlatformOutput(const String &text) const
 {
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
-    std::cout << text << std::endl;
-#else
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     NSLog(@"%s", text.c_str());
+#else
+    std::cout << text << std::endl;
 #endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
 }
     
