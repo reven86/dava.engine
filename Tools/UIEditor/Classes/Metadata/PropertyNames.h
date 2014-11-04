@@ -83,6 +83,8 @@ public:
     static const char* TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME;
     static const char* TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME;
 
+    static const char* MAX_TEXT_LENGTH_PROPERTY_NAME;
+    
 	// Slider properties
 	static const char* SLIDER_VALUE_PROPERTY_NAME;
 	static const char* SLIDER_MIN_VALUE_PROPERTY_NAME;

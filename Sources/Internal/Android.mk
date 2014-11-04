@@ -81,7 +81,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DLC/Downloader/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/bsdiff/*.c) \
-                     $(wildcard $(LOCAL_PATH)/DLC/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/DLC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp))
 
 ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
 ifndef USE_NEON

@@ -489,8 +489,8 @@ void main()
     
     #else
         #if defined (SKINNING)
-            vec3 t = 2.0 * cross(weightedVertexQuaternion.xyz, inPosition.xyz);
-            vec4 skinnedPosition = vec4(weightedVertexPosition.xyz + (inPosition.xyz + weightedVertexQuaternion.w * t + cross(weightedVertexQuaternion.xyz, t))*weightedVertexPosition.w, inPosition.w);
+            vec3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, inPosition.xyz);
+            vec4 skinnedPosition = vec4(weightedVertexPosition.xyz + (inPosition.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, inPosition.w);
             gl_Position = worldViewProjMatrix * skinnedPosition;
         #else
             gl_Position = worldViewProjMatrix * inPosition;

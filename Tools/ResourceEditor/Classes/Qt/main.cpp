@@ -114,10 +114,9 @@ int main(int argc, char *argv[])
 	if(cmdLine.IsEnabled())
 	{
 		Core::Instance()->EnableConsoleMode();
-
         DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
-        
-		new SceneValidator();
+
+        new SceneValidator();
 		DavaGLWidget* davaGL = new DavaGLWidget();
         RenderManager::Instance()->Init(0, 0);
 
@@ -131,6 +130,7 @@ int main(int argc, char *argv[])
             //Trick for correct loading of sprites.
             Core::Instance()->UnregisterAllAvailableResourceSizes();
             Core::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
+            
             
 			cmdLine.Process();
 			cmdLine.PrintResults();

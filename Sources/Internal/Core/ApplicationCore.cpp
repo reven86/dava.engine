@@ -35,7 +35,7 @@
 #include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "DLC/Downloader/DownloadManager.h"
-#include "Platform/Notification.h"
+#include "Notification/LocalNotificationController.h"
 
 
 #ifdef __DAVAENGINE_AUTOTESTING__

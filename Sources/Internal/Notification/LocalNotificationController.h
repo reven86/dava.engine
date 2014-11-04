@@ -26,93 +26,40 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#ifndef __NOTIFICATION_H__
-#define __NOTIFICATION_H__
+#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_CONTROLLER_H__
+#define __DAVAENGINE_LOCAL_NOTIFICATION_CONTROLLER_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Platform/NotificationAndroid.h"
-#include "Platform/NotificationNotImplemented.h"
+#include "Base/Message.h"
+#include "Platform/Mutex.h"
+#include "Notification/LocalNotificationAndroid.h"
+#include "Notification/LocalNotificationNotImplemented.h"
+
 
 namespace DAVA
 {
 
-class LocalNotification
-		: public BaseObject
-#if defined(__DAVAENGINE_ANDROID__)
-		, public JniLocalNotification
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-        , public LocalNotificationNotImplemented
-#endif
-{
-public:
-	LocalNotification();
-    virtual ~LocalNotification();
-
-    bool IsChanged();
-
-	void SetTitle(const WideString &_title);
-	void SetText(const WideString &_text);
-    virtual void Hide();
-    virtual void Update();
-
-protected:
-    bool isChanged;
-
-    uint32 id;
-    WideString title;
-    WideString text;
-};
-
-class LocalNotificationProgress : public LocalNotification
-{
-public:
-	LocalNotificationProgress();
-	virtual ~LocalNotificationProgress();
-
-	void SetProgressCurrent(uint32 _currentProgress);
-	void SetProgressTotal(uint32 _total);
-
-	void Update();
-
-	virtual void Hide();
-
-private:
-	void ShowNotifitaionWithProgress(uint32 id,
-			const WideString& title,
-			const WideString& text,
-			int32 maxValue,
-			int32 value);
-
-private:
-	uint32 total;
-	uint32 progress;
-};
-
-class LocalNotificationText : public LocalNotification
-{
-public:
-	virtual void Update();
-
-private:
-	void ShowNotificationWithText(uint32 id,
-			const WideString& title,
-			const WideString& text);
-};
+class LocalNotification;
+class LocalNotificationText;
+class LocalNotificationProgress;
 
 class LocalNotificationController : public Singleton<LocalNotificationController>
 {
 	friend class LocalNotification;
 public:
     virtual ~LocalNotificationController();
-	LocalNotificationProgress *CreateNotificationProgress(const WideString &title = L"", const WideString &text = L"", uint32 max = 0, uint32 current = 0);
-    LocalNotificationText *CreateNotificationText(const WideString &title = L"", const WideString &text = L"");
-	void Update();
+	LocalNotificationProgress *const CreateNotificationProgress(const WideString &title = L"", const WideString &text = L"", const uint32 max = 0, const uint32 current = 0);
+    LocalNotificationText *const CreateNotificationText(const WideString &title = L"", const WideString &text = L"");
+    void PostDelayedNotification(const WideString &title, const WideString text, int delaySeconds);
+    void RemoveAllDelayedNotifications();
+    bool Remove(LocalNotification *const notification);
+    bool RemoveById(const String &notificationId);
+    void Clear();
+    void Update();
 
-protected:
-	bool Remove(LocalNotification *notification);
+    LocalNotification *const GetNotificationById(const String &id);
+    void OnNotificationPressed(const String &id);
 
 private:
 	Mutex notificationsListMutex;

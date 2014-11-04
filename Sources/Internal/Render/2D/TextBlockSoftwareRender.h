@@ -64,7 +64,7 @@ protected:
 							  int32 lineSize);
 
 private:
-	int16* buf;
+    int8* buf;
 	FTFont* ftFont;
 };
 	

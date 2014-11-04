@@ -355,20 +355,31 @@ public class JNITextField {
 							source = s;
 						}
 
+						String origSource = source.toString();
+
 						NativeEditText editText = GetNativeEditText(_id);
-						if (editText != null && editText.maxLengthFilter != null) {
-							CharSequence res = editText.maxLengthFilter.filter(source, start, end, dest, dstart, dend);
-							if (res != null && res.toString().isEmpty())
-								return res;
-							if (res != null)
-								source = res;
+
+						int sourceRepLen = end - start;
+						int destRepLen = dend - dstart;
+						int curStringLen = editText.editText.getText().length();
+						int newStringLen = curStringLen - destRepLen + sourceRepLen;
+
+						if (newStringLen >= curStringLen)
+						{
+							if (editText != null && editText.maxLengthFilter != null) {
+								CharSequence res = editText.maxLengthFilter.filter(source, start, end, dest, dstart, dend);
+								if (res != null && res.toString().isEmpty())
+									return res;
+								if (res != null)
+									source = res;
+							}
 						}
 						
 						final CharSequence sourceToProcess = source;
 						final String text = editText.editText.getText().toString();
-						FutureTask<Boolean> t = new FutureTask<Boolean>(new Callable<Boolean>() {
+						FutureTask<String> t = new FutureTask<String>(new Callable<String>() {
 							@Override
-							public Boolean call() throws Exception {
+							public String call() throws Exception {
 								byte []bytes = sourceToProcess.toString().getBytes("UTF-8");
 								int curPos = 0;
 								int finalStart = dstart;
@@ -387,8 +398,15 @@ public class JNITextField {
 						});
 						JNIActivity.GetActivity().PostEventToGL(t);
 						try {
-							if (t.get())
-								return source;
+							String s = t.get();
+							if (s.equals(origSource))
+							{
+								return null;
+							}
+							else if (s.length() > 0)
+							{
+								return s;
+							}
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						} catch (ExecutionException e) {
@@ -1023,7 +1041,7 @@ public class JNITextField {
     }
 
 	public static native void TextFieldShouldReturn(int id);
-	public static native boolean TextFieldKeyPressed(
+	public static native String TextFieldKeyPressed(
 			int id,
 			int replacementLocation,
 			int replacementLength,

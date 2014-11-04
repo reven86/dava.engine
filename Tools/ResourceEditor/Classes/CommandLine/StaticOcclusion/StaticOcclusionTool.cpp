@@ -100,4 +100,8 @@ void StaticOcclusionTool::Process()
     }
 }
 
+DAVA::FilePath StaticOcclusionTool::GetQualityConfigPath() const
+{
+    return CreateQualityConfigPath(scenePathname);
+}
 

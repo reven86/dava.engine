@@ -42,6 +42,11 @@ void OpenURL(const String& url)
 	ShellExecute(NULL, L"open", urlWide.c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
+String GenerateGUID()
+{
+    DVASSERT_MSG(false, "Not implemented");
+}
+
 };
 
 #endif

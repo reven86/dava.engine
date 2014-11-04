@@ -28,32 +28,72 @@
 
 
 
-#ifndef __NOTIFICATION_ANDROID_H__
-#define __NOTIFICATION_ANDROID_H__
+#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_H__
+#define __DAVAENGINE_LOCAL_NOTIFICATION_H__
 
 #include "Base/BaseTypes.h"
-#include "Mutex.h"
-
-#ifdef __DAVAENGINE_ANDROID__
-#include "JniExtensions.h"
+#include "Base/Singleton.h"
+#include "Base/Message.h"
+#include "Notification/LocalNotificationImpl.h"
 
 namespace DAVA
 {
 
-class JniLocalNotification: public JniExtension
+class LocalNotification : public BaseObject
 {
 protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
+	LocalNotification();
+    virtual ~LocalNotification();
 
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+    void SetAction(const Message& msg);
+    inline void RunAction();
+
+	void SetTitle(const WideString &_title);
+	void SetText(const WideString &_text);
+	void Show();
+    void Hide();
+    void Update();
+
+    inline bool IsChanged() const;
+	inline bool IsVisible() const;
+    DAVA::String& GetId() const;
+private:
+    virtual void ImplShow() = 0;
 
 protected:
-	Mutex javaCallMutex;
-};
-}
-#endif //__DAVAENGINE_ANDROID__
+    LocalNotificationImpl *impl;
 
-#endif // __NOTIFICATION_ANDROID_H__
+    bool isChanged;
+    bool isVisible;
+
+    Message action;
+
+    WideString title;
+    WideString text;
+};
+    
+    
+inline void LocalNotification::RunAction()
+{
+    action(this);
+}
+    
+inline bool LocalNotification::IsChanged() const
+{
+    return isChanged;
+}
+
+inline bool LocalNotification::IsVisible() const
+{
+    return isVisible;
+}
+
+inline DAVA::String& LocalNotification::GetId() const
+{
+    return impl->GetId();
+}
+
+}
+
+#endif

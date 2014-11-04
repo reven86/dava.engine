@@ -522,6 +522,8 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
 {
+    Clear();
+    
 	if (!contentScaleIncluded)
 	{
 		xOffset = (int32)(Core::GetVirtualToPhysicalFactor() * xOffset);

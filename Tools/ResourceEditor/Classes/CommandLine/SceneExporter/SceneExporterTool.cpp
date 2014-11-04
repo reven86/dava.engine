@@ -133,8 +133,6 @@ void SceneExporterTool::DumpParams()
 
 void SceneExporterTool::Process()
 {
-    QualitySettingsSystem::Instance()->Load(qualityConfigPath);
-
     SceneExporter exporter;
 
     exporter.SetOutFolder(outFolder);
@@ -167,4 +165,9 @@ void SceneExporterTool::Process()
     }
 }
 
+
+FilePath SceneExporterTool::GetQualityConfigPath()
+{
+    return qualityConfigPath;
+}
 

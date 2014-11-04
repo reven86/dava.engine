@@ -53,7 +53,7 @@
 #include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Platform/Notification.h"
+#include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
