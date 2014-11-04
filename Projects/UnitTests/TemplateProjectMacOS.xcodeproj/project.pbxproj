@@ -31,6 +31,7 @@
 		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01217CF994300D5A334 /* ThreadSyncTest.cpp */; };
+		0367390C1A090C430079D8E7 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0367390B1A090C430079D8E7 /* CommandLineParser.cpp */; };
 		1146E0F219D00408009E5FAB /* MathTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E0F019D00408009E5FAB /* MathTest.cpp */; };
 		15CBB0B818D30B870038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0B618D30B870038ABA3 /* StringFormatTest.cpp */; };
 		1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A194183D1B4A000DE581 /* AVFoundation.framework */; };
@@ -184,6 +185,8 @@
 		02E9E45D173A43A900C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		02F8B01217CF994300D5A334 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadSyncTest.cpp; path = Classes/ThreadSyncTest.cpp; sourceTree = "<group>"; };
 		02F8B01317CF994300D5A334 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadSyncTest.h; path = Classes/ThreadSyncTest.h; sourceTree = "<group>"; };
+		0367390A1A090C2D0079D8E7 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = ../../Sources/Tools/TexturePacker/CommandLineParser.h; sourceTree = "<group>"; };
+		0367390B1A090C430079D8E7 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = ../../Sources/Tools/TexturePacker/CommandLineParser.cpp; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		1146E0F019D00408009E5FAB /* MathTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MathTest.cpp; path = Classes/MathTest.cpp; sourceTree = "<group>"; };
 		1146E0F119D00408009E5FAB /* MathTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MathTest.h; path = Classes/MathTest.h; sourceTree = "<group>"; };
@@ -420,6 +423,15 @@
 				02F8B01317CF994300D5A334 /* ThreadSyncTest.h */,
 			);
 			name = ThreadSyncTest;
+			sourceTree = "<group>";
+		};
+		036739071A090BDF0079D8E7 /* CommandLineParser */ = {
+			isa = PBXGroup;
+			children = (
+				0367390B1A090C430079D8E7 /* CommandLineParser.cpp */,
+				0367390A1A090C2D0079D8E7 /* CommandLineParser.h */,
+			);
+			name = CommandLineParser;
 			sourceTree = "<group>";
 		};
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
@@ -847,6 +859,7 @@
 		FE445A961153C27800F5EFD6 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				036739071A090BDF0079D8E7 /* CommandLineParser */,
 				0083487B1A024DE300F51E2D /* TeamcityOutput */,
 				008348681A024B1300F51E2D /* Infrastructure */,
 				0042F46219F9416100ABDD1D /* SFML */,
@@ -1048,6 +1061,7 @@
 				0042F48919F9416100ABDD1D /* IpAddress.cpp in Sources */,
 				008348771A024B1300F51E2D /* TeamCityTestsOutput.cpp in Sources */,
 				7410E83117146D5B0028AAAA /* UIListTest.cpp in Sources */,
+				0367390C1A090C430079D8E7 /* CommandLineParser.cpp in Sources */,
 				749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */,
 				1146E0F219D00408009E5FAB /* MathTest.cpp in Sources */,
 				E8B47D31196D4F5200D8ADF6 /* ImageSizeTest.cpp in Sources */,

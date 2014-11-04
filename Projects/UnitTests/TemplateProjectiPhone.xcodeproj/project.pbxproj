@@ -28,6 +28,7 @@
 		02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B3D3DD159C8D360082111B /* SoundTest.cpp */; };
 		02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC3C0515E6399C0047F67F /* SplitTest.cpp */; };
 		02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */; };
+		032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 032D348A1A0912B5007509C3 /* CommandLineParser.cpp */; };
 		1146E0EC19D003E4009E5FAB /* MathTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E0EA19D003E4009E5FAB /* MathTest.cpp */; };
 		15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */; };
 		1770DF4517DF446600000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4317DF446600000391 /* UIMovieTest.cpp */; };
@@ -169,6 +170,8 @@
 		02BC3C0615E6399C0047F67F /* SplitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SplitTest.h; sourceTree = "<group>"; };
 		02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ThreadSyncTest.cpp; sourceTree = "<group>"; };
 		02F8B01B17CF996C00D5A334 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadSyncTest.h; sourceTree = "<group>"; };
+		032D348A1A0912B5007509C3 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.cpp; sourceTree = "<group>"; };
+		032D348B1A0912B5007509C3 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.h; sourceTree = "<group>"; };
 		1146E0EA19D003E4009E5FAB /* MathTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MathTest.cpp; sourceTree = "<group>"; };
 		1146E0EB19D003E4009E5FAB /* MathTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MathTest.h; sourceTree = "<group>"; };
 		15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFormatTest.cpp; sourceTree = "<group>"; };
@@ -398,9 +401,19 @@
 			path = System;
 			sourceTree = "<group>";
 		};
+		032D34881A091285007509C3 /* CommandLineParser */ = {
+			isa = PBXGroup;
+			children = (
+				032D348A1A0912B5007509C3 /* CommandLineParser.cpp */,
+				032D348B1A0912B5007509C3 /* CommandLineParser.h */,
+			);
+			name = CommandLineParser;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				032D34881A091285007509C3 /* CommandLineParser */,
 				001CF9251A02539600751045 /* TeamcityOutput */,
 				001CF9121A02537B00751045 /* Infrastructure */,
 				0057A17D19FE580F00DFAEEC /* SFML */,
@@ -753,6 +766,7 @@
 				5035302F194A4026006B66DB /* SceneSystemTest.cpp in Sources */,
 				0057A1A619FE580F00DFAEEC /* Socket.cpp in Sources */,
 				74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */,
+				032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */,
 				74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */,
 				7497447517B3D61800282DAA /* AlignTest.cpp in Sources */,
 				02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */,
