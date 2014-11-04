@@ -85,9 +85,6 @@ protected:
 	//A pointer to iOS WebView.
 	void* webViewPtr;
 	
-	// A pointer to the WebView delegate.
-	//void* webViewDelegatePtr;
-
 	void* webViewURLDelegatePtr;
 
     void *rightSwipeGesturePtr;
