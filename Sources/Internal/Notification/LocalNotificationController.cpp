@@ -44,7 +44,7 @@ LocalNotificationController::~LocalNotificationController()
 	LockGuard<Mutex> guard(notificationsListMutex);
     if (!notificationsList.empty())
     {
-        for (typename List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
+        for (List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
         {
             LocalNotification *notification = (*it);
             it = notificationsList.erase(it);
@@ -94,7 +94,7 @@ bool LocalNotificationController::Remove(LocalNotification *notification)
 	LockGuard<Mutex> guard(notificationsListMutex);
     if (!notificationsList.empty())
     {
-        for (typename List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
+        for (List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
         {
         	if (notification == (*it))
         	{
@@ -113,7 +113,7 @@ bool LocalNotificationController::RemoveById(const String &notificationId)
     LockGuard<Mutex> guard(notificationsListMutex);
     if (!notificationsList.empty())
     {
-        for (typename List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
+        for (List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
         {
             if ((*it)->GetId().compare(notificationId) == 0)
             {
@@ -132,7 +132,7 @@ void LocalNotificationController::Clear()
     LockGuard<Mutex> guard(notificationsListMutex);
     if (!notificationsList.empty())
     {
-        for (typename List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end(); ++it)
+        for (List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end(); ++it)
         {
             (*it)->Release();
             it = notificationsList.erase(it);
@@ -146,7 +146,7 @@ void LocalNotificationController::Update()
 
     if (!notificationsList.empty())
     {
-    	typename List<LocalNotification *>::const_iterator end = notificationsList.end();
+    	List<LocalNotification *>::const_iterator end = notificationsList.end();
         for (List<LocalNotification *>::const_iterator it = notificationsList.begin(); it != end; ++it)
         {
 			(*it)->Update();
@@ -159,7 +159,7 @@ LocalNotification *const LocalNotificationController::GetNotificationById(const 
 	LockGuard<Mutex> guard(notificationsListMutex);
     if (!notificationsList.empty())
     {
-    	typename List<LocalNotification *>::const_iterator end = notificationsList.end();
+    	List<LocalNotification *>::const_iterator end = notificationsList.end();
         for (List<LocalNotification *>::const_iterator it = notificationsList.begin(); it != end; ++it)
         {
         	DVASSERT(NULL != (*it));

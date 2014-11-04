@@ -45,6 +45,7 @@ void OpenURL(const String& url)
 String GenerateGUID()
 {
     DVASSERT_MSG(false, "Not implemented");
+    return String();
 }
 
 };

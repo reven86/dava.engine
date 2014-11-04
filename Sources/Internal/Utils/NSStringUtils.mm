@@ -26,26 +26,29 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#import "NSStringUtils.h"
-#import <Foundation/Foundation.h>
+#include "NSStringUtils.h"
+
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
 
 namespace DAVA
 {
 
-    NSString *NSStringFromString(const DAVA::String &str) {
-        NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingASCII);
-        NSString *nsstring = [[[NSString alloc] initWithBytes:str.c_str()
-                                                       length:str.length()
-                                                     encoding:encoding] autorelease];
-        return nsstring;
-    }
+NSString *NSStringFromString(const DAVA::String &str) {
+    NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingASCII);
+    NSString *nsstring = [[[NSString alloc] initWithBytes:str.c_str()
+                                                   length:str.length()
+                                                 encoding:encoding] autorelease];
+    return nsstring;
+}
 
-    NSString *NSStringFromWideString(const DAVA::WideString &str) {
-        NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
-        NSString *nsstring = [[[NSString alloc] initWithBytes:(const char *) str.c_str()
-                                                       length:str.length() * sizeof(wchar_t)
-                                                     encoding:encoding] autorelease];
-        return nsstring;
-    }
+NSString *NSStringFromWideString(const DAVA::WideString &str) {
+    NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
+    NSString *nsstring = [[[NSString alloc] initWithBytes:(const char *) str.c_str()
+                                                   length:str.length() * sizeof(wchar_t)
+                                                 encoding:encoding] autorelease];
+    return nsstring;
+}
 
 }
+
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
