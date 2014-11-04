@@ -32,6 +32,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/../../Classes/SFML/Network/Unix/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/../../Classes/SFML/System/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/../../../../Sources/Tools/TeamcityOutput/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/../../../../Sources/Tools/TexturePacker/CommandLineParser.cpp) \
 	$(wildcard $(LOCAL_PATH)/../../../../Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
 
 LOCAL_LDLIBS := -lz -lOpenSLES -landroid

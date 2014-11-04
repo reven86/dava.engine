@@ -70,7 +70,7 @@ s.bind((HOST, PORT))
 s.listen(1)
 print("start listen")
 try:
-    s.settimeout(5)
+    s.settimeout(10)
     conn, addr = s.accept()
 except socket.error, msg:
     print(msg)
