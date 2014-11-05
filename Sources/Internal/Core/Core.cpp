@@ -53,7 +53,6 @@
 #include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Platform/Notification.h"
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 
