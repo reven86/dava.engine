@@ -101,6 +101,10 @@ protected:
 private:
 	void InitLogging();
 
+	bool isNeedSkipTest(const BaseScreen& screen) const;
+
+	String runOnlyThisTest;
+
 	String logFilePath;
 	std::ofstream logFile;
 

@@ -34,29 +34,25 @@
 int32 BaseScreen::globalScreenId = 1;
 
 BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
-    :   UIScreen()
+    :   UIScreen(),
+	skipCount(skipBeforeTests),
+	skipCounter(0),
+	readyForTests(false),
+	currentScreenId(globalScreenId++)
 {
 	SetName(_screenName);
     
-    skipCount = skipBeforeTests;
-    skipCounter = 0;
-    readyForTests = false;
-
-    currentScreenId = globalScreenId++;
     GameCore::Instance()->RegisterScreen(this);
 }
 
 BaseScreen::BaseScreen()
-    :   UIScreen()
+    :   UIScreen(), 
+	skipCount(10), 
+	skipCounter(0),
+	readyForTests(false),
+	currentScreenId(globalScreenId++)
 {
     SetName("BaseScreen");
-
-    skipCount = 10;
-    skipCounter = 0;
-    readyForTests = false;
-
-    
-    currentScreenId = globalScreenId++;
     GameCore::Instance()->RegisterScreen(this);
 }
 
