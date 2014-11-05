@@ -80,7 +80,7 @@ protected:
         \param[in] size - amout of data
         \param[in] seek - position in file where data should be stored
     */
-    virtual size_t SaveData(const void *ptr, const FilePath& storePath, uint64 size, uint64 seek);
+    virtual size_t SaveData(const void *ptr, const FilePath& storePath, uint64 size);
     /**
         \brief Used to report about saved data size to download manager. Used to calculate total download progress.
      */

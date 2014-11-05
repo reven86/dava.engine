@@ -49,12 +49,12 @@ DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const Fil
 
 }
 
-DownloadPart::DownloadPart(uint64 size)
-    : dataBufferSize(Min<uint64>(PART_CACHE_SIZE, size))
-    , dataBufferProgress(0)
-{
-    info.progress = 0;
-    dataBuffer = new char8[dataBufferSize];
+DownloadPart::DownloadPart(uint64 loadFrom, uint64 partSize)
+    : size(partSize)
+    , progress(0)
+    , seekPos(loadFrom)
+    
+{    dataBuffer = new char8[partSize];
 }
 
 DownloadPart::~DownloadPart()
@@ -62,91 +62,16 @@ DownloadPart::~DownloadPart()
     SafeDeleteArray(dataBuffer);
 }
 
-bool DownloadPart::RestoreDownload(const FilePath &infoFilePath, Vector<DownloadPart*> &downloadParts)
+DataChunkInfo::DataChunkInfo(uint64 size)
+    : buffer(NULL)
+    , progress(0)
 {
-    ScopedPtr<File> infoFile(File::Create(infoFilePath, File::OPEN | File::READ));
-    if (NULL == static_cast<File *>(infoFile))
-    {
-        return false;
-    }
-    
-    DownloadInfoHeader downloadHeader;
-    uint8 partsRead = 0;
-    const uint64 readPartSize = sizeof(DownloadPart::StoreData);
-    
-    bool readOk = sizeof(DownloadInfoHeader) == infoFile->Read(&downloadHeader);
-
-    while (readOk && partsRead < downloadHeader.partsCount)
-    {
-        DownloadPart *part = new DownloadPart();
-
-        readOk = sizeof(part->info.number) == infoFile->Read(&part->info.number);
-     
-        if (readOk)
-        {
-            infoFile->Seek(sizeof(DownloadInfoHeader) + part->info.number * readPartSize, File::SEEK_FROM_START);
-            readOk = sizeof(part->info) == infoFile->Read(&part->info);
-        }
-        
-        if (!readOk)
-        {
-            Logger::Error("[DownloadPart::RestoreDownload] Unexpected end of file");
-            SafeDelete(part);
-            return false;
-        }
-
-        // progress should not be bigger than expected download size
-        DVASSERT(part->info.progress <= part->info.size);
-
-        if (part->info.size == part->info.progress)
-        {
-            SafeDelete(part);
-        }
-        else
-        {
-            downloadParts.push_back(part);
-        }
-
-        ++partsRead;
-    }
-
-    return readOk;
+    buffer = new char8[size];
 }
 
-bool DownloadPart::SaveDownload(const FilePath &infoFilePath)
+DataChunkInfo::~DataChunkInfo()
 {
-    ScopedPtr<File> file(File::Create(infoFilePath, File::OPEN | File::READ | File::WRITE));
-    if (NULL != static_cast<File*>(file))
-    {
-        // we should to write pert data in it's place inside info file
-        uint32 seekPos = sizeof(DownloadInfoHeader) + info.number*sizeof(DownloadPart::StoreData);
-        file->Seek(seekPos, File::SEEK_FROM_START);
-
-        return sizeof(info) == file->Write(&info, sizeof(info));
-    }
-
-    return false;
-}
-
-bool DownloadPart::CreateDownload(const FilePath &infoFilePath, uint8 partsCount)
-{
-    // Create info file and allocate space for it
-    uint64 infoFileSize = sizeof(DownloadInfoHeader) + partsCount*sizeof(DownloadPart::StoreData);
-    if (!FileSystem::CreateZeroFilledFile(infoFilePath, infoFileSize))
-    {
-        return false;
-    }
-
-    // write download header into info file
-    ScopedPtr<File> file(File::Create(infoFilePath, File::OPEN | File::READ | File::WRITE));
-    if (NULL != static_cast<File*>(file))
-    {
-        DownloadInfoHeader header;
-        header.partsCount = partsCount;
-        return (sizeof(DownloadInfoHeader) == file->Write(&header));
-    }
-
-    return false;
+    SafeDeleteArray(buffer);
 }
 
 }

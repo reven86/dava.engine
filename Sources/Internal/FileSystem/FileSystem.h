@@ -253,11 +253,6 @@ public:
 	 */
 	void MarkFolderAsNoMedia(const FilePath &folder);
 
-    /**
-     \brief Makes new file with given size and fill it by "0".
-     */
-    static bool CreateZeroFilledFile(const FilePath &path, const uint64 size);
-
 private:
     
 	virtual eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);

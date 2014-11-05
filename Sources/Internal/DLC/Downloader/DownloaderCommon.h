@@ -30,6 +30,7 @@
 #define __DOWNLOADER_COMMON_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 
 namespace DAVA
@@ -115,54 +116,31 @@ struct DownloadInfoHeader
     uint8 partsCount;
 };
 
-#define PART_CACHE_SIZE 256*1024
 class Downloader;
-struct DownloadPart
+class DownloadPart
 {
-    DownloadPart(uint64 size = PART_CACHE_SIZE);
+public:
+    DownloadPart(uint64 loadFrom, uint64 partSize);
     ~DownloadPart();
     
-    /**
-        \brief Fills a given downloadParts list by readed download parts state from .dlinfo file
-        \param[in] infoFilePath - file with stored download info (not necessery to be created)
-        \param[out] downloadParts - restored download parts
-        \param[out] true if all is fine and false if there is any file read error
-     */
-    static bool RestoreDownload(const FilePath &infoFilePath, Vector<DownloadPart*> &downloadParts);
-    /**
-        \brief Save current part info into given file
-        \param[in] infoFilePath - file which already should be created and have Header
-        \param[out] true if all is fine and false if there is any file write or read error
-     */
-    bool SaveDownload(const FilePath &infoFilePath);
-    /**
-        \brief Creaites info file for current download and puts a header in that file.
-        \param[in] infoFilePath - file path to download info file to store the header
-        \param[in] partsCount - planed quantity of download parts
-        \param[out] true if all is fine and false if there is any file write or read error
-     */
-    static bool CreateDownload(const FilePath &infoFilePath, uint8 partsCount);
-
     /*
         Used to pass a pointer to current Downloader into DataReceive handler
      */
     Downloader *downloader;
-    
-    /*
-        All the data which we store to save and thed resume download part
-     */
-    struct StoreData
-    {
-        uint8 number;
-        uint64 seekPos;
-        uint64 size;
-        uint64 progress;
-    } info;
-    
+
+    const uint64 seekPos;
+    const uint64 size;
     char8 *dataBuffer;
-    
-    const uint64 dataBufferSize;
-    uint64 dataBufferProgress;
+    uint64 progress;
+};
+
+struct DataChunkInfo
+{
+    DataChunkInfo(uint64 size);
+    ~DataChunkInfo();
+
+    char8 *buffer;
+    uint64 progress;
 };
 
 }

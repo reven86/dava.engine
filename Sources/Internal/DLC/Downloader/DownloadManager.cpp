@@ -625,8 +625,18 @@ DownloadError DownloadManager::TryDownload()
 void DownloadManager::MakeFullDownload()
 {
     currentTask->type = FULL;
-    FileSystem::Instance()->DeleteFile(currentTask->storePath);
-    currentTask->error = DLE_NO_ERROR;
+
+    if (currentTask->storePath.Exists())
+    {
+        if (FileSystem::Instance()->DeleteFile(currentTask->storePath))
+        {
+            currentTask->error = DLE_NO_ERROR;
+        }
+        else
+        {
+            currentTask->error = DLE_FILE_ERROR;
+        }
+    }
     currentTask->downloadProgress = 0;
 }
 
@@ -644,7 +654,7 @@ void DownloadManager::MakeResumedDownload()
     else
     {
         // if exsisted file have not the same size as downloading file
-        if (file->GetSize() != currentTask->downloadTotal)
+        if (file->GetSize() > currentTask->downloadTotal)
         {
             MakeFullDownload();
         }

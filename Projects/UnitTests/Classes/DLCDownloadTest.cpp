@@ -40,7 +40,7 @@ size_t CurlTestDownloader::SaveData(const void *ptr, const FilePath& storePath, 
         return 0;
     }
     
-    return CurlDownloader::SaveData(ptr, storePath, size, seek);
+    return CurlDownloader::SaveData(ptr, storePath, size);
 }
 
 DLCDownloadTest::DLCDownloadTest()

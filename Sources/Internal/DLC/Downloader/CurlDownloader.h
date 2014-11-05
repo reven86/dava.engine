@@ -68,6 +68,10 @@ protected:
     virtual DownloadError Download(const String &url, const FilePath &savePath, uint8 partsCount, int32 timeout);
 
 private:
+    
+    void SaveChunkHandler(BaseObject * caller, void * callerData, void * userData);
+    
+    DownloadError DownloadRangeOfFile(const String &url, const FilePath &savePath, uint64 seek, uint64 size, uint8 partsCount, int32 timeout);
     /**
         \brief Data receive handler for all easy handles which downloads a data
         \param[in] ptr - pointer to incoming data chunk
@@ -108,7 +112,7 @@ private:
         \param[in] partsCount - quantity of download threads
         \param[in] timeout - operation timeout
     */
-    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, uint8 partsCount, int32 timeout);
+    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, uint64 seek, uint64 size,  uint8 partsCount, int32 timeout);
     /**
         \brief Do a prepared download. Do nothing and returnes DLE_NO_ERROR if there is no easy handles.
         \param[in] multiHandle - pointer to Curl multi interface handle
@@ -137,23 +141,27 @@ private:
     DownloadError TakeMostImportantReturnValue(const Vector<DownloadError> &errorList) const;
 
 private:
+    struct ErrorWithPriority
+    {
+        DownloadError error;
+        char8 priority;
+    };
+    
+private:
     static bool isCURLInit;
     bool isDownloadInterrupting;
     Vector<DownloadPart *> downloadParts;
     Vector<CURL *> easyHandles;
     CURLM *multiHandle;
     FilePath storePath;
-    FilePath dlInfoStorePath;
-    const String dlinfoExt;
-    
-    struct ErrorWithPriority
-    {
-        DownloadError error;
-        char8 priority;
-    };
-    static ErrorWithPriority errorsByPriority[];
-};
 
+    static ErrorWithPriority errorsByPriority[];
+    
+    Mutex writeMutex;
+    DownloadError saveResult;
+    DataChunkInfo *chunkInfo;
+};
+    
 }
 
 #endif

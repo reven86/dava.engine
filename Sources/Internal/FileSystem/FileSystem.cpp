@@ -721,44 +721,6 @@ void FileSystem::MarkFolderAsNoMedia(const FilePath &folder)
     SafeRelease(nomedia);
 #endif
 }
-    
-bool FileSystem::CreateZeroFilledFile(const FilePath &path, const uint64 size)
-{
-    ScopedPtr<File> file(File::Create(path, File::CREATE | File::WRITE));
-    
-    if (NULL == static_cast<File*>(file))
-    {
-        Logger::Error("[FileSystem::CreateZeroFilledFile] Cannot create a file.");
-        return false;
-    }
-    
-    // fill created file by NULL values.
-    const uint64 blockSize = Min<uint64>(4096, size);
-    char8 *nullValue = new char8[static_cast<uint32>(blockSize)];
-
-    Memset(nullValue, 0, static_cast<uint32>(blockSize));
-    
-    uint64 written = 0;
-    do
-    {
-        const uint64 blockSizeToWrite = Min<uint64>(blockSize, size - written);
-
-        const uint64 writtenNow = file->Write(nullValue, static_cast<int32>(blockSizeToWrite));
-        if (blockSizeToWrite != writtenNow)
-        {
-            FileSystem::Instance()->DeleteFile(path);
-            Logger::Error("[FileSystem::CreateZeroFilledFile] Cannot write to file.");
-            delete [] nullValue;
-            return false;
-        }
-        
-        written += writtenNow;
-
-    }while (written < size);
-
-    delete [] nullValue;
-    return true;
-}
 
 #if defined(__DAVAENGINE_ANDROID__)
 
