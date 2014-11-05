@@ -328,6 +328,37 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
     
 }
 
+DownloadError CurlDownloader::SaveDownloadedChunk(uint64 size)
+{
+    if (NULL != chunkInfo)
+    {
+        writeMutex.Lock();
+        SafeDelete(chunkInfo);
+        writeMutex.Unlock();
+        if (DLE_NO_ERROR != saveResult)
+        {
+            return saveResult;
+        }
+    }
+    
+    chunkInfo = new DataChunkInfo(size);
+    
+    for (uint8 i = 0; i < downloadParts.size(); ++i)
+    {
+        DownloadPart *part = downloadParts[i];
+        Memcpy(chunkInfo->buffer + chunkInfo->progress, part->dataBuffer, part->size);
+        chunkInfo->progress += part->size;
+    }
+    
+    writeMutex.Lock();
+    
+    Thread *savingThread = Thread::Create(Message(this, &CurlDownloader::SaveChunkHandler));
+    savingThread->Start();
+    savingThread->Release();
+    
+    return DLE_NO_ERROR;
+}
+
 DownloadError CurlDownloader::DownloadRangeOfFile(const String &url, const FilePath &savePath, uint64 seek, uint64 size, uint8 partsCount, int32 timeout)
 {
     CURLM *multiHandle = NULL;
@@ -342,27 +373,6 @@ DownloadError CurlDownloader::DownloadRangeOfFile(const String &url, const FileP
     
     DVASSERT(CURLM_CALL_MULTI_PERFORM != retPerform); // should not be used in curl 7.20.0 and later.
     
-    // handle easy handles states
-    Vector<DownloadError> results;
-    if (CURLM_OK == retPerform)
-    {
-        int32 messagesRest;
-        do
-        {
-            CURLMsg *message = curl_multi_info_read(multiHandle, &messagesRest);
-            if (NULL == message)
-            {
-                break;
-            }
-            
-            results.push_back(ErrorForEasyHandle(message->easy_handle, message->data.result));
-        } while (0 != messagesRest);
-    }
-    else
-    {
-        retCode = CurlmCodeToDownloadError(retPerform);
-    }
-
     // that is an exception from rule because of CURL interrupting mechanism.
     if (isDownloadInterrupting)
     {
@@ -371,36 +381,19 @@ DownloadError CurlDownloader::DownloadRangeOfFile(const String &url, const FileP
         CleanupDownload();
         return DLE_CANCELLED;
     }
-    
-    retCode = TakeMostImportantReturnValue(results);
+
+    if (CURLM_OK == retPerform)
+    {
+        retCode = HandleDownloadResults(multiHandle);
+    }
+    else
+    {
+        retCode = CurlmCodeToDownloadError(retPerform);
+    }
     
     if (DLE_NO_ERROR == retCode)
     {
-        if (NULL != chunkInfo)
-        {
-            writeMutex.Lock();
-            SafeDelete(chunkInfo);
-            writeMutex.Unlock();
-            if (DLE_NO_ERROR != saveResult)
-            {
-                return saveResult;
-            }
-        }
-        
-        chunkInfo = new DataChunkInfo(size);
-        
-        for (uint8 i = 0; i < downloadParts.size(); ++i)
-        {
-            DownloadPart *part = downloadParts[i];
-            Memcpy(chunkInfo->buffer + chunkInfo->progress, part->dataBuffer, part->size);
-            chunkInfo->progress += part->size;
-        }
-
-        writeMutex.Lock();
-        
-        Thread *savingThread = Thread::Create(Message(this, &CurlDownloader::SaveChunkHandler));
-        savingThread->Start();
-        savingThread->Release();
+        retCode = SaveDownloadedChunk(size);
     }
     
     // cleanup curl stuff
@@ -415,13 +408,14 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
 
     uint64 remoteFileSize = 0;
     DownloadError retCode = GetSize(url, remoteFileSize, timeout);
+
     if (DLE_NO_ERROR != retCode)
     {
         return retCode;
     }
     
     uint64 currentFileSize = 0;
-    
+    // if file esists - don't reload already downloaded part, just report
     File *dstFile = File::Create(savePath, File::OPEN | File::READ);
     if (NULL != dstFile)
     {
@@ -430,26 +424,41 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
         SafeRelease(dstFile);
     }
     
+    // rest part of file to download
     uint64 sizeToDownload = remoteFileSize - currentFileSize;
+
+    // a part of file to parallel download
     uint64 fileChunkSize = Min<uint64>(DOWNLOAD_IN_MEMORY_CACHE_SIZE, sizeToDownload);
-    uint8 fileChunksCount = sizeToDownload / fileChunkSize;
+    // quantity of paralleled file parts
+    // if file size is 0 - we don't need more than 1 download thread.
+    // if file exists
+    uint8 fileChunksCount = (0 == fileChunkSize) ? 1 : sizeToDownload / fileChunkSize;
     
     for (uint8 i = 0; i < fileChunksCount; ++i)
     {
+        // download from seek pos
         uint64 seek = fileChunkSize * i;
+        // download part size
         uint64 size = fileChunkSize;
         
+        // last download part considers the inaccuracy of division of file to parts
         if (i == fileChunksCount - 1)
         {
             size += sizeToDownload - fileChunksCount*fileChunkSize;
         }
         
+        // download a part of file
         retCode = DownloadRangeOfFile(url, savePath, seek, size, partsCount, timeout);
         if (DLE_NO_ERROR != retCode)
         {
             break;
         }
     }
+    
+    // wait for save of rest file part from memory
+    // if data saving is slower than data downloading
+    writeMutex.Lock();
+    writeMutex.Unlock();
     
     return retCode;
 }
@@ -556,6 +565,26 @@ void CurlDownloader::SetTimeout(CURL *easyHandle, int32 timeout)
     curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 0);
     curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, timeout);
     curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, timeout);
+}
+    
+DownloadError CurlDownloader::HandleDownloadResults(CURLM *multiHandle)
+{
+    // handle easy handles states
+    Vector<DownloadError> results;
+
+    int32 messagesRest;
+    do
+    {
+        CURLMsg *message = curl_multi_info_read(multiHandle, &messagesRest);
+        if (NULL == message)
+        {
+            break;
+        }
+        
+        results.push_back(ErrorForEasyHandle(message->easy_handle, message->data.result));
+    } while (0 != messagesRest);
+    
+    return TakeMostImportantReturnValue(results);
 }
 
 DownloadError CurlDownloader::ErrorForEasyHandle(CURL *easyHandle, CURLcode status) const

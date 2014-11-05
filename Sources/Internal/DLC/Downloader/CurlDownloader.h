@@ -63,14 +63,29 @@ protected:
      \param[in] url - destination file Url
      \param[in] savePath - path to save location of remote file
      \param[in] partsCount - quantity of download threads
-     \param[in] _timeout - operation timeout
+     \param[in] timeout - operation timeout
      */
     virtual DownloadError Download(const String &url, const FilePath &savePath, uint8 partsCount, int32 timeout);
 
 private:
-    
-    void SaveChunkHandler(BaseObject * caller, void * callerData, void * userData);
-    
+    /**
+     \brief Method for save downloaded data in a separate thread
+     */
+    void SaveChunkHandler(BaseObject *caller, void *callerData, void *userData);
+    /**
+        \brief Get downloaded data from the memory and store it
+        
+     */
+    DownloadError SaveDownloadedChunk(uint64 size);
+    /**
+     \brief Downloads a part of file using a number of download threads
+     \param[in] url - destination file Url
+     \param[in] savePath - path to save location of remote file
+     \param[in] seek - position inside remote file to download from
+     \param[in] size - size of data do download
+     \param[in] partsCount - quantity of download threads
+     \param[in] timeout - operation timeout
+     */
     DownloadError DownloadRangeOfFile(const String &url, const FilePath &savePath, uint64 seek, uint64 size, uint8 partsCount, int32 timeout);
     /**
         \brief Data receive handler for all easy handles which downloads a data
@@ -80,8 +95,6 @@ private:
         \param[in] part - pointer to download part which contains data for current download thread
      */
     static size_t CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb, void *part);
-    
-    static size_t SavePart(DownloadPart *part);
     /**
         \brief Convert Curl easy interface error to Download error
         \param[in] status - Curl easy interface operation status status
@@ -128,6 +141,10 @@ private:
         \param[in] timeout - operations timeout
      */
     void SetTimeout(CURL *easyHandle, int32 timeout);
+    /**
+        \brief Handle download results and return generalized result
+     */
+    DownloadError HandleDownloadResults(CURLM *multiHandle);
     /**
         \brief Returns actual error state for given easy handle with it's ststus
         \param[in] easyHandle - Curl easy handle to set options

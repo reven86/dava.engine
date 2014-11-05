@@ -131,8 +131,6 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     String dstHttps = StorePathForUrl(srcUrlSSL);
     String dstFtp = StorePathForUrl(srcUrlFTP);
 
-    FileSystem::Instance()->DeleteFile(dstHttp);
-
     // set custom downloader - it interrupts download after one chunk of data comes
     DownloadManager::Instance()->SetDownloader(new CurlTestDownloader());
 
