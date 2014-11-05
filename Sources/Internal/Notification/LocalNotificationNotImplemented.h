@@ -26,18 +26,31 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_NOTIFICATION_NOT_IMPLEMENTED_H__
-#define __DAVAENGINE_NOTIFICATION_NOT_IMPLEMENTED_H__
+#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_NOT_IMPLEMENTED_H__
+#define __DAVAENGINE_LOCAL_NOTIFICATION_NOT_IMPLEMENTED_H__
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+
+#include "Notification/LocalNotificationImpl.h"
+#include "Base/Message.h"
 
 namespace DAVA
 {
     
-class LocalNotificationNotImplemented
-    {
+class LocalNotificationNotImplemented : public LocalNotificationImpl
+{
 public:
+    LocalNotificationNotImplemented(const String &_id);
     virtual ~LocalNotificationNotImplemented();
+
+    virtual void SetAction(const WideString &action);
+    virtual void Hide();
+    virtual void ShowText(const WideString &title, const WideString text);
+    virtual void ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress);
+    virtual void PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds);
+    virtual void RemoveAllDelayedNotifications();
 };
 
 }

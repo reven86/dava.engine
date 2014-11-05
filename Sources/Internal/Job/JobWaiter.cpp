@@ -46,12 +46,12 @@ ThreadIdJobWaiter::~ThreadIdJobWaiter()
 
 void ThreadIdJobWaiter::Wait()
 {
-	if(JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForCreatorThread(this))
+	cvmutex.Lock();
+	if (JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForCreatorThread(this))
 	{
-        Mutex mutex;
-        mutex.Lock();
-		Thread::Wait(&cv, &mutex);
+		Thread::Wait(&cv, &cvmutex);
 	}
+	cvmutex.Unlock();
 }
 
 JobInstanceWaiter::JobInstanceWaiter(Job * _job)
@@ -67,12 +67,12 @@ JobInstanceWaiter::~JobInstanceWaiter()
 
 void JobInstanceWaiter::Wait()
 {
-	if(JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForJobInstance(this))
+	cvmutex.Lock();
+	if (JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForJobInstance(this))
 	{
-        Mutex mutex;
-        mutex.Lock();
-		Thread::Wait(&cv, &mutex);
+		Thread::Wait(&cv, &cvmutex);
 	}
+	cvmutex.Unlock();
 }
 
 //////

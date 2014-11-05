@@ -73,6 +73,11 @@ uint32 ZLibIStream::Read(char8 *data, uint32 size)
                 break;
             }
         }
+		else
+		{
+			// we didn't read anything
+			break;
+		}
     }
 
     return (size - zstream.avail_out);
@@ -123,7 +128,11 @@ uint32 ZLibOStream::Write(char8 *data, uint32 size)
         if(Z_OK == deflate(&zstream, Z_NO_FLUSH))
         {
             uint32 outSize = ZLIB_CHUNK_SIZE - zstream.avail_out;
-            file->Write(writeBuffer, outSize);
+			if(outSize != file->Write(writeBuffer, outSize))
+			{
+				// we didn't write everything
+				break;
+			}
         }
         else
         {

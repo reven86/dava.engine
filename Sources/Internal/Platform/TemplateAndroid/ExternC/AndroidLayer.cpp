@@ -53,7 +53,6 @@
 #include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
-#include "Platform/NotificationAndroid.h"
 
 //#if defined(__DAVAENGINE_PROFILE__)
 //#include "prof.h"
@@ -125,7 +124,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNILocalization", &DAVA::JniLocalization::gJavaClass, &DAVA::JniLocalization::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIFileList", &DAVA::JniFileList::gJavaClass, &DAVA::JniFileList::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDateTime", &DAVA::JniDateTime::gJavaClass, &DAVA::JniDateTime::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNINotificationProvider", &DAVA::JniLocalNotification::gJavaClass, &DAVA::JniLocalNotification::gJavaClassName);
 	DAVA::Thread::InitMainThread();
 
 

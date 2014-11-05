@@ -101,8 +101,8 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
     int32 height = Max(textBlock->cacheDy, 8);
     
 	int32 bsz = width * height;
-	buf = new int16[bsz];
-    memset(buf, 0, bsz * sizeof(int16));
+    buf = new int8[bsz];
+    memset(buf, 0, bsz * sizeof(int8));
 	
 	DrawText();
 	

@@ -16,7 +16,7 @@
 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURP§E ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -286,6 +286,13 @@
 #include "Core/ApplicationCore.h"
 
 
+
+// Notifications
+#include "Notification/LocalNotification.h"
+#include "Notification/LocalNotificationText.h"
+#include "Notification/LocalNotificationProgress.h"
+#include "Notification/LocalNotificationDelayed.h"
+#include "Notification/LocalNotificationController.h"
 
 #endif // __DAVAENGINE_H__
 

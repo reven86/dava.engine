@@ -387,6 +387,13 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationController.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationImpl.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationText.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\Particle.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleEmitter.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleForce.h" />
@@ -399,9 +406,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Notification.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -842,6 +846,12 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationText.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleForce.cpp" />
@@ -852,9 +862,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt\QtLayer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
