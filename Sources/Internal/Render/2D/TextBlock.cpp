@@ -103,6 +103,7 @@ TextBlock::TextBlock()
     , cacheDy(0)
     , cacheOx(0)
     , cacheOy(0)
+    , renderSize(1.f)
 {
     font = NULL;
     isMultilineEnabled = false;
@@ -144,6 +145,7 @@ void TextBlock::SetFont(Font * _font)
     font = SafeRetain(_font);
 
 	originalFontSize = font->GetSize();
+    renderSize = originalFontSize;
 	
 	SafeRelease(textBlockRender);
     SafeDelete(textureInvalidater);
@@ -293,6 +295,29 @@ int32 TextBlock::GetFittingOption()
     return fittingType;
 }
 
+float32 TextBlock::GetRenderSize()
+{
+    mutex.Lock();
+    mutex.Unlock();
+
+    return renderSize;
+}
+
+void TextBlock::SetRenderSize(float32 _renderSize)
+{
+    mutex.Lock();
+    if (renderSize != _renderSize)
+    {
+        renderSize = Max(_renderSize, 0.1f);
+        needRedraw = true;
+
+        mutex.Unlock();
+        Prepare();
+        return;
+    }
+    mutex.Unlock();
+}
+
 void TextBlock::SetAlign(int32 _align)
 {
     mutex.Lock();
@@ -372,7 +397,9 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 
         if(textBlockRender)
         {
+            font->SetSize(renderSize);
 			textBlockRender->Prepare(texture);
+            font->SetSize(originalFontSize);
         }
 
         needRedraw = false;
@@ -399,7 +426,8 @@ void TextBlock::CalculateCacheParams()
     }
 
     bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
-    font->SetSize(originalFontSize);
+    //font->SetSize(originalFontSize);
+    renderSize = originalFontSize;
     Vector2 drawSize = rectSize;
 
     if(requestedSize.dx > 0)
@@ -500,7 +528,7 @@ void TextBlock::CalculateCacheParams()
         else if(((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (requestedSize.dy >= 0 || requestedSize.dx >= 0))
         {
             bool isChanged = false;
-            float prevFontSize = font->GetRenderSize();
+            float prevFontSize = renderSize;
             while (true)
             {
                 float yMul = 1.0f;
@@ -514,10 +542,12 @@ void TextBlock::CalculateCacheParams()
                 {
                     if((isChanged || fittingType & FITTING_REDUCE) && textSize.height > drawSize.y)
                     {
-                        if (prevFontSize < font->GetRenderSize())
+                        if (prevFontSize < renderSize)
                         {
-                            font->SetRenderSize(prevFontSize);
+                            renderSize = prevFontSize;
+                            font->SetSize(renderSize);
                             textSize = font->GetStringMetrics(text);
+                            font->SetSize(originalFontSize);
                             break;
                         }
                         yBigger = true;
@@ -538,10 +568,12 @@ void TextBlock::CalculateCacheParams()
                 {
                     if((isChanged || fittingType & FITTING_REDUCE) && textSize.width > drawSize.x)
                     {
-                        if (prevFontSize < font->GetRenderSize())
+                        if (prevFontSize < renderSize)
                         {
-                            font->SetRenderSize(prevFontSize);
+                            renderSize = prevFontSize;
+                            font->SetSize(renderSize);
                             textSize = font->GetStringMetrics(text);
+                            font->SetSize(originalFontSize);
                             break;
                         }
                         xBigger = true;
@@ -564,7 +596,7 @@ void TextBlock::CalculateCacheParams()
                     break;
                 }
 
-                float finalSize = font->GetRenderSize();
+                float finalSize = renderSize;
                 prevFontSize = finalSize;
                 isChanged = true;
                 if(xMul < yMul)
@@ -575,8 +607,10 @@ void TextBlock::CalculateCacheParams()
                 {
                     finalSize *= yMul;
                 }
-                font->SetRenderSize(finalSize);
+                renderSize = finalSize;
+                font->SetSize(renderSize);
                 textSize = font->GetStringMetrics(text);
+                font->SetSize(originalFontSize);
             };
         }
 
@@ -605,8 +639,10 @@ void TextBlock::CalculateCacheParams()
                 SplitTextToStrings(text, drawSize, multilineStrings);
 
             int32 yOffset = font->GetVerticalSpacing();
+            font->SetSize(renderSize);
             int32 fontHeight = font->GetFontHeight() + yOffset;
-            float lastSize = font->GetRenderSize();
+            font->SetSize(originalFontSize);
+            float lastSize = renderSize;
 
             textSize.width = 0;
             textSize.height = fontHeight * (int32)multilineStrings.size() - yOffset;
@@ -624,9 +660,9 @@ void TextBlock::CalculateCacheParams()
                     {
                         yBigger = true;
                         yMul = drawSize.y / textSize.height;
-                        if(lastSize < font->GetRenderSize())
+                        if (lastSize < renderSize)
                         {
-                            font->SetRenderSize(lastSize);
+                            renderSize = lastSize;
                             break;
                         }
                     }
@@ -665,11 +701,11 @@ void TextBlock::CalculateCacheParams()
                     break;
                 }
 
-                float finalSize = lastSize = font->GetRenderSize();
+                float finalSize = lastSize = renderSize;
                 isChanged = true;
                 finalSize *= yMul;
 
-                font->SetRenderSize(finalSize);
+                renderSize = finalSize;
 
                 if(isMultilineBySymbolEnabled)
                     SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
@@ -677,7 +713,9 @@ void TextBlock::CalculateCacheParams()
                     SplitTextToStrings(text, drawSize, multilineStrings);
 
                 yOffset = font->GetVerticalSpacing();
+                font->SetSize(renderSize);
                 fontHeight = font->GetFontHeight() + yOffset;
+                font->SetSize(originalFontSize);
                 textSize.height = fontHeight * (int32)multilineStrings.size() - yOffset;
 
             };
@@ -690,7 +728,9 @@ void TextBlock::CalculateCacheParams()
             SplitTextToStrings(text, drawSize, multilineStrings);
 
         int32 yOffset = font->GetVerticalSpacing();
+        font->SetSize(renderSize);
         int32 fontHeight = font->GetFontHeight() + yOffset;
+        font->SetSize(originalFontSize);
 
         textSize.width = textSize.drawRect.dx = 0;
         textSize.height = textSize.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;	
@@ -794,7 +834,9 @@ void TextBlock::PreDraw()
 {
     if (textBlockRender)
     {
+        font->SetSize(renderSize);
         textBlockRender->PreDraw();
+        font->SetSize(originalFontSize);
     }
 }
 
@@ -802,7 +844,9 @@ void TextBlock::Draw(const Color& textColor, const Vector2* offset/* = NULL*/)
 {
     if (textBlockRender)
     {
+        font->SetSize(renderSize);
         textBlockRender->Draw(textColor, offset);
+        font->SetSize(originalFontSize);
     }
 }
 
@@ -814,6 +858,7 @@ TextBlock * TextBlock::Clone()
     block->SetMultiline(GetMultiline(), GetMultilineBySymbol());
     block->SetAlign(GetAlign());
     block->SetFittingOption(fittingType);
+    block->SetRenderSize(GetRenderSize());
 
     if (GetFont())
     {
@@ -856,7 +901,9 @@ void TextBlock::SplitTextToStrings(WideString const& text, Vector2 const& target
     resultVector.clear();
 
     Vector<float32> sizes;
+    font->SetSize(renderSize);
     font->GetStringSize(text, &sizes);
+    font->SetSize(originalFontSize);
     if(sizes.size() == 0)
     {
         return;
@@ -965,7 +1012,9 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString & text, const Vecto
 	resultVector.clear();
     
     Vector<float32> sizes;
-	font->GetStringSize(text, &sizes);
+    font->SetSize(renderSize);
+    font->GetStringSize(text, &sizes);
+    font->SetSize(originalFontSize);
 	if(sizes.size() == 0)
 	{
 		return;
