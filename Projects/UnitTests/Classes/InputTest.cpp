@@ -387,7 +387,7 @@ void InputTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
     }
 }
 
-bool InputTest::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString)
+bool InputTest::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString)
 {
 	if (replacementLocation < 0 || replacementLength < 0)
 	{

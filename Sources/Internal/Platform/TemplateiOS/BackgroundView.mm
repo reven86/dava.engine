@@ -26,22 +26,64 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_NOTIFICATION_NOT_IMPLEMENTED_H__
-#define __DAVAENGINE_NOTIFICATION_NOT_IMPLEMENTED_H__
+#include "BackgroundView.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_IPHONE__)
 
-namespace DAVA
+#import "Platform/TemplateiOS/NativeViewPool.h"
+
+@implementation BackgroundView
 {
-    
-class LocalNotificationNotImplemented
-    {
-public:
-    virtual ~LocalNotificationNotImplemented();
-};
-
+    DAVA::NativeViewPool<UIWebView> webViewPool;
+    DAVA::NativeViewPool<UITextFieldHolder> textFieldPool;
 }
 
-#endif
+- (void)drawRect:(CGRect)rect
+{
+    // Do nothing to reduce fill usage.
+}
 
-#endif /* defined __DAVAENGINE_NOTIFICATION_MACOS_H__ */
+
+- (UIView *) PrepareView: (UIView *)view
+{
+    if([view superview] == nil)
+    {
+        [self addSubview:view];
+    }
+
+    [view setHidden:YES];
+    return view;
+}
+
+
+- (UIWebView *) CreateWebView
+{
+    return  (UIWebView *) [self PrepareView:webViewPool.GetOrCreateView()];
+}
+
+- (UITextFieldHolder *) CreateTextField
+{
+    return (UITextFieldHolder *)[self PrepareView:textFieldPool.GetOrCreateView()];
+}
+
+- (void) ReleaseWebView: (UIWebView *)webView
+{
+    [webView setHidden:YES];
+    webViewPool.ReleaseView(webView);
+}
+
+- (void) ReleaseTextField: (UITextFieldHolder *)textField
+{
+    [textField setHidden:YES];
+    textFieldPool.ReleaseView(textField);
+}
+
+
+
+
+
+
+@end
+
+
+#endif // __DAVAENGINE_IPHONE__

@@ -278,13 +278,6 @@ vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
 	return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent));
 }
 
-vec3 JointTransform(vec3 inVec, vec4 jointPosition, vec4 jointQuaternion)
-{
-    vec3 t = 2.0 * cross(jointQuaternion.xyz, inVec);
-    return jointPosition.xyz + (inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t))*jointPosition.w; 
-    //return inVec; 
-}
-
 vec3 JointTransformTangent(vec3 inVec, vec4 jointQuaternion)
 {
     vec3 t = 2.0 * cross(jointQuaternion.xyz, inVec);
@@ -496,7 +489,8 @@ void main()
     
     #else
         #if defined (SKINNING)
-            vec4 skinnedPosition = vec4(JointTransform(inPosition.xyz, weightedVertexPosition, weightedVertexQuaternion), inPosition.w);
+            vec3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, inPosition.xyz);
+            vec4 skinnedPosition = vec4(weightedVertexPosition.xyz + (inPosition.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, inPosition.w);
             gl_Position = worldViewProjMatrix * skinnedPosition;
         #else
             gl_Position = worldViewProjMatrix * inPosition;

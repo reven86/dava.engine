@@ -26,35 +26,35 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "Platform/Notification.h"
-#include "NotificationNotImplemented.h"
+#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_NOT_IMPLEMENTED_H__
+#define __DAVAENGINE_LOCAL_NOTIFICATION_NOT_IMPLEMENTED_H__
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+
+#include "Notification/LocalNotificationImpl.h"
+#include "Base/Message.h"
 
 namespace DAVA
 {
     
-LocalNotificationNotImplemented::~LocalNotificationNotImplemented()
+class LocalNotificationNotImplemented : public LocalNotificationImpl
 {
-}
+public:
+    LocalNotificationNotImplemented(const String &_id);
+    virtual ~LocalNotificationNotImplemented();
 
-void LocalNotification::Hide()
-{
-}
-
-void LocalNotificationProgress::ShowNotifitaionWithProgress(uint32 id,
-			const WideString& title,
-			const WideString& text,
-			int32 maxValue,
-			int32 value)
-{
-}
-
-void LocalNotificationText::ShowNotificationWithText(uint32 id,
-		const WideString& title,
-		const WideString& text)
-{
-}
+    virtual void SetAction(const WideString &action);
+    virtual void Hide();
+    virtual void ShowText(const WideString &title, const WideString text);
+    virtual void ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress);
+    virtual void PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds);
+    virtual void RemoveAllDelayedNotifications();
+};
 
 }
+
 #endif
+
+#endif /* defined __DAVAENGINE_NOTIFICATION_MACOS_H__ */

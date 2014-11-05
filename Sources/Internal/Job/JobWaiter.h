@@ -46,10 +46,12 @@ public:
 
     inline const Thread::Id &GetThreadId() const;
     inline ConditionalVariable *GetConditionalVariable();
+	inline Mutex * GetMutex();
 
 private:
 	Thread::Id threadId;
 	ConditionalVariable cv;
+	Mutex cvmutex;
 };
 
 class JobInstanceWaiter
@@ -61,10 +63,12 @@ public:
 
     inline ConditionalVariable * GetConditionalVariable();
     inline Job * GetJob() const;
+	inline Mutex * GetMutex();
 
 private:
 	Job * job;
 	ConditionalVariable cv;
+	Mutex cvmutex;
 };
 
 
@@ -78,6 +82,11 @@ inline ConditionalVariable *ThreadIdJobWaiter::GetConditionalVariable()
     return &cv;
 }
 
+inline Mutex* ThreadIdJobWaiter::GetMutex()
+{
+	return &cvmutex;
+}
+
 inline ConditionalVariable *JobInstanceWaiter::GetConditionalVariable()
 {
     return &cv;
@@ -86,6 +95,11 @@ inline ConditionalVariable *JobInstanceWaiter::GetConditionalVariable()
 inline Job *JobInstanceWaiter::GetJob() const
 {
     return job;
+}
+
+inline Mutex* JobInstanceWaiter::GetMutex()
+{
+	return &cvmutex;
 }
 
 /////
