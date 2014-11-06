@@ -314,6 +314,15 @@ void FrameOcclusionQueryManager::EndQuery(const FastName & queryName)
     frameQuery->isQueryOpen = false;
 }
 
+bool FrameOcclusionQueryManager::IsQueryOpen(const FastName & queryName)
+{
+	FrameOcclusionQueryManager::FrameQuery * frameQuery = GetQuery(queryName);
+	if (frameQuery)
+		return frameQuery->isQueryOpen;
+
+	return false;
+}
+
 uint32 FrameOcclusionQueryManager::GetFrameStats(const FastName & queryName) const
 {
     if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))

@@ -90,7 +90,10 @@ void UI3DView::Update(float32 timeElapsed)
 
 void UI3DView::Draw(const UIGeometricData & geometricData)
 {
-    FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
+
+	if (uiDrawQueryWasOpen)
+		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 
 #if 1
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
@@ -128,7 +131,8 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
         //    projectionSave.Dump();
 #endif
 
-    FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
+	if (uiDrawQueryWasOpen)
+		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }
     
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)

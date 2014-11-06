@@ -146,6 +146,7 @@ public:
 
     void BeginQuery(const FastName & queryName);
     void EndQuery(const FastName & queryName);
+	bool IsQueryOpen(const FastName & queryName);
     uint32 GetFrameStats(const FastName & queryName) const;
     void GetQueriesNames(Vector<FastName> & names) const;
 
