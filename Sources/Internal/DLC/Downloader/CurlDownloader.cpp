@@ -429,7 +429,6 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
 
     // a part of file to parallel download
     // cast is needed because it is garanteed that download part is lesser than 4Gb
-    DVASSERT(MAXUINT32 >= DOWNLOAD_IN_MEMORY_CACHE_SIZE);
     uint32 fileChunkSize = static_cast<uint32>(Min<uint64>(DOWNLOAD_IN_MEMORY_CACHE_SIZE, sizeToDownload));
     // quantity of paralleled file parts
     // if file size is 0 - we don't need more than 1 download thread.
@@ -444,7 +443,6 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
         // last download part considers the inaccuracy of division of file to parts
         if (i == fileChunksCount - 1)
         {
-            DVASSERT(MAXUINT32 >= sizeToDownload - fileChunksCount*fileChunkSize);
             // part size could not be bigger than 4Gb
             fileChunkSize += static_cast<uint32>(sizeToDownload - fileChunksCount*fileChunkSize);
         }
