@@ -166,7 +166,7 @@ void SceneExporterTool::Process()
 }
 
 
-FilePath SceneExporterTool::GetQualityConfigPath()
+FilePath SceneExporterTool::GetQualityConfigPath() const
 {
     return qualityConfigPath;
 }
