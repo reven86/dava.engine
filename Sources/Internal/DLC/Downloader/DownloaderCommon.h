@@ -120,7 +120,7 @@ class Downloader;
 class DownloadPart
 {
 public:
-    DownloadPart(uint64 loadFrom, uint64 partSize);
+    DownloadPart(uint64 loadFrom, uint32 partSize);
     ~DownloadPart();
     
     /*
@@ -129,14 +129,14 @@ public:
     Downloader *downloader;
 
     const uint64 seekPos;
-    const uint64 size;
+    const uint32 size;
     char8 *dataBuffer;
-    uint64 progress;
+    uint32 progress;
 };
 
 struct DataChunkInfo
 {
-    DataChunkInfo(uint64 size);
+    DataChunkInfo(uint32 size);
     ~DataChunkInfo();
 
     char8 *buffer;

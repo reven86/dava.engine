@@ -69,9 +69,9 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     DownloadPart *thisPart = static_cast<DownloadPart *>(part);
     CurlDownloader *thisDownloader = static_cast<CurlDownloader *>(thisPart->downloader);
     
-    uint64 dataLeft = thisPart->size - thisPart->progress;
+    uint32 dataLeft = thisPart->size - thisPart->progress;
     size_t dataSizeCame = size*nmemb;
-    uint64 dataSizeToBuffer = 0;
+    uint32 dataSizeToBuffer = 0;
     
     if (dataLeft < dataSizeCame)
     {
@@ -86,7 +86,7 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     bool saveDataToBuffer = dataSizeToBuffer <= thisPart->size - thisPart->progress;
     if (saveDataToBuffer)
     {
-        Memcpy(thisPart->dataBuffer + thisPart->progress, ptr, dataSizeToBuffer);
+        Memcpy(thisPart->dataBuffer + thisPart->progress, ptr, static_cast<size_t>(dataSizeToBuffer));
         thisPart->progress += dataSizeToBuffer;
     }
     thisDownloader->notifyProgress(dataSizeToBuffer);
@@ -146,13 +146,13 @@ CURL *CurlDownloader::CreateEasyHandle(const String &url, DownloadPart *part, in
     return handle;
 }
     
-DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, uint64 seek, uint64 size, uint8 partsCount, int32 timeout)
+DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, uint64 seek, uint32 size, uint8 partsCount, int32 timeout)
 {
     DVASSERT(0 < partsCount);
 
     // save it for static SaveData function.
     storePath = savePath;
-    uint64 partSize;
+    uint32 partSize;
 
     // try to restore interrupted download
     partSize = size / partsCount;
@@ -169,7 +169,7 @@ DownloadError CurlDownloader::CreateDownload(CURLM **multiHandle, const String &
     {
         DownloadPart *part;
     
-        uint64 currentPartSize = partSize;
+        uint32 currentPartSize = partSize;
         if (i == partsCount - 1)
         {
             // we cannot divide without errors, so we will compensate that
@@ -328,7 +328,7 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
     
 }
 
-DownloadError CurlDownloader::SaveDownloadedChunk(uint64 size)
+DownloadError CurlDownloader::SaveDownloadedChunk(uint32 size)
 {
     if (NULL != chunkInfo)
     {
@@ -346,7 +346,7 @@ DownloadError CurlDownloader::SaveDownloadedChunk(uint64 size)
     for (uint8 i = 0; i < downloadParts.size(); ++i)
     {
         DownloadPart *part = downloadParts[i];
-        Memcpy(chunkInfo->buffer + chunkInfo->progress, part->dataBuffer, part->size);
+        Memcpy(chunkInfo->buffer + chunkInfo->progress, part->dataBuffer, static_cast<size_t>(part->size));
         chunkInfo->progress += part->size;
     }
     
@@ -359,7 +359,7 @@ DownloadError CurlDownloader::SaveDownloadedChunk(uint64 size)
     return DLE_NO_ERROR;
 }
 
-DownloadError CurlDownloader::DownloadRangeOfFile(const String &url, const FilePath &savePath, uint64 seek, uint64 size, uint8 partsCount, int32 timeout)
+DownloadError CurlDownloader::DownloadRangeOfFile(const String &url, const FilePath &savePath, uint64 seek, uint32 size, uint8 partsCount, int32 timeout)
 {
     CURLM *multiHandle = NULL;
     
@@ -428,27 +428,29 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     uint64 sizeToDownload = remoteFileSize - currentFileSize;
 
     // a part of file to parallel download
-    uint64 fileChunkSize = Min<uint64>(DOWNLOAD_IN_MEMORY_CACHE_SIZE, sizeToDownload);
+    // cast is needed because it is garanteed that download part is lesser than 4Gb
+    DVASSERT(MAXUINT32 >= DOWNLOAD_IN_MEMORY_CACHE_SIZE);
+    uint32 fileChunkSize = static_cast<uint32>(Min<uint64>(DOWNLOAD_IN_MEMORY_CACHE_SIZE, sizeToDownload));
     // quantity of paralleled file parts
     // if file size is 0 - we don't need more than 1 download thread.
     // if file exists
-    uint8 fileChunksCount = (0 == fileChunkSize) ? 1 : sizeToDownload / fileChunkSize;
+    uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : sizeToDownload / fileChunkSize;
     
-    for (uint8 i = 0; i < fileChunksCount; ++i)
+    for (uint64 i = 0; i < fileChunksCount; ++i)
     {
         // download from seek pos
         uint64 seek = fileChunkSize * i;
-        // download part size
-        uint64 size = fileChunkSize;
         
         // last download part considers the inaccuracy of division of file to parts
         if (i == fileChunksCount - 1)
         {
-            size += sizeToDownload - fileChunksCount*fileChunkSize;
+            DVASSERT(MAXUINT32 >= sizeToDownload - fileChunksCount*fileChunkSize);
+            // part size could not be bigger than 4Gb
+            fileChunkSize += static_cast<uint32>(sizeToDownload - fileChunksCount*fileChunkSize);
         }
         
         // download a part of file
-        retCode = DownloadRangeOfFile(url, savePath, seek, size, partsCount, timeout);
+        retCode = DownloadRangeOfFile(url, savePath, seek, fileChunkSize, partsCount, timeout);
         if (DLE_NO_ERROR != retCode)
         {
             break;

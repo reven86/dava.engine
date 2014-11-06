@@ -49,12 +49,13 @@ DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const Fil
 
 }
 
-DownloadPart::DownloadPart(uint64 loadFrom, uint64 partSize)
+DownloadPart::DownloadPart(uint64 loadFrom, uint32 partSize)
     : size(partSize)
     , progress(0)
     , seekPos(loadFrom)
     
-{    dataBuffer = new char8[partSize];
+{
+    dataBuffer = new char8[partSize];
 }
 
 DownloadPart::~DownloadPart()
@@ -62,7 +63,7 @@ DownloadPart::~DownloadPart()
     SafeDeleteArray(dataBuffer);
 }
 
-DataChunkInfo::DataChunkInfo(uint64 size)
+DataChunkInfo::DataChunkInfo(uint32 size)
     : buffer(NULL)
     , progress(0)
 {

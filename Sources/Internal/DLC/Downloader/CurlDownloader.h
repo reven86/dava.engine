@@ -76,7 +76,7 @@ private:
         \brief Get downloaded data from the memory and store it
         
      */
-    DownloadError SaveDownloadedChunk(uint64 size);
+    DownloadError SaveDownloadedChunk(uint32 size);
     /**
      \brief Downloads a part of file using a number of download threads
      \param[in] url - destination file Url
@@ -86,7 +86,7 @@ private:
      \param[in] partsCount - quantity of download threads
      \param[in] timeout - operation timeout
      */
-    DownloadError DownloadRangeOfFile(const String &url, const FilePath &savePath, uint64 seek, uint64 size, uint8 partsCount, int32 timeout);
+    DownloadError DownloadRangeOfFile(const String &url, const FilePath &savePath, uint64 seek, uint32 size, uint8 partsCount, int32 timeout);
     /**
         \brief Data receive handler for all easy handles which downloads a data
         \param[in] ptr - pointer to incoming data chunk
@@ -125,7 +125,7 @@ private:
         \param[in] partsCount - quantity of download threads
         \param[in] timeout - operation timeout
     */
-    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, uint64 seek, uint64 size,  uint8 partsCount, int32 timeout);
+    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, uint64 seek, uint32 size,  uint8 partsCount, int32 timeout);
     /**
         \brief Do a prepared download. Do nothing and returnes DLE_NO_ERROR if there is no easy handles.
         \param[in] multiHandle - pointer to Curl multi interface handle
