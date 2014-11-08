@@ -10,7 +10,7 @@ add_definitions       (
 -DDDARWIN_NO_CARBON
 )
 
-include_directories            ( ${DAVA_IMAGE_MAGICK_INCLUDES_PATH} ) 
+include_directories            ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 include_directories            ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 
 define_source_folders          ( GLOB_ERASE_FOLDERS "_build"  )
@@ -19,7 +19,14 @@ generate_source_groups_project ()
 add_library ( TextureTool STATIC ${PROJECT_SOURCE_FILES} )
 
 if( APPLE )
-	target_link_libraries  ( TextureTool libbz2.dylib libz.dylib stdc++.6.dylib )
+    target_link_libraries  ( TextureTool libbz2.dylib libz.dylib stdc++.6.dylib )
+
+elseif( WIN32 )
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" )
+
+    target_link_libraries  ( TextureTool  ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/IMagickHelper.lib )
+
 endif()
 
 foreach ( FILE ${DAVA_IMAGE_MAGICK_LIBRARIES_DEBUG} )
