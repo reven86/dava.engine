@@ -1,5 +1,8 @@
 #include <cstdio>
 
+#include <FileSystem/Logger.h>
+#include <Core/Core.h>
+
 #include <Network/IOLoop.h>
 #include <Network/Endpoint.h>
 #include <Network/IPAddress.h>
@@ -7,6 +10,7 @@
 #include "UDPReceiver.h"
 #include "UDPSender.h"
 #include "TimerTest.h"
+#include "SimpleSender.h"
 
 using namespace DAVA;
 
@@ -29,6 +33,20 @@ void TimerTestFunc(IOLoop* loop);
 
 int main(int argc, char* argv[])
 {
+    new Core();
+    new Logger();
+    Logger::Instance();
+
+#if 1
+    IOLoop loop;
+    UDPReceiver r(&loop);
+    SimpleSender ss(&loop);
+    
+    r.Start(9999);
+    ss.Start("127.0.0.1", 9999);
+    loop.Run();
+    
+#else
     CmdlineParams params = {0};
     if (!ParseCmdline(argc, argv, &params))
     {
@@ -58,6 +76,7 @@ int main(int argc, char* argv[])
             ReceiveOverUDP(&loop, &params);
         }
     }
+#endif
     return 0;
 }
 
@@ -72,7 +91,7 @@ void ReceiveOverUDP(IOLoop* loop, const CmdlineParams* params)
 
 void SendOverUDP(IOLoop* loop, const CmdlineParams* params)
 {
-    const std::size_t BUF_LENGTH = 15000;
+    const std::size_t BUF_LENGTH = 150000;
     char8* buf = new char8[BUF_LENGTH];
     Memset(buf, 'z', BUF_LENGTH);
 

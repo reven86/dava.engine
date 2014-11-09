@@ -63,6 +63,7 @@ class IOLoop;
     void HandleSend(SendRequestType* request, int32 error);
     void HandleClose();
 */
+
 template <typename T>
 class UDPSocketTemplateEx : public UDPSocketBase
 {
@@ -70,22 +71,20 @@ public:
     typedef UDPSocketBase BaseClassType;
     typedef T             DerivedClassType;
 
-protected:
-    /*struct SendRequestBase
-    {
-        DerivedClassType* pthis;
-        uv_buf_t          buffer;
-        uv_udp_send_t     request;
-    };*/
-
+    // Maximum simultaneous buffers that can be sent in one operation
     static const std::size_t MAX_WRITE_BUFFERS = 10;
 
-    struct SendRequest
+private:
+    /*
+     UDPSendRequest - wrapper for libuv's uv_udp_send_t with some necessary fields.
+    */
+    struct UDPSendRequest
     {
         uv_udp_send_t     request;
         DerivedClassType* pthis;
         Buffer            buffers[MAX_WRITE_BUFFERS];
         std::size_t       bufferCount;
+        int32             inProgress;
     };
 
 public:
@@ -100,45 +99,39 @@ public:
 
 protected:
     int32 InternalAsyncReceive(Buffer buffer);
-
-    /*
-     SendRequestType should have following public members (if it derived from SendRequestBase then everything is ok):
-        DerivedClassType* pthis   - pointer to DerivedClassType instance
-        uv_buf_t          buffer  - libuv buffer to write
-        uv_udp_send_t     request - libuv UDP send request
-    */
-    template <typename SendRequestType>
-    int32 InternalAsyncSend(SendRequestType* request, const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint);
-
-    int32 InternalAsyncSend(SendRequestType* request, const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint);
-    int32 InternalAsyncSendSerialized(const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint);
+    int32 InternalAsyncSend(const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint);
 
 private:
-    void HandleClose() {}
-    void HandleAlloc(std::size_t /*suggested_size*/, uv_buf_t* buffer);
-    void HandleReceive(int32 /*error*/, std::size_t /*nread*/, const uv_buf_t* /*buffer*/, const Endpoint& /*endpoint*/, bool /*partial*/) {}
-    template<typename SendRequestType>
-    void HandleSend(SendRequestType* /*request*/, int32 /*error*/) {}
+    bool LockSendRequest();
+    void UnlockSendRequest();
 
-    static void HandleCloseThunk(uv_handle_t* handle);
+    void HandleAlloc(std::size_t suggested_size, uv_buf_t* buffer);
+
+    // Methods should be implemented in derived class
+    void HandleClose() {}
+    void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial) {}
+    void HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount) {}
+
+    // Thunks between C callbacks and C++ class methods
     static void HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer);
+    static void HandleCloseThunk(uv_handle_t* handle);
     static void HandleReceiveThunk(uv_udp_t* handle, ssize_t nread, const uv_buf_t* buffer, const sockaddr* addr, unsigned int flags);
-    template <typename SendRequestType>
-    static void HandleSendThunk(uv_udp_send_t* sendRequest, int error);
+    static void HandleSendThunk(uv_udp_send_t* request, int error);
 
 protected:
-    Buffer      externalReadBuffer;
-    SendRequest sendRequestSerialized;
+    Buffer         readBuffer;
+    UDPSendRequest sendRequest;
 };
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
 UDPSocketTemplateEx<T>::UDPSocketTemplateEx(IOLoop* ioLoop) : UDPSocketBase(ioLoop)
-                                                            , externalReadBuffer()
-                                                            , sendRequestSerialized()
+                                                            , readBuffer()
+                                                            , sendRequest()
 {
-    handle.data                          = static_cast<DerivedClassType*>(this);
-    sendRequestSerialized.request.handle = static_cast<DerivedClassType*>(this);
+    handle.data              = static_cast<DerivedClassType*>(this);
+    sendRequest.request.data = &sendRequest;
+    sendRequest.pthis        = static_cast<DerivedClassType*>(this);
 }
 
 template <typename T>
@@ -165,47 +158,70 @@ int32 UDPSocketTemplateEx<T>::InternalAsyncReceive(Buffer buffer)
 {
     DVASSERT(buffer.base != NULL && buffer.len > 0);
 
-    externalReadBuffer = buffer;
+    readBuffer = buffer;
     return uv_udp_recv_start(Handle(), &HandleAllocThunk, &HandleReceiveThunk);
 }
 
 template <typename T>
-template <typename SendRequestType>
-int32 UDPSocketTemplateEx<T>::InternalAsyncSend(SendRequestType* request, const void* buffer, std::size_t size, const Endpoint& endpoint)
-{
-    DVASSERT(request != NULL && buffer != NULL && size > 0);
-
-    request->pthis        = static_cast<DerivedClassType*>(this);
-    request->buffer       = uv_buf_init(static_cast<char*>(const_cast<void*>(buffer)), size);    // uv_buf_init doesn't modify buffer
-    request->request.data = request;
-
-    return uv_udp_send(&request->request, Handle(), &request->buffer, 1, endpoint.CastToSockaddr(), &HandleSendThunk<SendRequestType>);
-}
-
-template <typename T>
-int32 UDPSocketTemplateEx<T>::InternalAsyncSendSerialized(const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint)
+int32 UDPSocketTemplateEx<T>::InternalAsyncSend(const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint)
 {
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
 
-    sendRequestSerialized.pthis       = static_cast<DerivedClassType*>(this);
-    sendRequestSerialized.bufferCount = bufferCount;
-    for (std::size_t i = 0;i < bufferCount;++i)
-        sendRequestSerialized.buffers[i] = buffers[i];
+    if (LockSendRequest())
+    {
+        sendRequest.bufferCount = bufferCount;
+        for (std::size_t i = 0;i < bufferCount;++i)
+        {
+            DVASSERT(buffers[i].base != NULL && buffers[i].len > 0);
+            sendRequest.buffers[i] = buffers[i];
+        }
 
-    return uv_udp_send(&sendRequestSerialized.request, Handle(), sendRequestSerialized.buffers
-                                                               , sendRequestSerialized.bufferCount
-                                                               , endpoint.CastToSockaddr()
-                                                               , 0);
+        int32 error = uv_udp_send(&sendRequest.request, Handle(), sendRequest.buffers
+                                                                , sendRequest.bufferCount
+                                                                , endpoint.CastToSockaddr()
+                                                                , &HandleSendThunk);
+        if (error != 0)
+            UnlockSendRequest();
+        return error;
+    }
+
+    DVASSERT(false && "Send operation is not serialized");
+    return 0;
 }
 
 template <typename T>
-void UDPSocketTemplateEx<T, autoRead>::HandleAlloc(std::size_t /*suggested_size*/, uv_buf_t* buffer)
+bool UDPSocketTemplateEx<T>::LockSendRequest()
 {
-    *buffer = uv_buf_init(static_cast<char*>(externalReadBuffer), externalReadBufferSize);
+    int32 prevState = sendRequest.inProgress;
+    if (0 == sendRequest.inProgress)
+    {
+        sendRequest.inProgress = 1;
+    }
+    return 0 == prevState;
 }
 
 template <typename T>
-void UDPSocketTemplateEx<T, autoRead>::HandleCloseThunk(uv_handle_t* handle)
+void UDPSocketTemplateEx<T>::UnlockSendRequest()
+{
+    sendRequest.inProgress = 0;
+}
+
+template <typename T>
+void UDPSocketTemplateEx<T>::HandleAlloc(std::size_t /*suggested_size*/, uv_buf_t* buffer)
+{
+    *buffer = readBuffer;
+}
+
+// Thunks
+template <typename T>
+void UDPSocketTemplateEx<T>::HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer)
+{
+    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
+    pthis->HandleAlloc(suggested_size, buffer);
+}
+
+template <typename T>
+void UDPSocketTemplateEx<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
     pthis->CleanUpBeforeNextUse();
@@ -213,18 +229,10 @@ void UDPSocketTemplateEx<T, autoRead>::HandleCloseThunk(uv_handle_t* handle)
 }
 
 template <typename T>
-void UDPSocketTemplateEx<T, autoRead>::HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer)
+void UDPSocketTemplateEx<T>::HandleReceiveThunk(uv_udp_t* handle, ssize_t nread, const uv_buf_t* buffer, const sockaddr* addr, unsigned int flags)
 {
-    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->HandleAlloc(suggested_size, buffer);
-}
-
-template <typename T>
-void UDPSocketTemplateEx<T, autoRead>::HandleReceiveThunk(uv_udp_t* handle, ssize_t nread, const uv_buf_t* buffer, const sockaddr* addr, unsigned int flags)
-{
-    // According to libuv documentation under such conditions there is nothing to read
-    if(0 == nread && NULL == addr)
-        return;
+    // According to libuv documentation under such condition there is nothing to read on UDP socket
+    if(0 == nread && NULL == addr) return;
 
     int32 error = 0;
     if(nread < 0)
@@ -233,19 +241,17 @@ void UDPSocketTemplateEx<T, autoRead>::HandleReceiveThunk(uv_udp_t* handle, ssiz
         nread = 0;
     }
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    if(!autoReadFlag && 0 == error)
-    {
-        pthis->StopAsyncReceive();
-    }
-    pthis->HandleReceive(error, nread, buffer, Endpoint(addr), UV_UDP_PARTIAL == flags);
+    pthis->HandleReceive(error, nread, Endpoint(addr), UV_UDP_PARTIAL == flags);
 }
 
 template <typename T>
-template <typename SendRequestType>
-void UDPSocketTemplateEx<T, autoRead>::HandleSendThunk(uv_udp_send_t* sendRequest, int error)
+void UDPSocketTemplateEx<T>::HandleSendThunk(uv_udp_send_t* request, int error)
 {
-    SendRequestType* request = static_cast<SendRequestType*>(sendRequest->data);
-    request->pthis->HandleSend(request, error);
+    UDPSendRequest* sendRequest = static_cast<UDPSendRequest*>(request->data);
+    DVASSERT(sendRequest != NULL && sendRequest->pthis != NULL);
+
+    sendRequest->pthis->UnlockSendRequest();
+    sendRequest->pthis->HandleSend(error, sendRequest->buffers, sendRequest->bufferCount);
 }
 
 }	// namespace DAVA

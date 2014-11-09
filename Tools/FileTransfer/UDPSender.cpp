@@ -1,6 +1,7 @@
 #include <Base/BaseTypes.h>
 #include <Base/FunctionTraits.h>
 #include <Network/NetworkUtils.h>
+#include <Network/Buffer.h>
 
 #include "CommonTypes.h"
 #include "UDPSender.h"
@@ -11,8 +12,8 @@ namespace DAVA
 UDPSender::UDPSender(IOLoop* loop) : socket(loop)
                                    , timer(loop)
                                    , endp()
-                                   , stage(STAGE_INIT)
-                                   , initSent(false)
+                                   , stage(STAGE_PING)
+                                   , pingSent(false)
                                    , fileBuf(NULL)
                                    , fileSize(0)
                                    , curOffset(0)
@@ -23,6 +24,8 @@ UDPSender::UDPSender(IOLoop* loop) : socket(loop)
     Memset(outbuf, 0, sizeof(outbuf));
 
     socket.SetCloseHandler(MakeFunction(this, &UDPSender::HandleClose));
+    socket.SetReceiveHandler(MakeFunction(this, &UDPSender::HandleReceive));
+    socket.SetSendHandler(MakeFunction(this, &UDPSender::HandleSend));
 }
 
 UDPSender::~UDPSender()
@@ -36,14 +39,13 @@ bool UDPSender::Start(const Endpoint& endpoint, const char8* buffer, std::size_t
     fileBuf  = buffer;
     fileSize = length;
 
-    //IssueWaitRequest(0);
-    IssueWriteRequest();
+    StartWait(0);
     return true;
 }
 
-int32 UDPSender::IssueReadRequest()
+int32 UDPSender::StartReceive()
 {
-    int32 error = socket.AsyncReceive(inbuf, INBUF_SIZE, MakeFunction(this, &UDPSender::HandleReceive));
+    int32 error = socket.AsyncReceive(CreateBuffer(inbuf, INBUF_SIZE));
     if (error != 0)
     {
         printf("*** AsyncReceive failed: %s\n", NetworkErrorToString(error));
@@ -51,39 +53,7 @@ int32 UDPSender::IssueReadRequest()
     return error;
 }
 
-int32 UDPSender::IssueWriteRequest()
-{
-    int32 error = socket.AsyncSend(endp, outbuf, OUTBUF_SIZE, MakeFunction(this, &UDPSender::HandleSend));
-    socket.AsyncSend(endp, inbuf, INBUF_SIZE, MakeFunction(this, &UDPSender::HandleSend));
-    if (error != 0)
-    {
-        printf("*** AsyncSend failed: %s\n", NetworkErrorToString(error));
-    }
-    return error;
-}
-
-int32 UDPSender::IssueWriteRequest(const char8* buf, std::size_t length)
-{
-    Memcpy(outbuf, buf, length);
-    int32 error = socket.AsyncSend(endp, outbuf, length, MakeFunction(this, &UDPSender::HandleSend));
-    if (error != 0)
-    {
-        printf("*** AsyncSend failed: %s\n", NetworkErrorToString(error));
-    }
-    return error;
-}
-
-int32 UDPSender::IssueWriteRequest(std::size_t offset, std::size_t length)
-{
-    int32 error = socket.AsyncSend(endp, fileBuf + offset, length, MakeFunction(this, &UDPSender::HandleSend));
-    if (error != 0)
-    {
-        printf("*** AsyncSend failed: %s\n", NetworkErrorToString(error));
-    }
-    return error;
-}
-
-int32 UDPSender::IssueWaitRequest(uint32 timeout)
+int32 UDPSender::StartWait(uint32 timeout)
 {
     int32 error = timer.AsyncStartWait(timeout, MakeFunction(this, &UDPSender::HandleTimer));
     if (error != 0)
@@ -93,31 +63,55 @@ int32 UDPSender::IssueWaitRequest(uint32 timeout)
     return error;
 }
 
+void UDPSender::SendPing()
+{
+    printf("Sending PING..\n");
+
+    ProtoPing proto;
+    proto.hdr.type = PROTO_PING;
+    proto.hdr.size = sizeof(ProtoPing);
+    proto.fileSize = static_cast<uint32>(fileSize);
+    IssueWriteRequest(&proto);
+}
+
+void UDPSender::SendChunk()
+{
+    std::size_t nleft = fileSize - curOffset;
+    curChunkSize      = Min(nleft, chunkSize);
+
+    ProtoChunk proto;
+    proto.hdr.type  = PROTO_CHUNK;
+    proto.hdr.size  = sizeof(ProtoChunk) + curChunkSize;
+    proto.chunkSize = curChunkSize;
+
+    Buffer buf[2] = {
+        CreateBuffer(&proto, 1),
+        CreateBuffer(const_cast<char8*>(fileBuf + curOffset), curChunkSize)
+    };
+    IssueWriteRequestBuffers(buf, 2);
+}
+
+int32 UDPSender::IssueWriteRequestBuffers(const Buffer* buffers, std::size_t nbuffers)
+{
+    int32 error = socket.AsyncSend(endp, buffers, nbuffers);
+    if (error != 0)
+    {
+        printf("*** AsyncSend failed: %s\n", NetworkErrorToString(error));
+    }
+    return error;
+}
+
+int32 UDPSender::IssueWriteRequestGeneric(const void* buffer, std::size_t length)
+{
+    Buffer buf = CreateBuffer(outbuf, length);
+    Memcpy(outbuf, buffer, length);
+    return IssueWriteRequestBuffers(&buf, 1);
+}
+
 void UDPSender::Cleanup()
 {
     socket.Close();
     timer.Close();
-}
-
-void UDPSender::SendInit()
-{
-    printf("Sending INIT\n");
-
-    InitRequest req = {0};
-    req.sign     = 0xDEADBEEF;
-    req.fileSize = static_cast<uint32>(fileSize);
-    IssueWriteRequest(&req);
-}
-
-void UDPSender::SendNextChunk()
-{
-    std::size_t nleft = fileSize - curOffset;
-    curChunkSize = Min(nleft, chunkSize);
-
-    printf("Sending: curOffset="SIZET_FMT", curChunkSize="SIZET_FMT", fileSize="SIZET_FMT"\n", curOffset
-                                                                                             , curChunkSize
-                                                                                             , fileSize);
-    IssueWriteRequest(curOffset, curChunkSize);
 }
 
 void UDPSender::HandleClose(SocketType* socket)
@@ -132,10 +126,10 @@ void UDPSender::HandleTimer(DeadlineTimer* timer)
     if (n > 30)
         Cleanup();
     else
-        SendInit();
+        SendPing();
 }
 
-void UDPSender::HandleReceive(SocketType* socket, int32 error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial)
+void UDPSender::HandleReceive(SocketType* socket, int32 error, std::size_t nread, const Endpoint& endpoint, bool partial)
 {
     timer.StopAsyncWait();
     if (error != 0 || partial)
@@ -147,55 +141,51 @@ void UDPSender::HandleReceive(SocketType* socket, int32 error, std::size_t nread
         Cleanup();
         return;
     }
-
-    if (STAGE_INIT == stage)
+    if (nread < sizeof(ProtoHeader))
     {
-        InitReply* rep = reinterpret_cast<InitReply*>(inbuf);
-        if (sizeof(InitReply) == nread && 0xACCA10DA == rep->sign)
-        {
-            if (rep->status == 0)
-            {
-                printf("Reciever ready\n");
-                stage = STAGE_FILE;
-                SendNextChunk();
-            }
-            else
-            {
-                printf("Reciever not ready\n");
-                IssueWaitRequest(1000);
-            }
-        }
-        else
-        {
-            printf("*** Unrecognizable reply: nread="SIZET_FMT"\n", nread);
-            Cleanup();
-            return;
-        }
+        printf("*** Received too few bytes: nread=%u\n", nread);
+        Cleanup();
+        return;
     }
-    else if (STAGE_FILE == stage)
+
+    ProtoHeader* hdr = reinterpret_cast<ProtoHeader*>(inbuf);
+    if (nread < hdr->size)
     {
-        FileReply* rep = reinterpret_cast<FileReply*>(inbuf);
-        if (sizeof(FileReply) == nread && 0xBABAABBA == rep->sign)
+        printf("*** Received too few bytes: nread=%u, proto.size=%u\n", nread, hdr->size);
+        Cleanup();
+        return;
+    }
+
+    if (PROTO_PONG == hdr->type)
+    {
+        if (STAGE_PING == stage)
         {
-            if (rep->status == 0)
-            {
-                SendNextChunk();
-            }
-            else
-            {
-                printf("Pause request\n");
-            }
+            ProtoPong* pong = reinterpret_cast<ProtoPong*>(inbuf);
+
+            stage = STAGE_CHUNK;
+            SendChunk();
         }
         else
+            printf("Abandoned PONG received\n");
+    }
+    else if (PROTO_ACK == hdr->type)
+    {
+        if (STAGE_CHUNK == stage)
         {
-            printf("*** Unrecognizable reply: nread="SIZET_FMT"\n", nread);
-            Cleanup();
-            return;
+            ProtoAck* ack = reinterpret_cast<ProtoAck*>(inbuf);
+            SendChunk();
         }
+        else
+            printf("Abandoned ACK received\n");
+    }
+    else
+    {
+        printf("Unknown proto type: %u\n", hdr->type);
+        Cleanup();
     }
 }
 
-void UDPSender::HandleSend(SocketType* socket, int32 error, const void* buffer)
+void UDPSender::HandleSend(SocketType* socket, int32 error, const Buffer* buffers, std::size_t bufferCount)
 {
     if (error != 0)
     {
@@ -204,28 +194,16 @@ void UDPSender::HandleSend(SocketType* socket, int32 error, const void* buffer)
         return;
     }
 
-    static int n = 0;
-
-    //printf("Sent %d, size=%u, count=%u, inv=%d\n", ++n, socket->SendQueueSize(), socket->SendRequestCount(), socket->Handle()->socket == INVALID_SOCKET);
-    if (n < 100)
+    if (STAGE_PING == stage)
     {
-        IssueWriteRequest();
-    }
-    else
-        Cleanup();
-
-#if 0
-    if (STAGE_INIT == stage)
-    {
-        printf("INIT has been sent\n");
-        if (!initSent)
+        if (!pingSent)
         {
-            IssueReadRequest();
-            initSent = true;
+            StartReceive();
+            pingSent = true;
         }
-        IssueWaitRequest(1000);
+        StartWait(1000);
     }
-    else if (STAGE_FILE == stage)
+    else if (STAGE_CHUNK == stage)
     {
         curOffset += curChunkSize;
         if (fileSize == curOffset)
@@ -233,12 +211,7 @@ void UDPSender::HandleSend(SocketType* socket, int32 error, const void* buffer)
             printf("File has been sent\n");
             Cleanup();
         }
-        else
-        {
-            //SendNextChunk();
-        }
     }
-#endif
 }
 
 }   // namespace DAVA

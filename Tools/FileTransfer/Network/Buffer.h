@@ -39,9 +39,9 @@ namespace DAVA
 typedef uv_buf_t Buffer;
 
 template<typename T>
-Buffer CreateBuffer(T* rawBuffer, std::size_t count)
+Buffer CreateBuffer(T* rawBuffer, std::size_t count = 1)
 {
-    return uv_buf_init(static_cast<char8*>(static_cast<void*>(rawBuffer)), static_cast<uint32>(sizeof(T) * size));
+    return uv_buf_init(static_cast<char8*>(static_cast<void*>(rawBuffer)), static_cast<uint32>(sizeof(T) * count));
 }
 
 inline Buffer CreateBuffer(void* rawBuffer, std::size_t size)

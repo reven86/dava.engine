@@ -10,6 +10,41 @@
 namespace DAVA
 {
 
+enum {
+    PROTO_PING,
+    PROTO_PONG,
+    PROTO_CHUNK,
+    PROTO_ACK
+};
+
+struct ProtoHeader
+{
+    uint32 size;
+    uint32 type;
+};
+
+struct ProtoPing
+{
+    ProtoHeader hdr;
+    uint32      fileSize;
+};
+
+struct ProtoPong
+{
+    ProtoHeader hdr;
+};
+
+struct ProtoChunk
+{
+    ProtoHeader hdr;
+    uint32      chunkSize;
+};
+
+struct ProtoAck
+{
+    ProtoHeader hdr;
+};
+
 struct InitRequest
 {
     uint32 sign;

@@ -32,7 +32,7 @@
 #include <Debug/DVAssert.h>
 #include <Base/Function.h>
 
-#include "UDPSocketTemplate.h"
+#include "UDPSocketTemplateEx.h"
 
 namespace DAVA
 {
@@ -51,38 +51,35 @@ namespace DAVA
  User is responsible for error processing.
 */
 
-class UDPSocketEx : public UDPSocketTemplate<UDPSocketEx, true>
+class UDPSocketEx : public UDPSocketTemplateEx<UDPSocketEx>
 {
 public:
-    typedef Function<void(UDPSocketEx* socket)>                                      CloseHandlerType;
-    typedef Function<void(UDPSocketEx* socket, int32 error, std::size_t nread,
-                            void* buffer, const Endpoint& endpoint, bool partial)>   ReceiveHandlerType;
-    typedef Function<void(UDPSocketEx* socket, int32 error, const void* buffer)>     SendHandlerType;
+    typedef Function<void(UDPSocketEx* socket)>                                                                         CloseHandlerType;
+    typedef Function<void(UDPSocketEx* socket, int32 error, std::size_t nread, const Endpoint& endpoint, bool partial)> ReceiveHandlerType;
+    typedef Function<void(UDPSocketEx* socket, int32 error, const Buffer* buffers, std::size_t bufferCount)>            SendHandlerType;
 
 private:
-    typedef UDPSocketTemplate<UDPSocketEx, true> BaseClassType;
-
-    struct SendRequest : public BaseClassType::SendRequestBase
-    {
-        SendHandlerType sendHandler;
-    };
+    typedef UDPSocketTemplateEx<UDPSocketEx> BaseClassType;
 
 public:
     explicit UDPSocketEx(IOLoop* ioLoop);
     ~UDPSocketEx() {}
 
     void SetCloseHandler(CloseHandlerType handler);
+    void SetReceiveHandler(ReceiveHandlerType handler);
+    void SetSendHandler(SendHandlerType handler);
 
-    int32 AsyncReceive(void* buffer, std::size_t size, ReceiveHandlerType handler);
-    int32 AsyncSend(const Endpoint& endpoint, const void* buffer, std::size_t size, SendHandlerType handler);
+    int32 AsyncReceive(Buffer buffer);
+    int32 AsyncSend(const Endpoint& endpoint, const Buffer* buffers, std::size_t bufferCount);
 
     void HandleClose();
-    void HandleReceive(int32 error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial);
-    void HandleSend(SendRequest* request, int32 error);
+    void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial);
+    void HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount);
 
 private:
     CloseHandlerType   closeHandler;
     ReceiveHandlerType receiveHandler;
+    SendHandlerType    sendHandler;
 };
 
 }   // namespace DAVA

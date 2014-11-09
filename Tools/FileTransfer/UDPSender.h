@@ -12,12 +12,12 @@ class IOLoop;
 
 class UDPSender
 {
-    static const std::size_t INBUF_SIZE = 32;
+    static const std::size_t INBUF_SIZE = 1024;
     static const std::size_t OUTBUF_SIZE = 1024;
 
     enum {
-        STAGE_INIT,
-        STAGE_FILE
+        STAGE_PING,
+        STAGE_CHUNK
     };
 
 public:
@@ -29,32 +29,30 @@ public:
     bool Start(const Endpoint& endpoint, const char8* buffer, std::size_t length);
 
 private:
-    int32 IssueReadRequest();
-    int32 IssueWriteRequest();
-    int32 IssueWriteRequest(const char8* buf, std::size_t length);
-    int32 IssueWriteRequest(std::size_t offset, std::size_t length);
-    int32 IssueWaitRequest(uint32 timeout);
-    template<typename T>
-    int32 IssueWriteRequest(const T* val)
-    {
-        return IssueWriteRequest(reinterpret_cast<const char8*>(val), sizeof(T));
-    }
-    void Cleanup();
+    int32 StartReceive();
+    int32 StartWait(uint32 timeout);
 
-    void SendInit();
-    void SendNextChunk();
+    void SendPing();
+    void SendChunk();
+
+    int32 IssueWriteRequestBuffers(const Buffer* buffers, std::size_t nbuffers);
+    int32 IssueWriteRequestGeneric(const void* buffer, std::size_t length);
+    template<typename T>
+    int32 IssueWriteRequest(const T* val, std::size_t count = 1);
+
+    void Cleanup();
 
     void HandleClose(SocketType* socket);
     void HandleTimer(DeadlineTimer* timer);
-    void HandleReceive(SocketType* socket, int32 error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial);
-    void HandleSend(SocketType* socket, int32 error, const void* buffer);
+    void HandleReceive(SocketType* socket, int32 error, std::size_t nread, const Endpoint& endpoint, bool partial);
+    void HandleSend(SocketType* socket, int32 error, const Buffer* buffers, std::size_t bufferCount);
 
 private:
     SocketType    socket;
     DeadlineTimer timer;
     Endpoint      endp;
     int32         stage;
-    bool          initSent;
+    bool          pingSent;
     char8         inbuf[INBUF_SIZE];
     char8         outbuf[OUTBUF_SIZE];
     const char8*  fileBuf;
@@ -63,6 +61,12 @@ private:
     std::size_t   curChunkSize;
     std::size_t   chunkSize;
 };
+
+template<typename T>
+int32 UDPSender::IssueWriteRequest(const T* val, std::size_t count)
+{
+    return IssueWriteRequestGeneric(val, sizeof(T) * count);
+}
 
 }   // namespace DAVA
 

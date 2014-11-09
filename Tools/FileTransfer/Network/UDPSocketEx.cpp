@@ -43,40 +43,51 @@ void UDPSocketEx::SetCloseHandler(CloseHandlerType handler)
     closeHandler = handler;
 }
 
-int32 UDPSocketEx::AsyncReceive(void* buffer, std::size_t size, ReceiveHandlerType handler)
+void UDPSocketEx::SetReceiveHandler(ReceiveHandlerType handler)
 {
-    DVASSERT(buffer != NULL && size > 0 && handler != 0);
-
     receiveHandler = handler;
-    return BaseClassType::InternalAsyncReceive(buffer, size);
 }
 
-int32 UDPSocketEx::AsyncSend(const Endpoint& endpoint, const void* buffer, std::size_t size, SendHandlerType handler)
+void UDPSocketEx::SetSendHandler(SendHandlerType handler)
 {
-    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+    sendHandler = handler;
+}
 
-    SendRequest* request = new SendRequest();
-    request->sendHandler = handler;
-    return BaseClassType::InternalAsyncSend(request, buffer, size, endpoint);
+int32 UDPSocketEx::AsyncReceive(Buffer buffer)
+{
+    DVASSERT(buffer.base != NULL && buffer.len > 0 && receiveHandler != 0);
+    return BaseClassType::InternalAsyncReceive(buffer);
+}
+
+int32 UDPSocketEx::AsyncSend(const Endpoint& endpoint, const Buffer* buffers, std::size_t bufferCount)
+{
+    DVASSERT(buffers != NULL && bufferCount > 0 && sendHandler != 0);
+
+    return BaseClassType::InternalAsyncSend(buffers, bufferCount, endpoint);
 }
 
 void UDPSocketEx::HandleClose()
 {
-    if(closeHandler != 0)
+    if (closeHandler != 0)
     {
         closeHandler(this);
     }
 }
 
-void UDPSocketEx::HandleReceive(int32 error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial)
+void UDPSocketEx::HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial)
 {
-    receiveHandler(this, error, nread, buffer->base, endpoint, partial);
+    if (receiveHandler != 0)
+    {
+        receiveHandler(this, error, nread, endpoint, partial);
+    }
 }
 
-void UDPSocketEx::HandleSend(SendRequest* request, int32 error)
+void UDPSocketEx::HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount)
 {
-    request->sendHandler(this, error, request->buffer.base);
-    delete request;
+    if (sendHandler != 0)
+    {
+        sendHandler(this, error, buffers, bufferCount);
+    }
 }
 
 }   // namespace DAVA

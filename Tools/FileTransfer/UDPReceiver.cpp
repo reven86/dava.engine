@@ -16,7 +16,8 @@ UDPReceiver::UDPReceiver(IOLoop* loop) : socket(loop)
                                        , fileSize(0)
                                        , recievedFileSize(0)
 {
-    socket.SetCloseHandler(MakeFunction(this, &UDPReceiver::HandleClose));
+    socket.SetCloseHandler(MakeFunction(this, &UDPReceiver::HandleCloseSocket));
+    timer.SetCloseHandler(MakeFunction(this, &UDPReceiver::HandleCloseTimer));
 }
 
 UDPReceiver::~UDPReceiver()
@@ -29,13 +30,21 @@ bool UDPReceiver::Start(uint16 port)
     int32 error = socket.Bind(port);
     if (0 == error)
     {
+        StartWait(5000);
         error = IssueReadRequest();
+        //endp = Endpoint("127.0.0.1", 9999);
+        IssueWriteRequest("XXX", 3);
     }
     else
     {
         printf("*** Bind failed: %s\n", NetworkErrorToString(error));
     }
     return 0 == error;
+}
+
+void UDPReceiver::StartWait(uint32 timeout)
+{
+    timer.AsyncStartWait(timeout, MakeFunction(this, &UDPReceiver::HandleTimer));
 }
 
 int32 UDPReceiver::IssueReadRequest()
@@ -67,31 +76,46 @@ void UDPReceiver::Cleanup()
 
 void UDPReceiver::SendInitReply()
 {
-    InitReply rep = {0};
-    rep.sign   = 0xACCA10DA;
-    rep.status = 0;
-    IssueWriteRequest(reinterpret_cast<const char8*>(&rep), sizeof(InitReply));
+    ProtoPong pong;
+    pong.hdr.type = PROTO_PONG;
+    pong.hdr.size = sizeof(ProtoPong);
+    IssueWriteRequest(reinterpret_cast<const char8*>(&pong), sizeof(ProtoPong));
 }
 
 void UDPReceiver::SentFileReply()
 {
-    FileReply rep = {0};
-    rep.sign   = 0xBABAABBA;
-    rep.status = 0;
-    IssueWriteRequest(reinterpret_cast<const char8*>(&rep), sizeof(FileReply));
+    ProtoAck ack;
+    ack.hdr.type = PROTO_ACK;
+    ack.hdr.size = sizeof(ProtoAck);
+    IssueWriteRequest(reinterpret_cast<const char8*>(&ack), sizeof(ProtoAck));
 }
 
-void UDPReceiver::HandleClose(UDPSocket* socket)
+void UDPReceiver::HandleCloseSocket(UDPSocket* socket)
 {
-    printf("Socket closed\n");
+    printf("Receiver socket closed\n");
+}
+
+void UDPReceiver::HandleCloseTimer(DeadlineTimer* timer)
+{
+    printf("Receiver timer closed\n");
 }
 
 void UDPReceiver::HandleTimer(DeadlineTimer* timer)
 {
+    printf("Receive timeout !!!\n");
+    Cleanup();
 }
 
 void UDPReceiver::HandleReceive(UDPSocket* socket, int32 error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial)
 {
+    static int n = 0;
+    n += 1;
+    inbuf[nread] = '\0';
+    printf("%d. Got %u bytes - %s\n", n, (uint32)nread, inbuf);
+    StartWait(5000);
+    //IssueReadRequest();
+    
+/*
     if (error != 0 || partial)
     {
         if (partial)
@@ -101,12 +125,12 @@ void UDPReceiver::HandleReceive(UDPSocket* socket, int32 error, std::size_t nrea
         Cleanup();
         return;
     }
-
-    static int n = 0;
-    ++n;
-    printf("Recieved %d, nread=%u\n", n, nread);
-    //Sleep(1000);
-#if 0
+    if (nread < sizeof(ProtoHeader))
+    {
+        printf("*** Received too few bytes: nread=%u\n", nread);
+        Cleanup();
+        return;
+    }
     if (!CheckRemotePeer(endpoint))
     {
         printf("*** Unexpected peer %s\n", endpoint.ToString().c_str());
@@ -114,62 +138,71 @@ void UDPReceiver::HandleReceive(UDPSocket* socket, int32 error, std::size_t nrea
         return;
     }
 
-    if (STAGE_INIT == stage)
+    ProtoHeader* hdr = reinterpret_cast<ProtoHeader*>(inbuf);
+    if (nread < hdr->size)
     {
-        InitRequest* req = reinterpret_cast<InitRequest*>(inbuf);
-        if (nread == sizeof(InitRequest) && req->fileSize > 0 && req->sign == 0xDEADBEEF)
+        printf("*** Received too few bytes: nread=%u, proto.size=%u\n", nread, hdr->size);
+        Cleanup();
+        return;
+    }
+
+    if (PROTO_PING == hdr->type)
+    {
+        if (STAGE_INIT == stage)
         {
-            fileSize = static_cast<std::size_t>(req->fileSize);
+            ProtoPing* ping = reinterpret_cast<ProtoPing*>(inbuf);
+            printf("PING: nread=%u, filesize=%u\n", nread, ping->fileSize);
+
+            fileSize = ping->fileSize;
             fileBuf  = new char8[fileSize];
             stage    = STAGE_FILE;
-
-            printf("Sender catched: filesize="SIZET_FMT"\n", fileSize);
 
             SendInitReply();
         }
         else
-        {
-            printf("*** Unrecognizable packet: nread="SIZET_FMT", size=%u, sign=%08X\n", nread, req->fileSize, req->sign);
-            Cleanup();
-            return;
-        }
+            printf("Out of order PING received\n");
     }
-    else if (STAGE_FILE == stage)
+    else if (PROTO_CHUNK == hdr->type)
     {
-        std::size_t nleft = fileSize - recievedFileSize;
-        if (nread > nleft)
+        if (STAGE_FILE == stage)
         {
-            printf("*** More data arrived: fileSize="SIZET_FMT", recievedFileSize="SIZET_FMT", nread="SIZET_FMT"\n", fileSize
-                                                                                                                   , recievedFileSize
-                                                                                                                   , nread);
-            Cleanup();
-            return;
-        }
-        Memcpy(fileBuf, inbuf, nread);
-        recievedFileSize += nread;
-        printf("Data arrived: nread="SIZET_FMT", nleft="SIZET_FMT"\n", nread, fileSize - recievedFileSize);
-        if (fileSize == recievedFileSize)
-        {
-            printf("File completely received\n");
-            Cleanup();
-            return;
+            ProtoChunk* chunk = reinterpret_cast<ProtoChunk*>(inbuf);
+            char8*      ptr   = inbuf + sizeof(ProtoChunk);
+
+            printf("PING: nread=%u, chunksize=%u\n", nread, chunk->chunkSize);
+
+            Memcpy(fileBuf, ptr, chunk->chunkSize);
+            recievedFileSize += chunk->chunkSize;
+            if (fileSize == recievedFileSize)
+            {
+                printf("File completely received\n");
+                Cleanup();
+                return;
+            }
+            else
+                SentFileReply();
         }
         else
-            SentFileReply();
+            printf("Out of order CHUNK received\n");
     }
-    //IssueReadRequest();
-#endif
+    else
+    {
+        printf("Unknown proto type: %u\n", hdr->type);
+        Cleanup();
+    }
+*/
 }
 
 void UDPReceiver::HandleSend(UDPSocket* socket, int32 error, const void* buffer)
 {
     if (0 == error)
     {
+        IssueWriteRequest("XXX", 3);
     }
     else
     {
-        printf("*** Send failed: %s\n", NetworkErrorToString(error));
-        Cleanup();
+        printf("*** Send failed: %s (%s)\n", NetworkErrorToString(error), endp.ToString().c_str());
+        //Cleanup();
     }
 }
 

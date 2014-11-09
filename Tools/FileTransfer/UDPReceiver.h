@@ -29,6 +29,7 @@ public:
     const char8* FileBuffer() const { return fileBuf; }
     
 private:
+    void StartWait(uint32 timeout);
     int32 IssueReadRequest();
     int32 IssueWriteRequest(const char8* buf, std::size_t length);
     void Cleanup();
@@ -36,7 +37,9 @@ private:
     void SendInitReply();
     void SentFileReply();
 
-    void HandleClose(UDPSocket* socket);
+    void HandleCloseSocket(UDPSocket* socket);
+    void HandleCloseTimer(DeadlineTimer* timer);
+
     void HandleTimer(DeadlineTimer* timer);
     void HandleReceive(UDPSocket* socket, int32 error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial);
     void HandleSend(UDPSocket* socket, int32 error, const void* buffer);
