@@ -127,6 +127,8 @@
 		A6D827A8187717A60006A5DD /* PlaneLODDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = A6D827A7187717A60006A5DD /* PlaneLODDialog_moc.cpp */; };
 		A6D827AB187717EA0006A5DD /* CreatePlaneLODCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = A6D827A9187717EA0006A5DD /* CreatePlaneLODCommand.cpp */; };
 		A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 419FFB6CDDEB353FF0A4F469 /* QtCore.framework */; };
+		B019F1851A0FE122004FB420 /* libIMagickHelper.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = B019F1841A0FE122004FB420 /* libIMagickHelper.dylib */; };
+		B019F1861A0FE4B2004FB420 /* libIMagickHelper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = B019F1841A0FE122004FB420 /* libIMagickHelper.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */; };
 		BCEF71E1EDFB18DA77DC750B /* OpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = DA18A6831232F53228631AD1 /* OpenGL.framework */; };
 		E8064AC3189A95FA00EE7164 /* DeleteRenderBatchCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8064AC1189A95FA00EE7164 /* DeleteRenderBatchCommand.cpp */; };
@@ -696,6 +698,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				B019F1861A0FE4B2004FB420 /* libIMagickHelper.dylib in CopyFiles */,
 				02F640801745372B0053F038 /* libfmodevent.dylib in CopyFiles */,
 				02F640811745372B0053F038 /* libfmodex.dylib in CopyFiles */,
 			);
@@ -898,6 +901,7 @@
 		A6D827A7187717A60006A5DD /* PlaneLODDialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlaneLODDialog_moc.cpp; sourceTree = "<group>"; };
 		A6D827A9187717EA0006A5DD /* CreatePlaneLODCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CreatePlaneLODCommand.cpp; sourceTree = "<group>"; };
 		A6D827AA187717EA0006A5DD /* CreatePlaneLODCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CreatePlaneLODCommand.h; sourceTree = "<group>"; };
+		B019F1841A0FE122004FB420 /* libIMagickHelper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libIMagickHelper.dylib; path = ../../Libs/IMagickHelpLib/libIMagickHelper.dylib; sourceTree = "<group>"; };
 		C6766F86E49E9C8701C8E637 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
 		CBE0854C74E7E8A8F67923BE /* yaml_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = yaml_macos; path = ../../Libs/libs/libyaml_macos.a; sourceTree = "<group>"; };
 		DA18A6831232F53228631AD1 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
@@ -1883,6 +1887,7 @@
 				77BDEC8E56A833D3814BC614 /* QtNetwork.framework in Frameworks & Libraries */,
 				BCEF71E1EDFB18DA77DC750B /* OpenGL.framework in Frameworks & Libraries */,
 				0C6D4628EE0B0D1479A20551 /* AGL.framework in Frameworks & Libraries */,
+				B019F1851A0FE122004FB420 /* libIMagickHelper.dylib in Frameworks & Libraries */,
 			);
 			name = "Frameworks & Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1914,6 +1919,7 @@
 		05596AB53D8D521C69802C27 /* ResourceEditorQt */ = {
 			isa = PBXGroup;
 			children = (
+				B019F1841A0FE122004FB420 /* libIMagickHelper.dylib */,
 				4F53ED6219A2430100D3869D /* Security.framework */,
 				17FB4BDB1924B9AD00F3E3BC /* CoreMedia.framework */,
 				17FB4BD91924B9A400F3E3BC /* CoreMediaIO.framework */,
@@ -5179,22 +5185,18 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
 					./../../Tools/ColladaConverter/Collada15/FCollada,
 					./../../Tools/ColladaConverter/Collada15/FCollada/LibXML/include,
 					./Classes/Qt,
 					./_GeneratedQt,
 					../../../dava.speedtree/Sources,
+					../../Libs/IMagickHelpLib,
 				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					../../Libs/libs/,
 					../../Libs/freetype/lib/,
 					../../Libs/oggvorbis/lib/,
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
@@ -5230,9 +5232,36 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/QtGui.framework/Headers,
+					/Library/Frameworks/QtCore.framework/Headers,
+					../../Sources/Internal,
+					../../Sources/Tools,
+					../../Sources/External,
+					../../Sources/External/Freetype,
+					../../Libs/oggvorbis/include,
+					../../Sources/Libs/include,
+					Classes,
+					../../Libs/include,
+					../../Libs/libs,
+					../../Libs/freetype/include,
+					/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers,
+					Classes/bullet,
+					/System/Library/Frameworks/AGL.framework/Headers,
+					.,
+					/usr/local/include,
+					/System/Library/Frameworks/CarbonCore.framework/Headers,
+					./../../Tools/ColladaConverter/Collada15/FCollada,
+					./../../Tools/ColladaConverter/Collada15/FCollada/LibXML/include,
+					./Classes/Qt,
+					./_GeneratedQt,
+					../../../dava.speedtree/Sources,
+					../../Libs/IMagickHelpLib,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					"$(SRCROOT)/../../Libs/fmod/lib/macos",
+					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
 				);
 				OTHER_LDFLAGS = (
 					"-headerpad_max_install_names",
@@ -5240,9 +5269,6 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore",
-					"-lMagick++",
-					"-lMagickWand",
 				);
 			};
 			name = Release;
@@ -5260,9 +5286,36 @@
 					__DAVAENGINE_SPEEDTREE__,
 					DAVA_FMOD,
 				);
+				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/QtGui.framework/Headers,
+					/Library/Frameworks/QtCore.framework/Headers,
+					../../Sources/Internal,
+					../../Sources/Tools,
+					../../Sources/External,
+					../../Sources/External/Freetype,
+					../../Libs/oggvorbis/include,
+					../../Sources/Libs/include,
+					Classes,
+					../../Libs/include,
+					../../Libs/libs,
+					../../Libs/freetype/include,
+					/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers,
+					Classes/bullet,
+					/System/Library/Frameworks/AGL.framework/Headers,
+					.,
+					/usr/local/include,
+					/System/Library/Frameworks/CarbonCore.framework/Headers,
+					./../../Tools/ColladaConverter/Collada15/FCollada,
+					./../../Tools/ColladaConverter/Collada15/FCollada/LibXML/include,
+					./Classes/Qt,
+					./_GeneratedQt,
+					../../../dava.speedtree/Sources,
+					../../Libs/IMagickHelpLib,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					"$(SRCROOT)/../../Libs/fmod/lib/macos",
+					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
 				);
 				OTHER_LDFLAGS = (
 					"-headerpad_max_install_names",
@@ -5270,9 +5323,6 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore",
-					"-lMagick++",
-					"-lMagickWand",
 				);
 			};
 			name = Debug;
@@ -5313,22 +5363,18 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
 					./../../Tools/ColladaConverter/Collada15/FCollada,
 					./../../Tools/ColladaConverter/Collada15/FCollada/LibXML/include,
 					./Classes/Qt,
 					./_GeneratedQt,
 					../../../dava.speedtree/Sources,
+					../../Libs/IMagickHelpLib,
 				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					../../Libs/libs/,
 					../../Libs/freetype/lib/,
 					../../Libs/oggvorbis/lib/,
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
