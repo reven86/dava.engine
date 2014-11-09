@@ -118,6 +118,10 @@ protected:
 private:
     bool isNativeControlVisible;
     int32 dataDetectorTypes;
+public:
+    INTROSPECTION_EXTEND(UIWebView, UIControl,
+            PROPERTY("dataDetectorTypes", "dataDetectorTypes", GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT)
+    );
 };
 };
 

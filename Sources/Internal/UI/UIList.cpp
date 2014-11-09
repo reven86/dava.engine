@@ -34,7 +34,8 @@
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "FileSystem/YamlNode.h"
-#include "UIYamlLoader.h"
+#include "UI/UIYamlLoader.h"
+#include "UI/UIControlHelpers.h"
 
 namespace DAVA
 {
@@ -173,9 +174,9 @@ void UIList::ScrollToElement(int32 index)
     SetScrollPosition(newScrollPos);
 }
 
-void UIList::SetOrientation(eListOrientation _orientation)
+void UIList::SetOrientation(int32 _orientation)
 {
-    orientation = _orientation;
+    orientation = (UIList::eListOrientation)_orientation;
 }
 
 float32 UIList::GetScrollPosition()
@@ -721,7 +722,7 @@ YamlNode * UIList::SaveToYamlNode(UIYamlLoader * loader)
     String stringValue;
 
     //Orientation
-    eListOrientation orient = this->GetOrientation();
+    eListOrientation orient = (eListOrientation)GetOrientation();
     switch(orient)
     {
         case ORIENTATION_VERTICAL:
@@ -783,9 +784,9 @@ void UIList::ScrollToPosition( float32 position, float32 timeSec /*= 0.3f*/ )
     scroll->ScrollToPosition(-position);
 }
 
-const String UIList::GetDelegateControlPath() const
+const String UIList::GetDelegateControlPath(const UIControl *rootControl) const
 {
-    return UIYamlLoader::GetControlPath(this);
+    return UIControlHelpers::GetControlPath(this, rootControl);
 }
 
 };

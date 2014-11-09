@@ -35,6 +35,8 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
+#include <limits>
+
 namespace DAVA
 {
 //Shared render data
@@ -674,6 +676,9 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle rend
         td.GenerateTransformData();
     }
 
+    if (td.vertices.empty())
+        return;
+
     vertexStream->Set(TYPE_FLOAT, 2, 0, &td.transformedVertices[0]);
     texCoordStream->Set(TYPE_FLOAT, 2, 0, &td.texCoords[0]);
 
@@ -917,6 +922,14 @@ void UIControlBackground::TiledDrawData::GenerateTileData()
     GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight() * sprite->GetResourceToVirtualFactor(), stretchCap.y, cellsHeight );
 
     int32 vertexCount = 4 * cellsHeight.size() * cellsWidth.size();
+    if (vertexCount>= std::numeric_limits<uint16>::max())
+    {
+        vertices.clear();
+        transformedVertices.clear();
+        texCoords.clear();
+        Logger::Error("[TiledDrawData::GenerateTileData] tile background too big!");
+        return;
+    }
     vertices.resize( vertexCount );
     transformedVertices.resize( vertexCount );
     texCoords.resize( vertexCount );

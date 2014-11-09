@@ -349,22 +349,16 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
     // UIStaticText has its own default value for Pixel Accuracy
     node->RemoveNodeFromMap("perPixelAccuracy");
 
-    UIStaticText *baseControl = new UIStaticText();
-
-    //Temp variable
-    VariantType *nodeValue = new VariantType();
-
+    ScopedPtr<UIStaticText> baseControl(new UIStaticText());
     //Font
     //Get font name and put it here
-    nodeValue->SetString(FontManager::Instance()->GetFontName(this->GetFont()));
-    node->Set("font", nodeValue);
+    node->Set("font", FontManager::Instance()->GetFontName(this->GetFont()));
 
     //TextColor
     const Color &textColor = GetTextColor();
     if (baseControl->GetTextColor() != textColor)
     {
-        nodeValue->SetColor(textColor);
-        node->Set("textcolor", nodeValue);
+        node->Set("textcolor", VariantType(textColor));
     }
     
     // Base per pixel accuracy
@@ -378,8 +372,7 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
     const Color &shadowColor = GetShadowColor();
     if (baseControl->GetShadowColor() != shadowColor)
     {
-        nodeValue->SetColor(shadowColor);
-        node->Set("shadowcolor", nodeValue);
+        node->Set("shadowcolor", VariantType(shadowColor));
     }
 
     // Text Color Inherit Type.
@@ -407,8 +400,7 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
     const Vector2 &shadowOffset = GetShadowOffset();
     if (baseControl->GetShadowOffset() != shadowOffset)
     {
-        nodeValue->SetVector2(shadowOffset);
-        node->Set("shadowoffset", nodeValue);
+        node->Set("shadowoffset", shadowOffset);
     }
 
     //Text
@@ -453,9 +445,6 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
         VariantType textMarginsVariant(textMargins->AsVector4());
         node->Set("textMargins", &textMarginsVariant);
     }
-
-    SafeDelete(nodeValue);
-    SafeRelease(baseControl);
 
     return node;
 }
@@ -526,4 +515,76 @@ Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) 
     return resultRect;
 }
 
+String UIStaticText::GetFontPresetName() const
+{
+    Font *font = GetFont();
+    if (!font)
+        return "";
+    return FontManager::Instance()->GetFontName(font);
+}
+
+void UIStaticText::SetFontPresetName(const String &presetName)
+{
+    Font *font = NULL;
+
+    if (!presetName.empty())
+    {
+        font = FontManager::Instance()->GetFont(presetName);
+    }
+
+    SetFont(font);
+}
+
+int32 UIStaticText::GetTextColorInheritType() const
+{
+    return GetTextBackground()->GetColorInheritType();
+}
+    
+void UIStaticText::SetTextColorInheritType(int32 type)
+{
+    GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType) type);
+    GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType) type);
+}
+
+int32 UIStaticText::GetTextPerPixelAccuracyType() const
+{
+    return GetTextBackground()->GetPerPixelAccuracyType();
+}
+    
+void UIStaticText::SetTextPerPixelAccuracyType(int32 type)
+{
+    GetTextBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
+    GetShadowBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
+}
+
+int32 UIStaticText::GetMultilineType() const
+{
+    if (GetMultiline())
+        return GetMultilineBySymbol() ? MULTILINE_ENABLED_BY_SYMBOL : MULTILINE_ENABLED;
+    else
+        return GetMultiline();
+}
+    
+void UIStaticText::SetMultilineType(int32 multilineType)
+{
+    switch (multilineType)
+    {
+        case MULTILINE_DISABLED:
+            SetMultiline(false);
+            break;
+            
+        case MULTILINE_ENABLED:
+            SetMultiline(true, false);
+            break;
+            
+        case MULTILINE_ENABLED_BY_SYMBOL:
+            SetMultiline(true, true);
+            break;
+            
+        default:
+            DVASSERT(false);
+            break;
+    }
+}
+    
 };
