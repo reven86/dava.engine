@@ -38,14 +38,18 @@ TCPAcceptor::TCPAcceptor(IOLoop* ioLoop) : BaseClassType(ioLoop)
 
 }
 
-void TCPAcceptor::SetCloseHandler(CloseHandlerType handler)
+void TCPAcceptor::Close(CloseHandlerType handler)
 {
+    DVASSERT(handler != 0);
+
     closeHandler = handler;
+    BaseClassType::Close();
 }
 
 int32 TCPAcceptor::AsyncListen(ConnectHandlerType handler, int32 backlog)
 {
-    DVASSERT(handler != 0);
+    DVASSERT(backlog > 0 && handler != 0);
+
     connectHandler = handler;
     return InternalAsyncListen(backlog);
 }

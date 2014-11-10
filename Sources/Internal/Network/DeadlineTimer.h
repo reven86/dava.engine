@@ -41,29 +41,35 @@ class IOLoop;
 
 /*
  Class DeadlineTimer - fully functional waitable timer implementation which can be used in most cases.
- User can provide functional object which is called on timer expiration.
- Functional objects prototypes:
-    CloseHandlerType - called when timer has been closed
-        void f(DeadlineTimer* timer)
-    WaitHandlerType - called when timer has expired
-        void f(DeadlineTimer* timer)
+ User can provide functional objects for tracking operation completion on timer.
+ Following operation can be tracked:
+ 1. Timer close, called when timer has been closed
+        void (DeadlineTimer* timer)
+ 2. Wait completed, called on timeout has expired
+        void(DeadlineTimer* timer)
+
+ Functional objects are executed in IOLoop's thread context, and they should not block to allow other operation to complete.
+
+ Methods AsyncWait and Close should be called from IOLoop's thread, e.g. from inside user's functional objects
 */
-class DeadlineTimer : public DeadlineTimerTemplate<DeadlineTimer, false>
+class DeadlineTimer : public DeadlineTimerTemplate<DeadlineTimer>
 {
+private:
+    typedef DeadlineTimerTemplate<DeadlineTimer> BaseClassType;
+
 public:
     typedef Function<void(DeadlineTimer* timer)> CloseHandlerType;
     typedef Function<void(DeadlineTimer* timer)> WaitHandlerType;
 
-private:
-    typedef DeadlineTimerTemplate<DeadlineTimer, false> BaseClassType;
-
 public:
-    explicit DeadlineTimer(IOLoop* loop);
+    DeadlineTimer(IOLoop* loop);
     ~DeadlineTimer() {}
 
-    void SetCloseHandler(CloseHandlerType handler);
+    // Overload Close member to accept handler and unhide Close from base class
+    using BaseClassType::Close;
+    void Close(CloseHandlerType handler);
 
-    int32 AsyncStartWait(uint32 timeout, WaitHandlerType handler);
+    int32 AsyncWait(uint32 timeout, WaitHandlerType handler);
 
     void HandleClose();
     void HandleTimer();

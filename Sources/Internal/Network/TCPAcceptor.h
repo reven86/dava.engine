@@ -29,7 +29,6 @@
 #ifndef __DAVAENGINE_TCPACCEPTOR_H__
 #define __DAVAENGINE_TCPACCEPTOR_H__
 
-#include <Debug/DVAssert.h>
 #include <Base/Function.h>
 
 #include "TCPAcceptorTemplate.h"
@@ -38,28 +37,40 @@ namespace DAVA
 {
 
 /*
- Class TCPAcceptor - fully functional implementation which can be used in most cases.
- This class provides ability to call user-specified functional object on incoming TCP connection event
- Functional objects prototypes:
-    void ConnectHandlerType(TCPAcceptor* acceptor, int32 error)
+ Class TCPAcceptor - fully functional incoming TCP connection acceptor implementation which can be used in most cases.
+ User can provide functional objects for tracking operation completion on acceptor.
+ Following operation can be tracked:
+ 1. Acceptor close, called when acceptor has been closed
+        void (TCPAcceptor* acceptor)
+ 2. Connection established, called when remote peer has connected
+        void(TCPAcceptor* acceptor, int32 error)
+
+ Functional objects are executed in IOLoop's thread context, and they should not block to allow other operation to complete.
+ User is responsible for error processing.
+
+ Methods AsyncListen and Close should be called from IOLoop's thread, e.g. from inside user's functional objects
 */
 class TCPAcceptor : public TCPAcceptorTemplate<TCPAcceptor>
 {
 private:
     typedef TCPAcceptorTemplate<TCPAcceptor> BaseClassType;
+    friend BaseClassType;   // Make base class friend to allow him to call my Handle... methods
 
 public:
     typedef Function<void(TCPAcceptor* acceptor)>              CloseHandlerType;
 	typedef Function<void(TCPAcceptor* acceptor, int32 error)> ConnectHandlerType;
 
 public:
-    explicit TCPAcceptor(IOLoop* ioLoop);
+    TCPAcceptor(IOLoop* ioLoop);
     ~TCPAcceptor() {}
 
-    void SetCloseHandler(CloseHandlerType handler);
+    // Overload Close member to accept handler and unhide Close from base class
+    using BaseClassType::Close;
+    void Close(CloseHandlerType handler);
 
     int32 AsyncListen(ConnectHandlerType handler, int32 backlog = SOMAXCONN);
 
+private:
     void HandleClose();
     void HandleConnect(int32 error);
 

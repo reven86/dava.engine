@@ -41,9 +41,10 @@ class IPAddress
 public:
     IPAddress(uint32 address = 0) : addr(htonl(address)) {}
 
-    uint32 ToULong() const;
+    uint32 ToUInt() const;
 
     bool IsUnspecified() const;
+    bool IsMulticast() const;
 
     bool ToString(char8* buffer, std::size_t size) const;
     String ToString() const;
@@ -55,7 +56,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline uint32 IPAddress::ToULong() const
+inline uint32 IPAddress::ToUInt() const
 {
     return ntohl(addr);
 }
@@ -63,6 +64,11 @@ inline uint32 IPAddress::ToULong() const
 inline bool IPAddress::IsUnspecified() const
 {
     return 0 == addr;
+}
+
+inline bool IPAddress::IsMulticast() const
+{
+    return 0xE0000000 == (ToUInt() & 0xF0000000);
 }
 
 }	// namespace DAVA

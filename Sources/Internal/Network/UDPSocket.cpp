@@ -34,48 +34,49 @@ namespace DAVA
 UDPSocket::UDPSocket(IOLoop* ioLoop) : BaseClassType(ioLoop)
                                      , closeHandler()
                                      , receiveHandler()
-                                     , sendRequest()
 {
 
 }
 
-void UDPSocket::SetCloseHandler(CloseHandlerType handler)
+void UDPSocket::Close(CloseHandlerType handler)
 {
+    DVASSERT(handler != 0);
+
     closeHandler = handler;
+    BaseClassType::Close();
 }
 
-int32 UDPSocket::AsyncReceive(void* buffer, std::size_t size, ReceiveHandlerType handler)
+int32 UDPSocket::AsyncReceive(Buffer buffer, ReceiveHandlerType handler)
 {
-    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+    DVASSERT(buffer.base != NULL && buffer.len > 0 && handler != 0);
 
     receiveHandler = handler;
-    return BaseClassType::InternalAsyncReceive(buffer, size);
+    return BaseClassType::InternalAsyncReceive(buffer);
 }
 
-int32 UDPSocket::AsyncSend(const Endpoint& endpoint, const void* buffer, std::size_t size, SendHandlerType handler)
+int32 UDPSocket::AsyncSend(const Endpoint& endpoint, const Buffer* buffers, std::size_t bufferCount, SendHandlerType handler)
 {
-    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+    DVASSERT(buffers != NULL && bufferCount > 0 && handler != 0);
 
-    sendRequest.sendHandler = handler;
-    return BaseClassType::InternalAsyncSend(&sendRequest, buffer, size, endpoint);
+    return BaseClassType::InternalAsyncSend(buffers, bufferCount, endpoint, handler);
 }
 
 void UDPSocket::HandleClose()
 {
-    if(closeHandler != 0)
+    if (closeHandler != 0)
     {
         closeHandler(this);
     }
 }
 
-void UDPSocket::HandleReceive(int32 error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial)
+void UDPSocket::HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial)
 {
-    receiveHandler(this, error, nread, buffer->base, endpoint, partial);
+    receiveHandler(this, error, nread, endpoint, partial);
 }
 
-void UDPSocket::HandleSend(SendRequest* request, int32 error)
+void UDPSocket::HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount, SendHandlerType& handler)
 {
-    request->sendHandler(this, error, request->buffer.base);
+    handler(this, error, buffers, bufferCount);
 }
 
 }   // namespace DAVA

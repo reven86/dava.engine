@@ -74,7 +74,7 @@ inline Endpoint::Endpoint(uint16 port) : data()
 
 inline Endpoint::Endpoint(const IPAddress& address, uint16 port) : data()
 {
-    InitSockaddrIn(address.ToULong(), port);
+    InitSockaddrIn(address.ToUInt(), port);
 }
 
 inline IPAddress Endpoint::Address() const

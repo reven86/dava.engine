@@ -29,9 +29,8 @@
 #ifndef __DAVAENGINE_TCPACCEPTORTEMPLATE_H__
 #define __DAVAENGINE_TCPACCEPTORTEMPLATE_H__
 
-#include <Debug/DVAssert.h>
-
-#include "TCPSocketBase.h"
+#include "Endpoint.h"
+#include "HandleBase.h"
 
 namespace DAVA
 {
@@ -39,50 +38,52 @@ namespace DAVA
 class IOLoop;
 
 /*
- Template class TCPAcceptorTemplate provides basic capabilities: accepting incoming TCP connections.
- Template parameter T specifies type that inherits TCPAcceptorTemplate(CRTP idiom)
+ Template class TCPAcceptorTemplate provides basic capabilities for accepting incoming TCP connections.
+ Template parameter T specifies type that inherits TCPAcceptorTemplate and implements necessary methods (CRTP idiom).
 
  Type specified by T should implement methods:
-    void HandleConnect(int32 error)
-        This method is called on recieving new incoming TCP connection.
-        Parameter error is non zero on error
-    void HandleClose() - optional
-        This method is called after underlying socket has been closed by libuv
-
- Summary of methods that should be implemented by T:
-    void HandleConnect(int32 error);
-    void HandleClose();
+    1. void HandleClose(), called after acceptor handle has been closed by libuv
+    2. void HandleConnect(int32 error), called after incoming connection has arrived
+        Parameters:
+            error - nonzero if error has occured
 */
 template <typename T>
-class TCPAcceptorTemplate : public TCPSocketBase
+class TCPAcceptorTemplate : public HandleBase<uv_tcp_t>
 {
 private:
-    typedef TCPSocketBase BaseClassType;
-    typedef T             DerivedClassType;
+    typedef HandleBase<uv_tcp_t> BaseClassType;
+    typedef T                    DerivedClassType;
 
 public:
-    explicit TCPAcceptorTemplate(IOLoop* ioLoop);
+    TCPAcceptorTemplate(IOLoop* ioLoop);
     ~TCPAcceptorTemplate() {}
 
     void Close();
-    int32 Accept(TCPSocketBase* socket);
+
+    int32 Bind(const Endpoint& endpoint);
+    int32 Bind(const char8* ipaddr, uint16 port);
+    int32 Bind(uint16 port);
+
+    int32 Accept(HandleBase<uv_tcp_t>* socket);
 
 protected:
     int32 InternalAsyncListen(int32 backlog);
 
 private:
-    void HandleClose() {}
-    void HandleConnect(int32 /*error*/) {}
+    // Methods should be implemented in derived class
+    void HandleClose();
+    void HandleConnect(int32 error);
 
+    // Thunks between C callbacks and C++ class methods
     static void HandleCloseThunk(uv_handle_t* handle);
     static void HandleConnectThunk(uv_stream_t* handle, int error);
 };
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
-TCPAcceptorTemplate<T>::TCPAcceptorTemplate(IOLoop* ioLoop) : TCPSocketBase(ioLoop)
+TCPAcceptorTemplate<T>::TCPAcceptorTemplate(IOLoop* ioLoop) : BaseClassType(ioLoop)
 {
-    handle.data = static_cast<DerivedClassType*>(this);
+    SetHandleData(static_cast<DerivedClassType*>(this));
 }
 
 template <typename T>
@@ -92,24 +93,51 @@ void TCPAcceptorTemplate<T>::Close()
 }
 
 template <typename T>
-int32 TCPAcceptorTemplate<T>::Accept(TCPSocketBase* socket)
+int32 TCPAcceptorTemplate<T>::Bind(const Endpoint& endpoint)
+{
+    return uv_tcp_bind(Handle<uv_tcp_t>(), endpoint.CastToSockaddr(), 0);
+}
+
+template <typename T>
+int32 TCPAcceptorTemplate<T>::Bind(const char8* ipaddr, uint16 port)
+{
+    DVASSERT(ipaddr != NULL);
+
+    Endpoint endpoint;
+    int32 result = uv_ip4_addr(ipaddr, port, endpoint.CastToSockaddrIn());
+    if(0 == result)
+    {
+        result = Bind(endpoint);
+    }
+    return result;
+}
+
+template <typename T>
+int32 TCPAcceptorTemplate<T>::Bind(uint16 port)
+{
+    return Bind(Endpoint(port));
+}
+
+template <typename T>
+int32 TCPAcceptorTemplate<T>::Accept(HandleBase<uv_tcp_t>* socket)
 {
     DVASSERT(socket);
-    return uv_accept(HandleAsStream(), socket->HandleAsStream());
+    return uv_accept(Handle<uv_stream_t>(), socket->Handle<>());
 }
 
 template <typename T>
 int32 TCPAcceptorTemplate<T>::InternalAsyncListen(int32 backlog)
 {
     DVASSERT(backlog > 0);
-    return uv_listen(HandleAsStream(), backlog, &HandleConnectThunk);
+    return uv_listen(Handle<uv_stream_t>(), backlog, &HandleConnectThunk);
 }
 
+///   Thunks   ///////////////////////////////////////////////////////////
 template <typename T>
 void TCPAcceptorTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->CleanUpBeforeNextUse();
+    pthis->InternalInit();
     pthis->HandleClose();
 }
 

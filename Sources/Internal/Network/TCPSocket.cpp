@@ -35,14 +35,16 @@ TCPSocket::TCPSocket(IOLoop* ioLoop) : BaseClassType(ioLoop)
                                      , closeHandler()
                                      , connectHandler()
                                      , readHandler()
-                                     , writeRequest()
 {
 
 }
 
-void TCPSocket::SetCloseHandler(CloseHandlerType handler)
+void TCPSocket::Close(CloseHandlerType handler)
 {
+    DVASSERT(handler != 0);
+
     closeHandler = handler;
+    BaseClassType::Close();
 }
 
 int32 TCPSocket::AsyncConnect(const Endpoint& endpoint, ConnectHandlerType handler)
@@ -52,20 +54,19 @@ int32 TCPSocket::AsyncConnect(const Endpoint& endpoint, ConnectHandlerType handl
     return BaseClassType::InternalAsyncConnect(endpoint);
 }
 
-int32 TCPSocket::AsyncRead(void* buffer, std::size_t size, ReadHandlerType handler)
+int32 TCPSocket::AsyncRead(Buffer buffer, ReadHandlerType handler)
 {
-    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+    DVASSERT(buffer.base != NULL && buffer.len > 0 && handler != 0);
 
     readHandler = handler;
-    return BaseClassType::InternalAsyncRead(buffer, size);
+    return BaseClassType::InternalAsyncRead(buffer);
 }
 
-int32 TCPSocket::AsyncWrite(const void* buffer, std::size_t size, WriteHandlerType handler)
+int32 TCPSocket::AsyncWrite(const Buffer* buffers, std::size_t bufferCount, WriteHandlerType handler)
 {
-    DVASSERT(buffer != NULL && size > 0 && handler != 0);
+    DVASSERT(buffers != NULL && bufferCount > 0 && handler != 0);
 
-    writeRequest.writeHandler = handler;
-    return BaseClassType::InternalAsyncWrite(&writeRequest, buffer, size);
+    return BaseClassType::InternalAsyncWrite(buffers, bufferCount, handler);
 }
 
 void TCPSocket::HandleClose()
@@ -81,14 +82,14 @@ void TCPSocket::HandleConnect(int32 error)
     connectHandler(this, error);
 }
 
-void TCPSocket::HandleRead(int32 error, size_t nread, const uv_buf_t* buffer)
+void TCPSocket::HandleRead(int32 error, size_t nread)
 {
-    readHandler(this, error, nread, buffer->base);
+    readHandler(this, error, nread);
 }
 
-void TCPSocket::HandleWrite(WriteRequest* request, int32 error)
+void TCPSocket::HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, WriteHandlerType& handler)
 {
-    request->writeHandler(this, error, request->buffer.base);
+    handler(this, error, buffers, bufferCount);
 }
 
 }   // namespace DAVA

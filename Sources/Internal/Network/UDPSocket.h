@@ -29,7 +29,6 @@
 #ifndef __DAVAENGINE_UDPSOCKET_H__
 #define __DAVAENGINE_UDPSOCKET_H__
 
-#include <Debug/DVAssert.h>
 #include <Base/Function.h>
 
 #include "UDPSocketTemplate.h"
@@ -39,51 +38,51 @@ namespace DAVA
 
 /*
  Class UDPSocket - fully functional UDP socket implementation which can be used in most cases.
- Can receieve from and send data to socket.
- User can provide functional object which is called on completion.
- Functional objects prototypes:
-    CloseHandlerType - called when socket has been closed
-        void f(UDPSocket* socket)
-    ReceiveHandlerType - called on read operation completion
-        void f(UDPSocket* socket, int32 error, std::size_t nread, void* buffer, const Endpoint& endpoint, bool partial);
-    SendHandlerType - called on write operation completion
-        void f(UDPSocket* socket, int32 error, const void* buffer);
+ User can provide functional objects for tracking operation completion on socket.
+ Following operation can be tracked:
+ 1. Socket close, called when socket has been closed
+        void (UDPSocket* socket)
+ 2. Datagram has arrived
+        void (UDPSocket* socket, int32 error, std::size_t nread, const Endpoint& endpoint, bool partial)
+ 3. Datagram has been sent
+        void (UDPSocket* socket, int32 error, const Buffer* buffers, std::size_t bufferCount)
+
+ Functional objects are executed in IOLoop's thread context, and they should not block to allow other operation to complete.
  User is responsible for error processing.
+
+ Methods AsyncReceive, AsyncSend and Close should be called from IOLoop's thread, e.g. from inside user's functional objects
 */
 
-class UDPSocket : public UDPSocketTemplate<UDPSocket, false>
+class UDPSocket : public UDPSocketTemplate<UDPSocket>
 {
-public:
-    typedef Function<void(UDPSocket* socket)>                                      CloseHandlerType;
-    typedef Function<void(UDPSocket* socket, int32 error, std::size_t nread,
-                            void* buffer, const Endpoint& endpoint, bool partial)> ReceiveHandlerType;
-    typedef Function<void(UDPSocket* socket, int32 error, const void* buffer)>     SendHandlerType;
-
 private:
-    typedef UDPSocketTemplate<UDPSocket, false> BaseClassType;
-
-    struct SendRequest : public BaseClassType::SendRequestBase
-    {
-        SendHandlerType sendHandler;
-    };
+    typedef UDPSocketTemplate<UDPSocket> BaseClassType;
+    friend BaseClassType;   // Make base class friend to allow him to call my Handle... methods
 
 public:
-    explicit UDPSocket(IOLoop* ioLoop);
+    typedef Function<void(UDPSocket* socket)>                                                                         CloseHandlerType;
+    typedef Function<void(UDPSocket* socket, int32 error, std::size_t nread, const Endpoint& endpoint, bool partial)> ReceiveHandlerType;
+    typedef Function<void(UDPSocket* socket, int32 error, const Buffer* buffers, std::size_t bufferCount)>            SendHandlerType;
+
+public:
+    UDPSocket(IOLoop* ioLoop);
     ~UDPSocket() {}
 
-    void SetCloseHandler(CloseHandlerType handler);
+    // Overload Close member to accept handler and unhide Close from base class
+    using BaseClassType::Close;
+    void Close(CloseHandlerType handler);
 
-    int32 AsyncReceive(void* buffer, std::size_t size, ReceiveHandlerType handler);
-    int32 AsyncSend(const Endpoint& endpoint, const void* buffer, std::size_t size, SendHandlerType handler);
+    int32 AsyncReceive(Buffer buffer, ReceiveHandlerType handler);
+    int32 AsyncSend(const Endpoint& endpoint, const Buffer* buffers, std::size_t bufferCount, SendHandlerType handler);
 
+private:
     void HandleClose();
-    void HandleReceive(int32 error, std::size_t nread, const uv_buf_t* buffer, const Endpoint& endpoint, bool partial);
-    void HandleSend(SendRequest* request, int32 error);
+    void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial);
+    void HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount, SendHandlerType& handler);
 
 private:
     CloseHandlerType   closeHandler;
     ReceiveHandlerType receiveHandler;
-    SendRequest        sendRequest;
 };
 
 }   // namespace DAVA

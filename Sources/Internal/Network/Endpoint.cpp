@@ -39,7 +39,7 @@ namespace DAVA
 
 Endpoint::Endpoint(const char8* address, uint16 port) : data()
 {
-    InitSockaddrIn(IPAddress::FromString(address).ToULong(), port);
+    InitSockaddrIn(IPAddress::FromString(address).ToUInt(), port);
 }
 
 Endpoint::Endpoint(const sockaddr* sa)

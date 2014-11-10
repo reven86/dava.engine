@@ -33,7 +33,7 @@
 
 #include <Base/BaseTypes.h>
 
-#include "DeadlineTimerBase.h"
+#include "HandleBase.h"
 
 namespace DAVA
 {
@@ -42,89 +42,80 @@ class IOLoop;
 
 /*
  Template class DeadlineTimerTemplate provides basic waitable timer functionality
- Template parameter T specifies type that inherits DeadlineTimerTemplate(CRTP idiom)
- Bool template parameter autoRepeat specifies timer behaviour:
-    when autoRepeat is true libuv automatically issues next wait operations until AsyncStop is called
-    when autoRepeat is false user should explicitly issue next wait operation
+ Template parameter T specifies type that inherits DeadlineTimerTemplate and implements necessary methods (CRTP idiom).
 
  Type specified by T should implement methods:
-    void HandleTimer()
-        This method is called when timeout has expired
-    void HandleClose()
-        This method is called after underlying timer has been closed by libuv
+    1. void HandleClose(), called after timer handle has been closed by libuv
+    2. void HandleTimer(), called when timeout has expired
 
  Summary of methods that should be implemented by T:
     void HandleTimer();
     void HandleClose();
 */
-template<typename T, bool autoRepeat = false>
-class DeadlineTimerTemplate : public DeadlineTimerBase
+template<typename T>
+class DeadlineTimerTemplate : public HandleBase<uv_timer_t>
 {
 private:
-    typedef DeadlineTimerBase BaseClassType;
-    typedef T                 DerivedClassType;
-
-    static const bool autoRepeatFlag = autoRepeat;
+    typedef HandleBase<uv_timer_t> BaseClassType;
+    typedef T                      DerivedClassType;
 
 public:
-    explicit DeadlineTimerTemplate(IOLoop* loop);
+    DeadlineTimerTemplate(IOLoop* loop);
     ~DeadlineTimerTemplate() {}
 
     void Close();
     void StopAsyncWait();
 
+    // Methods should be implemented in derived class
+    void HandleClose();
+    void HandleTimer();
+
 protected:
-    int32 InternalAsyncStartWait(uint32 timeout, uint32 repeat);
+    int32 InternalAsyncWait(uint32 timeout, uint32 repeat);
 
-private:
-    void HandleClose() {}
-    void HandleTimer() {}
-
+    // Thunks between C callbacks and C++ class methods
     static void HandleCloseThunk(uv_handle_t* handle);
     static void HandleTimerThunk(uv_timer_t* handle);
 };
 
 //////////////////////////////////////////////////////////////////////////
-template<typename T, bool autoRepeat>
-DeadlineTimerTemplate<T, autoRepeat>::DeadlineTimerTemplate(IOLoop* loop) : BaseClassType(loop)
+template<typename T>
+DeadlineTimerTemplate<T>::DeadlineTimerTemplate(IOLoop* loop) : BaseClassType(loop)
 {
-    handle.data = static_cast<DerivedClassType*>(this);
+    SetHandleData(static_cast<DerivedClassType*>(this));
 }
 
-template<typename T, bool autoRepeat>
-void DeadlineTimerTemplate<T, autoRepeat>::Close()
+template<typename T>
+void DeadlineTimerTemplate<T>::Close()
 {
     BaseClassType::InternalClose(&HandleCloseThunk);
 }
 
-template<typename T, bool autoRepeat>
-void DeadlineTimerTemplate<T, autoRepeat>::StopAsyncWait()
+template<typename T>
+void DeadlineTimerTemplate<T>::StopAsyncWait()
 {
-    uv_timer_stop(Handle());
+    uv_timer_stop(Handle<uv_timer_t>());
 }
 
-template<typename T, bool autoRepeat>
-int32 DeadlineTimerTemplate<T, autoRepeat>::InternalAsyncStartWait(uint32 timeout, uint32 repeat)
+template<typename T>
+int32 DeadlineTimerTemplate<T>::InternalAsyncWait(uint32 timeout, uint32 repeat)
 {
-    return uv_timer_start(Handle(), &HandleTimerThunk, timeout, repeat);
+    return uv_timer_start(Handle<uv_timer_t>(), &HandleTimerThunk, timeout, repeat);
 }
 
-template<typename T, bool autoRepeat>
-void DeadlineTimerTemplate<T, autoRepeat>::HandleCloseThunk(uv_handle_t* handle)
+///   Thunks   ///////////////////////////////////////////////////////////
+template<typename T>
+void DeadlineTimerTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->CleanUpBeforeNextUse();
+    pthis->InternalInit();
     pthis->HandleClose();
 }
 
-template<typename T, bool autoRepeat>
-void DeadlineTimerTemplate<T, autoRepeat>::HandleTimerThunk(uv_timer_t* handle)
+template<typename T>
+void DeadlineTimerTemplate<T>::HandleTimerThunk(uv_timer_t* handle)
 {
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    if(!autoRepeatFlag)
-    {
-        pthis->StopAsyncWait();
-    }
     pthis->HandleTimer();
 }
 

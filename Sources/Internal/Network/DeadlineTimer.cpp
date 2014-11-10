@@ -40,16 +40,20 @@ DeadlineTimer::DeadlineTimer(IOLoop* loop) : BaseClassType(loop)
 
 }
 
-void DeadlineTimer::SetCloseHandler(CloseHandlerType handler)
+void DeadlineTimer::Close(CloseHandlerType handler)
 {
+    DVASSERT(handler != 0);
+
     closeHandler = handler;
+    BaseClassType::Close();
 }
 
-int32 DeadlineTimer::AsyncStartWait(uint32 timeout, WaitHandlerType handler)
+int32 DeadlineTimer::AsyncWait(uint32 timeout, WaitHandlerType handler)
 {
-    DVASSERT (handler != 0);
+    DVASSERT(handler != 0);
+
     waitHandler = handler;
-    return BaseClassType::InternalAsyncStartWait(timeout, 0);
+    return BaseClassType::InternalAsyncWait(timeout, 0);
 }
 
 void DeadlineTimer::HandleClose()

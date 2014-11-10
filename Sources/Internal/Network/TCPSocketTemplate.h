@@ -29,12 +29,9 @@
 #ifndef __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 #define __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 
-#include <libuv/uv.h>
-
-#include <Debug/DVAssert.h>
-
 #include "Endpoint.h"
-#include "TCPSocketBase.h"
+#include "Buffer.h"
+#include "HandleBase.h"
 
 namespace DAVA
 {
@@ -42,193 +39,203 @@ namespace DAVA
 class IOLoop;
 
 /*
- Template class TCPSocketTemplate provides basic capabilities: reading from and sending to stream socket
- Template parameter T specifies type that inherits TCPSocketTemplate(CRTP idiom)
- Bool template parameter autoRead specifies read behaviour:
-    when autoRead is true libuv automatically issues next read operations until StopAsyncRead is called
-    when autoRead is false user should explicitly issue next read operation
- Multiple simultaneous read operations lead to undefined behaviour.
+ Template class TCPSocketTemplate provides basic stream socket capabilities
+ Template parameter T specifies type that inherits TCPSocketTemplate and implements necessary methods (CRTP idiom).
 
  Type specified by T should implement methods:
-    void HandleConnect(int32 error)
-        This method is called after connection to TCP server has been established
-        Parameter error is non zero on error
-    void HandleRead(int32 error, std::size_t nread, const uv_buf_t* buffer)
-        This method is called after data with length of nread bytes has been arrived
-        Parameter error is non zero on error, UV_EOF when remote peer has closed connection or 0 on no error
-    template<typename WriteRequestType>
-    void HandleWrite(WriteRequestType* request, int32 error)
-        This method is called after data has been written to
-    void HandleClose()
-        This method is called after underlying socket has been closed by libuv
-
- Summary of methods that should be implemented by T:
-    void HandleConnect(int32 error);
-    void HandleRead(int32 error, std::size_t nread, const uv_buf_t* buffer);
-    template<typename WriteRequestType>
-    void HandleWrite(WriteRequestType* request, int32 error);
-    void HandleClose();
+    1. void HandleClose(), called after socket handle has been closed by libuv
+    2. void HandleConnect(int32 error), called after connection to server has been established
+        Parameters:
+            error - nonzero if error has occured
+    3. void HandleRead(int32 error, std::size_t nread), called after some data have been arrived
+        Parameters:
+            error    - nonzero if error has occured; if connection has been closed IsEOF(error) returns true
+            nread    - number of bytes placed in read buffer
+    4. template<typename U>
+       void HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData)
+        Parameters:
+           error       - nonzero if error has occured
+           buffers     - buffers that have been sent (opportunity to delete them)
+           bufferCount - number of buffers
+           requestData - some data specified by derived class when issuing send request
 */
-template <typename T, bool autoRead = false>
-class TCPSocketTemplate : public TCPSocketBase
+template <typename T>
+class TCPSocketTemplate : public HandleBase<uv_tcp_t>
 {
 private:
-    typedef TCPSocketBase BaseClassType;
-    typedef T             DerivedClassType;
-
-    static const bool autoReadFlag = autoRead;
+    typedef HandleBase<uv_tcp_t> BaseClassType;
+    typedef T                    DerivedClassType;
 
 protected:
-    struct WriteRequestBase
+    // Maximum write buffers that can be sent in one operation
+    static const std::size_t maxWriteBuffers = 6;
+
+    /*
+     TCPWriteRequest - wrapper for libuv's uv_write_t request with some necessary fields and
+     auxilliary data specified by derived class
+    */
+    template<typename U>
+    struct TCPWriteRequest
     {
-        DerivedClassType* pthis;
-        uv_buf_t          buffer;
+        TCPWriteRequest (DerivedClassType* derived, U& reqData) : request()
+                                                                , pthis(derived)
+                                                                , requestData(reqData)
+        {
+            request.data = this;
+        }
         uv_write_t        request;
+        DerivedClassType* pthis;
+        Buffer            buffers[maxWriteBuffers];
+        std::size_t       bufferCount;
+        U                 requestData;
     };
 
 public:
-    explicit TCPSocketTemplate(IOLoop* ioLoop);
+    TCPSocketTemplate(IOLoop* ioLoop);
     ~TCPSocketTemplate() {}
 
     void Close();
 
-    int32 StopAsyncRead();
-
     int32 LocalEndpoint(Endpoint& endpoint);
     int32 RemoteEndpoint(Endpoint& endpoint);
 
+    std::size_t WriteQueueSize() const;
+
+    bool IsEOF(int32 error) const { return UV_EOF == error; }
+
 protected:
     int32 InternalAsyncConnect(const Endpoint& endpoint);
-    int32 InternalAsyncRead(void* buffer, std::size_t size);
-
-    template<typename WriteRequestType>
-    int32 InternalAsyncWrite(WriteRequestType* request, const void* buffer, std::size_t size);
+    int32 InternalAsyncRead(Buffer buffer);
+    template<typename U>
+    int32 InternalAsyncWrite(const Buffer* buffers, std::size_t bufferCount, U& requestData);
 
 private:
-    void HandleClose() {}
-    void HandleAlloc(std::size_t /*suggested_size*/, uv_buf_t* buffer);
-    void HandleConnect(int32 /*error*/) {}
-    void HandleRead(int32 /*error*/, std::size_t /*nread*/, const uv_buf_t* /*buffer*/) {}
-    template<typename WriteRequestType>
-    void HandleWrite(WriteRequestType* /*request*/, int32 /*error*/) {}
+    void HandleAlloc(std::size_t suggested_size, uv_buf_t* buffer);
 
-    static void HandleCloseThunk(uv_handle_t* handle);
+    // Methods should be implemented in derived class
+    void HandleClose();
+    void HandleConnect(int32 error);
+    void HandleRead(int32 error, std::size_t nread);
+    template<typename U>
+    void HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData);
+
+    // Thunks between C callbacks and C++ class methods
     static void HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer);
+    static void HandleCloseThunk(uv_handle_t* handle);
     static void HandleConnectThunk(uv_connect_t* connectRequest, int error);
     static void HandleReadThunk(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buffer);
-    template<typename WriteRequestType>
+    template<typename U>
     static void HandleWriteThunk(uv_write_t* writeRequest, int error);
 
 protected:
+    Buffer       readBuffer;
     uv_connect_t connectRequest;
-    void*        externalReadBuffer;
-    std::size_t  externalReadBufferSize;
 };
 
 //////////////////////////////////////////////////////////////////////////
-template <typename T, bool autoRead>
-TCPSocketTemplate<T, autoRead>::TCPSocketTemplate(IOLoop* ioLoop) : TCPSocketBase(ioLoop)
-                                                                  , connectRequest()
-                                                                  , externalReadBuffer(NULL)
-                                                                  , externalReadBufferSize(0)
+template <typename T>
+TCPSocketTemplate<T>::TCPSocketTemplate(IOLoop* ioLoop) : BaseClassType(ioLoop)
+                                                        , readBuffer()
+                                                        , connectRequest()
 {
-    DVASSERT(ioLoop != NULL);
-
-    handle.data         = static_cast<DerivedClassType*>(this);
+    SetHandleData(static_cast<DerivedClassType*>(this));
     connectRequest.data = static_cast<DerivedClassType*>(this);
 }
 
-template <typename T, bool autoRead>
-void TCPSocketTemplate<T, autoRead>::Close()
+template <typename T>
+void TCPSocketTemplate<T>::Close()
 {
     BaseClassType::InternalClose(&HandleCloseThunk);
 }
 
-template <typename T, bool autoRead>
-int32 TCPSocketTemplate<T, autoRead>::StopAsyncRead()
+template <typename T>
+std::size_t TCPSocketTemplate<T>::WriteQueueSize() const
 {
-    return uv_read_stop(HandleAsStream());
+    return Handle<uv_tcp_t>()->write_queue_size;
 }
 
-template <typename T, bool autoRead>
-int32 TCPSocketTemplate<T, autoRead>::LocalEndpoint(Endpoint& endpoint)
-{
-    int size = endpoint.Size();
-    return uv_tcp_getsockname(Handle(), endpoint.CastToSockaddr(), &size);
-}
-
-template <typename T, bool autoRead>
-int32 TCPSocketTemplate<T, autoRead>::RemoteEndpoint(Endpoint& endpoint)
+template <typename T>
+int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
     int size = endpoint.Size();
-    return uv_tcp_getpeername(Handle(), endpoint.CastToSockaddr(), &size);
+    return uv_tcp_getsockname(Handle<uv_tcp_t>(), endpoint.CastToSockaddr(), &size);
 }
 
-template <typename T, bool autoRead>
-int32 TCPSocketTemplate<T, autoRead>::InternalAsyncConnect(const Endpoint& endpoint)
+template <typename T>
+int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 {
-    return uv_tcp_connect(&connectRequest, Handle(), endpoint.CastToSockaddr(), &HandleConnectThunk);
+    int size = endpoint.Size();
+    return uv_tcp_getpeername(Handle<uv_tcp_t>(), endpoint.CastToSockaddr(), &size);
 }
 
-template <typename T, bool autoRead>
-int32 TCPSocketTemplate<T, autoRead>::InternalAsyncRead(void* buffer, std::size_t size)
+template <typename T>
+int32 TCPSocketTemplate<T>::InternalAsyncConnect(const Endpoint& endpoint)
 {
-    DVASSERT(buffer != NULL && size > 0);
-
-    externalReadBuffer     = buffer;
-    externalReadBufferSize = size;
-    return uv_read_start(HandleAsStream(), &HandleAllocThunk, &HandleReadThunk);
+    return uv_tcp_connect(&connectRequest, Handle<uv_tcp_t>(), endpoint.CastToSockaddr(), &HandleConnectThunk);
 }
 
-template <typename T, bool autoRead>
-template<typename WriteRequestType>
-int32 TCPSocketTemplate<T, autoRead>::InternalAsyncWrite(WriteRequestType* request, const void* buffer, std::size_t size)
+template <typename T>
+int32 TCPSocketTemplate<T>::InternalAsyncRead(Buffer buffer)
 {
-    /*
-        WriteRequestType should have following public members:
-        DerivedClassType* pthis   - pointer to DerivedClassType instance(can be pointer to void)
-        uv_buf_t          buffer  - libuv buffer to write
-        uv_write_t        request - libuv write request
-    */
-    DVASSERT(request != NULL && buffer != NULL && size > 0);
+    DVASSERT(buffer.base != NULL && buffer.len > 0);
 
-    request->pthis        = static_cast<DerivedClassType*>(this);
-    request->buffer       = uv_buf_init(static_cast<char*>(const_cast<void*>(buffer)), size);    // uv_buf_init doesn't modify buffer
-    request->request.data = request;
-
-    return uv_write(&request->request, HandleAsStream(), &request->buffer, 1, &HandleWriteThunk<WriteRequestType>);
+    readBuffer = buffer;
+    return uv_read_start(Handle<uv_stream_t>(), &HandleAllocThunk, &HandleReadThunk);
 }
 
-template <typename T, bool autoRead>
-void TCPSocketTemplate<T, autoRead>::HandleAlloc(std::size_t /*suggested_size*/, uv_buf_t* buffer)
+template <typename T>
+template<typename U>
+int32 TCPSocketTemplate<T>::InternalAsyncWrite(const Buffer* buffers, std::size_t bufferCount, U& requestData)
 {
-    *buffer = uv_buf_init(static_cast<char*>(externalReadBuffer), externalReadBufferSize);
+    DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= maxWriteBuffers);
+
+    TCPWriteRequest<U>* writeRequest = new TCPWriteRequest<U>(static_cast<DerivedClassType*>(this), requestData);
+    writeRequest->bufferCount = bufferCount;
+    for (std::size_t i = 0;i < bufferCount;++i)
+    {
+        DVASSERT(buffers[i].base != NULL && buffers[i].len > 0);
+        writeRequest->buffers[i] = buffers[i];
+    }
+
+    int32 error = uv_write(&writeRequest->request, Handle<uv_stream_t>(), writeRequest->buffers
+                                                                        , writeRequest->bufferCount
+                                                                        , &HandleWriteThunk<U>);
+    if (error != 0)
+        delete writeRequest;
+    return error;
 }
 
-template <typename T, bool autoRead>
-void TCPSocketTemplate<T, autoRead>::HandleCloseThunk(uv_handle_t* handle)
+template <typename T>
+void TCPSocketTemplate<T>::HandleAlloc(std::size_t /*suggested_size*/, uv_buf_t* buffer)
 {
-    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->CleanUpBeforeNextUse();
-    pthis->HandleClose();
+    *buffer = readBuffer;
 }
 
-template <typename T, bool autoRead>
-void TCPSocketTemplate<T, autoRead>::HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer)
+///   Thunks   ///////////////////////////////////////////////////////////
+template <typename T>
+void TCPSocketTemplate<T>::HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer)
 {
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
     pthis->HandleAlloc(suggested_size, buffer);
 }
 
-template <typename T, bool autoRead>
-void TCPSocketTemplate<T, autoRead>::HandleConnectThunk(uv_connect_t* connectRequest, int error)
+template <typename T>
+void TCPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
+{
+    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
+    pthis->InternalInit();
+    pthis->HandleClose();
+}
+
+template <typename T>
+void TCPSocketTemplate<T>::HandleConnectThunk(uv_connect_t* connectRequest, int error)
 {
     DerivedClassType* pthis = static_cast<DerivedClassType*>(connectRequest->data);
     pthis->HandleConnect(error);
 }
 
-template <typename T, bool autoRead>
-void TCPSocketTemplate<T, autoRead>::HandleReadThunk(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buffer)
+template <typename T>
+void TCPSocketTemplate<T>::HandleReadThunk(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buffer)
 {
     int32 error = 0;
     if(nread < 0)
@@ -237,19 +244,18 @@ void TCPSocketTemplate<T, autoRead>::HandleReadThunk(uv_stream_t* handle, ssize_
         nread = 0;
     }
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    if(!autoReadFlag && 0 == error)
-    {
-        pthis->StopAsyncRead();
-    }
-    pthis->HandleRead(error, nread, buffer);
+    pthis->HandleRead(error, nread);
 }
 
-template <typename T, bool autoRead>
-template<typename WriteRequestType>
-void TCPSocketTemplate<T, autoRead>::HandleWriteThunk(uv_write_t* writeRequest, int error)
+template <typename T>
+template<typename U>
+void TCPSocketTemplate<T>::HandleWriteThunk(uv_write_t* request, int error)
 {
-    WriteRequestType* request = static_cast<WriteRequestType*>(writeRequest->data);
-    request->pthis->HandleWrite(request, error);
+    TCPWriteRequest<U>* writeRequest = static_cast<TCPWriteRequest<U>*>(request->data);
+    DVASSERT(writeRequest != NULL && writeRequest->pthis != NULL);
+
+    writeRequest->pthis->HandleWrite(error, writeRequest->buffers, writeRequest->bufferCount, writeRequest->requestData);
+    delete writeRequest;
 }
 
 }	// namespace DAVA
