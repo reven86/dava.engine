@@ -30,10 +30,9 @@
 
 #include "UI/UIScrollBar.h"
 #include "UI/UIEvent.h"
-#include "Base/ObjectFactory.h"
+#include "UI/UIControlHelpers.h"
+#include "UI/UIYamlLoader.h"
 #include "FileSystem/YamlNode.h"
-
-#include "UIYamlLoader.h"
 
 namespace DAVA 
 {
@@ -61,11 +60,11 @@ void UIScrollBar::SetDelegate(UIScrollBarDelegate *newDelegate)
     delegate = newDelegate;
 }
 
-const String UIScrollBar::GetDelegatePath() const
+const String UIScrollBar::GetDelegatePath(const UIControl *rootControl) const
 {
     if (delegate)
     {
-        return delegate->GetDelegateControlPath();
+        return delegate->GetDelegateControlPath(rootControl);
     } else
     {
         return "";
@@ -175,7 +174,7 @@ YamlNode * UIScrollBar::SaveToYamlNode(UIYamlLoader * loader)
 	String stringValue;
 
 	//Orientation
-	eScrollOrientation orient = this->GetOrientation();
+	eScrollOrientation orient = (eScrollOrientation)GetOrientation();
 	switch(orient)
 	{
 		case ORIENTATION_VERTICAL:
@@ -194,7 +193,7 @@ YamlNode * UIScrollBar::SaveToYamlNode(UIYamlLoader * loader)
     if (delegate)
     {
         UIControl* delegateControl = dynamic_cast<UIControl*>(delegate);
-        node->Set("linkedScrollBarDelegate", UIYamlLoader::GetControlPath(delegateControl));
+        node->Set("linkedScrollBarDelegate", UIControlHelpers::GetControlPath(delegateControl));
     }
     
     
@@ -303,13 +302,13 @@ void UIScrollBar::Draw(const UIGeometricData &geometricData)
                 {
                     slider->size.y = FLOAT_EQUAL(totalSize, 0.0f) ? 0.0f : size.y * (visibleArea / totalSize);
 					slider->size.y = GetValidSliderSize(slider->size.y);
-                    if (slider->size.y >= size.y) 
+                    if ((slider->size.y >= size.y) || FLOAT_EQUAL(totalSize, 0.0f))
                     {
-                        slider->SetVisible(false, true);
+                        slider->SetVisible(false);
                     }
                     else 
                     {
-                        slider->SetVisible(true, true);
+                        slider->SetVisible(true);
                     }
                 }
                     //TODO: optimize
@@ -337,13 +336,13 @@ void UIScrollBar::Draw(const UIGeometricData &geometricData)
                 {
                     slider->size.x = FLOAT_EQUAL(totalSize, 0.0f) ? 0.0f : size.x * (visibleArea / totalSize);
 					slider->size.x = GetValidSliderSize(slider->size.x);
-                    if (slider->size.x >= size.x) 
+                    if ((slider->size.x >= size.x) || FLOAT_EQUAL(totalSize, 0.0f))
                     {
-                        slider->SetVisible(false, true);
+                        slider->SetVisible(false);
                     }
                     else 
                     {
-                        slider->SetVisible(true, true);
+                        slider->SetVisible(true);
                     }
                 }
                 slider->relativePosition.x = (size.x - slider->size.x) * (viewPos / diff);
@@ -369,14 +368,14 @@ void UIScrollBar::Draw(const UIGeometricData &geometricData)
     UIControl::Draw(geometricData);
 }
 
-UIScrollBar::eScrollOrientation UIScrollBar::GetOrientation() const
+int32 UIScrollBar::GetOrientation() const
 {
-	return (eScrollOrientation)orientation;
+	return orientation;
 }
 
-void UIScrollBar::SetOrientation(eScrollOrientation value)
+void UIScrollBar::SetOrientation(int32 value)
 {
-	orientation = value;
+	orientation = (eScrollOrientation)value;
 }
 
 float32 UIScrollBar::GetValidSliderSize(float32 size)

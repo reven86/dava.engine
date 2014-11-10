@@ -53,7 +53,7 @@
 #include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Platform/Notification.h"
+#include "Notification/LocalNotificationController.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -90,6 +90,7 @@ Core::Core()
 {
 	globalFrameIndex = 1;
 	isActive = false;
+    isAutotesting = false;
 	firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
@@ -633,6 +634,7 @@ void Core::SystemAppStarted()
     if (file.Exists())
     {
         AutotestingSystem::Instance()->OnAppStarted();
+        isAutotesting = true;
     }
     else
     {

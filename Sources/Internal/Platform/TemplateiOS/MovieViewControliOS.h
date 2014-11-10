@@ -31,7 +31,7 @@
 #define __DAVAENGINE_MOVIEVIEWCONTROL_IOS_H__
 
 #include "DAVAEngine.h"
-#include "IMovieViewControl.h"
+#include "UI/IMovieViewControl.h"
 
 namespace DAVA
 {
@@ -65,8 +65,6 @@ public:
 	virtual bool IsPlaying();
 	
 protected:
-	// Get the platform scale divider.
-	float GetScaleDivider();
 	
 	// Convert the DAVA Scaling Mode to platform-specific (iOS) one.
 	int ConvertScalingModeToPlatform(eMovieScalingMode scalingMode);

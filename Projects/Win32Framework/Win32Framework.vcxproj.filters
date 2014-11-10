@@ -151,6 +151,9 @@
     <Filter Include="Internal\DLC\Downloader">
       <UniqueIdentifier>{56f56b47-79c3-4bbc-adef-7d96d2c55443}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Notification">
+      <UniqueIdentifier>{4b5695b8-6b14-4d0c-8f8d-86535f5de24e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1122,9 +1125,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UISpinner.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -1510,6 +1510,9 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Function.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Functor.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
       <Filter>Internal\DLC</Filter>
     </ClInclude>
@@ -1540,17 +1543,21 @@
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Notification.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.h">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
@@ -1560,46 +1567,53 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\AnimationData.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h">
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationController.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationImpl.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationText.h">
+      <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlHelpers.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackage.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\AsyncRequest.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocket.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketTemplate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketTemplate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocket.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h">
+    <ClInclude Include="..\..\Sources\Internal\Network\Buffer.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimer.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Noncopyable.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkUtils.h">
+    <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Buffer.h">
+    <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\HandleBase.h">
@@ -1608,8 +1622,35 @@
     <ClInclude Include="..\..\Sources\Internal\Network\HandleTraits.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\AsyncRequest.h">
+    <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h">
       <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetworkUtils.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocket.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketTemplate.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocket.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketTemplate.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Noncopyable.h">
+      <Filter>Internal\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2426,9 +2467,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -2850,11 +2888,15 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneCache.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp">
-      <Filter>Internal\Platform</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.cpp">
+      <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.cpp">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
@@ -2865,34 +2907,66 @@
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationText.cpp">
+      <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlHelpers.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\AsyncRequest.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\DeadlineTimer.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Endpoint.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\HandleBase.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Endpoint.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\TCPSocket.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Network\NetworkErrorToString.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\TCPAcceptor.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\TCPSocket.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\UDPSocket.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\DeadlineTimer.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkErrorToString.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\HandleBase.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\AsyncRequest.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>

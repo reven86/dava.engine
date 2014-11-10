@@ -116,12 +116,12 @@ public:
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(DAVA::int32 value);
 
-	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text);
+	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
 	void TextFieldShouldReturn();
 	void TextFieldKeyboardShown(const Rect& rect);
 	void TextFieldKeyboardHidden();
 	void TextFieldFocusChanged(bool hasFocus);
-	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
+	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString &text);
 	static void TextFieldShouldReturn(uint32_t id);
 	static void TextFieldKeyboardShown(uint32_t id, const Rect& rect);
 	static void TextFieldKeyboardHidden(uint32_t id);
@@ -129,6 +129,10 @@ public:
 
 private:
 	static UITextFieldAndroid* GetUITextFieldAndroid(uint32_t id);
+
+protected:
+    // Truncate the text to maxLength characters.
+    WideString TruncateText(const WideString& text, int32 maxLength);
 
 private:
 	UITextField* textField;

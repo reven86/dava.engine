@@ -42,6 +42,9 @@ namespace DAVA
     
 void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text) const
 {
+    if(ll < Logger::Instance()->GetLogLevel())
+        return;
+    
     String outStr = NormalizeString(text);
 	String output;
     String status;

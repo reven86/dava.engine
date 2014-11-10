@@ -337,34 +337,18 @@ bool UIControlMetadata::GetVisible() const
     {
         return false;
     }
-    
+
     return GetActiveUIControl()->GetVisible();
 }
 
 void UIControlMetadata::SetVisible(const bool value)
-{
-    // Don't set Visible flag hierarchically for common UI Controls.
-    SetUIControlVisible(value, false);
-}
-
-bool UIControlMetadata::GetRecursiveVisible() const
-{
-    if (!VerifyActiveParamID())
-    {
-        return false;
-    }
-
-    return GetActiveUIControl()->GetRecursiveVisible();
-}
-
-void UIControlMetadata::SetRecursiveVisible(const bool value)
 {
     if (!VerifyActiveParamID())
     {
         return;
     }
 
-    GetActiveUIControl()->SetRecursiveVisible(value);
+    GetActiveUIControl()->SetVisible(value);
 }
 
 bool UIControlMetadata::GetInput() const
@@ -415,7 +399,7 @@ void UIControlMetadata::ApplyMove(const Vector2& moveDelta, bool alignControlsTo
         return;
     }
     
-    float32 parentsTotalAngle = GetActiveUIControl()->GetParentsTotalAngle(false);
+    float32 parentsTotalAngle = GetActiveUIControl()->GetParent()->GetGeometricData().angle;
     Vector2 controlPosition = GetActiveUIControl()->GetPosition();
     if(parentsTotalAngle != 0)
     {
@@ -990,7 +974,7 @@ QString UIControlMetadata::GetCustomControlName() const
 		return QString();
 	}
 	
-	return QString::fromStdString(GetActiveUIControl()->GetCustomControlType());
+	return QString::fromStdString(GetActiveUIControl()->GetCustomControlClassName());
 }
 	
 void UIControlMetadata::SetCustomControlName(const QString& value)
@@ -1000,14 +984,7 @@ void UIControlMetadata::SetCustomControlName(const QString& value)
 		return;
 	}
 
-	if (value.isEmpty())
-	{
-		GetActiveUIControl()->ResetCustomControlType();
-	}
-	else
-	{
-		GetActiveUIControl()->SetCustomControlType(value.toStdString());
-	}
+	GetActiveUIControl()->SetCustomControlClassName(value.toStdString());
 }
 
 int UIControlMetadata::GetInitialState() const
@@ -1050,16 +1027,6 @@ void UIControlMetadata::ResizeScrollViewContent(UIControl * control)
 	{
 		ResizeScrollViewContent(parentControl);
 	}
-}
-
-void UIControlMetadata::SetUIControlVisible(const bool value, bool hierarchic)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-    
-    GetActiveUIControl()->SetVisible(value, hierarchic);
 }
 
 QRectF UIControlMetadata::GetMargins() const

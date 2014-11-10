@@ -48,7 +48,7 @@ public:
 
     DAVA::RenderObject *renderObject;
     DAVA::RenderBatch * oldBatch;
-    DAVA::ShadowVolume * shadowVolume;
+    DAVA::RenderBatch * newBatch;
 };
 
 

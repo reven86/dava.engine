@@ -108,7 +108,7 @@ void UIParticles::DoStart()
 
     effect->isPaused = false;
     system->AddToActive(effect);
-    effect->effectRenderObject->SetEffectMatrix(&matrix);
+    effect->effectRenderObject->SetWorldTransformPtr(&matrix);
     system->RunEffect(effect);
 }
 
@@ -253,7 +253,7 @@ void UIParticles::Load(const FilePath& path)
 
     if (effect)
     {
-        effect->effectRenderObject->SetEffectMatrix(&matrix);
+        effect->effectRenderObject->SetWorldTransformPtr(&matrix);
         effect->effectRenderObject->Set2DMode(true);
         effectPath = path;
         
@@ -275,6 +275,11 @@ void UIParticles::Reload()
 
     Load(effectPath);
 }
+    
+void UIParticles::SetEffectPath(const FilePath& path)
+{
+    Load(path);
+}
 
 const FilePath& UIParticles::GetEffectPath() const
 {
@@ -294,7 +299,7 @@ bool UIParticles::IsAutostart() const
    
 YamlNode * UIParticles::SaveToYamlNode(UIYamlLoader * loader)
 {
-    UIParticles* baseControl = new UIParticles();
+    ScopedPtr<UIParticles> baseControl(new UIParticles());
 
     YamlNode *node = UIControl::SaveToYamlNode(loader);
     

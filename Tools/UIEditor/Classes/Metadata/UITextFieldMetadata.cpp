@@ -401,6 +401,26 @@ void UITextFieldMetadata::SetIsReturnKeyAutomatically(bool value)
 	return GetActiveUITextField()->SetEnableReturnKeyAutomatically(value);
 }
 
+int UITextFieldMetadata::GetMaxLength() const
+{
+	if (!VerifyActiveParamID())
+	{
+		return -1;
+	}
+	
+	return GetActiveUITextField()->GetMaxLength();
+}
+
+void UITextFieldMetadata::SetMaxLength(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUITextField()->SetMaxLength(value);
+}
+
 // Initialize the control(s) attached.
 void UITextFieldMetadata::InitializeControl(const String& controlName, const Vector2& position)
 {

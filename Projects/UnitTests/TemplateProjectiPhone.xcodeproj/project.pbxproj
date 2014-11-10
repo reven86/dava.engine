@@ -75,7 +75,6 @@
 		FEC9201113BA2D7D006F347F /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = FEC9200E13BA2D7D006F347F /* MainWindow.xib */; };
 		FEC95C7015B409E500588BBF /* HashMapTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC95C6C15B409E500588BBF /* HashMapTest.cpp */; };
 		FEC95C7115B409E500588BBF /* MemoryAllocatorsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC95C6E15B409E500588BBF /* MemoryAllocatorsTest.cpp */; };
-		FEFB01D311C8F28A00B65B8B /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEFB01D211C8F28A00B65B8B /* GameKit.framework */; };
 		FEFCD63412AE78D90060A1A1 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = FEFCD63312AE78D90060A1A1 /* Data */; };
 /* End PBXBuildFile section */
 
@@ -225,7 +224,6 @@
 		FEC95C6D15B409E500588BBF /* HashMapTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HashMapTest.h; sourceTree = "<group>"; };
 		FEC95C6E15B409E500588BBF /* MemoryAllocatorsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryAllocatorsTest.cpp; sourceTree = "<group>"; };
 		FEC95C6F15B409E500588BBF /* MemoryAllocatorsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryAllocatorsTest.h; sourceTree = "<group>"; };
-		FEFB01D211C8F28A00B65B8B /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		FEFCD63312AE78D90060A1A1 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -252,7 +250,6 @@
 				FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */,
 				FE76D9FF1163F316009E83B6 /* AudioToolbox.framework in Frameworks */,
 				FE76DA041163F32F009E83B6 /* QuartzCore.framework in Frameworks */,
-				FEFB01D311C8F28A00B65B8B /* GameKit.framework in Frameworks */,
 				17D4116E1973E95F00CF6BC0 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -333,7 +330,6 @@
 				74BF98191876B3A7001D4CFE /* GameController.framework */,
 				496ABE8C179E6FEB00BCA6E9 /* AdSupport.framework */,
 				49A0DB281796F8050000970C /* MessageUI.framework */,
-				FEFB01D211C8F28A00B65B8B /* GameKit.framework */,
 				FE76DA031163F32F009E83B6 /* QuartzCore.framework */,
 				FE76D9FE1163F316009E83B6 /* AudioToolbox.framework */,
 				FE76D9F51163F304009E83B6 /* AVFoundation.framework */,
@@ -493,7 +489,12 @@
 			attributes = {
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
-						DevelopmentTeam = 9KMD79CS7L;
+						DevelopmentTeam = XC9DK9T39T;
+						SystemCapabilities = {
+							com.apple.GameCenter = {
+								enabled = 0;
+							};
+						};
 					};
 				};
 			};
@@ -638,11 +639,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -668,11 +667,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
@@ -696,9 +693,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Entitlements.plist;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -723,11 +720,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
@@ -751,9 +746,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -778,8 +773,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;

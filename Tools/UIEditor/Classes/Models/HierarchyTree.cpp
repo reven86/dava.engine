@@ -664,6 +664,11 @@ void HierarchyTree::UpdateLocalization()
     UpdateExtraData(BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED);
 }
 
+void HierarchyTree::UpdateLocalization(const HierarchyTreeScreenNode* screenNode)
+{
+	UpdateExtraData(screenNode, BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED);
+}
+
 List<HierarchyTreeScreenNode*> HierarchyTree::GetUnsavedScreens()
 {
 	List<HierarchyTreeScreenNode*> resultList;

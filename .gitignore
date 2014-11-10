@@ -5,6 +5,7 @@
 build/     # ignore all files in the build/ directory
 /build     # ignore all files in the build/ directory
 /build/    # ignore all files in the build/ directory
+_build/    # ignore all files in the _build/ directory
 xcuserdata/
 /xcuserdata
 /xcuserdata/
@@ -36,3 +37,6 @@ ddd
 /testproj/
 fmod.log
 *.user
+/Tools/ResourceEditor/_build
+/Tools/UIEditor/_build
+/Projects/UnitTests/_build

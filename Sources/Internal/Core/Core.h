@@ -310,6 +310,8 @@ public:
 	void SystemProcessFrame();
 	void SystemAppFinished();
 
+    inline bool IsAutotesting() {return isAutotesting;}
+
     inline bool IsActive();
 	void SetIsActive(bool isActive);
 	
@@ -358,7 +360,8 @@ private:
     KeyedArchive * options;
 
 	bool isActive;
-	
+	bool isAutotesting;
+
 	uint32 globalFrameIndex;
 
 	bool firstRun;//call begin frame 1st time

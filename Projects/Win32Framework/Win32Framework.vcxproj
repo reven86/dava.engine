@@ -123,8 +123,6 @@
       <AdditionalDependencies>freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_wind.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libuvd.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>
-      </IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
@@ -144,7 +142,7 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libcurl.lib;pnglib_wind.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
@@ -162,7 +160,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_win.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_win.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;pnglib_win.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -199,7 +197,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;pnglib_win.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -263,6 +261,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\FastNameMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Function.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Functor.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Hash.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\HashMap.h" />
@@ -398,7 +397,6 @@
     <ClInclude Include="..\..\Sources\Internal\Network\HandleTraits.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\NetworkUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h" />
@@ -406,6 +404,13 @@
     <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\UDPSocket.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketTemplate.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationController.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationImpl.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationText.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\Particle.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleEmitter.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleForce.h" />
@@ -418,9 +423,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Notification.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -486,6 +488,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowRect.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolume.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpatialTree.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.h" />
@@ -590,6 +593,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\ParticleEffectComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\QualitySettingsComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\RenderComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SpeedTreeComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h" />
@@ -640,6 +644,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SpeedTreeUpdateSystem.h" />
@@ -656,6 +661,8 @@
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
@@ -663,6 +670,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIButton.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControl.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlBackground.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlHelpers.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIFadeTransition.h" />
@@ -677,6 +685,8 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UILoadingTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIMoveInTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIMovieView.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackage.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIParticles.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIPopup.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreen.h" />
@@ -864,11 +874,16 @@
     <ClCompile Include="..\..\Sources\Internal\Network\HandleBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\NetworkErrorToString.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPAcceptor.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPSocket.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\UDPSocket.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationText.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleForce.cpp" />
@@ -879,9 +894,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt\QtLayer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -948,6 +960,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowRect.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolume.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpatialTree.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.cpp" />
@@ -1045,6 +1058,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ParticleEffectComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\QualitySettingsComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\RenderComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SpeedTreeComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.cpp" />
@@ -1095,6 +1109,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SpeedTreeUpdateSystem.cpp" />
@@ -1108,6 +1123,8 @@
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODFileSoundEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
@@ -1115,6 +1132,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIButton.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControl.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlBackground.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlHelpers.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIFadeTransition.cpp" />
@@ -1129,6 +1147,8 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UILoadingTransition.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIMoveInTransition.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIMovieView.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIParticles.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIPopup.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreen.cpp" />

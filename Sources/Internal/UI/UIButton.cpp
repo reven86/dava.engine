@@ -496,6 +496,21 @@ UIControlBackground *UIButton::GetOrCreateBackground(eButtonDrawState drawState)
 
     return GetBackground(drawState);
 }
+    
+void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground *newBackground)
+{
+    DVASSERT(0 <= drawState && drawState < DRAW_STATE_COUNT);
+    
+    if (drawState == DRAW_STATE_UNPRESSED)
+    {
+        SafeRelease(background);
+        background = SafeRetain(newBackground);
+    }
+    
+    SafeRelease(stateBacks[drawState]);
+    stateBacks[drawState] = SafeRetain(newBackground);
+    selectedBackground = GetActualBackgroundForState(controlState);
+}
 
 UIStaticText *UIButton::GetOrCreateTextBlock(eButtonDrawState drawState)
 {
@@ -972,19 +987,6 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
     return node;
 }
 
-void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground * newBackground)
-{
-    if (drawState == DRAW_STATE_UNPRESSED)
-    {
-        SafeRelease(background);
-        background = SafeRetain(newBackground);
-    }
-
-    SafeRelease(stateBacks[drawState]);
-    stateBacks[drawState] = SafeRetain(newBackground);
-    selectedBackground = GetActualBackgroundForState(controlState);
-}
-
 void UIButton::SetTextBlock( eButtonDrawState drawState, UIStaticText * newTextBlock )
 {
     SafeRelease(stateTexts[drawState]);
@@ -1009,6 +1011,63 @@ void UIButton::UpdateStateTextControlSize()
 UIStaticText * UIButton::CreateDefaultTextBlock() const
 {
     return new UIStaticText(Rect(Vector2(), GetSize()));
+}
+
+int32 UIButton::GetBackgroundComponentsCount() const
+{
+    return DRAW_STATE_COUNT;
+}
+    
+UIControlBackground *UIButton::GetBackgroundComponent(int32 index) const
+{
+    return stateBacks[index];
+}
+ 
+UIControlBackground *UIButton::CreateBackgroundComponent(int32 index) const
+{
+    UIControlBackground *bg = GetActualBackground((eButtonDrawState) index);
+    return bg ? bg->Clone() : CreateDefaultBackground();
+}
+
+void UIButton::SetBackgroundComponent(int32 drawState, UIControlBackground *newBackground)
+{
+    SetBackground((eButtonDrawState) drawState, newBackground);
+}
+
+String UIButton::GetBackgroundComponentName(int32 index) const
+{
+    return statePostfix[index];
+}
+
+int32 UIButton::GetInternalControlsCount() const
+{
+    return DRAW_STATE_COUNT;
+}
+    
+UIControl *UIButton::GetInternalControl(int32 index) const
+{
+    return stateTexts[index];
+}
+
+UIControl *UIButton::CreateInternalControl(int32 index) const
+{
+    UIStaticText* targetTextBlock = GetActualTextBlock((eButtonDrawState) index);
+    return targetTextBlock ? targetTextBlock->Clone() : CreateDefaultTextBlock();
+}
+    
+void UIButton::SetInternalControl(int32 index, UIControl *control)
+{
+    SetTextBlock((eButtonDrawState) index, DynamicTypeCheck<UIStaticText*>(control));
+}
+    
+String UIButton::GetInternalControlName(int32 index) const
+{
+    return statePostfix[index];
+}
+
+String UIButton::GetInternalControlDescriptions() const
+{
+    return "Text";
 }
 
 };
