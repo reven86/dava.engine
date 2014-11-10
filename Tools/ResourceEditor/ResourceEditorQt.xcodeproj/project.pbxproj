@@ -5163,6 +5163,7 @@
 					DAVA_QT,
 					__DAVAENGINE_SPEEDTREE__,
 					DAVA_FMOD,
+					_DISABLE_IMAGE_MAGICK,
 				);
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
@@ -5232,6 +5233,12 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DAVA_QT,
+					__DAVAENGINE_SPEEDTREE__,
+					DAVA_FMOD,
+					_DISABLE_IMAGE_MAGICK,
+				);
 				HEADER_SEARCH_PATHS = (
 					/Library/Frameworks/QtGui.framework/Headers,
 					/Library/Frameworks/QtCore.framework/Headers,
@@ -5285,6 +5292,7 @@
 					DAVA_QT,
 					__DAVAENGINE_SPEEDTREE__,
 					DAVA_FMOD,
+					_DISABLE_IMAGE_MAGICK,
 				);
 				HEADER_SEARCH_PATHS = (
 					/Library/Frameworks/QtGui.framework/Headers,
@@ -5341,6 +5349,7 @@
 					DAVA_QT,
 					__DAVAENGINE_SPEEDTREE__,
 					DAVA_FMOD,
+					_DISABLE_IMAGE_MAGICK,
 				);
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
