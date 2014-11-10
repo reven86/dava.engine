@@ -55,6 +55,11 @@ public:
     bool IsClosing() const;
     bool IsActive() const;
 
+    template<typename U>
+    U* Handle() { return CastHandleTo<U>(&handle); }
+    template<typename U>
+    const U* Handle() const { return CastHandleTo<const U>(&handle); }
+
 protected:
     // Protected constructor and destructor to prevent creation and deletion through this type
     HandleBase(IOLoop* ioLoop);
@@ -62,11 +67,6 @@ protected:
     ~HandleBase() {}
 
     void SetHandleData(void* handleData);
-
-    template<typename U>
-    U* Handle() { return CastHandleTo<U>(&handle); }
-    template<typename U>
-    const U* Handle() const { return CastHandleTo<const U>(&handle); }
 
     void InternalInit();
     void InternalInit(uv_async_cb asyncCallback);

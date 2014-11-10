@@ -122,7 +122,7 @@ template <typename T>
 int32 TCPAcceptorTemplate<T>::Accept(HandleBase<uv_tcp_t>* socket)
 {
     DVASSERT(socket);
-    return uv_accept(Handle<uv_stream_t>(), socket->Handle<>());
+    return uv_accept(Handle<uv_stream_t>(), socket->Handle<uv_stream_t>());
 }
 
 template <typename T>
