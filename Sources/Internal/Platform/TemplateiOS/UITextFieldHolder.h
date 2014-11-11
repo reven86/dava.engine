@@ -44,6 +44,7 @@
     UITextField * textField;
     DAVA::UITextField * cppTextField;
     BOOL textInputAllowed;
+    BOOL useRtlAlign;
     
     CGRect lastKeyboardFrame;
 }
@@ -58,6 +59,7 @@
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 - (void)setIsPassword:(bool)isPassword;
 - (void)setTextInputAllowed:(bool)value;
+- (void)setUseRtlAlign:(bool)value;
 
 - (void)setupTraits;
 

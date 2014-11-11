@@ -101,7 +101,7 @@ void ScrollControlPropertyGridWidget::FillScrollViewsComboBox(const HierarchyTre
         UIScrollBarDelegate* scroll = dynamic_cast<UIScrollBarDelegate*>(control);
         if (NULL != scroll)
         {
-            QString delegatePath = QString::fromStdString(UIYamlLoader::GetControlPath(control));
+            QString delegatePath = QString::fromStdString(UIControlHelpers::GetControlPath(control));
             ui->scrollViewsComboBox->addItem(QString::fromStdString(control->GetName()));
             uint32 itemCount = ui->scrollViewsComboBox->count();
             ui->scrollViewsComboBox->setItemData(itemCount-1, delegatePath, Qt::ToolTipRole);

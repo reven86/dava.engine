@@ -53,6 +53,7 @@ public:
 	void SetFontSize(float size);
 	void SetIsPassword(bool isPassword);
 	void SetTextAlign(int32_t align);
+	void SetTextUseRtlAlign(bool useRtlAlign);
 	void SetInputEnabled(bool value);
 	void SetAutoCapitalizationType(int32_t value);
 	void SetAutoCorrectionType(int32_t value);
@@ -98,6 +99,9 @@ public:
 	void SetTextAlign(DAVA::int32 align);
 	DAVA::int32 GetTextAlign();
 
+	void SetTextUseRtlAlign(bool useRtlAlign);
+	bool GetTextUseRtlAlign() const;
+
 	void SetVisible(bool isVisible);
 
 	void SetIsPassword(bool isPassword);
@@ -142,6 +146,7 @@ private:
 	Rect rect;
 	WideString text;
 	int32_t align;
+	bool useRtlAlign;
 };
 
 };

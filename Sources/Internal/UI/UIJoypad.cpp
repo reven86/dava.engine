@@ -325,7 +325,7 @@ void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader *
 
 YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
 {
-    UIJoypad* baseControl = new UIJoypad();
+    ScopedPtr<UIJoypad> baseControl(new UIJoypad());
 
     YamlNode *node = UIControl::SaveToYamlNode(loader);
     
@@ -346,7 +346,6 @@ YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
         node->Set("digitalSense", GetDigitalSense());
     }
 
-    SafeRelease(baseControl);
     return node;
 }
     
