@@ -189,6 +189,26 @@ void UISliderMetadata::SetMinColorInheritType(int value)
     GetActiveUISlider()->GetBgMin()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
 }
 
+int UISliderMetadata::GetMinPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return (int)GetActiveUISlider()->GetBgMin()->GetPerPixelAccuracyType();
+}
+
+void UISliderMetadata::SetMinPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMin()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+}
+
 int UISliderMetadata::GetMinAlign() const
 {
     if (!VerifyActiveParamIDAndMinBackground())
@@ -409,6 +429,26 @@ void UISliderMetadata::SetMaxColorInheritType(int value)
     GetActiveUISlider()->GetBgMax()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
 }
 
+int UISliderMetadata::GetMaxPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return (int)GetActiveUISlider()->GetBgMax()->GetPerPixelAccuracyType();
+}
+
+void UISliderMetadata::SetMaxPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMax()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+}
+
 int UISliderMetadata::GetMaxAlign() const
 {
     if (!VerifyActiveParamIDAndMaxBackground())
@@ -576,3 +616,221 @@ bool UISliderMetadata::VerifyActiveParamIDAndMaxBackground() const
 {
     return VerifyActiveParamID() && GetActiveUISlider()->GetBgMax();
 }
+
+QRectF UISliderMetadata::GetMinMargins() const
+{
+    return GetMarginsForBackground(GetActiveUISlider()->GetBgMin());
+}
+
+void UISliderMetadata::SetMinMargins(const QRectF& value)
+{
+    SetMarginsForBackground(GetActiveUISlider()->GetBgMin(), value);
+}
+
+float UISliderMetadata::GetMinLeftMargin() const
+{
+    return GetMinMargins().left();
+}
+
+void UISliderMetadata::SetMinLeftMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMin())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMinMarginsToUpdate();
+    margins.left = value;
+    GetActiveUISlider()->GetBgMin()->SetMargins(&margins);
+}
+
+float UISliderMetadata::GetMinTopMargin() const
+{
+    return GetMinMargins().top();
+}
+
+void UISliderMetadata::SetMinTopMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMin())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMinMarginsToUpdate();
+    margins.top = value;
+    GetActiveUISlider()->GetBgMin()->SetMargins(&margins);
+}
+
+float UISliderMetadata::GetMinRightMargin() const
+{
+    return GetMinMargins().width();
+}
+
+void UISliderMetadata::SetMinRightMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMin())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMinMarginsToUpdate();
+    margins.right = value;
+    GetActiveUISlider()->GetBgMin()->SetMargins(&margins);
+}
+
+float UISliderMetadata::GetMinBottomMargin() const
+{
+    return GetMinMargins().height();
+}
+
+void UISliderMetadata::SetMinBottomMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMin())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMinMarginsToUpdate();
+    margins.bottom = value;
+    GetActiveUISlider()->GetBgMin()->SetMargins(&margins);
+}
+
+QRectF UISliderMetadata::GetMaxMargins() const
+{
+    return GetMarginsForBackground(GetActiveUISlider()->GetBgMax());
+}
+
+void UISliderMetadata::SetMaxMargins(const QRectF& value)
+{
+    SetMarginsForBackground(GetActiveUISlider()->GetBgMax(), value);
+}
+
+float UISliderMetadata::GetMaxLeftMargin() const
+{
+    return GetMaxMargins().left();
+}
+
+void UISliderMetadata::SetMaxLeftMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMax())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMaxMarginsToUpdate();
+    margins.left = value;
+    GetActiveUISlider()->GetBgMax()->SetMargins(&margins);
+}
+
+float UISliderMetadata::GetMaxTopMargin() const
+{
+    return GetMaxMargins().top();
+}
+
+void UISliderMetadata::SetMaxTopMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMax())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMaxMarginsToUpdate();
+    margins.top = value;
+    GetActiveUISlider()->GetBgMax()->SetMargins(&margins);
+}
+
+float UISliderMetadata::GetMaxRightMargin() const
+{
+    return GetMaxMargins().width();
+}
+
+void UISliderMetadata::SetMaxRightMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMax())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMaxMarginsToUpdate();
+    margins.right = value;
+    GetActiveUISlider()->GetBgMax()->SetMargins(&margins);
+}
+
+float UISliderMetadata::GetMaxBottomMargin() const
+{
+    return GetMaxMargins().height();
+}
+
+void UISliderMetadata::SetMaxBottomMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMax())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMaxMarginsToUpdate();
+    margins.bottom = value;
+    GetActiveUISlider()->GetBgMax()->SetMargins(&margins);
+}
+
+QRectF UISliderMetadata::GetMarginsForBackground(UIControlBackground* background) const
+{
+    if (!VerifyActiveParamID() || !background)
+    {
+        return QRectF();
+    }
+    
+    const UIControlBackground::UIMargins* margins = background->GetMargins();
+    if (!margins)
+    {
+        return QRectF();
+    }
+    
+    return UIMarginsToQRectF(margins);
+}
+
+void UISliderMetadata::SetMarginsForBackground(UIControlBackground* background, const QRectF& value)
+{
+    if (!VerifyActiveParamID() || !background)
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = QRectFToUIMargins(value);
+    background->SetMargins(&margins);
+}
+
+UIControlBackground::UIMargins UISliderMetadata::GetMinMarginsToUpdate()
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMin())
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    const UIControlBackground::UIMargins* margins = GetActiveUISlider()->GetBgMin()->GetMargins();
+    if (!margins)
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    return *margins;
+}
+
+UIControlBackground::UIMargins UISliderMetadata::GetMaxMarginsToUpdate()
+{
+    if (!VerifyActiveParamID() || !GetActiveUISlider()->GetBgMax())
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    const UIControlBackground::UIMargins* margins = GetActiveUISlider()->GetBgMax()->GetMargins();
+    if (!margins)
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    return *margins;
+}
+
+
+

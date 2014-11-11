@@ -36,7 +36,8 @@
 namespace DAVA
 {
 
-const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("VEGETATION_ANIMATION");
+const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("Vegetation Animation");
+const FastName QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW("Stencil Shadows");
 
 QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
@@ -46,11 +47,12 @@ QualitySettingsSystem::QualitySettingsSystem()
     Load("~res:/quality.yaml");
 
     EnableOption(QUALITY_OPTION_VEGETATION_ANIMATION, true);
+    EnableOption(QUALITY_OPTION_STENCIL_SHADOW, true);
 }
 
 void QualitySettingsSystem::Load(const FilePath &path)
 {
-    Logger::Info("Trying to loading QUALITY from: %s", path.GetAbsolutePathname().c_str());
+    Logger::Info("Trying to load QUALITY from: %s", path.GetAbsolutePathname().c_str());
 
     if(path.Exists())
     {
@@ -442,6 +444,16 @@ bool QualitySettingsSystem::IsOptionEnabled( const FastName & option ) const
 	}
 
 	return false;
+}
+
+int32 QualitySettingsSystem::GetOptionsCount() const
+{
+    return qualityOptions.size();
+}
+
+FastName QualitySettingsSystem::GetOptionName(int32 index) const
+{
+    return qualityOptions.keyByIndex(index);
 }
 
 void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)

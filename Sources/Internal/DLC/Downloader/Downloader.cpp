@@ -32,12 +32,6 @@
 namespace DAVA
 {
 
-Downloader::Downloader(uint32 operationTimeout)
-    : timeout(operationTimeout)
-{
-
-}
-
 size_t Downloader::SaveData(void *ptr, size_t size, size_t nmemb)
 {
     DownloadManager *mgr = DownloadManager::Instance();

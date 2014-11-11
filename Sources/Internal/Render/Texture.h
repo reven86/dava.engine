@@ -57,7 +57,10 @@ class Texture;
 class TextureInvalidater
 {
 public:
-	virtual void InvalidateTexture(Texture * texure) = 0;
+    virtual ~TextureInvalidater() {};
+	virtual void InvalidateTexture(Texture * texture) = 0;
+    virtual void AddTexture(Texture * texture) = 0;
+    virtual void RemoveTexture(Texture * texture) = 0;
 };
 	
 #ifdef USE_FILEPATH_IN_MAP
@@ -210,6 +213,7 @@ public:
         \returns pathname of texture
      */
     const FilePath & GetPathname() const;
+    void SetPathname(const FilePath& path);
     
     Image * CreateImageFromMemory(UniqueHandle renderState);
 
@@ -221,6 +225,7 @@ public:
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
 	void SetInvalidater(TextureInvalidater* invalidater);
+    void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
 
 	inline TextureState GetState() const;
 

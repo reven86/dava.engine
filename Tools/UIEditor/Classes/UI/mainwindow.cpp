@@ -267,6 +267,10 @@ MainWindow::MainWindow(QWidget *parent) :
             this,
             SLOT(OnGuideDropped(Qt::DropAction)));
 
+    DefaultScreen* defaultScreen = ScreenWrapper::Instance()->GetActiveScreen();
+    connect(defaultScreen, SIGNAL(DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST&)),
+            this->ui->hierarchyDockWidgetContents, SLOT(OnDeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST&)));
+
 	InitMenu();
 	RestoreMainWindowState();
 	CreateHierarchyDockWidgetToolbar();
@@ -1134,6 +1138,15 @@ void MainWindow::FileMenuTriggered(QAction *resentScene)
 
 bool MainWindow::CheckAndUnlockProject(const QString& projectPath)
 {
+    if (!FileSystem::Instance()->IsFile(projectPath.toStdString()))
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString(tr("The project file %1 does not exist").arg(projectPath)));
+        msgBox.addButton(tr("OK"), QMessageBox::YesRole);
+        msgBox.exec();
+        return false;
+    }
+    
     if (!FileSystem::Instance()->IsFileLocked(projectPath.toStdString()))
     {
         // Nothing to unlock.
@@ -1765,6 +1778,16 @@ void MainWindow::OnScreenshot()
         return;
     }
 
+    static const float32 maxScreenshotScale = 4.0f;
+    if (currentScreen->GetScale().x > maxScreenshotScale || currentScreen->GetScale().y > maxScreenshotScale)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString("Current zoom level is too high for making screenshots. Reduce it to less than %1%.").arg((int)(maxScreenshotScale * 100)));
+        msgBox.exec();
+
+        return;
+    }
+
     if (screenShotFolder.isEmpty())
     {
         SetScreenshotFolder();
@@ -1825,7 +1848,12 @@ void MainWindow::OnSearchPressed()
         
         if (!foundScreens.empty())
         {
+        	// Select first found screen/aggregator
         	this->ui->hierarchyDockWidgetContents->ScrollTo(foundScreens.at(0));
+            if (foundScreens.size() > 1)
+            {	// and highlight other found screens/aggregators
+            	this->ui->hierarchyDockWidgetContents->HighlightScreenNodes(foundScreens);
+            }
         }
     }
     else
@@ -1835,8 +1863,11 @@ void MainWindow::OnSearchPressed()
         {
         	// Multiple selection, or control selected
         	HierarchyTreeController::Instance()->SynchronizeSelection(foundNodes);
-        	// Scroll to first one in the list
-        	this->ui->hierarchyDockWidgetContents->ScrollTo(foundNodes.at(0));
+            if (foundNodes.size() == 1)
+            {
+        		// Scroll to first one in the list
+        		this->ui->hierarchyDockWidgetContents->ScrollTo(foundNodes.at(0));
+            }
         }
     }
 }

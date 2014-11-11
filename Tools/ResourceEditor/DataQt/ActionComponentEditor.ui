@@ -9,12 +9,34 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1020</width>
+    <width>1200</width>
     <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Edit actions</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton
+{
+  border: 1px solid #707070;
+  padding-top: 1px;
+  padding-left: 1px;
+}
+
+QPushButton:hover
+{
+  border: 1px solid #909090;
+  padding-top: 0px;
+  padding-left: 0px;
+}
+
+QPushButton:pressed
+{
+  border: 1px solid #808080;
+  padding-top: 1px;
+  padding-left: 1px;
+}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -43,8 +65,11 @@
      <attribute name="horizontalHeaderVisible">
       <bool>true</bool>
      </attribute>
+     <attribute name="horizontalHeaderCascadingSectionResizes">
+      <bool>false</bool>
+     </attribute>
      <attribute name="horizontalHeaderDefaultSectionSize">
-      <number>150</number>
+      <number>160</number>
      </attribute>
      <attribute name="horizontalHeaderStretchLastSection">
       <bool>false</bool>
@@ -103,7 +128,10 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+    <layout class="QHBoxLayout" name="_2">
+     <property name="spacing">
+      <number>16</number>
+     </property>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -119,12 +147,6 @@
      </item>
      <item>
       <widget class="QPushButton" name="buttonAddItem">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
        <property name="minimumSize">
         <size>
          <width>40</width>
@@ -134,16 +156,13 @@
        <property name="text">
         <string>+</string>
        </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonRemoveItem">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
        <property name="minimumSize">
         <size>
          <width>40</width>
@@ -152,6 +171,9 @@
        </property>
        <property name="text">
         <string>-</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

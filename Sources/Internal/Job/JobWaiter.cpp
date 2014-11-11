@@ -32,7 +32,7 @@
 namespace DAVA
 {
 
-ThreadIdJobWaiter::ThreadIdJobWaiter(Thread::ThreadId _threadId/* = Thread::GetCurrentThreadId()*/)
+ThreadIdJobWaiter::ThreadIdJobWaiter(Thread::Id _threadId/* = Thread::GetCurrentId()*/)
 :	threadId(_threadId)
 {
 	
@@ -46,23 +46,13 @@ ThreadIdJobWaiter::~ThreadIdJobWaiter()
 
 void ThreadIdJobWaiter::Wait()
 {
-	if(JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForCreatorThread(this))
+	cvmutex.Lock();
+	if (JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForCreatorThread(this))
 	{
-		Thread::Wait(&cv);
+		Thread::Wait(&cv, &cvmutex);
 	}
+	cvmutex.Unlock();
 }
-
-Thread::ThreadId & ThreadIdJobWaiter::GetThreadId()
-{
-	return threadId;
-}
-
-ConditionalVariable * ThreadIdJobWaiter::GetConditionalVariable()
-{
-	return &cv;
-}
-
-
 
 JobInstanceWaiter::JobInstanceWaiter(Job * _job)
 :	job(_job)
@@ -77,20 +67,32 @@ JobInstanceWaiter::~JobInstanceWaiter()
 
 void JobInstanceWaiter::Wait()
 {
-	if(JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForJobInstance(this))
+	cvmutex.Lock();
+	if (JobManager::WAITER_WILL_WAIT == JobManager::Instance()->RegisterWaiterForJobInstance(this))
 	{
-		Thread::Wait(&cv);
+		Thread::Wait(&cv, &cvmutex);
 	}
+	cvmutex.Unlock();
 }
 
-ConditionalVariable * JobInstanceWaiter::GetConditionalVariable()
+//////
+TaggedWorkerJobsWaiter::TaggedWorkerJobsWaiter(int32 _tag)
+    :   tag(_tag)
 {
-	return &cv;
 }
 
-Job * JobInstanceWaiter::GetJob()
+TaggedWorkerJobsWaiter::~TaggedWorkerJobsWaiter()
 {
-	return job;
+//    JobScheduler::Instance()->UnregisterWaiter(this);
+}
+
+void TaggedWorkerJobsWaiter::Wait()
+{
+//    if(JobManager::WAITER_WILL_WAIT == JobScheduler::Instance()->RegisterWaiterAndWait(this))
+    {
+        Thread::Wait(&cv, &mutex);
+        mutex.Unlock();
+    }
 }
 
 

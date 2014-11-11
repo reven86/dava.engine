@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>245</height>
+    <height>384</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,7 +19,7 @@
   <property name="maximumSize">
    <size>
     <width>300</width>
-    <height>245</height>
+    <height>16777215</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -37,7 +37,7 @@
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>245</height>
+       <height>16777215</height>
       </size>
      </property>
      <property name="title">
@@ -73,9 +73,9 @@
         <widget class="QLabel" name="backgroundNameLabel">
          <property name="geometry">
           <rect>
-           <x>8</x>
+           <x>4</x>
            <y>0</y>
-           <width>251</width>
+           <width>280</width>
            <height>21</height>
           </rect>
          </property>
@@ -109,14 +109,14 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>200</height>
+          <height>340</height>
          </size>
         </property>
         <widget class="QLabel" name="AlignLabel">
          <property name="geometry">
           <rect>
-           <x>9</x>
-           <y>146</y>
+           <x>4</x>
+           <y>176</y>
            <width>62</width>
            <height>16</height>
           </rect>
@@ -150,7 +150,7 @@
         <widget class="QLabel" name="drawTypeLabel">
          <property name="geometry">
           <rect>
-           <x>9</x>
+           <x>4</x>
            <y>87</y>
            <width>71</width>
            <height>16</height>
@@ -186,8 +186,8 @@
         <widget class="QSpinBox" name="tbSpinBox">
          <property name="geometry">
           <rect>
-           <x>240</x>
-           <y>171</y>
+           <x>241</x>
+           <y>201</y>
            <width>46</width>
            <height>25</height>
           </rect>
@@ -202,8 +202,8 @@
         <widget class="QLabel" name="tbStretchLabel">
          <property name="geometry">
           <rect>
-           <x>153</x>
-           <y>176</y>
+           <x>154</x>
+           <y>206</y>
            <width>81</width>
            <height>16</height>
           </rect>
@@ -215,8 +215,8 @@
         <widget class="QLabel" name="lrStretchLabel">
          <property name="geometry">
           <rect>
-           <x>8</x>
-           <y>176</y>
+           <x>4</x>
+           <y>205</y>
            <width>81</width>
            <height>16</height>
           </rect>
@@ -228,8 +228,8 @@
         <widget class="QSpinBox" name="lrSpinBox">
          <property name="geometry">
           <rect>
-           <x>89</x>
-           <y>171</y>
+           <x>90</x>
+           <y>201</y>
            <width>46</width>
            <height>25</height>
           </rect>
@@ -254,7 +254,7 @@
         <widget class="QLabel" name="colorInheritLabel">
          <property name="geometry">
           <rect>
-           <x>9</x>
+           <x>4</x>
            <y>109</y>
            <width>62</width>
            <height>31</height>
@@ -291,7 +291,7 @@ inherit:</string>
         <widget class="QLabel" name="colorLabel">
          <property name="geometry">
           <rect>
-           <x>9</x>
+           <x>4</x>
            <y>4</y>
            <width>62</width>
            <height>16</height>
@@ -304,7 +304,7 @@ inherit:</string>
         <widget class="QLabel" name="spriteLabel">
          <property name="geometry">
           <rect>
-           <x>9</x>
+           <x>4</x>
            <y>30</y>
            <width>62</width>
            <height>16</height>
@@ -343,7 +343,7 @@ inherit:</string>
         <widget class="QLabel" name="frameLabel">
          <property name="geometry">
           <rect>
-           <x>9</x>
+           <x>4</x>
            <y>60</y>
            <width>62</width>
            <height>16</height>
@@ -369,10 +369,44 @@ inherit:</string>
         <widget class="QComboBox" name="alignComboBox">
          <property name="geometry">
           <rect>
+           <x>80</x>
+           <y>170</y>
+           <width>209</width>
+           <height>26</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="pixelAccuracyLabel">
+         <property name="geometry">
+          <rect>
+           <x>4</x>
+           <y>141</y>
+           <width>61</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Per pixel
+accuracy:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="pixelAccuracyComboBox">
+         <property name="geometry">
+          <rect>
            <x>79</x>
            <y>140</y>
            <width>209</width>
            <height>26</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="UIMarginsPropertyGridWidget" name="marginsWidget" native="true">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>230</y>
+           <width>280</width>
+           <height>10</height>
           </rect>
          </property>
         </widget>
@@ -388,6 +422,12 @@ inherit:</string>
    <class>QColorWidget</class>
    <extends>QWidget</extends>
    <header>qcolorwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UIMarginsPropertyGridWidget</class>
+   <extends>QWidget</extends>
+   <header>uimarginspropertygridwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

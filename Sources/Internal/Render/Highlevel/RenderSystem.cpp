@@ -76,6 +76,7 @@ RenderSystem::~RenderSystem()
     SafeRelease(globalMaterial);
     
     SafeDelete(renderHierarchy);	
+    SafeDelete(mainRenderPass);
 }
     
 
@@ -250,27 +251,7 @@ void RenderSystem::UnregisterFromUpdate(IRenderUpdatable * updatable)
 
     
 void RenderSystem::FindNearestLights(RenderObject * renderObject)
-{
-	//do not calculate nearest lights for non-lit objects
-	bool needUpdate = false;
-	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-    for (uint32 k = 0; k < renderBatchCount; ++k)
-    {
-        RenderBatch * batch = renderObject->GetRenderBatch(k);
-        NMaterial * material = batch->GetMaterial();
-        uint8 bindFlags = material->GetDynamicBindFlags();
-        if (material && (bindFlags & NMaterial::DYNAMIC_BIND_LIGHT))
-        {
-			needUpdate = true;
-			break;
-		}
-	}
-	
-	if(!needUpdate)
-	{
-		return;
-	}
-	
+{		
     Light * nearestLight = 0;
     float32 squareMinDistance = 10000000.0f;
     Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
@@ -292,7 +273,7 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
 			const Vector3 & lightPosition = light->GetPosition();
 			
 			float32 squareDistanceToLight = (position - lightPosition).SquareLength();
-			if (squareDistanceToLight < squareMinDistance)
+			if ((!nearestLight) || (squareDistanceToLight < squareMinDistance))
 			{
 				squareMinDistance = squareDistanceToLight;
 				nearestLight = light;
@@ -300,11 +281,7 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
 		}
 	}
     
-    for (uint32 k = 0; k < renderBatchCount; ++k)
-    {
-        RenderBatch * batch = renderObject->GetRenderBatch(k);
-        batch->SetLight(0, nearestLight);
-    }
+    renderObject->SetLight(0, nearestLight);    
 }
 
 void RenderSystem::FindNearestLights()

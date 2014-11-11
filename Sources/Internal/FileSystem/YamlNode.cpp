@@ -678,7 +678,6 @@ void YamlNode::InternalSetKeyedArchive(KeyedArchive* archive)
 {
     //creation array with variables
     const Map<String, VariantType*> & innerArchiveMap =  archive->GetArchieveData();
-    objectArray->array.reserve(innerArchiveMap.size());
     for (Map<String, VariantType*>::const_iterator it = innerArchiveMap.begin(); it != innerArchiveMap.end(); ++it)
     {
         YamlNode* arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
@@ -718,6 +717,11 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
     case VariantType::TYPE_WIDE_STRING:
         {
             InternalSetString(UTF8Utils::EncodeToUTF8(varType.AsWideString()), SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
+        break;
+    case VariantType::TYPE_FILEPATH:
+        {
+            InternalSetString(varType.AsFilePath().GetAbsolutePathname(), SR_DOUBLE_QUOTED_REPRESENTATION);
         }
         break;
     case VariantType::TYPE_UINT32:
@@ -872,6 +876,7 @@ DAVA::YamlNode::eType YamlNode::VariantTypeToYamlNodeType(VariantType::eVariantT
     case VariantType::TYPE_UINT32:
     case VariantType::TYPE_INT64:
     case VariantType::TYPE_UINT64:
+    case VariantType::TYPE_FILEPATH:
         return TYPE_STRING;
 
     case VariantType::TYPE_BYTE_ARRAY:

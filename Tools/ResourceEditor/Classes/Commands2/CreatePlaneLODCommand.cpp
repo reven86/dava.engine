@@ -131,10 +131,12 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
 
 	RenderManager::Instance()->SetViewport(newViewport, true);
 
-    if(clearTarget)
-        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
     Scene * tempScene = new Scene();
+    if(clearTarget)
+        tempScene->SetClearBuffers(RenderManager::ALL_BUFFERS);
+    else
+        tempScene->SetClearBuffers(0);
+
     NMaterial * globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if(globalMaterial)
         tempScene->SetGlobalMaterial(globalMaterial->Clone());

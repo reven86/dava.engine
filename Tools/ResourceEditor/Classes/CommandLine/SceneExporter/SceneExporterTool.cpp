@@ -50,6 +50,7 @@ void SceneExporterTool::PrintUsage()
     printf("\t-gpu - PoverVR_iOS, PoverVR_Android, tegra, mali, adreno\n");
 	printf("\t-saveNormals - disable removing of normals from vertexes\n");
 	printf("\t-quality [0-4] - quality of pvr/etc compression. default is 4 - the best quality\n");
+    printf("\t-qualitycfgpath - path for quality.yaml file\n");
 
     printf("\n");
     printf("Samples:\n");
@@ -95,6 +96,7 @@ bool SceneExporterTool::InitializeFromCommandLine()
     
     filename = CommandLineParser::GetCommandParam(String("-processfile"));
     foldername = CommandLineParser::GetCommandParam(String("-processdir"));
+    qualityConfigPath = CommandLineParser::GetCommandParam(String("-qualitycfgpath"));
 
     if(!filename.empty())
     {
@@ -163,4 +165,9 @@ void SceneExporterTool::Process()
     }
 }
 
+
+FilePath SceneExporterTool::GetQualityConfigPath() const
+{
+    return qualityConfigPath;
+}
 

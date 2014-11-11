@@ -69,7 +69,6 @@ class TransformSystem;
 class LodSystem;
 class DebugRenderSystem;
 class EventSystem;
-class ParticleEmitterSystem;
 class ParticleEffectSystem;
 class UpdateSystem;
 class LightUpdateSystem;
@@ -84,6 +83,8 @@ class SpeedTreeUpdateSystem;
 class FoliageSystem;
 class WindSystem;
 class WaveSystem;
+class SkeletonSystem;
+class AnimationSystem;
     
 /**
     \ingroup scene3d
@@ -118,6 +119,8 @@ public:
         SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG  = 1 << 14,
         SCENE_SYSTEM_WIND_UPDATE_FLAG       = 1 << 15,
         SCENE_SYSTEM_WAVE_UPDATE_FLAG       = 1 << 16,
+        SCENE_SYSTEM_SKELETON_UPDATE_FLAG   = 1 << 17,
+        SCENE_SYSTEM_ANIMATION_FLAG         = 1 << 18,
 
         SCENE_SYSTEM_ALL_MASK               = 0xFFFFFFFF
     };
@@ -170,7 +173,9 @@ public:
     VersionInfo::SceneVersion version;
     WindSystem * windSystem;
     WaveSystem * waveSystem;
+    AnimationSystem * animationSystem;
     StaticOcclusionDebugDrawSystem *staticOcclusionDebugDrawSystem;
+    SkeletonSystem *skeletonSystem;
     
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
@@ -181,11 +186,7 @@ public:
 	void RemoveAnimatedMesh(AnimatedMesh * mesh);
 	AnimatedMesh * GetAnimatedMesh(int32 index);
 	inline int32	GetAnimatedMeshCount();
-	
-	void AddAnimation(SceneNodeAnimationList * animation);
-	SceneNodeAnimationList * GetAnimation(int32 index);
-	SceneNodeAnimationList * GetAnimation(const FastName & name);
-	inline int32 GetAnimationCount();
+
     
     
     /**
@@ -257,7 +258,8 @@ public:
 	EventSystem * GetEventSystem() const;
 	RenderSystem * GetRenderSystem() const;
     MaterialSystem * GetMaterialSystem() const;
-    
+    AnimationSystem * GetAnimationSystem() const;
+
 	virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
@@ -287,7 +289,6 @@ protected:
 
 	Vector<AnimatedMesh*> animatedMeshes;
 	Vector<Camera*> cameras;
-	Vector<SceneNodeAnimationList*> animations;
     
     static Texture* stubTexture2d;
     static Texture* stubTextureCube;
@@ -318,11 +319,6 @@ protected:
     friend class Entity;
 };
 
-	
-int32 Scene::GetAnimationCount()
-{
-    return (int32)animations.size();
-}
 
 int32 Scene::GetAnimatedMeshCount()
 {

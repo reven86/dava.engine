@@ -41,6 +41,7 @@
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {
@@ -115,6 +116,8 @@ void SpeedTreeUpdateSystem::UpdateAnimationFlag(Entity * entity)
 
 void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
 {
+    TIME_PROFILE("WaveSystem::Process");
+
     if(!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;
     

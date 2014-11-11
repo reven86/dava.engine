@@ -42,16 +42,16 @@ TextBlockGraphicsRender::TextBlockGraphicsRender(TextBlock* textBlock) :
 	isPredrawed = true;
 }
 	
-void TextBlockGraphicsRender::Prepare()
+void TextBlockGraphicsRender::Prepare(Texture *texture /*= NULL*/)
 {
-	TextBlockRender::Prepare();
+	TextBlockRender::Prepare(texture);
 	
 	isPredrawed = false;
 	sprite = Sprite::CreateAsRenderTarget((float32)textBlock->cacheDx, (float32)textBlock->cacheDy, FORMAT_RGBA8888);
 	if (sprite && sprite->GetTexture())
 	{
 		if (!textBlock->isMultilineEnabled)
-			sprite->GetTexture()->SetDebugInfo(WStringToString(textBlock->text));
+            sprite->GetTexture()->SetDebugInfo(WStringToString(textBlock->visualText));
 		else if (textBlock->isMultilineEnabled)
 		{
 			if (textBlock->multilineStrings.size() > 0)
@@ -71,7 +71,7 @@ void TextBlockGraphicsRender::PreDraw()
 	RenderManager::Instance()->RestoreRenderTarget();
 }
 	
-Size2i TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
+Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
 	if (textBlock->cacheUseJustify)
 	{
@@ -81,7 +81,7 @@ Size2i TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, 
 	return grFont->DrawString(0, 0, drawText);
 }
 
-Size2i TextBlockGraphicsRender::DrawTextML(const WideString& drawText,
+Font::StringMetrics TextBlockGraphicsRender::DrawTextML(const WideString& drawText,
 										   int32 x, int32 y, int32 w,
 										   int32 xOffset, uint32 yOffset,
 										   int32 lineSize)

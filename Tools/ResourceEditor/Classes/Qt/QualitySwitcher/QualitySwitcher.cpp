@@ -49,6 +49,7 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QGroupBox *texturesGroup = new QGroupBox(this);
     QGroupBox *materialsGroup = new QGroupBox(this);
+    QGroupBox *optionsGroup = new QGroupBox(this);
 
     // textures quality
     {
@@ -117,8 +118,35 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
         }
     }
 
+    // quality options
+    {
+        QGridLayout *optionsLayout = new QGridLayout(optionsGroup);
+        optionsLayout->setColumnMinimumWidth(0, minColumnW);
+        optionsLayout->setColumnMinimumWidth(1, minColumnW);
+
+        optionsGroup->setTitle("Options");
+        optionsGroup->setLayout(optionsLayout);
+
+        int32 optionsCount = QualitySettingsSystem::Instance()->GetOptionsCount();
+        for(int32 i = 0; i < optionsCount; ++i)
+        {
+            DAVA::FastName optionName = QualitySettingsSystem::Instance()->GetOptionName(i);
+
+            QLabel *labOp = new QLabel(QString(optionName.c_str()) + ":", materialsGroup);
+            QCheckBox *checkOp = new QCheckBox(materialsGroup);
+            checkOp->setChecked(QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
+            checkOp->setProperty("qualityOptionName", QVariant(optionName.c_str()));
+
+            QObject::connect(checkOp, SIGNAL(clicked(bool)), this, SLOT(OnOptionClick(bool)));
+
+            optionsLayout->addWidget(labOp, i, 0);
+            optionsLayout->addWidget(checkOp, i, 1);
+        }
+    }
+
     mainLayout->addWidget(texturesGroup);
     mainLayout->addWidget(materialsGroup);
+    mainLayout->addWidget(optionsGroup);
     mainLayout->addStretch();
     mainLayout->setMargin(5);
     mainLayout->setSpacing(spacing);
@@ -201,5 +229,15 @@ void QualitySwitcher::OnMaQualitySelect(int index)
             DAVA::QualitySettingsSystem::Instance()->SetCurMaterialQuality(group, newMaQuality);
             ApplyMa();
         }
+    }
+}
+
+void QualitySwitcher::OnOptionClick(bool checked)
+{
+    QCheckBox *checkBox = dynamic_cast<QCheckBox *>(QObject::sender());
+    if(NULL != checkBox)
+    {
+        FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
+        QualitySettingsSystem::Instance()->EnableOption(optionName, checked);
     }
 }

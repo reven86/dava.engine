@@ -68,10 +68,55 @@ void DAEConvertAction::Redo()
 void DAEConvertAction::ConvertFromSceToSc2() const
 {
     Scene *scene = CreateSceneFromSce();
+    FixLODFarDistance(scene);
+    
+    
     FilePath sc2Path = FilePath::CreateWithNewExtension(daePath, ".sc2");
     scene->Save(sc2Path);
     scene->Release();
 }
+
+void DAEConvertAction::FixLODFarDistance(Scene *scene) const
+{
+    Vector<Entity*> lodEntities;
+    scene->GetChildEntitiesWithComponent(lodEntities, Component::LOD_COMPONENT);
+
+    const uint32 size = (uint32)lodEntities.size();
+    for(uint32 k = 0; k < size; ++k)
+    {
+        int32 maxLodIndex = FindMaxLodLevel(lodEntities[k]);
+        if ((maxLodIndex < (LodComponent::MAX_LOD_LAYERS - 1)) && (maxLodIndex != LodComponent::INVALID_LOD_LAYER))
+        {
+            LodComponent * lodComponent = GetLodComponent(lodEntities[k]);
+            lodComponent->SetLodLayerDistance(maxLodIndex + 1, LodComponent::MAX_LOD_DISTANCE);
+        }
+    }
+}
+
+DAVA::int32 DAEConvertAction::FindMaxLodLevel(DAVA::Entity *entity) const
+{
+    Vector<Entity*> roEntities;
+    entity->GetChildEntitiesWithComponent(roEntities, Component::RENDER_COMPONENT);
+    if(GetRenderObject(entity))
+    {
+        roEntities.push_back(entity);
+    }
+
+    int32 maxLod = LodComponent::INVALID_LOD_LAYER;
+    
+    const uint32 size = (uint32)roEntities.size();
+    for(uint32 k = 0; k < size; ++k)
+    {
+        RenderObject *ro = GetRenderObject(roEntities[k]);
+        if(ro)
+        {
+            maxLod = Max(maxLod, ro->GetMaxLodIndex());
+        }
+    }
+
+    return maxLod;
+}
+
 
 
 DAVA::Scene * DAEConvertAction::CreateSceneFromSce() const

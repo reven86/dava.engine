@@ -88,6 +88,7 @@ void DeviceInfoTest::DidAppear()
     deviceInfoString += Format("UDID: %s\n", udid.c_str());
     deviceInfoString += Format("Name: %s\n", WStringToString(name).c_str());
     deviceInfoString += Format("ZBufferSize: %d\n", DeviceInfo::GetZBufferSize());
+    deviceInfoString += Format("CPU count: %d\n", DeviceInfo::GetCpuCount());
 	const eGPUFamily gpu = DeviceInfo::GetGPUFamily();
 	if(gpu == GPU_INVALID)
 	{

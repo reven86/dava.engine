@@ -602,7 +602,7 @@ void HierarchyTree::UpdateExtraData(BaseMetadata::eExtraDataUpdateStyle updateSt
     }
 }
 
-void HierarchyTree::UpdateExtraData(HierarchyTreeScreenNode* screenNode,BaseMetadata::eExtraDataUpdateStyle updateStyle)
+void HierarchyTree::UpdateExtraData(const HierarchyTreeScreenNode* screenNode,BaseMetadata::eExtraDataUpdateStyle updateStyle)
 {
     // Update extra data from controls in a recursive way.
     for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER controlNodesIter = screenNode->GetChildNodes().begin();
@@ -649,7 +649,7 @@ void HierarchyTree::UpdateExtraDataRecursive(HierarchyTreeControlNode* node, Bas
     }
 }
 
-void HierarchyTree::UpdateControlsData(HierarchyTreeScreenNode* screenNode)
+void HierarchyTree::UpdateControlsData(const HierarchyTreeScreenNode* screenNode)
 {
 	UpdateExtraData(screenNode, BaseMetadata::UPDATE_EXTRADATA_FROM_CONTROL);
 }
@@ -662,6 +662,11 @@ void HierarchyTree::UpdateControlsData()
 void HierarchyTree::UpdateLocalization()
 {
     UpdateExtraData(BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED);
+}
+
+void HierarchyTree::UpdateLocalization(const HierarchyTreeScreenNode* screenNode)
+{
+	UpdateExtraData(screenNode, BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED);
 }
 
 List<HierarchyTreeScreenNode*> HierarchyTree::GetUnsavedScreens()

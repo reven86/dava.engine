@@ -57,6 +57,8 @@ public:
     virtual void Process();
     virtual void PrintUsage();
     virtual void DumpParams();
+    
+    virtual DAVA::FilePath GetQualityConfigPath() const;
 
 protected:
 
@@ -68,7 +70,8 @@ protected:
     
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
-    
+    DAVA::FilePath qualityConfigPath;
+
     DAVA::String gpu;
 	bool optimizeOnExport;
 

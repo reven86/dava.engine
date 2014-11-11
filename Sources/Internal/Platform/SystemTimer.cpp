@@ -54,18 +54,15 @@ static int frameCount;
 #if defined(__DAVAENGINE_ANDROID__)
 void SystemTimer::InitTickCount()
 {
-	tickMutex.Lock();
-	struct timeval tv; 
+	struct timeval tv;
 	gettimeofday(&tv,NULL); 
 	savedSec = tv.tv_sec;
-	tickMutex.Unlock();
 
 	Logger::FrameworkDebug("[SystemTimer::InitTickCount] savedSec = %ld", savedSec);
 }
 
 uint64 SystemTimer::GetTickCount() 
-{ 
-	tickMutex.Lock();
+{
 	struct timeval tv; 
 	gettimeofday(&tv,NULL);
 
@@ -75,8 +72,7 @@ uint64 SystemTimer::GetTickCount()
 	msec = msec / 1000;
 	uint64 ret = sec + msec;
 
-	tickMutex.Unlock();
- 	return  ret;
+    return  ret;
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
@@ -85,7 +81,7 @@ SystemTimer::SystemTimer()
     globalTime = 0.0f;
     pauseMultiplier = 1.0f;
 #if defined(__DAVAENGINE_WIN32__)
-    t0 = 0;
+    t0 = (float32)(GetTickCount() / 1000.0f);
     QueryPerformanceCounter(&tLi);
 	bHighTimerSupport = QueryPerformanceFrequency(&liFrequency);
 	if (bHighTimerSupport)
@@ -95,7 +91,7 @@ SystemTimer::SystemTimer()
 #elif defined(__DAVAENGINE_ANDROID__)
 	savedSec = 0;
 	InitTickCount();
- 	//t0 = (float32)(GetTickCount() / 1000.0f);
+ 	t0 = (float32)(GetTickCount() / 1000.0f);
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	(void) mach_timebase_info(&timebase);
     

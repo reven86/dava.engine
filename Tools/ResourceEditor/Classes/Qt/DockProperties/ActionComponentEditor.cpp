@@ -103,6 +103,8 @@ ActionComponentEditor::ActionComponentEditor(QWidget *parent)
 
     actionTypes[DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_START] = "Particle start";
     actionTypes[DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_STOP] = "Particle stop";
+    actionTypes[DAVA::ActionComponent::Action::TYPE_ANIMATION_START] = "Animation start";
+    actionTypes[DAVA::ActionComponent::Action::TYPE_ANIMATION_STOP] = "Animation stop";
     actionTypes[DAVA::ActionComponent::Action::TYPE_SOUND_START] = "Sound start";
     actionTypes[DAVA::ActionComponent::Action::TYPE_SOUND_STOP] = "Sound stop";
 
@@ -273,6 +275,8 @@ ActionItemEditDelegate::ActionItemEditDelegate(QObject *parent)
 {
     actionTypes["Particle start"] = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_START;
     actionTypes["Particle stop"] = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_STOP;
+    actionTypes["Animation start"] = DAVA::ActionComponent::Action::TYPE_ANIMATION_START;
+    actionTypes["Animation stop"] = DAVA::ActionComponent::Action::TYPE_ANIMATION_STOP;
     actionTypes["Sound start"] = DAVA::ActionComponent::Action::TYPE_SOUND_START;
     actionTypes["Sound stop"] = DAVA::ActionComponent::Action::TYPE_SOUND_STOP;
 

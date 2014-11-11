@@ -79,6 +79,9 @@ public:
     void SetScreenScaleChangedFlag();
     void SetScreenPositionChangedFlag();
 
+signals:
+    void DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodesList);
+    
 private:
 	enum InputState
 	{
@@ -172,7 +175,7 @@ private:
 	
 	InputDelta GetInputDelta(const Vector2& point, bool applyScale = true);
 	
-	Rect GetControlRect(const HierarchyTreeControlNode* control) const;
+	Rect GetControlRect(const HierarchyTreeControlNode* control, bool checkAngle = false) const;
 	void CopySelectedControls();
 
     // In case Preview mode is enabled, translate mouse UI events directly to the preview screen.
@@ -236,8 +239,6 @@ private:
 
 	// Check control's visibility.
 	bool IsControlVisible(const UIControl* uiControl) const;
-
-    bool IsControlContentVisible( const UIControl *control ) const;
 
     // Calculate the stick to guides for different input modes.
     int32 CalculateStickToGuides(Vector2& offset) const;

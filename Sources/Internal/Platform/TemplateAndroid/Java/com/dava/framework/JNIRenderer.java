@@ -18,17 +18,15 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	private native void nativeOnPauseView(boolean isLock);
 	
 	private boolean skipFirstFrame = false;
+	private boolean showTextFields = false;
 
 	private int width = 0;
 	private int height = 0;
 	
 	private boolean isRenderRecreated = false;
-	private static JNIBackgroundUpdateThread backgroundUpdateThread = null;
 	
 	public JNIRenderer()
 	{
-		if (null == backgroundUpdateThread)
-			backgroundUpdateThread = new JNIBackgroundUpdateThread();
 	}
 
 	@Override
@@ -45,7 +43,6 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 		Log.w(JNIConst.LOG_TAG, "_________onSurfaceCreated_____DONE_____");
 	}
 
-
 	private void LogExtensions() {
 		String oglVersion = GLES20.glGetString(GLES20.GL_VERSION);
 		String deviceName = GLES20.glGetString(GLES20.GL_RENDERER);
@@ -59,45 +56,46 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged");
-		if (isRenderRecreated || width != w || height != h)
-		{
-			width = w;
-			height = h;
-
+		if (isRenderRecreated || width != w || height != h) {
+			if (width != w || height != h) {
+				skipFirstFrame = true;
+				width = w;
+				height = h;
+			}
 			nativeResize(width, height);
 			isRenderRecreated = false;
 		}
 		OnResume();
-		skipFirstFrame = true;
+		showTextFields = true;
 
 		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged__DONE___");
 	}
 
-	public boolean isFirstDraw = true;
-
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		if (skipFirstFrame) {
-			skipFirstFrame = false;
+			skipFirstFrame = false; //skip first frame for correct unlock device in landscape mode, after unlock device in first frame draw in portrait mode
 			return;
 		}
-			
+
 		nativeRender();
+		
+		if(showTextFields)
+		{
+			showTextFields = false;
+			JNITextField.ShowVisibleTextFields();
+		}
 	}
 	
 	public void OnPause()
 	{
 		PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
 		nativeOnPauseView(!pm.isScreenOn());
-		if (null != backgroundUpdateThread)
-			backgroundUpdateThread.StartBackgroundDownloadThread();
 	}
 	
 	public void OnResume()
 	{
 		nativeOnResumeView();
-		if (null != backgroundUpdateThread)
-			backgroundUpdateThread.WaitExitDownloadTread();
 	}
 	
 }

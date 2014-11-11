@@ -52,6 +52,7 @@ namespace DAVA
 
 static const FastName DEFINE_VERTEX_LIT("VERTEX_LIT");
 static const FastName DEFINE_PIXEL_LIT("PIXEL_LIT");
+static const FastName DEFINE_LAND_SPECULAR("SPECULAR_LAND");
 
 const FastName NMaterial::TEXTURE_ALBEDO("albedo");
 const FastName NMaterial::TEXTURE_NORMAL("normalmap");
@@ -80,6 +81,14 @@ const FastName NMaterial::PARAM_FOG_COLOR("fogColor");
 const FastName NMaterial::PARAM_FOG_DENSITY("fogDensity");
 const FastName NMaterial::PARAM_FOG_START("fogStart");
 const FastName NMaterial::PARAM_FOG_END("fogEnd");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_DENSITY("fogHalfspaceDensity");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_HEIGHT("fogHalfspaceHeight");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_FALLOFF("fogHalfspaceFalloff");
+const FastName NMaterial::PARAM_FOG_HALFSPACE_LIMIT("fogHalfspaceLimit");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SUN("fogAtmosphereColorSun");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_COLOR_SKY("fogAtmosphereColorSky");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_SCATTERING("fogAtmosphereScattering");
+const FastName NMaterial::PARAM_FOG_ATMOSPHERE_DISTANCE("fogAtmosphereDistance");
 const FastName NMaterial::PARAM_FLAT_COLOR("flatColor");
 const FastName NMaterial::PARAM_TEXTURE0_SHIFT("texture0Shift");
 const FastName NMaterial::PARAM_UV_OFFSET("uvOffset");
@@ -91,10 +100,12 @@ const FastName NMaterial::PARAM_DECAL_TILE_COLOR("decalTileColor");
 const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 
-
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
+const FastName NMaterial::FLAG_FOG_HALFSPACE = FastName("FOG_HALFSPACE");
+const FastName NMaterial::FLAG_FOG_HALFSPACE_LINEAR = FastName("FOG_HALFSPACE_LINEAR");
+const FastName NMaterial::FLAG_FOG_ATMOSPHERE = FastName("FOG_ATMOSPHERE");
 const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED");
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
@@ -109,6 +120,8 @@ const FastName NMaterial::FLAG_SPHERICAL_LIT = FastName("SPHERICAL_LIT");
 const FastName NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGENT_SPACE_WATER_REFLECTIONS");
 
 const FastName NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UNITY_Z_NORMAL");
+
+const FastName NMaterial::FLAG_SKINNING = FastName("SKINNING");
 
 const FastName NMaterial::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterial::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
@@ -133,7 +146,7 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 	NMaterial::FLAG_TEXTUREONLY,
 	NMaterial::FLAG_SETUPLIGHTMAP,
 
-    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,
+    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,    
 	
 	NMaterial::FLAG_VIEWALBEDO,
 	NMaterial::FLAG_VIEWAMBIENT,
@@ -356,23 +369,7 @@ void NMaterial::Save(KeyedArchive * archive,
 		archive->SetString("materialGroup", GetMaterialGroup().c_str());
 	}
 	
-	archive->SetString("materialTemplate", (materialTemplate) ? materialTemplate->name.c_str() : "");
-	
-	if(instancePassRenderStates.size() > 0)
-	{
-		KeyedArchive* materialCustomStates = new KeyedArchive();
-		for(HashMap<FastName, UniqueHandle>::iterator it = instancePassRenderStates.begin();
-			it != instancePassRenderStates.end();
-			++it)
-		{
-			UniqueHandle currentHandle = it->second;
-			
-			const RenderStateData& stateData = RenderManager::Instance()->GetRenderStateData(currentHandle);
-			materialCustomStates->SetByteArray(it->first.c_str(), (uint8*)&stateData, sizeof(RenderStateData));
-		}
-		archive->SetArchive("materialCustomStates", materialCustomStates);
-		SafeRelease(materialCustomStates);
-	}
+	archive->SetString("materialTemplate", (materialTemplate) ? materialTemplate->name.c_str() : "");		
 	
 	KeyedArchive* materialTextures = new KeyedArchive();
 	for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
@@ -461,25 +458,7 @@ void NMaterial::Load(KeyedArchive * archive,
     {
         materialKey = (NMaterial::NMaterialKey)archive->GetUInt64("materialKey");
 	    pointer = materialKey;
-    }
-	
-	if(archive->IsKeyExists("materialCustomStates"))
-	{
-		RenderStateData stateData;
-		const Map<String, VariantType*>& customRenderState = archive->GetArchive("materialCustomStates")->GetArchieveData();
-		for(Map<String, VariantType*>::const_iterator it = customRenderState.begin();
-			it != customRenderState.end();
-			++it)
-		{
-            
-			DVASSERT(it->second->AsByteArraySize() == sizeof(RenderStateData));
-			const uint8* array = it->second->AsByteArray();
-			memcpy(&stateData, array, sizeof(RenderStateData));
-			
-			UniqueHandle currentHandle = RenderManager::Instance()->CreateRenderState(stateData);
-			instancePassRenderStates.insert(FastName(it->first.c_str()), currentHandle);
-		}
-	}
+    }	
 
 	if(archive->IsKeyExists("materialGroup"))
 	{
@@ -1006,6 +985,10 @@ void NMaterial::SetMaterialGroup(const FastName &group)
 		{
 			SetQuality(curQuality->qualityName);
 		}
+        else
+        {
+            Logger::Error("Material \"%s\" uses quality group \"%s\", that isn't exist in quality system.", materialName.c_str(), group.c_str());
+        }
 	}
 }
 
@@ -1162,7 +1145,6 @@ void NMaterial::UpdateMaterialTemplate()
 	SetRenderLayers(RenderLayerManager::Instance()->GetLayerIDMaskBySet(baseTechnique->GetLayersSet()));
 
     //{VI: temporray code should be removed once lighting system is up
-
     dynamicBindFlags = (baseTechnique->GetLayersSet().count(LAYER_SHADOW_VOLUME) != 0) ? DYNAMIC_BIND_LIGHT : 0;
     for(uint32 i = 0; i < passCount; ++i)
     {
@@ -1230,6 +1212,17 @@ void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
 	}
 
     SetTexturesDirty();
+}
+    
+void NMaterial::BuildTextureParamsCache()
+{
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
+    while(it != endIt)
+    {
+        BuildTextureParamsCache(it->second);
+        ++it;
+    }
 }
     
 void NMaterial::BuildActiveUniformsCacheParamsCache()

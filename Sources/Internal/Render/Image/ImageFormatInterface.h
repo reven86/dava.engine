@@ -34,6 +34,7 @@
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
+#include "Utils/Utils.h"
 
 namespace DAVA 
 {
@@ -53,7 +54,7 @@ public:
     virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
     
     virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const = 0;
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const = 0;
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const = 0;
     
     virtual uint32 GetDataSize(File *infile) const = 0;
 
@@ -71,7 +72,16 @@ protected:
     
 inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extension) const
 {
-    return std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end();
+    for (Vector<String>::const_iterator it = supportedExtensions.begin(); it != supportedExtensions.end(); ++it)
+    {
+        const bool isEqual = (CompareCaseInsensitive(*it, extension) == 0);
+        if (isEqual)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 };

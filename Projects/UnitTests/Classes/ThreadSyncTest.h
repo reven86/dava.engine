@@ -46,10 +46,14 @@ public:
 	virtual void LoadResources();
 	virtual void UnloadResources();
 
+    void SomeThreadFunc(BaseObject * caller, void * callerData, void * userData);
 	void ThreadSyncTestFunction(PerfFuncData * data);
     void ThreadSleepTestFunction(PerfFuncData * data);
+    
+    void InfiniteThreadFunction(BaseObject * caller, void * callerData, void * userData);
+    void ShortThreadFunction(BaseObject * caller, void * callerData, void * userData);
+    void TestThread(PerfFuncData * data);
 
-    void SomeThreadFunc(BaseObject * caller, void * callerData, void * userData);
 
 private:
     Thread * someThread;

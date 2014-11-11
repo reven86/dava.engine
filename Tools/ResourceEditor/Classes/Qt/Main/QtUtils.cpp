@@ -232,3 +232,27 @@ void ShowFileInExplorer(const QString& path)
 #endif//
 
 }
+
+void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
+{
+    if(sprite)
+    {
+        SaveTextureToFile(sprite->GetTexture(), path);
+    }
+}
+
+void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
+{
+    if(texture)
+    {
+        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_BLEND);
+        SaveImageToFile(img, path);
+        img->Release();
+    }
+}
+
+void SaveImageToFile(DAVA::Image * image, const DAVA::FilePath & path)
+{
+    DAVA::ImageSystem::Instance()->Save(path, image);
+}
+

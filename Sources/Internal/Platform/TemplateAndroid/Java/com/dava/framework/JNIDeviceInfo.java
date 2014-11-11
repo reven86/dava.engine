@@ -222,6 +222,7 @@ public class JNIDeviceInfo {
 	public static StorageInfo GetInternalStorageInfo()
 	{
 		String path = Environment.getDataDirectory().getPath();
+		path += "/";
 		StatFs statFs = new StatFs(path);
 
 		long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
@@ -246,6 +247,7 @@ public class JNIDeviceInfo {
 		if (IsPrimaryExternalStoragePresent())
 		{
 			String path = Environment.getExternalStorageDirectory().getPath();
+			path += "/";
 			StatFs statFs = new StatFs(path);
 
             long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
@@ -275,28 +277,30 @@ public class JNIDeviceInfo {
 			String line;
 			while ((line = reader.readLine()) != null)
 			{
-				if (line.contains("vfat") || line.contains("/mnt"))
+				if (!line.contains("/mnt/secure")
+						&& !line.contains("/mnt/asec")
+						&& !line.contains("/mnt/obb")
+						&& !line.contains("/dev/mapper")
+						&& !line.contains("emulated")
+						&& !line.contains("tmpfs"))
 				{
 					StringTokenizer tokens = new StringTokenizer(line, " ");
-					String unused = tokens.nextToken(); //device
-					String mountPoint = tokens.nextToken(); //mount point
+					tokens.nextToken(); //device
+					String mountPoint = tokens.nextToken();
 
 					if (paths.contains(mountPoint))
 					{
 					    continue;
 					}
 
-					unused = tokens.nextToken(); //file system
+					String fileSystem = tokens.nextToken();
 
 					List<String> flags = Arrays.asList(tokens.nextToken().split(",")); //flags
 					boolean readonly = flags.contains("ro");
 
-					if (!line.contains("/mnt/secure")
-						&& !line.contains("/mnt/asec")
-						&& !line.contains("/mnt/obb")
-						&& !line.contains("/dev/mapper")
-						&& !line.contains("tmpfs"))
+					if (fileSystem.equals("vfat") || mountPoint.startsWith("/mnt") || mountPoint.startsWith("/storage"))
 					{
+						mountPoint += "/";
 						paths.add(mountPoint);
 
 						StatFs statFs = null;

@@ -72,7 +72,10 @@
 #include "ParseTextTest.h"
 #include "ImageSizeTest.h"
 #include "DLCDownloadTest.h"
-
+#include "FunctionBindSingalTest.h"
+#include "MathTest.h"
+#include "BiDiTest.h"
+#include "TextSizeTest.h"
 
 using namespace DAVA;
 
@@ -98,7 +101,11 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
+	new MathTest();
+	new FunctionBindSignalTest();
+    new ThreadSyncTest();
     new DLCDownloadTest();
+
 
 	new ImageSizeTest();
     new DeviceInfoTest();
@@ -136,6 +143,8 @@ void GameCore::OnAppStarted()
  	new SoundTest();
  	new SplitTest();
  	new AlignTest();
+    new BiDiTest();
+	new TextSizeTest();
  	new EMailTest();
  	new DPITest();
  	new MaterialCompilerTest();
@@ -148,7 +157,7 @@ void GameCore::OnAppStarted()
  	new UIListTest();
  	new UIScrollViewTest();
  
-    new ThreadSyncTest();
+
     new SceneSystemTest();
     
     errors.reserve(TestCount());

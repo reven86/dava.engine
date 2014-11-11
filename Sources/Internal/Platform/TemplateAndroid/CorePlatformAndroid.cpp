@@ -39,6 +39,8 @@ extern void FrameworkWillTerminate();
 #include "Platform/Thread.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
+#include "Scene3D/SceneCache.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
 namespace DAVA
 {
@@ -128,9 +130,25 @@ namespace DAVA
 	{
 		if(renderIsActive)
 		{
+			uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+		
 			DAVA::RenderManager::Instance()->Lock();
 			Core::SystemProcessFrame();
 			DAVA::RenderManager::Instance()->Unlock();
+
+			uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 sleepMs = 1;
+
+            int32 fps = RenderManager::Instance()->GetFPS();
+            if(fps > 0)
+            {
+                sleepMs = (1000 / fps) - elapsedTime;
+                if(sleepMs < 1)
+                {
+                    sleepMs = 1;
+                }
+            }
+            Thread::Sleep(sleepMs);
 		}
 	}
 
@@ -158,12 +176,15 @@ namespace DAVA
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
 	}
 
-	void CorePlatformAndroid::CreateAndroidWindow(const char8 *docPath, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate)
+	void CorePlatformAndroid::CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate)
 	{
 		androidDelegate = sysDelegate;
-		externalStorage = docPath;
-
+		externalStorage = docPathEx;
+		internalStorage = docPathIn;
+	
 		Core::CreateSingletons();
+
+		AssetsManager::Instance()->Init(assets);
 
 		Logger::SetTag(logTag);
 	}
@@ -176,6 +197,8 @@ namespace DAVA
 
 		Thread::InitGLThread();
 
+		totalTouches.clear();
+
 		if(wasCreated)
 		{
 			RenderManager::Instance()->Lost();
@@ -186,6 +209,8 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
+			
+			SceneCache::Instance()->InvalidateSceneMaterials();
 		}
 		else
 		{
@@ -343,16 +368,6 @@ namespace DAVA
 		newEvent.timestamp = time;
 
 		return newEvent;
-	}
-
-	AAssetManager * CorePlatformAndroid::GetAssetManager()
-	{
-		return assetMngr;
-	}
-
-	void CorePlatformAndroid::SetAssetManager(AAssetManager * mngr)
-	{
-		assetMngr = mngr;
 	}
 
 	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)

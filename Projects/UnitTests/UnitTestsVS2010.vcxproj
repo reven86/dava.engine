@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="Classes\AlignTest.h" />
     <ClInclude Include="Classes\BaseScreen.h" />
+    <ClInclude Include="Classes\BiDiTest.h" />
     <ClInclude Include="Classes\CloneTest.h" />
     <ClInclude Include="Classes\ComponentsTest.h" />
     <ClInclude Include="Classes\Config.h" />
@@ -28,8 +29,10 @@
     <ClInclude Include="Classes\FilePathTest.h" />
     <ClInclude Include="Classes\FileSystemTest.h" />
     <ClInclude Include="Classes\FormatsTest.h" />
+    <ClInclude Include="Classes\FunctionBindSingalTest.h" />
     <ClInclude Include="Classes\ImageSizeTest.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
+    <ClInclude Include="Classes\MathTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
     <ClInclude Include="Classes\ParseTextTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
@@ -50,6 +53,7 @@
     <ClInclude Include="Classes\SoundTest.h" />
     <ClInclude Include="Classes\SplitTest.h" />
     <ClInclude Include="Classes\TestTemplate.h" />
+    <ClInclude Include="Classes\TextSizeTest.h" />
     <ClInclude Include="Classes\TextureUtils.h" />
     <ClInclude Include="Classes\ThreadSyncTest.h" />
     <ClInclude Include="Classes\TransparentWebViewTest.h" />
@@ -61,6 +65,7 @@
   <ItemGroup>
     <ClCompile Include="Classes\AlignTest.cpp" />
     <ClCompile Include="Classes\BaseScreen.cpp" />
+    <ClCompile Include="Classes\BiDiTest.cpp" />
     <ClCompile Include="Classes\CloneTest.cpp" />
     <ClCompile Include="Classes\ComponentsTest.cpp" />
     <ClCompile Include="Classes\DateTimeTest.cpp" />
@@ -75,8 +80,10 @@
     <ClCompile Include="Classes\FilePathTest.cpp" />
     <ClCompile Include="Classes\FileSystemTest.cpp" />
     <ClCompile Include="Classes\FormatsTest.cpp" />
+    <ClCompile Include="Classes\FunctionBindSingalTest.cpp" />
     <ClCompile Include="Classes\ImageSizeTest.cpp" />
     <ClCompile Include="Classes\JPEGTest.cpp" />
+    <ClCompile Include="Classes\MathTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
     <ClCompile Include="Classes\ParseTextTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
@@ -96,6 +103,7 @@
     <ClCompile Include="Classes\SampleTest.cpp" />
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
+    <ClCompile Include="Classes\TextSizeTest.cpp" />
     <ClCompile Include="Classes\TextureUtils.cpp" />
     <ClCompile Include="Classes\ThreadSyncTest.cpp" />
     <ClCompile Include="Classes\TransparentWebViewTest.cpp" />
@@ -157,13 +165,14 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;DAVA_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Win32Framework.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -185,6 +194,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Win32Framework.lib;%(AdditionalDependencies)</AdditionalDependencies>

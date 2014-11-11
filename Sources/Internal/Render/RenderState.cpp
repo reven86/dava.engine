@@ -233,11 +233,13 @@ void RenderState::Flush(RenderState * hardwareState) const
     if(textureState != hardwareState->textureState &&
        textureState != InvalidUniqueHandle)
     {
+        DVASSERT(InvalidUniqueHandle != hardwareState->textureState);
+        
         const TextureStateData& currentTextureData = RenderManager::Instance()->GetTextureState(textureState);
         const TextureStateData& hardwareTextureData = RenderManager::Instance()->GetTextureState(hardwareState->textureState);
         
-        uint32 minIndex = currentTextureData.minmaxTextureIndex & 0x000000FF;
-        uint32 maxIndex = ((currentTextureData.minmaxTextureIndex & 0x0000FF00) >> 8);
+        uint32 minIndex = Min(currentTextureData.minmaxTextureIndex & 0x000000FF, hardwareTextureData.minmaxTextureIndex & 0x000000FF);
+        uint32 maxIndex = Max((currentTextureData.minmaxTextureIndex & 0x0000FF00), (hardwareTextureData.minmaxTextureIndex & 0x0000FF00)) >> 8;
         for(size_t i = minIndex; i <= maxIndex; ++i)
         {
             if(currentTextureData.textures[i] != hardwareTextureData.textures[i])

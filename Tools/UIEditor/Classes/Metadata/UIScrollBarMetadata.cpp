@@ -27,6 +27,8 @@
 =====================================================================================*/
 
 #include "UIScrollBarMetadata.h"
+#include "HierarchyTreeController.h"
+#include "UI/UIControlHelpers.h"
 
 namespace DAVA {
 
@@ -71,6 +73,28 @@ void UIScrollBarMetadata::SetScrollOrientation(int value)
     }	
     
 	GetActiveUIScrollBar()->SetOrientation((UIScrollBar::eScrollOrientation)value);
+}
+    
+QString UIScrollBarMetadata::GetUIScrollBarDelegateName()
+{
+    if (!VerifyActiveParamID())
+    {
+        return "";
+    }
+    
+    return QString::fromStdString(GetActiveUIScrollBar()->GetDelegatePath(NULL));
+}
+
+void UIScrollBarMetadata::SetUIScrollBarDelegateName(const QString& value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    String name = value.toStdString();
+    UIControl * rootControl = HierarchyTreeController::Instance()->GetActiveScreen()->GetScreen();
+    UIControl * delegate = UIControlHelpers::GetControlByPath(name, rootControl);
+    GetActiveUIScrollBar()->SetDelegate( dynamic_cast<UIScrollBarDelegate*>(delegate));
 }
 
 };

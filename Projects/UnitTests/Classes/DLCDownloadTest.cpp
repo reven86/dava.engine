@@ -29,11 +29,6 @@
 #include "DLCDownloadTest.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/Downloader.h"
-CurlTestDownloader::CurlTestDownloader(uint32 operationTimeout)
-    : CurlDownloader(operationTimeout)
-{
-    
-}
 
 size_t CurlTestDownloader::SaveData(void *ptr, size_t size, size_t nmemb)
 {
@@ -80,7 +75,7 @@ void DLCDownloadTest::WaitForTaskState(const uint32 &taskId, const DownloadStatu
     while (taskIdToWait != taskId && statusToWait != status)
     {
         DownloadManager::Instance()->Update();
-        Thread::SleepThread(1);
+        Thread::Sleep(1);
         uint64 delta = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if (delta >= timeout)
             return;
@@ -774,7 +769,10 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     DownloadManager::Instance()->GetTotal(httpId, total);
     file = File::Create(dstHttps, File::OPEN | File::READ);
     TEST_VERIFY(NULL != file);
-    filesize = file->GetSize();
+    if (NULL != file)
+    {
+        filesize = file->GetSize();
+    }
     TEST_VERIFY(filesize == progress);
     TEST_VERIFY(total > progress);
     SafeRelease(file);

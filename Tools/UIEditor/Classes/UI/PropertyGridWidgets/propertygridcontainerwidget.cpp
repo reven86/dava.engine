@@ -30,6 +30,8 @@
 #include "propertygridcontainerwidget.h"
 #include "ui_propertygridcontainerwidget.h"
 
+#include "statepropertygridwidget.h"
+
 #include "MetadataFactory.h"
 #include "EditorSettings.h"
 
@@ -48,6 +50,10 @@ PropertyGridContainerWidget::PropertyGridContainerWidget(QWidget *parent) :
 
 PropertyGridContainerWidget::~PropertyGridContainerWidget()
 {
+    disconnect(PropertiesGridController::Instance(), SIGNAL(PropertiesGridUpdated()),
+    this, SLOT(OnPropertiesGridUpdated()));
+    disconnect(PropertiesGridController::Instance(), SIGNAL(UIControlsDeselected()),
+    this, SLOT(OnUIControlsDeselected()));
     delete ui;
 }
 
@@ -142,7 +148,7 @@ void PropertyGridContainerWidget::BuildPropertiesGridList()
 {
     // Need to understand which Metadata we need. Since multiple controls of different
     // type might be selected, we are looking for the most common Metadata.
-    const HierarchyTreeController::SELECTEDCONTROLNODES activeNodes = PropertiesGridController::Instance()->GetActiveTreeNodesList();
+    const HierarchyTreeController::SELECTEDCONTROLNODES &activeNodes = PropertiesGridController::Instance()->GetActiveTreeNodesList();
     BaseMetadata* metaData = GetActiveMetadata(activeNodes);
 
     METADATAPARAMSVECT params;
@@ -172,7 +178,7 @@ void PropertyGridContainerWidget::BuildPropertiesGrid(BaseMetadata* metaData,
     CleanupPropertiesGrid();
 
     // Metadata is state-aware.
-	Vector<UIControl::eControlState> activeStates = PropertiesGridController::Instance()->GetActiveUIControlStates();
+    const Vector<UIControl::eControlState> &activeStates = PropertiesGridController::Instance()->GetActiveUIControlStates();
     metaData->SetUIControlStates(activeStates);
 
     this->activeWidgetsList = widgetsFactory.GetWidgets(metaData);
@@ -214,7 +220,7 @@ BaseMetadata* PropertyGridContainerWidget::GetActiveMetadata(const HierarchyTree
 }
 
 // Work with Active Metadata.
-BaseMetadata* PropertyGridContainerWidget::GetActiveMetadata(const HierarchyTreeController::SELECTEDCONTROLNODES activeNodes)
+BaseMetadata* PropertyGridContainerWidget::GetActiveMetadata(const HierarchyTreeController::SELECTEDCONTROLNODES &activeNodes)
 {
     return MetadataFactory::Instance()->GetMetadataForTreeNodesList(activeNodes);
 }

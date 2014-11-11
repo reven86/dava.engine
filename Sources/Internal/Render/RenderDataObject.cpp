@@ -44,9 +44,9 @@ RenderDataStream::RenderDataStream()
     stride = 0;
     pointer = 0;
     
-//#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-//    savedPointerData = NULL;
-//#endif //#if defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__)
+    savedPointerData = NULL;
+#endif //#if defined (__DAVAENGINE_ANDROID__)
 }
 
 RenderDataStream::~RenderDataStream()
@@ -60,9 +60,9 @@ void RenderDataStream::Set(eVertexDataType _type, int32 _size, int32 _stride, co
     stride = _stride;
     pointer = _pointer;
     
-//#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-//    savedPointerData = pointer;
-//#endif //#if defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__)
+    savedPointerData = pointer;
+#endif //#if defined (__DAVAENGINE_ANDROID__)
 
 }
     
@@ -73,11 +73,12 @@ RenderDataObject::RenderDataObject()
     vboBuffer = 0;
     vertexAttachmentActive = false;
     
-//#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-//    savedVertexCount = 0;
-//    savedIndices = NULL;
-//    isLost = false;
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__)
+    savedVertexCount = 0;
+    savedIndices = NULL;
+    isLost = false;
+    buildIndexBuffer = false;
+#endif //#if defined(__DAVAENGINE_ANDROID__)
 
     indexFormat = EIF_16;
     indices = 0;
@@ -222,6 +223,9 @@ void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * par
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vboBuffer));
 
 	int32 vertexCount = (int32)((int64)param);
+#if defined (__DAVAENGINE_ANDROID__)
+    savedVertexCount = vertexCount;
+#endif //#if defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GL_STATIC_DRAW));
 
     streamArray[0]->pointer = 0;
@@ -241,9 +245,9 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
     indexCount = _count;
     indices = _indices;
     
-//#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-//    savedIndices = indices;
-//#endif //#if defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__)
+    savedIndices = indices;
+#endif //#if defined (__DAVAENGINE_ANDROID__)
 }
 
 void RenderDataObject::BuildIndexBuffer(bool synchronously)
@@ -263,6 +267,9 @@ void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * para
 #if defined (__DAVAENGINE_OPENGL__)
     
     
+#if defined (__DAVAENGINE_ANDROID__)
+    buildIndexBuffer = true;
+#endif
     
 #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
     if (indexBuffer)
@@ -337,66 +344,48 @@ void RenderDataObject::DetachVertices()
     vertexAttachmentActive = false;
 }
 
-//#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-//void RenderDataObject::SaveToSystemMemory()
-//{
-//}
-//
-//void RenderDataObject::Lost()
-//{
-////    Logger::FrameworkDebug("[RenderDataObject::Lost]");
-//    //    vboBuffer = 0;
-//#if defined(__DAVAENGINE_OPENGL__)
-//#if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
-//    if (vboBuffer)
-//        RENDER_VERIFY(glDeleteBuffersARB(1, &vboBuffer));
-//    if (indexBuffer)
-//        RENDER_VERIFY(glDeleteBuffersARB(1, &indexBuffer));
-//#else 
-//    if (vboBuffer)
-//        RENDER_VERIFY(glDeleteBuffers(1, &vboBuffer));
-//    if (indexBuffer)
-//        RENDER_VERIFY(glDeleteBuffers(1, &indexBuffer));
-//#endif
-//    
-//    vboBuffer = 0;
-//    indexBuffer = 0;
-//#endif
-//
-//    isLost = true;
-//
-//}
-//
-//void RenderDataObject::Invalidate()
-//{
-////    Logger::FrameworkDebug("[RenderDataObject::Invalidate]");
-//
-//    if(isLost)
-//    {
-//        isLost = false;
-//        
-//        if(savedVertexCount)
-//        {
-//            uint32 size = streamArray.size();
-//            for (uint32 k = 0; k < size; ++k)
-//            {
-//                streamArray[k]->pointer = streamArray[k]->savedPointerData;
-//            }
-//            
-//            BuildVertexBuffer(savedVertexCount);
-//        }
-//        
-//        if(savedIndices)
-//        {
-//            indices = savedIndices;
-//            BuildIndexBuffer();
-//        }
-//    }
-//    else
-//    {
-//        Logger::Warning("[RenderDataObject::Invalidate] not lost !!!");
-//    }
-//}
-//
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__)
+void RenderDataObject::SaveToSystemMemory()
+{
+}
+
+void RenderDataObject::Lost()
+{
+    vboBuffer = 0;
+    indexBuffer = 0;
+    isLost = true;
+}
+
+void RenderDataObject::Invalidate()
+{
+//    Logger::FrameworkDebug("[RenderDataObject::Invalidate]");
+
+    if(isLost)
+    {
+        isLost = false;
+
+        if(!HasVertexAttachment() && savedVertexCount)
+        {
+            uint32 size = streamArray.size();
+            for (uint32 k = 0; k < size; ++k)
+            {
+                streamArray[k]->pointer = streamArray[k]->savedPointerData;
+            }
+
+            BuildVertexBuffer(savedVertexCount);
+        }
+
+        if(buildIndexBuffer && savedIndices)
+        {
+            indices = savedIndices;
+            BuildIndexBuffer();
+        }
+    }
+    else
+    {
+        Logger::Warning("[RenderDataObject::Invalidate] not lost !!!");
+    }
+}
+
+#endif //#if defined(__DAVAENGINE_ANDROID__)
 }

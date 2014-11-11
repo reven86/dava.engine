@@ -31,6 +31,7 @@
 #include "UI/UIListCell.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIAggregatorControl.h"
+#include "UI/UIYamlLoader.h"
 #include "FileSystem/YamlNode.h"
 
 namespace DAVA 
@@ -44,8 +45,7 @@ namespace DAVA
 		if (!aggregatorPath.IsEmpty())
 		{
 			UIAggregatorControl *aggregator = new UIAggregatorControl();
-			ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
-			loader->Load(aggregator, aggregatorPath);
+			UIYamlLoader::Load(aggregator, aggregatorPath);
 			
 			this->AddControl(aggregator);
 			SafeRelease(aggregator);
@@ -105,8 +105,9 @@ namespace DAVA
     {
         YamlNode *node = UIButton::SaveToYamlNode(loader);
 
+        ScopedPtr<UIListCell> baseControl(new UIListCell());
         //Identifier
-        if( !GetIdentifier().empty() )
+        if (baseControl->GetIdentifier() != GetIdentifier())
         {
             node->Set("identifier", GetIdentifier());
         }

@@ -41,7 +41,7 @@ namespace DAVA
     const FastName NMaterialName::TEXTURED_OPAQUE = FastName("~res:/Materials/Textured.Opaque.material");
     const FastName NMaterialName::DETAIL_ALPHABLEND = FastName("~res:/Materials/Detail.Alphablend.material");
     const FastName NMaterialName::SHADOWRECT_MULTIPLY = FastName("~res:/Materials/ShadowRectMultiply.material");
-    const FastName NMaterialName::TILE_MASK = FastName("~res:/Materials/TileMask.material");
+    const FastName NMaterialName::TILE_MASK = FastName("~res:/Materials/TileMaskAllQualities.material");
     const FastName NMaterialName::DETAIL_ALPHATEST = FastName("~res:/Materials/Detail.Alphatest.material");
     const FastName NMaterialName::SHADOW_VOLUME = FastName("~res:/Materials/ShadowVolume.material");
     const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/VertexColor.Alphablend.material");
@@ -49,6 +49,7 @@ namespace DAVA
     const FastName NMaterialName::SILHOUETTE = FastName("~res:/Materials/Silhouette.material");
     const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_ALPHABLEND = FastName("~res:/Materials/VertexColor.FrameBlend.Alphablend.material");
     const FastName NMaterialName::SKYBOX = FastName("~res:/Materials/Skybox.material");
+    const FastName NMaterialName::SKYOBJECT = FastName("~res:/Materials/Skyobject.material");
     const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_OPAQUE = FastName("~res:/Materials/VertexColor.FrameBlend.Opaque.material");
     const FastName NMaterialName::PIXELLIT_ALPHATEST = FastName("~res:/Materials/PixelLit.Alphatest.material");
     const FastName NMaterialName::SPEEDTREE_LEAF = FastName("~res:/Materials/SpeedTreeLeaf.material");
