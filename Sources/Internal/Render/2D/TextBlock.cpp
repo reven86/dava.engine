@@ -306,7 +306,6 @@ void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
 	if(this->useRtlAlign != useRtlAlign)
 	{
 		this->useRtlAlign = useRtlAlign;
-		needRedraw = true;
 		mutex.Unlock();
 		Prepare();
 		return;
