@@ -257,9 +257,9 @@ inline T Clamp(T val, T a, T b)
 	
 
 #if defined(__DAVAENGINE_WIN32__)
-#define Snprinf	_snprintf	
+#define Snprintf    _snprintf	
 #else //#if defined(__DAVAENGINE_WIN32__)
-#define Snprinf	snprintf	
+#define Snprintf    snprintf	
 #endif //#if defined(__DAVAENGINE_WIN32__)
 
 #define Memcmp memcmp
