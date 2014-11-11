@@ -47,11 +47,14 @@ class IOLoop;
     2. void HandleConnect(int32 error), called after connection to server has been established
         Parameters:
             error - nonzero if error has occured
-    3. void HandleRead(int32 error, std::size_t nread), called after some data have been arrived
+    3. void HandleAlloc(Buffer* buffer), called before read operation to allow specify read buffer
+        Parameters:
+            buffer - new read buffer
+    4. void HandleRead(int32 error, std::size_t nread), called after some data have been arrived
         Parameters:
             error    - nonzero if error has occured; if connection has been closed IsEOF(error) returns true
             nread    - number of bytes placed in read buffer
-    4. template<typename U>
+    5. template<typename U>
        void HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData)
         Parameters:
            error       - nonzero if error has occured
@@ -105,37 +108,34 @@ public:
 
 protected:
     int32 InternalAsyncConnect(const Endpoint& endpoint);
-    int32 InternalAsyncRead(Buffer buffer);
+    int32 InternalAsyncRead();
     template<typename U>
     int32 InternalAsyncWrite(const Buffer* buffers, std::size_t bufferCount, U& requestData);
 
 private:
-    void HandleAlloc(std::size_t suggested_size, uv_buf_t* buffer);
-
     // Methods should be implemented in derived class
     void HandleClose();
     void HandleConnect(int32 error);
+    void HandleAlloc(Buffer* buffer);
     void HandleRead(int32 error, std::size_t nread);
     template<typename U>
     void HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData);
 
     // Thunks between C callbacks and C++ class methods
-    static void HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer);
     static void HandleCloseThunk(uv_handle_t* handle);
     static void HandleConnectThunk(uv_connect_t* connectRequest, int error);
+    static void HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer);
     static void HandleReadThunk(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buffer);
     template<typename U>
     static void HandleWriteThunk(uv_write_t* writeRequest, int error);
 
 protected:
-    Buffer       readBuffer;
     uv_connect_t connectRequest;
 };
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
 TCPSocketTemplate<T>::TCPSocketTemplate(IOLoop* ioLoop) : BaseClassType(ioLoop)
-                                                        , readBuffer()
                                                         , connectRequest()
 {
     SetHandleData(static_cast<DerivedClassType*>(this));
@@ -175,11 +175,8 @@ int32 TCPSocketTemplate<T>::InternalAsyncConnect(const Endpoint& endpoint)
 }
 
 template <typename T>
-int32 TCPSocketTemplate<T>::InternalAsyncRead(Buffer buffer)
+int32 TCPSocketTemplate<T>::InternalAsyncRead()
 {
-    DVASSERT(buffer.base != NULL && buffer.len > 0);
-
-    readBuffer = buffer;
     return uv_read_start(Handle<uv_stream_t>(), &HandleAllocThunk, &HandleReadThunk);
 }
 
@@ -205,20 +202,7 @@ int32 TCPSocketTemplate<T>::InternalAsyncWrite(const Buffer* buffers, std::size_
     return error;
 }
 
-template <typename T>
-void TCPSocketTemplate<T>::HandleAlloc(std::size_t /*suggested_size*/, uv_buf_t* buffer)
-{
-    *buffer = readBuffer;
-}
-
 ///   Thunks   ///////////////////////////////////////////////////////////
-template <typename T>
-void TCPSocketTemplate<T>::HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer)
-{
-    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->HandleAlloc(suggested_size, buffer);
-}
-
 template <typename T>
 void TCPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
@@ -232,6 +216,13 @@ void TCPSocketTemplate<T>::HandleConnectThunk(uv_connect_t* connectRequest, int 
 {
     DerivedClassType* pthis = static_cast<DerivedClassType*>(connectRequest->data);
     pthis->HandleConnect(error);
+}
+
+template <typename T>
+void TCPSocketTemplate<T>::HandleAllocThunk(uv_handle_t* handle, std::size_t /*suggested_size*/, uv_buf_t* buffer)
+{
+    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
+    pthis->HandleAlloc(buffer);
 }
 
 template <typename T>

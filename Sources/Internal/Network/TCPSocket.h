@@ -78,13 +78,17 @@ public:
     int32 AsyncRead(Buffer buffer, ReadHandlerType handler);
     int32 AsyncWrite(const Buffer* buffers, std::size_t bufferCount, WriteHandlerType handler);
 
+    void AdjustReadBuffer(Buffer buffer);
+
 private:
     void HandleClose();
     void HandleConnect(int32 error);
+    void HandleAlloc(Buffer* buffer);
     void HandleRead(int32 error, size_t nread);
     void HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, WriteHandlerType& handler);
 
 private:
+    Buffer             readBuffer;
     CloseHandlerType   closeHandler;
     ConnectHandlerType connectHandler;
     ReadHandlerType    readHandler;

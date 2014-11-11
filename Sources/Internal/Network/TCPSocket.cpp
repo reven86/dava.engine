@@ -32,6 +32,7 @@ namespace DAVA
 {
 
 TCPSocket::TCPSocket(IOLoop* ioLoop) : BaseClassType(ioLoop)
+                                     , readBuffer()
                                      , closeHandler()
                                      , connectHandler()
                                      , readHandler()
@@ -58,8 +59,9 @@ int32 TCPSocket::AsyncRead(Buffer buffer, ReadHandlerType handler)
 {
     DVASSERT(buffer.base != NULL && buffer.len > 0 && handler != 0);
 
+    readBuffer  = buffer;
     readHandler = handler;
-    return BaseClassType::InternalAsyncRead(buffer);
+    return BaseClassType::InternalAsyncRead();
 }
 
 int32 TCPSocket::AsyncWrite(const Buffer* buffers, std::size_t bufferCount, WriteHandlerType handler)
@@ -67,6 +69,12 @@ int32 TCPSocket::AsyncWrite(const Buffer* buffers, std::size_t bufferCount, Writ
     DVASSERT(buffers != NULL && bufferCount > 0 && handler != 0);
 
     return BaseClassType::InternalAsyncWrite(buffers, bufferCount, handler);
+}
+
+void TCPSocket::AdjustReadBuffer(Buffer buffer)
+{
+    DVASSERT(buffer.base != NULL && buffer.len > 0);
+    readBuffer = buffer;
 }
 
 void TCPSocket::HandleClose()
@@ -80,6 +88,11 @@ void TCPSocket::HandleClose()
 void TCPSocket::HandleConnect(int32 error)
 {
     connectHandler(this, error);
+}
+
+void TCPSocket::HandleAlloc(Buffer* buffer)
+{
+    *buffer = readBuffer;
 }
 
 void TCPSocket::HandleRead(int32 error, size_t nread)

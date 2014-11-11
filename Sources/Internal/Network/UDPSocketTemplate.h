@@ -44,13 +44,16 @@ class IOLoop;
 
  Type specified by T should implement methods:
     1. void HandleClose(), called after socket handle has been closed by libuv
-    2. void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial), called after datagram has been arrived
+    2. void HandleAlloc(Buffer* buffer), called before read operation to allow specify read buffer
+        Parameters:
+            buffer - new read buffer
+    3. void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial), called after datagram has been arrived
         Parameters:
             error    - nonzero if error has occured
             nread    - number of bytes placed in read buffer
             endpoint - who sent data
             partial  - if true only part of datagram has been placed in read buffer, remaining part has been discarded by OS
-    3.template<typename U>
+    4.template<typename U>
       void HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData), called after data have been sent to destination
         Parameters:
             error       - nonzero if error has occured
@@ -108,15 +111,14 @@ public:
     int32 LocalEndpoint(Endpoint& endpoint);
 
 protected:
-    int32 InternalAsyncReceive(Buffer buffer);
+    int32 InternalAsyncReceive();
     template<typename U>
     int32 InternalAsyncSend(const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint, U& requestData);
 
 private:
-    void HandleAlloc(std::size_t suggested_size, uv_buf_t* buffer);
-
     // Methods should be implemented in derived class
     void HandleClose();
+    void HandleAlloc(Buffer* buffer);
     void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial);
     template<typename U>
     void HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData);
@@ -127,15 +129,11 @@ private:
     static void HandleReceiveThunk(uv_udp_t* handle, ssize_t nread, const uv_buf_t* buffer, const sockaddr* addr, unsigned int flags);
     template<typename U>
     static void HandleSendThunk(uv_udp_send_t* request, int error);
-
-protected:
-    Buffer readBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
 UDPSocketTemplate<T>::UDPSocketTemplate(IOLoop* ioLoop) : BaseClassType(ioLoop)
-                                                        , readBuffer()
 {
     SetHandleData(static_cast<DerivedClassType*>(this));
 }
@@ -206,11 +204,8 @@ int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 }
 
 template <typename T>
-int32 UDPSocketTemplate<T>::InternalAsyncReceive(Buffer buffer)
+int32 UDPSocketTemplate<T>::InternalAsyncReceive()
 {
-    DVASSERT(buffer.base != NULL && buffer.len > 0);
-
-    readBuffer = buffer;
     return uv_udp_recv_start(Handle<uv_udp_t>(), &HandleAllocThunk, &HandleReceiveThunk);
 }
 
@@ -237,18 +232,12 @@ int32 UDPSocketTemplate<T>::InternalAsyncSend(const Buffer* buffers, std::size_t
     return error;
 }
 
-template <typename T>
-void UDPSocketTemplate<T>::HandleAlloc(std::size_t /*suggested_size*/, uv_buf_t* buffer)
-{
-    *buffer = readBuffer;
-}
-
 ///   Thunks   ///////////////////////////////////////////////////////////
 template <typename T>
 void UDPSocketTemplate<T>::HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer)
 {
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->HandleAlloc(suggested_size, buffer);
+    pthis->HandleAlloc(buffer);
 }
 
 template <typename T>

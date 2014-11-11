@@ -75,12 +75,16 @@ public:
     int32 AsyncReceive(Buffer buffer, ReceiveHandlerType handler);
     int32 AsyncSend(const Endpoint& endpoint, const Buffer* buffers, std::size_t bufferCount, SendHandlerType handler);
 
+    void AdjustReadBuffer(Buffer buffer);
+
 private:
     void HandleClose();
+    void HandleAlloc(Buffer* buffer);
     void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial);
     void HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount, SendHandlerType& handler);
 
 private:
+    Buffer             readBuffer;
     CloseHandlerType   closeHandler;
     ReceiveHandlerType receiveHandler;
 };
