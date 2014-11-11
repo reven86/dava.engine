@@ -1961,7 +1961,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib";
+			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib";
 		};
 		5C42E09515B42E1C00F71425 /* Qt Qmake */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2309,11 +2309,7 @@
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
 				);
 				INFOPLIST_FILE = Info.plist;
-				LIBRARY_SEARCH_PATHS = (
-					/System/Library/Frameworks/,
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
-				);
+				LIBRARY_SEARCH_PATHS = /System/Library/Frameworks/;
 				OTHER_CFLAGS = (
 					"-pipe",
 					"-g",
@@ -2344,6 +2340,7 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
+					"-L../../Libs/IMagickHelpLib",
 				);
 				PRODUCT_NAME = TemplateProjectQt;
 				SDKROOT = macosx;
@@ -2381,10 +2378,20 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
-					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
+					../../Libs/IMagickHelpLib,
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LDFLAGS = (
+					"-headerpad_max_install_names",
+					"-L~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-F~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-lz",
+					"-L../../Libs/libs/",
+					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/oggvorbis/lib/",
+					"-L../../Libs/IMagickHelpLib",
+				);
 				PRODUCT_NAME = UIEditor;
 				SDKROOT = macosx;
 			};
@@ -2425,10 +2432,20 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
-					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
+					../../Libs/IMagickHelpLib,
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LDFLAGS = (
+					"-headerpad_max_install_names",
+					"-L~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-F~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-lz",
+					"-L../../Libs/libs/",
+					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/oggvorbis/lib/",
+					"-L../../Libs/IMagickHelpLib",
+				);
 				PRODUCT_NAME = UIEditor;
 				SDKROOT = macosx;
 			};
@@ -2470,11 +2487,7 @@
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
 				);
 				INFOPLIST_FILE = Info.plist;
-				LIBRARY_SEARCH_PATHS = (
-					/System/Library/Frameworks/,
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
-				);
+				LIBRARY_SEARCH_PATHS = /System/Library/Frameworks/;
 				OTHER_CFLAGS = (
 					"-pipe",
 					"-g",
@@ -2505,6 +2518,7 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
+					"-L../../Libs/IMagickHelpLib",
 				);
 				PRODUCT_NAME = TemplateProjectQt;
 				SDKROOT = macosx;

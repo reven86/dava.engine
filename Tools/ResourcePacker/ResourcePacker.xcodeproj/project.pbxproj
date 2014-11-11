@@ -397,9 +397,8 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
-					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-L../../Libs/IMagickHelpLib";
 				PRODUCT_NAME = ResourcePacker;
 			};
 			name = Debug;
@@ -421,9 +420,8 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
-					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-L../../Libs/IMagickHelpLib";
 				PRODUCT_NAME = ResourcePacker;
 			};
 			name = Release;
