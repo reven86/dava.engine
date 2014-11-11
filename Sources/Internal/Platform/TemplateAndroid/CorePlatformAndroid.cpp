@@ -226,7 +226,6 @@ namespace DAVA
 
 			ResizeView(w, h);
 			// Set proper width and height before call FrameworkDidlaunched
-			DeviceInfo::SetScreenInfo(w, h, 1);
 			FrameworkDidLaunched();
 
 			RenderManager::Instance()->SetFPS(60);

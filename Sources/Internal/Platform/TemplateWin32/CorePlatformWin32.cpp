@@ -201,8 +201,6 @@ namespace DAVA
 		int nScreenWidth = ::GetSystemMetrics(SM_CXSCREEN);
 		int nScreenHeight = ::GetSystemMetrics(SM_CYSCREEN);
 
-		DeviceInfo::SetScreenInfo(nScreenWidth, nScreenHeight, 1);
-
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
 
