@@ -256,6 +256,7 @@ void UITextField::DidAppear()
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->ShowField();
+    textFieldiPhone->SetVisible(IsOnScreen());
 #endif
 }
 
