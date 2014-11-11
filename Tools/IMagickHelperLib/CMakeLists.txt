@@ -82,7 +82,7 @@ elseif( APPLE )
     TARGET ${PROJECT_NAME}
     POST_BUILD
     COMMAND
-    install_name_tool -id @executable_path/../Frameworks/lib${PROJECT_NAME}.dylib 
+    install_name_tool -id  ./lib${PROJECT_NAME}.dylib #@executable_path/../Frameworks
                            ${CMAKE_BINARY_DIR}/$<CONFIG>/lib${PROJECT_NAME}.dylib
     )
 
