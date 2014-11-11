@@ -38,7 +38,7 @@
 #include "Render/2D/Sprite.h"
 #include "Render/2D/Font.h"
 #include "Platform/Mutex.h"
-#include <Utils/StringUtils.h>
+#include <Utils/BiDiHelper.h>
 
 namespace DAVA
 {
@@ -197,6 +197,7 @@ protected:
     bool treatMultilineAsSingleLine:1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
+    static BiDiHelper bidiHelper;
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;

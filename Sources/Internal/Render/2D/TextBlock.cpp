@@ -49,6 +49,7 @@ namespace DAVA
 {
 
 bool TextBlock::isBiDiSupportEnabled = true;    //!< Enable BiDi support by default
+BiDiHelper TextBlock::bidiHelper;
 
 struct TextBlockData
 {
@@ -453,10 +454,10 @@ void TextBlock::CalculateCacheParams()
 
     if (isBiDiSupportEnabled) // Check BiDi support
     {
-        if (StringUtils::BiDiPrepare(logicalText, preparedText, &isRtl))
+        if (bidiHelper.PrepareString(logicalText, preparedText, &isRtl))
         {
             visualText = preparedText;
-            StringUtils::BiDiReorder(visualText, isRtl);
+            bidiHelper.ReorderString(visualText, isRtl);
         }
     }
     CleanLine(visualText);
@@ -978,7 +979,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
                 WideString line = string.substr(fromPos, pos - fromPos + 1);
                 if (isBiDiSupportEnabled)
                 {
-                    StringUtils::BiDiReorder(line, isRtl);
+                    bidiHelper.ReorderString(line, isRtl);
                 }
                 CleanLine(line, pos < textLength - 1);
                 resultVector.push_back(line);
@@ -1005,7 +1006,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
         WideString line = string.substr(fromPos, pos - fromPos + 1);
         if (isBiDiSupportEnabled)
         {
-            StringUtils::BiDiReorder(line, isRtl);
+            bidiHelper.ReorderString(line, isRtl);
         }
         CleanLine(line, true);
         resultVector.push_back(line);
@@ -1049,7 +1050,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
             WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
             if (isBiDiSupportEnabled)
             {
-                StringUtils::BiDiReorder(currentLine, isRtl);
+                bidiHelper.ReorderString(currentLine, isRtl);
             }
             CleanLine(currentLine);
             resultVector.push_back(currentLine);
@@ -1062,7 +1063,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
             WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
             if (isBiDiSupportEnabled)
             {
-                StringUtils::BiDiReorder(currentLine, isRtl);
+                bidiHelper.ReorderString(currentLine, isRtl);
             }
             CleanLine(currentLine);
             resultVector.push_back(currentLine);
@@ -1080,7 +1081,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
             WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
             if (isBiDiSupportEnabled)
             {
-                StringUtils::BiDiReorder(currentLine, isRtl);
+                bidiHelper.ReorderString(currentLine, isRtl);
             }
             CleanLine(currentLine);
             resultVector.push_back(currentLine);
@@ -1098,7 +1099,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
     WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart + 1);
     if (isBiDiSupportEnabled)
     {
-        StringUtils::BiDiReorder(currentLine, isRtl);
+        bidiHelper.ReorderString(currentLine, isRtl);
     }
     CleanLine(currentLine);
     resultVector.push_back(currentLine);
