@@ -5268,7 +5268,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
-					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
 				);
 				OTHER_LDFLAGS = (
 					"-headerpad_max_install_names",
@@ -5276,6 +5275,7 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
+					"-L../../Libs/IMagickHelpLib",
 				);
 			};
 			name = Release;
@@ -5323,7 +5323,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
-					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
 				);
 				OTHER_LDFLAGS = (
 					"-headerpad_max_install_names",
@@ -5331,6 +5330,7 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
+					"-L../../Libs/IMagickHelpLib",
 				);
 			};
 			name = Debug;
