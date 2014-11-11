@@ -205,11 +205,9 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
     
 	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 	
-	
     FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
     psdNameWithoutExtension.TruncateExtension();
 	
-
     IMagickHelper::CroppedData cropped_data;
     
     IMagickHelper::ConvertToPNGCroppedGeometry( psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str() , &cropped_data, true );

@@ -30,7 +30,6 @@
 
 namespace DAVA
 {
-    
     Mutex SoundSystem::soundGroupsMutex;
 
     SoundSystem::SoundSystem()
@@ -45,7 +44,6 @@ namespace DAVA
     {
         return 0;
     }
-    
     
     SoundEvent* SoundSystem::CreateSoundEventFromFile(const FilePath & fileName, const FastName & groupName, uint32 createFlags, int32 priority)
     {
@@ -92,7 +90,6 @@ namespace DAVA
     
     void SoundSystem::SetGroupVolume(const FastName &groupName, float32 volume)
     {
-    
     }
     
     float32 SoundSystem::GetGroupVolume(const FastName & groupName)
@@ -102,13 +99,10 @@ namespace DAVA
     
     void SoundSystem::InitFromQualitySettings()
     {
-    
     }
-    
     
     void SoundSystem::ParseSFXConfig(const FilePath & configPath)
     {
     }
-    
     
 }//DAVA

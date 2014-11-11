@@ -65,7 +65,7 @@ bool ConvertToPNG ( const char *in_image_path, const char *out_path )
             && !FileSystem::Instance()->CreateDirectory( out_path, true )
           )
         {
-             Logger::Debug("Can't create directory: %s", out_path );
+             Logger::Error("Can't create directory: %s", out_path );
              return false;
         }
 
@@ -81,7 +81,7 @@ bool ConvertToPNG ( const char *in_image_path, const char *out_path )
 
         if (layers.size() == 0)
         {
-            Logger::Debug("Number of layers is too low: %s",in_image_path );
+            Logger::Error("Number of layers is too low: %s",in_image_path );
             return false;
         }
 
@@ -97,7 +97,7 @@ bool ConvertToPNG ( const char *in_image_path, const char *out_path )
     }
     catch( Magick::Exception &error_ )
     {
-        Logger::Debug("Caught exception: %s file: %s", error_.what(), in_image_path );
+        Logger::Error("Caught exception: %s file: %s", error_.what(), in_image_path );
         return false;
     }
 
@@ -115,7 +115,7 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
             && !FileSystem::Instance()->CreateDirectory( out_path, true )
           )
         {
-            Logger::Debug( "Can't create directory: %s", out_path );
+            Logger::Error( "Can't create directory: %s", out_path );
             return false;
         }
 
@@ -124,7 +124,7 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
 
         if (layers.size() == 0)
         {
-            Logger::Debug("Number of layers is too low: %s",in_image_path );
+            Logger::Error("Number of layers is too low: %s",in_image_path );
             return false;
         }
 
@@ -138,9 +138,11 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
         int width = (int)layers[0].columns();
         int height = (int)layers[0].rows();
 
+        FilePath out_image_base_path = FilePath::CreateWithNewExtension( in_image_path, ".png" );
+
         for(int k = skip_first_layer ? 1 : 0; k < (int)layers.size(); ++k)
         {
-            FilePath out_image_path = FilePath::CreateWithNewExtension( in_image_path, ".png" );
+            FilePath out_image_path = out_image_base_path;
             
             if( out_path_len )
             {
@@ -186,7 +188,7 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
     }
     catch( Magick::Exception &error_ )
     {
-        Logger::Debug("Caught exception: %s file: %s", error_.what(), in_image_path );
+        Logger::Error("Caught exception: %s file: %s", error_.what(), in_image_path );
         return 0;
     }
 

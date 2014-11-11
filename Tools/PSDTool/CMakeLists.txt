@@ -17,5 +17,9 @@ include_directories ( ${DAVA_INCLUDE_DIR} )
 add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../IMagickHelperLib" ${CMAKE_CURRENT_BINARY_DIR}/IMagickHelperLib )
 add_executable( ${PROJECT_NAME} main.cpp )
 
+if( MSVC )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")
+endif()
+
 target_link_libraries( ${PROJECT_NAME} ${DAVA_LIBRARY} ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/IMagickHelper.lib )
 
