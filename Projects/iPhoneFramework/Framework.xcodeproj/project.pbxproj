@@ -861,9 +861,6 @@
 		17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FE16B9326D002BD35F /* MongodbClient.h */; };
 		17FFF906193F03AF003D51DA /* MongodbObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80016B9326D002BD35F /* MongodbObject.h */; };
 		1AD7C35E17D8951C00B9977C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD7C35D17D8951C00B9977C /* Vector.cpp */; };
-		3267C4AD19E5501A003CF16F /* ComponentIndices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3267C4AA19E5501A003CF16F /* ComponentIndices.cpp */; };
-		3267C4AE19E5501A003CF16F /* ComponentIndices.h in Headers */ = {isa = PBXBuildFile; fileRef = 3267C4AB19E5501A003CF16F /* ComponentIndices.h */; };
-		3267C4AF19E5501A003CF16F /* ComponentIndices.h in Headers */ = {isa = PBXBuildFile; fileRef = 3267C4AB19E5501A003CF16F /* ComponentIndices.h */; };
 		32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B719E53C0C0069981A /* UIControlHelpers.cpp */; };
 		32B074BE19E53C0C0069981A /* UIControlHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B719E53C0C0069981A /* UIControlHelpers.cpp */; };
 		32B074BF19E53C0C0069981A /* UIControlHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074B819E53C0C0069981A /* UIControlHelpers.h */; };
@@ -1851,8 +1848,6 @@
 		17F53E3216D3705E004D5099 /* WebViewControliOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebViewControliOS.h; sourceTree = "<group>"; };
 		17F53E3316D3705E004D5099 /* WebViewControliOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebViewControliOS.mm; sourceTree = "<group>"; };
 		1AD7C35D17D8951C00B9977C /* Vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
-		3267C4AA19E5501A003CF16F /* ComponentIndices.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ComponentIndices.cpp; sourceTree = "<group>"; };
-		3267C4AB19E5501A003CF16F /* ComponentIndices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ComponentIndices.h; sourceTree = "<group>"; };
 		32B074B719E53C0C0069981A /* UIControlHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlHelpers.cpp; sourceTree = "<group>"; };
 		32B074B819E53C0C0069981A /* UIControlHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIControlHelpers.h; sourceTree = "<group>"; };
 		32B074B919E53C0C0069981A /* UIPackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackage.cpp; sourceTree = "<group>"; };
@@ -3622,8 +3617,6 @@
 		E8B3C9A316B9326E002BD35F /* Scene3D */ = {
 			isa = PBXGroup;
 			children = (
-				3267C4AA19E5501A003CF16F /* ComponentIndices.cpp */,
-				3267C4AB19E5501A003CF16F /* ComponentIndices.h */,
 				CCEB54371886FF0C0018491F /* Converters */,
 				A695E52F18113327008A0F20 /* SceneFile */,
 				11CB614719C338DF00B48A92 /* AnimationData.cpp */,
@@ -4200,8 +4193,6 @@
 				17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */,
 				02FD7FB71924997C007762C0 /* LandscapeCursor.h in Headers */,
 				02FD7FB81924997C007762C0 /* Light.h in Headers */,
-				3267C4AF19E5501A003CF16F /* ComponentIndices.h in Headers */,
-				D7B50F3019ACB28900F8C0C9 /* Notification.h in Headers */,
 				02FD7FB91924997C007762C0 /* Mesh.h in Headers */,
 				02FD7FBA1924997C007762C0 /* RenderBatch.h in Headers */,
 				02FD7FBB1924997C007762C0 /* RenderDataSource.h in Headers */,
@@ -4573,7 +4564,6 @@
 				A611714E1860C2A500E18F8C /* StaticOcclusionSystem.h in Headers */,
 				D7FEF14F19864E5C00B2C7AF /* bs_common.h in Headers */,
 				CC84B04518211BCE00934482 /* JobWaiter.h in Headers */,
-				3267C4AE19E5501A003CF16F /* ComponentIndices.h in Headers */,
 				E8B3CB5116B9326E002BD35F /* Matrix3.h in Headers */,
 				E8B3CB5316B9326E002BD35F /* Matrix4.h in Headers */,
 				E8FC1308186972C80095D8FE /* QualitySettingsSystem.h in Headers */,
@@ -5032,7 +5022,6 @@
 				02FD80B31924997C007762C0 /* UIParticles.cpp in Sources */,
 				02FD80B41924997C007762C0 /* DAVAEngine.cpp in Sources */,
 				02FD80B51924997C007762C0 /* Backtrace.cpp in Sources */,
-				3267C4AD19E5501A003CF16F /* ComponentIndices.cpp in Sources */,
 				02FD80B61924997C007762C0 /* MemoryManager.cpp in Sources */,
 				E84E5BE81988D99200686C14 /* OGLHelpers.cpp in Sources */,
 				02FD80B71924997C007762C0 /* Replay.cpp in Sources */,
