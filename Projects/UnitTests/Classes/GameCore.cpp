@@ -47,6 +47,7 @@
 #include "KeyedArchiveYamlTest.h"
 #include "CloneTest.h"
 #include "DPITest.h"
+#include "EMailTest.h"
 #include "InputTest.h"
 #include "FilePathTest.h"
 #include "FileListTest.h"
@@ -73,6 +74,8 @@
 #include "DLCDownloadTest.h"
 #include "FunctionBindSingalTest.h"
 #include "MathTest.h"
+#include "BiDiTest.h"
+#include "TextSizeTest.h"
 
 using namespace DAVA;
 
@@ -140,6 +143,9 @@ void GameCore::OnAppStarted()
  	new SoundTest();
  	new SplitTest();
  	new AlignTest();
+    new BiDiTest();
+	new TextSizeTest();
+ 	new EMailTest();
  	new DPITest();
  	new MaterialCompilerTest();
  	new CloneTest();

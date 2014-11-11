@@ -633,6 +633,22 @@ public class JNITextField {
 		task.AsyncRun();
 	}
 
+	public static void SetTextUseRtlAlign(int id, final boolean useRtlAlign) {
+		final EditText text = GetEditText(id);
+		if (text == null)
+			return;
+
+		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+			@Override
+			public Void call() throws Exception {
+				int gravity = text.getGravity();
+				text.setGravity(useRtlAlign ? (gravity | Gravity.RELATIVE_LAYOUT_DIRECTION) : (gravity & ~Gravity.RELATIVE_LAYOUT_DIRECTION));
+				return null;
+			}
+		});
+		task.AsyncRun();
+	}
+	
 	public static void SetTextAlign(int id, final int align) {
 		final EditText text = GetEditText(id);
 		if (text == null)
@@ -641,7 +657,8 @@ public class JNITextField {
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-
+				boolean isRelative = (text.getGravity() & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) > 0;
+				
 				int gravityH = Gravity.LEFT;
 				int gravityV = Gravity.CENTER_VERTICAL;
 				if ((align & 0x01) > 0) // ALIGN_LEFT
@@ -657,6 +674,9 @@ public class JNITextField {
 				if ((align & 0x20) > 0) // ALIGN_BOTTOM
 					gravityV = Gravity.BOTTOM;
 
+				if(isRelative) {
+					gravityH |= Gravity.RELATIVE_LAYOUT_DIRECTION;
+				}
 				text.setGravity(gravityH | gravityV);
 				return null;
 			}

@@ -1564,6 +1564,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\AnimationData.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Utils\StringUtils.h">
+      <Filter>Internal\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h">
       <Filter>Internal\Notification</Filter>
     </ClInclude>
@@ -1584,6 +1587,19 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationText.h">
       <Filter>Internal\Notification</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlHelpers.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackage.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h">
+      <Filter>Internal\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2840,6 +2856,9 @@
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\StringUtils.cpp">
+      <Filter>Internal\Utils</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp">
       <Filter>Internal\Notification</Filter>
     </ClCompile>
@@ -2857,6 +2876,20 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationText.cpp">
       <Filter>Internal\Notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlHelpers.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp">
+      <Filter>Internal\UI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

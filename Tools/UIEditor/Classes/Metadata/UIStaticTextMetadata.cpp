@@ -284,6 +284,26 @@ void UIStaticTextMetadata::SetTextAlign(int value)
     GetActiveStaticText()->SetTextAlign((eAlign)value);
 }
 
+bool UIStaticTextMetadata::GetTextUseRtlAlign()
+{
+	if (!VerifyActiveParamID())
+	{
+		return false;
+	}
+	
+	return GetActiveStaticText()->GetTextUseRtlAlign();
+}
+
+void UIStaticTextMetadata::SetTextUseRtlAlign(bool value)
+{
+	if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveStaticText()->SetTextUseRtlAlign(value);
+}
+
 bool UIStaticTextMetadata::GetMultiline() const
 {
     if (!VerifyActiveParamID())
