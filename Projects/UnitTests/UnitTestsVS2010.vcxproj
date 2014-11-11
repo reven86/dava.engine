@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="Classes\AlignTest.h" />
     <ClInclude Include="Classes\BaseScreen.h" />
+    <ClInclude Include="Classes\BiDiTest.h" />
     <ClInclude Include="Classes\CloneTest.h" />
     <ClInclude Include="Classes\ComponentsTest.h" />
     <ClInclude Include="Classes\Config.h" />
@@ -51,6 +52,7 @@
     <ClInclude Include="Classes\SoundTest.h" />
     <ClInclude Include="Classes\SplitTest.h" />
     <ClInclude Include="Classes\TestTemplate.h" />
+    <ClInclude Include="Classes\TextSizeTest.h" />
     <ClInclude Include="Classes\TextureUtils.h" />
     <ClInclude Include="Classes\ThreadSyncTest.h" />
     <ClInclude Include="Classes\TransparentWebViewTest.h" />
@@ -63,6 +65,7 @@
   <ItemGroup>
     <ClCompile Include="Classes\AlignTest.cpp" />
     <ClCompile Include="Classes\BaseScreen.cpp" />
+    <ClCompile Include="Classes\BiDiTest.cpp" />
     <ClCompile Include="Classes\CloneTest.cpp" />
     <ClCompile Include="Classes\ComponentsTest.cpp" />
     <ClCompile Include="Classes\DateTimeTest.cpp" />
@@ -99,6 +102,7 @@
     <ClCompile Include="Classes\SampleTest.cpp" />
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
+    <ClCompile Include="Classes\TextSizeTest.cpp" />
     <ClCompile Include="Classes\TextureUtils.cpp" />
     <ClCompile Include="Classes\ThreadSyncTest.cpp" />
     <ClCompile Include="Classes\TransparentWebViewTest.cpp" />

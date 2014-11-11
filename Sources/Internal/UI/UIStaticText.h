@@ -33,9 +33,6 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-//#include "FTFont.h"
-//#include "Texture.h"
-//#include "Sprite.h"
 #include "Render/2D/TextBlock.h"
 
 namespace DAVA
@@ -84,6 +81,10 @@ public:
 
     virtual void SetTextAlign(int32 _align);
     virtual int32 GetTextAlign() const;
+	virtual int32 GetTextVisualAlign() const;
+	virtual bool GetTextIsRtl() const;
+	virtual void SetTextUseRtlAlign(bool useRtlAlign);
+    virtual bool GetTextUseRtlAlign() const;
 
     const Vector2 & GetTextSize();
 

@@ -349,6 +349,31 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForTextAlign()
     }
 }
 
+bool UIButtonMetadata::GetTextUseRtlAlignForState(UIControl::eControlState state) const
+{
+	UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
+    if (referenceButtonText)
+    {
+		return referenceButtonText->GetTextUseRtlAlign();
+    }
+    
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextUseRtlAlign()
+{
+	int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetTextUseRtlAlignForState(curState) !=
+                              GetTextUseRtlAlignForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_USE_RTL_ALIGN_PROPERTY_NAME, curStateDirty);
+    }
+
+}
+
 void UIButtonMetadata::SetSprite(const QString& value)
 {
     if (!VerifyActiveParamID())
@@ -728,6 +753,33 @@ void UIButtonMetadata::SetTextAlign(int align)
 
     UpdateExtraDataLocalizationKey();
 	UpdatePropertyDirtyFlagForTextAlign();
+}
+
+bool UIButtonMetadata::GetTextUseRtlAlign()
+{
+	if (!VerifyActiveParamID())
+	{
+		return false;
+	}
+	
+	return GetTextUseRtlAlignForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetTextUseRtlAlign(bool value)
+{
+	if (!VerifyActiveParamID())
+    {
+        return;
+    }
+	
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+		GetActiveUIButton()->SetStateTextUseRtlAlign(this->uiControlStates[i], value);
+	}
+	
+    UpdateExtraDataLocalizationKey();
+	UpdatePropertyDirtyFlagForTextUseRtlAlign();
+	
 }
 
 void UIButtonMetadata::SetSpriteModification(int value)

@@ -1049,6 +1049,14 @@
 		B4C29D53199B933F001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D50199B933F001B83FE /* SceneCache.cpp */; };
 		B4C29D54199B933F001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D51199B933F001B83FE /* SceneCache.h */; };
 		B4C29D55199B933F001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D51199B933F001B83FE /* SceneCache.h */; };
+		B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
+		B78601491A08EAE60041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
+		B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
+		B786014D1A08EB140041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B786014B1A08EB140041F817 /* StringUtils.cpp */; };
+		B786014E1A08EB140041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B786014B1A08EB140041F817 /* StringUtils.cpp */; };
+		B786014F1A08EB140041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B786014C1A08EB140041F817 /* StringUtils.h */; };
+		B78601501A08EB140041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B786014C1A08EB140041F817 /* StringUtils.h */; };
+		B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
 		C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
 		C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */ = {isa = PBXBuildFile; fileRef = C13E6DB7186861FA00D1B2CE /* DFFont.h */; };
 		C172EC2A18C9F9D4004309CF /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */; };
@@ -1991,6 +1999,10 @@
 		AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		B4C29D50199B933F001B83FE /* SceneCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneCache.cpp; sourceTree = "<group>"; };
 		B4C29D51199B933F001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
+		B78601471A08EAD40041F817 /* libunibreak_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_ios.a; path = ../../Libs/libs/libunibreak_ios.a; sourceTree = "<group>"; };
+		B786014B1A08EB140041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
+		B786014C1A08EB140041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
+		B7D6C97319C9856B0095250A /* libfribidi_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_ios.a; path = ../../Libs/libs/libfribidi_ios.a; sourceTree = "<group>"; };
 		C13E6DB6186861FA00D1B2CE /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C13E6DB7186861FA00D1B2CE /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
 		C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextBlockDistanceRender.cpp; sourceTree = "<group>"; };
@@ -2630,7 +2642,6 @@
 		EA56555117CE00E100426EB8 /* PerformanceSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PerformanceSettings.cpp; sourceTree = "<group>"; };
 		EA56555217CE00E100426EB8 /* PerformanceSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PerformanceSettings.h; sourceTree = "<group>"; };
 		EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype_ios.a; path = ../../Libs/freetype/lib/libfreetype_ios.a; sourceTree = "<group>"; };
-		EA7DEDDC1448550100D9E652 /* libfreetype_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype_ios.a; path = ../../Libs/freetype/lib/libfreetype_ios.a; sourceTree = "<group>"; };
 		EA84E17317FAC20100304C3C /* SpatialTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpatialTree.cpp; sourceTree = "<group>"; };
 		EA84E17417FAC20100304C3C /* SpatialTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpatialTree.h; sourceTree = "<group>"; };
 		EAAC98BA1937354800549BAD /* MeshUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshUtils.cpp; sourceTree = "<group>"; };
@@ -2654,12 +2665,14 @@
 				02FD81F71924997C007762C0 /* libfmodex_iphonesimulator.a in Frameworks */,
 				02FD81F81924997C007762C0 /* libTextureConverter_macos.a in Frameworks */,
 				02FD81F91924997C007762C0 /* liblua_ios.a in Frameworks */,
+				B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */,
 				02FD81FA1924997C007762C0 /* libcurl_ios.a in Frameworks */,
 				02FD81FB1924997C007762C0 /* libdxt_ios.a in Frameworks */,
 				02FD81FC1924997C007762C0 /* libogg_ios.a in Frameworks */,
 				02FD81FD1924997C007762C0 /* libogg_macos.a in Frameworks */,
 				02FD81FE1924997C007762C0 /* libtheora_ios.a in Frameworks */,
 				02FD81FF1924997C007762C0 /* libtheora_macos.a in Frameworks */,
+				B78601491A08EAE60041F817 /* libunibreak_ios.a in Frameworks */,
 				02FD82001924997C007762C0 /* libmongodb_ios.a in Frameworks */,
 				02FD82011924997C007762C0 /* libxml_ios.a in Frameworks */,
 				02FD82021924997C007762C0 /* libyaml_ios.a in Frameworks */,
@@ -2674,6 +2687,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */,
+				B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */,
 				8402AB9E19B9FFB000111F35 /* libmongodb_ios.a in Frameworks */,
 				CC677BA5197D46390089547A /* SystemConfiguration.framework in Frameworks */,
 				6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */,
@@ -2755,6 +2770,8 @@
 				5C97964514E3E75000FFFA14 /* libxml_ios.a */,
 				5C97964614E3E75000FFFA14 /* libyaml_ios.a */,
 				5C77ABBE14C7703800E92D28 /* libpng_ios.a */,
+				B7D6C97319C9856B0095250A /* libfribidi_ios.a */,
+				B78601471A08EAD40041F817 /* libunibreak_ios.a */,
 				FEF4D38112C91A3A004B850E /* Box2D_iPhone.xcodeproj */,
 				FECFB1D912E5904400C71562 /* External */,
 				FECFB32D12E5904400C71562 /* Internal */,
@@ -2771,7 +2788,6 @@
 				CC677BA4197D46390089547A /* SystemConfiguration.framework */,
 				6252BF2518ED506E00058754 /* libjpeg_ios.a */,
 				87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */,
-				EA7DEDDC1448550100D9E652 /* libfreetype_ios.a */,
 				9A0118E18AC6866222998E4C /* GameController.framework */,
 			);
 			name = Frameworks;
@@ -3892,6 +3908,8 @@
 		E8B3CA7016B9326E002BD35F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				B786014B1A08EB140041F817 /* StringUtils.cpp */,
+				B786014C1A08EB140041F817 /* StringUtils.h */,
 				02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */,
 				02864522197960F200ABCAA0 /* VirtualToPhysicalHelper.h */,
 				A6A1E8671785688600AA3A86 /* CRC32.cpp */,
@@ -4383,6 +4401,7 @@
 				02FD806D1924997C007762C0 /* SoundUpdateSystem.h in Headers */,
 				02FD806E1924997C007762C0 /* LodToLod2Converter.h in Headers */,
 				02FD806F1924997C007762C0 /* OpenUDIDApple.h in Headers */,
+				B78601501A08EB140041F817 /* StringUtils.h in Headers */,
 				02FD80701924997C007762C0 /* OpenUDIDios.h in Headers */,
 				02FD80721924997C007762C0 /* GlobalEnum.h in Headers */,
 				02FD80731924997C007762C0 /* GPUFamilyDescriptor.h in Headers */,
@@ -4441,6 +4460,7 @@
 				E8B3CA8716B9326E002BD35F /* Interpolation.h in Headers */,
 				4F25831019BDC94000C28926 /* Bind.h in Headers */,
 				E8B3CA8916B9326E002BD35F /* KeyframeAnimation.h in Headers */,
+				B786014F1A08EB140041F817 /* StringUtils.h in Headers */,
 				E8B3CA8B16B9326E002BD35F /* LinearAnimation.h in Headers */,
 				E8B3CA8C16B9326E002BD35F /* NamedAnimationsList.h in Headers */,
 				E8B3CA9216B9326E002BD35F /* AutotestingSystem.h in Headers */,
@@ -5331,6 +5351,7 @@
 				02FD81CD1924997C007762C0 /* OpenUDIDApple.mm in Sources */,
 				02FD81CE1924997C007762C0 /* OpenUDIDios.mm in Sources */,
 				D7FEF14819864E5C00B2C7AF /* DownloaderCommon.cpp in Sources */,
+				B786014E1A08EB140041F817 /* StringUtils.cpp in Sources */,
 				02FD81CF1924997C007762C0 /* KeyedArchiveSwig.cpp in Sources */,
 				02FD81D11924997C007762C0 /* GlobalEnum.cpp in Sources */,
 				02FD81D21924997C007762C0 /* GPUFamilyDescriptor.cpp in Sources */,
@@ -5394,6 +5415,7 @@
 				E8B3CAA116B9326E002BD35F /* DynamicObjectCache.cpp in Sources */,
 				84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */,
 				E8B3CAA316B9326E002BD35F /* EventDispatcher.cpp in Sources */,
+				B786014D1A08EB140041F817 /* StringUtils.cpp in Sources */,
 				E8B3CAA616B9326E002BD35F /* FastName.cpp in Sources */,
 				E8B3CAA916B9326E002BD35F /* FixedSizePoolAllocator.cpp in Sources */,
 				E8B3CAB316B9326E002BD35F /* Message.cpp in Sources */,
@@ -5832,6 +5854,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -5879,6 +5902,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -5919,6 +5943,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -5959,6 +5984,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;

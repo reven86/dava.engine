@@ -247,6 +247,12 @@ public:
      \param[in] align the align .
      */
     virtual void SetStateTextAlign(int32 state, int32 align);
+	/**
+     \brief Sets text use RTL align flag what will be shown for the requested states.
+     \param[in] state state text bit mask to set value for.
+     \param[in] value using RTL align flag.
+     */
+    virtual void SetStateTextUseRtlAlign(int32 state, bool value);
     /**
      \brief Sets background margins for the requested states.
      \param[in] state state text bit mask to set value for.

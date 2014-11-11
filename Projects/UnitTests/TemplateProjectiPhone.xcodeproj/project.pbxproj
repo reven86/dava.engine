@@ -44,6 +44,8 @@
 		74F7355F18F596D000685E69 /* UIParticlesTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74F7355D18F596D000685E69 /* UIParticlesTest.cpp */; };
 		8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */; };
 		84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84C8F71316D3D16000FAC7DF /* DPITest.cpp */; };
+		B72EFFE819CB389600D38C33 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B72EFFE619CB389600D38C33 /* TextSizeTest.cpp */; };
+		B7D6C97819C999A40095250A /* BiDiTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7D6C97619C999A40095250A /* BiDiTest.cpp */; };
 		C12DE7A218E322B2002EEBB4 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */; };
 		C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */; };
 		C172EC3418C9FA00004309CF /* DFFontTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC3218C9FA00004309CF /* DFFontTest.cpp */; };
@@ -167,6 +169,10 @@
 		84C8F71316D3D16000FAC7DF /* DPITest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DPITest.cpp; sourceTree = "<group>"; };
 		84C8F71416D3D16000FAC7DF /* DPITest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPITest.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* TemplateProjectiPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TemplateProjectiPhone-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+		B72EFFE619CB389600D38C33 /* TextSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextSizeTest.cpp; sourceTree = "<group>"; };
+		B72EFFE719CB389600D38C33 /* TextSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextSizeTest.h; sourceTree = "<group>"; };
+		B7D6C97619C999A40095250A /* BiDiTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiTest.cpp; sourceTree = "<group>"; };
+		B7D6C97719C999A40095250A /* BiDiTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiTest.h; sourceTree = "<group>"; };
 		C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SaveImageTest.cpp; sourceTree = "<group>"; };
 		C166A6F018E31B4700007C2D /* SaveImageTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveImageTest.h; sourceTree = "<group>"; };
@@ -348,6 +354,10 @@
 			children = (
 				1146E0EA19D003E4009E5FAB /* MathTest.cpp */,
 				1146E0EB19D003E4009E5FAB /* MathTest.h */,
+				B72EFFE619CB389600D38C33 /* TextSizeTest.cpp */,
+				B72EFFE719CB389600D38C33 /* TextSizeTest.h */,
+				B7D6C97619C999A40095250A /* BiDiTest.cpp */,
+				B7D6C97719C999A40095250A /* BiDiTest.h */,
 				4F25830519BDB6B800C28926 /* FunctionBindSingalTest.cpp */,
 				4F25830619BDB6B800C28926 /* FunctionBindSingalTest.h */,
 				D7FEF1151982839600B2C7AF /* DLCDownloadTest.cpp */,
@@ -592,12 +602,14 @@
 				02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */,
 				E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */,
 				E8F98C48161AE9B900B50BDA /* PVRTest.cpp in Sources */,
+				B72EFFE819CB389600D38C33 /* TextSizeTest.cpp in Sources */,
 				E801A588183FAB8E00D5B770 /* ComponentsTest.cpp in Sources */,
 				E80842BA1639147A002A6A77 /* TextureUtils.cpp in Sources */,
 				CE1AA0781625B8D40005BE5E /* KeyedArchiveTest.cpp in Sources */,
 				CEC6DA17162D95A6009E5F1D /* KeyedArchiveYamlTest.cpp in Sources */,
 				E8C6B12216692E87001EBE09 /* CloneTest.cpp in Sources */,
 				49C4331F1675F1A6000EA877 /* DXTTest.cpp in Sources */,
+				B7D6C97819C999A40095250A /* BiDiTest.cpp in Sources */,
 				E81F2AF516BFA4E600C4545E /* MaterialCompilerTest.cpp in Sources */,
 				C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */,
 				84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */,
@@ -698,7 +710,13 @@
 					./../../Libs/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/libs\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
 				PROVISIONING_PROFILE = "";
@@ -747,7 +765,13 @@
 					./../../Libs/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/libs\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
 				PROVISIONING_PROFILE = "";
@@ -773,7 +797,13 @@
 					./../../Libs/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/libs\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
 				PROVISIONING_PROFILE = "";

@@ -230,6 +230,12 @@ public:
 
 	int32 GetTextAlign() const;
 
+	/**
+	 \brief Returns using RTL align flag
+	 \returns Using RTL align flag
+	 */
+	bool GetTextUseRtlAlign() const;
+
     void SetFocused()
     {
         UIControlSystem::Instance()->SetFocusedControl(this, true);
@@ -266,6 +272,12 @@ public:
 	virtual void SetShadowColor(const Color& color);
 
 	void SetTextAlign(int32 align);
+
+	/**
+	 \brief Sets using mirror align for RTL texts
+	 \param[in] useRrlAlign flag of support RTL align
+	 */
+	void SetTextUseRtlAlign(bool useRtlAlign);
 
     virtual void SetSize(const DAVA::Vector2 &newSize);
 

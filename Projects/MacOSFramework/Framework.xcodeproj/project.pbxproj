@@ -1191,6 +1191,18 @@
 		B4C29D42199B592D001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D3E199B592D001B83FE /* SceneCache.h */; };
 		B4C29D43199B592D001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D3E199B592D001B83FE /* SceneCache.h */; };
 		B4C29D44199B592D001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D3E199B592D001B83FE /* SceneCache.h */; };
+		B77953CC1A07D528001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
+		B77953CD1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
+		B77953CE1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B77953CB1A07D528001FB673 /* libunibreak_macos.a */; };
+		B78601391A08B6170041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B78601371A08B6170041F817 /* StringUtils.cpp */; };
+		B786013A1A08B6170041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B78601371A08B6170041F817 /* StringUtils.cpp */; };
+		B786013B1A08B6170041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B78601371A08B6170041F817 /* StringUtils.cpp */; };
+		B786013C1A08B6170041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B78601381A08B6170041F817 /* StringUtils.h */; };
+		B786013D1A08B6170041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B78601381A08B6170041F817 /* StringUtils.h */; };
+		B786013E1A08B6170041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B78601381A08B6170041F817 /* StringUtils.h */; };
+		B7BEB94819CB1A47005B4BC7 /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
+		B7BEB94919CB1A48005B4BC7 /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
+		B7D6C98419CAC6980095250A /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
 		C151B17716D3747E00E09BAF /* DVAssertMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */; };
 		C151B17816D3747E00E09BAF /* DVAssertMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B17516D3747E00E09BAF /* DVAssertMessage.h */; };
 		C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */; };
@@ -2755,6 +2767,10 @@
 		A6E4FE081761D97C00B48E41 /* ActionUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionUpdateSystem.h; sourceTree = "<group>"; };
 		B4C29D3D199B592D001B83FE /* SceneCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneCache.cpp; sourceTree = "<group>"; };
 		B4C29D3E199B592D001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
+		B77953CB1A07D528001FB673 /* libunibreak_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_macos.a; path = ../../Libs/libs/libunibreak_macos.a; sourceTree = "<group>"; };
+		B78601371A08B6170041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
+		B78601381A08B6170041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
+		B7D6C98319CAC6980095250A /* libfribidi_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_macos.a; path = ../../Libs/libs/libfribidi_macos.a; sourceTree = "<group>"; };
 		C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DVAssertMessage.cpp; sourceTree = "<group>"; };
 		C151B17516D3747E00E09BAF /* DVAssertMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DVAssertMessage.h; sourceTree = "<group>"; };
 		C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DVAssertMessageApple.mm; sourceTree = "<group>"; };
@@ -3413,8 +3429,10 @@
 				176DEB6B174B5561007A983B /* ApplicationServices.framework in Frameworks */,
 				176DEB6D174B5561007A983B /* libogg_macos.a in Frameworks */,
 				176DEB6E174B5561007A983B /* libvorbis_macos.a in Frameworks */,
+				B77953CE1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */,
 				176DEB6F174B5561007A983B /* libvorbisfile_macos.a in Frameworks */,
 				176DEB70174B5561007A983B /* libfreetype_macos.a in Frameworks */,
+				B7BEB94919CB1A48005B4BC7 /* libfribidi_macos.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3422,6 +3440,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B77953CC1A07D528001FB673 /* libunibreak_macos.a in Frameworks */,
+				B7D6C98419CAC6980095250A /* libfribidi_macos.a in Frameworks */,
 				620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */,
 				C1DC1F001717EC1E001C5EC3 /* libTextureConverter_macos.a in Frameworks */,
 				C7FBCFC116CD2060006F1B3F /* liblua_macos.a in Frameworks */,
@@ -3456,6 +3476,7 @@
 				E898A2B416BD265400732C04 /* libmongodb_macos.a in Frameworks */,
 				E898A2B516BD265400732C04 /* libyaml_macos.a in Frameworks */,
 				E898A2B616BD265400732C04 /* libxml_macos.a in Frameworks */,
+				B7BEB94819CB1A47005B4BC7 /* libfribidi_macos.a in Frameworks */,
 				E898A2B716BD265400732C04 /* libpng_macos.a in Frameworks */,
 				E898A2B816BD265400732C04 /* libBox2D_MacOS.a in Frameworks */,
 				E898A2B916BD265400732C04 /* Cocoa.framework in Frameworks */,
@@ -3463,6 +3484,7 @@
 				E898A2BC16BD265400732C04 /* libogg_macos.a in Frameworks */,
 				E898A2BD16BD265400732C04 /* libvorbis_macos.a in Frameworks */,
 				E898A2BE16BD265400732C04 /* libvorbisfile_macos.a in Frameworks */,
+				B77953CD1A07D52E001FB673 /* libunibreak_macos.a in Frameworks */,
 				E898A2BF16BD265400732C04 /* libfreetype_macos.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3496,6 +3518,8 @@
 		0867D691FE84028FC02AAC07 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				B77953CB1A07D528001FB673 /* libunibreak_macos.a */,
+				B7D6C98319CAC6980095250A /* libfribidi_macos.a */,
 				CCE2CA18197950A600D8086F /* AVFoundation.framework */,
 				627AFA6C18E964E300F2A52A /* libjpeg_macos.a */,
 				C1DC1EFB1717E791001C5EC3 /* libTextureConverter_macos.a */,
@@ -4666,6 +4690,8 @@
 		E8989D8C16BD24E500732C04 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				B78601371A08B6170041F817 /* StringUtils.cpp */,
+				B78601381A08B6170041F817 /* StringUtils.h */,
 				0286451119795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp */,
 				0286451219795E1200ABCAA0 /* VirtualToPhysicalHelper.h */,
 				E8989D8D16BD24E500732C04 /* HTTPDownloader.h */,
@@ -4974,6 +5000,7 @@
 				644C86FF19476A7100964F91 /* VegetationSpatialData.h in Headers */,
 				644C86EA19476A7100964F91 /* VegetationMaterialTransformer.h in Headers */,
 				176DE9BA174B5561007A983B /* GameObjectManager.h in Headers */,
+				B786013E1A08B6170041F817 /* StringUtils.h in Headers */,
 				E8ACC88218A29FBB00F26ABC /* ParticleRenderObject.h in Headers */,
 				176DE9BB174B5561007A983B /* TextGameObject.h in Headers */,
 				176DE9BC174B5561007A983B /* BillboardNode.h in Headers */,
@@ -5237,6 +5264,7 @@
 				E8989DE016BD24E500732C04 /* CollisionObject2.h in Headers */,
 				E8989DE216BD24E500732C04 /* CollisionPolygons.h in Headers */,
 				02FD7ED619237D96007762C0 /* SpeedTreeUpdateSystem.h in Headers */,
+				B786013C1A08B6170041F817 /* StringUtils.h in Headers */,
 				E8989DE416BD24E500732C04 /* Collisions.h in Headers */,
 				EAADA0011892A458001E1AA2 /* UIParticles.h in Headers */,
 				E8989DE616BD24E500732C04 /* ApplicationCore.h in Headers */,
@@ -5718,6 +5746,7 @@
 				E898A0A416BD265400732C04 /* LocalizationSystem.h in Headers */,
 				E898A0A516BD265400732C04 /* Logger.h in Headers */,
 				7A16933D180EE618005F1FBC /* AutotestingSystemLua.h in Headers */,
+				B786013D1A08B6170041F817 /* StringUtils.h in Headers */,
 				E898A0A716BD265400732C04 /* ResourceArchive.h in Headers */,
 				E8F43E28186C3D02006796CB /* MaterialSystem.h in Headers */,
 				E898A0A816BD265400732C04 /* VariantType.h in Headers */,
@@ -6293,6 +6322,7 @@
 				176DEAC3174B5561007A983B /* RenderGrayscaleEffect.cpp in Sources */,
 				176DEAC4174B5561007A983B /* RenderHelper.cpp in Sources */,
 				176DEAC5174B5561007A983B /* RenderManager.cpp in Sources */,
+				B786013B1A08B6170041F817 /* StringUtils.cpp in Sources */,
 				176DEAC6174B5561007A983B /* RenderManagerFactory.cpp in Sources */,
 				176DEAC7174B5561007A983B /* RenderManagerGL.cpp in Sources */,
 				176DEAC9174B5561007A983B /* RenderOptions.cpp in Sources */,
@@ -6659,6 +6689,7 @@
 				D7CC263419C43C7C00A3B754 /* LocalNotificationController.cpp in Sources */,
 				E8989EFB16BD24E500732C04 /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				E8989EFD16BD24E500732C04 /* TextureMulColorEffect.cpp in Sources */,
+				B78601391A08B6170041F817 /* StringUtils.cpp in Sources */,
 				E8989F3216BD24E500732C04 /* MaterialCompiler.cpp in Sources */,
 				E8989F3416BD24E500732C04 /* MaterialGraph.cpp in Sources */,
 				E8989F3616BD24E500732C04 /* MaterialGraphNode.cpp in Sources */,
@@ -7134,6 +7165,7 @@
 				E898A26416BD265400732C04 /* ParticleEmitterNode.cpp in Sources */,
 				E898A26516BD265400732C04 /* PathManip.cpp in Sources */,
 				E898A26616BD265400732C04 /* PolygonGroupInstance.cpp in Sources */,
+				B786013A1A08B6170041F817 /* StringUtils.cpp in Sources */,
 				E898A26716BD265400732C04 /* ProxyNode.cpp in Sources */,
 				84E975C9191FCE100054CCF9 /* LibJpegHelper.cpp in Sources */,
 				E898A26B16BD265400732C04 /* Scene.cpp in Sources */,
@@ -7368,6 +7400,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = FrameworkNPAPI;
 				SDKROOT = macosx;
@@ -7410,6 +7443,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = FrameworkNPAPI;
 				SDKROOT = macosx;
@@ -7449,7 +7483,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/a_makovii/Documents/work/git/dava.framework/Libs/libs,
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = Framework;
 			};
@@ -7486,7 +7520,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/a_makovii/Documents/work/git/dava.framework/Libs/libs,
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = Framework;
 			};
@@ -7596,6 +7630,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				LIBRARY_STYLE = STATIC;
 				OTHER_CFLAGS = (
@@ -7636,6 +7671,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				LIBRARY_STYLE = STATIC;
 				OTHER_CFLAGS = (

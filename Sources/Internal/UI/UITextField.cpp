@@ -105,14 +105,15 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(true);
+    SetTextUseRtlAlign(false);
 #elif defined(__DAVAENGINE_IPHONE__)
 	textFieldiPhone = new UITextFieldiPhone(this);
     textFieldiPhone->SetVisible(true);
+    SetTextUseRtlAlign(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
     staticText->SetVisible(false);
     AddControl(staticText);
-    
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
 #endif
     
@@ -140,14 +141,15 @@ UITextField::UITextField()
 #if defined (__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
+    SetTextUseRtlAlign(false);
 #elif defined(__DAVAENGINE_IPHONE__)
 	textFieldiPhone = new UITextFieldiPhone(this);
     textFieldiPhone->SetVisible(false);
+    SetTextUseRtlAlign(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
     staticText->SetVisible(false);
     AddControl(staticText);
-    
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
 #endif
     
@@ -354,6 +356,17 @@ void UITextField::SetTextAlign(int32 align)
 #endif	
 }
 
+void UITextField::SetTextUseRtlAlign(bool useRtlAlign)
+{
+#ifdef __DAVAENGINE_IPHONE__
+    textFieldiPhone->SetTextUseRtlAlign(useRtlAlign);
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetTextUseRtlAlign(useRtlAlign);
+#else
+    staticText->SetTextUseRtlAlign(useRtlAlign);
+#endif
+}
+
 void UITextField::SetFontSize(float size)
 {
 #ifdef __DAVAENGINE_IPHONE__
@@ -455,7 +468,17 @@ int32 UITextField::GetTextAlign() const
 #else
     return staticText ? staticText->GetTextAlign() : ALIGN_HCENTER|ALIGN_VCENTER;
 #endif
-    
+}
+
+bool UITextField::GetTextUseRtlAlign() const
+{
+#ifdef __DAVAENGINE_IPHONE__
+    return textFieldiPhone ? textFieldiPhone->GetTextUseRtlAlign() : false;
+#elif defined(__DAVAENGINE_ANDROID__)
+    return textFieldAndroid ? textFieldAndroid->GetTextUseRtlAlign() : false;
+#else
+    return staticText ? staticText->GetTextUseRtlAlign() : false;
+#endif
 }
 
 void UITextField::Input(UIEvent *currentInput)
@@ -672,6 +695,12 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 	{
 		SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
 	}
+
+	const YamlNode * textUseRtlAlign = node->Get("textUseRtlAlign");
+	if(textUseRtlAlign)
+	{
+		SetTextUseRtlAlign(textUseRtlAlign->AsBool());
+	}
     //InitAfterYaml();
 
     const YamlNode* maxLengthNode = node->Get("maxLength");
@@ -734,10 +763,17 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     }
 
 	// Text align
-    if (baseTextField->GetTextAlign() != GetTextAlign())
+	if (baseTextField->GetTextAlign() != GetTextAlign())
     {
         node->SetNodeToMap("textalign", loader->GetAlignNodeValue(GetTextAlign()));
     }
+	
+	// Text use rtl align
+	if (baseTextField->GetTextUseRtlAlign() != GetTextUseRtlAlign())
+    {
+        node->Set("textUseRtlAlign", this->GetTextUseRtlAlign());
+    }
+    
 
 	// Draw Type must be overwritten fot UITextField.
 	UIControlBackground::eDrawType drawType = GetBackground()->GetDrawType();
@@ -837,6 +873,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 	SetKeyboardType(t->GetKeyboardType());
 	SetReturnKeyType(t->GetReturnKeyType());
 	SetEnableReturnKeyAutomatically(t->IsEnableReturnKeyAutomatically());
+	SetTextUseRtlAlign(t->GetTextUseRtlAlign());
 }
     
 void UITextField::SetIsPassword(bool isPassword)
