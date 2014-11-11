@@ -912,7 +912,7 @@ void TextBlock::SetBiDiSupportEnabled(bool value)
     isBiDiSupportEnabled = value;
 }
 
-bool const& TextBlock::IsBiDiSupportEnabled()
+bool TextBlock::IsBiDiSupportEnabled()
 {
     return isBiDiSupportEnabled;
 }
