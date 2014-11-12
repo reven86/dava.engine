@@ -33,7 +33,7 @@ bool LicenceDialog::process()
 {
     return true;    // ;)
 
-    accepted = SettingsManager::Instance()->GetValue(ResourceEditor::SETTINGS_LICENCE_ACCEPTED, SettingsManager::INTERNAL).AsBool();
+    accepted = SettingsManager::GetValue(Settings::Internal_LicenceAccepted).AsBool();
     if ( !accepted )
     {
         exec();
@@ -49,9 +49,8 @@ void LicenceDialog::setHtmlText(const QString& text)
 
 void LicenceDialog::onAccept()
 {
-    const bool isAccepted = ui->accepted->isChecked();
-    SettingsManager::Instance()->SetValue(ResourceEditor::SETTINGS_LICENCE_ACCEPTED, VariantType(isAccepted), SettingsManager::INTERNAL);
-    accepted = SettingsManager::Instance()->GetValue(ResourceEditor::SETTINGS_LICENCE_ACCEPTED, SettingsManager::INTERNAL).AsBool();
+    accepted = ui->accepted->isChecked();
+    SettingsManager::SetValue(Settings::Internal_LicenceAccepted, DAVA::VariantType(accepted));
 }
 
 void LicenceDialog::onDecline()

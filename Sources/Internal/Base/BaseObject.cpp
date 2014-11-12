@@ -35,8 +35,6 @@
 
 namespace DAVA
 {
-REGISTER_CLASS(BaseObject);    
-    
 
 const String & BaseObject::GetClassName() const
 {

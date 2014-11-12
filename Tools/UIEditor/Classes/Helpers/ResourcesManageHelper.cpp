@@ -98,7 +98,7 @@ static const QString PROJECT_TITLE = "UIEdtior";
 static const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not located inside project 'Data' folder. It can't be linked with project or control!";
 
 //Available fonts extensions
-static const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def");
+static const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def" << "*.df");
 
 QString ResourcesManageHelper::buttonBackgroundImagePath;
 QString ResourcesManageHelper::projectTitle;
@@ -150,7 +150,7 @@ QString ResourcesManageHelper::GetDefaultSpritesPath(const QString& currentSprit
 	// If sprite is already set - we should use its directory as default for file dialog
 	if (!currentSpritePath.isEmpty() && currentSpritePath.compare(StringConstants::NO_SPRITE_IS_SET) != 0)
 	{
-		FilePath spriteAbsolutePath(currentSpritePath.toStdString());
+		FilePath spriteAbsolutePath(currentSpritePath.toStdString() + ".txt");
 		QFileInfo fileInfo(QString::fromStdString(spriteAbsolutePath.GetAbsolutePathname()));
 		return fileInfo.absoluteDir().absolutePath();
 	}

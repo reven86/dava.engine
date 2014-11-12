@@ -188,7 +188,6 @@ namespace DAVA
 		
 		SkyboxRenderObject* skyboxRenderObject = static_cast<SkyboxRenderObject*>(newObject);
 		
-		skyboxRenderObject->type = type;
 		skyboxRenderObject->flags = flags;
 		skyboxRenderObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
 		skyboxRenderObject->debugFlags = debugFlags;

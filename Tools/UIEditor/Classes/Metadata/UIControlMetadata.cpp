@@ -337,34 +337,18 @@ bool UIControlMetadata::GetVisible() const
     {
         return false;
     }
-    
+
     return GetActiveUIControl()->GetVisible();
 }
 
 void UIControlMetadata::SetVisible(const bool value)
-{
-    // Don't set Visible flag hierarchically for common UI Controls.
-    SetUIControlVisible(value, false);
-}
-
-bool UIControlMetadata::GetRecursiveVisible() const
-{
-    if (!VerifyActiveParamID())
-    {
-        return false;
-    }
-
-    return GetActiveUIControl()->GetRecursiveVisible();
-}
-
-void UIControlMetadata::SetRecursiveVisible(const bool value)
 {
     if (!VerifyActiveParamID())
     {
         return;
     }
 
-    GetActiveUIControl()->SetRecursiveVisible(value);
+    GetActiveUIControl()->SetVisible(value);
 }
 
 bool UIControlMetadata::GetInput() const
@@ -408,15 +392,26 @@ void UIControlMetadata::SetClipContents(const bool value)
     GetActiveUIControl()->SetClipContents(value);
 }
 
-void UIControlMetadata::ApplyMove(const Vector2& moveDelta)
+void UIControlMetadata::ApplyMove(const Vector2& moveDelta, bool alignControlsToIntegerPos)
 {
     if (!VerifyActiveParamID())
     {
         return;
     }
-
+    
+    float32 parentsTotalAngle = GetActiveUIControl()->GetParent()->GetGeometricData().angle;
     Vector2 controlPosition = GetActiveUIControl()->GetPosition();
-    controlPosition += moveDelta;
+    if(parentsTotalAngle != 0)
+    {
+        Matrix3 tmp;
+        tmp.BuildRotation(-parentsTotalAngle);
+        Vector2 rotatedVec = moveDelta * tmp;
+        controlPosition += rotatedVec;
+    }
+    else
+    {
+        controlPosition += moveDelta;
+    }
 	
 	Rect rect = GetActiveUIControl()->GetRect();
 	rect.x = controlPosition.x;
@@ -426,8 +421,8 @@ void UIControlMetadata::ApplyMove(const Vector2& moveDelta)
 	Vector2 pivotPoint = GetActiveUIControl()->pivotPoint;
 	rect.x -= pivotPoint.x;
 	rect.y -= pivotPoint.y;
-	
-	SetActiveControlRect(rect, false);
+
+	SetActiveControlRect(rect, false, alignControlsToIntegerPos);
 }
 
 void UIControlMetadata::ApplyResize(const Rect& /*originalRect*/, const Rect& newRect)
@@ -440,7 +435,7 @@ void UIControlMetadata::ApplyResize(const Rect& /*originalRect*/, const Rect& ne
 	SetActiveControlRect(newRect, false);
 }
                  
-QColor UIControlMetadata::GetColor()
+QColor UIControlMetadata::GetColor() const
 {
     if (!VerifyActiveParamID())
     {
@@ -460,7 +455,7 @@ void UIControlMetadata::SetColor(const QColor& value)
     GetActiveUIControl()->GetBackground()->SetColor(ColorHelper::QTColorToDAVAColor(value));
 }
     
-int UIControlMetadata::GetDrawType()
+int UIControlMetadata::GetDrawType() const
 {
     if (!VerifyActiveParamID())
     {
@@ -480,7 +475,7 @@ void UIControlMetadata::SetDrawType(int value)
     GetActiveUIControl()->GetBackground()->SetDrawType((UIControlBackground::eDrawType)value);
 }
     
-int UIControlMetadata::GetColorInheritType()
+int UIControlMetadata::GetColorInheritType() const
 {
     if (!VerifyActiveParamID())
     {
@@ -499,8 +494,27 @@ void UIControlMetadata::SetColorInheritType(int value)
     
     GetActiveUIControl()->GetBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
 }
+
+int UIControlMetadata::GetPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
     
-int UIControlMetadata::GetAlign()
+    return (int)GetActiveUIControl()->GetBackground()->GetPerPixelAccuracyType();
+}
+void UIControlMetadata::SetPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUIControl()->GetBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+}
+    
+int UIControlMetadata::GetAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -520,7 +534,7 @@ void UIControlMetadata::SetAlign(int value)
     GetActiveUIControl()->GetBackground()->SetAlign((eAlign)value);
 }
 
-float UIControlMetadata::GetLeftRightStretchCap()
+float UIControlMetadata::GetLeftRightStretchCap() const
 {
     if (!VerifyActiveParamID())
     {
@@ -530,7 +544,7 @@ float UIControlMetadata::GetLeftRightStretchCap()
     return GetActiveUIControl()->GetBackground()->GetLeftRightStretchCap();
 }
 
-float UIControlMetadata::GetTopBottomStretchCap()
+float UIControlMetadata::GetTopBottomStretchCap() const
 {
     if (!VerifyActiveParamID())
     {
@@ -568,7 +582,7 @@ void UIControlMetadata::SetSprite(const QString& value)
     }
     
     //If empty string value is used - remove sprite
-    if (value.isEmpty())
+    if (value.isEmpty() || value == StringConstants::NO_SPRITE_IS_SET)
     {
         GetActiveUIControl()->GetBackground()->SetSprite(NULL, 0); 
     }
@@ -599,7 +613,7 @@ void UIControlMetadata::UpdateThumbSizeForUIControlThumb()
     }
 }
     
-QString UIControlMetadata::GetSprite()
+QString UIControlMetadata::GetSprite() const
 {
     if (!VerifyActiveParamID())
     {
@@ -637,7 +651,7 @@ void UIControlMetadata::SetSpriteFrame(int value)
     GetActiveUIControl()->GetBackground()->SetFrame(value);
 }
     
-int UIControlMetadata::GetSpriteFrame()
+int UIControlMetadata::GetSpriteFrame() const
 {
     if (!VerifyActiveParamID())
     {
@@ -669,7 +683,7 @@ void UIControlMetadata::SetSpriteModification(int value)
     GetActiveUIControl()->GetBackground()->SetModification(value);
 }
 
-int UIControlMetadata::GetSpriteModification()
+int UIControlMetadata::GetSpriteModification() const
 {
     if (!VerifyActiveParamID())
     {
@@ -685,7 +699,7 @@ int UIControlMetadata::GetSpriteModification()
     return GetActiveUIControl()->GetBackground()->GetModification();
 }
 
-int UIControlMetadata::GetLeftAlign()
+int UIControlMetadata::GetLeftAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -704,7 +718,7 @@ void UIControlMetadata::SetLeftAlign(int value)
 	GetActiveUIControl()->SetLeftAlign(value);
 }
 	
-int UIControlMetadata::GetHCenterAlign()
+int UIControlMetadata::GetHCenterAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -724,7 +738,7 @@ void UIControlMetadata::SetHCenterAlign(int value)
 	GetActiveUIControl()->SetHCenterAlign(value);
 }
 
-int UIControlMetadata::GetRightAlign()
+int UIControlMetadata::GetRightAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -744,7 +758,7 @@ void UIControlMetadata::SetRightAlign(int value)
 	GetActiveUIControl()->SetRightAlign(value);
 }
 
-int UIControlMetadata::GetTopAlign()
+int UIControlMetadata::GetTopAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -764,7 +778,7 @@ void UIControlMetadata::SetTopAlign(int value)
 	GetActiveUIControl()->SetTopAlign(value);
 }
 
-int UIControlMetadata::GetVCenterAlign()
+int UIControlMetadata::GetVCenterAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -784,7 +798,7 @@ void UIControlMetadata::SetVCenterAlign(int value)
 	GetActiveUIControl()->SetVCenterAlign(value);
 }
 
-int UIControlMetadata::GetBottomAlign()
+int UIControlMetadata::GetBottomAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -924,7 +938,7 @@ void UIControlMetadata::SetBottomAlignEnabled(const bool value)
 	GetActiveUIControl()->SetBottomAlignEnabled(value);
 }
 
-void UIControlMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign)
+void UIControlMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign, bool alignToIntegerPos)
 {
 	// Save/restore Align Data before changing the Control Rect, if requested.
 	UIControl* activeControl = GetActiveUIControl();
@@ -936,6 +950,14 @@ void UIControlMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign
 	}
 
 	activeControl->SetRect(rect);
+    
+    if (alignToIntegerPos)
+    {
+        Vector2 controlPos = activeControl->GetPosition();
+        controlPos.x = Round(controlPos.x);
+        controlPos.y = Round(controlPos.y);
+        activeControl->SetPosition(controlPos);
+    }
 
 	if (restoreAlign)
 	{
@@ -952,7 +974,7 @@ QString UIControlMetadata::GetCustomControlName() const
 		return QString();
 	}
 	
-	return QString::fromStdString(GetActiveUIControl()->GetCustomControlType());
+	return QString::fromStdString(GetActiveUIControl()->GetCustomControlClassName());
 }
 	
 void UIControlMetadata::SetCustomControlName(const QString& value)
@@ -962,14 +984,7 @@ void UIControlMetadata::SetCustomControlName(const QString& value)
 		return;
 	}
 
-	if (value.isEmpty())
-	{
-		GetActiveUIControl()->ResetCustomControlType();
-	}
-	else
-	{
-		GetActiveUIControl()->SetCustomControlType(value.toStdString());
-	}
+	GetActiveUIControl()->SetCustomControlClassName(value.toStdString());
 }
 
 int UIControlMetadata::GetInitialState() const
@@ -1014,14 +1029,142 @@ void UIControlMetadata::ResizeScrollViewContent(UIControl * control)
 	}
 }
 
-void UIControlMetadata::SetUIControlVisible(const bool value, bool hierarchic)
+QRectF UIControlMetadata::GetMargins() const
 {
-    if (!VerifyActiveParamID())
+    if (!VerifyActiveParamID() || !GetActiveUIControl()->GetBackground())
+    {
+        return QRectF();
+    }
+    
+    const UIControlBackground::UIMargins* margins = GetActiveUIControl()->GetBackground()->GetMargins();
+    if (!margins)
+    {
+        return QRectF();
+    }
+
+    return UIMarginsToQRectF(margins);
+}
+    
+void UIControlMetadata::SetMargins(const QRectF& value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUIControl()->GetBackground())
+    {
+        return;
+    }
+
+    UIControlBackground::UIMargins margins = QRectFToUIMargins(value);
+    GetActiveUIControl()->GetBackground()->SetMargins(&margins);
+}
+
+float UIControlMetadata::GetLeftMargin() const
+{
+    return GetMargins().left();
+}
+
+void UIControlMetadata::SetLeftMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUIControl()->GetBackground())
+    {
+        return;
+    }
+
+    UIControlBackground::UIMargins margins = GetMarginsToUpdate();
+    margins.left = value;
+    GetActiveUIControl()->GetBackground()->SetMargins(&margins);
+}
+    
+float UIControlMetadata::GetTopMargin() const
+{
+    return GetMargins().top();
+}
+
+void UIControlMetadata::SetTopMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUIControl()->GetBackground())
     {
         return;
     }
     
-    GetActiveUIControl()->SetVisible(value, hierarchic);
+    UIControlBackground::UIMargins margins = GetMarginsToUpdate();
+    margins.top = value;
+    GetActiveUIControl()->GetBackground()->SetMargins(&margins);
 }
+    
+float UIControlMetadata::GetRightMargin() const
+{
+    return GetMargins().width();
+}
+    
+void UIControlMetadata::SetRightMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUIControl()->GetBackground())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMarginsToUpdate();
+    margins.right = value;
+    GetActiveUIControl()->GetBackground()->SetMargins(&margins);
+}
+
+float UIControlMetadata::GetBottomMargin() const
+{
+    return GetMargins().height();
+}
+
+void UIControlMetadata::SetBottomMargin(float value)
+{
+    if (!VerifyActiveParamID() || !GetActiveUIControl()->GetBackground())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetMarginsToUpdate();
+    margins.bottom = value;
+    GetActiveUIControl()->GetBackground()->SetMargins(&margins);
+}
+
+UIControlBackground::UIMargins UIControlMetadata::GetMarginsToUpdate(UIControl::eControlState /* state */) const
+{
+    if (!VerifyActiveParamID() || !GetActiveUIControl()->GetBackground())
+    {
+        return UIControlBackground::UIMargins();
+    }
+
+    const UIControlBackground::UIMargins* margins = GetActiveUIControl()->GetBackground()->GetMargins();
+    if (!margins)
+    {
+        return UIControlBackground::UIMargins();
+    }
+
+    return *margins;
+}
+
+QRectF UIControlMetadata::UIMarginsToQRectF(const UIControlBackground::UIMargins* margins) const
+{
+    if (!margins)
+    {
+        return QRectF();
+    }
+
+    QRectF resultRect;
+    resultRect.setLeft(margins->left);
+    resultRect.setTop(margins->top);
+    resultRect.setWidth(margins->right);
+    resultRect.setHeight(margins->bottom);
+
+    return resultRect;
+}
+    
+UIControlBackground::UIMargins UIControlMetadata::QRectFToUIMargins(const QRectF& rect) const
+{
+    UIControlBackground::UIMargins resultMargins;
+    resultMargins.left = rect.left();
+    resultMargins.top = rect.top();
+    resultMargins.right = rect.width();
+    resultMargins.bottom = rect.height();
+ 
+    return resultMargins;
+} 
 
 };

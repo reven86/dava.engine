@@ -138,7 +138,7 @@ ColourSet::ColourSet( u8 const* rgba, int flags, bool createMinimalSet/*=false*/
 #endif
 }
 
-#ifdef ANDROID
+#if defined (IOS) || defined (ANDROID)
 void ColourSet::RemapIndices( u8 const* source, u8* target ) const
 {
 	for( int i = 0; i < 16; ++i )

@@ -116,13 +116,13 @@ void AddNewGuideCommand::AcceptNewGuide()
 
 /////////////////////////////////////////////////////////////////////////////////////////
     
-MoveGuideCommand::MoveGuideCommand(const HierarchyTreeScreenNode* screenNode) :
+MoveGuideByMouseCommand::MoveGuideByMouseCommand(const HierarchyTreeScreenNode* screenNode) :
     BaseGuideCommand(screenNode),
     isFirstMovePerformed(false)
 {
 }
 
-void MoveGuideCommand::Execute()
+void MoveGuideByMouseCommand::Execute()
 {
     HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
     if (!screen)
@@ -154,7 +154,7 @@ void MoveGuideCommand::Execute()
     HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
 }
     
-void MoveGuideCommand::Rollback()
+void MoveGuideByMouseCommand::Rollback()
 {
     if (isFirstMovePerformed)
     {
@@ -164,7 +164,7 @@ void MoveGuideCommand::Rollback()
     }
 }
 
-void MoveGuideCommand::UpdateGuidePosition(const GuideData& guideData, const Vector2& newPos)
+void MoveGuideByMouseCommand::UpdateGuidePosition(const GuideData& guideData, const Vector2& newPos)
 {
     HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
     if (!screen)
@@ -173,6 +173,128 @@ void MoveGuideCommand::UpdateGuidePosition(const GuideData& guideData, const Vec
     }
 
     screen->UpdateGuidePosition(guideData, newPos);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+MoveGuideCommand::MoveGuideCommand(const HierarchyTreeScreenNode* screenNode, const Vector2& delta) :
+    BaseGuideCommand(screenNode),
+    isFirstMovePerformed(false),
+    moveDelta(delta)
+{
+}
+    
+void MoveGuideCommand::Execute()
+{
+    HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
+    if (!screen)
+    {
+        return;
+    }
+    
+    if (!isFirstMovePerformed)
+    {
+        // Gather all the selected guides and remember their original positions.
+        const List<GuideData*>& selectedGuides = screen->GetSelectedGuides();
+        for (List<GuideData*>::const_iterator iter = selectedGuides.begin(); iter != selectedGuides.end(); iter ++)
+        {
+            GuideData* guideData = *iter;
+            guidesPositions.push_back(guideData->GetPosition());
+            screen->SetGuidePosition(guideData, guideData->GetPosition() + moveDelta);
+        }
+    
+        isFirstMovePerformed = true;
+    }
+    else
+    {
+        // Called after Rollback. Restore the guide position.
+        const List<GuideData*>& allGuides = screen->GetGuides(false);
+        for (List<GuideData*>::const_iterator iter = allGuides.begin(); iter != allGuides.end(); iter ++)
+        {
+            GuideData* guideData = *iter;
+            
+            for (List<Vector2>::iterator innerIter = guidesPositions.begin(); innerIter != guidesPositions.end(); innerIter ++)
+            {
+                const Vector2& origPos = *innerIter;
+                if (guideData->GetPosition() == origPos)
+                {
+                    screen->SetGuidePosition(guideData, guideData->GetPosition() + moveDelta);
+                }
+            }
+        }
+    }
+
+    IncrementUnsavedChanges();
+    HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
+}
+
+void MoveGuideCommand::Rollback()
+{
+    HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
+    if (!screen || !isFirstMovePerformed)
+    {
+        return;
+    }
+
+    const List<GuideData*>& allGuides = screen->GetGuides(false);
+    for (List<GuideData*>::const_iterator iter = allGuides.begin(); iter != allGuides.end(); iter ++)
+    {
+        GuideData* guideData = *iter;
+
+        for (List<Vector2>::iterator innerIter = guidesPositions.begin(); innerIter != guidesPositions.end(); innerIter ++)
+        {
+            const Vector2& origPos = *innerIter;
+            if (guideData->GetPosition() - moveDelta == origPos)
+            {
+                screen->SetGuidePosition(guideData, origPos);
+            }
+        }
+    }
+
+    DecrementUnsavedChanges();
+    HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+DeleteSingleGuideCommand::DeleteSingleGuideCommand(const HierarchyTreeScreenNode* screenNode,
+    const GuideData& guideData) :
+    BaseGuideCommand(screenNode),
+    isFirstDeletePerformed(false),
+    guideDataToDelete(guideData)
+{
+}
+
+void DeleteSingleGuideCommand::Execute()
+{
+    HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
+    if (!screen)
+    {
+        return;
+    }
+
+    if (!isFirstDeletePerformed)
+    {
+        screen->RemoveGuide(guideDataToDelete);
+        isFirstDeletePerformed = true;
+    }
+    else
+    {
+        RemoveRememberedGuide(guideDataToDelete);
+    }
+    
+    IncrementUnsavedChanges();
+    HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
+}
+
+void DeleteSingleGuideCommand::Rollback()
+{
+    if (isFirstDeletePerformed)
+    {
+        AddRememberedGuide(guideDataToDelete);
+        DecrementUnsavedChanges();
+        HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -227,6 +349,7 @@ void DeleteGuidesCommand::RemoveRememberedGuides()
 {
     for (List<GuideData>::iterator iter = deletedGuidesData.begin(); iter != deletedGuidesData.end(); iter ++)
     {
+        (*iter).SetSelected(false);
         RemoveRememberedGuide(*iter);
     }
 }

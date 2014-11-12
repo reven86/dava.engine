@@ -195,20 +195,18 @@ void HeightmapEditorPanel::ConnectToSignals()
 
 void HeightmapEditorPanel::StoreState()
 {
-	KeyedArchive* customProperties = GetActiveScene()->GetCustomProperties();
-	if (customProperties)
-	{
-		customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MIN,
-								   sliderWidgetBrushSize->GetRangeMin());
-		customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MAX,
-								   sliderWidgetBrushSize->GetRangeMax());
-		customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_STRENGTH_MAX,
-								   sliderWidgetStrength->GetRangeMax());
-		customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_AVERAGE_STRENGTH_MIN,
-								   sliderWidgetAverageStrength->GetRangeMin());
-		customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_AVERAGE_STRENGTH_MAX,
-								   sliderWidgetAverageStrength->GetRangeMax());
-	}
+	KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
+    
+    customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MIN,
+                               sliderWidgetBrushSize->GetRangeMin());
+    customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MAX,
+                               sliderWidgetBrushSize->GetRangeMax());
+    customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_STRENGTH_MAX,
+                               sliderWidgetStrength->GetRangeMax());
+    customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_AVERAGE_STRENGTH_MIN,
+                               sliderWidgetAverageStrength->GetRangeMin());
+    customProperties->SetInt32(ResourceEditor::HEIGHTMAP_EDITOR_AVERAGE_STRENGTH_MAX,
+                               sliderWidgetAverageStrength->GetRangeMax());
 }
 
 void HeightmapEditorPanel::RestoreState()
@@ -229,7 +227,7 @@ void HeightmapEditorPanel::RestoreState()
 	int32 avStrRangeMin = DEF_AVERAGE_STRENGTH_MIN_VALUE;
 	int32 avStrRangeMax = DEF_AVERAGE_STRENGTH_MAX_VALUE;
 
-	KeyedArchive* customProperties = sceneEditor->GetCustomProperties();
+	KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
 	if (customProperties)
 	{
 		brushRangeMin = customProperties->GetInt32(ResourceEditor::HEIGHTMAP_EDITOR_BRUSH_SIZE_MIN,

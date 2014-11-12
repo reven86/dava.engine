@@ -33,14 +33,10 @@ UIParticlesMetadata::UIParticlesMetadata(QObject* parent) :
 {
 }
 
-void UIParticlesMetadata::InitializeControl(const String& controlName, const Vector2& position)
-{
-	UIControlMetadata::InitializeControl(controlName, position);
-}
 
 UIParticles* UIParticlesMetadata::GetActiveUIParticles() const
 {
-    return dynamic_cast<UIParticles*>(GetActiveUIControl());
+    return static_cast<UIParticles*>(GetActiveUIControl());
 }
 
 void UIParticlesMetadata::Start()
@@ -51,6 +47,15 @@ void UIParticlesMetadata::Start()
     }
 
     GetActiveUIParticles()->Start();
+    UIParticles* activeParticles = GetActiveUIParticles();
+    if (activeParticles->IsPaused())
+    {
+        activeParticles->Pause(false);
+    }
+    else
+    {
+        activeParticles->Start();
+    }
 }
 
 void UIParticlesMetadata::Stop()
@@ -70,7 +75,8 @@ void UIParticlesMetadata::Pause()
         return;
     }
     
-    GetActiveUIParticles()->Pause();
+    UIParticles* activeParticles = GetActiveUIParticles();
+    activeParticles->Pause(!activeParticles->IsPaused());
 }
 
 void UIParticlesMetadata::Restart()

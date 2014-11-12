@@ -42,7 +42,7 @@ SpriteObject::SpriteObject()
     , sprite(NULL)
 {
     Texture* t = Texture::CreatePink();
-    Sprite *spr = Sprite::CreateFromTexture(t, 0, 0, t->GetWidth(), t->GetHeight());
+    Sprite *spr = Sprite::CreateFromTexture(t, 0, 0, (float32)t->GetWidth(), (float32)t->GetHeight());
     Init(spr, 0, Vector2(1.f, 1.f), Vector2(0.f, 0.f));
 
     SafeRelease(spr);
@@ -152,7 +152,6 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
 
 	SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
 
-	spriteObject->type = type;
 	spriteObject->flags = flags;
 	spriteObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
 	spriteObject->debugFlags = debugFlags;

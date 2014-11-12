@@ -73,7 +73,7 @@ uint32 TextureHelper::EnumerateSceneTextures(DAVA::Scene* scene)
                 sceneTextureMemory += t->GetDataSize();
             }
             
-            descriptor->Release();
+            delete descriptor;
         }
 	}
 
@@ -103,7 +103,7 @@ DAVA::uint32 TextureHelper::EnumerateSceneTexturesFileSize(DAVA::Scene* scene)
                 textureFile->Release();
             }
             
-            descriptor->Release();
+            delete descriptor;
         }
 	}
 
@@ -138,7 +138,7 @@ void TextureHelper::EnumerateTextures(DAVA::Entity *forNode, Map<String, Texture
 				for(int32 t = 0; t < material->GetTextureCount(); ++t)
 				{
 					Texture* tx = material->GetTexture(t);
-					CollectTexture(textures, tx->relativePathname, tx);
+					CollectTexture(textures, tx->GetPathname(), tx);
 				}
 			}
 

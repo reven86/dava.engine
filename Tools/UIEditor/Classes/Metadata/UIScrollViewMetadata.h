@@ -54,15 +54,13 @@ protected:
 
     // Initialize the appropriate control.
     virtual void InitializeControl(const String& controlName, const Vector2& position);
-    virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
 
-    virtual QString GetUIControlClassName() { return "UIScrollView"; };
+    virtual QString GetUIControlClassName() const { return "UIScrollView"; };
 	
     // Helper to access active UI ScrollView.
     UIScrollView* GetActiveUIScrollView() const;
 	
     // Getters/setters.
-    virtual void SetVisible(const bool value);
     float GetHorizontalScrollPosition() const;
 	void SetHorizontalScrollPosition(float value);
     float GetVerticalScrollPosition() const;

@@ -65,6 +65,15 @@ public:
 	 \brief Unregister font.
 	 */
 	void UnregisterFont(Font *font);
+    /**
+	 \brief Register all fonts.
+	 */
+    void RegisterFonts(const Map<Font*, String>& _registeredFonts, const Map<String, Font*> &fonts);
+    /**
+	 \brief Unregister all fonts.
+	 */
+    void UnregisterFonts();
+    
 	/**
 	 \brief Set font name.
 	 */
@@ -74,18 +83,29 @@ public:
 	 \brief Get traked font name. Add font to track list.
 	 */
 	String GetFontName(Font *font);
-
-	typedef Set<Font*> TRACKED_FONTS;
+    
+    /**
+	 \brief Get font by name.
+	 */
+	Font* GetFont(const String &name);
 	
 	/**
 	 \brief Reset tracked fonts added by GetFontName().
 	 */
-	void PrepareToSaveFonts();
+	void PrepareToSaveFonts(bool saveAllFonts = false);
+    
+    typedef Set<Font*> TRACKED_FONTS;
 	/**
 	 \brief Get tracked fonts added by GetFontName().
 	 */
 	const TRACKED_FONTS& GetTrackedFont() const;
 	
+    /**
+	 \brief Get registered fonts.
+	 */
+	const Map<Font*, String>& GetRegisteredFonts() const;
+	
+    
 private:
 	void Clear();
 	String GetFontHashName(Font* font);
@@ -104,6 +124,8 @@ private:
 	
 	TRACKED_FONTS trackedFonts;
 	
+    //TODO: remove this extra map (UIYamlLoader legacy)
+    Map<String, Font*> fontMap;
 };
 	
 };

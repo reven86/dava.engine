@@ -46,6 +46,34 @@
 #include "UISwitchMetadata.h"
 #include "UITextFieldMetadata.h"
 #include "UIParticlesMetadata.h"
+#include "UIJoypadMetadata.h"
+#include "UIWebViewMetadata.h"
+#include "UI3DViewMetadata.h"
+#include "UIListCellMetadata.h"
+
+#include "Metadata/Custom/GuideMetadata.h"
+
+#include "alignspropertygridwidget.h"
+#include "backgroundpropertygridwidget.h"
+#include "basepropertygridwidget.h"
+#include "controlpropertygridwidget.h"
+#include "flagspropertygridwidget.h"
+#include "listpropertygridwidget.h"
+#include "rectpropertygridwidget.h"
+#include "scrollviewpropertygridwidget.h"
+#include "scrollcontrolpropertygridwidget.h"
+#include "sliderpropertygridwidget.h"
+#include "spinnerpropertygridwidget.h"
+#include "statepropertygridwidget.h"
+#include "textpropertygridwidget.h"
+#include "uitextfieldpropertygridwidget.h"
+#include "uistatictextpropertygridwidget.h"
+#include "particleeffectpropertygridwidget.h"
+#include "joypadpropertygridwidget.h"
+#include "webviewpropertygridwidget.h"
+#include "UIListCellPropertyGridWidget.h"
+
+#include "Custom/guidepropertygridwidget.h"
 
 using namespace DAVA;
 
@@ -75,13 +103,14 @@ PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
 	sliderWidget = new SliderPropertyGridWidget();
 	registeredWidgets.push_back(sliderWidget);
 
-    textWidget = new TextPropertyGridWidget();
+    textWidget = new UIStaticTextPropertyGridWidget();
     registeredWidgets.push_back(textWidget);
 
     uiTextFieldWidget = new UITextFieldPropertyGridWidget();
     registeredWidgets.push_back(uiTextFieldWidget);
 
-    backgroundWidget = new BackGroundPropertyGridWidget();
+    backgroundWidget = new BackgroundPropertyGridWidget("Background", "");
+    backgroundWidget->ForceExpand(true);
     registeredWidgets.push_back(backgroundWidget);
 	    
     flagsWidget = new FlagsPropertyGridWidget();
@@ -101,6 +130,18 @@ PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
     
     particleWidget = new ParticleEffectPropertyGridWidget();
     registeredWidgets.push_back(particleWidget);
+
+    joypadWidget = new JoypadPropertyGridWidget();
+    registeredWidgets.push_back(joypadWidget);
+    
+    webViewWidget = new WebViewPropertyGridWidget();
+    registeredWidgets.push_back(webViewWidget);
+
+    listCellWidget = new UIListCellPropertyGridWidget();
+    registeredWidgets.push_back(listCellWidget);
+
+    guideWidget = new GuidePropertyGridWidget();
+    registeredWidgets.push_back(guideWidget);
 }
 
 PropertyGridWidgetsFactory::~PropertyGridWidgetsFactory()
@@ -151,6 +192,21 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
 		resultList.push_back(aggregatorWidget);
 		return resultList;
 	}
+
+    const UIListCellMetadata* listCellMetadata = dynamic_cast<const UIListCellMetadata*>(metaData);
+    if (listCellMetadata)
+    {
+        resultList.push_back(controlWidget);
+        resultList.push_back(listCellWidget);
+        resultList.push_back(rectWidget);
+        resultList.push_back(alignWidget);
+        resultList.push_back(stateWidget);
+        resultList.push_back(textWidget);
+        resultList.push_back(backgroundWidget);
+        resultList.push_back(flagsWidget);
+
+        return resultList;
+    }
 
     // UI Button/Static Text Nodes - they require the same widgets.
     const UIButtonMetadata* uiButtonMetadata = dynamic_cast<const UIButtonMetadata*>(metaData);
@@ -282,6 +338,46 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
         return resultList;
 	}
 
+    // UIJoypad
+	const UIJoypadMetadata* uiJoypadMetadata = dynamic_cast<const UIJoypadMetadata*>(metaData);
+	if (uiJoypadMetadata)
+	{
+		resultList.push_back(controlWidget);
+        resultList.push_back(rectWidget);
+		resultList.push_back(alignWidget);
+		resultList.push_back(joypadWidget);
+        resultList.push_back(backgroundWidget);
+        resultList.push_back(flagsWidget);
+
+        return resultList;
+	}
+
+    // UIWebView
+	const UIWebViewMetadata* uiWebViewMetadata = dynamic_cast<const UIWebViewMetadata*>(metaData);
+	if (uiWebViewMetadata)
+	{
+		resultList.push_back(controlWidget);
+        resultList.push_back(rectWidget);
+		resultList.push_back(alignWidget);
+		resultList.push_back(webViewWidget);
+        resultList.push_back(backgroundWidget);
+        resultList.push_back(flagsWidget);
+        
+        return resultList;
+	}
+
+    // UI3DView - no background widget needed.
+	const UI3DViewMetadata* ui3DViewMetadata = dynamic_cast<const UI3DViewMetadata*>(metaData);
+	if (ui3DViewMetadata)
+	{
+		resultList.push_back(controlWidget);
+        resultList.push_back(rectWidget);
+		resultList.push_back(alignWidget);
+        resultList.push_back(flagsWidget);
+        
+        return resultList;
+	}
+
     // TODO: add other Metadatas here as soon as they will be implemented.
     // UI Control Node. Should be at the very bottom of this factory since it is a parent for
     // all UI Controls and used as a "last chance" if we are unable to determine the control type.
@@ -294,6 +390,14 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
         
+        return resultList;
+    }
+
+    // Handle Custom metadata here.
+    const GuideMetadata* guideMetadata = dynamic_cast<const GuideMetadata*>(metaData);
+    if (guideMetadata)
+    {
+        resultList.push_back(guideWidget);
         return resultList;
     }
 

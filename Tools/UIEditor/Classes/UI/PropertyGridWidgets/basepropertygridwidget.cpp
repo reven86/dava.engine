@@ -38,10 +38,13 @@
 #include "HierarchyTreeController.h"
 #include "WidgetSignalsBlocker.h"
 #include "SubcontrolsHelper.h"
+#include "ResourcesManageHelper.h"
 
 #include "CommandsController.h"
 #include "ChangePropertyCommand.h"
 #include "InvokeMethodCommand.h"
+
+const QString BasePropertyGridWidget::MULTIPLE_VALUE = "multiple";
 
 BasePropertyGridWidget::BasePropertyGridWidget(QWidget *parent) :
     QWidget(parent),
@@ -106,7 +109,7 @@ BasePropertyGridWidget::PROPERTIESMAP BasePropertyGridWidget::BuildMetadataPrope
     for (int32 i = 0; i < count; i ++)
     {
         const QMetaProperty& curProperty = activeMetadata->metaObject()->property(i);
-        //Logger::Debug("Property name %s", curProperty.name());
+        //Logger::FrameworkDebug("Property name %s", curProperty.name());
         propertiesMap.insert(std::make_pair(curProperty.name(), curProperty));
     }
     
@@ -672,12 +675,14 @@ void BasePropertyGridWidget::UpdateLineEditWidgetWithPropertyValue(QLineEdit* li
         WidgetSignalsBlocker blocker(lineEditWidget);
         if (isPropertyValueDiffers)
         {
-            lineEditWidget->setText("<multiple>"); // TODO! TO CONST!!!
+            lineEditWidget->setText(BasePropertyGridWidget::MULTIPLE_VALUE);
+            lineEditWidget->setStyleSheet("font:bold;");
         }
         else
         {
             // Get the current value.
             lineEditWidget->setText(propertyValue);
+            lineEditWidget->setStyleSheet("font:normal;");
         }
     }
 
@@ -688,11 +693,8 @@ void BasePropertyGridWidget::UpdateSpinBoxWidgetWithPropertyValue(QSpinBox* spin
                                                                   const QMetaProperty& curProperty)
 {
     // Get the current value.
-    bool isPropertyValueDiffers = false;
-    float propertyValue =
-        PropertiesHelper::GetAllPropertyValues<float>(this->activeMetadata,
-                                                      curProperty.name(),
-                                                      isPropertyValueDiffers);
+    float propertyValue = PropertiesHelper::GetAllPropertyValues<float>(this->activeMetadata,
+                                                                        curProperty.name());
     
     {
         // For Spin Box set some value irregardless of isPropertyValueDiffers flag.
@@ -781,12 +783,24 @@ void BasePropertyGridWidget::ProcessPushButtonClicked(QPushButton *)
     Logger::Error("BasePropertyGridWidget::ProcessPushButtonClicked is called - you've forgot to create custom handler for this button!!!");
 }
 
-void BasePropertyGridWidget::SetComboboxSelectedItem(QComboBox* comboBoxWidget, const QString& selectedItemText)
+void BasePropertyGridWidget::SetComboboxSelectedItem(QComboBox* comboBoxWidget, const QString& selectedItemText, bool byToolTip)
 {
-    int index = comboBoxWidget->findText(selectedItemText);
-    if ( index != -1 )
+    int index = -1;
+    if (byToolTip)
     {
-        comboBoxWidget->setCurrentIndex(index);
+        index = comboBoxWidget->findData(QVariant(selectedItemText),Qt::ToolTipRole);
+        if ( index != -1 )
+        {
+            comboBoxWidget->setCurrentIndex(index);
+        }
+    }
+    else
+    {
+        index = comboBoxWidget->findText(selectedItemText);
+        if ( index != -1 )
+        {
+            comboBoxWidget->setCurrentIndex(index);
+        }
     }
 }
 
@@ -883,7 +897,7 @@ bool BasePropertyGridWidget::IsActiveStatePropertyDirty(const QString& propertyN
 
 	bool res = false;
 
-	Vector<UIControl::eControlState> states = activeMetadata->GetUIControlStates();
+	const Vector<UIControl::eControlState> &states = activeMetadata->GetUIControlStates();
 	for (uint32 i = 0; i < activeMetadata->GetStatesCount(); ++i)
 	{
 		UIControl::eControlState state = states[i];
@@ -932,7 +946,7 @@ void BasePropertyGridWidget::UpdateWidgetPalette(QWidget* widget, const QString&
 void BasePropertyGridWidget::PreparePalettes()
 {
     dirtyPropertyPalette.setColor(QPalette::Text, Qt::red);
-    clearPropertyPalette.setColor(QPalette::Text, Qt::black);
+    clearPropertyPalette.setColor(QPalette::Text, QApplication::palette().text().color());
 }
 
 const QPalette& BasePropertyGridWidget::GetWidgetPaletteForDirtyProperty() const
@@ -1034,4 +1048,9 @@ bool BasePropertyGridWidget::ActiveControlIsSubcontrol()
 	}
 
 	return false;
+}
+
+QString BasePropertyGridWidget::PreprocessSpriteName(const QString& rawSpriteName)
+{
+    return ResourcesManageHelper::GetResourceRelativePath(rawSpriteName);
 }

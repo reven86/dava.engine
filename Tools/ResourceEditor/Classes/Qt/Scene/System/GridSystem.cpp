@@ -35,15 +35,16 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
+#define LOWEST_GRID_STEP 0.1f
+#define LOWEST_GRID_SIZE 1.0f
+
 SceneGridSystem::SceneGridSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
 {
-	gridMax = 500.0f;
-	gridStep = SettingsManager::Instance()->GetValue("GridStep", SettingsManager::DEFAULT).AsFloat();
-	
-	renderState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_COLORMASK_ALL |
-																	   DAVA::RenderStateData::STATE_DEPTH_WRITE |
-																	   DAVA::RenderStateData::STATE_DEPTH_TEST);
+	renderState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
+        DAVA::RenderStateData::STATE_COLORMASK_ALL |
+        DAVA::RenderStateData::STATE_DEPTH_WRITE | 
+        DAVA::RenderStateData::STATE_DEPTH_TEST);
 }
 
 SceneGridSystem::~SceneGridSystem()
@@ -63,37 +64,38 @@ void SceneGridSystem::ProcessUIEvent(DAVA::UIEvent *event)
 
 void SceneGridSystem::Draw()
 {
-	DAVA::RenderManager* rm = DAVA::RenderManager::Instance();
-	DAVA::RenderHelper* rh = DAVA::RenderHelper::Instance();
+    float gridStep = SettingsManager::GetValue(Settings::Scene_GridStep).AsFloat();
+	float gridMax = SettingsManager::GetValue(Settings::Scene_GridSize).AsFloat();
+
+    if(gridStep >= LOWEST_GRID_STEP && gridMax >= LOWEST_GRID_SIZE)
+    {
+	    DAVA::RenderManager* rm = DAVA::RenderManager::Instance();
+	    DAVA::RenderHelper* rh = DAVA::RenderHelper::Instance();
+
+        rm->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
+	    rm->FlushState();
 	
-	//DAVA::uint32 oldState = rm->GetState();
-	
-	//rm->SetState(DAVA::RenderState::STATE_COLORMASK_ALL | DAVA::RenderState::STATE_DEPTH_WRITE | DAVA::RenderState::STATE_DEPTH_TEST);
-    rm->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
-	rm->FlushState();
-	
-	rm->SetColor(0.4f, 0.4f, 0.4f, 1.0f);
-	for(DAVA::float32 x = -gridMax; x <= gridMax; x += gridStep)
-	{
-		DAVA::Vector3 v1(x, -gridMax, 0);
-		DAVA::Vector3 v2(x, gridMax, 0);
+	    rm->SetColor(0.4f, 0.4f, 0.4f, 1.0f);
+	    for(DAVA::float32 x = -gridMax; x <= gridMax; x += gridStep)
+	    {
+		    DAVA::Vector3 v1(x, -gridMax, 0);
+		    DAVA::Vector3 v2(x, gridMax, 0);
 		
-		DAVA::Vector3 v3(-gridMax, x, 0);
-		DAVA::Vector3 v4(gridMax, x, 0);
+		    DAVA::Vector3 v3(-gridMax, x, 0);
+		    DAVA::Vector3 v4(gridMax, x, 0);
 		
-		if (x!= 0.0f)
-		{
-			rh->DrawLine(v1, v2, 1.0f, renderState);
-			rh->DrawLine(v3, v4, 1.0f, renderState);
-		}
-	}
+		    if (x!= 0.0f)
+		    {
+			    rh->DrawLine(v1, v2, 1.0f, renderState);
+			    rh->DrawLine(v3, v4, 1.0f, renderState);
+		    }
+	    }
 	
-	rm->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
-	rh->DrawLine(DAVA::Vector3(-gridMax, 0, 0), DAVA::Vector3(gridMax, 0, 0), 1.0f, renderState);
-	rh->DrawLine(DAVA::Vector3(0, -gridMax, 0), DAVA::Vector3(0, gridMax, 0), 1.0f, renderState);
-	
-	rm->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	//rm->SetState(oldState);
+	    rm->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
+	    rh->DrawLine(DAVA::Vector3(-gridMax, 0, 0), DAVA::Vector3(gridMax, 0, 0), 1.0f, renderState);
+	    rh->DrawLine(DAVA::Vector3(0, -gridMax, 0), DAVA::Vector3(0, gridMax, 0), 1.0f, renderState);
+	    rm->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
 }
 
 void SceneGridSystem::ProcessCommand(const Command2 *command, bool redo)

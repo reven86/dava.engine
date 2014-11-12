@@ -56,8 +56,22 @@ class Font : public BaseObject
 public:
 	enum eFontType 
 	{
-			TYPE_FT = 0	//!< freetype-based
-		,	TYPE_GRAPHICAL //!< sprite-based
+			TYPE_FT = 0		//!< freetype-based
+		,	TYPE_GRAPHICAL	//!< sprite-based
+		,	TYPE_DISTANCE	//!< distance-based
+	};
+
+	/**
+		\brief Structure with sizes of string
+		Contents draw rect (buffer, sprite bounds), height, baseline, width.
+	*/
+	struct StringMetrics
+	{
+        inline StringMetrics(): drawRect(), height(0), width(0), baseline(0) {}
+		Rect2i drawRect;
+		int32 height;
+		int32 width;
+		int32 baseline;
 	};
 protected:
 	virtual ~Font();
@@ -114,26 +128,6 @@ public:
 	 \returns vertical spacing value in pixels
 	 */
 	virtual int32 GetVerticalSpacing() const;
-	
-	/**
-		\brief Split string into substrings.
-		If one word(letters without separators) is longer than targetRectSize.dx, word will not be splitted.
-		Separator symbols:
-		1. '\n', "\n"(two symbols) - forced split.
-		3. ' '(space) - soft split. If substring is longer than targetRectSize.dx, it will be limited to the last found space symbol. 
-		\param[in] text - string to be splitted
-		\param[in] targetRectSize - targetRectSize.dx sets desirable maximum substring width
-		\param[in, out] resultVector - contains resulting substrings
-	*/
-	void SplitTextToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector);
-
-	/**
-     \brief Split string into substrings by characters.
-     \param[in] text - string to be splitted
-     \param[in] targetRectSize - targetRectSize.dx sets desirable maximum substring width
-     \param[in, out] resultVector - contains resulting substrings
-     */
-	void SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector);    
     
 	/**
 		\brief Get string size(rect).
@@ -141,7 +135,15 @@ public:
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
 		\returns bounding rect for string in pixels
 	*/
-	virtual Size2i GetStringSize(const WideString & str, Vector<int32> *charSizes = 0) const = 0;
+	virtual Size2i GetStringSize(const WideString & str, Vector<float32> *charSizes = 0);
+	
+	/**
+	 \brief Get string metrics.
+	 \param[in] str - processed string
+	 \param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
+	 \returns StringMetrics structure
+	 */
+	virtual StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = 0) const = 0;
 
 	/**
 		\brief Checks if symbol is present in font.
@@ -166,31 +168,6 @@ public:
 	*/
 	virtual bool IsEqual(const Font *font) const;
 
-	/**
-		\brief Draw string to screen.
-		\param[in] offsetX - starting X offset
-		\param[in] offsetY - starting Y offset
-		\param[in] str - string to draw
-		\param[in] justifyWidth - reserved
-		\returns bounding rect for string in pixels
-	*/
-	virtual Size2i DrawString(float32 offsetX, float32 offsetY, const WideString & str, int32 justifyWidth = 0);
-
-	/**
-		\brief Draw string to memory buffer
-		\param[in, out] buffer - destination buffer
-		\param[in] bufWidth - buffer width in pixels
-		\param[in] bufHeight - buffer height in pixels
-		\param[in] offsetX - starting X offset
-		\param[in] offsetY - starting Y offset
-		\param[in] justifyWidth - TODO
-		\param[in] spaceAddon - TODO
-		\param[in] str - string to draw
-		\param[in] contentScaleIncluded - TODO
-		\returns bounding rect for string in pixels
-	*/
-	virtual Size2i DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString & str, bool contentScaleIncluded = false);
-
 	//TODO: get rid of this
 	virtual bool IsTextSupportsSoftwareRendering() const { return false; };
 	virtual bool IsTextSupportsHardwareRendering() const { return false; };
@@ -205,9 +182,9 @@ public:
 	virtual uint32 GetHashCode();
 
 protected:
-	// Get the raw hash string (identical for identical fonts).
+    // Get the raw hash string (identical for identical fonts).
 	virtual String GetRawHashString();
-
+    
 	static int32 globalFontDPI;
 	
 	float32	size;
@@ -217,7 +194,7 @@ protected:
 	
 	eFontType fontType;
 };
-		
+    
 };
 
 #endif // __DAVAENGINE_FONT_H__

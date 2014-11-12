@@ -80,6 +80,7 @@ public:
     void AddComponent(Component * component);
     void RemoveComponent(Component * component);
     void RemoveComponent(uint32 componentType, uint32 index = 0);
+    void DetachComponent(Component * component);
 
     Component * GetComponent(uint32 componentType, uint32 index = 0) const;
     Component * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
@@ -317,13 +318,7 @@ public:
         \brief Function to get node description for debug printing
      */
     virtual String GetDebugDescription();
-    
-    /**
-        \brief Function returns keyed archive of custom properties for this object. 
-        Custom properties can be set for each node in editor, and used in the game later to implement game logic.
-     */
-    KeyedArchive* GetCustomProperties();
-    
+        
     /**
         \brief This function should be implemented in each node that have data nodes inside it.
      */
@@ -382,7 +377,6 @@ protected:
 protected:
 
     String RecursiveBuildFullName(Entity * node, Entity * endNode);
-	CustomPropertiesComponent* GetCustomPropertiesComponent();
 
 //    virtual Entity* CopyDataTo(Entity *dstNode);
 	void SetParent(Entity * node);

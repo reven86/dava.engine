@@ -33,6 +33,7 @@
 #include "ui_davaglwidget.h"
 
 #include <QApplication>
+#include <QMessageBox>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QElapsedTimer>
@@ -45,6 +46,7 @@
 #include "ScreenWrapper.h"
 #include "HierarchyTreeController.h"
 #include "ItemsCommand.h"
+#include "GuideCommands.h"
 #include "CommandsController.h"
 
 #include "Guides/GuideMimeData.h"
@@ -191,19 +193,35 @@ bool DavaGLWidget::winEvent(MSG *message, long *result)
 }
 #endif //#if defined(Q_WS_WIN)
 
-#if defined (Q_WS_MAC)
 void DavaGLWidget::mouseMoveEvent(QMouseEvent *e)
 {
+#if defined (Q_WS_MAC)
 	DAVA::QtLayerMacOS *qtLayer = dynamic_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
 	if(qtLayer)
 	{
         QPointF p = e->posF();
 		qtLayer->MouseMoved((float32) p.x(), (float32) p.y());
 	}
+#endif //#if defined (Q_WS_MAC)
+
+    // Check whether we are dragging the guide outside the screen, if yes - cancel the move.
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+
+    if (activeScreen && (e->buttons() & Qt::LeftButton) && !rect().contains(e->pos()) &&
+       activeScreen->AreGuidesEnabled() && activeScreen->GetMoveGuide())
+    {
+        const GuideData moveGuideData = *(activeScreen->CancelMoveGuide());
+
+        DeleteSingleGuideCommand* command = new DeleteSingleGuideCommand(activeScreen, moveGuideData);
+        CommandsController::Instance()->ExecuteCommand(command);
+        SafeRelease(command);
+
+        HierarchyTreeController::Instance()->ResetSelectedControl();
+    }
 
 	QWidget::mouseMoveEvent(e);
 }
-#endif //#if defined (Q_WS_MAC)
+
 
 void DavaGLWidget::wheelEvent(QWheelEvent *e)
 {
@@ -223,7 +241,7 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 	if (!controlData)
 		return;
 
-	CreateControlCommand* cmd = new CreateControlCommand(controlData->GetControlName(), event->pos());
+	CreateControlCommand* cmd = new CreateControlCommand(controlData->GetControlId(), event->pos());
 	CommandsController::Instance()->ExecuteCommand(cmd);
 	SafeRelease(cmd);
 }
@@ -271,7 +289,19 @@ void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
     if (guideData && activeScreen->AreGuidesEnabled())
     {
         activeScreen->StartNewGuide(guideData->GetGuideType());
+        HierarchyTreeController::Instance()->ResetSelectedControl();
         event->acceptProposedAction();
+    }
+}
+
+void DavaGLWidget::dragLeaveEvent(QDragLeaveEvent* /*event*/)
+{
+    // Reset the selected guide when we are leaving screen.
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (activeScreen->AreGuidesEnabled())
+    {
+        activeScreen->CancelNewGuide();
+        HierarchyTreeController::Instance()->ResetSelectedControl();
     }
 }
 
@@ -332,4 +362,9 @@ Vector2 DavaGLWidget::GuideToInternal(const QPoint& pos)
     internalPos.y = Round(internalPos.y);
     
     return internalPos;
+}
+
+void DavaGLWidget::ShowAssertMessage(const char * message)
+{
+	QMessageBox::critical(this, "", message);
 }

@@ -54,6 +54,8 @@
 
 #include "Render/Material/NMaterialNames.h"
 
+#include "Scene3D/Components/ComponentHelpers.h"
+
 using namespace DAVA;
 
 SceneInfo::SceneInfo(QWidget *parent /* = 0 */)
@@ -88,6 +90,14 @@ SceneInfo::~SceneInfo()
 	posSaver.SaveValue("splitPos", v);
 }
 
+void SceneInfo::LODInfo::AddTriangles(int32 index, int32 count)
+{
+    if (index==-1)
+        trianglesOnObjects += count;
+    else
+        trianglesOnLod[index] += count;
+}
+
 void SceneInfo::InitializeInfo()
 {
     RemovePropertyAll();
@@ -97,6 +107,9 @@ void SceneInfo::InitializeInfo()
     InitializeLODSectionInFrame();
     InitializeLODSectionForSelection();
     InitializeSpeedTreeInfoSelection();
+    InitializeLayersSection();
+    
+    InitializeVegetationInfoSection();
 }
 
 void SceneInfo::InitializeGeneralSection()
@@ -133,6 +146,8 @@ void SceneInfo::Initialize3DDrawSection()
 {
     QtPropertyData* header = CreateInfoHeader("DrawInfo");
 
+    AddChild("Visible Render Object Count", header);
+    AddChild("Occluded Object Count",  header);
     AddChild("ArraysCalls", header);
     AddChild("ElementsCalls",  header);
     AddChild("PointsList", header);
@@ -155,6 +170,11 @@ void SceneInfo::Refresh3DDrawInfo()
     QtPropertyData* header = GetInfoHeader("DrawInfo");
     
     const RenderManager::Stats & renderStats = activeScene->GetRenderStats();
+
+    
+    SetChild("Visible Render Object Count", renderStats.visibleRenderObjectCount, header);
+    SetChild("Occluded Object Count", renderStats.occludedRenderObjectCount, header);
+
     
     SetChild("ArraysCalls", renderStats.drawArraysCalls, header);
     SetChild("ElementsCalls", renderStats.drawElementsCalls, header);
@@ -288,7 +308,7 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
             continue;
         }
         
-        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32());
+        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
     }
 
     return textureSize;
@@ -312,8 +332,7 @@ void SceneInfo::CollectSceneData(SceneEditor2 *scene)
         CollectParticlesData();
         particleTexturesSize = CalculateTextureSize(particleTextures);
         
-        CollectLODDataInFrame();
-        CollectLODDataForSelection();
+        CollectLODDataInFrame();        
         
     }
 }
@@ -339,6 +358,7 @@ void SceneInfo::ClearData()
 void SceneInfo::ClearSelectionData()
 {
     lodInfoSelection.Clear();
+    selectedRenderObjects.clear();
 }
 
 void SceneInfo::CollectParticlesData()
@@ -375,31 +395,55 @@ void SceneInfo::CollectParticlesData()
     spritesCount = (uint32)sprites.size();
 }
 
-void SceneInfo::CollectLODDataForSelection()
-{
-    if(!activeScene) return;
-    
-    Vector<LodComponent *>lods;
-    for(size_t i = 0; i < activeScene->selectionSystem->GetSelectionCount(); ++i)
-    {
-        EditorLODData::EnumerateLODsRecursive(activeScene->selectionSystem->GetSelectionEntity(i), lods);
-        lodInfoSelection.trianglesOnObjects += GetTrianglesForNotLODEntityRecursive(activeScene->selectionSystem->GetSelectionEntity(i), false);
-    }
-    
-    CollectLODTriangles(lods, lodInfoSelection);
-}
-
 void SceneInfo::CollectLODDataInFrame()
 {
     lodInfoInFrame.Clear();
+    lodInfoSelection.Clear();
 
-    if(!activeScene) return;
+    if(!activeScene||!activeScene->renderSystem||!activeScene->renderSystem->IsRenderHierarchyInitialized()||!activeScene->GetCurrentCamera())
+        return;
 
-    CollectLODDataInFrameRecursive(activeScene);
+    visibilityArray.Clear();
+    activeScene->renderSystem->GetRenderHierarchy()->Clip(activeScene->GetCurrentCamera(), &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA);
+
+    uint32 size = (uint32)visibilityArray.GetCount();
+    for (uint32 ro = 0; ro < size; ++ro)
+    {
+        RenderObject * renderObject = visibilityArray.Get(ro);
+        uint32 batchCount = renderObject->GetActiveRenderBatchCount();
+        int32 indexCount = 0;
+        for(uint32 i = 0; i < batchCount; ++i)
+        {            
+            RenderBatch *rb = renderObject->GetActiveRenderBatch(i);
+            if(IsPointerToExactClass<RenderBatch>(rb))
+            {                
+                PolygonGroup *pg = rb->GetPolygonGroup();
+                if(pg)                
+                    indexCount += pg->GetIndexCount();                
+            }
+        }
+        int32 currLodIndex = renderObject->GetLodIndex();
+        int32 polygonCount = indexCount/3;
+        lodInfoInFrame.AddTriangles(currLodIndex, polygonCount);        
+
+        if (selectedRenderObjects.find(renderObject)!=selectedRenderObjects.end())
+        {
+            lodInfoSelection.AddTriangles(currLodIndex, polygonCount);                    
+        }
+    }    
+}
+
+void SceneInfo::CollectLODDataInScene()
+{
+    lodInfoInFrame.Clear();
+    if(!activeScene)
+        return;
+
+    CollectLODDataInEntityRecursive(activeScene);
     lodInfoInFrame.trianglesOnObjects += GetTrianglesForNotLODEntityRecursive(activeScene, true);
 }
 
-void SceneInfo::CollectLODDataInFrameRecursive(DAVA::Entity *entity)
+void SceneInfo::CollectLODDataInEntityRecursive(DAVA::Entity *entity)
 {
     DAVA::LodComponent *lod = GetLodComponent(entity);
     
@@ -411,7 +455,7 @@ void SceneInfo::CollectLODDataInFrameRecursive(DAVA::Entity *entity)
     DAVA::int32 count = entity->GetChildrenCount();
     for(DAVA::int32 i = 0; i < count; ++i)
     {
-        CollectLODDataInFrameRecursive(entity->GetChild(i));
+        CollectLODDataInEntityRecursive(entity->GetChild(i));
     }
 }
 
@@ -493,6 +537,14 @@ void SceneInfo::AddChild(const QString & key, QtPropertyData *parent)
     parent->ChildAdd(key, propData);
 }
 
+void SceneInfo::AddChild(const QString & key, const QString& toolTip, QtPropertyData *parent)
+{
+    QtPropertyData *propData = new QtPropertyData(0);
+	propData->SetEditable(false);
+    propData->SetToolTip(toolTip);
+    parent->ChildAdd(key, propData);
+}
+
 void SceneInfo::SetChild(const QString & key, const QVariant &value, QtPropertyData *parent)
 {
 	if(NULL != parent)
@@ -503,6 +555,18 @@ void SceneInfo::SetChild(const QString & key, const QVariant &value, QtPropertyD
 			propData->SetValue(value);
 		}
 	}
+}
+
+bool SceneInfo::HasChild(const QString & key, QtPropertyData *parent)
+{
+    bool hasChild = false;
+    if(NULL != parent)
+	{
+		QtPropertyData *propData = parent->ChildGet(key);
+		hasChild = (propData != NULL);
+	}
+    
+    return hasChild;
 }
 
 void SceneInfo::SaveTreeState()
@@ -546,6 +610,11 @@ void SceneInfo::UpdateInfoByTimer()
     
     CollectLODDataInFrame();
     RefreshLODInfoInFrame();
+    RefreshLODInfoForSelection();
+    
+    RefreshVegetationInfoSection();
+    
+    RefreshLayersSection();
 }
 
 void SceneInfo::RefreshAllData(SceneEditor2 *scene)
@@ -559,6 +628,10 @@ void SceneInfo::RefreshAllData(SceneEditor2 *scene)
 	RefreshLODInfoInFrame();
     RefreshLODInfoForSelection();
     RefreshSpeedTreeInfoSelection();
+    
+    RefreshVegetationInfoSection();
+    
+    RefreshLayersSection();
 
 	RestoreTreeState();
 }
@@ -567,6 +640,8 @@ void SceneInfo::SceneActivated(SceneEditor2 *scene)
 {
     activeScene = scene;
     landscape = FindLandscape(activeScene);
+    
+    UpdateLayersSectionStructure(activeScene);
 	
 	isUpToDate = isVisible();
 	if(isUpToDate)
@@ -603,11 +678,32 @@ void SceneInfo::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 void SceneInfo::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
     ClearSelectionData();
-    CollectLODDataForSelection();
+        
+    CollectSelectedRenderObjects(selected);
+
+    CollectLODDataInFrame();
     RefreshLODInfoForSelection();
 
     CollectSpeedTreeLeafsSquare(selected);
     RefreshSpeedTreeInfoSelection();
+}
+
+
+void SceneInfo::CollectSelectedRenderObjects(const EntityGroup *selected)
+{
+    for (int32 i = 0, sz = selected->Size(); i<sz; ++i)
+    {
+        CollectSelectedRenderObjectsRecursivly(selected->GetEntity(i));
+    }
+}
+void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity * entity)
+{
+    RenderObject *renderObject = GetRenderObject(entity);
+    if (renderObject)    
+        selectedRenderObjects.insert(renderObject);    
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        CollectSelectedRenderObjectsRecursivly(entity->GetChild(i));
 }
 
 void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)
@@ -685,4 +781,215 @@ void SceneInfo::SpritesReloaded()
     particleTexturesSize = CalculateTextureSize(particleTextures);
     
     RefreshSceneGeneralInfo();
+}
+
+void SceneInfo::InitializeVegetationInfoSection()
+{
+    QtPropertyData* header = CreateInfoHeader("Vegetation Info");
+    
+    AddChild("Poly count", "Visible triangles count", header);
+    AddChild("Instance count", "Visible vegetation instance count", header);
+    
+    AddChild("Poly count in LOD #0", "Visible triangles count in LOD #0", header);
+    AddChild("Poly count in LOD #1", "Visible triangles count in LOD #1", header);
+    AddChild("Poly count in LOD #2", "Visible triangles count in LOD #2", header);
+    
+    AddChild("Instance count in LOD #0", "Visible vegetation instance count in LOD #0", header);
+    AddChild("Instance count in LOD #1", "Visible vegetation instance count in LOD #1", header);
+    AddChild("Instance count in LOD #2", "Visible vegetation instance count in LOD #2", header);
+    
+    AddChild("Poly count in layer #0", "Visible triangles count in layer #0", header);
+    AddChild("Poly count in layer #1", "Visible triangles count in layer #1", header);
+    AddChild("Poly count in layer #2", "Visible triangles count in layer #2", header);
+    AddChild("Poly count in layer #3", "Visible triangles count in layer #3", header);
+    
+    AddChild("Instance count in layer #0", "Visible vegetation instance count in layer #0", header);
+    AddChild("Instance count in layer #1", "Visible vegetation instance count in layer #1", header);
+    AddChild("Instance count in layer #2", "Visible vegetation instance count in layer #2", header);
+    AddChild("Instance count in layer #3", "Visible vegetation instance count in layer #3", header);
+    
+    AddChild("Poly count in LODs in layer #0", "Vegetation model info for layer_0 entity. LOD 0 / LOD 1 / LOD 2", header);
+    AddChild("Poly count in LODs in layer #1", "Vegetation model info for layer_1 entity. LOD 0 / LOD 1 / LOD 2", header);
+    AddChild("Poly count in LODs in layer #2", "Vegetation model info for layer_2 entity. LOD 0 / LOD 1 / LOD 2", header);
+    AddChild("Poly count in LODs in layer #3", "Vegetation model info for layer_3 entity. LOD 0 / LOD 1 / LOD 2", header);
+    
+    AddChild("Quadtree leaf count", "Number of quad tree leafs covering visible vegetation surface", header);
+    
+    AddChild("Quadtree leaf count in LOD #0", "Number of quad tree leafs covering visible vegetation surface for LOD #0", header);
+    AddChild("Quadtree leaf count in LOD #1", "Number of quad tree leafs covering visible vegetation surface for LOD #1", header);
+    AddChild("Quadtree leaf count in LOD #2", "Number of quad tree leafs covering visible vegetation surface for LOD #2", header);
+    
+    AddChild("RenderBatch count", "Number of renderbatches used to render visible vegetation", header);
+}
+
+void SceneInfo::RefreshVegetationInfoSection()
+{
+    if(activeScene != NULL)
+    {
+        VegetationRenderObject* renderObj = FindVegetation(activeScene);
+        
+        if(renderObj != NULL)
+        {
+            QtPropertyData* header = GetInfoHeader("Vegetation Info");
+            
+            VegetationMetrics metrics;
+            renderObj->CollectMetrics(metrics);
+            
+            if(metrics.isValid)
+            {
+                
+                static const char* INSTANCE_PER_LOD_HEADER[] =
+                {
+                    "Instance count in LOD #0",
+                    "Instance count in LOD #1",
+                    "Instance count in LOD #2"
+                };
+                
+                static const char* INSTANCE_PER_LAYER_HEADER[] =
+                {
+                    "Instance count in layer #0",
+                    "Instance count in layer #1",
+                    "Instance count in layer #2",
+                    "Instance count in layer #3"
+                };
+                
+                static const char* POLY_PER_LOD_HEADER[] =
+                {
+                    "Poly count in LOD #0",
+                    "Poly count in LOD #1",
+                    "Poly count in LOD #2"
+                };
+                
+                static const char* POLY_PER_LAYER_HEADER[] =
+                {
+                    "Poly count in layer #0",
+                    "Poly count in layer #1",
+                    "Poly count in layer #2",
+                    "Poly count in layer #3"
+                };
+                
+                static const char* QUADTREELEAF_PER_LOD_HEADER[] =
+                {
+                    "Quadtree leaf count in LOD #0",
+                    "Quadtree leaf count in LOD #1",
+                    "Quadtree leaf count in LOD #2"
+                };
+                
+                static const char* POLY_PER_LOD_PER_LAYER_HEADER[] =
+                {
+                    "Poly count in LODs in layer #0",
+                    "Poly count in LODs in layer #1",
+                    "Poly count in LODs in layer #2",
+                    "Poly count in LODs in layer #3"
+                };
+                
+                uint32 totalInstanceCount = 0;
+                for(uint32 lodIndex = 0; lodIndex < COUNT_OF(INSTANCE_PER_LOD_HEADER); ++lodIndex)
+                {
+                    if(metrics.visibleInstanceCountPerLOD.size() > lodIndex)
+                    {
+                        totalInstanceCount += metrics.visibleInstanceCountPerLOD[lodIndex];
+                    }
+                    
+                    SetChild(INSTANCE_PER_LOD_HEADER[lodIndex], metrics.visibleInstanceCountPerLOD[lodIndex], header);
+                }
+                SetChild("Instance count", totalInstanceCount, header);
+                
+                for(uint32 layerIndex = 0; layerIndex < COUNT_OF(INSTANCE_PER_LAYER_HEADER); ++layerIndex)
+                {
+                    if(metrics.visibleInstanceCountPerLayer.size() > layerIndex)
+                    {
+                        SetChild(INSTANCE_PER_LAYER_HEADER[layerIndex], metrics.visibleInstanceCountPerLayer[layerIndex], header);
+                    }
+                }
+                
+                uint32 totalPolyCount = 0;
+                for(uint32 lodIndex = 0; lodIndex < COUNT_OF(POLY_PER_LOD_HEADER); ++lodIndex)
+                {
+                    if(metrics.visiblePolyCountPerLOD.size() > lodIndex)
+                    {
+                        totalPolyCount += metrics.visiblePolyCountPerLOD[lodIndex];
+                    }
+                    
+                    SetChild(POLY_PER_LOD_HEADER[lodIndex], metrics.visiblePolyCountPerLOD[lodIndex], header);
+                }
+                SetChild("Poly count", totalPolyCount, header);
+                
+                for(uint32 layerIndex = 0; layerIndex < COUNT_OF(POLY_PER_LAYER_HEADER); ++layerIndex)
+                {
+                    if(metrics.visiblePolyCountPerLayer.size() > layerIndex)
+                    {
+                        SetChild(POLY_PER_LAYER_HEADER[layerIndex], metrics.visiblePolyCountPerLayer[layerIndex], header);
+                    }
+                }
+                
+                uint32 totalLeafCount = 0;
+                for(uint32 lodIndex = 0; lodIndex < COUNT_OF(QUADTREELEAF_PER_LOD_HEADER); ++lodIndex)
+                {
+                    if(metrics.quadTreeLeafCountPerLOD.size() > lodIndex)
+                    {
+                        totalLeafCount += metrics.quadTreeLeafCountPerLOD[lodIndex];
+                    }
+                    
+                    SetChild(QUADTREELEAF_PER_LOD_HEADER[lodIndex], metrics.quadTreeLeafCountPerLOD[lodIndex], header);
+                }
+                SetChild("Quadtree leaf count", totalLeafCount, header);
+                
+                SetChild("RenderBatch count", metrics.renderBatchCount, header);
+                
+                for(uint32 layerIndex = 0; layerIndex < COUNT_OF(POLY_PER_LOD_PER_LAYER_HEADER); ++layerIndex)
+                {
+                    if(metrics.polyCountPerLayerPerLod.size() > layerIndex)
+                    {
+                        String str = Format("%d / %d / %d", metrics.polyCountPerLayerPerLod[layerIndex][0], metrics.polyCountPerLayerPerLod[layerIndex][1], metrics.polyCountPerLayerPerLod[layerIndex][2]);
+                        SetChild(POLY_PER_LOD_PER_LAYER_HEADER[layerIndex], str.c_str(), header);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void SceneInfo::InitializeLayersSection()
+{
+    CreateInfoHeader("Fragments Info");
+}
+
+void SceneInfo::UpdateLayersSectionStructure(SceneEditor2 *scene)
+{
+    QtPropertyData* header = GetInfoHeader("Fragments Info");
+    header->ChildRemoveAll();
+    
+    if(scene)
+    {
+        RenderPass* renderPass = scene->renderSystem->GetMainRenderPass();
+        uint32 layerCount = renderPass->GetRenderLayerCount();
+        for(uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+        {
+            RenderLayer* layer = renderPass->GetRenderLayer(layerIndex);
+            AddChild(layer->GetName().c_str(), header);
+        }
+    }
+}
+
+void SceneInfo::RefreshLayersSection()
+{
+    if(activeScene)
+    {
+        float32 viewportSize = RenderManager::Instance()->frameBufferWidth * RenderManager::Instance()->frameBufferHeight;
+        
+        QtPropertyData* header = GetInfoHeader("Fragments Info");
+    
+        RenderPass* renderPass = activeScene->renderSystem->GetMainRenderPass();
+        uint32 layerCount = renderPass->GetRenderLayerCount();
+        for(uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+        {
+            RenderLayer* layer = renderPass->GetRenderLayer(layerIndex);
+            uint32 fragmentStats = layer->GetFragmentStats();
+            
+            String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0f) / viewportSize);
+            
+            SetChild(layer->GetName().c_str(), str.c_str(), header);
+        }
+    }
 }

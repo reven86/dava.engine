@@ -36,6 +36,12 @@ namespace DAVA
     
 HashMap<FastName, RenderLayerID> RenderLayerManager::layerIDmap(16);
     
+RenderLayerID RenderLayerManager::GetLayerIDByName(const FastName & fastname)
+{
+    DVASSERT((layerIDmap.find(fastname)!=layerIDmap.end())&&"Unknown material layer");
+    return layerIDmap[fastname];
+}
+
 uint32 RenderLayerManager::GetLayerIDMaskBySet(const FastNameSet & layers)
 {
     uint32 renderLayerIDsBitmask = 0;
@@ -64,7 +70,7 @@ void RenderLayerManager::InsertLayer(RenderLayer * renderLayer)
 
 RenderLayerManager::RenderLayerManager()
     : array(RENDER_LAYER_ID_COUNT)
-    , map(RENDER_LAYER_ID_COUNT)
+    , map(NextPowerOf2(RENDER_LAYER_ID_COUNT))
 {
     RenderLayer * renderLayerOpaque = new RenderLayer(LAYER_OPAQUE,
                                                       RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
@@ -98,6 +104,14 @@ RenderLayerManager::RenderLayerManager()
                                                             0,
                                                             RENDER_LAYER_SHADOW_VOLUME_ID);
     InsertLayer(renderLayerShadowVolume);
+    
+    RenderLayer * renderLayerVegetation = new RenderLayer(LAYER_VEGETATION,
+                                                          0,
+                                                          RENDER_LAYER_VEGETATION_ID);
+    InsertLayer(renderLayerVegetation);
+
+    RenderLayer * renderLayerDebugDraw = new RenderLayer(LAYER_DEBUG_DRAW, 0, RENDER_LAYER_DEBUG_DRAW_ID);
+    InsertLayer(renderLayerDebugDraw);
     
 }
 

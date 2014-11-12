@@ -107,21 +107,23 @@ public:
 	 */
 	void CopyDataFrom(EventDispatcher *srcDispatcher);
 
-    int32 GetEventsCount();
+    int32 GetEventsCount() const;
 
 protected:
 
 	class Event 
 	{
 	public:
-		int32	eventType;
-		Message msg;
-		Event()
-		{
-		}
+        Event() : eventType(0), needDelete(false){}
+        static bool IsEventToDelete(const Event &event){ return event.needDelete; }
+
+        int32   eventType : 31;
+        bool    needDelete : 1;
+        Message msg;
 	};
 	
 	List<Event> events;
+    bool eraseLocked;
 };
 	
 /**

@@ -1,0 +1,7 @@
+For work in scope of DAVA framework next changes were performed:
+
+* jquant2.c:
+	1) struct box was renamed to _box(lines 268, 270, 549);
+
+* jchuff.c:
+	1) lines "INLINE" were removed (4 occurrences)

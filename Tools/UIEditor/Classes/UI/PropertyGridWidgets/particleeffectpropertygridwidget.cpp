@@ -57,6 +57,8 @@ void ParticleEffectPropertyGridWidget::Cleanup()
     UnregisterPushButtonWidgetForInvokeMethod(ui->startButton);
     UnregisterPushButtonWidgetForInvokeMethod(ui->stopButton);
     UnregisterPushButtonWidgetForInvokeMethod(ui->reloadButton);
+    UnregisterPushButtonWidgetForInvokeMethod(ui->pauseButton);
+    UnregisterPushButtonWidgetForInvokeMethod(ui->restartButton);
 
     disconnect(ui->selectEffectPathButton, SIGNAL(clicked()), this, SLOT(OnSelectEffectPathButtonClicked()));
     BasePropertyGridWidget::Cleanup();
@@ -89,6 +91,8 @@ void ParticleEffectPropertyGridWidget::UpdateButtons()
     ui->startButton->setEnabled(enableButtons);
     ui->stopButton->setEnabled(enableButtons);
     ui->reloadButton->setEnabled(enableButtons);
+    ui->pauseButton->setEnabled(enableButtons);
+    ui->restartButton->setEnabled(enableButtons);
 }
 
 void ParticleEffectPropertyGridWidget::ProcessDoubleSpinBoxValueChanged(QDoubleSpinBox *doubleSpinBoxWidget,
@@ -108,7 +112,7 @@ void ParticleEffectPropertyGridWidget::ProcessDoubleSpinBoxValueChanged(QDoubleS
 			return;
 		}
         
-		BaseCommand* command = new ChangePropertyCommand<double>(activeMetadata, iter->second, value);
+		BaseCommand* command = new ChangeDoublePropertyCommand(activeMetadata, iter->second, value);
   	  	CommandsController::Instance()->ExecuteCommand(command);
    		SafeRelease(command);
 		return;
@@ -124,11 +128,9 @@ void ParticleEffectPropertyGridWidget::UpdateDoubleSpinBoxWidgetWithPropertyValu
     {
         return;
     }
-    
-    bool isPropertyValueDiffers = false;
+
 	double propertyValue = PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata,
-                                                                          curProperty.name(),
-                                                                          isPropertyValueDiffers);
+                                                                          curProperty.name());
     WidgetSignalsBlocker blocker(doubleSpinBoxWidget);
     doubleSpinBoxWidget->setValue(propertyValue);
 	UpdateWidgetPalette(doubleSpinBoxWidget, curProperty.name());

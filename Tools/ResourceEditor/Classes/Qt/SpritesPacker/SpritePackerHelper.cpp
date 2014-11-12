@@ -95,29 +95,26 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 
 void SpritePackerHelper::Reload()
 {
-    Map<String, Sprite *>spritesForReloading;
-
     // All the Particle Effects must be re-started after sprites are reloaded to avoid
     // issue like DF-545.
     const SceneTabWidget *widget = QtMainWindow::Instance()->GetSceneWidget();
+    
+    particleEffectsState.clear();
     for(int tab = 0; tab < widget->GetTabCount(); ++tab)
 	{
 		Scene *scene = widget->GetTabScene(tab);
-        EnumerateSpritesForReloading(scene, spritesForReloading);
+        StopParticleEffects(scene);
 	}
 
-    Map<String, Sprite *>::const_iterator endIt = spritesForReloading.end();
-    for(Map<String, Sprite *>::const_iterator it = spritesForReloading.begin(); it != endIt; ++it)
-    {
-        it->second->Reload();
-    }
+    Sprite::ReloadSprites();
+    RestartParticleEffects();
 }
 
-void SpritePackerHelper::EnumerateSpritesForReloading(Scene * scene, Map<String, Sprite *> &sprites)
+void SpritePackerHelper::StopParticleEffects(Scene * scene)
 {
     List<Entity*> particleEffects;
     FindAllParticleEffectsRecursive(scene, particleEffects);
-    
+
 	for (auto it = particleEffects.begin(); it != particleEffects.end(); ++it)
 	{
 		Entity* curNode = (*it);
@@ -128,25 +125,24 @@ void SpritePackerHelper::EnumerateSpritesForReloading(Scene * scene, Map<String,
 			continue;
 		}
         
-		bool isStopped = effectComponent->IsStopped();
-		if (!isStopped)
+        bool isPlaying = !effectComponent->IsStopped();
+        particleEffectsState[effectComponent] = isPlaying;
+		if (isPlaying)
 		{
 			effectComponent->Stop();
 		}
-        
-		// All the children of this Scene Node must have Emitter components.
-		int32 emittersCount = effectComponent->GetEmittersCount();
-		for (int32 i = 0; i < emittersCount; i ++)
-		{
-			ParticleEmitter * emitter = effectComponent->GetEmitter(i);			
-			EnumerateSpritesForParticleEmitter(emitter, sprites);
-		}
-        
-		if (!isStopped)
-		{
-			effectComponent->Start();
-		}
-	}
+    }
+}
+
+void SpritePackerHelper::RestartParticleEffects()
+{
+    for (Map<ParticleEffectComponent*, bool>::const_iterator iter = particleEffectsState.begin(); iter != particleEffectsState.end(); iter ++)
+    {
+        if (iter->second)
+        {
+            iter->first->Start();
+        }
+    }
 }
 
 void SpritePackerHelper::FindAllParticleEffectsRecursive(Entity *entity , List<DAVA::Entity*> & particleEffects)

@@ -68,11 +68,19 @@ void ActionEnableCustomColors::Redo()
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
 	}
-    
-    if(success &&
-       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    else
     {
-        sceneEditor->foliageSystem->SetFoliageVisible(false);
+        if (!sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->IsTextureLoaded())
+        {
+            ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
+            sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->ResetLoadedState();
+        }
+        
+        if(success &&
+           LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+        {
+            sceneEditor->foliageSystem->SetFoliageVisible(false);
+        }
     }
 
 	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
@@ -157,11 +165,13 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 	
 	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
 	
+    Rect rect = ConvertPhysicalToVirtual(updatedRect);
+    
 	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(updatedRect);
+	RenderManager::Instance()->SetClip(rect);
 
     Sprite::DrawState drawState;
-    drawState.SetPosition(updatedRect.x, updatedRect.y);
+    drawState.SetPosition(rect.x, rect.y);
 	sprite->Draw(&drawState);
 	
 	RenderManager::Instance()->ClipPop();

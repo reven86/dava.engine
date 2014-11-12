@@ -31,6 +31,7 @@
 #define __DAVAENGINE_PARTICLES_PROPERTY_LINE_H__
 
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "Base/RefPtr.h"
 #include <limits>
 
@@ -422,8 +423,8 @@ template<class T> inline void PropertyLineYamlWriter::WritePropertyLineToYamlNod
     for (typename Vector<PropValue<T> >::iterator iter = wrappedPropertyValues.begin();
          iter != wrappedPropertyValues.end(); iter ++)
     {
-        childNode->AddValueToArray((*iter).t);
-        childNode->AddValueToArray((*iter).v);
+        childNode->Add((*iter).t);
+        childNode->Add((*iter).v);
     }
     
     parentNode->AddNodeToMap(propertyName, childNode);    
@@ -451,8 +452,8 @@ template <> inline void PropertyLineYamlWriter::WritePropertyLineToYamlNodeInter
 	for (Vector<PropValue<Color> >::iterator iter = wrappedPropertyValues.begin();
 		iter != wrappedPropertyValues.end(); iter ++)
 	{        
-		childNode->AddValueToArray((*iter).t);
-		childNode->AddValueToArray(ColorToVector((*iter).v));
+		childNode->Add((*iter).t);
+		childNode->Add(ColorToVector((*iter).v));
 	}
 
 	parentNode->AddNodeToMap(propertyName, childNode);	

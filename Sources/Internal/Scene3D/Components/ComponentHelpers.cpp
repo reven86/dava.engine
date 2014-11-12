@@ -36,15 +36,22 @@
 #include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
+#include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/SkeletonComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"
-#include "Render/Highlevel/VegetationRenderObject.h"
+#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
+#include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/SpeedTreeComponent.h"
+#include "Scene3D/Components/WindComponent.h"
+#include "Scene3D/Components/WaveComponent.h"
 
 namespace DAVA
 {
@@ -52,12 +59,26 @@ namespace DAVA
 
 RenderComponent * GetRenderComponent(const Entity *fromEntity)
 {
-	return static_cast<RenderComponent*>(fromEntity->GetComponent(Component::RENDER_COMPONENT));
+    if(fromEntity)
+	    return static_cast<RenderComponent*>(fromEntity->GetComponent(Component::RENDER_COMPONENT));
+    else
+        return NULL;
 }
 
 TransformComponent * GetTransformComponent(Entity * fromEntity)
 {
-	return static_cast<TransformComponent*>(fromEntity->GetComponent(Component::TRANSFORM_COMPONENT));
+    if(fromEntity)
+	    return static_cast<TransformComponent*>(fromEntity->GetComponent(Component::TRANSFORM_COMPONENT));
+    else
+        return NULL;
+}
+
+SkeletonComponent * GetSkeletonComponent(Entity * fromEntity)
+{
+    if(fromEntity)
+        return static_cast<SkeletonComponent*>(fromEntity->GetComponent(Component::SKELETON_COMPONENT));
+    else
+        return NULL;
 }
 
 RenderObject * GetRenderObject(const Entity * fromEntity)
@@ -74,6 +95,17 @@ RenderObject * GetRenderObject(const Entity * fromEntity)
 	}
 
 	return object;
+}
+
+SpeedTreeObject * GetSpeedTreeObject(const Entity * fromEntity)
+{
+    RenderObject *ro = GetRenderObject(fromEntity);
+    if(ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
+    {
+        return (static_cast<SpeedTreeObject *>(ro));
+    }
+
+    return NULL;
 }
 
 SkyboxRenderObject * GetSkybox(const Entity * fromEntity)
@@ -96,6 +128,16 @@ ParticleEffectComponent * GetEffectComponent(Entity *fromEntity)
 
 	return NULL;
 }
+
+AnimationComponent * GetAnimationComponent(Entity *fromEntity)
+{
+    if(fromEntity)
+    {
+        return static_cast<AnimationComponent*>(fromEntity->GetComponent(Component::ANIMATION_COMPONENT));
+    }
+    return NULL;
+}
+
 
 LightComponent *GetLightComponent(Entity * fromEntity)
 {
@@ -269,7 +311,35 @@ void RecursiveProcessLodNode(Entity * curr, int32 lod, void * userData, void(*pr
 	}
 }
 
+SpeedTreeComponent * GetSpeedTreeComponent(Entity * fromEntity)
+{
+    if(fromEntity)
+    {
+        return static_cast<SpeedTreeComponent *>(fromEntity->GetComponent(Component::SPEEDTREE_COMPONENT));
+    }
+    
+    return NULL;
+}
 
+WindComponent * GetWindComponent(Entity * fromEntity)
+{
+    if(fromEntity)
+    {
+        return static_cast<WindComponent *>(fromEntity->GetComponent(Component::WIND_COMPONENT));
+    }
+    
+    return NULL;
+}
+
+WaveComponent * GetWaveComponent(Entity * fromEntity)
+{
+    if(fromEntity)
+    {
+        return static_cast<WaveComponent *>(fromEntity->GetComponent(Component::WAVE_COMPONENT));
+    }
+
+    return NULL;
+}
 
 Entity * FindLandscapeEntity(Entity * rootEntity)
 {
@@ -333,5 +403,39 @@ QualitySettingsComponent * GetQualitySettingsComponent(const Entity * fromEntity
     
     return NULL;
 }
+    
+CustomPropertiesComponent * GetCustomProperties(const Entity *fromEntity)
+{
+    if(fromEntity)
+    {
+		return (static_cast<CustomPropertiesComponent *>(fromEntity->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT)));
+    }
+    
+    return NULL;
+    
+}
+    
+CustomPropertiesComponent * GetOrCreateCustomProperties(Entity *fromEntity)
+{
+    if(fromEntity)
+    {
+        return (static_cast<CustomPropertiesComponent *>(fromEntity->GetOrCreateComponent(Component::CUSTOM_PROPERTIES_COMPONENT)));
+    }
+    
+    return NULL;
+}
+
+
+KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity)
+{
+    CustomPropertiesComponent * comp = GetCustomProperties(fromEntity);
+    if(comp)
+    {
+        return comp->GetArchive();
+    }
+    
+    return NULL;
+}
+
     
 }

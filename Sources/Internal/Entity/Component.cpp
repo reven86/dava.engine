@@ -42,11 +42,16 @@
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/UserComponent.h"
+#include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/SpeedTreeComponent.h"
+#include "Scene3D/Components/WindComponent.h"
+#include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
+#include "Scene3D/Components/SkeletonComponent.h"
 #include "Base/ObjectFactory.h"
 
 namespace DAVA
@@ -72,19 +77,20 @@ Component * Component::CreateByType(uint32 componentType)
 		return new UpdatableComponent();
 	case CAMERA_COMPONENT:
 		return new CameraComponent();
-		break;
 	case LIGHT_COMPONENT:
 		return new LightComponent();
-		break;
 	case SWITCH_COMPONENT:
 		return new SwitchComponent();
-		break;
 	case USER_COMPONENT:
 		return new UserComponent();
-		break;
 	case SOUND_COMPONENT:
 		return new SoundComponent();
-		break;
+    case SPEEDTREE_COMPONENT:
+        return new SpeedTreeComponent();
+    case WIND_COMPONENT:
+        return new WindComponent();
+    case WAVE_COMPONENT:
+        return new WaveComponent();
 	case CUSTOM_PROPERTIES_COMPONENT:
 		return new CustomPropertiesComponent();
 	case ACTION_COMPONENT:
@@ -95,6 +101,8 @@ Component * Component::CreateByType(uint32 componentType)
         return new StaticOcclusionDataComponent();
     case QUALITY_SETTINGS_COMPONENT:
         return new QualitySettingsComponent();
+    case SKELETON_COMPONENT:
+        return new SkeletonComponent();
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:

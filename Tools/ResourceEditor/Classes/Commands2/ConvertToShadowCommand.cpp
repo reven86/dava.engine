@@ -31,56 +31,45 @@
 ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)
     : Command2(CMDID_CONVERT_TO_SHADOW, "Convert To Shadow")
 	, oldBatch(batch)
-	, shadowVolume(NULL)
+	, newBatch(NULL)
 {
 	DVASSERT(oldBatch);
 
 	renderObject = DAVA::SafeRetain(oldBatch->GetRenderObject());
 	DVASSERT(renderObject);
 
-	renderObject->Retain();
 	oldBatch->Retain();
 
-	shadowVolume = oldBatch->CreateShadow();
+    newBatch = new DAVA::RenderBatch();
+    DAVA::PolygonGroup * shadowPg = DAVA::MeshUtils::CreateShadowPolygonGroup(oldBatch->GetPolygonGroup());
+    newBatch->SetPolygonGroup(shadowPg);
+    shadowPg->Release();
+
+    DAVA::NMaterial * shadowMaterialParent = DAVA::NMaterial::CreateMaterial(DAVA::FastName("Shadow_Material"), DAVA::NMaterialName::SHADOW_VOLUME, DAVA::NMaterial::DEFAULT_QUALITY_NAME);
+    DAVA::NMaterial * shadowMaterial = DAVA::NMaterial::CreateMaterialInstance();
+
+    shadowMaterial->SetParent(shadowMaterialParent);
+    newBatch->SetMaterial(shadowMaterial);
+
+    shadowMaterialParent->Release();
+    shadowMaterial->Release();
 }
 
 ConvertToShadowCommand::~ConvertToShadowCommand()
 {
 	DAVA::SafeRelease(oldBatch);
-	DAVA::SafeRelease(shadowVolume);
+	DAVA::SafeRelease(newBatch);
     DAVA::SafeRelease(renderObject);
 }
 
 void ConvertToShadowCommand::Redo()
 {
-	DAVA::int32 count = (DAVA::int32)renderObject->GetRenderBatchCount();
-	for(DAVA::int32 i = count-1; i >= 0; --i)
-	{
-		DAVA::int32 lodIndex, switchIndex;
-		DAVA::RenderBatch *b = renderObject->GetRenderBatch(i, lodIndex, switchIndex);
-		if(b == oldBatch)
-		{
-			renderObject->RemoveRenderBatch(i);
-			renderObject->AddRenderBatch(shadowVolume, lodIndex, switchIndex);
-			break;
-		}
-	}
+    renderObject->ReplaceRenderBatch(oldBatch, newBatch);
 }
 
 void ConvertToShadowCommand::Undo()
 {
-	DAVA::int32 count = (DAVA::int32)renderObject->GetRenderBatchCount();
-	for(DAVA::int32 i = count-1; i >= 0; --i)
-	{
-		DAVA::int32 lodIndex, switchIndex;
-		DAVA::RenderBatch *b = renderObject->GetRenderBatch(i, lodIndex, switchIndex);
-		if(b == shadowVolume)
-		{
-			renderObject->RemoveRenderBatch(i);
-			renderObject->AddRenderBatch(oldBatch, lodIndex, switchIndex);
-			break;
-		}
-	}
+    renderObject->ReplaceRenderBatch(newBatch, oldBatch);
 }
 
 DAVA::Entity* ConvertToShadowCommand::GetEntity() const
@@ -90,10 +79,10 @@ DAVA::Entity* ConvertToShadowCommand::GetEntity() const
 
 bool ConvertToShadowCommand::CanConvertBatchToShadow(DAVA::RenderBatch *renderBatch)
 {
-	if(renderBatch && (typeid(*renderBatch) == typeid(DAVA::RenderBatch)))
-	{
-		return true;
-	}
+    if(renderBatch && renderBatch->GetMaterial())
+    {
+        return renderBatch->GetMaterial()->GetMaterialTemplateName() != DAVA::NMaterialName::SHADOW_VOLUME;
+    }
 
 	return false;
 }

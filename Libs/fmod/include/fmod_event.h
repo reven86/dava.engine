@@ -2,7 +2,7 @@
 
 /* ============================================================================================ */
 /* FMOD Ex - Main C/C++ event/data driven system header file.                                   */
-/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2011.                                   */
+/* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2014.                                   */
 /*                                                                                              */
 /* This header is the base header for all other FMOD EventSystem headers. If you are            */
 /* programming in C use this exclusively, or if you are programming C++ use this in             */
@@ -21,7 +21,7 @@
     0xaaaabbcc -> aaaa = major version number.  bb = minor version number.  cc = development version number.
 */
 
-#define FMOD_EVENT_VERSION 0x00044412
+#define FMOD_EVENT_VERSION 0x00044432
 
 /*
     FMOD event types
@@ -428,6 +428,16 @@ typedef enum
     An FMOD_EVENT_CALLBACKTYPE_OCCLUSION callback is generated whenever an channel has its occlusion updated via the geometry system.
     <p>&nbsp;<p>
 
+    <b>FMOD_EVENT_CALLBACKTYPE_MAXSTREAMS</b>
+    <p>
+    param1 [out] = (int) wavebank stream reference count when attempting to create this event.<br>
+    param2 [out] = (int) max streams value for the wavebank that has been exceeded.<br>
+    <p>
+    An FMOD_EVENT_CALLBACKTYPE_MAXSTREAMS callback is generated whenever an event is retrieved and causes the 'max streams' limit for a wavebank to be reached/exceeded.<br>
+    Side effect is that stream playback will be delayed until a slot is free.<br>
+    Make sure the event has the callback set on its 'info only' event handle (FMOD_EVENT_INFOONLY) because the event instance in question may not be fully created at the time the callback is issued.
+    <p>&nbsp;<p>    
+
     [PLATFORMS]
     Win32, Win64, Linux, Linux64, Macintosh, Xbox360, PlayStation Portable, PlayStation 3, Wii, iPhone, 3GS, NGP, Android
 
@@ -452,7 +462,8 @@ typedef enum
     FMOD_EVENT_CALLBACKTYPE_SOUNDDEF_INFO,        /* Called when a sound definition entry is loaded. */
     FMOD_EVENT_CALLBACKTYPE_EVENTSTARTED,         /* Called when an event is started. */
     FMOD_EVENT_CALLBACKTYPE_SOUNDDEF_SELECTINDEX, /* Called when a sound definition entry needs to be chosen from a "ProgrammerSelected" sound definition. */
-    FMOD_EVENT_CALLBACKTYPE_OCCLUSION             /* Called when an event's channel is occluded with the geometry engine. */
+    FMOD_EVENT_CALLBACKTYPE_OCCLUSION,            /* Called when an event's channel is occluded with the geometry engine. */
+    FMOD_EVENT_CALLBACKTYPE_MAXSTREAMS            /* Called when an event causes the max streams limit for a bank to be reached.  Side effect is that stream playback will be delayed until a slot is free. */
 } FMOD_EVENT_CALLBACKTYPE;
 
 

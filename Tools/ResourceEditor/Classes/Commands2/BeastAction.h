@@ -32,6 +32,7 @@
 #define __BEAST_ACTION_H__
 
 #include "CommandAction.h"
+#include "Beast/BeastProxy.h"
 
 #if defined (__DAVAENGINE_BEAST__)
 
@@ -42,7 +43,7 @@ class QtWaitDialog;
 class BeastAction: public CommandAction
 {
 public:
-	BeastAction(SceneEditor2 *scene, QtWaitDialog *_waitDialog);
+    BeastAction(SceneEditor2 *scene, const DAVA::FilePath& outputPath, BeastProxy::eBeastMode mode, QtWaitDialog *_waitDialog);
 	~BeastAction();
 
 	virtual void Redo();
@@ -60,8 +61,11 @@ private:
 	QtWaitDialog * waitDialog;
 
 	SceneEditor2 *workingScene;
+    DAVA::FilePath outputPath;
 
 	DAVA::uint64 startTime;
+
+    BeastProxy::eBeastMode beastMode;
 };
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

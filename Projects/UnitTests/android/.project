@@ -51,7 +51,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.fullBuildTarget</key>
-					<value> -j 8</value>
+					<value>NDK_DEBUG=1 -j 8</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.stopOnError</key>
@@ -117,6 +117,7 @@
 		<link>
 			<name>src/Classes</name>
 			<type>2</type>
+<<<<<<< HEAD
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
@@ -155,14 +156,14 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.h</locationURI>
 		</link>
 		<link>
-			<name>src/Classes/DLCSystemTests.cpp</name>
+			<name>src/Classes/DLCDownloadTest.cpp</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.cpp</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCDownloadTest.cpp</locationURI>
 		</link>
 		<link>
-			<name>src/Classes/DLCSystemTests.h</name>
+			<name>src/Classes/DLCDownloadTest.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCDownloadTest.h</locationURI>
 		</link>
 		<link>
 			<name>src/Classes/DPITest.cpp</name>
@@ -335,6 +336,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SampleTest.h</locationURI>
 		</link>
 		<link>
+			<name>src/Classes/SaveImageTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/SaveImageTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/SaveImageTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/SaveImageTest.h</locationURI>
+		</link>
+		<link>
 			<name>src/Classes/SoundTest.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SoundTest.cpp</locationURI>
@@ -353,11 +364,6 @@
 			<name>src/Classes/SplitTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SplitTest.h</locationURI>
-		</link>
-		<link>
-			<name>src/Classes/TestTemplate.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/TestTemplate.cpp</locationURI>
 		</link>
 		<link>
 			<name>src/Classes/TestTemplate.h</name>
@@ -460,14 +466,14 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.h</locationURI>
 		</link>
 		<link>
-			<name>bin/classes/Classes/DLCSystemTests.cpp</name>
+			<name>bin/classes/Classes/DLCDownloadTest.cpp</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.cpp</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCDownloadTest.cpp</locationURI>
 		</link>
 		<link>
-			<name>bin/classes/Classes/DLCSystemTests.h</name>
+			<name>bin/classes/Classes/DLCDownloadTest.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCDownloadTest.h</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/DPITest.cpp</name>
@@ -640,6 +646,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SampleTest.h</locationURI>
 		</link>
 		<link>
+			<name>bin/classes/Classes/SaveImageTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/SaveImageTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/SaveImageTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/SaveImageTest.h</locationURI>
+		</link>
+		<link>
 			<name>bin/classes/Classes/SoundTest.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SoundTest.cpp</locationURI>
@@ -658,11 +674,6 @@
 			<name>bin/classes/Classes/SplitTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SplitTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/TestTemplate.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/TestTemplate.cpp</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/TestTemplate.h</name>
@@ -728,6 +739,9 @@
 			<name>bin/classes/Classes/eMailTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/eMailTest.h</locationURI>
+=======
+			<locationURI>PARENT-1-PROJECT_LOC/Classes</locationURI>
+>>>>>>> development
 		</link>
 	</linkedResources>
 </projectDescription>

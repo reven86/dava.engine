@@ -86,10 +86,16 @@ const QVector<ProjectManager::AvailableMaterialQuality>* ProjectManager::GetAvai
 
 FilePath ProjectManager::ProjectOpenDialog()
 {
-    QString  newPathStr = QtFileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
-    FilePath incomePath(PathnameToDAVAStyle(newPathStr));
-    incomePath.MakeDirectoryPathname();
-	return incomePath;
+    FilePath ret;
+
+    QString newPathStr = QtFileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
+    if(!newPathStr.isEmpty())
+    {
+        ret = FilePath(PathnameToDAVAStyle(newPathStr));
+        ret.MakeDirectoryPathname();
+    }
+    
+	return ret;
 }
 
 void ProjectManager::ProjectOpen(const QString &path)
@@ -114,18 +120,19 @@ void ProjectManager::ProjectOpen(const FilePath & incomePath)
             DAVA::FilePath particlesPathname = curProjectPath + "Data/Configs/Particles/";
 			curProjectPathParticles = particlesPathname.GetAbsolutePathname().c_str();
 
-			SettingsManager::Instance()->SetValue("LastProjectPath",
-				VariantType(curProjectPath), SettingsManager::INTERNAL);
+			SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(curProjectPath));
 
 			EditorConfig::Instance()->ParseConfig(curProjectPath + "EditorConfig.yaml");
 
 			SceneValidator::Instance()->SetPathForChecking(curProjectPath);
-            SpritePackerHelper::Instance()->UpdateParticleSprites((eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32());
+            SpritePackerHelper::Instance()->UpdateParticleSprites((eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
 
             DAVA::FilePath::AddTopResourcesFolder(curProjectPath);
 
             LoadProjectSettings();
             LoadMaterialsSettings();
+            DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
+            DAVA::SoundSystem::Instance()->InitFromQualitySettings();
 
             emit ProjectOpened(curProjectPath.GetAbsolutePathname().c_str());
         }
@@ -134,10 +141,7 @@ void ProjectManager::ProjectOpen(const FilePath & incomePath)
 
 void ProjectManager::ProjectOpenLast()
 {
-    VariantType projPathValue = SettingsManager::Instance()->GetValue("LastProjectPath", SettingsManager::INTERNAL);
-    // for old format of serialyzed settings check of inner type needed
-    String projPathStr = projPathValue.GetType() == VariantType::TYPE_STRING ? projPathValue.AsString() : projPathValue.AsFilePath().GetAbsolutePathname();
-	DAVA::FilePath projectPath (projPathStr);
+    DAVA::FilePath projectPath = SettingsManager::GetValue(Settings::Internal_LastProjectPath).AsFilePath();
 	if(!projectPath.IsEmpty())
 	{
 		ProjectOpen(QString(projectPath.GetAbsolutePathname().c_str()));
@@ -152,6 +156,7 @@ void ProjectManager::ProjectClose()
         curProjectPath = "";
         curProjectPathDataSource = "";
         curProjectPathParticles = "";
+        SettingsManager::ResetPerProjectSettings();
         emit ProjectClosed();
 	}
 }
@@ -179,7 +184,7 @@ void ProjectManager::LoadMaterialsSettings()
         {
             DAVA::FilePath materialsListDir = materialsListPath.GetDirectory();
 
-            for(int i = 0; i < rootNode->GetCount(); ++i)
+            for(uint32 i = 0; i < rootNode->GetCount(); ++i)
             {
                 const DAVA::YamlNode *templateNode = rootNode->Get(i);
                 if(NULL != templateNode)
@@ -207,7 +212,4 @@ void ProjectManager::LoadMaterialsSettings()
 
         parser->Release();
     }
-
-    // parse available material qualities
-    DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
 }

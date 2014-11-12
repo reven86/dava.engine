@@ -53,45 +53,45 @@ public:
 		This function return total number of items in directory including "." and ".." items
 		\returns number of items in this directory,
 	 */
-	int32 GetCount();
+	int32 GetCount() const;
 	
 	/**
 		\brief Get total item count in current list
 		This function return number of files in directory
 		\returns number of files in this directory
 	 */
-	int32 GetFileCount();
+	int32 GetFileCount() const;
 	/**
 		\brief Get total directory count in current list
 		This function return number of files in directory
 		\returns number of subdirectories in this directory
 	 */
-	int32 GetDirectoryCount();
+	int32 GetDirectoryCount() const;
 	
 	/**
 		\brief Get current path 
 		
 	 */
-	const FilePath & GetCurrentPath();
+	const FilePath & GetCurrentPath() const;
 	
 	//! Get path name
-	const FilePath & GetPathname(int32 index);
+	const FilePath & GetPathname(int32 index) const;
     
     //! Get file or folder name
-	const String & GetFilename(int32 index);
+	const String & GetFilename(int32 index) const;
 
 	/**
 		\brief is file with given index in this list is a directory
 		\return true if this is directory
 	 */
-	bool IsDirectory(int32 index);
+	bool IsDirectory(int32 index) const;
 	
 	/*
 		\brief is file with given index, is navigation directory. 
 		This funciton checks is directory == "." or directory == ".."
 		\return true if this is ".", or ".." directory
 	 */
-	bool IsNavigationDirectory(int32 index);
+	bool IsNavigationDirectory(int32 index) const;
 	
     void Sort();
     

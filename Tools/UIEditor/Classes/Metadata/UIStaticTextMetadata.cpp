@@ -44,10 +44,10 @@ UIStaticTextMetadata::UIStaticTextMetadata(QObject* parent) :
 
 UIStaticText* UIStaticTextMetadata::GetActiveStaticText() const
 {
-    return dynamic_cast<UIStaticText*>(GetActiveUIControl());
+    return static_cast<UIStaticText*>(GetActiveUIControl());
 }
 
-Font * UIStaticTextMetadata::GetFont()
+Font * UIStaticTextMetadata::GetFont() const
 {
     if (VerifyActiveParamID())
     {
@@ -64,8 +64,18 @@ void UIStaticTextMetadata::SetFont(Font * font)
     }
     if (font)
     {
-        font->SetSize(GetFontSize());
-        GetActiveStaticText()->SetFont(font);
+        //DF-3435 correct font size is set in font preset, not in control
+        // font size is defined in font preset and can be changed only by modifying font preset
+        //font->SetSize(GetFontSize());
+        
+        //TODO: font should be set correctly, remove this workaround
+        Font* localizedFont = EditorFontManager::Instance()->GetLocalizedFont(font);
+        if(font != localizedFont)
+        {
+            Logger::Warning("UIStaticTextMetadata::SetFont font=%p, but localizedFont=%p for locale=%s", font, localizedFont, LocalizationSystem::Instance()->GetCurrentLocale().c_str());
+        }
+        
+        GetActiveStaticText()->SetFont(localizedFont);
     }
 }
 
@@ -85,28 +95,36 @@ float UIStaticTextMetadata::GetFontSize() const
         Font *font = GetActiveStaticText()->GetFont();
         if (font)
         {
+            //TODO: font should be set correctly, remove this workaround
+            Font* localizedFont = EditorFontManager::Instance()->GetLocalizedFont(font);
+            if(localizedFont)
+            {
+                return localizedFont->GetSize();
+            }
+            
             return font->GetSize();
         }
     }
     return -1.0f;
 }
 
-void UIStaticTextMetadata::SetFontSize(float fontSize)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-
-    Font *font = GetActiveStaticText()->GetFont();
-    if (font)
-    {
-        Font* newFont = font->Clone();
-        newFont->SetSize(fontSize);
-        GetActiveStaticText()->SetFont(newFont);
-        newFont->Release();
-    }
-}
+//DF-3435 font size is defined in font preset and can be changed only by modifying font preset
+//void UIStaticTextMetadata::SetFontSize(float fontSize)
+//{
+//    if (!VerifyActiveParamID())
+//    {
+//        return;
+//    }
+//
+//    Font *font = GetActiveStaticText()->GetFont();
+//    if (font)
+//    {
+//        Font* newFont = font->Clone();
+//        newFont->SetSize(fontSize);
+//        GetActiveStaticText()->SetFont(newFont);
+//        newFont->Release();
+//    }
+//}
 
 // Initialize the control(s) attached.
 void UIStaticTextMetadata::InitializeControl(const String& controlName, const Vector2& position)
@@ -116,8 +134,9 @@ void UIStaticTextMetadata::InitializeControl(const String& controlName, const Ve
     int paramsCount = this->GetParamsCount();
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
-        UIStaticText* staticText = dynamic_cast<UIStaticText*>(this->treeNodeParams[i].GetUIControl());
+        UIStaticText* staticText = static_cast<UIStaticText*>(this->treeNodeParams[i].GetUIControl());
 
+        //TODO: remove default font, or make it a default font preset
         staticText->SetFont(EditorFontManager::Instance()->GetDefaultFont());
         staticText->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);
         staticText->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
@@ -225,7 +244,7 @@ void UIStaticTextMetadata::SetShadowColor(const QColor& value)
 	GetActiveStaticText()->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
 }
 
-int UIStaticTextMetadata::GetAlign()
+int UIStaticTextMetadata::GetAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -245,7 +264,7 @@ void UIStaticTextMetadata::SetAlign(int value)
     GetActiveStaticText()->SetAlign((eAlign)value);
 }
 
-int UIStaticTextMetadata::GetTextAlign()
+int UIStaticTextMetadata::GetTextAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -263,6 +282,26 @@ void UIStaticTextMetadata::SetTextAlign(int value)
     }
     
     GetActiveStaticText()->SetTextAlign((eAlign)value);
+}
+
+bool UIStaticTextMetadata::GetTextUseRtlAlign()
+{
+	if (!VerifyActiveParamID())
+	{
+		return false;
+	}
+	
+	return GetActiveStaticText()->GetTextUseRtlAlign();
+}
+
+void UIStaticTextMetadata::SetTextUseRtlAlign(bool value)
+{
+	if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveStaticText()->SetTextUseRtlAlign(value);
 }
 
 bool UIStaticTextMetadata::GetMultiline() const
@@ -316,10 +355,7 @@ void UIStaticTextMetadata::SetFittingType(int value)
         return;
     }
 
-    // Changing Fitting Option affects the font which might be reused
-    // by other controls, so clone the existing one.
     UIStaticText* staticText = GetActiveStaticText();
-    CloneFont(staticText);
     staticText->SetFittingOption(value);
 }
 
@@ -331,4 +367,158 @@ int UIStaticTextMetadata::GetFittingType() const
     }
     
     return GetActiveStaticText()->GetFittingOption();
+}
+
+int UIStaticTextMetadata::GetTextColorInheritType() const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return UIControlBackground::COLOR_MULTIPLY_ON_PARENT;
+    }
+
+    // Text Color is the base one.
+    return GetActiveStaticText()->GetTextBackground()->GetColorInheritType();
+}
+
+void UIStaticTextMetadata::SetTextColorInheritType(int value)
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return;
+    }
+
+    GetActiveStaticText()->GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+    GetActiveStaticText()->GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+}
+
+int UIStaticTextMetadata::GetTextPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return GetActiveStaticText()->GetTextBackground()->GetPerPixelAccuracyType();
+}
+
+void UIStaticTextMetadata::SetTextPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return;
+    }
+    
+    GetActiveStaticText()->GetTextBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+    GetActiveStaticText()->GetShadowBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+}
+
+QRectF UIStaticTextMetadata::GetTextMargins() const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return QRectF();
+    }
+    
+    const UIControlBackground::UIMargins* margins = GetActiveStaticText()->GetTextBackground()->GetMargins();
+    if (!margins)
+    {
+        return QRectF();
+    }
+
+    return UIMarginsToQRectF(margins);
+}
+
+void UIStaticTextMetadata::SetTextMargins(const QRectF& value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = QRectFToUIMargins(value);
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+float UIStaticTextMetadata::GetTextLeftMargin() const
+{
+    return GetTextMargins().left();
+}
+
+void UIStaticTextMetadata::SetTextLeftMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetTextMarginsToUpdate();
+    margins.left = value;
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+float UIStaticTextMetadata::GetTextTopMargin() const
+{
+    return GetTextMargins().top();
+}
+
+void UIStaticTextMetadata::SetTextTopMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetTextMarginsToUpdate();
+    margins.top = value;
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+float UIStaticTextMetadata::GetTextRightMargin() const
+{
+    return GetTextMargins().width();
+}
+
+void UIStaticTextMetadata::SetTextRightMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetTextMarginsToUpdate();
+    margins.right = value;
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+float UIStaticTextMetadata::GetTextBottomMargin() const
+{
+    return GetTextMargins().height();
+}
+
+void UIStaticTextMetadata::SetTextBottomMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetTextMarginsToUpdate();
+    margins.bottom = value;
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+UIControlBackground::UIMargins UIStaticTextMetadata::GetTextMarginsToUpdate(UIControl::eControlState /* state */) const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    const UIControlBackground::UIMargins* textMargins = GetActiveStaticText()->GetTextBackground()->GetMargins();
+    if (!textMargins)
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    return *textMargins;
 }

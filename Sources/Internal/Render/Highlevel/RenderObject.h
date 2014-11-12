@@ -78,7 +78,8 @@ public:
 		TYPE_SPRITE,			// Sprite Node
 		TYPE_PARTICLE_EMTITTER,  // Particle Emitter
 		TYPE_SKYBOX,
-        TYPE_VEGETATION
+        TYPE_VEGETATION,
+        TYPE_SPEED_TREE
     };
     
 	enum eFlags
@@ -100,7 +101,9 @@ public:
 
 	static const uint32 VISIBILITY_CRITERIA = VISIBLE | VISIBLE_STATIC_OCCLUSION;
 	const static uint32 CLIPPING_VISIBILITY_CRITERIA = RenderObject::VISIBLE | VISIBLE_STATIC_OCCLUSION;
-    static const uint32 SERIALIZATION_CRITERIA = VISIBLE | VISIBLE_REFLECTION | VISIBLE_REFRACTION | ALWAYS_CLIPPING_VISIBLE;protected:
+    static const uint32 SERIALIZATION_CRITERIA = VISIBLE | VISIBLE_REFLECTION | VISIBLE_REFRACTION | ALWAYS_CLIPPING_VISIBLE;
+
+protected:
     virtual ~RenderObject();
 public:
     RenderObject();
@@ -116,14 +119,26 @@ public:
     void AddRenderBatch(RenderBatch * batch, int32 lodIndex, int32 switchIndex);
     void RemoveRenderBatch(RenderBatch * batch);
     void RemoveRenderBatch(uint32 batchIndex);
+    void ReplaceRenderBatch(RenderBatch * oldBatch, RenderBatch * newBatch);
+    void ReplaceRenderBatch(uint32 batchIndex, RenderBatch * newBatch);
 
-    void UpdateBatchesSortingTransforms();
+    void SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex);
+    void SetRenderBatchSwitchIndex(uint32 batchIndex, int32 newSwitchIndex);    
 
     virtual void RecalcBoundingBox();
     
 	inline uint32 GetRenderBatchCount() const;
     inline RenderBatch * GetRenderBatch(uint32 batchIndex) const;
 	inline RenderBatch * GetRenderBatch(uint32 batchIndex, int32 & lodIndex, int32 & switchIndex) const;
+
+    /**
+		\brief collect render batches and append it to vector by request lods/switches
+		\param[in] requestLodIndex - request lod index. if -1 considering all lods
+        \param[in] requestSwitchIndex - request switch index. if -1 considering all switches
+        \param[in, out] batches vector of RenderBatch'es
+        \param[in] includeShareLods - if true considering request lod and lods with INVALID_INDEX(-1)
+	 */
+    void CollectRenderBatches(int32 requestLodIndex, int32 requestSwitchIndex, Vector<RenderBatch*> & batches, bool includeShareLods = false) const;
 
 	inline uint32 GetActiveRenderBatchCount() const;
 	inline RenderBatch * GetActiveRenderBatch(uint32 batchIndex) const;
@@ -138,7 +153,7 @@ public:
     inline void SetBSphere(const Sphere & sphere);
     
     inline const AABBox3 & GetBoundingBox() const;
-    inline AABBox3 & GetWorldBoundingBox();
+    inline const AABBox3 & GetWorldBoundingBox() const;
     
     inline void SetWorldTransformPtr(Matrix4 * _worldTransform);
     inline Matrix4 * GetWorldTransformPtr() const;
@@ -157,6 +172,8 @@ public:
 	virtual void BakeGeometry(const Matrix4 & transform);
 
 	virtual void RecalculateWorldBoundingBox();
+
+    virtual void BindDynamicParameters(Camera * camera);
     
     inline uint16 GetStaticOcclusionIndex() const;
     inline void SetStaticOcclusionIndex(uint16 index);
@@ -164,20 +181,23 @@ public:
 
 	void SetLodIndex(const int32 lodIndex);
 	void SetSwitchIndex(const int32 switchIndex);
-    int32 GetLodIndex();
-    int32 GetSwitchIndex();
+    int32 GetLodIndex() const;
+    int32 GetSwitchIndex() const;
     int32 GetMaxLodIndex() const;
     int32 GetMaxLodIndexForSwitchIndex(int32 forSwitchIndex) const;
     int32 GetMaxSwitchIndex() const;
 
 	uint8 startClippingPlane;
 
-	inline bool GetReflectionVisible();
+	inline bool GetReflectionVisible() const;
 	inline void SetReflectionVisible(bool visible);
-    inline bool GetRefractionVisible();
+    inline bool GetRefractionVisible() const;
     inline void SetRefractionVisible(bool visible);
     
     virtual void GetDataNodes(Set<DataNode*> & dataNodes);
+
+    inline void SetLight(uint32 index, Light * light);
+    inline Light * GetLight(uint32 index);
     
 protected:
 //    eType type; //TODO: waiting for enums at introspection
@@ -196,6 +216,9 @@ protected:
     FastName ownerDebugInfo;
 	int32 lodIndex;
 	int32 switchIndex;
+
+    static const uint32 MAX_LIGHT_COUNT = 2;
+    Light * lights[MAX_LIGHT_COUNT];    
 
 //    Sphere bsphere;
     
@@ -224,7 +247,7 @@ protected:
 
 public:
 	INTROSPECTION_EXTEND(RenderObject, AnimatedObject,
-        MEMBER(type, "Type", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(type, "Type", I_SAVE | I_VIEW)
                          
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(debugFlags, "Debug Flags", I_SAVE | I_VIEW | I_EDIT)
@@ -242,6 +265,18 @@ public:
         COLLECTION(activeRenderBatchArray, "Render Batch Array", I_VIEW)
     );
 };
+
+inline void RenderObject::SetLight(uint32 index, Light * light)
+{
+    DVASSERT(index < MAX_LIGHT_COUNT)
+    lights[index] = light;
+}
+
+inline Light * RenderObject::GetLight(uint32 index)
+{
+    DVASSERT(index < MAX_LIGHT_COUNT)
+     return lights[index];
+}
 
 inline uint32 RenderObject::GetRemoveIndex()
 {
@@ -277,7 +312,7 @@ inline const AABBox3 & RenderObject::GetBoundingBox() const
     return bbox;
 }
 
-inline AABBox3 & RenderObject::GetWorldBoundingBox()
+inline const AABBox3 & RenderObject::GetWorldBoundingBox() const
 {
     return worldBBox;
 }
@@ -287,8 +322,7 @@ inline void RenderObject::SetWorldTransformPtr(Matrix4 * _worldTransform)
     if (worldTransform == _worldTransform)
         return;
     worldTransform = _worldTransform;
-    flags |= TRANSFORM_UPDATED;
-    UpdateBatchesSortingTransforms();
+    flags |= TRANSFORM_UPDATED;    
 }
     
 inline Matrix4 * RenderObject::GetWorldTransformPtr() const
@@ -336,7 +370,7 @@ inline void RenderObject::SetStaticOcclusionIndex(uint16 _index)
     staticOcclusionIndex = _index;
 }
 
-inline bool RenderObject::GetReflectionVisible(){return (flags&VISIBLE_REFLECTION) == VISIBLE_REFLECTION;}
+inline bool RenderObject::GetReflectionVisible() const {return (flags&VISIBLE_REFLECTION) == VISIBLE_REFLECTION;}
 inline void RenderObject::SetReflectionVisible(bool visible)
 {
 	if (visible)
@@ -345,7 +379,7 @@ inline void RenderObject::SetReflectionVisible(bool visible)
 		flags&= ~VISIBLE_REFLECTION;
 }
 
-inline bool RenderObject::GetRefractionVisible(){return (flags&VISIBLE_REFRACTION) == VISIBLE_REFRACTION;}
+inline bool RenderObject::GetRefractionVisible() const {return (flags&VISIBLE_REFRACTION) == VISIBLE_REFRACTION;}
 inline void RenderObject::SetRefractionVisible(bool visible)
 {
     if (visible)

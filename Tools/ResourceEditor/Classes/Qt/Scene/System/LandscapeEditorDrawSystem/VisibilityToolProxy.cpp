@@ -37,7 +37,7 @@ VisibilityToolProxy::VisibilityToolProxy(int32 size)
 ,	isVisibilityPointSet(false)
 ,	visibilityPoint(Vector2(-1.f, -1.f))
 {
-	visibilityToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888);
+	visibilityToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
 }
 
 VisibilityToolProxy::~VisibilityToolProxy()
@@ -77,7 +77,7 @@ Rect VisibilityToolProxy::GetChangedRect()
 
 void VisibilityToolProxy::UpdateRect(const DAVA::Rect &rect)
 {
-	Rect bounds(0.f, 0.f, size - 1, size - 1);
+	Rect bounds(0.f, 0.f, (float32)(size - 1), (float32)(size - 1));
 	changedRect = rect;
 	bounds.ClampToRect(changedRect);
 

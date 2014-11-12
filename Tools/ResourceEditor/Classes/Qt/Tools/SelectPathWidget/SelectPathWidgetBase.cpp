@@ -143,7 +143,7 @@ void SelectPathWidgetBase::OpenClicked()
 
     if(checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
     {
-        QMessageBox::warning(NULL, "Wrong file selected", QString( Format("Path %s doesn't belong to project.", retString.c_str()).c_str() ), QMessageBox::Ok);
+        QMessageBox::warning(NULL, "Wrong file selected", QString(DAVA::Format("Path %s doesn't belong to project.", retString.c_str()).c_str() ), QMessageBox::Ok);
         return;
     }
     
@@ -165,12 +165,9 @@ void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
 
 void SelectPathWidgetBase::setText(const QString& filePath)
 {
-    if(filePath != text())
-    {
-        QLineEdit::setText(filePath);
-        setToolTip(filePath);
-        emit PathSelected(filePath.toStdString());
-    }
+    QLineEdit::setText(filePath);
+    setToolTip(filePath);
+    emit PathSelected(filePath.toStdString());
 }
 
 void SelectPathWidgetBase::setText(const DAVA::String &filePath)

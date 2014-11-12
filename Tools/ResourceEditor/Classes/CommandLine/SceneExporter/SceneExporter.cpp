@@ -41,13 +41,12 @@
 
 #include "../Qt/Main/QtUtils.h"
 
-#include "Qt/SoundComponentEditor/FMODSoundBrowser.h"
-
 using namespace DAVA;
 
 SceneExporter::SceneExporter()
 {
-    exportForGPU = GPU_UNKNOWN;
+    exportForGPU = GPU_PNG;
+	quality = TextureConverter::ECQ_DEFAULT;
 	optimizeOnExport = true;
 }
 
@@ -66,11 +65,6 @@ void SceneExporter::SetOutFolder(const FilePath &folderPathname)
     sceneUtils.SetOutFolder(folderPathname);
 }
 
-void SceneExporter::SetOutSoundsFolder(const FilePath &folderPathname)
-{
-    soundsOutFolder = folderPathname;
-}
-
 void SceneExporter::SetGPUForExporting(const String &newGPU)
 {
     SetGPUForExporting(GPUFamilyDescriptor::GetGPUByName(newGPU));
@@ -82,7 +76,45 @@ void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
 }
 
 
-void SceneExporter::ExportFile(const String &fileName, Set<String> &errorLog)
+void SceneExporter::ExportSceneFolder(const String &folderName, Set<String> &errorLog)
+{
+    FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
+    folderPathname.MakeDirectoryPathname();
+    
+	FileList * fileList = new FileList(folderPathname);
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+	{
+        FilePath pathname = fileList->GetPathname(i);
+		if(fileList->IsDirectory(i))
+		{
+            if(!fileList->IsNavigationDirectory(i))
+            {
+                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
+                ExportSceneFolder(workingPathname, errorLog);
+            }
+        }
+        else
+        {
+            if(pathname.IsEqualToExtension(".sc2"))
+            {
+                String::size_type exportedPos = pathname.GetAbsolutePathname().find(".exported.sc2");
+                if(exportedPos != String::npos)
+                {
+                    //Skip temporary files, created during export
+                    continue;
+                }
+                
+                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
+                ExportSceneFile(workingPathname, errorLog);
+            }
+        }
+    }
+    
+    SafeRelease(fileList);
+}
+
+
+void SceneExporter::ExportSceneFile(const String &fileName, Set<String> &errorLog)
 {
     Logger::FrameworkDebug("[SceneExporter::ExportFile] %s", fileName.c_str());
     
@@ -115,43 +147,104 @@ void SceneExporter::ExportFile(const String &fileName, Set<String> &errorLog)
     SafeRelease(scene);
 }
 
+
+void SceneExporter::ExportTextureFolder(const String &folderName, Set<String> &errorLog)
+{
+    FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
+    folderPathname.MakeDirectoryPathname();
+    
+	FileList * fileList = new FileList(folderPathname);
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+	{
+        FilePath pathname = fileList->GetPathname(i);
+		if(fileList->IsDirectory(i))
+		{
+            if(!fileList->IsNavigationDirectory(i))
+            {
+                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
+                ExportTextureFolder(workingPathname, errorLog);
+            }
+        }
+        else
+        {
+            if(pathname.IsEqualToExtension(".tex"))
+            {
+                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
+                ExportTextureFile(workingPathname, errorLog);
+            }
+        }
+    }
+    
+    SafeRelease(fileList);
+}
+
+
+void SceneExporter::ExportTextureFile(const String &fileName, Set<String> &errorLog)
+{
+    Logger::FrameworkDebug("[SceneExporter::ExportTextureFile] %s", fileName.c_str());
+    
+    FilePath filePath = sceneUtils.dataSourceFolder + fileName;
+    ExportTextureDescriptor(filePath, errorLog);
+}
+
+
 void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog)
 {
+    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+    
     //Create destination folder
     String relativeFilename = fileName.GetRelativePathname(sceneUtils.dataSourceFolder);
     sceneUtils.workingFolder = fileName.GetDirectory().GetRelativePathname(sceneUtils.dataSourceFolder);
     
     FileSystem::Instance()->CreateDirectory(sceneUtils.dataFolder + sceneUtils.workingFolder, true); 
     
+    uint64 removeEditorNodesStart = SystemTimer::Instance()->AbsoluteMS();
     //Export scene data
     RemoveEditorNodes(scene);
+    uint64 removeEditorNodesTime = SystemTimer::Instance()->AbsoluteMS() - removeEditorNodesStart;
     
+    uint64 removeEditorCPStart = SystemTimer::Instance()->AbsoluteMS();
     if(optimizeOnExport)
     {
         RemoveEditorCustomProperties(scene);
     }
+    uint64 removeEditorCPTime = SystemTimer::Instance()->AbsoluteMS() - removeEditorCPStart;
 
+    uint64 exportDescriptorsStart = SystemTimer::Instance()->AbsoluteMS();
     bool sceneWasExportedCorrectly = ExportDescriptors(scene, errorLog);
+    uint64 exportDescriptorsTime = SystemTimer::Instance()->AbsoluteMS() - exportDescriptorsStart;
 
+    
+    uint64 validationStart = SystemTimer::Instance()->AbsoluteMS();
     FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
     SceneValidator::Instance()->ValidateScene(scene, fileName, errorLog);
 	//SceneValidator::Instance()->ValidateScales(scene, errorLog);
+    uint64 validationTime = SystemTimer::Instance()->AbsoluteMS() - validationStart;
 
+    
+    uint64 landscapeStart = SystemTimer::Instance()->AbsoluteMS();
     sceneWasExportedCorrectly &= ExportLandscape(scene, errorLog);
+    uint64 landscapeTime = SystemTimer::Instance()->AbsoluteMS() - landscapeStart;
+
+    uint64 vegetationStart = SystemTimer::Instance()->AbsoluteMS();
     sceneWasExportedCorrectly &= ExportVegetation(scene, errorLog);
+    uint64 vegetationTime = SystemTimer::Instance()->AbsoluteMS() - vegetationStart;
 
     //save scene to new place
+    uint64 saveStart = SystemTimer::Instance()->AbsoluteMS();
     FilePath tempSceneName = FilePath::CreateWithNewExtension(sceneUtils.dataSourceFolder + relativeFilename, ".exported.sc2");
     scene->Save(tempSceneName, optimizeOnExport);
+    uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - saveStart;
 
+    
+    uint64 moveStart = SystemTimer::Instance()->AbsoluteMS();
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
 	if(!moved)
 	{
 		errorLog.insert(Format("Can't move file %s", fileName.GetAbsolutePathname().c_str()));
         sceneWasExportedCorrectly = false;
 	}
-    
-    ExportSounds(fileName);
+    uint64 moveTime = SystemTimer::Instance()->AbsoluteMS() - moveStart;
 
     SceneValidator::Instance()->SetPathForChecking(oldPath);
     
@@ -159,6 +252,12 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     {   // *** to highlight this message from other error messages
         Logger::Error("***  Scene %s was exported with errors!", fileName.GetAbsolutePathname().c_str());
     }
+    
+    
+    uint64 exportTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+    Logger::Info("Export Status\n\tScene: %s\n\tExport time: %ldms\n\tRemove editor nodes time: %ldms\n\tRemove custom properties: %ldms\n\tExport descriptors: %ldms\n\tValidation time: %ldms\n\tLandscape time: %ldms\n\tVegetation time: %ldms\n\tSave time: %ldms\n\tMove time: %ldms\n\tErrors occured: %d",
+                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, vegetationTime, saveTime, moveTime, !sceneWasExportedCorrectly
+                 );
     
     return;
 }
@@ -211,9 +310,9 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
     {
         Entity * node = *it;
 
-        if(node->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
+        KeyedArchive *props = GetCustomPropertiesArchieve(node);
+        if(props)
         {
-            KeyedArchive *props = node->GetCustomProperties();
             const Map<String, VariantType*> propsMap = props->GetArchieveData();
             
             auto endIt = propsMap.end();
@@ -228,6 +327,11 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
                         props->DeleteKey(key);
                     }
                 }
+            }
+            
+			if(props->Count() == 0)
+            {
+                node->RemoveComponent(DAVA::Component::CUSTOM_PROPERTIES_COMPONENT);
             }
         }
     }
@@ -268,9 +372,10 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
     }
     
     descriptor->exportedAsGpuFamily = exportForGPU;
-    descriptor->exportedAsPixelFormat = descriptor->GetPixelFormatForCompression(exportForGPU);
+    descriptor->format = descriptor->GetPixelFormatForCompression(exportForGPU);
 
-    if((descriptor->exportedAsGpuFamily != GPU_UNKNOWN) && (descriptor->exportedAsPixelFormat == FORMAT_INVALID))
+    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
+    if(GPUFamilyDescriptor::IsGPUForDevice(gpu) && (descriptor->format == FORMAT_INVALID))
     {
         errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
         
@@ -295,8 +400,9 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
 bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<String> &errorLog)
 {
     CompressTextureIfNeed(descriptor, errorLog);
-    
-    if(descriptor->exportedAsGpuFamily == GPU_UNKNOWN)
+
+    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
+    if(!GPUFamilyDescriptor::IsGPUForDevice(gpu))
     {
 		bool copyResult = true;
 		
@@ -326,68 +432,6 @@ bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<Stri
 }
 
 
-
-void SceneExporter::ExportFolder(const String &folderName, Set<String> &errorLog)
-{
-    FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
-    folderPathname.MakeDirectoryPathname();
-    
-	FileList * fileList = new FileList(folderPathname);
-    for (int32 i = 0; i < fileList->GetCount(); ++i)
-	{
-        FilePath pathname = fileList->GetPathname(i);
-		if(fileList->IsDirectory(i))
-		{
-            if(!fileList->IsNavigationDirectory(i))
-            {
-                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
-                ExportFolder(workingPathname, errorLog);
-            }
-        }
-        else 
-        {
-            if(pathname.IsEqualToExtension(".sc2"))
-            {
-                String::size_type exportedPos = pathname.GetAbsolutePathname().find(".exported.sc2");
-                if(exportedPos != String::npos)
-                {
-                    //Skip temporary files, created during export
-                    continue;
-                }
-                
-                String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
-                ExportFile(workingPathname, errorLog);
-            }
-        }
-    }
-    
-    SafeRelease(fileList);
-}
-
-void SceneExporter::ExportSounds(const FilePath &scenePath)
-{
-#ifdef DAVA_FMOD
-    FilePath sfxDir = FMODSoundBrowser::MakeFEVPathFromScenePath(scenePath).GetDirectory();
-    if(sfxDir.IsEmpty())
-        return;
-
-    if(exportForGPU != GPU_POWERVR_IOS && exportForGPU != GPU_UNKNOWN)
-    {
-        String pathStr = sfxDir.GetAbsolutePathname();
-        pathStr = pathStr.substr(0, pathStr.length() - 4) + "Android/";
-        sfxDir = FilePath(pathStr);
-    }
-
-    if(!soundsOutFolder.IsEmpty())
-    {
-        if(!soundsOutFolder.Exists())
-            FileSystem::Instance()->CreateDirectory(soundsOutFolder, true);
-
-        FileSystem::Instance()->CopyDirectory(sfxDir, soundsOutFolder, true);
-    }
-#endif
-}
-
 bool SceneExporter::ExportLandscape(Scene *scene, Set<String> &errorLog)
 {
     DVASSERT(scene);
@@ -410,8 +454,11 @@ bool SceneExporter::ExportVegetation(Scene *scene, Set<String> &errorLog)
     VegetationRenderObject *vegetation = FindVegetation(scene);
     if (vegetation)
     {
-        wasExported |= sceneUtils.CopyFile(vegetation->GetTextureSheetPath(), errorLog);
-        wasExported |= sceneUtils.CopyFile(vegetation->GetVegetationMapPath(), errorLog);
+        const FilePath& textureSheetPath = vegetation->GetTextureSheetPath();
+        if(textureSheetPath.Exists())
+        {
+            wasExported |= sceneUtils.CopyFile(vegetation->GetTextureSheetPath(), errorLog);
+        }
     }
     
     return wasExported;
@@ -419,7 +466,8 @@ bool SceneExporter::ExportVegetation(Scene *scene, Set<String> &errorLog)
 
 void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog)
 {
-    if(descriptor->exportedAsGpuFamily == GPU_UNKNOWN)
+    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
+    if(!GPUFamilyDescriptor::IsGPUForDevice(gpu))
         return;
     
     
@@ -435,8 +483,9 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
         //TODO: do we need to convert to pvr if needToConvert is false, but *.pvr file isn't at filesystem
         
 		eGPUFamily gpuFamily = (eGPUFamily)descriptor->exportedAsGpuFamily;
-		TextureConverter::CleanupOldTextures(descriptor, gpuFamily, (PixelFormat)descriptor->exportedAsPixelFormat);
-		TextureConverter::ConvertTexture(*descriptor, gpuFamily, true);
+
+		TextureConverter::CleanupOldTextures(descriptor, gpuFamily, descriptor->format);
+		TextureConverter::ConvertTexture(*descriptor, gpuFamily, true, quality);
         
         DAVA::TexturesMap texturesMap = Texture::GetTextureMap();
         
@@ -452,5 +501,10 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
 void SceneExporter::EnableOptimizations( bool enable )
 {
 	optimizeOnExport = enable;
+}
+
+void SceneExporter::SetCompressionQuality( TextureConverter::eConvertQuality _quality )
+{
+	quality = _quality;
 }
 

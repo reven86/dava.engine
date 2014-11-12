@@ -171,11 +171,17 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 	static QIcon lightIcon(":/QtIcons/light.png");
 	static QIcon shadowIcon(":/QtIcons/shadow.png");
 	static QIcon switchIcon(":/QtIcons/switch.png");
+	static QIcon windIcon(":/QtIcons/wind.png");
+    static QIcon soIcon(":/QtIcons/so.png");
 
 	QIcon ret;
 
 	if(NULL != entity)
-	{		
+	{	
+        if(NULL != entity->GetComponent(DAVA::Component::STATIC_OCCLUSION_COMPONENT))
+        {
+            ret = soIcon;
+        }
 		if(NULL != DAVA::GetEffectComponent(entity))
 		{
 			ret = effectIcon;
@@ -207,6 +213,10 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 		else if(NULL != DAVA::GetLight(entity))
 		{
 			ret = lightIcon;
+		}
+		else if(NULL != DAVA::GetWindComponent(entity))
+		{
+			ret = windIcon;
 		}
 	}
 

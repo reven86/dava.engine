@@ -1,13 +1,25 @@
 package com.dava.framework;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import org.fmod.FMODAudioDevice;
+
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.SensorManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.NotificationCompat.Builder;
+import android.telephony.TelephonyManager;
 import android.util.Log;
-import org.fmod.FMODAudioDevice;
+import android.view.Window;
+import android.view.WindowManager;
 import com.bda.controller.Controller;
+
+import java.util.Calendar;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
 {
@@ -15,7 +27,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
 	private JNIAccelerometer accelerometer = null;
 	protected JNIGLSurfaceView glView = null;
-
+	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
 	private Controller mController;
@@ -32,6 +44,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     public abstract JNIGLSurfaceView GetSurfaceView();
     
     private static JNIActivity activity = null;
+    protected static SingalStrengthListner singalStrengthListner = null;
     
     public static JNIActivity GetActivity()
 	{
@@ -44,6 +57,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	activity = this;
         super.onCreate(savedInstanceState);
         
+        // Initialize native framework core         
+        JNIApplication.GetApplication().InitFramework();
+        
+        //JNINotificationProvider.AttachToActivity();
+        
         if(null != savedInstanceState)
         {
         	isFirstRun = savedInstanceState.getBoolean("isFirstRun");
@@ -51,11 +69,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
     	// The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate]");
-
+        
         // initialize accelerometer
         SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         accelerometer = new JNIAccelerometer(this, sensorManager);
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().requestFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+        
         // initialize GL VIEW
         glView = GetSurfaceView();
         assert(glView != null);
@@ -63,19 +86,42 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setClickable(true);
         glView.setFocusable(true);
         glView.requestFocus();
-
+        
         mController = Controller.getInstance(this);
         if(mController != null)
         {
         	mController.init();
         	mController.setListener(glView.mogaListener, new Handler());
         }
-
+        
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
         
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
+        
+        try {
+        	ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        	NetworkInfo networkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        	if (cm != null && networkInfo != null && networkInfo.isConnectedOrConnecting())
+            {
+            	TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+            	singalStrengthListner = new SingalStrengthListner();
+            	tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
+            }
+		} catch (Exception e) {
+			Log.d("", "no singalStrengthListner");
+		}
+        
+        JNINotificationProvider.AttachToActivity(this);
+        
+		Intent intent = getIntent();
+		if (null != intent) {
+			String uid = intent.getStringExtra("uid");
+			if (uid != null) {
+				JNINotificationProvider.NotificationPressed(uid);
+			}
+		}
     }
     
     @Override
@@ -121,6 +167,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // The activity has become visible (it is now "resumed").
 		Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
 
+		
+		JNITextField.HideAllTextFields();
+		
 		if(mController != null)
 		{
 			mController.onResume();
@@ -142,6 +191,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
+        
+        JNIUtils.onResume();
     }
 
     
@@ -192,7 +243,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         //call native method
         nativeOnStop();
-
+        
+        // Destroy keyboard layout if its hasn't been destroyed by lost focus (samsung lock workaround)
+        JNITextField.DestroyKeyboardLayout(getWindowManager());
+        
         Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
         
         super.onStop();
@@ -227,7 +281,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     @Override
     public void onBackPressed() {
-    	
+    }
+    
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+    	super.onWindowFocusChanged(hasFocus);
+    	if(hasFocus) {
+    		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+    	} else {
+    		JNITextField.DestroyKeyboardLayout(getWindowManager());
+    	}
     }
     
     public void onAccelerationChanged(float x, float y, float z)
@@ -238,4 +301,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	public void PostEventToGL(Runnable event) {
 		glView.queueEvent(event);
 	}
+
+	public int GetNotificationIcon() {
+        return android.R.drawable.sym_def_app_icon;
+    }
 }
+

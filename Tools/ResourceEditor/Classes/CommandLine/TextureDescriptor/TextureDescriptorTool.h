@@ -32,6 +32,7 @@
 
 #include "DAVAEngine.h"
 #include "../CommandLineTool.h"
+#include "TextureCompression/TextureConverter.h"
 
 class TextureDescriptorTool: public CommandLineTool
 {
@@ -72,6 +73,9 @@ protected:
 
 	bool forceModeEnabled;
 	bool convertEnabled;
+    bool generateMipMaps;
+    
+    DAVA::TextureConverter::eConvertQuality quality;
     
 	DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
     

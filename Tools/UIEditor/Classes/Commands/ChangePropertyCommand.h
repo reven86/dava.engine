@@ -115,6 +115,9 @@ protected:
     // Get the property name.
     QString GetPropertyName();
 
+    // Compare the values.
+    virtual bool Compare(Type left, Type right);
+
 	// Actually apply the property value.
 	bool ApplyPropertyValue(const COMMANDDATAVECTITER& iter, Type newValue);
 
@@ -129,6 +132,24 @@ protected:
 
 	// The vector of Command Data with the initial values.
     COMMANDDATAVECT commandData;
+};
+
+// For Double properties compaeison logic is different.
+class ChangeDoublePropertyCommand : public ChangePropertyCommand<double>
+{
+public:
+    ChangeDoublePropertyCommand(BaseMetadata* baseMetadata,
+                                const PropertyGridWidgetData& propertyGridWidgetData,
+                                double value) :
+    ChangePropertyCommand(baseMetadata, propertyGridWidgetData, value)
+    {
+    }
+
+protected:
+    virtual bool Compare(double left, double right)
+    {
+        return FLOAT_EQUAL_EPS(left, right, 1E-4f);
+    }
 };
 
 // Change Property Command Helper class is needed to retain/release the pointers to the data stored when needed.
@@ -288,16 +309,20 @@ template<typename Type>
 	PropertiesHelper::SetAllPropertyValues<Type>(baseMetadata, propertyName, newValue);
 
 	// Verify whether the properties were indeed changed.
-	bool isPropertyValueDiffers = false;
-	Type realValue = PropertiesHelper::GetAllPropertyValues<Type>(baseMetadata, propertyName,
-																  isPropertyValueDiffers);
-	
-	bool propertySetOK = (realValue == curValue);
+	Type realValue = PropertiesHelper::GetAllPropertyValues<Type>(baseMetadata, propertyName);
+	bool propertySetOK = Compare(realValue, newValue);
 
 	SAFE_DELETE(baseMetadata);
 
 	return propertySetOK;
 }
+
+template<typename Type>
+    bool ChangePropertyCommand<Type>::Compare(Type left, Type right)
+{
+    return left == right;
+}
+
 
 template<typename Type>
     QString ChangePropertyCommand<Type>::GetPropertyName()
@@ -331,7 +356,7 @@ template<typename Type>
 			HierarchyTreeAggregatorNode* aggregator = dynamic_cast<HierarchyTreeAggregatorNode*>(nodeId);
 			if (aggregator)
 			{
-				HierarchyTreeAggregatorNode::CHILDS controls = aggregator->GetChilds();
+				const HierarchyTreeAggregatorNode::CHILDS &controls = aggregator->GetChilds();
 				HierarchyTreeAggregatorNode::CHILDS::iterator iter;
 				for (iter = controls.begin(); iter != controls.end(); ++iter)
 				{
@@ -372,7 +397,7 @@ template<typename Type>
 			HierarchyTreeAggregatorNode* aggregator = dynamic_cast<HierarchyTreeAggregatorNode*>(nodeId);
 			if (aggregator)
 			{
-				HierarchyTreeAggregatorNode::CHILDS controls = aggregator->GetChilds();
+				const HierarchyTreeAggregatorNode::CHILDS &controls = aggregator->GetChilds();
 				HierarchyTreeAggregatorNode::CHILDS::iterator iter;
 				for (iter = controls.begin(); iter != controls.end(); ++iter)
 				{

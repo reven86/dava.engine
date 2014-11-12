@@ -27,6 +27,8 @@
 =====================================================================================*/
 
 #include "UIScrollBarMetadata.h"
+#include "HierarchyTreeController.h"
+#include "UI/UIControlHelpers.h"
 
 namespace DAVA {
 
@@ -37,7 +39,7 @@ UIScrollBarMetadata::UIScrollBarMetadata(QObject* parent) :
 
 UIScrollBar* UIScrollBarMetadata::GetActiveUIScrollBar() const
 {
-	return dynamic_cast<UIScrollBar*>(GetActiveUIControl());
+	return static_cast<UIScrollBar*>(GetActiveUIControl());
 }
 
 void UIScrollBarMetadata::InitializeControl(const String& controlName, const Vector2& position)
@@ -48,17 +50,9 @@ void UIScrollBarMetadata::InitializeControl(const String& controlName, const Vec
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
 		// Initialize UIScrollBar
-        UIScrollBar* scroll = dynamic_cast<UIScrollBar*>(this->treeNodeParams[i].GetUIControl());
-		if (scroll)
-		{
-			scroll->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-		}
+        UIScrollBar* scroll = static_cast<UIScrollBar*>(this->treeNodeParams[i].GetUIControl());
+        scroll->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }
-}
-
-void UIScrollBarMetadata::UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle)
-{
-	UIControlMetadata::UpdateExtraData(extraData, updateStyle);
 }
 
 int UIScrollBarMetadata::GetScrollOrientation()
@@ -79,6 +73,28 @@ void UIScrollBarMetadata::SetScrollOrientation(int value)
     }	
     
 	GetActiveUIScrollBar()->SetOrientation((UIScrollBar::eScrollOrientation)value);
+}
+    
+QString UIScrollBarMetadata::GetUIScrollBarDelegateName()
+{
+    if (!VerifyActiveParamID())
+    {
+        return "";
+    }
+    
+    return QString::fromStdString(GetActiveUIScrollBar()->GetDelegatePath(NULL));
+}
+
+void UIScrollBarMetadata::SetUIScrollBarDelegateName(const QString& value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    String name = value.toStdString();
+    UIControl * rootControl = HierarchyTreeController::Instance()->GetActiveScreen()->GetScreen();
+    UIControl * delegate = UIControlHelpers::GetControlByPath(name, rootControl);
+    GetActiveUIScrollBar()->SetDelegate( dynamic_cast<UIScrollBarDelegate*>(delegate));
 }
 
 };

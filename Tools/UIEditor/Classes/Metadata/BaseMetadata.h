@@ -76,7 +76,7 @@ public:
 
     // Get the list of Params attached.
     int GetParamsCount() const;
-    const METADATAPARAMSVECT& GetParams();
+    const METADATAPARAMSVECT& GetParams() const;
     
     // Get/Set the active Parameter in context. All the properties operations will be executed
     // on this control.
@@ -90,11 +90,11 @@ public:
 	uint32 GetStatesCount() const;
 
     // UI Control State.
-	Vector<UIControl::eControlState> GetUIControlStates() const;
-	void SetUIControlStates(const Vector<UIControl::eControlState>& controlStates);
+    const Vector<UIControl::eControlState> &GetUIControlStates() const;
+    void SetUIControlStates(const Vector<UIControl::eControlState>& controlStates);
 
     // Apply move for all controls.
-    virtual void ApplyMove(const Vector2&) {};
+    virtual void ApplyMove(const Vector2&, bool /*alignControlsToIntegerPos*/) {};
     
     // Apply resize for all controls.
     virtual void ApplyResize(const Rect& /*originalRect*/, const Rect& /*newRect*/) {};
@@ -154,10 +154,10 @@ protected:
     HierarchyTreeNode::HIERARCHYTREENODEID GetActiveTreeNodeID() const;
     
     // Helper to access active UI Control.
-    UIControl* GetActiveUIControl() const;
+    virtual UIControl* GetActiveUIControl() const;
 
     // Get the UI control class name.
-    virtual QString GetUIControlClassName() { return QString(); };
+    virtual QString GetUIControlClassName() const { return QString(); };
     
     // List of Params.
     METADATAPARAMSVECT treeNodeParams;

@@ -42,12 +42,15 @@ using namespace DAVA;
 #if defined (__DAVAENGINE_BEAST__)
 
 //Beast
-BeastAction::BeastAction(SceneEditor2 *scene, QtWaitDialog *_waitDialog)
+BeastAction::BeastAction(SceneEditor2 *scene, const DAVA::FilePath& _outputPath, BeastProxy::eBeastMode mode, QtWaitDialog *_waitDialog)
 	: CommandAction(CMDID_BEAST, "Beast")
 	, workingScene(scene)
 	, waitDialog(_waitDialog)
+    , outputPath(_outputPath)
+    , beastMode(mode)
 {
 	beastManager = BeastProxy::Instance()->CreateManager();
+    BeastProxy::Instance()->SetMode(beastManager, mode);
 }
 
 BeastAction::~BeastAction()
@@ -108,7 +111,11 @@ void BeastAction::Start()
 	startTime = SystemTimer::Instance()->AbsoluteMS();
 
 	FilePath path = GetLightmapDirectoryPath();
-	FileSystem::Instance()->CreateDirectory(path, false);
+    if(beastMode == BeastProxy::MODE_LIGHTMAPS)
+    {
+	    FileSystem::Instance()->CreateDirectory(path, false);
+        FileSystem::Instance()->CreateDirectory(outputPath, true);
+    }
 
 	BeastProxy::Instance()->SetLightmapsDirectory(beastManager, path);
 	BeastProxy::Instance()->Run(beastManager, workingScene);
@@ -122,7 +129,10 @@ bool BeastAction::Process()
 
 void BeastAction::Finish()
 {
-	PackLightmaps();
+    if(beastMode == BeastProxy::MODE_LIGHTMAPS)
+    {
+	    PackLightmaps();
+    }
 
 	Landscape *land = FindLandscape(workingScene);
 	if(land)
@@ -133,16 +143,18 @@ void BeastAction::Finish()
 		FileSystem::Instance()->DeleteFile(textureName);
 	}
 
-	FileSystem::Instance()->DeleteDirectory(GetLightmapDirectoryPath());
-	FileSystem::Instance()->DeleteDirectory(FileSystem::Instance()->GetCurrentWorkingDirectory() + "temp_beast/");
+    FileSystem::Instance()->DeleteDirectory(FileSystem::Instance()->GetCurrentWorkingDirectory() + "temp_beast/");
+    if(beastMode == BeastProxy::MODE_LIGHTMAPS)
+    {
+        FileSystem::Instance()->DeleteDirectory(GetLightmapDirectoryPath());
+    }
 }
-
 
 void BeastAction::PackLightmaps()
 {
     FilePath scenePath = workingScene->GetScenePath();
 	FilePath inputDir = GetLightmapDirectoryPath();
-	FilePath outputDir = FilePath::CreateWithNewExtension(scenePath,  ".sc2_lightmaps/");
+    FilePath outputDir = outputPath;
 
 	FileSystem::Instance()->MoveFile(inputDir + "landscape.png", scenePath.GetDirectory() + "temp_landscape_lightmap.png", true);
 
@@ -150,7 +162,7 @@ void BeastAction::PackLightmaps()
 	packer.SetInputDir(inputDir);
 
 	packer.SetOutputDir(outputDir);
-	packer.PackLightmaps(DAVA::GPU_UNKNOWN);
+	packer.PackLightmaps(DAVA::GPU_PNG);
 	packer.CreateDescriptors();
 	packer.ParseSpriteDescriptors();
 

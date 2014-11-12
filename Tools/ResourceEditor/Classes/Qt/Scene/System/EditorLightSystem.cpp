@@ -41,7 +41,8 @@ EditorLightSystem::EditorLightSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
 {
 	Light *light = new Light();
-	light->SetType(Light::TYPE_DIRECTIONAL);
+	light->SetType(Light::TYPE_POINT);
+    light->SetAmbientColor(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f));
 		
 	cameraLight = new DAVA::Entity();
 	cameraLight->SetLocked(true);
@@ -156,12 +157,16 @@ void EditorLightSystem::RemoveEntity( DAVA::Entity * entity )
 	}
 
 	lightCountOnScene -= CountLightsForEntityRecursive(entity);
-	DVASSERT(lightCountOnScene >= 0);
 
-	if(isEnabled && (lightCountOnScene == 0))
-	{
-		AddCameraLightOnScene();
-	}
+    if (isEnabled)
+    {
+	    DVASSERT(lightCountOnScene >= 0);
+
+	    if(lightCountOnScene == 0)
+	    {
+		    AddCameraLightOnScene();
+	    }
+    }
 }
 
 DAVA::int32 EditorLightSystem::CountLightsForEntityRecursive( DAVA::Entity *entity)

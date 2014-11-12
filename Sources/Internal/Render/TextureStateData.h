@@ -40,102 +40,23 @@ class TextureStateData
 	
 public:
 	
-	TextureStateData()
-	{
-		minmaxTextureIndex = 0;
-		memset(textures, 0, sizeof(textures));
-	}
+	inline TextureStateData();
 
-	TextureStateData(const TextureStateData& src)
-	{
-		minmaxTextureIndex = src.minmaxTextureIndex;
-		memcpy(textures, src.textures, sizeof(textures));
-		
-		RetainAll();
-	}
+	inline TextureStateData(const TextureStateData& src);
 	
-	~TextureStateData()
-	{
-		ReleaseAll();
-	}
+	inline ~TextureStateData();
 	
-	TextureStateData& operator=(const TextureStateData& src)
-	{
-		if(this != &src)
-		{
-			minmaxTextureIndex = src.minmaxTextureIndex;
-			
-			for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
-			{
-				Texture* tmp = textures[i];
-				
-				textures[i] = SafeRetain(src.textures[i]);
-				
-				SafeRelease(tmp);
-			}
-		}
-		
-		return *this;
-	}
+	inline TextureStateData& operator=(const TextureStateData& src);
 	
-	void SetTexture(uint32 index, Texture* tx)
-	{
-		DVASSERT(index >= 0 && index < MAX_TEXTURE_COUNT);
-		
-		if(textures[index] != tx)
-		{
-			SafeRelease(textures[index]);
-			textures[index] = SafeRetain(tx);
-			
-			uint32 minIndex = 0;
-			uint32 maxIndex = 0;
-			GetMinMaxIndices(minIndex, maxIndex);
-			
-			if(index < minIndex)
-			{
-				minmaxTextureIndex = ((minmaxTextureIndex & 0xFFFFFF00) | index);
-			}
-			else if(index > maxIndex)
-			{
-				minmaxTextureIndex = ((minmaxTextureIndex & 0xFFFF00FF) | (index << 8));
-			}
-		}
-	}
+	inline void SetTexture(uint32 index, Texture* tx);
 	
-	Texture* GetTexture(uint32 index)
-	{
-		DVASSERT(index >= 0 && index < MAX_TEXTURE_COUNT);
-		return textures[index];
-	}
+	inline Texture* GetTexture(uint32 index);
 	
-	inline void GetMinMaxIndices(uint32& minIndex, uint32& maxIndex) const
-	{
-		minIndex = minmaxTextureIndex & 0x000000FF;
-		maxIndex = ((minmaxTextureIndex & 0x0000FF00) >> 8);
-	}
+	inline void GetMinMaxIndices(uint32& minIndex, uint32& maxIndex) const;
 	
-	void Clear()
-	{
-		ReleaseAll();
-	}
+	inline void Clear();
 	
-	bool Equals(const TextureStateData& data) const
-	{
-		bool dataEquals = (minmaxTextureIndex == data.minmaxTextureIndex);
-		if(dataEquals)
-		{
-			uint32 minIndex = 0;
-			uint32 maxIndex = 0;
-			GetMinMaxIndices(minIndex, maxIndex);
-
-			for(uint32 i = minIndex; (i <= maxIndex) && dataEquals; ++i)
-			{
-				dataEquals = dataEquals && (textures[i] == data.textures[i]);
-			}
-		}
-		
-		return dataEquals;
-	}
+	inline bool operator==(const TextureStateData& data) const;
 	
 private:
 
@@ -144,22 +65,124 @@ private:
 
 private:
 	
-	void ReleaseAll()
-	{
-		for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
-		{
-			SafeRelease(textures[i]);
-		}
-	}
+	inline void ReleaseAll();
 	
-	void RetainAll()
-	{
-		for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
-		{
-			SafeRetain(textures[i]);
-		}
-	}
+	inline void RetainAll();
 };
+
+inline TextureStateData::TextureStateData()
+{
+    minmaxTextureIndex = 0;
+    memset(textures, 0, sizeof(textures));
+}
+
+inline TextureStateData::TextureStateData(const TextureStateData& src)
+{
+    minmaxTextureIndex = src.minmaxTextureIndex;
+    memcpy(textures, src.textures, sizeof(textures));
+    
+    RetainAll();
+}
+
+inline TextureStateData::~TextureStateData()
+{
+    ReleaseAll();
+}
+
+inline TextureStateData& TextureStateData::operator=(const TextureStateData& src)
+{
+    if(this != &src)
+    {
+        minmaxTextureIndex = src.minmaxTextureIndex;
+        
+        for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
+        {
+            Texture* tmp = textures[i];
+            
+            textures[i] = SafeRetain(src.textures[i]);
+            
+            SafeRelease(tmp);
+        }
+    }
+    
+    return *this;
+}
+
+inline void TextureStateData::SetTexture(uint32 index, Texture* tx)
+{
+    DVASSERT(index >= 0 && index < MAX_TEXTURE_COUNT);
+    
+    if(textures[index] != tx)
+    {
+        SafeRelease(textures[index]);
+        textures[index] = SafeRetain(tx);
+        
+        uint32 minIndex = 0;
+        uint32 maxIndex = 0;
+        GetMinMaxIndices(minIndex, maxIndex);
+        
+        if(index < minIndex)
+        {
+            minmaxTextureIndex = ((minmaxTextureIndex & 0xFFFFFF00) | index);
+        }
+        else if(index > maxIndex)
+        {
+            minmaxTextureIndex = ((minmaxTextureIndex & 0xFFFF00FF) | (index << 8));
+        }
+    }
+}
+
+inline Texture* TextureStateData::GetTexture(uint32 index)
+{
+    DVASSERT(index >= 0 && index < MAX_TEXTURE_COUNT);
+    return textures[index];
+}
+
+inline void TextureStateData::GetMinMaxIndices(uint32& minIndex, uint32& maxIndex) const
+{
+    minIndex = minmaxTextureIndex & 0x000000FF;
+    maxIndex = ((minmaxTextureIndex & 0x0000FF00) >> 8);
+}
+
+inline void TextureStateData::Clear()
+{
+    ReleaseAll();
+}
+
+inline bool TextureStateData::operator==(const TextureStateData& data) const
+{
+    bool dataEquals = (minmaxTextureIndex == data.minmaxTextureIndex);
+    if(dataEquals)
+    {
+        uint32 minIndex = 0;
+        uint32 maxIndex = 0;
+        GetMinMaxIndices(minIndex, maxIndex);
+        
+        for(uint32 i = minIndex; (i <= maxIndex) && dataEquals; ++i)
+        {
+            dataEquals = dataEquals && (textures[i] == data.textures[i]);
+        }
+    }
+    
+    return dataEquals;
+}
+
+inline void TextureStateData::ReleaseAll()
+{
+    for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
+    {
+        SafeRelease(textures[i]);
+    }
+}
+
+inline void TextureStateData::RetainAll()
+{
+    for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
+    {
+        SafeRetain(textures[i]);
+    }
+}
+
 };
 
 #endif

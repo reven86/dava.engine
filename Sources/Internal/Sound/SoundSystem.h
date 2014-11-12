@@ -37,6 +37,7 @@
 #include "Base/EventDispatcher.h"
 #include "Base/FastName.h"
 #include "Sound/SoundEvent.h"
+#include "Platform/Mutex.h"
 
 #ifdef DAVA_FMOD
 namespace FMOD
@@ -45,6 +46,7 @@ class EventGroup;
 class System;
 class EventSystem;
 class EventProject;
+class ChannelGroup;
 };
 #endif
 
@@ -63,6 +65,8 @@ class FMODSoundEvent;
 class Component;
 class SoundSystem : public Singleton<SoundSystem>
 {
+    static Mutex soundGroupsMutex;
+    
 public:
     SoundSystem();
     ~SoundSystem();
@@ -72,6 +76,7 @@ public:
     
     void SerializeEvent(const SoundEvent * sEvent, KeyedArchive *toArchive);
     SoundEvent * DeserializeEvent(KeyedArchive *archive);
+    SoundEvent * CloneEvent(const SoundEvent * sEvent);
 
     void Update(float32 timeElapsed);
     void Suspend();
@@ -117,6 +122,11 @@ public:
     int32 GetChannelsUsed() const;
     int32 GetChannelsMax() const;
 
+#ifdef __DAVAENGINE_IPHONE__
+    bool IsSystemMusicPlaying();
+    void DuckSystemMusic(bool duck);
+#endif
+    
 protected:
     void GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String & currNamePath, Vector<String> & names);
 
@@ -125,11 +135,16 @@ protected:
 
 	void ReleaseOnUpdate(SoundEvent * sound);
 
+    FastName FindGroupByEvent(const SoundEvent * soundEvent);
+
 	Vector<SoundEvent *> soundsToReleaseOnUpdate;
 
     FMOD::System * fmodSystem;
     FMOD::EventSystem * fmodEventSystem;
 
+    FMOD::ChannelGroup * masterChannelGroup;
+    FMOD::ChannelGroup * masterEventChannelGroup;
+    
     Vector<SoundGroup> soundGroups;
     Map<FilePath, FMOD::EventProject *> projectsMap;
 

@@ -302,7 +302,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 		heightmapProxy->ResetHeightmapChanged();
 	}
 	
-	if (customColorsProxy &&  customColorsProxy->IsSpriteChanged())
+	if (customColorsProxy && customColorsProxy->IsSpriteChanged())
 	{
 		if (landscapeProxy)
 		{
@@ -338,6 +338,8 @@ void LandscapeEditorDrawSystem::UpdateBaseLandscapeHeightmap()
 	baseLandscape->SetHeightmap(h);
 	
 	SafeRelease(h);
+    
+    GetScene()->foliageSystem->SyncFoliageWithLandscape();
 }
 
 float32 LandscapeEditorDrawSystem::GetTextureSize(Landscape::eTextureLevel level)
@@ -453,7 +455,7 @@ Vector2 LandscapeEditorDrawSystem::TranslatePoint(const Vector2& point, const Re
 
 	Vector2 relPos = point - fromRect.GetPosition();
 	Vector2 newRelPos(relPos.x * scale.x,
-					  relPos.y * scale.y);
+					  toRect.dy - 1.0f - relPos.y * scale.y);
 
 	Vector2 newPos = newRelPos + toRect.GetPosition();
 
@@ -462,7 +464,7 @@ Vector2 LandscapeEditorDrawSystem::TranslatePoint(const Vector2& point, const Re
 
 KeyedArchive* LandscapeEditorDrawSystem::GetLandscapeCustomProperties()
 {
-	return landscapeNode->GetCustomProperties();
+	return GetOrCreateCustomProperties(landscapeNode)->GetArchive();
 }
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableTilemaskEditing()
@@ -615,7 +617,7 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
 
 		if(image)
 		{
-			ImageLoader::Save(image, texturePathname);
+            ImageSystem::Instance()->Save(texturePathname, image);
 			SafeRelease(image);
 		}
 
@@ -633,10 +635,11 @@ void LandscapeEditorDrawSystem::ResetTileMaskTexture()
 	}
 
 	FilePath filePath = baseLandscape->GetTextureName(Landscape::TEXTURE_TILE_MASK);
+	baseLandscape->SetTexture(Landscape::TEXTURE_TILE_MASK, "");
 	baseLandscape->SetTexture(Landscape::TEXTURE_TILE_MASK, filePath);
 }
 
-LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape()
+LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape() const
 {
 	//landscape initialization should be handled by AddEntity/RemoveEntity methods
 	if (!landscapeNode || !baseLandscape || !landscapeProxy)
@@ -709,6 +712,9 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 		case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
 			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
 			break;
+        case LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT:
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT;
+            break;
 			
 		default:
 			break;

@@ -40,7 +40,7 @@
 #include "TextureBrowser/TextureConvertor.h"
 #include "TextureCompression/TextureConverter.h"
 #include "Deprecated/SceneValidator.h"
-#include "Render/LibDxtHelper.h"
+#include "Render/Image/LibDdsHelper.h"
 
 #include "FileSystem/FileSystem.h"
 
@@ -48,6 +48,7 @@
 #include "Main/QtUtils.h"
 #include "Scene/SceneHelper.h"
 #include "ImageTools/ImageTools.h"
+#include "Settings/SettingsManager.h"
 
 TextureConvertor::TextureConvertor()
 	: curJobOriginal(NULL)
@@ -166,7 +167,8 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
 
 				if(NULL != descriptor)
 				{
-					for(int gpu = DAVA::GPU_UNKNOWN + 1; gpu < DAVA::GPU_FAMILY_COUNT; ++gpu)
+					DVASSERT(descriptor->compression);
+					for(int gpu = 0; gpu < DAVA::GPU_DEVICE_COUNT; ++gpu)
 					{
 						if( ! GPUFamilyDescriptor::IsFormatSupported((eGPUFamily)gpu, (PixelFormat)descriptor->compression[gpu].format))
 						{
@@ -313,7 +315,7 @@ void TextureConvertor::jobRunNextConvert()
 
 			convertJobQueueSize = 0;
 
-			emit ConvertStatusImg("", DAVA::GPU_UNKNOWN);
+			emit ConvertStatusImg("", DAVA::GPU_PNG);
 			emit ConvertStatusQueue(0, 0);
 
 			if(NULL != waitDialog)
@@ -406,7 +408,7 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 
 			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
 			{
-				if((descriptor->faceDescription & (1 << i)) != 0)
+				if((descriptor->dataSettings.faceDescription & (1 << i)) != 0)
 				{
 					QImage img;
 					img = QImage(cubeFaceNames[i].GetAbsolutePathname().c_str());
@@ -424,7 +426,7 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
 
-		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_UNKNOWN);
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_PNG);
 		result.fileSize = fileSize;
 	}
 
@@ -451,7 +453,7 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 			
 			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
 			{
-				if((descriptor->faceDescription & (1 << i)) != 0)
+				if((descriptor->dataSettings.faceDescription & (1 << i)) != 0)
 				{
 					QImage img;
 					img = QImage(cubeFaceNames[i].GetAbsolutePathname().c_str());
@@ -469,8 +471,14 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
 
-		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_UNKNOWN);
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_PNG);
 		result.fileSize = fileSize;
+
+		if(result.images.size())
+		{
+			result.imageSize.setWidth(result.images[0].width());
+			result.imageSize.setHeight(result.images[0].height());
+		}
 	}
 
     DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
@@ -493,9 +501,11 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 		DAVA::eGPUFamily gpu = (DAVA::eGPUFamily) item->type;
 
 		if( NULL != descriptor &&
-			gpu > DAVA::GPU_UNKNOWN && gpu < DAVA::GPU_FAMILY_COUNT && 
+			gpu >= 0 && gpu < DAVA::GPU_FAMILY_COUNT && 
 			descriptor->compression[gpu].format > DAVA::FORMAT_INVALID && descriptor->compression[gpu].format < DAVA::FORMAT_COUNT)
 		{
+			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);
+
 			const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpu, (DAVA::PixelFormat) descriptor->compression[gpu].format);
 			if(outExtension == ".pvr")
 			{
@@ -519,8 +529,13 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 
 			result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
 
-			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);
 			result.fileSize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
+
+			if(convertedImages.size() && convertedImages[0])
+			{
+				result.imageSize.setWidth(convertedImages[0]->GetWidth());
+				result.imageSize.setHeight(convertedImages[0]->GetHeight());
+			}
 		}
 		else
 		{
@@ -604,11 +619,12 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 		if(convert)
 		{
 			TextureConverter::CleanupOldTextures(descriptor, gpu, (DAVA::PixelFormat)descriptor->compression[gpu].format);
-			outputPath = TextureConverter::ConvertTexture(*descriptor, gpu, true);
+            DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
+			outputPath = TextureConverter::ConvertTexture(*descriptor, gpu, true, (TextureConverter::eConvertQuality)quality.AsInt32());
         }
 		
         Vector<DAVA::Image *> davaImages;
-		DAVA::ImageLoader::CreateFromFileByContent(outputPath, davaImages);
+        DAVA::ImageSystem::Instance()->Load(outputPath, davaImages);
 		
 		if(davaImages.size() > 0)
 		{
@@ -669,13 +685,12 @@ QImage TextureConvertor::FromDavaImage(DAVA::Image *image)
 		{
 		case DAVA::FORMAT_DXT1:
 		case DAVA::FORMAT_DXT1A:
-		case DAVA::FORMAT_DXT1NM:
 		case DAVA::FORMAT_DXT3:
 		case DAVA::FORMAT_DXT5:
 		case DAVA::FORMAT_DXT5NM:
 		{
 			Vector<Image* > vec;
-			LibDxtHelper::DecompressImageToRGBA(*image, vec, true);
+			LibDdsHelper::DecompressImageToRGBA(*image, vec, true);
 			if(vec.size() == 1)
 			{
 				qtImage = TextureConvertor::FromDavaImage(vec.front());

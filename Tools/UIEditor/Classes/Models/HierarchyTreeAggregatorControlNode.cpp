@@ -92,3 +92,8 @@ FilePath HierarchyTreeAggregatorControlNode::GetAggregatorPath() const
 
 	return FilePath();
 }
+
+HierarchyTreeControlNode* HierarchyTreeAggregatorControlNode::CreateControlCopy(HierarchyTreeNode* parent) const
+{
+	return new HierarchyTreeAggregatorControlNode(parent, this);
+}

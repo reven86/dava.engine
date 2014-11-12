@@ -34,9 +34,10 @@
 
 using namespace DAVA;
 
-#include "TestTemplate.h"
+#include "UITestTemplate.h"
+#include "Platform/DeviceInfo.h"
 
-class DeviceInfoTest : public TestTemplate<DeviceInfoTest>
+class DeviceInfoTest : public UITestTemplate<DeviceInfoTest>
 {
 protected:
     ~DeviceInfoTest(){}
@@ -45,10 +46,18 @@ public:
 	
 	virtual void LoadResources();
 	virtual void UnloadResources();
-	
-    virtual void Draw(const UIGeometricData &geometricData);
+
+    virtual void DidAppear();
 
     void TestFunction(PerfFuncData * data);
+
+protected:
+    String GetNetworkTypeString();
+
+    String FormatStorageSize(int64 size);
+
+private:
+    UIStaticText* deviceInfoText;
 };
 
 #endif /* defined(__TEMPLATEPROJECTMACOS__DEVICEINFOTEST__) */

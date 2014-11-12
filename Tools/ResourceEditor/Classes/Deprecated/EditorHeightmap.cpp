@@ -29,6 +29,7 @@
 
 
 #include "EditorHeightmap.h"
+#include "Render/PixelFormatDescriptor.h"
 
 using namespace DAVA;
 
@@ -667,7 +668,7 @@ void EditorHeightmap::DrawCopypasteRGBA(Image *src, Image *dst, Image *mask, con
     DVASSERT(src->height == dst->height);
     DVASSERT(src->format == dst->format);
     
-    int32 formatSize = Texture::GetPixelFormatSizeInBytes(dst->format);
+    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(dst->format);
     
     //copy-paste
     uint8 *srcData = src->data;

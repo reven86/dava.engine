@@ -49,5 +49,4 @@ protected:
 	DAVA::Matrix4 transform;
 };
 
-
 #endif // __BAKE_COMMAND_BATCH_H__

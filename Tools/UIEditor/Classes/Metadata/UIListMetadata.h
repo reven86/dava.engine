@@ -52,9 +52,8 @@ protected:
 
     // Initialize the appropriate control.
     virtual void InitializeControl(const String& controlName, const Vector2& position);
-    virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
 
-    virtual QString GetUIControlClassName() { return "UIList"; };
+    virtual QString GetUIControlClassName() const { return "UIList"; };
 	
     // Helper to access active UI List.
     UIList* GetActiveUIList() const;
@@ -66,7 +65,6 @@ protected:
 	int GetOrientation();
 	void SetOrientation(int value);
 
-    virtual void SetVisible(const bool value);
 	virtual void SetLeftAlign(int value);
 	virtual void SetHCenterAlign(int value);
 	virtual void SetRightAlign(int value);
@@ -80,7 +78,7 @@ protected:
 	virtual void SetVCenterAlignEnabled(const bool value);
 	virtual void SetBottomAlignEnabled(const bool value);
 	
-	virtual void SetActiveControlRect(const Rect& rect, bool restoreAlign);
+	virtual void SetActiveControlRect(const Rect& rect, bool restoreAlign, bool alignToIntegerPos = false);
 
 private:
 	void UpdateListCellSize();

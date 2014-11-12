@@ -28,13 +28,15 @@
 
 
 
-#ifndef __Framework__UIScrollViewContainer__
-#define __Framework__UIScrollViewContainer__
+#ifndef __DAVAENGINE_UI_SCROLLVIEWCONTAINER__
+#define __DAVAENGINE_UI_SCROLLVIEWCONTAINER__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "UI/UIControl.h"
 
 namespace DAVA 
 {
+class ScrollHelper;
 
 class UIScrollViewContainer : public UIControl
 {
@@ -51,8 +53,7 @@ public:
 	virtual void Input(UIEvent *currentTouch);
     virtual void InputCancelled(UIEvent *currentInput);
 	virtual bool SystemInput(UIEvent *currentInput);
-	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
-	virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	virtual void SetRect(const Rect &rect);
     virtual void WillDisappear();
 
 
@@ -92,4 +93,4 @@ protected:
 };
 };
 
-#endif /* defined(__Framework__UIScrollViewContainer__) */
+#endif /* defined(__DAVAENGINE_UI_SCROLLVIEWCONTAINER__) */

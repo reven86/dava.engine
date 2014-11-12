@@ -57,9 +57,11 @@ public:
 	static const FastName SILHOUETTE;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_ALPHABLEND;
 	static const FastName SKYBOX;
+    static const FastName SKYOBJECT;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
 	static const FastName PIXELLIT_ALPHATEST;
 	static const FastName SPEEDTREE_LEAF;
+    static const FastName SPHERICLIT_SPEEDTREE_LEAF;
 	static const FastName VERTEXCOLOR_OPAQUE;
 	static const FastName PIXELLIT_OPAQUE;
 	static const FastName TEXTURE_LIGHTMAP_ALPHABLEND;
@@ -73,6 +75,9 @@ public:
 	
 	static const FastName PARTICLES;
 	static const FastName PARTICLES_FRAMEBLEND;
+
+    static const FastName DEBUG_DRAW_OPAQUE;
+    static const FastName DEBUG_DRAW_ALPHABLEND;
 };
 };
 

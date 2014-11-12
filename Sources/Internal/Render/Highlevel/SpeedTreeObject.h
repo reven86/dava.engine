@@ -37,26 +37,51 @@
 namespace DAVA 
 {
 
-class SpeedTreeObject: public Mesh
+class SpeedTreeUpdateSystem;
+class SpeedTreeObject: public RenderObject
 {
 public:
 
-    SpeedTreeObject() {};
-    virtual ~SpeedTreeObject() {};
+    SpeedTreeObject();
+    virtual ~SpeedTreeObject();
 
     virtual void RecalcBoundingBox();
     virtual RenderObject * Clone(RenderObject *newObject);
+    virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
+    virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
 
-private:
-    AABBox3 CalcBBoxForSpeedTreeLeafGeometry(PolygonGroup * rb);
+    static bool IsTreeLeafBatch(RenderBatch * batch);
+
+    virtual void BindDynamicParameters(Camera * camera);
+
+    void SetSphericalHarmonics(const Vector<Vector3> & coeffs);
+    const Vector<Vector3> & GetSphericalHarmonics() const;
+
+    //Interpolate between globally smoothed (0.0) and locally smoothed (1.0) leafs lighting
+    void SetLightSmoothing(const float32 & smooth);
+    const float32 & GetLightSmoothing() const;
+
+protected:
+    static const FastName FLAG_WIND_ANIMATION;
+
+    AABBox3 CalcBBoxForSpeedTreeGeometry(RenderBatch * rb);
+
+    void SetTreeAnimationParams(const Vector2 & trunkOscillationParams, const Vector2 & leafOscillationParams);
+    void UpdateAnimationFlag(int32 maxAnimatedLod);
+
+    Vector2 trunkOscillation;
+    Vector2 leafOscillation;
+
+    Vector<Vector3> sphericalHarmonics;
+    float32 lightSmoothing;
 
 public:
+    INTROSPECTION_EXTEND(SpeedTreeObject, RenderObject,
+        PROPERTY("lightSmoothing", "Light Smoothing", GetLightSmoothing, SetLightSmoothing, I_SAVE | I_EDIT | I_VIEW)
+        );
 
-	INTROSPECTION_EXTEND(SpeedTreeObject, Mesh, 
-		NULL
-	);
+friend class SpeedTreeUpdateSystem;
 };
-
 
 };
 

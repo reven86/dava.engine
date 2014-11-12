@@ -49,7 +49,7 @@ void OwnersSignatureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(IsCommandIdValid(command->GetId()))
 	{
-		KeyedArchive* properties = command->GetEntity()->GetCustomProperties();
+		KeyedArchive* properties = GetCustomPropertiesArchieve(command->GetEntity());
 		if(NULL != properties)
 		{
 			UpdateEntityOwner(properties);
@@ -83,7 +83,6 @@ DAVA::String OwnersSignatureSystem::GetCurrentTime()
 
 void OwnersSignatureSystem::UpdateEntityOwner(DAVA::KeyedArchive *customProperties)
 {
-	customProperties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, 
-		SettingsManager::Instance()->GetValue("DesignerName",SettingsManager::GENERAL).AsString());
+	customProperties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, SettingsManager::GetValue(Settings::General_DesinerName).AsString());
 	customProperties->SetString(ResourceEditor::SCENE_NODE_MODIFICATION_DATA_PROPERTY_NAME, GetCurrentTime());
 }

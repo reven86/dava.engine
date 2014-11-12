@@ -191,8 +191,7 @@ void AlignTest::VerifyTestImage(Image *testImage)
 	// Loade reference image for current test
 	Image *referenceImage = NULL;
 	Vector<Image *> imageSet;
-	ImageLoader::CreateFromFileByContent(Format(REFERENCE_IMAGE_PATH, currenTestIndex), imageSet);
-	
+    ImageSystem::Instance()->Load(Format(REFERENCE_IMAGE_PATH, currenTestIndex), imageSet);
 	if(imageSet.size() != 0)
     {
 		referenceImage = imageSet[0];
@@ -201,6 +200,23 @@ void AlignTest::VerifyTestImage(Image *testImage)
 	float32 differencePersentage = 100.f;
 	if (testImage && referenceImage)
 	{
+
+        // Temporary fix
+        // Different devices have different screen resolution, but reference images are in only one resolution.
+        // This causes asserts and sometimes crashes in the image compare routine.
+        uint32 pixelsCount1 = testImage->GetWidth() * testImage->GetHeight();
+        uint32 pixelsCount2 = referenceImage->GetWidth() * referenceImage->GetHeight();
+
+        if (pixelsCount1 > pixelsCount2)
+        {
+            testImage->ResizeImage(referenceImage->GetWidth(), referenceImage->GetHeight());
+        }
+        else if (pixelsCount1 < pixelsCount2)
+        {
+            referenceImage->ResizeImage(testImage->GetWidth(), testImage->GetHeight());
+        }
+        // end of temporary fix
+
 		TextureUtils::CompareResult result = TextureUtils::CompareImages(testImage,
 																	referenceImage, FORMAT_RGBA8888);
 				

@@ -42,11 +42,11 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(ParticleEffectComponent)
 
 ParticleEffectComponent::ParticleEffectComponent()
 {
 	repeatsCount = -1;
+    currRepeatsCont = 0;
 	stopWhenEmpty = false;
 	clearOnRestart = true;
 	effectDuration = 100.0f;
@@ -59,6 +59,7 @@ ParticleEffectComponent::ParticleEffectComponent()
     effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY); //world transform doesn't effect particle render object drawing - instead particles are generated in corresponding world position
 	time = 0;
 	desiredLodLevel = 1;
+    activeLodLevel = 1;
 }
 
 ParticleEffectComponent::~ParticleEffectComponent()
@@ -87,6 +88,7 @@ Component * ParticleEffectComponent::Clone(Entity * toEntity)
 		newComponent->emitters[i] = emitters[i]->Clone();
     newComponent->spawnPositions = spawnPositions;
     newComponent->RebuildEffectModifiables();
+    newComponent->effectRenderObject->SetFlags(effectRenderObject->GetFlags());
 	return newComponent;
 }
 
@@ -156,19 +158,24 @@ void ParticleEffectComponent::StopWhenEmpty(bool value /*= true*/)
 	stopWhenEmpty = value;
 }
 
+void ParticleEffectComponent::ClearGroup(ParticleGroup& group)
+{
+    Particle * current = group.head;
+    while (current)
+    {
+        Particle *next = current->next;
+        delete current;
+        current = next;
+    }
+    group.layer->Release();
+    group.emitter->Release();		
+}
+
 void ParticleEffectComponent::ClearCurrentGroups()
 {
 	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
 	{
-		Particle * current = (*it).head;
-		while (current)
-		{
-			Particle *next = current->next;
-			delete current;
-			current = next;
-		}
-		it->layer->Release();
-		it->emitter->Release();		
+		ClearGroup(*it);
 	}
 	effectData.groups.clear();
 }
@@ -209,13 +216,7 @@ void ParticleEffectComponent::SetPlaybackSpeed(float32 value)
 
 void ParticleEffectComponent::SetDesiredLodLevel(int32 level)
 {
-	desiredLodLevel = level;
-	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e=effectData.groups.end(); it!=e;++it)
-	{
-		ParticleGroup& group = *it;
-		if (!group.emitter->shortEffect)
-			group.visibleLod = group.layer->IsLodActive(level);
-	}
+	desiredLodLevel = level;	
 }
 
 
@@ -312,6 +313,8 @@ void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationCont
 		emitterArch->Release();
 	} 
 	archive->SetArchive("pe.emitters", emittersArch);
+    
+    archive->SetUInt32("ro.flags", effectRenderObject->GetFlags() & PARTICLE_FLAGS_SERIALIZATION_CRITERIA);
 	emittersArch->Release();
 }
 	
@@ -342,6 +345,8 @@ void ParticleEffectComponent::Deserialize(KeyedArchive *archive, SerializationCo
                 emitters[i]=new ParticleEmitter();
             spawnPositions[i] = emitterArch->GetVector3("emitter.position");
 		} 	
+        uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::VISIBLE);
+        effectRenderObject->SetFlags(savedFlags | (effectRenderObject->GetFlags() & ~PARTICLE_FLAGS_SERIALIZATION_CRITERIA));        
         RebuildEffectModifiables();
 	}
 }
@@ -495,6 +500,23 @@ float32 ParticleEffectComponent::GetLayerActiveParticlesSquare(ParticleLayer *la
 float32 ParticleEffectComponent::GetCurrTime()
 {
     return time;
+}
+
+bool ParticleEffectComponent::GetReflectionVisible() const
+{
+    return effectRenderObject->GetReflectionVisible();
+}
+void ParticleEffectComponent::SetReflectionVisible(bool visible)
+{
+    effectRenderObject->SetReflectionVisible(visible);
+}
+bool ParticleEffectComponent::GetRefractionVisible() const
+{
+    return effectRenderObject->GetRefractionVisible();
+}
+void ParticleEffectComponent::SetRefractionVisible(bool visible)
+{
+    effectRenderObject->SetRefractionVisible(visible);
 }
 
 }

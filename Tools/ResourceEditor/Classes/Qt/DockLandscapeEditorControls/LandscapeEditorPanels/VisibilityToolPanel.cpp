@@ -107,14 +107,11 @@ void VisibilityToolPanel::ConnectToSignals()
 
 void VisibilityToolPanel::StoreState()
 {
-	KeyedArchive* customProperties = GetActiveScene()->GetCustomProperties();
-	if (customProperties)
-	{
-		customProperties->SetInt32(ResourceEditor::VISIBILITY_TOOL_AREA_SIZE_MIN,
-								   sliderWidgetAreaSize->GetRangeMin());
-		customProperties->SetInt32(ResourceEditor::VISIBILITY_TOOL_AREA_SIZE_MAX,
-								   sliderWidgetAreaSize->GetRangeMax());
-	}
+	KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
+    customProperties->SetInt32(ResourceEditor::VISIBILITY_TOOL_AREA_SIZE_MIN,
+                               sliderWidgetAreaSize->GetRangeMin());
+    customProperties->SetInt32(ResourceEditor::VISIBILITY_TOOL_AREA_SIZE_MAX,
+                               sliderWidgetAreaSize->GetRangeMax());
 }
 
 void VisibilityToolPanel::RestoreState()
@@ -128,7 +125,7 @@ void VisibilityToolPanel::RestoreState()
 	int32 areaSizeMin = DEF_AREA_MIN_SIZE;
 	int32 areaSizeMax = DEF_AREA_MAX_SIZE;
 
-	KeyedArchive* customProperties = sceneEditor->GetCustomProperties();
+	KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
 	if (customProperties)
 	{
 		areaSizeMin = customProperties->GetInt32(ResourceEditor::VISIBILITY_TOOL_AREA_SIZE_MIN, DEF_AREA_MIN_SIZE);

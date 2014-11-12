@@ -47,7 +47,7 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
     eventName = _eventName;
 
     FMOD::Event * fmodEventInfo = 0;
-    FMOD_VERIFY(SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
+    SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
     if(fmodEventInfo)
     {
         FMOD_MODE mode = 0;
@@ -58,11 +58,6 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
 
         isDirectional = IsParameterExists(FMOD_SYSTEM_EVENTANGLE_PARAMETER);
     }
-    else
-    {
-        Logger::Error(eventName.c_str());
-    }
-
 }
 
 FMODSoundEvent::~FMODSoundEvent()
@@ -112,7 +107,9 @@ bool FMODSoundEvent::Trigger()
     {
         Logger::Error("[FMODSoundEvent::Trigger()] Failed to retrieve event by %d on eventID: %s", result, eventName.c_str());
     }
-    
+
+    PerformEvent(EVENT_TRIGGERED);
+
     return fmodEvent != 0;
 }
 
@@ -167,7 +164,7 @@ void FMODSoundEvent::UpdateInstancesPosition()
     }
 }
     
-void FMODSoundEvent::Stop()
+void FMODSoundEvent::Stop(bool force /* = false */)
 {
     SoundSystem * soundSystem = SoundSystem::Instance();
 
@@ -177,7 +174,7 @@ void FMODSoundEvent::Stop()
 	{
         FMOD::Event * fEvent = instancesCopy[i];
 		FMOD_VERIFY(fEvent->setCallback(0, 0));
-        FMOD_VERIFY(fEvent->stop());
+        FMOD_VERIFY(fEvent->stop(force));
 
 		PerformEvent(SoundEvent::EVENT_END);
 		soundSystem->ReleaseOnUpdate(this);
@@ -248,10 +245,7 @@ void FMODSoundEvent::InitParamsMap()
     for(int32 i = 0; i < (int32)paramsInfo.size(); ++i)
     {
         const SoundEvent::SoundEventParameterInfo & info = paramsInfo[i];
-        if(info.name[0] != '(') // filter internal FMOD params
-        {
-            paramsValues[FastName(info.name)] = info.minValue;
-        }
+        paramsValues[FastName(info.name)] = info.minValue;
     }
 }
 
@@ -270,9 +264,17 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo> & pa
 {
     paramsInfo.clear();
 
-    FMOD::EventSystem * fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
     FMOD::Event * event = 0;
-    fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event);
+    if(fmodEventInstances.size())
+    {
+        event = fmodEventInstances[0];
+    }
+    else
+    {
+        FMOD::EventSystem * fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
+        fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event);
+    }
+
     if(!event)
         return;
 
@@ -300,6 +302,19 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo> & pa
 String FMODSoundEvent::GetEventName() const
 {
      return String(eventName.c_str());
+}
+
+float32 FMODSoundEvent::GetMaxDistance() const
+{
+    float32 distance = 0;
+    FMOD::Event * fmodEventInfo = 0;
+    SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+    if(fmodEventInfo)
+    {
+        fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_3D_MAXDISTANCE, &distance);
+    }
+
+    return distance;
 }
 
 FMOD_RESULT F_CALLBACK FMODSoundEvent::FMODEventCallback(FMOD_EVENT *event, FMOD_EVENT_CALLBACKTYPE type, void *param1, void *param2, void *userdata)

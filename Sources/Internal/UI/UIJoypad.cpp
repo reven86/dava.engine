@@ -29,7 +29,9 @@
 
 
 #include "UI/UIJoypad.h"
+#include "UI/UIEvent.h"
 #include "FileSystem/Logger.h"
+#include "FileSystem/YamlNode.h"
 
 
 namespace DAVA 
@@ -190,6 +192,21 @@ void UIJoypad::RecalcAnalogPosition()
     //Logger::Info("Analog joy pos x = %f, y = %f", analogVector.x, analogVector.y);
 }
 
+Sprite* UIJoypad::GetStickSprite() const
+{
+    return stick ? stick->GetSprite() : NULL;
+}
+
+int32 UIJoypad::GetStickSpriteFrame() const
+{
+    if (stick && stick->GetSprite())
+    {
+        return stick->GetFrame();
+    }
+    
+    return 0;
+}
+
 void UIJoypad::SetStickSprite(Sprite *stickSprite, int32 frame)
 {
     CreateStickControl();
@@ -200,6 +217,14 @@ void UIJoypad::SetStickSprite(const FilePath &stickSpriteName, int32 frame)
 {
     CreateStickControl();
     stick->SetSprite(stickSpriteName, frame);
+}
+
+void UIJoypad::SetStickSpriteFrame(int32 frame)
+{
+    if (stick && stick->GetSprite())
+    {
+        stick->SetSpriteFrame(frame);
+    }
 }
 
 void UIJoypad::Input(UIEvent *currentInput)
@@ -265,6 +290,71 @@ void UIJoypad::InputCancelled(UIEvent *currentInput)
 		needRecalcAnalog = true;
 		needRecalcDigital = true;
 	}
+}
+
+void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader *loader)
+{
+    UIControl::LoadFromYamlNode(node, loader);
+
+    const YamlNode * stickSpriteNode = node->Get("stickSprite");
+    const YamlNode * stickFrameNode = node->Get("stickFrame");
+    const YamlNode * deadAreaSizeNode = node->Get("deadAreaSize");
+    const YamlNode * digitalSenseNode = node->Get("digitalSense");
+
+    if (stickSpriteNode)
+    {
+        int32 spriteFrame = 0;
+        if (stickFrameNode)
+        {
+            spriteFrame = stickFrameNode->AsInt32();
+        }
+        
+        SetStickSprite(stickSpriteNode->AsString(), spriteFrame);
+    }
+
+    if (deadAreaSizeNode)
+    {
+        SetDeadAreaSize(deadAreaSizeNode->AsFloat());
+    }
+
+    if (digitalSenseNode)
+    {
+        SetDigitalSense(digitalSenseNode->AsFloat());
+    }
+}
+
+YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
+{
+    ScopedPtr<UIJoypad> baseControl(new UIJoypad());
+
+    YamlNode *node = UIControl::SaveToYamlNode(loader);
+    
+    // Sprite
+    if (stick && stick->GetSprite())
+    {
+        node->Set("stickSprite", Sprite::GetPathString(stick->GetSprite()));
+        node->Set("stickFrame", stick->GetFrame());
+    }
+
+    if (baseControl->GetDeadAreaSize() != GetDeadAreaSize())
+    {
+        node->Set("deadAreaSize", GetDeadAreaSize());
+    }
+
+    if (baseControl->GetDigitalSense() != GetDigitalSense())
+    {
+        node->Set("digitalSense", GetDigitalSense());
+    }
+
+    return node;
+}
+    
+List<UIControl* >& UIJoypad::GetRealChildren()
+{
+    realChilds = UIControl::GetRealChildren();
+    realChilds.remove(stick);
+    
+    return realChilds;
 }
 
 };

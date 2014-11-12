@@ -43,10 +43,13 @@ public:
 	virtual ~CommandLineParser();
 	
 	void SetVerbose(bool isVerbose);
-	bool GetVerbose();
+	bool GetVerbose() const;
 
 	void SetExtendedOutput(bool isExO);
-	bool IsExtendedOutput();
+	bool IsExtendedOutput() const;
+
+    void SetUseTeamcityOutput(bool use);
+    bool UseTeamcityOutput() const;
 	
 	void SetArguments(int argc, char * argv[]);
 	void SetArguments(const Vector<String> & arguments);
@@ -83,6 +86,7 @@ private:
 	Vector<String>	flags;
 	bool isVerbose;
 	bool isExtendedOutput;
+    bool useTeamcityOutput;
 };
 
 };

@@ -30,6 +30,8 @@
 
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
+#include "Base/Message.h"
+#include "Render/RenderStateData.h"
 
 namespace DAVA
 {
@@ -38,6 +40,19 @@ class RenderObject;
 class StaticOcclusion;
 class StaticOcclusionData;
 class StaticOcclusionDataComponent;
+class NMaterial;
+class PolygonGroup;
+
+class MessageQueue
+{
+public:
+    MessageQueue();
+    
+    void DispatchMessages();
+    void AddMessage(const Message & message);
+private:
+    std::queue<Message> messageQueue;
+};
     
 // System that allow to build occlusion information. Required only in editor.
 class StaticOcclusionBuildSystem : public SceneSystem
@@ -49,16 +64,29 @@ public:
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
     virtual void Process(float32 timeElapsed);
+    virtual void ImmediateEvent(Entity * entity, uint32 event);
     
     inline void SetCamera(Camera * camera);
 
     void Build();
+    void RebuildCurrentCell();
     void Cancel();
 
     bool IsInBuild() const;
     uint32 GetBuildStatus() const;
 
 private:
+    MessageQueue messageQueue;
+    
+    
+    void StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
+    void OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData);
+    void FinishBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
+    void SceneForceLod(int32 layerIndex);
+
+    void UpdateMaterialsForOcclusionRecursively(Entity *entity);
+    void RestoreOcclusionMaterials();
+    
     Camera * camera;
     Vector<Entity*> entities;
     StaticOcclusion * staticOcclusion;
@@ -66,7 +94,9 @@ private:
     uint32 activeIndex;
     uint32 buildStepsCount;
     uint32 buildStepRemains;
-    bool needSetupNextOcclusion;
+    uint32 renewIndex;
+
+    Map<NMaterial* , RenderStateData> originalRenderStateData;
 };
     
 // System that allow to use occlusion information during rendering
@@ -77,15 +107,31 @@ public:
     virtual ~StaticOcclusionSystem();
     
     inline void SetCamera(Camera * camera);
+    
+    virtual void RegisterEntity(Entity *entity);
+    virtual void UnregisterEntity(Entity *entity);
+    virtual void RegisterComponent(Entity *entity, Component * component);
+    virtual void UnregisterComponent(Entity *entity, Component * component);
+    
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
     virtual void Process(float32 timeElapsed);
-    virtual void SceneDidLoaded();
+    
+    void AddRenderObjectToOcclusion(RenderObject * renderObject);
+    void RemoveRenderObjectFromOcclusion(RenderObject * renderObject);
+
+    void ClearOcclusionObjects();
+    void CollectOcclusionObjectsRecursively(Entity *entity);
+
+    void InvalidateOcclusion();
+    void InvalidateOcclusionIndicesRecursively(Entity *entity);
+
 
 private:
     Camera * camera;
     StaticOcclusionData * activePVSSet;
     uint32 activeBlockIndex;
+    
     
     // Final system part
     void ProcessStaticOcclusion(Camera * camera);
@@ -94,6 +140,24 @@ private:
     Vector<StaticOcclusionDataComponent*> staticOcclusionComponents;
     Vector<RenderObject*> indexedRenderObjects;
 
+};
+
+
+class StaticOcclusionDebugDrawSystem : public SceneSystem
+{
+public:
+    StaticOcclusionDebugDrawSystem(Scene *scene);    
+
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    virtual void ImmediateEvent(Entity * entity, uint32 event);    
+
+
+    static PolygonGroup* CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);
+    static PolygonGroup* CreateStaticOcclusionDebugDrawCover(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, PolygonGroup *gridPolygonGroup);
+    ~StaticOcclusionDebugDrawSystem();    
+private:
+    NMaterial *debugOpaqueMaterial, *debugAlphablendMaterial;
 };
     
 inline void StaticOcclusionBuildSystem::SetCamera(Camera * _camera)

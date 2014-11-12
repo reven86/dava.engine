@@ -49,17 +49,15 @@
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Utils/Random.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
-#define CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION 8
 #define USE_VECTOR(x) (((1 << x) & vectorComponentsMask) != 0)
-
-const int COMPONENT_COUNT_V6 = 18;
-const int COMPONENTS_IN_MAP_COUNT = 4;
-const int COMPONENTS_IN_VECTOR_COUNT = 3;
-const int COMPONENTS_BY_NAME_SAVE_SCENE_VERSION = 10;
 
 namespace DAVA
 {
+
+const int COMPONENT_COUNT_V6 = 18;
+const int COMPONENTS_IN_VECTOR_COUNT = 3;
     
 uint32 vectorComponentsMask = (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT) | (1 << Component::LOD_COMPONENT);
 
@@ -159,7 +157,7 @@ void Entity::AddComponent(Component * component)
 	componentFlags |= 1 << component->GetType();
 
 	if (scene)
-		scene->AddComponent(this, component);
+		scene->RegisterComponent(this, component);
 }
     
 void Entity::RemoveAllComponents()
@@ -169,7 +167,7 @@ void Entity::RemoveAllComponents()
 		if(components[i])
 		{
 			CleanupComponent(components[i], 0);
-			components[i] = NULL;
+            SafeDelete(components[i]);
 		}
 	}
 
@@ -188,7 +186,8 @@ void Entity::RemoveAllComponents()
 			{
 				componentCount--;
 				CleanupComponent(*compIt, componentCount);
-			}
+                SafeDelete(*compIt);
+            }
 		}
 
 		SafeDelete(componentsVector);
@@ -199,60 +198,83 @@ void Entity::RemoveAllComponents()
 	
 void Entity::RemoveComponent(Component * component)
 {
-	if (scene)
-		scene->RemoveComponent(this, component);
-
 	int componentCount = 0;
 	uint32 componentType = component->GetType();
-		
-	if(USE_VECTOR(componentType))
+    
+    DetachComponent(component);
+
+	if (!USE_VECTOR(componentType))
 	{
-		components[componentType] = 0;
-	}
-	else
-	{
+        Vector<Component*>* componentsVector = NULL;
+
 #if defined(COMPONENT_STORAGE_STDMAP)
-			
-		ComponentsMap::iterator it = componentsMap.find(componentType);
-		if(componentsMap.end() != it)
-		{
-			for(Vector<Component*>::iterator i = it->second->begin();
-				i != it->second->end(); ++i)
-			{
-				if((*i) == component)
-				{
-					it->second->erase(i);
-					break;
-				}
-			}
-				
-			componentCount = it->second->size();
-		}
-			
+        ComponentsMap::iterator it = componentsMap.find( componentType );
+        componentsVector = (it != componentsMap.end()) ? it->second : NULL;
 #else
-			
-		Vector<Component*>* componentsVector = componentsMap[componentType];
-		if(NULL != componentsVector)
-		{
-			for(Vector<Component*>::iterator i = componentsVector->begin();
-				i != componentsVector->end(); ++i)
-			{
-				if((*i) == component)
-				{
-					componentsVector->erase(i);
-					break;
-				}
-			}
-				
-			componentCount = componentsVector->size();
-				
-		}
-			
+        componentsVector = componentsMap[componentType];
 #endif
 
-	}
-		
+        if ( componentsVector != NULL )
+        {
+            componentCount = componentsVector->size();
+        }
+    }
+
 	CleanupComponent(component, componentCount);
+    SafeDelete(component);
+}
+
+void Entity::DetachComponent( Component * component )
+{
+    if ( scene )
+        scene->UnregisterComponent( this, component );
+
+    uint32 componentType = component->GetType();
+    uint32 componentCount = 0;
+
+    if (USE_VECTOR(componentType))
+    {
+        components[componentType] = 0;
+    }
+    else
+    {
+#if defined(COMPONENT_STORAGE_STDMAP)
+
+        ComponentsMap::iterator it = componentsMap.find( componentType );
+        if (componentsMap.end() != it)
+        {
+            for (Vector<Component*>::iterator i = it->second->begin();
+                i != it->second->end(); ++i )
+            {
+                if ((*i) == component)
+                {
+                    it->second->erase(i);
+                    break;
+                }
+            }
+        }
+
+#else
+
+        Vector<Component*>* componentsVector = componentsMap[componentType];
+        if (NULL != componentsVector)
+        {
+            for (Vector<Component*>::iterator i = componentsVector->begin();
+                i != componentsVector->end(); ++i)
+            {
+                if ((*i) == component)
+                {
+                    componentsVector->erase(i);
+                    break;
+                }
+            }
+            componentCount = componentsVector->size();
+        }
+
+#endif
+    }
+
+    CleanupComponent(component, componentCount);
 }
     
 void Entity::RemoveComponent(uint32 componentType, uint32 index)
@@ -261,7 +283,7 @@ void Entity::RemoveComponent(uint32 componentType, uint32 index)
 	{
 		Component *c = GetComponent(componentType, index);
 		if(c)
-			scene->RemoveComponent(this, c);
+			scene->UnregisterComponent(this, c);
 	}
 
 	Component* component = NULL;
@@ -303,6 +325,7 @@ void Entity::RemoveComponent(uint32 componentType, uint32 index)
 	if(NULL != component)
 	{
 		CleanupComponent(component, componentCount);
+        SafeDelete(component);
 	}
 }
     
@@ -314,8 +337,6 @@ inline void Entity::CleanupComponent(Component* component, uint32 componentCount
 	{
 		componentFlags &= ~(1 << component->GetType());
 	}
-		
-	SafeDelete(component);
 }
     
 Component * Entity::GetComponent(uint32 componentType, uint32 index) const
@@ -448,12 +469,12 @@ void Entity::SetScene(Scene * _scene)
 	// РЎheck
 	if (scene)
 	{
-		scene->UnregisterNode(this);
+		scene->UnregisterEntity(this);
 	}
 	scene = _scene;
 	if (scene)
 	{
-		scene->RegisterNode(this);
+		scene->RegisterEntity(this);
 		GlobalEventSystem::Instance()->PerformAllEventsFromCache(this);
 	}
 		
@@ -702,7 +723,7 @@ void Entity::BakeTransforms()
 	
 void Entity::PropagateBoolProperty(String name, bool value)
 {
-	KeyedArchive *currentProperties = GetCustomProperties();
+	KeyedArchive *currentProperties = GetOrCreateCustomProperties(this)->GetArchive();
 	currentProperties->SetBool(name, value);
 		
 	uint32 size = (uint32)children.size();
@@ -1078,7 +1099,8 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 	for(uint32 i = 0; i < components.size(); ++i)
 	{
 		if(NULL != components[i])
-		{
+		{                       
+            DVASSERT(i < Component::DEBUG_COMPONENTS); //Bad idea to allocate debug components in vector
 			//don't save empty custom properties
 			if(Component::CUSTOM_PROPERTIES_COMPONENT == i)
 			{
@@ -1119,6 +1141,9 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 		it != componentsMap.end();
 		++it)
 	{
+        //dont save debug components
+        if (it->first > Component::DEBUG_COMPONENTS) 
+            continue; 
 		Vector<Component*>* componentsVector = it->second;
 			
 		if(NULL != componentsVector)
@@ -1174,13 +1199,12 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
 	if(serializationContext->GetVersion() < CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION)
 	{
 		KeyedArchive* customProps = archive->GetArchiveFromByteArray("customprops");
-			
 		if(customProps != NULL)
 		{
-			CustomPropertiesComponent* customPropsComponent = GetCustomPropertiesComponent();
+			CustomPropertiesComponent* customPropsComponent = GetOrCreateCustomProperties(this);
 			customPropsComponent->LoadFromArchive(*customProps, serializationContext);
 				
-			SafeRelease(customProps);
+			customProps->Release();
 		}
 	}
 }
@@ -1225,19 +1249,7 @@ void Entity::LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * se
 		}
 	}		
 }
-	
-CustomPropertiesComponent* Entity::GetCustomPropertiesComponent()
-{
-	CustomPropertiesComponent* component = (CustomPropertiesComponent *) GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT);
-	if(NULL == component)
-	{
-		component = new CustomPropertiesComponent();
-		AddComponent(component);
-	}
 		
-	return component;
-}
-	
 void Entity::LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext)
 {
 	if(NULL != compsArch)
@@ -1264,31 +1276,37 @@ void Entity::LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * se
 		}
 	}
 }
-	
-KeyedArchive * Entity::GetCustomProperties()
-{
-	CustomPropertiesComponent* component = GetCustomPropertiesComponent();
-	return component->GetArchive();
-}
-    
+	    
 void Entity::SetSolid(bool isSolid)
 {
-	GetCustomProperties()->SetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, isSolid);
+    KeyedArchive *props = GetOrCreateCustomProperties(this)->GetArchive();
+	props->SetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, isSolid);
 }
     
 bool Entity::GetSolid()
 {
-	return GetCustomProperties()->GetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, false);
+    KeyedArchive *props = GetCustomPropertiesArchieve(this);
+    if(props)
+    {
+        return props->GetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, false);
+    }
+	return false;
 }
 	
 void Entity::SetLocked(bool isLocked)
 {
-	GetCustomProperties()->SetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, isLocked);
+    KeyedArchive *props = GetOrCreateCustomProperties(this)->GetArchive();
+	props->SetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, isLocked);
 }
 	
 bool Entity::GetLocked()
 {
-	return GetCustomProperties()->GetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, false);
+    KeyedArchive *props = GetCustomPropertiesArchieve(this);
+    if(props)
+    {
+        return props->GetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, false);
+    }
+	return false;
 }
 	
 void Entity::GetDataNodes(Set<DataNode*> & dataNodes)
@@ -1444,7 +1462,7 @@ Matrix4 & Entity::ModifyLocalTransform()
 	
 void Entity::SetLocalTransform(const Matrix4 & newMatrix)
 {
-	TIME_PROFILE("Entity::SetLocalTransform");
+//	TIME_PROFILE("Entity::SetLocalTransform");
 	((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->SetLocalTransform(&newMatrix);
 }
 	

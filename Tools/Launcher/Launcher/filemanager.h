@@ -54,6 +54,7 @@ public:
     //directories path must be with '/' at the end
 
     QString GetApplicationFolder(const QString & branchID, const QString & appID);
+    QString GetBranchFolder(const QString & branchID);
 
 private:
     FileManager();

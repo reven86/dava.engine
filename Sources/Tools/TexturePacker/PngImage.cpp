@@ -29,9 +29,11 @@
 
 #include "TexturePacker/PngImage.h"
 #include "TexturePacker/CommandLineParser.h"
-#include "Render/LibPngHelpers.h"
-#include "Render/ImageLoader.h"
+#include "Render/Image/LibPngHelpers.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/Texture.h"
+#include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA
 {
@@ -51,23 +53,30 @@ PngImageExt::~PngImageExt()
 bool PngImageExt::Read(const FilePath & filename)
 {
     SafeRelease(internalData);
-    
-    internalData = new Image();
-    
-    int32 retCode = LibPngWrapper::ReadPngFile(filename, internalData, FORMAT_RGBA8888);
-    if(1 != retCode)
-    {
-        Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
-        SafeRelease(internalData);
-    }
-    
+	
+	File *fileRead = File::Create(filename, File::READ | File::OPEN);
+	if(!fileRead)
+	{
+		Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
+		return false;
+	}
+
+	internalData = new Image();
+	int innerRetCode = LibPngWrapper::ReadPngFile(fileRead, internalData, FORMAT_RGBA8888);
+	if(innerRetCode != 1)
+	{
+		SafeRelease(internalData);
+		Logger::Error("[PngImageExt::Read] failed to read png file: %s", filename.GetAbsolutePathname().c_str());
+	}
+
+	SafeRelease(fileRead);
 	return (internalData != NULL);
 }
 
 void PngImageExt::Write(const FilePath & filename)
 {
     DVASSERT(internalData);
-    ImageLoader::Save(internalData, filename);
+    ImageSystem::Instance()->Save(filename, internalData, internalData->format);
 }
 
 bool PngImageExt::Create(uint32 width, uint32 height)
@@ -75,7 +84,7 @@ bool PngImageExt::Create(uint32 width, uint32 height)
     SafeRelease(internalData);
     
     internalData = Image::Create(width, height, FORMAT_RGBA8888);
-    memset(GetData(), 0, width * height * Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888));
+    memset(GetData(), 0, width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888));
 
 	return (internalData != 0);
 }

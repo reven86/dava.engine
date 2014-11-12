@@ -55,7 +55,7 @@ protected:
     virtual void InitializeControl(const String& controlName, const Vector2& position);
     virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
 
-    virtual QString GetUIControlClassName() { return "UIStaticText"; };
+    virtual QString GetUIControlClassName() const { return "UIStaticText"; };
     
     // Set the localized text key.
     virtual void SetLocalizedTextKey(const QString& value);
@@ -64,17 +64,20 @@ protected:
     UIStaticText* GetActiveStaticText() const;
     
     // Getters/setters.
-	virtual int GetAlign();
+	virtual int GetAlign() const;
     virtual void SetAlign(int value);
 
-	virtual int GetTextAlign();
+	virtual int GetTextAlign() const;
     virtual void SetTextAlign(int value);
+	
+	virtual bool GetTextUseRtlAlign();
+	virtual void SetTextUseRtlAlign(bool value);
 
-    virtual Font * GetFont();
+    virtual Font * GetFont() const;
     virtual void SetFont(Font* font);
     
     virtual float GetFontSize() const;
-    virtual void SetFontSize(float fontSize);
+    //virtual void SetFontSize(float fontSize);
     
     virtual QColor GetFontColor() const;
     virtual void SetFontColor(const QColor& value);
@@ -96,6 +99,30 @@ protected:
     
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);
+    
+    virtual int GetTextColorInheritType() const;
+    virtual void SetTextColorInheritType(int value);
+
+    virtual int GetTextPerPixelAccuracyType() const;
+    virtual void SetTextPerPixelAccuracyType(int value);
+
+    // Text margins.
+    virtual QRectF GetTextMargins() const;
+    virtual void SetTextMargins(const QRectF& value);
+    
+    virtual float GetTextLeftMargin() const;
+    virtual void SetTextLeftMargin(float value);
+
+    virtual float GetTextTopMargin() const;
+    virtual void SetTextTopMargin(float value);
+    
+    virtual float GetTextRightMargin() const;
+    virtual void SetTextRightMargin(float value);
+    
+    virtual float GetTextBottomMargin() const;
+    virtual void SetTextBottomMargin(float value);
+
+    virtual UIControlBackground::UIMargins GetTextMarginsToUpdate(UIControl::eControlState state = UIControl::STATE_NORMAL) const;
 };
 
 };

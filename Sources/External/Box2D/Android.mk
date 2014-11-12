@@ -70,8 +70,11 @@ LOCAL_SRC_FILES :=  \
 
 LOCAL_CFLAGS := -O2
 
-# set arm mode
-# LOCAL_ARM_MODE := arm
+ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
+LOCAL_ARM_NEON := true
+LOCAL_ARM_MODE := arm
+LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
+endif
 
 # build static library
 include $(BUILD_STATIC_LIBRARY)

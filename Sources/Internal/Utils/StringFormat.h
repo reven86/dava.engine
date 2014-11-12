@@ -43,11 +43,11 @@ namespace DAVA
 	//! Format("%s", Format("%d: %d: %d", 10, 20, 33));
 
 	String Format(const char8 * text, ... );
-	String FormatVL(const char8 * text, va_list vl);
+	String FormatVL(const char8 * text, va_list &vl);
 
 	//! Formatting function (use printf syntax)
 	WideString Format(const char16 * text, ... );
-	WideString FormatVL(const char16 * text, va_list vl);
+	WideString FormatVL(const char16 * text, va_list &vl);
 	
 	
 	//! Function to get indent strings for usage in printf and similar functions

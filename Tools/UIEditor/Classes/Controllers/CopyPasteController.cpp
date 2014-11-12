@@ -85,11 +85,11 @@ void CopyPasteController::Copy(const HierarchyTreeNode::HIERARCHYTREENODESLIST& 
 		}
 		else if (curCopy == CopyTypeAggregator && aggregator)
 		{
-			copy = new HierarchyTreeAggregatorNode(NULL, aggregator);
+			copy = new HierarchyTreeAggregatorNode(NULL, aggregator, false);
 		}
 		else if (curCopy == CopyTypeScreen && screen)
 		{
-			copy = new HierarchyTreeScreenNode(NULL, screen);
+			copy = new HierarchyTreeScreenNode(NULL, screen, false);
 		}
 		
 		if (copy)
@@ -127,14 +127,7 @@ void CopyPasteController::CopyControls(const HierarchyTreeController::SELECTEDCO
 		if (ControlIsChild(items, control))
 			continue;
 		
-		HierarchyTreeControlNode* copy = NULL;
-		const HierarchyTreeAggregatorControlNode* aggregatorControl = dynamic_cast<const HierarchyTreeAggregatorControlNode*>(control);
-		if (aggregatorControl)
-			copy = new HierarchyTreeAggregatorControlNode(NULL, aggregatorControl);
-		else
-			copy = new HierarchyTreeControlNode(NULL, control);
-		
-		this->items.push_back(copy);
+		this->items.push_back(control->CreateControlCopy(NULL));
 	}
 	if (this->items.size())
 		copyType = CopyTypeControl;

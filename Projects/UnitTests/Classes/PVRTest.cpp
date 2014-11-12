@@ -30,6 +30,7 @@
 
 #include "PVRTest.h"
 #include "TextureUtils.h"
+#include "Render/PixelFormatDescriptor.h"
 
 static const PixelFormat formats[] =
 {
@@ -52,7 +53,6 @@ PVRTest::PVRTest()
     FilePath testFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "PVRTest/";
     FileSystem::Instance()->CreateDirectory(testFolder, true);
 
-    
     pngSprite = NULL;
     pvrSprite = NULL;
     decompressedPNGSprite = NULL;
@@ -60,21 +60,9 @@ PVRTest::PVRTest()
     currentTest = FIRST_TEST;
     for(int32 i = 0; i < TESTS_COUNT; ++i)
     {
-        PixelFormatDescriptor formatDescriptor = Texture::GetPixelFormatDescriptor(formats[i]);
+        const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(formats[i]);
         RegisterFunction(this, &PVRTest::TestFunction, Format("PVRTest of %s", formatDescriptor.name.c_str()), NULL);
     }
-    
-    
-//Temporary code for descriptors generation 
-//    String documentsPath = FileSystem::Instance()->GetUserDocumentsPath();
-//    TextureDescriptor *descriptor = new TextureDescriptor();
-//    descriptor->textureFileFormat = Texture::PNG_FILE;
-//    descriptor->Export(documentsPath + "/TemplatePNGDescriptor.tex");
-//
-//    descriptor->textureFileFormat = Texture::PVR_FILE;
-//    descriptor->Export(documentsPath + "/TemplatePVRDescriptor.tex");
-//
-//    SafeRelease(descriptor);
 }
 
 void PVRTest::LoadResources()
@@ -119,9 +107,7 @@ void PVRTest::TestFunction(PerfFuncData * data)
         TextureUtils::CompareResult result = TextureUtils::CompareSprites(decompressedPNGSprite, pvrSprite, formats[currentTest]);
         float32 differencePersentage = ((float32)result.difference / ((float32)result.bytesCount * 256.f)) * 100.f;
         
-        PixelFormatDescriptor formatDescriptor = Texture::GetPixelFormatDescriptor(formats[currentTest]);
-        data->testData.message = Format("\nDifference: %f%%\nCoincidence: %f%%",
-                                        differencePersentage, 100.f - differencePersentage);
+        data->testData.message = Format("\nDifference: %f%%\nCoincidence: %f%%", differencePersentage, 100.f - differencePersentage);
         
         compareResultText->SetText(StringToWString(data->testData.message));
         Logger::Debug(data->testData.message.c_str());
@@ -134,8 +120,10 @@ void PVRTest::TestFunction(PerfFuncData * data)
         Image *secondComparer = TextureUtils::CreateImageAsRGBA8888(pvrSprite);
         
         FilePath documentsPath = FileSystem::Instance()->GetCurrentDocumentsDirectory();
-        ImageLoader::Save(firstComparer, documentsPath + Format("PVRTest/src_number_%d.png", currentTest));
-        ImageLoader::Save(secondComparer, documentsPath + Format("PVRTest/dst_number_%d.png", currentTest));
+        ImageSystem::Instance()->Save(documentsPath + Format("PVRTest/src_number_%d.png", currentTest), firstComparer);
+        ImageSystem::Instance()->Save(documentsPath + Format("PVRTest/dst_number_%d.png", currentTest), secondComparer);
+        SafeRelease(firstComparer);
+        SafeRelease(secondComparer);
     }
     
     ++currentTest;
@@ -185,8 +173,6 @@ void PVRTest::Draw(const DAVA::UIGeometricData &geometricData)
 {
     RenderManager::Instance()->ClearWithColor(0.f, 0.0f, 0.f, 1.f);
     
-//    RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-
     Sprite::DrawState state;
     state.SetFrame(0);
 

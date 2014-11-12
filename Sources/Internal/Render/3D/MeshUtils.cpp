@@ -1,0 +1,781 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+#include "MeshUtils.h"
+#include "EdgeAdjacency.h"
+
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Render/Highlevel/RenderBatch.h"
+#include "Render/Material/NMaterial.h"
+#include "Render/Highlevel/ShadowVolume.h"
+#include "Render/Highlevel/SkinnedMesh.h"
+#include "Scene3D/Components/RenderComponent.h"
+
+namespace DAVA
+{
+
+namespace MeshUtils
+{
+
+void CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos)
+{
+    int32 srcFormat = srcGroup->GetFormat();
+    int32 dstFormat = dstGroup->GetFormat();
+    int32 copyFormat = srcFormat&dstFormat;    //most common format;   
+
+    uint8 *srcData = srcGroup->meshData+srcPos*GetVertexSize(srcFormat);
+    uint8 *dstData = dstGroup->meshData+dstPos*GetVertexSize(dstFormat);
+        
+    for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
+    {
+        int32 vertexAttribSize = GetVertexSize(mask);
+        if (mask&copyFormat)
+            Memcpy(dstData, srcData, vertexAttribSize);
+
+        if (mask&srcFormat)
+            srcData+=vertexAttribSize;
+        
+        if (mask&dstFormat)
+            dstData+=vertexAttribSize;
+
+         copyFormat&=~mask;
+    }    
+    
+    /*unsupported stream*/
+    DVASSERT((copyFormat == 0)&&"Unsupported attribute stream in copy");
+    
+}
+
+void CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup)
+{
+    dstGroup->ReleaseData();
+    dstGroup->AllocateData(srcGroup->GetFormat(), srcGroup->GetVertexCount(), srcGroup->GetIndexCount());
+
+    Memcpy(dstGroup->meshData, srcGroup->meshData, srcGroup->GetVertexCount()*srcGroup->vertexStride);
+    Memcpy(dstGroup->indexArray, srcGroup->indexArray, srcGroup->GetIndexCount()*sizeof(int16));
+
+    dstGroup->BuildBuffers();
+}
+
+void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true*/)
+{
+    DVASSERT(group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST); //only triangle lists for now    
+    DVASSERT(group->GetFormat()&EVF_TEXCOORD0);
+    DVASSERT(group->GetFormat()&EVF_NORMAL);
+
+    Vector<FaceWork> faces;
+    uint32 faceCount = group->GetIndexCount()/3;
+    faces.resize(faceCount);
+    Vector<VertexWork> verticesOrigin;
+    Vector<VertexWork> verticesFull;
+    verticesOrigin.resize(group->GetVertexCount());
+    verticesFull.resize(group->GetIndexCount());
+
+    for (uint32 i=0, sz = group->GetVertexCount(); i<sz; ++i)
+        verticesOrigin[i].refIndex = i;
+    //compute tangent for faces
+    for (uint32 f=0; f<faceCount; ++f)
+    {
+        Vector3 pos[3];
+        Vector2 texCoord[3];
+        for (uint32 i=0; i<3; ++i)
+        {
+            int32 workIndex = f*3+i;
+            int32 originIndex;
+            group->GetIndex(workIndex, originIndex);
+            faces[f].indexOrigin[i] = originIndex;
+            group->GetCoord(originIndex, pos[i]);
+            group->GetTexcoord(0, originIndex, texCoord[i]);
+            
+            verticesOrigin[originIndex].refIndices.push_back(workIndex);
+            verticesFull[f*3+i].refIndex = faces[f].indexOrigin[i];
+        }                       
+        
+        float32 x10 = pos[1].x - pos[0].x;
+        float32 y10 = pos[1].y - pos[0].y;
+        float32 z10 = pos[1].z - pos[0].z;
+        float32 u10 = texCoord[1].x-texCoord[0].x;
+        float32 v10 = texCoord[1].y-texCoord[0].y;
+        
+        
+        float32 x20 = pos[2].x - pos[0].x;
+        float32 y20 = pos[2].y - pos[0].y;
+        float32 z20 = pos[2].z - pos[0].z;
+        float32 u20 = texCoord[2].x-texCoord[0].x;
+        float32 v20 = texCoord[2].y-texCoord[0].y;
+
+        float32 d = u10 * v20 - u20 * v10;
+
+        if(d == 0.0f)
+        {
+            d = 1.0f;	// this may happen in case of degenerated triangle
+        }
+        d = 1.0f / d;
+
+
+        Vector3 tangent = Vector3((v20 * x10 - v10 * x20) * d, (v20 * y10 - v10 * y20) * d, (v20 * z10 - v10 * z20) * d);
+        Vector3 binormal = Vector3((x20 * u10 - x10 * u20) * d, (y20 * u10 - y10 * u20) * d, (z20 * u10 - z10 * u20) * d);
+
+         //should we normalize it here or only final result?        
+        tangent.Normalize();
+        binormal.Normalize();
+        
+        faces[f].tangent = tangent;
+        faces[f].binormal = binormal;
+        for (int32 i=0; i<3; ++i)
+        {
+            verticesFull[f*3+i].tangent = tangent;            
+            verticesFull[f*3+i].binormal = binormal;
+        }
+    }
+
+    /*smooth tangent space preventing mirrored uv's smooth*/
+    for (uint32 v = 0, sz = verticesFull.size(); v<sz; ++v)
+    {
+        int32 faceId = v/3;
+        VertexWork& originVert = verticesOrigin[verticesFull[v].refIndex];      
+        verticesFull[v].tbRatio = 1;
+        for (int32 iRef=0, refSz = originVert.refIndices.size(); iRef<refSz; ++iRef)
+        {
+            int32 refFaceId = originVert.refIndices[iRef]/3;
+            if (refFaceId == faceId) continue;
+            
+            //check if uv's mirrored;            
+            
+            //here we use handness to find mirrored UV's - still not sure if it is better then using dot product (upd: experiments show it is really better)
+            Vector3 n1 = CrossProduct(verticesFull[v].tangent, verticesFull[v].binormal);
+            Vector3 n2 = CrossProduct(faces[refFaceId].tangent, faces[refFaceId].binormal);                        
+            
+            if (DotProduct(n1, n2)>0.0f)
+            {
+                verticesFull[v].tangent+=faces[refFaceId].tangent;
+                verticesFull[v].binormal+=faces[refFaceId].binormal;
+                verticesFull[v].tbRatio++;
+            }
+            
+        }
+
+        //as we use normalized tangent space - we renormalize vertex TB instead of rescaling it - think later if it is ok
+        verticesFull[v].tangent.Normalize();
+        verticesFull[v].binormal.Normalize();                
+        
+        /*float32 invScale = 1.0f/(float32)vertices_full[v].tbRatio;
+        vertices_full[v].tangent*=invScale;
+        vertices_full[v].binormal*=invScale;*/
+        
+    }
+
+
+    const float32 EPS = 0.00001f; //should be the same value as in exporter
+    Vector<int32> groups;
+    //unlock vertices that have different tangent/binormal but same ref
+    for (uint32 i=0, sz=verticesOrigin.size(); i<sz; ++i)
+    {        
+        DVASSERT(verticesOrigin[i].refIndices.size()); //vertex with no reference triangles found?
+
+        verticesOrigin[i].tangent = verticesFull[verticesOrigin[i].refIndices[0]].tangent;
+        verticesOrigin[i].binormal = verticesFull[verticesOrigin[i].refIndices[0]].binormal;
+
+        if (verticesOrigin[i].refIndices.size()<=1) //1 and less references do not need unlock test
+            continue;
+        groups.clear();
+        groups.push_back(0);
+        verticesFull[verticesOrigin[i].refIndices[0]].resultGroup = 0;
+        //if has different refs, check different groups;
+        for (int32 refId=1, refSz = verticesOrigin[i].refIndices.size(); refId<refSz; ++refId)
+        {
+            VertexWork& vertexRef = verticesFull[verticesOrigin[i].refIndices[refId]];
+            bool groupFound = false;
+            for (int32 groupId = 0, groupSz = groups.size(); groupId<groupSz; ++groupId)
+            {
+                const VertexWork& groupRef = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]];                
+                bool groupEqual = FLOAT_EQUAL_EPS(vertexRef.tangent.x, groupRef.tangent.x, EPS) && FLOAT_EQUAL_EPS(vertexRef.tangent.y, groupRef.tangent.y, EPS) && FLOAT_EQUAL_EPS(vertexRef.tangent.z, groupRef.tangent.z, EPS);
+                if (precomputeBinormal)
+                    groupEqual &= FLOAT_EQUAL_EPS(vertexRef.binormal.x, groupRef.binormal.x, EPS) && FLOAT_EQUAL_EPS(vertexRef.binormal.y, groupRef.binormal.y, EPS) && FLOAT_EQUAL_EPS(vertexRef.binormal.z, groupRef.binormal.z, EPS);
+
+                if (groupEqual)
+                {                    
+                    vertexRef.resultGroup = groupId;
+                    groupFound = true;
+                    break;
+                }                
+            }
+            if (!groupFound) //start new group
+            {
+                vertexRef.resultGroup = groups.size();
+                groups.push_back(refId);
+            }
+        }
+
+        if (groups.size()>1) //different groups found - unlock vertices and update refs
+        {            
+            groups[0] = i;
+            for (int32 groupId = 1, groupSz = groups.size(); groupId<groupSz; ++groupId)
+            {
+                verticesOrigin.push_back(verticesOrigin[i]);
+                
+                verticesOrigin.back().tangent = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]].tangent;
+                verticesOrigin.back().binormal = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]].binormal;
+                groups[groupId] = verticesOrigin.size()-1;
+                verticesOrigin[groups[groupId]].refIndex = i;
+            }
+            for (int32 refId=1, refSz = verticesOrigin[i].refIndices.size(); refId<refSz; ++refId)
+            {
+                VertexWork& vertexRef = verticesFull[verticesOrigin[i].refIndices[refId]];
+                vertexRef.refIndex = groups[vertexRef.resultGroup];
+            }
+        }
+    }
+    
+    //copy original polygon group data and fill new tangent/binormal values
+    ScopedPtr<PolygonGroup> tmpGroup(new PolygonGroup());        
+    tmpGroup->AllocateData(group->GetFormat(), group->GetVertexCount(), group->GetIndexCount());
+
+    Memcpy(tmpGroup->meshData, group->meshData, group->GetVertexCount()*group->vertexStride);
+    Memcpy(tmpGroup->indexArray, group->indexArray, group->GetIndexCount()*sizeof(int16));
+
+    int32 vertexFormat = group->GetFormat() | EVF_TANGENT;
+    if (precomputeBinormal)
+        vertexFormat|=EVF_BINORMAL;
+    group->ReleaseData();
+    group->AllocateData(vertexFormat, verticesOrigin.size(), verticesFull.size());
+
+    //copy vertices
+    for (uint32 i=0, sz = verticesOrigin.size(); i<sz; ++i)
+    {
+        CopyVertex(tmpGroup, verticesOrigin[i].refIndex, group, i);   
+        Vector3 normal;
+        group->GetNormal(i, normal);
+        
+        Vector3 tangent = verticesOrigin[i].tangent;
+        tangent -=normal*DotProduct(tangent, normal);        
+        tangent.Normalize();
+        group->SetTangent(i, tangent);
+        if (precomputeBinormal)
+        {
+            Vector3 binormal = -verticesOrigin[i].binormal;
+            binormal -=normal*DotProduct(binormal, normal);            
+            binormal.Normalize();
+            group->SetBinormal(i, binormal);
+        }
+    }
+
+    //copy indices
+    for (int32 i = 0, sz = verticesFull.size(); i<sz; ++i)
+        group->SetIndex(i, verticesFull[i].refIndex);
+
+    group->BuildBuffers();
+}
+
+SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::JointConfig> & outJoints)
+{
+    Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> > collapseDataMap;
+
+    Vector<Entity *> childrenNodes;
+    fromEntity->GetChildNodes(childrenNodes);
+
+    outJoints.resize(childrenNodes.size());
+
+    int32 currentTargetIndex = 0;
+    for(int32 nodeIndex = 0; nodeIndex < (int32)childrenNodes.size(); ++nodeIndex)
+    {
+        Entity * child = childrenNodes[nodeIndex];
+        RenderObject * ro = GetRenderObject(child);
+        if(ro)
+        {
+            int32 batchesCount = ro->GetRenderBatchCount();
+            for(int32 batchIndex = 0; batchIndex < batchesCount; ++batchIndex)
+            {
+                int32 lodIndex, switchIndex;
+                RenderBatch * rb = ro->GetRenderBatch(batchIndex, lodIndex, switchIndex);
+                SkinnedMeshWorkKey dataKey(lodIndex, switchIndex, rb->GetMaterial()->GetParent());
+
+                collapseDataMap[dataKey].push_back(SkinnedMeshJointWork(rb, currentTargetIndex));
+            }
+
+            outJoints[nodeIndex].bbox = ro->GetBoundingBox();
+
+            outJoints[nodeIndex].targetId = currentTargetIndex;
+            currentTargetIndex++;
+        }
+        else
+        {
+            outJoints[nodeIndex].targetId = SkeletonComponent::INVALID_JOINT_INDEX;
+        }
+
+        const Matrix4 & localTransform = child->GetLocalTransform();
+
+        outJoints[nodeIndex].name = childrenNodes[nodeIndex]->GetName();
+        outJoints[nodeIndex].orientation.Construct(localTransform);
+        outJoints[nodeIndex].position = localTransform.GetTranslationVector();
+        outJoints[nodeIndex].scale = localTransform.GetScaleVector().x;
+
+        Entity * parentEntity = child->GetParent();
+        if(!parentEntity || parentEntity == fromEntity)
+        {
+            outJoints[nodeIndex].parentIndex = SkeletonComponent::INVALID_JOINT_INDEX;
+        }
+        else
+        {
+            for(int32 i = 0; i < (int32)childrenNodes.size(); ++i)
+            {
+                if(parentEntity == childrenNodes[i])
+                {
+                    outJoints[nodeIndex].parentIndex = i;
+                    continue;
+                }
+            }
+        }
+    }
+
+    SkinnedMesh * newRenderObject = new SkinnedMesh();
+
+    Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator it = collapseDataMap.begin();
+    Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork> >::iterator itEnd = collapseDataMap.end();
+    for(;it != itEnd; ++it)
+    {
+        const SkinnedMeshWorkKey & key = it->first;
+        Vector<SkinnedMeshJointWork> & data = it->second;
+
+        int32 vxCount = 0;
+        int32 indCount = 0;
+        int32 meshFormat = data.front().batch->GetPolygonGroup()->GetFormat();
+        for(int32 dataIndex = 0; dataIndex < (int32)data.size(); ++dataIndex)
+        {
+            vxCount += data[dataIndex].batch->GetPolygonGroup()->GetVertexCount();
+            indCount += data[dataIndex].batch->GetPolygonGroup()->GetIndexCount();
+
+            DVASSERT(meshFormat == data[dataIndex].batch->GetPolygonGroup()->GetFormat());
+        }
+
+        PolygonGroup * polygonGroup = new PolygonGroup();
+        polygonGroup->AllocateData(meshFormat | EVF_JOINTINDEX | EVF_JOINTWEIGHT, vxCount, indCount);
+
+        int32 vertexOffset = 0;
+        int32 indexOffset = 0;
+        for(int32 dataIndex = 0; dataIndex < (int32)data.size(); ++dataIndex)
+        {
+            PolygonGroup * currentGroup = data[dataIndex].batch->GetPolygonGroup();
+            int32 currentBatchVxCount = currentGroup->GetVertexCount();
+            for(int32 currentBatchVxIndex = 0; currentBatchVxIndex < currentBatchVxCount; ++currentBatchVxIndex)
+            {
+                int32 newBatchVxIndex = vertexOffset + currentBatchVxIndex;
+                CopyVertex(currentGroup, currentBatchVxIndex, polygonGroup, newBatchVxIndex);
+                polygonGroup->SetJointWeight(newBatchVxIndex, 0, 1.f);
+                polygonGroup->SetJointIndex(newBatchVxIndex, 0, data[dataIndex].jointIndex);
+                polygonGroup->SetJointCount(newBatchVxIndex, 1);
+            }
+
+            int32 currentBatchIndexCount = currentGroup->GetIndexCount();
+            for(int32 currentBatchIdxIndex = 0; currentBatchIdxIndex < currentBatchIndexCount; ++currentBatchIdxIndex)
+            {
+                int32 index;
+                currentGroup->GetIndex(currentBatchIdxIndex, index);
+                polygonGroup->SetIndex(indexOffset + currentBatchIdxIndex, (int16)(vertexOffset + index));
+            }
+
+            vertexOffset += currentBatchVxCount;
+            indexOffset += currentBatchIndexCount;
+        }
+
+        NMaterial * material = NMaterial::CreateMaterialInstance();
+        material->SetParent(key.materialParent);
+        material->SetFlag(NMaterial::FLAG_SKINNING, NMaterial::FlagOn);
+
+        RenderBatch * newBatch = new RenderBatch();
+        polygonGroup->RecalcAABBox();
+        polygonGroup->BuildBuffers();
+        newBatch->SetPolygonGroup(polygonGroup);
+        newBatch->SetMaterial(material);
+
+        newRenderObject->AddRenderBatch(newBatch, key.lodIndex, key.switchIndex);
+
+        material->Release();
+        polygonGroup->Release();
+        newBatch->Release();
+    }
+
+    return newRenderObject;
+}
+
+PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
+{
+    int32 numEdges = oldPolygonGroup->GetIndexCount();
+    int32 oldIndexCount = oldPolygonGroup->GetIndexCount();
+    EdgeMappingWork * mapping = new EdgeMappingWork[numEdges];
+    int32 numMaps = 0;
+
+    //generate adjacency
+    int32 oldVertexCount = oldPolygonGroup->GetVertexCount();
+    int32 * adjacency = new int32[oldVertexCount];
+    Memset(adjacency, -1, oldVertexCount*sizeof(int32));
+    for(int32 i = 0; i < oldVertexCount; ++i)
+    {
+        Vector3 newFoundCoord;
+        oldPolygonGroup->GetCoord(i, newFoundCoord);
+        adjacency[i] = i;
+        for(int32 j = 0; j < i; ++j)
+        {
+            Vector3 oldCoord;
+            oldPolygonGroup->GetCoord(j, oldCoord);
+            if(EdgeAdjacency::IsPointsEqual(newFoundCoord, oldCoord))
+            {
+                adjacency[i] = j;
+                break;
+            }
+        }
+    }
+
+    PolygonGroup * newPolygonGroup = new PolygonGroup();
+    newPolygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL, oldIndexCount, oldIndexCount + numEdges*3);
+    int32 nextIndex = 0;
+
+    int32 facesCount = oldIndexCount/3;
+    for(int32 f = 0; f < facesCount; ++f)
+    {
+        //copy old vertex data
+        int32 oldIndex0, oldIndex1, oldIndex2;
+        Vector3 oldPos0, oldPos1, oldPos2;
+        oldPolygonGroup->GetIndex(f*3+0, oldIndex0);
+        oldPolygonGroup->GetCoord(oldIndex0, oldPos0);
+        newPolygonGroup->SetCoord(f*3+0, oldPos0);
+        newPolygonGroup->SetIndex(nextIndex++, f*3+0);
+
+        oldPolygonGroup->GetIndex(f*3+1, oldIndex1);
+        oldPolygonGroup->GetCoord(oldIndex1, oldPos1);
+        newPolygonGroup->SetCoord(f*3+1, oldPos1);
+        newPolygonGroup->SetIndex(nextIndex++, f*3+1);
+
+        oldPolygonGroup->GetIndex(f*3+2, oldIndex2);
+        oldPolygonGroup->GetCoord(oldIndex2, oldPos2);
+        newPolygonGroup->SetCoord(f*3+2, oldPos2);
+        newPolygonGroup->SetIndex(nextIndex++, f*3+2);
+
+        //generate new normals
+        Vector3 v0 = oldPos1 - oldPos0;
+        Vector3 v1 = oldPos2 - oldPos0;
+        Vector3 normal = v0.CrossProduct(v1);
+        normal.Normalize();
+
+        newPolygonGroup->SetNormal(f*3+0, normal);
+        newPolygonGroup->SetNormal(f*3+1, normal);
+        newPolygonGroup->SetNormal(f*3+2, normal);
+
+
+        //edge 1
+        int32 nIndex;
+        int32 vertIndex[3] = 
+        {
+            adjacency[oldIndex0],
+            adjacency[oldIndex1],
+            adjacency[oldIndex2]
+        };
+        nIndex = FindEdgeInMappingTable(vertIndex[0], vertIndex[1], mapping, numEdges);
+
+        if(mapping[nIndex].oldEdge[0] == -1 && mapping[nIndex].oldEdge[1] == -1)
+        {
+            // No entry for this edge yet.  Initialize one.
+            mapping[nIndex].oldEdge[0] = vertIndex[0];
+            mapping[nIndex].oldEdge[1] = vertIndex[1];
+            mapping[nIndex].newEdge[0][0] = f*3 + 0;
+            mapping[nIndex].newEdge[0][1] = f*3 + 1;
+
+            ++numMaps;
+        }
+        else
+        {
+            // An entry is found for this edge.  Create
+            // a quad and output it.
+            mapping[nIndex].newEdge[1][0] = f*3 + 0;
+            mapping[nIndex].newEdge[1][1] = f*3 + 1;
+
+            // First triangle
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][1]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][0]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][0]);
+
+            // Second triangle
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][1]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][0]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][0]);
+
+            // pMapping[nIndex] is no longer needed. Copy the last map entry
+            // over and decrement the map count.
+            mapping[nIndex] = mapping[numMaps - 1];
+            Memset(&mapping[numMaps - 1], 0xFF, sizeof(mapping[numMaps - 1]));
+            --numMaps;
+        }
+
+        //edge 2
+        nIndex = FindEdgeInMappingTable(vertIndex[1], vertIndex[2], mapping, numEdges);
+
+        if(mapping[nIndex].oldEdge[0] == -1 && mapping[nIndex].oldEdge[1] == -1)
+        {
+            mapping[nIndex].oldEdge[0] = vertIndex[1];
+            mapping[nIndex].oldEdge[1] = vertIndex[2];
+            mapping[nIndex].newEdge[0][0] = f*3 + 1;
+            mapping[nIndex].newEdge[0][1] = f*3 + 2;
+
+            ++numMaps;
+        }
+        else
+        {
+            mapping[nIndex].newEdge[1][0] = f*3 + 1;
+            mapping[nIndex].newEdge[1][1] = f*3 + 2;
+
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][1]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][0]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][0]);
+
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][1]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][0]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][0]);
+
+            mapping[nIndex] = mapping[numMaps - 1];
+            Memset(&mapping[numMaps - 1], 0xFF, sizeof(mapping[numMaps - 1]));
+            --numMaps;
+        }
+
+        //edge 3
+        nIndex = FindEdgeInMappingTable(vertIndex[2], vertIndex[0], mapping, numEdges);
+
+        if(mapping[nIndex].oldEdge[0] == -1 && mapping[nIndex].oldEdge[1] == -1)
+        {
+            mapping[nIndex].oldEdge[0] = vertIndex[2];
+            mapping[nIndex].oldEdge[1] = vertIndex[0];
+            mapping[nIndex].newEdge[0][0] = f*3 + 2;
+            mapping[nIndex].newEdge[0][1] = f*3 + 0;
+
+            ++numMaps;
+        }
+        else
+        {
+            mapping[nIndex].newEdge[1][0] = f*3 + 2;
+            mapping[nIndex].newEdge[1][1] = f*3 + 0;
+
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][1]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][0]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][0]);
+
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][1]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[1][0]);
+            newPolygonGroup->SetIndex(nextIndex++, mapping[nIndex].newEdge[0][0]);
+
+            mapping[nIndex] = mapping[numMaps - 1];
+            Memset(&mapping[numMaps - 1], 0xFF, sizeof(mapping[numMaps - 1]));
+            --numMaps;
+        }
+    }
+
+    int32 nextVertex = oldIndexCount;
+
+    //patch holes
+    if(numMaps > 0)
+    {
+        PolygonGroup * patchPolygonGroup = new PolygonGroup();
+        // Make enough room in IB for the face and up to 3 quads for each patching face
+        patchPolygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL, oldIndexCount+numMaps*3, nextIndex + numMaps*7*3);
+
+        Memcpy(patchPolygonGroup->meshData, newPolygonGroup->meshData, newPolygonGroup->GetVertexCount()*newPolygonGroup->vertexStride);
+        Memcpy(patchPolygonGroup->indexArray, newPolygonGroup->indexArray, newPolygonGroup->GetIndexCount()*sizeof(int16));
+
+        SafeRelease(newPolygonGroup);
+        newPolygonGroup = patchPolygonGroup;
+
+        // Now, we iterate through the edge mapping table and
+        // for each shared edge, we generate a quad.
+        // For each non-shared edge, we patch the opening
+        // with new faces.
+
+        for(int32 i = 0; i < numMaps; ++i)
+        {
+            if(mapping[i].oldEdge[0] != -1 && mapping[i].oldEdge[1] != -1)
+            {
+                // If the 2nd new edge indexes is -1,
+                // this edge is a non-shared one.
+                // We patch the opening by creating new
+                // faces.
+                if(mapping[i].newEdge[1][0] == -1 || mapping[i].newEdge[1][1] == -1) // must have only one new edge
+                {
+                    // Find another non-shared edge that
+                    // shares a vertex with the current edge.
+                    for(int32 i2 = i + 1; i2 < numMaps; ++i2)
+                    {
+                        if(mapping[i2].oldEdge[0] != -1 && mapping[i2].oldEdge[1] != -1      // must have a valid old edge
+                            &&(mapping[i2].newEdge[1][0] == -1 || mapping[i2].newEdge[1][1] == -1))// must have only one new edge
+                        {
+                            int32 nVertShared = 0;
+                            if(mapping[i2].oldEdge[0] == mapping[i].oldEdge[1])
+                                ++nVertShared;
+                            if(mapping[i2].oldEdge[1] == mapping[i].oldEdge[0])
+                                ++nVertShared;
+
+                            if(2 == nVertShared)
+                            {
+                                // These are the last two edges of this particular
+                                // opening. Mark this edge as shared so that a degenerate
+                                // quad can be created for it.
+
+                                mapping[i2].newEdge[1][0] = mapping[i].newEdge[0][0];
+                                mapping[i2].newEdge[1][1] = mapping[i].newEdge[0][1];
+                                break;
+                            }
+                            else if(1 == nVertShared)
+                            {
+                                // nBefore and nAfter tell us which edge comes before the other.
+                                int32 nBefore, nAfter;
+                                if(mapping[i2].oldEdge[0] == mapping[i].oldEdge[1])
+                                {
+                                    nBefore = i;
+                                    nAfter = i2;
+                                }
+                                else
+                                {
+                                    nBefore = i2;
+                                    nAfter = i;
+                                }
+
+                                // Found such an edge. Now create a face along with two
+                                // degenerate quads from these two edges.
+                                Vector3 coord0, coord1, coord2;
+                                newPolygonGroup->GetCoord(mapping[nAfter].newEdge[0][1], coord0);
+                                newPolygonGroup->GetCoord(mapping[nBefore].newEdge[0][1], coord1);
+                                newPolygonGroup->GetCoord(mapping[nBefore].newEdge[0][0], coord2);
+
+                                newPolygonGroup->SetCoord(nextVertex+0, coord0);
+                                newPolygonGroup->SetCoord(nextVertex+1, coord1);
+                                newPolygonGroup->SetCoord(nextVertex+2, coord2);
+
+                                // Recompute the normal
+                                Vector3 v0 = coord1 - coord0;
+                                Vector3 v1 = coord2 - coord0;
+                                Vector3 normal = v0.CrossProduct(v1);
+                                normal.Normalize();
+
+                                newPolygonGroup->SetNormal(nextVertex+0, normal);
+                                newPolygonGroup->SetNormal(nextVertex+1, normal);
+                                newPolygonGroup->SetNormal(nextVertex+2, normal);
+
+                                newPolygonGroup->SetIndex(nextIndex+0, nextVertex+0);
+                                newPolygonGroup->SetIndex(nextIndex+1, nextVertex+1);
+                                newPolygonGroup->SetIndex(nextIndex+2, nextVertex+2);
+
+                                // 1st quad
+                                newPolygonGroup->SetIndex(nextIndex+3, mapping[nBefore].newEdge[0][1]);
+                                newPolygonGroup->SetIndex(nextIndex+4, mapping[nBefore].newEdge[0][0]);
+                                newPolygonGroup->SetIndex(nextIndex+5, nextVertex + 1);
+
+                                newPolygonGroup->SetIndex(nextIndex+6, nextVertex + 2);
+                                newPolygonGroup->SetIndex(nextIndex+7, nextVertex + 1);
+                                newPolygonGroup->SetIndex(nextIndex+8, mapping[nBefore].newEdge[0][0]);
+
+                                // 2nd quad
+                                newPolygonGroup->SetIndex(nextIndex+9, mapping[nAfter].newEdge[0][1]);
+                                newPolygonGroup->SetIndex(nextIndex+10, mapping[nAfter].newEdge[0][0]);
+                                newPolygonGroup->SetIndex(nextIndex+11, nextVertex);
+
+                                newPolygonGroup->SetIndex(nextIndex+12, nextVertex + 1);
+                                newPolygonGroup->SetIndex(nextIndex+13,  nextVertex);
+                                newPolygonGroup->SetIndex(nextIndex+14, mapping[nAfter].newEdge[0][0]);
+
+                                // Modify mapping entry i2 to reflect the third edge
+                                // of the newly added face.
+                                if(mapping[i2].oldEdge[0] == mapping[i].oldEdge[1])
+                                {
+                                    mapping[i2].oldEdge[0] = mapping[i].oldEdge[0];
+                                }
+                                else
+                                {
+                                    mapping[i2].oldEdge[1] = mapping[i].oldEdge[1];
+                                }
+                                mapping[i2].newEdge[0][0] = nextVertex + 2;
+                                mapping[i2].newEdge[0][1] = nextVertex;
+
+                                // Update next vertex/index positions
+                                nextVertex += 3;
+                                nextIndex += 15;
+
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // This is a shared edge.  Create the degenerate quad.
+                    // First triangle
+                    newPolygonGroup->SetIndex(nextIndex++, mapping[i].newEdge[0][1]);
+                    newPolygonGroup->SetIndex(nextIndex++, mapping[i].newEdge[0][0]);
+                    newPolygonGroup->SetIndex(nextIndex++, mapping[i].newEdge[1][0]);
+
+                    // Second triangle
+                    newPolygonGroup->SetIndex(nextIndex++, mapping[i].newEdge[1][1]);
+                    newPolygonGroup->SetIndex(nextIndex++,  mapping[i].newEdge[1][0]);
+                    newPolygonGroup->SetIndex(nextIndex++, mapping[i].newEdge[0][0]);
+                }
+            }
+        }
+    }
+
+    PolygonGroup * shadowDataSource = new PolygonGroup();
+    shadowDataSource->AllocateData(EVF_VERTEX | EVF_NORMAL, nextVertex, nextIndex);
+    Memcpy(shadowDataSource->meshData, newPolygonGroup->meshData, nextVertex*newPolygonGroup->vertexStride);
+    Memcpy(shadowDataSource->indexArray, newPolygonGroup->indexArray, nextIndex*sizeof(int16));
+
+    shadowDataSource->RecalcAABBox();
+
+    SafeRelease(newPolygonGroup);
+    SafeDeleteArray(adjacency);
+    SafeDeleteArray(mapping);
+
+    return shadowDataSource;
+}
+
+int32 FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMappingWork * mapping, int32 count)
+{
+    for( int i = 0; i < count; ++i )
+    {
+        // If both vertex indexes of the old edge in mapping entry are -1, then
+        // we have searched every valid entry without finding a match.  Return
+        // this index as a newly created entry.
+        if( ( mapping[i].oldEdge[0] == -1 && mapping[i].oldEdge[1] == -1 ) ||
+
+            // Or if we find a match, return the index.
+            ( mapping[i].oldEdge[1] == nV1 && mapping[i].oldEdge[0] == nV2 ) )
+        {
+            return i;
+        }
+    }
+
+    DVASSERT(0);
+    return -1;  // We should never reach this line
+}
+
+};
+};
+

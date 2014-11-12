@@ -39,6 +39,8 @@
 #include "Scene3D/SwitchNode.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Mesh.h"
+#include "Render/3D/MeshUtils.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/SceneNodeAnimationList.h"
 #include "Scene3D/LodNode.h"
@@ -77,11 +79,13 @@
 
 #include "Scene3D/Converters/LodToLod2Converter.h"
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
+#include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
 
 namespace DAVA
 {
-    
+
 SceneFileV2::SceneFileV2()
+    : scene(NULL)
 {
     isDebugLogEnabled = false;
     isSaveForGame = false;
@@ -140,9 +144,10 @@ DataNode * SceneFileV2::GetNodeByPointer(uint64 pointer)
     return 0;
 }*/
 
-int32 SceneFileV2::GetVersion()
+const VersionInfo::SceneVersion& SceneFileV2::GetVersion() const
 {
-    return header.version;
+    DVASSERT(scene);
+    return scene->version;
 }
     
 void SceneFileV2::SetError(eError error)
@@ -174,7 +179,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     header.signature[2] = 'V';
     header.signature[3] = '2';
     
-    header.version = 11;
+    header.version = VersionInfo::Instance()->GetCurrentVersion().version;
     header.nodeCount = _scene->GetChildrenCount();
 
     if(NULL != scene->GetGlobalMaterial())
@@ -191,8 +196,21 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 	serializationContext.SetScene(_scene);
     
     file->Write(&header, sizeof(Header));
-	WriteDescriptor(file, descriptor);
     
+    // save version tags
+    {
+        KeyedArchive * tagsArchive = new KeyedArchive();
+        const VersionInfo::TagsMap& tags = VersionInfo::Instance()->GetCurrentVersion().tags;
+        for ( VersionInfo::TagsMap::const_iterator it = tags.begin(); it != tags.end(); it++ )
+        {
+            tagsArchive->SetUInt32( it->first, it->second );
+        }
+        tagsArchive->Save( file );
+        SafeRelease( tagsArchive );
+    }
+    
+	WriteDescriptor(file, descriptor);
+
     // save data objects
     if(isDebugLogEnabled)
     {
@@ -287,6 +305,82 @@ uint32 SceneFileV2::GetSerializableDataNodesCount(List<DataNode*>& nodeList)
 	
 	return nodeCount;
 }
+
+bool SceneFileV2::ReadHeader(SceneFileV2::Header& _header, File * file)
+{
+    DVASSERT(file);
+    
+    file->Read( &_header, sizeof( Header ) );
+
+    if (   ( _header.signature[0] != 'S' )
+        || ( _header.signature[1] != 'F' )
+        || ( _header.signature[2] != 'V' )
+        || ( _header.signature[3] != '2' ) )
+    {
+        Logger::Error( "SceneFileV2::LoadSceneVersion header is wrong" );
+        return false;
+    }
+
+    return true;
+}
+
+bool SceneFileV2::ReadVersionTags(VersionInfo::SceneVersion& _version, File * file)
+{
+    DVASSERT(file);
+
+    bool loaded = false;
+    if ( _version.version >= 14 )
+    {
+        KeyedArchive * tagsArchive = new KeyedArchive();
+        loaded = tagsArchive->Load( file );
+
+        if (loaded)
+        {
+            typedef Map<String, VariantType*> KeyedTagsMap;
+            const KeyedTagsMap& keyedTags = tagsArchive->GetArchieveData();
+            for (KeyedTagsMap::const_iterator it = keyedTags.begin(); it != keyedTags.end(); it++)
+            {
+                const String& tag = it->first;
+                const uint32 ver = it->second->AsUInt32();
+                _version.tags.insert(VersionInfo::TagsMap::value_type(tag, ver));
+            }
+        }
+        SafeRelease(tagsArchive);
+    }
+    else
+    {
+        loaded = true;
+    }
+
+    return loaded;
+}
+
+VersionInfo::SceneVersion SceneFileV2::LoadSceneVersion(const FilePath & filename)
+{
+    File * file = File::Create( filename, File::OPEN | File::READ );
+    if ( !file )
+    {
+        Logger::Error( "SceneFileV2::LoadSceneVersion failed to open file: %s", filename.GetAbsolutePathname().c_str() );
+        return VersionInfo::SceneVersion();
+    }
+
+    VersionInfo::SceneVersion version;
+
+    Header header;
+    const bool headerValid = ReadHeader(header, file);
+    if (headerValid)
+    {
+        version.version = header.version;
+        const bool versionValid = ReadVersionTags(version, file);
+        if (!versionValid)
+        {
+            version = VersionInfo::SceneVersion();
+        }
+    }
+
+    SafeRelease(file);
+    return version;
+}
     
 SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _scene)
 {
@@ -303,17 +397,25 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     scene = _scene;
     rootNodePathName = filename;
 
-    file->Read(&header, sizeof(Header));
-    int requiredVersion = 3;
-    if (    (header.signature[0] != 'S') 
-        ||  (header.signature[1] != 'F') 
-        ||  (header.signature[2] != 'V') 
-        ||  (header.signature[3] != '2'))
+    const bool headerValid = ReadHeader(header, file);
+
+    if (!headerValid)
     {
-        Logger::Error("SceneFileV2::LoadScene header version is wrong: %d, required: %d", header.version, requiredVersion);
         
         SafeRelease(file);
         SetError(ERROR_VERSION_IS_TOO_OLD);
+        return GetError();
+    }
+
+    // load version tags
+    _scene->version.version = header.version;
+    const bool versionValid = ReadVersionTags(_scene->version, file);
+    if ( !versionValid )
+    {
+        Logger::Error("SceneFileV2::LoadScene version tags are wrong");
+
+        SafeRelease(file);
+        SetError(ERROR_VERSION_TAGS_INVALID);
         return GetError();
     }
 	
@@ -321,7 +423,28 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 	{
 		ReadDescriptor(file, descriptor);
 	}
-	
+
+    VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(_scene->version);
+    switch (status)
+    {
+    case VersionInfo::COMPATIBLE:
+        {
+            const String tags = VersionInfo::Instance()->UnsupportedTagsMessage(_scene->version);
+            Logger::Warning("SceneFileV2::LoadScene scene was saved with older version of framework. Saving scene will broke compatibility. Missed tags: %s", tags.c_str());
+        }
+        break;
+    case VersionInfo::INVALID:
+        {
+            const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(_scene->version);
+            Logger::Error( "SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
+            SafeRelease( file );
+            SetError( ERROR_VERSION_TAGS_INVALID );
+            return GetError();
+        }
+    default:
+        break;
+    }
+
 	serializationContext.SetRootNodePath(rootNodePathName);
 	serializationContext.SetScenePath(FilePath(rootNodePathName.GetDirectory()));
 	serializationContext.SetVersion(header.version);
@@ -331,7 +454,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load data objects");
 
-    if (GetVersion() >= 2)
+    if (header.version >= 2)
     {
         int32 dataNodeCount = 0;
         file->Read(&dataNodeCount, sizeof(int32));
@@ -363,7 +486,13 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         scene->SetGlobalMaterial(globalMaterial);
     }
 		    
-    OptimizeScene(rootNode);	
+    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
+    ThreadIdJobWaiter waiter;
+    waiter.Wait();
+    UpdatePolygonGroupRequestedFormatRecursively(rootNode);
+    serializationContext.LoadPolygonGroupData(file);
+
+    OptimizeScene(rootNode);	            
     
 	rootNode->SceneDidLoaded();
     
@@ -372,6 +501,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         // TODO: Check do we need to releae root node here
         _scene->AddRootNode(rootNode, rootNodePathName);
     }
+    
+    scene->OnSceneReady(rootNode);
     
     SafeRelease(rootNode);
     SafeRelease(file);
@@ -384,31 +515,58 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
-        Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());        
+        Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
         return res;
     }   
-        
 
-    file->Read(&header, sizeof(Header));
-    int requiredVersion = 3;
-    if (    (header.signature[0] != 'S') 
-        ||  (header.signature[1] != 'F') 
-        ||  (header.signature[2] != 'V') 
-        ||  (header.signature[3] != '2'))
+    const bool headerValid = ReadHeader(header, file);
+
+    if (!headerValid)
     {
-        Logger::Error("SceneFileV2::LoadScene header version is wrong: %d, required: %d", header.version, requiredVersion);
-        SafeRelease(file);        
+        SafeRelease(file);
         return res;
     }
 
+    // load version tags
+    VersionInfo::SceneVersion version;
+    version.version = header.version;
+    const bool versionValid = ReadVersionTags(version, file);
+    if (!versionValid)
+    {
+        Logger::Error("SceneFileV2::LoadScene version tags are wrong");
+
+        SafeRelease(file);
+        return res;
+    }
+	
     if(header.version >= 10)
     {
         ReadDescriptor(file, descriptor);
     }
 
+    VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(version);
+    switch (status)
+    {
+    case VersionInfo::COMPATIBLE:
+        {
+            const String tags = VersionInfo::Instance()->UnsupportedTagsMessage(version);
+            Logger::Warning("SceneFileV2::LoadScene scene was saved with older version of framework. Saving scene will broke compatibility. Missed tags: %s", tags.c_str());
+        }
+        break;
+    case VersionInfo::INVALID:
+        {
+            const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(version);
+            Logger::Error( "SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
+            SafeRelease(file);
+            return res;
+        }
+    default:
+        break;
+    }
+
    res = new SceneArchive();
 
-    if (GetVersion() >= 2)
+    if (header.version >= 2)
     {
         int32 dataNodeCount = 0;
         file->Read(&dataNodeCount, sizeof(int32));
@@ -419,8 +577,6 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
             res->dataNodes.push_back(archive);
         }
     }
-
-    
 
     res->children.reserve(header.nodeCount);
     for (int ci = 0; ci < header.nodeCount; ++ci)
@@ -468,6 +624,7 @@ bool SceneFileV2::SaveDataNode(DataNode * node, File * file)
     
 void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
 {
+    uint32 currFilePos = file->GetPos();
     KeyedArchive * archive = new KeyedArchive();
     archive->Load(file);
     
@@ -491,6 +648,11 @@ void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
         }
         node->Load(archive, &serializationContext);
         AddToNodeMap(node);
+
+        if (name == "PolygonGroup")
+        {
+            serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), currFilePos);
+        }
         
         int32 childrenCount = archive->GetInt32("#childrenCount", 0);
         DVASSERT(0 == childrenCount && "We don't support hierarchical dataNodes load.");
@@ -704,7 +866,12 @@ Entity * SceneFileV2::LoadLight(Scene * scene, KeyedArchive * archive)
 {
     Entity * lightEntity = LoadEntity(scene, archive);
     
-    bool isDynamic = lightEntity->GetCustomProperties()->GetBool("editor.dynamiclight.enable", true);
+    bool isDynamic = true;
+    KeyedArchive *props = GetCustomPropertiesArchieve(lightEntity);
+    if(props)
+    {
+        isDynamic = props->GetBool("editor.dynamiclight.enable", true);
+    }
     
     Light * light = new Light();
     light->Load(archive, &serializationContext);
@@ -751,7 +918,7 @@ bool SceneFileV2::RemoveEmptySceneNodes(DAVA::Entity * currentNode)
     }
     if ((currentNode->GetChildrenCount() == 0) && (typeid(*currentNode) == typeid(Entity)))
     {
-        KeyedArchive *customProperties = currentNode->GetCustomProperties();
+        KeyedArchive *customProperties = GetCustomPropertiesArchieve(currentNode);
         bool doNotRemove = customProperties && customProperties->IsKeyExists("editor.donotremove");
         
         uint32 componentCount = currentNode->GetComponentCount();
@@ -774,7 +941,7 @@ bool SceneFileV2::RemoveEmptySceneNodes(DAVA::Entity * currentNode)
             Entity * parent  = currentNode->GetParent();
             if (parent)
             {
-				if(GetVersion() < 11 && GetLodComponent(parent))
+                if(header.version < OLD_LODS_SCENE_VERSION && GetLodComponent(parent))
 				{
 					return false;
 				}
@@ -823,15 +990,15 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
 
             if (parent)
             {
-				if(GetVersion() < 11 && GetLodComponent(parent))
+				if(header.version < OLD_LODS_SCENE_VERSION && GetLodComponent(parent))
 				{
 					return false;
 				}
 
-
                 Entity * childNode = SafeRetain(currentNode->GetChild(0));
-                FastName currentName = currentNode->GetName();
-				KeyedArchive * currentProperties = currentNode->GetCustomProperties();
+
+				FastName currentName = currentNode->GetName();
+				KeyedArchive * currentProperties = GetCustomPropertiesArchieve(currentNode);
                 
                 //Logger::FrameworkDebug("remove node: %s %p", currentNode->GetName().c_str(), currentNode);
 				parent->InsertBeforeNode(childNode, currentNode);
@@ -842,13 +1009,17 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
                     childNode->SetName(currentName);
                 }
 				//merge custom properties
-				KeyedArchive * newProperties = childNode->GetCustomProperties();
-				const Map<String, VariantType*> & oldMap = currentProperties->GetArchieveData();
-				Map<String, VariantType*>::const_iterator itEnd = oldMap.end();
-				for(Map<String, VariantType*>::const_iterator it = oldMap.begin(); it != itEnd; ++it)
-				{
-					newProperties->SetVariant(it->first, *it->second);
-				}
+                
+                if(currentProperties)
+                {
+                    KeyedArchive * newProperties = GetOrCreateCustomProperties(childNode)->GetArchive();
+                    const Map<String, VariantType*> & oldMap = currentProperties->GetArchieveData();
+                    Map<String, VariantType*>::const_iterator itEnd = oldMap.end();
+                    for(Map<String, VariantType*>::const_iterator it = oldMap.begin(); it != itEnd; ++it)
+                    {
+                        newProperties->SetVariant(it->first, *it->second);
+                    }
+                }
 				
 				//VI: remove node after copying its properties since properties become invalid after node removal
 				parent->RemoveNode(currentNode);
@@ -875,7 +1046,7 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
         for (uint32 k = 0; k < (uint32)polygroups.size(); ++k)
         {
             PolygonGroupWithMaterial * group = polygroups[k];
-            if (group->GetMaterial()->type == Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP)
+            if (group->GetMaterial() && (group->GetMaterial()->type == Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP))
             {
                 if (oldMeshInstanceNode->GetLightmapCount() == 0)
                 {
@@ -902,6 +1073,8 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
             PolygonGroupWithMaterial * group = polygroups[k];
             
 			Material* oldMaterial = group->GetMaterial();
+            if(!oldMaterial) continue;
+            
             NMaterial* nMaterial = serializationContext.ConvertOldMaterialToNewMaterial(oldMaterial, 0, (uint64)oldMaterial);
             mesh->AddPolygonGroup(group->GetPolygonGroup(), nMaterial);
             
@@ -1047,12 +1220,6 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 		Entity * newNode = new Entity();
 		particleEmitterNode->Entity::Clone(newNode);
 		Entity * parent = particleEmitterNode->GetParent();
-
-		ParticleEmitter * emitter = particleEmitterNode->GetEmitter();
-		//!NB emitter is not render component anymore
-		/*RenderComponent * renderComponent = new RenderComponent();
-		newNode->AddComponent(renderComponent);
-		renderComponent->SetRenderObject(emitter);*/
 		
 		DVASSERT(parent);
 		if(parent)
@@ -1174,7 +1341,73 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 	}
 }
 
-    
+
+void SceneFileV2::RebuildTangentSpace(Entity *entity)
+{
+    static int32 prerequiredFormat = EVF_TANGENT|EVF_NORMAL;
+    RenderObject *ro = GetRenderObject(entity);
+
+    if (ro)
+    {
+        for (int32 i=0, sz=ro->GetRenderBatchCount(); i<sz; ++i)
+        {
+            RenderBatch *renderBatch = ro->GetRenderBatch(i);
+            PolygonGroup *group = renderBatch->GetPolygonGroup();
+            if (group)
+            {
+                int32 format = group->GetFormat();
+                if (((format&prerequiredFormat)==prerequiredFormat)&&!(format&EVF_BINORMAL))
+                    MeshUtils::RebuildMeshTangentSpace(group, true);
+            }
+        }
+    }
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        RebuildTangentSpace(entity->GetChild(i));
+}
+
+void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMaterialParent)
+{
+    RenderObject * ro = GetRenderObject(entity);
+    if(ro)
+    {
+        int32 batchCount = ro->GetRenderBatchCount();
+        for(int32 ri = 0; ri < batchCount; ++ri)
+        {
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            if(typeid(*batch) == typeid(ShadowVolume) || entity->GetName().find("_shadow") != String::npos)
+            {
+                RenderBatch * shadowBatch = new RenderBatch();
+                if(typeid(*batch) == typeid(ShadowVolume))
+                {
+                    shadowBatch->SetPolygonGroup(batch->GetPolygonGroup());
+                }
+                else
+                {
+                    PolygonGroup * shadowPg = MeshUtils::CreateShadowPolygonGroup(batch->GetPolygonGroup());
+                    shadowBatch->SetPolygonGroup(shadowPg);
+                    shadowPg->Release();
+                }
+
+                NMaterial* shadowMaterial = NMaterial::CreateMaterialInstance();
+                shadowMaterial->SetParent(shadowMaterialParent);
+                shadowBatch->SetMaterial(shadowMaterial);
+                shadowMaterial->Release();
+
+                ro->ReplaceRenderBatch(ri, shadowBatch);
+                shadowBatch->Release();
+            }
+        }
+    }
+
+    uint32 size = entity->GetChildrenCount();
+    for(uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = entity->GetChild(i);
+        ConvertShadowVolumes(child, shadowMaterialParent);
+    }
+}
+
 void SceneFileV2::OptimizeScene(Entity * rootNode)
 {
     int32 beforeCount = rootNode->GetChildrenCountRecursive();
@@ -1186,14 +1419,32 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 	ReplaceOldNodes(rootNode);
 	RemoveEmptyHierarchy(rootNode);
 
-    if(GetVersion() < 11)
+    if (header.version < SHADOW_VOLUME_SCENE_VERSION)
+    {
+        NMaterial * shadowMaterial = NMaterial::CreateMaterial(FastName("Shadow_Material"), NMaterialName::SHADOW_VOLUME, NMaterial::DEFAULT_QUALITY_NAME);
+        ConvertShadowVolumes(rootNode, shadowMaterial);
+        shadowMaterial->Release();
+    }
+
+    if(header.version < OLD_LODS_SCENE_VERSION)
     {
 	    LodToLod2Converter lodConverter;
 	    lodConverter.ConvertLodToV2(rootNode);
 	    SwitchToRenerObjectConverter switchConverter;
 	    switchConverter.ConsumeSwitchedRenderObjects(rootNode);
-    }
+    }    
 	
+    if(header.version < TREE_ANIMATION_SCENE_VERSION)
+    {
+        TreeToAnimatedTreeConverter treeConverter;
+        treeConverter.ConvertTrees(rootNode);
+    }
+
+    if (header.version < PREREQUIRED_BINORMAL_SCENE_VERSION)
+    {     
+        RebuildTangentSpace(rootNode);
+    }
+
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
     
 //    for (int32 k = 0; k < rootNode->GetChildrenCount(); ++k)
@@ -1206,12 +1457,34 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     Logger::FrameworkDebug("nodes removed: %d before: %d, now: %d, diff: %d", removedNodeCount, beforeCount, nowCount, beforeCount - nowCount);
 }
 
-void SceneFileV2::SetVersion( int32 version )
+void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 {
-	header.version = version;
+    RenderObject *ro = GetRenderObject(entity);
+
+    if (ro && ro->GetType()!=RenderObject::TYPE_SKYBOX)
+    {
+        for (int32 i=0, sz=ro->GetRenderBatchCount(); i<sz; ++i)
+        {
+            RenderBatch *renderBatch = ro->GetRenderBatch(i);
+            PolygonGroup *group = renderBatch->GetPolygonGroup();
+            NMaterial *material = renderBatch->GetMaterial();
+            if (group && material)
+                serializationContext.AddRequestedPolygonGroupFormat(group, material->GetRequiredVertexFormat());            
+        }
+    }
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        UpdatePolygonGroupRequestedFormatRecursively(entity->GetChild(i));
 }
 
-
+void SceneFileV2::SetVersion(const VersionInfo::SceneVersion& version)
+{
+	header.version = version.version;
+    if (scene)
+    {
+        scene->version = version;
+    }
+}
 
 SceneArchive::~SceneArchive()
 {    

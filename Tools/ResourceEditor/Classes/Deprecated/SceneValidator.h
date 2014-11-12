@@ -133,12 +133,18 @@ public:
 protected:
 
     void ValidateRenderComponent(Entity *ownerNode, Set<String> &errorsLog);
-    void ValidateParticleEffectComponent(Entity *ownerNode, Set<String> &errorsLog);
     void ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog);
+
+    void ValidateParticleEffectComponent(Entity *ownerNode, Set<String> &errorsLog) const;
+    void ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog) const;
 
     
 	void ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog);
 	void ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog);
+
+    void FixIdentityTransform(Entity *ownerNode,
+                              Set<String> &errorsLog,
+                              const String& errorMessage);
 
 	bool ValidateColor(Color& color);
 
@@ -159,12 +165,12 @@ protected:
     void ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material);
 
     VariantType* GetCustomPropertyFromParentsTree(Entity *ownerNode, const String & key);
-    bool VariantTypeToBool();
 
     Set<Entity *> emptyNodesForDeletion;
     Set<String> errorMessages;
     
     FilePath pathForChecking;
+    String sceneName;
 };
 
 

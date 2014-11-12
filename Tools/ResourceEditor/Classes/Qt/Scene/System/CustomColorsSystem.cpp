@@ -44,42 +44,22 @@
 #include "Project/ProjectManager.h"
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
-:	SceneSystem(scene)
-,	enabled(false)
+:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	cursorSize(120)
 ,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
 ,	toolImageSprite(NULL)
-,	prevCursorPos(Vector2(-1.f, -1.f))
 ,	originalImage(NULL)
 ,	colorIndex(0)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    cursorSize = 120;
 
-	SetColor(colorIndex);
-	
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
+    SetColor(colorIndex);
 }
 
 CustomColorsSystem::~CustomColorsSystem()
 {
-	SafeRelease(cursorTexture);
 	SafeRelease(toolImageSprite);
-}
-
-bool CustomColorsSystem::IsLandscapeEditingEnabled() const
-{
-	return enabled;
-}
-
-LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::IsCanBeEnabled()
-{
-	return drawSystem->VerifyLandscape();
 }
 
 LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing()
@@ -101,15 +81,15 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 		return enableCustomDrawError;
 	}
 
-	selectionSystem->SetLocked(true);
-	modifSystem->SetLocked(true);
-
-	landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_TILE_FULL);
+    selectionSystem->SetLocked(true);
+    modifSystem->SetLocked(true);
+    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_TILE_FULL);
 
 	FilePath filePath = GetCurrentSaveFileName();
 	if (!filePath.IsEmpty())
 	{
-		LoadTexture(filePath, false);
+        const bool isTextureLoaded = LoadTexture(filePath, false);
+        drawSystem->GetCustomColorsProxy()->ResetLoadedState(isTextureLoaded);
 	}
 	else
 	{
@@ -228,33 +208,6 @@ void CustomColorsSystem::FinishEditing()
 	}
 }
 
-void CustomColorsSystem::UpdateCursorPosition()
-{
-	Vector3 landPos;
-	isIntersectsLandscape = false;
-	if (collisionSystem->LandRayTestFromCamera(landPos))
-	{
-		isIntersectsLandscape = true;
-		Vector2 point(landPos.x, landPos.y);
-		
-		point.x = (float32)((int32)point.x);
-		point.y = (float32)((int32)point.y);
-		
-		AABBox3 box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-		
-		cursorPosition.x = (point.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (point.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = (int32)cursorPosition.y;
-
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
-	{
-		// hide cursor
-		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
-	}
-}
 
 void CustomColorsSystem::UpdateToolImage(bool force)
 {
@@ -269,7 +222,7 @@ Image* CustomColorsSystem::CreateToolImage(int32 sideSize, const FilePath& fileP
 	}
 	
 	SafeRelease(toolImageSprite);
-	toolImageSprite = Sprite::CreateFromTexture(toolTexture, 0.f, 0.f, sideSize, sideSize);
+	toolImageSprite = Sprite::CreateFromTexture(toolTexture, 0.f, 0.f, sideSize, sideSize, true);
 	toolImageSprite->GetTexture()->GeneratePixelesation();
 	
 	SafeRelease(toolTexture);
@@ -289,9 +242,11 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 	Vector2 spritePos = cursorPosition - spriteSize / 2.f;
 	
     Sprite::DrawState drawState;
-	drawState.SetScaleSize(spriteSize.x, spriteSize.y,
-                           toolImageSprite->GetWidth(), toolImageSprite->GetHeight());
-	drawState.SetPosition(spritePos.x, spritePos.y);
+	drawState.SetScaleSize(spriteSize.x / Core::GetVirtualToPhysicalFactor(),
+                           spriteSize.y / Core::GetVirtualToPhysicalFactor(),
+                           toolImageSprite->GetWidth(),
+                           toolImageSprite->GetHeight());
+	drawState.SetPosition(spritePos / Core::GetVirtualToPhysicalFactor());
 	toolImageSprite->Draw(&drawState);
 	
 	RenderManager::Instance()->RestoreRenderTarget();
@@ -302,6 +257,7 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 	Rect updatedRect;
 	updatedRect.SetCenter(spritePos);
 	updatedRect.SetSize(spriteSize);
+    
 	AddRectToAccumulator(updatedRect);
 }
 
@@ -376,22 +332,22 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
 	Texture* customColorsTexture = customColorsSprite->GetTexture();
 
 	Image* image = customColorsTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-	ImageLoader::Save(image, filePath);
+    ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
 
 	StoreSaveFileName(filePath);
 	drawSystem->GetCustomColorsProxy()->ResetChanges();
 }
 
-void CustomColorsSystem::LoadTexture(const DAVA::FilePath &filePath, bool createUndo /* = true */)
+bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool createUndo /* = true */ )
 {
 	if(filePath.IsEmpty())
-		return;
+		return false;
 
     Vector<Image*> images;
-	ImageLoader::CreateFromFileByContent(filePath, images);
+    ImageSystem::Instance()->Load(filePath, images);
 	if(images.empty())
-		return;
+		return false;
 
 	Image* image = images.front();
 	if(image)
@@ -427,6 +383,8 @@ void CustomColorsSystem::LoadTexture(const DAVA::FilePath &filePath, bool create
 			((SceneEditor2*)GetScene())->EndBatch();
 		}
 	}
+
+    return true;
 }
 
 void CustomColorsSystem::StoreSaveFileName(const FilePath& filePath)

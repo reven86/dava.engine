@@ -36,7 +36,6 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(SwitchComponent)
 
 
 SwitchComponent::SwitchComponent()
@@ -50,7 +49,8 @@ Component * SwitchComponent::Clone(Entity * toEntity)
 {
 	SwitchComponent * newComponent = new SwitchComponent();
 	newComponent->SetEntity(toEntity);
-	GlobalEventSystem::Instance()->Event(toEntity, EventSystem::SWITCH_CHANGED);
+    newComponent->SetSwitchIndex(GetSwitchIndex());
+
 	return newComponent;
 }
 

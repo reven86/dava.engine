@@ -45,7 +45,6 @@
 #include "Debug/DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
-#include "Network/MailSender.h"
 #include "Utils/UtilsAndroid.h"
 #include "UI/UITextFieldAndroid.h"
 #include "Platform/TemplateAndroid/DPIHelperAndroid.h"
@@ -53,13 +52,18 @@
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
+#include "Utils/UTF8Utils.h"
+
+//#if defined(__DAVAENGINE_PROFILE__)
+//#include "prof.h"
+//#endif //#if defined(__DAVAENGINE_PROFILE__)
 
 extern "C"
 {
 	jint JNI_OnLoad(JavaVM *vm, void *reserved);
 
 	//JNIApplication
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring path, jstring apppath, jstring logTag, jstring packageName);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnLowMemory(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis);
@@ -90,7 +94,8 @@ extern "C"
 DAVA::CorePlatformAndroid *core = NULL;
 
 #define MAX_PATH_SZ 260
-char documentsFolderPath[MAX_PATH_SZ];
+char documentsFolderPathEx[MAX_PATH_SZ];
+char documentsFolderPathIn[MAX_PATH_SZ];
 char folderDocuments[MAX_PATH_SZ];
 char assetsFolderPath[MAX_PATH_SZ];
 char androidLogTag[MAX_PATH_SZ];
@@ -110,7 +115,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIAssert", &DAVA::JniDVAssertMessage::gJavaClass, &DAVA::JniDVAssertMessage::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIUtils", &DAVA::JniUtils::gJavaClass, &DAVA::JniUtils::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDeviceInfo", &DAVA::JniDeviceInfo::gJavaClass, &DAVA::JniDeviceInfo::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNISendMail", &DAVA::JniMailSender::gJavaClass, &DAVA::JniMailSender::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNITextField", &DAVA::JniTextField::gJavaClass, &DAVA::JniTextField::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIWebView", &DAVA::JniWebView::gJavaClass, &DAVA::JniWebView::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDpiHelper", &DAVA::JniDpiHelper::gJavaClass, &DAVA::JniDpiHelper::gJavaClassName);
@@ -172,25 +176,19 @@ void CreateWStringFromJni(JNIEnv* env, jstring jniString, DAVA::WideString& stri
 	}
 }
 
+jstring CreateJString(JNIEnv* env, const DAVA::WideString& string)
+{
+	return env->NewStringUTF(DAVA::UTF8Utils::EncodeToUTF8(string).c_str());
+}
+
 void InitApplication(JNIEnv * env)
 {
 	if(!core)
 	{
-		//TODO: VK: think about
-// 		char *argv[] =
-// 		{
-// 			(char *)documentsFolderPath,
-// 			(char *)assetsFolderPath
-// 		}
-// 		int argc = 2;
-// 		DAVA::Core::Run(argc, argv, 0);
-
-
 		core = new DAVA::CorePlatformAndroid();
 		if(core)
 		{
-			//androidDelegate = new AndroidDelegate(env);
-			core->CreateAndroidWindow(documentsFolderPath, assetsFolderPath, androidLogTag, androidDelegate);
+			core->CreateAndroidWindow(documentsFolderPathEx, documentsFolderPathIn, assetsFolderPath, androidLogTag, androidDelegate);
 		}
 		else
 		{
@@ -221,20 +219,17 @@ void DeinitApplication()
 // private static native void OnLowMemory();
 // private static native void OnTerminate()
 
-void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring path, jstring apppath, jstring logTag, jstring packageName)
+void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName)
 {
 	bool retCreateLogTag = CreateStringFromJni(env, logTag, androidLogTag);
 //	LOGI("___ OnCreateApplication __ %d", classthis);
 
-	bool retCreatedDocuments = CreateStringFromJni(env, path, documentsFolderPath);
+	bool retCreatedExDocuments = CreateStringFromJni(env, externalPath, documentsFolderPathEx);
+	bool retCreatedInDocuments = CreateStringFromJni(env, internalPath, documentsFolderPathIn);
 	bool retCreatedAssets = CreateStringFromJni(env, apppath, assetsFolderPath);
 	bool retCreatePackageName = CreateStringFromJni(env, packageName, androidPackageName);
 
 	InitApplication(env);
-	if(androidDelegate)
-	{
-		androidDelegate->SetApplication(classthis, androidPackageName);
-	}
 }
 
 void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis)
@@ -258,8 +253,6 @@ void Java_com_dava_framework_JNIApplication_OnLowMemory(JNIEnv * env, jobject cl
 void Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis)
 {
 //	LOGI("___ ON TERMINATE ___");
-
-//	DeinitApplication();
 }
 // END OF JNIApplication
 
@@ -270,11 +263,6 @@ void Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv * env, jobject cl
 //	LOGI("___ ON CREATE ___ %p, %d;  isFirstRun = %d", env, classthis, isFirstRun);
 	if(core)
 	{
-		if(androidDelegate)
-		{
-			androidDelegate->SetActivity(classthis);
-		}
-
 		core->OnCreateActivity();
 
 //		DAVA::DownloadFileFromURLToDocuments("http://seriouswheels.com/pics-2011/def/2011-Edo-Competition-Mercedes-Benz-SLR-Black-Arrow-Exhaust-1024x768.jpg", "~doc:/device.yaml");
@@ -287,6 +275,16 @@ void Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv * env, jobject cla
 
 	if(core)
 	{
+//#if defined(__DAVAENGINE_PROFILE__)
+//
+//#define STR_EXPAND(tok) #tok
+//#define STR(tok) STR_EXPAND(tok)
+//        
+//        const char *moduleName = STR(__DAVAENGINE_MODULE_NAME__);
+//		LOGI("____MODULE___ ___ %s", moduleName);
+//        monstartup(moduleName);
+//#endif //#if defined(__DAVAENGINE_PROFILE__)
+        
 		core->StartVisible();
 	}
 }
@@ -298,6 +296,10 @@ void Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv * env, jobject clas
 	if(core)
 	{
 		core->StopVisible();
+        
+//#if defined(__DAVAENGINE_PROFILE__)
+//        moncleanup();
+//#endif //#if defined(__DAVAENGINE_PROFILE__)
 	}
 }
 
@@ -314,7 +316,6 @@ void Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv * env, jobject c
 	if(core)
 	{
 		core->OnDestroyActivity();
-//		DeinitApplication();
 	}
 }
 
@@ -400,13 +401,7 @@ void Java_com_dava_framework_JNIRenderer_nativeRenderRecreated(JNIEnv * env, job
 		{
 			androidDelegate->SetBuffers(0, 0);
 		}
-
-//		core->RenderRecreated();
 	}
-}
-void Java_com_dava_framework_JNIApplication_SetAssetManager(JNIEnv * env, jobject classthis, jobject assetManager)
-{
-	core->SetAssetManager(AAssetManager_fromJava(env, assetManager));
 }
 
 //END OF activity

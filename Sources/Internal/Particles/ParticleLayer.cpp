@@ -30,7 +30,7 @@
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleEmitter.h"
 #include "Utils/StringFormat.h"
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 #include "FileSystem/FileSystem.h"
 
 namespace DAVA
@@ -79,6 +79,8 @@ ParticleLayer::ParticleLayer()
 	enableFrameBlend = false;
 	inheritPosition = false;
 	type = TYPE_PARTICLES;
+
+    degradeStrategy = DEGRADE_KEEP;
     
     endTime = 100.0f;
 	deltaTime = 0.0f;
@@ -213,6 +215,7 @@ ParticleLayer * ParticleLayer::Clone()
 	dstLayer->isDisabled = isDisabled;
 
 	dstLayer->type = type;
+    dstLayer->degradeStrategy = degradeStrategy;
 	SafeRelease(dstLayer->sprite);
 	dstLayer->sprite = SafeRetain(sprite);
 	dstLayer->layerPivotPoint = layerPivotPoint;	
@@ -370,6 +373,13 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 		type = StringToLayerType(typeNode->AsString(), TYPE_PARTICLES);
 	}
 
+    degradeStrategy = DEGRADE_KEEP;
+    const YamlNode * degradeNode = node->Get("degradeStrategy");
+    if (degradeNode)
+    {
+        degradeStrategy = (eDegradeStrategy)(degradeNode->AsInt());
+    }
+
 	const YamlNode * nameNode = node->Get("name");
 	if (nameNode)
 	{
@@ -384,21 +394,20 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
 	const YamlNode * pivotPointNode = node->Get("pivotPoint");
 	
-
+    SetSprite(NULL);
 	const YamlNode * spriteNode = node->Get("sprite");
 	if (spriteNode && !spriteNode->AsString().empty())
 	{
 		// Store the absolute path to sprite.
 		spritePath = FilePath(configPath.GetDirectory(), spriteNode->AsString());
 
-		Sprite * _sprite = Sprite::Create(spritePath);
-		SetSprite(_sprite);
-        SafeRelease(_sprite);
-	}
-	else
-	{
-		SetSprite(NULL);
-	}
+        if (type != TYPE_SUPEREMITTER_PARTICLES)
+        {
+		    Sprite * _sprite = Sprite::Create(spritePath);
+		    SetSprite(_sprite);
+            SafeRelease(_sprite);
+        }
+	}	
 	if(pivotPointNode)
 	{
 		Vector2 _pivot = pivotPointNode->AsPoint();
@@ -418,7 +427,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	{
 		const Vector<YamlNode*> & vec = lodsNode->AsVector();
 		for (uint32 i=0; i<(uint32)vec.size(); ++i)
-			SetLodActive(i, (bool)(vec[i]->AsInt())); //as AddToArray has no override for bool, flags are stored as int
+			SetLodActive(i, (vec[i]->AsInt()) != 0); //as AddToArray has no override for bool, flags are stored as int
 	}
 
 
@@ -693,6 +702,8 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "layerType",
 																 LayerTypeToString(type, "particles"));
     
+
+    PropertyLineYamlWriter::WritePropertyValueToYamlNode<int32>(layerNode, "degradeStrategy", (int32)degradeStrategy);
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "isLong", isLong);
     
 
@@ -700,10 +711,12 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 
     // Truncate an extension of the sprite file.
     FilePath savePath = spritePath;
-    savePath.TruncateExtension();
-	String relativePath = savePath.GetRelativePathname(configPath.GetDirectory());
-	PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite", relativePath);
-
+    if (!savePath.IsEmpty())
+    {        
+        savePath.TruncateExtension();
+	    String relativePath = savePath.GetRelativePathname(configPath.GetDirectory());
+	    PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite", relativePath);
+    }
 
 	layerNode->Add("srcBlendFactor", BLEND_MODE_NAMES[(int32)srcBlendFactor]);
 	layerNode->Add("dstBlendFactor", BLEND_MODE_NAMES[(int32)dstBlendFactor]);
@@ -761,7 +774,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 
 	YamlNode *lodsNode = new YamlNode(YamlNode::TYPE_ARRAY);
 	for (int32 i =0; i<4; i++)
-		lodsNode->AddValueToArray((int32)activeLODS[i]); //as for now AddValueToArray has no bool type - force it to int
+		lodsNode->Add((int32)activeLODS[i]); //as for now AddValueToArray has no bool type - force it to int
 	layerNode->SetNodeToMap("activeLODS", lodsNode);
 
 	if ((type == TYPE_SUPEREMITTER_PARTICLES) && innerEmitter)

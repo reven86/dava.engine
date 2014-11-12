@@ -53,12 +53,9 @@ void CustomColorsPanel::BlockAllSignals(bool block)
 
 void CustomColorsPanel::StoreState()
 {
-	KeyedArchive* customProperties = GetActiveScene()->GetCustomProperties();
-	if (customProperties)
-	{
-		customProperties->SetInt32(ResourceEditor::CUSTOM_COLORS_BRUSH_SIZE_MIN, sliderWidgetBrushSize->GetRangeMin());
-		customProperties->SetInt32(ResourceEditor::CUSTOM_COLORS_BRUSH_SIZE_MAX, sliderWidgetBrushSize->GetRangeMax());
-	}
+	KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
+    customProperties->SetInt32(ResourceEditor::CUSTOM_COLORS_BRUSH_SIZE_MIN, sliderWidgetBrushSize->GetRangeMin());
+    customProperties->SetInt32(ResourceEditor::CUSTOM_COLORS_BRUSH_SIZE_MAX, sliderWidgetBrushSize->GetRangeMax());
 }
 
 void CustomColorsPanel::RestoreState()
@@ -72,7 +69,7 @@ void CustomColorsPanel::RestoreState()
 	int32 brushRangeMin = DEF_BRUSH_MIN_SIZE;
 	int32 brushRangeMax = DEF_BRUSH_MAX_SIZE;
 	
-	KeyedArchive* customProperties = sceneEditor->GetCustomProperties();
+	KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
 	if (customProperties)
 	{
 		brushRangeMin = customProperties->GetInt32(ResourceEditor::CUSTOM_COLORS_BRUSH_SIZE_MIN, DEF_BRUSH_MIN_SIZE);

@@ -48,12 +48,22 @@ public:
     virtual void Process() = 0;
 
     virtual void PrintUsage() = 0;
+    
+    virtual DAVA::FilePath GetQualityConfigPath() const {return DAVA::FilePath(); };
+    
+    virtual void DumpParams() {};
 
     inline const DAVA::Set<DAVA::String> & GetErrorList() const;
     
 	inline bool IsOneFrameCommand() const;
 
+    static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath & pathname);
+
+    
 protected:
+    
+    DAVA::FilePath CreateQualityConfigPath(const DAVA::FilePath & path) const;
+    
     
     DAVA::Set<DAVA::String> errors;
 	bool oneFrameCommand;

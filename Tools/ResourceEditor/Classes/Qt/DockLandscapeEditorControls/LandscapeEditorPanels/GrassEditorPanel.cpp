@@ -9,6 +9,15 @@
 #define LAYERS_PREVIEW_WIDTH 48
 #define LAYERS_CHECKBOX_WIDTH 24
 
+#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QApplication>
+#include <QHeaderView>
+#include <QPainter>
+#include <QFileDialog>
+
+
 GrassEditorPanel::GrassEditorPanel(QWidget* parent)
 :	LandscapeEditorBasePanel(parent)
 {
@@ -22,7 +31,7 @@ GrassEditorPanel::~GrassEditorPanel()
 
 bool GrassEditorPanel::GetEditorEnabled()
 {
-	return GetActiveScene()->grassEditorSystem->IsEnabledGrassEdit();
+	return GetActiveScene()->grassEditorSystem->IsLandscapeEditingEnabled();
 }
 
 void GrassEditorPanel::OnEditorEnabled()
@@ -180,7 +189,8 @@ void GrassEditorPanel::RestoreState()
         if(NULL != vegetationRObj)
         {
             QPixmap txpix;
-            const DAVA::TextureSheet &sheet = vegetationRObj->GetTextureSheet();
+            DAVA::TextureSheet sheet;
+            sheet.Load(vegetationRObj->GetTextureSheetPath());
 
             DAVA::FilePath texturePath = vegetationRObj->GetVegetationTexture();
             texturePath.ReplaceExtension(".png");

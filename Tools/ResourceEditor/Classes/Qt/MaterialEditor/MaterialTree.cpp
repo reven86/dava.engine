@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 MaterialTree::MaterialTree(QWidget *parent /* = 0 */)
 : QTreeView(parent)
 { 
-	treeModel = new MaterialFilteringModel(new MaterialModel());
+	treeModel = new MaterialFilteringModel(new MaterialModel(this));
 	setModel(treeModel);
 	setContextMenuPolicy(Qt::CustomContextMenu);
     setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -311,14 +311,21 @@ void MaterialTree::OnCommandExecuted(SceneEditor2 *scene, const Command2 *comman
 {
 	if(QtMainWindow::Instance()->GetCurrentScene() == scene)
 	{
-		int commandID = command->GetId();
-		if(		(commandID == CMDID_DELETE_RENDER_BATCH) 
-			||	(commandID == CMDID_CLONE_LAST_BATCH) 
-            ||	(commandID == CMDID_CONVERT_TO_SHADOW) 
-			||	(commandID == CMDID_MATERIAL_SWITCH_PARENT))
-		{
-			Update();
-		}
+		const int commandID = command->GetId();
+        switch (commandID)
+        {
+        case CMDID_INSP_MEMBER_MODIFY:
+            treeModel->invalidate();
+            break;
+        case CMDID_DELETE_RENDER_BATCH:
+        case CMDID_CLONE_LAST_BATCH:
+        case CMDID_CONVERT_TO_SHADOW:
+        case CMDID_MATERIAL_SWITCH_PARENT:
+            Update();
+            break;
+        default:
+            break;
+        }
 	}
 }
 

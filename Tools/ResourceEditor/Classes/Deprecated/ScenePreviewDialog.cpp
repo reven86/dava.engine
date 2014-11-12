@@ -67,17 +67,15 @@ ScenePreviewDialog::~ScenePreviewDialog()
 
 void ScenePreviewDialog::Show(const FilePath &scenePathname)
 {
-    bool enabled = SettingsManager::Instance()->GetValue(ResourceEditor::SETTINGS_PREVIEW_DIALOG_ENABLED, SettingsManager::GENERAL).AsBool();
+    bool enabled = SettingsManager::GetValue(Settings::General_PreviewEnabled).AsBool();
     if(!enabled)
         return;
-    
     
     if(!GetParent())
     {
         UIScreen *screen = UIScreenManager::Instance()->GetScreen();
         screen->AddControl(this);
     }
-    
     
     //show preview
     if(errorMessage->GetParent())

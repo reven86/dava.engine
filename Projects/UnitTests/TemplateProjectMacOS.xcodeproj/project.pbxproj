@@ -13,19 +13,20 @@
 		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01217CF994300D5A334 /* ThreadSyncTest.cpp */; };
+		1146E0F219D00408009E5FAB /* MathTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E0F019D00408009E5FAB /* MathTest.cpp */; };
 		15CBB0B818D30B870038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0B618D30B870038ABA3 /* StringFormatTest.cpp */; };
 		1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A194183D1B4A000DE581 /* AVFoundation.framework */; };
 		1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A19A183D227A000DE581 /* CoreMedia.framework */; };
 		1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF5717DF6CC200000391 /* UIMovieTest.cpp */; };
 		495B67091797DCA30017D8DD /* TransparentWebViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 495B67071797DCA30017D8DD /* TransparentWebViewTest.cpp */; };
 		49637DFA18B20D79008A3398 /* RectSpriteTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49637DF818B20D79008A3398 /* RectSpriteTest.cpp */; };
-		49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */; };
 		49C2B8F816F75A39006E24CB /* DeviceInfoTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */; };
 		49C432081675E370000EA877 /* DXTTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C432061675E370000EA877 /* DXTTest.cpp */; };
+		4F25831919BF237800C28926 /* FunctionBindSingalTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */; };
+		50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50353034194A46C4006B66DB /* SceneSystemTest.cpp */; };
 		5C44737715B5A0FD00028948 /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C44737515B5A0FD00028948 /* SoundTest.cpp */; };
 		5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA2461B158F46D600465879 /* EntityTest.cpp */; };
 		5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC24FA156CC72400742348 /* SampleTest.cpp */; };
-		5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC24FC156CC72400742348 /* TestTemplate.cpp */; };
 		5CDC2501156CC93300742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2500156CC93300742348 /* libz.dylib */; };
 		5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CF2253E157E555D00DF5395 /* BaseScreen.cpp */; };
 		6260B9E418E9C225002DA65F /* SaveImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6260B9E218E9C224002DA65F /* SaveImageTest.cpp */; };
@@ -33,15 +34,22 @@
 		7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497446617B3C38D00282DAA /* AlignTest.cpp */; };
 		749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 749A1B4D174A73130082B080 /* UIScrollViewTest.cpp */; };
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
+		840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840CB02218EE08C600B722D0 /* JPEGTest.cpp */; };
 		84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		B72EFFE319CB340100D38C33 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B72EFFE119CB340100D38C33 /* TextSizeTest.cpp */; };
+		B7D6C98E19CAC7EB0095250A /* BiDiTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7D6C98D19CAC7EB0095250A /* BiDiTest.cpp */; };
 		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
 		C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */; };
+		C172EC1918C9F412004309CF /* DFFontTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC1718C9F412004309CF /* DFFontTest.cpp */; };
 		C177F28016D227A70036F02B /* InputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C177F27E16D227A70036F02B /* InputTest.cpp */; };
 		C18046CA16D52ECA00DC24D8 /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C18046C816D52EC900DC24D8 /* DPITest.cpp */; };
+		D7E6C5BD1982562C00B96D1A /* DLCDownloadTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C5BB1982562C00B96D1A /* DLCDownloadTest.cpp */; };
 		E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81F2AEE16BFA4A600C4545E /* MaterialCompilerTest.cpp */; };
 		E83604F1163FEB4C0061A636 /* KeyedArchiveTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604ED163FEB4C0061A636 /* KeyedArchiveTest.cpp */; };
 		E83604F2163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */; };
+		E8490AA8192386B600C07E36 /* ParseTextTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8490AA6192386B600C07E36 /* ParseTextTest.cpp */; };
+		E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */; };
 		E8583EE0183E41B9009DEEB6 /* ComponentsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */; };
 		E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679172175F407200C5A6A2 /* FormatsTest.cpp */; };
 		E87402D7172582DB00A4A75A /* FileListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87402D1172582DB00A4A75A /* FileListTest.cpp */; };
@@ -49,6 +57,7 @@
 		E87402D9172582DB00A4A75A /* FileSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87402D5172582DB00A4A75A /* FileSystemTest.cpp */; };
 		E87BB1E4162D5CCB001A5448 /* TextureUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87BB1E2162D5CCB001A5448 /* TextureUtils.cpp */; };
 		E87E23B7161334E5005DB5A8 /* PVRTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87E23B5161334E5005DB5A8 /* PVRTest.cpp */; };
+		E8B47D31196D4F5200D8ADF6 /* ImageSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B47D2F196D4F5200D8ADF6 /* ImageSizeTest.cpp */; };
 		E8B6B3C11705DD97004F665E /* LocalizationTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3BF1705DD97004F665E /* LocalizationTest.cpp */; };
 		E8EF78011669249000DA7BD2 /* CloneTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8EF77FF1669249000DA7BD2 /* CloneTest.cpp */; };
 		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
@@ -118,6 +127,8 @@
 		02F8B01217CF994300D5A334 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadSyncTest.cpp; path = Classes/ThreadSyncTest.cpp; sourceTree = "<group>"; };
 		02F8B01317CF994300D5A334 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadSyncTest.h; path = Classes/ThreadSyncTest.h; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		1146E0F019D00408009E5FAB /* MathTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MathTest.cpp; path = Classes/MathTest.cpp; sourceTree = "<group>"; };
+		1146E0F119D00408009E5FAB /* MathTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MathTest.h; path = Classes/MathTest.h; sourceTree = "<group>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		15CBB0B618D30B870038ABA3 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringFormatTest.cpp; path = Classes/StringFormatTest.cpp; sourceTree = "<group>"; };
 		15CBB0B718D30B870038ABA3 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringFormatTest.h; path = Classes/StringFormatTest.h; sourceTree = "<group>"; };
@@ -133,12 +144,14 @@
 		495B67081797DCA30017D8DD /* TransparentWebViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TransparentWebViewTest.h; path = Classes/TransparentWebViewTest.h; sourceTree = "<group>"; };
 		49637DF818B20D79008A3398 /* RectSpriteTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RectSpriteTest.cpp; path = Classes/RectSpriteTest.cpp; sourceTree = "<group>"; };
 		49637DF918B20D79008A3398 /* RectSpriteTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RectSpriteTest.h; path = Classes/RectSpriteTest.h; sourceTree = "<group>"; };
-		49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DLCSystemTests.cpp; path = Classes/DLCSystemTests.cpp; sourceTree = "<group>"; };
-		49B774CC16B188A900A80FA3 /* DLCSystemTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DLCSystemTests.h; path = Classes/DLCSystemTests.h; sourceTree = "<group>"; };
 		49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DeviceInfoTest.cpp; path = Classes/DeviceInfoTest.cpp; sourceTree = "<group>"; };
 		49C2B8F716F75A39006E24CB /* DeviceInfoTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DeviceInfoTest.h; path = Classes/DeviceInfoTest.h; sourceTree = "<group>"; };
 		49C432061675E370000EA877 /* DXTTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DXTTest.cpp; path = Classes/DXTTest.cpp; sourceTree = "<group>"; };
 		49C432071675E370000EA877 /* DXTTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DXTTest.h; path = Classes/DXTTest.h; sourceTree = "<group>"; };
+		4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FunctionBindSingalTest.cpp; path = Classes/FunctionBindSingalTest.cpp; sourceTree = "<group>"; };
+		4F25831819BF237800C28926 /* FunctionBindSingalTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FunctionBindSingalTest.h; path = Classes/FunctionBindSingalTest.h; sourceTree = "<group>"; };
+		50353033194A46C4006B66DB /* SceneSystemTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneSystemTest.h; path = Classes/SceneSystemTest.h; sourceTree = "<group>"; };
+		50353034194A46C4006B66DB /* SceneSystemTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SceneSystemTest.cpp; path = Classes/SceneSystemTest.cpp; sourceTree = "<group>"; };
 		5C44737515B5A0FD00028948 /* SoundTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SoundTest.cpp; path = Classes/SoundTest.cpp; sourceTree = "<group>"; };
 		5C44737615B5A0FD00028948 /* SoundTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SoundTest.h; path = Classes/SoundTest.h; sourceTree = "<group>"; };
 		5C6EF11B15751E1B001E45AD /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -148,7 +161,6 @@
 		5CA2461C158F46D600465879 /* EntityTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EntityTest.h; path = Classes/EntityTest.h; sourceTree = "<group>"; };
 		5CDC24FA156CC72400742348 /* SampleTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SampleTest.cpp; path = Classes/SampleTest.cpp; sourceTree = "<group>"; };
 		5CDC24FB156CC72400742348 /* SampleTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SampleTest.h; path = Classes/SampleTest.h; sourceTree = "<group>"; };
-		5CDC24FC156CC72400742348 /* TestTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TestTemplate.cpp; path = Classes/TestTemplate.cpp; sourceTree = "<group>"; };
 		5CDC24FD156CC72400742348 /* TestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestTemplate.h; path = Classes/TestTemplate.h; sourceTree = "<group>"; };
 		5CDC2500156CC93300742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		5CE56F9D157F2804006C953B /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Config.h; path = Classes/Config.h; sourceTree = "<group>"; };
@@ -165,22 +177,37 @@
 		749A3DCC17B8CF400008EC12 /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
 		749A3DCD17B8CF400008EC12 /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignTest.h; path = Classes/AlignTest.h; sourceTree = "<group>"; };
 		74AF6340188530CD00070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		840CB02218EE08C600B722D0 /* JPEGTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JPEGTest.cpp; path = Classes/JPEGTest.cpp; sourceTree = "<group>"; };
+		840CB02318EE08C600B722D0 /* JPEGTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JPEGTest.h; path = Classes/JPEGTest.h; sourceTree = "<group>"; };
 		84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DateTimeTest.cpp; path = Classes/DateTimeTest.cpp; sourceTree = "<group>"; };
 		84E2926E18DA5D4300B5D4C9 /* DateTimeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DateTimeTest.h; path = Classes/DateTimeTest.h; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B72EFFE119CB340100D38C33 /* TextSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TextSizeTest.cpp; path = Classes/TextSizeTest.cpp; sourceTree = "<group>"; };
+		B72EFFE219CB340100D38C33 /* TextSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextSizeTest.h; path = Classes/TextSizeTest.h; sourceTree = "<group>"; };
+		B7D6C98819CAC6F90095250A /* BiDiTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BiDiTest.h; path = Classes/BiDiTest.h; sourceTree = "<group>"; };
+		B7D6C98D19CAC7EB0095250A /* BiDiTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BiDiTest.cpp; path = Classes/BiDiTest.cpp; sourceTree = "<group>"; };
 		C151B18E16D37E2700E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eMailTest.cpp; path = Classes/eMailTest.cpp; sourceTree = "<group>"; };
 		C151B1BF16D50BDA00E09BAF /* eMailTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = eMailTest.h; path = Classes/eMailTest.h; sourceTree = "<group>"; };
+		C172EC1718C9F412004309CF /* DFFontTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DFFontTest.cpp; path = Classes/DFFontTest.cpp; sourceTree = "<group>"; };
+		C172EC1818C9F412004309CF /* DFFontTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DFFontTest.h; path = Classes/DFFontTest.h; sourceTree = "<group>"; };
 		C177F27E16D227A70036F02B /* InputTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputTest.cpp; path = Classes/InputTest.cpp; sourceTree = "<group>"; };
 		C177F27F16D227A70036F02B /* InputTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputTest.h; path = Classes/InputTest.h; sourceTree = "<group>"; };
 		C18046C816D52EC900DC24D8 /* DPITest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DPITest.cpp; path = Classes/DPITest.cpp; sourceTree = "<group>"; };
 		C18046C916D52ECA00DC24D8 /* DPITest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DPITest.h; path = Classes/DPITest.h; sourceTree = "<group>"; };
+		D7E6C5BB1982562C00B96D1A /* DLCDownloadTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DLCDownloadTest.cpp; path = Classes/DLCDownloadTest.cpp; sourceTree = "<group>"; };
+		D7E6C5BC1982562C00B96D1A /* DLCDownloadTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DLCDownloadTest.h; path = Classes/DLCDownloadTest.h; sourceTree = "<group>"; };
 		E81F2AEE16BFA4A600C4545E /* MaterialCompilerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaterialCompilerTest.cpp; path = Classes/MaterialCompilerTest.cpp; sourceTree = "<group>"; };
 		E81F2AEF16BFA4A600C4545E /* MaterialCompilerTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaterialCompilerTest.h; path = Classes/MaterialCompilerTest.h; sourceTree = "<group>"; };
 		E83604ED163FEB4C0061A636 /* KeyedArchiveTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyedArchiveTest.cpp; path = Classes/KeyedArchiveTest.cpp; sourceTree = "<group>"; };
 		E83604EE163FEB4C0061A636 /* KeyedArchiveTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveTest.h; path = Classes/KeyedArchiveTest.h; sourceTree = "<group>"; };
 		E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyedArchiveYamlTest.cpp; path = Classes/KeyedArchiveYamlTest.cpp; sourceTree = "<group>"; };
 		E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveYamlTest.h; path = Classes/KeyedArchiveYamlTest.h; sourceTree = "<group>"; };
+		E8490AA11923838D00C07E36 /* UITestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UITestTemplate.h; path = Classes/UITestTemplate.h; sourceTree = "<group>"; };
+		E8490AA6192386B600C07E36 /* ParseTextTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ParseTextTest.cpp; path = Classes/ParseTextTest.cpp; sourceTree = "<group>"; };
+		E8490AA7192386B600C07E36 /* ParseTextTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParseTextTest.h; path = Classes/ParseTextTest.h; sourceTree = "<group>"; };
+		E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OpenGLES30FormatTest.cpp; path = Classes/OpenGLES30FormatTest.cpp; sourceTree = "<group>"; };
+		E8573EA718C890E4004A8B50 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OpenGLES30FormatTest.h; path = Classes/OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ComponentsTest.cpp; path = Classes/ComponentsTest.cpp; sourceTree = "<group>"; };
 		E8583EDF183E41B9009DEEB6 /* ComponentsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ComponentsTest.h; path = Classes/ComponentsTest.h; sourceTree = "<group>"; };
 		E8679172175F407200C5A6A2 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Classes/FormatsTest.cpp; sourceTree = "<group>"; };
@@ -195,6 +222,8 @@
 		E87BB1E3162D5CCB001A5448 /* TextureUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextureUtils.h; path = Classes/TextureUtils.h; sourceTree = "<group>"; };
 		E87E23B5161334E5005DB5A8 /* PVRTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PVRTest.cpp; path = Classes/PVRTest.cpp; sourceTree = "<group>"; };
 		E87E23B6161334E5005DB5A8 /* PVRTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PVRTest.h; path = Classes/PVRTest.h; sourceTree = "<group>"; };
+		E8B47D2F196D4F5200D8ADF6 /* ImageSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageSizeTest.cpp; path = Classes/ImageSizeTest.cpp; sourceTree = "<group>"; };
+		E8B47D30196D4F5200D8ADF6 /* ImageSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageSizeTest.h; path = Classes/ImageSizeTest.h; sourceTree = "<group>"; };
 		E8B6B3BF1705DD97004F665E /* LocalizationTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocalizationTest.cpp; path = Classes/LocalizationTest.cpp; sourceTree = "<group>"; };
 		E8B6B3C01705DD97004F665E /* LocalizationTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocalizationTest.h; path = Classes/LocalizationTest.h; sourceTree = "<group>"; };
 		E8EF77FF1669249000DA7BD2 /* CloneTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CloneTest.cpp; path = Classes/CloneTest.cpp; sourceTree = "<group>"; };
@@ -275,6 +304,24 @@
 				FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */,
 			);
 			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		1146E10119D0049E009E5FAB /* MathTest */ = {
+			isa = PBXGroup;
+			children = (
+				1146E0F019D00408009E5FAB /* MathTest.cpp */,
+				1146E0F119D00408009E5FAB /* MathTest.h */,
+			);
+			name = MathTest;
+			sourceTree = "<group>";
+		};
+		1146E10419D004A9009E5FAB /* FunctionBindSignalTest */ = {
+			isa = PBXGroup;
+			children = (
+				4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */,
+				4F25831819BF237800C28926 /* FunctionBindSingalTest.h */,
+			);
+			name = FunctionBindSignalTest;
 			sourceTree = "<group>";
 		};
 		15CBB0B318D30B6E0038ABA3 /* StringFormatTest */ = {
@@ -374,13 +421,13 @@
 			name = RectSpriteTest;
 			sourceTree = "<group>";
 		};
-		49B774CA16B1889A00A80FA3 /* DLCTest */ = {
+		49B774CA16B1889A00A80FA3 /* DLCDownloadTest */ = {
 			isa = PBXGroup;
 			children = (
-				49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */,
-				49B774CC16B188A900A80FA3 /* DLCSystemTests.h */,
+				D7E6C5BB1982562C00B96D1A /* DLCDownloadTest.cpp */,
+				D7E6C5BC1982562C00B96D1A /* DLCDownloadTest.h */,
 			);
-			name = DLCTest;
+			name = DLCDownloadTest;
 			sourceTree = "<group>";
 		};
 		49C2B8F416F75A2A006E24CB /* DeviceInfoTest */ = {
@@ -404,6 +451,17 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				1146E10119D0049E009E5FAB /* MathTest */,
+				1146E10419D004A9009E5FAB /* FunctionBindSignalTest */,
+				B7BEB95419CB2265005B4BC7 /* TextSizeTest */,
+				B7D6C98C19CAC7220095250A /* BiDiTest */,
+				4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */,
+				4F25831819BF237800C28926 /* FunctionBindSingalTest.h */,
+				C172EC1418C9F406004309CF /* DFFont */,
+				E8B47D2C196D4F4800D8ADF6 /* ImageSizeTest */,
+				E8490AA51923864A00C07E36 /* ParseTextTest */,
+				E8573EA318C890B0004A8B50 /* OpenGLES30 */,
+				840CB01F18EE088A00B722D0 /* JPEGTest */,
 				6260B9DF18E9C209002DA65F /* SaveImageTest */,
 				15CBB0B318D30B6E0038ABA3 /* StringFormatTest */,
 				84E2926A18DA5D2700B5D4C9 /* DateTimeTest */,
@@ -424,7 +482,7 @@
 				C151B1BC16D50BD000E09BAF /* eMailTest */,
 				C177F27C16D2279B0036F02B /* InputTest */,
 				E81F2AEA16BFA49100C4545E /* MaterialCompilerTest */,
-				49B774CA16B1889A00A80FA3 /* DLCTest */,
+				49B774CA16B1889A00A80FA3 /* DLCDownloadTest */,
 				E8EF77FE1669248300DA7BD2 /* CloneTest */,
 				E83604EC163FEB370061A636 /* KeyedArchiveTest */,
 				49C432051675E35E000EA877 /* DXTTests */,
@@ -452,6 +510,8 @@
 		5CA2461A158F46CD00465879 /* EntityTest */ = {
 			isa = PBXGroup;
 			children = (
+				50353033194A46C4006B66DB /* SceneSystemTest.h */,
+				50353034194A46C4006B66DB /* SceneSystemTest.cpp */,
 				5CA2461B158F46D600465879 /* EntityTest.cpp */,
 				5CA2461C158F46D600465879 /* EntityTest.h */,
 			);
@@ -463,8 +523,8 @@
 			children = (
 				5CF2253E157E555D00DF5395 /* BaseScreen.cpp */,
 				5CF2253F157E555D00DF5395 /* BaseScreen.h */,
-				5CDC24FC156CC72400742348 /* TestTemplate.cpp */,
 				5CDC24FD156CC72400742348 /* TestTemplate.h */,
+				E8490AA11923838D00C07E36 /* UITestTemplate.h */,
 			);
 			name = TestSuite;
 			sourceTree = "<group>";
@@ -514,6 +574,15 @@
 			name = AlignTest;
 			sourceTree = "<group>";
 		};
+		840CB01F18EE088A00B722D0 /* JPEGTest */ = {
+			isa = PBXGroup;
+			children = (
+				840CB02218EE08C600B722D0 /* JPEGTest.cpp */,
+				840CB02318EE08C600B722D0 /* JPEGTest.h */,
+			);
+			name = JPEGTest;
+			sourceTree = "<group>";
+		};
 		84E2926A18DA5D2700B5D4C9 /* DateTimeTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -523,6 +592,24 @@
 			name = DateTimeTest;
 			sourceTree = "<group>";
 		};
+		B7BEB95419CB2265005B4BC7 /* TextSizeTest */ = {
+			isa = PBXGroup;
+			children = (
+				B72EFFE119CB340100D38C33 /* TextSizeTest.cpp */,
+				B72EFFE219CB340100D38C33 /* TextSizeTest.h */,
+			);
+			name = TextSizeTest;
+			sourceTree = "<group>";
+		};
+		B7D6C98C19CAC7220095250A /* BiDiTest */ = {
+			isa = PBXGroup;
+			children = (
+				B7D6C98D19CAC7EB0095250A /* BiDiTest.cpp */,
+				B7D6C98819CAC6F90095250A /* BiDiTest.h */,
+			);
+			name = BiDiTest;
+			sourceTree = "<group>";
+		};
 		C151B1BC16D50BD000E09BAF /* eMailTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -530,6 +617,15 @@
 				C151B1BF16D50BDA00E09BAF /* eMailTest.h */,
 			);
 			name = eMailTest;
+			sourceTree = "<group>";
+		};
+		C172EC1418C9F406004309CF /* DFFont */ = {
+			isa = PBXGroup;
+			children = (
+				C172EC1718C9F412004309CF /* DFFontTest.cpp */,
+				C172EC1818C9F412004309CF /* DFFontTest.h */,
+			);
+			name = DFFont;
 			sourceTree = "<group>";
 		};
 		C177F27C16D2279B0036F02B /* InputTest */ = {
@@ -570,6 +666,24 @@
 			name = KeyedArchiveTest;
 			sourceTree = "<group>";
 		};
+		E8490AA51923864A00C07E36 /* ParseTextTest */ = {
+			isa = PBXGroup;
+			children = (
+				E8490AA6192386B600C07E36 /* ParseTextTest.cpp */,
+				E8490AA7192386B600C07E36 /* ParseTextTest.h */,
+			);
+			name = ParseTextTest;
+			sourceTree = "<group>";
+		};
+		E8573EA318C890B0004A8B50 /* OpenGLES30 */ = {
+			isa = PBXGroup;
+			children = (
+				E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */,
+				E8573EA718C890E4004A8B50 /* OpenGLES30FormatTest.h */,
+			);
+			name = OpenGLES30;
+			sourceTree = "<group>";
+		};
 		E8583EDB183E41B2009DEEB6 /* ComponentsTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -608,6 +722,15 @@
 				E87E23B6161334E5005DB5A8 /* PVRTest.h */,
 			);
 			name = PVRTests;
+			sourceTree = "<group>";
+		};
+		E8B47D2C196D4F4800D8ADF6 /* ImageSizeTest */ = {
+			isa = PBXGroup;
+			children = (
+				E8B47D2F196D4F5200D8ADF6 /* ImageSizeTest.cpp */,
+				E8B47D30196D4F5200D8ADF6 /* ImageSizeTest.h */,
+			);
+			name = ImageSizeTest;
 			sourceTree = "<group>";
 		};
 		E8B6B3BD1705DD80004F665E /* LocaliztionTests */ = {
@@ -790,7 +913,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ntouch -cm ${SRCROOT}/Data/\ntouch -cm ${SRCROOT}/Data/XGfx/\ntouch -cm ${SRCROOT}/Data/Configs/\ntouch -cm ${SRCROOT}/Data/Audio/";
+			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ntouch -cm ${SRCROOT}/Data/\ntouch -cm ${SRCROOT}/Data/XGfx/\ntouch -cm ${SRCROOT}/Data/Configs/\ntouch -cm ${SRCROOT}/Data/Audio/";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -800,11 +923,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				FEA30C331231362D00E691CC /* main.mm in Sources */,
+				4F25831919BF237800C28926 /* FunctionBindSingalTest.cpp in Sources */,
 				15CBB0B818D30B870038ABA3 /* StringFormatTest.cpp in Sources */,
 				FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
-				5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */,
+				50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */,
+				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
+				B72EFFE319CB340100D38C33 /* TextSizeTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
 				FEA8F6EB159DB0EF00EED3DC /* MemoryAllocatorsTest.cpp in Sources */,
@@ -821,14 +947,16 @@
 				49C432081675E370000EA877 /* DXTTest.cpp in Sources */,
 				E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */,
 				6260B9E418E9C225002DA65F /* SaveImageTest.cpp in Sources */,
-				49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */,
 				C177F28016D227A70036F02B /* InputTest.cpp in Sources */,
+				B7D6C98E19CAC7EB0095250A /* BiDiTest.cpp in Sources */,
 				C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */,
 				C18046CA16D52ECA00DC24D8 /* DPITest.cpp in Sources */,
 				49C2B8F816F75A39006E24CB /* DeviceInfoTest.cpp in Sources */,
 				E8B6B3C11705DD97004F665E /* LocalizationTest.cpp in Sources */,
 				7410E83117146D5B0028AAAA /* UIListTest.cpp in Sources */,
 				749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */,
+				1146E0F219D00408009E5FAB /* MathTest.cpp in Sources */,
+				E8B47D31196D4F5200D8ADF6 /* ImageSizeTest.cpp in Sources */,
 				E87402D7172582DB00A4A75A /* FileListTest.cpp in Sources */,
 				E87402D8172582DB00A4A75A /* FilePathTest.cpp in Sources */,
 				E87402D9172582DB00A4A75A /* FileSystemTest.cpp in Sources */,
@@ -836,8 +964,12 @@
 				84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */,
 				E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */,
 				7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */,
+				C172EC1918C9F412004309CF /* DFFontTest.cpp in Sources */,
+				840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */,
 				02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */,
+				E8490AA8192386B600C07E36 /* ParseTextTest.cpp in Sources */,
 				1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */,
+				D7E6C5BD1982562C00B96D1A /* DLCDownloadTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -875,6 +1007,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -886,11 +1019,17 @@
 					./../../Sources/External,
 					/opt/local/include/,
 					../../Libs/include,
+					./../../Sources/Tools,
 				);
 				INFOPLIST_FILE = "TemplateProjectMacOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/oggvorbis/lib\"",
+					"\"$(SRCROOT)/../../Libs/feetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/libs\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
@@ -902,6 +1041,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -911,11 +1051,17 @@
 					./../../Sources/External,
 					/opt/local/include/,
 					../../Libs/include,
+					./../../Sources/Tools,
 				);
 				INFOPLIST_FILE = "TemplateProjectMacOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/oggvorbis/lib\"",
+					"\"$(SRCROOT)/../../Libs/feetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/libs\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
@@ -927,6 +1073,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
@@ -954,6 +1101,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;

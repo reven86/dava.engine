@@ -314,12 +314,16 @@ void RenderManager::DetectRenderingCapabilities()
     
     //TODO: need to set correct values
     caps.isPVRTCSupported = false;
+	caps.isPVRTC2Supported = false;
     caps.isETCSupported = false;
+	caps.isETC2Supported = false;
     caps.isBGRA8888Supported = false;
     caps.isFloat16Supported = false;
     caps.isFloat32Supported = false;
 	caps.isDXTSupported = false;
-    
+    caps.isRFormatSupported = false;
+	caps.isRGFormatSupported = false;
+
 	//if (D3DCURSORCAPS_COLOR & deviceCaps.CursorCaps)
 	//	caps.isHardwareCursorSupported = true;
 }

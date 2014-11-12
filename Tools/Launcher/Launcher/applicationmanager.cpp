@@ -121,6 +121,14 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask> & tasks)
                 }
             }
         }
+
+        int localBranchCount = localConfig->GetBranchCount();
+        for(int i = 0; i < localBranchCount; ++i)
+        {
+            Branch * branch = localConfig->GetBranch(i);
+            if(!remoteConfig->GetBranch(branch->id))
+                tasks.push_back(UpdateTask(branch->id, "", AppVersion(), false, true));
+        }
     }
 }
 
@@ -155,7 +163,7 @@ void ApplicationManager::DownloadFinished()
         bool breakFlag = false;
         QByteArray data = currentDownload->readAll();
         if(currentDownload->hasRawHeader(QByteArray("Content-Type"))
-                && currentDownload->rawHeader(QByteArray("Content-Type")) == QByteArray("text/html"))
+                && currentDownload->rawHeader(QByteArray("Content-Type")).left(9) == QByteArray("text/html"))
             breakFlag = true;
 
         if(data.size() && !breakFlag)
@@ -226,4 +234,36 @@ bool ApplicationManager::RemoveApplication(const QString & branchID, const QStri
         return true;
     }
     return false;
+}
+
+bool ApplicationManager::RemoveBranch(const QString & branchID)
+{
+    Branch * branch = localConfig->GetBranch(branchID);
+    if(!branch)
+        return false;
+
+    int appCount = branch->GetAppCount();
+    for(int i = 0; i < appCount; ++i)
+    {
+        Application * app = branch->GetApplication(i);
+        int versionCount = app->GetVerionsCount();
+        for(int j = 0; j < versionCount; ++j)
+        {
+            AppVersion * version = app->GetVersion(j);
+            QString runPath = FileManager::Instance()->GetApplicationFolder(branchID, app->id) + version->runPath;
+            while(ProcessHelper::IsProcessRuning(runPath))
+            {
+                int result = ErrorMessanger::Instance()->ShowRetryDlg(true);
+                if(result == QMessageBox::Cancel)
+                    return false;
+            }
+        }
+    }
+
+    QString branchPath = FileManager::Instance()->GetBranchFolder(branchID);
+    FileManager::Instance()->DeleteDirectory(branchPath);
+    localConfig->RemoveBranch(branch->id);
+    localConfig->SaveToYamlFile(localConfigFilePath);
+
+    return true;
 }

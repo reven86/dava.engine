@@ -44,21 +44,6 @@ print "Framework directory:" + frameworkDir
 print "Project directory:" + projectDir
 
 
-# Change Config.h ot turn on AUTOTESTING mode
-if 2 <= len(arguments):
-    autotestingConfigSrcPath = os.path.realpath(currentDir + "/../Data/Config.h")
-    autotestingConfigDestPath = os.path.realpath(frameworkDir + "/Sources/Internal/Autotesting/Config.h")
-    if os.path.exists(autotestingConfigDestPath):
-        if filecmp.cmp(autotestingConfigSrcPath, autotestingConfigDestPath):
-            print "skip copy Config.h - dest file exists and equal to src file"
-        else:
-            print "delete " + autotestingConfigDestPath
-            os.remove(autotestingConfigDestPath)
-            print "copy " + autotestingConfigSrcPath + " to " + autotestingConfigDestPath
-            shutil.copy(autotestingConfigSrcPath, autotestingConfigDestPath)
-    else:
-        print "copy " + autotestingConfigSrcPath + " to " + autotestingConfigDestPath
-        shutil.copy(autotestingConfigSrcPath, autotestingConfigDestPath)
 
 autotestingSrcFolder = os.path.realpath(projectDir + "/Autotesting")
 scriptsSrcFolder = os.path.realpath(projectDir + "/Scripts")
@@ -68,17 +53,11 @@ scripts = ["/copy_tests.py"]
 
 if (platform.system() == "Darwin"):
     if (platformName == "iOS"):
-        scripts.append("/runOnDevice.sh")
-        scripts.append("/floatsign.sh")
+        #scripts.append("/runOnDevice.sh")
+        #scripts.append("/floatsign.sh")
         scripts.append("/packipa.sh")
-        scripts.append("/transporter_chief.rb")
+        #scripts.append("/transporter_chief.rb")
         scripts.append("/testRun.js")
-
-autotestingReportsFolder = os.path.realpath(autotestingSrcFolder + "/Reports")      
-# Remove as depricated
-if os.path.exists(autotestingReportsFolder):   
-    print "remove previous report folder: " + autotestingReportsFolder       
-    shutil.rmtree(autotestingReportsFolder)
 
     
 print "copy scripts from " + currentDir + " to " + autotestingSrcFolder

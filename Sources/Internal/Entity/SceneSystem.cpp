@@ -28,6 +28,7 @@
 
 
 #include "Entity/SceneSystem.h"
+#include "Scene3D/Entity.h"
 
 namespace DAVA 
 {
@@ -43,15 +44,69 @@ SceneSystem::~SceneSystem()
 {
     
 }
-
-void SceneSystem::SetRequiredComponents(uint32 _requiredComponents)
+    
+void SceneSystem::RegisterEntity(Entity * entity)
 {
-    requiredComponents = _requiredComponents;
+    uint32 requiredComponents = this->GetRequiredComponents();
+    bool needAdd = ((requiredComponents & entity->GetAvailableComponentFlags()) == requiredComponents);
+
+    if (needAdd)
+        this->AddEntity(entity);
 }
     
-uint32 SceneSystem::GetRequiredComponents()
+void SceneSystem::UnregisterEntity(Entity * entity)
 {
-    return requiredComponents;
+    uint32 requiredComponents = this->GetRequiredComponents();
+    bool needRemove = ((requiredComponents & entity->GetAvailableComponentFlags()) == requiredComponents);
+
+    if (needRemove)
+        this->RemoveEntity(entity);
+}
+    
+bool SceneSystem::IsEntityComponentFitsToSystem(Entity * entity, Component * component)
+{
+    uint32 entityComponentFlags = entity->GetAvailableComponentFlags();
+    uint32 componentToCheckType = 1 << component->GetType();
+    uint32 requiredBySystemComponents = this->GetRequiredComponents();
+
+    bool isAllRequiredComponentsAvailable = ((entityComponentFlags & requiredBySystemComponents) == requiredBySystemComponents);
+    bool isComponentMarkedForCheckAvailable = ((requiredBySystemComponents & componentToCheckType) == componentToCheckType);
+
+    if (isAllRequiredComponentsAvailable && isComponentMarkedForCheckAvailable)
+    {
+        return true;
+    }
+    return false;
+}
+    
+void SceneSystem::RegisterComponent( Entity * entity, Component * component )
+{
+    if (IsEntityComponentFitsToSystem(entity, component))
+    {
+        if (entity->GetComponentCount(component->GetType()) == 1)
+        {
+            AddEntity(entity);
+        }
+        else
+        {
+            AddComponent(entity, component);
+        }
+    }
+}
+    
+void SceneSystem::UnregisterComponent( Entity * entity, Component * component )
+{
+    if (IsEntityComponentFitsToSystem(entity, component))
+    {
+        if (entity->GetComponentCount(component->GetType()) == 1)
+        {
+            RemoveEntity(entity);
+        }
+        else
+        {
+            RemoveComponent(entity, component);
+        }
+    }
 }
 
 void SceneSystem::AddEntity(Entity * entity)
@@ -64,7 +119,12 @@ void SceneSystem::RemoveEntity(Entity * entity)
     
 }
     
-void SceneSystem::SetParent(Entity *entity, Entity *parent)
+void SceneSystem::AddComponent(Entity * entity, Component * component)
+{
+    
+}
+
+void SceneSystem::RemoveComponent(Entity * entity, Component * component)
 {
     
 }
@@ -92,16 +152,6 @@ void SceneSystem::SetLocked(bool locked)
 bool SceneSystem::IsLocked()
 {
 	return locked;
-}
-
-void SceneSystem::AddComponent( Entity * entity, Component * component )
-{
-
-}
-
-void SceneSystem::RemoveComponent( Entity * entity, Component * component )
-{
-
 }
 
 };

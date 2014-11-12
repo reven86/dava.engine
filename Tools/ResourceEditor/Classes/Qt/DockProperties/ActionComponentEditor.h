@@ -35,6 +35,7 @@
 #include <QDialog>
 #include <QStyledItemDelegate>
 
+
 namespace Ui {
 class ActionComponentEditor;
 }
@@ -62,9 +63,12 @@ public:
 	void SetComponentEditor(ActionComponentEditor* editor);
 	
 private:
+    QWidget *createFloatEditor(QWidget *parent) const;
 	
 	DAVA::ActionComponent* targetComponent;
 	ActionComponentEditor* componentEditor;
+    QMap< QString, int > actionTypes;
+    QMap< QString, int > eventTypes;
 };
 
 
@@ -78,24 +82,27 @@ public:
 	
 	void SetComponent(DAVA::ActionComponent* component);
 	void Update();
-	
-private:
-	
-	void UpdateTableFromComponent(DAVA::ActionComponent* component);
-	DAVA::ActionComponent::Action GetDefaultAction();
-	bool IsActionPresent(const DAVA::ActionComponent::Action action);
+
+    bool IsModified() const;
 	
 private slots:
-
 	void OnAddAction();
 	void OnRemoveAction();
 	void OnSelectedItemChanged();
-    
+
 private:
+	void UpdateTableFromComponent(DAVA::ActionComponent* component);
+	DAVA::ActionComponent::Action GetDefaultAction();
+	bool IsActionPresent(const DAVA::ActionComponent::Action action);
+
     Ui::ActionComponentEditor *ui;
 	
 	DAVA::ActionComponent* targetComponent;
 	ActionItemEditDelegate editDelegate;
+
+    QMap< int, QString > actionTypes;
+    QMap< int, QString > eventTypes;
+    bool isModified;
 };
 
 #endif // ACTIONCOMPONENTEDITOR_H

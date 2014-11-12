@@ -41,11 +41,9 @@
 #include <QApplication>
 
 TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
-:	SceneSystem(scene)
-,	enabled(false)
+:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	cursorSize(120)
 ,	toolImage(NULL)
 ,	toolImageSprite(NULL)
 ,	strength(0.25f)
@@ -53,7 +51,6 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 ,	tileTextureNum(0)
 ,	toolSprite(NULL)
 ,	stencilSprite(NULL)
-,	prevCursorPos(Vector2(-1.f, -1.f))
 ,	toolSpriteUpdated(false)
 ,	needCreateUndo(false)
 ,	toolImageIndex(0)
@@ -62,21 +59,14 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 ,	copyPasteTo(-1.f, -1.f)
 ,	textureLevel(Landscape::TEXTURE_TILE_MASK)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-	
+    cursorSize = 120;
+    
     tileMaskEditorShader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/tilemask-editor"), FastNameSet()));
     tileMaskCopyPasteShader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/tilemask-editor-copypaste"), FastNameSet()));
 
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
-	
-	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
-	DAVA::RenderStateData noBlendStateData;
-	memcpy(&noBlendStateData, &default3dState, sizeof(noBlendStateData));
-	
+    DAVA::RenderStateData noBlendStateData;
+    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, noBlendStateData);
+    
 	noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
 	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
 	
@@ -85,7 +75,6 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 
 TilemaskEditorSystem::~TilemaskEditorSystem()
 {
-	SafeRelease(cursorTexture);
 	SafeRelease(tileMaskEditorShader);
 	SafeRelease(tileMaskCopyPasteShader);
 	SafeRelease(toolImage);
@@ -94,11 +83,6 @@ TilemaskEditorSystem::~TilemaskEditorSystem()
 	SafeRelease(stencilSprite);
 
 	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
-}
-
-LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::IsCanBeEnabled()
-{
-	return drawSystem->VerifyLandscape();
 }
 
 LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditing()
@@ -165,11 +149,6 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
 	return !enabled;
 }
 
-bool TilemaskEditorSystem::IsLandscapeEditingEnabled() const
-{
-	return enabled;
-}
-
 void TilemaskEditorSystem::Process(float32 timeElapsed)
 {
 	if (!IsLandscapeEditingEnabled())
@@ -192,8 +171,9 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
                 
                 Sprite::DrawState drawState;
 				drawState.SetScaleSize(toolSize.x, toolSize.y,
-                                       toolImageSprite->GetWidth(), toolImageSprite->GetHeight());
-				drawState.SetPosition(toolPos.x, toolPos.y);
+                                       toolImageSprite->GetWidth() * Core::GetVirtualToPhysicalFactor(),
+                                       toolImageSprite->GetHeight() * Core::GetVirtualToPhysicalFactor());
+				drawState.SetPosition(Vector2(toolPos.x, toolPos.y) / Core::GetVirtualToPhysicalFactor());
 				toolImageSprite->Draw(&drawState);
                 
 				RenderManager::Instance()->RestoreRenderTarget();
@@ -222,6 +202,8 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 					return;
 				}
 
+                dstRect = ConvertPhysicalToVirtual(dstRect);
+                
 				RenderManager::Instance()->SetRenderTarget(toolSprite);
 				RenderManager::Instance()->ClipPush();
 				RenderManager::Instance()->SetClip(dstRect);
@@ -240,8 +222,9 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
                 
                 drawState.Reset();
 				drawState.SetScaleSize(toolSize.x, toolSize.y,
-                                       toolImageSprite->GetWidth(), toolImageSprite->GetHeight());
-				drawState.SetPosition(toolPos.x, toolPos.y);
+                                       toolImageSprite->GetWidth() * Core::GetVirtualToPhysicalFactor(),
+                                       toolImageSprite->GetHeight() * Core::GetVirtualToPhysicalFactor());
+				drawState.SetPosition(Vector2(toolPos.x, toolPos.y) / Core::GetVirtualToPhysicalFactor());
                 drawState.SetRenderState(noBlendDrawState);
 				toolImageSprite->Draw(&drawState);
                 
@@ -355,34 +338,6 @@ void TilemaskEditorSystem::SetTileTexture(uint32 tileTexture)
 	tileTextureNum = tileTexture;
 }
 
-void TilemaskEditorSystem::UpdateCursorPosition()
-{
-	Vector3 landPos;
-	isIntersectsLandscape = false;
-	if (collisionSystem->LandRayTestFromCamera(landPos))
-	{
-		isIntersectsLandscape = true;
-		Vector2 point(landPos.x, landPos.y);
-		
-		point.x = (float32)((int32)point.x);
-		point.y = (float32)((int32)point.y);
-		
-		AABBox3 box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-		
-		cursorPosition.x = (point.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (point.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = (int32)cursorPosition.y;
-		
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
-	{
-		// hide cursor
-		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
-	}
-}
-
 void TilemaskEditorSystem::UpdateToolImage(bool force)
 {
 	if (toolImage)
@@ -407,7 +362,7 @@ void TilemaskEditorSystem::UpdateBrushTool()
 {
 	Sprite* srcSprite = drawSystem->GetLandscapeProxy()->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
 	Sprite* dstSprite = drawSystem->GetLandscapeProxy()->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_DESTINATION);
-
+    
 	RenderManager::Instance()->SetRenderTarget(dstSprite);
 
 	Shader* shader = tileMaskEditorShader;
@@ -420,6 +375,7 @@ void TilemaskEditorSystem::UpdateBrushTool()
 
     Sprite::DrawState drawState;
     drawState.SetRenderState(noBlendDrawState);
+    drawState.SetScale(Core::GetVirtualToPhysicalFactor(), Core::GetVirtualToPhysicalFactor());
 	srcSprite->PrepareSpriteRenderData(&drawState);
 	RenderManager::Instance()->SetRenderData(srcSprite->spriteRenderObject);
 
@@ -460,11 +416,13 @@ void TilemaskEditorSystem::UpdateBrushTool()
 
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
 
+    glLineWidth(1.0);
+    
 	RenderManager::Instance()->RestoreRenderTarget();
 	RenderManager::Instance()->SetColor(Color::White);
 
 	RenderManager::Instance()->ReleaseTextureState(textureState);
-
+    
 //	srcSprite->GetTexture()->GenerateMipmaps();
 //	dstSprite->GetTexture()->GenerateMipmaps();
 	drawSystem->GetLandscapeProxy()->SetTilemaskTexture(dstSprite->GetTexture());
@@ -484,9 +442,9 @@ void TilemaskEditorSystem::UpdateBrushTool()
 
 Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
 {
-	Sprite *dstSprite = Sprite::CreateAsRenderTarget(sideSize, sideSize, FORMAT_RGBA8888);
+	Sprite *dstSprite = Sprite::CreateAsRenderTarget(sideSize, sideSize, FORMAT_RGBA8888, true);
 	Texture *srcTex = Texture::CreateFromFile(filePath);
-	Sprite *srcSprite = Sprite::CreateFromTexture(srcTex, 0, 0, (float32)srcTex->GetWidth(), (float32)srcTex->GetHeight());
+	Sprite *srcSprite = Sprite::CreateFromTexture(srcTex, 0, 0, (float32)srcTex->GetWidth(), (float32)srcTex->GetHeight(),true);
 	
 	RenderManager::Instance()->SetRenderTarget(dstSprite);
 	
@@ -494,10 +452,12 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
 	RenderManager::Instance()->SetColor(Color::White);
 	
     Sprite::DrawState drawState;
-    drawState.SetScaleSize((float32)sideSize, (float32)sideSize,
-                           srcSprite->GetWidth(), srcSprite->GetHeight());
+    drawState.SetScaleSize((float32)sideSize / Core::GetVirtualToPhysicalFactor(),
+                           (float32)sideSize / Core::GetVirtualToPhysicalFactor(),
+                           srcSprite->GetWidth(),
+                           srcSprite->GetHeight());
 	drawState.SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
-								   (dstSprite->GetTexture()->GetHeight() - sideSize)/2.0f));
+                                  (dstSprite->GetTexture()->GetHeight() - sideSize)/2.0f) / Core::GetVirtualToPhysicalFactor());
 	srcSprite->Draw(&drawState);
 	RenderManager::Instance()->RestoreRenderTarget();
 	
@@ -609,7 +569,7 @@ void TilemaskEditorSystem::CreateMaskFromTexture(Texture* texture)
 	if(texture)
 	{
 		Sprite *oldMask = Sprite::CreateFromTexture(texture, 0, 0,
-													(float32)texture->GetWidth(), (float32)texture->GetHeight());
+													(float32)texture->GetWidth(), (float32)texture->GetHeight(), true);
 		
 		RenderManager::Instance()->SetRenderTarget(sprite);
         Sprite::DrawState drawState;
@@ -679,12 +639,12 @@ void TilemaskEditorSystem::InitSprites()
 
 	if (toolSprite == NULL)
 	{
-		toolSprite = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888);
+		toolSprite = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888,true);
 	}
 
 	if (stencilSprite == NULL)
 	{
-		stencilSprite = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888);
+		stencilSprite = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888,true);
 	}
 
 	drawSystem->GetLandscapeProxy()->InitTilemaskSprites();

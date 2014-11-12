@@ -82,7 +82,7 @@ public:
 		return _ptr;
 	}
 	
-	bool Valid()
+	bool Valid() const
 	{
 		return _ptr != 0;
 	}

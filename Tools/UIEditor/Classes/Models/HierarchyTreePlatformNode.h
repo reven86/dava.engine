@@ -32,6 +32,7 @@
 #define __UIEditor__HierarchyTreePlatformNode__
 
 #include "HierarchyTreeNode.h"
+#include "HierarchyTreeAggregatorNode.h"
 #include "HierarchyTreeRootNode.h"
 
 using namespace DAVA;
@@ -46,9 +47,9 @@ public:
 	virtual ~HierarchyTreePlatformNode();
 
 	void SetSize(int width, int height);
-	int GetWidth() const;
-	int GetHeight() const;
-    Vector2 GetSize() const;
+	int GetWidth(bool forceOriginal = false) const;
+	int GetHeight(bool forceOriginal = false) const;
+    Vector2 GetSize(bool forceOriginal = false) const;
 
 	virtual HierarchyTreeNode* GetParent();
 
@@ -60,8 +61,8 @@ public:
 	QString GetScreenPath(QString screenName) const;
 	QString GetScreenPath(String screenName) const;
 	
-	bool Load(const YamlNode* node);
-	bool Save(YamlNode* node, bool saveAll);
+	bool Load(const YamlNode* node, List<QString>& fileNames);
+	bool Save(YamlNode* node, bool saveAll, List<QString>& fileNames);
 
     // Separate method to load/save localization.
     bool LoadLocalization(const YamlNode* platform);
@@ -80,9 +81,10 @@ public:
 	virtual void SetParent(HierarchyTreeNode* node, HierarchyTreeNode* insertAfter);
 
 	bool IsAggregatorOrScreenNamePresent(const QString& candidatName);
+    HierarchyTreeAggregatorNode* GetAggregatorNodeByName(const QString& aggregatorName);
 
     // Enable/disable Preview Mode. In Preview Mode different (preview) platform size is returned.
-    void EnablePreview(int width, int height);
+    void SetPreviewMode(int width, int height);
     void DisablePreview();
 
 private:

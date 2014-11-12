@@ -232,6 +232,11 @@ void KeyboardDevice::PrepareKeyTranslator()
     }
     
 #endif
+    
+#if defined(__DAVAENGINE_ANDROID__)
+    keyTranslator[0x04] = DVKEY_BACK;
+    keyTranslator[0x52] = DVKEY_MENU;
+#endif
 
 }
 

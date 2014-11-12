@@ -4,7 +4,7 @@
 using namespace DAVA;
 
 SaveImageTest::SaveImageTest()
-    : TestTemplate<SaveImageTest>("SaveImageTest")
+: TestTemplate<SaveImageTest>("SaveImageTest")
 {
     RegisterFunction(this, &SaveImageTest::PngTest, "PngTest", NULL);
     RegisterFunction(this, &SaveImageTest::JpegTest, "JpegTest", NULL);
@@ -14,7 +14,7 @@ void SaveImageTest::PngTest(PerfFuncData * data)
 {
     Image* img = GetImage();
     FilePath path = FilePath::FilepathInDocuments("testImage.png");
-
+    
     TEST_VERIFY(img->Save(path));
     
     SafeRelease(img);

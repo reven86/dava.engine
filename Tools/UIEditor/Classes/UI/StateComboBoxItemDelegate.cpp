@@ -77,8 +77,8 @@ void StateComboBoxItemDelegate::paint(QPainter * painter, const QStyleOptionView
         }
         else
         {
-            //Set black color for non-selected text
-            QPen penHText(Qt::black);
+            //Set text color for non-selected text
+            QPen penHText(option.palette.text().color());
             painter->setPen(penHText);
         }
 

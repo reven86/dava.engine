@@ -27,9 +27,9 @@
 //=====================================================================================*/
 
 #include "FMODSoundBrowser.h"
-#include "Qt/Scene/SceneSignals.h"
 #include "ui_soundbrowser.h"
 #include "Scene/SceneEditor2.h"
+#include "Project/ProjectManager.h"
 
 #include <QTreeWidget>
 #include <QMessageBox>
@@ -54,8 +54,7 @@ FMODSoundBrowser::FMODSoundBrowser(QWidget *parent) :
     QObject::connect(this, SIGNAL(accepted()), this, SLOT(OnAccepted()));
     QObject::connect(this, SIGNAL(rejected()), this, SLOT(OnRejected()));
 
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Loaded(SceneEditor2 *)), this, SLOT(OnSceneLoaded(SceneEditor2 *)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(Closed(SceneEditor2 *)), this, SLOT(OnSceneClosed(SceneEditor2 *)));
+    QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString &)), this, SLOT(OnProjectOpened(const QString &)));
 
     SetSelectedItem(0);
 
@@ -82,40 +81,9 @@ DAVA::String FMODSoundBrowser::GetSelectSoundEvent()
     return "";
 }
 
-void FMODSoundBrowser::OnSceneLoaded(SceneEditor2 * scene)
+void FMODSoundBrowser::OnProjectOpened(const QString &)
 {
-#ifdef DAVA_FMOD
-    FilePath fevPath = MakeFEVPathFromScenePath(scene->GetScenePath());
-    if(!fevPath.IsEmpty() && fevPath.Exists())
-    {
-        if(projectsMap.find(scene) == projectsMap.end())
-        {
-            SoundSystem::Instance()->LoadFEV(fevPath);
-            projectsMap[scene] = fevPath;
-
-            UpdateEventTree();
-        }
-    }
-#endif //DAVA_FMOD
-}
-
-void FMODSoundBrowser::OnSceneClosed(SceneEditor2 * scene)
-{
-#ifdef DAVA_FMOD
-    FilePath fevPath = MakeFEVPathFromScenePath(scene->GetScenePath());
-    if(!fevPath.IsEmpty() && fevPath.Exists())
-    {
-        Map<Scene *, FilePath>::iterator it = projectsMap.find(scene);
-        if(it != projectsMap.end())
-        {
-            SoundSystem::Instance()->UnloadFEV(fevPath);
-            projectsMap.erase(it);
-
-            UpdateEventTree();
-        }
-    }
-#endif //DAVA_FMOD
-
+    UpdateEventTree();
 }
 
 void FMODSoundBrowser::UpdateEventTree()
@@ -127,32 +95,6 @@ void FMODSoundBrowser::UpdateEventTree()
     FillEventsTree(names);
 #endif //DAVA_FMOD
 }
-
-#ifdef DAVA_FMOD
-FilePath FMODSoundBrowser::MakeFEVPathFromScenePath(const FilePath & scenePath)
-{
-    String sceneDir = scenePath.GetDirectory().GetAbsolutePathname();
-
-    String mapsSubPath("DataSource/3d/Maps/");
-    size_t pos = sceneDir.find(mapsSubPath);
-    if(pos == String::npos)
-        return FilePath();
-
-    String projectPath = sceneDir.substr(0, pos);
-    String sfxMapsPath(projectPath + "DataSource/Sfx/Maps/");
-
-    String mapSubDir = sceneDir.substr(projectPath.length() + mapsSubPath.length());
-    Vector<String> dirs;
-    Split(mapSubDir, "/", dirs);
-    if(dirs.size() == 0)
-        return FilePath();
-    
-    String mapName = dirs[0];
-
-    FilePath fevPath = FilePath(sfxMapsPath + mapName + "/iOS/" + mapName + ".fev");
-    return fevPath;
-}
-#endif
 
 void FMODSoundBrowser::OnEventSelected(QTreeWidgetItem * item, int column)
 {

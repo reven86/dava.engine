@@ -59,6 +59,9 @@ protected:
             }
             trianglesOnObjects = 0;
         }
+
+        void AddTriangles(DAVA::int32 index, DAVA::int32 count);
+        
     };
     
     struct SpeedTreeInfo
@@ -104,12 +107,21 @@ protected:
 
     void InitializeSpeedTreeInfoSelection();
 
+    void InitializeVegetationInfoSection();
+    
+    void InitializeLayersSection();
+    void UpdateLayersSectionStructure(SceneEditor2 *scene);
+
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();
     void RefreshLODInfoInFrame();
     void RefreshLODInfoForSelection();
 
     void RefreshSpeedTreeInfoSelection();
+    
+    void RefreshVegetationInfoSection();
+    
+    void RefreshLayersSection();
     
 	void RefreshAllData(SceneEditor2 *scene);
 
@@ -124,15 +136,18 @@ protected:
     QtPropertyData * GetInfoHeader(const QString &key);
     
     void AddChild(const QString & key, QtPropertyData *parent);
+    void AddChild(const QString & key, const QString& toolTip, QtPropertyData *parent);
     void SetChild(const QString & key, const QVariant &value, QtPropertyData *parent);
-    
+    bool HasChild(const QString & key, QtPropertyData *parent);
     
     void CollectSceneData(SceneEditor2 *scene);
     void CollectParticlesData();
     void CollectLODDataInFrame();
-    void CollectLODDataInFrameRecursive(DAVA::Entity *entity);
-    void CollectLODDataForSelection();
+    void CollectLODDataInScene();
+    void CollectLODDataInEntityRecursive(DAVA::Entity *entity);    
     void CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup);
+    void CollectSelectedRenderObjects(const EntityGroup *selected);
+    void CollectSelectedRenderObjectsRecursivly(DAVA::Entity * entity);
     static void CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent *> &lods, LODInfo &info);
     
     void CollectTexture(DAVA::TexturesMap &textures, const DAVA::FilePath &pathname, DAVA::Texture *tex);
@@ -169,6 +184,9 @@ protected:
     
     LODInfo lodInfoSelection;
     LODInfo lodInfoInFrame;
+
+    DAVA::VisibilityArray visibilityArray;
+    DAVA::Set<DAVA::RenderObject *> selectedRenderObjects;
 
 	bool isUpToDate;
 };

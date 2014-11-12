@@ -40,7 +40,7 @@ materials:
   default: "HIGH"
 
  -
-  group: "Landscap"
+  group: "Landscape"
   quality: ["HIGH", "LOW"]
   default: "HIGH"
 
@@ -51,10 +51,15 @@ materials:
 
  -
   group: "Tank"
-  quality: ["HIGH", "LOW"]
+  quality: ["HIGH", "MEDIUM", "LOW"]
   default: "HIGH"
 
  -
   group: "Vegetation"
   quality: ["HIGH", "LOW"]
+  default: "HIGH"
+
+ -
+  group: "Spherical Harmonics"
+  quality: ["HIGH", "MEDIUM", "LOW"]
   default: "HIGH"

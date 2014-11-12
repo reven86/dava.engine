@@ -33,7 +33,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/StringFormat.h"
 #include "Render/Shader.h"
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/Scene.h"
@@ -1158,11 +1158,6 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState,
 
 void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::MATERIAL_DRAW))
-	{
-		return;
-	}
-
 	if(isTranslucent && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TRANSPARENT_DRAW))
 	{
 		return;
@@ -1172,11 +1167,6 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 	{
 		return;
 	}
-
-    if(type == MATERIAL_SPEED_TREE_LEAF && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPEEDTREE_LEAFS_DRAW))
-    {
-        return;
-    }
 
 	//Dizz: uniformFogDensity != -1 is a check if fog is inabled in shader
 	if(isFogEnabled && (uniformFogDensity != -1) && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
@@ -1204,11 +1194,11 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
     // TODO: rethink this code
     if (group->renderDataObject->GetIndexBufferID() != 0)
     {
-        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, group->indexCount, EIF_16, 0);
+        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, group->indexCount, group->renderDataObject->GetIndexFormat(), 0);
     }
     else
     {
-        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, group->indexCount, EIF_16, group->indexArray);
+        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, group->indexCount, group->renderDataObject->GetIndexFormat(), group->indexArray);
     }
 
     

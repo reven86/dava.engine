@@ -61,7 +61,8 @@ public:
 		LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE1_TEXTURE_ABSENT,
 		LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE2_TEXTURE_ABSENT,
 		LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE3_TEXTURE_ABSENT,
-		LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT
+		LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT,
+        LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT,
 	};
 	
 	LandscapeEditorDrawSystem(Scene* scene);
@@ -121,7 +122,7 @@ public:
 	void SaveTileMaskTexture();
 	void ResetTileMaskTexture();
 
-	eErrorType VerifyLandscape();
+	eErrorType VerifyLandscape() const;
 
 	Landscape * GetBaseLandscape() const;
 	

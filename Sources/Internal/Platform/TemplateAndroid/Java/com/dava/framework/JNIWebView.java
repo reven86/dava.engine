@@ -129,7 +129,7 @@ public class JNIWebView {
 				webView.setWebViewClient(new InternalViewClient(id));
 				webView.getSettings().setJavaScriptEnabled(true);
 				webView.getSettings().setLoadWithOverviewMode(true);
-				webView.getSettings().setUseWideViewPort(true);
+				webView.getSettings().setUseWideViewPort(false);
 				webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
 				
 				activity.addContentView(webView, params);
@@ -186,8 +186,9 @@ public class JNIWebView {
 					Log.d(TAG, String.format("Unknown view id %d", id));
 					return;
 				}
+				
 				WebView webView = views.get(id);
-				webView.loadDataWithBaseURL(baseUrl, data, "text/html", "utf-8", null);
+                webView.loadDataWithBaseURL(baseUrl, data, "text/html", "utf-8", null);
 			}
 		});
 	}

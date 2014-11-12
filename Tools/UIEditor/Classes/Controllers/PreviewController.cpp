@@ -28,6 +28,7 @@
 
 
 #include "PreviewController.h"
+#include "DefaultScreen.h"
 
 #define DEFAULT_GFX_EXTENSION "Gfx"
 
@@ -63,8 +64,10 @@ static const PreviewSettingsData predefinedPreviewSettings[] =
     {-4, "iPad mini Retina", Vector2(2048, 1536), 326, true, 3},
     {-5, "iPhone 4S", Vector2(960, 640), 326, true, 4},
     {-6, "iPhone 5/5C/5S", Vector2(1136, 640), 326, true, 5},
-    {-7, "Nexus 7 (2012)", Vector2(1280, 800), 216, true, 6},
-    {-8, "Nexus 7 (2013)", Vector2(1920, 1080), 323, true, 7},
+    {-7, "iPhone 6", Vector2(1134, 750), 326, true, 6},
+    {-8, "iPhone 6 Plus", Vector2(1920, 1080), 401, true, 7},
+    {-9, "Nexus 7 (2012)", Vector2(1280, 800), 216, true, 8},
+    {-10, "Nexus 7 (2013)", Vector2(1920, 1080), 323, true, 9},
 };
 
 #define PREVIEW_SETTINGS_NODE "previewSettings"
@@ -76,28 +79,37 @@ static const PreviewSettingsData predefinedPreviewSettings[] =
 #define PREVIEW_SETTINGS_HEIGHT_NODE "height"
 #define PREVIEW_SETTINGS_DPI_NODE "dpi"
 
+#define EMPTY_PREVIEW_SETTINGS_ID -99
+    
 int32 PreviewController::nextId = 0;
+    
+
     
 PreviewController::PreviewController() :
     previewEnabled(false),
-    isDirty(false)
+    isDirty(false),
+    activePreviewSettingsID(EMPTY_PREVIEW_SETTINGS_ID),
+    isApplyPreviewScale(false)
 {
+    LoadPredefinedPreviewSettings();
 }
 
 PreviewController::~PreviewController()
 {
     previewSettings.clear();
 }
-    
-const PreviewTransformData& PreviewController::EnablePreview(const PreviewSettingsData& data,
-                                                            const Vector2& virtualScreenSize,
-                                                            uint32 screenDPI)
-{
-    if (previewEnabled)
-    {
-        return currentTransformData;
-    }
 
+void PreviewController::EnablePreview(bool applyScale)
+{
+    isApplyPreviewScale = applyScale;
+    previewEnabled = true;
+}
+
+const PreviewTransformData& PreviewController::SetPreviewMode(const PreviewSettingsData& data,
+                                                              const Vector2& virtualScreenSize,
+                                                              uint32 screenDPI)
+{
+    activePreviewSettingsID = data.id;
     currentTransformData = CalculateTransform(data, virtualScreenSize, screenDPI);
     previewEnabled = true;
     
@@ -112,6 +124,7 @@ void PreviewController::DisablePreview()
     }
 
     previewEnabled = false;
+    activePreviewSettingsID = EMPTY_PREVIEW_SETTINGS_ID;
 }
     
 const PreviewTransformData& PreviewController::GetTransformData() const
@@ -127,13 +140,7 @@ bool previewSettingsDataSortFn(const PreviewSettingsData & a, const PreviewSetti
 void PreviewController::LoadPreviewSettings(const YamlNode* rootNode)
 {
     previewSettings.clear();
-
-    // Predefined preview settings aren't stored in the Yaml.
-    int32 predefinedItemsCount = COUNT_OF(predefinedPreviewSettings);
-    for (int32 i = 0; i < predefinedItemsCount; i ++)
-    {
-        previewSettings.push_back(predefinedPreviewSettings[i]);
-    }
+    LoadPredefinedPreviewSettings();
 
     const YamlNode* previewSettingsNode = rootNode->Get(PREVIEW_SETTINGS_NODE);
     if (!previewSettingsNode)
@@ -180,6 +187,16 @@ void PreviewController::LoadPreviewSettings(const YamlNode* rootNode)
     
     // At this moment no changes were made.
     SetDirty(false);
+}
+
+void PreviewController::LoadPredefinedPreviewSettings()
+{
+    // Predefined preview settings aren't stored in the Yaml.
+    int32 predefinedItemsCount = COUNT_OF(predefinedPreviewSettings);
+    for (int32 i = 0; i < predefinedItemsCount; i ++)
+    {
+        previewSettings.push_back(predefinedPreviewSettings[i]);
+    }
 }
 
 void PreviewController::SavePreviewSettings(YamlNode* rootNode)
@@ -232,9 +249,9 @@ const List<PreviewSettingsData>& PreviewController::GetPreviewSettings() const
     return previewSettings;
 }
 
-PreviewSettingsData PreviewController::GetPreviewSettingsData(int32 id)
+PreviewSettingsData PreviewController::GetPreviewSettingsData(int32 id) const
 {
-    for (List<PreviewSettingsData>::iterator iter = previewSettings.begin(); iter != previewSettings.end(); iter ++)
+    for (List<PreviewSettingsData>::const_iterator iter = previewSettings.begin(); iter != previewSettings.end(); iter ++)
     {
         if (iter->id == id)
         {
@@ -244,6 +261,11 @@ PreviewSettingsData PreviewController::GetPreviewSettingsData(int32 id)
     
     DVASSERT(false);
     return PreviewSettingsData();
+}
+
+PreviewSettingsData PreviewController::GetActivePreviewSettingsData() const
+{
+    return GetPreviewSettingsData(GetActivePreviewSettingsID());
 }
 
 void PreviewController::AddPreviewSettingsData(const PreviewSettingsData& data)
@@ -296,8 +318,12 @@ PreviewTransformData PreviewController::CalculateTransform(const PreviewSettings
     transformData.screenSize.y = floorf(virtualScreenHeight);
     transformData.zoomLevel = scaleFactor;
 
-    // Now apply the DPI.
-    transformData.zoomLevel *= ((float32)screenDPI / (float32)settings.dpi);
+    // Now apply the DPI, if requested.
+    if (isApplyPreviewScale)
+    {
+        transformData.zoomLevel *= ((float32)screenDPI / (float32)settings.dpi);
+    }
+
     return transformData;
 }
     
@@ -309,6 +335,70 @@ bool PreviewController::HasUnsavedChanges() const
 void PreviewController::SetDirty(bool value)
 {
     isDirty = value;
+}
+
+void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* screen)
+{
+    if (!screen || !screen->GetScreenControl())
+    {
+        return;
+    }
+
+    ScreenControl* screenControl = screen->GetScreenControl();
+    Rect rawScreenRect = Rect(Vector2(0.0f, 0.0f), screenControl->GetSize());
+    Rect scaledScreenRect = rawScreenRect;
+    scaledScreenRect.SetSize(rawScreenRect.GetSize() * screen->GetScale());
+
+    float32 virToPhysFactor = Core::Instance()->GetVirtualToPhysicalFactor();
+    Rect textureRect = scaledScreenRect;
+    textureRect.SetSize(textureRect.GetSize() * virToPhysFactor);
+    ScopedPtr<Texture> texture(Texture::CreateFBO((int32)ceilf(textureRect.dx), (int32)ceilf(textureRect.dy),
+                                                  FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER));
+
+    ScopedPtr<Sprite> screenshot(Sprite::Create(""));
+    screenshot->InitFromTexture(texture, 0, 0, textureRect.dx, textureRect.dy, -1, -1, true);
+    
+    RenderManager::Instance()->SetRenderTarget(screenshot);
+    RenderManager::Instance()->ClearWithColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    // The clipping rectangle defines on scale and preview mode.
+    Rect clipRect = rawScreenRect;
+    clipRect.SetSize(clipRect.GetSize() * virToPhysFactor);
+    if (IsPreviewEnabled())
+    {
+        clipRect.SetSize(GetTransformData().screenSize);
+        if (GetTransformData().zoomLevel > 1.0f)
+        {
+            clipRect.SetSize(clipRect.GetSize() * GetTransformData().zoomLevel);
+        }
+    }
+    else if (screen->GetScale().x > 1.0f || screen->GetScale().y > 1.0f)
+    {
+        clipRect = textureRect;
+    }
+
+    RenderManager::Instance()->ClipPush();
+    RenderManager::Instance()->SetClip(clipRect);
+
+    // Draw the screen with the scale requested, but without any offset.
+    RenderManager::Instance()->SetDrawScale(screen->GetScale());
+	RenderManager::Instance()->SetDrawTranslate(Vector2(0.0f, 0.0f));
+    
+    screen->GetScreenControl()->SetScreenshotMode(true);
+    screen->GetScreenControl()->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+    screen->GetScreenControl()->SetScreenshotMode(false);
+
+    RenderManager::Instance()->ClipPop();
+    RenderManager::Instance()->RestoreRenderTarget();
+
+    ScopedPtr<Image> image(texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
+    
+    // Resulting texture is square. Resize its canvas to the
+    // texture size and then resize the image to the original
+    // size without virtual to physical factor.
+    image->ResizeCanvas(textureRect.dx, textureRect.dy);
+    image->ResizeImage(scaledScreenRect.dx, scaledScreenRect.dy);
+    ImageSystem::Instance()->Save(fileName, image);
 }
 
 };

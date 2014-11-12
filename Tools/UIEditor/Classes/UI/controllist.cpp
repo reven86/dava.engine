@@ -30,14 +30,26 @@
 #include "Classes/UI/controllist.h"
 #include "HierarchyTreeController.h"
 
-ControlMimeData::ControlMimeData(const QString& controlName)
+#define ITEM_ID 0, Qt::UserRole
+
+ControlMimeData::ControlMimeData(HierarchyTreeNode::HIERARCHYTREENODEID itemId)
 {
-	this->controlName = controlName;
+    this->controlId = itemId;
 }
 
 ControlMimeData::~ControlMimeData()
 {
 
+}
+
+bool ControlMimeData::hasFormat( const QString & mimeType ) const
+{
+    // We need this to drop controls from Library to Hierarchy tree as native.
+    if(mimeType == "application/x-qabstractitemmodeldatalist")
+    {
+        return true;
+    }
+    return QMimeData::hasFormat(mimeType);
 }
 
 ControlList::ControlList(QWidget *parent) :
@@ -62,7 +74,9 @@ QMimeData* ControlList::mimeData(const QList<QTreeWidgetItem*> items) const
 		return NULL;
 	
 	QTreeWidgetItem* item = items[0];
-	ControlMimeData* data = new ControlMimeData(item->text(0));
+	QVariant itemData = item->data(ITEM_ID);
+	HierarchyTreeNode::HIERARCHYTREENODEID id = itemData.toInt();
+	ControlMimeData* data = new ControlMimeData(id);
 	
 	HierarchyTreeController::Instance()->ResetSelectedControl();
 	

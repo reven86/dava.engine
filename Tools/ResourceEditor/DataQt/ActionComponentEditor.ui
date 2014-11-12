@@ -9,21 +9,52 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>1200</width>
     <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Edit actions</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton
+{
+  border: 1px solid #707070;
+  padding-top: 1px;
+  padding-left: 1px;
+}
+
+QPushButton:hover
+{
+  border: 1px solid #909090;
+  padding-top: 0px;
+  padding-left: 0px;
+}
+
+QPushButton:pressed
+{
+  border: 1px solid #808080;
+  padding-top: 1px;
+  padding-left: 1px;
+}</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTableWidget" name="tableActions">
+     <property name="editTriggers">
+      <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+     </property>
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="dragDropOverwriteMode">
+      <bool>false</bool>
+     </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
+      <enum>QAbstractItemView::SelectItems</enum>
      </property>
      <property name="verticalScrollMode">
       <enum>QAbstractItemView::ScrollPerPixel</enum>
@@ -31,15 +62,32 @@
      <property name="horizontalScrollMode">
       <enum>QAbstractItemView::ScrollPerPixel</enum>
      </property>
+     <attribute name="horizontalHeaderVisible">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="horizontalHeaderCascadingSectionResizes">
+      <bool>false</bool>
+     </attribute>
      <attribute name="horizontalHeaderDefaultSectionSize">
-      <number>150</number>
+      <number>160</number>
      </attribute>
      <attribute name="horizontalHeaderStretchLastSection">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderHighlightSections">
       <bool>false</bool>
      </attribute>
      <column>
       <property name="text">
        <string>EventType</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Event Name</string>
       </property>
      </column>
      <column>
@@ -55,6 +103,11 @@
      <column>
       <property name="text">
        <string>Delay</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Delay variation</string>
       </property>
      </column>
      <column>
@@ -75,7 +128,10 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+    <layout class="QHBoxLayout" name="_2">
+     <property name="spacing">
+      <number>16</number>
+     </property>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -91,12 +147,6 @@
      </item>
      <item>
       <widget class="QPushButton" name="buttonAddItem">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
        <property name="minimumSize">
         <size>
          <width>40</width>
@@ -106,16 +156,13 @@
        <property name="text">
         <string>+</string>
        </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonRemoveItem">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
        <property name="minimumSize">
         <size>
          <width>40</width>
@@ -125,12 +172,22 @@
        <property name="text">
         <string>-</string>
        </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
     </layout>
    </item>
   </layout>
  </widget>
- <resources/>
+ <tabstops>
+  <tabstop>tableActions</tabstop>
+  <tabstop>buttonAddItem</tabstop>
+  <tabstop>buttonRemoveItem</tabstop>
+ </tabstops>
+ <resources>
+  <include location="QtIcons.qrc"/>
+ </resources>
  <connections/>
 </ui>

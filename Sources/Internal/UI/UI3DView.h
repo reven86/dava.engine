@@ -47,7 +47,7 @@ class UI3DView : public UIControl
 protected:
     virtual ~UI3DView();
 public:
-	UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates = FALSE);
+	UI3DView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = FALSE);
     
     void SetScene(Scene * scene);
     Scene * GetScene() const;
@@ -56,17 +56,21 @@ public:
     virtual void Update(float32 timeElapsed);
     virtual void Draw(const UIGeometricData &geometricData);
 
+    virtual void WillBecomeVisible(); 	
+	virtual void WillBecomeInvisible();
+
 	inline const Rect & GetLastViewportRect()
 	{
 		return viewportRc;
 	}
 
     virtual void SetSize(const Vector2 &newSize);
-    
-    
+    virtual UIControl* Clone();
+
 protected:
     Scene * scene;
 	Rect viewportRc;
+    bool registeredInUIControlSystem;
 };
 	
 };

@@ -56,6 +56,9 @@ class QualitySettingsComponent;
 class QualitySettingsSystem: public StaticSingleton<QualitySettingsSystem>
 {
 public:
+    static const FastName QUALITY_OPTION_VEGETATION_ANIMATION;
+    static const FastName QUALITY_OPTION_STENCIL_SHADOW;
+
     QualitySettingsSystem();
 
     void Load(const FilePath &path);
@@ -94,12 +97,17 @@ public:
     // ------------------------------------------
 
 	void EnableOption(const FastName & option, bool enabled);
-    
 	bool IsOptionEnabled(const FastName & option) const;
+    int32 GetOptionsCount() const;
+    FastName GetOptionName(int32 index) const;
 
     bool NeedLoadEntity(const Entity *entity);
     
 	void UpdateEntityAfterLoad(Entity *entity);
+
+    int32 GetPrerequiredVertexFormat();
+    void SetPrerequiredVertexFormat(int32 format);
+     
 
 protected:
 
@@ -136,6 +144,8 @@ protected:
     Vector<SFXQ> soundQualities;
 
 	FastNameMap<bool> qualityOptions;
+
+    int32 prerequiredVertexFromat;
 };
 	
 }

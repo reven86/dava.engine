@@ -46,13 +46,14 @@
 
 namespace DAVA
 {
+
 #if defined(__DAVAENGINE_OPENGL__)
 GLuint Shader::activeProgram = 0;
 
 Shader::Shader()
 : RenderResource()
 {
-    DVASSERT(RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_2_0 || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL);
+    DVASSERT(RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_2_0 || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_3_0);
     
     vertexShader = 0;
     fragmentShader = 0;
@@ -61,6 +62,7 @@ Shader::Shader()
     attributeNames = 0;
     activeAttributes = 0;
     activeUniforms = 0;
+    requiredVertexFormat = 0;
     
     //uniforms = 0;
     uniformData = NULL;
@@ -116,8 +118,13 @@ FastName attributeStrings[VERTEX_FORMAT_STREAM_MAX_COUNT] =
     FastName("inTexCoord3"),
     FastName("inTangent"),
     FastName("inBinormal"),
-    FastName("inJointWeight"),
-    FastName("inTime")
+    FastName(""),               // nine bit of vertex format skipped cause legacy; for now it unused
+    FastName("inTime"),
+    FastName("inPivot"),
+    FastName("inFlexibility"),
+    FastName("inAngleSinCos"),
+    FastName("inJointIndex"),
+    FastName("inJointWeight")
 };
 
 eShaderSemantic Shader::GetShaderSemanticByName(const FastName & name)
@@ -236,6 +243,8 @@ const char * Shader::GetUniformTypeSLName(eUniformType type)
 
 void Shader::ClearLastBindedCaches()
 {
+    //Logger::FrameworkDebug("Frame reset");
+
     for (uint32 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform * currentUniform = autobindUniforms[k];
@@ -273,7 +282,7 @@ Shader::~Shader()
     ReleaseShaderData();
 }
 
-void Shader::ReleaseShaderData()
+void Shader::ReleaseShaderData(bool deleteShader/* = true*/)
 {
     SafeDeleteArray(attributeNames);
     //SafeDeleteArray(uniforms);
@@ -283,7 +292,8 @@ void Shader::ReleaseShaderData()
     SafeRelease(vertexShaderData);
     SafeRelease(fragmentShaderData);
     
-    DeleteShaders();
+    if (deleteShader)
+        DeleteShaders();
 
     activeAttributes = 0;
     activeUniforms = 0;
@@ -318,13 +328,13 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     
     if (!CompileShader(&vertexShader, GL_VERTEX_SHADER, vertexShaderDataSize, (GLchar*)vertexShaderDataStart, shaderDefines))
     {
-        Logger::Error("Failed to compile vertex shader: %s", assetName.c_str());
+        Logger::Error("Failed to compile vertex shader: %s defines: %s", assetName.c_str(), shaderDefines.c_str());
         return;
     }
     
     if (!CompileShader(&fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderDataSize, (GLchar*)fragmentShaderDataStart, shaderDefines))
     {
-        Logger::Error("Failed to compile fragment shader: %s", assetName.c_str());
+        Logger::Error("Failed to compile fragment shader: %s defines:%s", assetName.c_str(), shaderDefines.c_str());
         return ;
     }
     
@@ -345,6 +355,9 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     char attributeName[512];
     DVASSERT(attributeNames == NULL);
     attributeNames = new FastName[activeAttributes];
+
+    requiredVertexFormat = 0;
+
     for (int32 k = 0; k < activeAttributes; ++k)
     {
         GLint size;
@@ -353,7 +366,12 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         attributeNames[k] = FastName(attributeName);
         
         int32 flagIndex = GetAttributeIndexByName(attributeNames[k]);
-        vertexFormatAttribIndeces[flagIndex] = glGetAttribLocation(program, attributeName);
+        if(flagIndex != -1)
+        {
+            int32 attributeLocationIndex = glGetAttribLocation(program, attributeName);
+            vertexFormatAttribIndeces[flagIndex] = attributeLocationIndex;
+            requiredVertexFormat |= 1<<flagIndex;
+        }
     }
     
     RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &activeUniforms));
@@ -376,7 +394,11 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         totalSize += sizeof(Uniform) + (uniformDataSize * size);
     }
     
+    
+    Bind();
+    
     uniformData = new uint8[totalSize];
+    Memset(uniformData, 0, totalSize * sizeof(uint8));
     autobindUniformCount = 0;
     for (int32 k = 0; k < activeUniforms; ++k)
     {
@@ -394,6 +416,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         uniformStruct->shaderSemantic = shaderSemantic;
         uniformStruct->type = (eUniformType)type;
         uniformStruct->size = size;
+        uniformStruct->updateSemantic = 0;
 
         void* value = uniformData + uniformOffsets[k] + sizeof(Uniform);
         uint16 valueSize = GetUniformTypeSize((eUniformType)type) * size;
@@ -409,148 +432,87 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         
         if(IsAutobindUniform(shaderSemantic))
         {
-            //Logger::FrameworkDebug(Format("%s %d", attrName.c_str(), shaderSemantic).c_str());
+            Logger::FrameworkDebug(Format("Autobind: %s %d", attrName.c_str(), shaderSemantic).c_str());
             autobindUniformCount++;
         }
         
-        //VI: initialize cacheValue with value from shader
         switch(uniformStruct->type)
         {
             case UT_FLOAT:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+                RENDER_VERIFY(glUniform1fv(uniformStruct->location, uniformStruct->size, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_VEC2:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+                RENDER_VERIFY(glUniform2fv(uniformStruct->location, uniformStruct->size, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_VEC3:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+                RENDER_VERIFY(glUniform3fv(uniformStruct->location, uniformStruct->size, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_VEC4:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
-                break;
-            }
-                
-            case UT_INT:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
-                break;
-            }
-                
-            case UT_INT_VEC2:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
-                break;
-            }
-                
-            case UT_INT_VEC3:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
-                break;
-            }
-                
-            case UT_INT_VEC4:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform4fv(uniformStruct->location, uniformStruct->size, (float32*)value));
                 break;
             }
                 
             case UT_BOOL:
+            case UT_INT:
+            case UT_SAMPLER_2D:
+            case UT_SAMPLER_CUBE:
             {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform1iv(uniformStruct->location, uniformStruct->size, (int32*)value));
                 break;
             }
                 
             case UT_BOOL_VEC2:
+            case UT_INT_VEC2:
             {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform2iv(uniformStruct->location, uniformStruct->size, (int32*)value));
                 break;
             }
                 
             case UT_BOOL_VEC3:
+            case UT_INT_VEC3:
             {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform3iv(uniformStruct->location, uniformStruct->size, (int32*)value));
                 break;
             }
                 
             case UT_BOOL_VEC4:
+            case UT_INT_VEC4:
             {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform4iv(uniformStruct->location, uniformStruct->size, (int32*)value));
                 break;
             }
-                
-                //VI: Matrices are returned from the shader in column-major order so need to transpose the matrix.
+            
             case UT_FLOAT_MAT2:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
-                
-                
-                for(uint32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
-                {
-                    Matrix2* m = (Matrix2*)(((uint8*)value) + paramIndex * sizeof(Matrix2));
-                    Matrix2 t;
-                    for (int i = 0; i < 2; ++i)
-                        for (int j = 0; j < 2; ++j)
-                            t._data[i][j] = m->_data[j][i];
-                    *m = t;
-                }
-                
+                RENDER_VERIFY(glUniformMatrix2fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_MAT3:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
-                
-                for(uint32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
-                {
-
-                    Matrix3* m = (Matrix3*)(((uint8*)value) + paramIndex * sizeof(Matrix3));
-                    Matrix3 t;
-                    for (int i = 0; i < 3; ++i)
-                        for (int j = 0; j < 3; ++j)
-                            t._data[i][j] = m->_data[j][i];
-                    *m = t;
-                }
-                
+                RENDER_VERIFY(glUniformMatrix3fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_MAT4:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
-                
-                for(uint32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
-                {
-                    Matrix4* m = (Matrix4*)(((uint8*)value) + paramIndex * sizeof(Matrix4));
-                    m->Transpose();
-                }
-                
-                break;
-            }
-                
-            case UT_SAMPLER_2D:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
-                break;
-            }
-                
-            case UT_SAMPLER_CUBE:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniformMatrix4fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
                 break;
             }
         }
     }
+    
+    Unbind();
     
     if(autobindUniformCount)
     {
@@ -565,7 +527,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
                 autobindUniformIndex++;
             }
         }
-    }		
+    }
 }
 
 bool Shader::Recompile(bool silentDelete)
@@ -676,7 +638,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, eUniformType uniformType
     int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * currentUniform->size;
     if(currentUniform->ValidateCache(data, size) == false)
 #else
-    if(currentUniform->ValidateCache(data, currentUniform->cacheValueSize) == false)
+    int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * arraySize;
+    if(currentUniform->ValidateCache(data, size) == false)
 #endif
     {
         switch(uniformType)
@@ -815,7 +778,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType unif
     int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * currentUniform->size;
     if(currentUniform->ValidateCache(data, size) == false)
 #else
-    if(currentUniform->ValidateCache(data, currentUniform->cacheValueSize) == false)
+    int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * arraySize;
+    if(currentUniform->ValidateCache(data, size) == false)
 #endif
     {
         switch(uniformType)
@@ -903,16 +867,16 @@ GLint Shader::LinkProgram(GLuint prog)
 
 void Shader::DeleteShaders()
 {
-    DVASSERT(vertexShader != 0);
-    DVASSERT(fragmentShader != 0);
+    //DVASSERT(vertexShader != 0);
+    //DVASSERT(fragmentShader != 0);
     //DVASSERT(program != 0);
-
+    
     DeleteShaderContainer * container = new DeleteShaderContainer();
     container->program = program;
     container->vertexShader = vertexShader;
     container->fragmentShader = fragmentShader;
     ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::DeleteShadersInternal, container));
-
+    
     vertexShader = 0;
     fragmentShader = 0;
     program = 0;
@@ -922,17 +886,21 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
 {
     DeleteShaderContainer * container = (DeleteShaderContainer*) param;
     DVASSERT(container);
-
+    
     if (container->program)
     {
-        RENDER_VERIFY(glDetachShader(container->program, container->vertexShader));
-        RENDER_VERIFY(glDetachShader(container->program, container->fragmentShader));
+        if (container->vertexShader)
+            RENDER_VERIFY(glDetachShader(container->program, container->vertexShader));
+        if (container->fragmentShader)
+            RENDER_VERIFY(glDetachShader(container->program, container->fragmentShader));
         RENDER_VERIFY(glDeleteProgram(container->program));
     }
     
-    RENDER_VERIFY(glDeleteShader(container->vertexShader));
-    RENDER_VERIFY(glDeleteShader(container->fragmentShader));
-
+    if (container->vertexShader)
+        RENDER_VERIFY(glDeleteShader(container->vertexShader));
+    if (container->fragmentShader)
+        RENDER_VERIFY(glDeleteShader(container->fragmentShader));
+    
     SafeDelete(container);
 }
 
@@ -971,7 +939,7 @@ GLint Shader::CompileShader(GLuint *shader, GLenum type, GLint count, const GLch
         RENDER_VERIFY(glGetShaderInfoLog(*shader, 4096, &logLength, log));
         if (logLength)
         {
-            Logger::FrameworkDebug("Shader compile log:\n%s", log);
+            Logger::Error("Shader compile log:\n%s", log);
         }
     }
 #endif
@@ -1003,6 +971,7 @@ void Shader::Bind()
 {
     if (activeProgram != program)
     {
+        //Logger::FrameworkDebug(Format("Bind: %d", program).c_str());
         RENDERER_UPDATE_STATS(shaderBindCount++);
         RENDER_VERIFY(glUseProgram(program));
         activeProgram = program;
@@ -1051,19 +1020,6 @@ void Shader::BindDynamicParameters()
                 }
                 break;
             }
-            case PARAM_WORLD_VIEW_TRANSLATE:
-            {
-                RenderManager::Instance()->ComputeWorldViewMatrixIfRequired();
-                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD_VIEW);
-                if (_updateSemantic != currentUniform->updateSemantic)
-                {
-                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    Matrix4 * world = (Matrix4*)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW);
-                    SetUniformValueByUniform(currentUniform, world->GetTranslationVector());
-                    currentUniform->updateSemantic = _updateSemantic;
-                }
-                break;
-            }
             case PARAM_WORLD_SCALE:
             {
                 pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD);
@@ -1085,6 +1041,19 @@ void Shader::BindDynamicParameters()
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     Matrix4 * proj = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
+                    SetUniformValueByUniform(currentUniform, *proj);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_INV_WORLD_VIEW:
+            {
+                RenderManager::Instance()->ComputeInvWorldViewMatrixIfRequired();
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_INV_WORLD_VIEW);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
+                    Matrix4 * proj = (Matrix4*)RenderManager::GetDynamicParam(PARAM_INV_WORLD_VIEW);
                     SetUniformValueByUniform(currentUniform, *proj);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1172,27 +1141,123 @@ void Shader::BindDynamicParameters()
             case PARAM_CAMERA_POS:
             case PARAM_CAMERA_DIR:
             case PARAM_CAMERA_UP:
+            case PARAM_LIGHT0_COLOR:
+            case PARAM_LIGHT0_AMBIENT_COLOR:
             {
                 pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
                 if (_updateSemantic != currentUniform->updateSemantic)
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    
-                    Vector3 * camParam = (Vector3*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    //RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, (float*)camParam));
-                    SetUniformValueByUniform(currentUniform, *camParam);
-
+                    Vector3 * param = (Vector3*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_LIGHT0_POSITION:
+            {
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
+                    Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_WORLD_VIEW_OBJECT_CENTER:
+            {
+                RenderManager::Instance()->ComputeWorldViewMatrixIfRequired();
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_WORLD_VIEW);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    AABBox3 * objectBox = (AABBox3*)RenderManager::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
+                    Matrix4 * worldView = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW);
+                    Vector3 param = objectBox->GetCenter() * (*worldView);
+                    SetUniformValueByUniform(currentUniform, param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_BOUNDING_BOX_SIZE:
+            {
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_LOCAL_BOUNDING_BOX);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    AABBox3 * objectBox = (AABBox3*)RenderManager::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
+                    Vector3 param = objectBox->GetSize();
+                    SetUniformValueByUniform(currentUniform, param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_SPEED_TREE_LEAFS_OSCILLATION:
+            case PARAM_SPEED_TREE_TRUNK_OSCILLATION:
+            {
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    Vector2 * param = (Vector2*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_SPEED_TREE_LIGHT_SMOOTHING:
+            {
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    float32 * param = (float32*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_SPHERICAL_HARMONICS:
+            {
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_SPHERICAL_HARMONICS);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    Vector3 * param = (Vector3*)RenderManager::GetDynamicParam(PARAM_SPHERICAL_HARMONICS);
+                    SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC3, currentUniform->size, param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
                 break;
             }
 
+            case PARAM_JOINT_POSITIONS:
+                {
+                    int32 count = *((int32*)RenderManager::GetDynamicParam(PARAM_JOINTS_COUNT));
+                    pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_JOINT_POSITIONS);
+                    if (_updateSemantic != currentUniform->updateSemantic)
+                    {
+                        Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(PARAM_JOINT_POSITIONS);
+                        SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC4, count, param);
+                        currentUniform->updateSemantic = _updateSemantic;
+                    }
+                    break;
+                }
+            case PARAM_JOINT_QUATERNIONS:
+                {
+                    int32 count = *((int32*)RenderManager::GetDynamicParam(PARAM_JOINTS_COUNT));
+                    pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(PARAM_JOINT_QUATERNIONS);
+                    if (_updateSemantic != currentUniform->updateSemantic)
+                    {
+                        Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(PARAM_JOINT_QUATERNIONS);
+                        SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC4, count, param);
+                        currentUniform->updateSemantic = _updateSemantic;
+                    }
+                    break;
+                }
             case PARAM_COLOR:
             {
                 const Color & c = RenderManager::Instance()->GetColor();
                 SetUniformColor4ByUniform(currentUniform, c);
                 break;
             }
+            
             case PARAM_GLOBAL_TIME:
             {
                 if (currentUniform->updateSemantic != Core::Instance()->GetGlobalFrameIndex())
@@ -1236,7 +1301,7 @@ void Shader::Dump()
     }
 }
 
-Shader * Shader::CompileShader(const FastName & assetName,
+Shader * Shader::CreateShader(const FastName & assetName,
                                Data * vertexShaderData,
                                Data * fragmentShaderData,
                                uint8 * vertexShaderDataStart,
@@ -1262,9 +1327,8 @@ Shader * Shader::CompileShader(const FastName & assetName,
         result += Format("#define %s\n", fname.c_str());
     }
     shader->SetDefines(result);
-    
-    shader->Recompile();
-    return shader;
+
+	return shader;
 }
 
 void Shader::Reload(DAVA::Data *vertexShaderData,
@@ -1282,8 +1346,6 @@ void Shader::Reload(DAVA::Data *vertexShaderData,
     this->vertexShaderDataSize = vertexShaderDataSize;
     this->fragmentShaderDataStart = fragmentShaderDataStart;
     this->fragmentShaderDataSize = fragmentShaderDataSize;
-
-    Recompile();
 }
 
     
@@ -1308,13 +1370,19 @@ void Shader::Lost()
     fragmentShader = 0;
     if (program == activeProgram)
         activeProgram = 0;
-    program = 0;
+    //program = 0;
     activeAttributes = 0;
     activeUniforms = 0;
+    
+    ReleaseShaderData(false);
 }
 
 void Shader::Invalidate()
 {
+    if (program == 0)
+        return;
+    program = 0;
+    
     RenderResource::Invalidate();
     Recompile();
     
@@ -1569,7 +1637,7 @@ bool Shader::Uniform::ValidateCache(const void* value, uint16 valueSize)
         crc = crc32;
     }
 #else
-    DVASSERT(valueSize >= cacheValueSize);
+    DVASSERT(valueSize <= cacheValueSize);
     
     bool result = false;
     if(cacheValueSize == valueSize)

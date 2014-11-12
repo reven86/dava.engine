@@ -38,6 +38,7 @@
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/CloneLastBatchCommand.h"
+#include "Commands2/CopyLastLODCommand.h"
 
 EditorMaterialSystem::EditorMaterialSystem(DAVA::Scene * scene)
 : DAVA::SceneSystem(scene)
@@ -309,6 +310,22 @@ void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
         else
         {
             AddMaterial(swCommand->oldBatch->GetMaterial(), swCommand->GetEntity(), swCommand->oldBatch);
+        }
+    }
+    else if(commandID == CMDID_LOD_COPY_LAST_LOD)
+    {
+        CopyLastLODToLod0Command *copyCommand = (CopyLastLODToLod0Command *) command;
+        DAVA::uint32 batchCount = copyCommand->newBatches.size();
+        for(DAVA::uint32 i = 0; i < batchCount; ++i)
+        {
+            if(redo)
+            {
+                AddMaterial(copyCommand->newBatches[i]->GetMaterial(), copyCommand->GetEntity(), copyCommand->newBatches[i]);
+            }
+            else
+            {
+                RemoveMaterial(copyCommand->newBatches[i]->GetMaterial());
+            }
         }
     }
 }

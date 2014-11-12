@@ -30,42 +30,26 @@
 #ifndef UITEXTFIELDPROPERTYGRIDWIDGET_H
 #define UITEXTFIELDPROPERTYGRIDWIDGET_H
 
-#include <QWidget>
-#include "basepropertygridwidget.h"
+#include "textpropertygridwidget.h"
 
-namespace Ui {
-class UITextFieldPropertyGridWidget;
-}
+class QLabel;
 
-class UITextFieldPropertyGridWidget : public BasePropertyGridWidget
+class UITextFieldPropertyGridWidget : public TextPropertyGridWidget
 {
     Q_OBJECT
     
 public:
     explicit UITextFieldPropertyGridWidget(QWidget *parent = 0);
     ~UITextFieldPropertyGridWidget();
-  
+    
     virtual void Initialize(BaseMetadata* activeMetadata);
-    
     virtual void Cleanup();
-
+    
 protected:
-    
-    virtual void ProcessPushButtonClicked(QPushButton* senderWidget);
-    
-    //Update of internal propeperties
-    virtual void UpdatePushButtonWidgetWithPropertyValue(QPushButton *pushButtonWidget, const QMetaProperty& curProperty);
-    
     virtual void ProcessComboboxValueChanged(QComboBox* senderWidget, const PROPERTYGRIDWIDGETSITER& iter,
                                              const QString& value);
     virtual void UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty);
-    
     virtual void FillComboboxes();
-
-    virtual void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
-	virtual void OnPropertiesChangedFromExternalSource() {};	
-
-    Ui::UITextFieldPropertyGridWidget *ui;
 };
 
 #endif // UITEXTFIELDPROPERTYGRIDWIDGET_H

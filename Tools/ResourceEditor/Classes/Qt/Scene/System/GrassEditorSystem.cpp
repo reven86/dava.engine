@@ -39,11 +39,14 @@
 #include "Scene/SceneSignals.h"
 #include "Commands2/ImageRegionCopyCommand.h"
 
+#include "Render/PixelFormatDescriptor.h"
+
 #include <QApplication>
 
+static const float32 DENSITY_THRESHOLD = 0.1f;
+
 GrassEditorSystem::GrassEditorSystem(Scene* scene)
-: SceneSystem(scene)
-, isEnabled(false)
+: LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/squareCursor.tex")
 , inDrawState(false)
 , vegetationMap(NULL)
 , vegetationMapCopy(NULL)
@@ -54,18 +57,10 @@ GrassEditorSystem::GrassEditorSystem(Scene* scene)
 , curLayer(0)
 , curVegetation(NULL)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/squareCursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
 }
 
 GrassEditorSystem::~GrassEditorSystem()
 {
-	SafeRelease(cursorTexture);
     SafeRelease(vegetationMap);
     SafeRelease(vegetationMapCopy);
     SafeRelease(curVegetation);
@@ -76,7 +71,7 @@ void GrassEditorSystem::Update(DAVA::float32 timeElapsed)
 
 void GrassEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
 {
-    if(isEnabled && NULL != vegetationMap)
+    if(enabled && NULL != vegetationMap)
     {
         UpdateCursorPos();
 
@@ -143,7 +138,7 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
 {
     bool ret = false;
 
-    if(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == drawSystem->VerifyLandscape())
+    /*if(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == drawSystem->VerifyLandscape())
     {
         if(enable != isEnabled)
         {
@@ -154,13 +149,10 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
                 DVASSERT(NULL == curVegetation);
                 curVegetation = SafeRetain(veg);
 
-                if(NULL != veg && NULL != veg->GetVegetationMap())
+                if(NULL != veg)
                 {
                     isEnabled = true;
                     ret = true;
-
-                    DVASSERT(vegetationMap);
-                    vegetationMap = SafeRetain(veg->GetVegetationMap());
 
                     selectionSystem->SetLocked(true);
                     modifSystem->SetLocked(true);
@@ -183,6 +175,7 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
                 if(NULL != curVegetation)
                 {
                     curVegetation->SetLayerVisibilityMask(0xFF);
+                    
                 }
 
                 SafeRelease(vegetationMap);
@@ -193,14 +186,9 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
                 ret = true;
             }
         }
-    }
+    }*/
 
     return ret;
-}
-
-bool GrassEditorSystem::IsEnabledGrassEdit() const
-{
-    return isEnabled;
 }
 
 void GrassEditorSystem::UpdateCursorPos()
@@ -339,7 +327,7 @@ void GrassEditorSystem::DrawGrass(DAVA::Vector2 pos)
 
         for(DAVA::uint8 layer = applyFromLayer; layer <= applyToLayer; ++layer)
         {
-            DAVA::uint32 index = offset * Texture::GetPixelFormatSizeInBytes(vegetationMap->format);
+            DAVA::uint32 index = offset * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(vegetationMap->format);
             index += layer;
 
             uint8 mapData = vegetationMap->data[index];
@@ -406,7 +394,7 @@ void GrassEditorSystem::DrawGrass(DAVA::Vector2 pos)
 
 void GrassEditorSystem::DrawGrassEnd()
 {
-    if(!affectedArea.IsEmpty() && NULL != vegetationMapCopy)
+    /*if(!affectedArea.IsEmpty() && NULL != vegetationMapCopy)
     {
         SceneEditor2 *sceneEditor = (SceneEditor2 *) GetScene();
 
@@ -414,7 +402,7 @@ void GrassEditorSystem::DrawGrassEnd()
         DAVA::Rect affectedRect = DAVA::Rect(affectedRect2i.x, affectedRect2i.y, affectedRect2i.dx, affectedRect2i.dy);
         DAVA::Image *orig = DAVA::Image::CopyImageRegion(vegetationMapCopy, affectedRect);
         sceneEditor->Exec(new ImageRegionCopyCommand(vegetationMap, affectedRect.GetPosition(), vegetationMap, affectedRect, curVegetation->GetVegetationMapPath(), orig));
-    }
+    }*/
 }
 
 void GrassEditorSystem::BuildGrassCopy(DAVA::AABBox2 area)

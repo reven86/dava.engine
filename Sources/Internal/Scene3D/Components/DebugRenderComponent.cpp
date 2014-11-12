@@ -32,8 +32,6 @@
 
 namespace DAVA 
 {
-    
-REGISTER_CLASS(DebugRenderComponent)
 
 DebugRenderComponent::DebugRenderComponent()
     : curDebugFlags(DEBUG_DRAW_NONE)
@@ -49,7 +47,7 @@ void DebugRenderComponent::SetDebugFlags(uint32 debugFlags)
     curDebugFlags = debugFlags;
 }
     
-uint32 DebugRenderComponent::GetDebugFlags()
+uint32 DebugRenderComponent::GetDebugFlags() const
 {
     return curDebugFlags;
 }

@@ -6,6 +6,8 @@
 #include "Constants.h"
 #include "../LandscapeEditorShortcutManager.h"
 
+#include "Render/PixelFormatDescriptor.h"
+
 #include <QLayout>
 #include <QComboBox>
 #include <QRadioButton>
@@ -21,11 +23,10 @@ TilemaskEditorPanel::TilemaskEditorPanel(QWidget* parent)
 ,	frameStrength(NULL)
 ,	frameTileTexturesPreview(NULL)
 {
-	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
-	DAVA::RenderStateData noBlendStateData;
-	memcpy(&noBlendStateData, &default3dState, sizeof(noBlendStateData));
+    DAVA::RenderStateData noBlendStateData;
+    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, noBlendStateData);
 	
-	noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
+    noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
 	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
 	
 	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
@@ -164,18 +165,15 @@ void TilemaskEditorPanel::ConnectToSignals()
 
 void TilemaskEditorPanel::StoreState()
 {
-	KeyedArchive* customProperties = GetActiveScene()->GetCustomProperties();
-	if (customProperties)
-	{
-		customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MIN,
-								   (int32)sliderWidgetBrushSize->GetRangeMin());
-		customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MAX,
-								   (int32)sliderWidgetBrushSize->GetRangeMax());
-		customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MIN,
-								   (int32)sliderWidgetStrength->GetRangeMin());
-		customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MAX,
-								   (int32)sliderWidgetStrength->GetRangeMax());
-	}
+	KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
+    customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MIN,
+                               (int32)sliderWidgetBrushSize->GetRangeMin());
+    customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MAX,
+                               (int32)sliderWidgetBrushSize->GetRangeMax());
+    customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MIN,
+                               (int32)sliderWidgetStrength->GetRangeMin());
+    customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MAX,
+                               (int32)sliderWidgetStrength->GetRangeMax());
 }
 
 void TilemaskEditorPanel::RestoreState()
@@ -193,7 +191,7 @@ void TilemaskEditorPanel::RestoreState()
 	int32 strRangeMin = DEF_STRENGTH_MIN_VALUE;
 	int32 strRangeMax = DEF_STRENGTH_MAX_VALUE;
 
-	KeyedArchive* customProperties = sceneEditor->GetCustomProperties();
+	KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
 	if (customProperties)
 	{
 		brushRangeMin = customProperties->GetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MIN, DEF_BRUSH_MIN_SIZE);
@@ -302,7 +300,7 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 		images[i] = Image::Create(width, height, FORMAT_RGBA8888);
 	}
 
-	int32 pixelSize = Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+	int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
 	for(int32 i = 0; i < size; ++i)
 	{
 		int32 offset = i * pixelSize;

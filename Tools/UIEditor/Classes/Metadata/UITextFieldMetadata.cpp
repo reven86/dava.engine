@@ -43,7 +43,7 @@ UITextFieldMetadata::UITextFieldMetadata(QObject* parent) :
 
 UITextField* UITextFieldMetadata::GetActiveUITextField() const
 {
-    return dynamic_cast<UITextField*>(GetActiveUIControl());
+    return static_cast<UITextField*>(GetActiveUIControl());
 }
 
 QString UITextFieldMetadata::GetText() const
@@ -52,7 +52,7 @@ QString UITextFieldMetadata::GetText() const
     {
         return QString();
     }
-    return WideString2QStrint(GetActiveUITextField()->GetText());
+    return WideString2QString(GetActiveUITextField()->GetText());
 }
 
 
@@ -66,7 +66,7 @@ void UITextFieldMetadata::SetText(const QString& text)
     GetActiveUITextField()->SetText(QStrint2WideString(text));
 }
 
-Font * UITextFieldMetadata::GetFont()
+Font * UITextFieldMetadata::GetFont() const
 {
     if (VerifyActiveParamID())
     {
@@ -101,25 +101,33 @@ float UITextFieldMetadata::GetFontSize() const
         return 0.0f;
     }
     
+    //TODO: font should be set correctly, remove this workaround
+    Font* localizedFont = EditorFontManager::Instance()->GetLocalizedFont(font);
+    if(localizedFont)
+    {
+        return localizedFont->GetSize();
+    }
+    
     return font->GetSize();
 }
 
-void UITextFieldMetadata::SetFontSize(float fontSize)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-    
-    Font* font = GetActiveUITextField()->GetFont();
-    if (font)
-    {
-        Font* newFont = font->Clone();
-        newFont->SetSize(fontSize);
-        GetActiveUITextField()->SetFont(newFont);
-        newFont->Release();
-    }
-}
+//DF-3435 font size is defined in font preset and can be changed only by modifying font preset
+//void UITextFieldMetadata::SetFontSize(float fontSize)
+//{
+//    if (!VerifyActiveParamID())
+//    {
+//        return;
+//    }
+//    
+//    Font* font = GetActiveUITextField()->GetFont();
+//    if (font)
+//    {
+//        Font* newFont = font->Clone();
+//        newFont->SetSize(fontSize);
+//        GetActiveUITextField()->SetFont(newFont);
+//        newFont->Release();
+//    }
+//}
 
 QColor UITextFieldMetadata::GetTextColor() const
 {
@@ -213,7 +221,7 @@ void UITextFieldMetadata::SetShadowColor(const QColor& value)
 	GetActiveUITextField()->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
 }
 
-int UITextFieldMetadata::GetTextAlign()
+int UITextFieldMetadata::GetTextAlign() const
 {
 	if (!VerifyActiveParamID())
 	{
@@ -231,6 +239,26 @@ void UITextFieldMetadata::SetTextAlign(int32 align)
     }
 	
 	GetActiveUITextField()->SetTextAlign(align);
+}
+
+bool UITextFieldMetadata::GetTextUseRtlAlign()
+{
+	if (!VerifyActiveParamID())
+	{
+		return false;
+	}
+	
+	return GetActiveUITextField()->GetTextUseRtlAlign();
+}
+
+void UITextFieldMetadata::SetTextUseRtlAlign(bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+	
+	GetActiveUITextField()->SetTextUseRtlAlign(value);
 }
 
 bool UITextFieldMetadata::GetIsPassword() const
@@ -393,6 +421,26 @@ void UITextFieldMetadata::SetIsReturnKeyAutomatically(bool value)
 	return GetActiveUITextField()->SetEnableReturnKeyAutomatically(value);
 }
 
+int UITextFieldMetadata::GetMaxLength() const
+{
+	if (!VerifyActiveParamID())
+	{
+		return -1;
+	}
+	
+	return GetActiveUITextField()->GetMaxLength();
+}
+
+void UITextFieldMetadata::SetMaxLength(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUITextField()->SetMaxLength(value);
+}
+
 // Initialize the control(s) attached.
 void UITextFieldMetadata::InitializeControl(const String& controlName, const Vector2& position)
 {
@@ -401,7 +449,7 @@ void UITextFieldMetadata::InitializeControl(const String& controlName, const Vec
     int paramsCount = this->GetParamsCount();
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
-        UITextField* textField = dynamic_cast<UITextField*>(this->treeNodeParams[i].GetUIControl());
+        UITextField* textField = static_cast<UITextField*>(this->treeNodeParams[i].GetUIControl());
         
         textField->SetFont(EditorFontManager::Instance()->GetDefaultFont());
         textField->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);

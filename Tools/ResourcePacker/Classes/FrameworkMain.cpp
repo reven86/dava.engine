@@ -36,6 +36,8 @@
 #include "TextureCompression/PVRConverter.h"
 
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
+#include "TeamcityOutput/TeamcityOutput.h"
 
 using namespace DAVA;
  
@@ -46,6 +48,7 @@ void PrintUsage()
     printf("\t-usage or --help to display this help\n");
     printf("\t-exo - extended output\n"); 
     printf("\t-v or --verbose - detailed output\n");
+    printf("\t-teamcity - extra output in teamcity format\n");
 
     printf("\n");
     printf("resourcepacker [src_dir] - will pack resources from src_dir\n");
@@ -124,9 +127,9 @@ void ProcessRecourcePacker()
     }
     
 #if defined (__DAVAENGINE_MACOS__)
-	String toolName = String("/PVRTexToolCL");
+	String toolName = String("/PVRTexToolCLI");
 #elif defined (__DAVAENGINE_WIN32__)
-	String toolName = String("/PVRTexToolCL.exe");
+	String toolName = String("/PVRTexToolCLI.exe");
 #endif
     PVRConverter::Instance()->SetPVRTexTool(resourcePacker->excludeDirectory + (commandLine[2] + toolName));
     
@@ -136,11 +139,11 @@ void ProcessRecourcePacker()
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker->outputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker->excludeDirectory.GetAbsolutePathname().c_str());
     
-    Texture::InitializePixelFormatDescriptors();
+    PixelFormatDescriptor::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
     
     
-    eGPUFamily exportForGPU = GPU_UNKNOWN;
+    eGPUFamily exportForGPU = GPU_PNG;
     if(CommandLineParser::CommandIsFound(String("-gpu")))
     {
         String gpuName = CommandLineParser::GetCommandParam(String("-gpu"));
@@ -182,6 +185,15 @@ void FrameworkDidLaunched()
 
             Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
         }
+
+        if(CommandLineParser::CommandIsFound(String("-teamcity")))
+        {
+            CommandLineParser::Instance()->SetUseTeamcityOutput(true);
+
+            DAVA::TeamcityOutput *out = new DAVA::TeamcityOutput();
+            DAVA::Logger::AddCustomOutput(out);
+        }
+
 	}
 
     ProcessRecourcePacker();

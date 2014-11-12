@@ -60,8 +60,11 @@ void SaveEntityAsAction::Redo()
             newLocalTransform.SetTranslationVector(offset);
             clone->SetLocalTransform(newLocalTransform);
 
-            DAVA::KeyedArchive *props = clone->GetCustomProperties();
-            props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+            DAVA::KeyedArchive *props = GetCustomPropertiesArchieve(clone);
+            if(props)
+            {
+                props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+            }
             
 			scene->AddNode(clone);
 		}

@@ -189,9 +189,10 @@ void InputTest::LoadResources()
     
     textField->SetTextColor(Color::White);
 
-	textField->SetText(L"textField");
+	textField->SetText(L"Length lim 12");
 	textField->SetDebugDraw(true);
 	textField->SetDelegate(new UITextFieldDelegate());
+    textField->SetMaxLength(12);
 	AddControl(textField);
 
 	removeFromParentButton = new UIButton(Rect(320, 300, 300, 30));
@@ -385,7 +386,7 @@ void InputTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
     }
 }
 
-bool InputTest::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString)
+bool InputTest::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString)
 {
 	if (replacementLocation < 0 || replacementLength < 0)
 	{

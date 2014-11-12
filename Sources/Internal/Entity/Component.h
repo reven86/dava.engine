@@ -65,7 +65,14 @@ public:
         STATIC_OCCLUSION_COMPONENT,
         STATIC_OCCLUSION_DATA_COMPONENT, 
         QUALITY_SETTINGS_COMPONENT,   // type as fastname for detecting type of model
+        SPEEDTREE_COMPONENT,
+        WIND_COMPONENT,
+        WAVE_COMPONENT,
+        SKELETON_COMPONENT,
 
+        //debug components - note that everything below won't be serialized
+        DEBUG_COMPONENTS,
+        STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT,
         COMPONENT_COUNT
     };
 

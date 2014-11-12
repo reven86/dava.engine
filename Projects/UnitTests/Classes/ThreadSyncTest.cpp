@@ -35,32 +35,17 @@ ThreadSyncTest::ThreadSyncTest()
 {
     RegisterFunction(this, &ThreadSyncTest::ThreadSyncTestFunction, "ThreadSyncTestFunction", NULL);
     RegisterFunction(this, &ThreadSyncTest::ThreadSleepTestFunction, "ThreadSleepTestFunction", NULL);
+    RegisterFunction(this, &ThreadSyncTest::TestThread, "TestThread", NULL);
 }
 
 void ThreadSyncTest::LoadResources()
 {
-    someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
+
 }
 
 void ThreadSyncTest::UnloadResources()
 {
-    SafeRelease(someThread);
-}
 
-void ThreadSyncTest::ThreadSleepTestFunction(PerfFuncData * data)
-{
-    uint64 time = SystemTimer::Instance()->AbsoluteMS();
-    Thread::SleepThread(300);
-    uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - time;
-    TEST_VERIFY(elapsedTime >= 300);
-}
-
-void ThreadSyncTest::ThreadSyncTestFunction(PerfFuncData * data)
-{
-    someValue = -1;
-    someThread->Start();
-    Thread::Wait(&cv);
-    TEST_VERIFY(someValue == 0);
 }
 
 void ThreadSyncTest::SomeThreadFunc(BaseObject * caller, void * callerData, void * userData)
@@ -68,5 +53,122 @@ void ThreadSyncTest::SomeThreadFunc(BaseObject * caller, void * callerData, void
     someValue = 0;
     Thread::Signal(&cv);
 }
+
+void ThreadSyncTest::ThreadSleepTestFunction(PerfFuncData * data)
+{
+    uint64 time = SystemTimer::Instance()->AbsoluteMS();
+    Thread::Sleep(300);
+    uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - time;
+    TEST_VERIFY(elapsedTime >= 300);
+}
+
+void ThreadSyncTest::ThreadSyncTestFunction(PerfFuncData * data)
+{
+	someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
+    someValue = -1;
+    someThread->Start();
+    Mutex mutex;
+    mutex.Lock();
+    Thread::Wait(&cv, &mutex);
+    TEST_VERIFY(someValue == 0);
+    someThread->Join();
+    TEST_VERIFY(0 == someThread->Release());
+    someThread = NULL;
+}
+
+void ThreadSyncTest::InfiniteThreadFunction(BaseObject * caller, void * callerData, void * userData)
+{
+    Thread *thread = static_cast<Thread *>(caller);
+    while(thread && Thread::STATE_CANCELLING != thread->GetState())
+    {
+        Thread::Sleep(200);
+    }
+    
+}
+
+void ThreadSyncTest::ShortThreadFunction(BaseObject * caller, void * callerData, void * userData)
+{
+    uint32 i = 200;
+    Thread *thread = static_cast<Thread *>(caller);
+    while(thread && i-- > 0)
+    {
+        Thread::Sleep(1);
+        if (Thread::STATE_CANCELLING == thread->GetState())
+            break;
+    }
+}
+
+void ThreadSyncTest::TestThread(PerfFuncData * data)
+{
+	Logger::Debug("[ThreadSyncTest] testing threads logic");
+
+    TEST_VERIFY(true == Thread::IsMainThread());
+
+    Thread *infiniteThread = Thread::Create(Message(this, &ThreadSyncTest::InfiniteThreadFunction));
+    
+    TEST_VERIFY(Thread::STATE_CREATED == infiniteThread->GetState());
+    infiniteThread->SetName("Infinite test thread");
+    infiniteThread->Start();
+    
+    uint32 timeout = 3000;
+    while (timeout-- > 0 && Thread::STATE_RUNNING != infiniteThread->GetState())
+    {
+        Thread::Sleep(1);
+    }
+    TEST_VERIFY(timeout > 0);
+
+    infiniteThread->Cancel();
+    infiniteThread->Join();
+    TEST_VERIFY(Thread::STATE_CANCELLED == infiniteThread->GetState());
+
+    Thread *shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
+    shortThread->Start();
+    shortThread->Join();
+    TEST_VERIFY(Thread::STATE_ENDED == shortThread->GetState());
+
+    TEST_VERIFY(0 == shortThread->Release());
+	shortThread = NULL;
+	TEST_VERIFY(0 == infiniteThread->Release());
+	infiniteThread = NULL;
+
+    infiniteThread = Thread::Create(Message(this, &ThreadSyncTest::InfiniteThreadFunction));
+    shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
+
+    infiniteThread->Start();
+    shortThread->Start();
+
+    Thread::Sleep(50);
+    timeout = 3000;
+    while (timeout-- > 0 
+        && Thread::STATE_RUNNING != infiniteThread->GetState()
+        && Thread::STATE_RUNNING != shortThread->GetState())
+    {
+        Thread::Sleep(1);
+    }
+
+    Thread::Id itid = infiniteThread->GetId();
+    Thread::Id stid = shortThread->GetId();
+    TEST_VERIFY(itid != stid);
+
+    Thread::KillAll();
+    
+    shortThread->Join();
+    TEST_VERIFY(Thread::STATE_KILLED == shortThread->GetState());
+
+    infiniteThread->Join();
+    TEST_VERIFY(Thread::STATE_KILLED == infiniteThread->GetState());
+
+    TEST_VERIFY(0 != shortThread);
+    TEST_VERIFY(0 != shortThread->Release());
+    TEST_VERIFY(0 == shortThread->Release());
+    shortThread = NULL;
+
+    TEST_VERIFY(0 != infiniteThread->Release());
+    TEST_VERIFY(0 == infiniteThread->Release());
+    infiniteThread = NULL;
+
+	Logger::Debug("[ThreadSyncTest] Done.");
+}
+
 
 

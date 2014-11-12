@@ -157,41 +157,41 @@ FileList::~FileList()
 
 }
 
-int32 FileList::GetCount()
+int32 FileList::GetCount() const
 {
 	return (int32)fileList.size();
 }	
 
-int32 FileList::GetFileCount()
+int32 FileList::GetFileCount() const
 {
 	return fileCount;
 }
 
-int32 FileList::GetDirectoryCount()
+int32 FileList::GetDirectoryCount() const
 {
 	return directoryCount;
 }
 
-const FilePath & FileList::GetPathname(int32 index)
+const FilePath & FileList::GetPathname(int32 index) const
 {
 	DVASSERT((index >= 0) && (index < (int32)fileList.size()));
 	return fileList[index].path;
 }
     
-const String & FileList::GetFilename(int32 index)
+const String & FileList::GetFilename(int32 index) const
 {
     DVASSERT((index >= 0) && (index < (int32)fileList.size()));
     return fileList[index].name;
 }
     
 
-bool FileList::IsDirectory(int32 index) 
+bool FileList::IsDirectory(int32 index)  const
 {
 	DVASSERT((index >= 0) && (index < (int32)fileList.size()));
 	return fileList[index].isDirectory;
 }
 	
-bool FileList::IsNavigationDirectory(int32 index)
+bool FileList::IsNavigationDirectory(int32 index) const
 {
 	DVASSERT((index >= 0) && (index < (int32)fileList.size()));
 	//bool isDir = fileList[index].isDirectory;

@@ -41,11 +41,13 @@ void EnumMap::Register(const int e, const char* s) const
 {
 	DVASSERT(!map.count(e));
 	map[e] = DAVA::String(s);
+    indexes.push_back(e);
 }
 
 void EnumMap::UnregistelAll() const
 {
 	map.clear();
+    indexes.clear();
 }
 
 bool EnumMap::ToValue(const char* s, int &e) const
@@ -76,6 +78,10 @@ const char* EnumMap::ToString(const int e) const
 	{
 		ret = map.at(e).c_str();
 	}
+    else
+    {
+        DVASSERT_MSG(false, "Be sure that e is declared at global enum"); //example ENUM_ADD_DESCR(FORMAT_ATC_RGBA_EXPLICIT_ALPHA, "ATC_RGBA_EXPLICIT_ALPHA");
+    }
 
 	return ret;
 }
@@ -88,21 +94,10 @@ size_t EnumMap::GetCount() const
 bool EnumMap::GetValue(size_t index, int &e) const
 {
 	bool ret = false;
-	EnumMapContainer::const_iterator i = map.begin();
-
 	if(index < map.size())
 	{
-		while(index > 0)
-		{
-			index--;
-			i++;
-		}
-
-		if(i != map.end())
-		{
-			e = i->first;
-			ret = true;
-		}
+        e = indexes[index];
+		ret = true;
 	}
 
 	return ret;

@@ -51,6 +51,7 @@ SwitchSystem::SwitchSystem(Scene * scene)
 void SwitchSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("SwitchSystem::Process");
+    
 	Set<Entity*>::iterator it;
 	Set<Entity*>::const_iterator itEnd = updatableEntities.end();
 	for(it = updatableEntities.begin(); it != itEnd; ++it)
@@ -81,6 +82,11 @@ void SwitchSystem::ImmediateEvent(Entity * entity, uint32 event)
 	{
 		updatableEntities.insert(entity);
 	}
+}
+
+void SwitchSystem::AddEntity(Entity * entity)
+{
+    updatableEntities.insert(entity); //need update entity when add it into scene
 }
 
 void SwitchSystem::RemoveEntity(Entity* entity)

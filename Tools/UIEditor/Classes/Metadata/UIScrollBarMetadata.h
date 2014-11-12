@@ -40,6 +40,8 @@ class UIScrollBarMetadata : public UIControlMetadata
 	
 	// Scrollbar orientation
     Q_PROPERTY(int ScrollOrientation READ GetScrollOrientation WRITE SetScrollOrientation);
+    //UIScrollBarDelegateName
+    Q_PROPERTY(QString UIScrollBarDelegateName READ GetUIScrollBarDelegateName WRITE SetUIScrollBarDelegateName);
 	
 public:
     UIScrollBarMetadata(QObject* parent = 0);
@@ -49,9 +51,8 @@ protected:
 
     // Initialize the appropriate control.
     virtual void InitializeControl(const String& controlName, const Vector2& position);
-    virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
 
-    virtual QString GetUIControlClassName() { return "UIScrollBar"; };
+    virtual QString GetUIControlClassName() const { return "UIScrollBar"; };
 	
     // Helper to access active UI ScrollBar.
     UIScrollBar* GetActiveUIScrollBar() const;
@@ -59,6 +60,8 @@ protected:
     // Getters/setters.
 	int GetScrollOrientation();
 	void SetScrollOrientation(int value);
+    QString GetUIScrollBarDelegateName();
+	void SetUIScrollBarDelegateName(const QString& value);
 };
 
 };

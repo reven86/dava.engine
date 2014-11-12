@@ -49,7 +49,7 @@ void UIAggregatorMetadata::InitializeControl(const String& controlName, const Ve
     }
 }
 
-QString UIAggregatorMetadata::GetUIControlClassName()
+QString UIAggregatorMetadata::GetUIControlClassName() const
 {
 	const METADATAPARAMSVECT& params = GetParams();
 	if (params.size())
@@ -66,10 +66,4 @@ QString UIAggregatorMetadata::GetUIControlClassName()
 	}
 	
 	return UIControlMetadata::GetUIControlClassName();
-}
-
-void UIAggregatorMetadata::SetVisible(const bool value)
-{
-    // UIAggregator must update its children hierarchically.
-    SetUIControlVisible(value, true);
 }

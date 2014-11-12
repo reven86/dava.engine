@@ -43,4 +43,19 @@ namespace DAVA
 		ReleaseDC(NULL, screen);
 		return hDPI;
 	}
+
+    float64 DPIHelper::GetDpiScaleFactor(int32 screenId)
+    {
+        return 1.0;
+    }
+
+    Size2i DPIHelper::GetScreenSize()
+    {
+        Size2i screenSize;
+        HDC screen = GetDC(NULL);
+        screenSize.dx = GetDeviceCaps(screen, HORZRES);
+        screenSize.dy = GetDeviceCaps(screen, VERTRES);
+        ReleaseDC(NULL, screen);
+        return screenSize;
+    }
 }

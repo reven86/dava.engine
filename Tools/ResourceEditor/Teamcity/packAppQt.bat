@@ -11,6 +11,7 @@ echo start ResourceEditorQtVS2010.exe >> app/ResourceEditor/start.cmd
 
 xcopy /e ..\Data\*.* app\ResourceEditor\dava.framework\Tools\ResourceEditor\Data 
 xcopy *.exe app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy *.pdb app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\glew32.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\Teamcity\imagesplitter\*.bat app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy %QT_HOME%\lib\QtCore4.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor

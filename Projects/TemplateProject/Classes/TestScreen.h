@@ -47,16 +47,5 @@ public:
 	virtual void Input(UIEvent * touch);
 
 private:
-	Sprite * testSprite;
-
-	float32 time;
-	GameObjectManager * manager;
-
-	RefPtr<GameObject> bigBox;
-	RefPtr<GameObject> smallBox;
-	RefPtr<GameObject> smallCircle;
-	
-	RefPtr<GameObject> bigBoxParticles;
-	RefPtr<ParticleEmitterObject> bigBoxEmitter;
 };
 

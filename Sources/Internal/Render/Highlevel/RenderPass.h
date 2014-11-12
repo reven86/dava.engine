@@ -42,7 +42,7 @@ class Camera;
 
 class RenderPass
 {
-public:
+public:    
     RenderPass(const FastName & name, RenderPassID id);
     virtual ~RenderPass();
     
@@ -54,7 +54,7 @@ public:
 	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
 	void RemoveRenderLayer(RenderLayer * layer);
 
-    virtual void Draw(Camera * camera, RenderSystem * renderSystem);
+    virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
     
     inline uint32 GetRenderLayerCount() const;
     inline RenderLayer * GetRenderLayer(uint32 index) const;
@@ -69,6 +69,7 @@ protected:
     /*convinience*/
     void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);
     void DrawLayers(Camera *camera);
+    void ClearBuffers(uint32 clearBuffers);
 
 	RenderPassBatchArray * renderPassBatchArray;
 	VisibilityArray visibilityArray;
@@ -109,34 +110,43 @@ public:
     WaterPrePass(const FastName & name, RenderPassID id);
     ~WaterPrePass();
 protected:
-    Camera *passCamera;
+    Camera *passMainCamera, *passDrawCamera;
     float32 waterLevel;
 };
 class WaterReflectionRenderPass  : public WaterPrePass
-{    
+{        
 public:    
     WaterReflectionRenderPass(const FastName & name, RenderPassID id);
-	virtual void Draw(Camera * camera, RenderSystem * renderSystem);	
+	virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);	
+private:
+    void UpdateCamera(Camera *camera);
 };
 
 class WaterRefractionRenderPass  : public WaterPrePass
-{    
+{       
 public:
     WaterRefractionRenderPass(const FastName & name, RenderPassID id);
-    virtual void Draw(Camera * camera, RenderSystem * renderSystem);
+    virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
 
 };
 
 class MainForwardRenderPass : public RenderPass
-{
-	WaterReflectionRenderPass *reflectionPass;
-    WaterRefractionRenderPass *refractionPass;
-    Texture *reflectionTexture, *refractionTexture;
-    Sprite *reflectionSprite, *refractionSprite;
+{	
+
 public:
     MainForwardRenderPass(const FastName & name, RenderPassID id);
 	~MainForwardRenderPass();
-	virtual void Draw(Camera * camera, RenderSystem * renderSystem);
+	virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
+
+private:
+	WaterReflectionRenderPass *reflectionPass;
+    WaterRefractionRenderPass *refractionPass;
+    Texture *reflectionTexture, *refractionTexture;    
+    
+    bool needWaterPrepass;
+    AABBox3 waterBox;
+
+    void PrepareReflectionRefractionTextures(RenderSystem * renderSystem);
 };
 
 } // ns

@@ -51,14 +51,18 @@ class UIJoypad : public UIControl
 protected:
     virtual ~UIJoypad();
 public:
-	UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates = FALSE);
+	UIJoypad(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = FALSE);
 	
 	const Vector2 & GetDigitalPosition();
 	const Vector2 & GetAnalogPosition();
     
+    virtual Sprite* GetStickSprite() const;
+    virtual int32 GetStickSpriteFrame() const;
+
     virtual void SetStickSprite(Sprite *stickSprite, int32 frame);
     virtual void SetStickSprite(const FilePath &stickSpriteName, int32 frame);
-	
+    virtual void SetStickSpriteFrame(int32 frame);
+
 	virtual void Input(UIEvent *currentInput); // Can be overrided for control additioanl functionality implementation
 	virtual void InputCancelled(UIEvent *currentInput); // Can be overrided for control additioanl functionality implementation
 
@@ -69,6 +73,12 @@ public:
 
     float32 GetStickAngle() const;
 
+    // Load/save functionality.
+    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
+    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+
+    virtual List<UIControl* >& GetRealChildren();
+
 protected:
 	void RecalcDigitalPosition();
 	void RecalcAnalogPosition();
@@ -78,7 +88,7 @@ protected:
     UIControl *stick;
     
 private:
-	int mainTouch;
+	int32 mainTouch;
 	float deadAreaSize;// dead area size in pixels (must be positive value)
 	float32 digitalSense;
 	bool needRecalcDigital;

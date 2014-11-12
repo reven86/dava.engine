@@ -40,7 +40,7 @@ public:
     void InitWithFile(const FilePath& filename);
 	
 	Vector2 GetLandscapePartitioningSize() const;
-	const String GetLandscapeNodeName() const;
+	const FastName & GetLandscapeNodeName() const;
 	float32 GetCameraElevation() const;
 	float32 GetCameraRotationSpeed() const;
 	float32 GetCameraMovementSpeed() const;
@@ -50,7 +50,7 @@ public:
 	Color GetColorByFps(float32 fps) const;
 private:
 	Vector2 landscapePartitioningSize;
-	String landscapeNodeName;
+	FastName landscapeNodeName;
 	float32 cameraElevation;
 	float32 cameraRotationSpeed;
 	float32 cameraMovementSpeed;

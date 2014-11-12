@@ -34,12 +34,15 @@
 
 #include <QMessageBox>
 #include <QToolButton>
+#include <QFileInfo>
+
 #include "mainwindow.h"
 
 #include "TexturePacker/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "DAVAEngine.h"
+#include <QProcess>
 using namespace DAVA;
 
 
@@ -105,7 +108,7 @@ DAVA::Image * CreateTopLevelImage(const DAVA::FilePath &imagePathname)
 {
     Image *image = NULL;
     Vector<Image *> imageSet;
-    ImageLoader::CreateFromFileByContent(imagePathname, imageSet);
+    ImageSystem::Instance()->Load(imagePathname, imageSet);
     if(0 != imageSet.size())
     {
         image = SafeRetain(imageSet[0]);
@@ -136,7 +139,7 @@ void ShowErrorDialog(const DAVA::String &errorMessage)
 {
 	bool forceClose =    CommandLineParser::CommandIsFound(String("-force"))
 					||  CommandLineParser::CommandIsFound(String("-forceclose"));
-	if(!forceClose)
+	if(!forceClose && !Core::Instance()->IsConsoleMode())
 	{
 		QMessageBox::critical(QtMainWindow::Instance(), "Error", errorMessage.c_str());
 	}
@@ -205,5 +208,51 @@ DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::Stri
 	}
 
 	return sourceString;
+}
+
+void ShowFileInExplorer(const QString& path)
+{
+    const QFileInfo fileInfo(path);
+
+#if defined (Q_WS_MAC)
+    QStringList args;
+    args << "-e";
+    args << "tell application \"Finder\"";
+    args << "-e";
+    args << "activate";
+    args << "-e";
+    args << "select POSIX file \"" + fileInfo.absoluteFilePath() + "\"";
+    args << "-e";
+    args << "end tell";
+    QProcess::startDetached( "osascript", args );
+#elif defined (Q_WS_WIN)
+    QStringList args;
+    args << "/select," << QDir::toNativeSeparators( fileInfo.absoluteFilePath() );
+    QProcess::startDetached( "explorer", args );
+#endif//
+
+}
+
+void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
+{
+    if(sprite)
+    {
+        SaveTextureToFile(sprite->GetTexture(), path);
+    }
+}
+
+void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
+{
+    if(texture)
+    {
+        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_BLEND);
+        SaveImageToFile(img, path);
+        img->Release();
+    }
+}
+
+void SaveImageToFile(DAVA::Image * image, const DAVA::FilePath & path)
+{
+    DAVA::ImageSystem::Instance()->Save(path, image);
 }
 

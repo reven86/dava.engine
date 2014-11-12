@@ -72,6 +72,13 @@ struct ParticleLayer : public BaseObject
 		PARTICLE_ORIENTATION_WORLD_ALIGN = 1<<4 
 	};
 
+    enum eDegradeStrategy
+    {
+        DEGRADE_KEEP = 0,
+        DEGRADE_CUT_PARTICLES = 1,
+        DEGRADE_REMOVE = 2
+    };
+
 
 	ParticleLayer();
 	virtual ~ParticleLayer();		
@@ -165,6 +172,8 @@ struct ParticleLayer : public BaseObject
 	
 
 	eType		type;
+
+    eDegradeStrategy degradeStrategy;
 
 	int32 particleOrientation;
 

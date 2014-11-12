@@ -1,23 +1,38 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "WebViewControliOS.h"
 #include "DAVAEngine.h"
 
 #import <UIKit/UIKit.h>
 #import <HelperAppDelegate.h>
+#import "Platform/TemplateiOS/BackgroundView.h"
 
 @interface WebViewURLDelegate : NSObject<UIWebViewDelegate>
 {
@@ -141,33 +156,58 @@ namespace DAVA
 	using ::UIWebView;
 	using ::UIScreen;
 
+    static const struct
+    {
+        DAVAWebView::eDataDetectorType davaDetectorType;
+        NSUInteger systemDetectorType;
+    }
+    detectorsMap[] =
+    {
+        {DAVAWebView::DATA_DETECTOR_ALL, UIDataDetectorTypeAll},
+        {DAVAWebView::DATA_DETECTOR_NONE, UIDataDetectorTypeNone},
+        {DAVAWebView::DATA_DETECTOR_PHONE_NUMBERS, UIDataDetectorTypePhoneNumber},
+        {DAVAWebView::DATA_DETECTOR_LINKS, UIDataDetectorTypeLink},
+        {DAVAWebView::DATA_DETECTOR_ADDRESSES, UIDataDetectorTypeAddress},
+        {DAVAWebView::DATA_DETECTOR_CALENDAR_EVENTS, UIDataDetectorTypeCalendarEvent}
+    };
+
 WebViewControl::WebViewControl()
 {
     gesturesEnabled = false;
-	CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
-	webViewPtr = [[UIWebView alloc] initWithFrame:emptyRect];
-	SetBounces(false);
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    
+    UIWebView* localWebView = [backgroundView CreateWebView];
+    webViewPtr = localWebView;
+    
+    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
+    [localWebView setFrame:emptyRect];
 
-	UIWebView* localWebView = (UIWebView*)webViewPtr;
-	HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-	[[appDelegate glController].backgroundView addSubview:localWebView];
+    SetBounces(false);
 
-	webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
-	[localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
+    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
+    [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
 
-	[localWebView becomeFirstResponder];
-}
+    [localWebView becomeFirstResponder];
+ }
 
 WebViewControl::~WebViewControl()
 {
     SetGestures(NO);
 	UIWebView* innerWebView = (UIWebView*)webViewPtr;
 
+    
     [innerWebView setDelegate:nil];
     [innerWebView stopLoading];
     [innerWebView loadHTMLString:@"" baseURL:nil];
-	[innerWebView removeFromSuperview];
-	[innerWebView release];
+    
+    [innerWebView resignFirstResponder];
+
+    
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    [backgroundView ReleaseWebView:innerWebView];
+    
 	webViewPtr = nil;
 
 	WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
@@ -203,12 +243,12 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
 	NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
-    NSString* baseUrl = [NSString stringWithUTF8String:basePath.GetAbsolutePathname().c_str()];
+    NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
     
     UIWebView* innerWebView = (UIWebView*)webViewPtr;
     [innerWebView stopLoading];
     
-    [innerWebView loadHTMLString:dataToOpen baseURL:[NSURL fileURLWithPath:baseUrl]];
+    [innerWebView loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
 }
 
 void WebViewControl::SetRect(const Rect& rect)
@@ -228,7 +268,7 @@ void WebViewControl::SetRect(const Rect& rect)
 
 	
 	// Apply the Retina scale divider, if any.
-	float scaleDivider = GetScaleDivider();
+    DAVA::float32 scaleDivider = [HelperAppDelegate GetScale];
 	webViewRect.origin.x /= scaleDivider;
 	webViewRect.origin.y /= scaleDivider;
 	webViewRect.size.height /= scaleDivider;
@@ -240,21 +280,6 @@ void WebViewControl::SetRect(const Rect& rect)
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
 	[(UIWebView*)webViewPtr setHidden:!isVisible];
-}
-
-float WebViewControl::GetScaleDivider()
-{
-    float scaleDivider = 1.f;
-    if (DAVA::Core::IsAutodetectContentScaleFactor())
-    {
-        if ([UIScreen instancesRespondToSelector: @selector(scale) ]
-            && [UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
-        {
-            scaleDivider = [[UIScreen mainScreen] scale];
-        }
-	}
-
-	return scaleDivider;
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
@@ -359,6 +384,42 @@ void WebViewControl::SetGestures(bool value)
         leftSwipeGesturePtr = nil;
     }
     gesturesEnabled = value;
+}
+
+void WebViewControl::SetDataDetectorTypes(int32 value)
+{
+    NSUInteger systemDetectorTypes = 0;
+
+    int detectorsCount = COUNT_OF(detectorsMap);
+    for (int i = 0; i < detectorsCount; i ++)
+    {
+        if ((value & detectorsMap[i].davaDetectorType) == detectorsMap[i].davaDetectorType)
+        {
+            systemDetectorTypes |= detectorsMap[i].systemDetectorType;
+        }
+    }
+
+    UIWebView* localWebView = (UIWebView*)webViewPtr;
+    localWebView.dataDetectorTypes = systemDetectorTypes;
+}
+
+int32 WebViewControl::GetDataDetectorTypes() const
+{
+    UIWebView* localWebView = (UIWebView*)webViewPtr;
+    NSUInteger systemDetectorTypes = localWebView.dataDetectorTypes;
+
+    int32 davaDetectorTypes = 0;
+    
+    int detectorsCount = COUNT_OF(detectorsMap);
+    for (int i = 0; i < detectorsCount; i ++)
+    {
+        if ((systemDetectorTypes & detectorsMap[i].systemDetectorType) == detectorsMap[i].systemDetectorType)
+        {
+            davaDetectorTypes |= detectorsMap[i].davaDetectorType;
+        }
+    }
+
+    return davaDetectorTypes;
 }
     
 };

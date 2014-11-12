@@ -46,6 +46,7 @@
 #include "Scene3D/SceneFileV2.h"
 #include "Render/Highlevel/ShadowVolumeRenderPass.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
+#include "Render/Highlevel/RenderBatchArray.h"
 
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
@@ -54,6 +55,8 @@ SceneEditor2::SceneEditor2()
 	, isLoaded(false)
 	, isHUDVisible(true)
 {
+    SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
+
 	renderStats.Clear();
 
 	EditorCommandNotify *notify = new EditorCommandNotify(this);
@@ -168,8 +171,6 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
 		commandStack.SetClean(true);
     }
 
-	UpdateShadowColorFromLandscape();
-
     SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
     
 	SceneSignals::Instance()->EmitLoaded(this);
@@ -247,8 +248,11 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 	
 	exporter.SetInFolder(projectPath + String("DataSource/3d/"));
     exporter.SetOutFolder(projectPath + String("Data/3d/"));
-    exporter.SetOutSoundsFolder(projectPath + String("Data/Sfx/"));
 	exporter.SetGPUForExporting(newGPU);
+
+	DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
+	exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
+
 	Set<String> errorLog;
 
 	SceneEditor2 *clonedScene = CreateCopyForExport();
@@ -495,39 +499,6 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 	}
 }
 
-void SceneEditor2::UpdateShadowColorFromLandscape()
-{
-	// try to get shadow color for landscape
-	Entity *land = FindLandscapeEntity(this);
-	if(!land || !GetRenderSystem()) return;
-
-	KeyedArchive * props = land->GetCustomProperties();
-	if (props->IsKeyExists("ShadowColor"))
-	{
-		GetRenderSystem()->SetShadowRectColor(props->GetVariant("ShadowColor")->AsColor());
-	}
-}
-
-void SceneEditor2::SetShadowColor( const Color &color )
-{
-	Entity *land = FindLandscapeEntity(this);
-	if(!land) return;
-
-	KeyedArchive * props = land->GetCustomProperties();
-	if(!props) return;
-
-	props->SetVariant("ShadowColor", VariantType(color));
-
-	UpdateShadowColorFromLandscape();
-}
-
-const Color SceneEditor2::GetShadowColor() const
-{
-	if(GetRenderSystem())
-		return GetRenderSystem()->GetShadowRectColor();
-
-	return Color::White;
-}
 
 void SceneEditor2::SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend)
 {
@@ -626,7 +597,7 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 
     if(toolFlags & LANDSCAPE_TOOL_GRASS_EDITOR)
     {
-        res |= grassEditorSystem->IsEnabledGrassEdit();
+        res |= grassEditorSystem->IsLandscapeEditingEnabled();
     }
 
 	return res;
@@ -666,7 +637,7 @@ int32 SceneEditor2::GetEnabledTools()
 		toolFlags |= LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN;
 	}
 
-    if(grassEditorSystem->IsEnabledGrassEdit())
+    if(grassEditorSystem->IsLandscapeEditingEnabled())
     {
         toolFlags |= LANDSCAPE_TOOL_GRASS_EDITOR;
     }
@@ -699,6 +670,7 @@ void SceneEditor2::RemoveSystems()
 {
 	if(editorLightSystem)
 	{
+        editorLightSystem->SetCameraLightEnabled(false);
 		RemoveSystem(editorLightSystem);
 		SafeDelete(editorLightSystem);
 	}
@@ -745,9 +717,9 @@ void SceneEditor2::Setup2DDrawing()
 
 void SceneEditor2::Setup3DDrawing()
 {
-    if (currentCamera)
+    if (drawCamera)
     {
-        currentCamera->SetupDynamicParameters();
+        drawCamera->SetupDynamicParameters();
     }
 }
 

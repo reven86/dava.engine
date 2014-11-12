@@ -28,11 +28,13 @@
 
 
 #include "Base/EventDispatcher.h"
+#include <iterator>
 
 namespace DAVA 
 {
 
 EventDispatcher::EventDispatcher()
+    : eraseLocked( false )
 {
 }
 
@@ -54,9 +56,11 @@ bool EventDispatcher::RemoveEvent(int32 eventType, const Message &msg)
 	for(; it != events.end(); it++)
 	{
 		//if(Event(*it).msg == msg && Event(*it).eventType == eventType)
-		if((it->msg == msg) && (it->eventType == eventType))
+		if((it->msg == msg) && (it->eventType == eventType) && !it->needDelete)
 		{
-			events.erase(it);
+			it->needDelete = true;
+			if( !eraseLocked )
+				events.erase(it);
 			return true;
 		}
 	}
@@ -65,26 +69,36 @@ bool EventDispatcher::RemoveEvent(int32 eventType, const Message &msg)
 	
 bool EventDispatcher::RemoveAllEvents()
 {
-	int32 size = (int32)events.size();
-	events.clear();
-	return (size != 0);
+    int32 removedEventsCount = 0;
+    if( !eraseLocked )
+    {
+        removedEventsCount = (int32)events.size();
+        events.clear();
+    }
+    else
+    {
+        List<Event>::iterator it = events.begin();
+        List<Event>::const_iterator end = events.end();
+        for(; it != end; ++it)
+        {
+            if(!(*it).needDelete)
+            {
+                (*it).needDelete = true;
+                ++removedEventsCount;
+            }
+        }
+    }
+    return (removedEventsCount != 0);
 }
 
 void EventDispatcher::PerformEvent(int32 eventType)
 {
-	PerformEvent(eventType, this);
+	PerformEventWithData(eventType, this, NULL);
 }
 
 void EventDispatcher::PerformEvent(int32 eventType, BaseObject *eventParam)
 {
-	List<Event>::iterator it = events.begin();
-	for(; it != events.end(); it++)
-	{
-		if((*it).eventType == eventType)
-		{
-			(*it).msg(eventParam);
-		}
-	}
+    PerformEventWithData(eventType, eventParam, NULL);
 }
 
 void EventDispatcher::PerformEventWithData(int32 eventType, void *callerData)
@@ -94,14 +108,30 @@ void EventDispatcher::PerformEventWithData(int32 eventType, void *callerData)
 	
 void EventDispatcher::PerformEventWithData(int32 eventType, BaseObject *eventParam, void *callerData)
 {
-	List<Event>::iterator it = events.begin();
-	for(; it != events.end(); it++)
-	{
-		if((*it).eventType == eventType)
-		{
-			(*it).msg(eventParam, callerData);
-		}
-	}
+    if(events.empty())
+        return;
+
+    bool needEraseEvents = false;
+    bool eraseLockedOldValue = true;
+    std::swap( eraseLocked, eraseLockedOldValue );// set eraseLocked in TRUE, remember old value of eraseLocked in eraseLockedOldValue;
+
+    List<Event>::const_iterator it = events.begin();
+    List<Event>::const_iterator end = events.end();
+    for(; it != end; ++it)
+    {
+        if((*it).eventType == eventType && !(*it).needDelete)
+        {
+            (*it).msg(eventParam, callerData);
+        }
+
+        needEraseEvents |= (*it).needDelete;
+    }
+    std::swap( eraseLocked, eraseLockedOldValue );// restore old value for eraseLocked
+
+    if( !eraseLocked && needEraseEvents )
+    {
+        events.erase(std::remove_if(events.begin(), events.end(), Event::IsEventToDelete), events.end());
+    }
 }
 	
 void EventDispatcher::CopyDataFrom(EventDispatcher *srcDispatcher)
@@ -114,7 +144,7 @@ void EventDispatcher::CopyDataFrom(EventDispatcher *srcDispatcher)
 	}
 }
 
-int32 EventDispatcher::GetEventsCount()
+int32 EventDispatcher::GetEventsCount() const
 {
     return events.size();
 }

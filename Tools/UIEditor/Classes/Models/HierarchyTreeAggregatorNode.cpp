@@ -30,7 +30,6 @@
 
 
 #include "HierarchyTreeAggregatorNode.h"
-#include "LibraryController.h"
 #include "ResourcesManageHelper.h"
 #include "HierarchyTreePlatformNode.h"
 #include "HierarchyTreeAggregatorControlNode.h"
@@ -48,24 +47,20 @@ HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNo
 {
 	this->rect = rect;
 	screen->SetRect(rect);
-	
-	LibraryController::Instance()->AddControl(this);
 }
 
 HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent,
-														 const HierarchyTreeAggregatorNode* base)
-:	HierarchyTreeScreenNode(parent, base),
+														 const HierarchyTreeAggregatorNode* base,
+                                                         bool needLoad/* = true*/)
+:	HierarchyTreeScreenNode(parent, base, needLoad),
     listDelegate(NULL)
 {
 	this->rect = base->GetRect();
 	screen->SetRect(rect);
-
-	LibraryController::Instance()->AddControl(this);
 }
 
 HierarchyTreeAggregatorNode::~HierarchyTreeAggregatorNode()
 {
-	LibraryController::Instance()->RemoveControl(this);
 	DVASSERT(childs.size() == 0);
     
     SafeRelease(listDelegate);
@@ -84,6 +79,11 @@ void HierarchyTreeAggregatorNode::RemoveChild(HierarchyTreeControlNode* node)
 		childs.erase(node);
 }
 
+void HierarchyTreeAggregatorNode::ReturnTreeNodeToScene()
+{
+	HierarchyTreeScreenNode::ReturnTreeNodeToScene();
+}
+
 void HierarchyTreeAggregatorNode::SetRect(const Rect& rect)
 {
 	this->rect = rect;
@@ -93,7 +93,13 @@ void HierarchyTreeAggregatorNode::SetRect(const Rect& rect)
 
 Rect HierarchyTreeAggregatorNode::GetRect() const
 {
-	return this->rect;
+    // Need to override because GetRect() implementation of HierarchyTreeScreenNode does additional processing.
+    return this->rect;
+}
+
+Rect HierarchyTreeAggregatorNode::GetOwnRect() const
+{
+    return GetRect();
 }
 
 void HierarchyTreeAggregatorNode::SetParent(HierarchyTreeNode* node, HierarchyTreeNode* insertAfter)
@@ -151,6 +157,15 @@ void HierarchyTreeAggregatorNode::UpdateChilds()
 		{
 			UIControl* control = (*iter);
 			UIControl* newControl = control->Clone();
+            
+            UIList* controlIsList = dynamic_cast<UIList*>(control);
+            if (controlIsList)
+            {
+                EditorListDelegate* delegate = dynamic_cast<EditorListDelegate*>(controlIsList->GetDelegate());
+                SafeRetain(delegate);
+                static_cast<UIList*>(newControl)->SetDelegate(delegate);
+            }
+
 			aggregatorControl->InsertChildBelow(newControl, belowControl);
 			aggregatorControl->AddAggregatorChild(newControl);
             newControl->Release();
@@ -243,7 +258,8 @@ void HierarchyTreeAggregatorNode::ReplaceAggregator(HierarchyTreeControlNode *no
 	// Set aggregator ID for list if it has saved aggregator path and it is available in tree
 	if (list && list->GetAggregatorPath() == path)
 	{
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+        SafeRelease(listDelegate);
+		listDelegate = new EditorListDelegate(list);
 		// If loaded delegate has aggregator path - pass its id to delegate
 		listDelegate->SetAggregatorID(GetId());
 		// Always set a delegate for loaded UIList
@@ -290,7 +306,6 @@ void HierarchyTreeAggregatorNode::ReplaceAggregator(HierarchyTreeControlNode *no
 void HierarchyTreeAggregatorNode::SetName(const QString& name)
 {
 	HierarchyTreeScreenNode::SetName(name);
-	LibraryController::Instance()->UpdateControl(this);
 }
 
 const HierarchyTreeAggregatorNode::CHILDS& HierarchyTreeAggregatorNode::GetChilds() const

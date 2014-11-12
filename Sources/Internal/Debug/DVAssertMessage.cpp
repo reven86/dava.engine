@@ -29,6 +29,7 @@
 
 
 #include "Debug/DVAssertMessage.h"
+#include "Core/Core.h"
 
 using namespace DAVA;
 
@@ -38,6 +39,9 @@ void* DVAssertMessage::messageBoxPtr = NULL;
 
 void DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
 {
+	// we don't need to show assert window for console mode
+	if(Core::Instance()->IsConsoleMode()) return; 
+
 	va_list vl;
 	va_start(vl, text);
 	

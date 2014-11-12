@@ -29,7 +29,7 @@
 
 #include "PasteCommand.h"
 #include "HierarchyTreeAggregatorControlNode.h"
-#include "SubcontrolsHelper.h"
+#include "CopyPasteHelper.h"
 
 #define COPY_DELTA Vector2(5, 5)
 
@@ -46,7 +46,6 @@ PasteCommand::~PasteCommand()
 {
 	// Nothing is to be cleaned up - Pasted Items are under control of Hierarchy Tree.
 }
-
 
 void PasteCommand::Execute()
 {
@@ -179,13 +178,10 @@ int PasteCommand::PasteControls(HierarchyTreeNode::HIERARCHYTREENODESLIST* newCo
 			
 		//  We should change control name and apply copy delta only if new parent already has children with such name
 		bool bUpdateNameAndShiftPosition = IsParentContainsCopyItemName(parent, control);
-		
-		HierarchyTreeAggregatorControlNode* aggregatorControl = dynamic_cast<HierarchyTreeAggregatorControlNode*>(control);
-		HierarchyTreeControlNode* copy = NULL;
-		if (aggregatorControl)
-			copy = new HierarchyTreeAggregatorControlNode(parent, aggregatorControl);
-		else
-			copy = new HierarchyTreeControlNode(parent, control);
+
+        CopyPasteHelper::UpdateAggregators(control, parent);
+  		
+		HierarchyTreeControlNode* copy = control->CreateControlCopy(parent);
 			
 		UpdateControlName(parent, copy, bUpdateNameAndShiftPosition);
 
@@ -230,7 +226,7 @@ void PasteCommand::UpdateControlName(const HierarchyTreeNode* parent, HierarchyT
 	QString name = node->GetName();
 	if (needCreateNewName)
 	{
-		name = SubcontrolsHelper::FormatCopyName(node->GetName(), parent);
+		name = CopyPasteHelper::FormatCopyName(node->GetName(), parent);
 	}
 	node->SetName(name);
     
@@ -241,8 +237,8 @@ void PasteCommand::UpdateControlName(const HierarchyTreeNode* parent, HierarchyT
         controlNode->GetUIObject()->SetName(node->GetName().toStdString());
     }
 
-	HierarchyTreeNode::HIERARCHYTREENODESLIST child = node->GetChildNodes();
-	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::iterator iter = child.begin();
+	const HierarchyTreeNode::HIERARCHYTREENODESLIST &child = node->GetChildNodes();
+	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = child.begin();
 		 iter != child.end();
 		 ++iter)
 	{
@@ -264,18 +260,20 @@ int PasteCommand::PasteScreens(HierarchyTreeNode::HIERARCHYTREENODESLIST* newScr
 
 		if (!screen && !aggregator)
 			continue;
+        
+        CopyPasteHelper::UpdateAggregators(screen, parent);
 
 		HierarchyTreeNode* copy;
 		if (aggregator)
 		{
-			copy = new HierarchyTreeAggregatorNode(parent, aggregator);
+			copy = new HierarchyTreeAggregatorNode(parent, aggregator, false);
 		}
 		else
 		{
-			copy = new HierarchyTreeScreenNode(parent, screen);
+			copy = new HierarchyTreeScreenNode(parent, screen, false);
 		}
 		copy->SetMarked(true);
-        UpdateControlName(parent, copy, true);
+        UpdateControlName(parent, copy, parent->IsAggregatorOrScreenNamePresent(copy->GetName()));
 		//copy->SetName(FormatCopyName(screen->GetName(), parent));
 		
 		count++;

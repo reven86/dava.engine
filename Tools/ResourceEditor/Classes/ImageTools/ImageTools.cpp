@@ -28,13 +28,14 @@
 
 
 #include "ImageTools/ImageTools.h"
-#include "Render/LibPngHelpers.h"
-#include "Render/LibPVRHelper.h"
-#include "Render/LibDxtHelper.h"
+#include "Render/Image/LibPngHelpers.h"
+#include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/LibDdsHelper.h"
 
 #include "TextureCompression/TextureConverter.h"
 
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
 
 #include "Main/QtUtils.h"
 
@@ -46,8 +47,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	
 	Vector<FilePath> files;
 	
-	if(descriptor->IsCubeMap() &&
-	   GPU_UNKNOWN == forGPU)
+	if(descriptor->IsCubeMap() && forGPU == GPU_PNG)
 	{
 		Vector<FilePath> faceNames;
 		Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
@@ -76,21 +76,26 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 			return 0;
 		}
 		
-		
-		if(ImageLoader::IsPNGFile(imageFile))
+		ImageSystem* system = ImageSystem::Instance();
+		if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->IsImage(imageFile))
 		{
-			size += LibPngWrapper::GetDataSize(imagePathname);
+			size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->GetDataSize(imageFile);
 		}
-		else if(ImageLoader::IsDDSFile(imageFile))
+		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->IsImage(imageFile))
 		{
-			size += LibDxtHelper::GetDataSize(imagePathname);
+            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->GetDataSize(imageFile);
 		}
-		else if(ImageLoader::IsPVRFile(imageFile))
+		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->IsImage(imageFile))
 		{
-			size += LibPVRHelper::GetDataSize(imagePathname);
+            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->GetDataSize(imageFile);
+		}
+        else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->IsImage(imageFile))
+		{
+            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->GetDataSize(imageFile);
 		}
 		else
 		{
+			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());
 			DVASSERT(false);
 		}
 		
@@ -101,12 +106,12 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 }
 
 
-void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format)
+void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format, DAVA::TextureConverter::eConvertQuality quality)
 {
 	if(!descriptor || (format == FORMAT_INVALID)) return;
 
 	TextureConverter::CleanupOldTextures(descriptor, forGPU, format);
-	TextureConverter::ConvertTexture(*descriptor, forGPU, true);
+	TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
 }
 
 bool ImageTools::SplitImage(const FilePath &pathname, Set<String> &errorLog)
@@ -120,7 +125,7 @@ bool ImageTools::SplitImage(const FilePath &pathname, Set<String> &errorLog)
     
     if(loadedImage->GetPixelFormat() != FORMAT_RGBA8888)
     {
-        errorLog.insert(String(Format("Incorrect image format %s. Must be RGBA8888", Texture::GetPixelFormatString(loadedImage->GetPixelFormat()))));
+        errorLog.insert(String(Format("Incorrect image format %s. Must be RGBA8888", PixelFormatDescriptor::GetPixelFormatString(loadedImage->GetPixelFormat()))));
         return false;
     }
     
@@ -167,8 +172,7 @@ bool ImageTools::MergeImages(const FilePath &folder, Set<String> &errorLog)
     
     Image *mergedImage = CreateMergedImage(channels);
     
-    ImageLoader::Save(mergedImage, folder + "merged.png");
-    
+    ImageSystem::Instance()->Save(folder + "merged.png", mergedImage);
     channels.ReleaseImages();
     SafeRelease(mergedImage);
     return true;
@@ -176,7 +180,7 @@ bool ImageTools::MergeImages(const FilePath &folder, Set<String> &errorLog)
 
 void ImageTools::SaveImage(Image *image, const FilePath &pathname)
 {
-    ImageLoader::Save(image, pathname);
+    ImageSystem::Instance()->Save(pathname, image);
 }
 
 Image * ImageTools::LoadImage(const FilePath &pathname)
@@ -192,7 +196,7 @@ Channels ImageTools::CreateSplittedImages(DAVA::Image* originalImage)
     DAVA::Image* a = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
     
     int32 size = originalImage->width * originalImage->height;
-    int32 pixelSize = Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
     for(int32 i = 0; i < size; ++i)
     {
         int32 offset = i * pixelSize;
@@ -212,7 +216,7 @@ DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
     }
     Image *mergedImage = Image::Create(channels.red->width, channels.red->height, FORMAT_RGBA8888);
     int32 size = mergedImage->width * mergedImage->height;
-    int32 pixelSize = Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
     for(int32 i = 0; i < size; ++i)
     {
         int32 offset = i * pixelSize;
@@ -231,7 +235,7 @@ void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::u
         return;
     }
     int32 size = image->width * image->height;
-    int32 pixelSize = Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
     int32 offset = channel;
     for( int32 i = 0; i < size; ++i, offset += pixelSize)
     {

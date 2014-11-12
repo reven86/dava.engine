@@ -53,9 +53,9 @@ void RenderPassManager::Release()
     map.clear();
 }
 
-RenderPassManager::RenderPassManager(RenderSystem * renderSystem)
+RenderPassManager::RenderPassManager()
     : array(RENDER_PASS_ID_COUNT)
-    , map(RENDER_PASS_ID_COUNT)
+    , map(NextPowerOf2(RENDER_PASS_ID_COUNT))
 {
     const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
 

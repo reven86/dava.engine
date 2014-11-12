@@ -43,10 +43,13 @@ void MainThreadJobQueue::Update()
 
 		job->Perform();
 
-        BaseObject * bo = job->GetMessage().GetTargetObject();
-        if(bo)
+        if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
         {
-            bo->Release();
+            BaseObject * bo = job->GetMessage().GetBaseObject();
+            if(bo)
+            {
+                bo->Release();
+            }
         }
 
 		mutex.Lock();
@@ -59,10 +62,9 @@ void MainThreadJobQueue::Update()
 
 void MainThreadJobQueue::AddJob(Job * job)
 {
-    BaseObject * bo = job->GetMessage().GetTargetObject();
-    if(bo)
+    if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
     {
-        bo->Retain();
+        SafeRetain(job->GetMessage().GetBaseObject());
     }
 
 	mutex.Lock();

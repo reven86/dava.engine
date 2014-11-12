@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Classes\BaseScreen.cpp" />
@@ -13,12 +13,10 @@
     <ClCompile Include="Classes\SampleTest.cpp" />
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
-    <ClCompile Include="Classes\TestTemplate.cpp" />
     <ClCompile Include="Classes\TextureUtils.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
     <ClCompile Include="Classes\CloneTest.cpp" />
     <ClCompile Include="Classes\DXTTest.cpp" />
-    <ClCompile Include="Classes\DLCSystemTests.cpp" />
     <ClCompile Include="Classes\MaterialCompilerTest.cpp" />
     <ClCompile Include="Classes\InputTest.cpp" />
     <ClCompile Include="Classes\DPITest.cpp" />
@@ -38,8 +36,20 @@
     <ClCompile Include="Classes\ComponentsTest.cpp" />
     <ClCompile Include="Classes\RectSpriteTest.cpp" />
     <ClCompile Include="Classes\StringFormatTest.cpp" />
+    <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\DateTimeTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
+    <ClCompile Include="Classes\JPEGTest.cpp" />
+    <ClCompile Include="Classes\ParseTextTest.cpp" />
+    <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
+    <ClCompile Include="Classes\DFFontTest.cpp" />
+    <ClCompile Include="Classes\ImageSizeTest.cpp" />
+    <ClCompile Include="Classes\SceneSystemTest.cpp" />
+    <ClCompile Include="Classes\DLCDownloadTest.cpp" />
+    <ClCompile Include="Classes\FunctionBindSingalTest.cpp" />
+    <ClCompile Include="Classes\BiDiTest.cpp" />
+    <ClCompile Include="Classes\TextSizeTest.cpp" />
+    <ClCompile Include="Classes\MathTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\BaseScreen.h" />
@@ -59,7 +69,6 @@
     <ClInclude Include="Classes\TextureUtils.h" />
     <ClInclude Include="Classes\CloneTest.h" />
     <ClInclude Include="Classes\DXTTest.h" />
-    <ClInclude Include="Classes\DLCSystemTests.h" />
     <ClInclude Include="Classes\MaterialCompilerTest.h" />
     <ClInclude Include="Classes\InputTest.h" />
     <ClInclude Include="Classes\DPITest.h" />
@@ -79,7 +88,20 @@
     <ClInclude Include="Classes\ComponentsTest.h" />
     <ClInclude Include="Classes\RectSpriteTest.h" />
     <ClInclude Include="Classes\StringFormatTest.h" />
+    <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
+    <ClInclude Include="Classes\JPEGTest.h" />
+    <ClInclude Include="Classes\UITestTemplate.h" />
+    <ClInclude Include="Classes\ParseTextTest.h" />
+    <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
+    <ClInclude Include="Classes\DFFontTest.h" />
+    <ClInclude Include="Classes\ImageSizeTest.h" />
+    <ClInclude Include="Classes\SceneSystemTest.h" />
+    <ClInclude Include="Classes\DLCDownloadTest.h" />
+    <ClInclude Include="Classes\FunctionBindSingalTest.h" />
+    <ClInclude Include="Classes\BiDiTest.h" />
+    <ClInclude Include="Classes\TextSizeTest.h" />
+    <ClInclude Include="Classes\MathTest.h" />
   </ItemGroup>
 </Project>

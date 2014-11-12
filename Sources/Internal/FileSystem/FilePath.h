@@ -35,6 +35,9 @@
 
 namespace DAVA
 {
+
+static const char* localResourcesPath = "/mnt/sdcard/DavaProject/";
+    
 /**
 	\ingroup filesystem
 	\brief class to work with file pathname
@@ -98,7 +101,7 @@ public:
         \returns pathname value
 	 */
     const String GetAbsolutePathname() const;
-    
+
 	/**
         \brief Function to retrieve filename from pathname. Filename for path "/Users/Folder/image.png" is "image.png".
         \returns filename value
@@ -138,6 +141,18 @@ public:
     String GetRelativePathname(const FilePath &forDirectory) const;
 	String GetRelativePathname(const String &forDirectory) const;
     String GetRelativePathname(const char * forDirectory) const;
+    
+    /**
+        \brief Function to retrieve string path value, passed in constructor
+        \returns relative string path value
+	 */
+    const String & GetStringValue() const;
+    
+    /**
+        \brief Function to retrieve string path value as URL for Web Browser
+        \returns path as URL
+     */
+    const String AsURL() const;
     
     
 	/**
@@ -275,6 +290,8 @@ protected:
 
     static ePathType GetPathType(const String &pathname);
     
+    static bool IsGlobbing(const String &pathname);
+    
 public:
     static String AddPath(const FilePath &folder, const String & addition);
 
@@ -298,7 +315,7 @@ inline FilePath::ePathType FilePath::GetType() const
 {
     return pathType;
 }
-    
+  
 };
 
 #endif //__DAVAENGINE_FILE_PATH_H__

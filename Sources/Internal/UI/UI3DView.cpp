@@ -33,6 +33,8 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Core/Core.h"
+#include "UI/UIControlSystem.h"
+
 
 namespace DAVA 
 {
@@ -41,6 +43,7 @@ namespace DAVA
 UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
     :   UIControl(rect, rectInAbsoluteCoordinates)
     ,   scene(0)
+    ,   registeredInUIControlSystem(false)
 {
 
 }
@@ -98,8 +101,6 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     
     Rect viewportSave = RenderManager::Instance()->GetViewport();
     RenderManager::Instance()->SetViewport(viewportRect, false);
-    RenderManager::Instance()->ClearDepthBuffer();
-	RenderManager::Instance()->ClearStencilBuffer(0);
     
     
     if (scene)
@@ -136,6 +137,30 @@ void UI3DView::SetSize(const DAVA::Vector2 &newSize)
         {
             scene->GetCamera(k)->SetAspect(aspect);
         }
+    }
+}
+
+UIControl* UI3DView::Clone()
+{
+    UI3DView* ui3DView = new UI3DView(GetRect());
+    ui3DView->CopyDataFrom(this);
+    return ui3DView;
+}
+
+void UI3DView::WillBecomeVisible()
+{
+    if (!registeredInUIControlSystem)
+    {
+        registeredInUIControlSystem = true;
+        UIControlSystem::Instance()->UI3DViewAdded();
+    }
+}
+void UI3DView::WillBecomeInvisible()
+{
+    if (registeredInUIControlSystem)
+    {
+        registeredInUIControlSystem = false;
+        UIControlSystem::Instance()->UI3DViewRemoved();
     }
 }
 

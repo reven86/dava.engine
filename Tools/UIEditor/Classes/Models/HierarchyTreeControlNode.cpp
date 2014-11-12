@@ -36,8 +36,8 @@
 HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 												   UIControl* uiObject,
 												   const QString& name) :
-	HierarchyTreeNode(name),
-    listDelegate(NULL)
+	HierarchyTreeNode(name)
+    , listDelegate(NULL)
 {
 	this->parent = parent;
 	
@@ -50,7 +50,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	UIList *list = dynamic_cast<UIList*>(uiObject);
 	if (list)
 	{
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		list->SetDelegate(listDelegate);
 	}
 
@@ -59,8 +59,8 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 
 HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 												   const HierarchyTreeControlNode* node):
-	HierarchyTreeNode(node),
-    listDelegate(NULL)
+	HierarchyTreeNode(node)
+    , listDelegate(NULL)
 {
 	this->parent = parent;
 	this->uiObject = node->GetUIObject()->Clone();
@@ -72,7 +72,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	UIList *srcList = dynamic_cast<UIList*>(node->GetUIObject());
 	if (list)
 	{
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		EditorListDelegate *srcListDelegate = dynamic_cast<EditorListDelegate*>(srcList->GetDelegate());
 		if (srcListDelegate)
 		{
@@ -102,7 +102,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 		if (!controlNode)
 			continue;
 				
-		AddTreeNode(new HierarchyTreeControlNode(this, controlNode));
+		AddTreeNode(controlNode->CreateControlCopy(parent ? this : NULL));
 	}
 }
 
@@ -146,8 +146,6 @@ HierarchyTreeControlNode::~HierarchyTreeControlNode()
 		SafeRelease(uiObject);
 		SafeRelease(parentUIObject);
 	}
-
-    SafeRelease(listDelegate);
 }
 
 HierarchyTreeScreenNode* HierarchyTreeControlNode::GetScreenNode() const
@@ -203,6 +201,9 @@ void HierarchyTreeControlNode::SetParent(HierarchyTreeNode* node, HierarchyTreeN
 	node->AddTreeNode(this, insertAfter);
 	if (newParentUI && uiObject)
 	{
+        Rect controlAbsoluteRect = uiObject->GetRect(true);
+        Rect parentAbsoluteRect = newParentUI->GetRect(true);
+
 		if (insertAfter != node)
 		{
 			newParentUI->InsertChildAbove(uiObject, afterControl);
@@ -217,6 +218,12 @@ void HierarchyTreeControlNode::SetParent(HierarchyTreeNode* node, HierarchyTreeN
 			}
 			newParentUI->InsertChildBelow(uiObject, belowControl);
 		}
+
+        // Recalculate the relative coords of the moved object to don't change its position.
+        Vector2 newControlOffset = controlAbsoluteRect.GetPosition() - parentAbsoluteRect.GetPosition();
+        uiObject->SetRect(Rect(newControlOffset, uiObject->GetRect().GetSize()));
+        
+        // Fix
 		// DF-2395 - Recalculate scrollContainer content each time we add controls to it
 		UIScrollViewContainer *container = dynamic_cast<UIScrollViewContainer*>(newParentUI);
 		if (container)
@@ -230,6 +237,11 @@ void HierarchyTreeControlNode::SetParent(HierarchyTreeNode* node, HierarchyTreeN
 	}
 	
 	parent = node;
+}
+
+HierarchyTreeControlNode* HierarchyTreeControlNode::CreateControlCopy(HierarchyTreeNode* parent) const
+{
+	return new HierarchyTreeControlNode(parent, this);
 }
 
 Vector2 HierarchyTreeControlNode::GetParentDelta(bool skipControl/* = false*/) const
@@ -264,19 +276,6 @@ void HierarchyTreeControlNode::RemoveTreeNodeFromScene()
 	this->parentUIObject = uiObject->GetParent();
 	SafeRetain(this->parentUIObject);
 
-	// Determine the "child above" to return node to scene to the correct position.
-	this->childUIObjectAbove = NULL;
-	for (List<UIControl*>::const_iterator iter = parentUIObject->GetChildren().begin();
-		 iter != parentUIObject->GetChildren().end(); iter ++)
-	{
-		if (((*iter) == uiObject) && (iter != parentUIObject->GetChildren().begin()))
-		{
-			iter --;
-			this->childUIObjectAbove = (*iter);
-			break;
-		}
-	}
-
 	SafeRetain(uiObject);
 	this->parentUIObject->RemoveControl(uiObject);
 	
@@ -296,7 +295,11 @@ void HierarchyTreeControlNode::ReturnTreeNodeToScene()
 	this->redoParentNode->AddTreeNode(this, redoPreviousNode);
 
 	// Return the object back to the proper position.
-	if (childUIObjectAbove == NULL)
+    UIControl* childUIObjectAbove = NULL;
+    HierarchyTreeControlNode* controlRedoPreviousNode = dynamic_cast<HierarchyTreeControlNode*>(redoPreviousNode);
+    if (controlRedoPreviousNode)
+        childUIObjectAbove = controlRedoPreviousNode->GetUIObject();
+    if (childUIObjectAbove == NULL)
 	{
 		// Set it to the top.
 		int childCount = parentUIObject->GetChildren().size();
@@ -306,7 +309,7 @@ void HierarchyTreeControlNode::ReturnTreeNodeToScene()
 		}
 		else
 		{
-			parentUIObject->InsertChildAbove(uiObject, parentUIObject->GetChildren().front());
+			parentUIObject->InsertChildBelow(uiObject, parentUIObject->GetChildren().front());
 		}
 	}
 	else
@@ -321,7 +324,7 @@ void HierarchyTreeControlNode::ReturnTreeNodeToScene()
 	this->needReleaseUIObjects = false;
 }
 
-Rect HierarchyTreeControlNode::GetRect() const
+Rect HierarchyTreeControlNode::GetRect(bool checkAngle/*=false*/) const
 {
 	Rect rect;
     
@@ -334,7 +337,16 @@ Rect HierarchyTreeControlNode::GetRect() const
     }
 
 	if (uiObject)
-		rect = uiObject->GetRect(true);
+    {
+        if(!checkAngle)
+        {
+            rect = uiObject->GetRect(true);
+        }
+        else
+        {
+            rect = uiObject->GetGeometricData().GetAABBox();
+        }
+    }
 
 	const HIERARCHYTREENODESLIST& childs = GetChildNodes();
 	for (HIERARCHYTREENODESLIST::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
@@ -366,4 +378,27 @@ bool HierarchyTreeControlNode::GetVisibleFlag() const
 	}
 
 	return false;
+}
+
+void HierarchyTreeControlNode::OnScreenScaleChanged()
+{
+    UpdateUIObject();
+}
+
+void HierarchyTreeControlNode::OnScreenPositionChanged()
+{
+    UpdateUIObject();
+}
+
+void HierarchyTreeControlNode::UpdateUIObject()
+{
+    // UIWebView contains the interal system object,
+    // which has to be repositioned while screen scale/position is changed.
+    UIWebView* webView = dynamic_cast<UIWebView*>(GetUIObject());
+    if (!webView)
+    {
+        return;
+    }
+    
+    webView->SetRect(webView->GetRect(true), true);
 }

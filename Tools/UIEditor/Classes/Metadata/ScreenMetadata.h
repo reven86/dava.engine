@@ -48,6 +48,8 @@ class ScreenMetadata : public BaseMetadata
     virtual QString GetName() const;
     virtual void SetName(const QString& name);
     
+    virtual void ApplyRename(const QString& originalName, const QString& newName);
+
 protected:
     // Default Flags.
     virtual bool GetInitialInputEnabled() const {return true;};

@@ -46,7 +46,6 @@
 #include "DXTTest.h"
 #include "KeyedArchiveYamlTest.h"
 #include "CloneTest.h"
-#include "DLCSystemTests.h"
 #include "DPITest.h"
 #include "EMailTest.h"
 #include "InputTest.h"
@@ -61,11 +60,22 @@
 #include "UIScrollViewTest.h"
 #include "ThreadSyncTest.h"
 #include "UIMovieTest.h"
+#include "DFFontTest.h"
 #include "ComponentsTest.h"
 #include "RectSpriteTest.h"
+#include "OpenGLES30FormatTest.h"
 #include "StringFormatTest.h"
 #include "SaveImageTest.h"
+#include "JPEGTest.h"
 #include "DateTimeTest.h"
+#include "SceneSystemTest.h"
+#include "ParseTextTest.h"
+#include "ImageSizeTest.h"
+#include "DLCDownloadTest.h"
+#include "FunctionBindSingalTest.h"
+#include "MathTest.h"
+#include "BiDiTest.h"
+#include "TextSizeTest.h"
 
 using namespace DAVA;
 
@@ -91,8 +101,25 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
+	new MathTest();
+	new FunctionBindSignalTest();
+    new ThreadSyncTest();
+    new DLCDownloadTest();
+
+
+	new ImageSizeTest();
+    new DeviceInfoTest();
+
+    new PVRTest();
+ 	new DXTTest();
+    new JPEGTest();
+
+    new ParseTextTest(Font::TYPE_FT);
+    new ParseTextTest(Font::TYPE_GRAPHICAL);
+    new OpenGLES30FormatTest();
     new SaveImageTest();
     
+    new OpenGLES30FormatTest();
     new StringFormatTest();
     new RectSpriteTest();
 
@@ -103,11 +130,11 @@ void GameCore::OnAppStarted()
     
  	new UIMovieTest();
  	new InputTest();
-     new FormatsTest();
- 	new DeviceInfoTest();
+    new FormatsTest();
+ 
  	new DateTimeTest();
  	new TransparentWebViewTest();
-     new LocalizationTest();
+    new LocalizationTest();
  
  	new SampleTest();
  	new EntityTest(); 
@@ -116,21 +143,22 @@ void GameCore::OnAppStarted()
  	new SoundTest();
  	new SplitTest();
  	new AlignTest();
+    new BiDiTest();
+	new TextSizeTest();
  	new EMailTest();
  	new DPITest();
  	new MaterialCompilerTest();
  	new CloneTest();
- 	new PVRTest();
- 	new DXTTest();
+
  	new EntityTest();	
  	new MemoryAllocatorsTest();
  	new HashMapTest();
  	new KeyedArchiveYamlTest();
- 	new DLCTest();
  	new UIListTest();
  	new UIScrollViewTest();
  
-     new ThreadSyncTest();
+
+    new SceneSystemTest();
     
     errors.reserve(TestCount());
 
@@ -204,7 +232,7 @@ void GameCore::OnResume()
 void GameCore::OnDeviceLocked()
 {
 //    Logger::Debug("GameCore::OnDeviceLocked");
-    Core::Instance()->Quit();
+    //Core::Instance()->Quit();
 }
 
 void GameCore::OnBackground()

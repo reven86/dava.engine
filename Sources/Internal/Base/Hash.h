@@ -42,6 +42,8 @@ namespace DAVA
 	// default hash function for strings
 	inline size_t DavaHashString(const char* str)
 	{
+		DVASSERT(str && "Can't be NULL. Check logics.");
+
 		size_t hash = 0;
 		for (; *str; ++str)
 		{

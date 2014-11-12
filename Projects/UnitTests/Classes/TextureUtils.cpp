@@ -29,6 +29,7 @@
 
 
 #include "TextureUtils.h"
+#include "Render/PixelFormatDescriptor.h"
 
 
 Sprite * TextureUtils::CreateSpriteFromTexture(const String &texturePathname)
@@ -75,19 +76,25 @@ TextureUtils::CompareResult TextureUtils::CompareSprites(Sprite *first, Sprite *
 
 TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *second, PixelFormat format)
 {
-    DVASSERT(first->GetHeight() == second->GetHeight());
-    DVASSERT(first->GetWidth() == second->GetWidth());
-
     CompareResult compareResult = {0};
-    
-    int32 imageSizeInBytes = (int32)(first->GetWidth() * first->GetHeight() * Texture::GetPixelFormatSizeInBytes(first->format));
+
+    if (first->GetWidth() != second->GetWidth() ||
+        first->GetHeight() != second->GetHeight())
+    {
+        DVASSERT_MSG(false, "Can't compare images of different dimensions.");
+
+        compareResult.difference = 100;
+        return compareResult;
+    }
+
+    int32 imageSizeInBytes = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(first->format));
 
     int32 step = 1;
     int32 startIndex = 0;
     
 	if(FORMAT_A8 == format)
 	{
-		compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * Texture::GetPixelFormatSizeInBytes(FORMAT_A8));
+		compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
 		step = 4;
 		startIndex = 3;
 	}
@@ -108,11 +115,10 @@ Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
 {
     Sprite *renderTarget = Sprite::CreateAsRenderTarget(sprite->GetWidth(), sprite->GetHeight(), FORMAT_RGBA8888);
     RenderManager::Instance()->SetRenderTarget(renderTarget);
-
-    Sprite::DrawState state;
-    state.SetFrame(0);
-    state.SetPosition(0.f, 0.f);
-    sprite->Draw(&state);
+    
+    
+    Sprite::DrawState drawState;
+    sprite->Draw(&drawState);
     
     RenderManager::Instance()->RestoreRenderTarget();
     

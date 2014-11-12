@@ -64,7 +64,6 @@ namespace DAVA {
         // Determine whether at least one subcontrol is selected.
         bool SubcontrolsSelected(const HierarchyTreeController::SELECTEDCONTROLNODES& items);
 
-	private:
 		void Clear();
 				
 	private:

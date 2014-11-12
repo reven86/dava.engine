@@ -97,11 +97,12 @@ void RenderPassBatchArray::Clear()
 void RenderPassBatchArray::PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera)
 {
     cameraWorldMatrices.clear();
-    uint32 size = (uint32)visibilityArray->visibilityArray.size();
+    uint32 size = visibilityArray->GetCount();
     for (uint32 ro = 0; ro < size; ++ro)
     {
-        RenderObject * renderObject = visibilityArray->visibilityArray[ro];
-        if (renderObject->GetFlags()&RenderObject::CUSTOM_PREPARE_TO_RENDER)
+        RenderObject * renderObject = visibilityArray->Get(ro);
+        if (renderObject->GetFlags() & RenderObject::CUSTOM_PREPARE_TO_RENDER)
+
 		    renderObject->PrepareToRender(camera);
         //cameraWorldMatrices[ro] = camera->GetTransform() * (*renderObject->GetWorldTransformPtr());
         
@@ -163,6 +164,7 @@ bool RenderLayerBatchArray::MaterialCompareFunction(const RenderBatch * a, const
 void RenderLayerBatchArray::Sort(Camera * camera)
 {
     TIME_PROFILE("RenderLayerBatchArray::Sort");
+    
     // Need sort
 	flags |= SORT_REQUIRED;
 	
@@ -195,13 +197,14 @@ void RenderLayerBatchArray::Sort(Camera * camera)
         else if (flags & SORT_BY_DISTANCE_BACK_TO_FRONT)
         {
             Vector3 cameraPosition = camera->GetPosition();
+            Vector3 cameraDirection = camera->GetDirection();
             
             for (uint32 k = 0; k < renderBatchCount; ++k)
             {
                 RenderBatch * batch = renderBatchArray[k];
-                RenderObject * renderObject = batch->GetRenderObject();
-                Vector3 position = batch->GetSortingTransformPtr()->GetTranslationVector();
-                uint32 distance = ((uint32)((position - cameraPosition).Length())) + 31 - batch->GetSortingOffset();                
+                Vector3 delta = batch->GetRenderObject()->GetWorldTransformPtr()->GetTranslationVector() - cameraPosition;                
+                uint32 distance = delta.DotProduct(cameraDirection)<0?0:((uint32)(delta.Length() * 1000.0f)); //x1000.0f is to prevent resorting of nearby objects (still 26 km range)
+                distance = distance + 31 - batch->GetSortingOffset();
                 batch->layerSortingKey = (distance & 0x0fffffff) | (batch->GetSortingKey() << 28);
             }
             

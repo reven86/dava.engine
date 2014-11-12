@@ -43,6 +43,7 @@ public:
 	bool DisableSleepTimer();
 	bool EnableSleepTimer();
 	void OpenURL(const String& url);
+	String GenerateGUID();
 
 protected:
 	virtual jclass GetJavaClass() const;

@@ -176,13 +176,6 @@ void PolygonGroupWithMaterial::Draw()
     
 }
 
-ShadowVolume * PolygonGroupWithMaterial::CreateShadow()
-{
-	return NULL;
-}
-
-
-
 MeshInstanceNode::MeshInstanceNode()
 :	Entity()
 {
@@ -771,7 +764,6 @@ void MeshInstanceNode::GetDataNodes(Set<DataNode*> & dataNodes)
     
 void MeshInstanceNode::BakeTransforms()
 {
-    /*
     const Matrix4 & localTransform = GetLocalTransform();
 
     Set<PolygonGroup*> groupsToBatch;
@@ -806,7 +798,6 @@ void MeshInstanceNode::BakeTransforms()
         SetLocalTransform(Matrix4::IDENTITY);
         AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
     }
-    */
 }
     
 void MeshInstanceNode::UpdateLights()

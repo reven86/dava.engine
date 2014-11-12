@@ -32,6 +32,8 @@
 #include <QPainter>
 #include <QFileInfo>
 
+#include "Render/PixelFormatDescriptor.h"
+
 TextureListModel::TextureListModel(QObject *parent /* = 0 */) 
 	: QAbstractListModel(parent)
 	, curSortMode(TextureListModel::SortByName)
@@ -106,14 +108,6 @@ DAVA::TextureDescriptor* TextureListModel::getDescriptor(const QModelIndex &inde
 	return ret;
 }
 
-void TextureListModel::setTexture(const DAVA::TextureDescriptor* descriptor, DAVA::Texture *texture)
-{
-	if(texturesAll.contains(descriptor))
-	{
-		texturesAll[descriptor] = texture;
-	}
-}
-
 bool TextureListModel::isHighlited(const QModelIndex &index) const
 {
 	bool ret = false;
@@ -170,18 +164,11 @@ void TextureListModel::setScene(DAVA::Scene *scene)
 
 	for(DAVA::TexturesMap::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
 	{
-		const DAVA::FilePath descPath = t->first;
-
-		// if there is no the same descriptor and this file exists
-		if(DAVA::FileSystem::Instance()->IsFile(descPath))
+		DAVA::TextureDescriptor * descriptor = t->second->texDescriptor;
+		if(NULL != descriptor && descriptor->pathname.Exists())
 		{
-			DAVA::TextureDescriptor * descriptor = DAVA::TextureDescriptor::CreateFromFile(descPath);
-
-			if(NULL != descriptor)
-			{
-				textureDescriptorsAll.push_back(descriptor);
-				texturesAll[descriptor] = t->second;
-			}
+			textureDescriptorsAll.push_back(descriptor);
+			texturesAll[descriptor] = SafeRetain(t->second);
 		}
 	}
 
@@ -228,16 +215,17 @@ void TextureListModel::setHighlight(const EntityGroup *nodes)
 void TextureListModel::clear()
 {
     activeScene = NULL;
+
+    QMapIterator<const DAVA::TextureDescriptor *, DAVA::Texture *> it(texturesAll);
+    while (it.hasNext()) 
+    {
+        it.next();
+        it.value()->Release();
+    }
     
 	texturesAll.clear();
 	textureDescriptorsHighlight.clear();
 	textureDescriptorsFiltredSorted.clear();
-
-	for(int i = 0; i < textureDescriptorsAll.size(); ++i)
-	{
-		DAVA::SafeDelete(textureDescriptorsAll[i]);
-	}
-
 	textureDescriptorsAll.clear();
 }
 
@@ -308,5 +296,5 @@ bool SortFnByDataSize::operator()(const DAVA::TextureDescriptor* t1, const DAVA:
 	DAVA::Texture *tx1 = model->getTexture(t1);
 	DAVA::Texture *tx2 = model->getTexture(t2);
 
-	return (tx1->width * tx1->height * DAVA::Texture::GetPixelFormatSizeInBytes(tx1->GetFormat())) < (tx2->width * tx2->height * DAVA::Texture::GetPixelFormatSizeInBytes(tx2->GetFormat()));
+	return (tx1->width * tx1->height * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(tx1->GetFormat())) < (tx2->width * tx2->height * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(tx2->GetFormat()));
 }

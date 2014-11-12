@@ -70,6 +70,9 @@ public:
 	void bgmaskShow(bool show);
 	void waitbarShow(bool show);
 
+    void warningSetText(const QString &text);
+    void warningShow(bool show);
+
 	void resetTexturePosZoom();
 	
 	QSize getContentSize();
@@ -117,7 +120,10 @@ private:
 	bool tiledBgDoDraw;
 	QPixmap tiledBgPixmap;
 
-	bool warningVisible;
+	bool noImageVisible;
+	QLabel *noImageLabel;
+	QGraphicsProxyWidget *noImageProxy;
+
 	QLabel *warningLabel;
 	QGraphicsProxyWidget *warningProxy;
 

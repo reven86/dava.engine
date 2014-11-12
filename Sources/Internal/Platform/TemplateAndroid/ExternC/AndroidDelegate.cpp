@@ -34,66 +34,8 @@
 AndroidDelegate::AndroidDelegate(JavaVM *vm) :
 	AndroidSystemDelegate(vm)
 {
-	classActivity = NULL;
-	classApplication = NULL;
-    
     renderBuffer = 0;
     frameBuffer = 0;
-}
-
-void AndroidDelegate::SetApplication(jobject app, char *packageName)
-{
-	classApplication = app;
-
-	strcpy(activityName, packageName);
-	strcat(activityName, ".JNIActivity");
-
-	strcpy(httpDownloaderName, packageName);
-	strcat(httpDownloaderName, ".JNIHttpDownloader");
-}
-
-void AndroidDelegate::SetActivity(jobject activity)
-{
-	classActivity = activity;
-}
-
-void AndroidDelegate::ShowKeyboard()
-{
-	if(environment)
-	{
-		jclass cls = environment->FindClass(activityName);
-		jmethodID mid = environment->GetMethodID(cls, "ShowKeyboard", "()V");
-		if(mid && classActivity)
-		{
-			environment->CallVoidMethod(classActivity, mid);
-		}
-		else
-		{
-			DAVA::Logger::Error("[AndroidDelegate::ShowKeyboard] Can't find method");
-		}
-
-		environment->DeleteLocalRef(cls);
-	}
-}
-
-void AndroidDelegate::HideKeyboard()
-{
-	if(environment)
-	{
-		jclass cls = environment->FindClass(activityName);
-		jmethodID mid = environment->GetMethodID(cls, "HideKeyboard", "()V");
-
-		if(mid && classActivity)
-		{
-			environment->CallVoidMethod(classActivity, mid);
-		}
-		else
-		{
-			DAVA::Logger::Error("[AndroidDelegate::HideKeyboard] Can't find method");
-		}
-
-		environment->DeleteLocalRef(cls);	
-	}
 }
 
 bool AndroidDelegate::DownloadHttpFile(const DAVA::String & url, const DAVA::String & documentsPathname)

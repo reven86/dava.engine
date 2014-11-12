@@ -52,6 +52,7 @@ class ParticleEffectComponent : public Component
 	friend class ParticleEffectSystem;
     friend class UIParticles;            
 
+    static const uint32 PARTICLE_FLAGS_SERIALIZATION_CRITERIA = RenderObject::VISIBLE | RenderObject::VISIBLE_REFLECTION | RenderObject::VISIBLE_REFRACTION;
 public:
 	IMPLEMENT_COMPONENT_TYPE(PARTICLE_EFFECT_COMPONENT);
 
@@ -104,7 +105,13 @@ public:
      /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
     void SetSortingOffset(uint32 offset);
 
+    bool GetReflectionVisible() const;
+    void SetReflectionVisible(bool visible);
+    bool GetRefractionVisible() const;
+    void SetRefractionVisible(bool visible);
+
 private:
+    void ClearGroup(ParticleGroup& group);
 	void ClearCurrentGroups();
     void SetGroupsFinishing();
 	
@@ -136,7 +143,8 @@ private:
 		
 	ParticleEffectData effectData;
 	ParticleRenderObject *effectRenderObject;
-	int32 desiredLodLevel;
+
+	int32 desiredLodLevel, activeLodLevel;
 
 public: //mostly editor commands
 	int32 GetEmittersCount();
@@ -162,6 +170,9 @@ public:
         MEMBER(stopWhenEmpty, "stopWhenEmpty",  I_VIEW | I_EDIT | I_SAVE)
         MEMBER(effectDuration, "effectDuration",  I_VIEW | I_EDIT |I_SAVE)	
 		MEMBER(clearOnRestart, "clearOnRestart",  I_VIEW | I_EDIT |I_SAVE)	
+
+        PROPERTY("visibleReflection", "Visible Reflection", GetReflectionVisible, SetReflectionVisible, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("visibleRefraction", "Visible Refraction", GetRefractionVisible, SetRefractionVisible, I_SAVE | I_VIEW | I_EDIT)
     );
 };
 

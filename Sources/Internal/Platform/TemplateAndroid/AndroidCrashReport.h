@@ -46,6 +46,7 @@ class AndroidCrashReport
 {
 public:
 	static void Init();
+	static void ThrowExeption(const String& message);
 
 private:
 	static void SignalHandler(int signal, siginfo_t *info, void *uapVoid);

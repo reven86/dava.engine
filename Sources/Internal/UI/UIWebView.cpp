@@ -29,6 +29,8 @@
 
 
 #include "UIWebView.h"
+#include "Render/RenderManager.h"
+#include "FileSystem/YamlNode.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "../Platform/TemplateMacOS/WebViewControlMacOS.h"
@@ -44,15 +46,19 @@
 #pragma error UIWEbView control is not implemented for this platform yet!
 #endif
 
-using namespace DAVA;
+namespace DAVA {
 
-UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates) :
-    webViewControl(new WebViewControl()),
-    UIControl(rect, rectInAbsoluteCoordinates)
+UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates)
+    : UIControl(rect, rectInAbsoluteCoordinates)
+    , webViewControl(new WebViewControl())
+    , isNativeControlVisible(false)
 {
     Rect newRect = GetRect(true);
     this->webViewControl->Initialize(newRect);
-    this->webViewControl->SetVisible(false, true); // will be displayed in WillAppear.
+    UpdateControlRect();
+
+    UpdateNativeControlVisible(false); // will be displayed in WillAppear.
+    SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 
 UIWebView::~UIWebView()
@@ -65,51 +71,43 @@ void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 	webViewControl->SetDelegate(delegate, this);
 }
 
+void UIWebView::OpenFile(const FilePath &path)
+{
+    webViewControl->OpenURL(path.AsURL());
+}
+
 void UIWebView::OpenURL(const String& urlToOpen)
 {
-	this->webViewControl->OpenURL(urlToOpen);
+	webViewControl->OpenURL(urlToOpen);
 }
 
 void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
-    this->webViewControl->OpenFromBuffer(string, basePath);
+    webViewControl->OpenFromBuffer(string, basePath);
 }
 
-void UIWebView::WillAppear()
+void UIWebView::WillBecomeVisible()
 {
-    UIControl::WillAppear();
-    webViewControl->SetVisible(GetVisible(), true);
+    UIControl::WillBecomeVisible();
+    UpdateNativeControlVisible(true);
 }
 
-void UIWebView::WillDisappear()
+void UIWebView::WillBecomeInvisible()
 {
-    UIControl::WillDisappear();
-    webViewControl->SetVisible(false, true);
+    UIControl::WillBecomeInvisible();
+    UpdateNativeControlVisible(false);
 }
 
 void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
 {
 	UIControl::SetPosition(position, positionInAbsoluteCoordinates);
-
-	// Update the inner control.
-	Rect newRect = GetRect(true);
-	this->webViewControl->SetRect(newRect);
+    UpdateControlRect();
 }
 
 void UIWebView::SetSize(const Vector2 &newSize)
 {
 	UIControl::SetSize(newSize);
-
-	// Update the inner control.
-	Rect newRect = GetRect(true);
-	this->webViewControl->SetRect(newRect);
-}
-
-void UIWebView::SetVisible(bool isVisible, bool hierarchic)
-{
-	UIControl::SetVisible(isVisible, hierarchic);
-    if (IsOnScreen())
-        webViewControl->SetVisible(isVisible, hierarchic);
+    UpdateControlRect();
 }
 
 void UIWebView::SetBackgroundTransparency(bool enabled)
@@ -132,3 +130,85 @@ void UIWebView::SetGestures(bool value)
 {
 	this->webViewControl->SetGestures(value);    
 }
+
+void UIWebView::UpdateControlRect()
+{
+    Rect rect = GetRect(true);
+
+    rect.SetPosition(rect.GetPosition() * RenderManager::Instance()->GetDrawScale() + RenderManager::Instance()->GetDrawTranslate());
+    rect.SetSize(rect.GetSize() * RenderManager::Instance()->GetDrawScale());
+
+    webViewControl->SetRect(rect);
+}
+
+void UIWebView::SetNativeControlVisible(bool isVisible)
+{
+    UpdateNativeControlVisible(isVisible);
+}
+
+bool UIWebView::GetNativeControlVisible() const
+{
+    return isNativeControlVisible;
+}
+
+void UIWebView::UpdateNativeControlVisible(bool value)
+{
+    isNativeControlVisible = value;
+    webViewControl->SetVisible(value, true);
+}
+
+void UIWebView::SetDataDetectorTypes(int32 value)
+{
+    dataDetectorTypes = value;
+	webViewControl->SetDataDetectorTypes(value);
+}
+
+
+int32 UIWebView::GetDataDetectorTypes() const
+{
+    return dataDetectorTypes;
+}
+
+void UIWebView::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader *loader)
+{
+    UIControl::LoadFromYamlNode(node, loader);
+    
+    const YamlNode * dataDetectorTypesNode = node->Get("dataDetectorTypes");
+    if (dataDetectorTypesNode)
+    {
+        SetDataDetectorTypes(dataDetectorTypesNode->AsInt32());
+    }
+}
+
+YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader *loader)
+{
+    ScopedPtr<UIWebView> baseControl(new UIWebView());
+    YamlNode *node = UIControl::SaveToYamlNode(loader);
+    
+    // Data Detector Types.
+    if (baseControl->GetDataDetectorTypes() != GetDataDetectorTypes())
+    {
+        node->Set("dataDetectorTypes", GetDataDetectorTypes());
+    }
+    
+    return node;
+}
+
+UIControl* UIWebView::Clone()
+{
+    UIWebView* webView = new UIWebView(GetRect());
+    webView->CopyDataFrom(this);
+    return webView;
+}
+
+void UIWebView::CopyDataFrom(UIControl *srcControl)
+{
+    UIControl::CopyDataFrom(srcControl);
+
+    UIWebView* webView = (UIWebView*) srcControl;
+    SetNativeControlVisible(webView->GetNativeControlVisible());
+    SetDataDetectorTypes(webView->GetDataDetectorTypes());
+}
+
+
+};

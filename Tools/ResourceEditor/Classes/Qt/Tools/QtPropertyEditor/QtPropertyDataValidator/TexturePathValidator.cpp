@@ -58,8 +58,20 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
         {
             if (filePath.GetExtension() == ".png")
             {
-                TextureDescriptorUtils::CreateDescriptorIfNeed(filePath);
-                DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
+				DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
+				bool wasCreated = TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
+				if(wasCreated)
+				{	// we need to reload textures in case we change path on existing on disk
+					DAVA::TexturesMap texturesMap = DAVA::Texture::GetTextureMap();
+
+					DAVA::TexturesMap::iterator found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
+					if(found != texturesMap.end())
+					{
+						DAVA::Texture *tex = found->second;
+						tex->Reload();
+					}
+				}
+
                 v = QVariant(QString::fromStdString(texFile.GetAbsolutePathname()));
             }
         }

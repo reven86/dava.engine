@@ -50,7 +50,8 @@ public:
 	enum eThreadType
 	{
 		THREAD_MAIN = 0,
-		THREAD_WORKER
+		THREAD_WORKER,
+        THREAD_MAIN_FORCE_ENQUEUE
 	};
 
 	enum eWaiterRegistrationResult
@@ -62,7 +63,7 @@ public:
 	JobManager();
 	virtual ~JobManager();
 
-	ScopedPtr<Job> CreateJob(eThreadType threadType, const Message & message);
+	ScopedPtr<Job> CreateJob(eThreadType threadType, const Message & message, uint32 flags = Job::DEFAULT_FLAGS);
 
 	void Update();
 	
@@ -80,9 +81,9 @@ protected:
 	MainThreadJobQueue * mainQueue;
 	void UpdateMainQueue();
 
-	Map<Thread::ThreadId, uint32> jobsPerCreatorThread;
-	Map<Thread::ThreadId, ThreadIdJobWaiter *> waitersPerCreatorThread;
-	void CheckAndCallWaiterForThreadId(const Thread::ThreadId & threadId);
+	Map<Thread::Id, uint32> jobsPerCreatorThread;
+	Map<Thread::Id, ThreadIdJobWaiter *> waitersPerCreatorThread;
+	void CheckAndCallWaiterForThreadId(const Thread::Id & threadId);
 	
 	
 	void CheckAndCallWaiterForJobInstance(Job * job);

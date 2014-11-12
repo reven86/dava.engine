@@ -29,14 +29,15 @@
 
 #include "Render/MipMapReplacer.h"
 #include "Render/Texture.h"
-#include "Render/ImageLoader.h"
-#include "Render/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/Image.h"
 #include "Render/RenderManager.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/Landscape.h"
+#include "Render/PixelFormatDescriptor.h"
 
 #define DUMMY_TEXTURES_DIR "~res:/TexDum/"
 
@@ -97,7 +98,7 @@ void MipMapReplacer::ReplaceMipMap(Texture * texture, int32 level)
     if(!textureFilePath.IsEmpty())
     {
         Vector<Image*> mipImg;
-        ImageLoader::CreateFromFileByContent(textureFilePath, mipImg);
+        ImageSystem::Instance()->Load(textureFilePath, mipImg);
         if(mipImg.size())
         {
             uint32 mipMapSize = texture->width / (1 << level);
@@ -146,7 +147,7 @@ void MipMapReplacer::ReplaceMipMapFromMemory(Texture * texture, int32 level)
     }
     else
     {
-        int32 elementBytesCount = Texture::GetPixelFormatSizeInBytes(format);
+        int32 elementBytesCount = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
         uint32 elementValue = GetReplaceValue(format);
 
         uint32 pixelsCount = mipMapSize * mipMapSize;
@@ -213,9 +214,6 @@ FilePath MipMapReplacer::GetDummyTextureFilePath(Texture * texture)
         break;
     case FORMAT_DXT1A:
         formatFile = "dxt1a.dds";
-        break;
-    case FORMAT_DXT1NM:
-        formatFile = "dxt1nm.dds";
         break;
     case FORMAT_DXT3:
         formatFile = "dxt3.dds";

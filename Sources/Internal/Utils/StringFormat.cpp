@@ -36,8 +36,7 @@
 
 namespace DAVA
 {
-static const int32 FORMAT_STRING_SIZE = 2048;
-static const int32 FORMAT_STRING_MAX_LEN = 256;
+static const int32 FORMAT_STRING_MAX_LEN = 512;
 
 //static char8 formatString8[FORMAT_STRING_SIZE];
 //static char16 formatString16[FORMAT_STRING_SIZE];
@@ -250,7 +249,7 @@ int32 do_div(int64 &n, int32 base)
 		if (tail >= pow(10.f, precision))
 		{
 			whole++;
-			tail -= pow(10.f, precision);
+			tail -= (int32)pow(10.f, precision);
 		}
 		
         type = SIGN | LEFT;
@@ -273,6 +272,12 @@ int32 do_div(int64 &n, int32 base)
         if (precision > 0)
         {
             *firstStr++ = '.';
+			precision--;
+			while (pow(10.f, precision) > tail && precision > 0)
+			{
+				*firstStr++ = '0';
+				precision--;
+			}
             
             type = LEFT;
             firstStr = Number(firstStr, tail, 10, -1, -1, type);
@@ -282,7 +287,7 @@ int32 do_div(int64 &n, int32 base)
     }
     
     
-    int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list args)
+    int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list &args)
     {
         int32 len;
         int64 num;
@@ -575,7 +580,7 @@ int32 do_div(int64 &n, int32 base)
                     {
                         /* print counted ascii string */
                         char8 * pus = va_arg(args, char8 *);
-                        if ((pus == NULL))
+                        if (pus == NULL)
                         {
                             sw = L"<NULL>";
                             while ((*sw) != 0)
@@ -585,7 +590,7 @@ int32 do_div(int64 &n, int32 base)
                         }
                         else
                         {
-                            for (i = 0; pus[i] && i < strlen(pus); i++)
+                            for (i = 0; pus[i] && i < (int32)strlen(pus); i++)
                             {
                                 *str++ = (char16)(pus[i]);
                             }
@@ -595,7 +600,7 @@ int32 do_div(int64 &n, int32 base)
                     {
                         /* print counted unicode string */
                         char16* pus = va_arg(args, char16*);
-                        if ((pus == NULL))
+                        if (pus == NULL)
                         {
                             sw = L"<NULL>";
                             while ((*sw) != 0)
@@ -605,7 +610,7 @@ int32 do_div(int64 &n, int32 base)
                         }
                         else
                         {
-                            for (i = 0; pus[i] && i < wcslen(pus); ++i) // / sizeof(WCHAR); i++)
+                            for (i = 0; pus[i] && i < (int32)wcslen(pus); ++i) // / sizeof(WCHAR); i++)
                             {
                                 *str++ = pus[i];
                             }
@@ -805,51 +810,34 @@ int32 do_div(int64 &n, int32 base)
 WideString Format(const char16 * text, ...)
 {
 	WideString str;
-	char16 buffer[FORMAT_STRING_MAX_LEN];
-
+    
     va_list ll;
 	va_start(ll, text);
 
-    Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
-
-/*
-#if defined(_WIN32)
-	vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
-#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_HTML5__)
-    Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
-#else
-    // MAC_OS & other nix systems
-	vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
-#endif
-	*/
+    str = FormatVL(text, ll);
 
 	va_end(ll);
 
-	str = buffer;
 	return str;
 }
 
-String FormatVL(const char8 * text, va_list ll)
+String FormatVL(const char8 * text, va_list &ll)
 {
 	String str;
 	char8 buffer[FORMAT_STRING_MAX_LEN];
 
-	vsprintf(buffer,  text, ll);
+	vsprintf(buffer, text, ll);
 
 	str = buffer;
 	return str;
 }
 
-WideString FormatVL(const char16 * text, va_list ll)
+WideString FormatVL(const char16 * text, va_list &ll)
 {
 	WideString str;
 	char16 buffer[FORMAT_STRING_MAX_LEN];
 
-#if defined(_WIN32)
-	vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
-#else // MAC_OS & other nix systems
-	vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
-#endif
+    Vsnwprintf(buffer, FORMAT_STRING_MAX_LEN, text, ll);
 
 	str = buffer;
 	return str;

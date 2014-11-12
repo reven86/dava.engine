@@ -77,7 +77,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
                   outputGfxDirectory.GetAbsolutePathname().c_str(),
                   excludeDirectory.GetAbsolutePathname().c_str());
 
-    Logger::FrameworkDebug("For GPU: %s", (GPU_UNKNOWN != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
+    Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
 
     
 	requestedGPUFamily = forGPU;
@@ -146,6 +146,7 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 	MD5::ForDirectory(pathname, newMD5Digest, isRecursive);
 
 	file = File::Create(md5FileName, File::CREATE | File::WRITE);
+    DVASSERT(file);
     
 	int32 bytes = file->Write(newMD5Digest, 16);
 	DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
@@ -238,7 +239,16 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			FilePath outputFile = FramePathHelper::GetFramePathRelative(psdNameWithoutExtension, k - 1);
 
 			Magick::Image & currentLayer = layers[k];
-			currentLayer.crop(Magick::Geometry(width,height, 0, 0));
+
+			const Magick::Geometry bbox = currentLayer.page();
+			const Magick::Geometry croppedGeometry(width,height, 0, 0);
+			currentLayer.crop(croppedGeometry);
+//TODO: disabled for future investigation of correct cropping in different situations
+// 			if(bbox.width() > (size_t)width || bbox.height() > (size_t)height)
+// 			{
+// 				currentLayer.page(croppedGeometry);
+// 			}
+
 			currentLayer.magick("PNG");
 			currentLayer.write(outputFile.GetAbsolutePathname());
 		}
@@ -619,6 +629,5 @@ void ResourcePacker2D::AddError(const String& errorMsg)
 	Logger::Error(errorMsg.c_str());
 	errors.insert(errorMsg);
 }
-
 
 };

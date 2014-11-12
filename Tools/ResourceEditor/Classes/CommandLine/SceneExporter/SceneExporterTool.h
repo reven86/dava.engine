@@ -31,6 +31,7 @@
 #define __SCENE_EXPORTER_TOOL_H__
 
 #include "../CommandLineTool.h"
+#include "TextureCompression/TextureConverter.h"
 
 class SceneExporterTool: public CommandLineTool
 {
@@ -42,25 +43,39 @@ class SceneExporterTool: public CommandLineTool
         ACTION_EXPORT_FOLDER
     };
     
+    enum eObject
+    {
+        OBJECT_SCENE = 0,
+        OBJECT_TEXTURE
+    };
+    
+    
 public:
 
     virtual DAVA::String GetCommandLineKey();
     virtual bool InitializeFromCommandLine();
     virtual void Process();
     virtual void PrintUsage();
+    virtual void DumpParams();
     
+    virtual DAVA::FilePath GetQualityConfigPath() const;
+
 protected:
 
     eAction commandAction;
+    eObject commandObject;
+    
     DAVA::String filename;
     DAVA::String foldername;
     
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
-    DAVA::FilePath outSoundsFolder;
-    
+    DAVA::FilePath qualityConfigPath;
+
     DAVA::String gpu;
 	bool optimizeOnExport;
+
+	DAVA::TextureConverter::eConvertQuality quality;
 };
 
 

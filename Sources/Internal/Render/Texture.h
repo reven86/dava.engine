@@ -57,7 +57,10 @@ class Texture;
 class TextureInvalidater
 {
 public:
-	virtual void InvalidateTexture(Texture * texure) = 0;
+    virtual ~TextureInvalidater() {};
+	virtual void InvalidateTexture(Texture * texture) = 0;
+    virtual void AddTexture(Texture * texture) = 0;
+    virtual void RemoveTexture(Texture * texture) = 0;
 };
 	
 #ifdef USE_FILEPATH_IN_MAP
@@ -122,23 +125,6 @@ public:
 	};
 	
 	// Main constructors
-	
-    static void InitializePixelFormatDescriptors();
-
-    
-	/**
-        \brief Return size of pixel format in bits 
-        \returns size in bits, for example for FORMAT_RGBA8888 function will return 32.
-     */
-	static int32 GetPixelFormatSizeInBytes(PixelFormat format);
-	static int32 GetPixelFormatSizeInBits(PixelFormat format);
-	/**
-        \brief Return string representation of pixel format
-        \returns string value describing pixel format
-     */
-    static const char * GetPixelFormatString(PixelFormat format);
-    static PixelFormat GetPixelFormatByName(const String &formatName);
-    
     /**
         \brief Create texture from data arrray
         This function creates texture from given format, data pointer and width + height
@@ -147,8 +133,18 @@ public:
         \param[in] data desired data 
         \param[in] width width of new texture
         \param[in] height height of new texture
+        \param[in] generateMipMaps generate mipmaps or not
      */
 	static Texture * CreateFromData(PixelFormat format, const uint8 *data, uint32 width, uint32 height, bool generateMipMaps);
+
+    /**
+        \brief Create texture from data arrray stored at Image
+        This function creates texture from given image
+     
+        \param[in] image stores data
+        \param[in] generateMipMaps generate mipmaps or not
+     */
+	static Texture * CreateFromData(Image *img, bool generateMipMaps);
 
     /**
         \brief Create text texture from data arrray
@@ -217,19 +213,19 @@ public:
         \returns pathname of texture
      */
     const FilePath & GetPathname() const;
+    void SetPathname(const FilePath& path);
     
     Image * CreateImageFromMemory(UniqueHandle renderState);
 
 	bool IsPinkPlaceholder();
     
-    static PixelFormatDescriptor GetPixelFormatDescriptor(PixelFormat formatID);
-	
 	static void GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames);
 	static void GenerateCubeFaceNames(const FilePath & baseName, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames);
 
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
 	void SetInvalidater(TextureInvalidater* invalidater);
+    void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
 
 	inline TextureState GetState() const;
 
@@ -263,7 +259,6 @@ public:
 	PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
-
 protected:
     
     void ReleaseTextureData();
@@ -281,13 +276,12 @@ protected:
 	void FlushDataToRenderer(Vector<Image *> * images);
 	void ReleaseImages(Vector<Image *> * images);
     
-    void MakePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
+    void MakePink(bool checkers = true);
 	void ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData);
     
 	void GeneratePixelesationInternal(BaseObject * caller, void * param, void *callerData);
     
     static bool CheckImageSize(const Vector<Image *> &imageSet);
-    static bool IsCompressedFormat(PixelFormat format);
     
 	void GenerateMipmapsInternal(BaseObject * caller, void * param, void *callerData);
     
@@ -295,9 +289,6 @@ protected:
 	virtual ~Texture();
     
     Image * ReadDataToImage();
-    
-    static PixelFormatDescriptor pixelDescriptors[FORMAT_COUNT];
-    static void SetPixelDescription(PixelFormat index, const String &name, int32 size, GLenum type, GLenum format, GLenum internalFormat);
     
 #if defined(__DAVAENGINE_OPENGL__)
 	void HWglCreateFBOBuffers();
@@ -336,7 +327,7 @@ public:							// properties for fast access
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height
 
-    eGPUFamily loadedAsFile:3;
+    eGPUFamily loadedAsFile:4;
 	TextureState state:2;
 	uint32		textureType:2;
 	DepthFormat depthFormat:2;

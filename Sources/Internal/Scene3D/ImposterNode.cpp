@@ -31,7 +31,7 @@
 #include "ImposterNode.h"
 #include "ImposterManager.h"
 #include "Utils/Utils.h"
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 #include "Platform/SystemTimer.h"
 #include "Scene3D/MeshInstanceNode.h"
 
@@ -151,11 +151,8 @@ bool ImposterNode::IsAngleOrRangeChangedEnough(float32 squareDistance, float32 d
 
 void ImposterNode::Draw()
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE) && GetChildrenCount() > 0)
-	{
-		DVASSERT(GetChildrenCount() == 1);
-		GetChild(0)->Draw();
-	}
+	DVASSERT(GetChildrenCount() == 1);
+	GetChild(0)->Draw();
 }
 
 void ImposterNode::GeneralDraw()

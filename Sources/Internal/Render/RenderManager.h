@@ -93,6 +93,10 @@ public:
 		Caps() 
 		{
 			isHardwareCursorSupported = false;
+
+			isPVRTC2Supported = false;
+			isOpenGLES3Supported = false;
+
 			isFramebufferFetchSupported = isPVRTCSupported = isETCSupported = isDXTSupported = isATCSupported = false;
 			isVertexTextureUnitsSupported = isBGRA8888Supported = isFloat16Supported = isFloat32Supported = false;
             
@@ -104,7 +108,9 @@ public:
         Core::eRenderer renderer;
 		bool isHardwareCursorSupported;
         bool isPVRTCSupported;
-        bool isETCSupported;
+		bool isPVRTC2Supported;
+		bool isETCSupported;
+        bool isOpenGLES3Supported;
         bool isBGRA8888Supported;
         bool isFloat16Supported;
         bool isFloat32Supported;
@@ -134,9 +140,13 @@ public:
 		uint32 textureStateFullSwitches;
 		
 		uint32 attachRenderDataCount;
+        uint32 attachRenderDataSkipCount;
         uint32 dynamicParamUniformBindCount;
         uint32 materialParamUniformBindCount;
         uint32 spriteDrawCount;
+        
+        uint32 visibleRenderObjectCount;
+        uint32 occludedRenderObjectCount;
     };
     
     static void Create(Core::eRenderer renderer);
@@ -442,11 +452,14 @@ public:
     
 	void SetDrawTranslate(const Vector3 &offset);
 
+    const Vector2& GetDrawTranslate() const;
+
 	/** 
 	 \brief 
 	 \param[in] offset
 	 */
 	void SetDrawScale(const Vector2 &scale);
+    const Vector2& GetDrawScale() const;
 
 	void IdentityDrawMatrix();
 	void IdentityMappingMatrix();
@@ -502,9 +515,6 @@ public:
 
     static inline void SetDynamicParam(eShaderSemantic shaderSemantic, const void * value, pointer_size updateSemantic);
     
-    //void SetMatrix(eShaderSemantic type, void * value, uint32 updateSemantic);
-    //void SetMatrix(eShaderSemantic type, const Matrix4 & matrix, uint32 cacheValue);
-
     static inline const void * GetDynamicParam(eShaderSemantic shaderSemantic);
     static inline const Matrix4 & GetDynamicParamMatrix(eShaderSemantic shaderSemantic);
     static inline void ComputeWorldViewMatrixIfRequired();
@@ -515,12 +525,6 @@ public:
     
     static inline void ComputeInvWorldMatrixIfRequired();
     static inline void ComputeWorldInvTransposeMatrixIfRequired();
-
-    
-    //const Matrix4 & GetUniformMatrix(eUniformMatrixType type);
-    //const Matrix3 & GetNormalMatrix();
-    //void  ClearUniformMatrices();
-
 
 	/**
 		\brief This function sets hardware cursor to render manager
@@ -544,10 +548,10 @@ public:
 #if defined(__DAVAENGINE_OPENGL__)
     void HWglBindBuffer(GLenum target, GLuint  	buffer);
     GLuint bufferBindingId[2];
+    void HWglDeleteBuffers(GLsizei count, const GLuint * buffers);
     
     int32 HWglGetLastTextureID(int textureType);
-	void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
-	void HWglForceBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
+    void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
     int32 lastBindedTexture[Texture::TEXTURE_TYPE_COUNT];
 	uint32 lastBindedTextureType;
 
@@ -567,139 +571,40 @@ public:
     void LockTextureState();
 	void UnlockTexturerState();
 	
-	inline void RetainRenderState(UniqueHandle handle)
-	{
-        LockRenderState();
-		uniqueRenderStates.RetainUnique(handle);
-        UnlockRenderState();
-	}
-	
-	inline UniqueHandle CreateRenderState(const RenderStateData& data)
-	{
-        LockRenderState();
-		UniqueHandle renderStateHandle = uniqueRenderStates.MakeUnique(data);
-        UnlockRenderState();
-        
-        return renderStateHandle;
-	}
+	inline void RetainRenderState(UniqueHandle handle);
+	inline UniqueHandle CreateRenderState(const RenderStateData& data);
 
     //this method is not thread safe since array element could be modified in background
-	inline const RenderStateData& GetRenderStateData(UniqueHandle handle)
-	{
-		return uniqueRenderStates.GetUnique(handle);
-	}
+	inline const RenderStateData& GetRenderStateData(UniqueHandle handle);
     
     //this method is thread safe
-    inline const void GetRenderStateData(UniqueHandle handle, RenderStateData& target)
-	{
-		LockRenderState();
-		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(handle);
-		memcpy(&target, &parentState, sizeof(target));
-        UnlockRenderState();
-	}
+    inline const void GetRenderStateData(UniqueHandle handle, RenderStateData& target);
 	
-	inline void ReleaseRenderState(UniqueHandle handle)
-	{
-        LockRenderState();
-		uniqueRenderStates.ReleaseUnique(handle);
-        UnlockRenderState();
-	}
+	inline void ReleaseRenderState(UniqueHandle handle);
 				
-	inline UniqueHandle SubclassRenderState(UniqueHandle parentStateHandle, uint32 renderStateFlags)
-	{
-        LockRenderState();
-		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
-		RenderStateData derivedState;
-		memcpy(&derivedState, &parentState, sizeof(derivedState));
-        UnlockRenderState();
-		
-		derivedState.state = renderStateFlags;
-		return CreateRenderState(derivedState);
-	}
+	inline UniqueHandle SubclassRenderState(UniqueHandle parentStateHandle, uint32 renderStateFlags);
 	
 	inline UniqueHandle SubclassRenderState(UniqueHandle parentStateHandle,
-										  eBlendMode srcBlend,
-										  eBlendMode dstBlend)
-	{
-        LockRenderState();
-		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
-		RenderStateData derivedState;
-		memcpy(&derivedState, &parentState, sizeof(derivedState));
-        UnlockRenderState();
-		
-		derivedState.sourceFactor = srcBlend;
-		derivedState.destFactor = dstBlend;
-		return CreateRenderState(derivedState);
-	}
+                                            eBlendMode srcBlend,
+                                            eBlendMode dstBlend);
+
 
 	inline UniqueHandle Subclass3DRenderState(eBlendMode srcBlend,
-										  eBlendMode dstBlend)
-	{
-		return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, srcBlend, dstBlend);
-	}
+                                              eBlendMode dstBlend);
 	
-	inline UniqueHandle Subclass3DRenderState(uint32 renderStateFlags)
-	{
-		return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, renderStateFlags);
-	}
+	inline UniqueHandle Subclass3DRenderState(uint32 renderStateFlags);
 	
-	inline UniqueHandle Subclass2DRenderState(uint32 renderStateFlags)
-	{
-		return SubclassRenderState(RenderState::RENDERSTATE_2D_BLEND, renderStateFlags);
-	}
-	
-	inline void SetRenderState(UniqueHandle requestedState)
-	{
-		currentState.stateHandle = requestedState;
-	}
-	
-	inline UniqueHandle CreateTextureState(const TextureStateData& data)
-	{
-        LockTextureState();
-		UniqueHandle textureStateHandle = uniqueTextureStates.MakeUnique(data);
-        UnlockTexturerState();
-        
-        return textureStateHandle;
-	}
+	inline UniqueHandle Subclass2DRenderState(uint32 renderStateFlags);
+	inline void SetRenderState(UniqueHandle requestedState);
+	inline UniqueHandle CreateTextureState(const TextureStateData& data);
 	
     //this method is not thread safe since array element could be modified in background
-	inline const TextureStateData& GetTextureState(UniqueHandle handle)
-	{
-		return uniqueTextureStates.GetUnique(handle);
-	}
-
-    inline void RetainTextureState(UniqueHandle handle)
-	{
-        LockTextureState();
-		uniqueTextureStates.RetainUnique(handle);
-        UnlockTexturerState();
-	}
-	
-	inline void ReleaseTextureState(UniqueHandle handle)
-	{
-        LockTextureState();
-		uniqueTextureStates.ReleaseUnique(handle);
-        UnlockTexturerState();
-	}
-
-	inline void SetTextureState(UniqueHandle requestedState)
-	{
-		currentState.textureState = requestedState;
-	}
+	inline const TextureStateData& GetTextureState(UniqueHandle handle);
+    inline void RetainTextureState(UniqueHandle handle);
+	inline void ReleaseTextureState(UniqueHandle handle);
+	inline void SetTextureState(UniqueHandle requestedState);
 		
 protected:
-    //
-    // general matrices for rendermanager 
-    // 
-    
-//    Matrix4 matrices[MATRIX_COUNT];
-//    uint32 projectionMatrixCache;
-//    uint32 modelViewMatrixCache;
-//    int32   uniformMatrixFlags[UNIFORM_MATRIX_COUNT];
-//    Matrix4 uniformMatrices[UNIFORM_MATRIX_COUNT];
-//    Matrix3 uniformMatrixNormal;
-//    
-
     //do nothing right now
     DAVA_DEPRECATED(void RectFromRenderOrientationToViewport(Rect & rect));
     
@@ -731,9 +636,7 @@ public:
     void Setup2DMatrices();
     Renderer2D * GetRenderer2D() { return &renderer2d; };
 
-    
-    
-	/** 
+	/**
 	 \brief 
 	 \returns 
 	 */
@@ -758,21 +661,9 @@ public:
 		Vector2 userDrawScale;
 	} DrawMatrix;
 	
-
 	// fbo data
 	uint32 fboViewRenderbuffer;
 	uint32 fboViewFramebuffer;
-
-	// state information
-//	Color oldColor;                 // UNIFORM - can be used or not used by RenderEffect
-//	Color newColor;                 // UNIFORM - can be used or not used by RenderEffect
-    
-//	eBlendMode oldSFactor, oldDFactor;  // STATE
-//	eBlendMode newSFactor, newDFactor;  // STATE
-    
-//  static const uint32 MAX_TEXTURE_LEVELS = 4;
-//	Texture *currentTexture[MAX_TEXTURE_LEVELS];                        // Texture that was set
-//  Shader * shader;
 	
 	UniqueStateSet<RenderStateData> uniqueRenderStates;
 	UniqueStateSet<TextureStateData> uniqueTextureStates;
@@ -782,9 +673,8 @@ public:
     RenderState currentState;
     RenderState hardwareState;
 
-    int32 enabledAttribCount;
-
-    
+    int32 cachedEnabledStreams;
+    uint32 cachedAttributeMask;
     
     int32 renderOrientation;
 	Sprite *currentRenderTarget;
@@ -796,6 +686,7 @@ public:
 	Shader * currentRenderEffect;
 	
     RenderDataObject * currentRenderData;
+    RenderDataObject * attachedRenderData;
 
     Rect viewport;
     
@@ -822,12 +713,23 @@ public:
 	void SetHWRenderTargetSprite(Sprite *renderTarget);
 	void SetHWRenderTargetTexture(Texture * renderTarget);
     
+    enum eClearBuffers
+    {
+        COLOR_BUFFER = 1,
+        DEPTH_BUFFER = 2,
+        STENCIL_BUFFER = 4,
+        
+        ALL_BUFFERS = COLOR_BUFFER | DEPTH_BUFFER | STENCIL_BUFFER
+    };
+    
     enum eDiscardAttachments
     {
         COLOR_ATTACHMENT = 1,
         DEPTH_ATTACHMENT = 2,
         STENCIL_ATTACHMENT = 4
-    };
+    };    
+
+
     /**
      \Hints renderer that attachment is not needed anymore 
      \param[in] attachments - bitmask of eDiscardAttachments
@@ -917,7 +819,7 @@ inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const
         switch(shaderSemantic)
         {
             case PARAM_WORLD:
-                dynamicParamersRequireUpdate |= ((1 << PARAM_INV_WORLD) | ( 1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW)
+                dynamicParamersRequireUpdate |= ((1 << PARAM_INV_WORLD) | ( 1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW) |  (1 << PARAM_WORLD_VIEW_OBJECT_CENTER)
                                                  | ( 1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ) | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) | (1 << PARAM_WORLD_INV_TRANSPOSE));
             break;
             case PARAM_VIEW:
@@ -928,7 +830,8 @@ inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const
                                                  |  (1 << PARAM_INV_WORLD_VIEW_PROJ)
                                                  |  (1 << PARAM_VIEW_PROJ)
                                                  |  (1 << PARAM_INV_VIEW_PROJ)
-                                                 |  (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) );
+                                                 |  (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) 
+                                                 |  (1 << PARAM_WORLD_VIEW_OBJECT_CENTER));
             break;
             case PARAM_PROJ:
                 dynamicParamersRequireUpdate |= ((1 << PARAM_INV_PROJ) | (1 << PARAM_VIEW_PROJ) | (1 << PARAM_INV_VIEW_PROJ) |
@@ -1034,6 +937,131 @@ const void * RenderManager::GetDynamicParam(eShaderSemantic shaderSemantic)
 #else
 #define RENDERER_UPDATE_STATS(param)
 #endif
+    
+    
+// Render State Functions
+    
+inline void RenderManager::RetainRenderState(UniqueHandle handle)
+{
+    LockRenderState();
+    uniqueRenderStates.RetainUnique(handle);
+    UnlockRenderState();
+}
+
+inline UniqueHandle RenderManager::CreateRenderState(const RenderStateData& data)
+{
+    LockRenderState();
+    UniqueHandle renderStateHandle = uniqueRenderStates.MakeUnique(data);
+    UnlockRenderState();
+    
+    return renderStateHandle;
+}
+
+//this method is not thread safe since array element could be modified in background
+inline const RenderStateData& RenderManager::GetRenderStateData(UniqueHandle handle)
+{
+    return uniqueRenderStates.GetUnique(handle);
+}
+
+//this method is thread safe
+inline const void RenderManager::GetRenderStateData(UniqueHandle handle, RenderStateData& target)
+{
+    LockRenderState();
+    const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(handle);
+    target = parentState;
+    UnlockRenderState();
+}
+
+inline void RenderManager::ReleaseRenderState(UniqueHandle handle)
+{
+    LockRenderState();
+    uniqueRenderStates.ReleaseUnique(handle);
+    UnlockRenderState();
+}
+
+inline UniqueHandle RenderManager::SubclassRenderState(UniqueHandle parentStateHandle, uint32 renderStateFlags)
+{
+    LockRenderState();
+    const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
+    RenderStateData derivedState(parentState);
+    UnlockRenderState();
+    
+    derivedState.state = renderStateFlags;
+    return CreateRenderState(derivedState);
+}
+
+inline UniqueHandle RenderManager::SubclassRenderState(UniqueHandle parentStateHandle,
+                                        eBlendMode srcBlend,
+                                        eBlendMode dstBlend)
+{
+    LockRenderState();
+    const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
+    RenderStateData derivedState;
+    memcpy(&derivedState, &parentState, sizeof(derivedState));
+    UnlockRenderState();
+    
+    derivedState.sourceFactor = srcBlend;
+    derivedState.destFactor = dstBlend;
+    return CreateRenderState(derivedState);
+}
+
+inline UniqueHandle RenderManager::Subclass3DRenderState(eBlendMode srcBlend,
+                                          eBlendMode dstBlend)
+{
+    return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, srcBlend, dstBlend);
+}
+
+inline UniqueHandle RenderManager::Subclass3DRenderState(uint32 renderStateFlags)
+{
+    return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, renderStateFlags);
+}
+
+inline UniqueHandle RenderManager::Subclass2DRenderState(uint32 renderStateFlags)
+{
+    return SubclassRenderState(RenderState::RENDERSTATE_2D_BLEND, renderStateFlags);
+}
+
+inline void RenderManager::SetRenderState(UniqueHandle requestedState)
+{
+    currentState.stateHandle = requestedState;
+}
+
+inline UniqueHandle RenderManager::CreateTextureState(const TextureStateData& data)
+{
+    LockTextureState();
+    UniqueHandle textureStateHandle = uniqueTextureStates.MakeUnique(data);
+    UnlockTexturerState();
+    
+    return textureStateHandle;
+}
+
+//this method is not thread safe since array element could be modified in background
+inline const TextureStateData& RenderManager::GetTextureState(UniqueHandle handle)
+{
+    return uniqueTextureStates.GetUnique(handle);
+}
+
+inline void RenderManager::RetainTextureState(UniqueHandle handle)
+{
+    LockTextureState();
+    uniqueTextureStates.RetainUnique(handle);
+    UnlockTexturerState();
+}
+
+inline void RenderManager::ReleaseTextureState(UniqueHandle handle)
+{
+    LockTextureState();
+    uniqueTextureStates.ReleaseUnique(handle);
+    UnlockTexturerState();
+}
+
+inline void RenderManager::SetTextureState(UniqueHandle requestedState)
+{
+    currentState.textureState = requestedState;
+}
+
+    
+
     
 };
 #endif

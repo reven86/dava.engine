@@ -58,3 +58,10 @@ HierarchyTreeScreenNode* ScreenMetadata::GetScreenNode() const
     return dynamic_cast<HierarchyTreeScreenNode*>(GetTreeNode(0));
 }
 
+void ScreenMetadata::ApplyRename(const QString& originalName, const QString& newName)
+{
+    HierarchyTreeController::Instance()->AddUnusedItem(new HierarchyTreeController::ScreenUnusedItem( GetScreenNode()->GetPlatform()->GetName(), originalName));
+    
+    BaseMetadata::ApplyRename(originalName, newName);
+}
+

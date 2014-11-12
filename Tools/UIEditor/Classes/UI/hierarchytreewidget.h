@@ -48,7 +48,12 @@ class HierarchyTreeWidget : public QWidget
 public:
     explicit HierarchyTreeWidget(QWidget *parent = 0);
     ~HierarchyTreeWidget();
-	
+    void ScrollTo(HierarchyTreeNode *node);
+    void HighlightScreenNodes(const QList<HierarchyTreeScreenNode*>& foundNodesList);
+
+    // Delete the requested nodes.
+    void DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST& selectedNodes);
+
 private:
 	typedef Set<HierarchyTreeNode::HIERARCHYTREENODEID> EXPANDEDITEMS;
 	void AddControlItem(QTreeWidgetItem* parent, const HierarchyTreeNode::HIERARCHYTREENODESLIST& items);
@@ -56,11 +61,16 @@ private:
 	// Restore the selected/expanded tree item state.
 	void RestoreTreeItemSelectedStateRecursive(QTreeWidgetItem* parentItem, const EXPANDEDITEMS& selectedItems);
 	void RestoreTreeItemExpandedStateRecursive(QTreeWidgetItem* parentItem, const EXPANDEDITEMS& expandedItems);
+    
+    void HandleItemSelectionChanged();
 signals:
 	void CreateNewScreen();
 	void CreateNewAggregator();
 
 	void ImportScreenOrAggregator();
+
+public slots:
+	void OnDeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST& selectedNodes);
 
 protected slots:
 	void OnTreeUpdated(bool needRestoreSelection);
@@ -68,7 +78,7 @@ protected slots:
 
 private slots:
     void on_treeWidget_itemSelectionChanged();
-	void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &);
+	void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType expandType);
 	void OnShowCustomMenu(const QPoint& pos);
 	void OnDeleteControlAction();
 	void OnRenameControlAction();
@@ -100,7 +110,8 @@ private:
 
 	// "UI Editor Visible Flag" behavior.
 	HierarchyTreeControlNode* GetControlNodeByTreeItem(QTreeWidgetItem* item);
-	void UpdateVisibleFlagRecursive(QTreeWidgetItem* rootItem, int column, bool flagValue);
+
+    virtual bool eventFilter(QObject *target, QEvent *event);
 
 private:
 	bool internalSelectionChanged;

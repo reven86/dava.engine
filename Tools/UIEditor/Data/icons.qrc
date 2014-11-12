@@ -24,7 +24,13 @@
         <file>Icons/savesceneall.png</file>
         <file>Icons/uicustomcontrol.png</file>
         <file>Icons/uitextfield.png</file>
+        <file>Icons/uiparticles.png</file>
+        <file>Icons/uiwebview.png</file>
+        <file>Icons/uimovieview.png</file>
         <file>Icons/uiswitch.png</file>
+        <file>Icons/uijoypad.png</file>
+        <file>Icons/ui3dview.png</file>
+        <file>Icons/uilistcell.png</file>
         <file>Icons/help.png</file>
         <file>Icons/align_bottom.png</file>
         <file>Icons/align_hcenter.png</file>
@@ -45,6 +51,20 @@
         <file>Icons/pixelated.png</file>
         <file>Icons/stickmode.png</file>
         <file>Icons/enableguides.png</file>
+        <file>Icons/screenshot.png</file>
+        <file>Icons/screenshot_folder.png</file>
         <file>Icons/lockguides.png</file>
+        <file>Icons/search-icon.png</file>
+        <file>Icons/ignore-case.png</file>
+        <file>Icons/custom_icon.png</file>
+    </qresource>
+    <qresource prefix="/Cursors">
+        <file>Cursors/arrow.png</file>
+        <file>Cursors/left_corner.png</file>
+        <file>Cursors/left_right.png</file>
+        <file>Cursors/right_corner.png</file>
+        <file>Cursors/up_down.png</file>
+        <file>Cursors/size_all.png</file>
+        <file>Cursors/open_hand.png</file>
     </qresource>
 </RCC>

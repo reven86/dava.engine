@@ -52,6 +52,8 @@ RenderObject::RenderObject()
 	,	lodIndex(-1)
 	,	switchIndex(-1)
 {
+    lights[0] = NULL;
+    lights[1] = NULL;
 }
     
 RenderObject::~RenderObject()
@@ -72,8 +74,7 @@ void RenderObject::AddRenderBatch(RenderBatch * batch, int32 _lodIndex, int32 _s
 {    
 	batch->Retain();
     DVASSERT((batch->GetRenderObject() == 0) || (batch->GetRenderObject() == this));
-	batch->SetRenderObject(this);
-    batch->SetSortingTransformPtr(worldTransform);
+	batch->SetRenderObject(this);    
 	
 	IndexedRenderBatch ind;
 	ind.lodIndex = _lodIndex;
@@ -81,7 +82,7 @@ void RenderObject::AddRenderBatch(RenderBatch * batch, int32 _lodIndex, int32 _s
 	ind.renderBatch = batch;
     renderBatchArray.push_back(ind);
 
-    if(_lodIndex == lodIndex && _switchIndex == switchIndex)
+    if((_lodIndex == lodIndex && _switchIndex == switchIndex) || (_lodIndex == -1 && _switchIndex == -1))
     {
         activeRenderBatchArray.push_back(batch);
     }
@@ -90,12 +91,6 @@ void RenderObject::AddRenderBatch(RenderBatch * batch, int32 _lodIndex, int32 _s
         renderSystem->RegisterBatch(batch);
             
     RecalcBoundingBox();
-}
-
-void RenderObject::UpdateBatchesSortingTransforms()
-{
-    for (int32 i=0, batchCount = renderBatchArray.size(); i<batchCount; ++i)
-        renderBatchArray[i].renderBatch->SetSortingTransformPtr(worldTransform); 
 }
 
 void RenderObject::RemoveRenderBatch(RenderBatch * batch)
@@ -142,6 +137,64 @@ void RenderObject::RemoveRenderBatch(uint32 batchIndex)
     RecalcBoundingBox();
 }
 
+void RenderObject::ReplaceRenderBatch(RenderBatch * oldBatch, RenderBatch * newBatch)
+{
+    uint32 size = (uint32)renderBatchArray.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        if (renderBatchArray[k].renderBatch == oldBatch)
+        {
+            ReplaceRenderBatch(k, newBatch);
+            return;
+        }
+    }
+}
+
+void RenderObject::ReplaceRenderBatch(uint32 batchIndex, RenderBatch * newBatch)
+{
+    uint32 size = (uint32)renderBatchArray.size();
+    DVASSERT(batchIndex < size);
+
+    RenderBatch * batch = renderBatchArray[batchIndex].renderBatch;
+    renderBatchArray[batchIndex].renderBatch = newBatch;
+
+    batch->SetRenderObject(0);
+    newBatch->SetRenderObject(this);
+
+    if (renderSystem)
+    {
+        renderSystem->UnregisterBatch(batch);
+        renderSystem->RegisterBatch(newBatch);
+    }
+
+    batch->Release();
+    newBatch->Retain();
+
+    UpdateActiveRenderBatches();
+    RecalcBoundingBox();
+}
+
+void RenderObject::SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex)
+{
+    uint32 size = (uint32)renderBatchArray.size();
+    DVASSERT(batchIndex < size && batchIndex >= 0);
+
+    IndexedRenderBatch & iBatch = renderBatchArray[batchIndex];
+    iBatch.lodIndex = newLodIndex;
+
+    UpdateActiveRenderBatches();
+}
+
+void RenderObject::SetRenderBatchSwitchIndex(uint32 batchIndex, int32 newSwitchIndex)
+{
+    uint32 size = (uint32)renderBatchArray.size();
+    DVASSERT(batchIndex < size && batchIndex >= 0);
+
+    IndexedRenderBatch & iBatch = renderBatchArray[batchIndex];
+    iBatch.switchIndex = newSwitchIndex;
+
+    UpdateActiveRenderBatches();
+}
     
 void RenderObject::RecalcBoundingBox()
 {
@@ -153,7 +206,21 @@ void RenderObject::RecalcBoundingBox()
         bbox.AddAABBox(renderBatchArray[k].renderBatch->GetBoundingBox());
     }
 }
-    
+
+void RenderObject::CollectRenderBatches(int32 requestLodIndex, int32 requestSwitchIndex, Vector<RenderBatch*> & batches, bool includeShareLods /* = false */) const
+{
+    uint32 batchesCount = renderBatchArray.size();
+    for(uint32 i = 0; i < batchesCount; ++i)
+    {
+        const IndexedRenderBatch & irb = renderBatchArray[i];
+        if( (requestLodIndex == -1 || requestLodIndex == irb.lodIndex || (includeShareLods && irb.lodIndex == -1)) &&
+            (requestSwitchIndex == -1 || requestSwitchIndex == irb.switchIndex) )
+        {
+            batches.push_back(irb.renderBatch);
+        }
+    }
+}
+
 RenderObject * RenderObject::Clone(RenderObject *newObject)
 {
 	if(!newObject)
@@ -162,7 +229,6 @@ RenderObject * RenderObject::Clone(RenderObject *newObject)
 		newObject = new RenderObject();
 	}
 
-	newObject->type = type;
 	newObject->flags = flags;
 	newObject->RemoveFlag(MARKED_FOR_UPDATE);
 	newObject->debugFlags = debugFlags;
@@ -193,7 +259,6 @@ void RenderObject::Save(KeyedArchive * archive, SerializationContext* serializat
 
 	if(NULL != archive)
 	{
-		archive->SetUInt32("ro.type", type);
 		archive->SetUInt32("ro.debugflags", debugFlags);
 		archive->SetUInt32("ro.batchCount", GetRenderBatchCount());
         archive->SetUInt32("ro.sOclIndex", staticOcclusionIndex);
@@ -229,7 +294,6 @@ void RenderObject::Load(KeyedArchive * archive, SerializationContext *serializat
 {
 	if(NULL != archive)
 	{
-		type = archive->GetUInt32("ro.type", TYPE_RENDEROBJECT);
 		debugFlags = archive->GetUInt32("ro.debugflags", 0);
         staticOcclusionIndex = (uint16)archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX);
         
@@ -261,6 +325,24 @@ void RenderObject::Load(KeyedArchive * archive, SerializationContext *serializat
 		}
 
 	AnimatedObject::Load(archive);
+}
+
+void RenderObject::BindDynamicParameters(Camera * camera)
+{    
+    DVASSERT(worldTransform != 0);
+    RenderManager::SetDynamicParam(PARAM_WORLD, worldTransform, (pointer_size)worldTransform);
+    if(camera)
+    {
+        if(lights[0])
+        {
+            const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
+            RenderManager::SetDynamicParam(PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
+            RenderManager::SetDynamicParam(PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)lights[0]);
+            RenderManager::SetDynamicParam(PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)lights[0]);
+        }        
+        //if(material->GetDynamicBindFlags() & NMaterial::DYNAMIC_BIND_OBJECT_CENTER)                
+        RenderManager::SetDynamicParam(PARAM_LOCAL_BOUNDING_BOX, &bbox, (pointer_size)&bbox);        
+    }    
 }
 
 void RenderObject::SetRenderSystem(RenderSystem * _renderSystem)
@@ -306,12 +388,12 @@ void RenderObject::SetSwitchIndex(int32 _switchIndex)
 	}
 }
 
-int32 RenderObject::GetLodIndex()
+int32 RenderObject::GetLodIndex() const
 {
     return lodIndex;
 }
 
-int32 RenderObject::GetSwitchIndex()
+int32 RenderObject::GetSwitchIndex() const
 {
     return switchIndex;
 }

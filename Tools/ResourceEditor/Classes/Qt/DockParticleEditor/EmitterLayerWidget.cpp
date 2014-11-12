@@ -90,7 +90,19 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 			SLOT(OnLodsChanged()));		
 	}
 	lodsLayout->addLayout(lodsInnerLayout);
+
+    QHBoxLayout* lodsDegradeLayout = new QHBoxLayout();
+    lodsDegradeLayout->addWidget(new QLabel("Lod0 degrade strategy"));
+    degradeStrategyComboBox = new QComboBox();    
+    degradeStrategyComboBox->addItem("Keep everything");
+    degradeStrategyComboBox->addItem("Reduce particles");
+    degradeStrategyComboBox->addItem("Clear");
+    connect(degradeStrategyComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+    lodsDegradeLayout->addWidget(degradeStrategyComboBox);
+    lodsLayout->addLayout(lodsDegradeLayout);
 	mainBox->addLayout(lodsLayout);
+
+    
 
 	layerTypeLabel = new QLabel(this);
 	layerTypeLabel->setText("Layer type");
@@ -783,10 +795,13 @@ void EmitterLayerWidget::OnValueChanged()
 	if (worldAlignCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
 
+    ParticleLayer::eDegradeStrategy degradeStrategy = ParticleLayer::eDegradeStrategy(degradeStrategyComboBox->currentIndex());
+
     bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 	CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
 	updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
 						 propLayerType,
+                         degradeStrategy,
 						 !enableCheckBox->isChecked(),						 
 						 inheritPostionCheckBox->isChecked(),
 						 isLongCheckBox->isChecked(),
@@ -888,6 +903,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
         layerLodsCheckBox[i]->setChecked(layer->IsLodActive(i));
     }
 
+    degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
     //LAYER_SPRITE = 0,
     sprite = layer->sprite;
     Sprite* renderSprite = Sprite::CreateAsRenderTarget(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);

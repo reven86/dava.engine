@@ -35,6 +35,7 @@
 #include "WidgetSignalsBlocker.h"
 #include "ChangePropertyCommand.h"
 #include "CommandsController.h"
+#include "PropertyNames.h"
 
 static const QString SCROLL_PROPERTY_BLOCK_NAME = "Scroll";
 
@@ -59,12 +60,14 @@ void ScrollControlPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 	// Build the properties map to make the properties search faster.
 	PROPERTIESMAP propertiesMap = BuildMetadataPropertiesMap();
 
-	RegisterComboBoxWidgetForProperty(propertiesMap, "ScrollOrientation", ui->orientationComboBox, false, true);
+	RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::SCROLL_ORIENTATION, ui->orientationComboBox, false, true);
+    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::SCROLL_BAR_DELEGATE_NAME, ui->scrollViewsComboBox, false, true);
 }
 
 void ScrollControlPropertyGridWidget::Cleanup()
 {	
 	UnregisterComboBoxWidget(ui->orientationComboBox);
+    UnregisterComboBoxWidget(ui->scrollViewsComboBox);
 	
 	BasePropertyGridWidget::Cleanup();
 }
@@ -72,12 +75,38 @@ void ScrollControlPropertyGridWidget::Cleanup()
 void ScrollControlPropertyGridWidget::FillComboboxes()
 {
 	WidgetSignalsBlocker orientationBlocked(ui->orientationComboBox);
+    WidgetSignalsBlocker scrollViewsBlocked(ui->scrollViewsComboBox);
 	
 	ui->orientationComboBox->clear();
+    ui->scrollViewsComboBox->clear();
     int itemsCount = ScrollPropertyGridWidgetHelper::GetOrientationCount();
     for (int i = 0; i < itemsCount; i ++)
     {
         ui->orientationComboBox->addItem(ScrollPropertyGridWidgetHelper::GetOrientationDesc(i));
+    }
+    ui->scrollViewsComboBox->addItem(QString(""));
+    ui->scrollViewsComboBox->setItemData(0, "None",Qt::ToolTipRole);
+    FillScrollViewsComboBox(HierarchyTreeController::Instance()->GetActiveScreen()->GetChildNodes());
+
+    
+}
+
+void ScrollControlPropertyGridWidget::FillScrollViewsComboBox(const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes)
+{
+    HierarchyTreeNode::HIERARCHYTREENODESCONSTITER it=nodes.begin();
+    for (; it!=nodes.end(); ++it)
+    {
+        const HierarchyTreeControlNode * controlNode = static_cast<HierarchyTreeControlNode *>(*it);
+        UIControl* control = controlNode->GetUIObject();
+        UIScrollBarDelegate* scroll = dynamic_cast<UIScrollBarDelegate*>(control);
+        if (NULL != scroll)
+        {
+            QString delegatePath = QString::fromStdString(UIControlHelpers::GetControlPath(control));
+            ui->scrollViewsComboBox->addItem(QString::fromStdString(control->GetName()));
+            uint32 itemCount = ui->scrollViewsComboBox->count();
+            ui->scrollViewsComboBox->setItemData(itemCount-1, delegatePath, Qt::ToolTipRole);
+        }
+        FillScrollViewsComboBox((*it)->GetChildNodes());
     }
 }
 
@@ -93,15 +122,22 @@ void ScrollControlPropertyGridWidget::ProcessComboboxValueChanged(QComboBox* sen
     // Try to process this control-specific widgets.
 	if (senderWidget == ui->orientationComboBox)
 	{
-		CustomProcessComboboxValueChanged(iter, ScrollPropertyGridWidgetHelper::GetOrientation(senderWidget->currentIndex()));
+		CustomProcessOrientationValueChanged(iter, ScrollPropertyGridWidgetHelper::GetOrientation(senderWidget->currentIndex()));
 		return;
 	}
+    if (senderWidget == ui->scrollViewsComboBox)
+    {
+        int32 index = ui->scrollViewsComboBox->findText(value);
+        QVariant controlPath = ui->scrollViewsComboBox->itemData(index,Qt::ToolTipRole);
+        CustomProcessScrollViewValueChanged(iter, controlPath.toString());
+        return;
+    }
 
     // No postprocessing was applied - use the generic process.
     BasePropertyGridWidget::ProcessComboboxValueChanged(senderWidget, iter, value);
 }
 
-void ScrollControlPropertyGridWidget::CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value)
+void ScrollControlPropertyGridWidget::CustomProcessOrientationValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value)
 {
 	// Don't update the property if the text wasn't actually changed.
     int curValue = PropertiesHelper::GetAllPropertyValues<int>(this->activeMetadata, iter->second.getProperty().name());
@@ -114,6 +150,19 @@ void ScrollControlPropertyGridWidget::CustomProcessComboboxValueChanged(const PR
     CommandsController::Instance()->ExecuteCommand(command);
     SafeRelease(command);
 }
+void ScrollControlPropertyGridWidget::CustomProcessScrollViewValueChanged(const PROPERTYGRIDWIDGETSITER& iter, QString value)
+{
+    QString curValue = PropertiesHelper::GetAllPropertyValues<QString>(this->activeMetadata, iter->second.getProperty().name());
+	if (curValue == value)
+	{
+		return;
+	}
+    
+    BaseCommand* command = new ChangePropertyCommand<QString>(activeMetadata, iter->second, value);
+    CommandsController::Instance()->ExecuteCommand(command);
+    SafeRelease(command);
+    
+}
 
 void ScrollControlPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty)
 {
@@ -124,18 +173,27 @@ void ScrollControlPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QCom
 
     bool isPropertyValueDiffers = false;
     const QString& propertyName = curProperty.name();
-    int propertyValue = PropertiesHelper::GetPropertyValue<int>(this->activeMetadata, propertyName, isPropertyValueDiffers);
+    
 
     // Firstly check the custom comboboxes.
 	if (comboBoxWidget == ui->orientationComboBox)
 	{
+        int propertyValueOrientation = PropertiesHelper::GetPropertyValue<int>(this->activeMetadata, propertyName, isPropertyValueDiffers);
 	    UpdateWidgetPalette(comboBoxWidget, propertyName);
 		
         SetComboboxSelectedItem(comboBoxWidget, ScrollPropertyGridWidgetHelper::GetOrientationDescByType(
-																		(UIScrollBar::eScrollOrientation)propertyValue));
+																		(UIScrollBar::eScrollOrientation)propertyValueOrientation));
 		return;
 	}
 
+    if (comboBoxWidget == ui->scrollViewsComboBox)
+	{
+        QString propertyValueName = PropertiesHelper::GetPropertyValue<QString>(this->activeMetadata, propertyName, isPropertyValueDiffers);
+	    UpdateWidgetPalette(comboBoxWidget, propertyName);
+		
+        SetComboboxSelectedItem(comboBoxWidget, propertyValueName, true);
+		return;
+	}
     // Not related to the custom combobox - call the generic one.
     BasePropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(comboBoxWidget, curProperty);
 }

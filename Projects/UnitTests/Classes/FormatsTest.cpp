@@ -29,6 +29,7 @@
 
 
 #include "FormatsTest.h"
+#include "Render/PixelFormatDescriptor.h"
 
 static const float TEST_TIME = 30.0f;
 
@@ -61,10 +62,12 @@ void FormatsTest::LoadResources()
 
     for(int32 i = FORMAT_RGBA8888; i < FORMAT_COUNT; ++i)
     {
+		if(i == 13) continue; // FORMAT_DXT1NM was deleted
+
         int32 y = (i-1) / columnCount;
         int32 x = (i-1) % columnCount;
         
-        String formatName = Texture::GetPixelFormatString((PixelFormat)i);
+        String formatName = PixelFormatDescriptor::GetPixelFormatString((PixelFormat)i);
         
         UIControl *c = new UIControl(Rect(x*size, y*size, size - 2, size - 2));
         c->SetSprite(Format("~res:/TestData/FormatTest/%s/number_0", formatName.c_str()), 0);

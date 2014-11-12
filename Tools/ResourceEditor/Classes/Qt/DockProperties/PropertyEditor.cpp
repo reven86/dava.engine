@@ -55,6 +55,7 @@
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/RebuildTangentSpaceCommand.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 
@@ -71,6 +72,7 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 	, viewMode(VIEW_NORMAL)
 	, treeStateHelper(this, curModel)
 	, favoriteGroup(NULL)
+    , resetRequests(0)
 {
 	if(connectToSceneSignals)
 	{
@@ -88,6 +90,9 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
     connect(mainUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));
     connect(mainUi->actionAddQualitySettingsComponent, SIGNAL(triggered()), SLOT(OnAddModelTypeComponent()));
     connect(mainUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
+    connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
+    connect(mainUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
+    connect(mainUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
 
 	SetUpdateTimeout(5000);
 	SetEditTracking(true);
@@ -117,7 +122,7 @@ void PropertyEditor::SetEntities(const EntityGroup *selected)
             curNodes << node;
             // ensure that custom properties exist
             // this call will create them if they are not created yet
-            node->GetCustomProperties();
+            GetOrCreateCustomProperties(node);
         }
     }
 
@@ -162,6 +167,14 @@ void PropertyEditor::ClearCurrentNodes()
 
 void PropertyEditor::ResetProperties()
 {
+    if (resetRequests > 1)
+    {
+        resetRequests--;
+        return;
+    }
+
+    resetRequests = 0;
+
     // Store the current Property Editor Tree state before switching to the new node.
 	// Do not clear the current states map - we are using one storage to share opened
 	// Property Editor nodes between the different Scene Nodes.
@@ -353,17 +366,23 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
 			{
 				// Add optional button to edit action component
-				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "");
+				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
 				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
-                QtPropertyToolButton *editSound = data->AddButton();
-                editSound->setIcon(QIcon(":/QtIcons/settings.png"));
+                QtPropertyToolButton * editSound = CreateButton(data, QIcon( ":/QtIcons/settings.png" ), "Edit sound component");
                 editSound->setAutoRaise(true);
-
                 QObject::connect(editSound, SIGNAL(pressed()), this, SLOT(ActionEditSoundComponent()));
+            }
+            else if(DAVA::MetaInfo::Instance<DAVA::WaveComponent>() == meta)
+            {
+                QtPropertyToolButton *triggerWave = data->AddButton();
+                triggerWave->setIcon(QIcon(":/QtIcons/clone.png"));
+                triggerWave->setAutoRaise(true);
+
+                QObject::connect(triggerWave, SIGNAL(pressed()), this, SLOT(OnTriggerWaveComponent()));
             }
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
 			{
@@ -389,20 +408,33 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 				if(NULL != introData)
 				{
 					DAVA::RenderBatch *batch = (DAVA::RenderBatch *) introData->object;
-					DAVA::RenderObject *ro = batch->GetRenderObject();
-					if(ConvertToShadowCommand::CanConvertBatchToShadow(batch) && (ro->GetType() == RenderObject::TYPE_MESH))
-					{
-						QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
-                        convertButton->setEnabled(isSingleSelection);
-						QObject::connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
-					}
+                    if (batch != NULL)
+                    {
+					    DAVA::RenderObject *ro = batch->GetRenderObject();
+					    if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch))
+					    {
+						    QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
+                            convertButton->setEnabled(isSingleSelection);
+						    connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
+					    }
+
+                        PolygonGroup* group = batch->GetPolygonGroup();
+                        if (group != NULL)
+                        {
+                            bool isRebuildTsEnabled = true;
+                            const int32 requiredVertexFormat = (EVF_TEXCOORD0 | EVF_NORMAL);
+                            isRebuildTsEnabled &= (group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST);
+                            isRebuildTsEnabled &= ((group->GetFormat() & requiredVertexFormat) == requiredVertexFormat);
+
+                            if (isRebuildTsEnabled)
+                            {
+                                QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                                rebuildTangentButton->setEnabled(isSingleSelection);
+                                connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+                            }
+                        }
+                    }
 				}
-			}
-			else if(DAVA::MetaInfo::Instance<DAVA::ShadowVolume>() == meta)
-			{
-				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
-                deleteButton->setEnabled(isSingleSelection);
-				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
@@ -683,6 +715,12 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2 *scene, const EntityGrou
     SetEntities(selected);
 }
 
+void PropertyEditor::QueueResetProperties()
+{
+    resetRequests++;
+    QTimer::singleShot(0, this, SLOT(ResetProperties()));
+}
+
 void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
 	int cmdId = command->GetId();
@@ -708,7 +746,7 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
             }
             if (doReset)
             {
-                ResetProperties();
+                QueueResetProperties();
             }
             break;
         }
@@ -821,12 +859,17 @@ void PropertyEditor::ActionEditComponent()
 	if(curNodes.size() == 1)
 	{
         Entity *node = curNodes.at(0);
-		ActionComponentEditor editor;
+		ActionComponentEditor editor(this);
 
 		editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
 		editor.exec();
 
-		ResetProperties();
+        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        curScene->selectionSystem->SetSelection(node);
+        if (editor.IsModified())
+        {
+            curScene->SetChanged(true);
+        }
 	}	
 }
 
@@ -870,6 +913,22 @@ void PropertyEditor::ConvertToShadow()
             }
 		}
 	}
+}
+
+void PropertyEditor::RebuildTangentSpace()
+{
+    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+
+    if(NULL != btn)
+    {
+        QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
+        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        if(NULL != data && NULL != curScene)
+        {            
+                RenderBatch *batch = (RenderBatch *)data->object;
+            curScene->Exec(new RebuildTangentSpaceCommand(batch, true));
+        }
+    }
 }
 
 void PropertyEditor::DeleteRenderBatch()
@@ -1267,64 +1326,54 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
     }
 }
 
-void PropertyEditor::OnAddActionComponent()
+void PropertyEditor::OnAddComponent(Component::eType type)
 {
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-	if(curNodes.size() > 0)
-	{
-		curScene->BeginBatch("Add Action Component");
+    if(curNodes.size() > 0)
+    {
+        curScene->BeginBatch("Add Component");
 
-		for(int i = 0; i < curNodes.size(); ++i)
-		{
+        for(int i = 0; i < curNodes.size(); ++i)
+        {
             Entity* node = curNodes.at(i);
-            if (node->GetComponentCount(Component::ACTION_COMPONENT) == 0)
+            if (node->GetComponentCount(type) == 0)
             {
-    			curScene->Exec(new AddComponentCommand(curNodes.at(i), Component::CreateByType(Component::ACTION_COMPONENT)));
+                curScene->Exec(new AddComponentCommand(curNodes.at(i), Component::CreateByType(type)));
             }
-		}
+        }
 
-		curScene->EndBatch();
-	}
+        curScene->EndBatch();
+    }
+}
+
+void PropertyEditor::OnAddActionComponent()
+{
+    OnAddComponent(Component::ACTION_COMPONENT);
 }
 
 void PropertyEditor::OnAddStaticOcclusionComponent()
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-	if(curNodes.size() > 0)
-	{
-		curScene->BeginBatch("Add Static Occlusion Component");
-        
-		for(int i = 0; i < curNodes.size(); ++i)
-		{
-            Entity* node = curNodes.at(i);
-            if (node->GetComponentCount(Component::STATIC_OCCLUSION_COMPONENT) == 0)
-            {
-    			curScene->Exec(new AddComponentCommand(curNodes.at(i), Component::CreateByType(Component::STATIC_OCCLUSION_COMPONENT)));
-            }
-		}
-        
-		curScene->EndBatch();
-	}
+    OnAddComponent(Component::STATIC_OCCLUSION_COMPONENT);
+}
+
+void PropertyEditor::OnAddSoundComponent()
+{
+    OnAddComponent(Component::SOUND_COMPONENT);
+}
+
+void PropertyEditor::OnAddWaveComponent()
+{
+    OnAddComponent(Component::WAVE_COMPONENT);
 }
 
 void PropertyEditor::OnAddModelTypeComponent()
 {
-    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-	if(curNodes.size() > 0)
-	{
-		curScene->BeginBatch("Add Model Type Component");
-        
-		for(int i = 0; i < curNodes.size(); ++i)
-		{
-            Entity* node = curNodes.at(i);
-            if (node->GetComponentCount(Component::QUALITY_SETTINGS_COMPONENT) == 0)
-            {
-			    curScene->Exec(new AddComponentCommand(curNodes.at(i), Component::CreateByType(Component::QUALITY_SETTINGS_COMPONENT)));
-            }
-		}
-        
-		curScene->EndBatch();
-	}
+    OnAddComponent(Component::QUALITY_SETTINGS_COMPONENT);
+}
+
+void PropertyEditor::OnAddSkeletonComponent()
+{
+    OnAddComponent(Component::SKELETON_COMPONENT);
 }
 
 void PropertyEditor::OnRemoveComponent()
@@ -1372,6 +1421,18 @@ void PropertyEditor::OnRemoveComponent()
             }
 		}
 	}
+}
+
+void PropertyEditor::OnTriggerWaveComponent()
+{
+    for(int i = 0; i < curNodes.size(); ++i)
+    {
+        WaveComponent * component = GetWaveComponent(curNodes.at(i));
+        if (component)
+        {
+            component->Trigger();
+        }
+    }
 }
 
 QString PropertyEditor::GetDefaultFilePath()

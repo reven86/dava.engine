@@ -63,6 +63,8 @@ ControlPropertyGridWidget::ControlPropertyGridWidget(QWidget *parent) :
     this->ui->objectNameLineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp(), this));
     this->ui->customControlLineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp(), this));
     this->ui->tagLineEdit->setValidator(new QIntValidator(-INT_MAX, INT_MAX, this));
+    
+    this->ui->objectNameLineEdit->installEventFilter(this);
 
 	SetWidgetState(STATE_DEFAULT_CONTROL, true);
 	ConnectToSignals();
@@ -231,4 +233,19 @@ void ControlPropertyGridWidget::UpdatePropertiesForSubcontrol()
 	// Hide morph button for UI Aggregator
 	UIAggregatorMetadata *UIAggregatorMeta = dynamic_cast<UIAggregatorMetadata*>(activeMetadata);
 	this->ui->btnMorphToCustomControl->setHidden(UIAggregatorMeta ? true : false);
+}
+
+bool ControlPropertyGridWidget::eventFilter(QObject *object, QEvent *event)
+{
+    if ((event->type() == QEvent::FocusOut) && (object == ui->objectNameLineEdit) && (ui->objectNameLineEdit->text() != BasePropertyGridWidget::MULTIPLE_VALUE))
+    {
+        ui->objectNameLineEdit->setStyleSheet("font:normal;");
+    }
+
+    if ((event->type() == QEvent::FocusIn) && (object == ui->objectNameLineEdit) && (ui->objectNameLineEdit->text() == BasePropertyGridWidget::MULTIPLE_VALUE))
+    {
+        ui->objectNameLineEdit->setStyleSheet("font:normal;");
+        ui->objectNameLineEdit->setText("");
+    }
+    return  QObject::eventFilter(object, event);;
 }

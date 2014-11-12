@@ -35,23 +35,16 @@ using namespace DAVA;
 
 HierarchyTreeNodeExtraData::HierarchyTreeNodeExtraData()
 {
-    // Init the map.
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_NORMAL, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_PRESSED_INSIDE, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_PRESSED_OUTSIDE, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_DISABLED, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_SELECTED, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_HOVER, WideString()));
 }
 
 // Access to Localization Key.
+bool HierarchyTreeNodeExtraData::IsLocalizationKeyExist(UIControl::eControlState state) const
+{
+    return localizationKeysMap.find(state) != localizationKeysMap.end();
+}
+
 void HierarchyTreeNodeExtraData::SetLocalizationKey(const WideString& localizationKey, UIControl::eControlState state)
 {
-    if (!ValidateControlState(state))
-    {
-        return;
-    }
-
     this->localizationKeysMap[state] = localizationKey;
 }
     
@@ -61,8 +54,6 @@ WideString HierarchyTreeNodeExtraData::GetLocalizationKey(UIControl::eControlSta
     {
         return WideString();
     }
-
-    //return this->localizationKeysMap[state];
     
     Map<UIControl::eControlState, WideString>::const_iterator iter = this->localizationKeysMap.find(state);
     return iter->second;
@@ -73,7 +64,7 @@ bool HierarchyTreeNodeExtraData::ValidateControlState(UIControl::eControlState s
     Map<UIControl::eControlState, WideString>::const_iterator iter = this->localizationKeysMap.find(state);
     if (iter == this->localizationKeysMap.end())
     {
-        Logger::Error("UIControlState %i is invalid in HierarchyTreeNodeExtraData!");
+        Logger::Error("UIControlState %i is invalid in HierarchyTreeNodeExtraData!", state);
         return false;
     }
     

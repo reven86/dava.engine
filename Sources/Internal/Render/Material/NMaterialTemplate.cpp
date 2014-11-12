@@ -28,6 +28,7 @@
  =====================================================================================*/
 
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/Material/NMaterialTemplate.h"
 
@@ -84,7 +85,7 @@ NMaterialTemplate* NMaterialTemplateCache::Load(const FilePath& loadPath)
 	{
 		result = new NMaterialTemplate();
 		
-		for(int32 i = 0; i < materialTemplateNode->GetCount(); ++i)
+		for(uint32 i = 0; i < materialTemplateNode->GetCount(); ++i)
 		{
 			const YamlNode* techniqueNode = materialTemplateNode->Get(i);
 			

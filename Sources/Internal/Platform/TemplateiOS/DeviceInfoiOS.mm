@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "Platform/DeviceInfo.h"
 
@@ -24,6 +38,8 @@
 #import <Foundation/NSLocale.h>
 #import <sys/utsname.h>
 #import <AdSupport/ASIdentifierManager.h>
+
+#import "Reachability.h"
 
 namespace DAVA
 {
@@ -95,6 +111,11 @@ String DeviceInfo::GetModel()
 		if ([modelName hasPrefix:@"iPhone6,2"])
 			model = "iPhone 5S GSM+CDMA";
 
+        if ([modelName hasPrefix:@"iPhone7,1"])
+			model = "iPhone 6 Plus";
+		if ([modelName hasPrefix:@"iPhone7,2"])
+			model = "iPhone 6";
+        
 		// iPad
 		if ([modelName hasPrefix:@"iPad1,1"])
 			model = "iPad 1";
@@ -133,11 +154,27 @@ String DeviceInfo::GetModel()
 			model = "iPad 5 WiFi";
 		if ([modelName hasPrefix:@"iPad4,2"])
 			model = "iPad 5 GSM CDMA LTE";
+		if ([modelName hasPrefix:@"iPad4,3"])
+			model = "iPad 5 (China)";
 
 		if ([modelName hasPrefix:@"iPad4,4"])
 			model = "iPad Mini 2 WiFi";
 		if ([modelName hasPrefix:@"iPad4,5"])
 			model = "iPad Mini 2 GSM CDMA LTE";
+		if ([modelName hasPrefix:@"iPad4,6"])
+			model = "iPad Mini 2 (China)";
+
+		if ([modelName hasPrefix:@"iPad4,7"])
+			model = "iPad Mini 3 WiFi";
+		if ([modelName hasPrefix:@"iPad4,8"])
+			model = "iPad Mini 3 Cellular";
+		if ([modelName hasPrefix:@"iPad4,9"])
+			model = "iPad Mini 3 (China)";
+
+		if ([modelName hasPrefix:@"iPad5,3"])
+			model = "iPad 6 WiFi";
+		if ([modelName hasPrefix:@"iPad5,4"])
+			model = "iPad 6 Cellular";
 
 		// iPod
 		if ([modelName hasPrefix:@"iPod1,1"])
@@ -234,6 +271,53 @@ WideString DeviceInfo::GetName()
     return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
 }
     
+eGPUFamily DeviceInfo::GetGPUFamily()
+{
+    return GPU_POWERVR_IOS;
+}
+    
+DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
+{
+    static const struct
+    {
+        NetworkStatus platformNetworkStatus;
+        DeviceInfo::eNetworkType internalNetworkType;
+    }
+    networkStatusMap[] =
+    {
+        { NotReachable, DeviceInfo::NETWORK_TYPE_NOT_CONNECTED },
+        { ReachableViaWiFi, DeviceInfo::NETWORK_TYPE_WIFI },
+        { ReachableViaWWAN, DeviceInfo::NETWORK_TYPE_CELLULAR }
+    };
+
+    NetworkInfo networkInfo;
+    
+    Reachability *reachability = [Reachability reachabilityForInternetConnection];
+    [reachability startNotifier];
+
+    NetworkStatus networkStatus = [reachability currentReachabilityStatus];
+
+    uint32 networkStatusMapCount = COUNT_OF(networkStatusMap);
+    for (uint32 i = 0; i < networkStatusMapCount; i ++)
+    {
+        if (networkStatusMap[i].platformNetworkStatus == networkStatus)
+        {
+            networkInfo.networkType = networkStatusMap[i].internalNetworkType;
+            break;
+        }
+    }
+
+    [reachability stopNotifier];
+
+    // No way to determine signal strength under iOS.
+    return networkInfo;
+}
+
+int32 DeviceInfo::GetCpuCount()
+{
+    return (int32)[[NSProcessInfo processInfo] processorCount];
+}
+
 }
 
 #endif

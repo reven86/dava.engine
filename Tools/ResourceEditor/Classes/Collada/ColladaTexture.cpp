@@ -32,7 +32,7 @@
 #include "ColladaTexture.h"
 #include "FileSystem/Logger.h"
 #include <Magick++.h>
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
 #include "../Qt/Main/QtUtils.h"

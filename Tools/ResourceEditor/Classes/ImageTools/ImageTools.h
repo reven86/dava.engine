@@ -30,6 +30,7 @@
 #ifndef __IMAGE_TOOLS_H__
 #define __IMAGE_TOOLS_H__
 
+#include "TextureCompression/TextureConverter.h"
 #include "DAVAEngine.h"
 
 struct Channels
@@ -68,7 +69,7 @@ struct Channels
     void ReleaseImages();
 };
 
-class ImageTools: public DAVA::ImageLoader
+class ImageTools
 {
 public:
     
@@ -81,8 +82,7 @@ public:
      };
     
     static DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU);
-
-	static void ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format);
+	static void ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format, DAVA::TextureConverter::eConvertQuality quality);
     
     static bool SplitImage(const DAVA::FilePath &pathname, DAVA::Set<DAVA::String> &errorLog);
     

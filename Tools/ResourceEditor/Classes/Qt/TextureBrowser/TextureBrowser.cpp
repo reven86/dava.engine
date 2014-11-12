@@ -35,8 +35,8 @@
 #include "TextureBrowser/TextureCache.h"
 #include "Main/QtUtils.h"
 #include "Main/mainwindow.h"
-#include "Render/LibPVRHelper.h"
-#include "Render/LibDxtHelper.h"
+#include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/LibDdsHelper.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Scene/SceneHelper.h"
 #include "CubemapEditor/CubemapUtils.h"
@@ -300,7 +300,7 @@ void TextureBrowser::updateConvertedImageAndInfo(const QList<QImage> &images, DA
 	}
 	else
 	{
-		ui->textureAreaConverted->setImage(images, descriptor.faceDescription);
+		ui->textureAreaConverted->setImage(images, descriptor.dataSettings.faceDescription);
 	}
 	
 	ui->textureAreaConverted->setEnabled(true);
@@ -342,7 +342,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 	{
 		char tmp[1024];
 
-		const char *formatStr = DAVA::Texture::GetPixelFormatString(DAVA::FORMAT_RGBA8888);
+		const char *formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(DAVA::FORMAT_RGBA8888);
 
 		int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
 		int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
@@ -368,23 +368,14 @@ void TextureBrowser::updateInfoConverted()
 
 		int datasize = TextureCache::Instance()->getConvertedSize(curDescriptor, curTextureView);
 		int filesize = TextureCache::Instance()->getConvertedFileSize(curDescriptor, curTextureView);
-		QSize imgSize(0, 0);
+		QSize imgSize = TextureCache::Instance()->getConvertedImageSize(curDescriptor, curTextureView);
+
+        bool isUpToDate = curDescriptor->IsCompressedTextureActual(curTextureView);
         
         bool isFormatValid = curDescriptor->compression[curTextureView].format != DAVA::FORMAT_INVALID;
 		if(isFormatValid)
 		{
 			formatStr = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(curDescriptor->compression[curTextureView].format);
-			
-			int w = curDescriptor->compression[curTextureView].compressToWidth;
-			int h = curDescriptor->compression[curTextureView].compressToHeight;
-			if(0 != w && 0 != h)
-			{
-				imgSize = QSize(w, h);
-			}
-			else
-			{
-				imgSize = QSize(curTexture->width, curTexture->height);
-			}
 		}
         ui->convertToolButton->setEnabled(isFormatValid);
         
@@ -393,10 +384,12 @@ void TextureBrowser::updateInfoConverted()
 			SizeInBytesToString(filesize).c_str());
 
 		ui->labelConvertedFormat->setText(tmp);
+        ui->textureAreaConverted->warningShow(!isUpToDate);
 	}
 	else
 	{
 		ui->labelConvertedFormat->setText("");
+        ui->textureAreaConverted->warningShow(false);
 	}
 }
 
@@ -447,6 +440,8 @@ void TextureBrowser::setupImagesScrollAreas()
 	// mouse wheel
 	QObject::connect(ui->textureAreaOriginal, SIGNAL(mouseWheel(int)), this, SLOT(textureAreaWheel(int)));
 	QObject::connect(ui->textureAreaConverted, SIGNAL(mouseWheel(int)), this, SLOT(textureAreaWheel(int)));
+
+    ui->textureAreaConverted->warningSetText("Not relevant");
 }
 
 void TextureBrowser::setupTextureToolbar()
@@ -607,11 +602,11 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture *texture, const DAVA::Te
 {
 	if(NULL != descriptor && NULL != texture)
 	{
-		DAVA::eGPUFamily curEditorImageGPUForTextures = (eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32();
+		DAVA::eGPUFamily curEditorImageGPUForTextures = QtMainWindow::Instance()->GetGPUFormat();
 
 		// reload only when editor view format is the same as given texture format
 		// or if given texture format if not a file (will happened if some common texture params changed - mipmap/filtering etc.)
-		if(DAVA::GPU_UNKNOWN == gpu || gpu == curEditorImageGPUForTextures)
+		if(!GPUFamilyDescriptor::IsGPUForDevice(gpu) || gpu == curEditorImageGPUForTextures)
 		{
 			descriptor->Save(); //TODO: it's kostil for broken logic. We need to remove this code during refactoring of texture browser
 			texture->ReloadAs(curEditorImageGPUForTextures);
@@ -688,6 +683,7 @@ void TextureBrowser::texturePropertyChanged(int type)
 	// settings that need texture to reconvert
 	if( type == TextureProperties::PROP_FORMAT ||
 		type == TextureProperties::PROP_MIPMAP ||
+        type == TextureProperties::PROP_NORMALMAP||
 		type == TextureProperties::PROP_SIZE)
 	{
 		// set current Texture view and force texture convertion
@@ -698,7 +694,7 @@ void TextureBrowser::texturePropertyChanged(int type)
 	else
 	{
 		// new texture can be applied to scene immediately
-		reloadTextureToScene(curTexture, ui->textureProperties->getTextureDescriptor(), DAVA::GPU_UNKNOWN);
+		reloadTextureToScene(curTexture, ui->textureProperties->getTextureDescriptor(), DAVA::GPU_PNG);
 	}
 
 	// update warning message
@@ -713,7 +709,7 @@ void TextureBrowser::textureReadyOriginal(const DAVA::TextureDescriptor *descrip
 		{
 			if(descriptor->IsCubeMap())
 			{
-				ui->textureAreaOriginal->setImage(images.images, descriptor->faceDescription);
+				ui->textureAreaOriginal->setImage(images.images, descriptor->dataSettings.faceDescription);
 			}
 			else
 			{

@@ -43,6 +43,10 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
+#include "Render/3D/MeshUtils.h"
+#include "Scene3D/Components/AnimationComponent.h"
+#include "Scene3D/AnimationData.h"
 
 namespace DAVA
 {
@@ -98,7 +102,6 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
 //	staticMeshIndexOffset = scene->GetStaticMeshCount();
 	animatedMeshIndexOffset = scene->GetAnimatedMeshCount();
 	cameraIndexOffset = scene->GetCameraCount();
-	animationIndexOffset = scene->GetAnimationCount();
     
 
 	sceneFP = File::Create(filename, File::OPEN | File::READ);
@@ -186,7 +189,7 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
 	// Binding of animations to scene nodes 
 	for (int32 animationIndex = 0; animationIndex < (int32)header.nodeAnimationsCount; ++animationIndex)
 	{
-		SceneNodeAnimationList * aList = scene->GetAnimation(animationIndex + animationIndexOffset);
+		SceneNodeAnimationList * aList = animations[animationIndex];
 		for (int32 k = 0; k < (int32)aList->animations.size(); ++k)
 		{
 			SceneNodeAnimation * anim = aList->animations[k];
@@ -201,6 +204,27 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
 			if (!bindNode)
 			{
 				if (debugLogEnabled)Logger::Error("*** ERROR: animation: %d can't find bind node: %s\n", animationIndex, name.c_str());
+			}
+			else
+			{
+				if (bindNode->GetParent() && dynamic_cast< LodNode* >(bindNode->GetParent()))
+					bindNode = bindNode->GetParent();
+
+				if (!bindNode->GetComponent(Component::ANIMATION_COMPONENT))
+				{
+					AnimationComponent* animComp = new AnimationComponent();
+
+					AnimationData* animData = new AnimationData();
+					for (int32 keyIndex = 0; keyIndex < anim->GetKeyCount(); ++keyIndex)
+					{
+						animData->AddKey(anim->keys[keyIndex]);
+					}
+					animData->SetInvPose(anim->GetInvPose());
+					animData->SetDuration(anim->GetDuration());
+
+					animComp->SetAnimation(animData);
+					bindNode->AddComponent(animComp);
+				}
 			}
 		}
 	}
@@ -219,6 +243,13 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
         SafeRelease(staticMeshes[mi]);
     }
     staticMeshes.clear();
+
+    for (size_t animationIndex = 0; animationIndex < animations.size(); ++animationIndex)
+    {
+        SafeRelease(animations[animationIndex]);
+    }
+    animations.clear();
+
     return true;
 }
 
@@ -245,7 +276,8 @@ bool SceneFile::ReadTexture()
     sceneFP->Read(&hasOpacity, sizeof(hasOpacity));
 	
 	DAVA::Texture * texture = DAVA::Texture::CreateFromFile(tname);//textureDef.name);//0;
-	if (debugLogEnabled)Logger::FrameworkDebug("- Texture: %s hasOpacity: %s %s\n", textureDef.name, (hasOpacity) ? ("yes") : ("no"), Texture::GetPixelFormatString(texture->texDescriptor->format));
+	if (debugLogEnabled)
+		Logger::FrameworkDebug("- Texture: %s hasOpacity: %s %s\n", textureDef.name, (hasOpacity) ? ("yes") : ("no"), PixelFormatDescriptor::GetPixelFormatString(texture->texDescriptor->format));
     
     SafeRelease(texture);
 	return true;
@@ -340,6 +372,12 @@ bool SceneFile::ReadMaterial()
 	
 bool SceneFile::ReadStaticMesh()
 {
+
+    bool rebuildTangentSpace = false;
+    #ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
+    rebuildTangentSpace = true;
+    #endif
+
 	uint32 polyGroupCount;
 	sceneFP->Read(&polyGroupCount, sizeof(uint32));
 	if (debugLogEnabled)Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
@@ -363,7 +401,7 @@ bool SceneFile::ReadStaticMesh()
 		
 		for (uint32 v = 0; v < vertexCount; ++v)
 		{
-			Vector3 position, normal, tangent; 
+			Vector3 position, normal, tangent, binormal; 
 			Vector2 texCoords0, texCoords1;
             
             if (polygonGroup->GetFormat() & EVF_VERTEX)
@@ -385,6 +423,12 @@ bool SceneFile::ReadStaticMesh()
                 polygonGroup->SetTangent(v, tangent);
                 //Logger::FrameworkDebug("loadnorm: %f %f %f", normal.x, normal.y, normal.z);
             }
+            if (polygonGroup->GetFormat() & EVF_BINORMAL)
+            {
+                sceneFP->Read(&binormal, sizeof(Vector3));
+                polygonGroup->SetBinormal(v, binormal);
+                //Logger::FrameworkDebug("loadnorm: %f %f %f", normal.x, normal.y, normal.z);
+            }
             
 			if (polygonGroup->GetFormat() & EVF_TEXCOORD0)
             {
@@ -397,7 +441,7 @@ bool SceneFile::ReadStaticMesh()
                 sceneFP->Read(&texCoords1, sizeof(Vector2));
                 polygonGroup->SetTexcoord(1, v, texCoords1);
             }
-		}
+		}        
 		
 		int * indices = new int[indexCount];
 		sceneFP->Read(indices, sizeof(int) * indexCount);
@@ -406,7 +450,12 @@ bool SceneFile::ReadStaticMesh()
 			polygonGroup->SetIndex(i, indices[i]);
         }
         delete [] indices;
-        polygonGroup->BuildBuffers();
+
+        const int32 prerequiredFormat = EVF_TANGENT | EVF_BINORMAL | EVF_NORMAL;
+        if (rebuildTangentSpace&&((polygonGroup->GetFormat()&prerequiredFormat) == prerequiredFormat))
+            MeshUtils::RebuildMeshTangentSpace(polygonGroup, true);
+        else
+            polygonGroup->BuildBuffers();
         
         SafeRelease(polygonGroup);
 	}
@@ -439,7 +488,7 @@ bool SceneFile::ReadAnimatedMesh()
 		if (debugLogEnabled)Logger::FrameworkDebug("--- index count: %d\n", indexCount);
 		
 		
-		polygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL | EVF_COLOR | EVF_TEXCOORD0 | EVF_JOINTWEIGHT, vertexCount, indexCount);
+		polygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL | EVF_COLOR | EVF_TEXCOORD0 | EVF_JOINTINDEX | EVF_JOINTWEIGHT, vertexCount, indexCount);
 		
 		for (int v = 0; v < vertexCount; ++v)
 		{
@@ -460,7 +509,7 @@ bool SceneFile::ReadAnimatedMesh()
 				sceneFP->Read(&jointIdx, sizeof(int32));
 				sceneFP->Read(&weight, sizeof(float32));
 				polygonGroup->SetJointIndex(v, k, jointIdx);
-				polygonGroup->SetWeight(v, k, weight);
+				polygonGroup->SetJointWeight(v, k, weight);
 			}
 			
 			polygonGroup->SetCoord(v, position);
@@ -606,18 +655,20 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 			sceneFP->Read(&materialIndex, sizeof(int32));
             
             DVASSERT(materialIndex < (int)materials.size());
+            DVASSERT(0 <= materialIndex);
 
+            Material * material = (0 <= materialIndex) ? materials[materialIndex] : NULL;
 			if (debugLogEnabled)Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
 		
 			if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
 			{
 				StaticMesh * staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
-				meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, materials[materialIndex]);
+				meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
 			}else
 			{
 				// add animated mesh
 				AnimatedMesh * animatedMesh = scene->GetAnimatedMesh(meshIndex + animatedMeshIndexOffset);
-				meshNode->AddPolygonGroup(animatedMesh, polyGroupIndex, materials[materialIndex]);
+				meshNode->AddPolygonGroup(animatedMesh, polyGroupIndex, material);
 			}
 		}
         if (parentNode != scene) 
@@ -702,12 +753,14 @@ bool SceneFile::ReadAnimation()
 		anim->SetDuration(duration); 
 		if (debugLogEnabled)Logger::FrameworkDebug("-- scene node %d anim: %s keyCount: %d duration: %f seconds\n", nodeIndex, name, keyCount, duration); 
 
+		sceneFP->Read(anim->invPose.data, sizeof(anim->invPose.data));
 		for (int k = 0; k < keyCount; ++k)
 		{
 			SceneNodeAnimationKey key;
-            sceneFP->Read(&key.time, sizeof(float32));
-            sceneFP->Read(&key.translation, sizeof(Vector3));
-            sceneFP->Read(&key.rotation, sizeof(Quaternion));
+			sceneFP->Read(&key.time, sizeof(float32));
+			sceneFP->Read(&key.translation, sizeof(Vector3));
+			sceneFP->Read(&key.rotation, sizeof(Quaternion));
+			sceneFP->Read(&key.scale, sizeof(Vector3));
 			anim->SetKey(k, key);
 			//printf("---- key: %f tr: %f %f %f q: %f %f %f %f\n", key.time, key.translation.x, key.translation.y, key.translation.z
 			//	   , key.rotation.x, key.rotation.y, key.rotation.z, key.rotation.w); 
@@ -715,8 +768,7 @@ bool SceneFile::ReadAnimation()
 		animationList->AddAnimation(anim);
 		SafeRelease(anim);
 	}
-	scene->AddAnimation(animationList);
-	SafeRelease(animationList);
+	animations.push_back(animationList);
 	return true;
 }
 	

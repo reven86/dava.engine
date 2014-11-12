@@ -280,22 +280,37 @@ const FastName DYNAMIC_PARAM_NAMES[] =
         
         FastName("flatColor"),
         FastName("globalTime"),
-        FastName("worldViewTranslate"),
         FastName("worldScale"),
 
         FastName("cameraPosition"), // PARAM_CAMERA_POS,
         FastName("cameraDirection"), // PARAM_CAMERA_DIR,
         FastName("cameraUp"), // PARAM_CAMERA_UP,
         
-        FastName("objectPosition"),
-        FastName("objectScale"),
-        
-        FastName("light0Position"),
-        
+        FastName("lightPosition0"),
+        FastName("lightColor0"),
+        FastName("lightAmbientColor0"),
+
+        FastName("localBoundingBox"),
+        FastName("worldViewObjectCenter"),
+        FastName("boundingBoxSize"),
+
+        FastName("trunkOscillationParams"),
+        FastName("leafOscillationParams"),
+        FastName("speedTreeLightSmoothing"),
+
+        FastName("sphericalHarmonics[0]"),
+
+        FastName("jointPositions[0]"),
+        FastName("jointQuaternions[0]"),
+        FastName("jointsCount"),
+
         FastName("rtSize"),
         FastName("rtPixelSize"),
         FastName("rtHalfPixelSize"),
         FastName("rtAspectRatio")
+
+//        FastName("objectPosition"),
+//        FastName("objectScale"),
     };
 
 RenderGuard::RenderGuard()

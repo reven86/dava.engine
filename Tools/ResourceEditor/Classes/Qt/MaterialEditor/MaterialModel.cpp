@@ -512,9 +512,9 @@ void MaterialModel::ReloadLodSwColors()
 
     for(int i = 0; i < supportedLodColorsCount; ++i)
     {
-        key.sprintf("LodColor%d", i);
+        key.sprintf("General/MaterialEditor/LodColor%d", i);
 
-        DAVA::VariantType val = SettingsManager::Instance()->GetValue(key.toStdString(), SettingsManager::GENERAL);
+        DAVA::VariantType val = SettingsManager::GetValue(key.toStdString());
         if(val.type == DAVA::VariantType::TYPE_COLOR)
         {
             lodColors[i] = ColorToQColor(val.AsColor());
@@ -527,9 +527,9 @@ void MaterialModel::ReloadLodSwColors()
 
     for(int i = 0; i < supportedSwColorsCount; ++i)
     {
-        key.sprintf("SwitchColor%d", i);
+        key.sprintf("General/MaterialEditor/SwitchColor%d", i);
 
-        DAVA::VariantType val = SettingsManager::Instance()->GetValue(key.toStdString(), SettingsManager::GENERAL);
+        DAVA::VariantType val = SettingsManager::GetValue(key.toStdString());
         if(val.type == DAVA::VariantType::TYPE_COLOR)
         {
             switchColors[i] = ColorToQColor(val.AsColor());

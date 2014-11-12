@@ -30,6 +30,8 @@
 
 #include "UIAggregatorControl.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlNode.h"
+#include "UI/UIYamlLoader.h"
 
 using namespace DAVA;
 
@@ -52,7 +54,6 @@ UIControl* UIAggregatorControl::Clone()
 YamlNode* UIAggregatorControl::SaveToYamlNode(UIYamlLoader * loader)
 {
 	YamlNode* node = UIControl::SaveToYamlNode(loader);
-	SetPreferredNodeType(node, "UIAggregatorControl");
 	node->Set(AGGREGATOR_PATH, aggregatorPath.GetFrameworkPath());
 	return node;
 }
@@ -66,8 +67,7 @@ void UIAggregatorControl::LoadFromYamlNode(const YamlNode * node, UIYamlLoader *
 	{
 		aggregatorPath = FilePath(pathNode->AsString());
 		// DF-2230 - Pass relative path to loader
-		ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
-		loader->Load(this, aggregatorPath);
+		UIYamlLoader::Load(this, aggregatorPath, loader->GetAssertIfCustomControlNotFound());
 	}
 }
 

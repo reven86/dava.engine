@@ -29,7 +29,8 @@
 #ifndef __DAVAENGINE_UIMOVIEVIEW__H__
 #define __DAVAENGINE_UIMOVIEVIEW__H__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "UI/UIControl.h"
 #include "IMovieViewControl.h"
 
 namespace DAVA {
@@ -46,14 +47,15 @@ public:
 	void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
 
 	// Overloaded virtual methods.
-	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);
+	virtual void SetPosition(const Vector2 &position);
 	virtual void SetSize(const Vector2 &newSize);
-	virtual void SetVisible(bool isVisible, bool hierarchic = true);
 
 	virtual void SystemDraw(const UIGeometricData &geometricData);
 
-    virtual void WillAppear();
-    virtual void WillDisappear();
+    virtual void WillBecomeVisible();
+    virtual void WillBecomeInvisible();
+
+    virtual UIControl* Clone();
 
 	// Start/stop the video playback.
 	void Play();
@@ -65,6 +67,7 @@ public:
 	
 	// Whether the movie is being played?
 	bool IsPlaying();
+
 protected:
 	// Platform-specific implementation of the Movie Control.
 	IMovieViewControl* movieViewControl;

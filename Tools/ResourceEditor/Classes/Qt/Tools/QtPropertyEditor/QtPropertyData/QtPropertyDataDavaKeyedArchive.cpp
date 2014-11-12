@@ -58,6 +58,7 @@ QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(DAVA::KeyedArchive 
 	// add optional widget (button) to add new key
 	QToolButton *addButton = AddButton();
 	addButton->setIcon(QIcon(":/QtIcons/keyplus.png"));
+    addButton->setToolTip("Add keyed archive member");
 	addButton->setIconSize(QSize(12, 12));
 	//addButton->setAutoRaise(true);
 	QObject::connect(addButton, SIGNAL(released()), this, SLOT(AddKeyedArchiveField()));
@@ -169,6 +170,7 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const QString &key, DAVA::Varian
 	// add optional widget (button) to remove this key
 	QToolButton *remButton = childData->AddButton();
 	remButton->setIcon(QIcon(":/QtIcons/keyminus.png"));
+    remButton->setToolTip("Remove keyed archive member");
 	remButton->setIconSize(QSize(12, 12));
 	//remButton->setAutoRaise(true);
 

@@ -39,7 +39,8 @@ void HeightmapProxy::UpdateRect(const DAVA::Rect &rect)
 {
 	int32 size = Size();
 
-	Rect bounds(0.f, 0.f, size, size);
+	Rect bounds(0.f, 0.f, (float32)size, (float32)size);
+
 	changedRect = rect;
 	bounds.ClampToRect(changedRect);
 

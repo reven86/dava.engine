@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>3FDD54B1-62D6-431F-BA4C-7B448F3CACD4</string>
+	<key>IDESourceControlProjectName</key>
+	<string>libjpeg</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>DC9900A5-9DB2-46E4-BBDA-20D128FDCBFA</key>
+		<string>https://github.com/dava/dava.framework</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Libs/libjpeg/libjpeg/libjpeg.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>DC9900A5-9DB2-46E4-BBDA-20D128FDCBFA</key>
+		<string>../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/dava/dava.framework</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>DC9900A5-9DB2-46E4-BBDA-20D128FDCBFA</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>DC9900A5-9DB2-46E4-BBDA-20D128FDCBFA</string>
+			<key>IDESourceControlWCCName</key>
+			<string>dava.framework</string>
+		</dict>
+	</array>
+</dict>
+</plist>

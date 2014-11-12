@@ -49,9 +49,6 @@
 
 using namespace DAVA;
 
-//Register DAVA::Font type here so we can use it as Qt object
-Q_DECLARE_METATYPE(Font*);
-
 namespace Ui {
 class BasePropertyGridWidget;
 }
@@ -167,7 +164,7 @@ protected:
 												const double value);
 
     // Set the combobox selected item by the item text.
-    void SetComboboxSelectedItem(QComboBox* comboBoxWidget, const QString& selectedItemText);
+    void SetComboboxSelectedItem(QComboBox* comboBoxWidget, const QString& selectedItemText, bool byToolTip = false);
 
     // Handle Line Edit Editing finished.
     virtual void HandleLineEditEditingFinished(QLineEdit* senderWidget);
@@ -217,6 +214,9 @@ protected:
 	// Whether the active control IS subcontrol?
 	bool ActiveControlIsSubcontrol();
 
+    // Pre-process the sprite name.
+    QString PreprocessSpriteName(const QString& rawSpriteName);
+
 protected slots:
     // Properties are updated from the external source and needs to be re-drawn.
     void OnPropertiesChangedExternally();
@@ -244,7 +244,7 @@ protected slots:
 protected:
     // Get the "dirty states" indexes for the particular property.
     QList<int> GetDirtyStateIndexesList(const QString& propertyName);
-
+    static const QString MULTIPLE_VALUE;
 private:
     // Palettes.
     QPalette clearPropertyPalette;

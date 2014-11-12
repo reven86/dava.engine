@@ -54,19 +54,26 @@ public:
 	virtual void SetParent(HierarchyTreeNode* node, HierarchyTreeNode* insertAfter);
 	virtual HierarchyTreeNode* GetParent() {return parent;};
 	
+	virtual HierarchyTreeControlNode* CreateControlCopy(HierarchyTreeNode* parent) const;
+	
 	Vector2 GetParentDelta(bool skipControl = false) const;
 
 	// Remove/return Tree Node from the scene.
 	virtual void RemoveTreeNodeFromScene();
 	virtual void ReturnTreeNodeToScene();
 	
-	Rect GetRect() const;
+	Rect GetRect(bool checkAngle = false) const;
 
 	void SetVisibleFlag(bool value);
 	bool GetVisibleFlag() const;
 
+    // Screen scale/position changed.
+    virtual void OnScreenScaleChanged();
+    virtual void OnScreenPositionChanged();
+
 private:
 	void AddControlToParent();
+    void UpdateUIObject();
 	
 private:
 	HierarchyTreeNode* parent;
@@ -75,7 +82,6 @@ private:
     EditorListDelegate *listDelegate;
 
 	UIControl* parentUIObject;
-	UIControl* childUIObjectAbove;
 	bool needReleaseUIObjects;
 };
 

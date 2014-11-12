@@ -36,8 +36,11 @@
 
 #include "../QtPropertyData.h"
 
+
 class QtComboFake;
-class QtPropertyDataDavaVariant : public QtPropertyData
+
+class QtPropertyDataDavaVariant
+    : public QtPropertyData
 {
 	Q_OBJECT
 
@@ -61,6 +64,8 @@ public:
 	void ClearAllowedValues();
     void SetAllowedValueType(AllowedValueType type);
     AllowedValueType GetAllowedValueType() const;
+
+    void SetInspDescription(const DAVA::InspDesc &desc);
 
 	QVariant FromDavaVariant(const DAVA::VariantType &variant) const;
     
@@ -88,6 +93,7 @@ protected slots:
 	void FilePathOWPressed();
 	void AllowedOWPressed();
 	void AllowedSelected(int index);
+    void OnColorChanging();
 
 protected:
 	struct AllowedValue
@@ -95,15 +101,6 @@ protected:
 		DAVA::VariantType realValue;
 		QVariant visibleValue;
 	};
-
-	QVector<AllowedValue> allowedValues;
-	mutable bool allowedValuesLocked;
-	QtPropertyToolButton *allowedButton;
-    AllowedValueType allowedValueType;
-    
-    QString openDialogFilter;
-    QString defaultOpenDialogPath;
-    bool isSettingMeFromChilds;
 
 	void InitFlags();
 	void ChildsCreate();
@@ -136,42 +133,38 @@ protected:
 	int ParseFloatList(const QString &str, int maxCount, DAVA::float32 *dest);
 
 	void SubValueAdd(const QString &key, const DAVA::VariantType &subvalue);
-	void SubValueSet(const QString &key, const QVariant &subvalue);
+	void SubValueSetToMe(const QString &key, const QVariant &subvalue);
+	void SubValueSetFromMe(const QString &key, const QVariant &subvalue);
 	QVariant SubValueGet(const QString &key);
 
 	QWidget* CreateAllowedValuesEditor(QWidget *parent) const;
     QWidget* CreateAllowedFlagsEditor(QWidget *parent) const;
 	void SetAllowedValueEditorData(QWidget *editorWidget);
 	void ApplyAllowedValueFromEditor(QWidget *editorWidget);
+
+    QStringList GetFlagsList() const;
+
+	QVector<AllowedValue> allowedValues;
+	mutable bool allowedValuesLocked;
+	QtPropertyToolButton *allowedButton;
+    AllowedValueType allowedValueType;
+    
+    QString openDialogFilter;
+    QString defaultOpenDialogPath;
+    bool isSettingMeFromChilds;
 };
 
-class QtPropertyDataDavaVariantSubValue : public QtPropertyDataDavaVariant
+class QtPropertyDataDavaVariantSubValue
+    : public QtPropertyDataDavaVariant
 {
 public:
-	QtPropertyDataDavaVariantSubValue(QtPropertyDataDavaVariant *_parentVariant, const DAVA::VariantType &subvalue)
-		: QtPropertyDataDavaVariant(subvalue)
-		, parentVariant(_parentVariant)
-		, trackParent(true)
-	{ }
+    QtPropertyDataDavaVariantSubValue(QtPropertyDataDavaVariant* _parentVariant, const DAVA::VariantType& subvalue);
 
-	QtPropertyDataDavaVariant *parentVariant;
+    QtPropertyDataDavaVariant *parentVariant;
 	bool trackParent;
 
-	virtual void SetValueInternal(const QVariant &value)
-	{
-		QtPropertyDataDavaVariant::SetValueInternal(value);
-		if(NULL != parentVariant && trackParent)
-		{
-			parentVariant->MeSetFromChilds();
-		}
-
-		trackParent = true;
-	}
-
-    virtual bool IsMergable() const
-    {
-        return false;
-    }
+    virtual void SetValueInternal(const QVariant& value);
+    virtual bool IsMergable() const;
 };
 
 #endif // __QT_PROPERTY_DATA_DAVA_VARIANT_H__

@@ -41,6 +41,7 @@
 #include "Scene3D/Systems/LodSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
+#include "Debug/Stats.h"
 
 
 namespace DAVA
@@ -89,7 +90,7 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 }
 
 
-ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDepthTest) :	SceneSystem(scene), forceDisableDepthTest(_forceDisableDepthTest)	
+ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDepthTest) :	SceneSystem(scene), forceDisableDepthTest(_forceDisableDepthTest), allowLodDegrade(false)	
 {	
     if (scene) //for 2d particles there would be no scene
     {
@@ -120,7 +121,7 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 	for (int32 layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
 	{
 		ParticleLayer *layer = emitter->layers[layerId];
-		bool isLodActive = layer->IsLodActive(effect->desiredLodLevel);
+		bool isLodActive = layer->IsLodActive(effect->activeLodLevel);
 		if ((!isLodActive)&&emitter->shortEffect) //layer could never become active
 			continue; 
 		ParticleGroup group;
@@ -146,8 +147,11 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 {	
     Scene *scene = GetScene();
+    
     if (scene)
-        scene->lodSystem->ForceUpdate(effect->GetEntity(), scene->GetClipCamera(), 1.0f/60.0f);
+        scene->lodSystem->ForceUpdate(effect->GetEntity(), scene->GetCurrentCamera(), 1.0f/60.0f);
+    if (effect->activeLodLevel!=effect->desiredLodLevel)
+        UpdateActiveLod(effect);
 
 	if (effect->effectData.groups.empty()) //clean position sources
 		effect->effectData.infoSources.resize(1);
@@ -173,7 +177,7 @@ void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
         if (scene)
         {
             Matrix4 * worldTransformPointer = ((TransformComponent*)effect->GetEntity()->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-            effect->effectRenderObject->SetEffectMatrix(worldTransformPointer);
+            effect->effectRenderObject->SetWorldTransformPtr(worldTransformPointer);
             Vector3 pos = worldTransformPointer->GetTranslationVector();
             effect->effectRenderObject->SetAABBox(AABBox3(pos, pos));
             scene->GetRenderSystem()->RenderPermanent(effect->effectRenderObject);
@@ -216,6 +220,7 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
 		if (effect->state == ParticleEffectComponent::STATE_STOPPED)
             AddToActive(effect);            
         effect->state = ParticleEffectComponent::STATE_STARTING;                    
+        effect->currRepeatsCont = 0;
     }
 	else if (event == EventSystem::STOP_PARTICLE_EFFECT)
 		RemoveFromActive(effect);
@@ -223,7 +228,9 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
 }
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
-{        
+{
+    TIME_PROFILE("ParticleEffectSystem::Process");
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
 		return;		
 	/*shortEffectTime*/
@@ -237,8 +244,12 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	for(int i=0; i<componentsCount; i++) 
 	{
 		ParticleEffectComponent * effect = activeComponents[i];
-        if (effect->state == ParticleEffectComponent::STATE_STARTING)        
+        if (effect->activeLodLevel!=effect->desiredLodLevel)
+            UpdateActiveLod(effect);
+        if (effect->state == ParticleEffectComponent::STATE_STARTING)  
+        {            
             RunEffect(effect);
+        }
         
 		if (effect->isPaused) 
 			continue;
@@ -248,7 +259,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 		if (effectEnded)
 		{
 			effect->currRepeatsCont++;
-			if ((effect->repeatsCount==0)||(effect->currRepeatsCont<effect->repeatsCount)) //0 means infinite repeats
+			if (((effect->repeatsCount==0)||(effect->currRepeatsCont<effect->repeatsCount))&&(effect->state != ParticleEffectComponent::STATE_STOPPING)) //0 means infinite repeats
 			{
 				if (effect->clearOnRestart)
 					effect->ClearCurrentGroups();
@@ -282,6 +293,61 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	}
 }
 
+
+void ParticleEffectSystem::UpdateActiveLod(ParticleEffectComponent *effect)
+{
+    DVASSERT(effect->activeLodLevel!=effect->desiredLodLevel);
+    effect->activeLodLevel = effect->desiredLodLevel;
+    for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e=effect->effectData.groups.end(); it!=e;++it)
+    {
+        ParticleGroup& group = *it;
+        if (!group.emitter->shortEffect)
+            group.visibleLod = group.layer->IsLodActive(effect->activeLodLevel);
+    }    
+
+    if (allowLodDegrade && (effect->activeLodLevel == 0)) //degrade existing groups if needed
+    {
+        for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e=effect->effectData.groups.end(); it!=e;++it)
+        {
+            ParticleGroup& group = *it;
+            if (group.layer->degradeStrategy==ParticleLayer::DEGRADE_REMOVE)
+            {
+                Particle * current = group.head;
+                while (current)
+                {
+                    Particle *next = current->next;
+                    delete current;
+                    current = next;
+                }
+                group.head = NULL;
+            }
+            else if (group.layer->degradeStrategy==ParticleLayer::DEGRADE_CUT_PARTICLES)
+            {
+
+                Particle * current = group.head;
+                Particle * prev = NULL;
+                int32 i=0;
+                while (current)
+                {
+                    Particle *next = current->next;
+                    if (i%2) //cut every second particle
+                    {                            
+                        delete current;                 
+                        group.activeParticleCount--;
+                        if (prev)
+                            prev->next = next;
+                        else
+                            group.head = next;
+                    }
+                    prev = current;
+                    current = next;
+                    i++;                        
+                }               
+            }
+        }
+    }
+}
+
 void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32 time, float32 shortEffectTime)
 {
 	effect->time+=time;
@@ -289,7 +355,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
     if (GetScene())
         worldTransformPtr = &effect->GetEntity()->GetWorldTransform();
     else
-        worldTransformPtr = effect->effectRenderObject->GetEffectMatrix();
+        worldTransformPtr = effect->effectRenderObject->GetWorldTransformPtr();
 
 	effect->effectData.infoSources[0].position = worldTransformPtr->GetTranslationVector();
 	
@@ -384,7 +450,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
 				effect->effectData.infoSources[current->positionTarget].size = current->currSize;
 			}
 			
-			if (group.layer->frameOverLifeEnabled)
+			if (group.layer->frameOverLifeEnabled&&group.layer->sprite)
 			{
 				float32 animDelta = group.layer->frameOverLifeFPS;
 				if (group.layer->animSpeedOverLife)
@@ -579,7 +645,15 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle * particle, Particl
 		float32 curRadius = 1.0f;
 		if (group.emitter->radius)		
 			curRadius = group.emitter->radius->GetValue(group.time);		
-		float32 curAngle = PI_2 * (float32)Random::Instance()->RandFloat();
+
+        float32 angleBase = 0;
+        float32 angleVariation = PI_2;
+        if (group.emitter->emissionAngle)
+            angleBase = DegToRad(group.emitter->emissionAngle->GetValue(group.time));
+        if (group.emitter->emissionAngleVariation)
+            angleVariation = DegToRad(group.emitter->emissionAngleVariation->GetValue(group.time));
+
+		float32 curAngle = angleBase + angleVariation * (float32)Random::Instance()->RandFloat();
 		if (group.emitter->emitterType == ParticleEmitter::EMITTER_ONCIRCLE_VOLUME)		
 			curRadius *= (float32)Random::Instance()->RandFloat();		
 		float sinAngle = 0.0f;

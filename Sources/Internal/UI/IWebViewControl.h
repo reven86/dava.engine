@@ -83,7 +83,10 @@ public:
 	virtual bool GetBounces() const {return false;};
 	virtual void SetBounces(bool value) {};
     virtual void SetGestures(bool value){};
-
+    
+    // Data detector types.
+    virtual void SetDataDetectorTypes(int32 /*value*/) {};
+    virtual int32 GetDataDetectorTypes() const {return 0;};
 };
 
 };

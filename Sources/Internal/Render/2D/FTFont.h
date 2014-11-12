@@ -84,12 +84,12 @@ public:
 	virtual bool IsEqual(const Font *font) const;
 
 	/**
-		\brief Get string size(rect).
+		\brief Get string metrics.
 		\param[in] str - processed string
-		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
-		\returns bounding rect for string in pixels
-	*/
-	virtual Size2i		GetStringSize(const WideString & str, Vector<int32> *charSizes = NULL) const;
+		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
+		\returns StringMetrics structure
+	 */
+	virtual StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = NULL) const;
 
 	/**
 		\brief Get height of highest symbol in font.
@@ -117,7 +117,7 @@ public:
 		\param[in] contentScaleIncluded - TODO
 		\returns bounding rect for string in pixels
 	*/
-	virtual Size2i DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString & str, bool contentScaleIncluded = false);
+	virtual StringMetrics DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString & str, bool contentScaleIncluded = false);
 
 	virtual bool IsTextSupportsSoftwareRendering() const { return true; };
 

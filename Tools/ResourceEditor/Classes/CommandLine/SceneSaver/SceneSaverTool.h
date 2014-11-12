@@ -48,7 +48,10 @@ public:
     virtual bool InitializeFromCommandLine();
     virtual void Process();
     virtual void PrintUsage();
- 
+    virtual void DumpParams();
+
+    virtual DAVA::FilePath GetQualityConfigPath() const;
+
 protected:
 
     eAction commandAction;

@@ -47,10 +47,9 @@ NormalHood::NormalHood() : HoodObject(2.0f)
 	axisZ = CreateLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, 0, baseSize));
 	axisZ->axis = ST_AXIS_Z;
 	
-	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
-	DAVA::RenderStateData hoodStateData;
-	memcpy(&hoodStateData, &default3dState, sizeof(hoodStateData));
-	
+    DAVA::RenderStateData hoodStateData;
+    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, hoodStateData);
+    
 	hoodStateData.state =	DAVA::RenderStateData::STATE_BLEND |
 							DAVA::RenderStateData::STATE_COLORMASK_ALL |
 							DAVA::RenderStateData::STATE_DEPTH_WRITE;

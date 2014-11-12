@@ -127,15 +127,21 @@ void SceneUtils::CopyFiles(Set<String> &errorLog)
     auto endIt = filesForCopy.end();
     for(auto it = filesForCopy.begin(); it != endIt; ++it)
     {
-        FileSystem::Instance()->DeleteFile(it->second);
-        bool retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
-        if(!retCopy)
-        {
-            errorLog.insert(String(Format("Can't copy %s to %s",
-                                          it->first.GetAbsolutePathname().c_str(),
-                                          it->second.GetAbsolutePathname().c_str())));
-        }
-    }
+		bool retCopy = false;
+
+		if(it->first.Exists())
+		{
+			FileSystem::Instance()->DeleteFile(it->second);
+			retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
+		}
+
+		if(!retCopy)
+		{
+			errorLog.insert(String(Format("Can't copy %s to %s",
+				it->first.GetAbsolutePathname().c_str(),
+				it->second.GetAbsolutePathname().c_str())));
+		}
+	}
 }
 
 void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)

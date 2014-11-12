@@ -42,7 +42,7 @@ void BeastSystem::AddEntity(Entity * entity)
 
 void BeastSystem::SetDefaultPropertyValues(Entity * entity)
 {
-	DAVA::KeyedArchive* propertyList = entity->GetCustomProperties();
+	DAVA::KeyedArchive* propertyList = GetOrCreateCustomProperties(entity)->GetArchive();
 
 	if(GetLight(entity))
 	{

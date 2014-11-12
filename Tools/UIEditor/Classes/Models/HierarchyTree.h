@@ -48,6 +48,7 @@ class HierarchyTree
 {
 public:
 	HierarchyTree();
+    virtual ~HierarchyTree();
 
     bool Load(const QString& projectPath);
 	
@@ -73,6 +74,9 @@ public:
 	
 	const HierarchyTreeNode::HIERARCHYTREENODESLIST& GetPlatforms() const;
 
+    // Return all nodes in a tree.
+    HierarchyTreeNode::HIERARCHYTREENODESLIST GetNodes() const;
+
 	// Whether the project is created?
 	bool IsProjectCreated() const {return projectCreated;};
 
@@ -81,9 +85,11 @@ public:
 	
 	// Update properties for all controls
 	void UpdateControlsData();
+    void UpdateControlsData(const HierarchyTreeScreenNode* screenNode);
 
     // Update the localization for all controls.
     void UpdateLocalization();
+    void UpdateLocalization(const HierarchyTreeScreenNode* screenNode);
 
 	bool IsPlatformNamePresent(const QString& name) const ;
 
@@ -94,13 +100,22 @@ protected:
 	// Insert the new scren node to the proper place.
 	void InsertScreenNode(HierarchyTreePlatformNode* platformNode, HierarchyTreeScreenNode* screenNode);
 
+    // Recursively traverse the nodes tree.
+    void GetNodesRecursive(const HierarchyTreeNode* rootNode, HierarchyTreeNode::HIERARCHYTREENODESLIST& resultList) const;
+
+    // Lock/unlock the project files.
+    void LockProjectFiles(const List<QString>& fileNames);
+    void UnlockProjectFiles(bool needCleanup);
+
 private:
 	void Clear();
     
     // Update Extra Data from/to the control's data.
     void UpdateExtraData(BaseMetadata::eExtraDataUpdateStyle updateStyle);
+    void UpdateExtraData(const HierarchyTreeScreenNode* screenNode,BaseMetadata::eExtraDataUpdateStyle updateStyle);
+
     void UpdateExtraDataRecursive(HierarchyTreeControlNode* node, BaseMetadata::eExtraDataUpdateStyle updateStyle);
-	
+
 	// Update file/folder last modified date
 	void UpdateModificationDate(const QString &path);
 
@@ -108,6 +123,9 @@ private:
 	HierarchyTreeNode* FindNode(const HierarchyTreeNode* parent, HierarchyTreeNode::HIERARCHYTREENODEID id) const;
 	HierarchyTreeNode* FindNode(const HierarchyTreeNode* parent, const UIControl* control) const;
     HierarchyTreeRootNode rootNode;
+    
+    // List of lock files for the project.
+    List<String> projectLockedFiles;
 	
 	bool projectCreated;
 };

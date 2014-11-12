@@ -42,7 +42,7 @@ namespace DAVA
 class SharedFBO;
 class Scene;
 
-class ImposterManager : public BaseObject, public Observer //Dizz: I know you hate multiple inheritance
+class ImposterManager : public BaseObject
 {
 protected:
 	virtual ~ImposterManager();
@@ -66,8 +66,6 @@ public:
 	void CreateFBO();
 	void ReleaseFBO();
 	SharedFBO * GetFBO();
-
-	virtual void HandleEvent(Observable * observable);
 
 private:
 	List<ImposterNode*> imposters;

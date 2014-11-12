@@ -57,6 +57,9 @@ public:
 	void SetGlobalExtertnalValue(const String& name, float32 value);
 	float32 GetGlobalExternalValue(const String& name);
 	Map<String, float32> GetGlobalExternals();
+
+    inline void SetAllowLodDegrade(bool allowDegrade);
+    inline bool GetAllowLodDegrade() const;
 	
     inline const Map<uint32, NMaterial *> & GetMaterialInstances() const;
     
@@ -65,6 +68,7 @@ protected:
     void AddToActive(ParticleEffectComponent *effect);
 	void RemoveFromActive(ParticleEffectComponent *effect);
 
+    void UpdateActiveLod(ParticleEffectComponent *effect);
 	void UpdateEffect(ParticleEffectComponent *effect, float32 time, float32 shortEffectTime);
 	Particle* GenerateNewParticle(ParticleEffectComponent *effect, ParticleGroup& group, float32 currLoopTime, const Matrix4 &worldTransform);
 	
@@ -85,6 +89,7 @@ private: //materials stuff
 	Map<uint32, NMaterial *> materialMap;
 	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor);
     bool forceDisableDepthTest;
+    bool allowLodDegrade;
 };
 
 inline const Map<uint32, NMaterial *> & ParticleEffectSystem::GetMaterialInstances() const
@@ -92,7 +97,15 @@ inline const Map<uint32, NMaterial *> & ParticleEffectSystem::GetMaterialInstanc
     return materialMap;
 }
 
-    
+inline void ParticleEffectSystem::SetAllowLodDegrade(bool allowDegrade)
+{
+    allowLodDegrade = allowDegrade;
 }
+inline bool ParticleEffectSystem::GetAllowLodDegrade() const
+{
+    return allowLodDegrade;   
+}
+
+};
 
 #endif //__DAVAENGINE_SCENE3D_PARTICLEEFFECTSYSTEM_H__

@@ -52,7 +52,8 @@ class UIScreen;
 class ScreenSwitchListener
 {
 public:
-	virtual void OnScreenSwitched(UIScreen* newScreen) {}
+	virtual void OnScreenWillSwitch(UIScreen* newScreen) {}
+    virtual void OnScreenDidSwitch(UIScreen* newScreen) {}
 };
 
 	/**
@@ -230,7 +231,7 @@ public:
 	 
 	 \returns GeometricData uset for the base draw
 	 */
-	const UIGeometricData &GetBaseGeometricData();
+	const UIGeometricData &GetBaseGeometricData() const;
 	
 	/**
 	 \brief Sets input with the requested ID to the required control.
@@ -321,6 +322,9 @@ public:
 	 */
 	int32 UnlockSwitch();
 
+    void UI3DViewAdded();
+    void UI3DViewRemoved();
+
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -332,6 +336,9 @@ private:
 	void ReplaceScreen(UIScreen *newMainControl);
 
 	void ProcessScreenLogic();
+
+    void NotifyListenersWillSwitch( UIScreen* screen );
+    void NotifyListenersDidSwitch( UIScreen* screen );
 
 	Vector<ScreenSwitchListener*> screenSwitchListeners;
 
@@ -349,7 +356,7 @@ private:
     UIControl *focusedControl;
 
 	UIControl * popupContainer;
-	Vector<UIPopup*> popupsToRemove;
+	Set<UIPopup*> popupsToRemove;
 	
 	int32 lockInputCounter;
 	
@@ -361,6 +368,8 @@ private:
 	int32 inputHeight;
 	float32 scaleFactor;
 	Vector2 inputOffset;
+
+    int32 ui3DViewCount;
 	
 	friend class UIScreenTransition;
 	friend class UIScreenManager;

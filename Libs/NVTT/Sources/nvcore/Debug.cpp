@@ -147,6 +147,8 @@ namespace
 	static bool nvHasStackTrace() {
 #if NV_OS_DARWIN
 		return backtrace != NULL;
+#elif defined(ANDROID)
+		return false;
 #else
 		return true;
 #endif
@@ -208,6 +210,8 @@ namespace
 				return (void *) ucp->uc_mcontext->ss.eip;
 #			endif
 #		endif
+#	elif defined(ANDROID)
+			// no call stack for android platform
 #	else
 #		if NV_CPU_X86_64
 			// #define REG_RIP REG_INDEX(rip) // seems to be 16

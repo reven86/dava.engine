@@ -36,10 +36,14 @@
 
 namespace DAVA 
 {
+    const float32 ScrollHelper::maxDeltaTime = 0.1f;
+
 	ScrollHelper::ScrollHelper()
 	:	BaseObject()
 	,	position(0.f)
 	,	elementSize(0.f)
+    ,   viewSize(0.f)
+    ,   virtualViewSize(0.f)
 	,	totalDeltaTime(0.f)
 	,	totalDeltaMove(0.f)
 	,   speed(0.f)
@@ -68,7 +72,7 @@ namespace DAVA
 		}
 	}
 	
-	float ScrollHelper::GetPosition()
+	float ScrollHelper::GetPosition() const
 	{
 		return position;
 	}
@@ -83,17 +87,17 @@ namespace DAVA
 		}
 	}
     
-    float32 ScrollHelper::GetViewSize()
+    float32 ScrollHelper::GetViewSize() const
     {
         return viewSize;
     }
-    
-    float32 ScrollHelper::GetElementSize()
+
+    float32 ScrollHelper::GetElementSize() const
     {
         return elementSize;
     }
 
-	float32 ScrollHelper::GetCurrentSpeed()
+	float32 ScrollHelper::GetCurrentSpeed() const
 	{
 		return speed;
 	}
@@ -120,6 +124,11 @@ namespace DAVA
 	
 	float ScrollHelper::GetPosition(float positionDelta, float timeDelta, bool isPositionLocked)
 	{
+        if (virtualViewSize == 0.0f)
+        {
+            return 0.0f;
+        }
+        
 		if(isPositionLocked)
 		{
 			if(position + positionDelta > 0)
@@ -140,7 +149,7 @@ namespace DAVA
 			moves.push_back(m);
 			totalDeltaTime += timeDelta;
 			totalDeltaMove += positionDelta;
-			if(totalDeltaTime >= 0.4f)
+			if(totalDeltaTime >= maxDeltaTime)
 			{
 				List<MovesDelta>::iterator it = moves.begin();
 				totalDeltaTime -= it->deltaTime;

@@ -57,7 +57,7 @@ void BaseMetadata::SetupParams(const METADATAPARAMSVECT& params)
     activeParamID = BaseMetadataParams::BaseMetadataID_UNKNOWN;
 }
 
-const METADATAPARAMSVECT& BaseMetadata::GetParams()
+const METADATAPARAMSVECT& BaseMetadata::GetParams() const
 {
     return treeNodeParams;
 }
@@ -96,19 +96,11 @@ bool BaseMetadata::VerifyActiveParamID() const
 
 bool BaseMetadata::VerifyParamID(BaseMetadataParams::METADATAPARAMID paramID) const
 {
-    if (treeNodeParams.empty())
+    if (treeNodeParams.empty() || paramID < 0 || paramID >= GetParamsCount())
     {
-        Logger::Error("No Framework Controls defined to setup the Param ID! %i", paramID);
         return false;
     }
-    
-    if (paramID < 0 || paramID >= GetParamsCount())
-    {
-        Logger::Error("Param ID %i passed is less of 0 or more than Params Count!",
-                      paramID, GetParamsCount());
-        return false;
-    }
-    
+
     return true;
 }
 
@@ -151,15 +143,15 @@ UIControl* BaseMetadata::GetActiveUIControl() const
     return treeNodeParams[activeParamID].GetUIControl();
 }
 
-Vector<UIControl::eControlState> BaseMetadata::GetUIControlStates() const
+const Vector<UIControl::eControlState> &BaseMetadata::GetUIControlStates() const
 {
-	return this->uiControlStates;
+    return uiControlStates;
 }
 
 void BaseMetadata::SetUIControlStates(const Vector<UIControl::eControlState> &controlStates)
 {
-	this->uiControlStates = controlStates;
-	ResetActiveStateIndex();
+    uiControlStates = controlStates;
+    ResetActiveStateIndex();
 }
 
 HierarchyTreeNode* BaseMetadata::GetTreeNode(BaseMetadataParams::METADATAPARAMID paramID) const

@@ -40,7 +40,8 @@
 const float32 HierarchyTreeScreenNode::POSITION_UNDEFINED = -1.0f;
 
 HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const QString& name) :
-	HierarchyTreeNode(name)
+	HierarchyTreeNode(name),
+    loaded(false)
 {
 	this->parent = parent;
 	this->screen = new ScreenControl();
@@ -52,8 +53,9 @@ HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* pare
 	posY = POSITION_UNDEFINED;
 }
 
-HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base):
-	HierarchyTreeNode(base)
+HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base, bool needLoad/* = true*/):
+	HierarchyTreeNode(base),
+    loaded(!needLoad)
 {
 	this->parent = parent;
 	this->screen = new ScreenControl();
@@ -66,16 +68,25 @@ HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* pare
 
 	unsavedChangesCounter = 0;
 
-	const HierarchyTreeNode::HIERARCHYTREENODESLIST& chilren = base->GetChildNodes();
-	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = chilren.begin();
-		 iter != chilren.end();
+	const HierarchyTreeNode::HIERARCHYTREENODESLIST& children = base->GetChildNodes();
+	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = children.begin();
+		 iter != children.end();
 		 ++iter)
 	{
 		const HierarchyTreeControlNode* baseControl = dynamic_cast<const HierarchyTreeControlNode* >((*iter));
 		if (!baseControl)
 			continue;
 		
-		HierarchyTreeControlNode* control = new HierarchyTreeControlNode(this, baseControl);
+		HierarchyTreeControlNode* control = NULL;
+		if (dynamic_cast<UIAggregatorControl*>(baseControl->GetUIObject()))
+        {
+        	const HierarchyTreeAggregatorControlNode* aggregatorBaseControl = static_cast<const HierarchyTreeAggregatorControlNode*>(baseControl);
+			control = new HierarchyTreeAggregatorControlNode(this, aggregatorBaseControl);
+        }
+		else
+        {
+        	 control = new HierarchyTreeControlNode(this, baseControl);
+        }
 		AddTreeNode(control);
 	}
 }
@@ -172,13 +183,33 @@ bool HierarchyTreeScreenNode::IsNameExist(const QString &name, const HierarchyTr
 	return false;
 }
 
+bool HierarchyTreeScreenNode::Unload()
+{
+    if(loaded && !IsNeedSave())
+    {
+        Cleanup();
+        SafeRelease(screen);
+        this->screen = new ScreenControl();
+        if (parent)
+        {
+            screen->SetRect(Rect(0, 0, parent->GetWidth(), parent->GetHeight()));
+        }
+        loaded = false;
+        return true;
+    }
+    return false;
+}
+
 bool HierarchyTreeScreenNode::Load(const QString& path)
 {
-	ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
-	loader->Load(screen, path.toStdString());
-    guides.Load(path.toStdString());
-	
-	BuildHierarchyTree(this, screen->GetChildren());
+    if(!loaded)
+    {
+        UIYamlLoader::Load(screen, path.toStdString(), false);
+        guides.Load(path.toStdString());
+        
+        BuildHierarchyTree(this, screen->GetChildren());
+        loaded = true;
+    }
 	return true;
 }
 
@@ -195,7 +226,9 @@ void HierarchyTreeScreenNode::BuildHierarchyTree(HierarchyTreeNode* parent, List
 			node = new HierarchyTreeAggregatorControlNode(NULL, parent, uiControl, QString::fromStdString(uiControl->GetName()));
 		else
 			node = new HierarchyTreeControlNode(parent, uiControl, QString::fromStdString(uiControl->GetName()));
+
 		// Build hierarchy tree for all control's children. Subcontrols are loaded separately
+        InitializeControlBeforeAddingToTree(uiControl);
 		BuildHierarchyTree(node, uiControl->GetRealChildren());
 		parent->AddTreeNode(node);
 	}
@@ -209,7 +242,9 @@ bool HierarchyTreeScreenNode::Save(const QString& path, bool saveAll)
 		return true;
 	}
 
-	FontManager::Instance()->PrepareToSaveFonts();
+    //TODO: if there is still any reason to group fonts by IsEqual and save using one name (instead of using registered font name assuming all fonts are registered), use FontManager::Instance()->PrepareToSaveFonts();, otherwise:
+    FontManager::Instance()->PrepareToSaveFonts(true);
+    
 	bool saveResult = UIYamlLoader::Save(screen, path.toStdString(), true);
 	if (saveResult)
 	{
@@ -242,11 +277,10 @@ void HierarchyTreeScreenNode::CombineRectWithChild(Rect& rect) const
 	for (HIERARCHYTREENODESLIST::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
 	{
 		const HierarchyTreeControlNode* control = dynamic_cast<const HierarchyTreeControlNode*>(*iter);
-		if (!control)
+		if (!control || !control->GetUIObject())
 			continue;
 		
-		Rect controlRect = control->GetRect();
-		
+		Rect controlRect = control->GetUIObject()->GetGeometricData().GetAABBox();
 		rect = rect.Combine(controlRect);
 	}
 }
@@ -267,7 +301,7 @@ bool HierarchyTreeScreenNode::IsNeedSave() const
 
 void HierarchyTreeScreenNode::StartNewGuide(GuideData::eGuideType guideType)
 {
-    guides.StartNewGuide(guideType);
+    guides.StartNewGuide(guideType, GetControlRectsList(true));
 }
 
 void HierarchyTreeScreenNode::MoveNewGuide(const Vector2& pos)
@@ -275,7 +309,7 @@ void HierarchyTreeScreenNode::MoveNewGuide(const Vector2& pos)
     guides.MoveNewGuide(pos);
 }
 
-bool HierarchyTreeScreenNode::CanAcceptNewGuide()
+bool HierarchyTreeScreenNode::CanAcceptNewGuide() const
 {
     return guides.CanAcceptNewGuide();
 }
@@ -292,7 +326,7 @@ void HierarchyTreeScreenNode::CancelNewGuide()
 
 bool HierarchyTreeScreenNode::StartMoveGuide(const Vector2& pos)
 {
-    return guides.StartMoveGuide(pos);
+    return guides.StartMoveGuide(pos, GetControlRectsList(true));
 }
 
 void HierarchyTreeScreenNode::MoveGuide(const Vector2& pos)
@@ -300,14 +334,47 @@ void HierarchyTreeScreenNode::MoveGuide(const Vector2& pos)
     guides.MoveGuide(pos);
 }
 
+const GuideData* HierarchyTreeScreenNode::GetMoveGuide() const
+{
+    return guides.GetMoveGuide();
+}
+
 const GuideData* HierarchyTreeScreenNode::AcceptMoveGuide()
 {
     return guides.AcceptMoveGuide();
 }
 
+const GuideData* HierarchyTreeScreenNode::CancelMoveGuide()
+{
+    return guides.CancelMoveGuide();
+}
+
 Vector2 HierarchyTreeScreenNode::GetMoveGuideStartPos() const
 {
     return guides.GetMoveGuideStartPos();
+}
+
+const List<GuideData*> HierarchyTreeScreenNode::GetSelectedGuides(bool includeNewGuide) const
+{
+    return guides.GetSelectedGuides(includeNewGuide);
+}
+
+const GuideData* HierarchyTreeScreenNode::GetActiveGuide() const
+{
+    // Firstly try if exactly one guide is selected.
+    const List<GuideData*>& selectedGuides = guides.GetSelectedGuides(true);
+    if (selectedGuides.empty())
+    {
+        return NULL;
+    }
+    
+    if (selectedGuides.size() == 1)
+    {
+        return selectedGuides.front();
+    }
+    
+    // Retry with the move guide.
+    return guides.GetMoveGuide();
 }
 
 bool HierarchyTreeScreenNode::AreGuidesSelected() const
@@ -345,9 +412,19 @@ bool HierarchyTreeScreenNode::UpdateGuidePosition(const GuideData& guideData, co
     return guides.UpdateGuidePosition(guideData, newPos);
 }
 
+void HierarchyTreeScreenNode::SetGuidePosition(GuideData* guideData, const Vector2& newPos)
+{
+    return guides.SetGuidePosition(guideData, newPos);
+}
+
 const List<GuideData*> HierarchyTreeScreenNode::GetGuides(bool includeNewGuide) const
 {
     return guides.GetGuides(includeNewGuide);
+}
+
+int32 HierarchyTreeScreenNode::GetStickMode() const
+{
+    return guides.GetStickMode();
 }
 
 void HierarchyTreeScreenNode::SetStickMode(int32 stickMode)
@@ -365,6 +442,16 @@ void HierarchyTreeScreenNode::SetGuidesEnabled(bool value)
     guides.SetGuidesEnabled(value);
 }
 
+void HierarchyTreeScreenNode::InitializeControlBeforeAddingToTree(UIControl* uiControl)
+{
+    // Hide WebView native control during load.
+    UIWebView* webViewControl = dynamic_cast<UIWebView*>(uiControl);
+    if (webViewControl)
+    {
+        webViewControl->SetNativeControlVisible(false);
+    }
+}
+
 bool HierarchyTreeScreenNode::AreGuidesLocked() const
 {
     return guides.AreGuidesLocked();
@@ -373,4 +460,49 @@ bool HierarchyTreeScreenNode::AreGuidesLocked() const
 void HierarchyTreeScreenNode::LockGuides(bool value)
 {
     guides.LockGuides(value);
+}
+
+const GuidesManager& HierarchyTreeScreenNode::GetGuidesManager() const
+{
+    return guides;
+}
+
+List<GuidesManager::StickedRect> HierarchyTreeScreenNode::GetControlRectsList(bool includeScreenBounds) const
+{
+    List<GuidesManager::StickedRect> rectsList;
+    
+    const HierarchyTreeNode::HIERARCHYTREENODESLIST& children = GetChildNodes();
+
+    for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER iter = children.begin(); iter != children.end(); iter ++)
+    {
+        const HierarchyTreeControlNode* controlNode = static_cast<const HierarchyTreeControlNode*>(*iter);
+        GetControlRectsListRecursive(controlNode, rectsList);
+    }
+
+    if (includeScreenBounds)
+    {
+        // Screen/platform bounds are always forced to be sticked.
+        rectsList.push_back(GuidesManager::StickedRect(GetOwnRect(), true));
+    }
+
+    return rectsList;
+}
+
+Rect HierarchyTreeScreenNode::GetOwnRect() const
+{
+    const Vector2& screenSize = GetPlatform()->GetSize();
+    return Rect(0, 0, screenSize.x, screenSize.y);
+}
+
+void HierarchyTreeScreenNode::GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<GuidesManager::StickedRect>& rectsList) const
+{
+    // Inner controls aren't forced to be sticked.
+    rectsList.push_back(GuidesManager::StickedRect(rootNode->GetUIObject()->GetGeometricData().GetAABBox(), false));
+
+    const HierarchyTreeNode::HIERARCHYTREENODESLIST& children = rootNode->GetChildNodes();
+    for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER iter = children.begin(); iter != children.end(); iter ++)
+    {
+        const HierarchyTreeControlNode* childNode = static_cast<const HierarchyTreeControlNode*>(*iter);
+        GetControlRectsListRecursive(childNode, rectsList);
+    }
 }

@@ -50,11 +50,7 @@ protected:
     // Default Flags.
     virtual bool GetInitialInputEnabled() const {return true;};
 
-	// Initialize the appropriate control.
-	virtual void InitializeControl(const String& controlName, const Vector2& position);
-	virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
-
-	virtual QString GetUIControlClassName() { return "UISwitch"; };
+	virtual QString GetUIControlClassName() const { return "UISwitch"; };
 	
 	bool GetIsLeftSelected();
     void SetIsLeftSelected(const bool value);

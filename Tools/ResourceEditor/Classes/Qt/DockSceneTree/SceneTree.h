@@ -78,6 +78,8 @@ public slots:
 
 	// Particle Emitter handlers.
 	void AddEmitter();
+    void SaveEffectEmitters();
+    void SaveEffectEmittersAs();
 	void StartEffect();
 	void StopEffect();
 	void RestartEffect();
@@ -106,7 +108,7 @@ public slots:
 	void CollapseAll();
     
 	void SetCurrentCamera();
-    void SetClipCamera();
+    void SetCustomDrawCamera();
 
 protected slots:
 	void SceneActivated(SceneEditor2 *scene);
@@ -139,7 +141,9 @@ protected:
 	QString GetParticlesConfigPath();
 	
 	// Perform save for selected Emitters.
-	void PerformSaveEmitter(bool forceAskFileName);
+	void PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName, const QString& defaultName);
+
+    void PerformSaveEffectEmitters(bool forceAskFileName);
 
 	// Cleanup the selected Particle Editor items.
 	void CleanupParticleEditorSelectedItems();

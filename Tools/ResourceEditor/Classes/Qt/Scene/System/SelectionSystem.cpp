@@ -39,20 +39,26 @@
 #include <QApplication>
 #include "Scene/SceneEditor2.h"
 
+ENUM_DECLARE(SelectionSystemDrawMode)
+{
+	ENUM_ADD(SS_DRAW_SHAPE);
+	ENUM_ADD(SS_DRAW_CORNERS);
+	ENUM_ADD(SS_DRAW_BOX);
+	ENUM_ADD(SS_DRAW_NO_DEEP_TEST);
+}
+
 SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys)
 	: DAVA::SceneSystem(scene)
 	, collisionSystem(collSys)
 	, hoodSystem(hoodSys)
-	, drawMode(ST_SELDRAW_FILL_SHAPE | ST_SELDRAW_DRAW_CORNERS)
 	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
 	, applyOnPhaseEnd(false)
 	, selectionAllowed(true)
 	, selectionHasChanges(false)
     , invalidSelectionBoxes(false)
 {
-	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
-	DAVA::RenderStateData selectionStateData;
-	memcpy(&selectionStateData, &default3dState, sizeof(selectionStateData));
+    DAVA::RenderStateData selectionStateData;
+    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, selectionStateData);
 	
 	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
 								DAVA::RenderStateData::STATE_COLORMASK_ALL;
@@ -158,7 +164,7 @@ void SceneSelectionSystem::ProcessUIEvent(DAVA::UIEvent *event)
 				DAVA::Entity *nextEntity = selectableItems.GetEntity(0);
 
                 // sequent selection?
-                if(SettingsManager::Instance()->GetValue("SequentSelection", SettingsManager::GENERAL).AsBool())
+                if(SettingsManager::GetValue(Settings::Scene_SelectionSequent).AsBool())
                 {
 				    // search possible next item only if now there is no selection or is only single selection
 				    if(curSelections.Size() <= 1)
@@ -227,28 +233,29 @@ void SceneSelectionSystem::Draw()
 
 	if(curSelections.Size() > 0)
 	{
-        DAVA::RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-        UniqueHandle renderState = (!(drawMode & ST_SELDRAW_NO_DEEP_TEST)) ? selectionDepthDrawState : selectionNormalDrawState;
+        DAVA::int32 drawMode = SettingsManager::GetValue(Settings::Scene_SelectionDrawMode).AsInt32();
+        DAVA::RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size) &Matrix4::IDENTITY);
+        UniqueHandle renderState = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? selectionDepthDrawState : selectionNormalDrawState;
 
 		for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
 		{
             DAVA::AABBox3 selectionBox = curSelections.GetBbox(i);
 
 			// draw selection share
-			if(drawMode & ST_SELDRAW_DRAW_SHAPE)
+			if(drawMode & SS_DRAW_SHAPE)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
 				DAVA::RenderHelper::Instance()->DrawBox(selectionBox, 1.0f, renderState);
 			}
 			// draw selection share
-			else if(drawMode & ST_SELDRAW_DRAW_CORNERS)
+			else if(drawMode & SS_DRAW_CORNERS)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
 				DAVA::RenderHelper::Instance()->DrawCornerBox(selectionBox, 1.0f, renderState);
 			}
 
 			// fill selection shape
-			if(drawMode & ST_SELDRAW_FILL_SHAPE)
+			if(drawMode & SS_DRAW_BOX)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f));
 				DAVA::RenderHelper::Instance()->FillBox(selectionBox, renderState);
@@ -358,6 +365,23 @@ size_t SceneSelectionSystem::GetSelectionCount() const
 DAVA::Entity* SceneSelectionSystem::GetSelectionEntity(int index) const
 {
 	return curSelections.GetEntity(index);
+}
+
+bool SceneSelectionSystem::IsEntitySelected(Entity *entity)
+{
+    return curSelections.HasEntity(entity);
+}
+
+bool SceneSelectionSystem::IsEntitySelectedHierarchically(Entity *entity)
+{
+    while (entity)
+    {
+        if (curSelections.HasEntity(entity))
+            return true;
+
+        entity = entity->GetParent();
+    }
+    return false;
 }
 
 void SceneSelectionSystem::SelectedItemsWereModified()
@@ -541,16 +565,3 @@ DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity, cons
 
 	return ret;
 }
-
-void SceneSelectionSystem::SetDrawMode(int mode)
-{
-	drawMode = mode;
-}
-
-int SceneSelectionSystem::GetDrawMode() const
-{
-	return drawMode;
-}
-
-
-

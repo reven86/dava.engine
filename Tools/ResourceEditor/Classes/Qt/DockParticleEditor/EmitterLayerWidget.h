@@ -108,6 +108,7 @@ private:
 
 
 	QCheckBox* layerLodsCheckBox[LodComponent::MAX_LOD_LAYERS];
+    QComboBox* degradeStrategyComboBox;
 
 	QLabel* layerTypeLabel;
 	QComboBox* layerTypeComboBox;

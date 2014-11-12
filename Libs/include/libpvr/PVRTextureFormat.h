@@ -1,18 +1,3 @@
-/******************************************************************************
-
- @File         PVRTextureFormat.h
-
- @Title        
-
- @Version      
-
- @Copyright    Copyright (c) Imagination Technologies Limited. All Rights Reserved. Strictly Confidential.
-
- @Platform     
-
- @Description  
-
-******************************************************************************/
 #ifndef _PVRT_PIXEL_FORMAT_H
 #define _PVRT_PIXEL_FORMAT_H
 
@@ -86,4 +71,3 @@ namespace pvrtexture
 }
 
 #endif
-

@@ -49,7 +49,7 @@ public:
 	static const float32 POSITION_UNDEFINED;
 
 	HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const QString& name);
-	HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base);
+	HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base, bool needLoad = true);
 	~HierarchyTreeScreenNode();
 	
 	HierarchyTreePlatformNode* GetPlatform() const {return parent;};
@@ -72,6 +72,7 @@ public:
 	
 	bool Load(const QString& path);
 	bool Save(const QString& path, bool saveAll);
+    bool Unload();
 	
 	virtual void ReturnTreeNodeToScene();
 	virtual Rect GetRect() const;
@@ -88,16 +89,21 @@ public:
     void StartNewGuide(GuideData::eGuideType guideType);
     void MoveNewGuide(const Vector2& pos);
     
-    bool CanAcceptNewGuide();
+    bool CanAcceptNewGuide() const;
     const GuideData* AcceptNewGuide();
     void CancelNewGuide();
 
     // Methods related to the moving existing guide.
     bool StartMoveGuide(const Vector2& pos);
     void MoveGuide(const Vector2& pos);
+    const GuideData* GetMoveGuide() const;
+
+    // Get the active (selected or moved) guide.
+    const GuideData* GetActiveGuide() const;
 
     Vector2 GetMoveGuideStartPos() const;
     const GuideData* AcceptMoveGuide();
+    const GuideData* CancelMoveGuide();
 
     // Selected Guide methods.
     bool AreGuidesSelected() const;
@@ -112,10 +118,13 @@ public:
     // Access to the guides.
     void AddGuide(const GuideData& guideData);
     bool RemoveGuide(const GuideData& guideData);
+
+    void SetGuidePosition(GuideData* guideData, const Vector2& newPos);
     bool UpdateGuidePosition(const GuideData& guideData, const Vector2& newPos);
 
     const List<GuideData*> GetGuides(bool includeNewGuide) const;
-
+    const List<GuideData*> GetSelectedGuides(bool includeNewGuide = false) const;
+    
     // Set the guide enabled mode.
     bool AreGuidesEnabled() const;
     void SetGuidesEnabled(bool value);
@@ -124,11 +133,25 @@ public:
     bool AreGuidesLocked() const;
     void LockGuides(bool value);
 
-    // Set the stick mode.
+    // Get/set the stick mode.
+    int32 GetStickMode() const;
     void SetStickMode(int32 stickMode);
 
+    // Access to Guides Manager.
+    const GuidesManager& GetGuidesManager() const;
+
+    // Access to the list of control rects for this node.
+    List<GuidesManager::StickedRect> GetControlRectsList(bool includeScreenBounds) const;
+    void GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<GuidesManager::StickedRect>& rectsList) const;
+    
+    bool IsLoaded() const {return loaded;}
+
 protected:
+    virtual Rect GetOwnRect() const;
 	void CombineRectWithChild(Rect& rect) const;
+    
+    // Initialize the control before adding to hierarchy tree.
+    virtual void InitializeControlBeforeAddingToTree(UIControl* uiControl);
 
 private:
 	void BuildHierarchyTree(HierarchyTreeNode* parent, List<UIControl*> child);
@@ -142,6 +165,7 @@ protected:
 	float scale;
 	int posX;
 	int posY;
+    bool loaded;
 };
 
 #endif /* defined(__UIEditor__HierarchyTreeScreenNode__) */

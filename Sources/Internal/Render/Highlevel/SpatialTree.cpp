@@ -444,21 +444,44 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
 	if (!clippingFlags) //node is fully inside frustum - no need to clip anymore
 	{
 		for (int32 i = 0; i<objectsSize; ++i)
-		{			
-			if ((currNode.objects[i]->GetFlags()&currVisibilityCriteria) == currVisibilityCriteria)
-				visibilityArray->Add(currNode.objects[i]);
+		{
+            RenderObject * obj = currNode.objects[i];
+            uint32 flags = obj->GetFlags();
+			if ((flags & currVisibilityCriteria) == currVisibilityCriteria)
+            {
+				visibilityArray->Add(obj);
+                RENDERER_UPDATE_STATS(visibleRenderObjectCount++);
+
+            }else
+            {
+#if defined(__DAVAENGINE_DEBUG__)
+                if (!(flags & RenderObject::VISIBLE_STATIC_OCCLUSION))
+                    RENDERER_UPDATE_STATS(occludedRenderObjectCount++);
+#endif
+            }
 		}
 	}
 	else
 	{		
-		for (int32 i = 0; i<objectsSize; ++i)
-		{			
-			uint32 flags = currNode.objects[i]->GetFlags();
-			if ((flags&currVisibilityCriteria)==currVisibilityCriteria)
+		for (int32 i = 0; i < objectsSize; ++i)
+		{
+            RenderObject * obj = currNode.objects[i];
+			uint32 flags = obj->GetFlags();
+			if ((flags & currVisibilityCriteria) == currVisibilityCriteria)
 			{				
-				if ((flags&RenderObject::ALWAYS_CLIPPING_VISIBLE)||currFrustum->IsInside(currNode.objects[i]->GetWorldBoundingBox(), clippingFlags, currNode.objects[i]->startClippingPlane))
-					visibilityArray->Add(currNode.objects[i]);
-			}				
+				if (    (flags & RenderObject::ALWAYS_CLIPPING_VISIBLE)
+                    ||   currFrustum->IsInside(obj->GetWorldBoundingBox(), clippingFlags, obj->startClippingPlane))
+                {
+					visibilityArray->Add(obj);
+                    RENDERER_UPDATE_STATS(visibleRenderObjectCount++);
+                }
+			}else
+            {
+#if defined(__DAVAENGINE_DEBUG__)
+                if (!(flags & RenderObject::VISIBLE_STATIC_OCCLUSION))
+                    RENDERER_UPDATE_STATS(occludedRenderObjectCount++);
+#endif
+            }
 		}
 	}
 	

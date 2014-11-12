@@ -47,13 +47,14 @@ class ApplicationManager;
 
 struct UpdateTask
 {
-    UpdateTask(const QString & branch, const QString & app, const AppVersion & _version, bool _isSelfUpdate = false) :
-        branchID(branch), appID(app), version(_version), isSelfUpdate(_isSelfUpdate) {}
+    UpdateTask(const QString & branch, const QString & app, const AppVersion & _version, bool _isSelfUpdate = false, bool _isRemove = false) :
+        branchID(branch), appID(app), version(_version), isSelfUpdate(_isSelfUpdate), isRemoveBranch(_isRemove) {}
 
     QString branchID;
     QString appID;
     AppVersion version;
     bool isSelfUpdate;
+    bool isRemoveBranch;
 };
 
 class UpdateDialog : public QDialog
@@ -61,7 +62,7 @@ class UpdateDialog : public QDialog
     Q_OBJECT
     
 public:
-    explicit UpdateDialog(const QQueue<UpdateTask> & taskQueue, QWidget *parent = 0);
+    explicit UpdateDialog(const QQueue<UpdateTask> & taskQueue, ApplicationManager * _appManager, QWidget *parent = 0);
     ~UpdateDialog();
 
 signals:
@@ -108,6 +109,8 @@ private:
 
     int lastErrorCode;
     QString lastErrorDesrc;
+
+    ApplicationManager * appManager;
 };
 
 #endif // UPDATEDIALOG_H

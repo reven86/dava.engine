@@ -68,9 +68,7 @@ protected:
     // Default Flags.
     virtual bool GetInitialInputEnabled() const {return false;};
 
-    // Initialize the appropriate control.
-    virtual void InitializeControl(const String& controlName, const Vector2& position);
-    virtual QString GetUIControlClassName() { return "UIParticles"; };
+    virtual QString GetUIControlClassName() const { return "UIParticles"; };
 };
 }
 

@@ -78,4 +78,13 @@ int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int b
 
 DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::String & what, const DAVA::String & on);
 
+void ShowFileInExplorer( const QString& path );
+
+
+// Method for debugging. Save image to file
+void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path);
+void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path);
+void SaveImageToFile(DAVA::Image * image, const DAVA::FilePath & path);
+
+
 #endif // __QT_UTILS_H__

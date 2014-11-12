@@ -68,8 +68,6 @@
 namespace DAVA
 {
 
-	
-
 FileSystem::FileSystem()
 {
 }
@@ -83,6 +81,9 @@ FileSystem::~FileSystem()
 		SafeRelease(item.archive);
 	}
 	resourceArchiveList.clear();
+
+    // All locked files should be explicitely unlocked before closing the app.
+    DVASSERT(lockedFileHandles.empty());
 }
 
 FileSystem::eCreateDirectoryResult FileSystem::CreateDirectory(const FilePath & filePath, bool isRecursive)
@@ -360,18 +361,16 @@ File *FileSystem::CreateFileForFrameworkPath(const FilePath & frameworkPath, uin
         frameworkPath.GetAbsolutePathname().c_str()[0] != '/')
     {
 #ifdef USE_LOCAL_RESOURCES
-        return File::CreateFromSystemPath(frameworkPath, attributes);
+        File * res = File::CreateFromSystemPath(frameworkPath, attributes);
+        if (!res)
+        	res = ZipFile::CreateFromZip(frameworkPath, attributes);
+        return res;
 #else
-        return APKFile::CreateFromAssets(frameworkPath, attributes);
+        return ZipFile::CreateFromAPK(frameworkPath, attributes);
 #endif
     }
-    else
-    {
-        return File::CreateFromSystemPath(frameworkPath, attributes);
-    }
-#else //#if defined(__DAVAENGINE_ANDROID__)
-	return File::CreateFromSystemPath(frameworkPath, attributes);
 #endif //#if defined(__DAVAENGINE_ANDROID__)
+	return File::CreateFromSystemPath(frameworkPath, attributes);
 }
 
 
@@ -442,13 +441,16 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 
 bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 {
-
 #if defined (__DAVAENGINE_WIN32__)
 	DWORD stats = GetFileAttributesA(pathToCheck.GetAbsolutePathname().c_str());
 	return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
 #else //defined (__DAVAENGINE_WIN32__)
 #if defined(__DAVAENGINE_ANDROID__)
-	const String& path = pathToCheck.GetAbsolutePathname();
+    
+	String path = pathToCheck.GetAbsolutePathname();
+	if (path.length() &&
+		path.at(path.length() - 1) == '/')
+		path.erase(path.begin() + path.length() - 1);
 	if (IsAPKPath(path))
 		return (dirSet.find(path) != dirSet.end());
 #endif //#if defined(__DAVAENGINE_ANDROID__)
@@ -461,6 +463,100 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 #endif //#if defined (__DAVAENGINE_WIN32__)
 
 	return false;
+}
+
+bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
+{
+    if (!IsFile(filePath))
+    {
+        return false;
+    }
+
+    if (IsFileLocked(filePath) == isLock)
+    {
+        return true;
+    }
+
+    String path = filePath.GetAbsolutePathname();
+#if defined (__DAVAENGINE_WIN32__)
+    if (isLock)
+    {
+        HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile != INVALID_HANDLE_VALUE)
+        {
+            lockedFileHandles[path] = hFile;
+            return true;
+        }
+    }
+    else
+    {
+        Map<String, void*>::iterator lockedFileIter = lockedFileHandles.find(path);
+        if (lockedFileIter != lockedFileHandles.end())
+        {
+            CloseHandle((HANDLE)lockedFileIter->second);
+            lockedFileHandles.erase(lockedFileIter);
+            return true;
+        }
+    }
+
+    return false;
+#elif defined(__DAVAENGINE_MACOS__)
+    if (isLock)
+    {
+        if (chflags(path.c_str(), UF_IMMUTABLE) == 0)
+        {
+            lockedFileHandles[path] = NULL; // handle is not needed in case of MacOS.
+            return true;
+        }
+    }
+    else
+    {
+        struct stat s;
+        if(stat(path.c_str(), &s) == 0)
+        {
+            Map<String, void*>::iterator lockedFileIter = lockedFileHandles.find(path);
+            if (lockedFileIter != lockedFileHandles.end())
+            {
+                lockedFileHandles.erase(lockedFileIter);
+            }
+
+            s.st_flags &= ~UF_IMMUTABLE;
+            return (chflags(path.c_str(), s.st_flags) == 0);
+        }
+    }
+
+    return false;
+#else
+    // Not implemented for all other platforms yet.
+    DVASSERT(false);
+    return false;
+#endif
+}
+
+bool FileSystem::IsFileLocked(const FilePath & filePath) const
+{
+    String path = filePath.GetAbsolutePathname();
+#if defined (__DAVAENGINE_WIN32__)
+	HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE || GetLastError() == ERROR_SHARING_VIOLATION)
+	{
+		return true;
+	}
+
+	CloseHandle(hFile);
+	return false;
+#elif defined(__DAVAENGINE_MACOS__)
+	struct stat s;
+	if(stat(path.c_str(), &s) == 0)
+	{
+		return (0 != (s.st_flags & UF_IMMUTABLE));
+	}
+
+	return false;
+#else
+	// Not implemented for all other platforms yet.
+	return false;
+#endif
 }
 
 const FilePath & FileSystem::GetCurrentDocumentsDirectory()
@@ -527,13 +623,13 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 const FilePath FileSystem::GetUserDocumentsPath()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-    return core->GetExternalStoragePathname() + String("/");
+    return core->GetInternalStoragePathname();
 }
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-    return core->GetExternalStoragePathname() + String("/");
+    return core->GetExternalStoragePathname();
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
     
@@ -632,14 +728,19 @@ int32 FileSystem::Spawn(const String& command)
 	{
 		Logger::Warning("[FileSystem::Spawn] command (%s) has return code (%d)", command.c_str(), retCode);
 	}
+    return retCode;
+}
 
-	return retCode;
+void FileSystem::MarkFolderAsNoMedia(const FilePath &folder)
+{
+#if defined(__DAVAENGINE_ANDROID__)
+	// for android we create .nomedia file to say to the OS that this directory have no media content and exclude it from index
+    File *nomedia = FileSystem::Instance()->CreateFileForFrameworkPath(folder + ".nomedia", File::WRITE | File::CREATE);
+    SafeRelease(nomedia);
+#endif
 }
 
 #if defined(__DAVAENGINE_ANDROID__)
-
-Set<String> FileSystem::dirSet;
-Set<String> FileSystem::fileSet;
 
 bool FileSystem::IsAPKPath(const String& path) const
 {
@@ -650,7 +751,11 @@ bool FileSystem::IsAPKPath(const String& path) const
 
 void FileSystem::Init()
 {
+#ifdef USE_LOCAL_RESOURCES
+	YamlParser* parser = YamlParser::Create("~zip:/fileSystem.yaml");
+#else
 	YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
+#endif
 	if (parser)
 	{
 		const YamlNode* node = parser->GetRootNode();

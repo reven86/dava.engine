@@ -36,7 +36,7 @@
 #include "FileSystem/FilePath.h"
 
 #if defined (__DAVAENGINE_ANDROID__)
-#include "FileSystem/APKFile.h"
+#include "FileSystem/ZipFile.h"
 #endif //__DAVAENGINE_ANDROID__
 /**
 	\defgroup filesystem File System
@@ -128,37 +128,37 @@ public:
         \brief Function to retrieve current documents directory
         \returns current documents directory
      */
-    virtual const FilePath & GetCurrentDocumentsDirectory();
+	virtual const FilePath & GetCurrentDocumentsDirectory();
     
     /**
          \brief Function to set current documents directory
          \param[in] newDocDirectory new documents directory to be set
      */
-    virtual void SetCurrentDocumentsDirectory(const FilePath & newDocDirectory);
+	virtual void SetCurrentDocumentsDirectory(const FilePath & newDocDirectory);
     
     /**
          \brief Function to set current documents directory to default
      */
-    virtual void SetDefaultDocumentsDirectory();
+	virtual void SetDefaultDocumentsDirectory();
     
     /**
          \brief Function to retrieve user's documents path
          \returns user's documents path
      */
-    virtual const FilePath GetUserDocumentsPath();
+	virtual const FilePath GetUserDocumentsPath();
     
     /**
          \brief Function to retrieve public documents path
          \returns public documents path
      */
-    virtual const FilePath GetPublicDocumentsPath();
+	virtual const FilePath GetPublicDocumentsPath();
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)  
     /**
         \brief Function to retrieve user’s home path
         \returns user’s home path
     */
-    virtual const FilePath GetHomePath();
+    const FilePath GetHomePath();
 #endif
     
 	/**
@@ -172,6 +172,21 @@ public:
 	 */
 	virtual bool IsDirectory(const FilePath & pathToCheck);
 	
+	/**
+     \brief Function sets/removes exclusive lock to/from file.
+     \param[in] filePath The name of the file to be locked/unlocked.
+     \param[in] isLock true to lock file, false to unlock.
+     \returns true if file was successfully locked/unlocked, false otherwise
+	 */
+	virtual bool LockFile(const FilePath & filePath, bool isLock);
+
+    /**
+     \brief Function checks whether the file is locked.
+     \param[in] filePath The name of the file to be checked for lock.
+     \returns true if file is locked, false if not locked
+	 */
+	virtual bool IsFileLocked(const FilePath & filePath) const;
+
 	File *CreateFileForFrameworkPath(const FilePath & frameworkPath, uint32 attributes);
 
 	/**
@@ -232,6 +247,11 @@ public:
 	 \returns platform-dependent
 	 */
 	int32 Spawn(const String& command);
+
+	/**
+	 \brief Marks folder as contains no media files to exclude it from index
+	 */
+	void MarkFolderAsNoMedia(const FilePath &folder);
     
     
 private:
@@ -248,17 +268,19 @@ private:
 	};
 
 	List<ResourceArchiveItem> resourceArchiveList;
+    Map<String, void*> lockedFileHandles;
 
 	friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
-	friend class APKFile;
+	friend class ZipFile;
 public:
-	static void Init();
+	void Init();
 
 private:
 	bool IsAPKPath(const String& path) const;
-	static Set<String> dirSet;
-	static Set<String> fileSet;
+	Set<String> fileSet;
+	Set<String> dirSet;
+
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 };
 	

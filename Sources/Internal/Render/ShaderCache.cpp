@@ -85,15 +85,15 @@ void ShaderAsset::SetShaderData(Data * _vertexShaderData, Data * _fragmentShader
 
 Shader * ShaderAsset::Compile(const FastNameSet & defines)
 {
-    Shader * checkShader = compiledShaders.at(defines);
-    if (checkShader)return checkShader;
+    Shader * shader = compiledShaders.at(defines);
+    if (shader)return shader;
     
 	compileShaderMutex.Lock();
 
-	Shader * shader = compiledShaders.at(defines); //to check if shader was created while mutex was locked
+	shader = compiledShaders.at(defines); //to check if shader was created while mutex was locked
 	if (NULL == shader)
 	{
-        shader = Shader::CompileShader(name,
+        shader = Shader::CreateShader(name,
                                             vertexShaderData,
                                             fragmentShaderData,
                                             vertexShaderDataStart,
@@ -121,33 +121,24 @@ void ShaderAsset::ReloadShaders()
 {
     HashMap < FastNameSet, Shader *>::iterator it = compiledShaders.begin();
     HashMap < FastNameSet, Shader *>::iterator endIt = compiledShaders.end();
-    while (it != endIt)
-    {
-        it->second->Reload(vertexShaderData,
-                           fragmentShaderData,
-                           vertexShaderDataStart,
-                           vertexShaderDataSize,
-                           fragmentShaderDataStart,
-                           fragmentShaderDataSize);
-        
-        ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
-                                                               Message(this, &ShaderAsset::ReloadShaderInternal, it->second));
-        
-        ++it;
-        if(it == endIt)
-        {
-            JobInstanceWaiter waiter(job);
-            waiter.Wait();
-            
-            break;
-        }
-    }
+	for( ; it != endIt; ++it)
+	{
+		Shader *shader = it->second;
+
+		shader->Reload(vertexShaderData, fragmentShaderData, vertexShaderDataStart, vertexShaderDataSize, fragmentShaderDataStart, fragmentShaderDataSize);
+		ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &ShaderAsset::ReloadShaderInternal, shader));
+
+        JobInstanceWaiter waiter(job);
+        waiter.Wait();
+	}
 }
 
 void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void *callerData )
 {
 	CompiledShaderData *shaderData = (CompiledShaderData*)param;
 	DVASSERT(shaderData);
+
+	shaderData->shader->Recompile();
 
 	BindShaderDefaults(shaderData->shader);
 	compiledShaders.insert(shaderData->defines, shaderData->shader);
@@ -158,7 +149,10 @@ void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void
 
 void ShaderAsset::ReloadShaderInternal(BaseObject * caller, void * param, void *callerData)
 {
-	BindShaderDefaults((Shader*)param);
+	Shader *shader = (Shader*)param;
+	shader->Recompile();
+
+	BindShaderDefaults(shader);
 }
 
 void ShaderAsset::BindShaderDefaults(Shader * shader)
@@ -173,8 +167,39 @@ void ShaderAsset::BindShaderDefaults(Shader * shader)
         if (defaultValues.count(uniform->name) > 0)
         {
             const DefaultValue & value = defaultValues.at(uniform->name);
-            shader->SetUniformValueByIndex(ui, value.int32Value);
-            //Logger::FrameworkDebug("Assign: %s = %d", uniform->name.c_str(), value.int32Value);
+            
+            switch (value.type)
+            {
+                case Shader::UT_FLOAT_MAT4:
+                    shader->SetUniformValueByIndex(ui, Matrix4(value.matrix4Value[0], value.matrix4Value[1], value.matrix4Value[2], value.matrix4Value[3],
+                                                               value.matrix4Value[4], value.matrix4Value[5], value.matrix4Value[6], value.matrix4Value[7],
+                                                               value.matrix4Value[8], value.matrix4Value[9], value.matrix4Value[10], value.matrix4Value[11],
+                                                               value.matrix4Value[12], value.matrix4Value[13], value.matrix4Value[14], value.matrix4Value[15]));
+                break;
+                case Shader::UT_FLOAT_MAT3:
+                    shader->SetUniformValueByIndex(ui, Matrix3(value.matrix3Value[0], value.matrix3Value[1], value.matrix3Value[2],
+                                                               value.matrix3Value[3], value.matrix3Value[4], value.matrix3Value[5],
+                                                               value.matrix3Value[6], value.matrix3Value[7], value.matrix3Value[8]));
+                break;
+                case Shader::UT_FLOAT_VEC3:
+                    shader->SetUniformValueByIndex(ui, Vector3(value.vector3Value[0], value.vector3Value[1], value.vector3Value[2]));
+                break;
+                case Shader::UT_FLOAT_VEC2:
+                    shader->SetUniformValueByIndex(ui, Vector2(value.vector2Value[0], value.vector2Value[1]));
+                break;
+                case Shader::UT_FLOAT:
+                    shader->SetUniformValueByIndex(ui, value.float32Value);
+                    Logger::FrameworkDebug("Assign: %s = %f", uniform->name.c_str(), value.float32Value);
+                break;
+                case Shader::UT_INT:
+                    shader->SetUniformValueByIndex(ui, value.int32Value);
+                    Logger::FrameworkDebug("Assign: %s = %d", uniform->name.c_str(), value.int32Value);
+                break;
+
+                default:
+                break;
+            }
+            
         }
     }
     shader->Unbind();
@@ -254,6 +279,111 @@ void ShaderCache::ClearAllLastBindedCaches()
 	shaderAssetMapMutex.Unlock();
 }
     
+void ShaderCache::ParseDefaultVariable(ShaderAsset * asset, const String & inputLine)
+{
+    if (inputLine.find("uniform") == String::npos) return;
+    
+    Vector<String> tokens;
+    Split(inputLine, " (,\t;", tokens);
+    
+    
+    /*
+        Line format: 
+        uniform [highp] vec3 var1 = vec3(1.0, 1.0, 1.0);
+        uniform mat3 var2 = mat3(1.0, 1.0, 1.0, 5.0, 1.0, 0.4, 8.5, 0.6, 0.8);
+        uniform float float = 1.0;
+     */
+    
+    // Remove precision qualifiers
+    String qualifier;
+    for (size_t k = 0; k < tokens.size(); ++k)
+    {
+        if ((tokens[k] == "highp") || (tokens[k] == "mediump") || (tokens[k] == "lowp"))
+        {
+            qualifier = tokens[k];
+            tokens.erase (tokens.begin() + k);
+            k--;
+        }
+    }
+    
+    if (tokens[0] == "uniform")
+    {
+        //
+        const String & type = tokens[1];
+        const String & name = tokens[2];
+        const String & equals = tokens[3];
+        
+        DVASSERT(equals == "=");
+        
+        uint32 valuesCount = 0;
+        ShaderAsset::DefaultValue value;
+        if ((type == "sampler2D") || (type == "samplerCube"))
+        {
+            value.type = Shader::UT_INT;
+            value.int32Value = atoi(tokens[4].c_str());
+        }
+        else if (type == "float")
+        {
+            value.type = Shader::UT_FLOAT;
+            value.float32Value = (float32)atof(tokens[4].c_str());
+        }
+        else if (type == "vec2")
+        {
+            value.type = Shader::UT_FLOAT_VEC2;
+            valuesCount = 2;
+        }
+        else if (type == "vec3")
+        {
+            value.type = Shader::UT_FLOAT_VEC3;
+            valuesCount = 3;
+        }
+        else if (type == "vec4")
+        {
+            value.type = Shader::UT_FLOAT_VEC4;
+            valuesCount = 4;
+        }
+        else if (type == "mat2")
+        {
+            value.type = Shader::UT_FLOAT_MAT2;
+            valuesCount = 2 * 2;
+        }
+        else if (type == "mat3")
+        {
+            value.type = Shader::UT_FLOAT_MAT3;
+            valuesCount = 3 * 3;
+        }
+        else if (type == "mat4")
+        {
+            value.type = Shader::UT_FLOAT_MAT4;
+            valuesCount = 4 * 4;
+        }
+        
+        if (valuesCount > 1)
+            for (uint32 k = 0; k < valuesCount; ++k)
+            {
+                value.matrix4Value[k] = (float32)atof(tokens[5 + k].c_str());
+            };
+        
+        FastName fastName = FastName(name);
+        asset->defaultValues.insert(fastName, value);
+        
+        //return tokens[0] + String(" ") + type + String(" ") + qualifier + String(" ") + name + ";";
+    }
+    
+    /*if ((tokens.size() == 3) && (tokens[1] == "=") && (tokens[2].size() > 0))
+    {
+        ShaderAsset::DefaultValue value;
+        if ((tokens[2].find(".") != String::npos) || (tokens[2].find("-") != String::npos))
+        value.float32Value = (float32)atof(tokens[2].c_str());
+        else
+        value.int32Value = atoi(tokens[2].c_str());
+        FastName fastName = FastName(tokens[0]);
+        asset->defaultValues.insert(fastName, value);
+        
+        Logger::Debug("Shader Default: %s = %d", fastName.c_str(), value.int32Value);
+    }*/
+}
+    
 void ShaderCache::ParseShader(ShaderAsset * asset)
 {
     Data * vertexShaderData = asset->vertexShaderData;
@@ -328,21 +458,7 @@ void ShaderCache::ParseShader(ShaderAsset * asset)
         else if (configStarted)
         {
             // GetToken();
-            Vector<String> tokens;
-            Split(line, " \t", tokens);
-            
-            if ((tokens.size() == 3) && (tokens[1] == "=") && (tokens[2].size() > 0))
-            {
-                ShaderAsset::DefaultValue value;
-                if ((tokens[2].find(".") != String::npos) || (tokens[2].find("-") != String::npos))
-                    value.float32Value = (float32)atof(tokens[2].c_str());
-                else
-                    value.int32Value = atoi(tokens[2].c_str());
-                FastName fastName = FastName(tokens[0]);
-                asset->defaultValues.insert(fastName, value);
-                
-                Logger::FrameworkDebug("Shader Default: %s = %d", fastName.c_str(), value.int32Value);
-            }
+            ParseDefaultVariable(asset, line);
         }
         //Logger::Debug("%s", line.c_str());
         lineBegin = lineEnd + lineEnding;
@@ -424,26 +540,8 @@ void ShaderCache::ParseShader(ShaderAsset * asset)
         }
         else if (configStarted)
         {
-            // GetToken();
-            Vector<String> tokens;
-            Split(line, " \t", tokens);
-            
-            if ((tokens.size() == 3) && (tokens[1] == "=") && (tokens[2].size() > 0))
-            {
-                ShaderAsset::DefaultValue value;
-                if ((tokens[2].find(".") != String::npos) || (tokens[2].find("-") != String::npos))
-                    value.float32Value = (float32)atof(tokens[2].c_str());
-                else
-                    value.int32Value = atoi(tokens[2].c_str());
-                FastName fastName = FastName(tokens[0]);
-                asset->defaultValues.insert(fastName, value);
-                
-                Logger::FrameworkDebug("Shader Default: %s = %d", fastName.c_str(), value.int32Value);
-            }
+            ParseDefaultVariable(asset, line);
         }
-        
-        //Logger::Debug("%s", line.c_str());
-        
         lineBegin = lineEnd + lineEnding;
     }
     asset->fragmentShaderDataStart = fragmentShaderStartPosition;

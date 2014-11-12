@@ -205,7 +205,7 @@ public:
     
     void SetDefines(const String & _defines);
 
-    static Shader * CompileShader(const FastName & assetName,
+    static Shader * CreateShader(const FastName & assetName,
                                   Data * vertexShaderData,
                                   Data * fragmentShaderData,
                                   uint8 * vertexShaderDataStart,
@@ -232,12 +232,13 @@ public:
 
     void Bind();
     void BindDynamicParameters();
+
     static void Unbind();
     
 	static bool IsAutobindUniform(eShaderSemantic uniformId);
 
     inline int32 GetAttributeIndex(eVertexFormat vertexFormat);
-    inline int32 GetAttributeCount();
+    inline int32 GetAttributeCount();    
     
     inline int32 GetUniformCount();
     inline Uniform * GetUniform(int32 index);
@@ -281,6 +282,7 @@ public:
     /**
         This function return vertex format required by shader
      */
+    uint32 GetRequiredVertexFormat(){return requiredVertexFormat;}
 
 #if defined(__DAVAENGINE_ANDROID__)
 	virtual void Lost();
@@ -289,8 +291,11 @@ public:
 
 private:
     
-    void ReleaseShaderData();
+    void ReleaseShaderData(bool deleteShader = true);
     
+
+    uint32 requiredVertexFormat;
+
 #if defined(__DAVAENGINE_DIRECTX9__)
 #elif defined(__DAVAENGINE_OPENGL__)
     String shaderDefines;
@@ -300,7 +305,7 @@ private:
     
     FastName *attributeNames;
     GLint activeAttributes;
-    GLint activeUniforms;
+    GLint activeUniforms;    
 	
 	uint16* uniformOffsets;
 	uint8* uniformData;

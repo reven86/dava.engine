@@ -40,6 +40,7 @@ namespace DAVA
 
 class RenderLayerBatchArray;
 class Camera;
+class OcclusionQuery;
     
 class RenderLayer
 {
@@ -53,10 +54,17 @@ public:
 
     virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
     
+    inline uint32 GetFragmentStats() const;
+    
 protected:
     FastName name;
     uint32 flags;
     RenderLayerID id;
+    
+    OcclusionQuery* occlusionQuery;
+    uint32 lastFragmentsRenderedValue;
+    bool queryPending;
+    
 public:
     INTROSPECTION(RenderLayer,
         MEMBER(name, "Name", I_VIEW )
@@ -77,6 +85,11 @@ inline const FastName & RenderLayer::GetName() const
 inline uint32 RenderLayer::GetFlags() const
 {
     return flags;
+}
+
+inline uint32 RenderLayer::GetFragmentStats() const
+{
+    return lastFragmentsRenderedValue;
 }
     
 } // ns

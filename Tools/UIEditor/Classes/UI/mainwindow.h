@@ -34,7 +34,7 @@
 #include <QCloseEvent>
 #include "ScreenWrapper.h"
 #include "EditorSettings.h"
-
+#include <QLineEdit>
 #include "PreviewController.h"
 
 namespace Ui {
@@ -83,6 +83,7 @@ private slots:
 	void OnImportScreenOrAggregator();
 
 	void OnProjectCreated();
+    void OnProjectLoaded();
 	void OnSelectedScreenChanged();
 	
 	void OnUpdateScaleRequest(float scaleDelta);
@@ -104,7 +105,7 @@ private slots:
 
 	void OnUnsavedChangesNumberChanged();
 
-    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &);
+    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType expandType);
 
 	// Adjust size
 	void OnAdjustSize();
@@ -136,7 +137,12 @@ private slots:
 
     // Editing mode (Edit/Preview)
     void OnPreviewTriggered();
-    
+    void OnPreviewModeChanged(int previewSettingsID);
+
+    // Screenshot.
+    void OnScreenshot();
+    void OnSetScreenshotFolder();
+
     // Edit Preview Settings..
     void OnEditPreviewSettings();
     
@@ -154,6 +160,7 @@ private slots:
 
     // Notification from GL widget its resize is done.
     void OnGLWidgetResized();
+    void OnSearchPressed();
 
 private:
 	bool CloseProject();
@@ -199,12 +206,22 @@ private:
     void SetDistributeEnabled(bool value);
 
     // Preview handling.
-    void EnablePreview(const PreviewSettingsData& data);
+    void EnablePreview(const PreviewSettingsData& data, bool applyScale);
+    void SetPreviewMode(const PreviewSettingsData& data);
     void DisablePreview();
+
     void UpdatePreviewButton();
+    void UpdatePreviewScale();
 
     // Enable/disable editing controls for Preview mode.
     void EnableEditing(bool value);
+
+    // Set the screenshot folder.
+    void SetScreenshotFolder();
+    
+    void UpdateSaveButtons();
+
+    bool CheckAndUnlockProject(const QString& projectPath);
 
 private:
     Ui::MainWindow *ui;
@@ -216,6 +233,11 @@ private:
     QAction* backgroundFrameSelectCustomColorAction;
 
 	bool screenChangeUpdate;
+    QString screenShotFolder;
+    
+    QLineEdit *findField;
+    void SearchControlsByName(QList<HierarchyTreeControlNode*>& foundNodes,const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName, bool ignoreCase) const;
+    QList<HierarchyTreeScreenNode*> SearchScreenByName(const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName, bool ignoreCase) const;
 };
 
 #endif // MAINWINDOW_H

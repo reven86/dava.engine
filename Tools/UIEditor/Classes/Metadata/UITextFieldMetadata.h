@@ -52,13 +52,16 @@ class UITextFieldMetadata : public UITextControlMetadata
 	Q_PROPERTY(int KeyboardType READ GetKeyboardType WRITE SetKeyboardType);
 	Q_PROPERTY(int ReturnKeyType READ GetReturnKeyType WRITE SetReturnKeyType);
 	Q_PROPERTY(bool IsReturnKeyAutomatically READ GetIsReturnKeyAutomatically WRITE SetIsReturnKeyAutomatically);
+    
+    Q_PROPERTY(int MaxLength READ GetMaxLength WRITE SetMaxLength);
+
 public:
     UITextFieldMetadata(QObject* parent = 0);
 
 protected:
     virtual bool GetInitialInputEnabled() const {return true;};
     
-	virtual QString GetUIControlClassName() { return "UITextField"; };
+	virtual QString GetUIControlClassName() const { return "UITextField"; };
 	
     // Initialization.
     void InitializeControl(const String& controlName, const Vector2& position);
@@ -69,11 +72,11 @@ protected:
     QString GetText() const;
     void SetText(const QString& text);
     
-    virtual Font * GetFont();
+    virtual Font * GetFont() const;
     virtual void SetFont(Font* font);
 
     virtual float GetFontSize() const;
-    virtual void SetFontSize(float fontSize);
+    //virtual void SetFontSize(float fontSize);
 
     virtual QColor GetFontColor() const;
     virtual void SetFontColor(const QColor& value);
@@ -90,8 +93,11 @@ protected:
 	virtual QColor GetShadowColor() const;
 	virtual void SetShadowColor(const QColor& value);
 
-	virtual int GetTextAlign();
+	virtual int GetTextAlign() const;
     virtual void SetTextAlign(int align);
+	
+	virtual bool GetTextUseRtlAlign();
+	virtual void SetTextUseRtlAlign(bool value);
 	
 	bool GetIsPassword() const;
 	void SetIsPassword(bool value);
@@ -116,6 +122,9 @@ protected:
 	
 	bool GetIsReturnKeyAutomatically() const;
 	void SetIsReturnKeyAutomatically(bool value);
+
+	int GetMaxLength() const;
+	void SetMaxLength(int value);
 };
 
 };

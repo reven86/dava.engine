@@ -67,7 +67,6 @@ class RenderBatch;
 class NMaterial;
 class NMaterialInstance;
 class OcclusionQuery;
-class ShadowVolume;
 
     
 /*
@@ -96,13 +95,10 @@ public:
     
     void SetMaterial(NMaterial * _material);
     inline NMaterial * GetMaterial();
-    inline uint32 GetRenderLayerIDsBitmask() const { return renderLayerIDsBitmaskFromMaterial; };
+    inline uint32 GetRenderLayerIDsBitmask() const;
     
 	void SetRenderObject(RenderObject * renderObject);
-	inline RenderObject * GetRenderObject() const;
-
-    void SetSortingTransformPtr(Matrix4* worldTransformPtr);
-    inline Matrix4 * GetSortingTransformPtr() const;
+	inline RenderObject * GetRenderObject() const;        
     
     inline void SetStartIndex(uint32 _startIndex);
     inline void SetIndexCount(uint32 _indexCount);
@@ -121,22 +117,21 @@ public:
      */
    
     void SetSortingKey(uint32 key);
-    inline uint32 GetSortingKey();
+    inline uint32 GetSortingKey() const;
 
     /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
     void SetSortingOffset(uint32 offset);
     inline uint32 GetSortingOffset();
-
-	void SetVisibilityCriteria(uint32 criteria);
-    bool GetVisible() const;
-
+	
+    //bool GetVisible() const;       
+    
 	virtual void UpdateAABBoxFromSource();
 	
     pointer_size layerSortingKey;
 
-	virtual ShadowVolume * CreateShadow();
-
 protected:
+    void BindDynamicParameters(Camera * camera);
+    
     uint32 renderLayerIDsBitmaskFromMaterial;
     PolygonGroup * dataSource;
     RenderDataObject * renderDataObject;   // Probably should be replaced to VBO / IBO, but not sure
@@ -149,9 +144,14 @@ protected:
     
 //    ePrimitiveType type; //TODO: waiting for enums at introspection
     uint32 type;
-    uint32 sortingKey; //oooookkkk -where o is offset, k is key
-    uint32 visiblityCriteria;
+    uint32 sortingKey; //oooookkkk -where o is offset, k is key    
 
+    const static uint32 SORTING_KEY_MASK = 0x0f;
+    const static uint32 SORTING_OFFSET_MASK = 0x1f0;
+    const static uint32 SORTING_OFFSET_SHIFT = 4;
+    const static uint32 SORTING_KEY_DEF_VALUE = 0xf8;
+    
+    
 	AABBox3 aabbox;
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     OcclusionQuery * occlusionQuery;
@@ -180,6 +180,11 @@ public:
         PROPERTY("sortingKey", "Key for the sorting inside render layer", GetSortingKey, SetSortingKey, I_SAVE | I_VIEW | I_EDIT)
     );
 };
+    
+inline uint32 RenderBatch::GetRenderLayerIDsBitmask() const
+{
+    return renderLayerIDsBitmaskFromMaterial;
+};
 
 inline PolygonGroup * RenderBatch::GetPolygonGroup()
 {
@@ -201,11 +206,6 @@ inline RenderObject * RenderBatch::GetRenderObject() const
 	return renderObject;
 }
 
-inline Matrix4 * RenderBatch::GetSortingTransformPtr() const
-{
-    return sortingTransformPtr;
-}
-
 inline void RenderBatch::SetStartIndex(uint32 _startIndex)
 {
     startIndex = _startIndex;
@@ -216,18 +216,18 @@ inline void RenderBatch::SetIndexCount(uint32 _indexCount)
     indexCount = _indexCount;
 }
     
-inline uint32 RenderBatch::GetSortingKey()
+inline uint32 RenderBatch::GetSortingKey() const
 {
-    return sortingKey&0x0f;
+    return sortingKey&SORTING_KEY_MASK;
 }
 
 inline uint32 RenderBatch::GetSortingOffset()
 {
-    return ((sortingKey>>4)&0x1f);
+    return ((sortingKey&SORTING_OFFSET_MASK)>>SORTING_OFFSET_SHIFT);
 }
 
     
-} // ns
+} //
 
 #endif	/* __DAVAENGINE_SCENE3D_RENDER_BATCH_H__ */
 

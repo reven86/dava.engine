@@ -35,42 +35,64 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QCheckBox>
+#include <QCompleter>
+#include <QLineEdit>
+#include <QRegExpValidator>
 
-const int COLUMN_EVENT_TYPE = 0;
-const int COLUMN_ACTION_TYPE = 1;
-const int COLUMN_ENTITY_NAME = 2;
-const int COLUMN_DELAY = 3;
-const int COLUMN_SWITCH_INDEX = 4;
-const int COLUMN_STOPAFTERNREPEATS_INDEX = 5;
-const int COLUMN_STOPWHENEMPTY_INDEX = 6;
 
-const int COMBO_YES_INDEX = 0;
-const int COMBO_NO_INDEX = 1;
-
-const int ACTION_NAME_COUNT = 3;
-static QString ACTION_TYPE_NAME[] =
+namespace
 {
-	"None",
-	"Particle",
-	"Sound"
-};
-const int EVENT_NAME_COUNT = 2;
-static QString EVENT_TYPE_NAME[] =
-{	
-	"Switch",
-	"Added"
-};
+    
+    enum eColumns
+    {
+        COLUMN_EVENT_TYPE,
+        COLUMN_EVENT_NAME,
+        COLUMN_ACTION_TYPE,
+        COLUMN_ENTITY_NAME,
+        COLUMN_DELAY,
+        COLUMN_DELAY_VARIATION,
+        COLUMN_SWITCH_INDEX,
+        COLUMN_STOPAFTERNREPEATS_INDEX,
+        COLUMN_STOPWHENEMPTY_INDEX,
+    };
 
-ActionComponentEditor::ActionComponentEditor(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::ActionComponentEditor)
+    enum eYesNo
+    {
+        COMBO_YES_INDEX,
+        COMBO_NO_INDEX,
+    };
+
+    QString ACTION_TYPE_NAME[] = 
+    {
+        "None",
+        "Particle start",
+        "Particle stop",
+        "Sound",
+    };
+    const size_t ACTION_NAME_COUNT = sizeof( ACTION_TYPE_NAME ) / sizeof( *ACTION_TYPE_NAME );
+
+    QString EVENT_TYPE_NAME[] =
+    {
+        "Switch",
+        "Added",
+        "User",
+    };
+    const size_t EVENT_NAME_COUNT = sizeof( EVENT_TYPE_NAME ) / sizeof( *EVENT_TYPE_NAME );
+    
+}
+
+
+ActionComponentEditor::ActionComponentEditor(QWidget *parent)
+    : QDialog(parent)
+    , ui(new Ui::ActionComponentEditor)
+    , isModified(false)
 {
     ui->setupUi(this);
 	
 	targetComponent = NULL;
-	QObject::connect(ui->buttonAddItem, SIGNAL(pressed()), this, SLOT(OnAddAction()));
-	QObject::connect(ui->buttonRemoveItem, SIGNAL(pressed()), this, SLOT(OnRemoveAction()));
-	QObject::connect(ui->tableActions, SIGNAL(itemSelectionChanged()), this, SLOT(OnSelectedItemChanged()));
+	connect(ui->buttonAddItem, SIGNAL(clicked()), SLOT(OnAddAction()));
+    connect(ui->buttonRemoveItem, SIGNAL(clicked()), SLOT(OnRemoveAction()));
+	connect(ui->tableActions, SIGNAL(itemSelectionChanged()), SLOT(OnSelectedItemChanged()));
 	
 	ui->tableActions->resizeColumnsToContents();
 	ui->buttonRemoveItem->setEnabled(false);
@@ -78,6 +100,17 @@ ActionComponentEditor::ActionComponentEditor(QWidget *parent) :
 	editDelegate.setParent(ui->tableActions);
 	editDelegate.SetComponentEditor(this);
 	ui->tableActions->setItemDelegate(&editDelegate);
+
+    actionTypes[DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_START] = "Particle start";
+    actionTypes[DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_STOP] = "Particle stop";
+    actionTypes[DAVA::ActionComponent::Action::TYPE_ANIMATION_START] = "Animation start";
+    actionTypes[DAVA::ActionComponent::Action::TYPE_ANIMATION_STOP] = "Animation stop";
+    actionTypes[DAVA::ActionComponent::Action::TYPE_SOUND_START] = "Sound start";
+    actionTypes[DAVA::ActionComponent::Action::TYPE_SOUND_STOP] = "Sound stop";
+
+    eventTypes[DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED] = "Switch";
+    eventTypes[DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE] = "Added";
+    eventTypes[DAVA::ActionComponent::Action::EVENT_CUSTOM] = "User";
 }
 
 ActionComponentEditor::~ActionComponentEditor()
@@ -107,18 +140,22 @@ void ActionComponentEditor::UpdateTableFromComponent(DAVA::ActionComponent* comp
 		{
 			DAVA::ActionComponent::Action& action = component->Get(i);
 			
-			QTableWidgetItem* eventTypeTableItem = new QTableWidgetItem(EVENT_TYPE_NAME[action.eventType]);
-			QTableWidgetItem* actionTypeTableItem = new QTableWidgetItem(ACTION_TYPE_NAME[action.type]);
-			QTableWidgetItem* entityNameTableItem = new QTableWidgetItem(action.entityName.c_str());
-			QTableWidgetItem* delayTableItem = new QTableWidgetItem(QString("%1").arg(action.delay, 16, 'f', 2));
-			QTableWidgetItem* switchIndexTableItem = new QTableWidgetItem(QString("%1").arg(action.switchIndex));
-			QTableWidgetItem* stopAfterNRepeatsTableItem = new QTableWidgetItem(QString("%1").arg(action.stopAfterNRepeats));
-			QTableWidgetItem* stopWhenEmptyTableItem = new QTableWidgetItem((action.stopWhenEmpty) ? "Yes" : "No", Qt::EditRole);
+            QTableWidgetItem* eventTypeTableItem = new QTableWidgetItem( eventTypes[action.eventType], COLUMN_ACTION_TYPE );
+            QTableWidgetItem* eventNameTableItem = new QTableWidgetItem( action.userEventId.c_str(), COLUMN_EVENT_NAME );
+            QTableWidgetItem* actionTypeTableItem = new QTableWidgetItem( actionTypes[action.type], COLUMN_ACTION_TYPE );
+            QTableWidgetItem* entityNameTableItem = new QTableWidgetItem( action.entityName.c_str(), COLUMN_ENTITY_NAME );
+            QTableWidgetItem* delayTableItem = new QTableWidgetItem( QString( "%1" ).arg( action.delay, 16, 'f', 2 ), COLUMN_DELAY );
+            QTableWidgetItem* delayVariationTableItem = new QTableWidgetItem( QString( "%1" ).arg( action.delayVariation, 16, 'f', 2 ), COLUMN_DELAY_VARIATION );
+            QTableWidgetItem* switchIndexTableItem = new QTableWidgetItem( QString( "%1" ).arg( action.switchIndex ), COLUMN_SWITCH_INDEX );
+            QTableWidgetItem* stopAfterNRepeatsTableItem = new QTableWidgetItem( QString( "%1" ).arg( action.stopAfterNRepeats ), COLUMN_STOPAFTERNREPEATS_INDEX );
+            QTableWidgetItem* stopWhenEmptyTableItem = new QTableWidgetItem( ( action.stopWhenEmpty ) ? "Yes" : "No", COLUMN_STOPWHENEMPTY_INDEX );
 			
 			ui->tableActions->setItem(i, COLUMN_EVENT_TYPE, eventTypeTableItem);
+            ui->tableActions->setItem( i, COLUMN_EVENT_NAME, eventNameTableItem );
 			ui->tableActions->setItem(i, COLUMN_ACTION_TYPE, actionTypeTableItem);
 			ui->tableActions->setItem(i, COLUMN_ENTITY_NAME, entityNameTableItem);
 			ui->tableActions->setItem(i, COLUMN_DELAY, delayTableItem);
+            ui->tableActions->setItem( i, COLUMN_DELAY_VARIATION, delayVariationTableItem );
 			ui->tableActions->setItem(i, COLUMN_SWITCH_INDEX, switchIndexTableItem);
 			ui->tableActions->setItem(i, COLUMN_STOPAFTERNREPEATS_INDEX, stopAfterNRepeatsTableItem);
 			ui->tableActions->setItem(i, COLUMN_STOPWHENEMPTY_INDEX, stopWhenEmptyTableItem);
@@ -145,6 +182,7 @@ void ActionComponentEditor::OnAddAction()
 		UpdateTableFromComponent(targetComponent);
 		
 		ui->buttonAddItem->setEnabled(false);
+        isModified = true;
 	}
 }
 
@@ -165,6 +203,7 @@ void ActionComponentEditor::OnRemoveAction()
 		}
 		
 		ui->buttonAddItem->setEnabled(!IsActionPresent(GetDefaultAction()));
+        isModified = true;
 	}
 }
 
@@ -174,11 +213,19 @@ void ActionComponentEditor::OnSelectedItemChanged()
 	ui->buttonRemoveItem->setEnabled(currentRow >= 0);
 }
 
+QWidget* ActionItemEditDelegate::createFloatEditor(QWidget *parent) const
+{
+    QLineEdit *sb = new QLineEdit(parent);
+    sb->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
+
+    return sb;
+}
+
 DAVA::ActionComponent::Action ActionComponentEditor::GetDefaultAction()
 {
 	DAVA::ActionComponent::Action action;
 	action.eventType = DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED;
-	action.type = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT;	
+	action.type = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_START;	
 	action.entityName = DAVA::ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME;
 	action.delay = 0.0f;
 	action.switchIndex = -1;
@@ -211,42 +258,70 @@ void ActionComponentEditor::Update()
 	ui->tableActions->resizeRowsToContents();
 
 	ui->buttonAddItem->setEnabled(!IsActionPresent(GetDefaultAction()));
+    isModified = true;
+}
+
+bool ActionComponentEditor::IsModified() const
+{
+    return isModified;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ActionItemEditDelegate::ActionItemEditDelegate(QObject *parent) : targetComponent(NULL), componentEditor(NULL)
-{	
+ActionItemEditDelegate::ActionItemEditDelegate(QObject *parent)
+    : QStyledItemDelegate( parent )
+    , targetComponent(NULL)
+    , componentEditor(NULL)
+{
+    actionTypes["Particle start"] = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_START;
+    actionTypes["Particle stop"] = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_STOP;
+    actionTypes["Animation start"] = DAVA::ActionComponent::Action::TYPE_ANIMATION_START;
+    actionTypes["Animation stop"] = DAVA::ActionComponent::Action::TYPE_ANIMATION_STOP;
+    actionTypes["Sound start"] = DAVA::ActionComponent::Action::TYPE_SOUND_START;
+    actionTypes["Sound stop"] = DAVA::ActionComponent::Action::TYPE_SOUND_STOP;
+
+    eventTypes["Switch"] = DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED;
+    eventTypes["Added"] = DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE;
+    eventTypes["User"] = DAVA::ActionComponent::Action::EVENT_CUSTOM;
 }
 
 QWidget* ActionItemEditDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option,
 					  const QModelIndex &index) const
 {	
 	QWidget* editor = NULL;
+
 	switch(index.column())
 	{
 		case COLUMN_EVENT_TYPE:
 		{
-			QComboBox* combo = new QComboBox(parent);
-			combo->setFrame(false);
-			for(int i = 0; i < EVENT_NAME_COUNT; ++i) //do not add sound aciton
-			{
-				combo->addItem(EVENT_TYPE_NAME[i]);
-			}
+            QComboBox* combo = new QComboBox( parent );
+            combo->setFrame( false );
+            for ( auto it = eventTypes.begin(); it != eventTypes.end(); it++ )
+            {
+                combo->addItem( it.key(), it.value() );
+            }
 
 			editor = combo;
 
 			break;
 		}
+
+        case COLUMN_EVENT_NAME:
+        {
+            editor = new QLineEdit( parent );
+            break;
+        }
+
 		case COLUMN_ACTION_TYPE:
 		{
 			QComboBox* combo = new QComboBox(parent);
 			combo->setFrame(false);
-			for(int i = 1; i < ACTION_NAME_COUNT; ++i) //do not add sound aciton
-			{
-				combo->addItem(ACTION_TYPE_NAME[i]);
-			}
-			
+
+            for ( auto it = actionTypes.begin(); it != actionTypes.end(); it++ )
+            {
+                combo->addItem( it.key(), it.value() );
+            }
+
 			editor = combo;
 			
 			break;
@@ -284,14 +359,9 @@ QWidget* ActionItemEditDelegate::createEditor(QWidget *parent, const QStyleOptio
 		}
 			
 		case COLUMN_DELAY:
+        case COLUMN_DELAY_VARIATION:
 		{
-			QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
-			spinBox->setMinimum(0.0f);
-			spinBox->setMaximum(3600.f);
-			spinBox->setSingleStep(0.01f);
-			
-			editor = spinBox;
-			
+			editor = createFloatEditor(parent);
 			break;
 		}
 			
@@ -323,15 +393,14 @@ QWidget* ActionItemEditDelegate::createEditor(QWidget *parent, const QStyleOptio
 		{
 			QComboBox* combo = new QComboBox(parent);
 			combo->setFrame(false);
-			combo->addItem("Yes");
-			combo->addItem("No");
+            combo->addItem( "Yes", COMBO_YES_INDEX );
+            combo->addItem( "No", COMBO_NO_INDEX );
 			
 			editor = combo;
 			break;
 		}
 	}
 
-	DVASSERT(editor);
 	return editor;
 }
 
@@ -343,15 +412,39 @@ void ActionItemEditDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 	{
 		case COLUMN_EVENT_TYPE:
 		{
-			QComboBox* combo = static_cast<QComboBox*>(editor);
-			combo->setCurrentIndex((int)currentAction.eventType);
+            QComboBox* combo = static_cast<QComboBox*>( editor );
+            const int n = combo->count();
+            for ( int i = 0; i < n; i++ )
+            {
+                if ( combo->itemData( i ).toInt() == (int)currentAction.eventType )
+                {
+                    combo->setCurrentIndex( i );
+                    break;
+                }
+            }
 
 			break;
 		}
-		case COLUMN_ACTION_TYPE:
+
+        case COLUMN_EVENT_NAME:
+        {
+            QLineEdit* edit = static_cast<QLineEdit*>( editor );
+            edit->setText( currentAction.userEventId.c_str() );
+            break;
+        }
+
+        case COLUMN_ACTION_TYPE:
 		{
 			QComboBox* combo = static_cast<QComboBox*>(editor);
-			combo->setCurrentIndex((int)currentAction.type - 1);
+            const int n = combo->count();
+            for ( int i = 0; i < n; i++ )
+            {
+                if ( combo->itemData( i ).toInt() == (int)currentAction.type )
+                {
+                    combo->setCurrentIndex( i );
+                    break;
+                }
+            }
 			
 			break;
 		}
@@ -373,12 +466,18 @@ void ActionItemEditDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 			
 		case COLUMN_DELAY:
 		{
-			QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>(editor);
-			spinBox->setValue(currentAction.delay);
-			
+            QLineEdit *edit = static_cast<QLineEdit*>(editor);
+			edit->setText(QString::number(currentAction.delay));
 			break;
 		}
-			
+
+        case COLUMN_DELAY_VARIATION:
+        {
+            QLineEdit *edit = static_cast<QLineEdit*>(editor);
+			edit->setText(QString::number(currentAction.delayVariation));
+            break;
+        }
+
 		case COLUMN_SWITCH_INDEX:
 		{
 			QSpinBox* spinBox = static_cast<QSpinBox*>(editor);
@@ -416,15 +515,24 @@ void ActionItemEditDelegate::setModelData(QWidget *editor, QAbstractItemModel *m
 		case COLUMN_EVENT_TYPE:
 		{
 			QComboBox* combo = static_cast<QComboBox*>(editor);
-			currentAction.eventType = (DAVA::ActionComponent::Action::eEvent)(combo->currentIndex());
+            currentAction.eventType = ( DAVA::ActionComponent::Action::eEvent )combo->itemData( combo->currentIndex() ).toUInt();
 			model->setData(index, combo->currentText(), Qt::EditRole);
-
 			break;
 		}
+
+        case COLUMN_EVENT_NAME:
+        {
+            QLineEdit* edit = static_cast<QLineEdit*>( editor );
+            currentAction.userEventId = DAVA::FastName( edit->text().toStdString().c_str() );
+            model->setData( index, edit->text(), Qt::EditRole );
+            break;
+        }
+
 		case COLUMN_ACTION_TYPE:
 		{
 			QComboBox* combo = static_cast<QComboBox*>(editor);
-			currentAction.type = (DAVA::ActionComponent::Action::eType)(combo->currentIndex() + 1);
+            DAVA::ActionComponent::Action::eType t = (DAVA::ActionComponent::Action::eType)combo->itemData( combo->currentIndex() ).toUInt();
+            currentAction.type = t;
 			model->setData(index, combo->currentText(), Qt::EditRole);
 			
 			break;
@@ -441,14 +549,21 @@ void ActionItemEditDelegate::setModelData(QWidget *editor, QAbstractItemModel *m
 			
 		case COLUMN_DELAY:
 		{
-			QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>(editor);
-			currentAction.delay = (DAVA::float32)spinBox->value();
+            QLineEdit *edit = static_cast<QLineEdit*>(editor);
+            currentAction.delay = edit->text().toDouble();
 			model->setData(index, QString("%1").arg(currentAction.delay, 16, 'f', 2), Qt::EditRole);
-			
 			break;
 		}
 			
-		case COLUMN_SWITCH_INDEX:
+        case COLUMN_DELAY_VARIATION:
+        {
+            QLineEdit *edit = static_cast<QLineEdit*>(editor);
+            currentAction.delayVariation = edit->text().toDouble();
+			model->setData(index, QString("%1").arg(currentAction.delayVariation, 16, 'f', 2), Qt::EditRole);
+            break;
+        }
+
+        case COLUMN_SWITCH_INDEX:
 		{
 			QSpinBox* spinBox = static_cast<QSpinBox*>(editor);
 			currentAction.switchIndex = spinBox->value();
