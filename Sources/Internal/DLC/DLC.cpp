@@ -789,7 +789,7 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
 
 	if(errors)
 	{
-		Logger::Info("DLC: Error applying patch: %u", dlcContext.patchingError);
+		Logger::Error("DLC: Error applying patch: %u", dlcContext.patchingError);
 	}
 }
 

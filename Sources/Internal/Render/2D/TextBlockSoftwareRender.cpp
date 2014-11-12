@@ -97,19 +97,19 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
         TextBlockRender::Prepare(NULL);
     }
 
-    int32 width = Max(textBlock->cacheDx, 8);
-    int32 height = Max(textBlock->cacheDy, 8);
+    int32 width = Max(textBlock->cacheDx, 1);
+    int32 height = Max(textBlock->cacheDy, 1);
     
 	int32 bsz = width * height;
-	buf = new int16[bsz];
-    memset(buf, 0, bsz * sizeof(int16));
+    buf = new int8[bsz];
+    memset(buf, 0, bsz * sizeof(int8));
 	
 	DrawText();
 	
 	String addInfo;
 	if (!textBlock->isMultilineEnabled)
 	{
-		addInfo = WStringToString(textBlock->text.c_str());
+		addInfo = WStringToString(textBlock->visualText.c_str());
 	}
 	else
 	{

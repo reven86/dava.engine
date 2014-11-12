@@ -117,11 +117,11 @@ bool PatchInfo::ReadString(File* file, String &str)
     uint32 len = 0;
     uint32 rlen = file->Read(&len);
 
-    if(rlen == sizeof(rlen))
+    if(rlen == sizeof(len))
     {
         if(len > 0)
         {
-            char8 *buffer = new char8[len + 1];
+			char8 *buffer = new(std::nothrow) char8[len + 1];
 			if(NULL != buffer)
 			{
 				buffer[len] = 0;
@@ -610,7 +610,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                 else
                 {
                     uint32 origSize = origFile->GetSize();
-                    origData = new char8[origSize];
+					origData = new(std::nothrow) char8[origSize];
 
 					if(NULL != origData)
 					{
@@ -669,7 +669,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                     {
                         if(curInfo.newSize > 0)
                         {
-                            newData = new char8[curInfo.newSize];
+							newData = new(std::nothrow) char8[curInfo.newSize];
 
                             if(NULL != newData)
                             {

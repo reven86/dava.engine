@@ -37,7 +37,10 @@
 		840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840CB02218EE08C600B722D0 /* JPEGTest.cpp */; };
 		84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		B72EFFE319CB340100D38C33 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B72EFFE119CB340100D38C33 /* TextSizeTest.cpp */; };
+		B7D6C98E19CAC7EB0095250A /* BiDiTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7D6C98D19CAC7EB0095250A /* BiDiTest.cpp */; };
 		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
+		C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */; };
 		C172EC1918C9F412004309CF /* DFFontTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC1718C9F412004309CF /* DFFontTest.cpp */; };
 		C177F28016D227A70036F02B /* InputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C177F27E16D227A70036F02B /* InputTest.cpp */; };
 		C18046CA16D52ECA00DC24D8 /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C18046C816D52EC900DC24D8 /* DPITest.cpp */; };
@@ -179,7 +182,13 @@
 		84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DateTimeTest.cpp; path = Classes/DateTimeTest.cpp; sourceTree = "<group>"; };
 		84E2926E18DA5D4300B5D4C9 /* DateTimeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DateTimeTest.h; path = Classes/DateTimeTest.h; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B72EFFE119CB340100D38C33 /* TextSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TextSizeTest.cpp; path = Classes/TextSizeTest.cpp; sourceTree = "<group>"; };
+		B72EFFE219CB340100D38C33 /* TextSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextSizeTest.h; path = Classes/TextSizeTest.h; sourceTree = "<group>"; };
+		B7D6C98819CAC6F90095250A /* BiDiTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BiDiTest.h; path = Classes/BiDiTest.h; sourceTree = "<group>"; };
+		B7D6C98D19CAC7EB0095250A /* BiDiTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BiDiTest.cpp; path = Classes/BiDiTest.cpp; sourceTree = "<group>"; };
 		C151B18E16D37E2700E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eMailTest.cpp; path = Classes/eMailTest.cpp; sourceTree = "<group>"; };
+		C151B1BF16D50BDA00E09BAF /* eMailTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = eMailTest.h; path = Classes/eMailTest.h; sourceTree = "<group>"; };
 		C172EC1718C9F412004309CF /* DFFontTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DFFontTest.cpp; path = Classes/DFFontTest.cpp; sourceTree = "<group>"; };
 		C172EC1818C9F412004309CF /* DFFontTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DFFontTest.h; path = Classes/DFFontTest.h; sourceTree = "<group>"; };
 		C177F27E16D227A70036F02B /* InputTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputTest.cpp; path = Classes/InputTest.cpp; sourceTree = "<group>"; };
@@ -444,6 +453,10 @@
 			children = (
 				1146E10119D0049E009E5FAB /* MathTest */,
 				1146E10419D004A9009E5FAB /* FunctionBindSignalTest */,
+				B7BEB95419CB2265005B4BC7 /* TextSizeTest */,
+				B7D6C98C19CAC7220095250A /* BiDiTest */,
+				4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */,
+				4F25831819BF237800C28926 /* FunctionBindSingalTest.h */,
 				C172EC1418C9F406004309CF /* DFFont */,
 				E8B47D2C196D4F4800D8ADF6 /* ImageSizeTest */,
 				E8490AA51923864A00C07E36 /* ParseTextTest */,
@@ -466,6 +479,7 @@
 				E8B6B3BD1705DD80004F665E /* LocaliztionTests */,
 				49C2B8F416F75A2A006E24CB /* DeviceInfoTest */,
 				C18046C616D52E6E00DC24D8 /* DPITest */,
+				C151B1BC16D50BD000E09BAF /* eMailTest */,
 				C177F27C16D2279B0036F02B /* InputTest */,
 				E81F2AEA16BFA49100C4545E /* MaterialCompilerTest */,
 				49B774CA16B1889A00A80FA3 /* DLCDownloadTest */,
@@ -576,6 +590,33 @@
 				84E2926E18DA5D4300B5D4C9 /* DateTimeTest.h */,
 			);
 			name = DateTimeTest;
+			sourceTree = "<group>";
+		};
+		B7BEB95419CB2265005B4BC7 /* TextSizeTest */ = {
+			isa = PBXGroup;
+			children = (
+				B72EFFE119CB340100D38C33 /* TextSizeTest.cpp */,
+				B72EFFE219CB340100D38C33 /* TextSizeTest.h */,
+			);
+			name = TextSizeTest;
+			sourceTree = "<group>";
+		};
+		B7D6C98C19CAC7220095250A /* BiDiTest */ = {
+			isa = PBXGroup;
+			children = (
+				B7D6C98D19CAC7EB0095250A /* BiDiTest.cpp */,
+				B7D6C98819CAC6F90095250A /* BiDiTest.h */,
+			);
+			name = BiDiTest;
+			sourceTree = "<group>";
+		};
+		C151B1BC16D50BD000E09BAF /* eMailTest */ = {
+			isa = PBXGroup;
+			children = (
+				C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */,
+				C151B1BF16D50BDA00E09BAF /* eMailTest.h */,
+			);
+			name = eMailTest;
 			sourceTree = "<group>";
 		};
 		C172EC1418C9F406004309CF /* DFFont */ = {
@@ -889,6 +930,7 @@
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
 				50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */,
 				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
+				B72EFFE319CB340100D38C33 /* TextSizeTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
 				FEA8F6EB159DB0EF00EED3DC /* MemoryAllocatorsTest.cpp in Sources */,
@@ -906,6 +948,8 @@
 				E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */,
 				6260B9E418E9C225002DA65F /* SaveImageTest.cpp in Sources */,
 				C177F28016D227A70036F02B /* InputTest.cpp in Sources */,
+				B7D6C98E19CAC7EB0095250A /* BiDiTest.cpp in Sources */,
+				C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */,
 				C18046CA16D52ECA00DC24D8 /* DPITest.cpp in Sources */,
 				49C2B8F816F75A39006E24CB /* DeviceInfoTest.cpp in Sources */,
 				E8B6B3C11705DD97004F665E /* LocalizationTest.cpp in Sources */,
@@ -981,6 +1025,11 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/oggvorbis/lib\"",
+					"\"$(SRCROOT)/../../Libs/feetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/libs\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
@@ -1008,6 +1057,11 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/oggvorbis/lib\"",
+					"\"$(SRCROOT)/../../Libs/feetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
+					"\"$(SRCROOT)/../../Libs/libs\"",
+					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;

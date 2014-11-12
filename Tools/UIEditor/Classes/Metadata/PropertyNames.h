@@ -64,6 +64,7 @@ public:
     static const char* TEXT_PROPERTY_MULTILINE_BY_SYMBOL;
     static const char* TEXT_COLOR_PROPERTY_NAME;
 	static const char* TEXT_ALIGN_PROPERTY_NAME;
+	static const char* TEXT_USE_RTL_ALIGN_PROPERTY_NAME;
 	static const char* TEXT_FITTING_TYPE_PROPERTY_NAME;
 
 	static const char* IS_PASSWORD_PROPERTY_NAME;

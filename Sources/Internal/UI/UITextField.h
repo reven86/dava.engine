@@ -82,7 +82,7 @@ public:
         \returns true if the specified text range should be replaced; otherwise, false to keep the old text. Default implementation returns true.
 	 */
 	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString);
-    
+
     virtual bool IsTextFieldShouldSetFocusedOnAppear(UITextField * textField);
     virtual bool IsTextFieldCanLostFocus(UITextField * textField);
 	
@@ -211,7 +211,7 @@ public:
 	 \brief Returns the font of control
 	 \returns Font font of the control
 	 */
-    Font *GetFont();
+    Font *GetFont() const;
 	/**
 	 \brief Returns the text color of control.
 	 \returns Color color of control's text
@@ -229,6 +229,12 @@ public:
 	virtual const Color &GetShadowColor() const;
 
 	int32 GetTextAlign() const;
+
+	/**
+	 \brief Returns using RTL align flag
+	 \returns Using RTL align flag
+	 */
+	bool GetTextUseRtlAlign() const;
 
     void SetFocused()
     {
@@ -267,6 +273,12 @@ public:
 
 	void SetTextAlign(int32 align);
 
+	/**
+	 \brief Sets using mirror align for RTL texts
+	 \param[in] useRrlAlign flag of support RTL align
+	 */
+	void SetTextUseRtlAlign(bool useRtlAlign);
+
     virtual void SetSize(const DAVA::Vector2 &newSize);
 
     /**
@@ -282,38 +294,38 @@ public:
 	/**
  	 \brief Auto-capitalization type.
 	 */
-	eAutoCapitalizationType GetAutoCapitalizationType() const;
-	void SetAutoCapitalizationType(eAutoCapitalizationType value);
+	int32 GetAutoCapitalizationType() const;
+	void SetAutoCapitalizationType(int32 value);
 
 	/**
  	 \brief Auto-correction type.
 	 */
-	eAutoCorrectionType GetAutoCorrectionType() const;
-	void SetAutoCorrectionType(eAutoCorrectionType value);
+	int32 GetAutoCorrectionType() const;
+	void SetAutoCorrectionType(int32 value);
 
 	/**
  	 \brief Spell checking type.
 	 */
-	eSpellCheckingType GetSpellCheckingType() const;
-	void SetSpellCheckingType(eSpellCheckingType value);
+	int32 GetSpellCheckingType() const;
+	void SetSpellCheckingType(int32 value);
 
 	/**
  	 \brief Keyboard appearance type.
 	 */
-	eKeyboardAppearanceType GetKeyboardAppearanceType() const;
-	void SetKeyboardAppearanceType(eKeyboardAppearanceType value);
+	int32 GetKeyboardAppearanceType() const;
+	void SetKeyboardAppearanceType(int32 value);
 
 	/**
  	 \brief Keyboard type.
 	 */
-	eKeyboardType GetKeyboardType() const;
-	void SetKeyboardType(eKeyboardType value);
+	int32 GetKeyboardType() const;
+	void SetKeyboardType(int32 value);
 	
 	/**
  	 \brief Return key type.
 	 */
-	eReturnKeyType GetReturnKeyType() const;
-	void SetReturnKeyType(eReturnKeyType value);
+	int32 GetReturnKeyType() const;
+	void SetReturnKeyType(int32 value);
 
 	/**
  	 \brief Enable return key automatically.
@@ -327,7 +339,7 @@ public:
 	 */
 	virtual List<UIControl* >& GetRealChildren();
 	
-	virtual UIControl *Clone();
+	virtual UITextField *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 
     // Cursor control.
@@ -340,6 +352,10 @@ public:
      */
     void SetMaxLength(int32 maxLength);
     int32 GetMaxLength() const;
+
+    String GetFontPresetName() const;
+
+    void SetFontPresetName(const String &presetName);
 
 protected:
 	WideString text;
@@ -374,6 +390,21 @@ private:
 #endif
     float32 cursorTime;
     int32 maxLength;
+public:
+    INTROSPECTION_EXTEND(UITextField, UIControl,
+        PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("font", "Font preset", GetFontPresetName, SetFontPresetName, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("maxLength", "Max text lenght", GetMaxLength, SetMaxLength, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("isPassword", "Is password", IsPassword, SetIsPassword, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("autoCapitalizationType", InspDesc("Auto capitalization type", GlobalEnumMap<eAutoCapitalizationType>::Instance()), GetAutoCapitalizationType, SetAutoCapitalizationType , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("autoCorrectionType"    , InspDesc("Auto correction type"    , GlobalEnumMap<eAutoCorrectionType>::Instance())    , GetAutoCorrectionType    , SetAutoCorrectionType     , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("spellCheckingType"     , InspDesc("Spell checking type"     , GlobalEnumMap<eSpellCheckingType>::Instance())     , GetSpellCheckingType     , SetSpellCheckingType      , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("keyboardAppearanceType", InspDesc("Keyboard appearance type", GlobalEnumMap<eKeyboardAppearanceType>::Instance()), GetKeyboardAppearanceType, SetKeyboardAppearanceType , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("keyboardType"          , InspDesc("Keyboard type"           , GlobalEnumMap<eKeyboardType>::Instance())          , GetKeyboardType          , SetKeyboardType           , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("returnKeyType"         , InspDesc("Return key type"         , GlobalEnumMap<eReturnKeyType>::Instance())         , GetReturnKeyType         , SetReturnKeyType          , I_SAVE | I_VIEW | I_EDIT)
+        );
 };
 
 };
