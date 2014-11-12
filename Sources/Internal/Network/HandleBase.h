@@ -29,8 +29,6 @@
 #ifndef __DAVAENGINE_HANDLEBASE_H__
 #define __DAVAENGINE_HANDLEBASE_H__
 
-#include <type_traits>
-
 #include <libuv/uv.h>
 
 #include <Base/Noncopyable.h>
@@ -47,7 +45,7 @@ class IOLoop;
 template<typename T>
 class HandleBase : private Noncopyable
 {
-    static_assert(IsHandleType<T>::value, "Not handle type");
+    //static_assert(IsHandleType<T>::value, "Not handle type");
 
 public:
     IOLoop* Loop() { return loop; }

@@ -75,7 +75,7 @@ template<> struct IsHandleConvertible<const uv_handle_t, const uv_async_t > : pu
  If casting is not allowed then compiler would complain.
 */
 template<typename To, typename From>
-typename std::enable_if<IsSame<To, From>::value || IsHandleConvertible<To, From>::value, To>::type* CastHandleTo(From* ptr)
+typename EnableIf<IsSame<To, From>::value || IsHandleConvertible<To, From>::value, To>::type* CastHandleTo(From* ptr)
 {
     return reinterpret_cast<To*>(ptr);
 }
