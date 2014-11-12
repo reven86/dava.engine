@@ -44,7 +44,7 @@ void OpenURL(const String& url)
 
 String GenerateGUID()
 {
-    DVASSERT_MSG(false, "Not implemented");
+    Logger::Warning("GenerateGUID for Win32 Not implemented");
     return String();
 }
 
