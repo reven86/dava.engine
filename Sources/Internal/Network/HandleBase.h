@@ -29,8 +29,6 @@
 #ifndef __DAVAENGINE_HANDLEBASE_H__
 #define __DAVAENGINE_HANDLEBASE_H__
 
-#include <type_traits>
-
 #include <libuv/uv.h>
 
 #include <Base/Noncopyable.h>
