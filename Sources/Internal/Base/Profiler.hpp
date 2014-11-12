@@ -26,9 +26,6 @@
 
     #define PROF__TEST1             40
 
-#define DV_MATERIAL_UNIFORM_CACHING 1
-#define DV_SHADER_UNIFORM_CACHING   0
-
     #define PROF_ENABLED            1
 
 

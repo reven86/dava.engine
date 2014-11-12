@@ -631,8 +631,6 @@ NAME_COUNTER(PROF__GL_SET_UNIFORM2,"gl.set-uniform2");
 NAME_COUNTER(PROF__RHI_SETUNIFORM,"rhi.set-uniform");
 NAME_COUNTER(PROF__RHI_SETDYNPARAM,"shader.bind-dyn-param");
 NAME_COUNTER(PROF__RHI_SETMATPARAM,"material.bind-param");
-Logger::Info( "DV_MATERIAL_UNIFORM_CACHING = %i\n", int(DV_MATERIAL_UNIFORM_CACHING) );
-Logger::Info( "DV_SHADER_UNIFORM_CACHING   = %i\n", int(DV_SHADER_UNIFORM_CACHING) );
 
 
 	if (Core::Instance()->NeedToRecalculateMultipliers()) 
@@ -670,6 +668,7 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
+profiler::Start();
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	static bool isInit = false;
 	static EGLuint64NV frequency;
@@ -807,7 +806,7 @@ if( profiler::GetAverageCounters( &result ) )
 }
 }
 //profiler::Dump();
-profiler::DumpAverage();
+//profiler::DumpAverage();
 }
 
 	
