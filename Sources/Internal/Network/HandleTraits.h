@@ -29,7 +29,7 @@
 #ifndef __DAVAENGINE_HANDLETRAITS_H__
 #define __DAVAENGINE_HANDLETRAITS_H__
 
-#include <type_traits>
+#include <Base/TemplateHelpers.h>
 
 #include <libuv/uv.h>
 
@@ -40,12 +40,12 @@ namespace DAVA
  IsHandleType<T> checks whether type T is supported libuv's handle type
 */
 template<typename T>
-struct IsHandleType : public std::false_type {};
+struct IsHandleType : public FalseType {};
 
-template<> struct IsHandleType<uv_tcp_t>    : public std::true_type {};
-template<> struct IsHandleType<uv_udp_t>    : public std::true_type {};
-template<> struct IsHandleType<uv_timer_t>  : public std::true_type {};
-template<> struct IsHandleType<uv_async_t>  : public std::true_type {};
+template<> struct IsHandleType<uv_tcp_t>    : public TrueType {};
+template<> struct IsHandleType<uv_udp_t>    : public TrueType {};
+template<> struct IsHandleType<uv_timer_t>  : public TrueType {};
+template<> struct IsHandleType<uv_async_t>  : public TrueType {};
 
 /*
  IsHandleConvertible<To,From> checks whether pointer of type From can be converted
@@ -54,28 +54,28 @@ template<> struct IsHandleType<uv_async_t>  : public std::true_type {};
 template<typename To, typename From>
 struct IsHandleConvertible : public std::false_type {};
 
-template<> struct IsHandleConvertible<uv_handle_t, uv_tcp_t>    : public std::true_type {};
-template<> struct IsHandleConvertible<uv_stream_t, uv_tcp_t>    : public std::true_type {};
-template<> struct IsHandleConvertible<uv_handle_t, uv_stream_t> : public std::true_type {};
-template<> struct IsHandleConvertible<uv_handle_t, uv_udp_t>    : public std::true_type {};
-template<> struct IsHandleConvertible<uv_handle_t, uv_timer_t > : public std::true_type {};
-template<> struct IsHandleConvertible<uv_handle_t, uv_async_t > : public std::true_type {};
+template<> struct IsHandleConvertible<uv_handle_t, uv_tcp_t>    : public TrueType {};
+template<> struct IsHandleConvertible<uv_stream_t, uv_tcp_t>    : public TrueType {};
+template<> struct IsHandleConvertible<uv_handle_t, uv_stream_t> : public TrueType {};
+template<> struct IsHandleConvertible<uv_handle_t, uv_udp_t>    : public TrueType {};
+template<> struct IsHandleConvertible<uv_handle_t, uv_timer_t > : public TrueType {};
+template<> struct IsHandleConvertible<uv_handle_t, uv_async_t > : public TrueType {};
 
 // Explicit const specializations
 // I hope I will not need volatile and const volatile specializations
-template<> struct IsHandleConvertible<const uv_handle_t, const uv_tcp_t>    : public std::true_type {};
-template<> struct IsHandleConvertible<const uv_stream_t, const uv_tcp_t>    : public std::true_type {};
-template<> struct IsHandleConvertible<const uv_handle_t, const uv_stream_t> : public std::true_type {};
-template<> struct IsHandleConvertible<const uv_handle_t, const uv_udp_t>    : public std::true_type {};
-template<> struct IsHandleConvertible<const uv_handle_t, const uv_timer_t > : public std::true_type {};
-template<> struct IsHandleConvertible<const uv_handle_t, const uv_async_t > : public std::true_type {};
+template<> struct IsHandleConvertible<const uv_handle_t, const uv_tcp_t>    : public TrueType {};
+template<> struct IsHandleConvertible<const uv_stream_t, const uv_tcp_t>    : public TrueType {};
+template<> struct IsHandleConvertible<const uv_handle_t, const uv_stream_t> : public TrueType {};
+template<> struct IsHandleConvertible<const uv_handle_t, const uv_udp_t>    : public TrueType {};
+template<> struct IsHandleConvertible<const uv_handle_t, const uv_timer_t > : public TrueType {};
+template<> struct IsHandleConvertible<const uv_handle_t, const uv_async_t > : public TrueType {};
 
 /*
  Function CastHandleTo<To, From> performs allowable casting from pointer to type From to pointer to type To.
  If casting is not allowed then compiler would complain.
 */
 template<typename To, typename From>
-typename std::enable_if<std::is_same<To, From>::value || IsHandleConvertible<To, From>::value, To>::type* CastHandleTo(From* ptr)
+typename std::enable_if<IsSame<To, From>::value || IsHandleConvertible<To, From>::value, To>::type* CastHandleTo(From* ptr)
 {
     return reinterpret_cast<To*>(ptr);
 }
