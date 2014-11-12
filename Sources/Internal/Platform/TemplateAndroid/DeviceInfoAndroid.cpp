@@ -33,6 +33,7 @@
 
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "unistd.h"
 
 DAVA::String intermediateStr;
