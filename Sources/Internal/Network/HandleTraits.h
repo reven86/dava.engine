@@ -52,7 +52,7 @@ template<> struct IsHandleType<uv_async_t>  : public TrueType {};
  to pointer of type To, where From and To should be libuv handle types
 */
 template<typename To, typename From>
-struct IsHandleConvertible : public std::false_type {};
+struct IsHandleConvertible : public FalseType {};
 
 template<> struct IsHandleConvertible<uv_handle_t, uv_tcp_t>    : public TrueType {};
 template<> struct IsHandleConvertible<uv_stream_t, uv_tcp_t>    : public TrueType {};
