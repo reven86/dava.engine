@@ -23,7 +23,7 @@ import sys
 import os.path
 import time
 
-# Work around to get correct ip adress on mac os x on wifi connection
+# Workaround to get correct ip adress on mac os x on wifi connection
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("gmail.com", 80))
 current_ip = s.getsockname()[0]
@@ -62,8 +62,12 @@ elif sys.platform == 'win32':
         ponen_obj = subprocess.Popen(["..\\Release\\UnitTestsVS2010.exe", "-host", # run on local PC
                       str(HOST), "-port", str(PORT)], cwd="./..")
 elif sys.platform == "darwin":
-    # TODO set correct path for you
-    app_path = "/Users/l_chayaka/Library/Developer/Xcode/DerivedData/TemplateProjectMacOS-dbxxssltfwptblcqvujqzliwpvah/Build/Products/Debug/UnitTests.app"
+    if os.path.exists("./UnitTests.app")
+        # if run on teamcity current dir is: Projects/UnitTests/DerivedData/TemplateProjectMacOS/Build/Products/Release
+        app_path = "./UnitTests.app"
+    else:
+        # run on local machine from dir: UnitTests/Report
+        app_path = "../Release/UnitTests.app"
     ponen_obj = subprocess.Popen(["open", "-a", app_path, "--args", "-host", str(HOST), "-port", str(PORT)])
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
