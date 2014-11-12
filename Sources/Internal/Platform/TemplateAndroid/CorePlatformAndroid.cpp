@@ -159,6 +159,8 @@ namespace DAVA
 		{
 			width = w;
 			height = h;
+            
+            DeviceInfo::InitializeScreenInfo();
 
 			UpdateScreenMode();
 		}
