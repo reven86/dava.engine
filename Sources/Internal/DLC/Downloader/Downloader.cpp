@@ -27,11 +27,12 @@
 =====================================================================================*/
 
 #include "Downloader.h"
+#include "DLC/Downloader/DownloadManager.h"
 
 namespace DAVA
 {
 
-size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 size)
+bool Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 size)
 {
     size_t written = 0;
     File *destFile = File::Create(storePath, File::OPEN | File::WRITE | File::APPEND);
@@ -39,14 +40,15 @@ size_t Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 s
     {
         written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
 
+        DownloadManager::Instance()->ResetRetriesCount();
         SafeRelease(destFile);
+        return true;
     }
     else
     {
         Logger::Error("[Downloader::SaveData] Cannot open file to save data");
+        return false;
     }
-
-    return written;
 }
     
 void Downloader::SetProgressNotificator(Function<void (uint64)> progressNotifier)

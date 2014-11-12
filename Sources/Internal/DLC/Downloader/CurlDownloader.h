@@ -73,20 +73,11 @@ private:
      */
     void SaveChunkHandler(BaseObject *caller, void *callerData, void *userData);
     /**
-        \brief Get downloaded data from the memory and store it
-        
-     */
-    DownloadError SaveDownloadedChunk(uint32 size);
-    /**
      \brief Downloads a part of file using a number of download threads
-     \param[in] url - destination file Url
-     \param[in] savePath - path to save location of remote file
      \param[in] seek - position inside remote file to download from
      \param[in] size - size of data do download
-     \param[in] partsCount - quantity of download threads
-     \param[in] timeout - operation timeout
      */
-    DownloadError DownloadRangeOfFile(const String &url, const FilePath &savePath, uint64 seek, uint32 size, uint8 partsCount, int32 timeout);
+    DownloadError DownloadRangeOfFile(uint64 seek, uint32 size);
     /**
         \brief Data receive handler for all easy handles which downloads a data
         \param[in] ptr - pointer to incoming data chunk
@@ -112,25 +103,23 @@ private:
     DownloadError HttpCodeToDownloadError(uint32 code) const;
     /**
         \brief Create one of easy handles to download content. Returns a pointer to new created curl easy handle
-        \param[in] url - remote file Url
         \param[in] part - pointer to download part which contains data for current download thread
-        \param[in] timeout - operation timeout
      */
-    CURL *CreateEasyHandle(const String &url, DownloadPart *part, int32 timeout);
+    void SetupEasyHandle(CURL *handle, DownloadPart *part);
     /**
         \brief Prepare all we need to start or resume download
         \param[in] multiHandle - pointer to Curl multi interface handle
-        \param[in] url - destination file Url
-        \param[in] savePath - path to save location of remote file
-        \param[in] partsCount - quantity of download threads
-        \param[in] timeout - operation timeout
+        \param[in] seek - position inside remote file to download from
+        \param[in] size - size of data do download
     */
-    DownloadError CreateDownload(CURLM **multiHandle, const String &url, const FilePath &savePath, uint64 seek, uint32 size,  uint8 partsCount, int32 timeout);
+    DownloadError CreateDownload();
+    DownloadError SetupDownload(uint64 seek, uint32 size);
+    void SetupDownloadPart(DownloadPart *part, uint64 seek, uint32 size);
     /**
         \brief Do a prepared download. Do nothing and returnes DLE_NO_ERROR if there is no easy handles.
         \param[in] multiHandle - pointer to Curl multi interface handle
      */
-    CURLMcode Perform(CURLM *multiHandle);
+    CURLMcode Perform();
     /**
         \brief Cleanup all used Curl resurces when they are not needed anymore
      */
@@ -138,9 +127,8 @@ private:
     /**
         \brief Set up Curl timeouts
         \param[in] handle - Curl easy handle to set options
-        \param[in] timeout - operations timeout
      */
-    void SetTimeout(CURL *easyHandle, int32 timeout);
+    void SetTimeout(CURL *easyHandle);
     /**
         \brief Handle download results and return generalized result
      */
@@ -167,16 +155,21 @@ private:
 private:
     static bool isCURLInit;
     bool isDownloadInterrupting;
+    uint8 currentDownloadPartsCount;
     Vector<DownloadPart *> downloadParts;
     Vector<CURL *> easyHandles;
     CURLM *multiHandle;
     FilePath storePath;
+    String downloadUrl;
+    int32 operationTimeout;
 
     static ErrorWithPriority errorsByPriority[];
     
-    Mutex writeMutex;
     DownloadError saveResult;
     DataChunkInfo *chunkInfo;
+    Mutex chunksMutex;
+    List<DataChunkInfo *> chunksToSave;
+    Thread *saveThread;
 };
     
 }

@@ -120,26 +120,79 @@ class Downloader;
 class DownloadPart
 {
 public:
-    DownloadPart(uint64 loadFrom, uint32 partSize);
-    ~DownloadPart();
+    DownloadPart(Downloader *currentDownloader);
     
+    bool SaveToBuffer(char8 *srcBuf, uint32 size);
+    
+    inline void SetDestinationBuffer(char8 *dstBuffer);
+    inline void SetSeekPos(uint32 seek);
+    inline uint64 GetSeekPos() const;
+    inline void SetSize(uint32 size);
+    inline uint32 GetSize() const;
+    inline void SetProgress(uint32 newProgress);
+    inline uint32 GetProgress() const;
+    
+    inline Downloader *GetDownloader() const;
+    
+private:
     /*
         Used to pass a pointer to current Downloader into DataReceive handler
      */
     Downloader *downloader;
-
-    const uint64 seekPos;
-    const uint32 size;
     char8 *dataBuffer;
+    
+    uint32 downloadSize;
+    uint64 seekPos;
     uint32 progress;
 };
+    
+inline void DownloadPart::SetDestinationBuffer(char8 *dstBuffer)
+{
+    dataBuffer = dstBuffer;
+}
 
-struct DataChunkInfo
+inline void DownloadPart::SetSeekPos(uint32 seek)
+{
+    seekPos = seek;
+}
+
+inline uint64 DownloadPart::GetSeekPos() const
+{
+    return seekPos;
+}
+
+inline void DownloadPart::SetSize(uint32 size)
+{
+    downloadSize = size;
+}
+
+inline uint32 DownloadPart::GetSize() const
+{
+    return downloadSize;
+}
+
+inline void DownloadPart::SetProgress(uint32 newProgress)
+{
+    progress = newProgress;
+}
+
+inline uint32 DownloadPart::GetProgress() const
+{
+    return progress;
+}
+
+inline Downloader *DownloadPart::GetDownloader() const
+{
+    return downloader;
+}
+
+struct DataChunkInfo : public BaseObject
 {
     DataChunkInfo(uint32 size);
     ~DataChunkInfo();
 
     char8 *buffer;
+    uint32 bufferSize;
     uint64 progress;
 };
 

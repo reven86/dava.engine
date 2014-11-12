@@ -49,25 +49,38 @@ DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const Fil
 
 }
 
-DownloadPart::DownloadPart(uint64 loadFrom, uint32 partSize)
-    : size(partSize)
+DownloadPart::DownloadPart(Downloader *currentDownloader)
+    : downloader(currentDownloader)
+    , dataBuffer(0)
+    , downloadSize(0)
+    , seekPos(0)
     , progress(0)
-    , seekPos(loadFrom)
     
 {
-    dataBuffer = new char8[partSize];
 }
-
-DownloadPart::~DownloadPart()
+    
+bool DownloadPart::SaveToBuffer(char8 *srcBuf, uint32 size)
 {
-    SafeDeleteArray(dataBuffer);
+    DVASSERT(downloadSize - progress >= size);
+    if (downloadSize - progress > 0)
+    {
+        Memcpy(dataBuffer + progress, srcBuf, size);
+        progress += size;
+        return true;
+    }
+    else
+    {
+        Logger::Error("[DownloadPart::SaveToBuffer] Cannot save data.");
+    }
+    return false;
 }
 
 DataChunkInfo::DataChunkInfo(uint32 size)
     : buffer(NULL)
+    , bufferSize(size)
     , progress(0)
 {
-    buffer = new char8[size];
+    buffer = new char8[bufferSize];
 }
 
 DataChunkInfo::~DataChunkInfo()
