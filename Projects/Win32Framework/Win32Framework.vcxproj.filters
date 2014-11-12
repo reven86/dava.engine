@@ -1596,6 +1596,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\AnimationData.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystemConfig.h">
+      <Filter>Internal\Autotesting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2441,9 +2444,6 @@
     <ClCompile Include="..\..\Sources\Internal\Autotesting\RectSwig.cpp">
       <Filter>Internal\Autotesting</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Autotesting\UIControlSwig.cpp">
-      <Filter>Internal\Autotesting</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\VectorSwig.cpp">
       <Filter>Internal\Autotesting</Filter>
     </ClCompile>
@@ -2866,6 +2866,10 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\AnimationData.cpp">
       <Filter>Internal\Scene3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\UIControlSwig.cpp">
+      <Filter>Internal\Autotesting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -434,6 +434,7 @@ local function select_list_cell(item, list, isHorisontalList, pattern, firstElem
     assert(WaitControl(list), "Couldn't find " .. list)
     local to_scrool = isHorisontalList and HorizontalScroll or VerticalScroll
     local function click() if IsVisible(cell, list) and IsVisible(cell) then ClickControl(cell) return true end return false end
+
     if click() then
         return true
     end
