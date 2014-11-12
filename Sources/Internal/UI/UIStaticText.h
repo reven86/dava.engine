@@ -115,6 +115,7 @@ public:
 protected:
     void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
+    void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;
 
 protected:
     TextBlock *textBlock;

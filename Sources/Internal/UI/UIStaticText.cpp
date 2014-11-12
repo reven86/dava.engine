@@ -36,8 +36,10 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
+#include "Render/RenderHelper.h"
 #include "Animation/LinearAnimation.h"
 
+#define LOCALIZATION_RESERVED_PORTION (0.6f)
 namespace DAVA
 {
 
@@ -245,9 +247,83 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     }
 
     textBlock->Draw(textBg->GetDrawColor());
+#if defined(LOCALIZATION_DEBUG)
+    DrawLocalizationDebug(textGeomData);
+#endif
 	textBg->Draw(textGeomData);
 }
+void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) const
+{
+    if (!textBlock->GetMultiline())
+    {
+        if (textBg->GetSprite() != NULL && GetSize().x*LOCALIZATION_RESERVED_PORTION < textBg->GetSprite()->GetSize().x)
+        {
+            RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.f);
+            RenderHelper::Instance()->DrawRect(textGeomData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
+            RenderManager::Instance()->ResetColor();
+        }
+        if (textBg->GetSprite() != NULL && GetSize().x < textBg->GetSprite()->GetSize().x)
+        {
+            RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 0.5f);
+            RenderHelper::Instance()->FillRect(textGeomData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
+            RenderManager::Instance()->ResetColor();
+        }
+    }
+    else
+    {
+        DAVA::Color highliteColor(0.0f, 0.0f, 0.0f, 0.5f);
+        const auto & strings = textBlock->GetMultilineStrings();
+        const auto & text = textBlock->GetText();
+        size_t subStringIndx = 0;
+        bool needHighlite = false;
+        size_t substrC = 0;
+        for (size_t textC = 0; textC < text.size(); textC++)
+        {
+            if (substrC >= strings[subStringIndx].size())
+            {
+                substrC = 0;
+                subStringIndx++;
+            }
+            if (subStringIndx >= strings.size())
+            {
+                needHighlite = true;
+                highliteColor.r = 1.0f;
+                break;
+            }
+            if (!iswspace(text[textC]))
+            {
+                if (strings[subStringIndx][substrC] != text[textC])
+                {
+                    needHighlite = true;
+                    highliteColor.r = 1.0f;
+                    break;
+                }
+                substrC++;
+            }
+            //we are lenient at the beginning of substring so that we can skip whitespace characters
+            else if (substrC != 0)
+                substrC++;
 
+        }
+        if (GetSize().y < textBg->GetSprite()->GetSize().y)
+        {
+            highliteColor.b = 1.0f;
+            needHighlite = true;
+        }
+        if (GetSize().y*LOCALIZATION_RESERVED_PORTION< textBg->GetSprite()->GetSize().y)
+        {
+            RenderManager::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.f);
+            RenderHelper::Instance()->DrawRect(textGeomData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
+            RenderManager::Instance()->ResetColor();
+        }
+        if (needHighlite)
+        {
+            RenderManager::Instance()->SetColor(highliteColor);
+            RenderHelper::Instance()->FillRect(textGeomData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
+            RenderManager::Instance()->ResetColor();
+        }
+    }
+}
 void UIStaticText::SetParentColor(const Color &parentColor)
 {
     UIControl::SetParentColor(parentColor);
