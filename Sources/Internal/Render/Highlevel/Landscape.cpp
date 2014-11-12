@@ -698,8 +698,12 @@ void Landscape::FlushQueue()
 {
     if (queueRenderCount == 0) return;
     
-	//currentMaterial->Draw(landscapeRDOArray[queueRdoQuad], indices, queueRenderCount);
-	tileMaskMaterial->Draw(landscapeRDOArray[queueRdoQuad], indices, queueRenderCount);
+	//currentMaterial->Draw(landscapeRDOArray[queueRdoQuad], indices, queueRenderCount);               
+	//tileMaskMaterial->Draw(landscapeRDOArray[queueRdoQuad], indices, queueRenderCount);
+    //just temporary copied it here
+    RenderManager::Instance()->SetRenderData(landscapeRDOArray[queueRdoQuad]);
+    RenderManager::Instance()->AttachRenderData();
+    RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, queueRenderCount, EIF_16, indices);
 	
 	drawIndices += queueRenderCount;
 

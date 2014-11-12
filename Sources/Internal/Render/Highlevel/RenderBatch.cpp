@@ -104,70 +104,24 @@ void RenderBatch::SetMaterial(NMaterial * _material)
 void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
 //  TIME_PROFILE("RenderBatch::Draw");
-//	if(!renderObject)return;
-    DVASSERT(renderObject != 0);    
-    
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-    
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if ((queryRequested >= 0) && occlusionQuery->IsResultAvailable())
-        {
-            uint32 result = 0;
-            occlusionQuery->GetQuery(&result);
-            if (result == 0 && ((globalFrameIndex - queryRequestFrame) < 3) && (lastFraemDrawn == globalFrameIndex - 1))
-            {
-                //RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
-                occlusionQuery->ResetResult();
-                queryRequested = -2;
-            }
-            else queryRequested = -1;
-        }
-    }
-    
-    if (queryRequested < -1)
-    {
-        queryRequested++;
-        RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
-        return;
-    }
-#endif
-	
-    
+
+    DVASSERT(renderObject);    	    
     
     renderObject->BindDynamicParameters(camera);
     material->BindMaterialTechnique(ownerRenderPass);
     
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if (queryRequested == -1)
-        {
-            queryRequestFrame = globalFrameIndex;
-            occlusionQuery->BeginQuery();
-            queryRequested = 0;
-        }
-        else queryRequested++;
-    }
-#endif
-
-	if (dataSource)
-		material->Draw(dataSource);
-	else
-		material->Draw(renderDataObject);
-    
-#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
-    lastFraemDrawn = globalFrameIndex;
-    
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
-    {
-        if (queryRequested == 0)
-        {
-            occlusionQuery->EndQuery();
-        }
-    }
-#endif
+    //draw code
+    RenderDataObject *renderData = renderDataObject;
+    if (dataSource)
+        renderData = dataSource->renderDataObject;    
+    RenderManager::Instance()->SetRenderData(renderData);
+    RenderManager::Instance()->AttachRenderData();
+    DVASSERT(renderData);    
+    // TODO: rethink this code
+    void * indices = 0;
+    if (!renderData->GetIndexBufferID())
+        indices = renderData->indices;    
+    RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, renderData->indexCount, renderData->GetIndexFormat(), indices);
 }
     
 void RenderBatch::SetRenderObject(RenderObject * _renderObject)

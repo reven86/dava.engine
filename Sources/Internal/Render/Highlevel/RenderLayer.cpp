@@ -199,7 +199,7 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
     if (!incomingGroup)
         return;
     
-    incomingGroup->Draw(ownerRenderPass, camera);        
+    incomingGroup->Draw(ownerRenderPass, camera);
 
     if (currInstancesCount>1)
         drawQue.push_back(std::make_pair(incomingGroup->GetMaterial()->GetParent()->GetMaterialName(), currInstancesCount));
@@ -210,7 +210,11 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
 
 void InstancedRenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
 {
-       
+    /**/
+    RenderLayer::DrawRenderBatchArray(ownerRenderPass, camera, renderLayerBatchArray);
+    return;
+    /**/
+
     incomingGroup = NULL;
     currInstancesCount = 0;
         

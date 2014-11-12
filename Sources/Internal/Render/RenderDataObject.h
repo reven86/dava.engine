@@ -124,7 +124,7 @@ private:
     
     friend class RenderManager;
     friend class RenderManagerGL20;
-	friend class NMaterial;
+	friend class RenderBatch;
 
 	struct DestructorContainer
 	{

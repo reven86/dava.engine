@@ -310,21 +310,7 @@ public:
 	//{TODO: these should be removed and changed to a generic system
 	//setting properties via special setters
 	inline uint8 GetDynamicBindFlags() const;
-	//}END TODO
-	
-    /**
-	 \brief Renders given polygon group with the current material.
-     \param[in] polygonGroup polygon group to render.
-	 */
-    void Draw(PolygonGroup * polygonGroup);
-    
-    /**
-	 \brief Renders given render data object and index array with the current material.
-     \param[in] renderData render data object with set of geometry attribute streams.
-     \param[in] indices array of indices to render.
-     \param[in] indexCount number of indices to render.
-	 */
-	void Draw(RenderDataObject* renderData, uint16* indices = NULL, uint16 indexCount = 0);
+	//}END TODO	    
 	
     /**
 	 \brief Sets flag to the material affectively altering its shaders by define

@@ -1563,51 +1563,7 @@ void NMaterial::InvalidateProperties()
     this->Release();
 }
 
-void NMaterial::Draw(PolygonGroup * polygonGroup)
-{
-	// TODO: Remove support of OpenGL ES 1.0 from attach render data
-	RenderManager::Instance()->SetRenderData(polygonGroup->renderDataObject);
-	RenderManager::Instance()->AttachRenderData();
-	
-	//Logger::FrameworkDebug("[Material::Draw] %s", baseTechnique->GetName().c_str());
-	
-	// TODO: rethink this code
-	if(polygonGroup->renderDataObject->GetIndexBufferID() != 0)
-	{
-		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), 0);
-	}
-	else
-	{
-		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), polygonGroup->indexArray);
-	}
-}
 
-void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 indexCount)
-{
-	DVASSERT(renderData);
-	
-	RenderManager::Instance()->SetRenderData(renderData);
-	RenderManager::Instance()->AttachRenderData();
-	
-	//Logger::FrameworkDebug("[Material::Draw] %s", baseTechnique->GetName().c_str());
-	
-	// TODO: rethink this code
-	if(renderData->GetIndexBufferID() != 0)
-	{
-		RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, renderData->indexCount, renderData->GetIndexFormat(), 0);
-	}
-	else
-	{
-		if(renderData->indexCount)
-		{
-			RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, renderData->indexCount, renderData->GetIndexFormat(), renderData->indices);
-		}
-		else
-		{
-			RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, indexCount, EIF_16, indices);
-		}
-	}
-}
 
 //void NMaterial::SetLight(uint32 index, Light * light, bool forceUpdate)
 //{
