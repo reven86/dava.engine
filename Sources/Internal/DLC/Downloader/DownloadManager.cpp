@@ -662,6 +662,10 @@ void DownloadManager::MakeResumedDownload()
         {
             MakeFullDownload();
         }
+        else
+        {
+        	currentTask->downloadProgress = file->GetSize();
+        }
     }
 }
 

@@ -403,7 +403,6 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     if (NULL != dstFile)
     {
         currentFileSize = dstFile->GetSize();
-        notifyProgress(currentFileSize);
     }
     else
     {
