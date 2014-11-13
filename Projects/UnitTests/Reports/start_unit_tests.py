@@ -62,13 +62,14 @@ elif sys.platform == 'win32':
         ponen_obj = subprocess.Popen(["..\\Release\\UnitTestsVS2010.exe", "-host", # run on local PC
                       str(HOST), "-port", str(PORT)], cwd="./..")
 elif sys.platform == "darwin":
-    if os.path.exists("./UnitTests.app")
+    if os.path.exists("./UnitTests.app"):
         # if run on teamcity current dir is: Projects/UnitTests/DerivedData/TemplateProjectMacOS/Build/Products/Release
         app_path = "./UnitTests.app"
     else:
         # run on local machine from dir: UnitTests/Report
+        # Warning! To make DerivedData relative to project goto Xcode->Preferences->Location->DerivedData select relative 
         app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/UnitTests.app"
-    ponen_obj = subprocess.Popen(["open", "-a", app_path, "--args", "-host", str(HOST), "-port", str(PORT)])
+    ponen_obj = subprocess.Popen(["open", "-W", app_path, "--args", "-host", str(HOST), "-port", str(PORT)])
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("bind: " + str(HOST) + ":" + str(PORT))
