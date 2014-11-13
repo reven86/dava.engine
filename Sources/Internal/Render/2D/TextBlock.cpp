@@ -44,6 +44,7 @@
 #include "Render/2D/TextBlockDistanceRender.h"
 
 #include "Utils/StringUtils.h"
+#include <Thread/LockGuard.h>
 
 namespace DAVA 
 {
@@ -252,57 +253,43 @@ void TextBlock::SetFittingOption(int32 _fittingType)
 
 Font * TextBlock::GetFont()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return font;
 }
 
 const Vector<WideString> & TextBlock::GetMultilineStrings()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return multilineStrings;
 }
 
 const WideString & TextBlock::GetText()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return logicalText;
 }
 
 bool TextBlock::GetMultiline()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return isMultilineEnabled;
 }
 
 bool TextBlock::GetMultilineBySymbol()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return isMultilineBySymbolEnabled;
 }
 
 int32 TextBlock::GetFittingOption()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return fittingType;
 }
 
 float32 TextBlock::GetRenderSize()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return renderSize;
 }
 
@@ -352,30 +339,26 @@ void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
 
 bool TextBlock::GetUseRtlAlign()
 {
-    mutex.Lock();
-    mutex.Unlock();
+    LockGuard<Mutex> guard(mutex);
     return useRtlAlign;
 }
 
 bool TextBlock::IsRtl()
 {
-    mutex.Lock();
-    mutex.Unlock();
+    LockGuard<Mutex> guard(mutex);
     return isRtl;
 }
 
 int32 TextBlock::GetAlign()
 {
-    mutex.Lock();
-    mutex.Unlock();
-	return align;
+    LockGuard<Mutex> guard(mutex);
+    return align;
 }
 	
 int32 TextBlock::GetVisualAlign()
 {
-	mutex.Lock();
-    mutex.Unlock();
-	return GetVisualAlignNoMutexLock();
+    LockGuard<Mutex> guard(mutex);
+    return GetVisualAlignNoMutexLock();
 }
 	
 int32 TextBlock::GetVisualAlignNoMutexLock() const
@@ -390,7 +373,7 @@ int32 TextBlock::GetVisualAlignNoMutexLock() const
 
 Sprite * TextBlock::GetSprite()
 {
-    mutex.Lock();
+    LockGuard<Mutex> guard(mutex);
 
     Sprite* sprite = NULL;
     if (textBlockRender)
@@ -403,21 +386,19 @@ Sprite * TextBlock::GetSprite()
         Logger::Error("[Textblock] getting NULL sprite");
     }
 
-    mutex.Unlock();
-
     return sprite;
 }
 
 bool TextBlock::IsSpriteReady()
 {
-    mutex.Lock();
+    LockGuard<Mutex> guard(mutex);
+
     Sprite* sprite = NULL;
     if (textBlockRender)
     {
         sprite = textBlockRender->GetSprite();
     }
 
-    mutex.Unlock();
     return sprite != NULL;
 }
 
@@ -589,11 +570,11 @@ void TextBlock::CalculateCacheParams()
         else if(((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (requestedSize.dy >= 0 || requestedSize.dx >= 0))
         {
             bool isChanged = false;
-            float prevFontSize = renderSize;
+            float32 prevFontSize = renderSize;
             while (true)
             {
-                float yMul = 1.0f;
-                float xMul = 1.0f;
+                float32 yMul = 1.0f;
+                float32 xMul = 1.0f;
 
                 bool xBigger = false;
                 bool xLower = false;
@@ -655,7 +636,7 @@ void TextBlock::CalculateCacheParams()
                     break;
                 }
 
-                float finalSize = renderSize;
+                float32 finalSize = renderSize;
                 prevFontSize = finalSize;
                 isChanged = true;
                 if(xMul < yMul)
@@ -703,7 +684,7 @@ void TextBlock::CalculateCacheParams()
 
             int32 yOffset = font->GetVerticalSpacing();
             int32 fontHeight = font->GetFontHeight() + yOffset;
-            float lastSize = renderSize;
+            float32 lastSize = renderSize;
 
             textSize.width = 0;
             textSize.height = fontHeight * (int32)multilineStrings.size() - yOffset;
@@ -711,7 +692,7 @@ void TextBlock::CalculateCacheParams()
             bool isChanged = false;
             while (true)
             {
-                float yMul = 1.0f;
+                float32 yMul = 1.0f;
 
                 bool yBigger = false;
                 bool yLower = false;
@@ -763,7 +744,7 @@ void TextBlock::CalculateCacheParams()
                     break;
                 }
 
-                float finalSize = lastSize = renderSize;
+                float32 finalSize = lastSize = renderSize;
                 isChanged = true;
                 finalSize *= yMul;
 
@@ -958,9 +939,7 @@ bool const& TextBlock::IsBiDiSupportEnabled()
 
 const Vector2 & TextBlock::GetTextSize()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return cacheTextSize;
 }
 
@@ -971,9 +950,7 @@ const Vector<int32> & TextBlock::GetStringSizes() const
 
 const Vector2& TextBlock::GetSpriteOffset()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return cacheSpriteOffset;
 }
 
