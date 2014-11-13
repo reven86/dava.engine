@@ -252,6 +252,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 #endif
 	textBg->Draw(textGeomData);
 }
+#if defined(LOCALIZATION_DEBUG)
 void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) const
 {
     if (!textBlock->GetMultiline())
@@ -324,6 +325,7 @@ void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) 
         }
     }
 }
+#endif
 void UIStaticText::SetParentColor(const Color &parentColor)
 {
     UIControl::SetParentColor(parentColor);

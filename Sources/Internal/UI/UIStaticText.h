@@ -115,8 +115,9 @@ public:
 protected:
     void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
+#if defined(LOCALIZATION_DEBUG)
     void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;
-
+#endif
 protected:
     TextBlock *textBlock;
     Vector2 shadowOffset;
