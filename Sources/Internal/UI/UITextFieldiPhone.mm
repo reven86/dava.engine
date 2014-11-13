@@ -177,17 +177,7 @@ namespace DAVA
 	void UITextFieldiPhone::SetTextUseRtlAlign(bool useRtlAlign)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		textFieldHolder.useRtlAlign = (useRtlAlign == true);
-		
-		// Set natural alignment if need
-		switch (textFieldHolder->textField.contentHorizontalAlignment) {
-			case UIControlContentHorizontalAlignmentLeft:
-				textFieldHolder->textField.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
-				break;
-			case UIControlContentHorizontalAlignmentRight:
-				textFieldHolder->textField.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
-				break;
-		}
+        [textFieldHolder setUseRtlAlign:useRtlAlign];
 	}
 	
 	bool UITextFieldiPhone::GetTextUseRtlAlign() const
