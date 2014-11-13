@@ -66,7 +66,7 @@ void UITextFieldMetadata::SetText(const QString& text)
     GetActiveUITextField()->SetText(QStrint2WideString(text));
 }
 
-Font * UITextFieldMetadata::GetFont()
+Font * UITextFieldMetadata::GetFont() const
 {
     if (VerifyActiveParamID())
     {
@@ -221,7 +221,7 @@ void UITextFieldMetadata::SetShadowColor(const QColor& value)
 	GetActiveUITextField()->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
 }
 
-int UITextFieldMetadata::GetTextAlign()
+int UITextFieldMetadata::GetTextAlign() const
 {
 	if (!VerifyActiveParamID())
 	{
@@ -239,6 +239,26 @@ void UITextFieldMetadata::SetTextAlign(int32 align)
     }
 	
 	GetActiveUITextField()->SetTextAlign(align);
+}
+
+bool UITextFieldMetadata::GetTextUseRtlAlign()
+{
+	if (!VerifyActiveParamID())
+	{
+		return false;
+	}
+	
+	return GetActiveUITextField()->GetTextUseRtlAlign();
+}
+
+void UITextFieldMetadata::SetTextUseRtlAlign(bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+	
+	GetActiveUITextField()->SetTextUseRtlAlign(value);
 }
 
 bool UITextFieldMetadata::GetIsPassword() const
@@ -399,6 +419,26 @@ void UITextFieldMetadata::SetIsReturnKeyAutomatically(bool value)
 	}
 	
 	return GetActiveUITextField()->SetEnableReturnKeyAutomatically(value);
+}
+
+int UITextFieldMetadata::GetMaxLength() const
+{
+	if (!VerifyActiveParamID())
+	{
+		return -1;
+	}
+	
+	return GetActiveUITextField()->GetMaxLength();
+}
+
+void UITextFieldMetadata::SetMaxLength(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUITextField()->SetMaxLength(value);
 }
 
 // Initialize the control(s) attached.

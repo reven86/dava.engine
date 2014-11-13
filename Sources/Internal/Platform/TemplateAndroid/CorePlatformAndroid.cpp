@@ -130,9 +130,25 @@ namespace DAVA
 	{
 		if(renderIsActive)
 		{
+			uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+		
 			DAVA::RenderManager::Instance()->Lock();
 			Core::SystemProcessFrame();
 			DAVA::RenderManager::Instance()->Unlock();
+
+			uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 sleepMs = 1;
+
+            int32 fps = RenderManager::Instance()->GetFPS();
+            if(fps > 0)
+            {
+                sleepMs = (1000 / fps) - elapsedTime;
+                if(sleepMs < 1)
+                {
+                    sleepMs = 1;
+                }
+            }
+            Thread::Sleep(sleepMs);
 		}
 	}
 
@@ -181,6 +197,8 @@ namespace DAVA
 
 		Thread::InitGLThread();
 
+		totalTouches.clear();
+
 		if(wasCreated)
 		{
 			RenderManager::Instance()->Lost();
@@ -199,7 +217,37 @@ namespace DAVA
 			wasCreated = true;
 
 			Logger::Debug("[CorePlatformAndroid::] before create renderer");
-			RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+			const GLubyte* glVersion = glGetString(GL_VERSION);
+			Logger::Debug("RENDERER glVersion %s",(const char*)glVersion);
+			if ((NULL != glVersion))
+			{
+				String ver((const char*)glVersion);
+				std::size_t found = ver.find_first_of(".");
+				if (found!=std::string::npos && found > 0)
+				{
+					char cv = ver.at(found-1);
+					int major = atoi(&cv);
+					if(major >= 3)
+					{
+						RenderManager::Create(Core::RENDERER_OPENGL_ES_3_0);
+						Logger::Debug("RENDERER_OPENGL_ES_3_0 ");
+					} else
+					{
+						RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+						Logger::Debug("RENDERER_OPENGL_ES_2_0 ");
+					}
+				}else
+				{
+					RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+					Logger::Debug("RENDERER_OPENGL_ES_2_0 GLVersion invalid format");
+				}
+
+			} else
+			{
+				RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+				Logger::Debug("RENDERER_OPENGL_ES_2_0 NULL");
+			}
+
 			FileSystem::Instance()->Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());

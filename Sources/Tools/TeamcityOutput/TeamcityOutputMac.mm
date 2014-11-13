@@ -28,7 +28,7 @@
 
 
 
-#include "Utils/TeamcityOutput.h"
+#include "TeamcityOutput.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #import <Foundation/Foundation.h>

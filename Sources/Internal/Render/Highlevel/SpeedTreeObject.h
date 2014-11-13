@@ -52,7 +52,7 @@ public:
 
     static bool IsTreeLeafBatch(RenderBatch * batch);
 
-    void BindDynamicParams();
+    virtual void BindDynamicParameters(Camera * camera);
 
     void SetSphericalHarmonics(const Vector<Vector3> & coeffs);
     const Vector<Vector3> & GetSphericalHarmonics() const;

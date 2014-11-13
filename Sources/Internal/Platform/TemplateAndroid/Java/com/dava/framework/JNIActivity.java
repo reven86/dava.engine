@@ -1,9 +1,12 @@
 package com.dava.framework;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import org.fmod.FMODAudioDevice;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -14,8 +17,9 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
-
 import com.bda.controller.Controller;
+
+import java.util.Calendar;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
 {
@@ -56,7 +60,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // Initialize native framework core         
         JNIApplication.GetApplication().InitFramework();
         
-        JNINotificationProvider.AttachToActivity();
+        //JNINotificationProvider.AttachToActivity();
         
         if(null != savedInstanceState)
         {
@@ -107,6 +111,16 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
             }
 		} catch (Exception e) {
 			Log.d("", "no singalStrengthListner");
+		}
+        
+        JNINotificationProvider.AttachToActivity(this);
+        
+		Intent intent = getIntent();
+		if (null != intent) {
+			String uid = intent.getStringExtra("uid");
+			if (uid != null) {
+				JNINotificationProvider.NotificationPressed(uid);
+			}
 		}
     }
     
@@ -177,6 +191,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
+        
+        JNIUtils.onResume();
     }
 
     
@@ -285,8 +301,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	public void PostEventToGL(Runnable event) {
 		glView.queueEvent(event);
 	}
-	
-	public void InitNotification(Builder builder) {
-		Log.e("JNIActivity", "Need to implement InitNotification");
-	}
+
+	public int GetNotificationIcon() {
+        return android.R.drawable.sym_def_app_icon;
+    }
 }
+

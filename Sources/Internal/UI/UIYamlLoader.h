@@ -53,6 +53,7 @@ class Font;
 
 class UIYamlLoader : public BaseObject
 {
+    friend class UIPackageLoader;
 protected:
     ~UIYamlLoader(){}
     UIYamlLoader();
@@ -108,8 +109,8 @@ public:
     YamlNode * GetFittingOptionNodeValue(int32 fitting) const;
 
     void AddScrollBarToLink(UIScrollBar* scroll,const String& delegatePath);
-    static String GetControlPath(const UIControl* conrol);
-    static UIControl* GetControlByPath(const String& controlPath, UIControl* rootControl);
+
+    inline bool GetAssertIfCustomControlNotFound() const;
 
 protected:
     //Internal functions that do actual loading and saving.
@@ -143,6 +144,12 @@ protected:
 
     Map<UIScrollBar*,String> scrollsToLink;    
 };
+    
+inline bool UIYamlLoader::GetAssertIfCustomControlNotFound() const
+{
+    return assertIfCustomControlNotFound;
+}
+
 };
 
 #endif // __DAVAENGINE_YAML_LOADER_H__

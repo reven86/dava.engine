@@ -45,12 +45,15 @@
 #include "editfontdialog.h"
 
 static const QString TEXTFIELD_PROPERTY_BLOCK_NAME = "Text";
+static const String TEXT_MARGINS_PROPERTY_PREFIX = "Text";
 
 TextPropertyGridWidget::TextPropertyGridWidget(QWidget *parent) :
 BasePropertyGridWidget(parent),
 ui(new Ui::TextPropertyGridWidget)
 {
     ui->setupUi(this);
+    ui->marginsWidget->SetPropertyPrefix(TEXT_MARGINS_PROPERTY_PREFIX);
+
 	SetPropertyBlockName(TEXTFIELD_PROPERTY_BLOCK_NAME);
 	BasePropertyGridWidget::InstallEventFiltersForWidgets(this);
 }
@@ -63,6 +66,8 @@ TextPropertyGridWidget::~TextPropertyGridWidget()
 void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 {
     BasePropertyGridWidget::Initialize(activeMetadata);
+    ui->marginsWidget->Initialize(activeMetadata);
+
 	FillComboboxes();
     
     PROPERTIESMAP propertiesMap = BuildMetadataPropertiesMap();
@@ -72,7 +77,6 @@ void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_PROPERTY_NAME, ui->fontPresetComboBox, false, true);
     RegisterPushButtonWidgetForProperty(propertiesMap, PropertyNames::FONT_PROPERTY_NAME, ui->fontPresetEditButton, false, true);
     
-    RegisterLineEditWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_NAME, ui->textLineEdit);
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::SHADOW_OFFSET_X, ui->shadowOffsetXSpinBox, false, true);
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::SHADOW_OFFSET_Y, ui->shadowOffsetYSpinBox, false, true);
     RegisterColorWidgetForProperty(propertiesMap, PropertyNames::SHADOW_COLOR, ui->shadowColorWidget, false, true);
@@ -84,6 +88,9 @@ void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 	//								dynamic_cast<UIButtonMetadata*>(activeMetadata)		!= NULL);
 	//ui->alignComboBox->setEnabled(enableTextAlignComboBox);
     ui->alignComboBox->setEnabled(true); // in any case metadata is one of: UIStaticTextMetadata, UITextFieldMetadata, UIButtonMetadata
+    
+	RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_USE_RTL_ALIGN_PROPERTY_NAME, ui->useRtlAlignCheckBox, false, true);
+	ui->useRtlAlignCheckBox->setEnabled(true);
     
     // register font and size to display selected font and size, disable editing
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_SIZE_PROPERTY_NAME, ui->fontSizeSpinBox, false, true);
@@ -98,16 +105,18 @@ void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 
 void TextPropertyGridWidget::Cleanup()
 {
+    ui->marginsWidget->Cleanup();
+
     UnregisterPushButtonWidget(ui->fontSelectButton);
     UnregisterSpinBoxWidget(ui->fontSizeSpinBox);
     
-    UnregisterLineEditWidget(ui->textLineEdit);
     UnregisterSpinBoxWidget(ui->shadowOffsetXSpinBox);
     UnregisterSpinBoxWidget(ui->shadowOffsetYSpinBox);
     UnregisterColorWidget(ui->shadowColorWidget);
     
     UnregisterComboBoxWidget(ui->alignComboBox);
-    
+    UnregisterCheckBoxWidget(ui->useRtlAlignCheckBox);
+	
     UnregisterComboBoxWidget(ui->fontPresetComboBox);
     UnregisterPushButtonWidget(ui->fontPresetEditButton);
     

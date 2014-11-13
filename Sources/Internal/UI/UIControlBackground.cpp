@@ -37,8 +37,33 @@
 #include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
+#include <limits>
+
 namespace DAVA
 {
+
+const uint16 UIControlBackground::StretchDrawData::indeces[18 * 3] = {
+    0, 1, 4,
+    1, 5, 4,
+    1, 2, 5,
+    2, 6, 5,
+    2, 3, 6,
+    3, 7, 6,
+            
+    4, 5, 8,
+    5, 9, 8,
+    5, 6, 9,
+    6, 10, 9,
+    6, 7, 10,
+    7, 11, 10,
+            
+    8, 9, 12,
+    9, 12, 13,
+    9, 10, 13,
+    10, 14, 13,
+    10, 11, 14,
+    11, 15, 14
+};
 
 UIControlBackground::UIControlBackground()
 :	spr(NULL)
@@ -54,7 +79,9 @@ UIControlBackground::UIControlBackground()
 ,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
 ,	lastDrawPos(0, 0)
 ,	tiledData(NULL)
+,   stretchData(NULL)
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
+,   margins(NULL)
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
 }
@@ -74,6 +101,7 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
     align = srcBackground->align;
 
     SetDrawType(srcBackground->type);
+    SetMargins(srcBackground->GetMargins());
 
     color = srcBackground->color;
     spriteModification = srcBackground->spriteModification;
@@ -90,6 +118,7 @@ UIControlBackground::~UIControlBackground()
 {
     SafeRelease(spr);
     SafeRelease(shader);
+    SafeDelete(margins);
     ReleaseDrawData();
 }
 
@@ -104,7 +133,8 @@ bool UIControlBackground::IsEqualTo( const UIControlBackground *back ) const
         GetModification() != back->GetModification() ||
         GetLeftRightStretchCap() != back->GetLeftRightStretchCap() ||
         GetTopBottomStretchCap() != back->GetTopBottomStretchCap() ||
-        GetPerPixelAccuracyType() != back->GetPerPixelAccuracyType())
+        GetPerPixelAccuracyType() != back->GetPerPixelAccuracyType() ||
+        GetMargins() != back->GetMargins())
         return false;
     return true;
 }
@@ -251,8 +281,17 @@ void UIControlBackground::SetParentColor(const Color &parentColor)
     }
 }
 
-void UIControlBackground::Draw(const UIGeometricData &geometricData)
+void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 {
+    UIGeometricData geometricData;
+    geometricData.size = parentGeometricData.size;
+    if (margins)
+    {
+        geometricData.position = Vector2(margins->left, margins->top);
+        geometricData.size += Vector2(-(margins->right + margins->left), -(margins->bottom + margins->top));
+    }
+
+    geometricData.AddToGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
@@ -485,6 +524,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 
         case DRAW_TILED:
             RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData);
+            DrawTiled(geometricData, drawState.GetRenderState());
         break;
         default:
             break;
@@ -497,6 +537,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 void UIControlBackground::ReleaseDrawData()
 {
     SafeDelete(tiledData);
+    SafeDelete(stretchData);
 }
 
 void UIControlBackground::SetLeftRightStretchCap(float32 _leftStretchCap)
@@ -528,5 +569,20 @@ void UIControlBackground::SetShader(Shader *_shader)
     }
 }
 
+void UIControlBackground::SetMargins(const UIMargins* uiMargins)
+{
+    if (!uiMargins || uiMargins->empty())
+    {
+        SafeDelete(margins);
+        return;
+    }
+
+    if (!margins)
+    {
+        margins = new UIControlBackground::UIMargins();
+    }
+
+    *margins = *uiMargins;
+}
 
 };

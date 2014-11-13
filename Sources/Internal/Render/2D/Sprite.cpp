@@ -42,6 +42,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "Render/Texturedescriptor.h"
 #include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 #define NEW_PPA
@@ -379,20 +380,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
     
-    int32 size = (int32)Max(width, height);
-    
-    Image *img = NULL;
-    if(IsPowerOf2(width) && IsPowerOf2(height))
-    {
-        img = SafeRetain(image);
-    }
-    else
-    {
-        EnsurePowerOf2(size);
-
-        img = Image::Create((uint32)size, (uint32)size, image->GetPixelFormat());
-        img->InsertImage(image, 0, 0);
-    }
+    Image *img = ImageSystem::Instance()->EnsurePowerOf2Image(image);
 
     Texture* texture = Texture::CreateFromData(img, false);
 
@@ -467,6 +455,12 @@ String Sprite::GetPathString( const Sprite *sprite )
 
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
+    Sprite* sprite = GetSpriteFromMap(path);
+    if (sprite)
+    {
+        return sprite;
+    }
+    
     Vector<Image*> images;
     ImageSystem::Instance()->Load(path, images);
     if (images.size() == 0)
@@ -474,7 +468,11 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
         return NULL;
     }
 
-    Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
+    sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
+    if (sprite)
+    {
+        sprite->SetRelativePathname(path);
+    }
 
     for_each(images.begin(), images.end(), SafeRelease<Image>);
 
@@ -483,6 +481,8 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
 {
+    Clear();
+    
     Vector2 offset((float32)xOffset, (float32)yOffset);
     size = Vector2(sprWidth, sprHeight);
 	if (!contentScaleIncluded)
@@ -1001,6 +1001,16 @@ void Sprite::ReloadExistingTextures()
             Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
         }
     }
+}
+    
+void Sprite::SetRelativePathname(const FilePath& path)
+{
+    spriteMapMutex.Lock();
+    spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
+    relativePathname = path;
+    spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
+    spriteMapMutex.Unlock();
+    GetTexture()->SetPathname(path);
 }
 
 };

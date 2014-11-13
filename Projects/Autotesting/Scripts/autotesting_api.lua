@@ -467,7 +467,7 @@ function SelectHorizontal(list, item, pattern, firstElement, back)
 end
 
 function SelectFirstHorizontal(list, firstElement)
-    return select_list_cell(list .. "/0", list, true)
+    return select_list_cell("0", list, true)
 end
 
 function SelectVertical(list, item, pattern, firstElement, back)
@@ -476,7 +476,7 @@ function SelectVertical(list, item, pattern, firstElement, back)
 end
 
 function SelectFirstVertical(list)
-    return select_list_cell(list .. "/0", list)
+    return select_list_cell("0", list)
 end
 
 function GetNewPosition(list, vertical, invert)

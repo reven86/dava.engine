@@ -693,11 +693,8 @@ void BasePropertyGridWidget::UpdateSpinBoxWidgetWithPropertyValue(QSpinBox* spin
                                                                   const QMetaProperty& curProperty)
 {
     // Get the current value.
-    bool isPropertyValueDiffers = false;
-    float propertyValue =
-        PropertiesHelper::GetAllPropertyValues<float>(this->activeMetadata,
-                                                      curProperty.name(),
-                                                      isPropertyValueDiffers);
+    float propertyValue = PropertiesHelper::GetAllPropertyValues<float>(this->activeMetadata,
+                                                                        curProperty.name());
     
     {
         // For Spin Box set some value irregardless of isPropertyValueDiffers flag.

@@ -385,6 +385,42 @@ void UIButton::SetStateTextAlign(int32 state, int32 align)
         state >>= 1;
     }
 }
+	
+void UIButton::SetStateTextUseRtlAlign(int32 state, bool value)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            GetOrCreateTextBlock((eButtonDrawState)i)->SetTextUseRtlAlign(value);
+        }
+        state >>= 1;
+    }
+}
+
+void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            GetOrCreateBackground((eButtonDrawState)i)->SetMargins(margins);
+        }
+        state >>= 1;
+    }
+}
+
+void UIButton::SetStateTextMargins(int32 state, const UIControlBackground::UIMargins* margins)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            GetOrCreateTextBlock((eButtonDrawState)i)->SetMargins(margins);
+        }
+        state >>= 1;
+    }
+}
 
 void UIButton::SetStateTextControl(int32 state, UIStaticText *textControl)
 {
@@ -435,8 +471,11 @@ void UIButton::Draw(const UIGeometricData &geometricData)
 {
     DVASSERT(selectedBackground);
     selectedBackground->Draw(geometricData);
+    
     if (selectedTextBlock)
+    {
         selectedTextBlock->Draw(geometricData);
+    }
 }
 
 void UIButton::SetParentColor( const Color &parentColor )
@@ -468,6 +507,21 @@ UIControlBackground *UIButton::GetOrCreateBackground(eButtonDrawState drawState)
     }
 
     return GetBackground(drawState);
+}
+    
+void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground *newBackground)
+{
+    DVASSERT(0 <= drawState && drawState < DRAW_STATE_COUNT);
+    
+    if (drawState == DRAW_STATE_UNPRESSED)
+    {
+        SafeRelease(background);
+        background = SafeRetain(newBackground);
+    }
+    
+    SafeRelease(stateBacks[drawState]);
+    stateBacks[drawState] = SafeRetain(newBackground);
+    selectedBackground = GetActualBackgroundForState(controlState);
 }
 
 UIStaticText *UIButton::GetOrCreateTextBlock(eButtonDrawState drawState)
@@ -568,9 +622,11 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * colorNode = node->Get(Format("stateColor%s", statePostfix.c_str()));
         const YamlNode * leftRightStretchCapNode = node->Get(Format("leftRightStretchCap%s", statePostfix.c_str()));
         const YamlNode * topBottomStretchCapNode = node->Get(Format("topBottomStretchCap%s", statePostfix.c_str()));
+        const YamlNode* marginsNode = node->Get(Format("stateMargins%s", statePostfix.c_str()));
 
         if (stateSpriteNode || stateDrawTypeNode || stateAlignNode ||
-            colorInheritNode || colorNode || perPixelAccuracyNode || leftRightStretchCapNode || topBottomStretchCapNode)
+            colorInheritNode || colorNode || leftRightStretchCapNode ||
+            topBottomStretchCapNode || perPixelAccuracyNode || marginsNode)
         {
             RefPtr<UIControlBackground> stateBackground;
             if (drawState == DRAW_STATE_UNPRESSED)
@@ -648,11 +704,18 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
                 Color color = loader->GetColorFromYamlNode(colorNode);
                 stateBackground->SetColor(color);
             }
+            
+            if (marginsNode)
+            {
+                UIControlBackground::UIMargins margins(marginsNode->AsVector4());
+                stateBackground->SetMargins(&margins);
+            }
         }
 
         const YamlNode * stateFontNode = node->Get(Format("stateFont%s", statePostfix.c_str()));
         const YamlNode * stateTextAlignNode = node->Get(Format("stateTextAlign%s", statePostfix.c_str()));
         const YamlNode * stateTextColorNode = node->Get(Format("stateTextcolor%s", statePostfix.c_str()));
+        const YamlNode * stateTextUseRtlAlignNode = node->Get(Format("stateTextUseRtlAlign%s", statePostfix.c_str()));
         const YamlNode * stateShadowColorNode = node->Get(Format("stateShadowcolor%s", statePostfix.c_str()));
         const YamlNode * stateShadowOffsetNode = node->Get(Format("stateShadowoffset%s", statePostfix.c_str()));
         const YamlNode * stateFittingOptionNode = node->Get(Format("stateFittingOption%s", statePostfix.c_str()));
@@ -660,12 +723,13 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * multilineNode = node->Get(Format("stateMultiline%s", statePostfix.c_str()));
         const YamlNode * multilineBySymbolNode = node->Get(Format("stateMultilineBySymbol%s", statePostfix.c_str()));
         const YamlNode * textColorInheritTypeNode = node->Get(Format("stateTextColorInheritType%s", statePostfix.c_str()));
+        const YamlNode * stateTextMarginsNode = node->Get(Format("stateTextMargins%s", statePostfix.c_str()));
         const YamlNode * textPerPixelAccuracyTypeNode = node->Get(Format("stateTextPerPixelAccuracyType%s", statePostfix.c_str()));
-                                                   
+ 
         if (stateFontNode || stateTextAlignNode || stateTextColorNode ||
             stateShadowColorNode || stateShadowOffsetNode || stateFittingOptionNode ||
             stateTextNode || multilineNode || multilineBySymbolNode || textColorInheritTypeNode ||
-            textPerPixelAccuracyTypeNode)
+            stateTextMarginsNode || textPerPixelAccuracyTypeNode || stateTextUseRtlAlignNode)
         {
             RefPtr<UIStaticText> stateTextBlock;
             if (drawState == DRAW_STATE_UNPRESSED)
@@ -687,7 +751,12 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
             if (stateTextAlignNode)
             {
-                stateTextBlock->SetAlign(loader->GetAlignFromYamlNode(stateTextAlignNode));
+                stateTextBlock->SetTextAlign(loader->GetAlignFromYamlNode(stateTextAlignNode));
+            }
+			
+			if (stateTextUseRtlAlignNode)
+            {
+                stateTextBlock->SetTextUseRtlAlign(stateTextUseRtlAlignNode->AsBool());
             }
 
             if (stateTextColorNode)
@@ -729,6 +798,12 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
                 stateTextBlock->GetShadowBackground()->SetPerPixelAccuracyType(type);
             }
 
+            if (stateTextMarginsNode)
+            {
+                UIControlBackground::UIMargins textMargins(stateTextMarginsNode->AsVector4());
+                stateTextBlock->SetMargins(&textMargins);
+            }
+
             bool multiline = loader->GetBoolFromYamlNode(multilineNode, false);
             bool multilineBySymbol = loader->GetBoolFromYamlNode(multilineBySymbolNode, false);
             stateTextBlock->SetMultiline(multiline, multilineBySymbol);
@@ -752,8 +827,11 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
     node->RemoveNodeFromMap("leftRightStretchCap");
     node->RemoveNodeFromMap("topBottomStretchCap");
     node->RemoveNodeFromMap("spriteModification");
-
+    node->RemoveNodeFromMap("margins");
+    node->RemoveNodeFromMap("textMargins");
+    
     ScopedPtr<UIButton> baseControl( new UIButton() );
+
     //States cycle for values
     for (int32 i = 0; i < STATE_COUNT; ++i)
     {
@@ -820,13 +898,19 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             {
                 node->Set(Format("stateColorInherit%s", statePostfix.c_str()), loader->GetColorInheritTypeNodeValue(colorInheritType));
             }
-            
-            // State per pixel accuracy
+
+            // State margins.
+            const UIControlBackground::UIMargins* margins = stateBackground->GetMargins();
+            if (margins)
+            {
+                node->Set(Format("stateMargins%s", statePostfix.c_str()), margins->AsVector4());
+			}
+
+			// State per pixel accuracy
             UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType = stateBackground->GetPerPixelAccuracyType();
             if (baseStateBackground->GetPerPixelAccuracyType() != perPixelAccuracyType)
             {
-                node->Set(Format("statePerPixelAccuracy%s", statePostfix.c_str()),
-                											loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
+                node->Set(Format("statePerPixelAccuracy%s", statePostfix.c_str()), loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
             }
         }
 
@@ -896,11 +980,24 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             {
                 node->SetNodeToMap(Format("stateTextAlign%s", statePostfix.c_str()), loader->GetAlignNodeValue(textAlign));
             }
+			
+			bool textUseRtlAlign = stateTextBlock->GetTextUseRtlAlign();
+            if (baseStaticText->GetTextUseRtlAlign() != textUseRtlAlign)
+            {
+                node->Set(Format("stateTextUseRtlAlign%s", statePostfix.c_str()), textUseRtlAlign);
+            }
             
             UIControlBackground::eColorInheritType colorInheritType = stateTextBlock->GetTextBackground()->GetColorInheritType();
             if (baseStaticText->GetTextBackground()->GetColorInheritType() != colorInheritType)
             {
                 node->Set(Format("stateTextColorInheritType%s", statePostfix.c_str()), loader->GetColorInheritTypeNodeValue(colorInheritType));
+            }
+
+            // State text margins.
+            const UIControlBackground::UIMargins* textMargins = stateTextBlock->GetMargins();
+            if (textMargins)
+            {
+                node->Set(Format("stateTextMargins%s", statePostfix.c_str()), textMargins->AsVector4());
             }
             
             UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType = stateTextBlock->GetTextBackground()->GetPerPixelAccuracyType();
@@ -912,19 +1009,6 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
     }
 
     return node;
-}
-
-void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground * newBackground)
-{
-    if (drawState == DRAW_STATE_UNPRESSED)
-    {
-        SafeRelease(background);
-        background = SafeRetain(newBackground);
-    }
-
-    SafeRelease(stateBacks[drawState]);
-    stateBacks[drawState] = SafeRetain(newBackground);
-    selectedBackground = GetActualBackgroundForState(controlState);
 }
 
 void UIButton::SetTextBlock( eButtonDrawState drawState, UIStaticText * newTextBlock )
@@ -951,6 +1035,63 @@ void UIButton::UpdateStateTextControlSize()
 UIStaticText * UIButton::CreateDefaultTextBlock() const
 {
     return new UIStaticText(Rect(Vector2(), GetSize()));
+}
+
+int32 UIButton::GetBackgroundComponentsCount() const
+{
+    return DRAW_STATE_COUNT;
+}
+    
+UIControlBackground *UIButton::GetBackgroundComponent(int32 index) const
+{
+    return stateBacks[index];
+}
+ 
+UIControlBackground *UIButton::CreateBackgroundComponent(int32 index) const
+{
+    UIControlBackground *bg = GetActualBackground((eButtonDrawState) index);
+    return bg ? bg->Clone() : CreateDefaultBackground();
+}
+
+void UIButton::SetBackgroundComponent(int32 drawState, UIControlBackground *newBackground)
+{
+    SetBackground((eButtonDrawState) drawState, newBackground);
+}
+
+String UIButton::GetBackgroundComponentName(int32 index) const
+{
+    return statePostfix[index];
+}
+
+int32 UIButton::GetInternalControlsCount() const
+{
+    return DRAW_STATE_COUNT;
+}
+    
+UIControl *UIButton::GetInternalControl(int32 index) const
+{
+    return stateTexts[index];
+}
+
+UIControl *UIButton::CreateInternalControl(int32 index) const
+{
+    UIStaticText* targetTextBlock = GetActualTextBlock((eButtonDrawState) index);
+    return targetTextBlock ? targetTextBlock->Clone() : CreateDefaultTextBlock();
+}
+    
+void UIButton::SetInternalControl(int32 index, UIControl *control)
+{
+    SetTextBlock((eButtonDrawState) index, DynamicTypeCheck<UIStaticText*>(control));
+}
+    
+String UIButton::GetInternalControlName(int32 index) const
+{
+    return statePostfix[index];
+}
+
+String UIButton::GetInternalControlDescriptions() const
+{
+    return "Text";
 }
 
 };

@@ -97,17 +97,20 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
     {
         TextBlockRender::Prepare(NULL);
     }
-	
-	int32 bsz = textBlock->cacheDx * textBlock->cacheDy;
-	buf = new int16[bsz];
-    memset(buf, 0, bsz * sizeof(int16));
+
+    int32 width = Max(textBlock->cacheDx, 1);
+    int32 height = Max(textBlock->cacheDy, 1);
+    
+	int32 bsz = width * height;
+    buf = new int8[bsz];
+    memset(buf, 0, bsz * sizeof(int8));
 	
 	DrawText();
 	
 	String addInfo;
 	if (!textBlock->isMultilineEnabled)
 	{
-		addInfo = WStringToString(textBlock->text.c_str());
+		addInfo = WStringToString(textBlock->visualText.c_str());
 	}
 	else
 	{
@@ -122,7 +125,7 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
 	
     if(!texture)
     {
-        Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, textBlock->cacheDx, textBlock->cacheDy, false, addInfo.c_str());
+        Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, width, height, false, addInfo.c_str());
         if(textBlock->textureInvalidater)
         {
             tex->SetInvalidater(textBlock->textureInvalidater);
@@ -132,7 +135,7 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
     }
     else
     {
-        texture->ReloadFromData(FORMAT_A8, (uint8*)buf, textBlock->cacheDx, textBlock->cacheDy);
+        texture->ReloadFromData(FORMAT_A8, (uint8*)buf, width, height);
     }
     
 	SafeDeleteArray(buf);

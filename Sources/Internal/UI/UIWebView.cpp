@@ -89,7 +89,7 @@ void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
 void UIWebView::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();
-    UpdateNativeControlVisible(GetVisible());
+    UpdateNativeControlVisible(true);
 }
 
 void UIWebView::WillBecomeInvisible()
@@ -108,13 +108,6 @@ void UIWebView::SetSize(const Vector2 &newSize)
 {
 	UIControl::SetSize(newSize);
     UpdateControlRect();
-}
-
-void UIWebView::SetVisible(bool isVisible, bool hierarchic)
-{
-	UIControl::SetVisible(isVisible, hierarchic);
-    if (IsOnScreen())
-        UpdateNativeControlVisible(isVisible);
 }
 
 void UIWebView::SetBackgroundTransparency(bool enabled)
@@ -186,7 +179,7 @@ void UIWebView::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader 
 
 YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader *loader)
 {
-    UIWebView* baseControl = new UIWebView();
+    ScopedPtr<UIWebView> baseControl(new UIWebView());
     YamlNode *node = UIControl::SaveToYamlNode(loader);
     
     // Data Detector Types.
@@ -195,7 +188,6 @@ YamlNode* UIWebView::SaveToYamlNode(DAVA::UIYamlLoader *loader)
         node->Set("dataDetectorTypes", GetDataDetectorTypes());
     }
     
-    SafeRelease(baseControl);
     return node;
 }
 

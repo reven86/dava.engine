@@ -29,6 +29,7 @@
 #include "PixelizationController.h"
 #include "SpritesHelper.h"
 
+#if 0
 namespace DAVA {
 
 PixelizationController::PixelizationController()
@@ -63,3 +64,4 @@ void PixelizationController::Cleanup()
 }
 
 };
+#endif
