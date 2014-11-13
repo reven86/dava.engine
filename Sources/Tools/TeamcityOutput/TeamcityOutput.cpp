@@ -83,10 +83,6 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
     StringReplace(str, "\n", "|n");
     StringReplace(str, "\r", "|r");
 
-//    StringReplace(str, "\u0085", "|x");
-//     StringReplace(str, "\u2028", "|l");
-//     StringReplace(str, "\u2029", "|p");
-
     StringReplace(str, "[", "|[");
     StringReplace(str, "]", "|]");
     
@@ -95,11 +91,7 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
 
 void TeamcityOutput::PlatformOutput(const String &text) const
 {
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    NSLog(@"%s", text.c_str());
-#else
     std::cout << text << std::endl;
-#endif
 }
     
 }; // end of namespace DAVA

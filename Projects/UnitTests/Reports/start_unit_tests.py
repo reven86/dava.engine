@@ -67,7 +67,7 @@ elif sys.platform == "darwin":
         app_path = "./UnitTests.app"
     else:
         # run on local machine from dir: UnitTests/Report
-        app_path = "../Release/UnitTests.app"
+        app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/UnitTests.app"
     ponen_obj = subprocess.Popen(["open", "-a", app_path, "--args", "-host", str(HOST), "-port", str(PORT)])
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
