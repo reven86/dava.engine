@@ -49,9 +49,15 @@ CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
 
 CurlDownloader::CurlDownloader()
     : isDownloadInterrupting(false)
+    , currentDownloadPartsCount(0)
     , multiHandle(NULL)
     , storePath("")
+    , downloadUrl("")
+    , operationTimeout(2)
+    , saveResult(DLE_NO_ERROR)
     , chunkInfo(NULL)
+    , saveThread(NULL)
+    , allowedBuffersInMemory(3)
 {
     if (!isCURLInit && CURLE_OK == curl_global_init(CURL_GLOBAL_ALL))
     {
@@ -462,7 +468,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
                 chunksMutex.Lock();
                 chunksInList = chunksToSave.size();
                 chunksMutex.Unlock();
-            } while(3 <= chunksInList && DLE_NO_ERROR != saveResult);
+            } while(allowedBuffersInMemory <= chunksInList && DLE_NO_ERROR != saveResult);
             
             if (DLE_NO_ERROR != saveResult)
             {
