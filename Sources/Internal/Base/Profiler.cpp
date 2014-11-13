@@ -7,6 +7,7 @@
 //  externals:
 
     #include "Profiler.hpp"
+    #include "FileSystem/Logger.h"
 
     #include <stdio.h>
     #include <string.h>
@@ -21,37 +22,13 @@
     #endif
 
     #include <vector>
-    #define Array std::vector
 
 
 //==============================================================================
 
 const unsigned  InvalidIndex        = (unsigned)(-1);
-#define         countof(array)      (sizeof(array)/sizeof(array[0]))
 
 
-void     
-Logs( const char* str )
-{
-    #ifdef _WIN32
-        ::OutputDebugStringA( str );
-    #elif defined __ANDROID_API__
-        __android_log_print( ANDROID_LOG_INFO, "prof", "%s", str );
-    #endif
-}
-
-void     
-Log( const char* format, ... )
-{
-    va_list     arglist;
-    char        msg[1024];
-    
-    va_start( arglist, format );
-    vsnprintf( msg, countof(msg)-1, format, arglist );
-    va_end( arglist );
-
-    Logs( msg );
-}
 
 
 //==============================================================================
@@ -355,7 +332,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
             max_name_len = len;
     }
 
-    Logs( "---\n" );
+    Logger::Info( "---\n" );
     for( unsigned i=0; i!=result.size(); ++i )
     {
         unsigned    pi          = result[i].parent_i;
@@ -396,10 +373,9 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
             else        text_len += sprintf( text+text_len, "   %02i.%i    %02i.%i", int(pg),flt_dec(pg), int(pg),flt_dec(pg) );
         }
 
-        Logs( text );
-        Logs( "\n" );
+        Logger::Info( text );
     }
-    Logs( "\n" );
+    Logger::Info( "\n" );
 }
 
 
@@ -436,7 +412,7 @@ DumpAverage()
 //------------------------------------------------------------------------------
 
 void 
-_CollectCountersWithChilds( const Counter* base, const Counter* counter, Array<Counter*>* result )
+_CollectCountersWithChilds( const Counter* base, const Counter* counter, std::vector<Counter*>* result )
 {
     for( const Counter* c=base,*c_end=base+MaxCounterCount; c!=c_end; ++c )
     {
@@ -454,11 +430,11 @@ _CollectCountersWithChilds( const Counter* base, const Counter* counter, Array<C
 //------------------------------------------------------------------------------
 
 static void
-_CollectActiveCounters( Counter* cur_counter, Array<Counter*>* result )
+_CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
 {
     // get top-level counters, sorted by time
 
-    static Array<Counter*>  top;
+    static std::vector<Counter*>  top;
 
     top.clear();
     for( Counter* c=cur_counter,*c_end=cur_counter+MaxCounterCount; c!=c_end; ++c )
@@ -503,7 +479,7 @@ _CollectActiveCounters( Counter* cur_counter, Array<Counter*>* result )
 void    
 GetCounters( std::vector<CounterInfo>* info )
 {
-    static Array<Counter*>  result;
+    static std::vector<Counter*>  result;
     
     _CollectActiveCounters( _CurCounter, &result );
 
@@ -536,7 +512,7 @@ GetAverageCounters( std::vector<CounterInfo>* info )
 
     if( _CurCounter == _Counter + MaxCounterCount*(HistoryCount-1) )
     {
-        static Array<Counter*>  result;
+        static std::vector<Counter*>    result;
 
         for( Counter* c=_Average,*c_end=_Average+MaxCounterCount; c!=c_end; ++c )
         {
