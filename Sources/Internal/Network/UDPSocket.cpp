@@ -47,13 +47,13 @@ void UDPSocket::Close(CloseHandlerType handler)
     BaseClassType::Close();
 }
 
-int32 UDPSocket::AsyncReceive(Buffer buffer, ReceiveHandlerType handler)
+int32 UDPSocket::StartAsyncReceive(Buffer buffer, ReceiveHandlerType handler)
 {
     DVASSERT(buffer.base != NULL && buffer.len > 0 && handler != 0);
 
     readBuffer     = buffer;
     receiveHandler = handler;
-    return BaseClassType::InternalAsyncReceive();
+    return BaseClassType::InternalStartAsyncReceive();
 }
 
 int32 UDPSocket::AsyncSend(const Endpoint& endpoint, const Buffer* buffers, std::size_t bufferCount, SendHandlerType handler)

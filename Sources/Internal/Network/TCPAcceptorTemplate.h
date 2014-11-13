@@ -67,7 +67,7 @@ public:
     int32 Accept(HandleBase<uv_tcp_t>* socket);
 
 protected:
-    int32 InternalAsyncListen(int32 backlog);
+    int32 InternalStartAsyncListen(int32 backlog);
 
 private:
     // Methods should be implemented in derived class
@@ -126,7 +126,7 @@ int32 TCPAcceptorTemplate<T>::Accept(HandleBase<uv_tcp_t>* socket)
 }
 
 template <typename T>
-int32 TCPAcceptorTemplate<T>::InternalAsyncListen(int32 backlog)
+int32 TCPAcceptorTemplate<T>::InternalStartAsyncListen(int32 backlog)
 {
     DVASSERT(backlog > 0);
     return uv_listen(Handle<uv_stream_t>(), backlog, &HandleConnectThunk);

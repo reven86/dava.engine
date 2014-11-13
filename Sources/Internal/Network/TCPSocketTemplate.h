@@ -47,14 +47,15 @@ class IOLoop;
     2. void HandleConnect(int32 error), called after connection to server has been established
         Parameters:
             error - nonzero if error has occured
-    3. void HandleAlloc(Buffer* buffer), called before read operation to allow specify read buffer
+    3. void HandleShutdown(int32 error), called after shutdown has been completed
+    4. void HandleAlloc(Buffer* buffer), called before read operation to allow specify read buffer
         Parameters:
             buffer - new read buffer
-    4. void HandleRead(int32 error, std::size_t nread), called after some data have been arrived
+    5. void HandleRead(int32 error, std::size_t nread), called after some data have been arrived
         Parameters:
             error    - nonzero if error has occured; if connection has been closed IsEOF(error) returns true
             nread    - number of bytes placed in read buffer
-    5. template<typename U>
+    6. template<typename U>
        void HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData)
         Parameters:
            error       - nonzero if error has occured
@@ -107,14 +108,16 @@ public:
     bool IsEOF(int32 error) const { return UV_EOF == error; }
 
 protected:
-    int32 InternalAsyncConnect(const Endpoint& endpoint);
-    int32 InternalAsyncRead();
+    int32 InternalShutdown();
+    int32 InternalStartAsyncConnect(const Endpoint& endpoint);
+    int32 InternalStartAsyncRead();
     template<typename U>
     int32 InternalAsyncWrite(const Buffer* buffers, std::size_t bufferCount, U& requestData);
 
 private:
     // Methods should be implemented in derived class
     void HandleClose();
+    void HandleShutdown(int32 error);
     void HandleConnect(int32 error);
     void HandleAlloc(Buffer* buffer);
     void HandleRead(int32 error, std::size_t nread);
@@ -123,6 +126,7 @@ private:
 
     // Thunks between C callbacks and C++ class methods
     static void HandleCloseThunk(uv_handle_t* handle);
+    static void HandleShutdownThunk(uv_shutdown_t* shutdownRequest, int error);
     static void HandleConnectThunk(uv_connect_t* connectRequest, int error);
     static void HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer);
     static void HandleReadThunk(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buffer);
@@ -130,16 +134,19 @@ private:
     static void HandleWriteThunk(uv_write_t* writeRequest, int error);
 
 protected:
-    uv_connect_t connectRequest;
+    uv_connect_t  connectRequest;
+    uv_shutdown_t shutdownRequest;
 };
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
 TCPSocketTemplate<T>::TCPSocketTemplate(IOLoop* ioLoop) : BaseClassType(ioLoop)
                                                         , connectRequest()
+                                                        , shutdownRequest()
 {
     SetHandleData(static_cast<DerivedClassType*>(this));
-    connectRequest.data = static_cast<DerivedClassType*>(this);
+    connectRequest.data  = static_cast<DerivedClassType*>(this);
+    shutdownRequest.data = static_cast<DerivedClassType*>(this);
 }
 
 template <typename T>
@@ -169,13 +176,19 @@ int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 }
 
 template <typename T>
-int32 TCPSocketTemplate<T>::InternalAsyncConnect(const Endpoint& endpoint)
+int32 TCPSocketTemplate<T>::InternalShutdown()
+{
+    return uv_shutdown(&shutdownRequest, Handle<uv_stream_t>(), &HandleShutdownThunk);
+}
+
+template <typename T>
+int32 TCPSocketTemplate<T>::InternalStartAsyncConnect(const Endpoint& endpoint)
 {
     return uv_tcp_connect(&connectRequest, Handle<uv_tcp_t>(), endpoint.CastToSockaddr(), &HandleConnectThunk);
 }
 
 template <typename T>
-int32 TCPSocketTemplate<T>::InternalAsyncRead()
+int32 TCPSocketTemplate<T>::InternalStartAsyncRead()
 {
     return uv_read_start(Handle<uv_stream_t>(), &HandleAllocThunk, &HandleReadThunk);
 }
@@ -209,6 +222,13 @@ void TCPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
     DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
     pthis->InternalInit();
     pthis->HandleClose();
+}
+
+template <typename T>
+void TCPSocketTemplate<T>::HandleShutdownThunk(uv_shutdown_t* shutdownRequest, int error)
+{
+    DerivedClassType* pthis = static_cast<DerivedClassType*>(shutdownRequest->data);
+    pthis->HandleShutdown(error);
 }
 
 template <typename T>

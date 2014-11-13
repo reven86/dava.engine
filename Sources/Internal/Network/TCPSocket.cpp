@@ -34,6 +34,7 @@ namespace DAVA
 TCPSocket::TCPSocket(IOLoop* ioLoop) : BaseClassType(ioLoop)
                                      , readBuffer()
                                      , closeHandler()
+                                     , shutdownHandler()
                                      , connectHandler()
                                      , readHandler()
 {
@@ -48,20 +49,28 @@ void TCPSocket::Close(CloseHandlerType handler)
     BaseClassType::Close();
 }
 
-int32 TCPSocket::AsyncConnect(const Endpoint& endpoint, ConnectHandlerType handler)
+int32 TCPSocket::Shutdown(ShutdownHandlerType handler)
+{
+    DVASSERT(handler != 0);
+
+    shutdownHandler = handler;
+    return BaseClassType::InternalShutdown();
+}
+
+int32 TCPSocket::StartAsyncConnect(const Endpoint& endpoint, ConnectHandlerType handler)
 {
     DVASSERT (handler != 0);
     connectHandler = handler;
-    return BaseClassType::InternalAsyncConnect(endpoint);
+    return BaseClassType::InternalStartAsyncConnect(endpoint);
 }
 
-int32 TCPSocket::AsyncRead(Buffer buffer, ReadHandlerType handler)
+int32 TCPSocket::StartAsyncRead(Buffer buffer, ReadHandlerType handler)
 {
     DVASSERT(buffer.base != NULL && buffer.len > 0 && handler != 0);
 
     readBuffer  = buffer;
     readHandler = handler;
-    return BaseClassType::InternalAsyncRead();
+    return BaseClassType::InternalStartAsyncRead();
 }
 
 int32 TCPSocket::AsyncWrite(const Buffer* buffers, std::size_t bufferCount, WriteHandlerType handler)
@@ -88,6 +97,11 @@ void TCPSocket::HandleClose()
 void TCPSocket::HandleConnect(int32 error)
 {
     connectHandler(this, error);
+}
+
+void TCPSocket::HandleShutdown(int32 error)
+{
+    shutdownHandler(this, error);
 }
 
 void TCPSocket::HandleAlloc(Buffer* buffer)

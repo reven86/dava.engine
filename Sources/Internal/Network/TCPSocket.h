@@ -42,11 +42,13 @@ namespace DAVA
  Following operation can be tracked:
  1. Socket close, called when socket has been closed
         void (TCPSocket* socket)
- 2. Connection established
+ 2. Socket shutdown, called when socket has been shutdown
         void(TCPSocket* socket, int32 error)
- 3. Some data has arrived
+ 3. Connection established
+        void(TCPSocket* socket, int32 error)
+ 4. Some data has arrived
         void (TCPSocket* socket, int32 error, std::size_t nread)
- 4. Data has been sent
+ 5. Data has been sent
         void (TCPSocket* socket, int32 error, const Buffer* buffers, std::size_t bufferCount)
 
  Functional objects are executed in IOLoop's thread context, and they should not block to allow other operation to complete.
@@ -62,6 +64,7 @@ private:
 
 public:
     typedef Function<void(TCPSocket* socket)>                                                              CloseHandlerType;
+    typedef Function<void(TCPSocket* socket, int32 error)>                                                 ShutdownHandlerType;
     typedef Function<void(TCPSocket* socket, int32 error)>                                                 ConnectHandlerType;
     typedef Function<void(TCPSocket* socket, int32 error, std::size_t nread)>                              ReadHandlerType;
     typedef Function<void(TCPSocket* socket, int32 error, const Buffer* buffers, std::size_t bufferCount)> WriteHandlerType;
@@ -74,8 +77,9 @@ public:
     using BaseClassType::Close;
     void Close(CloseHandlerType handler);
 
-    int32 AsyncConnect(const Endpoint& endpoint, ConnectHandlerType handler);
-    int32 AsyncRead(Buffer buffer, ReadHandlerType handler);
+    int32 Shutdown(ShutdownHandlerType handler);
+    int32 StartAsyncConnect(const Endpoint& endpoint, ConnectHandlerType handler);
+    int32 StartAsyncRead(Buffer buffer, ReadHandlerType handler);
     int32 AsyncWrite(const Buffer* buffers, std::size_t bufferCount, WriteHandlerType handler);
 
     void AdjustReadBuffer(Buffer buffer);
@@ -83,15 +87,17 @@ public:
 private:
     void HandleClose();
     void HandleConnect(int32 error);
+    void HandleShutdown(int32 error);
     void HandleAlloc(Buffer* buffer);
     void HandleRead(int32 error, size_t nread);
     void HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, WriteHandlerType& handler);
 
 private:
-    Buffer             readBuffer;
-    CloseHandlerType   closeHandler;
-    ConnectHandlerType connectHandler;
-    ReadHandlerType    readHandler;
+    Buffer              readBuffer;
+    CloseHandlerType    closeHandler;
+    ShutdownHandlerType shutdownHandler;
+    ConnectHandlerType  connectHandler;
+    ReadHandlerType     readHandler;
 };
 
 }	// namespace DAVA

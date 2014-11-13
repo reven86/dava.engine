@@ -46,12 +46,12 @@ void TCPAcceptor::Close(CloseHandlerType handler)
     BaseClassType::Close();
 }
 
-int32 TCPAcceptor::AsyncListen(ConnectHandlerType handler, int32 backlog)
+int32 TCPAcceptor::StartAsyncListen(ConnectHandlerType handler, int32 backlog)
 {
     DVASSERT(backlog > 0 && handler != 0);
 
     connectHandler = handler;
-    return InternalAsyncListen(backlog);
+    return InternalStartAsyncListen(backlog);
 }
 
 void TCPAcceptor::HandleClose()

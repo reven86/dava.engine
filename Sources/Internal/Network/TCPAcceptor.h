@@ -68,7 +68,7 @@ public:
     using BaseClassType::Close;
     void Close(CloseHandlerType handler);
 
-    int32 AsyncListen(ConnectHandlerType handler, int32 backlog = SOMAXCONN);
+    int32 StartAsyncListen(ConnectHandlerType handler, int32 backlog = SOMAXCONN);
 
 private:
     void HandleClose();

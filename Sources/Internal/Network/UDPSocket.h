@@ -72,7 +72,7 @@ public:
     using BaseClassType::Close;
     void Close(CloseHandlerType handler);
 
-    int32 AsyncReceive(Buffer buffer, ReceiveHandlerType handler);
+    int32 StartAsyncReceive(Buffer buffer, ReceiveHandlerType handler);
     int32 AsyncSend(const Endpoint& endpoint, const Buffer* buffers, std::size_t bufferCount, SendHandlerType handler);
 
     void AdjustReadBuffer(Buffer buffer);

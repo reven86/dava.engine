@@ -111,7 +111,7 @@ public:
     int32 LocalEndpoint(Endpoint& endpoint);
 
 protected:
-    int32 InternalAsyncReceive();
+    int32 InternalStartAsyncReceive();
     template<typename U>
     int32 InternalAsyncSend(const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint, U& requestData);
 
@@ -204,7 +204,7 @@ int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 }
 
 template <typename T>
-int32 UDPSocketTemplate<T>::InternalAsyncReceive()
+int32 UDPSocketTemplate<T>::InternalStartAsyncReceive()
 {
     return uv_udp_recv_start(Handle<uv_udp_t>(), &HandleAllocThunk, &HandleReceiveThunk);
 }
