@@ -1488,7 +1488,7 @@ bool UIButtonMetadata::GetMultiline() const
 {
     if (!VerifyActiveParamID())
     {
-        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+        return false;
     }
     
     return GetMultilineForState(uiControlStates[GetActiveStateIndex()]);
@@ -1545,7 +1545,7 @@ bool UIButtonMetadata::GetMultilineBySymbol() const
 {
     if (!VerifyActiveParamID())
     {
-        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+        return false;
     }
     
     return GetMultilineBySymbolForState(uiControlStates[GetActiveStateIndex()]);
