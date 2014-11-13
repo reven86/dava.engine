@@ -2787,20 +2787,6 @@ namespace DAVA
         return position;
     }
 
-    void UIControl::RecalculatePivotPoint(const Rect &newRect)
-    {
-        Rect oldRect = this->GetRect();
-        // DF-2009 - Change proportianal pivot point accodring to new size
-        if ((oldRect.dx > 0 && oldRect.dy > 0))
-        {
-            float32 xMultiup = pivotPoint.x / oldRect.dx;
-            float32 yMultiup = pivotPoint.y / oldRect.dy;
-
-            pivotPoint.x = xMultiup * newRect.dx;
-            pivotPoint.y = yMultiup * newRect.dy;
-        }
-    }
-
     void UIControl::ApplyAlignSettingsForChildren()
     {
         UpdateChildrenLayout();
