@@ -32,8 +32,7 @@ if( APPLE )
     set( IMAGE_MAGICK ImageMagick_mac )
 
     set ( IMAGE_MAGICK_INCLUDES_PATH  
-         "${LIBRARIES_DIR}/${IMAGE_MAGICK}/include/ImageMagick"
-         "${LIBRARIES_DIR}/${IMAGE_MAGICK}/delegates/include" 
+         "${LIBRARIES_DIR}/${IMAGE_MAGICK}/include/ImageMagick-6"
          "${LIBRARIES_DIR}/${IMAGE_MAGICK}/" 
          )
 

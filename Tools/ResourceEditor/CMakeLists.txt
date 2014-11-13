@@ -55,6 +55,7 @@ add_definitions       (
 -DDAVA_QT
 #-D__DAVAENGINE_BEAST__
 -DDAVA_FMOD
+-D_DISABLE_IMAGE_MAGICK
 -DDAVA_DEBUG
 )
 
@@ -95,6 +96,7 @@ if( MACOS )
 
 
     file ( GLOB DYLIB_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
+    list ( APPEND DYLIB_FILES   ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib ) 
 
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
 
@@ -136,6 +138,9 @@ if( APPLE )
 
         COMMAND   
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
+
+        COMMAND   
+        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}           
     )
 
 elseif( MSVC )
