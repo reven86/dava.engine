@@ -561,8 +561,12 @@ DownloadError DownloadManager::Download()
     {
         error = TryDownload();
 
-        if (DLE_CONTENT_NOT_FOUND == error || DLE_CANCELLED == error)
+        if (DLE_CONTENT_NOT_FOUND == error
+        		|| DLE_CANCELLED == error
+				|| DLE_FILE_ERROR == error)
+        {
             break;
+        }
         
         currentTask->type = RESUMED;
 
