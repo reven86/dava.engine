@@ -17,7 +17,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -330,21 +333,53 @@ public class JNITextField {
 					@Override
 					public CharSequence filter(CharSequence source, final int start, final int end,
 							Spanned dest, final int dstart, final int dend) {
-						
+
+						// Avoiding the line breaks in the single-line text fields. Line breaks should be replaced with spaces.
+						EditText textField = GetEditText(_id);
+						if (0 == (textField.getInputType() & (InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE)))
+						{
+							SpannableStringBuilder s = new SpannableStringBuilder(source);
+							if (source instanceof Spanned || source instanceof Spannable)
+							{
+								Spanned spanned = (Spanned) source;
+								TextUtils.copySpansFrom(spanned, start, end, null, s, 0);
+							}
+
+							for (int i = 0; i < s.length(); ++i)
+							{
+								if ('\n' == s.charAt(i))
+								{
+									s.replace(i, i + 1, " ");
+								}
+							}
+							source = s;
+						}
+
+						String origSource = source.toString();
+
 						NativeEditText editText = GetNativeEditText(_id);
-						if (editText != null && editText.maxLengthFilter != null) {
-							CharSequence res = editText.maxLengthFilter.filter(source, start, end, dest, dstart, dend);
-							if (res != null && res.toString().isEmpty())
-								return res;
-							if (res != null)
-								source = res;
+
+						int sourceRepLen = end - start;
+						int destRepLen = dend - dstart;
+						int curStringLen = editText.editText.getText().length();
+						int newStringLen = curStringLen - destRepLen + sourceRepLen;
+
+						if (newStringLen >= curStringLen)
+						{
+							if (editText != null && editText.maxLengthFilter != null) {
+								CharSequence res = editText.maxLengthFilter.filter(source, start, end, dest, dstart, dend);
+								if (res != null && res.toString().isEmpty())
+									return res;
+								if (res != null)
+									source = res;
+							}
 						}
 						
 						final CharSequence sourceToProcess = source;
 						final String text = editText.editText.getText().toString();
-						FutureTask<Boolean> t = new FutureTask<Boolean>(new Callable<Boolean>() {
+						FutureTask<String> t = new FutureTask<String>(new Callable<String>() {
 							@Override
-							public Boolean call() throws Exception {
+							public String call() throws Exception {
 								byte []bytes = sourceToProcess.toString().getBytes("UTF-8");
 								int curPos = 0;
 								int finalStart = dstart;
@@ -363,8 +398,15 @@ public class JNITextField {
 						});
 						JNIActivity.GetActivity().PostEventToGL(t);
 						try {
-							if (t.get())
-								return source;
+							String s = t.get();
+							if (s.equals(origSource))
+							{
+								return null;
+							}
+							else if (s.length() > 0)
+							{
+								return s;
+							}
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						} catch (ExecutionException e) {
@@ -591,6 +633,22 @@ public class JNITextField {
 		task.AsyncRun();
 	}
 
+	public static void SetTextUseRtlAlign(int id, final boolean useRtlAlign) {
+		final EditText text = GetEditText(id);
+		if (text == null)
+			return;
+
+		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+			@Override
+			public Void call() throws Exception {
+				int gravity = text.getGravity();
+				text.setGravity(useRtlAlign ? (gravity | Gravity.RELATIVE_LAYOUT_DIRECTION) : (gravity & ~Gravity.RELATIVE_LAYOUT_DIRECTION));
+				return null;
+			}
+		});
+		task.AsyncRun();
+	}
+	
 	public static void SetTextAlign(int id, final int align) {
 		final EditText text = GetEditText(id);
 		if (text == null)
@@ -599,7 +657,8 @@ public class JNITextField {
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-
+				boolean isRelative = (text.getGravity() & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) > 0;
+				
 				int gravityH = Gravity.LEFT;
 				int gravityV = Gravity.CENTER_VERTICAL;
 				if ((align & 0x01) > 0) // ALIGN_LEFT
@@ -615,6 +674,9 @@ public class JNITextField {
 				if ((align & 0x20) > 0) // ALIGN_BOTTOM
 					gravityV = Gravity.BOTTOM;
 
+				if(isRelative) {
+					gravityH |= Gravity.RELATIVE_LAYOUT_DIRECTION;
+				}
 				text.setGravity(gravityH | gravityV);
 				return null;
 			}
@@ -999,7 +1061,7 @@ public class JNITextField {
     }
 
 	public static native void TextFieldShouldReturn(int id);
-	public static native boolean TextFieldKeyPressed(
+	public static native String TextFieldKeyPressed(
 			int id,
 			int replacementLocation,
 			int replacementLength,

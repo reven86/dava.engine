@@ -52,7 +52,7 @@ void TextBlockGraphicsRender::Prepare(Texture *texture /*= NULL*/)
 	if (sprite && sprite->GetTexture())
 	{
 		if (!textBlock->isMultilineEnabled)
-			sprite->GetTexture()->SetDebugInfo(WStringToString(textBlock->text));
+            sprite->GetTexture()->SetDebugInfo(WStringToString(textBlock->visualText));
 		else if (textBlock->isMultilineEnabled)
 		{
 			if (textBlock->multilineStrings.size() > 0)

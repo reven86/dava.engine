@@ -43,7 +43,6 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 		Log.w(JNIConst.LOG_TAG, "_________onSurfaceCreated_____DONE_____");
 	}
 
-
 	private void LogExtensions() {
 		String oglVersion = GLES20.glGetString(GLES20.GL_VERSION);
 		String deviceName = GLES20.glGetString(GLES20.GL_RENDERER);

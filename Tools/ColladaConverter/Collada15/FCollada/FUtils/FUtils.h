@@ -132,7 +132,7 @@ typedef struct _xmlNode xmlNode;
 #endif // _FU_ERROR_H_
 
 #ifndef RETAIL
-#define ENABLE_TEST /**< Used by FCollada, enables the compilation and gives access to the unit tests. Disabled in the retail configurations. */
+//#define ENABLE_TEST /**< Used by FCollada, enables the compilation and gives access to the unit tests. Disabled in the retail configurations. */
 #endif
 
 #endif // _F_UTILS_H_

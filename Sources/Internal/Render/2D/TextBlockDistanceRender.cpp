@@ -88,7 +88,7 @@ void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
     uint32 charCount = 0;
     if (!textBlock->isMultilineEnabled || textBlock->treatMultilineAsSingleLine)
     {
-        charCount = textBlock->pointsStr.length() ? textBlock->pointsStr.length() : textBlock->text.length();
+        charCount = textBlock->visualText.length();
     }
     else
     {
@@ -125,7 +125,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 		yOffset += (int32)offset->y;
 	}
 	
-	int32 align = textBlock->GetAlign();
+	int32 align = textBlock->GetVisualAlignNoMutexLock();
 	if (align & ALIGN_RIGHT)
 	{
 		xOffset += (int32)(textBlock->rectSize.dx - renderRect.dx);

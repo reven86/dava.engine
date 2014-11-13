@@ -62,7 +62,7 @@ public:
 	virtual void RemoveTreeNodeFromScene();
 	virtual void ReturnTreeNodeToScene();
 	
-	Rect GetRect() const;
+	Rect GetRect(bool checkAngle = false) const;
 
 	void SetVisibleFlag(bool value);
 	bool GetVisibleFlag() const;

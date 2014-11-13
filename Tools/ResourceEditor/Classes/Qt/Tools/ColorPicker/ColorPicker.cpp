@@ -203,6 +203,7 @@ void ColorPicker::OnDropperChanged(const QColor& c)
     normalized.setAlphaF(GetColor().alphaF());
     UpdateControls(normalized);
     ui->preview->SetColorNew(normalized);
+    emit changed(GetColor());
 }
 
 void ColorPicker::OnDropper()

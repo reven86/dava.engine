@@ -238,6 +238,8 @@ public:
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
+
+    static const FastName FLAG_SKINNING;
     
 	static const FastName FLAG_LIGHTMAPONLY;
 	static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY

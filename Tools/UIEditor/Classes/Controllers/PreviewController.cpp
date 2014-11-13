@@ -64,8 +64,10 @@ static const PreviewSettingsData predefinedPreviewSettings[] =
     {-4, "iPad mini Retina", Vector2(2048, 1536), 326, true, 3},
     {-5, "iPhone 4S", Vector2(960, 640), 326, true, 4},
     {-6, "iPhone 5/5C/5S", Vector2(1136, 640), 326, true, 5},
-    {-7, "Nexus 7 (2012)", Vector2(1280, 800), 216, true, 6},
-    {-8, "Nexus 7 (2013)", Vector2(1920, 1080), 323, true, 7},
+    {-7, "iPhone 6", Vector2(1134, 750), 326, true, 6},
+    {-8, "iPhone 6 Plus", Vector2(1920, 1080), 401, true, 7},
+    {-9, "Nexus 7 (2012)", Vector2(1280, 800), 216, true, 8},
+    {-10, "Nexus 7 (2013)", Vector2(1920, 1080), 323, true, 9},
 };
 
 #define PREVIEW_SETTINGS_NODE "previewSettings"
@@ -346,18 +348,22 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
     Rect rawScreenRect = Rect(Vector2(0.0f, 0.0f), screenControl->GetSize());
     Rect scaledScreenRect = rawScreenRect;
     scaledScreenRect.SetSize(rawScreenRect.GetSize() * screen->GetScale());
-    
-    ScopedPtr<Texture> texture(Texture::CreateFBO((int32)ceilf(scaledScreenRect.dx), (int32)ceilf(scaledScreenRect.dy), FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER));
 
-    
+    float32 virToPhysFactor = Core::Instance()->GetVirtualToPhysicalFactor();
+    Rect textureRect = scaledScreenRect;
+    textureRect.SetSize(textureRect.GetSize() * virToPhysFactor);
+    ScopedPtr<Texture> texture(Texture::CreateFBO((int32)ceilf(textureRect.dx), (int32)ceilf(textureRect.dy),
+                                                  FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER));
+
     ScopedPtr<Sprite> screenshot(Sprite::Create(""));
-    screenshot->InitFromTexture(texture, 0, 0, scaledScreenRect.dx, scaledScreenRect.dy, -1, -1, true);
+    screenshot->InitFromTexture(texture, 0, 0, textureRect.dx, textureRect.dy, -1, -1, true);
     
     RenderManager::Instance()->SetRenderTarget(screenshot);
     RenderManager::Instance()->ClearWithColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // The clipping rectangle defines on scale and preview mode.
     Rect clipRect = rawScreenRect;
+    clipRect.SetSize(clipRect.GetSize() * virToPhysFactor);
     if (IsPreviewEnabled())
     {
         clipRect.SetSize(GetTransformData().screenSize);
@@ -368,7 +374,7 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
     }
     else if (screen->GetScale().x > 1.0f || screen->GetScale().y > 1.0f)
     {
-        clipRect = scaledScreenRect;
+        clipRect = textureRect;
     }
 
     RenderManager::Instance()->ClipPush();
@@ -386,7 +392,12 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
     RenderManager::Instance()->RestoreRenderTarget();
 
     ScopedPtr<Image> image(texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
-    image->ResizeCanvas(scaledScreenRect.dx, scaledScreenRect.dy);
+    
+    // Resulting texture is square. Resize its canvas to the
+    // texture size and then resize the image to the original
+    // size without virtual to physical factor.
+    image->ResizeCanvas(textureRect.dx, textureRect.dy);
+    image->ResizeImage(scaledScreenRect.dx, scaledScreenRect.dy);
     ImageSystem::Instance()->Save(fileName, image);
 }
 

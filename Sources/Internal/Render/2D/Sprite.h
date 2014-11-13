@@ -299,6 +299,8 @@ protected:
     static File* GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex);
 
     void ReloadExistingTextures();
+    
+    void SetRelativePathname(const FilePath& path);
 
     static Mutex spriteMapMutex;
 
@@ -310,9 +312,6 @@ protected:
 	};
 
 	float32 tempVertices[8];
-
-
-	FilePath  relativePathname;
 
 	Texture ** textures;
 	FilePath *textureNames;
@@ -357,6 +356,9 @@ protected:
 //	static Vector<Vector2> clippedTexCoords;
 //	static Vector<Vector2> clippedVertices;
     
+private:
+    FilePath  relativePathname;
+
     friend class RenderSystem2D;
 };
 

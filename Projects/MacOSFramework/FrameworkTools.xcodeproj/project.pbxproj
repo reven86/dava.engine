@@ -400,7 +400,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libstdc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -448,7 +448,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libstdc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -493,6 +493,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Sources/External/Freetype,
+					./../../Libs/oggvorbis/include,
+					./../../Libs/include,
+					./../../Libs/lua/include,
+					./../../Sources/Tools,
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -502,6 +514,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Sources/External/Freetype,
+					./../../Libs/oggvorbis/include,
+					./../../Libs/include,
+					./../../Libs/lua/include,
+					./../../Sources/Tools,
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -512,6 +536,18 @@
 			buildSettings = {
 				CONFIGURATION_TEMP_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)Qt";
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Sources/External/Freetype,
+					./../../Libs/oggvorbis/include,
+					./../../Libs/include,
+					./../../Libs/lua/include,
+					./../../Sources/Tools,
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsQt;
 			};
@@ -522,6 +558,18 @@
 			buildSettings = {
 				CONFIGURATION_TEMP_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)Qt";
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Sources/External/Freetype,
+					./../../Libs/oggvorbis/include,
+					./../../Libs/include,
+					./../../Libs/lua/include,
+					./../../Sources/Tools,
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsQt;
 			};
@@ -532,6 +580,18 @@
 			buildSettings = {
 				CONFIGURATION_TEMP_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)NPAPI";
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Sources/External/Freetype,
+					./../../Libs/oggvorbis/include,
+					./../../Libs/include,
+					./../../Libs/lua/include,
+					./../../Sources/Tools,
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsNPAPI;
 			};
@@ -542,6 +602,18 @@
 			buildSettings = {
 				CONFIGURATION_TEMP_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)NPAPI";
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Sources/External/Freetype,
+					./../../Libs/oggvorbis/include,
+					./../../Libs/include,
+					./../../Libs/lua/include,
+					./../../Sources/Tools,
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = FrameworkToolsNPAPI;
 			};

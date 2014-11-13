@@ -123,7 +123,7 @@ void Image::MakePink(bool checkers)
     if(data == NULL) return;
     
     uint32 pink = 0xffff00ff;
-    uint32 gray = (checkers) ? 0xff7f7f7f : 0xffff00ff;
+    uint32 gray = (checkers) ? 0xffffff00 : 0xffff00ff;
     bool pinkOrGray = false;
     
     uint32 * writeData = (uint32*) data;

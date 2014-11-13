@@ -273,7 +273,7 @@ void UISlider::Draw(const UIGeometricData &geometricData)
     float32 screenYMin = 0.f;
     float32 screenYMax = (float32)ScreenSizes::GetVirtualScreenSize().dy;
 
-	if (minBackground)
+    if (minBackground)
 	{
 		minBackground->SetParentColor(GetBackground()->GetDrawColor());
 		RenderSystem2D::Instance()->ClipPush();
@@ -443,16 +443,7 @@ List<UIControl*> UISlider::GetSubcontrols()
 	return subControls;
 }
 
-void UISlider::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
-{
-    UIControl::SetVisibleForUIEditor(value, hierarchic);
-    if (thumbButton)
-    {
-        thumbButton->SetVisibleForUIEditor(value, hierarchic);
-    }
-}
-
-void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, UIYamlLoader* loader)
+void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, const UIYamlLoader* loader)
 {
     const YamlNode * colorNode = rootNode->Get(Format("%scolor", prefix));
     const YamlNode * spriteNode = rootNode->Get(Format("%ssprite", prefix));
@@ -464,6 +455,7 @@ void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background
     const YamlNode * leftRightStretchCapNode = rootNode->Get(Format("%sleftRightStretchCap", prefix));
     const YamlNode * topBottomStretchCapNode = rootNode->Get(Format("%stopBottomStretchCap", prefix));
     const YamlNode * spriteModificationNode = rootNode->Get(Format("%sspriteModification", prefix));
+    const YamlNode * marginsNode = rootNode->Get(Format("%smargins", prefix));
 
     if (colorNode)
     {
@@ -516,9 +508,15 @@ void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background
     {
         background->SetModification(spriteModificationNode->AsInt32());
     }
+    
+    if (marginsNode)
+    {
+        UIControlBackground::UIMargins margins(marginsNode->AsVector4());
+        background->SetMargins(&margins);
+    }
 }
 
-void UISlider::SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, UIYamlLoader * loader)
+void UISlider::SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader * loader)
 {
     if (!background)
     {
@@ -593,6 +591,13 @@ void UISlider::SaveBackground(const char* prefix, UIControlBackground* backgroun
     {
         rootNode->Set(Format("%sspriteModification", prefix), modification);
     }
+
+    // margins.
+    const UIControlBackground::UIMargins* margins = background->GetMargins();
+    if (margins)
+    {
+        rootNode->Set(Format("%smargins", prefix), margins->AsVector4());
+    }
 }
 
 void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to)
@@ -610,5 +615,59 @@ void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackgrou
     to = from->GetBackground()->Clone();
     RemoveControl(from);
 }
-	
+
+int32 UISlider::GetBackgroundComponentsCount() const
+{
+    return 3;
+}
+
+UIControlBackground *UISlider::GetBackgroundComponent(int32 index) const
+{
+    switch (index)
+    {
+        case 0:
+            return GetBackground();
+            
+        case 1:
+            return minBackground;
+            
+        case 2:
+            return maxBackground;
+            
+        default:
+            DVASSERT(false);
+            return NULL;
+    }
+}
+
+UIControlBackground *UISlider::CreateBackgroundComponent(int32 index) const
+{
+    DVASSERT(0 <= index && index < 3);
+    return new UIControlBackground();
+}
+
+void UISlider::SetBackgroundComponent(int32 index, UIControlBackground *bg)
+{
+    DVASSERT(false);
+}
+
+String UISlider::GetBackgroundComponentName(int32 index) const
+{
+    switch (index)
+    {
+        case 0:
+            return "Background";
+            
+        case 1:
+            return "min";
+            
+        case 2:
+            return "max";
+            
+        default:
+            DVASSERT(false);
+            return NULL;
+    }
+}
+
 } // ns

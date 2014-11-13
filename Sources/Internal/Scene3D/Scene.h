@@ -69,7 +69,6 @@ class TransformSystem;
 class LodSystem;
 class DebugRenderSystem;
 class EventSystem;
-class ParticleEmitterSystem;
 class ParticleEffectSystem;
 class UpdateSystem;
 class LightUpdateSystem;
@@ -84,6 +83,7 @@ class SpeedTreeUpdateSystem;
 class FoliageSystem;
 class WindSystem;
 class WaveSystem;
+class SkeletonSystem;
 class AnimationSystem;
     
 /**
@@ -119,7 +119,8 @@ public:
         SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG  = 1 << 14,
         SCENE_SYSTEM_WIND_UPDATE_FLAG       = 1 << 15,
         SCENE_SYSTEM_WAVE_UPDATE_FLAG       = 1 << 16,
-        SCENE_SYSTEM_ANIMATION_FLAG         = 1 << 17,
+        SCENE_SYSTEM_SKELETON_UPDATE_FLAG   = 1 << 17,
+        SCENE_SYSTEM_ANIMATION_FLAG         = 1 << 18,
 
         SCENE_SYSTEM_ALL_MASK               = 0xFFFFFFFF
     };
@@ -174,6 +175,7 @@ public:
     WaveSystem * waveSystem;
     AnimationSystem * animationSystem;
     StaticOcclusionDebugDrawSystem *staticOcclusionDebugDrawSystem;
+    SkeletonSystem *skeletonSystem;
     
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.

@@ -55,7 +55,7 @@
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Platform/Notification.h"
+#include "Notification/LocalNotificationController.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -88,6 +88,7 @@ Core::Core()
 {
 	globalFrameIndex = 1;
 	isActive = false;
+    isAutotesting = false;
 	firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
@@ -433,10 +434,11 @@ void Core::SystemAppStarted()
     if (file.Exists())
     {
         AutotestingSystem::Instance()->OnAppStarted();
+        isAutotesting = true;
     }
     else
     {
-        Logger::FrameworkDebug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
+        Logger::Debug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
     }
 #endif //__DAVAENGINE_AUTOTESTING__
 }

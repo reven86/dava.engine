@@ -361,7 +361,7 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
 		if (!control)
 			continue;
 
-		if (!control->GetRecursiveVisible())
+		if (!control->GetVisible())
 			continue;
 
         SmartSelection* currList = list;
@@ -374,7 +374,7 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
             currList = newList;
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             SmartGetSelectedControl(currList, node, point);
         }
@@ -429,19 +429,19 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
         if (!control)
             continue;
 
-        if (!control->GetRecursiveVisible())
+        if (!control->GetVisible())
             continue;
 
         bool controlVisible = IsControlVisible(control);
 
         if (controlVisible)
         {
-            Rect controlRect = GetControlRect(controlNode);
+            Rect controlRect = GetControlRect(controlNode, true);
             if (controlRect.RectIntersects(rect))
                 list.push_back(node);
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             GetSelectedControl(list, rect, node);
         }
@@ -493,7 +493,7 @@ void DefaultScreen::ApplyMoveDelta(const Vector2& delta)
 		UIControl* control = controlNode->GetUIObject();
 		if (control)
 		{
-            float32 parentsTotalAngle = control->GetParentsTotalAngle(false);
+            float32 parentsTotalAngle = control->GetParent()->GetGeometricData().angle;
             if(parentsTotalAngle != 0)
             {
                 Matrix3 tmp;
@@ -960,6 +960,11 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 
     Vector2 localPoint = event->point;
 	Vector2 point = LocalToInternal(localPoint);
+    
+	if (event->tid == UIEvent::BUTTON_1 && CheckEnterScreenMoveState())
+	{
+		return;
+	}
 
     HierarchyTreeScreenNode* screenNode = HierarchyTreeController::Instance()->GetActiveScreen();
 	if (screenNode && event->tid == UIEvent::BUTTON_1 && screenNode->AreGuidesEnabled() && screenNode->StartMoveGuide(point))
@@ -1454,30 +1459,7 @@ int32 DefaultScreen::CalculateStickToGuidesDrag(Vector2& offset) const
         HierarchyTreeControlNode* controlNode = (*iter);
         if (controlNode && controlNode->GetUIObject())
         {
-            Rect rectControl = controlNode->GetUIObject()->GetRect(true);
-            Rect rectFinal = rectControl;
-            float32 fAngle = controlNode->GetUIObject()->GetAngle();
-            if(fAngle != 0)
-            {
-                // Complex case - angle is not 0. Particular fix for 90, 180 and 270 degrees goes here
-                if(FLOAT_EQUAL_EPS(fAngle, PI_05, 1e-4f))
-                {
-                    // 90
-                    rectFinal = Rect(rectControl.x - rectControl.dy, rectControl.y, rectControl.dy, rectControl.dx);
-                }
-                else if(FLOAT_EQUAL_EPS(fAngle, PI, 1e-4f))
-                {
-                    // 180
-                    rectFinal = Rect(rectControl.x - rectControl.dx, rectControl.y - rectControl.dy, rectControl.dx, rectControl.dy);
-                }
-                else if(FLOAT_EQUAL_EPS(fAngle, (PI+PI_05), 1e-4f))
-                {
-                    // 270
-                    rectFinal = Rect(rectControl.x, rectControl.y - rectControl.dx, rectControl.dy, rectControl.dx);
-                }
-                
-            }
-            controlRects.push_back(rectFinal);
+            controlRects.push_back(controlNode->GetUIObject()->GetGeometricData().GetAABBox());
         }
     }
     
@@ -1679,7 +1661,7 @@ bool DefaultScreen::IsDropEnable(const DAVA::Vector2 &position) const
 	return true;
 }
 
-Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode) const
+Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode, bool checkAngle/*=false*/) const
 {
 	Rect rect;
 	
@@ -1690,7 +1672,14 @@ Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode) 
 	if (!control)
 		return rect;
 	
-	rect = control->GetRect();
+    if(!checkAngle)
+    {
+        rect = control->GetRect(false);
+    }
+    else
+    {
+        rect = control->GetGeometricData(false).GetAABBox();
+    }
 	rect += controlNode->GetParentDelta(true);
 
 	return rect;
@@ -1771,31 +1760,6 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 bool DefaultScreen::IsControlVisible(const UIControl* uiControl) const
 {
     return (uiControl->GetVisibleForUIEditor() && uiControl->GetVisible());
-}
-
-bool DefaultScreen::IsControlContentVisible( const UIControl *control ) const
-{
-    const List<UIControl*>& children = control->GetChildren();
-    if( children.empty() )
-        return false;
-
-    List<UIControl*>::const_iterator iter = children.begin();
-    List<UIControl*>::const_iterator end = children.end();
-    for(; iter != end; ++iter)
-    {
-        if (!control->GetRecursiveVisible())
-        {
-            continue;
-        }
-
-        if (IsControlVisible(*iter))
-            return true;
-
-        if (IsControlContentVisible(*iter))
-            return true;
-    }
-
-    return false;
 }
 
 void DefaultScreen::SetScreenControl(ScreenControl* control)

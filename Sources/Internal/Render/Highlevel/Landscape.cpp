@@ -1691,7 +1691,7 @@ Texture * Landscape::CreateLandscapeTexture()
     {
         FastName tName = tileMaskMaterial->GetTextureName(t);
         Texture *tex = tileMaskMaterial->GetTexture(t);
-        if(tex->isRenderTarget)
+        if(tex && tex->isRenderTarget)
         {
             tmpTileMaskMaterial->SetTexture(tName, tex);
         }

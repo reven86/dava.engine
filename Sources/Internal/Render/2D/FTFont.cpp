@@ -90,7 +90,6 @@ private:
         
         bool operator < (const Glyph& right) const { return image < right.image; };
 
-        
 		FT_UInt		index;
 		FT_Glyph	image;    /* the glyph image */
 
@@ -369,10 +368,10 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     }
 
 	Font::StringMetrics metrics;
-
-	metrics.baseline =  (int32)ceilf((float32)faceBboxYMax / ftToPixelScale * virtualToPhysicalFactor);
+	metrics.baseline = (int32)ceilf((float32)faceBboxYMax / ftToPixelScale * virtualToPhysicalFactor);
 	metrics.height = baseSize;
-    metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width/height
+    metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width
+    
 	int32 layoutWidth = 0; // width in FT points
 		
 	for(int32 i = 0; i < strLen; ++i)
@@ -427,7 +426,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
 			if(charSizes)
 			{
-				charSizes->push_back((float32)advances[i].x / 64.f);
+				charSizes->push_back((float32)advances[i].x / ftToPixelScale);
 			}
 
 			layoutWidth += advances[i].x;
@@ -464,21 +463,26 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
             pen.x += advances[i].x;
             pen.y += advances[i].y;
-
 		}
-		
 		FT_Done_Glyph(image);
 	}
 
 	SafeDeleteArray(advances);
 	drawStringMutex.Unlock();
 
+    if (metrics.drawRect.x == 0x7fffffff || metrics.drawRect.y == 0x7fffffff) // Empty string
+    {
+        metrics.drawRect.x = 0;
+        metrics.drawRect.y = 0;
+    }
+    
 	// Transform right/bottom edges into width/height
-	metrics.drawRect.dx -= metrics.drawRect.x;
-	metrics.drawRect.dy -= metrics.drawRect.y;
+	metrics.drawRect.dx += -metrics.drawRect.x + 1;
+    metrics.drawRect.dy += -metrics.drawRect.y + 1;
 
 	// Transform width from FT points to pixels
-	metrics.width = layoutWidth >> ftToPixelShift;
+    // Increase width by 1 for get total size litle larged that summ of length all symbols in float32 (charSizes)
+    metrics.width = (layoutWidth >> ftToPixelShift) + 1;
 
 	if(!contentScaleIncluded) 
 	{
@@ -534,41 +538,21 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 	{
 		Glyph & glyph = glyphs[i];
 
-		if(glyph.index != 0)
-		{
-			advances[i] = glyph.image->advance;
-			advances[i].x >>= 10;
-			advances[i].y >>= 10;
-		}
-		else
-		{
-			advances[i].x = advances[i].y = 0;
-		}
-
+		advances[i] = glyph.image->advance;
+		advances[i].x >>= 10;
+		advances[i].y >>= 10;
+		
 		if(prevAdvance)
 		{
-			//prevAdvance->x += track_kern;
-
 			if(useKerning)
 			{
 				FT_Vector  kern;
-
 				FT_Get_Kerning(face, prevIndex, glyph.index, FT_KERNING_UNFITTED, &kern );
-
 				prevAdvance->x += kern.x;
 				prevAdvance->y += kern.y;
-
-				//if(sc->kerning_mode > KERNING_MODE_NORMAL)
-					prevAdvance->x += glyph.delta;
+            	prevAdvance->x += glyph.delta;
 			}
-
-			//if(handle->hinted)
-			//{
-			//	prevAdvance->x = Round(prevAdvance->x);
-			//	prevAdvance->y = Round(prevAdvance->y);
-			//}
 		}
-
 		prevIndex   = glyph.index;
 		prevAdvance = &advances[i];
 	}
@@ -622,7 +606,6 @@ int32 FTInternalFont::LoadString(const WideString& str)
 		if (!(loadGlyphError = FT_Load_Glyph( face, glyph.index, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING))  &&
 			!(getGlyphError = FT_Get_Glyph(face->glyph, &glyph.image)))
 		{
-			//FT_Glyph_Metrics*  metrics = &face->glyph->metrics;
 			if(prevRsbDelta - face->glyph->lsb_delta >= 32 )
 				glyph.delta = -1 << 6;
 			else if(prevRsbDelta - face->glyph->lsb_delta < -32)
