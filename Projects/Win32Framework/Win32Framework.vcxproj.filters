@@ -1558,8 +1558,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -1599,12 +1597,17 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackage.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h">
       <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2860,7 +2863,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\AnimationData.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\StringUtils.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
@@ -2888,7 +2890,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp">
       <Filter>Internal\UI</Filter>
@@ -2898,6 +2899,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\VirtualCoordinatesSystem.cpp">
       <Filter>Internal\Render\2D\RenderSystem2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp">
+      <Filter>Internal\Autotesting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
