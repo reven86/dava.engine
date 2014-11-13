@@ -524,7 +524,6 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 
         case DRAW_TILED:
             RenderSystem2D::Instance()->DrawTiled(spr, &drawState, Vector2(leftStretchCap, topStretchCap), geometricData, &tiledData);
-            DrawTiled(geometricData, drawState.GetRenderState());
         break;
         default:
             break;
