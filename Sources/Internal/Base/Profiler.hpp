@@ -36,7 +36,7 @@ namespace profiler
 //  publics:
 //
 
-void    Init();
+void    Init( unsigned max_counter_count=64, unsigned history_len=128 );
 
 void    Start();
 void    Stop();
@@ -46,7 +46,6 @@ void    StartCounter( unsigned counter_id );
 void    StartCounter( unsigned counter_id, const char* counter_name );
 void    StopCounter( unsigned counter_id );
 
-void    ScheduleDump();
 void    Dump();
 bool    DumpAverage();
 

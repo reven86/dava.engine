@@ -786,6 +786,7 @@ for( unsigned i=0; i!=result.size(); ++i )
 }
 Logger::Debug( "\n" );
 */
+/*
 if( profiler::GetAverageCounters( &result ) )
 {
     Logger::Debug( "\nprof\n---" );
@@ -804,9 +805,10 @@ if( profiler::GetAverageCounters( &result ) )
     }
     Logger::Debug( "\n" );
 }
+*/
 }
-//profiler::Dump();
-//profiler::DumpAverage();
+profiler::Dump();
+profiler::DumpAverage();
 }
 
 	

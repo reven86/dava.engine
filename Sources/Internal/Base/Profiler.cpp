@@ -91,11 +91,11 @@ class Counter;
 
 Counter*    GetCounter( uint32 id );
 
-static const unsigned   MaxCounterCount                 = 64;
-static const unsigned   HistoryCount                    = 100;
+static unsigned         MaxCounterCount                 = 64;
+static unsigned         HistoryCount                    = 100;
 
 static Counter*         _CurCounter                     = 0;
-static Counter*         _ActiveCounter[MaxCounterCount];
+static Counter**        _ActiveCounter                  = 0;
 static unsigned         _ActiveCounterCount             = 0;
 static bool             _DumpPending                    = false;
 static long             _TotalTime0                     = 0;
@@ -152,7 +152,7 @@ public:
 
 
 private :
-friend void Init();
+friend void Init( unsigned max_counter_count, unsigned history_len );
 friend void Start();
 friend void Stop();
 friend bool DumpAverage();
@@ -173,7 +173,8 @@ private:
     unsigned    _used:1;
 };
 
-static Counter          _Counter[MaxCounterCount*HistoryCount];
+static Counter*         _Counter    = 0;
+static Counter*         _Average    = 0;
 
 
 
@@ -190,8 +191,15 @@ GetCounter( uint32 id )
 //------------------------------------------------------------------------------
 
 void 
-Init()
+Init( unsigned max_counter_count, unsigned history_len )
 {
+    HistoryCount    = history_len;
+    MaxCounterCount = max_counter_count;
+
+   _Counter         = new Counter[MaxCounterCount*HistoryCount];
+   _Average         = new Counter[MaxCounterCount];
+   _ActiveCounter   = new Counter*[MaxCounterCount];
+
     Counter*    counter = _Counter;
     
     for( unsigned h=0; h!=HistoryCount; ++h )
@@ -315,136 +323,83 @@ Stop()
 
 //------------------------------------------------------------------------------
 
-void
-ScheduleDump()
-{
-    _DumpPending = true;
-}
-
 static inline int
 flt_dec( float f )
 {
     return int((f - float(int(f)))*10.0f);
 }
 
-
-//------------------------------------------------------------------------------
-
-void 
-_DumpWithChilds( const Counter* base, const Counter* counter, unsigned indent=0, bool show_percents=true )
+static void
+_Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
 {
-    char    line[256];
-    int     line_len    = 0;
-    char    name[128];  /*memset(name,0,sizeof(name));//*/memset( name, ' ', indent*2 );
-    int     l           = (counter->name()) 
-                        ? sprintf( name+indent*2, "%s", counter->name() )
-                        : sprintf( name+indent*2, "%02u", counter->id() );
-/*
-if(indent*2+l > _MaxNameLen)
-{
-Logs("bla!");
-}
-*/
-    memset( name+indent*2+l, ' ', _MaxNameLen-(indent*2+l) );
-    name[_MaxNameLen] = '\0';
+    unsigned    max_name_len = 0;
     
-    line_len += sprintf( line+line_len, "%s  %-4u  %-5i us", name, counter->count(), int(counter->time_us()) );
-
-    if( show_percents )
+    for( unsigned i=0; i!=result.size(); ++i )
     {
-        float           pg  = (_TotalTime)  
-                              ? 100.0f*float(counter->time_us())/float(_TotalTime)
-                              : 0;
-        const Counter*  pc  = (counter->parent_id() != InvalidIndex)  ? base + counter->parent_id()  : 0;
-        float           pl  = (pc  &&  pc->time_us())  
-                              ? 100.0f*float(counter->time_us())/float(pc->time_us())
-                              : 0;
+        unsigned    pi      = result[i].parent_i;
+        unsigned    indent  = 0;
+        unsigned    len     = 0;
 
-        if( pc )    line_len += sprintf( line+line_len, "   %02i.%i    %02i.%i \n", int(pl),flt_dec(pl), int(pg),flt_dec(pg) );
-        else        line_len += sprintf( line+line_len, "   %02i.%i    %02i.%i \n", int(pg),flt_dec(pg), int(pg),flt_dec(pg) );
-    }
-    else
-    {
-        strcat( line, "\n" );
-        ++line_len;
-    }
-
-    Logs( line );
-
-    for( const Counter* c=base,*c_end=base+MaxCounterCount; c!=c_end; ++c )
-    {
-        if( !c->is_used() )
-          continue;
-        
-        if( c->parent_id() == counter->id() )
-            _DumpWithChilds( base, c, indent+1, show_percents );
-    }
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-_Dump( Counter* cur_counter, bool show_percents=true )
-{
-    static Array<Counter*>  counter;
-
-
-    // sort top-level counters by time
-
-    counter.clear();
-    _MaxNameLen = 4;
-    for( Counter* c=cur_counter,*c_end=cur_counter+MaxCounterCount; c!=c_end; ++c )
-    {
-        if( !c->is_used() )
-          continue;
-
-        bool    do_add = true;
-
-        if( c->parent_id() == InvalidIndex )
+        while( pi != unsigned(-1) )
         {
-            for( unsigned i=0; i<counter.size(); ++i )
-            {
-                if( c->time_us() > counter[i]->time_us() )
-                {
-                    counter.insert( counter.begin()+i, c );
-                    do_add = false;
-                    break;
-                }
-            }
+            pi = result[pi].parent_i;
+            ++indent;
+        }
+        
+        if( result[i].name )
+            len += strlen( result[i].name );
 
-            if( do_add )
-                counter.push_back( c );
+        len += indent*2;
+        
+        if( len > max_name_len )
+            max_name_len = len;
+    }
+
+    Logs( "---\n" );
+    for( unsigned i=0; i!=result.size(); ++i )
+    {
+        unsigned    pi          = result[i].parent_i;
+        unsigned    indent      = 0;
+        char        text[256];  memset( text, ' ', sizeof(text) );
+        unsigned    len         = 0;
+
+        while( pi != unsigned(-1) )
+        {
+            pi = result[pi].parent_i;
+            ++indent;
         }
 
-        int l = ((c->name()) ? strlen( c->name() ) : 2) + c->nesting_level()*2;
+        int  text_len = 0;       
 
-        if( unsigned(l) > _MaxNameLen )
-            _MaxNameLen = l;
+        if( result[i].name )
+            text_len = sprintf( text+indent*2, "%s", result[i].name );
+        else
+            text_len = sprintf( text+indent*2, "%u", i );
+        
+        text[indent*2+text_len] = ' ';
+        text_len = max_name_len+2+sprintf( text+max_name_len+2, " %-5u  %u us", result[i].count, result[i].time_us );
+
+        if( show_percents )
+        {
+            float               pg  = (_TotalTime)  
+                                      ? 100.0f*float(result[i].time_us)/float(_TotalTime)
+                                      : 0;
+            const CounterInfo*  pc  = (result[i].parent_i != InvalidIndex)  ? &(result[0]) + result[i].parent_i  : 0;
+            float               pl  = (pc  &&  pc->time_us)  
+                                      ? 100.0f*float(result[i].time_us)/float(pc->time_us)
+                                      : 0;
+
+            text[text_len] = ' ';
+            text_len = max_name_len + 2 + 1 + 5 + 2 + 5+1+2;
+
+            if( pc )    text_len += sprintf( text+text_len, "   %02i.%i    %02i.%i", int(pl),flt_dec(pl), int(pg),flt_dec(pg) );
+            else        text_len += sprintf( text+text_len, "   %02i.%i    %02i.%i", int(pg),flt_dec(pg), int(pg),flt_dec(pg) );
+        }
+
+        Logs( text );
+        Logs( "\n" );
     }
-
-    char        name[128];
-    char        dash[128];
-    int         dash_l   = _MaxNameLen + 33;
-    char        header[128];
-
-    memset( dash, '-', dash_l );
-    dash[dash_l]   = '\n';
-    dash[dash_l+1] = '\0';
-    strcpy( name, "Name" );
-    memset( name+4, ' ', _MaxNameLen-4 );
-    name[_MaxNameLen] = '\0';
-    Log( dash );
-//    sprintf( header, "%s  cnt.  time(us)   %% parent  %% global\n", name );
-    sprintf( header, "%s  cnt.  time(us)   parent  global\n", name );
-    Logs( header );
-    Log( dash );
-    
-    
-    for( unsigned i=0; i<counter.size(); ++i )
-        _DumpWithChilds( cur_counter, counter[i], 0, show_percents );
-    Log( dash );
-    Log( "\n" );
+    Logs( "\n" );
 }
 
 
@@ -453,7 +408,10 @@ _Dump( Counter* cur_counter, bool show_percents=true )
 void
 Dump()
 {
-    _Dump( _CurCounter );
+    static std::vector<CounterInfo> result;
+
+    GetCounters( &result );
+    _Dump( result, true );
 }
 
 
@@ -462,51 +420,17 @@ Dump()
 bool
 DumpAverage()
 {
-    bool    success = false;
+    bool                            success = false;
+    static std::vector<CounterInfo> result;
 
-    if( _CurCounter == _Counter + MaxCounterCount*(HistoryCount-1) )
+    if( GetAverageCounters( &result ) )
     {
-        Counter     avg[MaxCounterCount];
-
-        for( Counter* c=avg,*c_end=avg+MaxCounterCount; c!=c_end; ++c )
-        {
-            Counter*    src = _Counter + (c-avg);
-            
-            c->reset();
-            c->set_name( src->name() );
-
-            c->_id          = src->_id;
-            c->_parent_id   = src->_parent_id;
-            c->_t0          = 0;
-            c->_t           = 0;
-            c->_used        = src->_used;
-        }
-    
-        for( unsigned h=0; h!=HistoryCount; ++h )
-        {
-            Counter*    counter = _Counter + h*MaxCounterCount;
-            
-            for( Counter* c=counter,*c_end=counter+MaxCounterCount,*a=avg; c!=c_end; ++c,++a )
-            {        
-                a->_count += c->_count;
-                a->_t0     = 0;
-                a->_t     += c->time_us();
-            }
-        }
-
-        for( Counter* c=avg,*c_end=avg+MaxCounterCount; c!=c_end; ++c )
-        {
-            c->_count /= HistoryCount;
-            c->_t     /= HistoryCount;
-        }
-
-        _Dump( avg, false );
+        _Dump( result, false );
         success = true;
     }
-    
+
     return success;
 }
-
 
 
 //------------------------------------------------------------------------------
@@ -525,7 +449,6 @@ _CollectCountersWithChilds( const Counter* base, const Counter* counter, Array<C
         }
     }
 }
-
 
 
 //------------------------------------------------------------------------------
@@ -613,12 +536,11 @@ GetAverageCounters( std::vector<CounterInfo>* info )
 
     if( _CurCounter == _Counter + MaxCounterCount*(HistoryCount-1) )
     {
-        Counter                 avg[MaxCounterCount];
         static Array<Counter*>  result;
 
-        for( Counter* c=avg,*c_end=avg+MaxCounterCount; c!=c_end; ++c )
+        for( Counter* c=_Average,*c_end=_Average+MaxCounterCount; c!=c_end; ++c )
         {
-            Counter*    src = _Counter + (c-avg);
+            Counter*    src = _Counter + (c-_Average);
             
             c->reset();
             c->set_name( src->name() );
@@ -634,7 +556,7 @@ GetAverageCounters( std::vector<CounterInfo>* info )
         {
             Counter*    counter = _Counter + h*MaxCounterCount;
             
-            for( Counter* c=counter,*c_end=counter+MaxCounterCount,*a=avg; c!=c_end; ++c,++a )
+            for( Counter* c=counter,*c_end=counter+MaxCounterCount,*a=_Average; c!=c_end; ++c,++a )
             {        
                 a->_count += c->_count;
                 a->_t0     = 0;
@@ -642,14 +564,14 @@ GetAverageCounters( std::vector<CounterInfo>* info )
             }
         }
 
-        for( Counter* c=avg,*c_end=avg+MaxCounterCount; c!=c_end; ++c )
+        for( Counter* c=_Average,*c_end=_Average+MaxCounterCount; c!=c_end; ++c )
         {
             c->_count /= HistoryCount;
             c->_t     /= HistoryCount;
         }
 
         
-        _CollectActiveCounters( avg, &result );
+        _CollectActiveCounters( _Average, &result );
 
         info->resize( result.size() );
         for( unsigned i=0; i!=result.size(); ++i )
