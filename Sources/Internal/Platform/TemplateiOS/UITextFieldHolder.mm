@@ -462,6 +462,15 @@
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
+
+- (void)resetToDefaults
+{
+    textInputAllowed = YES;
+    useRtlAlign = NO;
+    [self setIsPassword:false];
+}
+
+
 @end
 
 #endif //#if defined(__DAVAENGINE_IPHONE__)

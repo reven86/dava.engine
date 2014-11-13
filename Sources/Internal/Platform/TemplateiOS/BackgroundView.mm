@@ -75,12 +75,10 @@
 - (void) ReleaseTextField: (UITextFieldHolder *)textField
 {
     [textField setHidden:YES];
+    [textField resetToDefaults];
+
     textFieldPool.ReleaseView(textField);
 }
-
-
-
-
 
 
 @end
