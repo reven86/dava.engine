@@ -85,11 +85,6 @@ public:
 	void FetchParametersFromIdTxt();
 	void SetUpConnectionToDB();
 
-	String GetDeviceName();
-	String GetPlatform() { return AUTOTESTING_PLATFORM_NAME; }
-
-	bool IsPhoneScreen();
-
 	void InitializeDevice(const String & device);
 
 	// Test organization

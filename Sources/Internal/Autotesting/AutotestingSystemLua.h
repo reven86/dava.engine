@@ -43,6 +43,7 @@
 #include "UI/UIList.h"
 
 #include "FileSystem/LocalizationSystem.h"
+#include "AutotestingSystem.h"
 
 struct lua_State;
 
@@ -136,6 +137,11 @@ public:
 	String ReadCommand(const String &device);
 
 	void InitializeDevice(const String &device);
+
+	String GetDeviceName();
+	String GetPlatform() { return AUTOTESTING_PLATFORM_NAME; }
+
+	bool IsPhoneScreen();
 
 	// DB storing
 	bool SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive* archive, const String &docName = "aux");

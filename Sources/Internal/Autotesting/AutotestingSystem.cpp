@@ -81,7 +81,7 @@ namespace DAVA
 			Logger::Error("AutotestingSystem::OnAppStarted App already initialized. Skip autotest initialization");
 		}
 		FetchParametersFromIdTxt();
-		deviceName = GetDeviceName();
+		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
 
 		SetUpConnectionToDB();
 
@@ -113,22 +113,6 @@ namespace DAVA
 			return;
 		}
 		isInit = true;
-	}
-
-	String AutotestingSystem::GetDeviceName()
-	{
-		if (AUTOTESTING_PLATFORM_NAME == "Android")
-		{
-			return DeviceInfo::GetModel();
-		}
-		return WStringToString(DeviceInfo::GetName());
-	}
-
-	bool AutotestingSystem::IsPhoneScreen()
-	{
-		float32 xInch = Core::Instance()->GetPhysicalScreenWidth() / static_cast<float32>(Core::Instance()->GetScreenDPI());
-		float32 yInch = Core::Instance()->GetPhysicalScreenHeight() / static_cast<float32>(Core::Instance()->GetScreenDPI());
-		return sqrtf(xInch*xInch + yInch*yInch) <= 6.5f; 
 	}
 
 	// Get test parameters from id.tx

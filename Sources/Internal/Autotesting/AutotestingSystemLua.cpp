@@ -6,6 +6,7 @@
 #include "AutotestingDB.h"
 
 #include "Utils/Utils.h"
+#include <Platform/DeviceInfo.h>
 
 extern "C"{
 #include "lua.h"
@@ -231,6 +232,23 @@ namespace DAVA
 	{
 		Logger::Debug("AutotestingSystemLua::InitializeDevice device=%s", device.c_str());
 		AutotestingSystem::Instance()->InitializeDevice(device);
+	}
+
+
+	String AutotestingSystemLua::GetDeviceName()
+	{
+		if (AUTOTESTING_PLATFORM_NAME == "Android")
+		{
+			return DeviceInfo::GetModel();
+		}
+		return WStringToString(DeviceInfo::GetName());
+	}
+
+	bool AutotestingSystemLua::IsPhoneScreen()
+	{
+		float32 xInch = Core::Instance()->GetPhysicalScreenWidth() / static_cast<float32>(Core::Instance()->GetScreenDPI());
+		float32 yInch = Core::Instance()->GetPhysicalScreenHeight() / static_cast<float32>(Core::Instance()->GetScreenDPI());
+		return sqrtf(xInch*xInch + yInch*yInch) <= 6.5f; 
 	}
 
 	String AutotestingSystemLua::GetTestParameter(const String &device)
@@ -546,7 +564,7 @@ namespace DAVA
 			AutotestingSystem::Instance()->OnError("AutotestingSystemLua::Can't get UIScrollView obj.");
 		}
 		Vector2 position = scrollView->GetScrollPosition();
-		return position;
+		return Vector2(position.x * (-1), position.y * (-1));
 	}
 
 	Vector2 AutotestingSystemLua::GetMaxContainerOffsetSize(UIControl* control)

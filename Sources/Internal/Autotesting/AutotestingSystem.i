@@ -8,7 +8,6 @@
 
 %{
 #include "AutotestingSystemLua.h"
-#include "AutotestingSystem.h"
 %}
 
 %template(Singleton_Autotesting) DAVA::Singleton<DAVA::AutotestingSystemLua>;
@@ -21,18 +20,3 @@
 
 %include "KeyedArchive.i"
 %include "AutotestingSystemLua.h"
-
-namespace DAVA
-{
-    class AutotestingSystem
-    {
-        public:
-            AutotestingSystem();
-            ~AutotestingSystem();
-
-            String GetDeviceName();
-            String GetPlatform();
-
-            bool IsPhoneScreen();
-    };
-};
