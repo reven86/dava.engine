@@ -45,7 +45,6 @@
 #include "Debug/DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
-#include "Network/MailSender.h"
 #include "Utils/UtilsAndroid.h"
 #include "UI/UITextFieldAndroid.h"
 #include "Platform/TemplateAndroid/DPIHelperAndroid.h"
@@ -54,7 +53,6 @@
 #include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
-#include "Platform/NotificationAndroid.h"
 
 //#if defined(__DAVAENGINE_PROFILE__)
 //#include "prof.h"
@@ -117,7 +115,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIAssert", &DAVA::JniDVAssertMessage::gJavaClass, &DAVA::JniDVAssertMessage::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIUtils", &DAVA::JniUtils::gJavaClass, &DAVA::JniUtils::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDeviceInfo", &DAVA::JniDeviceInfo::gJavaClass, &DAVA::JniDeviceInfo::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNISendMail", &DAVA::JniMailSender::gJavaClass, &DAVA::JniMailSender::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNITextField", &DAVA::JniTextField::gJavaClass, &DAVA::JniTextField::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIWebView", &DAVA::JniWebView::gJavaClass, &DAVA::JniWebView::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDpiHelper", &DAVA::JniDpiHelper::gJavaClass, &DAVA::JniDpiHelper::gJavaClassName);
@@ -127,7 +124,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNILocalization", &DAVA::JniLocalization::gJavaClass, &DAVA::JniLocalization::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIFileList", &DAVA::JniFileList::gJavaClass, &DAVA::JniFileList::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDateTime", &DAVA::JniDateTime::gJavaClass, &DAVA::JniDateTime::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNINotificationProvider", &DAVA::JniLocalNotification::gJavaClass, &DAVA::JniLocalNotification::gJavaClassName);
 	DAVA::Thread::InitMainThread();
 
 

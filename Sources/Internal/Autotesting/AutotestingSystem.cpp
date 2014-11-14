@@ -143,7 +143,7 @@ namespace DAVA
 			ForceQuit("Couldn't open file " + file.GetAbsolutePathname());
 		}
 
-		buildId = option->GetString("buildId");
+		buildId = option->GetString("BuildId");
 		buildDate = option->GetString("date");
 		branch = option->GetString("branch");
 		framework = option->GetString("framework");

@@ -60,7 +60,7 @@ void UITextFieldDelegate::TextFieldLostFocus(UITextField * /*textField*/)
 {
 };
 
-bool UITextFieldDelegate::TextFieldKeyPressed(UITextField * /*textField*/, int32 /*replacementLocation*/, int32 /*replacementLength*/, const WideString & /*replacementString*/)
+bool UITextFieldDelegate::TextFieldKeyPressed(UITextField * /*textField*/, int32 /*replacementLocation*/, int32 /*replacementLength*/, WideString & /*replacementString*/)
 {
 	return true;
 }
@@ -105,19 +105,20 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(true);
+    SetTextUseRtlAlign(false);
 #elif defined(__DAVAENGINE_IPHONE__)
 	textFieldiPhone = new UITextFieldiPhone(this);
     textFieldiPhone->SetVisible(true);
+    SetTextUseRtlAlign(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
     staticText->SetVisible(false);
     AddControl(staticText);
-    
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
 #endif
     
     cursorTime = 0;
-    showCursor = true;    
+    showCursor = true;
 }
 
 UITextField::UITextField()
@@ -140,14 +141,15 @@ UITextField::UITextField()
 #if defined (__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
+    SetTextUseRtlAlign(false);
 #elif defined(__DAVAENGINE_IPHONE__)
 	textFieldiPhone = new UITextFieldiPhone(this);
     textFieldiPhone->SetVisible(false);
+    SetTextUseRtlAlign(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
     staticText->SetVisible(false);
     AddControl(staticText);
-    
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
 #endif
     
@@ -254,6 +256,7 @@ void UITextField::DidAppear()
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->ShowField();
+    textFieldiPhone->SetVisible(IsOnScreen());
 #endif
 }
 
@@ -354,6 +357,17 @@ void UITextField::SetTextAlign(int32 align)
 #endif	
 }
 
+void UITextField::SetTextUseRtlAlign(bool useRtlAlign)
+{
+#ifdef __DAVAENGINE_IPHONE__
+    textFieldiPhone->SetTextUseRtlAlign(useRtlAlign);
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetTextUseRtlAlign(useRtlAlign);
+#else
+    staticText->SetTextUseRtlAlign(useRtlAlign);
+#endif
+}
+
 void UITextField::SetFontSize(float size)
 {
 #ifdef __DAVAENGINE_IPHONE__
@@ -409,7 +423,7 @@ const WideString & UITextField::GetText()
 	return text;
 }
     
-Font* UITextField::GetFont()
+Font* UITextField::GetFont() const
 {
 #if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
     return NULL;
@@ -455,7 +469,17 @@ int32 UITextField::GetTextAlign() const
 #else
     return staticText ? staticText->GetTextAlign() : ALIGN_HCENTER|ALIGN_VCENTER;
 #endif
-    
+}
+
+bool UITextField::GetTextUseRtlAlign() const
+{
+#ifdef __DAVAENGINE_IPHONE__
+    return textFieldiPhone ? textFieldiPhone->GetTextUseRtlAlign() : false;
+#elif defined(__DAVAENGINE_ANDROID__)
+    return textFieldAndroid ? textFieldAndroid->GetTextUseRtlAlign() : false;
+#else
+    return staticText ? staticText->GetTextUseRtlAlign() : false;
+#endif
 }
 
 void UITextField::Input(UIEvent *currentInput)
@@ -672,7 +696,19 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 	{
 		SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
 	}
+
+	const YamlNode * textUseRtlAlign = node->Get("textUseRtlAlign");
+	if(textUseRtlAlign)
+	{
+		SetTextUseRtlAlign(textUseRtlAlign->AsBool());
+	}
     //InitAfterYaml();
+
+    const YamlNode* maxLengthNode = node->Get("maxLength");
+    if (maxLengthNode)
+    {
+        SetMaxLength(maxLengthNode->AsInt32());
+    }
 
 #if 0
 	const YamlNode * orientNode = node->Get("orientation");
@@ -693,55 +729,103 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
 YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
 {
+    ScopedPtr<UITextField> baseTextField(new UITextField());
+
     YamlNode *node = UIControl::SaveToYamlNode(loader);
 
-    //Temp variable
-    VariantType *nodeValue = new VariantType();
-
     //Text
-    nodeValue->SetWideString(this->GetText());
-    node->Set("text", nodeValue);
+    if (baseTextField->GetText() != this->GetText())
+    {
+        node->Set("text", GetText());
+    }
 
     //Font
     //Get font name and put it here
-    nodeValue->SetString(FontManager::Instance()->GetFontName(this->GetFont()));
-    node->Set("font", nodeValue);
+    node->Set("font", FontManager::Instance()->GetFontName(this->GetFont()));
 	
 	//TextColor
 	const Color &textColor = GetTextColor();
-	nodeValue->SetColor(textColor);
-	node->Set("textcolor", nodeValue);
+    if (baseTextField->GetTextColor() != textColor)
+    {
+        node->Set("textcolor", VariantType(textColor));
+    }
 
 	// ShadowColor
 	const Color &shadowColor = GetShadowColor();
-	nodeValue->SetColor(shadowColor);
-	node->Set("shadowcolor", nodeValue);
+    if (baseTextField->GetShadowColor() != GetShadowColor())
+    {
+        node->Set("shadowcolor", VariantType(shadowColor));
+    }
 
 	// ShadowOffset
-	nodeValue->SetVector2(GetShadowOffset());
-	node->Set("shadowoffset", nodeValue);
+    if (baseTextField->GetShadowOffset() != GetShadowOffset())
+    {
+        node->Set("shadowoffset", GetShadowOffset());
+    }
 
 	// Text align
-	node->SetNodeToMap("textalign", loader->GetAlignNodeValue(this->GetTextAlign()));
+	if (baseTextField->GetTextAlign() != GetTextAlign())
+    {
+        node->SetNodeToMap("textalign", loader->GetAlignNodeValue(GetTextAlign()));
+    }
+	
+	// Text use rtl align
+	if (baseTextField->GetTextUseRtlAlign() != GetTextUseRtlAlign())
+    {
+        node->Set("textUseRtlAlign", this->GetTextUseRtlAlign());
+    }
+    
 
 	// Draw Type must be overwritten fot UITextField.
-	UIControlBackground::eDrawType drawType =  this->GetBackground()->GetDrawType();
-	node->Set("drawType", loader->GetDrawTypeNodeValue(drawType));
+	UIControlBackground::eDrawType drawType = GetBackground()->GetDrawType();
     
+    if (baseTextField->GetBackground()->GetDrawType() != drawType)
+    {
+        node->Set("drawType", loader->GetDrawTypeNodeValue(drawType));
+    }
+
     // Is password
-    node->Set("isPassword", isPassword);
+    if (baseTextField->IsPassword() != IsPassword())
+    {
+        node->Set("isPassword", IsPassword());
+    }
 
 	// Keyboard customization params.
-	node->Set("autoCapitalizationType", autoCapitalizationType);
-	node->Set("autoCorrectionType", autoCorrectionType);
-	node->Set("spellCheckingType", spellCheckingType);
-	node->Set("keyboardAppearanceType", keyboardAppearanceType);
-	node->Set("keyboardType", keyboardType);
-	node->Set("returnKeyType", returnKeyType);
-	node->Set("enableReturnKeyAutomatically", enableReturnKeyAutomatically);
+    if (baseTextField->GetAutoCapitalizationType() != GetAutoCapitalizationType())
+    {
+        node->Set("autoCapitalizationType", GetAutoCapitalizationType());
+    }
+    if (baseTextField->GetAutoCorrectionType() != GetAutoCorrectionType())
+    {
+        node->Set("autoCorrectionType", GetAutoCorrectionType());
+    }
+    if (baseTextField->GetSpellCheckingType() != GetSpellCheckingType())
+    {
+        node->Set("spellCheckingType", GetSpellCheckingType());
+    }
+    if (baseTextField->GetKeyboardAppearanceType() != GetKeyboardAppearanceType())
+    {
+        node->Set("keyboardAppearanceType", GetKeyboardAppearanceType());
+    }
+    if (baseTextField->GetKeyboardType() != GetKeyboardType())
+    {
+        node->Set("keyboardType", GetKeyboardType());
+    }
+    if (baseTextField->GetReturnKeyType() != GetReturnKeyType())
+    {
+        node->Set("returnKeyType", GetReturnKeyType());
+    }
+    if (baseTextField->IsEnableReturnKeyAutomatically() != IsEnableReturnKeyAutomatically())
+    {
+        node->Set("enableReturnKeyAutomatically", IsEnableReturnKeyAutomatically());
+    }
 
-    SafeDelete(nodeValue);
-    
+    // Max length.
+    if (baseTextField->GetMaxLength() != GetMaxLength())
+    {
+        node->Set("maxLength", GetMaxLength());
+    }
+
     return node;
 }
 
@@ -754,7 +838,7 @@ List<UIControl* >& UITextField::GetRealChildren()
 	return realChildren;
 }
 
-UIControl* UITextField::Clone()
+UITextField* UITextField::Clone()
 {
 	UITextField *t = new UITextField();
 	t->CopyDataFrom(this);
@@ -790,6 +874,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 	SetKeyboardType(t->GetKeyboardType());
 	SetReturnKeyType(t->GetReturnKeyType());
 	SetEnableReturnKeyAutomatically(t->IsEnableReturnKeyAutomatically());
+	SetTextUseRtlAlign(t->GetTextUseRtlAlign());
 }
     
 void UITextField::SetIsPassword(bool isPassword)
@@ -819,14 +904,14 @@ WideString UITextField::GetVisibleText() const
     return text;
 }
 	
-UITextField::eAutoCapitalizationType UITextField::GetAutoCapitalizationType() const
+int32 UITextField::GetAutoCapitalizationType() const
 {
 	return autoCapitalizationType;
 }
 
-void UITextField::SetAutoCapitalizationType(eAutoCapitalizationType value)
+void UITextField::SetAutoCapitalizationType(int32 value)
 {
-	autoCapitalizationType = value;
+	autoCapitalizationType = (eAutoCapitalizationType)value;
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetAutoCapitalizationType(value);
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -834,14 +919,14 @@ void UITextField::SetAutoCapitalizationType(eAutoCapitalizationType value)
 #endif
 }
 
-UITextField::eAutoCorrectionType UITextField::GetAutoCorrectionType() const
+int32 UITextField::GetAutoCorrectionType() const
 {
 	return autoCorrectionType;
 }
 
-void UITextField::SetAutoCorrectionType(eAutoCorrectionType value)
+void UITextField::SetAutoCorrectionType(int32 value)
 {
-	autoCorrectionType = value;
+	autoCorrectionType = (eAutoCorrectionType)value;
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetAutoCorrectionType(value);
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -849,14 +934,14 @@ void UITextField::SetAutoCorrectionType(eAutoCorrectionType value)
 #endif
 }
 
-UITextField::eSpellCheckingType UITextField::GetSpellCheckingType() const
+int32 UITextField::GetSpellCheckingType() const
 {
 	return spellCheckingType;
 }
 
-void UITextField::SetSpellCheckingType(eSpellCheckingType value)
+void UITextField::SetSpellCheckingType(int32 value)
 {
-	spellCheckingType = value;
+	spellCheckingType = (eSpellCheckingType)value;
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetSpellCheckingType(value);
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -864,14 +949,14 @@ void UITextField::SetSpellCheckingType(eSpellCheckingType value)
 #endif
 }
 
-UITextField::eKeyboardAppearanceType UITextField::GetKeyboardAppearanceType() const
+int32 UITextField::GetKeyboardAppearanceType() const
 {
 	return keyboardAppearanceType;
 }
 
-void UITextField::SetKeyboardAppearanceType(eKeyboardAppearanceType value)
+void UITextField::SetKeyboardAppearanceType(int32 value)
 {
-	keyboardAppearanceType = value;
+	keyboardAppearanceType = (eKeyboardAppearanceType)value;
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetKeyboardAppearanceType(value);
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -879,14 +964,14 @@ void UITextField::SetKeyboardAppearanceType(eKeyboardAppearanceType value)
 #endif
 }
 
-UITextField::eKeyboardType UITextField::GetKeyboardType() const
+int32 UITextField::GetKeyboardType() const
 {
 	return keyboardType;
 }
 
-void UITextField::SetKeyboardType(eKeyboardType value)
+void UITextField::SetKeyboardType(int32 value)
 {
-	keyboardType = value;
+	keyboardType = (eKeyboardType)value;
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetKeyboardType(value);
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -894,14 +979,14 @@ void UITextField::SetKeyboardType(eKeyboardType value)
 #endif
 }
 
-UITextField::eReturnKeyType UITextField::GetReturnKeyType() const
+int32 UITextField::GetReturnKeyType() const
 {
 	return returnKeyType;
 }
 
-void UITextField::SetReturnKeyType(eReturnKeyType value)
+void UITextField::SetReturnKeyType(int32 value)
 {
-	returnKeyType = value;
+	returnKeyType = (eReturnKeyType)value;
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetReturnKeyType(value);
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -995,6 +1080,27 @@ void UITextField::WillBecomeInvisible()
 #else
     staticText->SetVisible(false);
 #endif
+}
+    
+
+String UITextField::GetFontPresetName() const
+{
+    Font *font = GetFont();
+    if (!font)
+        return "";
+    return FontManager::Instance()->GetFontName(font);
+}
+
+void UITextField::SetFontPresetName( const String &presetName )
+{
+    Font *font = NULL;
+
+    if (!presetName.empty())
+    {
+        font = FontManager::Instance()->GetFont(presetName);
+    }
+
+    SetFont(font);
 }
 
 }; // namespace

@@ -74,6 +74,8 @@
 #include "DLCDownloadTest.h"
 #include "FunctionBindSingalTest.h"
 #include "MathTest.h"
+#include "BiDiTest.h"
+#include "TextSizeTest.h"
 
 using namespace DAVA;
 
@@ -141,6 +143,8 @@ void GameCore::OnAppStarted()
  	new SoundTest();
  	new SplitTest();
  	new AlignTest();
+    new BiDiTest();
+	new TextSizeTest();
  	new EMailTest();
  	new DPITest();
  	new MaterialCompilerTest();

@@ -26,6 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_HELPER_APP_DELEGATE_H__
+#define __DAVAENGINE_HELPER_APP_DELEGATE_H__
+
 
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
@@ -48,6 +51,9 @@ enum
 
 @property (nonatomic, retain) EAGLViewController * glController;
 
++ (DAVA::float32) GetScale;
+
 @end
 
-#endif
+#endif //__DAVAENGINE_IPHONE__
+#endif //__DAVAENGINE_HELPER_APP_DELEGATE_H__

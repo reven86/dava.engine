@@ -102,6 +102,7 @@ public:
     enum PatchError
     {
         ERROR_NO = 0,
+		ERROR_MEMORY,		// can't allocate memory
         ERROR_CANT_READ,    // path file can't be read
         ERROR_CORRUPTED,    // path file is corrupted
         ERROR_EMPTY_PATCH,  // no data to apply patch

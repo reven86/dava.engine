@@ -54,6 +54,7 @@ class UITextControlMetadata : public UIControlMetadata
 	Q_PROPERTY(float ShadowOffsetY READ GetShadowOffsetY WRITE SetShadowOffsetY);
 	Q_PROPERTY(QColor ShadowColor READ GetShadowColor WRITE SetShadowColor);
 	Q_PROPERTY(int TextAlign READ GetTextAlign WRITE SetTextAlign);
+	Q_PROPERTY(bool TextUseRtlAlign READ GetTextUseRtlAlign WRITE SetTextUseRtlAlign);
     Q_PROPERTY(int FittingType READ GetFittingType WRITE SetFittingType);
 
     // Font color/shadow color inherit types.
@@ -82,6 +83,9 @@ protected:
 
 	virtual int GetTextAlign() const = 0;
     virtual void SetTextAlign(int align) = 0;
+	
+	virtual bool GetTextUseRtlAlign() = 0;
+    virtual void SetTextUseRtlAlign(bool value) = 0;
     
     virtual float GetFontSize() const = 0;
     //virtual void SetFontSize(float fontSize) = 0;

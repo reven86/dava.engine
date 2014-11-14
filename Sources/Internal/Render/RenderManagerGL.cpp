@@ -115,6 +115,10 @@ void RenderManager::Release()
 
 #endif //#if defined(__DAVAENGINE_WIN32__)
 
+#if defined(__DAVAENGINE_ANDROID__)
+typedef void (GL_APIENTRYP PFNGLDISCARDFRAMEBUFFEREXTPROC) (GLenum target, GLsizei numAttachments, const GLenum *attachments);
+static PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT = NULL;
+#endif
 
 bool IsGLExtensionSupported(const String &extension)
 {
@@ -164,6 +168,9 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isGlDepth24Stencil8Supported = IsGLExtensionSupported("GL_DEPTH24_STENCIL8") || IsGLExtensionSupported("GL_OES_packed_depth_stencil");
     caps.isGlDepthNvNonLinearSupported = IsGLExtensionSupported("GL_DEPTH_COMPONENT16_NONLINEAR_NV");
     
+    if (IsGLExtensionSupported("GL_EXT_discard_framebuffer"))
+        glDiscardFramebufferEXT = (PFNGLDISCARDFRAMEBUFFEREXTPROC) eglGetProcAddress("glDiscardFramebufferEXT");
+
 #   if (__ANDROID_API__ < 18)
     InitFakeOcclusion();
 #   endif
@@ -675,9 +682,14 @@ void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 
 void RenderManager::DiscardFramebufferHW(uint32 attachments)
 {
-#ifdef __DAVAENGINE_IPHONE__
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     if (!attachments) 
       return;
+#if defined (__DAVAENGINE_ANDROID__)
+    if (glDiscardFramebufferEXT == NULL)
+        return;
+#endif
+
     GLenum discards[3];
     int32 discardsCount=0;
     if (attachments&COLOR_ATTACHMENT)
@@ -863,29 +875,10 @@ int32 RenderManager::HWglGetLastTextureID(int textureType)
 	
 void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 {
-    if(0 != tId)
-    {
-        RENDER_VERIFY(glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId));
-        
-        		//GLenum err = glGetError();
-        		//if (err != GL_NO_ERROR)
-        		//	Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindTexture(GL_TEXTURE_2D, tId)", __FILE__, __LINE__, err);
-        
-        lastBindedTexture[textureType] = tId;
-		lastBindedTextureType = textureType;
-    }
-}
-	
-void RenderManager::HWglForceBindTexture(int32 tId, uint32 textureType)
-{
-	glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId);
-	
-	//GLenum err = glGetError();
-	//if (err != GL_NO_ERROR)
-	//	Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindTexture(GL_TEXTURE_2D, tId)", __FILE__, __LINE__, err);
-	
-	lastBindedTexture[textureType] = tId;
-	lastBindedTextureType = textureType;
+    RENDER_VERIFY(glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId));
+
+    lastBindedTexture[textureType] = tId;
+    lastBindedTextureType = textureType;
 }
 
 int32 RenderManager::HWglGetLastFBO()
@@ -930,7 +923,11 @@ void RenderManager::HWglBindFBO(const int32 fbo)
     
 void RenderManager::DiscardDepth()
 {
-#ifdef __DAVAENGINE_IPHONE__
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__)
+    if (glDiscardFramebufferEXT == NULL)
+        return;
+#endif
     static const GLenum discards[]  = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
     RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));
 #endif

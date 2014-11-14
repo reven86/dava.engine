@@ -394,7 +394,11 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         totalSize += sizeof(Uniform) + (uniformDataSize * size);
     }
     
+    
+    Bind();
+    
     uniformData = new uint8[totalSize];
+    Memset(uniformData, 0, totalSize * sizeof(uint8));
     autobindUniformCount = 0;
     for (int32 k = 0; k < activeUniforms; ++k)
     {
@@ -432,144 +436,83 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
             autobindUniformCount++;
         }
         
-        //VI: initialize cacheValue with value from shader
         switch(uniformStruct->type)
         {
             case UT_FLOAT:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+                RENDER_VERIFY(glUniform1fv(uniformStruct->location, uniformStruct->size, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_VEC2:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+                RENDER_VERIFY(glUniform2fv(uniformStruct->location, uniformStruct->size, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_VEC3:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+                RENDER_VERIFY(glUniform3fv(uniformStruct->location, uniformStruct->size, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_VEC4:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
-                break;
-            }
-                
-            case UT_INT:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
-                break;
-            }
-                
-            case UT_INT_VEC2:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
-                break;
-            }
-                
-            case UT_INT_VEC3:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
-                break;
-            }
-                
-            case UT_INT_VEC4:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform4fv(uniformStruct->location, uniformStruct->size, (float32*)value));
                 break;
             }
                 
             case UT_BOOL:
+            case UT_INT:
+            case UT_SAMPLER_2D:
+            case UT_SAMPLER_CUBE:
             {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform1iv(uniformStruct->location, uniformStruct->size, (int32*)value));
                 break;
             }
                 
             case UT_BOOL_VEC2:
+            case UT_INT_VEC2:
             {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform2iv(uniformStruct->location, uniformStruct->size, (int32*)value));
                 break;
             }
                 
             case UT_BOOL_VEC3:
+            case UT_INT_VEC3:
             {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform3iv(uniformStruct->location, uniformStruct->size, (int32*)value));
                 break;
             }
                 
             case UT_BOOL_VEC4:
+            case UT_INT_VEC4:
             {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniform4iv(uniformStruct->location, uniformStruct->size, (int32*)value));
                 break;
             }
-                
-                //VI: Matrices are returned from the shader in column-major order so need to transpose the matrix.
+            
             case UT_FLOAT_MAT2:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
-                
-                
-                for(int32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
-                {
-                    Matrix2* m = (Matrix2*)(((uint8*)value) + paramIndex * sizeof(Matrix2));
-                    Matrix2 t;
-                    for (int i = 0; i < 2; ++i)
-                        for (int j = 0; j < 2; ++j)
-                            t._data[i][j] = m->_data[j][i];
-                    *m = t;
-                }
-                
+                RENDER_VERIFY(glUniformMatrix2fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_MAT3:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
-                
-                for(int32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
-                {
-
-                    Matrix3* m = (Matrix3*)(((uint8*)value) + paramIndex * sizeof(Matrix3));
-                    Matrix3 t;
-                    for (int i = 0; i < 3; ++i)
-                        for (int j = 0; j < 3; ++j)
-                            t._data[i][j] = m->_data[j][i];
-                    *m = t;
-                }
-                
+                RENDER_VERIFY(glUniformMatrix3fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
                 break;
             }
                 
             case UT_FLOAT_MAT4:
             {
-                RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
-                
-                for(int32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
-                {
-                    Matrix4* m = (Matrix4*)(((uint8*)value) + paramIndex * sizeof(Matrix4));
-                    m->Transpose();
-                }
-                
-                break;
-            }
-                
-            case UT_SAMPLER_2D:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
-                break;
-            }
-                
-            case UT_SAMPLER_CUBE:
-            {
-                RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
+                RENDER_VERIFY(glUniformMatrix4fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
                 break;
             }
         }
     }
+    
+    Unbind();
     
     if(autobindUniformCount)
     {
