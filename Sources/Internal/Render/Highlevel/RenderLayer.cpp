@@ -113,10 +113,11 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
         return;
     }    
     batch->GetRenderObject()->BindDynamicParameters(camera);
-    material->SetActivePass(ownerRenderPass);
+    material->SetActiveMaterialTechnique(ownerRenderPass);
+    material->BindActivePassRenderState();
     Shader *shader = material->GetActivePassShader();
     shader->Bind();    
-    shader->BindDynamicParameters();
+    shader->BindDynamicParameters(false);
 
     int32 instancedUniformesCount = shader->GetInstancingUniformCount();
     incomingUniformValues.clear();
@@ -149,7 +150,7 @@ bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & o
     {
         return false;
     }
-    material->SetActivePass(ownerRenderPass);
+    material->SetActiveMaterialTechnique(ownerRenderPass);
     NMaterial *incomingMaterial = incomingGroup->GetMaterial();
     if ((material->GetParent()!=incomingMaterial->GetParent())
       ||(material->GetActivePassRenderStateHandle()!=incomingMaterial->GetActivePassRenderStateHandle())
@@ -199,6 +200,8 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
     if (!incomingGroup)
         return;
     
+    //incomingMaterial->GetActivePassShader()->setInstanceData(incomingUniformValues, currInstancesCount);
+
     incomingGroup->Draw(ownerRenderPass, camera);
 
     if (currInstancesCount>1)

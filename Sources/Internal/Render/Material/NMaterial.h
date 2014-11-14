@@ -108,6 +108,22 @@ public:
 	inline NMaterialProperty* Clone();
 };
 
+
+typedef std::pair<FastName, uint8> PassInstanceKeyType;    
+
+template<> struct Hash <PassInstanceKeyType>
+{
+    inline size_t operator()(const PassInstanceKeyType& i) const
+    {
+        return i.first.Index()^i.second;
+    }
+
+    inline bool Compare(const PassInstanceKeyType &i1, const PassInstanceKeyType &i2) const
+    {
+        return (i1 == i2);
+    }
+};
+
 class Camera;
 class SerializationContext;
 
@@ -232,6 +248,7 @@ public:
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
+    static const FastName FLAG_INSTANCING;
 
     static const FastName FLAG_SPHERICAL_LIT;
 
@@ -272,6 +289,12 @@ public:
     {
         DYNAMIC_BIND_LIGHT = 1 << 0,
         DYNAMIC_BIND_OBJECT_CENTER = 1 << 1
+    };
+
+    enum eEngineFlags
+    {
+        EF_NONE = 0,
+        EF_INSTANCING = 1<<0
     };
 
 public:
@@ -343,20 +366,18 @@ public:
     bool IsFlagEffective(const FastName& flag) const;
     
     /**
-	 \brief Binds render technique using pass name and camera.
-     Binding means:
-     - shader uniforms will be set
-     - textures will be set
-     - render state will be set
+	 \brief sets active render technique using pass name and validates that all cached properties are up-to-date     
      \param[in] passName name of the render pass.     
 	 */
-	void BindMaterialTechnique(const FastName & passName);
+	void SetActiveMaterialTechnique(const FastName & passName, uint8 flags = EF_NONE);         
+    
+    void UpdateActivePass(const FastName& passName, uint8 flags);
+    void UpdateActivePassTextures();
+    void UpdateActivePassProperties();
 
-     /**
-	 \brief Set Active pass without binding anything     
-     \param[in] passName name of the render pass.     
-	 */
-    void SetActivePass(const FastName& passName);
+    void BindActivePassRenderState();
+    void BindActivePassMaterialProperties();    
+
 
     /**
 	 \brief returns Active pass shader     
@@ -642,6 +663,14 @@ public:
 	 */
     void GetRenderState(const FastName& passName, RenderStateData& target) const;
     
+
+     /**
+	 \brief Allows to replace render state for the pass and flags define.
+     \param[in] passName pass name.
+     \param[in] flags engine flags for pass.
+	 \param[in] newState new render state.
+	 */
+	void SubclassRenderState(const FastName& passName, uint8 flags, RenderStateData& newState);
     /**
 	 \brief Allows to replace render state for the pass.
      \param[in] passName pass name.
@@ -804,10 +833,7 @@ protected:
         bool propsDirty;
 		
 		HashMap<FastName, int32> textureIndexMap;
-		Vector<UniformCacheEntry> activeUniformsCache;
-		
-		UniformCacheEntry* activeUniformsCachePtr;
-		size_t activeUniformsCacheSize;
+		Vector<UniformCacheEntry> activeUniformsCache;        
 
         
     private:
@@ -841,8 +867,9 @@ protected:
     uint8 dynamicBindFlags;
 
 	uint16 materialSortKey; //VI: depends on baseTechnique
-	RenderTechnique* baseTechnique;
-	HashMap<FastName, RenderPassInstance*> instancePasses;
+	RenderTechnique* baseTechnique;       
+
+	HashMap<PassInstanceKeyType, RenderPassInstance*> instancePasses;
 	HashMap<FastName, UniqueHandle> instancePassRenderStates;
 	
 	RenderPassInstance* activePassInstance;
@@ -877,7 +904,7 @@ protected:
 	void ReleaseInstancePasses();
 	
 	void UpdateMaterialTemplate();
-	void UpdateRenderPass(const FastName& passName,
+	void AddRenderPassInstance(const FastName& passName, uint8 flags,
 						  const FastNameSet& instanceDefines,
 						  RenderTechniquePass* pass);
 	void BuildTextureParamsCache(RenderPassInstance* passInstance);
@@ -888,13 +915,9 @@ protected:
 	void CleanupUnusedTextures();
 	Texture* GetOrLoadTextureRecursive(const FastName& textureName);
 	bool IsTextureActive(const FastName& textureName) const;
-	void SetTexturesDirty();
-	void PrepareTextureState(RenderPassInstance* passInstance);
+	void SetTexturesDirty();	
 	void UpdateShaderWithFlags();
-	//static Texture* GetStubTexture(const FastName& uniformName);
-	
-	void BindMaterialTextures(RenderPassInstance* passInstance);
-	void BindMaterialProperties(RenderPassInstance* passInstance);
+	//static Texture* GetStubTexture(const FastName& uniformName);	
 	
 	//VI: this method is for updating light. It's temporary solution hopefully
 	//void UpdateLightingProperties(Light* light);
@@ -981,8 +1004,6 @@ inline NMaterial::RenderPassInstance::RenderPassInstance() :
 textureIndexMap(8),
 dirtyState(false),
 texturesDirty(true),
-activeUniformsCachePtr(NULL),
-activeUniformsCacheSize(0),
 propsDirty(true)
 {
     renderState.shader = NULL;

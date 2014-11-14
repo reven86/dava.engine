@@ -115,7 +115,7 @@ class Data;
 */	
 class Shader : public RenderResource
 {
-public:
+public:    
     enum eUniform
     {
         UNIFORM_NONE = 0, 
@@ -232,8 +232,8 @@ public:
     void ClearLastBindedCaches();
 
     void Bind();
-    void BindDynamicParameters();
-    bool TestDynamicParamsInstancing();
+    void BindDynamicParameters(bool bindInstanced = true);
+    bool TestDynamicParamsInstancing();    
 
     static void Unbind();
     

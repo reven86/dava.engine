@@ -128,7 +128,7 @@ bool NMaterialHelper::IsAlphablend(const FastName& passName, NMaterial* mat)
     
     bool result = false;
     
-    if(mat->instancePasses.count(passName) > 0)
+    if(mat->instancePasses.count(PassInstanceKeyType(passName,0)) > 0)
     {
         RenderStateData currentData = mat->GetRenderState(passName);
         

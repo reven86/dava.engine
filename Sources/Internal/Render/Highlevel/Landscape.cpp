@@ -1117,7 +1117,10 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippi
 void Landscape::BindMaterial(int32 lodLayer, Camera* camera)
 {	
 	tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
-	tileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME);
+    tileMaskMaterial->SetActiveMaterialTechnique(TECHNIQUE_TILEMASK_NAME);
+    tileMaskMaterial->BindActivePassRenderState();
+    tileMaskMaterial->BindActivePassMaterialProperties();
+	
     
     prevLodLayer = lodLayer;
 }
@@ -1705,7 +1708,9 @@ Texture * Landscape::CreateLandscapeTexture()
     
     tmpTileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
     tmpTileMaskMaterial->SetParent(tmpLandscapeParent);
-    tmpTileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME);
+    tileMaskMaterial->SetActiveMaterialTechnique(TECHNIQUE_TILEMASK_NAME);
+    tileMaskMaterial->BindActivePassRenderState();
+    tileMaskMaterial->BindActivePassMaterialProperties();
 
 	RenderManager::Instance()->SetRenderData(ftRenderData);
 	RenderManager::Instance()->AttachRenderData();

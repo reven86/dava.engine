@@ -108,16 +108,19 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
     DVASSERT(renderObject);    	    
     
     renderObject->BindDynamicParameters(camera);
-    material->BindMaterialTechnique(ownerRenderPass);
+    material->SetActiveMaterialTechnique(ownerRenderPass);
+    material->BindActivePassRenderState();
+    material->BindActivePassMaterialProperties();
     
     //draw code
     RenderDataObject *renderData = renderDataObject;
     if (dataSource)
         renderData = dataSource->renderDataObject;    
-    RenderManager::Instance()->SetRenderData(renderData);
-    RenderManager::Instance()->AttachRenderData();
     DVASSERT(renderData);    
-    // TODO: rethink this code
+    RenderManager::Instance()->SetRenderData(renderData);
+    RenderManager::Instance()->AttachRenderData();    
+    
+    // TODO: rethink this code (this was todo from original code)
     void * indices = 0;
     if (!renderData->GetIndexBufferID())
         indices = renderData->indices;    

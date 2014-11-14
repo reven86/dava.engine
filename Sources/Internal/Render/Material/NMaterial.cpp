@@ -114,6 +114,7 @@ const FastName NMaterial::FLAG_TILED_DECAL = FastName("TILED_DECAL");
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterial::FLAG_SPECULAR = FastName("SPECULAR");
+const FastName NMaterial::FLAG_INSTANCING = FastName("INSTANCING");
 
 const FastName NMaterial::FLAG_SPHERICAL_LIT = FastName("SPHERICAL_LIT");
 
@@ -685,7 +686,7 @@ NMaterial* NMaterial::Clone()
 		clonedMaterial->SetFlag(it->first, (NMaterial::eFlagValue)it->second);
 	}
 	
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
+	for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
 	{
@@ -1086,7 +1087,7 @@ void NMaterial::BuildEffectiveFlagSetInternal(FastNameSet& effectiveFlagSet)
 
 void NMaterial::ReleaseInstancePasses()
 {
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
+	for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
 	{
@@ -1105,8 +1106,8 @@ void NMaterial::UpdateMaterialTemplate()
 	
 	ReleaseInstancePasses();
 	
-	FastNameSet effectiveFlags;
-	BuildEffectiveFlagSet(effectiveFlags);
+	FastNameSet effectiveDefines;
+	BuildEffectiveFlagSet(effectiveDefines);
 	
 	FastName techniqueName;
 	if(currentQuality.IsValid())
@@ -1133,12 +1134,15 @@ void NMaterial::UpdateMaterialTemplate()
         DVASSERT(baseTechnique);
     }
 	
+    FastNameSet effectiveDefinesInstancing = effectiveDefines;
+    effectiveDefinesInstancing.Insert(FLAG_INSTANCING);
     requiredVertexFormat = 0;
 	uint32 passCount = baseTechnique->GetPassCount();
 	for(uint32 i = 0; i < passCount; ++i)
 	{
 		RenderTechniquePass* pass = baseTechnique->GetPassByIndex(i);
-		UpdateRenderPass(baseTechnique->GetPassName(i), effectiveFlags, pass);
+		AddRenderPassInstance(baseTechnique->GetPassName(i), EF_NONE, effectiveDefines, pass);        
+        AddRenderPassInstance(baseTechnique->GetPassName(i), EF_INSTANCING, effectiveDefinesInstancing, pass);
 	}
 	
 	SetTexturesDirty();
@@ -1156,7 +1160,7 @@ void NMaterial::UpdateMaterialTemplate()
     }
 }
 
-void NMaterial::UpdateRenderPass(const FastName& passName,
+void NMaterial::AddRenderPassInstance(const FastName& passName, uint8 flags, 
 								 const FastNameSet& instanceDefines,
 								 RenderTechniquePass* pass)
 {
@@ -1185,7 +1189,7 @@ void NMaterial::UpdateRenderPass(const FastName& passName,
 	passInstance->SetRenderer(parentRenderState->renderer);
 	passInstance->SetColor(parentRenderState->color);
 	
-	instancePasses.insert(passName, passInstance);
+	instancePasses.insert(PassInstanceKeyType(passName, flags), passInstance);
 	
 	BuildTextureParamsCache(passInstance);
 	BuildActiveUniformsCacheParamsCache(passInstance);
@@ -1217,8 +1221,8 @@ void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
     
 void NMaterial::BuildTextureParamsCache()
 {
-    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
-    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
+    HashMap<PassInstanceKeyType, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
+    HashMap<PassInstanceKeyType, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
     while(it != endIt)
     {
         BuildTextureParamsCache(it->second);
@@ -1228,8 +1232,8 @@ void NMaterial::BuildTextureParamsCache()
     
 void NMaterial::BuildActiveUniformsCacheParamsCache()
 {
-    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
-    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
+    HashMap<PassInstanceKeyType, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
+    HashMap<PassInstanceKeyType, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
     while(it != endIt)
     {
         BuildActiveUniformsCacheParamsCache(it->second);
@@ -1240,7 +1244,7 @@ void NMaterial::BuildActiveUniformsCacheParamsCache()
 void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInstance)
 {
 	Shader* shader = passInstance->GetShader();
-	passInstance->activeUniformsCache.clear();
+	passInstance->activeUniformsCache.clear();    
 	
 	uint32 uniformCount = shader->GetUniformCount();
 	for(uint32 uniformIndex = 0; uniformIndex < uniformCount; ++uniformIndex)
@@ -1261,15 +1265,7 @@ void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInst
 			
 			passInstance->activeUniformsCache.push_back(entry);
 		}
-	}
-	
-	passInstance->activeUniformsCachePtr = NULL;
-	passInstance->activeUniformsCacheSize = 0;
-	if(passInstance->activeUniformsCache.size())
-	{
-		passInstance->activeUniformsCachePtr = &passInstance->activeUniformsCache[0];
-		passInstance->activeUniformsCacheSize = passInstance->activeUniformsCache.size();
-	}
+	}		
 }
 
 NMaterial::TextureBucket* NMaterial::GetEffectiveTextureBucket(const FastName& textureFastName) const
@@ -1289,7 +1285,7 @@ NMaterial::TextureBucket* NMaterial::GetEffectiveTextureBucket(const FastName& t
 
 void NMaterial::LoadActiveTextures()
 {
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
+	for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
 	{
@@ -1353,7 +1349,7 @@ Texture* NMaterial::GetOrLoadTextureRecursive(const FastName& textureName)
 bool NMaterial::IsTextureActive(const FastName& textureName) const
 {
 	bool active = false;
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
+	for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
 	{
@@ -1383,7 +1379,7 @@ bool NMaterial::IsTextureActive(const FastName& textureName) const
 
 void NMaterial::SetTexturesDirty()
 {
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
+	for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
 	{
@@ -1398,38 +1394,13 @@ void NMaterial::SetTexturesDirty()
 	}
 }
 
-void NMaterial::PrepareTextureState(RenderPassInstance* passInstance)
-{
-	DVASSERT(passInstance);
-	
-	TextureStateData textureData;
-	for(HashMap<FastName, int32>::iterator texIt = passInstance->textureIndexMap.begin();
-		texIt != passInstance->textureIndexMap.end();
-		++texIt)
-	{
-		textureData.SetTexture(texIt->second, GetOrLoadTextureRecursive(texIt->first));
-		//VI: use commented out part of code for debugging texture setting
-		//if(NULL == textureData.GetTexture(texIt->second))
-		//{
-		//	//VI: this case is mostly for ResEditor
-		//	textureData.SetTexture(texIt->second, GetStubTexture(texIt->first));
-		//}
-	}
-	
-	UniqueHandle textureState = RenderManager::Instance()->CreateTextureState(textureData);
-	passInstance->SetTextureStateHandle(textureState);
-	RenderManager::Instance()->ReleaseTextureState(textureState);
-	
-	passInstance->texturesDirty = false;
-}
-
-void NMaterial::SetActivePass(const FastName& passName)
+void NMaterial::UpdateActivePass(const FastName& passName, uint8 flags)
 {
     if(activePassName != passName)
     {
         activePassName = passName;
         activeRenderPass = baseTechnique->GetPassByName(passName);
-        activePassInstance = instancePasses.at(passName);
+        activePassInstance = instancePasses.at(std::make_pair(passName, flags));
 
         DVASSERT(activeRenderPass);
         DVASSERT(activePassInstance);
@@ -1456,70 +1427,80 @@ UniqueHandle NMaterial::GetActivePassTextureStateHandle() const
     return activePassInstance->GetTextureStateHandle();
 }
 
-void NMaterial::BindMaterialTechnique(const FastName & passName)
+void NMaterial::SetActiveMaterialTechnique(const FastName & passName, uint8 flags)
 {
 	
-	SetActivePass(passName);
+	UpdateActivePass(passName, flags);	
 
-	//VI: this call is temporary solution. It will be removed once autobind system and lighting system ready
-	//SetupPerFrameProperties(camera);
-	
-	BindMaterialTextures(activePassInstance);
-	
-	activePassInstance->FlushState();
-	
-	BindMaterialProperties(activePassInstance);
+    DVASSERT(activePassInstance);	
+	UpdateActivePassTextures();			
+	UpdateActivePassProperties();
 }
 
-//void NMaterial::SetupPerFrameProperties(Camera* camera)
-//{
-//	if(camera && IsDynamicLit() && lights[0])
-//	{
-//		//const Matrix4 & matrix = camera->GetMatrix();
-//		//Vector3 lightPosition0InCameraSpace = lights[0]->GetPosition() * matrix;
-//		const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
-//        
-//		SetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC4, 1, lightPositionDirection0InCameraSpace.data);
-//	}
-//}
-
-void NMaterial::BindMaterialTextures(RenderPassInstance* passInstance)
+void NMaterial::UpdateActivePassTextures()
 {
-	if(passInstance->texturesDirty)
-	{
-		PrepareTextureState(passInstance);
+	if(activePassInstance->texturesDirty)
+	{        
+        TextureStateData textureData;
+        for(HashMap<FastName, int32>::iterator texIt = activePassInstance->textureIndexMap.begin();
+            texIt != activePassInstance->textureIndexMap.end();
+            ++texIt)
+        {
+            textureData.SetTexture(texIt->second, GetOrLoadTextureRecursive(texIt->first));
+            //VI: use commented out part of code for debugging texture setting
+            //if(NULL == textureData.GetTexture(texIt->second))
+            //{
+            //	//VI: this case is mostly for ResEditor
+            //	textureData.SetTexture(texIt->second, GetStubTexture(texIt->first));
+            //}
+        }
+
+        UniqueHandle textureState = RenderManager::Instance()->CreateTextureState(textureData);
+        activePassInstance->SetTextureStateHandle(textureState);
+        RenderManager::Instance()->ReleaseTextureState(textureState);
+
+        activePassInstance->texturesDirty = false;
 	}
 }
 
-void NMaterial::BindMaterialProperties(RenderPassInstance* passInstance)
+void NMaterial::UpdateActivePassProperties()
 {
 	//TODO: think of a way to re-bind only changed properties. (Move dirty flag to UniformCacheEntry or something?)
-	if(passInstance->propsDirty)
+	if(activePassInstance->propsDirty)
 	{
-		for(size_t i = 0; i < passInstance->activeUniformsCacheSize; ++i)
+		for(size_t i = 0, sz = activePassInstance->activeUniformsCache.size(); i < sz; ++i)
 		{
-			UniformCacheEntry& uniformEntry = passInstance->activeUniformsCachePtr[i];
+			UniformCacheEntry& uniformEntry = activePassInstance->activeUniformsCache[i];
 			uniformEntry.prop = GetPropertyValue(uniformEntry.uniform->name);
-		}
-		
-		passInstance->propsDirty = false;
+		}		
+		activePassInstance->propsDirty = false;
 	}
-	
-	Shader* shader = passInstance->GetShader();
-	for(size_t i = 0; i < passInstance->activeUniformsCacheSize; ++i)
-	{
-		UniformCacheEntry& uniformEntry = passInstance->activeUniformsCachePtr[i];
-		Shader::Uniform* uniform = uniformEntry.uniform;
 		
-		if(uniformEntry.prop)
-		{
-			RENDERER_UPDATE_STATS(materialParamUniformBindCount++);
-			shader->SetUniformValueByUniform(uniform,
-											 uniform->type,
-											 uniform->size,
-											 uniformEntry.prop->data);
-		}
-	}
+}
+
+void NMaterial::BindActivePassRenderState()
+{
+    activePassInstance->FlushState();
+}
+
+
+void NMaterial::BindActivePassMaterialProperties()
+{
+    Shader* shader = activePassInstance->GetShader();
+    for(size_t i = 0, sz = activePassInstance->activeUniformsCache.size(); i < sz; ++i)
+    {
+        UniformCacheEntry& uniformEntry = activePassInstance->activeUniformsCache[i];
+        Shader::Uniform* uniform = uniformEntry.uniform;
+
+        if(uniformEntry.prop)
+        {
+            RENDERER_UPDATE_STATS(materialParamUniformBindCount++);
+            shader->SetUniformValueByUniform(uniform,
+                uniform->type,
+                uniform->size,
+                uniformEntry.prop->data);
+        }
+    }
 }
 
 void NMaterial::OnMaterialPropertyAdded(const FastName& propName)
@@ -1544,7 +1525,7 @@ void NMaterial::OnMaterialPropertyRemoved(const FastName& propName)
 
 void NMaterial::InvalidateProperties()
 {
-    for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
+    for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
         it != instancePasses.end();
         ++it)
     {
@@ -1642,7 +1623,7 @@ void NMaterial::InvalidateProperties()
 
 const RenderStateData& NMaterial::GetRenderState(const FastName& passName) const
 {
-	RenderPassInstance* pass = instancePasses.at(passName);
+	RenderPassInstance* pass = instancePasses.at(PassInstanceKeyType(passName, EF_NONE));
 	DVASSERT(pass);
 	
 	return RenderManager::Instance()->GetRenderStateData(pass->GetRenderStateHandle());
@@ -1650,15 +1631,15 @@ const RenderStateData& NMaterial::GetRenderState(const FastName& passName) const
 
 void NMaterial::GetRenderState(const FastName& passName, RenderStateData& target) const
 {
-	RenderPassInstance* pass = instancePasses.at(passName);
+	RenderPassInstance* pass = instancePasses.at(PassInstanceKeyType(passName, EF_NONE));
 	DVASSERT(pass);
 	
 	RenderManager::Instance()->GetRenderStateData(pass->GetRenderStateHandle(), target);
 }
 
-void NMaterial::SubclassRenderState(const FastName& passName, RenderStateData& newState)
+void NMaterial::SubclassRenderState(const FastName& passName, uint8 flags, RenderStateData& newState)
 {
-	RenderPassInstance* pass = instancePasses.at(passName);
+	RenderPassInstance* pass = instancePasses.at(PassInstanceKeyType(passName, flags));
 	DVASSERT(pass);
 	
 	if(pass)
@@ -1688,13 +1669,19 @@ void NMaterial::SubclassRenderState(const FastName& passName, RenderStateData& n
 	}
 }
 
+void NMaterial::SubclassRenderState(const FastName& passName, RenderStateData& newState)
+{
+    SubclassRenderState(passName, EF_NONE, newState);
+    SubclassRenderState(passName, EF_INSTANCING, newState);
+}
+
 void NMaterial::SubclassRenderState(RenderStateData& newState)
 {
-	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
+	for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
 	{
-		SubclassRenderState(it->first, newState);
+		SubclassRenderState(it->first.first, newState);
 	}
 }
 
@@ -1706,12 +1693,12 @@ void NMaterial::UpdateShaderWithFlags()
 		FastNameSet effectiveFlags(16);
 		BuildEffectiveFlagSet(effectiveFlags);
 		
-		for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
+		for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
 			it != instancePasses.end();
 			++it)
 		{
 			RenderPassInstance* pass = it->second;
-			RenderTechniquePass* techniquePass = baseTechnique->GetPassByName(it->first);
+			RenderTechniquePass* techniquePass = baseTechnique->GetPassByName(it->first.first);
 			
 			Shader* shader = techniquePass->CompileShader(effectiveFlags);
 			pass->SetShader(shader);

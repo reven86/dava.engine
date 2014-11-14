@@ -88,8 +88,8 @@ const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* NMaterialStateDy
         source = PropData::SOURCE_SHADER;
         if(state->instancePasses.size() > 0)
         {
-            HashMap<FastName, NMaterial::RenderPassInstance*>::iterator it = state->instancePasses.begin();
-            HashMap<FastName, NMaterial::RenderPassInstance*>::iterator end = state->instancePasses.end();
+            HashMap<PassInstanceKeyType, NMaterial::RenderPassInstance*>::iterator it = state->instancePasses.begin();
+            HashMap<PassInstanceKeyType, NMaterial::RenderPassInstance*>::iterator end = state->instancePasses.end();
         
             for(; it != end; ++it)
             {
