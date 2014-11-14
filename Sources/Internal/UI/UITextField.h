@@ -380,6 +380,12 @@ protected:
 private:
     WideString GetVisibleText() const;
 
+    
+    /**
+         \brief Setups initial state to reset settings for cached native control.
+     */
+    void SetupDefaults();
+
 #ifdef __DAVAENGINE_IPHONE__
 	UITextFieldiPhone * textFieldiPhone;
 #elif defined(__DAVAENGINE_ANDROID__)
