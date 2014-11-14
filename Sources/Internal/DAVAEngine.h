@@ -147,6 +147,9 @@
 // UI
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIPackage.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/DefaultUIPackageBuilder.h"
 #include "UI/UIEvent.h"
 #include "UI/UIButton.h"
 #include "UI/UIStaticText.h"
@@ -185,6 +188,7 @@
 #include "UI/UIAggregatorControl.h"
 
 #include "UI/UIScrollViewContainer.h"
+#include "UI/UIControlHelpers.h"
 
 // Game object manager / 2D Scene
 #include "Scene2D/GameObject.h"

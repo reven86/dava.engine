@@ -73,6 +73,8 @@
 #include "DLCDownloadTest.h"
 #include "FunctionBindSingalTest.h"
 #include "MathTest.h"
+#include "BiDiTest.h"
+#include "TextSizeTest.h"
 
 #include <fstream>
 #include <algorithm>
@@ -141,6 +143,8 @@ void GameCore::OnAppStarted()
  	//new DPITest();
  	new MaterialCompilerTest(); // TODO empty
  	new CloneTest(); // TODO empty
+    new BiDiTest();
+	new TextSizeTest();
 
  	new EntityTest(); // TODO empty
  	new KeyedArchiveYamlTest();

@@ -58,6 +58,7 @@ const char* PropertyNames::TEXT_PROPERTY_MULTILINE = "Multiline";
 const char* PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL = "MultilineBySymbol";
 const char* PropertyNames::TEXT_COLOR_PROPERTY_NAME = "TextColor";
 const char* PropertyNames::TEXT_ALIGN_PROPERTY_NAME = "TextAlign";
+const char* PropertyNames::TEXT_USE_RTL_ALIGN_PROPERTY_NAME = "TextUseRtlAlign";
 const char* PropertyNames::TEXT_FITTING_TYPE_PROPERTY_NAME = "FittingType";
 
 const char* PropertyNames::IS_PASSWORD_PROPERTY_NAME = "IsPassword";
