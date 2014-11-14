@@ -242,12 +242,12 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 	Vector2 spritePos = cursorPosition - spriteSize / 2.f;
 	
     Sprite::DrawState drawState;
-	drawState.SetScaleSize(spriteSize.x / Core::GetVirtualToPhysicalFactor(),
-                           spriteSize.y / Core::GetVirtualToPhysicalFactor(),
+	drawState.SetScaleSize(spriteSize.x / VirtualCoordinates::GetVirtualToPhysicalFactor(),
+                           spriteSize.y / VirtualCoordinates::GetVirtualToPhysicalFactor(),
                            toolImageSprite->GetWidth(),
                            toolImageSprite->GetHeight());
-	drawState.SetPosition(spritePos / Core::GetVirtualToPhysicalFactor());
-	toolImageSprite->Draw(&drawState);
+    drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spritePos));
+    RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
 	
 	RenderManager::Instance()->RestoreRenderTarget();
 	RenderManager::Instance()->SetColor(Color::White);
@@ -365,8 +365,7 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		}
 		RenderManager::Instance()->SetRenderTarget(drawSystem->GetCustomColorsProxy()->GetSprite());
         
-        Sprite::DrawState drawState;
-		sprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(sprite);
         
 		RenderManager::Instance()->RestoreRenderTarget();
 		AddRectToAccumulator(Rect(Vector2(0.f, 0.f), Vector2(texture->GetWidth(), texture->GetHeight())));

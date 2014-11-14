@@ -71,6 +71,10 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
 	
 	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
+
+    spriteRenderObject = new RenderDataObject();
+    spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+    spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
 }
 
 TilemaskEditorSystem::~TilemaskEditorSystem()
@@ -81,6 +85,7 @@ TilemaskEditorSystem::~TilemaskEditorSystem()
 	SafeRelease(toolImageSprite);
 	SafeRelease(toolSprite);
 	SafeRelease(stencilSprite);
+    SafeRelease(spriteRenderObject);
 
 	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
 }
@@ -171,10 +176,10 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
                 
                 Sprite::DrawState drawState;
 				drawState.SetScaleSize(toolSize.x, toolSize.y,
-                                       toolImageSprite->GetWidth() * Core::GetVirtualToPhysicalFactor(),
-                                       toolImageSprite->GetHeight() * Core::GetVirtualToPhysicalFactor());
-				drawState.SetPosition(Vector2(toolPos.x, toolPos.y) / Core::GetVirtualToPhysicalFactor());
-				toolImageSprite->Draw(&drawState);
+                                       toolImageSprite->GetWidth() * VirtualCoordinates::GetVirtualToPhysicalFactor(),
+                                       toolImageSprite->GetHeight() * VirtualCoordinates::GetVirtualToPhysicalFactor());
+                drawState.SetPosition(Vector2(toolPos.x, toolPos.y) / VirtualCoordinates::GetVirtualToPhysicalFactor());
+                RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
                 
 				RenderManager::Instance()->RestoreRenderTarget();
 
@@ -202,33 +207,33 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 					return;
 				}
 
-                dstRect = ConvertPhysicalToVirtual(dstRect);
+                dstRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(dstRect);
                 
 				RenderManager::Instance()->SetRenderTarget(toolSprite);
-				RenderManager::Instance()->ClipPush();
-				RenderManager::Instance()->SetClip(dstRect);
+				RenderSystem2D::Instance()->ClipPush();
+                RenderSystem2D::Instance()->SetClip(dstRect);
                 
                 Sprite::DrawState drawState;
                 drawState.SetPosition(spriteDeltaPos.x, spriteDeltaPos.y);
                 drawState.SetRenderState(noBlendDrawState);
-				dstSprite->Draw(&drawState);
+                RenderSystem2D::Instance()->Draw(dstSprite, &drawState);
                 
-				RenderManager::Instance()->ClipPop();
+                RenderSystem2D::Instance()->ClipPop();
 				RenderManager::Instance()->RestoreRenderTarget();
 
 				RenderManager::Instance()->SetRenderTarget(stencilSprite);
-				RenderManager::Instance()->ClipPush();
-				RenderManager::Instance()->SetClip(dstRect);
+                RenderSystem2D::Instance()->ClipPush();
+                RenderSystem2D::Instance()->SetClip(dstRect);
                 
                 drawState.Reset();
 				drawState.SetScaleSize(toolSize.x, toolSize.y,
-                                       toolImageSprite->GetWidth() * Core::GetVirtualToPhysicalFactor(),
-                                       toolImageSprite->GetHeight() * Core::GetVirtualToPhysicalFactor());
-				drawState.SetPosition(Vector2(toolPos.x, toolPos.y) / Core::GetVirtualToPhysicalFactor());
+                                        toolImageSprite->GetWidth() * VirtualCoordinates::GetVirtualToPhysicalFactor(),
+                                        toolImageSprite->GetHeight() * VirtualCoordinates::GetVirtualToPhysicalFactor());
+                drawState.SetPosition(Vector2(toolPos.x, toolPos.y) / VirtualCoordinates::GetVirtualToPhysicalFactor());
                 drawState.SetRenderState(noBlendDrawState);
-				toolImageSprite->Draw(&drawState);
+                RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
                 
-				RenderManager::Instance()->ClipPop();
+                RenderSystem2D::Instance()->ClipPop();
 				RenderManager::Instance()->RestoreRenderTarget();
 
 				toolSpriteUpdated = true;
@@ -371,16 +376,15 @@ void TilemaskEditorSystem::UpdateBrushTool()
 		shader = tileMaskCopyPasteShader;
 	}
 
-	RenderManager::Instance()->SetShader(shader);
+    spriteTempVertices[0] = spriteTempVertices[4] = srcSprite->GetFrameVerticesForFrame(0)[0] * VirtualCoordinates::GetVirtualToPhysicalFactor();
+    spriteTempVertices[5] = spriteTempVertices[7] = srcSprite->GetFrameVerticesForFrame(0)[5] * VirtualCoordinates::GetVirtualToPhysicalFactor();
+    spriteTempVertices[1] = spriteTempVertices[3] = srcSprite->GetFrameVerticesForFrame(0)[1] * VirtualCoordinates::GetVirtualToPhysicalFactor();
+    spriteTempVertices[2] = spriteTempVertices[6] = srcSprite->GetFrameVerticesForFrame(0)[2] * VirtualCoordinates::GetVirtualToPhysicalFactor();
 
-    Sprite::DrawState drawState;
-    drawState.SetRenderState(noBlendDrawState);
-    drawState.SetScale(Core::GetVirtualToPhysicalFactor(), Core::GetVirtualToPhysicalFactor());
-	srcSprite->PrepareSpriteRenderData(&drawState);
-	RenderManager::Instance()->SetRenderData(srcSprite->spriteRenderObject);
+    spriteVertexStream->Set(TYPE_FLOAT, 2, 0, spriteTempVertices);
+    spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, srcSprite->GetTextureCoordsForFrame(0));
 
 	TextureStateData textureStateData;
-    
 	textureStateData.SetTexture(0, srcSprite->GetTexture());
 	textureStateData.SetTexture(1, toolSprite->GetTexture());
 	if (activeDrawingType == TILEMASK_DRAW_COPY_PASTE)
@@ -389,6 +393,8 @@ void TilemaskEditorSystem::UpdateBrushTool()
 	}
 	UniqueHandle textureState = RenderManager::Instance()->CreateTextureState(textureStateData);
 
+    RenderManager::Instance()->SetShader(shader);
+    RenderManager::Instance()->SetRenderData(spriteRenderObject);
 	RenderManager::Instance()->SetRenderState(noBlendDrawState);
 	RenderManager::Instance()->SetTextureState(textureState);
 	RenderManager::Instance()->FlushState();
@@ -398,7 +404,6 @@ void TilemaskEditorSystem::UpdateBrushTool()
 	shader->SetUniformValueByIndex(tex0, 0);
 	int32 tex1 = shader->FindUniformIndexByName(DAVA::FastName("texture1"));
 	shader->SetUniformValueByIndex(tex1, 1);
-
 
 	if (activeDrawingType == TILEMASK_DRAW_NORMAL)
 	{
@@ -415,8 +420,6 @@ void TilemaskEditorSystem::UpdateBrushTool()
 	}
 
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
-
-    glLineWidth(1.0);
     
 	RenderManager::Instance()->RestoreRenderTarget();
 	RenderManager::Instance()->SetColor(Color::White);
@@ -452,13 +455,13 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
 	RenderManager::Instance()->SetColor(Color::White);
 	
     Sprite::DrawState drawState;
-    drawState.SetScaleSize((float32)sideSize / Core::GetVirtualToPhysicalFactor(),
-                           (float32)sideSize / Core::GetVirtualToPhysicalFactor(),
+    drawState.SetScaleSize((float32)sideSize / VirtualCoordinates::GetVirtualToPhysicalFactor(),
+                           (float32)sideSize / VirtualCoordinates::GetVirtualToPhysicalFactor(),
                            srcSprite->GetWidth(),
                            srcSprite->GetHeight());
 	drawState.SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
-                                  (dstSprite->GetTexture()->GetHeight() - sideSize)/2.0f) / Core::GetVirtualToPhysicalFactor());
-	srcSprite->Draw(&drawState);
+                                  (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f) / VirtualCoordinates::GetVirtualToPhysicalFactor());
+    RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 	RenderManager::Instance()->RestoreRenderTarget();
 	
 	SafeRelease(toolImageSprite);
@@ -575,7 +578,7 @@ void TilemaskEditorSystem::CreateMaskFromTexture(Texture* texture)
         Sprite::DrawState drawState;
         drawState.SetPosition(0.f, 0.f);
         drawState.SetRenderState(noBlendDrawState);
-		oldMask->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(oldMask, &drawState);
         
 		RenderManager::Instance()->RestoreRenderTarget();
 		

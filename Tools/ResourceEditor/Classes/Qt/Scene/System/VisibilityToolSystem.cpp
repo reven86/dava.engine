@@ -321,9 +321,8 @@ void VisibilityToolSystem::SetVisibilityPointInternal()
 
     Sprite::DrawState drawState;
     drawState.SetPosition(0.f, 0.f);
-	drawState.SetScaleSize(sprite->GetWidth(), sprite->GetHeight(),
-                           cursorSprite->GetWidth(), cursorSprite->GetHeight());
-	cursorSprite->Draw(&drawState);
+	drawState.SetScaleSize(sprite->GetWidth(), sprite->GetHeight(), cursorSprite->GetWidth(), cursorSprite->GetHeight());
+    RenderSystem2D::Instance()->Draw(cursorSprite, &drawState);
 
 	RenderManager::Instance()->RestoreRenderTarget();
 
@@ -580,7 +579,7 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 
 		manager->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
 		manager->SetColor(areaPointColors[colorIndex]);
-		helper->DrawPoint(pos / Core::GetVirtualToPhysicalFactor(), 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
+		helper->DrawPoint(pos / VirtualCoordinates::GetVirtualToPhysicalFactor(), 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
 	}
 
 	manager->ResetColor();

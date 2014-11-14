@@ -787,7 +787,7 @@ void UIControlBackground::StretchDrawData::GenerateStretchData()
     float32 dx = size.x - ( Max( 0.0f, -leftOffset ) + Max( 0.0f, -rightOffset  ) ) * scaleFactorX;
     float32 dy = size.y - ( Max( 0.0f, -topOffset  ) + Max( 0.0f, -bottomOffset ) ) * scaleFactorY;
     
-    const float32 resMulFactor = 1.0f / Core::Instance()->GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
+    const float32 resMulFactor = 1.0f / VirtualCoordinatesSystem::Instance()->GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
     
     texDx *= resMulFactor;
     texDy *= resMulFactor;

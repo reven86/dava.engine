@@ -1671,8 +1671,8 @@ void QtMainWindow::On2DCameraDialog()
     Entity* sceneNode = new Entity();
     Camera * camera = new Camera();
     
-    float32 w = Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin();
-    float32 h = Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin();
+    float32 w = VirtualCoordinatesSystem::Instance()->GetFullVirtualScreenRect().dx;
+    float32 h = VirtualCoordinatesSystem::Instance()->GetFullVirtualScreenRect().dy;
     float32 aspect = w / h;
     camera->SetupOrtho(w, aspect, 1, 1000);        
     camera->SetPosition(Vector3(0,0, -10000));

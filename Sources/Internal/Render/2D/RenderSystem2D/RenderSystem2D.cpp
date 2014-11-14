@@ -54,6 +54,10 @@ void RenderSystem2D::Reset()
 	currentClip.dy = -1;
     
     Setup2DMatrices();
+
+    defaultSpriteDrawState.Reset();
+    defaultSpriteDrawState.renderState = RenderState::RENDERSTATE_2D_BLEND;
+    defaultSpriteDrawState.shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
 }
     
 void RenderSystem2D::Setup2DMatrices()
@@ -124,15 +128,21 @@ void RenderSystem2D::ClipPop()
     clipStack.pop();
 }
 
-void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
+void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 */)
 {
     if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
 	}
-    
+
     Setup2DMatrices();
     
+    Sprite::DrawState * state = drawState;
+    if (!state)
+    {
+        state = &defaultSpriteDrawState;
+    }
+
 	PrepareSpriteRenderData(sprite, state);
     
 	if(sprite->clipPolygon)

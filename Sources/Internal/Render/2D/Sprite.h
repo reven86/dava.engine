@@ -311,8 +311,6 @@ protected:
 		EST_MODIFICATION	= 1 << 2
 	};
 
-	float32 tempVertices[8];
-
 	Texture ** textures;
 	FilePath *textureNames;
 	int32 *frameTextureIndex;

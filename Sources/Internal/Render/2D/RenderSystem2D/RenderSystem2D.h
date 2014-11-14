@@ -49,7 +49,7 @@ public:
     RenderSystem2D();
     virtual ~RenderSystem2D();
     
-    void Draw(Sprite * sprite, Sprite::DrawState * state);
+    void Draw(Sprite * sprite, Sprite::DrawState * drawState = 0);
     void Draw(TextBlock * textblock);
     void Draw(Font * font);
     
@@ -65,14 +65,14 @@ public:
     void ScreenSizeChanged();
     
     void Setup2DMatrices();
-    
+
+    //sprite draw
+    void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
+
 private:
     Matrix4 viewMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
-    
-    //sprite draw
-    void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
     
 	float32 spriteTempVertices[8];
     RenderDataObject * spriteRenderObject;
@@ -81,6 +81,8 @@ private:
 	ePrimitiveType spritePrimitiveToDraw;
 	int32 spriteVertexCount;
     
+    Sprite::DrawState defaultSpriteDrawState;
+
     Vector<Vector2> spriteClippedTexCoords;
 	Vector<Vector2> spriteClippedVertices;
 };
