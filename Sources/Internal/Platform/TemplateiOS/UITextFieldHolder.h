@@ -71,6 +71,8 @@
 - (UIKeyboardType) convertKeyboardType:(DAVA::UITextField::eKeyboardType) davaType;
 - (UIReturnKeyType) convertReturnKeyType:(DAVA::UITextField::eReturnKeyType) davaType;
 
+- (void)resetToDefaults;
+
 @end
 
 
