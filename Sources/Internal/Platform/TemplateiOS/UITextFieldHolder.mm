@@ -476,15 +476,6 @@
 }
 
 
-- (void)resetToDefaults
-{
-    textInputAllowed = YES;
-    [textField setText: @""];
-    [self setIsPassword:false];
-    [self setUseRtlAlign:false];
-}
-
-
 @end
 
 #endif //#if defined(__DAVAENGINE_IPHONE__)
