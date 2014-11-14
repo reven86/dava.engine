@@ -606,8 +606,6 @@ DownloadError DownloadManager::TryDownload()
         return currentTask->error;
     }
 
-    currentTask->downloadProgress = 0;
-
     if (DLE_NO_ERROR == currentTask->error)
     {
         currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
@@ -662,11 +660,9 @@ void DownloadManager::MakeResumedDownload()
         {
             MakeFullDownload();
         }
-        else
-        {
-        	currentTask->downloadProgress = file->GetSize();
-        }
     }
+    
+    currentTask->downloadProgress = file->GetSize();
 }
 
 void DownloadManager::ResetRetriesCount()
