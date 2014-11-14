@@ -9,18 +9,18 @@
     #include "Profiler.hpp"
     #include "FileSystem/Logger.h"
 
-    #include <stdio.h>
-    #include <string.h>
-
 
     #ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
         #include <windows.h>
     #elif __ANDROID_API__
         #include <time.h>
         #include <android/log.h>
+        #include <sys/atomics.h>
     #endif
 
+    #include <stdio.h>
+    #include <string.h>
     #include <vector>
 
 
@@ -60,6 +60,44 @@ _CurTimeUs()
 }
 
 
+#if defined(_MSC_VER)
+
+    inline bool CAS( volatile uint32* val_ptr, const uint32 old_val, const uint32 new_val ) 
+    {
+        __asm {
+            mov eax, [old_val]
+            mov edx, [new_val]
+            mov ecx, [val_ptr]
+            lock cmpxchg dword ptr [ecx], edx
+            sete al
+        }
+    }
+
+#elif defined __ANDROID_API__
+    inline bool CAS( volatile uint32* val_ptr, const uint32 old_val, const uint32 new_val ) 
+    {
+        __atomic_cmpxchg( old_val, new_val, val_ptr );
+    }
+
+#else
+    #error define a compare-and-swap / full memory barrier implementation!
+#endif
+
+struct 
+CASLock 
+{
+    void    Acquire()       { while ( !CAS( &val, uint32(0), uint32(1) ) ) ; }
+    void    Release()       { while ( !CAS( &val, uint32(1), uint32(0) ) ) ; }
+    bool    TryAcquire()    { return CAS( &val, uint32(0), uint32(1) ); }
+    bool    TryRelease()    { return CAS( &val, uint32(1), uint32(0) ); }
+    uint32  Value() const   { return val; }
+//protected:
+    volatile uint32     val;
+};
+
+
+
+
 namespace profiler
 {
 //==============================================================================
@@ -78,6 +116,7 @@ static bool             DumpPending         = false;
 static long             TotalTime0          = 0;
 static long             TotalTime           = 0;
 static unsigned         MaxNameLen          = 32;
+static CASLock          CounterSync;
 
 
 
@@ -92,28 +131,63 @@ public:
                     id(0),
                     parentId(InvalidIndex),
                     name(0),
-                    used(false)
+                    used(false),
+                    useCount(0)
                 {
                 }
 
     void        setName( const char* n )        { name = n; }
 
-    void        reset()                         { t = 0; count = 0; }
+    void        reset()                         
+                                                { 
+                                                    CounterSync.Acquire();
+
+                                                    t         = 0; 
+                                                    count     = 0; 
+                                                    used      = false;
+                                                    useCount  = 0;
+                                                    parentId  = InvalidIndex;
+                                                    
+                                                    CounterSync.Release();
+                                                }
     void        start()
                                                 {
-                                                    if( ActiveCounterCount )
-                                                        parentId = ActiveCounter[ActiveCounterCount-1]->id;
-                                                    else
-                                                        parentId = InvalidIndex;
+                                                    CounterSync.Acquire();
 
-                                                    ActiveCounter[ActiveCounterCount] = this;
-                                                    ++ActiveCounterCount;
+                                                    if( !useCount ) 
+                                                    {
+                                                        if( ActiveCounterCount )
+                                                            parentId = ActiveCounter[ActiveCounterCount-1]->id;
+                                                        else
+                                                            parentId = InvalidIndex;
 
-                                                    ++count;
-                                                    t0 = _CurTimeUs();
+                                                        ActiveCounter[ActiveCounterCount] = this;
+                                                        ++ActiveCounterCount;
+                                                        
+                                                        t0 = _CurTimeUs();
+                                                    }
+
                                                     used = true;
+                                                    ++count;
+                                                    ++useCount;
+                                                    
+                                                    CounterSync.Release();
                                                 }
-    void        stop()                          { t += _CurTimeUs() - t0; --ActiveCounterCount; }
+    void        stop()                          
+                                                { 
+                                                    CounterSync.Acquire();
+
+                                                    if( useCount == 1 )
+                                                    {
+                                                        if( ActiveCounterCount )
+                                                            --ActiveCounterCount; 
+                                                    }
+
+                                                    if( --useCount == 0 )
+                                                        t += _CurTimeUs() - t0; 
+                                                    
+                                                    CounterSync.Release();
+                                                }
 
 
     const char* getName() const                 { return name; }
@@ -123,7 +197,7 @@ public:
 
     uint32      getId() const                   { return id; }
     uint32      getParentId() const             { return parentId; }
-    bool        isUsed() const                  { return used; }
+    bool        isUsed() const                  { return (used)  ? true  : false; }
     unsigned    nestingLevel() const            { return _nesting_level(); }
 
 
@@ -147,7 +221,8 @@ private:
     uint32      parentId;
     const char* name;      // ref-only, expected to be immutable string
 
-    unsigned    used:1;
+    int         used:1;
+    int         useCount:4;
 };
 
 static Counter*         _Counter    = 0;
@@ -183,9 +258,9 @@ Init( unsigned max_counter_count, unsigned history_len )
     {
         for( Counter* c=counter,*c_end=counter+MaxCounterCount; c!=c_end; ++c )
         {        
-            c->id       = c - counter;
-            c->parentId = InvalidIndex;
-            c->used     = false;
+            c->id        = c - counter;
+            c->parentId  = InvalidIndex;
+            c->used      = false;
         }
 
         counter += MaxCounterCount;
@@ -332,7 +407,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
             max_name_len = len;
     }
 
-    Logger::Info( "---\n" );
+    Logger::Info( "===================================================" );
     for( unsigned i=0; i!=result.size(); ++i )
     {
         unsigned    pi          = result[i].parent_i;
@@ -521,11 +596,11 @@ GetAverageCounters( std::vector<CounterInfo>* info )
             c->reset();
             c->setName( src->getName() );
 
-            c->id       = src->id;
-            c->parentId = src->parentId;
-            c->t0       = 0;
-            c->t        = 0;
-            c->used     = src->used;
+            c->id        = src->id;
+            c->parentId  = src->parentId;
+            c->t0        = 0;
+            c->t         = 0;
+            c->used      = src->used;
         }
     
         for( unsigned h=0; h!=HistoryCount; ++h )

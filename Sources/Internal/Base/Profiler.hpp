@@ -12,7 +12,7 @@
     using namespace DAVA;
     #include "Hash.hpp"
 
-
+/*
     #define PROF__FRAME             0
     #define PROF__FRAME_UPDATE      1
     #define PROF__FRAME_DRAW        2
@@ -25,8 +25,8 @@
     #define PROF__GL_SET_UNIFORM2   23
 
     #define PROF__TEST1             40
-
-    #define PROF_ENABLED            1
+*/
+    #define PROFILER_ENABLED        1
 
 
 namespace profiler
@@ -68,7 +68,7 @@ bool    GetAverageCounters( std::vector<CounterInfo>* info );
 
 //==============================================================================
 
-#if PROF_ENABLED
+#if PROFILER_ENABLED
 
 // utils, used by 'real' timing macros
 #define PROF_FUNCTION_ID(name_ptr)      (((int(name_ptr))>>4)&(64-1))
