@@ -9,25 +9,25 @@
 class ImageConverter
 {
 public:
-    unsigned    ComandLineProcessing ( int argc, char **argv );
-    unsigned    ConvertImage         ( const std::string &image_path );
+    unsigned ComandLineProcessing( int argc, const char **argv );
+    unsigned ConvertImage( const std::string &image_path );
     
     ImageConverter();
 
 private:
-    const char  *_out_dir;
-    bool         _croped_layers;
+    const char *outDir;
+    bool cropedLayers;
 
 };
 
 
 ImageConverter::ImageConverter()
 {
-    _out_dir          = 0;
-    _croped_layers    = false;
+    outDir = 0;
+    cropedLayers = false;
 }
 
-unsigned ImageConverter::ComandLineProcessing( int argc, char** argv )
+unsigned ImageConverter::ComandLineProcessing( int argc, const char** argv )
 {
     if( argc > 1 )
     {
@@ -56,8 +56,9 @@ unsigned ImageConverter::ComandLineProcessing( int argc, char** argv )
             {
                 switch( state )
                 {
-                case EOutDir      : _out_dir       = argv[i];  break;
-                case ECropedLayers: _croped_layers = !strcmp( argv[i], "true" ); break;
+                case EOutDir: outDir = argv[i]; break;
+                case ECropedLayers: cropedLayers = !strcmp( argv[i], "true" ); break;
+                case EInvalid: break;
                 }
 
                 state = EInvalid;
@@ -74,10 +75,10 @@ unsigned ImageConverter::ConvertImage( const std::string &image_path )
 {
     bool result = false;
 
-    if( _croped_layers )
+    if( cropedLayers )
     {
         IMagickHelper::CroppedData cropped_data;
-        result = IMagickHelper::ConvertToPNGCroppedGeometry( image_path.c_str(), _out_dir, &cropped_data, false );
+        result = IMagickHelper::ConvertToPNGCroppedGeometry( image_path.c_str(), outDir, &cropped_data, false );
 
         for( unsigned i = 0; i < cropped_data.rects_array_size; i++ )
         {
@@ -87,14 +88,14 @@ unsigned ImageConverter::ConvertImage( const std::string &image_path )
     }
     else
     {
-        result = IMagickHelper::ConvertToPNG( image_path.c_str(), _out_dir );
+        result = IMagickHelper::ConvertToPNG( image_path.c_str(), outDir );
     }
 
     return result;
 }
 
 //D:\Dava\wot.blitz\DataSource\Gfx\Particles\exp_anim_one.psd -out_dir D:\png -cropped_layers true
-int main( int argc, char **argv )
+int main( int argc, const char **argv )
 {
     new DAVA::Logger();
     ImageConverter converter;
