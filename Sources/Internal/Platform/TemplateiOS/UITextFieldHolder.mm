@@ -183,6 +183,19 @@
 - (void)setUseRtlAlign:(bool)value
 {
     useRtlAlign = (value == true);
+    
+    // Set natural alignment if need
+    switch (textField.contentHorizontalAlignment)
+    {
+        case UIControlContentHorizontalAlignmentLeft:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
+            break;
+        case UIControlContentHorizontalAlignmentRight:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
+            break;
+            
+        default: break;
+    }
 }
 
 - (void) setupTraits
@@ -460,14 +473,6 @@
 	keyboardSize += DAVA::UIControlSystem::Instance()->GetInputOffset();
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
-}
-
-
-- (void)resetToDefaults
-{
-    textInputAllowed = YES;
-    useRtlAlign = NO;
-    [self setIsPassword:false];
 }
 
 
