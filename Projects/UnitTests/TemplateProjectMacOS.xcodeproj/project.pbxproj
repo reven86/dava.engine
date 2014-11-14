@@ -734,8 +734,6 @@
 			name = DateTimeTest;
 			sourceTree = "<group>";
 		};
-<<<<<<< HEAD
-=======
 		B7BEB95419CB2265005B4BC7 /* TextSizeTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -754,16 +752,6 @@
 			name = BiDiTest;
 			sourceTree = "<group>";
 		};
-		C151B1BC16D50BD000E09BAF /* eMailTest */ = {
-			isa = PBXGroup;
-			children = (
-				C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */,
-				C151B1BF16D50BDA00E09BAF /* eMailTest.h */,
-			);
-			name = eMailTest;
-			sourceTree = "<group>";
-		};
->>>>>>> development
 		C172EC1418C9F406004309CF /* DFFont */ = {
 			isa = PBXGroup;
 			children = (
@@ -1071,12 +1059,9 @@
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
 				50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */,
 				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
-<<<<<<< HEAD
 				0042F48E19F9416100ABDD1D /* TcpSocket.cpp in Sources */,
-=======
 				B72EFFE319CB340100D38C33 /* TextSizeTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
->>>>>>> development
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
 				FEA8F6EB159DB0EF00EED3DC /* MemoryAllocatorsTest.cpp in Sources */,
 				0042F49319F9416100ABDD1D /* String.cpp in Sources */,
@@ -1098,11 +1083,7 @@
 				0042F48F19F9416100ABDD1D /* UdpSocket.cpp in Sources */,
 				008348761A024B1300F51E2D /* GameCore.cpp in Sources */,
 				C177F28016D227A70036F02B /* InputTest.cpp in Sources */,
-<<<<<<< HEAD
-=======
 				B7D6C98E19CAC7EB0095250A /* BiDiTest.cpp in Sources */,
-				C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */,
->>>>>>> development
 				C18046CA16D52ECA00DC24D8 /* DPITest.cpp in Sources */,
 				0083487A1A024C1C00F51E2D /* TextureUtils.cpp in Sources */,
 				008348741A024B1300F51E2D /* BaseScreen.cpp in Sources */,

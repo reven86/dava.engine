@@ -111,7 +111,7 @@ void GameCore::OnAppStarted()
     new JPEGTest();
 
     new ParseTextTest(Font::TYPE_FT);
-    new ParseTextTest(Font::TYPE_GRAPHICAL);
+//    new ParseTextTest(Font::TYPE_GRAPHICAL);
     //new OpenGLES30FormatTest();
     new SaveImageTest();
  //   
