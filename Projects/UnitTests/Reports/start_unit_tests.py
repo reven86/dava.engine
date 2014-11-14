@@ -4,7 +4,7 @@
 # then start server inside this script to listen unit test log output
 # exemple:
 # win32: 
-#> cd to dava.framevork/Projects/UnitTests/Reports
+# > cd to dava.framevork/Projects/UnitTests/Reports
 #> python start_unit_tests.py
 # mac os x: 
 #  make DerivedData relative to project goto Xcode->Preferences->Location->DerivedData select relative
@@ -30,9 +30,19 @@ s.connect(("gmail.com", 80))
 current_ip = s.getsockname()[0]
 s.close()
 
+
+def get_postfix(platform):
+    if platform == 'win32':
+        return '.exe'
+    elif platform == 'darwin':
+        return '.app'
+    else:
+        return ''
+
 HOST = current_ip
 PORT = 50007
 PRJ_NAME_BASE = "UnitTests"
+PRJ_POSTFIX = get_postfix(sys.platform)
 
 start_on_android = False
 start_on_ios = False
@@ -46,31 +56,32 @@ if len(sys.argv) > 1:
 popen_obj = None
 
 if start_on_ios:
-    app_name = "com.davaconsulting."+PRJ_NAME_BASE
-    device_name = "iPadMini1FW" # TODO put your device name here
-    test_run_file = "testRun.js" # file with content: var target = UIATarget.localTarget(); target.delay( 7200 );
+    app_name = "com.davaconsulting." + PRJ_NAME_BASE
+    device_name = "iPadMini1FW"  # TODO put your device name here
+    test_run_file = "testRun.js"  # file with content: var target = UIATarget.localTarget(); target.delay( 7200 );
     popen_obj = subprocess.Popen(["instruments", "-t",
-        "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate", 
-        "-w", device_name, app_name, "-e",
-        "UIASCRIPT", test_run_file, "-host", str(HOST), "-port", str(PORT)])
+                                  "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate",
+                                  "-w", device_name, app_name, "-e",
+                                  "UIASCRIPT", test_run_file, "-host", str(HOST), "-port", str(PORT)])
 elif start_on_android:
-    popen_obj = subprocess.Popen(["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests."+PRJ_NAME_BASE,
-                      "-e", "-host", str(HOST), "-e", "-port", str(PORT)])
+    popen_obj = subprocess.Popen(
+        ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests." + PRJ_NAME_BASE,
+         "-e", "-host", str(HOST), "-e", "-port", str(PORT)])
 elif sys.platform == 'win32':
-    if os.path.isfile("..\\Release\\app\\"+PRJ_NAME_BASE+"2010.exe"): # run on build server (TeamCity)
-        popen_obj = subprocess.Popen(["..\\Release\\app\\"+PRJ_NAME_BASE+"VS2010.exe", "-host",
-                      str(HOST), "-port", str(PORT)], cwd="./..")
+    if os.path.isfile("..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX):  # run on build server (TeamCity)
+        popen_obj = subprocess.Popen(["..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX, "-host",
+                                      str(HOST), "-port", str(PORT)], cwd="./..")
     else:
-        popen_obj = subprocess.Popen(["..\\Release\\"+PRJ_NAME_BASE+"VS2010.exe", "-host", # run on local PC
-                      str(HOST), "-port", str(PORT)], cwd="./..")
+        popen_obj = subprocess.Popen(["..\\Release\\" + PRJ_NAME_BASE + PRJ_POSTFIX, "-host",  # run on local PC
+                                      str(HOST), "-port", str(PORT)], cwd="./..")
 elif sys.platform == "darwin":
-    if os.path.exists("./"+PRJ_NAME_BASE+".app"):
+    if os.path.exists("./" + PRJ_NAME_BASE + PRJ_POSTFIX):
         # if run on teamcity current dir is: Projects/UnitTests/DerivedData/TemplateProjectMacOS/Build/Products/Release
-        app_path = "./UnitTests.app"
+        app_path = "./" + PRJ_NAME_BASE + PRJ_POSTFIX
     else:
         # run on local machine from dir: UnitTests/Report
         # Warning! To make DerivedData relative to project goto Xcode->Preferences->Location->DerivedData select relative 
-        app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/"+PRJ_NAME_BASE+".app"
+        app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/" + PRJ_NAME_BASE + PRJ_POSTFIX
     popen_obj = subprocess.Popen(["open", "-W", app_path, "--args", "-host", str(HOST), "-port", str(PORT)])
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -87,9 +98,9 @@ except socket.error, msg:
 
     current_exit_code = popen_obj.poll()
     if current_exit_code is not None:
-        print(PRJ_NAME_BASE+" finished with code: " + str(current_exit_code))
+        print(PRJ_NAME_BASE + " finished with code: " + str(current_exit_code))
     else:
-        print(PRJ_NAME_BASE+" still running... may be increase timeout? ")
+        print(PRJ_NAME_BASE + " still running... may be increase timeout? ")
     sys.exit(-1)
 
 print("connected by:" + str(addr))
@@ -111,6 +122,6 @@ while 1:
     if not data:
         break
     sys.stdout.write(data)
-    sys.stdout.flush() #  want teamcity show output realtime for every test
+    sys.stdout.flush()  #  want teamcity show output realtime for every test
 
 conn.close()
