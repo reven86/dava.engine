@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Classes\EntityTest.cpp" />
@@ -44,6 +44,24 @@
     <ClCompile Include="Classes\BiDiTest.cpp" />
     <ClCompile Include="Classes\TextSizeTest.cpp" />
     <ClCompile Include="Classes\MathTest.cpp" />
+    <ClCompile Include="Classes\Infrastructure\BaseScreen.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\FrameworkMain.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\GameCore.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\TeamCityTestsOutput.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32Specific\main.cpp">
+      <Filter>Infrastructure</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\SFML\Network\IpAddress.cpp">
       <Filter>SFML\Network</Filter>
     </ClCompile>
@@ -76,24 +94,6 @@
     </ClCompile>
     <ClCompile Include="Classes\SFML\System\Time.cpp">
       <Filter>SFML\System</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Infrastructure\BaseScreen.cpp">
-      <Filter>Infrastructure</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Infrastructure\FrameworkMain.cpp">
-      <Filter>Infrastructure</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Infrastructure\GameCore.cpp">
-      <Filter>Infrastructure</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Infrastructure\TeamCityTestsOutput.cpp">
-      <Filter>Infrastructure</Filter>
-    </ClCompile>
-    <ClCompile Include="Win32Specific\main.cpp">
-      <Filter>Infrastructure</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp">
-      <Filter>Infrastructure</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,6 +140,30 @@
     <ClInclude Include="Classes\BiDiTest.h" />
     <ClInclude Include="Classes\TextSizeTest.h" />
     <ClInclude Include="Classes\MathTest.h" />
+    <ClInclude Include="Classes\Infrastructure\BaseScreen.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\Config.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\FrameworkMain.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\GameCore.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\TeamCityTestsOutput.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\TestTemplate.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\TextureUtils.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Infrastructure\UITestTemplate.h">
+      <Filter>Infrastructure</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\SFML\Config.hpp">
       <Filter>SFML</Filter>
     </ClInclude>
@@ -199,30 +223,6 @@
     </ClInclude>
     <ClInclude Include="Classes\SFML\System\Utf.hpp">
       <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\BaseScreen.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\Config.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\FrameworkMain.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\GameCore.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\TeamCityTestsOutput.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\TestTemplate.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\UITestTemplate.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\TextureUtils.h">
-      <Filter>Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
