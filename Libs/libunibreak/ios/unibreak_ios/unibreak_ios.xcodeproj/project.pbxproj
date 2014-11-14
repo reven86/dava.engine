@@ -6,7 +6,30 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		B7395D3C1A161F0600FB5356 /* unibreak_ios */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = B7395D3D1A161F0600FB5356 /* Build configuration list for PBXAggregateTarget "unibreak_ios" */;
+			buildPhases = (
+				B7395D401A161F1400FB5356 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = unibreak_ios;
+			productName = unibreak_ios;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
+		B7395D2D1A161CD000FB5356 /* linebreakdata.c in Sources */ = {isa = PBXBuildFile; fileRef = B77953A91A07C782001FB673 /* linebreakdata.c */; };
+		B7395D2E1A161CD000FB5356 /* wordbreak.c in Sources */ = {isa = PBXBuildFile; fileRef = B77953B31A07C782001FB673 /* wordbreak.c */; };
+		B7395D2F1A161CD000FB5356 /* wordbreakdata.c in Sources */ = {isa = PBXBuildFile; fileRef = B77953B51A07C782001FB673 /* wordbreakdata.c */; };
+		B7395D301A161CD000FB5356 /* linebreak.c in Sources */ = {isa = PBXBuildFile; fileRef = B77953A51A07C782001FB673 /* linebreak.c */; };
+		B7395D311A161CD000FB5356 /* linebreakdef.c in Sources */ = {isa = PBXBuildFile; fileRef = B77953AD1A07C782001FB673 /* linebreakdef.c */; };
+		B7395D341A161CD000FB5356 /* wordbreakdef.h in Headers */ = {isa = PBXBuildFile; fileRef = B77953B81A07C782001FB673 /* wordbreakdef.h */; };
+		B7395D351A161CD000FB5356 /* linebreakdef.h in Headers */ = {isa = PBXBuildFile; fileRef = B77953AE1A07C782001FB673 /* linebreakdef.h */; };
+		B7395D361A161CD000FB5356 /* wordbreak.h in Headers */ = {isa = PBXBuildFile; fileRef = B77953B41A07C782001FB673 /* wordbreak.h */; };
+		B7395D371A161CD000FB5356 /* linebreak.h in Headers */ = {isa = PBXBuildFile; fileRef = B77953A61A07C782001FB673 /* linebreak.h */; };
 		B77953BA1A07C782001FB673 /* linebreak.c in Sources */ = {isa = PBXBuildFile; fileRef = B77953A51A07C782001FB673 /* linebreak.c */; };
 		B77953BB1A07C782001FB673 /* linebreak.h in Headers */ = {isa = PBXBuildFile; fileRef = B77953A61A07C782001FB673 /* linebreak.h */; };
 		B77953BC1A07C782001FB673 /* linebreakdata.c in Sources */ = {isa = PBXBuildFile; fileRef = B77953A91A07C782001FB673 /* linebreakdata.c */; };
@@ -19,6 +42,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B7395D3B1A161CD000FB5356 /* libunibreak_iphone_sim.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libunibreak_iphone_sim.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B77953A51A07C782001FB673 /* linebreak.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = linebreak.c; sourceTree = "<group>"; };
 		B77953A61A07C782001FB673 /* linebreak.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linebreak.h; sourceTree = "<group>"; };
 		B77953A91A07C782001FB673 /* linebreakdata.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = linebreakdata.c; sourceTree = "<group>"; };
@@ -28,10 +52,17 @@
 		B77953B41A07C782001FB673 /* wordbreak.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wordbreak.h; sourceTree = "<group>"; };
 		B77953B51A07C782001FB673 /* wordbreakdata.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = wordbreakdata.c; sourceTree = "<group>"; };
 		B77953B81A07C782001FB673 /* wordbreakdef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wordbreakdef.h; sourceTree = "<group>"; };
-		B7D6C86119C88B740095250A /* libunibreak_ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libunibreak_ios.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7D6C86119C88B740095250A /* libunibreak_iphone.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libunibreak_iphone.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B7395D321A161CD000FB5356 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B7D6C85E19C88B740095250A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -70,7 +101,8 @@
 		B7D6C86219C88B740095250A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B7D6C86119C88B740095250A /* libunibreak_ios.a */,
+				B7D6C86119C88B740095250A /* libunibreak_iphone.a */,
+				B7395D3B1A161CD000FB5356 /* libunibreak_iphone_sim.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -78,6 +110,17 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		B7395D331A161CD000FB5356 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7395D341A161CD000FB5356 /* wordbreakdef.h in Headers */,
+				B7395D351A161CD000FB5356 /* linebreakdef.h in Headers */,
+				B7395D361A161CD000FB5356 /* wordbreak.h in Headers */,
+				B7395D371A161CD000FB5356 /* linebreak.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B7D6C85F19C88B740095250A /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -92,9 +135,26 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		B7D6C86019C88B740095250A /* unibreak_ios */ = {
+		B7395D2B1A161CD000FB5356 /* unibreak_iphone_sim */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B7D6C86519C88B740095250A /* Build configuration list for PBXNativeTarget "unibreak_ios" */;
+			buildConfigurationList = B7395D381A161CD000FB5356 /* Build configuration list for PBXNativeTarget "unibreak_iphone_sim" */;
+			buildPhases = (
+				B7395D2C1A161CD000FB5356 /* Sources */,
+				B7395D321A161CD000FB5356 /* Frameworks */,
+				B7395D331A161CD000FB5356 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = unibreak_iphone_sim;
+			productName = unibreak_ios;
+			productReference = B7395D3B1A161CD000FB5356 /* libunibreak_iphone_sim.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		B7D6C86019C88B740095250A /* unibreak_iphone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B7D6C86519C88B740095250A /* Build configuration list for PBXNativeTarget "unibreak_iphone" */;
 			buildPhases = (
 				B7D6C85D19C88B740095250A /* Sources */,
 				B7D6C85E19C88B740095250A /* Frameworks */,
@@ -104,9 +164,9 @@
 			);
 			dependencies = (
 			);
-			name = unibreak_ios;
+			name = unibreak_iphone;
 			productName = unibreak_ios;
-			productReference = B7D6C86119C88B740095250A /* libunibreak_ios.a */;
+			productReference = B7D6C86119C88B740095250A /* libunibreak_iphone.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -117,6 +177,11 @@
 			attributes = {
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = Wargaming;
+				TargetAttributes = {
+					B7395D3C1A161F0600FB5356 = {
+						CreatedOnToolsVersion = 6.1;
+					};
+				};
 			};
 			buildConfigurationList = B7D6C85C19C88B740095250A /* Build configuration list for PBXProject "unibreak_ios" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -130,12 +195,42 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B7D6C86019C88B740095250A /* unibreak_ios */,
+				B7D6C86019C88B740095250A /* unibreak_iphone */,
+				B7395D2B1A161CD000FB5356 /* unibreak_iphone_sim */,
+				B7395D3C1A161F0600FB5356 /* unibreak_ios */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		B7395D401A161F1400FB5356 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "rm -rf ${BUILT_PRODUCTS_DIR}/libunibreak_ios.a\n\nlipo -create \"${BUILT_PRODUCTS_DIR}/../${BUILD_STYLE}Release-iphonesimulator/libunibreak_iphone_sim.a\" \\\n\"${BUILT_PRODUCTS_DIR}/libunibreak_iphone.a\" -output \\\n\"${PROJECT_DIR}/../../../libs/libunibreak_ios.a\"";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		B7395D2C1A161CD000FB5356 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7395D2D1A161CD000FB5356 /* linebreakdata.c in Sources */,
+				B7395D2E1A161CD000FB5356 /* wordbreak.c in Sources */,
+				B7395D2F1A161CD000FB5356 /* wordbreakdata.c in Sources */,
+				B7395D301A161CD000FB5356 /* linebreak.c in Sources */,
+				B7395D311A161CD000FB5356 /* linebreakdef.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B7D6C85D19C88B740095250A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -151,6 +246,38 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		B7395D391A161CD000FB5356 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = unibreak_iphone_sim;
+				VALID_ARCHS = i386;
+			};
+			name = Debug;
+		};
+		B7395D3A1A161CD000FB5356 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = unibreak_iphone_sim;
+				VALID_ARCHS = i386;
+			};
+			name = Release;
+		};
+		B7395D3E1A161F0600FB5356 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		B7395D3F1A161F0600FB5356 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		B7D6C86319C88B740095250A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -245,7 +372,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				PRODUCT_NAME = unibreak_ios;
+				PRODUCT_NAME = unibreak_iphone;
 			};
 			name = Debug;
 		};
@@ -253,13 +380,30 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				PRODUCT_NAME = unibreak_ios;
+				PRODUCT_NAME = unibreak_iphone;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B7395D381A161CD000FB5356 /* Build configuration list for PBXNativeTarget "unibreak_iphone_sim" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7395D391A161CD000FB5356 /* Debug */,
+				B7395D3A1A161CD000FB5356 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B7395D3D1A161F0600FB5356 /* Build configuration list for PBXAggregateTarget "unibreak_ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7395D3E1A161F0600FB5356 /* Debug */,
+				B7395D3F1A161F0600FB5356 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		B7D6C85C19C88B740095250A /* Build configuration list for PBXProject "unibreak_ios" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -269,7 +413,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B7D6C86519C88B740095250A /* Build configuration list for PBXNativeTarget "unibreak_ios" */ = {
+		B7D6C86519C88B740095250A /* Build configuration list for PBXNativeTarget "unibreak_iphone" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B7D6C86619C88B740095250A /* Debug */,
