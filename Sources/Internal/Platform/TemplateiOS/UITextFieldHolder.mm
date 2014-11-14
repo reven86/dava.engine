@@ -479,6 +479,7 @@
 - (void)resetToDefaults
 {
     textInputAllowed = YES;
+    [textField setText: @""];
     [self setIsPassword:false];
     [self setUseRtlAlign:false];
 }
