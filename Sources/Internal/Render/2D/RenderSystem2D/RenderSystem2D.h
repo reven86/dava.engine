@@ -66,10 +66,10 @@ public:
     
     void Setup2DMatrices();
 
+private:
     //sprite draw
     void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
 
-private:
     Matrix4 viewMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
