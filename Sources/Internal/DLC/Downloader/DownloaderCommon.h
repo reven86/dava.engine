@@ -125,7 +125,7 @@ public:
     bool SaveToBuffer(char8 *srcBuf, uint32 size);
     
     inline void SetDestinationBuffer(char8 *dstBuffer);
-    inline void SetSeekPos(uint32 seek);
+    inline void SetSeekPos(uint64 seek);
     inline uint64 GetSeekPos() const;
     inline void SetSize(uint32 size);
     inline uint32 GetSize() const;
@@ -151,7 +151,7 @@ inline void DownloadPart::SetDestinationBuffer(char8 *dstBuffer)
     dataBuffer = dstBuffer;
 }
 
-inline void DownloadPart::SetSeekPos(uint32 seek)
+inline void DownloadPart::SetSeekPos(uint64 seek)
 {
     seekPos = seek;
 }

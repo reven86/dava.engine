@@ -23,7 +23,6 @@
     <ClInclude Include="Classes\DLCDownloadTest.h" />
     <ClInclude Include="Classes\DPITest.h" />
     <ClInclude Include="Classes\DXTTest.h" />
-    <ClInclude Include="Classes\EMailTest.h" />
     <ClInclude Include="Classes\EntityTest.h" />
     <ClInclude Include="Classes\FileListTest.h" />
     <ClInclude Include="Classes\FilePathTest.h" />
@@ -74,7 +73,6 @@
     <ClCompile Include="Classes\DLCDownloadTest.cpp" />
     <ClCompile Include="Classes\DPITest.cpp" />
     <ClCompile Include="Classes\DXTTest.cpp" />
-    <ClCompile Include="Classes\EMailTest.cpp" />
     <ClCompile Include="Classes\EntityTest.cpp" />
     <ClCompile Include="Classes\FileListTest.cpp" />
     <ClCompile Include="Classes\FilePathTest.cpp" />
@@ -119,6 +117,9 @@
     <ProjectReference Include="..\Win32Framework\Win32Framework.vcxproj">
       <Project>{a6472d47-5050-406d-89e9-4725192e32f2}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A31689CE-A339-464E-8D7E-49EF2AF81AA4}</ProjectGuid>

@@ -429,7 +429,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     // if file exists
     uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : sizeToDownload / fileChunkSize;
     // part size could not be bigger than 4Gb
-    uint64 lastFileChunkSize =  fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount*fileChunkSize);
+    uint32 lastFileChunkSize =  fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount*fileChunkSize);
 
     saveThread = Thread::Create(Message(this, &CurlDownloader::SaveChunkHandler));
     saveThread->Start();

@@ -170,7 +170,7 @@ private:
     Mutex chunksMutex;
     List<DataChunkInfo *> chunksToSave;
     Thread *saveThread;
-    const char8 allowedBuffersInMemory;
+    const uint8 allowedBuffersInMemory;
 };
     
 }
