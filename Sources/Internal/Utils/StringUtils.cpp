@@ -85,14 +85,14 @@ bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& prepared
     uint32 fribidi_len = fribidi_charset_to_unicode(FRIBIDI_CHAR_SET_UTF8, inputUTF.c_str(), utf_len, logical);
     if (fribidi_len == 0)
     {
-        SAFE_DELETE(logical);
+        SAFE_DELETE_ARRAY(logical);
         return false;
     }
     
     FriBidiCharType* bidi_types = new FriBidiCharType[fribidi_len];
     if (!bidi_types)
     {
-        SAFE_DELETE(logical);
+        SAFE_DELETE_ARRAY(logical);
         return false;
     }
 
@@ -101,7 +101,7 @@ bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& prepared
     FriBidiLevel* embedding_levels = new FriBidiLevel[fribidi_len];
     if (!embedding_levels)
     {
-        SAFE_DELETE(logical);
+        SAFE_DELETE_ARRAY(logical);
         return false;
     }
 
@@ -109,7 +109,7 @@ bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& prepared
     FriBidiLevel max_level = fribidi_get_par_embedding_levels(bidi_types, fribidi_len, &base_dir, embedding_levels) - 1;
     if (max_level < 0)
     {
-        SAFE_DELETE(logical);
+        SAFE_DELETE_ARRAY(logical);
         return false;
     }
 
@@ -121,7 +121,7 @@ bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& prepared
     fribidi_get_joining_types(logical, fribidi_len, ar_props);
     fribidi_join_arabic(bidi_types, fribidi_len, embedding_levels, ar_props);
     fribidi_shape(flags, embedding_levels, fribidi_len, ar_props, visual);
-    SAFE_DELETE(ar_props);
+    SAFE_DELETE_ARRAY(ar_props);
     
     char outstring[MAX_LINE_LENGTH];
     utf_len = fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, visual, fribidi_len, outstring);
@@ -131,8 +131,8 @@ bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& prepared
         *isRTL = FRIBIDI_IS_RTL(base_dir);
     }
 
-    SAFE_DELETE(logical);
-    SAFE_DELETE(visual);
+    SAFE_DELETE_ARRAY(logical);
+    SAFE_DELETE_ARRAY(visual);
     return true;
 }
 
@@ -148,14 +148,14 @@ bool StringUtils::BiDiReorder(WideString& string, const bool forceRtl)
     uint32 fribidi_len = fribidi_charset_to_unicode(FRIBIDI_CHAR_SET_UTF8, inputUTF.c_str(), utf_len, logical);
     if (fribidi_len == 0)
     {
-        SAFE_DELETE(logical);
+        SAFE_DELETE_ARRAY(logical);
         return false;
     }
 
     FriBidiCharType* bidi_types = new FriBidiCharType[fribidi_len];
     if (!bidi_types)
     {
-        SAFE_DELETE(logical);
+        SAFE_DELETE_ARRAY(logical);
         return false;
     }
 
@@ -164,7 +164,7 @@ bool StringUtils::BiDiReorder(WideString& string, const bool forceRtl)
     FriBidiLevel* embedding_levels = new FriBidiLevel[fribidi_len];
     if (!embedding_levels)
     {
-        SAFE_DELETE(logical);
+        SAFE_DELETE_ARRAY(logical);
         return false;
     }
 
@@ -172,7 +172,7 @@ bool StringUtils::BiDiReorder(WideString& string, const bool forceRtl)
     FriBidiLevel max_level = fribidi_get_par_embedding_levels(bidi_types, fribidi_len, &base_dir, embedding_levels) - 1;
     if (max_level < 0)
     {
-        SAFE_DELETE(logical);
+        SAFE_DELETE_ARRAY(logical);
         return false;
     }
 
@@ -186,8 +186,8 @@ bool StringUtils::BiDiReorder(WideString& string, const bool forceRtl)
     utf_len = fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, visual, fribidi_len, outstring);
     UTF8Utils::EncodeToWideString(reinterpret_cast<unsigned char*>(outstring), utf_len, string);
 
-    SAFE_DELETE(logical);
-    SAFE_DELETE(visual);
+    SAFE_DELETE_ARRAY(logical);
+    SAFE_DELETE_ARRAY(visual);
     return status != 0;
 }
 
