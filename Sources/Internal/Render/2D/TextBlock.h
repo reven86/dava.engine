@@ -95,6 +95,18 @@ public:
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();
     
+    /**
+    \brief Get the render size.
+    \returns size in pixels
+    */
+    virtual float32	GetRenderSize();
+
+    /**
+    \brief Set the render size.
+    \param[in] size in points
+    */
+    virtual void SetRenderSize(float32 renderSize);
+	
     Sprite * GetSprite();
     bool IsSpriteReady();
     const Vector2& GetSpriteOffset();
@@ -166,6 +178,7 @@ protected:
     Vector2 cacheTextSize;
 
     float32 originalFontSize;
+    float32 renderSize;
     
     int32 cacheDx;
     int32 cacheDy;
