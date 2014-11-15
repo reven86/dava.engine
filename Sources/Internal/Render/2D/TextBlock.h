@@ -38,7 +38,7 @@
 #include "Render/2D/Sprite.h"
 #include "Render/2D/Font.h"
 #include "Platform/Mutex.h"
-#include <Utils/StringUtils.h>
+#include <Utils/BiDiHelper.h>
 
 namespace DAVA
 {
@@ -120,7 +120,7 @@ public:
      * \brief Is BiDi trasformations support enabled.
      * \return true if BiDi trasformations supported.
      */
-    static const bool & IsBiDiSupportEnabled();
+    static bool IsBiDiSupportEnabled();
     
 protected:
     TextBlock();
@@ -137,8 +137,7 @@ protected:
      * \param string The string.
      * \param targetRectSize Size of the target rectangle.
      * \param [out] resultVector The result vector.
-     * \param forceRtl Flag for force RTL transformation
-     *  splited lines.
+     * \param forceRtl Flag for force RTL transformation splited lines.
      */
     void SplitTextToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
@@ -147,8 +146,7 @@ protected:
      * \param string The string.
      * \param targetRectSize Size of the target rectangle.
      * \param [out] resultVector The result vector.
-     * \param forceRtl Flag for force RTL transformation
-     *  splited lines.
+     * \param forceRtl Flag for force RTL transformation splited lines.
      */
     void SplitTextBySymbolsToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
@@ -197,6 +195,7 @@ protected:
     bool treatMultilineAsSingleLine:1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
+    static BiDiHelper bidiHelper;
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;
