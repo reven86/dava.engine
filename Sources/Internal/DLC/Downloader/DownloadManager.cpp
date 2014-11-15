@@ -591,6 +591,7 @@ DownloadError DownloadManager::TryDownload()
     }
 
     DVASSERT(GET_SIZE != currentTask->type);
+    currentTask->downloadProgress = 0;
 
     if (RESUMED == currentTask->type)
     {
@@ -645,9 +646,8 @@ void DownloadManager::MakeFullDownload()
 void DownloadManager::MakeResumedDownload()
 {
     currentTask->type = RESUMED;
-
     // if file is particulary downloaded, we will try to download rest part of it        
-    ScopedPtr<File> file(File::Create(currentTask->storePath, File::OPEN | File::READ));
+    File *file = File::Create(currentTask->storePath, File::OPEN | File::READ);
     if (NULL == static_cast<File *>(file))
     {
         // download fully if there is no file.
@@ -655,14 +655,14 @@ void DownloadManager::MakeResumedDownload()
     }
     else
     {
+        currentTask->downloadProgress = file->GetSize();
+        SafeRelease(file);
         // if exsisted file have not the same size as downloading file
-        if (file->GetSize() > currentTask->downloadTotal)
+        if (currentTask->downloadProgress > currentTask->downloadTotal)
         {
             MakeFullDownload();
         }
     }
-    
-    currentTask->downloadProgress = file->GetSize();
 }
 
 void DownloadManager::ResetRetriesCount()
