@@ -18,7 +18,7 @@ function assert(isTrue, errorMsg)
     if not isTrue then OnError(tostring(errorMsg)) end
 end
 
-local function __ToBoolean(condition)
+local function toboolean(condition)
     return not not condition
 end
 
@@ -340,7 +340,7 @@ end
 function IsVisible(element, background)
     Yield()
     local control = autotestingSystem:FindControl(element)
-    return __ToBoolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background))
+    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background))
 end
 
 function IsDisabled(element)
@@ -355,7 +355,7 @@ function IsOnScreen(control, background)
     local rect = geomData:GetUnrotatedRect()
     geomData = screen:GetGeometricData()
     local backRect = geomData:GetUnrotatedRect()
-    return __ToBoolean((rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y)
+    return toboolean((rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y)
             and (rect.y + rect.dy <= backRect.y + backRect.dy))
 end
 
@@ -364,7 +364,7 @@ function IsCenterOnScreen(control, background)
     local center = GetCenter(control)
     local geomData = screen:GetGeometricData()
     local backRect = geomData:GetUnrotatedRect()
-    return __ToBoolean((center.x >= backRect.x) and (center.x <= backRect.x + backRect.dx) and (center.y >= backRect.y)
+    return toboolean((center.x >= backRect.x) and (center.x <= backRect.x + backRect.dx) and (center.y >= backRect.y)
             and (center.y <= backRect.y + backRect.dy))
 end
 
