@@ -6,7 +6,7 @@
 #include "AutotestingDB.h"
 
 #include "Utils/Utils.h"
-#include <Platform/DeviceInfo.h>
+#include "Platform/DeviceInfo.h"
 
 extern "C"{
 #include "lua.h"
