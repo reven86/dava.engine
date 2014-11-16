@@ -134,7 +134,7 @@ function StartTest(name, test)
     autotestingSystem = AutotestingSystem.Singleton_Autotesting_Instance()
     DEVICE_NAME = autotestingSystem:GetDeviceName()
     PLATFORM = autotestingSystem:GetPlatform()
-    IS_PHONE = true --autotestingSystem:IsPhoneScreen() TODO: Uncomment it!
+    IS_PHONE = autotestingSystem:IsPhoneScreen()
     autotestingSystem:OnTestStart(name)
     coroutine.resume(co, test)
 end
@@ -513,11 +513,21 @@ function SelectItemInList(listName, item)
     return false
 end
 
-function SelectItemInContainer(containerName, item, notInCenter)
+function SelectItemInContainer(containerName, item, notInCenter, __condition)
     Log(string.format("Select '%s' cell in '%s' container.", item, containerName))
     assert(WaitControl(containerName), "Couldn't find " .. containerName)
 
-    local function __click() if IsVisible(item, containerName) and IsVisible(item) then ClickControl(item) return true end return false end
+    if not __condition then
+        __condition = function(x) return true end
+    end
+
+    local function __click()
+        if IsVisible(item, containerName) and IsVisible(item) and __condition(item) then
+            ClickControl(item)
+            return true
+        end
+        return false
+    end
 
     if __click() then
         return true
