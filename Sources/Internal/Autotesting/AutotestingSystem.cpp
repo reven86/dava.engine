@@ -342,7 +342,7 @@ namespace DAVA
 	{
 		Logger::Debug("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
-		screenShotName = Format("%s_%s_%s_%s", AUTOTESTING_PLATFORM_NAME, deviceName.c_str(), groupName.c_str(), currentDateTime);
+		screenShotName = Format("%s_%s_%s_%s", AUTOTESTING_PLATFORM_NAME, deviceName.c_str(), groupName.c_str(), currentDateTime.c_str());
 		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		RenderManager::Instance()->RequestGLScreenShot(this);
 	}
