@@ -39,7 +39,7 @@ bool Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 siz
     if (destFile)
     {
         written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
-
+        notifyProgress(written);
         DownloadManager::Instance()->ResetRetriesCount();
         SafeRelease(destFile);
         return true;

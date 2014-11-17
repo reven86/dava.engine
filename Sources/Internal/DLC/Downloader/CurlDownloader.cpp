@@ -92,7 +92,6 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     if (thisPart->SaveToBuffer(static_cast<char8 *>(ptr), static_cast<size_t>(dataSizeToBuffer)))
     {
         thisDownloader->chunkInfo->progress += dataSizeToBuffer;
-        thisDownloader->notifyProgress(dataSizeToBuffer);
     }
 
     if (thisDownloader->isDownloadInterrupting)
@@ -276,7 +275,6 @@ CURLMcode CurlDownloader::Perform()
         {
             // Curl documentation recommends to sleep not less than 200ms in this case
             Thread::Sleep(200);
-            rc = 0;
         }
 
         switch (rc)
@@ -356,6 +354,15 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
             Thread::Sleep(1);
         }
     } while(hasChunksToSave || Thread::STATE_CANCELLING != thisThread->GetState());
+    
+    chunksMutex.Lock();
+    List<DataChunkInfo *>::iterator endC = chunksToSave.end();
+    for (List<DataChunkInfo *>::iterator it = chunksToSave.begin(); it != endC; ++it)
+    {
+        SafeDelete(*it);
+    }
+    chunksToSave.clear();
+    chunksMutex.Unlock();
 }
 
 DownloadError CurlDownloader::DownloadRangeOfFile(uint64 seek, uint32 size)
@@ -413,6 +420,10 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     else
     {
         dstFile = File::Create(storePath, File::CREATE | File::WRITE);
+        if (NULL == dstFile)
+        {
+            return DLE_FILE_ERROR;
+        }
     }
     SafeRelease(dstFile);
     
@@ -474,17 +485,6 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
             {
                 retCode = saveResult;
                 SafeRelease(chunkInfo);
-                
-                chunksMutex.Lock();
-                List<DataChunkInfo *>::iterator endC = chunksToSave.end();
-                for (List<DataChunkInfo *>::iterator it = chunksToSave.begin(); it != endC; ++it)
-                {
-                    SafeDelete(*it);
-                }
-                chunksToSave.clear();
-                chunksMutex.Unlock();
-                
-                break;
             }
             else
             {
@@ -495,6 +495,11 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
         }
         
         CleanupDownload();
+        
+        if (DLE_NO_ERROR != retCode)
+        {
+            break;
+        }
     }
     
     // wait for save of rest file part from memory
@@ -511,6 +516,11 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     saveThread->Cancel();
     saveThread->Join();
     SafeRelease(saveThread);
+    
+    if (DLE_NO_ERROR != saveResult)
+    {
+        retCode = saveResult;
+    }
     
     return retCode;
 }
