@@ -1607,6 +1607,9 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Profiler.hpp">
       <Filter>Internal\Base</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\FWSpinlock.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2899,6 +2902,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\Profiler.cpp">
       <Filter>Internal\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\FWSpinlock.cpp">
+      <Filter>Internal\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

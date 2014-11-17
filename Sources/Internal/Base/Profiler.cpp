@@ -27,7 +27,7 @@
 
 //==============================================================================
 
-const unsigned  InvalidIndex        = (unsigned)(-1);
+const unsigned  InvalidIndex = (unsigned)(-1);
 
 
 
