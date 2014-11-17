@@ -8,6 +8,7 @@
 
     #include "Profiler.hpp"
     #include "FileSystem/Logger.h"
+    #include "Platform/FWSpinlock.h"
 
 
     #ifdef _WIN32
@@ -38,28 +39,32 @@ _CurTimeUs()
 {
     #ifdef _WIN32
 
-    LARGE_INTEGER freq;
-    LARGE_INTEGER t;
+        LARGE_INTEGER freq;
+        LARGE_INTEGER t;
 
-    ::QueryPerformanceFrequency( &freq );
-    ::QueryPerformanceCounter( &t );
+        ::QueryPerformanceFrequency( &freq );
+        ::QueryPerformanceCounter( &t );
     
-    return long(((t.QuadPart)*1000000) / freq.QuadPart);
+        return long(((t.QuadPart)*1000000) / freq.QuadPart);
 
     #elif defined __ANDROID_API__
 
-    timespec    ts;
+        timespec    ts;
 
-    clock_gettime( CLOCK_REALTIME, &ts );
-// this gives more correct time, but slow-as-Hell on lots of devices
-//   clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts );
+        clock_gettime( CLOCK_REALTIME, &ts );
+        //   this gives more correct time, but slow-as-Hell on lots of devices
+        //   clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts );
 
-    return long(ts.tv_sec*1000000 + ts.tv_nsec/1000);
+        return long(ts.tv_sec*1000000 + ts.tv_nsec/1000);
+    
+    #else
+
+    #error high-resolution timer must be defined!
 
     #endif
 }
 
-
+/*
 #if defined(_MSC_VER)
 
     inline bool CAS( volatile uint32* val_ptr, const uint32 old_val, const uint32 new_val ) 
@@ -91,10 +96,14 @@ CASLock
     bool    TryAcquire()    { return CAS( &val, uint32(0), uint32(1) ); }
     bool    TryRelease()    { return CAS( &val, uint32(1), uint32(0) ); }
     uint32  Value() const   { return val; }
+
+    void    Lock()          { while ( !CAS( &val, uint32(0), uint32(1) ) ) ; }
+    void    Unlock()        { while ( !CAS( &val, uint32(1), uint32(0) ) ) ; }
+
 //protected:
     volatile uint32     val;
 };
-
+*/
 
 
 
@@ -116,7 +125,8 @@ static bool             DumpPending         = false;
 static long             TotalTime0          = 0;
 static long             TotalTime           = 0;
 static unsigned         MaxNameLen          = 32;
-static CASLock          CounterSync;
+//static CASLock          CounterSync;
+static Spinlock         CounterSync;
 
 
 
@@ -140,7 +150,7 @@ public:
 
     void        reset()                         
                                                 { 
-                                                    CounterSync.Acquire();
+                                                    CounterSync.Lock();
 
                                                     t         = 0; 
                                                     count     = 0; 
@@ -148,11 +158,11 @@ public:
                                                     useCount  = 0;
                                                     parentId  = InvalidIndex;
                                                     
-                                                    CounterSync.Release();
+                                                    CounterSync.Unlock();
                                                 }
     void        start()
                                                 {
-                                                    CounterSync.Acquire();
+                                                    CounterSync.Lock();
 
                                                     if( !useCount ) 
                                                     {
@@ -171,11 +181,11 @@ public:
                                                     ++count;
                                                     ++useCount;
                                                     
-                                                    CounterSync.Release();
+                                                    CounterSync.Unlock();
                                                 }
     void        stop()                          
                                                 { 
-                                                    CounterSync.Acquire();
+                                                    CounterSync.Lock();
 
                                                     if( useCount == 1 )
                                                     {
@@ -186,7 +196,7 @@ public:
                                                     if( --useCount == 0 )
                                                         t += _CurTimeUs() - t0; 
                                                     
-                                                    CounterSync.Release();
+                                                    CounterSync.Unlock();
                                                 }
 
 
@@ -411,7 +421,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
     for( unsigned i=0; i!=result.size(); ++i )
     {
         unsigned    pi          = result[i].parent_i;
-        unsigned    indent      = 0;
+        unsigned    indent      = 0;\
         char        text[256];  memset( text, ' ', sizeof(text) );
         unsigned    len         = 0;
 
