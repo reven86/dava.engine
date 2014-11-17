@@ -1,15 +1,35 @@
-//==============================================================================
-//
-//  Profiler implementation
-//
-//==============================================================================
-//
-//  externals:
+/*==================================================================================
+Copyright (c) 2008, binaryzebra
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+* Neither the name of the binaryzebra nor the
+names of its contributors may be used to endorse or promote products
+derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
     #include "Profiler.hpp"
     #include "FileSystem/Logger.h"
     #include "Platform/FWSpinlock.h"
-
+    #include "BaseTypes.h"
 
     #ifdef _WIN32
         #define WIN32_LEAN_AND_MEAN
@@ -398,13 +418,13 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
     
     for( unsigned i=0; i!=result.size(); ++i )
     {
-        unsigned    pi      = result[i].parent_i;
+        unsigned    pi      = result[i].parentIndex;
         unsigned    indent  = 0;
         unsigned    len     = 0;
 
         while( pi != unsigned(-1) )
         {
-            pi = result[pi].parent_i;
+            pi = result[pi].parentIndex;
             ++indent;
         }
         
@@ -420,42 +440,42 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
     Logger::Info( "===================================================" );
     for( unsigned i=0; i!=result.size(); ++i )
     {
-        unsigned    pi          = result[i].parent_i;
+        unsigned    pi          = result[i].parentIndex;
         unsigned    indent      = 0;\
         char        text[256];  memset( text, ' ', sizeof(text) );
         unsigned    len         = 0;
 
         while( pi != unsigned(-1) )
         {
-            pi = result[pi].parent_i;
+            pi = result[pi].parentIndex;
             ++indent;
         }
 
         int  text_len = 0;       
 
         if( result[i].name )
-            text_len = sprintf( text+indent*2, "%s", result[i].name );
+            text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%s", result[i].name );
         else
-            text_len = sprintf( text+indent*2, "%u", i );
+            text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%u", i );
         
         text[indent*2+text_len] = ' ';
-        text_len = max_name_len+2+sprintf( text+max_name_len+2, " %-5u  %u us", result[i].count, result[i].time_us );
+        text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %u us", result[i].count, result[i].timeUs );
 
         if( show_percents )
         {
             float               pg  = (TotalTime)  
-                                      ? 100.0f*float(result[i].time_us)/float(TotalTime)
+                                      ? 100.0f*float(result[i].timeUs)/float(TotalTime)
                                       : 0;
-            const CounterInfo*  pc  = (result[i].parent_i != InvalidIndex)  ? &(result[0]) + result[i].parent_i  : 0;
-            float               pl  = (pc  &&  pc->time_us)  
-                                      ? 100.0f*float(result[i].time_us)/float(pc->time_us)
+            const CounterInfo*  pc  = (result[i].parentIndex != InvalidIndex)  ? &(result[0]) + result[i].parentIndex  : 0;
+            float               pl  = (pc  &&  pc->timeUs)  
+                                      ? 100.0f*float(result[i].timeUs)/float(pc->timeUs)
                                       : 0;
 
             text[text_len] = ' ';
             text_len = max_name_len + 2 + 1 + 5 + 2 + 5+1+2;
 
-            if( pc )    text_len += sprintf( text+text_len, "   %02i.%i    %02i.%i", int(pl),flt_dec(pl), int(pg),flt_dec(pg) );
-            else        text_len += sprintf( text+text_len, "   %02i.%i    %02i.%i", int(pg),flt_dec(pg), int(pg),flt_dec(pg) );
+            if( pc )    text_len += Snprinf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pl),flt_dec(pl), int(pg),flt_dec(pg) );
+            else        text_len += Snprinf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pg),flt_dec(pg), int(pg),flt_dec(pg) );
         }
 
         Logger::Info( text );
@@ -571,16 +591,16 @@ GetCounters( std::vector<CounterInfo>* info )
     info->resize( result.size() );
     for( unsigned i=0; i!=result.size(); ++i )
     {
-        (*info)[i].name     = result[i]->getName();
-        (*info)[i].count    = result[i]->getCount();
-        (*info)[i].time_us  = result[i]->getTimeUs();
-        (*info)[i].parent_i = InvalidIndex;
+        (*info)[i].name         = result[i]->getName();
+        (*info)[i].count        = result[i]->getCount();
+        (*info)[i].timeUs       = result[i]->getTimeUs();
+        (*info)[i].parentIndex  = InvalidIndex;
         
         for( unsigned k=0; k!=info->size(); ++k )
         {
             if( result[i]->getParentId() == result[k]->getId() )
             {
-                (*info)[i].parent_i = k;
+                (*info)[i].parentIndex = k;
                 break;
             }
         }
@@ -637,16 +657,16 @@ GetAverageCounters( std::vector<CounterInfo>* info )
         info->resize( result.size() );
         for( unsigned i=0; i!=result.size(); ++i )
         {
-            (*info)[i].name     = result[i]->getName();
-            (*info)[i].count    = result[i]->getCount();
-            (*info)[i].time_us  = result[i]->getTimeUs();
-            (*info)[i].parent_i = InvalidIndex;
+            (*info)[i].name         = result[i]->getName();
+            (*info)[i].count        = result[i]->getCount();
+            (*info)[i].timeUs       = result[i]->getTimeUs();
+            (*info)[i].parentIndex  = InvalidIndex;
         
             for( unsigned k=0; k!=info->size(); ++k )
             {
                 if( result[i]->getParentId() == result[k]->getId() )
                 {
-                    (*info)[i].parent_i = k;
+                    (*info)[i].parentIndex = k;
                     break;
                 }
             }

@@ -48,6 +48,13 @@
 #include "Render/Material/NMaterialNames.h"
 
 #include "Base/Profiler.hpp"
+#define PROF__RHI_SETUNIFORM    10
+#define PROF__RHI_SETDYNPARAM   11
+#define PROF__RHI_SETMATPARAM   12
+#define PROF__GL_DIP            20
+#define PROF__GL_SET_PROG       21
+#define PROF__GL_SET_UNIFORM    22
+#define PROF__GL_SET_UNIFORM2   23
 
 namespace DAVA
 {
@@ -1604,7 +1611,7 @@ void NMaterial::InvalidateProperties()
 void NMaterial::Draw(PolygonGroup * polygonGroup)
 {
 //SCOPED_TIMING(PROF__TEST1);
-PROF_ENTER_FUNCTION();
+SCOPED_FUNCTION_TIMING();
 SCOPED_NAMED_TIMING("blam!");
 START_NAMED_TIMING("smack1");
 	// TODO: Remove support of OpenGL ES 1.0 from attach render data

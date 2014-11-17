@@ -56,6 +56,19 @@
 #include "Notification/LocalNotificationController.h"
 
 #include "Base/Profiler.hpp"
+#define PROF__FRAME             0
+#define PROF__FRAME_UPDATE      1
+#define PROF__FRAME_DRAW        2
+#define PROF__RHI_SETUNIFORM    10
+#define PROF__RHI_SETDYNPARAM   11
+#define PROF__RHI_SETMATPARAM   12
+#define PROF__GL_DIP            20
+#define PROF__GL_SET_PROG       21
+#define PROF__GL_SET_UNIFORM    22
+#define PROF__GL_SET_UNIFORM2   23
+
+#define PROF__TEST1             40
+
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -807,7 +820,7 @@ if( profiler::GetAverageCounters( &result ) )
 }
 */
 }
-profiler::Dump();
+//profiler::Dump();
 profiler::DumpAverage();
 }
 
