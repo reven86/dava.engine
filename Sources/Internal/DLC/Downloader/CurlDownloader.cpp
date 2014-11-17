@@ -275,6 +275,7 @@ CURLMcode CurlDownloader::Perform()
         {
             // Curl documentation recommends to sleep not less than 200ms in this case
             Thread::Sleep(200);
+            rc = 0;
         }
 
         switch (rc)
