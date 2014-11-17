@@ -1053,6 +1053,10 @@
 		B786014E1A08EB140041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B786014B1A08EB140041F817 /* StringUtils.cpp */; };
 		B786014F1A08EB140041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B786014C1A08EB140041F817 /* StringUtils.h */; };
 		B78601501A08EB140041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B786014C1A08EB140041F817 /* StringUtils.h */; };
+		B79723EE1A125F96009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723EC1A125F96009421F3 /* BiDiHelper.cpp */; };
+		B79723EF1A125F96009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723EC1A125F96009421F3 /* BiDiHelper.cpp */; };
+		B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
+		B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
 		B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
 		C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
 		C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */ = {isa = PBXBuildFile; fileRef = C13E6DB7186861FA00D1B2CE /* DFFont.h */; };
@@ -1997,6 +2001,8 @@
 		B78601471A08EAD40041F817 /* libunibreak_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_ios.a; path = ../../Libs/libs/libunibreak_ios.a; sourceTree = "<group>"; };
 		B786014B1A08EB140041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
 		B786014C1A08EB140041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
+		B79723EC1A125F96009421F3 /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
+		B79723ED1A125F96009421F3 /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
 		B7D6C97319C9856B0095250A /* libfribidi_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_ios.a; path = ../../Libs/libs/libfribidi_ios.a; sourceTree = "<group>"; };
 		C13E6DB6186861FA00D1B2CE /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C13E6DB7186861FA00D1B2CE /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
@@ -3901,6 +3907,8 @@
 		E8B3CA7016B9326E002BD35F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				B79723EC1A125F96009421F3 /* BiDiHelper.cpp */,
+				B79723ED1A125F96009421F3 /* BiDiHelper.h */,
 				B786014B1A08EB140041F817 /* StringUtils.cpp */,
 				B786014C1A08EB140041F817 /* StringUtils.h */,
 				02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */,
@@ -4422,6 +4430,7 @@
 				02FD80881924997C007762C0 /* AutotestingDB.h in Headers */,
 				02FD80891924997C007762C0 /* GameAPI.h in Headers */,
 				02FD808A1924997C007762C0 /* ShaderCache.h in Headers */,
+				B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */,
 				02FD808B1924997C007762C0 /* RenderBatchArray.h in Headers */,
 				02FD808C1924997C007762C0 /* RenderHierarchy.h in Headers */,
 				02FD808D1924997C007762C0 /* SerializationContext.h in Headers */,
@@ -4494,6 +4503,7 @@
 				84D18BFF19201BEF009E3E90 /* ImageFormatInterface.h in Headers */,
 				E8B3CABE16B9326E002BD35F /* RefPtr.h in Headers */,
 				E8B3CABF16B9326E002BD35F /* ScopedPtr.h in Headers */,
+				B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */,
 				E8B3CAC016B9326E002BD35F /* Singleton.h in Headers */,
 				E8B3CAC116B9326E002BD35F /* StaticSingleton.h in Headers */,
 				E8B3CAC216B9326E002BD35F /* TemplateHelpers.h in Headers */,
@@ -5075,6 +5085,7 @@
 				02FD80DE1924997C007762C0 /* NeonMath.cpp in Sources */,
 				8402ABA319BA033600111F35 /* TextBlockGraphicsRender.cpp in Sources */,
 				02FD80DF1924997C007762C0 /* Polygon2.cpp in Sources */,
+				B79723EF1A125F96009421F3 /* BiDiHelper.cpp in Sources */,
 				02FD80E01924997C007762C0 /* Polygon3.cpp in Sources */,
 				02FD80E11924997C007762C0 /* RectPacker.cpp in Sources */,
 				1146E10A19D0064B009E5FAB /* AnimationSystem.cpp in Sources */,
@@ -5478,6 +5489,7 @@
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,
 				D7FEF15919864E5C00B2C7AF /* PatchFile.cpp in Sources */,
 				E8B3CB8316B9326E002BD35F /* ParticlePropertyLine.cpp in Sources */,
+				B79723EE1A125F96009421F3 /* BiDiHelper.cpp in Sources */,
 				D7FEF15119864E5C00B2C7AF /* bs_diff.c in Sources */,
 				E8B3CB8E16B9326E002BD35F /* Mutex.cpp in Sources */,
 				E8B3CB9E16B9326E002BD35F /* SystemTimer.cpp in Sources */,
@@ -5843,7 +5855,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -5891,7 +5902,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -5932,7 +5942,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -5973,7 +5982,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;

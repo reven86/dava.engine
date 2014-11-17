@@ -168,8 +168,7 @@ public:
 protected:
 	virtual ~UITextField();
 public:
-	UITextField();
-	UITextField(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
 	virtual void WillAppear();
 	virtual void DidAppear();

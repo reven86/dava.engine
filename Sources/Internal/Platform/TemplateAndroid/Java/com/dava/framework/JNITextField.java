@@ -161,6 +161,9 @@ public class JNITextField {
 	        
 	        keyboardLayout = new FrameLayout(JNIActivity.GetActivity());
 	        manager.addView(keyboardLayout, params);	
+
+	        // Set UI flags for detect correct size when navigation bar hiden
+	        JNIActivity.HideNavigationBar(keyboardLayout);
 		}
 		
 		if(keyboardHelper == null && keyboardLayout != null)
