@@ -112,37 +112,9 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
     SetupDefaults();
 }
     
-UITextField::UITextField()
-:   delegate(NULL)
-,   cursorBlinkingTime(0.f)
-#if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
-,   textFont(NULL)
-,   staticText(NULL)
-#endif
-{
-#if defined (__DAVAENGINE_ANDROID__)
-	textFieldAndroid = new UITextFieldAndroid(this);
-    textFieldAndroid->SetVisible(false);
-#elif defined(__DAVAENGINE_IPHONE__)
-	textFieldiPhone = new UITextFieldiPhone(this);
-    textFieldiPhone->SetVisible(false);
-#else
-    staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
-    staticText->SetVisible(false);
-    AddControl(staticText);
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
-#endif
-    
-    cursorTime = 0;
-    showCursor = true;
-    
-    SetupDefaults();
-}
-
-    
 void UITextField::SetupDefaults()
 {
-    SetInputEnabled(true);
+    SetInputEnabled(true, false);
     
     SetAutoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES);
     SetAutoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT);
