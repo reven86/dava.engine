@@ -39,45 +39,50 @@ template <class T>
 class TestTemplate : public BaseScreen
 {
 protected:
-	~TestTemplate(){};
+    ~TestTemplate(){};
 public:
 
-	struct PerfFuncData
-	{
-		void (T::*func)(PerfFuncData * data);
-		T				* screen;
+    struct PerfFuncData
+    {
+        void (T::*func)(PerfFuncData * data);
+        T                * screen;
 
         TestData testData;
-	};
+    };
     
 
-	TestTemplate(const String & screenName);
+    TestTemplate(const String & screenName);
 
-	virtual void Draw(const UIGeometricData &geometricData);
+    virtual void Draw(const UIGeometricData &geometricData);
 
-	void RegisterFunction(T * screen, void (T::*func)(PerfFuncData * data), const String & name, void * userData);
+    void RegisterFunction(T * screen, void (T::*func)(PerfFuncData * data), const String & name, void * userData);
 
-	void LogError(PerfFuncData * data, const String &errorMessage);
+    void LogError(PerfFuncData * data, const String &errorMessage);
     
     int32 GetScreenId();
     
     virtual int32 GetTestCount();
     virtual TestData * GetTestData(int32 iTest);
+    virtual const DAVA::String& GetTestName() const
+    {
+        return screenName;
+    }
 
     virtual bool RunTest(int32 testNum);
     
 protected:
     
     
-	Vector<PerfFuncData> perfFuncs;
-	String screenName;
+    Vector<PerfFuncData> perfFuncs;
+    String screenName;
 
 private:
     
     static int32 globalScreenId; // 1, on create of screen increment  
     int32 currentScreenId;
+    DAVA::String testName;
     
-	TestTemplate();
+    TestTemplate();
 };
 
 template <class T>
@@ -86,26 +91,26 @@ int32 TestTemplate<T>::globalScreenId = 1;
 template <class T>
 void TestTemplate<T>::RegisterFunction(T * screen, void (T::*func)(PerfFuncData * data), const String & name, void * userData)
 {
-	PerfFuncData data;
-	data.testData.name = name;
-	data.func = func;
-	data.screen = screen;
-	data.testData.userData = userData;
+    PerfFuncData data;
+    data.testData.name = name;
+    data.func = func;
+    data.screen = screen;
+    data.testData.userData = userData;
 
-	perfFuncs.push_back(data);
+    perfFuncs.push_back(data);
 }
 
 template <class T>
 void TestTemplate<T>::LogError(PerfFuncData * data, const String &errorMessage)
 {
-	GameCore::Instance()->LogMessage(Format("Error %s at test: %s", errorMessage.c_str(), data->testData.name.c_str()));
+    GameCore::Instance()->LogMessage(Format("Error %s at test: %s", errorMessage.c_str(), screenName.c_str()));
 }
 
 
 template <class T>
 TestTemplate<T>::TestTemplate(const String & _screenName)
 {
-	screenName = _screenName;
+    screenName = _screenName;
     
     currentScreenId = globalScreenId++;
 }
@@ -120,12 +125,11 @@ void TestTemplate<T>::Draw(const UIGeometricData &geometricData)
 template <class T>
 bool TestTemplate<T>::RunTest(int32 testNum)
 {
-	int32 testCount = perfFuncs.size();
+    int32 testCount = perfFuncs.size();
     
     if(0 <= testNum && testNum < testCount)
     {
-		PerfFuncData * data = &(perfFuncs[testNum]);
-
+        PerfFuncData * data = &(perfFuncs[testNum]);
         (data->screen->*data->func)(data);
         return true;
     }

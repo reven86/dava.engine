@@ -30,7 +30,7 @@
 #include "UIMovieTest.h"
 
 
-static const float MOVIE_TEST_AUTO_CLOSE_TIME = 30.0f;
+static const float MOVIE_TEST_AUTO_CLOSE_TIME = 5.0f; // 5 second is enough to see movie on device
 
 UIMovieTest::UIMovieTest() :
 TestTemplate<UIMovieTest>("UMovieTest")

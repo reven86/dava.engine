@@ -142,7 +142,8 @@ void InputTest::LoadResources()
 	GetBackground()->SetColor(Color(1.f, 0, 0, 1));
 	
 	Texture* texture = Texture::CreateFromFile("~res:/TestData/InputTest/rect2.png");
-	Sprite* spr = Sprite::CreateFromTexture(texture,0,0,texture->width,texture->height);
+	Sprite* spr = Sprite::CreateFromTexture(texture,0,0,static_cast<float32>(texture->width),
+		static_cast<float32>(texture->height));
 
 	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
@@ -329,7 +330,7 @@ void InputTest::Update(float32 timeElapsed)
     cursorUpdateTime += timeElapsed;
     if (cursorUpdateTime > 0.5f)
     {
-        int32 cursorPos = passwordTextField->GetCursorPos();
+        uint32 cursorPos = passwordTextField->GetCursorPos();
         if (cursorMoveForward)
         {
             if (cursorPos < passwordTextField->GetText().length())

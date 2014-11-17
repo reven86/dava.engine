@@ -12,11 +12,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\AlignTest.h" />
-    <ClInclude Include="Classes\BaseScreen.h" />
     <ClInclude Include="Classes\BiDiTest.h" />
     <ClInclude Include="Classes\CloneTest.h" />
     <ClInclude Include="Classes\ComponentsTest.h" />
-    <ClInclude Include="Classes\Config.h" />
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\DeviceInfoTest.h" />
     <ClInclude Include="Classes\DFFontTest.h" />
@@ -30,15 +28,41 @@
     <ClInclude Include="Classes\FormatsTest.h" />
     <ClInclude Include="Classes\FunctionBindSingalTest.h" />
     <ClInclude Include="Classes\ImageSizeTest.h" />
+    <ClInclude Include="Classes\Infrastructure\BaseScreen.h" />
+    <ClInclude Include="Classes\Infrastructure\Config.h" />
+    <ClInclude Include="Classes\Infrastructure\FrameworkMain.h" />
+    <ClInclude Include="Classes\Infrastructure\GameCore.h" />
+    <ClInclude Include="Classes\Infrastructure\TeamCityTestsOutput.h" />
+    <ClInclude Include="Classes\Infrastructure\TestTemplate.h" />
+    <ClInclude Include="Classes\Infrastructure\TextureUtils.h" />
+    <ClInclude Include="Classes\Infrastructure\UITestTemplate.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\MathTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
     <ClInclude Include="Classes\ParseTextTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
     <ClInclude Include="Classes\SceneSystemTest.h" />
+    <ClInclude Include="Classes\SFML\Config.hpp" />
+    <ClInclude Include="Classes\SFML\Network.hpp" />
+    <ClInclude Include="Classes\SFML\Network\Export.hpp" />
+    <ClInclude Include="Classes\SFML\Network\IpAddress.hpp" />
+    <ClInclude Include="Classes\SFML\Network\Packet.hpp" />
+    <ClInclude Include="Classes\SFML\Network\Socket.hpp" />
+    <ClInclude Include="Classes\SFML\Network\SocketHandle.hpp" />
+    <ClInclude Include="Classes\SFML\Network\SocketImpl.hpp" />
+    <ClInclude Include="Classes\SFML\Network\SocketSelector.hpp" />
+    <ClInclude Include="Classes\SFML\Network\TcpListener.hpp" />
+    <ClInclude Include="Classes\SFML\Network\TcpSocket.hpp" />
+    <ClInclude Include="Classes\SFML\Network\UdpSocket.hpp" />
+    <ClInclude Include="Classes\SFML\Network\Win32\SocketImpl.hpp" />
+    <ClInclude Include="Classes\SFML\System.hpp" />
+    <ClInclude Include="Classes\SFML\System\Err.hpp" />
+    <ClInclude Include="Classes\SFML\System\Export.hpp" />
+    <ClInclude Include="Classes\SFML\System\NonCopyable.hpp" />
+    <ClInclude Include="Classes\SFML\System\String.hpp" />
+    <ClInclude Include="Classes\SFML\System\Time.hpp" />
+    <ClInclude Include="Classes\SFML\System\Utf.hpp" />
     <ClInclude Include="Classes\StringFormatTest.h" />
-    <ClInclude Include="Classes\FrameworkMain.h" />
-    <ClInclude Include="Classes\GameCore.h" />
     <ClInclude Include="Classes\HashMapTest.h" />
     <ClInclude Include="Classes\InputTest.h" />
     <ClInclude Include="Classes\KeyedArchiveTest.h" />
@@ -51,20 +75,16 @@
     <ClInclude Include="Classes\SampleTest.h" />
     <ClInclude Include="Classes\SoundTest.h" />
     <ClInclude Include="Classes\SplitTest.h" />
-    <ClInclude Include="Classes\TestTemplate.h" />
     <ClInclude Include="Classes\TextSizeTest.h" />
-    <ClInclude Include="Classes\TextureUtils.h" />
     <ClInclude Include="Classes\ThreadSyncTest.h" />
     <ClInclude Include="Classes\TransparentWebViewTest.h" />
     <ClInclude Include="Classes\UIListTest.h" />
     <ClInclude Include="Classes\UIMovieTest.h" />
     <ClInclude Include="Classes\UIParticlesTest.h" />
     <ClInclude Include="Classes\UIScrollViewTest.h" />
-    <ClInclude Include="Classes\UITestTemplate.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\AlignTest.cpp" />
-    <ClCompile Include="Classes\BaseScreen.cpp" />
     <ClCompile Include="Classes\BiDiTest.cpp" />
     <ClCompile Include="Classes\CloneTest.cpp" />
     <ClCompile Include="Classes\ComponentsTest.cpp" />
@@ -81,15 +101,29 @@
     <ClCompile Include="Classes\FormatsTest.cpp" />
     <ClCompile Include="Classes\FunctionBindSingalTest.cpp" />
     <ClCompile Include="Classes\ImageSizeTest.cpp" />
+    <ClCompile Include="Classes\Infrastructure\BaseScreen.cpp" />
+    <ClCompile Include="Classes\Infrastructure\FrameworkMain.cpp" />
+    <ClCompile Include="Classes\Infrastructure\GameCore.cpp" />
+    <ClCompile Include="Classes\Infrastructure\TeamCityTestsOutput.cpp" />
+    <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp" />
     <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\MathTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
     <ClCompile Include="Classes\ParseTextTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
     <ClCompile Include="Classes\SceneSystemTest.cpp" />
+    <ClCompile Include="Classes\SFML\Network\IpAddress.cpp" />
+    <ClCompile Include="Classes\SFML\Network\Packet.cpp" />
+    <ClCompile Include="Classes\SFML\Network\Socket.cpp" />
+    <ClCompile Include="Classes\SFML\Network\SocketSelector.cpp" />
+    <ClCompile Include="Classes\SFML\Network\TcpListener.cpp" />
+    <ClCompile Include="Classes\SFML\Network\TcpSocket.cpp" />
+    <ClCompile Include="Classes\SFML\Network\UdpSocket.cpp" />
+    <ClCompile Include="Classes\SFML\Network\Win32\SocketImpl.cpp" />
+    <ClCompile Include="Classes\SFML\System\Err.cpp" />
+    <ClCompile Include="Classes\SFML\System\String.cpp" />
+    <ClCompile Include="Classes\SFML\System\Time.cpp" />
     <ClCompile Include="Classes\StringFormatTest.cpp" />
-    <ClCompile Include="Classes\FrameworkMain.cpp" />
-    <ClCompile Include="Classes\GameCore.cpp" />
     <ClCompile Include="Classes\HashMapTest.cpp" />
     <ClCompile Include="Classes\InputTest.cpp" />
     <ClCompile Include="Classes\KeyedArchiveTest.cpp" />
@@ -103,7 +137,6 @@
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
     <ClCompile Include="Classes\TextSizeTest.cpp" />
-    <ClCompile Include="Classes\TextureUtils.cpp" />
     <ClCompile Include="Classes\ThreadSyncTest.cpp" />
     <ClCompile Include="Classes\TransparentWebViewTest.cpp" />
     <ClCompile Include="Classes\UIListTest.cpp" />
@@ -120,9 +153,12 @@
       <Project>{a6472d47-5050-406d-89e9-4725192e32f2}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Classes\SFML\System\Utf.inl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A31689CE-A339-464E-8D7E-49EF2AF81AA4}</ProjectGuid>
-    <RootNamespace>UnitTestsVS2010</RootNamespace>
+    <RootNamespace>UnitTests</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -163,7 +199,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Classes;./Classes/Infrastructure;./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;DAVA_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -187,7 +223,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Classes;./Classes/Infrastructure;./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>

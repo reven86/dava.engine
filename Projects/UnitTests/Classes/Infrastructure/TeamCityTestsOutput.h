@@ -27,72 +27,46 @@
 =====================================================================================*/
 
 
+#ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
+#define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
-#include "BaseScreen.h"
-#include "GameCore.h"
+/**
+    \defgroup utils Utilities
+ */
 
-int32 BaseScreen::globalScreenId = 1;
+#include "TeamcityOutput/TeamcityOutput.h"
 
-BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
-    :   UIScreen()
+#include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/TcpSocket.hpp"
+
+namespace DAVA 
 {
-	SetName(_screenName);
-    
-    skipCount = skipBeforeTests;
-    skipCounter = 0;
-    readyForTests = false;
 
-    currentScreenId = globalScreenId++;
-    GameCore::Instance()->RegisterScreen(this);
-}
-
-BaseScreen::BaseScreen()
-    :   UIScreen()
+   
+class TeamcityTestsOutput: public TeamcityOutput
 {
-    SetName("BaseScreen");
+public:
+    TeamcityTestsOutput():connected(false){}
 
-    skipCount = 10;
-    skipCounter = 0;
-    readyForTests = false;
+    virtual void Output(Logger::eLogLevel ll, const char8* text);
 
-    
-    currentScreenId = globalScreenId++;
-    GameCore::Instance()->RegisterScreen(this);
-}
+    static String FormatTestStarted(const String& testName);
+    static String FormatTestFinished(const String& testName);
+    static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
 
-int32 BaseScreen::GetScreenId()
-{
-    return currentScreenId;
-}
+    void Connect(const String& host, uint16 port);
+    void SendTestResult(const String& testResult);
+    void Disconnect();
 
-void BaseScreen::WillAppear()
-{
-    skipCounter = 0;
-    readyForTests = (skipCounter == skipCount);
-}
+private:
+    void TestOutput(const String& data);
+
+    sf::TcpSocket socket;
+    bool connected;
+};
 
 
-void BaseScreen::DidAppear()
-{
-    skipCounter = 0;
-    readyForTests = (skipCounter == skipCount);
-}
+};
 
-bool BaseScreen::ReadyForTests()
-{
-    return readyForTests;
-}
+#endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
-void BaseScreen::Update(float32 timeElapsed)
-{
-    if(!readyForTests)
-    {
-        ++skipCounter;
-        if(skipCount == skipCounter)
-        {
-            readyForTests = true;
-        }
-    }
-    
-    UIScreen::Update(timeElapsed);
-}

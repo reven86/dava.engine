@@ -807,6 +807,16 @@ void Core::SetCommandLine(int argc, char *argv[])
 		commandLine.push_back(argv[k]);
 }
 
+void Core::SetCommandLine(const DAVA::String& cmdLine)
+{
+	std::stringstream ss(cmdLine);
+	std::string param;
+	while (std::getline(ss, param, ' '))
+	{
+		commandLine.push_back(param);
+	}
+}
+
 Vector<String> & Core::GetCommandLine()
 {
 	return commandLine;
@@ -864,3 +874,4 @@ DAVA::float32 Core::GetRequestedVirtualScreenHeight()
 }
 
 };
+
