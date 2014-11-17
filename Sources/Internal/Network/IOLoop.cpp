@@ -59,10 +59,13 @@ IOLoop::~IOLoop()
 
 int32 IOLoop::Run(eRunMode runMode)
 {
-    uv_run_mode mode = runMode == RUN_DEFAULT ? UV_RUN_DEFAULT :
-                      (runMode == RUN_ONCE    ? UV_RUN_ONCE    :
-                      (runMode == RUN_NOWAIT  ? UV_RUN_NOWAIT  : UV_RUN_DEFAULT));
-    return uv_run(actualLoop, mode);
+    static const uv_run_mode modes[] = {
+        UV_RUN_DEFAULT,
+        UV_RUN_ONCE,
+        UV_RUN_NOWAIT
+    };
+    DVASSERT(RUN_DEFAULT == runMode || RUN_ONCE == runMode || RUN_NOWAIT == runMode);
+    return uv_run(actualLoop, modes[runMode]);
 }
 
 void IOLoop::Stop()
