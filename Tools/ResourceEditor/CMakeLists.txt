@@ -1,9 +1,16 @@
 cmake_minimum_required (VERSION 3.0)
 project ( ResourceEditor )
 
+set(ENV_QT5_HOME "$ENV{QT5_HOME}")
+if( NOT ENV_QT5_HOME )        
+   message(FATAL_ERROR "Error: Undefined QT5_HOME env var. Sample QT5_HOME=D:/Tools/QT5/5.3/msvc2010_opengl")
+   exit()
+endif()
+
+
 if( WIN32 )
 
-    set ( QT5_PATH c:/Qt/5.3/msvc2010_opengl/ CACHE PATH "Path to Qt5")
+    set ( QT5_PATH ${ENV_QT5_HOME} CACHE PATH "Path to Qt5")
 
 elseif( MACOS )
 
