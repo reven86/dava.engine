@@ -99,6 +99,7 @@ Core::Core()
     
     desirableIndex = 0;
 
+	needTorecalculateMultipliers = true;
     EnableReloadResourceOnResize(true);
 }
 
