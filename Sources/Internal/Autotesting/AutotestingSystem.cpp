@@ -128,11 +128,11 @@ namespace DAVA
 		}
 
 		buildId = option->GetString("BuildId");
-		buildDate = option->GetString("date");
-		branch = option->GetString("branch");
-		framework = option->GetString("framework");
-		branchRev = option->GetString("branchRev");
-		frameworkRev = option->GetString("frameworkRev");
+		buildDate = option->GetString("Date");
+		branch = option->GetString("Branch");
+		framework = option->GetString("Framework");
+		branchRev = option->GetString("BranchRev");
+		frameworkRev = option->GetString("FrameworkRev");
 
 		SafeRelease(option);
 	}
