@@ -29,7 +29,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	
 	MOGAListener mogaListener = null;
 
-	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode()];
+	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode() + 1];
 
 	public int lastDoubleActionIdx = -1;
 	
@@ -283,6 +283,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+    	// Check keyCode value for pressedKeys array limit
+    	if(keyCode >= pressedKeys.length)
+    	{
+    		return super.onKeyDown(keyCode, event);
+    	}
+    	
     	if(pressedKeys[keyCode] == false)
     		queueEvent(new KeyInputRunnable(keyCode));
     	pressedKeys[keyCode] = true;
@@ -295,6 +301,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+    	// Check keyCode value for pressedKeys array limit
+    	if(keyCode >= pressedKeys.length)
+    	{
+    		return super.onKeyUp(keyCode, event);
+    	}
+    	
     	pressedKeys[keyCode] = false;
         nativeOnKeyUp(keyCode);
     	return super.onKeyUp(keyCode, event);
