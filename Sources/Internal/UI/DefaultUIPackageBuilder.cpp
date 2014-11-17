@@ -60,13 +60,13 @@ namespace DAVA
     UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)
     {
         UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
-        if (className != "UITextField")//TODO: fix internal staticText for Win\Mac
+        if (!control)
+            Logger::Warning("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
+
+        if (control && className != "UITextField")//TODO: fix internal staticText for Win\Mac
         {
             control->RemoveAllControls();
         }
-
-        if (!control)
-            Logger::Warning("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
 
         controlsStack.push_back(ControlDescr(control, true));
         return control;

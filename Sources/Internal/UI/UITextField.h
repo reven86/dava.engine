@@ -168,8 +168,7 @@ public:
 protected:
 	virtual ~UITextField();
 public:
-	UITextField();
-	UITextField(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
 	virtual void WillAppear();
 	virtual void DidAppear();
@@ -379,6 +378,12 @@ protected:
     void RenderText();
 private:
     WideString GetVisibleText() const;
+
+    
+    /**
+         \brief Setups initial state to reset settings for cached native control.
+     */
+    void SetupDefaults();
 
 #ifdef __DAVAENGINE_IPHONE__
 	UITextFieldiPhone * textFieldiPhone;

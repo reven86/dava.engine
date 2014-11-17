@@ -117,8 +117,7 @@
 		<link>
 			<name>src/Classes</name>
 			<type>2</type>
-<<<<<<< HEAD
-			<locationURI>virtual:/virtual</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes</locationURI>
 		</link>
 		<link>
 			<name>src/Classes/BaseScreen.cpp</name>
@@ -739,9 +738,6 @@
 			<name>bin/classes/Classes/eMailTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/eMailTest.h</locationURI>
-=======
-			<locationURI>PARENT-1-PROJECT_LOC/Classes</locationURI>
->>>>>>> development
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -8,7 +8,6 @@ EPSILON = 1
 
 MAX_LIST_COUNT = 100 -- Max item of list
 
-
 -- API setup
 function SetPackagePath(path)
     package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;"
@@ -21,6 +20,29 @@ end
 
 local function toboolean(condition)
     return not not condition
+end
+
+local function __GetNewPosition(list, vertical, invert, notInCenter)
+    local position, newPosition = Vector.Vector2(), Vector.Vector2()
+    local rect = GetElementRect(list)
+    position.x, position.y = (rect.x + rect.dx / 2), (rect.y + rect.dy / 2)
+    if invert then
+        newPosition.y = position.y + rect.dy / 2
+        newPosition.x = position.x + rect.dx / 2
+    else
+        newPosition.y = position.y - rect.dy / 2
+        newPosition.x = position.x - rect.dx / 2
+    end
+    if vertical == true then
+        newPosition.x = position.x
+    else
+        newPosition.y = position.y
+    end
+    if notInCenter then
+        newPosition.x = newPosition.x - rect.dx / 8
+        position.x = position.x - rect.dx / 8
+    end
+    return position, newPosition
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -109,6 +131,10 @@ end
 
 function StartTest(name, test)
     CreateTest()
+    autotestingSystem = AutotestingSystem.Singleton_Autotesting_Instance()
+    DEVICE_NAME = autotestingSystem:GetDeviceName()
+    PLATFORM = autotestingSystem:GetPlatform()
+    IS_PHONE = autotestingSystem:IsPhoneScreen()
     autotestingSystem:OnTestStart(name)
     coroutine.resume(co, test)
 end
@@ -247,6 +273,18 @@ function noneStep()
     return true
 end
 
+function GetDeviceName()
+    return autotestingSystem:GetDeviceName()
+end
+
+function GetPlatform()
+    return autotestingSystem:GetPlatform()
+end
+
+function IsPhone()
+    return autotestingSystem:IsPhoneScreen()
+end
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Work with UI controls
 ------------------------------------------------------------------------------------------------------------------------
@@ -256,7 +294,7 @@ end
 function GetControl(name)
     local control
     if type(name) == "string" then
-        control = autotestingSystem:FindControl(name)
+        control = autotestingSystem:FindControl(name) or autotestingSystem:FindControlOnPopUp(name)
     else
         control = name
     end
@@ -358,7 +396,7 @@ end
 
 function WaitUntil(time, func, ...)
     local waitTime, err = time or TIMEOUT, nil
-    local elapsedTime, status = 0.0, false
+    local elapsedTime, status = 0.0, nil
     while elapsedTime < waitTime do
         elapsedTime = elapsedTime + autotestingSystem:GetTimeElapsed()
         coroutine.yield()
@@ -371,9 +409,9 @@ function WaitUntil(time, func, ...)
 end
 
 function WaitControl(name, time)
-    local waitTime, elapsedTime = time or TIMEOUT, 0.0
-    local find_control_lua = function(x) return autotestingSystem:FindControl(x) end
-    if WaitUntil(time, find_control_lua, name) then
+    local waitTime, aSys = time or TIMEOUT, autotestingSystem
+    local find_control_lua = function(x) return aSys:FindControl(x) or aSys:FindControlOnPopUp(x) end
+    if WaitUntil(waitTime, find_control_lua, name) then
         return true
     end
     Log("WaitControl not found " .. name, "DEBUG")
@@ -381,9 +419,9 @@ function WaitControl(name, time)
 end
 
 function WaitControlDisappeared(name, time)
-    local waitTime, elapsedTime = time or TIMEOUT, 0.0
-    local not_find_control_lua = function(x) return not autotestingSystem:FindControl(x) end
-    if WaitUntil(time, not_find_control_lua, name) then
+    local waitTime, aSys = time or TIMEOUT, autotestingSystem
+    local not_find_control_lua = function(x) return not aSys:FindControl(x) and not aSys:FindControlOnPopUp(x) end
+    if WaitUntil(waitTime, not_find_control_lua, name) then
         return true
     end
     Log("WaitControl still on the screen: " .. name, "DEBUG")
@@ -391,8 +429,8 @@ function WaitControlDisappeared(name, time)
 end
 
 function WaitControlBecomeVisible(name, time)
-    local waitTime, elapsedTime = time or TIMEOUT, 0.0
-    if WaitUntil(time, IsVisible, name) then
+    local waitTime = time or TIMEOUT
+    if WaitUntil(waitTime, IsVisible, name) then
         return true
     end
     Log("WaitControl not found " .. name, "DEBUG")
@@ -400,9 +438,9 @@ function WaitControlBecomeVisible(name, time)
 end
 
 function WaitUntilControlBecomeEnabled(name, time)
-    local waitTime, elapsedTime = time or TIMEOUT, 0.0
+    local waitTime = time or TIMEOUT
     local is_enabled = function(x) return not IsDisabled(x) end
-    if WaitUntil(time, is_enabled, name) then
+    if WaitUntil(waitTime, is_enabled, name) then
         return true
     end
     Log("WaitControl is disabled " .. name, "DEBUG")
@@ -427,84 +465,144 @@ function ClearField(field)
     KeyPress(2)
 end
 
-local function select_list_cell(item, list, isHorisontalList, pattern, firstElement)
-    pattern = "/" .. (pattern or "")
-    firstElement = list .. pattern .. (firstElement or "0")
-    local cell = list .. pattern .. item
-    assert(WaitControl(list), "Couldn't find " .. list)
-    local to_scrool = isHorisontalList and HorizontalScroll or VerticalScroll
-    local function click() if IsVisible(cell, list) and IsVisible(cell) then ClickControl(cell) return true end return false end
-    if click() then
+function SelectItemInList(listName, item)
+    Log(string.format("Select '%s' cell in '%s' list.", item, listName))
+    assert(WaitControl(listName), "Couldn't find " .. listName)
+
+    local function __click() if IsVisible(item, listName) and IsVisible(item) then ClickControl(item) return true end return false end
+
+    if __click() then
         return true
     end
+    local listControl = GetControl(listName)
+    local startPoint, __scroll = listControl:GetPivotPoint(), nil
+    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
+    local finalPoint = autotestingSystem:GetMaxListOffsetSize(listControl)
+    print(string.format('Final point: ' .. finalPoint))
+    if autotestingSystem:IsListHorisontal(listControl) then
+        __scroll, startPoint = HorizontalScroll, startPoint.y
+    else
+        __scroll, startPoint = VerticalScroll, startPoint.x
+    end
+
+    local function __getPosition() return autotestingSystem:GetListScrollPosition(listControl) end
+
     -- move to start of list and check cell
-    for i = 0, MAX_LIST_COUNT do
-        if IsVisible(firstElement, list) and IsVisible(firstElement) then
+    for _ = 0, MAX_LIST_COUNT do
+        local position = __getPosition()
+        if position <= startPoint then
             break
         end
-        to_scrool(list, true)
-        if click() then
+        __scroll(listName, true)
+        if __click() then
             return true
         end
     end
-    for i = 1, MAX_LIST_COUNT do
-        if click() then
+    -- move to end of list and check cell
+    for _ = 0, MAX_LIST_COUNT do
+        local position = __getPosition()
+        if position >= finalPoint then
+            break
+        end
+        __scroll(listName)
+        if __click() then
             return true
-        elseif not IsVisible(list .. pattern .. i, list) or not IsVisible(list .. pattern .. i) then
-            to_scrool(list)
-            if not IsVisible(list .. pattern .. i, list) or not IsVisible(list .. pattern .. i) then
-                break
-            end
         end
     end
-    Log("Cell " .. cell .. " in " .. list .. " not found")
+    Log(string.format("Cell '%s' in '%s' list is not found", item, listName))
     return false
 end
 
-function SelectHorizontal(list, item, pattern, firstElement, back)
-    Log("Select " .. item .. " item in horizontal list " .. list)
-    return select_list_cell(item, list, true, pattern, firstElement)
-end
+function SelectItemInContainer(containerName, item, notInCenter, __condition)
+    Log(string.format("Select '%s' cell in '%s' container.", item, containerName))
+    assert(WaitControl(containerName), "Couldn't find " .. containerName)
 
-function SelectFirstHorizontal(list, firstElement)
-    return select_list_cell("0", list, true)
-end
-
-function SelectVertical(list, item, pattern, firstElement, back)
-    Log("Select " .. item .. " item in vertical list " .. list)
-    return select_list_cell(item, list, false, pattern, firstElement)
-end
-
-function SelectFirstVertical(list)
-    return select_list_cell("0", list)
-end
-
-function GetNewPosition(list, vertical, invert)
-    local position, newPosition = Vector.Vector2(), Vector.Vector2()
-    local rect = GetElementRect(list)
-    position.x, position.y = (rect.x + rect.dx / 2), (rect.y + rect.dy / 2)
-    if invert then
-        newPosition.y = position.y + rect.dy / 2
-        newPosition.x = position.x + rect.dx / 2
-    else
-        newPosition.y = position.y - rect.dy / 2
-        newPosition.x = position.x - rect.dx / 2
+    if not __condition then
+        __condition = function(x) return true end
     end
-    if vertical == true then
-        newPosition.x = position.x
-    else
-        newPosition.y = position.y
+
+    local function __click()
+        if IsVisible(item, containerName) and IsVisible(item) and __condition(item) then
+            ClickControl(item)
+            return true
+        end
+        return false
     end
-    return position, newPosition
+
+    if __click() then
+        return true
+    end
+    local containerCtrl, position, invert = GetControl(containerName)
+    local startPoint = containerCtrl:GetPivotPoint()
+    print(string.format('Start points X: %f; Y: %f', startPoint.x, startPoint.y))
+    local finalPoint = autotestingSystem:GetMaxContainerOffsetSize(containerCtrl)
+    print(string.format('Final point: X: %f; Y: %f', finalPoint.x, finalPoint.y))
+
+    local function __getPosition() return autotestingSystem:GetContainerScrollPosition(containerCtrl) end
+
+    -- move to start of list and check cell
+    for _ = 0, MAX_LIST_COUNT do -- move to up side
+        position = __getPosition()
+        if position.y <= startPoint.y then
+            break
+        end
+        VerticalScroll(containerName, true, notInCenter)
+        if __click() then
+            return true
+        end
+    end
+    -- move to left side
+    for _ = 0, MAX_LIST_COUNT do
+        position = __getPosition()
+        if position.x <= startPoint.x then
+            break
+        end
+        HorizontalScroll(containerName)
+        if __click() then
+            return true
+        end
+    end
+    -- move to rigth side and down side, then to left and down
+    for _ = 0, MAX_LIST_COUNT do
+        invert = _ % 2 ~= 0 -- if true - right side, else - left
+        -- move to right/left side
+        for __ = 0, MAX_LIST_COUNT do
+            position = __getPosition()
+            if invert then
+                if position.x <= startPoint.x then
+                    break
+                end
+            else
+                if position.x >= finalPoint.x then
+                    break
+                end
+            end
+            HorizontalScroll(containerName, invert)
+            if __click() then
+                return true
+            end
+        end
+        -- move to down side
+        position = __getPosition()
+        if position.y >= finalPoint.y then
+            break
+        end
+        VerticalScroll(containerName, false, notInCenter)
+        if __click() then
+            return true
+        end
+    end
+    Log(string.format("Item '%s' in '%s' container is not found", item, containerName))
+    return false
 end
 
-function VerticalScroll(list, invert)
-    local position, new_position = GetNewPosition(list, true, invert)
+function VerticalScroll(list, invert, notInCenter)
+    local position, new_position = __GetNewPosition(list, true, invert, notInCenter)
     TouchMove(position, new_position)
 end
 
 function HorizontalScroll(list, invert)
-    local position, new_position = GetNewPosition(list, false, invert)
+    local position, new_position = __GetNewPosition(list, false, invert)
     TouchMove(position, new_position)
 end
 
