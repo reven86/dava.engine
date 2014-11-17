@@ -53,6 +53,9 @@ elseif( APPLE )
 
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
+    set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
+    set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
+
     file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
     foreach ( FILE ${RESOURCES_LIST} )
 
@@ -69,6 +72,8 @@ elseif( APPLE )
 
 
     list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
+    list ( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
+    list ( APPEND RESOURCES_LIST  ${MACOS_ICO} )
     list ( APPEND LIBRARIES       ${DYLIB_FILES} )
 
 endif()
@@ -111,6 +116,11 @@ if( APPLE )
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
     )
 
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES
+                            MACOSX_BUNDLE_INFO_PLIST ${MACOS_PLIST} 
+                            XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
+                            RESOURCE ${MACOS_ICO}
+                          )
 
 elseif ( MSVC )
 
