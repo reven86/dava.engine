@@ -25,47 +25,44 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#include "Platform/DateTime.h"
-#include "Utils/UTF8Utils.h"
-#include "FileSystem/LocalizationSystem.h"
+
+#ifndef __DAVAENGINE_BIDIHELPER_H__
+#define __DAVAENGINE_BIDIHELPER_H__
+
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-	DAVA::WideString DateTime::AsWString(const wchar_t* format) const
-	{
-		DAVA::String configLocale = LocalizationSystem::Instance()->GetCountryCode();
-		configLocale.replace(configLocale.find("_"), 1, "-");
-		LCID locale = LocaleNameToLCID(StringToWString(configLocale).c_str(), 0);
-		int nchars = GetLocaleInfoW(locale, LOCALE_SENGLANGUAGE, NULL, 0);
-		wchar_t* languageCode = new wchar_t[nchars];
-		memset(languageCode, 0, nchars);
-		GetLocaleInfoW(locale, LOCALE_SENGLANGUAGE, languageCode, nchars);
 
-		DAVA::WideString locID(languageCode);
-		SafeDeleteArray(languageCode);
+class BiDiWrapper;
 
-		struct tm timeinfo = {0};
-        wchar_t buffer [256] = {0};
-		
-        Timestamp timeWithTZ = innerTime + timeZoneOffset;
+class BiDiHelper
+{
+public:
+    BiDiHelper();
+    virtual ~BiDiHelper();
 
-		GmTimeThreadSafe(&timeinfo, &timeWithTZ);
+    /**
+    * \brief Prepare string for BiDi transformation (shape arabic string). Need for correct splitting.
+    * \param [in] logicalStr The logical string.
+    * \param [out] preparedStr The prepared string.
+    * \param [out] isRTL If non-null, store in isRTL true if line contains Right-to-left text.
+    * \return true if it succeeds, false if it fails.
+    */
+    bool PrepareString(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
 
-        _locale_t loc = _create_locale(LC_ALL, UTF8Utils::EncodeToUTF8(locID).c_str());
-		DVASSERT(loc);
-        _wcsftime_l(buffer, 256, format, &timeinfo, loc);
+    /**
+    * \brief Reorder characters in string based.
+    * \param [in,out] string The string.
+    * \param forceRtl (Optional) true if input text is mixed and must be processed as RTL.
+    * \return true if it succeeds, false if it fails.
+    */
+    bool ReorderString(WideString& string, const bool forceRtl = false);
 
-        DAVA::WideString str(buffer);
-		return str;
-    }
+private:
+    BiDiWrapper* wrapper;
+};
 
-    int32 DateTime::GetLocalTimeZoneOffset()
-    {
-		TIME_ZONE_INFORMATION TimeZoneInfo;
-		GetTimeZoneInformation( &TimeZoneInfo );
-	
-		// TimeZoneInfo.Bias is the difference between local time
-		// and GMT in minutes.
-        return TimeZoneInfo.Bias*(-60);
-    }
 }
+
+#endif
