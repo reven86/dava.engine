@@ -181,7 +181,7 @@ IpAddress IpAddress::getPublicAddress(Time timeout)
     // Here we get the web page from http://www.sfml-dev.org/ip-provider.php
     // and parse the result to extract our IP address
     // (not very hard: the web page contains only our IP address).
-	// TODO reimplement it
+    // TODO reimplement it
     //Http server("www.sfml-dev.org");
     //Http::Request request("/ip-provider.php", Http::Request::Get);
     //Http::Response page = server.sendRequest(request, timeout);

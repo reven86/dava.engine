@@ -49,15 +49,15 @@ public:
     virtual void UnloadResources();
     virtual bool RunTest(int32 testNum);
 
-	virtual void DidAppear();
-	virtual void Update(float32 timeElapsed);
+    virtual void DidAppear();
+    virtual void Update(float32 timeElapsed);
 
 private:
 
     UIButton* finishButton;
 
     bool testFinished;
-	float testTime;
+    float testTime;
 
     void ButtonPressed(BaseObject *obj, void *data, void *callerData);
 };
@@ -68,7 +68,7 @@ const float32 UITestTemplate<T>::TEST_TIME = 10.f;
 
 template <class T>
 UITestTemplate<T>::UITestTemplate(const String & screenName)
-:	TestTemplate<T>(screenName)
+:    TestTemplate<T>(screenName)
 ,   testFinished(false)
 ,   testTime(0.f)
 ,   finishButton(NULL)
@@ -84,17 +84,17 @@ UITestTemplate<T>::~UITestTemplate()
 template <class T>
 void UITestTemplate<T>::LoadResources()
 {
-	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
-	font->SetSize(20);
+    font->SetSize(20);
     
-	finishButton = new UIButton(Rect(0, 0, 300, 30));
-	finishButton->SetStateFont(0xFF, font);
-	finishButton->SetStateText(0xFF, L"Finish Test");
-	finishButton->SetStateFontColor(0xFF, Color::White);
-	finishButton->SetDebugDraw(true);
-	finishButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UITestTemplate::ButtonPressed));
-	TestTemplate<T>::AddControl(finishButton);
+    finishButton = new UIButton(Rect(0, 0, 300, 30));
+    finishButton->SetStateFont(0xFF, font);
+    finishButton->SetStateText(0xFF, L"Finish Test");
+    finishButton->SetStateFontColor(0xFF, Color::White);
+    finishButton->SetDebugDraw(true);
+    finishButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UITestTemplate::ButtonPressed));
+    TestTemplate<T>::AddControl(finishButton);
     
     font->Release();
 }
@@ -109,33 +109,33 @@ void UITestTemplate<T>::UnloadResources()
 template <class T>
 bool UITestTemplate<T>::RunTest(int32 testNum)
 {
-	TestTemplate<T>::RunTest(testNum);
-	return testFinished;
+    TestTemplate<T>::RunTest(testNum);
+    return testFinished;
 }
 
 
 template <class T>
 void UITestTemplate<T>::DidAppear()
 {
-	testTime = 0.f;
+    testTime = 0.f;
 }
 
 template <class T>
 void UITestTemplate<T>::Update(float32 timeElapsed)
 {
-	testTime += timeElapsed;
-	if(testTime > TEST_TIME)
-	{
-		testFinished = true;
-	}
+    testTime += timeElapsed;
+    if(testTime > TEST_TIME)
+    {
+        testFinished = true;
+    }
     
-	TestTemplate<T>::Update(timeElapsed);
+    TestTemplate<T>::Update(timeElapsed);
 }
 
 template <class T>
 void UITestTemplate<T>::ButtonPressed(BaseObject *obj, void *data, void *callerData)
 {
-	testFinished = true;
+    testFinished = true;
 }
 
 

@@ -67,8 +67,8 @@ protected:
     ~BaseScreen(){}
 public:
 
-	BaseScreen();
-	BaseScreen(const String & screenName, int32 skipBeforeTests = 10);
+    BaseScreen();
+    BaseScreen(const String & screenName, int32 skipBeforeTests = 10);
     int32 GetScreenId();
 
     virtual void WillAppear();
@@ -79,7 +79,7 @@ public:
     
     virtual int32 GetTestCount() = 0;
     virtual TestData * GetTestData(int32 iTest) = 0;
-	virtual const DAVA::String& GetTestName() const = 0;
+    virtual const DAVA::String& GetTestName() const = 0;
     
     virtual bool RunTest(int32 testNum) = 0;
     
