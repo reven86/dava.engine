@@ -472,8 +472,6 @@
 		1146E10419D004A9009E5FAB /* FunctionBindSignalTest */ = {
 			isa = PBXGroup;
 			children = (
-				4F25831719BF237800C28926 /* FunctionBindSingalTest.cpp */,
-				4F25831819BF237800C28926 /* FunctionBindSingalTest.h */,
 			);
 			name = FunctionBindSignalTest;
 			sourceTree = "<group>";
@@ -1061,7 +1059,6 @@
 				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
 				0042F48E19F9416100ABDD1D /* TcpSocket.cpp in Sources */,
 				B72EFFE319CB340100D38C33 /* TextSizeTest.cpp in Sources */,
-				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
 				FEA8F6EB159DB0EF00EED3DC /* MemoryAllocatorsTest.cpp in Sources */,
 				0042F49319F9416100ABDD1D /* String.cpp in Sources */,
@@ -1178,6 +1175,7 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OTHER_LDFLAGS = "-headerpad_max_install_names";
 				PRODUCT_NAME = UnitTests;
 			};
 			name = Debug;
@@ -1211,6 +1209,7 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OTHER_LDFLAGS = "-headerpad_max_install_names";
 				PRODUCT_NAME = UnitTests;
 			};
 			name = Release;
