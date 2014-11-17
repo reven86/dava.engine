@@ -1081,7 +1081,7 @@ inline uint32 NMaterial::GetChildrenCount() const
 
 inline NMaterial* NMaterial::GetChild(uint32 index) const
 {
-    DVASSERT(index >= 0 && index < children.size());
+    DVASSERT(index < children.size());
     return children[index];
 }
 

@@ -41,6 +41,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 {
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	DAVA::Core * core = new DAVA::Core();
+    core->SetCommandLine(argc, argv);
 	core->CreateSingletons();
 	FrameworkDidLaunched();
 	
