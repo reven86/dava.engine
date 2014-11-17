@@ -101,7 +101,7 @@ protected:
 private:
     void InitLogging();
 
-    bool isNeedSkipTest(const BaseScreen& screen) const;
+    bool IsNeedSkipTest(const BaseScreen& screen) const;
 
     String runOnlyThisTest;
 
