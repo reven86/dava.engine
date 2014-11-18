@@ -230,6 +230,8 @@ public:
 #endif 
     
 protected:
+    void AddDrawCallToStats(ePrimitiveType type, int32 count);
+
 	RenderManager::Caps caps;
     RenderManager::Stats stats;
     int32 statsFrameCountToShowDebug;
@@ -350,6 +352,8 @@ public:
 	
 	void DrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices); 
 	void HWDrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices); 
+
+    void HWDrawElementsInstanced(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices, int32 instanceCount); 
 		
 	/** 
 	 \brief Sets the clip rect

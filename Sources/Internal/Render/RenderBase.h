@@ -517,7 +517,7 @@ enum eShaderSemantic
 
 enum
 {
-    INSTANCE_PARAMETERS_COUNT = 9,
+    INSTANCE_PARAMETERS_COUNT = 5,
 };
 
 extern const FastName INSTANCE_PARAM_NAMES[INSTANCE_PARAMETERS_COUNT];

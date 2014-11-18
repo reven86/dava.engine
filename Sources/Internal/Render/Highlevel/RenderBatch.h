@@ -103,7 +103,7 @@ public:
     inline void SetStartIndex(uint32 _startIndex);
     inline void SetIndexCount(uint32 _indexCount);
 
-    virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
+    virtual void Draw(const FastName & ownerRenderPass, Camera * camera);    
     
     const AABBox3 & GetBoundingBox() const;
 
@@ -136,8 +136,7 @@ protected:
     PolygonGroup * dataSource;
     RenderDataObject * renderDataObject;   // Probably should be replaced to VBO / IBO, but not sure
     NMaterial * material;                    // Should be replaced to NMaterial
-	RenderObject * renderObject;
-    Matrix4 *sortingTransformPtr;
+	RenderObject * renderObject;    
     
     uint32 startIndex;
     uint32 indexCount;
@@ -148,12 +147,6 @@ protected:
     
     
 	AABBox3 aabbox;
-#if defined(__DAVA_USE_OCCLUSION_QUERY__)
-    OcclusionQuery * occlusionQuery;
-    int32 queryRequested;
-    uint32 queryRequestFrame;
-    uint32 lastFraemDrawn;
-#endif
 
 	void InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes);
     

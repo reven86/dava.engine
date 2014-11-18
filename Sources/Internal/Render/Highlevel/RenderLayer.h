@@ -92,9 +92,7 @@ protected:
 private:
     Vector<std::pair<Shader::Uniform* , Vector<uint8> > > incomingUniformValues; //anyway we are to collect this to data arrays.
     RenderBatch * incomingGroup;
-    int32 currInstancesCount;
-
-    Vector<std::pair<FastName, int> > drawQue;
+    int32 currInstancesCount;    
 };
     
 inline RenderLayerID RenderLayer::GetRenderLayerID() const

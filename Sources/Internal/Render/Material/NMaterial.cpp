@@ -217,6 +217,7 @@ materialSetFlags(8),
 baseTechnique(NULL),
 activePassInstance(NULL),
 activeRenderPass(NULL),
+activeEngineFlags(0),
 instancePasses(4),
 textures(8),
 dynamicBindFlags(0),
@@ -1097,6 +1098,7 @@ void NMaterial::ReleaseInstancePasses()
 	
 	activePassInstance = NULL;
 	activePassName = FastName();
+    activeEngineFlags = 0;
 	activeRenderPass = NULL;
 }
 
@@ -1396,9 +1398,10 @@ void NMaterial::SetTexturesDirty()
 
 void NMaterial::UpdateActivePass(const FastName& passName, uint8 flags)
 {
-    if(activePassName != passName)
+    if((activePassName != passName)||(activeEngineFlags != flags))
     {
         activePassName = passName;
+        activeEngineFlags = flags;
         activeRenderPass = baseTechnique->GetPassByName(passName);
         activePassInstance = instancePasses.at(std::make_pair(passName, flags));
 
@@ -1484,7 +1487,7 @@ void NMaterial::BindActivePassRenderState()
 }
 
 
-void NMaterial::BindActivePassMaterialProperties()
+void NMaterial::BindActivePassMaterialProperties(bool bindInstanced/* = true*/)
 {
     Shader* shader = activePassInstance->GetShader();
     for(size_t i = 0, sz = activePassInstance->activeUniformsCache.size(); i < sz; ++i)
@@ -1492,13 +1495,10 @@ void NMaterial::BindActivePassMaterialProperties()
         UniformCacheEntry& uniformEntry = activePassInstance->activeUniformsCache[i];
         Shader::Uniform* uniform = uniformEntry.uniform;
 
-        if(uniformEntry.prop)
+        if(uniformEntry.prop && (bindInstanced||(!uniform->supportInstancing)))
         {
             RENDERER_UPDATE_STATS(materialParamUniformBindCount++);
-            shader->SetUniformValueByUniform(uniform,
-                uniform->type,
-                uniform->size,
-                uniformEntry.prop->data);
+            shader->SetUniformValueByUniform(uniform, uniform->type, uniform->size, uniformEntry.prop->data);
         }
     }
 }

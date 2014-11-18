@@ -73,14 +73,19 @@ attribute float inTime;
 // UNIFORMS
 
 #if defined(INSTANCING)
-uniform mat4 worldViewProjMatrixArray[MAX_INSTANCES];
-#define worldViewProjMatrix worldViewProjMatrixArray[gl_InstanceID]
+uniform mat4 worldViewProjMatrix[MAX_INSTANCES];
+#define worldViewProjMatrix worldViewProjMatrix[gl_InstanceID]
 #else
 uniform mat4 worldViewProjMatrix;
 #endif
 
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPEED_TREE_LEAF) || defined(SPHERICAL_LIT)
+#if defined(INSTANCING)
+uniform mat4 worldViewMatrix[MAX_INSTANCES];
+#define worldViewMatrix worldViewMatrix[gl_InstanceID]
+#else
 uniform mat4 worldViewMatrix;
+#endif
 #endif
 
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_ATMOSPHERE))
@@ -132,8 +137,15 @@ uniform vec3 metalFresnelReflectance;
 #endif
 
 #if defined(MATERIAL_LIGHTMAP)
+#if defined(INSTANCING)
+uniform vec2 uvOffset[MAX_INSTANCES];
+#define uvOffset uvOffset[gl_InstanceID]
+uniform vec2 uvScale[MAX_INSTANCES];
+#define uvScale uvScale[gl_InstanceID]
+#else
 uniform mediump vec2 uvOffset;
 uniform mediump vec2 uvScale;
+#endif
 #endif
 
 #if defined(WIND_ANIMATION)
@@ -232,7 +244,13 @@ uniform mediump vec2 texture0Shift;
 #endif 
 
 uniform vec3 cameraPosition;
+
+#if defined(INSTANCING)
+uniform mat4 worldMatrix[MAX_INSTANCES];
+#define worldMatrix worldMatrix[gl_InstanceID]
+#else
 uniform mat4 worldMatrix;
+#endif
 
 #if defined(REFLECTION) // works now only with VERTEX_LIT
 uniform mat3 worldInvTransposeMatrix;

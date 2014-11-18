@@ -113,11 +113,12 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
         return;
     }    
     batch->GetRenderObject()->BindDynamicParameters(camera);
-    material->SetActiveMaterialTechnique(ownerRenderPass);
+    material->SetActiveMaterialTechnique(ownerRenderPass, NMaterial::EF_INSTANCING);
     material->BindActivePassRenderState();
     Shader *shader = material->GetActivePassShader();
     shader->Bind();    
-    shader->BindDynamicParameters(false);
+    shader->BindDynamicParameters(false); //instanced properties would be bound later
+    material->BindActivePassMaterialProperties(false); //instanced properties would be bound later
 
     int32 instancedUniformesCount = shader->GetInstancingUniformCount();
     incomingUniformValues.clear();
@@ -199,13 +200,33 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
 {
     if (!incomingGroup)
         return;
+
+    //incomingGroup->Draw(ownerRenderPass, camera);
+    NMaterial *incomingMaterial = incomingGroup->GetMaterial();
+    Shader *shader = incomingMaterial->GetActivePassShader(); 
+    for (int32 i=0, sz = incomingUniformValues.size(); i<sz; ++i)
+    {
+        Shader::Uniform *uniform = incomingUniformValues[i].first;
+        void *data = &incomingUniformValues[i].second[0];
+        shader->SetUniformValueByUniform(uniform, uniform->type, currInstancesCount, data);
+    }
+
+    //TODO this is mostly copy from RenderBatch::draw - rethink this
+    RenderDataObject *renderData = incomingGroup->GetRenderDataObject();
+    PolygonGroup *dataSource = incomingGroup->GetPolygonGroup();
+    if (dataSource)
+        renderData = dataSource->renderDataObject;    
     
-    //incomingMaterial->GetActivePassShader()->setInstanceData(incomingUniformValues, currInstancesCount);
-
-    incomingGroup->Draw(ownerRenderPass, camera);
-
-    if (currInstancesCount>1)
-        drawQue.push_back(std::make_pair(incomingGroup->GetMaterial()->GetParent()->GetMaterialName(), currInstancesCount));
+    if (!renderData) //TEST!!!! remove it naher!
+        return;
+    DVASSERT(renderData);    
+    RenderManager::Instance()->SetRenderData(renderData);
+    RenderManager::Instance()->AttachRenderData();    
+    
+    void * indices = 0;
+    if (!renderData->GetIndexBufferID())
+        indices = renderData->GetIndices();    
+    RenderManager::Instance()->HWDrawElementsInstanced(PRIMITIVETYPE_TRIANGLELIST, renderData->GetIndexCount(), renderData->GetIndexFormat(), indices, currInstancesCount);
 
     incomingGroup = NULL;
     currInstancesCount = 0;
@@ -213,7 +234,7 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
 
 void InstancedRenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
 {
-    /**/
+    /*/
     RenderLayer::DrawRenderBatchArray(ownerRenderPass, camera, renderLayerBatchArray);
     return;
     /**/
@@ -238,17 +259,7 @@ void InstancedRenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass
         }
     }    
 
-    CompleteInstancingGroup(ownerRenderPass, camera);
-
-    int32 economy = 0;
-    for (int32 i=0, sz = drawQue.size(); i<sz; ++i)
-    {
-        Logger::FrameworkDebug("instance - %s count %d", drawQue[i].first.c_str(), drawQue[i].second);
-        economy+=drawQue[i].second - 1;
-    }
-
-    Logger::FrameworkDebug("Total economy: %d", economy);
-    drawQue.clear();
+    CompleteInstancingGroup(ownerRenderPass, camera);    
 
 };
 

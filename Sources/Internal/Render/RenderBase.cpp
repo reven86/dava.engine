@@ -320,10 +320,10 @@ const FastName INSTANCE_PARAM_NAMES[] =
     FastName("uvScale"),
 
     //trees
-    FastName("worldScale"),
+    /*FastName("worldScale"),
     FastName("leafOscillationParams"),
     FastName("treeLeafOcclusionMul"),
-    FastName("treeLeafColorMul"),
+    FastName("treeLeafColorMul"),*/
 
     //fog - in current maps - on all objects
     FastName("worldMatrix"),

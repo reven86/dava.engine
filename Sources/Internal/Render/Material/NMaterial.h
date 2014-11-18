@@ -376,7 +376,7 @@ public:
     void UpdateActivePassProperties();
 
     void BindActivePassRenderState();
-    void BindActivePassMaterialProperties();    
+    void BindActivePassMaterialProperties(bool bindInstanced = true);
 
 
     /**
@@ -875,6 +875,7 @@ protected:
 	RenderPassInstance* activePassInstance;
 	RenderTechniquePass* activeRenderPass;
 	FastName activePassName;
+    uint8 activeEngineFlags;
 	
 	FastName currentQuality;
 	FastName orderedQuality;

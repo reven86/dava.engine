@@ -103,6 +103,8 @@ public:
     inline bool HasVertexAttachment() const;
 
     inline eIndexFormat GetIndexFormat() const;
+    inline int32 GetIndexCount() const;
+    inline uint8* GetIndices() const;
     
 private:
     Map<eVertexFormat, RenderDataStream *> streamMap;
@@ -136,6 +138,15 @@ private:
 inline eIndexFormat RenderDataObject::GetIndexFormat() const
 {
     return indexFormat;
+}
+
+inline int32 RenderDataObject::GetIndexCount() const
+{
+    return indexCount;
+}
+inline uint8* RenderDataObject::GetIndices() const
+{
+    return indices;
 }
 
 inline bool RenderDataObject::HasVertexAttachment() const

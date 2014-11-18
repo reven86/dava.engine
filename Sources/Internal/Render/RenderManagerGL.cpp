@@ -54,6 +54,29 @@ static HGLRC hRC;
 static HWND hWnd;
 static HINSTANCE hInstance;
 
+static const int32 primitiveTypes[PRIMITIVETYPE_COUNT] = 
+{
+    GL_POINTS,			// 		PRIMITIVETYPE_POINTLIST = 0,
+    GL_LINES,			// 		PRIMITIVETYPE_LINELIST,
+    GL_LINE_STRIP,		// 		PRIMITIVETYPE_LINESTRIP,
+    GL_TRIANGLES,		// 		PRIMITIVETYPE_TRIANGLELIST,
+    GL_TRIANGLE_STRIP,	// 		PRIMITIVETYPE_TRIANGLESTRIP,
+    GL_TRIANGLE_FAN,	// 		PRIMITIVETYPE_TRIANGLEFAN,
+};
+
+#if defined(__DAVAENGINE_IPHONE__)
+#if not defined(GL_UNSIGNED_INT)
+#define GL_UNSIGNED_INT 0
+#endif //not defined(GL_UNSIGNED_INT)
+#endif // __DAVAENGINE_IPHONE__
+
+static const int32 indexTypes[2] = 
+{
+    GL_UNSIGNED_SHORT, 
+    GL_UNSIGNED_INT,
+};
+
+
 bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 {
 	hInstance = _hInstance;
@@ -431,19 +454,35 @@ void RenderManager::FlushState(RenderState * stateBlock)
 	stateBlock->Flush(&hardwareState);
 }
 
-void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
+void RenderManager::AddDrawCallToStats(ePrimitiveType type, int32 count)
 {
-	static const int32 types[PRIMITIVETYPE_COUNT] = 
-	{
-		GL_POINTS,			// 		PRIMITIVETYPE_POINTLIST = 0,
-		GL_LINES,			// 		PRIMITIVETYPE_LINELIST,
-		GL_LINE_STRIP,		// 		PRIMITIVETYPE_LINESTRIP,
-		GL_TRIANGLES,		// 		PRIMITIVETYPE_TRIANGLELIST,
-		GL_TRIANGLE_STRIP,	// 		PRIMITIVETYPE_TRIANGLESTRIP,
-		GL_TRIANGLE_FAN,	// 		PRIMITIVETYPE_TRIANGLEFAN,
-	};
+    stats.drawArraysCalls++;
+    switch(type)
+    {
+    case PRIMITIVETYPE_POINTLIST: 
+        stats.primitiveCount[type] += count;
+        break;
+    case PRIMITIVETYPE_LINELIST:
+        stats.primitiveCount[type] += count / 2;
+        break;
+    case PRIMITIVETYPE_LINESTRIP:
+        stats.primitiveCount[type] += count - 1;
+        break;
+    case PRIMITIVETYPE_TRIANGLELIST:
+        stats.primitiveCount[type] += count / 3;
+        break;
+    case PRIMITIVETYPE_TRIANGLEFAN:
+    case PRIMITIVETYPE_TRIANGLESTRIP:
+        stats.primitiveCount[type] += count - 2;
+        break;
+    default:
+        break;
+    };
+}
 
-	GLuint mode = types[type];
+void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
+{	
+	GLuint mode = primitiveTypes[type];
 
 	if(debugEnabled)
 	{
@@ -451,83 +490,33 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 	}
 
     RENDER_VERIFY(glDrawArrays(mode, first, count));
-    stats.drawArraysCalls++;
-    switch(type)
-    {
-        case PRIMITIVETYPE_POINTLIST: 
-            stats.primitiveCount[type] += count;
-            break;
-        case PRIMITIVETYPE_LINELIST:
-            stats.primitiveCount[type] += count / 2;
-            break;
-        case PRIMITIVETYPE_LINESTRIP:
-            stats.primitiveCount[type] += count - 1;
-            break;
-        case PRIMITIVETYPE_TRIANGLELIST:
-            stats.primitiveCount[type] += count / 3;
-            break;
-        case PRIMITIVETYPE_TRIANGLEFAN:
-        case PRIMITIVETYPE_TRIANGLESTRIP:
-            stats.primitiveCount[type] += count - 2;
-            break;
-        default:
-            break;
-    };
+    AddDrawCallToStats(type, count);
 }
 
 void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices)
-{
-	static const int32 types[PRIMITIVETYPE_COUNT] = 
-	{
-		GL_POINTS,			// 		PRIMITIVETYPE_POINTLIST = 0,
-		GL_LINES,			// 		PRIMITIVETYPE_LINELIST,
-		GL_LINE_STRIP,		// 		PRIMITIVETYPE_LINESTRIP,
-		GL_TRIANGLES,		// 		PRIMITIVETYPE_TRIANGLELIST,
-		GL_TRIANGLE_STRIP,	// 		PRIMITIVETYPE_TRIANGLESTRIP,
-		GL_TRIANGLE_FAN,	// 		PRIMITIVETYPE_TRIANGLEFAN,
-	};
-	
-	GLuint mode = types[type];
+{		
+	GLuint mode = primitiveTypes[type];
 	
 	if(debugEnabled)
 	{
 		Logger::FrameworkDebug("Draw arrays texture state: id %d", currentState.textureState);
 	}
-#if defined(__DAVAENGINE_IPHONE__)
-#if not defined(GL_UNSIGNED_INT)
-#define GL_UNSIGNED_INT 0
-#endif //not defined(GL_UNSIGNED_INT)
-#endif // __DAVAENGINE_IPHONE__
-
-	static const int32 indexTypes[2] = 
-	{
-		GL_UNSIGNED_SHORT, 
-		GL_UNSIGNED_INT,
-	};
 	
 	RENDER_VERIFY(glDrawElements(mode, count, indexTypes[indexFormat], indices));
-    stats.drawElementsCalls++;
-    switch(type)
+    AddDrawCallToStats(type, count);
+}
+
+void RenderManager::HWDrawElementsInstanced(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices, int32 instanceCount)
+{
+    GLuint mode = primitiveTypes[type];
+
+    if(debugEnabled)
     {
-        case PRIMITIVETYPE_POINTLIST: 
-            stats.primitiveCount[type] += count;
-            break;
-        case PRIMITIVETYPE_LINELIST:
-            stats.primitiveCount[type] += count / 2;
-            break;
-        case PRIMITIVETYPE_LINESTRIP:
-            stats.primitiveCount[type] += count - 1;
-            break;
-        case PRIMITIVETYPE_TRIANGLELIST:
-            stats.primitiveCount[type] += count / 3;
-            break;
-        case PRIMITIVETYPE_TRIANGLEFAN:
-        case PRIMITIVETYPE_TRIANGLESTRIP:
-            stats.primitiveCount[type] += count - 2;
-            break;
-        default:
-            break;
-    };
+        Logger::FrameworkDebug("Draw arrays texture state: id %d", currentState.textureState);
+    }
+
+    RENDER_VERIFY(glDrawElementsInstancedARB(mode, count, indexTypes[indexFormat], indices, instanceCount));
+    AddDrawCallToStats(type, count);
 }
 
 void RenderManager::ClearWithColor(float32 r, float32 g, float32 b, float32 a)

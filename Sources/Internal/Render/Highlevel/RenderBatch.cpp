@@ -56,23 +56,12 @@ RenderBatch::RenderBatch()
     ,   indexCount(0)
     ,   type(PRIMITIVETYPE_TRIANGLELIST)
     ,   renderObject(0)
-    ,   aabbox(Vector3(), Vector3())
-    ,   sortingTransformPtr(NULL)
-{
-	
-#if defined(__DAVA_USE_OCCLUSION_QUERY__)
-    occlusionQuery = new OcclusionQuery();
-    queryRequested = -1;
-    queryRequestFrame = 0;
-    lastFraemDrawn = -10;
-#endif        
+    ,   aabbox(Vector3(), Vector3())    
+{	
 }
     
 RenderBatch::~RenderBatch()
 {
-#if defined(__DAVA_USE_OCCLUSION_QUERY__)
-    SafeDelete(occlusionQuery);
-#endif
 	SafeRelease(dataSource);
 	SafeRelease(renderDataObject);
 		
