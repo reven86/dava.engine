@@ -45,7 +45,11 @@ size_t Downloader::SaveData(void *ptr, size_t size, size_t nmemb)
     File *destFile = File::Create(storePath, File::APPEND | File::WRITE);
     if (destFile)
     {
-        written = destFile->Write(ptr, size * nmemb);
+        uint32 posBeforeWrite = destFile->GetPos();
+        destFile->Write(ptr, size * nmemb);
+        //for Android value returned by 'Write()' is incorrect in case of full disk, that's why we calculate 'written' using 'GetPos()'
+        DVASSERT(destFile->GetPos() >= posBeforeWrite);
+        written = destFile->GetPos() - posBeforeWrite;
         mgr->currentTask->downloadProgress += written;
         SafeRelease(destFile);
     }
