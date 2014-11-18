@@ -873,7 +873,7 @@
     <ClCompile Include="..\..\Sources\Internal\Network\HandleBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkErrorToString.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\NetworkUtils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPAcceptor.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPSocket.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\UDPSocket.cpp" />

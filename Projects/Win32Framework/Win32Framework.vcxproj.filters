@@ -2954,9 +2954,6 @@
     <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkErrorToString.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\TCPAcceptor.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
@@ -2964,6 +2961,9 @@
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\UDPSocket.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetworkUtils.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>
