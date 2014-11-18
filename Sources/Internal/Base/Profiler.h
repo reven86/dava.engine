@@ -26,8 +26,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#if !defined __PROFILER_HPP__
-#define __PROFILER_HPP__
+#if !defined __PROFILER_H__
+#define __PROFILER_H__
 
     #include <Base/BaseTypes.h>
     using namespace DAVA;
@@ -126,5 +126,5 @@ ScopedTiming
 #endif // PROFILER_ENABLED
 
 
-#endif // __PROFILER_HPP__
+#endif // __PROFILER_H__
 
