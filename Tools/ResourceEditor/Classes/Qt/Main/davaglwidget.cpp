@@ -49,6 +49,7 @@
 
 #if defined (__DAVAENGINE_MACOS__)
 	#include "Platform/Qt/MacOS/QtLayerMacOS.h"
+    #include "Platform/Qt/MacOS/CoreMacOSPlatformQt.h"
 #elif defined (__DAVAENGINE_WIN32__)
 	#include "Platform/Qt/Win32/QtLayerWin32.h"
 	#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
@@ -73,7 +74,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	//setWindowFlags(windowFlags() | Qt::MSWindowsOwnDC);	// TODO: investigate
 #endif
 
-	setFocusPolicy( Qt::ClickFocus );
+    setFocusPolicy( Qt::StrongFocus );
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
 	// Init OS-specific layer
@@ -121,6 +122,8 @@ QPaintEngine *DavaGLWidget::paintEngine() const
 
 bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, long* result)
 {
+    Q_UNUSED(eventType);
+    
 #if defined(Q_OS_WIN)
 
 	MSG *message = static_cast<MSG *>(msg);
@@ -167,6 +170,14 @@ bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, lon
 		return core->WinEvent(message, result);
 	}
 
+#elif defined(Q_OS_MAC)
+    Q_UNUSED(result);
+
+    if (hasFocus())
+    {
+        DAVA::QtLayerMacOS *qtLayer = static_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
+        qtLayer->HandleEvent(msg);
+    }
 #endif
 
 	return false;
@@ -201,17 +212,18 @@ void DavaGLWidget::hideEvent(QHideEvent *e)
 
 void DavaGLWidget::focusInEvent(QFocusEvent *e)
 {
-	QWidget::focusInEvent(e);
 
 	DAVA::QtLayer::Instance()->LockKeyboardInput(true);
+    qDebug() << "Focus In";
+    QWidget::focusInEvent(e);
 }
 
 void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
-	QWidget::focusOutEvent(e);
-
 	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
+    qDebug() << "Focus Out";
+    QWidget::focusOutEvent(e);
 }
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -250,7 +262,7 @@ void DavaGLWidget::mouseMoveEvent(QMouseEvent *e)
     {
         //const QRect geometry = this->geometry();
         //qtLayer->MouseMoved(e->x() + geometry.x(), -e->y() - geometry.y());
-        qtLayer->MouseMoved(e->x(), e->y());
+        //fsdqtLayer->MouseMoved(e->x(), e->y());
     }
 
     QWidget::mouseMoveEvent(e);
@@ -315,15 +327,6 @@ void DavaGLWidget::Quit()
 {
 //    DAVA::Logger::Info("[QUIT]");
     exit(0);
-}
-
-void DavaGLWidget::EnableCustomPaintFlags(bool enable)
-{
-	// Disable Widget blinking
-	setAttribute(Qt::WA_OpaquePaintEvent, enable);
-	setAttribute(Qt::WA_NoSystemBackground, enable);
-	setAttribute(Qt::WA_PaintOnScreen, enable);
-	setAttribute( Qt::WA_TranslucentBackground, enable );
 }
 
 void DavaGLWidget::ShowAssertMessage(const char * message)

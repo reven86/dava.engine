@@ -221,18 +221,24 @@
 
 - (BOOL)acceptsFirstResponder
 {
-	return YES;
+	return NO;
 }
 
 - (BOOL)becomeFirstResponder
 {
-	return YES;
+	return NO;
 }
 
 - (BOOL)resignFirstResponder
 {	
 //	return YES;
     return NO;
+}
+
+ - (void)resignKeyWindow
+{
+    NSWindow *w = [self window];
+    //[w makeFirstResponder:nil];
 }
 
 
@@ -412,26 +418,18 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 
-/*
+///*
 - (void)mouseEntered:(NSEvent *)theEvent
 {
     [super mouseEntered:theEvent];
-    if(RenderManager::Instance()->GetCursor())
-    {
-        if(RenderManager::Instance()->GetCursor()->IsShow())
-            [NSCursor unhide];
-        else
-            [NSCursor hide];
-    }
-//	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
+//*/
+///*
 - (void)mouseExited:(NSEvent *)theEvent
 {
     [super mouseExited:theEvent];
-    [NSCursor unhide];
-//	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
-*/
+//*/
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {

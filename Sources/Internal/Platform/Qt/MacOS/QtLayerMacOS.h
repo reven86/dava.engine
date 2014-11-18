@@ -67,6 +67,7 @@ public:
     void InitializeGlWindow(void *qtView, int32 width, int32 height);
     
     void MouseMoved(float32 x, float32 y);
+    void HandleEvent(void *message);
 	
 	virtual void* GetOpenGLView();
 };	

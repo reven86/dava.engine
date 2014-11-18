@@ -74,7 +74,7 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 
 	// davawidget to display DAVAEngine content
 	davaWidget = new DavaGLWidget(this);
-	davaWidget->setFocusPolicy(Qt::StrongFocus);
+	//davaWidget->setFocusPolicy(Qt::StrongFocus);
 	davaWidget->installEventFilter(this);
     
 	// put tab bar and davawidget into vertical layout

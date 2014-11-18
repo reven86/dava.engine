@@ -91,8 +91,6 @@ private:
 
 	qint64 fpsCountTime;
 	int fpsCount;
-
-	void EnableCustomPaintFlags(bool enable);
 };
 
 #endif // DAVAGLWIDGET_H

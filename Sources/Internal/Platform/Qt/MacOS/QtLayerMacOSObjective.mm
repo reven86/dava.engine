@@ -115,6 +115,22 @@ void* QtLayerMacOS::GetOpenGLView()
 {
 	return openGLView;
 }
+    
+void QtLayerMacOS::HandleEvent(void *message)
+{
+    NSEvent *event = static_cast<NSEvent *>(message);
+    switch ( event.type )
+    {
+        case NSKeyDown:
+            [openGLView keyDown:event];
+            break;
+        case NSKeyUp:
+            [openGLView keyUp:event];
+            break;
+        default:
+            break;
+    }
+}
 
 };
 
