@@ -29,7 +29,7 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 namespace DAVA
 {
 
-	AutotestingSystemLua::AutotestingSystemLua() : luaState(nullptr), delegate(nullptr), autotestingLocalizationSystem(nullptr)
+	AutotestingSystemLua::AutotestingSystemLua() : luaState(NULL), delegate(NULL), autotestingLocalizationSystem(NULL)
 	{
 		autotestingLocalizationSystem = new LocalizationSystem();
 	}
@@ -43,7 +43,7 @@ namespace DAVA
 			return;
 		}
 		lua_close(luaState);
-		luaState = nullptr;
+		luaState = NULL;
 	}
 
 	void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
@@ -118,7 +118,7 @@ namespace DAVA
 	{
 		const char *l;
 		while (*path == *LUA_PATHSEP) path++;  /* skip separators */
-		if (*path == '\0') return nullptr;  /* no more templates */
+		if (*path == '\0') return NULL;  /* no more templates */
 		l = strchr(path, *LUA_PATHSEP);  /* find next separator */
 		if (l == NULL) l = path + strlen(path);
 		lua_pushlstring(L, path, l - path);  /* template */
@@ -135,7 +135,7 @@ namespace DAVA
 		if (path == NULL)
 			luaL_error(L, LUA_QL("package.%s") " must be a string", pname);
 		lua_pushliteral(L, "");  /* error accumulator */
-		while ((path = pushnexttemplate(L, path)) != nullptr) {
+		while ((path = pushnexttemplate(L, path)) != NULL) {
 			const char *filename;
 			filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
 			lua_remove(L, -2);  /* remove path template */
@@ -145,7 +145,7 @@ namespace DAVA
 			lua_remove(L, -2);  /* remove file name */
 			lua_concat(L, 2);  /* add entry to possible error message */
 		}
-		return nullptr;  /* not found */
+		return NULL;  /* not found */
 	}
 
 	int AutotestingSystemLua::ReqModule(lua_State* L)
@@ -344,7 +344,7 @@ namespace DAVA
 
 		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl || controlPath.empty())
 		{
-			return nullptr;
+			return NULL;
 		}
 
 		UIControl* control = FindControl(srcControl, controlPath[0]);
@@ -363,7 +363,7 @@ namespace DAVA
 	{
 		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl)
 		{
-			return nullptr;
+			return NULL;
 		}
 		int32 index = atoi(controlName.c_str());
 		if (Format("%d", index) != controlName)
@@ -384,7 +384,7 @@ namespace DAVA
 	{
 		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl)
 		{
-			return nullptr;
+			return NULL;
 		}
 		const List<UIControl*> &children = srcControl->GetChildren();
 		int32 childIndex = 0;
@@ -395,14 +395,14 @@ namespace DAVA
 				return (*it);
 			}
 		}
-		return nullptr;
+		return NULL;
 	}
 
 	UIControl* AutotestingSystemLua::FindControl(UIList* srcList, int32 index)
 	{
 		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcList)
 		{
-			return nullptr;
+			return NULL;
 		}
 		const List<UIControl*> &cells = srcList->GetVisibleCells();
 		for(List<UIControl*>::const_iterator it = cells.begin(); it != cells.end(); ++it)
@@ -413,7 +413,7 @@ namespace DAVA
 				return cell;
 			}
 		}
-		return nullptr;
+		return NULL;
 	}
 
 	bool AutotestingSystemLua::IsCenterInside(UIControl* parent, UIControl* child)
@@ -543,7 +543,7 @@ namespace DAVA
 			AutotestingSystem::Instance()->OnError("AutotestingSystemLua::Can't get UIList obj.");
 		}
 		float32 size;
-		float32 areaSize = list->TotalAreaSize(nullptr);
+		float32 areaSize = list->TotalAreaSize(NULL);
 		Vector2 visibleSize = control->GetSize();
 		if (list->GetOrientation() == UIList::ORIENTATION_HORIZONTAL)
 		{
