@@ -80,7 +80,7 @@ void UIScreenManager::ActivateGLController()
 
 void UIScreenManager::ScreenSizeChanged()
 {
-    GetScreen()->SystemScreenSizeDidChanged(ScreenSizes::GetFullVirtualScreenRect());
+    GetScreen()->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
 }
 
 

@@ -90,7 +90,7 @@ namespace DAVA
     void UITextFieldiPhone::SetFontSize(float size)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        float scaledSize = size * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
+        float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
         
         if( [[::UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)])
         {
@@ -235,7 +235,7 @@ namespace DAVA
         float divider = [HelperAppDelegate GetScale];
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
-        DAVA::Rect physicalRect = DAVA::VirtualCoordinates::ConvertVirtualToPhysical(rect);
+        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
         DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
         CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x) / divider
                                        , (physicalRect.y + physicalOffset.y) / divider
