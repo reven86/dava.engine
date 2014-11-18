@@ -809,12 +809,8 @@ void Core::SetCommandLine(int argc, char *argv[])
 
 void Core::SetCommandLine(const DAVA::String& cmdLine)
 {
-	std::stringstream ss(cmdLine);
-	std::string param;
-	while (std::getline(ss, param, ' '))
-	{
-		commandLine.push_back(param);
-	}
+    commandLine.clear();
+    Split(cmdLine, " ", commandLine);
 }
 
 Vector<String> & Core::GetCommandLine()
