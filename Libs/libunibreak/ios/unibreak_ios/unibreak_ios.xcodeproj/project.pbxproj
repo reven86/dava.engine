@@ -249,6 +249,7 @@
 		B7395D391A161CD000FB5356 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = i386;
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = unibreak_iphone_sim;
 				VALID_ARCHS = i386;
@@ -258,6 +259,7 @@
 		B7395D3A1A161CD000FB5356 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = i386;
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = unibreak_iphone_sim;
 				VALID_ARCHS = i386;
@@ -268,6 +270,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 			};
 			name = Debug;
 		};
@@ -275,6 +278,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 			};
 			name = Release;
 		};
@@ -371,6 +375,10 @@
 		B7D6C86619C88B740095250A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = unibreak_iphone;
 			};
@@ -379,6 +387,10 @@
 		B7D6C86719C88B740095250A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = unibreak_iphone;
 			};
@@ -403,6 +415,7 @@
 				B7395D3F1A161F0600FB5356 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B7D6C85C19C88B740095250A /* Build configuration list for PBXProject "unibreak_ios" */ = {
 			isa = XCConfigurationList;
