@@ -35,7 +35,7 @@
 #include "Base/BaseObject.h"
 #include "Mutex.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     #define __DAVAENGINE_PTHREAD__
 #endif
 

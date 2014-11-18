@@ -67,30 +67,6 @@ void EmscriptenThreadMain(void *p)
 	PthreadMain(p);
 }
  
-void Thread::StartHtml5()
-{
-    /*if(needCopyContext)
-    {
-        localContext = EGL_NO_CONTEXT;
-        //		bool ret = eglMakeCurrent(currentDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        //		Logger::Info("[PthreadMain] restore eglMakeCurrent returned = %d", ret);
-    }*/
-    
-    emscripten_async_call(EmscriptenThreadMain, (void*)this, 5000);
-    //PthreadMain((void*)this);
-    //pthread_t threadId;
-    //pthread_create(&threadId, 0, PthreadMain, (void*)this);
-    
-    Logger::Info("[Thread::StartHtml5]");
-}
-
-Thread::ThreadId Thread::GetCurrentThreadId()
-{
-	ThreadId ret;
-	ret.internalTid = 0;
-	return ret;
-}
-    
 bool Thread::IsMainThread()
 {
     return 1;

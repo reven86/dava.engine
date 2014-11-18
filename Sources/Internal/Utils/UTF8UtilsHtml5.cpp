@@ -8,7 +8,7 @@
 namespace DAVA
 {
 
-void UTF8Utils::EncodeToWideString(uint8 * string, int32 size, WideString & resultString)
+void UTF8Utils::EncodeToWideString(const uint8 * string, int32 size, WideString & resultString)
 {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> conv;
     resultString = conv.from_bytes((const char*)string);
