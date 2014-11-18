@@ -1165,8 +1165,7 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 void Sprite::Draw(DrawState * state)
 {
 	// DF-2897 - Do not draw sprite if its position is beyond screen
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW) ||
-		(spriteClipping && !IsSpriteOnScreen(state)))
+	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
 	}
@@ -1179,7 +1178,8 @@ void Sprite::Draw(DrawState * state)
 #endif
 
 	PrepareSpriteRenderData(state);
-
+    
+    bool spriteIsOnScreen = (clipPolygon) ? true : (!spriteClipping || IsSpriteOnScreen(state));
 	if( clipPolygon )
 	{
 		RenderManager::Instance()->ClipPush();
@@ -1204,14 +1204,17 @@ void Sprite::Draw(DrawState * state)
 		}
 
 		RenderManager::Instance()->ClipRect( clipRect );
-	}
+    }
 
-    RenderManager::Instance()->SetRenderState(state->renderState);
-	RenderManager::Instance()->SetTextureState(textureHandles[frameTextureIndex[frame]]);
-	RenderManager::Instance()->SetRenderData(spriteRenderObject);
-    RenderManager::Instance()->SetRenderEffect(state->shader);
- 	RenderManager::Instance()->DrawArrays(primitiveToDraw, 0, vertexCount);
-
+    if(spriteIsOnScreen)
+    {
+        RenderManager::Instance()->SetRenderState(state->renderState);
+        RenderManager::Instance()->SetTextureState(textureHandles[frameTextureIndex[frame]]);
+        RenderManager::Instance()->SetRenderData(spriteRenderObject);
+        RenderManager::Instance()->SetRenderEffect(state->shader);
+        RenderManager::Instance()->DrawArrays(primitiveToDraw, 0, vertexCount);
+    }
+    
 	if( clipPolygon )
 	{
 		RenderManager::Instance()->ClipPop();
@@ -1736,14 +1739,12 @@ bool Sprite::IsSpriteOnScreen(DrawState * state)
 		clipRect.dy = Core::Instance()->GetVirtualScreenHeight();
 	}
 
-	// DF-2897 - Calculate real size of texture and it's position
-	float32 realWidth = GetWidth() * state->scale.x;
-	float32 realHeight = GetHeight() * state->scale.y;
-	float32 xPosition = state->position.x - (state->pivotPoint.x * state->scale.x);
-	float32 yPosition = state->position.y - (state->pivotPoint.y * state->scale.y);
-
-	const Rect spriteRect(xPosition, yPosition, realWidth, realHeight);
-
+    float32 left = Min(Min(tempVertices[0], tempVertices[2]), Min(tempVertices[4], tempVertices[6]));
+    float32 right = Max(Max(tempVertices[0], tempVertices[2]), Max(tempVertices[4], tempVertices[6]));
+    float32 top = Min(Min(tempVertices[1], tempVertices[3]), Min(tempVertices[5], tempVertices[7]));
+    float32 bottom = Max(Max(tempVertices[1], tempVertices[3]), Max(tempVertices[5], tempVertices[7]));
+    
+	const Rect spriteRect(left, top, right - left, bottom - top);
 	return clipRect.RectIntersects(spriteRect);
 }
 
