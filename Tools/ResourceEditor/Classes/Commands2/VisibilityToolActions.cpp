@@ -140,7 +140,7 @@ void ActionSetVisibilityPoint::Redo()
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
     Sprite::DrawState drawState;
-    drawState.SetPosition((redoVisibilityPoint - cursorSprite->GetSize() / 2.f) / VirtualCoordinates::GetVirtualToPhysicalFactor());
+    drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(redoVisibilityPoint - cursorSprite->GetSize() / 2.f));
     RenderSystem2D::Instance()->Draw(cursorSprite, &drawState);
 
 	RenderManager::Instance()->RestoreRenderTarget();

@@ -240,25 +240,23 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 
 	Vector2 spriteSize = Vector2(cursorSize, cursorSize);
 	Vector2 spritePos = cursorPosition - spriteSize / 2.f;
+
+    Rect updatedRect;
+    updatedRect.SetCenter(spritePos);
+    updatedRect.SetSize(spriteSize);
+    AddRectToAccumulator(updatedRect);
 	
+    spriteSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spritePos);
+
     Sprite::DrawState drawState;
-	drawState.SetScaleSize(spriteSize.x / VirtualCoordinates::GetVirtualToPhysicalFactor(),
-                           spriteSize.y / VirtualCoordinates::GetVirtualToPhysicalFactor(),
-                           toolImageSprite->GetWidth(),
-                           toolImageSprite->GetHeight());
-    drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spritePos));
+	drawState.SetScaleSize(spriteSize.x, spriteSize.y, toolImageSprite->GetWidth(), toolImageSprite->GetHeight());
+    drawState.SetPosition(spritePos);
     RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
 	
 	RenderManager::Instance()->RestoreRenderTarget();
 	RenderManager::Instance()->SetColor(Color::White);
 	
 	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(colorSprite->GetTexture());
-	
-	Rect updatedRect;
-	updatedRect.SetCenter(spritePos);
-	updatedRect.SetSize(spriteSize);
-    
-	AddRectToAccumulator(updatedRect);
 }
 
 void CustomColorsSystem::ResetAccumulatorRect()

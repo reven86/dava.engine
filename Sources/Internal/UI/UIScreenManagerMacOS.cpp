@@ -64,7 +64,7 @@ UIScreenManager::~UIScreenManager()
 	
 void UIScreenManager::ScreenSizeChanged()
 {
-    GetScreen()->SystemScreenSizeDidChanged(ScreenSizes::GetFullVirtualScreenRect());
+    GetScreen()->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
 }
     
 void UIScreenManager::SetFirst(int screenId)

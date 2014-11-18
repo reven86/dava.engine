@@ -1664,8 +1664,8 @@ namespace DAVA
 
         if(InputSystem::Instance()->IsCursorPining())
         {
-            point.x = ScreenSizes::GetVirtualScreenSize().dx / 2.f;
-            point.y = ScreenSizes::GetVirtualScreenSize().dx / 2.f;
+            point.x = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
+            point.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
         }
 
         const UIGeometricData &gd = GetGeometricData();

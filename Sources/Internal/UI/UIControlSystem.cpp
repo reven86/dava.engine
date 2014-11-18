@@ -397,7 +397,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 			for(Vector<UIEvent>::const_iterator it = activeInputs.begin(); it != activeInputs.end(); ++it) 
 			{
 				UIEvent ev = *it;
-                ev.point = VirtualCoordinates::ConvertInputToVirtual(ev.physPoint);
+                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
 				Replay::Instance()->RecordEvent(&ev);
 			}
 
@@ -406,7 +406,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 			for(Vector<UIEvent>::const_iterator it = allInputs.begin(); it != allInputs.end(); ++it) 
 			{
 				UIEvent ev = *it;
-                ev.point = VirtualCoordinates::ConvertInputToVirtual(ev.physPoint);
+                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
 				Replay::Instance()->RecordEvent(&ev);
 			}
 		}
@@ -434,7 +434,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 					(*it).phase = (*wit).phase;
 					(*it).timestamp = (*wit).timestamp;
 					(*it).physPoint = (*wit).physPoint;
-                    (*it).point = VirtualCoordinates::ConvertInputToVirtual((*it).physPoint);
+                    (*it).point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual((*it).physPoint);
 					(*it).tapCount = (*wit).tapCount;
 					(*it).inputHandledType = (*wit).inputHandledType;
 					break;
@@ -459,7 +459,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 						(*it).timestamp = (*wit).timestamp;
 						(*it).physPoint = (*wit).physPoint;
 						(*it).point = (*wit).point;
-                        (*it).point = VirtualCoordinates::ConvertInputToVirtual((*it).physPoint);
+                        (*it).point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual((*it).physPoint);
 						(*it).tapCount = (*wit).tapCount;
 						(*it).inputHandledType = (*wit).inputHandledType;
 						break;
@@ -487,7 +487,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
                 Vector<UIEvent>::reference curr(totalInputs.back());
 				curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
                 //curr.phase = UIEvent::PHASE_BEGAN;
-                curr.point = VirtualCoordinates::ConvertInputToVirtual(curr.physPoint);
+                curr.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(curr.physPoint);
 			}
 		}
 		for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
@@ -507,7 +507,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
                 
                 Vector<UIEvent>::reference curr(totalInputs.back());
 				curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-                curr.point = VirtualCoordinates::ConvertInputToVirtual(curr.physPoint);
+                curr.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(curr.physPoint);
 			}
 		}
 		
@@ -678,7 +678,7 @@ UIControl *UIControlSystem::GetExclusiveInputLocker()
     
 void UIControlSystem::ScreenSizeChanged()
 {
-    popupContainer->SystemScreenSizeDidChanged(ScreenSizes::GetFullVirtualScreenRect());
+    popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
 }
 
 void UIControlSystem::SetHoveredControl(UIControl *newHovered)

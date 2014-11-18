@@ -363,7 +363,7 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
         }
         float32 charWidth = (charDescription.xAdvance + nextKerning) * sizeScale;
         if (charSizes)
-            charSizes->push_back(VirtualCoordinates::GetVirtualToPhysicalFactor() * charWidth);
+            charSizes->push_back(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(charWidth));
         lastX += charWidth;
         
         charDrawed++;

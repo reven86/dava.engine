@@ -787,15 +787,13 @@ void UIControlBackground::StretchDrawData::GenerateStretchData()
     float32 dx = size.x - ( Max( 0.0f, -leftOffset ) + Max( 0.0f, -rightOffset  ) ) * scaleFactorX;
     float32 dy = size.y - ( Max( 0.0f, -topOffset  ) + Max( 0.0f, -bottomOffset ) ) * scaleFactorY;
     
-    const float32 resMulFactor = 1.0f / VirtualCoordinatesSystem::Instance()->GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
+    texDx = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceX(texDx, sprite->GetResourceSizeIndex());
+    texDy = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceY(texDy, sprite->GetResourceSizeIndex());
     
-    texDx *= resMulFactor;
-    texDy *= resMulFactor;
-    
-    const float32 leftCap  = realLeftStretchCap   * resMulFactor;
-    const float32 rightCap = realRightStretchCap  * resMulFactor;
-    const float32 topCap   = realTopStretchCap    * resMulFactor;
-    const float32 bottomCap= realBottomStretchCap * resMulFactor;
+    const float32 leftCap = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceX(realLeftStretchCap, sprite->GetResourceSizeIndex());
+    const float32 rightCap = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceX(realRightStretchCap, sprite->GetResourceSizeIndex());
+    const float32 topCap = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceY(realTopStretchCap, sprite->GetResourceSizeIndex());
+    const float32 bottomCap = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceY(realBottomStretchCap, sprite->GetResourceSizeIndex());
     
     float32 textureWidth = (float32)texture->GetWidth();
     float32 textureHeight = (float32)texture->GetHeight();
@@ -927,11 +925,12 @@ void UIControlBackground::TiledDrawData::GenerateTileData()
     Texture *texture = sprite->GetTexture(frame);
 
     Vector< Vector3 > cellsWidth;
-    float32 spriteResToVirFactor = VirtualCoordinates::GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
-    GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), (float32)texture->GetWidth() * spriteResToVirFactor, stretchCap.x, cellsWidth );
+    GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
+        VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX((float32)texture->GetWidth(), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
 
     Vector< Vector3 > cellsHeight;
-    GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight() * spriteResToVirFactor, stretchCap.y, cellsHeight );
+    GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), 
+        VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY((float32)texture->GetHeight(), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
     int32 vertexCount = 4 * cellsHeight.size() * cellsWidth.size();
     if (vertexCount>= std::numeric_limits<uint16>::max())

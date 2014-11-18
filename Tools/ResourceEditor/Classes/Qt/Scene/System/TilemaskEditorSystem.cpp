@@ -176,9 +176,10 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
                 
                 Sprite::DrawState drawState;
 				drawState.SetScaleSize(toolSize.x, toolSize.y,
-                                       toolImageSprite->GetWidth() * VirtualCoordinates::GetVirtualToPhysicalFactor(),
-                                       toolImageSprite->GetHeight() * VirtualCoordinates::GetVirtualToPhysicalFactor());
-                drawState.SetPosition(Vector2(toolPos.x, toolPos.y) / VirtualCoordinates::GetVirtualToPhysicalFactor());
+                    VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(toolImageSprite->GetWidth()),
+                    VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(toolImageSprite->GetHeight()));
+
+                drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(toolPos));
                 RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
                 
 				RenderManager::Instance()->RestoreRenderTarget();
@@ -226,10 +227,10 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
                 RenderSystem2D::Instance()->SetClip(dstRect);
                 
                 drawState.Reset();
-				drawState.SetScaleSize(toolSize.x, toolSize.y,
-                                        toolImageSprite->GetWidth() * VirtualCoordinates::GetVirtualToPhysicalFactor(),
-                                        toolImageSprite->GetHeight() * VirtualCoordinates::GetVirtualToPhysicalFactor());
-                drawState.SetPosition(Vector2(toolPos.x, toolPos.y) / VirtualCoordinates::GetVirtualToPhysicalFactor());
+                drawState.SetScaleSize(toolSize.x, toolSize.y,
+                    VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(toolImageSprite->GetWidth()),
+                    VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(toolImageSprite->GetHeight()));
+                drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(toolPos));
                 drawState.SetRenderState(noBlendDrawState);
                 RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
                 
@@ -376,10 +377,10 @@ void TilemaskEditorSystem::UpdateBrushTool()
 		shader = tileMaskCopyPasteShader;
 	}
 
-    spriteTempVertices[0] = spriteTempVertices[4] = srcSprite->GetFrameVerticesForFrame(0)[0] * VirtualCoordinates::GetVirtualToPhysicalFactor();
-    spriteTempVertices[5] = spriteTempVertices[7] = srcSprite->GetFrameVerticesForFrame(0)[5] * VirtualCoordinates::GetVirtualToPhysicalFactor();
-    spriteTempVertices[1] = spriteTempVertices[3] = srcSprite->GetFrameVerticesForFrame(0)[1] * VirtualCoordinates::GetVirtualToPhysicalFactor();
-    spriteTempVertices[2] = spriteTempVertices[6] = srcSprite->GetFrameVerticesForFrame(0)[2] * VirtualCoordinates::GetVirtualToPhysicalFactor();
+    spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(srcSprite->GetFrameVerticesForFrame(0)[0]);
+    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(srcSprite->GetFrameVerticesForFrame(0)[5]);
+    spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(srcSprite->GetFrameVerticesForFrame(0)[1]);
+    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(srcSprite->GetFrameVerticesForFrame(0)[2]);
 
     spriteVertexStream->Set(TYPE_FLOAT, 2, 0, spriteTempVertices);
     spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, srcSprite->GetTextureCoordsForFrame(0));
@@ -455,12 +456,12 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
 	RenderManager::Instance()->SetColor(Color::White);
 	
     Sprite::DrawState drawState;
-    drawState.SetScaleSize((float32)sideSize / VirtualCoordinates::GetVirtualToPhysicalFactor(),
-                           (float32)sideSize / VirtualCoordinates::GetVirtualToPhysicalFactor(),
+    drawState.SetScaleSize(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)sideSize),
+                           VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)sideSize),
                            srcSprite->GetWidth(),
                            srcSprite->GetHeight());
-	drawState.SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
-                                  (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f) / VirtualCoordinates::GetVirtualToPhysicalFactor());
+	drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
+                                  (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f)));
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 	RenderManager::Instance()->RestoreRenderTarget();
 	

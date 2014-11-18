@@ -39,9 +39,9 @@ namespace DAVA
     
 class VirtualCoordinatesSystem : public Singleton<VirtualCoordinatesSystem>
 {
-    struct AvailableSize
+    struct ResourceSpaceSize
 	{
-		AvailableSize()
+		ResourceSpaceSize()
         : width(0)
         , height(0)
         , toVirtual(0)
@@ -67,8 +67,17 @@ public:
     inline const Size2i & GetVirtualScreenSize() const;
     inline const Size2i & GetRequestedVirtualScreenSize() const;
     inline const Size2i & GetPhysicalScreenSize() const;
-    inline const Rect & GetFullVirtualScreenRect() const;
-    
+    inline const Rect & GetFullScreenVirtualRect() const;
+
+    inline float32 ConvertPhysicalToVirtualX(const float32 & value) const;
+    inline float32 ConvertPhysicalToVirtualY(const float32 & value) const;
+    inline float32 ConvertVirtualToPhysicalX(const float32 & value) const;
+    inline float32 ConvertVirtualToPhysicalY(const float32 & value) const;
+    inline float32 ConvertResourceToVirtualX(const float32 & value, DAVA::int32 resourceIndex) const;
+    inline float32 ConvertResourceToVirtualY(const float32 & value, DAVA::int32 resourceIndex) const;
+    inline float32 ConvertVirtualToResourceX(const float32 & value, DAVA::int32 resourceIndex) const;
+    inline float32 ConvertVirtualToResourceY(const float32 & value, DAVA::int32 resourceIndex) const;
+
     inline Vector2 ConvertPhysicalToVirtual(const Vector2 & vector) const;
     inline Vector2 ConvertVirtualToPhysical(const Vector2 & vector) const;
     inline Vector2 ConvertResourceToVirtual(const Vector2 & vector, DAVA::int32 resourceIndex) const;
@@ -95,19 +104,10 @@ public:
     
 	inline const Vector2 & GetPhysicalDrawOffset() const;
     
-	inline Vector2 GetInputOffset() const;
-	inline float32 GetInputScaleFactor() const;
-    
-    //TODO: cut this
-    float32 GetVirtualToPhysicalFactor() const;
-    float32 GetPhysicalToVirtualFactor() const;
-    float32 GetResourceToVirtualFactor(DAVA::int32 resourceIndex) const;
-    float32 GetResourceToPhysicalFactor(DAVA::int32 resourceIndex) const;
-    
 private:
     inline Rect ConvertRect(const Rect & rect, float32 factor) const;
     
-    Vector<AvailableSize> allowedSizes;
+    Vector<ResourceSpaceSize> allowedSizes;
 	
     Size2i virtualScreenSize;
     Size2i requestedVirtualScreenSize;
@@ -129,70 +129,6 @@ private:
 	Vector2 inputOffset;
 };
     
-class ScreenSizes
-{
-public:
-    static const Size2i & GetVirtualScreenSize()
-    { return VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize(); }
-    
-    static const Size2i & GetRequestedVirtualScreenSize()
-    { return VirtualCoordinatesSystem::Instance()->GetRequestedVirtualScreenSize(); }
-    
-    static const Size2i & GetPhysicalScreenSize()
-    { return VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize(); }
-    
-    static const Rect & GetFullVirtualScreenRect()
-    { return VirtualCoordinatesSystem::Instance()->GetFullVirtualScreenRect(); }
-};
-    
-class VirtualCoordinates
-{
-public:
-    static float32 GetVirtualToPhysicalFactor()
-    { return VirtualCoordinatesSystem::Instance()->GetVirtualToPhysicalFactor(); }
-    
-    static float32 GetPhysicalToVirtualFactor()
-    { return VirtualCoordinatesSystem::Instance()->GetPhysicalToVirtualFactor(); }
-    
-    static Vector2 ConvertPhysicalToVirtual(const Vector2 & vector)
-    { return VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(vector); }
-    
-    static Vector2 ConvertVirtualToPhysical(const Vector2 & vector)
-    { return VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(vector); }
-    
-    
-    static Vector2 ConvertResourceToVirtual(const Vector2 & vector, DAVA::int32 resourceIndex)
-    { return VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(vector, resourceIndex); }
-    
-    static Vector2 ConvertResourceToPhysical(const Vector2 & vector, DAVA::int32 resourceIndex)
-    { return VirtualCoordinatesSystem::Instance()->ConvertResourceToPhysical(vector, resourceIndex); }
-    
-    static float32 GetResourceToVirtualFactor(DAVA::int32 resourceIndex)
-    { return VirtualCoordinatesSystem::Instance()->GetResourceToVirtualFactor(resourceIndex); }
-    
-    static float32 GetResourceToPhysicalFactor(DAVA::int32 resourceIndex)
-    { return VirtualCoordinatesSystem::Instance()->GetResourceToPhysicalFactor(resourceIndex); }
-    
-    static Rect ConvertPhysicalToVirtual(const Rect & rect)
-    { return VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(rect); }
-    
-    static Rect ConvertVirtualToPhysical(const Rect & rect)
-    { return VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect); }
-    
-    static Rect ConvertResourceToVirtual(const Rect & rect, int32 resourceIndex)
-    { return VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(rect, resourceIndex); }
-    
-    static Rect ConvertResourceToPhysical(const Rect & rect, int32 resourceIndex)
-    { return VirtualCoordinatesSystem::Instance()->ConvertResourceToPhysical(rect, resourceIndex); }
-    
-    
-    static Vector2 ConvertInputToVirtual(const Vector2 & point)
-    { return VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point); }
-    
-    static Vector2 ConvertInputToPhysical(const Vector2 & point)
-    { return VirtualCoordinatesSystem::Instance()->ConvertInputToPhysical(point); }
-};
-    
 inline const Size2i & VirtualCoordinatesSystem::GetVirtualScreenSize() const
 {
     return virtualScreenSize;
@@ -208,9 +144,53 @@ inline const Size2i & VirtualCoordinatesSystem::GetPhysicalScreenSize() const
     return physicalScreenSize;
 }
     
-inline const Rect & VirtualCoordinatesSystem::GetFullVirtualScreenRect() const
+inline const Rect & VirtualCoordinatesSystem::GetFullScreenVirtualRect() const
 {
     return fullVirtualScreenRect;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualX(const float32 & value) const
+{
+    return physicalToVirtual * value;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualY(const float32 & value) const
+{
+    return physicalToVirtual * value;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalX(const float32 & value) const
+{
+    return virtualToPhysical * value;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToPhysicalY(const float32 & value) const
+{
+    return virtualToPhysical * value;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualX(const float32 & value, DAVA::int32 resourceIndex) const
+{
+    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    return value * allowedSizes[resourceIndex].toVirtual;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertResourceToVirtualY(const float32 & value, DAVA::int32 resourceIndex) const
+{
+    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    return value * allowedSizes[resourceIndex].toVirtual;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToResourceX(const float32 & value, DAVA::int32 resourceIndex) const
+{
+    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    return value / allowedSizes[resourceIndex].toVirtual;
+}
+
+inline float32 VirtualCoordinatesSystem::ConvertVirtualToResourceY(const float32 & value, DAVA::int32 resourceIndex) const
+{
+    DVASSERT(resourceIndex < (int32)allowedSizes.size());
+    return value / allowedSizes[resourceIndex].toVirtual;
 }
 
 inline Vector2 VirtualCoordinatesSystem::ConvertPhysicalToVirtual(const Vector2 & vector) const
@@ -267,8 +247,7 @@ inline Rect VirtualCoordinatesSystem::ConvertRect(const Rect & rect, float32 fac
     
     return newRect;
 }
-    
-    
+
 inline Vector2 VirtualCoordinatesSystem::ConvertInputToPhysical(const Vector2 &point) const
 {
     Vector2 calcPoint(point);
@@ -313,16 +292,6 @@ inline bool VirtualCoordinatesSystem::WasScreenSizeChanged() const
 const Vector2 & VirtualCoordinatesSystem::GetPhysicalDrawOffset() const
 {
     return drawOffset;
-}
-    
-inline Vector2 VirtualCoordinatesSystem::GetInputOffset() const
-{
-    return inputOffset;
-}
-
-inline float32 VirtualCoordinatesSystem::GetInputScaleFactor() const
-{
-    return inputScaleFactor;
 }
     
 };

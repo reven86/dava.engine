@@ -450,7 +450,7 @@ Font::StringMetrics GraphicsFont::DrawString(float32 x, float32 y, const WideStr
 
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
 
-		float32 newSize = Round((currentX - prevX) * VirtualCoordinates::GetVirtualToPhysicalFactor());
+        float32 newSize = Round(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(currentX - prevX));
 		
 		if(charSizes)
 			charSizes->push_back(newSize);

@@ -264,14 +264,11 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	const Rect & aRect =  thumbButton->GetGeometricData().GetUnrotatedRect();
 	float32 clipPointAbsolute = aRect.x + aRect.dx * 0.5f;
 
-    const Vector2& drawTranslate = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-    const Vector2& drawScale = VirtualCoordinates::ConvertVirtualToPhysical(Vector2(1.f, 1.f));
-
-    Rect fullVirtualScreen = ScreenSizes::GetFullVirtualScreenRect();
+    Rect fullVirtualScreen = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
     float32 screenXMin = fullVirtualScreen.x;
     float32 screenXMax = fullVirtualScreen.x + fullVirtualScreen.dx;
     float32 screenYMin = 0.f;
-    float32 screenYMax = (float32)ScreenSizes::GetVirtualScreenSize().dy;
+    float32 screenYMax = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
 
     if (minBackground)
 	{

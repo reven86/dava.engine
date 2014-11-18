@@ -254,12 +254,12 @@ Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fi
 	RenderManager::Instance()->SetColor(Color::White);
 	
     Sprite::DrawState drawState;
-    drawState.SetScaleSize((float32)sideSize / VirtualCoordinates::GetVirtualToPhysicalFactor(),
-                           (float32)sideSize / VirtualCoordinates::GetVirtualToPhysicalFactor(),
+    drawState.SetScaleSize(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)sideSize),
+                           VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)sideSize),
                            srcSprite->GetWidth(),
                            srcSprite->GetHeight());
-    drawState.SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
-                                  (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f) / VirtualCoordinates::GetVirtualToPhysicalFactor());
+    drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(
+        Vector2((dstSprite->GetTexture()->GetWidth() - sideSize) / 2.0f, (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f)));
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 	RenderManager::Instance()->RestoreRenderTarget();
 	

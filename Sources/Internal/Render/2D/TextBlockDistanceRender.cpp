@@ -178,7 +178,7 @@ Font::StringMetrics TextBlockDistanceRender::DrawTextML(const WideString& drawTe
 										   int32 xOffset, uint32 yOffset,
 										   int32 lineSize)
 {
-	return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * w), lineSize);
+    return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)), lineSize);
 }
 	
 Font::StringMetrics TextBlockDistanceRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)

@@ -175,7 +175,7 @@ void VirtualCoordinatesSystem::SetProportionsIsFixed( bool needFixed )
 
 void VirtualCoordinatesSystem::RegisterAvailableResourceSize(int32 width, int32 height, const String &resourcesFolderName)
 {
-    VirtualCoordinatesSystem::AvailableSize newSize;
+    VirtualCoordinatesSystem::ResourceSpaceSize newSize;
     newSize.width = width;
     newSize.height = height;
     newSize.folderName = resourcesFolderName;
@@ -186,28 +186,6 @@ void VirtualCoordinatesSystem::RegisterAvailableResourceSize(int32 width, int32 
 void VirtualCoordinatesSystem::UnregisterAllAvailableResourceSizes()
 {
     allowedSizes.clear();
-}
-    
-float32 VirtualCoordinatesSystem::GetVirtualToPhysicalFactor() const
-{
-    return virtualToPhysical;
-}
-
-float32 VirtualCoordinatesSystem::GetPhysicalToVirtualFactor() const
-{
-    return physicalToVirtual;
-}
-
-float32 VirtualCoordinatesSystem::GetResourceToVirtualFactor(DAVA::int32 resourceIndex) const
-{
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
-    return allowedSizes[resourceIndex].toVirtual;
-}
-
-float32 VirtualCoordinatesSystem::GetResourceToPhysicalFactor(DAVA::int32 resourceIndex) const
-{
-    DVASSERT(resourceIndex < (int32)allowedSizes.size());
-    return allowedSizes[resourceIndex].toPhysical;
 }
     
 };
