@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if !defined __PROFILER_HPP__
 #define __PROFILER_HPP__
 
-    #include <base/BaseTypes.h>
+    #include <Base/BaseTypes.h>
     using namespace DAVA;
     #include "Hash.hpp"
 

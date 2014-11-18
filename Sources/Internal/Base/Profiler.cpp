@@ -30,13 +30,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #include "FileSystem/Logger.h"
     #include "Platform/FWSpinlock.h"
     #include "BaseTypes.h"
+    #include "Platform/SystemTimer.h"
 
-    #ifdef _WIN32
+    #ifdef __DAVAENGINE_WIN32__
         #define WIN32_LEAN_AND_MEAN
         #include <windows.h>
-    #elif __ANDROID_API__
+    #elif __DAVAENGINE_ANDROID__
         #include <time.h>
-        #include <android/log.h>
         #include <sys/atomics.h>
     #endif
 
@@ -47,8 +47,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //==============================================================================
 
-const unsigned  InvalidIndex = (unsigned)(-1);
-
+const unsigned                      InvalidIndex = (unsigned)(-1);
+#if defined __DAVAENGINE_WIN32__
+static LARGE_INTEGER                TimerFreq;
+#elif defined(__DAVAENGINE_IPHONE__)  ||  defined(__DAVAENGINE_MACOS__)
+static mach_timebase_info_data_t    TimeBase;
+#endif 
 
 
 
@@ -57,17 +61,15 @@ const unsigned  InvalidIndex = (unsigned)(-1);
 static long
 _CurTimeUs()
 {
-    #ifdef _WIN32
+    #ifdef __DAVAENGINE_WIN32__
 
-        LARGE_INTEGER freq;
         LARGE_INTEGER t;
 
-        ::QueryPerformanceFrequency( &freq );
         ::QueryPerformanceCounter( &t );
     
-        return long(((t.QuadPart)*1000000) / freq.QuadPart);
+        return long(((t.QuadPart)*1000000) / TimerFreq.QuadPart);
 
-    #elif defined __ANDROID_API__
+    #elif defined __DAVAENGINE_ANDROID__
 
         timespec    ts;
 
@@ -77,53 +79,16 @@ _CurTimeUs()
 
         return long(ts.tv_sec*1000000 + ts.tv_nsec/1000);
     
+    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+	    
+	    return (mach_absolute_time() * timebase.numer) / timebase.denom;
+
     #else
 
     #error high-resolution timer must be defined!
 
     #endif
 }
-
-/*
-#if defined(_MSC_VER)
-
-    inline bool CAS( volatile uint32* val_ptr, const uint32 old_val, const uint32 new_val ) 
-    {
-        __asm {
-            mov eax, [old_val]
-            mov edx, [new_val]
-            mov ecx, [val_ptr]
-            lock cmpxchg dword ptr [ecx], edx
-            sete al
-        }
-    }
-
-#elif defined __ANDROID_API__
-    inline bool CAS( volatile uint32* val_ptr, const uint32 old_val, const uint32 new_val ) 
-    {
-        __atomic_cmpxchg( old_val, new_val, val_ptr );
-    }
-
-#else
-    #error define a compare-and-swap / full memory barrier implementation!
-#endif
-
-struct 
-CASLock 
-{
-    void    Acquire()       { while ( !CAS( &val, uint32(0), uint32(1) ) ) ; }
-    void    Release()       { while ( !CAS( &val, uint32(1), uint32(0) ) ) ; }
-    bool    TryAcquire()    { return CAS( &val, uint32(0), uint32(1) ); }
-    bool    TryRelease()    { return CAS( &val, uint32(1), uint32(0) ); }
-    uint32  Value() const   { return val; }
-
-    void    Lock()          { while ( !CAS( &val, uint32(0), uint32(1) ) ) ; }
-    void    Unlock()        { while ( !CAS( &val, uint32(1), uint32(0) ) ) ; }
-
-//protected:
-    volatile uint32     val;
-};
-*/
 
 
 
@@ -295,6 +260,22 @@ Init( unsigned max_counter_count, unsigned history_len )
 
         counter += MaxCounterCount;
     }
+
+    #if defined __DAVAENGINE_WIN32__
+
+        ::QueryPerformanceFrequency( &TimerFreq );
+    
+    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+	    
+        (void) mach_timebase_info( &TimeBase );
+    
+	    while( ((TimeBase.numer % 10) == 0)  &&  ((TimeBase.denom % 10) == 0) )
+	    {
+		    TimeBase.numer /= 10;
+		    TimeBase.denom /= 10;
+	    }
+    
+    #endif
 }
 
 
