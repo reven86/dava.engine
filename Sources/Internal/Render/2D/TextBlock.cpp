@@ -403,7 +403,10 @@ void TextBlock::PrepareInternal()
     needPrepareInternal = false;
     if (textBlockRender)
     {
+        font->SetSize(renderSize);
         textBlockRender->Prepare(textureForInvalidation);
+        font->SetSize(originalFontSize);
+
         SafeRelease(textureForInvalidation);
     }
 }
@@ -860,7 +863,7 @@ void TextBlock::PreDraw()
 	{
 		PrepareInternal();
 	}
-
+    
 	if (textBlockRender)
 	{
         font->SetSize(renderSize);
