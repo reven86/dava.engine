@@ -1692,6 +1692,8 @@ void NMaterial::UpdateShaderWithFlags()
 	{
 		FastNameSet effectiveFlags(16);
 		BuildEffectiveFlagSet(effectiveFlags);
+        FastNameSet effectiveDefinesInstancing = effectiveFlags;
+        effectiveDefinesInstancing.Insert(FLAG_INSTANCING);
 		
 		for(HashMap<PassInstanceKeyType, RenderPassInstance*>::iterator it = instancePasses.begin();
 			it != instancePasses.end();
@@ -1700,7 +1702,11 @@ void NMaterial::UpdateShaderWithFlags()
 			RenderPassInstance* pass = it->second;
 			RenderTechniquePass* techniquePass = baseTechnique->GetPassByName(it->first.first);
 			
-			Shader* shader = techniquePass->CompileShader(effectiveFlags);
+			Shader* shader;
+            if (it->first.second&EF_INSTANCING)
+                shader = techniquePass->CompileShader(effectiveDefinesInstancing);
+            else
+                shader = techniquePass->CompileShader(effectiveFlags);
 			pass->SetShader(shader);
             requiredVertexFormat |= shader->GetRequiredVertexFormat();
 			SafeRelease(shader);
