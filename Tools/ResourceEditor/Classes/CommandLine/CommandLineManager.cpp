@@ -201,6 +201,12 @@ void CommandLineManager::Process()
 {
     if(activeTool)
     {
+        const FilePath qualitySettings = activeTool->GetQualityConfigPath();
+        if(!qualitySettings.IsEmpty())
+        {
+            QualitySettingsSystem::Instance()->Load(activeTool->GetQualityConfigPath());
+        }
+
         activeTool->Process();
     }
 }

@@ -65,5 +65,6 @@
         <file>Cursors/right_corner.png</file>
         <file>Cursors/up_down.png</file>
         <file>Cursors/size_all.png</file>
+        <file>Cursors/open_hand.png</file>
     </qresource>
 </RCC>

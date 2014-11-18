@@ -40,6 +40,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Mesh.h"
 #include "Render/3D/MeshUtils.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/SceneNodeAnimationList.h"
 #include "Scene3D/LodNode.h"
@@ -1363,7 +1364,48 @@ void SceneFileV2::RebuildTangentSpace(Entity *entity)
         RebuildTangentSpace(entity->GetChild(i));
 }
 
- 
+void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMaterialParent)
+{
+    RenderObject * ro = GetRenderObject(entity);
+    if(ro)
+    {
+        int32 batchCount = ro->GetRenderBatchCount();
+        for(int32 ri = 0; ri < batchCount; ++ri)
+        {
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            if(typeid(*batch) == typeid(ShadowVolume) || entity->GetName().find("_shadow") != String::npos)
+            {
+                RenderBatch * shadowBatch = new RenderBatch();
+                if(typeid(*batch) == typeid(ShadowVolume))
+                {
+                    shadowBatch->SetPolygonGroup(batch->GetPolygonGroup());
+                }
+                else
+                {
+                    PolygonGroup * shadowPg = MeshUtils::CreateShadowPolygonGroup(batch->GetPolygonGroup());
+                    shadowBatch->SetPolygonGroup(shadowPg);
+                    shadowPg->Release();
+                }
+
+                NMaterial* shadowMaterial = NMaterial::CreateMaterialInstance();
+                shadowMaterial->SetParent(shadowMaterialParent);
+                shadowBatch->SetMaterial(shadowMaterial);
+                shadowMaterial->Release();
+
+                ro->ReplaceRenderBatch(ri, shadowBatch);
+                shadowBatch->Release();
+            }
+        }
+    }
+
+    uint32 size = entity->GetChildrenCount();
+    for(uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = entity->GetChild(i);
+        ConvertShadowVolumes(child, shadowMaterialParent);
+    }
+}
+
 void SceneFileV2::OptimizeScene(Entity * rootNode)
 {
     int32 beforeCount = rootNode->GetChildrenCountRecursive();
@@ -1374,6 +1416,13 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     RemoveEmptySceneNodes(rootNode);
 	ReplaceOldNodes(rootNode);
 	RemoveEmptyHierarchy(rootNode);
+
+    if (header.version < SHADOW_VOLUME_SCENE_VERSION)
+    {
+        NMaterial * shadowMaterial = NMaterial::CreateMaterial(FastName("Shadow_Material"), NMaterialName::SHADOW_VOLUME, NMaterial::DEFAULT_QUALITY_NAME);
+        ConvertShadowVolumes(rootNode, shadowMaterial);
+        shadowMaterial->Release();
+    }
 
     if(header.version < OLD_LODS_SCENE_VERSION)
     {

@@ -52,7 +52,7 @@ public:
 
     static bool IsTreeLeafBatch(RenderBatch * batch);
 
-    void BindDynamicParams();
+    virtual void BindDynamicParameters(Camera * camera);
 
     void SetSphericalHarmonics(const Vector<Vector3> & coeffs);
     const Vector<Vector3> & GetSphericalHarmonics() const;
@@ -60,9 +60,6 @@ public:
     //Interpolate between globally smoothed (0.0) and locally smoothed (1.0) leafs lighting
     void SetLightSmoothing(const float32 & smooth);
     const float32 & GetLightSmoothing() const;
-
-    void SetSHValue(const float32 & value);
-    const float32 & GetSHValue() const;
 
 protected:
     static const FastName FLAG_WIND_ANIMATION;
@@ -77,12 +74,10 @@ protected:
 
     Vector<Vector3> sphericalHarmonics;
     float32 lightSmoothing;
-    float32 harmonicsValue;
 
 public:
     INTROSPECTION_EXTEND(SpeedTreeObject, RenderObject,
         PROPERTY("lightSmoothing", "Light Smoothing", GetLightSmoothing, SetLightSmoothing, I_SAVE | I_EDIT | I_VIEW)
-        PROPERTY("harmonicsValue", "Harmonics Value", GetSHValue, SetSHValue, I_SAVE | I_EDIT | I_VIEW)
         );
 
 friend class SpeedTreeUpdateSystem;

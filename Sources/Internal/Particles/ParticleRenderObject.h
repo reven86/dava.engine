@@ -59,8 +59,7 @@ class ParticleRenderObject : public RenderObject
 	Vector<ParticleRenderGroup*> renderGroupCache;
 
 	void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);	
-	void PrepareRenderData(Camera * camera);
-    Matrix4* effectMatrix;
+	void PrepareRenderData(Camera * camera);    
 	Vector<uint16> indices;
     uint32 sortingOffset;
 
@@ -70,15 +69,13 @@ public:
 	~ParticleRenderObject();
 	
 
-	virtual void PrepareToRender(Camera *camera);
-	
-    void SetEffectMatrix(Matrix4 *matrix);
-    Matrix4 *GetEffectMatrix();
+	virtual void PrepareToRender(Camera *camera);	    
 
     void SetSortingOffset(uint32 offset);
 
     void Set2DMode(bool is2d);
 
+    virtual void BindDynamicParameters(Camera * camera);
 	virtual void RecalcBoundingBox(){}
 	virtual void RecalculateWorldBoundingBox(){
 		worldBBox = bbox;}

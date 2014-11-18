@@ -58,6 +58,7 @@ const char* PropertyNames::TEXT_PROPERTY_MULTILINE = "Multiline";
 const char* PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL = "MultilineBySymbol";
 const char* PropertyNames::TEXT_COLOR_PROPERTY_NAME = "TextColor";
 const char* PropertyNames::TEXT_ALIGN_PROPERTY_NAME = "TextAlign";
+const char* PropertyNames::TEXT_USE_RTL_ALIGN_PROPERTY_NAME = "TextUseRtlAlign";
 const char* PropertyNames::TEXT_FITTING_TYPE_PROPERTY_NAME = "FittingType";
 
 const char* PropertyNames::IS_PASSWORD_PROPERTY_NAME = "IsPassword";
@@ -76,6 +77,8 @@ const char* PropertyNames::SHADOW_COLOR = "ShadowColor";
 
 const char* PropertyNames::TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME = "TextColorInheritType";
 const char* PropertyNames::TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME = "TextPerPixelAccuracyType";
+
+const char* PropertyNames::MAX_TEXT_LENGTH_PROPERTY_NAME = "MaxLength";
 
 // Slider properties
 const char* PropertyNames::SLIDER_VALUE_PROPERTY_NAME = "SliderValue";

@@ -157,11 +157,5 @@ void UIScrollViewMetadata::SetContentSizeY(float value)
 	Vector2 contentSize = GetActiveUIScrollView()->GetContentSize();
 	contentSize.y = value;
 }
-    
-void UIScrollViewMetadata::SetVisible(const bool value)
-{
-    // UIAggregator must update its children hierarchically.
-    SetUIControlVisible(value, true);
-}
 
 }

@@ -105,7 +105,7 @@ public:
 //Inline
 inline SoundEvent * SoundComponent::GetSoundEvent(uint32 index) const
 {
-    DVASSERT(index >= 0 && index < (uint32)events.size());
+    DVASSERT(index < (uint32)events.size());
     return events[index].soundEvent;
 }
 
@@ -116,13 +116,13 @@ inline uint32 SoundComponent::GetEventsCount() const
 
 inline uint32 SoundComponent::GetSoundEventFlags(uint32 index) const
 {
-    DVASSERT(index >= 0 && index < (uint32)events.size());
+    DVASSERT(index < (uint32)events.size());
     return events[index].flags;
 }
 
 inline const Vector3 & SoundComponent::GetLocalDirection(uint32 index) const
 {
-    DVASSERT(index >= 0 && index < (uint32)events.size());
+    DVASSERT(index < (uint32)events.size());
     return events[index].localDirection;
 }
 

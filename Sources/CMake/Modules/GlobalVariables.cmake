@@ -46,14 +46,16 @@ set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 #ImageMagick
 if( MACOS ) 
 
+        set( IMAGE_MAGICK ImageMagick-6.7.4 )
+
 	set ( DAVA_IMAGE_MAGICK_INCLUDES_PATH  
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/ImageMagick-6.7.4/include/ImageMagick"
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/ImageMagick-6.7.4/delegates/include" 
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/ImageMagick-6.7.4/" 
+	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/include/ImageMagick"
+	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/delegates/include" 
+	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/" 
 	     )
 
 	set ( DAVA_IMAGE_MAGICK_LIBRARIES_PATH  
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/ImageMagick-6.7.4" )  
+	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}" )  
 
 	file ( GLOB DAVA_IMAGE_MAGICK_LIBRARIES_RELEASE  ${DAVA_IMAGE_MAGICK_LIBRARIES_PATH}/lib/*.a ${DAVA_IMAGE_MAGICK_LIBRARIES_PATH}/delegates/lib/*.a )
 
@@ -61,14 +63,16 @@ if( MACOS )
 
 elseif( IOS ) 
 
-else()
+elseif( WIN32 )
+
+        set( IMAGE_MAGICK ImageMagick-6.7.4-Windows )
 
 	set ( DAVA_IMAGE_MAGICK_INCLUDES_PATH  
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/ImageMagick-6.7.4-Windows"
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/ImageMagick-6.7.4-Windows/Magick++/lib" )
+	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}"
+	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/Magick++/lib" )
 
 	set ( DAVA_IMAGE_MAGICK_LIBRARIES_PATH  
-	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/lib" )  
+	     "${CMAKE_CURRENT_LIST_DIR}/../../../Libs/${IMAGE_MAGICK}/VisualMagick/lib" )  
 
 	file ( GLOB DAVA_IMAGE_MAGICK_LIBRARIES_RELEASE  "${DAVA_IMAGE_MAGICK_LIBRARIES_PATH}/CORE_RL_*.lib" )
 	file ( GLOB DAVA_IMAGE_MAGICK_LIBRARIES_DEBUG    "${DAVA_IMAGE_MAGICK_LIBRARIES_PATH}/CORE_DB_*.lib" )

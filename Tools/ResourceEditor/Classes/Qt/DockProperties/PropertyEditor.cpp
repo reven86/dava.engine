@@ -92,6 +92,7 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
     connect(mainUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
     connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
     connect(mainUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
+    connect(mainUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
 
 	SetUpdateTimeout(5000);
 	SetEditTracking(true);
@@ -407,11 +408,10 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 				if(NULL != introData)
 				{
 					DAVA::RenderBatch *batch = (DAVA::RenderBatch *) introData->object;
-
                     if (batch != NULL)
                     {
 					    DAVA::RenderObject *ro = batch->GetRenderObject();
-					    if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch) && (ro->GetType() == RenderObject::TYPE_MESH))
+					    if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch))
 					    {
 						    QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
                             convertButton->setEnabled(isSingleSelection);
@@ -435,12 +435,6 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                         }
                     }
 				}
-			}
-			else if(DAVA::MetaInfo::Instance<DAVA::ShadowVolume>() == meta)
-			{
-				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
-                deleteButton->setEnabled(isSingleSelection);
-				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
@@ -1375,6 +1369,11 @@ void PropertyEditor::OnAddWaveComponent()
 void PropertyEditor::OnAddModelTypeComponent()
 {
     OnAddComponent(Component::QUALITY_SETTINGS_COMPONENT);
+}
+
+void PropertyEditor::OnAddSkeletonComponent()
+{
+    OnAddComponent(Component::SKELETON_COMPONENT);
 }
 
 void PropertyEditor::OnRemoveComponent()

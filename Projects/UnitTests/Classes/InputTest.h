@@ -59,7 +59,7 @@ public:
 	virtual void DidAppear();
 	virtual void Update(float32 timeElapsed);
 
-	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
+	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString);
 
 	void TestFunction(PerfFuncData * data);
 	void OnPageLoaded(DAVA::BaseObject * caller, void * param, void *callerData);

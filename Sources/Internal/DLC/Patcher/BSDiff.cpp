@@ -73,37 +73,45 @@ bool BSDiff::Diff(char8 *origData, uint32 origSize, char8 *newData, uint32 newSi
     return ret;
 }
 
+// This function should be as safe as possible. 
+// So we should continue to work event after DVASSERT
 bool BSDiff::Patch(char8 *origData, uint32 origSize, char8 *newData, uint32 newSize, File *patchFile)
 {
-    bool ret = false;
-    ZLibIStream inStream(patchFile);
+	bool ret = false;
+	ZLibIStream inStream(patchFile);
 
-    // read BS type
-    uint32 typeToRead = -1;
-    patchFile->Read(&typeToRead);
+	// read BS type
+	uint32 typeToRead = -1;
+	if(sizeof(typeToRead) == patchFile->Read(&typeToRead))
+	{
+		bool type_is_ok = true;
+		bspatch_stream patchStream;
+		patchStream.read = &BSDiff::BSRead;
+		patchStream.type = (BSType) typeToRead;
 
-    bspatch_stream patchStream;
-    patchStream.read = &BSDiff::BSRead;
-    patchStream.type = (BSType) typeToRead;
+		switch(typeToRead)
+		{
+			case BS_ZLIB:
+				patchStream.opaque = &inStream;
+				break;
+			case BS_PLAIN:
+				patchStream.opaque = patchFile;
+				break;
+			default:
+				DVASSERT(0 && "Unknow BS-type");
+				type_is_ok = false;
+				break;
+		}
 
-    switch(typeToRead)
-    {
-        case BS_ZLIB:
-            patchStream.opaque = &inStream;
-            break;
-        case BS_PLAIN:
-            patchStream.opaque = patchFile;
-            break;
-        default:
-            DVASSERT(0 && "Unknow BS-type");
-            break;
-    }
-
-    // apply bsdiff
-    if(0 == bspatch((uint8_t *) origData, origSize, (uint8_t *) newData, newSize, &patchStream))
-    {
-        ret = true;
-    }
+		if(type_is_ok)
+		{
+			// apply bsdiff
+			if(0 == bspatch((uint8_t *)origData, origSize, (uint8_t *)newData, newSize, &patchStream))
+			{
+				ret = true;
+			}
+		}
+	}
 
     return ret;
 }
@@ -150,6 +158,8 @@ int BSDiff::BSWrite(struct bsdiff_stream* stream, const void* buffer, int64_t si
     return ret;
 }
 
+// This function should be as safe as possible. 
+// So we should continue to work event after DVASSERT
 int BSDiff::BSRead(const struct bspatch_stream* stream, void* buffer, int64_t size)
 {
     int ret = 0;

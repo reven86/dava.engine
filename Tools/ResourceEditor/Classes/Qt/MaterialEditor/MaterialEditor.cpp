@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QDialogButtonBox>
+#include <QDebug>
 
 #include "MaterialEditor.h"
 #include "ui_materialeditor.h"
@@ -328,7 +329,8 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
             // if material flag was changed we should rebuild list of all properties
             // because their set can be changed
-            if(inspCommand->dynamicInfo->GetMember()->Name() == "materialSetFlags")
+            const QString memberName = inspCommand->dynamicInfo->GetMember()->Name();   // magic
+            if (memberName == "materialSetFlags")
             {
                 FillDynamic(propertiesRoot, "materialProperties");
                 FillDynamic(texturesRoot, "textures");

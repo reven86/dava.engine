@@ -2,6 +2,9 @@
 #define FILEPATHBROWSER_H
 
 
+#include <QLabel>
+#include <QCache>
+
 #include "LineEditEx.h"
 
 
@@ -30,13 +33,20 @@ protected:
 private slots:
     void OnBrowse();
     void OnReturnPressed();
+    void ValidatePath();
 
 private:
-    void InitActions();
+    void InitButtons();
     void TryToAcceptPath(const QString& path);
 
     QSize ButtonSizeHint(const QAction *action) const;
+    void keyPressEvent(QKeyEvent * event);
 
+    QPointer< QLabel > validIcon;
+    QCache< bool, QPixmap > iconCache;
+
+    bool allowInvalidPath;
+    
     QString hintText;
     QString defaultFolder;
     QString path;

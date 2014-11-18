@@ -1,21 +1,30 @@
 package com.dava.framework;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+
 import org.fmod.FMODAudioDevice;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.bda.controller.Controller;
+
+import java.util.Calendar;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
 {
@@ -36,8 +45,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private native void nativeOnAccelerometer(float x, float y, float z);
     
     private boolean isFirstRun = true;
+    private static String commandLineParams = null;
     
-    public abstract JNIGLSurfaceView GetSurfaceView();
+	public abstract JNIGLSurfaceView GetSurfaceView();
     
     private static JNIActivity activity = null;
     protected static SingalStrengthListner singalStrengthListner = null;
@@ -53,10 +63,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	activity = this;
         super.onCreate(savedInstanceState);
         
+        commandLineParams = initCommandLineParams();
+
         // Initialize native framework core         
-        JNIApplication.GetApplication().InitFramework();
+        JNIApplication.GetApplication().InitFramework(commandLineParams);
         
-        JNINotificationProvider.AttachToActivity();
+        //JNINotificationProvider.AttachToActivity();
         
         if(null != savedInstanceState)
         {
@@ -74,6 +86,20 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().requestFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        
+        final View decorView = getWindow().getDecorView();
+		// Try hide navigation bar for detect correct GL view size
+        HideNavigationBar(decorView);
+        // Subscribe listener on UI changing for hiding navigation bar after keyboard hiding
+        decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+        	@Override
+			public void onSystemUiVisibilityChange(int visibility) {
+				if((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+					HideNavigationBar(decorView);
+				}
+			}
+		});
         
         // initialize GL VIEW
         glView = GetSurfaceView();
@@ -108,7 +134,31 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		} catch (Exception e) {
 			Log.d("", "no singalStrengthListner");
 		}
+        
+        JNINotificationProvider.AttachToActivity(this);
+        
+		Intent intent = getIntent();
+		if (null != intent) {
+			String uid = intent.getStringExtra("uid");
+			if (uid != null) {
+				JNINotificationProvider.NotificationPressed(uid);
+			}
+		}
     }
+	private String initCommandLineParams() {
+		String commandLine = "";
+		Bundle extras = this.getIntent().getExtras();
+		if (extras != null) {
+			commandLine = "";
+			for (String key : extras.keySet()) {
+				String value = extras.getString(key);
+				commandLine += key + " " + value + " ";
+			}
+			commandLine = commandLine.trim();
+		}
+		Log.i("DAVA", "command line params: " + commandLine);
+		return commandLine;
+	}
     
     @Override
     protected void onStart()
@@ -177,6 +227,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         }
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
+        
+        JNIUtils.onResume();
     }
 
     
@@ -272,6 +324,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	super.onWindowFocusChanged(hasFocus);
     	if(hasFocus) {
     		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
+			HideNavigationBar(getWindow().getDecorView());
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
     	}
@@ -285,8 +338,46 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	public void PostEventToGL(Runnable event) {
 		glView.queueEvent(event);
 	}
+
+	public int GetNotificationIcon() {
+        return android.R.drawable.sym_def_app_icon;
+    }
 	
-	public void InitNotification(Builder builder) {
-		Log.e("JNIActivity", "Need to implement InitNotification");
+	/**
+	 * Since API 19 we can hide Navigation bar (Immersive Full-Screen Mode)
+	 */
+    public static void HideNavigationBar(View view) {
+    	// The UI options currently enabled are represented by a bitfield.
+        // getSystemUiVisibility() gives us that bitfield.
+        int uiOptions = view.getSystemUiVisibility();
+        
+        // Navigation bar hiding:  Backwards compatible to ICS.
+        // Don't use View.SYSTEM_UI_FLAG_HIDE_NAVIGATION on API less that 19 because any
+        // click on view shows navigation bar, and we must hide it manually only. It is
+        // bad workflow.
+
+        // Status bar hiding: Backwards compatible to Jellybean
+        if (Build.VERSION.SDK_INT >= 16) {
+            uiOptions |= 0x00000004; //View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+
+        // Immersive mode: Backward compatible to KitKat.
+        // Note that this flag doesn't do anything by itself, it only augments the behavior
+        // of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
+        // all three flags are being toggled together.
+        // Note that there are two immersive mode UI flags, one of which is referred to as "sticky".
+        // Sticky immersive mode differs in that it makes the navigation and status bars
+        // semi-transparent, and the UI flag does not get cleared when the user interacts with
+        // the screen.
+        if (Build.VERSION.SDK_INT >= 19) {
+        	uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION 
+        			| 0x00000200 //View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        			| 0x00000100 //View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+			        | 0x00000400 //View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+			        | 0x00001000; //View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        }
+    	
+		view.setSystemUiVisibility(uiOptions);
 	}
 }
+

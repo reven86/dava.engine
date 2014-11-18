@@ -1778,6 +1778,16 @@ void MainWindow::OnScreenshot()
         return;
     }
 
+    static const float32 maxScreenshotScale = 4.0f;
+    if (currentScreen->GetScale().x > maxScreenshotScale || currentScreen->GetScale().y > maxScreenshotScale)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString("Current zoom level is too high for making screenshots. Reduce it to less than %1%.").arg((int)(maxScreenshotScale * 100)));
+        msgBox.exec();
+
+        return;
+    }
+
     if (screenShotFolder.isEmpty())
     {
         SetScreenshotFolder();
