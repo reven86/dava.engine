@@ -192,8 +192,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     for (int i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
-        String memberName = member->Name();
-        
+
         VariantType res;
         if (node)
             res = ReadVariantTypeFromYamlNode(member, node);
@@ -243,13 +242,11 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
         if (internalControl)
         {
             const InspInfo *insp = internalControl->GetTypeInfo();
-            String bgName = control->GetInternalControlName(i);
-            
+
             for (int j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
-                String memberName = member->Name();
-                
+
                 VariantType value;
                 if (componentNode)
                     value = ReadVariantTypeFromYamlNode(member, componentNode);

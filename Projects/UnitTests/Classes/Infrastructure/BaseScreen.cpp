@@ -28,21 +28,67 @@
 
 
 
-#include "TeamcityOutput.h"
+#include "BaseScreen.h"
+#include "GameCore.h"
 
-#if defined(__DAVAENGINE_MACOS__)
-#import <Foundation/Foundation.h>
+int32 BaseScreen::globalScreenId = 1;
 
-
-namespace DAVA
+BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
+    :   UIScreen(),
+    skipCount(skipBeforeTests),
+    skipCounter(0),
+    readyForTests(false),
+    currentScreenId(globalScreenId++)
 {
+    SetName(_screenName);
     
-void TeamcityOutput::PlatformOutput(const String &text) const
-{
-    NSLog(@"%s", text.c_str());
+    GameCore::Instance()->RegisterScreen(this);
 }
+
+BaseScreen::BaseScreen()
+    :   UIScreen(), 
+    skipCount(10), 
+    skipCounter(0),
+    readyForTests(false),
+    currentScreenId(globalScreenId++)
+{
+    SetName("BaseScreen");
+    GameCore::Instance()->RegisterScreen(this);
+}
+
+int32 BaseScreen::GetScreenId()
+{
+    return currentScreenId;
+}
+
+void BaseScreen::WillAppear()
+{
+    skipCounter = 0;
+    readyForTests = (skipCounter == skipCount);
+}
+
+
+void BaseScreen::DidAppear()
+{
+    skipCounter = 0;
+    readyForTests = (skipCounter == skipCount);
+}
+
+bool BaseScreen::ReadyForTests()
+{
+    return readyForTests;
+}
+
+void BaseScreen::Update(float32 timeElapsed)
+{
+    if(!readyForTests)
+    {
+        ++skipCounter;
+        if(skipCount == skipCounter)
+        {
+            readyForTests = true;
+        }
+    }
     
-}; // end of namespace DAVA
-
-#endif //#if defined(__DAVAENGINE_MACOS__)
-
+    UIScreen::Update(timeElapsed);
+}

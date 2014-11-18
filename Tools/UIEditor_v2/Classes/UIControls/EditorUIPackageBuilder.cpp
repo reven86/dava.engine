@@ -71,7 +71,7 @@ UIPackage * EditorUIPackageBuilder::ProcessImportedPackage(const String &package
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
-    if (className != "UITextField")//TODO: fix internal staticText for Win\Mac
+    if (control && className != "UITextField")//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }

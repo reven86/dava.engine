@@ -797,6 +797,12 @@ void Core::SetCommandLine(int argc, char *argv[])
 		commandLine.push_back(argv[k]);
 }
 
+void Core::SetCommandLine(const DAVA::String& cmdLine)
+{
+    commandLine.clear();
+    Split(cmdLine, " ", commandLine);
+}
+
 Vector<String> & Core::GetCommandLine()
 {
 	return commandLine;

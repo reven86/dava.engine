@@ -183,6 +183,19 @@
 - (void)setUseRtlAlign:(bool)value
 {
     useRtlAlign = (value == true);
+    
+    // Set natural alignment if need
+    switch (textField.contentHorizontalAlignment)
+    {
+        case UIControlContentHorizontalAlignmentLeft:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
+            break;
+        case UIControlContentHorizontalAlignmentRight:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
+            break;
+            
+        default: break;
+    }
 }
 
 - (void) setupTraits
@@ -461,6 +474,7 @@
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
+
 
 @end
 

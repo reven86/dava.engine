@@ -65,7 +65,7 @@ class CorePlatformAndroid: public Core
 {
 public:
 
-	CorePlatformAndroid();
+	CorePlatformAndroid(const DAVA::String& cmdLine);
 
 	virtual void CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate);
 
