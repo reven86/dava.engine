@@ -800,7 +800,7 @@ void Core::SetCommandLine(int argc, char *argv[])
 void Core::SetCommandLine(const DAVA::String& cmdLine)
 {
     commandLine.clear();
-    Split(cmdLine, "\n", commandLine);
+    Split(cmdLine, " ", commandLine);
 }
 
 Vector<String> & Core::GetCommandLine()
