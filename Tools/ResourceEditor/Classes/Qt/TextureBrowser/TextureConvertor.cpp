@@ -28,13 +28,13 @@
 
 
 
-#include <QtConcurrentRun>
 #include <QPainter>
 #include <QProcess>
 #include <QTextOption>
 #include <QPushButton>
 #include <QLabel>
 #include <QFileInfo>
+#include <QtConcurrent>
 
 #include "Main/mainwindow.h"
 #include "TextureBrowser/TextureConvertor.h"

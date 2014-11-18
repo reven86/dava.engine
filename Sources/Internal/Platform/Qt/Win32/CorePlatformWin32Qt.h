@@ -49,6 +49,7 @@ public:
 #endif //#if defined(__DAVAENGINE_DIRECTX9__)
 
     void SetFocused(bool focused);
+	bool IsFocused() const;
 
 private:
     bool willQuit;
@@ -59,4 +60,4 @@ private:
 };
 
 #endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__
+#endif // __DAVAENGINE_CORE_PLATFORM_WIN32_QT_H__

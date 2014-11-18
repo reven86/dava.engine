@@ -78,18 +78,6 @@ bool CoreWin32PlatformQt::SetupWindow(HINSTANCE _hInstance, HWND _hWindow)
     hWindow = _hWindow;
     needToSkipMouseUp = false;
 
-    //single instance check
-    TCHAR fileName[MAX_PATH];
-    GetModuleFileName(NULL, fileName, MAX_PATH);
-    fileName[MAX_PATH-1] = 0; //string can be not null-terminated on winXP
-    for(int32 i = 0; i < MAX_PATH; ++i)
-    {
-        if(fileName[i] == L'\\') //symbol \ is not allowed in CreateMutex mutex name
-        {
-            fileName[i] = ' ';
-        }
-    }
-
     return true;
 }
 
@@ -216,9 +204,6 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 
 	case WM_KEYDOWN:
 		{
-			BYTE allKeys[256];
-			GetKeyboardState(allKeys);
-
 			Vector<DAVA::UIEvent> touches;
 			Vector<DAVA::UIEvent> emptyTouches;
 
@@ -271,7 +256,8 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
 			}
 
-			*result = 0;
+			if (result)
+				*result = 0;
 			return true;
 		}
 		break;
@@ -303,10 +289,12 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
     
 void CoreWin32PlatformQt::SetFocused(bool focused)
 {
-	if(isFocused != focused)
-	{
-		isFocused = focused;
-	}
+	isFocused = focused;
+}
+
+bool CoreWin32PlatformQt::IsFocused() const
+{
+	return isFocused;
 }
 
 }

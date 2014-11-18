@@ -102,8 +102,8 @@ void TileTexturePreviewWidget::InitWithColors()
 	setColumnCount(2);
 	setRootIsDecorated(false);
 	header()->setStretchLastSection(false);
-	header()->setResizeMode(0, QHeaderView::Stretch);
-	header()->setResizeMode(1, QHeaderView::ResizeToContents);
+	header()->setSectionResizeMode(0, QHeaderView::Stretch);
+	header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 	setIconSize(QSize(TEXTURE_PREVIEW_WIDTH_SMALL, TEXTURE_PREVIEW_HEIGHT));
 
 	blockSignals(blocked);

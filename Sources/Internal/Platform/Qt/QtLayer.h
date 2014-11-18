@@ -30,23 +30,26 @@
 #ifndef __DAVAENGINE_QT_LAYER_H__
 #define __DAVAENGINE_QT_LAYER_H__
 
-#include "DAVAEngine.h"
+#include "Base/Singleton.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA 
 {
+
 class QtLayerDelegate
 {
 public:
-    
-    virtual void Quit() = 0;
+	virtual ~QtLayerDelegate() {}
+
+	virtual void Quit() = 0;
     virtual void ShowAssertMessage(const char * message) = 0;
-    
 };
-    
-class QtLayer: public Singleton<QtLayer>
+
+
+class QtLayer
+	: public Singleton<QtLayer>
 {
 public:
-
     QtLayer();
     virtual ~QtLayer() {};
     
@@ -81,8 +84,9 @@ protected:
     QtLayerDelegate *delegate;
     
     bool isDAVAEngineEnabled;
-};	
 };
+
+}
 
 
 #endif // __DAVAENGINE_QT_LAYER_H__

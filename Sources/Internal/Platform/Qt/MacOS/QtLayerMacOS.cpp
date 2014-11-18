@@ -81,9 +81,6 @@ void QtLayerMacOS::AppStarted()
     Core::Instance()->SystemAppStarted();
 }
 
-
-
-
 };
 
 
