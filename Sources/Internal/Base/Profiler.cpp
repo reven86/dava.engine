@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #include "Platform/FWSpinlock.h"
     #include "BaseTypes.h"
     #include "Platform/SystemTimer.h"
+    using namespace DAVA;
 
     #ifdef __DAVAENGINE_WIN32__
         #define WIN32_LEAN_AND_MEAN
@@ -243,9 +244,9 @@ Init( unsigned max_counter_count, unsigned history_len )
     HistoryCount    = history_len;
     MaxCounterCount = max_counter_count;
 
-   _Counter         = new Counter[MaxCounterCount*HistoryCount];
-   _Average         = new Counter[MaxCounterCount];
-   ActiveCounter    = new Counter*[MaxCounterCount];
+    _Counter        = new Counter[MaxCounterCount*HistoryCount];
+    _Average        = new Counter[MaxCounterCount];
+    ActiveCounter   = new Counter*[MaxCounterCount];
 
     Counter*    counter = _Counter;
     
@@ -397,7 +398,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
 {
     unsigned    max_name_len = 0;
     
-    for( unsigned i=0; i!=result.size(); ++i )
+    for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
     {
         unsigned    pi      = result[i].parentIndex;
         unsigned    indent  = 0;
@@ -419,7 +420,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
     }
 
     Logger::Info( "===================================================" );
-    for( unsigned i=0; i!=result.size(); ++i )
+    for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
     {
         unsigned    pi          = result[i].parentIndex;
         unsigned    indent      = 0;\
@@ -532,7 +533,7 @@ _CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
 
         if( c->getParentId() == InvalidIndex )
         {
-            for( unsigned i=0; i!=top.size(); ++i )
+            for( unsigned i=0,i_end=top.size(); i!=i_end; ++i )
             {
                 if( c->getTimeUs() > top[i]->getTimeUs() )
                 {
@@ -570,14 +571,14 @@ GetCounters( std::vector<CounterInfo>* info )
     _CollectActiveCounters( CurCounter, &result );
 
     info->resize( result.size() );
-    for( unsigned i=0; i!=result.size(); ++i )
+    for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
     {
         (*info)[i].name         = result[i]->getName();
         (*info)[i].count        = result[i]->getCount();
         (*info)[i].timeUs       = result[i]->getTimeUs();
         (*info)[i].parentIndex  = InvalidIndex;
         
-        for( unsigned k=0; k!=info->size(); ++k )
+        for( unsigned k=0,k_end=info->size(); k!=k_end; ++k )
         {
             if( result[i]->getParentId() == result[k]->getId() )
             {
@@ -636,14 +637,14 @@ GetAverageCounters( std::vector<CounterInfo>* info )
         _CollectActiveCounters( _Average, &result );
 
         info->resize( result.size() );
-        for( unsigned i=0; i!=result.size(); ++i )
+        for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
         {
             (*info)[i].name         = result[i]->getName();
             (*info)[i].count        = result[i]->getCount();
             (*info)[i].timeUs       = result[i]->getTimeUs();
             (*info)[i].parentIndex  = InvalidIndex;
         
-            for( unsigned k=0; k!=info->size(); ++k )
+            for( unsigned k=0,k_end=info->size(); k!=k_end; ++k )
             {
                 if( result[i]->getParentId() == result[k]->getId() )
                 {

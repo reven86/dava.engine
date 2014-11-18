@@ -2,29 +2,15 @@
 #define __HASH_HPP__
 //==============================================================================
 //
-//  externals:
-
-
-//    #include "Type.hpp"
-    
-
-
-//==============================================================================
-//
 //  quasi compile-time hash
 //  it's 'quasi' since you can't use its value in switch() or as template-argument
 
+    #include "BaseTypes.h"
+    using DAVA::uint32;
+
 // NOTE: 'str' expected to be immutable const static string
 #define L_HASH(str)     StringHash(str).hash
-/*
-#if L_PLATFORM == L_PLATFORM_PS4 
 #define L_HASH_INLINE inline
-#elif L_PLATFORM != L_PLATFORM_PS3 
-#define L_HASH_INLINE L_FORCE_INLINE
-#else
-*/
-#define L_HASH_INLINE inline
-//#endif
 
 //------------------------------------------------------------------------------
 
@@ -41,6 +27,7 @@ HashValue_N( const char* key, unsigned length )
     a -= b; a -= c; a ^= (c>>3);    \
     b -= c; b -= a; b ^= (a<<10);   \
     c -= a; c -= b; c ^= (b>>15);   \
+
 
     // set up the internal state
 
@@ -91,7 +78,7 @@ HashValue_N( const char* key, unsigned length )
     _Hash_Mix( a, b, c );
 
     return c;
-#undef _Hash_Mix
+    #undef _Hash_Mix
 }
 
 

@@ -30,7 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __PROFILER_H__
 
     #include <Base/BaseTypes.h>
-    using namespace DAVA;
     #include "Hash.hpp"
 
     #define PROFILER_ENABLED        1
@@ -87,7 +86,7 @@ ScopedTiming
 
 #if PROFILER_ENABLED
 
-// utils, used by 'real' timing macros
+// utils, used by actual timing macros
 #define PROF_FUNCTION_ID(name_ptr)      (((int(name_ptr))>>4)&(64-1))
 #define PROF_STRING_ID(str)             (((L_HASH(str))>>4)&(64-1))
 
@@ -115,13 +114,14 @@ ScopedTiming
 
 #else
 
-#define NAME_COUNTER(counter_id,name)   
-#define BEGIN_TIMING(counter_id)        
-#define BEGIN_TIMING_EX(c_id,c_name)    
-#define END_TIMING(counter_id)          
-#define SCOPED_TIMING(counter_id)       
-#define SCOPED_TIMING_EX(counter_name)  
-#define PROF_ENTER_FUNCTION()           
+#define NAME_COUNTER(counter_id,name)       
+#define START_TIMING(counter_id)            
+#define STOP_TIMING(counter_id)             
+#define START_NAMED_TIMING(c_name)          
+#define STOP_NAMED_TIMING(c_name)           
+#define SCOPED_TIMING(counter_id)           
+#define SCOPED_NAMED_TIMING(counter_name)   
+#define SCOPED_FUNCTION_TIMING()            
 
 #endif // PROFILER_ENABLED
 
