@@ -75,10 +75,12 @@ namespace DAVA
 	{
 		Logger::Debug("AutotestingSystem::OnAppStarted");
 
-		if(isInit)
+		if (isInit)
 		{
 			Logger::Error("AutotestingSystem::OnAppStarted App already initialized. Skip autotest initialization");
+			return;
 		}
+
 		FetchParametersFromIdTxt();
 		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
 
@@ -87,9 +89,8 @@ namespace DAVA
 		FetchParametersFromDB();
 
 		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s", groupName.c_str(), testFileName.c_str());
-        if (FILE *file = fopen(FilePath(testFilePath).GetAbsolutePathname().c_str(), "r")) 
+		if (FileSystem::Instance()->IsFile(FilePath(testFilePath).GetAbsolutePathname().c_str()))
 		{
-            fclose(file);
             AutotestingSystemLua::Instance()->InitFromFile(testFilePath);
             return;
         }
