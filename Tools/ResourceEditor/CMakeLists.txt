@@ -12,8 +12,14 @@ find_package ( DavaFramework REQUIRED )
 include      ( CMake-common )
 include      ( ${QT_USE_FILE} )
 
-define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
-generate_source_groups_project ()
+set( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+set( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
+set( Generated          ${CMAKE_CURRENT_BINARY_DIR}  )
+
+
+define_source_folders ( SRC_ROOT "Classes" )
+generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated Data )
+
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
