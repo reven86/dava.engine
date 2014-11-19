@@ -825,6 +825,8 @@ namespace DAVA
                 OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
             }
 
+            SafeDeleteArray(lpb);
+
             break;
         }
 		case WM_MOUSEMOVE:
