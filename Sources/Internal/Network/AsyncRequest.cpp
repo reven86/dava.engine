@@ -37,6 +37,11 @@ AsyncRequest::AsyncRequest(IOLoop* loop, AsyncHandlerType handler) : BaseClassTy
     SetHandleData(this);
 }
 
+void AsyncRequest::SetAsyncHandler(AsyncHandlerType handler)
+{
+    asyncHandler = handler;
+}
+
 void AsyncRequest::Close()
 {
     BaseClassType::InternalClose(&HandleCloseThunk);

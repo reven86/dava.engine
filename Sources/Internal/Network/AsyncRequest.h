@@ -66,6 +66,8 @@ public:
     AsyncRequest(IOLoop* loop, AsyncHandlerType handler = AsyncHandlerType());
     ~AsyncRequest() {}
 
+    void SetAsyncHandler(AsyncHandlerType handler);
+
     void Close();
 
     int32 WakeLoop();
