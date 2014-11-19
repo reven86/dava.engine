@@ -36,7 +36,7 @@
 #   endif
 #elif defined (__DAVAENGINE_MACOS__)
 #   include "curl/MacOS/curl.h"
-#elif
+#else
 #   include "curl/Others/curl.h"
 #endif
 
