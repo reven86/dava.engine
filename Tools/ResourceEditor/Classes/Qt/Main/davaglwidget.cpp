@@ -70,10 +70,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	setAttribute(Qt::WA_TranslucentBackground, true);
 	setAttribute(Qt::WA_NativeWindow, true);
 
-#ifdef Q_OS_WIN
-	//setWindowFlags(windowFlags() | Qt::MSWindowsOwnDC);	// TODO: investigate
-#endif
-
     setFocusPolicy( Qt::StrongFocus );
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
@@ -214,7 +210,6 @@ void DavaGLWidget::focusInEvent(QFocusEvent *e)
 {
 
 	DAVA::QtLayer::Instance()->LockKeyboardInput(true);
-    qDebug() << "Focus In";
     QWidget::focusInEvent(e);
 }
 
@@ -222,7 +217,6 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
 	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
-    qDebug() << "Focus Out";
     QWidget::focusOutEvent(e);
 }
 
@@ -258,13 +252,8 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 void DavaGLWidget::mouseMoveEvent(QMouseEvent *e)
 {
     DAVA::QtLayerMacOS *qtLayer = static_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
-    if(qtLayer)
-    {
-        //const QRect geometry = this->geometry();
-        //qtLayer->MouseMoved(e->x() + geometry.x(), -e->y() - geometry.y());
-        //fsdqtLayer->MouseMoved(e->x(), e->y());
-    }
-
+	DVASSERT(qtLayer != NULL);
+    qtLayer->MouseMoved(e->x(), e->y());
     QWidget::mouseMoveEvent(e);
 }
 #endif //#if defined (Q_OS_MAC)
@@ -313,11 +302,9 @@ void DavaGLWidget::Render()
 	}
 
 	qint64 waitUntilNextFrameMs = (qint64) minFrameTimeMs - frameTimer.elapsed();
-	if(waitUntilNextFrameMs <= 0)
+	if(waitUntilNextFrameMs < 0)
 	{
-		// our render is too slow to reach maxFPS,
-		// so we can wait a minimum time
-		waitUntilNextFrameMs = 1;
+		waitUntilNextFrameMs = 0;
 	}
 
 	QTimer::singleShot(waitUntilNextFrameMs, this, SLOT(Render()));
@@ -325,7 +312,6 @@ void DavaGLWidget::Render()
 
 void DavaGLWidget::Quit()
 {
-//    DAVA::Logger::Info("[QUIT]");
     exit(0);
 }
 
