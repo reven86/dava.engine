@@ -394,9 +394,15 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 void WebViewControl::HideSubviewImages(void* view)
 {
+    UIWebView* webView = (UIWebView*)webViewPtr;
+    ::UIScrollView *scrollView = webView.scrollView;
+    
 	UIView* uiview = (UIView*)view;
 	for (UIView* subview in [uiview subviews])
 	{
+        if(uiview == scrollView)
+            continue;
+        
 		if ([subview isKindOfClass:[UIImageView class]])
 		{
 			subviewVisibilityMap[subview] = [subview isHidden];
