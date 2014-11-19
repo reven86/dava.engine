@@ -87,6 +87,11 @@ enum HttpCodeClass
     HTTP_SERVER_ERROR,
 };
 
+struct DownloadStatistics
+{
+    float64 downloadSpeedBytesPerSec;
+    uint64 timeLeftSecs;
+};
 /*
     Download task information which contains all necessery data to perform download and handle any download states
  */

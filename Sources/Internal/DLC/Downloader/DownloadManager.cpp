@@ -455,6 +455,11 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
 
     return true;
 }
+    
+DownloadStatistics *DownloadManager::GetStatistics() const
+{
+    return downloader->GetStatistics();
+}
 
 void DownloadManager::ClearQueue(Deque<DownloadTaskDescription *> &queue)
 {
@@ -604,11 +609,8 @@ DownloadError DownloadManager::TryDownload()
     {
         return currentTask->error;
     }
-
-    if (DLE_NO_ERROR == currentTask->error)
-    {
-        currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
-    }
+    
+    currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
 
     // seems server doesn't supports download resuming. So we need to download whole file.
     if (DLE_COULDNT_RESUME == currentTask->error)

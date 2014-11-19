@@ -28,6 +28,7 @@
 
 #include "Downloader.h"
 #include "DLC/Downloader/DownloadManager.h"
+#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
@@ -56,4 +57,72 @@ void Downloader::SetProgressNotificator(Function<void (uint64)> progressNotifier
     notifyProgress = progressNotifier;
 }
 
+void Downloader::ResetStatistics(uint64 sizeToDownload)
+{
+    sizeTime.clear();
+    currentSpeeds.clear();
+    dataToDownloadLeft = sizeToDownload;
+    statistics.downloadSpeedBytesPerSec = 0;
+    statistics.timeLeftSecs = 0;
+}
+
+void Downloader::CalcStatistics(uint32 dataCame)
+{
+    dataToDownloadLeft -= dataCame;
+    
+    static const uint32 currentSpeedWindowRange = 100;
+    
+    static uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
+    static uint64 prevTime = curTime;
+    static uint64 timeDelta = 0;
+    
+    curTime = SystemTimer::Instance()->AbsoluteMS();
+    timeDelta = curTime - prevTime;
+    prevTime = curTime;
+
+    MeasureSpeedUnit currentMeasure = {dataCame, timeDelta};
+    sizeTime.push_back(currentMeasure);
+    
+    if (currentSpeedWindowRange < sizeTime.size())
+    {
+        sizeTime.pop_front();
+    }
+    
+    float64 currentSpeed = 0;
+    uint64 totalTime = 0;
+    uint64 totalSize = 0;
+    
+    auto end = sizeTime.end();
+    for (auto i = sizeTime.begin(); i != end; ++i)
+    {
+        totalSize += (*i).dataSizeCame;
+        totalTime += (*i).deltaTime;
+    }
+    
+    static const uint32 averageSpeedWindowRange = 50;
+    
+    if (0 != totalSize && 0 != totalTime)
+    {
+        currentSpeed = totalSize / (static_cast<float64>(totalTime)/1000);
+        currentSpeeds.push_back(currentSpeed);
+        if (averageSpeedWindowRange < currentSpeeds.size())
+        {
+            currentSpeeds.pop_front();
+        }
+    }
+
+    float64 speedsSumm = 0;
+    auto speedsEnd = currentSpeeds.end();
+    for (auto i = currentSpeeds.begin(); i != speedsEnd; ++i)
+    {
+        speedsSumm += (*i);
+    }
+    
+    if (0 < currentSpeeds.size())
+    {
+        statistics.downloadSpeedBytesPerSec = speedsSumm / currentSpeeds.size();
+        statistics.timeLeftSecs = dataToDownloadLeft / statistics.downloadSpeedBytesPerSec;
+    }
+}
+    
 }

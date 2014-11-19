@@ -47,7 +47,7 @@ class Downloader
 {
 /* only Download manager could use Downloader and it's childs*/
 friend class DownloadManager;
-
+    
 public:
     virtual ~Downloader(){};
 
@@ -85,10 +85,42 @@ protected:
         \brief Used to report about saved data size to download manager. Used to calculate total download progress.
      */
     virtual void SetProgressNotificator(Function<void (uint64)> progressNotifier);
-    
+    /**
+        \brief Reset download statistics
+        \param[in] sizeToDownload - data size we suppose to download
+     */
+    void ResetStatistics(uint64 sizeToDownload);
+    /**
+        \brief Calculate download statistics. Should be called at data came or saved.
+        \param[in] dataCame - amout of data came or saved.
+     */
+    void CalcStatistics(uint32 dataCame);
+    /**
+        \brief Returns download statistics structure
+     */
+    inline DownloadStatistics *GetStatistics();
+
 protected:
     Function<void (uint64)> notifyProgress;
+    
+private:
+    struct MeasureSpeedUnit
+    {
+        uint64 dataSizeCame;
+        uint64 deltaTime;
+    };
+    
+    List<MeasureSpeedUnit> sizeTime;
+    List<float64> currentSpeeds;
+    uint64 dataToDownloadLeft;
+    DownloadStatistics statistics;
+
 };
+
+DownloadStatistics *Downloader::GetStatistics()
+{
+    return &statistics;
+}
 
 }
 

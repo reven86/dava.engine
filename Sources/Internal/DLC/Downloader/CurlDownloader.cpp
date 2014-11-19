@@ -51,6 +51,8 @@ CurlDownloader::CurlDownloader()
     , storePath("")
     , downloadUrl("")
     , operationTimeout(2)
+    , remoteFileSize(0)
+    , sizeToDownload(0)
     , saveResult(DLE_NO_ERROR)
     , chunkInfo(NULL)
     , saveThread(NULL)
@@ -89,6 +91,7 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     if (thisPart->SaveToBuffer(static_cast<char8 *>(ptr), static_cast<size_t>(dataSizeToBuffer)))
     {
         thisDownloader->chunkInfo->progress += dataSizeToBuffer;
+        thisDownloader->CalcStatistics(dataSizeToBuffer);
     }
 
     if (thisDownloader->isDownloadInterrupting)
@@ -409,7 +412,6 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     storePath = savePath;
     downloadUrl = url;
     currentDownloadPartsCount = partsCount;
-    uint64 remoteFileSize = 0;
     DownloadError retCode = GetSize(downloadUrl, remoteFileSize, operationTimeout);
 
     if (DLE_NO_ERROR != retCode)
@@ -435,9 +437,12 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     SafeRelease(dstFile);
     
     saveResult = DLE_NO_ERROR;
-
+    
     // rest part of file to download
-    uint64 sizeToDownload = remoteFileSize - currentFileSize;
+    sizeToDownload = remoteFileSize - currentFileSize;
+    
+    // reset download speed statistics
+    ResetStatistics(sizeToDownload);
 
     uint32 inMemoryBufferChunkSize = Max<uint32>(GetMaxChunkSize(), static_cast<uint32>(remoteFileSize/100));
     // a part of file to parallel download

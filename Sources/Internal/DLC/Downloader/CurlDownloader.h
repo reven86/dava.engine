@@ -171,6 +171,8 @@ private:
     FilePath storePath;
     String downloadUrl;
     int32 operationTimeout;
+    uint64 remoteFileSize;
+    uint64 sizeToDownload;
 
     static ErrorWithPriority errorsByPriority[];
     
