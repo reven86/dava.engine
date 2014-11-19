@@ -4201,7 +4201,6 @@
 				02FD7FB71924997C007762C0 /* LandscapeCursor.h in Headers */,
 				02FD7FB81924997C007762C0 /* Light.h in Headers */,
 				3267C4AF19E5501A003CF16F /* ComponentIndices.h in Headers */,
-				D7B50F3019ACB28900F8C0C9 /* Notification.h in Headers */,
 				02FD7FB91924997C007762C0 /* Mesh.h in Headers */,
 				02FD7FBA1924997C007762C0 /* RenderBatch.h in Headers */,
 				02FD7FBB1924997C007762C0 /* RenderDataSource.h in Headers */,
@@ -6137,7 +6136,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -6183,7 +6182,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 				WARNING_CFLAGS = "";
 			};
 			name = Release;
@@ -6229,7 +6228,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 				WARNING_CFLAGS = "";
 			};
 			name = AdHoc;
@@ -6318,7 +6317,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 				WARNING_CFLAGS = "";
 			};
 			name = Distribution;

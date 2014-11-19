@@ -40,7 +40,7 @@ class CurlDownloader : public Downloader
     enum HttpCodeClass
     {
         HTTP_INFO = 1,
-        HTTP_SUCCESS,
+        HTTP_SUCCESS, 
         HTTP_REDIRECTION,
         HTTP_CLIENT_ERROR,
         HTTP_SERVER_ERROR,
