@@ -41,6 +41,7 @@
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/SkeletonComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -68,6 +69,14 @@ TransformComponent * GetTransformComponent(Entity * fromEntity)
 {
     if(fromEntity)
 	    return static_cast<TransformComponent*>(fromEntity->GetComponent(Component::TRANSFORM_COMPONENT));
+    else
+        return NULL;
+}
+
+SkeletonComponent * GetSkeletonComponent(Entity * fromEntity)
+{
+    if(fromEntity)
+        return static_cast<SkeletonComponent*>(fromEntity->GetComponent(Component::SKELETON_COMPONENT));
     else
         return NULL;
 }

@@ -48,80 +48,100 @@ namespace DAVA
 		typedef typename TL::Append<RealParamsList7, RealParamType8>::Result RealParamsList8;
 		typedef RealParamsList8 RealParamsFullList;
 
+		typedef typename Select<IsPlaceholder<P1>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P1>::value>::Result, NullType>::Result OutgoingOrderType1;
+		typedef typename Select<IsPlaceholder<P2>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P2>::value>::Result, NullType>::Result OutgoingOrderType2;
+		typedef typename Select<IsPlaceholder<P3>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P3>::value>::Result, NullType>::Result OutgoingOrderType3;
+		typedef typename Select<IsPlaceholder<P4>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P4>::value>::Result, NullType>::Result OutgoingOrderType4;
+		typedef typename Select<IsPlaceholder<P5>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P5>::value>::Result, NullType>::Result OutgoingOrderType5;
+		typedef typename Select<IsPlaceholder<P6>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P6>::value>::Result, NullType>::Result OutgoingOrderType6;
+		typedef typename Select<IsPlaceholder<P7>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P7>::value>::Result, NullType>::Result OutgoingOrderType7;
+		typedef typename Select<IsPlaceholder<P8>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P7>::value>::Result, NullType>::Result OutgoingOrderType8;
+
+		typedef Typelist<NullType, NullType> OutgoingFunctionParamsList0;
+		typedef typename TL::Append<OutgoingFunctionParamsList0, OutgoingOrderType1>::Result OutgoingFunctionParamsList1;
+		typedef typename TL::Append<OutgoingFunctionParamsList1, OutgoingOrderType2>::Result OutgoingFunctionParamsList2;
+		typedef typename TL::Append<OutgoingFunctionParamsList2, OutgoingOrderType3>::Result OutgoingFunctionParamsList3;
+		typedef typename TL::Append<OutgoingFunctionParamsList3, OutgoingOrderType4>::Result OutgoingFunctionParamsList4;
+		typedef typename TL::Append<OutgoingFunctionParamsList4, OutgoingOrderType5>::Result OutgoingFunctionParamsList5;
+		typedef typename TL::Append<OutgoingFunctionParamsList5, OutgoingOrderType6>::Result OutgoingFunctionParamsList6;
+		typedef typename TL::Append<OutgoingFunctionParamsList6, OutgoingOrderType7>::Result OutgoingFunctionParamsList7;
+		typedef typename TL::Append<OutgoingFunctionParamsList7, OutgoingOrderType8>::Result OutgoingFunctionParamsList8;
+		typedef OutgoingFunctionParamsList8 OutgoingFunctionParamsList;
+
 		// possible outgoing function types
-		typedef Function<ReturnType (
+		typedef Function<ReturnType(
 			)> OutgoingFunctionType0;
 
 		typedef Function<ReturnType(
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P1>::result, PlaceholderIndex<P1>::value, 1>::result >::Result
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result
 			)> OutgoingFunctionType1;
 
 		typedef Function<ReturnType(
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P1>::result, PlaceholderIndex<P1>::value, 1>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P2>::result, PlaceholderIndex<P2>::value, 2>::result >::Result
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 2>::Result
 			)> OutgoingFunctionType2;
 
 		typedef Function<ReturnType(
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P1>::result, PlaceholderIndex<P1>::value, 1>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P2>::result, PlaceholderIndex<P2>::value, 2>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P3>::result, PlaceholderIndex<P3>::value, 3>::result >::Result
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 2>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 3>::Result
 			)> OutgoingFunctionType3;
 
 		typedef Function<ReturnType(
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P1>::result, PlaceholderIndex<P1>::value, 1>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P2>::result, PlaceholderIndex<P2>::value, 2>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P3>::result, PlaceholderIndex<P3>::value, 3>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P4>::result, PlaceholderIndex<P4>::value, 4>::result >::Result
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 2>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 3>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 4>::Result
 			)> OutgoingFunctionType4;
 
 		typedef Function<ReturnType(
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P1>::result, PlaceholderIndex<P1>::value, 1>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P2>::result, PlaceholderIndex<P2>::value, 2>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P3>::result, PlaceholderIndex<P3>::value, 3>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P4>::result, PlaceholderIndex<P4>::value, 4>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P5>::result, PlaceholderIndex<P5>::value, 5>::result >::Result
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 2>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 3>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 4>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 5>::Result
 			)> OutgoingFunctionType5;
 
 		typedef Function<ReturnType(
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P1>::result, PlaceholderIndex<P1>::value, 1>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P2>::result, PlaceholderIndex<P2>::value, 2>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P3>::result, PlaceholderIndex<P3>::value, 3>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P4>::result, PlaceholderIndex<P4>::value, 4>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P5>::result, PlaceholderIndex<P5>::value, 5>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P6>::result, PlaceholderIndex<P6>::value, 6>::result >::Result
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 2>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 3>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 4>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 5>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 6>::Result
 			)> OutgoingFunctionType6;
 
 		typedef Function<ReturnType(
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P1>::result, PlaceholderIndex<P1>::value, 1>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P2>::result, PlaceholderIndex<P2>::value, 2>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P3>::result, PlaceholderIndex<P3>::value, 3>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P4>::result, PlaceholderIndex<P4>::value, 4>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P5>::result, PlaceholderIndex<P5>::value, 5>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P6>::result, PlaceholderIndex<P6>::value, 6>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P7>::result, PlaceholderIndex<P7>::value, 7>::result >::Result
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 2>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 3>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 4>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 5>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 6>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 7>::Result
 			)> OutgoingFunctionType7;
 
 		typedef Function<ReturnType(
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P1>::result, PlaceholderIndex<P1>::value, 1>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P2>::result, PlaceholderIndex<P2>::value, 2>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P3>::result, PlaceholderIndex<P3>::value, 3>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P4>::result, PlaceholderIndex<P4>::value, 4>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P5>::result, PlaceholderIndex<P5>::value, 5>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P6>::result, PlaceholderIndex<P6>::value, 6>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P7>::result, PlaceholderIndex<P7>::value, 7>::result >::Result,
-			typename TL::TypeAtNonStrict<RealParamsFullList, SelectIndex<IsPlaceholder<P8>::result, PlaceholderIndex<P8>::value, 8>::result >::Result
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 2>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 3>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 4>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 5>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 6>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 7>::Result,
+			typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 8>::Result
 			)> OutgoingFunctionType8;
 
-		// evaluating outgoing function type
+		// evaluating real outgoing function type
 		typedef OutgoingFunctionType0 _OutgoingFunctionType0;
-		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<RealParamsFullList, 1>::Result>::result, _OutgoingFunctionType0, OutgoingFunctionType1>::Result _OutgoingFunctionType1;
-		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<RealParamsFullList, 2>::Result>::result, _OutgoingFunctionType1, OutgoingFunctionType2>::Result _OutgoingFunctionType2;
-		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<RealParamsFullList, 3>::Result>::result, _OutgoingFunctionType2, OutgoingFunctionType3>::Result _OutgoingFunctionType3;
-		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<RealParamsFullList, 4>::Result>::result, _OutgoingFunctionType3, OutgoingFunctionType4>::Result _OutgoingFunctionType4;
-		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<RealParamsFullList, 5>::Result>::result, _OutgoingFunctionType4, OutgoingFunctionType5>::Result _OutgoingFunctionType5;
-		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<RealParamsFullList, 6>::Result>::result, _OutgoingFunctionType5, OutgoingFunctionType6>::Result _OutgoingFunctionType6;
-		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<RealParamsFullList, 7>::Result>::result, _OutgoingFunctionType6, OutgoingFunctionType7>::Result _OutgoingFunctionType7;
-		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<RealParamsFullList, 8>::Result>::result, _OutgoingFunctionType7, OutgoingFunctionType8>::Result _OutgoingFunctionType8;
+		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 1>::Result>::result, _OutgoingFunctionType0, OutgoingFunctionType1>::Result _OutgoingFunctionType1;
+		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 2>::Result>::result, _OutgoingFunctionType1, OutgoingFunctionType2>::Result _OutgoingFunctionType2;
+		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 3>::Result>::result, _OutgoingFunctionType2, OutgoingFunctionType3>::Result _OutgoingFunctionType3;
+		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 4>::Result>::result, _OutgoingFunctionType3, OutgoingFunctionType4>::Result _OutgoingFunctionType4;
+		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 5>::Result>::result, _OutgoingFunctionType4, OutgoingFunctionType5>::Result _OutgoingFunctionType5;
+		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 6>::Result>::result, _OutgoingFunctionType5, OutgoingFunctionType6>::Result _OutgoingFunctionType6;
+		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 7>::Result>::result, _OutgoingFunctionType6, OutgoingFunctionType7>::Result _OutgoingFunctionType7;
+		typedef typename Select<IsNullType<typename TL::TypeAtNonStrict<OutgoingFunctionParamsList, 8>::Result>::result, _OutgoingFunctionType7, OutgoingFunctionType8>::Result _OutgoingFunctionType8;
 		typedef _OutgoingFunctionType8 OutgoingFunctionType; // evaluated result
 	};
 
@@ -661,7 +681,7 @@ namespace DAVA
   	{
 		typedef Bound_2<typename FuncTraits<F>::FunctionType, P1, P2> BoundType;
   		BoundType *b = new BoundType(MakeFunction(fn), p1, p2);
- 		return typename  BoundType::OutgoingFunctionType(b, &BoundType::invoke);
+ 		return typename BoundType::OutgoingFunctionType(b, &BoundType::invoke);
   	}
 
 	template<typename F, typename P1, typename P2,  typename P3>
@@ -669,7 +689,7 @@ namespace DAVA
 	{
 		typedef Bound_3<typename FuncTraits<F>::FunctionType, P1, P2, P3> BoundType;
 		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3);
-		return typename  BoundType::OutgoingFunctionType(b, &BoundType::invoke);
+		return typename BoundType::OutgoingFunctionType(b, &BoundType::invoke);
 	}
 
 	template<typename F, typename P1, typename P2,  typename P3,  typename P4>

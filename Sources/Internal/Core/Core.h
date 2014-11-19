@@ -310,6 +310,8 @@ public:
 	void SystemProcessFrame();
 	void SystemAppFinished();
 
+    inline bool IsAutotesting() {return isAutotesting;}
+
     inline bool IsActive();
 	void SetIsActive(bool isActive);
 	
@@ -336,6 +338,9 @@ public:
 protected:
 	int32 screenOrientation;
 
+	void SetCommandLine(int argc, char *argv[]);
+	void SetCommandLine(const DAVA::String& cmdLine);
+
 private:
 	float32 screenWidth;
 	float32 screenHeight;	
@@ -358,12 +363,12 @@ private:
     KeyedArchive * options;
 
 	bool isActive;
-	
+	bool isAutotesting;
+
 	uint32 globalFrameIndex;
 
 	bool firstRun;//call begin frame 1st time
 	
-	void SetCommandLine(int argc, char *argv[]);
 	Vector<String> commandLine;
 	bool isConsoleMode;
     

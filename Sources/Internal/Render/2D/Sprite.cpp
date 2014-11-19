@@ -494,6 +494,12 @@ String Sprite::GetPathString( const Sprite *sprite )
 
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
+    Sprite* sprite = GetSpriteFromMap(path);
+    if (sprite)
+    {
+        return sprite;
+    }
+    
     Vector<Image*> images;
     ImageSystem::Instance()->Load(path, images);
     if (images.size() == 0)
@@ -501,7 +507,7 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
         return NULL;
     }
 
-    Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
+    sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
     if (sprite)
     {
         sprite->SetRelativePathname(path);
@@ -514,6 +520,8 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
 {
+    Clear();
+    
 	if (!contentScaleIncluded)
 	{
 		xOffset = (int32)(Core::GetVirtualToPhysicalFactor() * xOffset);

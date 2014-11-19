@@ -53,7 +53,7 @@
 #include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Platform/Notification.h"
+#include "Notification/LocalNotificationController.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -90,6 +90,7 @@ Core::Core()
 {
 	globalFrameIndex = 1;
 	isActive = false;
+    isAutotesting = false;
 	firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
@@ -633,10 +634,11 @@ void Core::SystemAppStarted()
     if (file.Exists())
     {
         AutotestingSystem::Instance()->OnAppStarted();
+        isAutotesting = true;
     }
     else
     {
-        Logger::FrameworkDebug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
+        Logger::Debug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
     }
 #endif //__DAVAENGINE_AUTOTESTING__
 }
@@ -793,6 +795,12 @@ void Core::SetCommandLine(int argc, char *argv[])
     commandLine.reserve(argc);
 	for (int k = 0; k < argc; ++k)
 		commandLine.push_back(argv[k]);
+}
+
+void Core::SetCommandLine(const DAVA::String& cmdLine)
+{
+    commandLine.clear();
+    Split(cmdLine, " ", commandLine);
 }
 
 Vector<String> & Core::GetCommandLine()

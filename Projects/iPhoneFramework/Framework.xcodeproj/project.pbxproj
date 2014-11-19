@@ -21,6 +21,18 @@
 		022AA8E51934CED9009A4B84 /* WaveSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022AA8E21934CED9009A4B84 /* WaveSystem.cpp */; };
 		022AA8E61934CED9009A4B84 /* WaveSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 022AA8E31934CED9009A4B84 /* WaveSystem.h */; };
 		022AA8E71934CED9009A4B84 /* WaveSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 022AA8E31934CED9009A4B84 /* WaveSystem.h */; };
+		026A1DE019DAF24A00813AEF /* SkeletonComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DDE19DAF24A00813AEF /* SkeletonComponent.cpp */; };
+		026A1DE119DAF24A00813AEF /* SkeletonComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DDE19DAF24A00813AEF /* SkeletonComponent.cpp */; };
+		026A1DE219DAF24A00813AEF /* SkeletonComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DDF19DAF24A00813AEF /* SkeletonComponent.h */; };
+		026A1DE319DAF24A00813AEF /* SkeletonComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DDF19DAF24A00813AEF /* SkeletonComponent.h */; };
+		026A1DE619DAF25700813AEF /* SkeletonSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DE419DAF25700813AEF /* SkeletonSystem.cpp */; };
+		026A1DE719DAF25700813AEF /* SkeletonSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DE419DAF25700813AEF /* SkeletonSystem.cpp */; };
+		026A1DE819DAF25700813AEF /* SkeletonSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DE519DAF25700813AEF /* SkeletonSystem.h */; };
+		026A1DE919DAF25700813AEF /* SkeletonSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DE519DAF25700813AEF /* SkeletonSystem.h */; };
+		026A1DEC19DAF26600813AEF /* SkinnedMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DEA19DAF26600813AEF /* SkinnedMesh.cpp */; };
+		026A1DED19DAF26600813AEF /* SkinnedMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 026A1DEA19DAF26600813AEF /* SkinnedMesh.cpp */; };
+		026A1DEE19DAF26600813AEF /* SkinnedMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DEB19DAF26600813AEF /* SkinnedMesh.h */; };
+		026A1DEF19DAF26600813AEF /* SkinnedMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DEB19DAF26600813AEF /* SkinnedMesh.h */; };
 		0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */; };
 		0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */; };
 		02864523197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */; };
@@ -191,15 +203,7 @@
 		02FD7F851924997C007762C0 /* ES3Renderer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8983CC418C8A540002FB974 /* ES3Renderer.h */; };
 		02FD7F861924997C007762C0 /* Spline.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89516B9326D002BD35F /* Spline.h */; };
 		02FD7F871924997C007762C0 /* Vector.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89616B9326D002BD35F /* Vector.h */; };
-		02FD7F881924997C007762C0 /* BaseNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89816B9326D002BD35F /* BaseNetworkConnection.h */; };
-		02FD7F891924997C007762C0 /* BTNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89A16B9326D002BD35F /* BTNetworkConnection.h */; };
-		02FD7F8A1924997C007762C0 /* NetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89D16B9326D002BD35F /* NetworkConnection.h */; };
-		02FD7F8B1924997C007762C0 /* NetworkConnectionIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89E16B9326D002BD35F /* NetworkConnectionIPhone.h */; };
-		02FD7F8C1924997C007762C0 /* NetworkDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8A116B9326D002BD35F /* NetworkDelegate.h */; };
-		02FD7F8D1924997C007762C0 /* NetworkPacket.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8A316B9326D002BD35F /* NetworkPacket.h */; };
-		02FD7F8E1924997C007762C0 /* TCPServer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8A416B9326D002BD35F /* TCPServer.h */; };
 		02FD7F8F1924997C007762C0 /* StaticOcclusion.h in Headers */ = {isa = PBXBuildFile; fileRef = A61171421860C24D00E18F8C /* StaticOcclusion.h */; };
-		02FD7F901924997C007762C0 /* WFNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8A616B9326D002BD35F /* WFNetworkConnection.h */; };
 		02FD7F911924997C007762C0 /* Particle.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8AA16B9326D002BD35F /* Particle.h */; };
 		02FD7F921924997C007762C0 /* ParticleEmitter.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8AC16B9326D002BD35F /* ParticleEmitter.h */; };
 		02FD7F931924997C007762C0 /* ParticleLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8B216B9326D002BD35F /* ParticleLayer.h */; };
@@ -394,7 +398,6 @@
 		02FD805A1924997C007762C0 /* UIAlertView_Modal.h in Headers */ = {isa = PBXBuildFile; fileRef = CC247FEF16D69F1700183D40 /* UIAlertView_Modal.h */; };
 		02FD805B1924997C007762C0 /* UserComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24801416DD17F300183D40 /* UserComponent.h */; };
 		02FD805C1924997C007762C0 /* NMaterialTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = A69C9394186C377C00EAC8BC /* NMaterialTemplate.h */; };
-		02FD805D1924997C007762C0 /* MailSender.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BD1F0A16DE4A9C00499E18 /* MailSender.h */; };
 		02FD805E1924997C007762C0 /* UISpinner.h in Headers */ = {isa = PBXBuildFile; fileRef = E95B4C5B16DF78EE00880713 /* UISpinner.h */; };
 		02FD805F1924997C007762C0 /* VectorSpinnerAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24804516E0E34300183D40 /* VectorSpinnerAdapter.h */; };
 		02FD80601924997C007762C0 /* UISwitch.h in Headers */ = {isa = PBXBuildFile; fileRef = E9E7982E16F0B45100745AF5 /* UISwitch.h */; };
@@ -414,7 +417,6 @@
 		02FD806E1924997C007762C0 /* LodToLod2Converter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB54391886FF0C0018491F /* LodToLod2Converter.h */; };
 		02FD806F1924997C007762C0 /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */; };
 		02FD80701924997C007762C0 /* OpenUDIDios.h in Headers */ = {isa = PBXBuildFile; fileRef = 84E5E100174D02F60001C74F /* OpenUDIDios.h */; };
-		02FD80711924997C007762C0 /* MailComposeDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BAA48D178EF915003DE32C /* MailComposeDelegate.h */; };
 		02FD80721924997C007762C0 /* GlobalEnum.h in Headers */ = {isa = PBXBuildFile; fileRef = E867917B175F620400C5A6A2 /* GlobalEnum.h */; };
 		02FD80731924997C007762C0 /* GPUFamilyDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E867917F175F621E00C5A6A2 /* GPUFamilyDescriptor.h */; };
 		02FD80741924997C007762C0 /* EnumMap.h in Headers */ = {isa = PBXBuildFile; fileRef = E8679183175F62D600C5A6A2 /* EnumMap.h */; };
@@ -522,14 +524,6 @@
 		02FD80E01924997C007762C0 /* Polygon3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C88C16B9326D002BD35F /* Polygon3.cpp */; };
 		02FD80E11924997C007762C0 /* RectPacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89116B9326D002BD35F /* RectPacker.cpp */; };
 		02FD80E21924997C007762C0 /* Spline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89416B9326D002BD35F /* Spline.cpp */; };
-		02FD80E31924997C007762C0 /* BaseNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89916B9326D002BD35F /* BaseNetworkConnection.mm */; };
-		02FD80E41924997C007762C0 /* BTNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89B16B9326D002BD35F /* BTNetworkConnection.mm */; };
-		02FD80E51924997C007762C0 /* NetworkConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89C16B9326D002BD35F /* NetworkConnection.cpp */; };
-		02FD80E61924997C007762C0 /* NetworkConnectionIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89F16B9326D002BD35F /* NetworkConnectionIPhone.mm */; };
-		02FD80E71924997C007762C0 /* NetworkDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A016B9326D002BD35F /* NetworkDelegate.cpp */; };
-		02FD80E81924997C007762C0 /* NetworkPacket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A216B9326D002BD35F /* NetworkPacket.cpp */; };
-		02FD80E91924997C007762C0 /* TCPServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A516B9326D002BD35F /* TCPServer.mm */; };
-		02FD80EA1924997C007762C0 /* WFNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A716B9326D002BD35F /* WFNetworkConnection.mm */; };
 		02FD80EB1924997C007762C0 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A916B9326D002BD35F /* Particle.cpp */; };
 		02FD80EC1924997C007762C0 /* ParticleEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8AB16B9326D002BD35F /* ParticleEmitter.cpp */; };
 		02FD80ED1924997C007762C0 /* ParticleLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8B116B9326D002BD35F /* ParticleLayer.cpp */; };
@@ -724,9 +718,7 @@
 		02FD81B51924997C007762C0 /* UIAlertView_Modal.m in Sources */ = {isa = PBXBuildFile; fileRef = CC247FF016D69F1700183D40 /* UIAlertView_Modal.m */; };
 		02FD81B61924997C007762C0 /* RenderPassManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AFDED5187187D3006E43A1 /* RenderPassManager.cpp */; };
 		02FD81B71924997C007762C0 /* UserComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24801316DD17F300183D40 /* UserComponent.cpp */; };
-		02FD81B81924997C007762C0 /* MailSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0916DE4A9C00499E18 /* MailSender.cpp */; };
 		02FD81B91924997C007762C0 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */; };
-		02FD81BA1924997C007762C0 /* MailSenderMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0B16DE4A9C00499E18 /* MailSenderMacOS.mm */; };
 		02FD81BC1924997C007762C0 /* QualitySettingsSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8FC1305186972C80095D8FE /* QualitySettingsSystem.cpp */; };
 		02FD81BD1924997C007762C0 /* UISpinner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E95B4C5A16DF78EE00880713 /* UISpinner.cpp */; };
 		02FD81BE1924997C007762C0 /* SpeedTreeObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AFDEFA1871C3D1006E43A1 /* SpeedTreeObject.cpp */; };
@@ -747,7 +739,6 @@
 		02FD81CD1924997C007762C0 /* OpenUDIDApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */; };
 		02FD81CE1924997C007762C0 /* OpenUDIDios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84E5E101174D02F60001C74F /* OpenUDIDios.mm */; };
 		02FD81CF1924997C007762C0 /* KeyedArchiveSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C70B56591753CB5E008966FA /* KeyedArchiveSwig.cpp */; };
-		02FD81D01924997C007762C0 /* MailComposeDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 62BAA491178EF952003DE32C /* MailComposeDelegate.mm */; };
 		02FD81D11924997C007762C0 /* GlobalEnum.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E867917A175F620400C5A6A2 /* GlobalEnum.cpp */; };
 		02FD81D21924997C007762C0 /* GPUFamilyDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E867917E175F621E00C5A6A2 /* GPUFamilyDescriptor.cpp */; };
 		02FD81D31924997C007762C0 /* EnumMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679182175F62D600C5A6A2 /* EnumMap.cpp */; };
@@ -813,6 +804,14 @@
 		11CB614A19C338DF00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614719C338DF00B48A92 /* AnimationData.cpp */; };
 		11CB614B19C338DF00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614819C338DF00B48A92 /* AnimationData.h */; };
 		11CB614C19C338DF00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614819C338DF00B48A92 /* AnimationData.h */; };
+		150353931A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */; };
+		150353941A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */; };
+		150353951A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */; };
+		150353961A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */; };
+		150353971A02D5AA00C90B4F /* AbstractUIPackageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 150353911A02D5AA00C90B4F /* AbstractUIPackageBuilder.h */; };
+		150353981A02D5AA00C90B4F /* AbstractUIPackageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 150353911A02D5AA00C90B4F /* AbstractUIPackageBuilder.h */; };
+		150353991A02D5AA00C90B4F /* AbstractUIPackageBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 150353921A02D5AA00C90B4F /* AbstractUIPackageBuilder.cpp */; };
+		1503539A1A02D5AA00C90B4F /* AbstractUIPackageBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 150353921A02D5AA00C90B4F /* AbstractUIPackageBuilder.cpp */; };
 		155D77E8197DD265006AEBCD /* YamlNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 155D77E6197DD265006AEBCD /* YamlNode.cpp */; };
 		155D77E9197DD265006AEBCD /* YamlNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 155D77E6197DD265006AEBCD /* YamlNode.cpp */; };
 		155D77EA197DD265006AEBCD /* YamlNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 155D77E7197DD265006AEBCD /* YamlNode.h */; };
@@ -862,6 +861,18 @@
 		17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FE16B9326D002BD35F /* MongodbClient.h */; };
 		17FFF906193F03AF003D51DA /* MongodbObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80016B9326D002BD35F /* MongodbObject.h */; };
 		1AD7C35E17D8951C00B9977C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD7C35D17D8951C00B9977C /* Vector.cpp */; };
+		32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B719E53C0C0069981A /* UIControlHelpers.cpp */; };
+		32B074BE19E53C0C0069981A /* UIControlHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B719E53C0C0069981A /* UIControlHelpers.cpp */; };
+		32B074BF19E53C0C0069981A /* UIControlHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074B819E53C0C0069981A /* UIControlHelpers.h */; };
+		32B074C019E53C0C0069981A /* UIControlHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074B819E53C0C0069981A /* UIControlHelpers.h */; };
+		32B074C119E53C0C0069981A /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B919E53C0C0069981A /* UIPackage.cpp */; };
+		32B074C219E53C0C0069981A /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B919E53C0C0069981A /* UIPackage.cpp */; };
+		32B074C319E53C0C0069981A /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BA19E53C0C0069981A /* UIPackage.h */; };
+		32B074C419E53C0C0069981A /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BA19E53C0C0069981A /* UIPackage.h */; };
+		32B074C519E53C0C0069981A /* UIPackageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */; };
+		32B074C619E53C0C0069981A /* UIPackageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */; };
+		32B074C719E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
+		32B074C819E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
 		496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
 		497BF6E216F751ED00AC57C6 /* DeviceInfoiOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 497BF6E116F751ED00AC57C6 /* DeviceInfoiOS.mm */; };
 		4F25831019BDC94000C28926 /* Bind.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F25830A19BDC94000C28926 /* Bind.h */; };
@@ -884,8 +895,6 @@
 		6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6252BF2518ED506E00058754 /* libjpeg_ios.a */; };
 		6272153E192265C7007B7DE9 /* CRCAdditionInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6272153D192265C7007B7DE9 /* CRCAdditionInterface.h */; };
 		6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */; };
-		62BAA48F178EF915003DE32C /* MailComposeDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BAA48D178EF915003DE32C /* MailComposeDelegate.h */; };
-		62BAA492178EF952003DE32C /* MailComposeDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 62BAA491178EF952003DE32C /* MailComposeDelegate.mm */; };
 		641A61FF18CE0F61003359E7 /* FoliageSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 641A61FD18CE0F61003359E7 /* FoliageSystem.cpp */; };
 		641A620018CE0F61003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61FE18CE0F61003359E7 /* FoliageSystem.h */; };
 		64493DF219476F4700AB2715 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64493DDC19476F4700AB2715 /* RenderBatchPool.cpp */; };
@@ -977,6 +986,10 @@
 		84E5E102174D02F60001C74F /* OpenUDIDios.h in Headers */ = {isa = PBXBuildFile; fileRef = 84E5E100174D02F60001C74F /* OpenUDIDios.h */; };
 		84E5E103174D02F60001C74F /* OpenUDIDios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84E5E101174D02F60001C74F /* OpenUDIDios.mm */; };
 		87A0C45B18EACBEE00A7402D /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */; };
+		9A0110663B88BCD0451F54EF /* LocalNotificationDelayed.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A011E482AD5A0EA4F082005 /* LocalNotificationDelayed.h */; };
+		9A0110F1302925F60E1FB064 /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011A8135D9BBBADF8E3299 /* LocalNotificationDelayed.cpp */; };
+		9A0116C9D40C6F4C8F6D62D2 /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011A8135D9BBBADF8E3299 /* LocalNotificationDelayed.cpp */; };
+		9A0116D5BCEED06B84CA6928 /* LocalNotificationDelayed.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A011E482AD5A0EA4F082005 /* LocalNotificationDelayed.h */; };
 		9A0116F3967F43C036364993 /* GamepadDevice.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9A011B491A9F000929E1677C /* GamepadDevice.mm */; };
 		9A011C77BA90F38DCDB7F4E6 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
 		9A011EB2802FEC4E0A4AA289 /* GamepadManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A011711EF06ABD979FD9B39 /* GamepadManager.h */; };
@@ -1033,6 +1046,18 @@
 		B4C29D53199B933F001B83FE /* SceneCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4C29D50199B933F001B83FE /* SceneCache.cpp */; };
 		B4C29D54199B933F001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D51199B933F001B83FE /* SceneCache.h */; };
 		B4C29D55199B933F001B83FE /* SceneCache.h in Headers */ = {isa = PBXBuildFile; fileRef = B4C29D51199B933F001B83FE /* SceneCache.h */; };
+		B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
+		B78601491A08EAE60041F817 /* libunibreak_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B78601471A08EAD40041F817 /* libunibreak_ios.a */; };
+		B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
+		B786014D1A08EB140041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B786014B1A08EB140041F817 /* StringUtils.cpp */; };
+		B786014E1A08EB140041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B786014B1A08EB140041F817 /* StringUtils.cpp */; };
+		B786014F1A08EB140041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B786014C1A08EB140041F817 /* StringUtils.h */; };
+		B78601501A08EB140041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B786014C1A08EB140041F817 /* StringUtils.h */; };
+		B79723EE1A125F96009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723EC1A125F96009421F3 /* BiDiHelper.cpp */; };
+		B79723EF1A125F96009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723EC1A125F96009421F3 /* BiDiHelper.cpp */; };
+		B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
+		B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
+		B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
 		C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
 		C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */ = {isa = PBXBuildFile; fileRef = C13E6DB7186861FA00D1B2CE /* DFFont.h */; };
 		C172EC2A18C9F9D4004309CF /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */; };
@@ -1089,18 +1114,32 @@
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
 		D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
-		D7B50F2D19ACB28900F8C0C9 /* Notification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2719ACB28900F8C0C9 /* Notification.cpp */; };
-		D7B50F2E19ACB28900F8C0C9 /* Notification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2719ACB28900F8C0C9 /* Notification.cpp */; };
-		D7B50F2F19ACB28900F8C0C9 /* Notification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2819ACB28900F8C0C9 /* Notification.h */; };
-		D7B50F3019ACB28900F8C0C9 /* Notification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2819ACB28900F8C0C9 /* Notification.h */; };
-		D7B50F3119ACB28900F8C0C9 /* NotificationAndroid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */; };
-		D7B50F3219ACB28900F8C0C9 /* NotificationAndroid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */; };
-		D7B50F3319ACB28900F8C0C9 /* NotificationAndroid.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2A19ACB28900F8C0C9 /* NotificationAndroid.h */; };
-		D7B50F3419ACB28900F8C0C9 /* NotificationAndroid.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2A19ACB28900F8C0C9 /* NotificationAndroid.h */; };
-		D7B50F3519ACB28900F8C0C9 /* NotificationNotImplemented.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2B19ACB28900F8C0C9 /* NotificationNotImplemented.cpp */; };
-		D7B50F3619ACB28900F8C0C9 /* NotificationNotImplemented.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B50F2B19ACB28900F8C0C9 /* NotificationNotImplemented.cpp */; };
-		D7B50F3719ACB28900F8C0C9 /* NotificationNotImplemented.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2C19ACB28900F8C0C9 /* NotificationNotImplemented.h */; };
-		D7B50F3819ACB28900F8C0C9 /* NotificationNotImplemented.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B50F2C19ACB28900F8C0C9 /* NotificationNotImplemented.h */; };
+		D7CC265D19C517E500A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC264F19C517E500A3B754 /* LocalNotification.cpp */; };
+		D7CC265E19C517E500A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC264F19C517E500A3B754 /* LocalNotification.cpp */; };
+		D7CC265F19C517E500A3B754 /* LocalNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265019C517E500A3B754 /* LocalNotification.h */; };
+		D7CC266019C517E500A3B754 /* LocalNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265019C517E500A3B754 /* LocalNotification.h */; };
+		D7CC266519C517E500A3B754 /* LocalNotificationController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC265319C517E500A3B754 /* LocalNotificationController.cpp */; };
+		D7CC266619C517E500A3B754 /* LocalNotificationController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC265319C517E500A3B754 /* LocalNotificationController.cpp */; };
+		D7CC266719C517E500A3B754 /* LocalNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265419C517E500A3B754 /* LocalNotificationController.h */; };
+		D7CC266819C517E500A3B754 /* LocalNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265419C517E500A3B754 /* LocalNotificationController.h */; };
+		D7CC266919C517E500A3B754 /* LocalNotificationIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC265519C517E500A3B754 /* LocalNotificationIOS.cpp */; };
+		D7CC266A19C517E500A3B754 /* LocalNotificationIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC265519C517E500A3B754 /* LocalNotificationIOS.cpp */; };
+		D7CC266B19C517E500A3B754 /* LocalNotificationIOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265619C517E500A3B754 /* LocalNotificationIOS.h */; };
+		D7CC266C19C517E500A3B754 /* LocalNotificationIOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265619C517E500A3B754 /* LocalNotificationIOS.h */; };
+		D7CC267119C517E500A3B754 /* LocalNotificationProgress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC265919C517E500A3B754 /* LocalNotificationProgress.cpp */; };
+		D7CC267219C517E500A3B754 /* LocalNotificationProgress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC265919C517E500A3B754 /* LocalNotificationProgress.cpp */; };
+		D7CC267319C517E500A3B754 /* LocalNotificationProgress.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265A19C517E500A3B754 /* LocalNotificationProgress.h */; };
+		D7CC267419C517E500A3B754 /* LocalNotificationProgress.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265A19C517E500A3B754 /* LocalNotificationProgress.h */; };
+		D7CC267519C517E500A3B754 /* LocalNotificationText.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC265B19C517E500A3B754 /* LocalNotificationText.cpp */; };
+		D7CC267619C517E500A3B754 /* LocalNotificationText.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC265B19C517E500A3B754 /* LocalNotificationText.cpp */; };
+		D7CC267719C517E500A3B754 /* LocalNotificationText.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265C19C517E500A3B754 /* LocalNotificationText.h */; };
+		D7CC267819C517E500A3B754 /* LocalNotificationText.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265C19C517E500A3B754 /* LocalNotificationText.h */; };
+		D7D3A2C419C8313300CD6B51 /* NSStringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D3A2C219C8313300CD6B51 /* NSStringUtils.h */; };
+		D7D3A2C519C8313300CD6B51 /* NSStringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D3A2C219C8313300CD6B51 /* NSStringUtils.h */; };
+		D7D3A2C619C8313300CD6B51 /* NSStringUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D7D3A2C319C8313300CD6B51 /* NSStringUtils.mm */; };
+		D7D3A2C719C8313300CD6B51 /* NSStringUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D7D3A2C319C8313300CD6B51 /* NSStringUtils.mm */; };
+		D7D3A2CE19CAB6C000CD6B51 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D3A2CB19CAB6C000CD6B51 /* LocalNotificationImpl.h */; };
+		D7D3A2CF19CAB6C000CD6B51 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D3A2CB19CAB6C000CD6B51 /* LocalNotificationImpl.h */; };
 		D7FEF13B19864E5C00B2C7AF /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12319864E5C00B2C7AF /* DLC.cpp */; };
 		D7FEF13C19864E5C00B2C7AF /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12319864E5C00B2C7AF /* DLC.cpp */; };
 		D7FEF13D19864E5C00B2C7AF /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12419864E5C00B2C7AF /* DLC.h */; };
@@ -1143,8 +1182,18 @@
 		E8373BD817268CD9001A9770 /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */; };
 		E8373BD917268CD9001A9770 /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E8373BD717268CD9001A9770 /* UIAggregatorControl.h */; };
 		E845D4E61732B7C9000DA8E7 /* FilePathObjective.mm in Sources */ = {isa = PBXBuildFile; fileRef = E845D4E51732B7C9000DA8E7 /* FilePathObjective.mm */; };
+		E84B1A6819FA394700E4D4BC /* UITextFieldHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = E84B1A6619FA394700E4D4BC /* UITextFieldHolder.h */; };
+		E84B1A6919FA394700E4D4BC /* UITextFieldHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = E84B1A6619FA394700E4D4BC /* UITextFieldHolder.h */; };
+		E84B1A6A19FA394700E4D4BC /* UITextFieldHolder.mm in Sources */ = {isa = PBXBuildFile; fileRef = E84B1A6719FA394700E4D4BC /* UITextFieldHolder.mm */; };
+		E84B1A6B19FA394700E4D4BC /* UITextFieldHolder.mm in Sources */ = {isa = PBXBuildFile; fileRef = E84B1A6719FA394700E4D4BC /* UITextFieldHolder.mm */; };
 		E84E5BE71988D99000686C14 /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E84E5BE61988D99000686C14 /* OGLHelpers.cpp */; };
 		E84E5BE81988D99200686C14 /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E84E5BE61988D99000686C14 /* OGLHelpers.cpp */; };
+		E8586C4119F8FEBA004FD709 /* BackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = E8586C3F19F8FEBA004FD709 /* BackgroundView.h */; };
+		E8586C4219F8FEBA004FD709 /* BackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = E8586C3F19F8FEBA004FD709 /* BackgroundView.h */; };
+		E8586C4319F8FEBA004FD709 /* BackgroundView.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8586C4019F8FEBA004FD709 /* BackgroundView.mm */; };
+		E8586C4419F8FEBA004FD709 /* BackgroundView.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8586C4019F8FEBA004FD709 /* BackgroundView.mm */; };
+		E8586C4719F924D1004FD709 /* NativeViewPool.h in Headers */ = {isa = PBXBuildFile; fileRef = E8586C4519F924D1004FD709 /* NativeViewPool.h */; };
+		E8586C4819F924D1004FD709 /* NativeViewPool.h in Headers */ = {isa = PBXBuildFile; fileRef = E8586C4519F924D1004FD709 /* NativeViewPool.h */; };
 		E867917C175F620400C5A6A2 /* GlobalEnum.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E867917A175F620400C5A6A2 /* GlobalEnum.cpp */; };
 		E867917D175F620400C5A6A2 /* GlobalEnum.h in Headers */ = {isa = PBXBuildFile; fileRef = E867917B175F620400C5A6A2 /* GlobalEnum.h */; };
 		E8679180175F621E00C5A6A2 /* GPUFamilyDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E867917E175F621E00C5A6A2 /* GPUFamilyDescriptor.cpp */; };
@@ -1335,22 +1384,6 @@
 		E8B3CB6216B9326E002BD35F /* Spline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89416B9326D002BD35F /* Spline.cpp */; };
 		E8B3CB6316B9326E002BD35F /* Spline.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89516B9326D002BD35F /* Spline.h */; };
 		E8B3CB6416B9326E002BD35F /* Vector.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89616B9326D002BD35F /* Vector.h */; };
-		E8B3CB6516B9326E002BD35F /* BaseNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89816B9326D002BD35F /* BaseNetworkConnection.h */; };
-		E8B3CB6616B9326E002BD35F /* BaseNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89916B9326D002BD35F /* BaseNetworkConnection.mm */; };
-		E8B3CB6716B9326E002BD35F /* BTNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89A16B9326D002BD35F /* BTNetworkConnection.h */; };
-		E8B3CB6816B9326E002BD35F /* BTNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89B16B9326D002BD35F /* BTNetworkConnection.mm */; };
-		E8B3CB6916B9326E002BD35F /* NetworkConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89C16B9326D002BD35F /* NetworkConnection.cpp */; };
-		E8B3CB6A16B9326E002BD35F /* NetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89D16B9326D002BD35F /* NetworkConnection.h */; };
-		E8B3CB6B16B9326E002BD35F /* NetworkConnectionIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C89E16B9326D002BD35F /* NetworkConnectionIPhone.h */; };
-		E8B3CB6C16B9326E002BD35F /* NetworkConnectionIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C89F16B9326D002BD35F /* NetworkConnectionIPhone.mm */; };
-		E8B3CB6D16B9326E002BD35F /* NetworkDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A016B9326D002BD35F /* NetworkDelegate.cpp */; };
-		E8B3CB6E16B9326E002BD35F /* NetworkDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8A116B9326D002BD35F /* NetworkDelegate.h */; };
-		E8B3CB6F16B9326E002BD35F /* NetworkPacket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A216B9326D002BD35F /* NetworkPacket.cpp */; };
-		E8B3CB7016B9326E002BD35F /* NetworkPacket.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8A316B9326D002BD35F /* NetworkPacket.h */; };
-		E8B3CB7116B9326E002BD35F /* TCPServer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8A416B9326D002BD35F /* TCPServer.h */; };
-		E8B3CB7216B9326E002BD35F /* TCPServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A516B9326D002BD35F /* TCPServer.mm */; };
-		E8B3CB7316B9326E002BD35F /* WFNetworkConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8A616B9326D002BD35F /* WFNetworkConnection.h */; };
-		E8B3CB7416B9326E002BD35F /* WFNetworkConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A716B9326D002BD35F /* WFNetworkConnection.mm */; };
 		E8B3CB7516B9326E002BD35F /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8A916B9326D002BD35F /* Particle.cpp */; };
 		E8B3CB7616B9326E002BD35F /* Particle.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C8AA16B9326D002BD35F /* Particle.h */; };
 		E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C8AB16B9326D002BD35F /* ParticleEmitter.cpp */; };
@@ -1672,9 +1705,6 @@
 		E8B3CD3416B9326E002BD35F /* UtilsMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA7D16B9326E002BD35F /* UtilsMacOS.mm */; };
 		E8B6B3C61705DEB4004F665E /* DeviceInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3C41705DEB4004F665E /* DeviceInfo.cpp */; };
 		E8B6B3C71705DEB4004F665E /* DeviceInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B6B3C51705DEB4004F665E /* DeviceInfo.h */; };
-		E8BD1F0C16DE4A9C00499E18 /* MailSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0916DE4A9C00499E18 /* MailSender.cpp */; };
-		E8BD1F0D16DE4A9C00499E18 /* MailSender.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BD1F0A16DE4A9C00499E18 /* MailSender.h */; };
-		E8BD1F0E16DE4A9C00499E18 /* MailSenderMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0B16DE4A9C00499E18 /* MailSenderMacOS.mm */; };
 		E8C0A6FA17D5D8B300F8F93C /* UIScrollView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8C0A6F817D5D8B300F8F93C /* UIScrollView.cpp */; };
 		E8C0A6FB17D5D8B300F8F93C /* UIScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = E8C0A6F917D5D8B300F8F93C /* UIScrollView.h */; };
 		E8C0A6FE17D5D8EC00F8F93C /* UIScrollViewContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8C0A6FC17D5D8EC00F8F93C /* UIScrollViewContainer.cpp */; };
@@ -1747,6 +1777,12 @@
 		022AA8DD1934CECD009A4B84 /* WaveComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaveComponent.h; sourceTree = "<group>"; };
 		022AA8E21934CED9009A4B84 /* WaveSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WaveSystem.cpp; sourceTree = "<group>"; };
 		022AA8E31934CED9009A4B84 /* WaveSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaveSystem.h; sourceTree = "<group>"; };
+		026A1DDE19DAF24A00813AEF /* SkeletonComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkeletonComponent.cpp; sourceTree = "<group>"; };
+		026A1DDF19DAF24A00813AEF /* SkeletonComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkeletonComponent.h; sourceTree = "<group>"; };
+		026A1DE419DAF25700813AEF /* SkeletonSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkeletonSystem.cpp; sourceTree = "<group>"; };
+		026A1DE519DAF25700813AEF /* SkeletonSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkeletonSystem.h; sourceTree = "<group>"; };
+		026A1DEA19DAF26600813AEF /* SkinnedMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkinnedMesh.cpp; sourceTree = "<group>"; };
+		026A1DEB19DAF26600813AEF /* SkinnedMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkinnedMesh.h; sourceTree = "<group>"; };
 		0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODFileSoundEvent.cpp; sourceTree = "<group>"; };
 		0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
 		02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualToPhysicalHelper.cpp; sourceTree = "<group>"; };
@@ -1789,6 +1825,10 @@
 		1146E10D19D0066F009E5FAB /* AnimationComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationComponent.h; sourceTree = "<group>"; };
 		11CB614719C338DF00B48A92 /* AnimationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationData.cpp; sourceTree = "<group>"; };
 		11CB614819C338DF00B48A92 /* AnimationData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationData.h; sourceTree = "<group>"; };
+		1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefaultUIPackageBuilder.h; sourceTree = "<group>"; };
+		150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DefaultUIPackageBuilder.cpp; sourceTree = "<group>"; };
+		150353911A02D5AA00C90B4F /* AbstractUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractUIPackageBuilder.h; sourceTree = "<group>"; };
+		150353921A02D5AA00C90B4F /* AbstractUIPackageBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbstractUIPackageBuilder.cpp; sourceTree = "<group>"; };
 		155D77E6197DD265006AEBCD /* YamlNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlNode.cpp; sourceTree = "<group>"; };
 		155D77E7197DD265006AEBCD /* YamlNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlNode.h; sourceTree = "<group>"; };
 		15D3118E1982861500919AAA /* YamlEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlEmitter.cpp; sourceTree = "<group>"; };
@@ -1812,6 +1852,12 @@
 		17F53E3216D3705E004D5099 /* WebViewControliOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebViewControliOS.h; sourceTree = "<group>"; };
 		17F53E3316D3705E004D5099 /* WebViewControliOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebViewControliOS.mm; sourceTree = "<group>"; };
 		1AD7C35D17D8951C00B9977C /* Vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
+		32B074B719E53C0C0069981A /* UIControlHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlHelpers.cpp; sourceTree = "<group>"; };
+		32B074B819E53C0C0069981A /* UIControlHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIControlHelpers.h; sourceTree = "<group>"; };
+		32B074B919E53C0C0069981A /* UIPackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackage.cpp; sourceTree = "<group>"; };
+		32B074BA19E53C0C0069981A /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
+		32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackageLoader.cpp; sourceTree = "<group>"; };
+		32B074BC19E53C0C0069981A /* UIPackageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackageLoader.h; sourceTree = "<group>"; };
 		496526CF167F173400107C70 /* libdxt_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_ios.a; path = ../../Libs/libs/libdxt_ios.a; sourceTree = "<group>"; };
 		497BF6E116F751ED00AC57C6 /* DeviceInfoiOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceInfoiOS.mm; sourceTree = "<group>"; };
 		4F25830A19BDC94000C28926 /* Bind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Bind.h; sourceTree = "<group>"; };
@@ -1840,8 +1886,6 @@
 		6252BF2518ED506E00058754 /* libjpeg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_ios.a; path = ../../Libs/libs/libjpeg_ios.a; sourceTree = "<group>"; };
 		6272153D192265C7007B7DE9 /* CRCAdditionInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CRCAdditionInterface.h; path = Image/CRCAdditionInterface.h; sourceTree = "<group>"; };
 		6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DateTimeApple.mm; sourceTree = "<group>"; };
-		62BAA48D178EF915003DE32C /* MailComposeDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailComposeDelegate.h; sourceTree = "<group>"; };
-		62BAA491178EF952003DE32C /* MailComposeDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MailComposeDelegate.mm; sourceTree = "<group>"; };
 		641A61FD18CE0F61003359E7 /* FoliageSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FoliageSystem.cpp; sourceTree = "<group>"; };
 		641A61FE18CE0F61003359E7 /* FoliageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoliageSystem.h; sourceTree = "<group>"; };
 		64493DDC19476F4700AB2715 /* RenderBatchPool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderBatchPool.cpp; sourceTree = "<group>"; };
@@ -1899,8 +1943,10 @@
 		87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		9A011711EF06ABD979FD9B39 /* GamepadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GamepadManager.h; sourceTree = "<group>"; };
 		9A0118E18AC6866222998E4C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
+		9A011A8135D9BBBADF8E3299 /* LocalNotificationDelayed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationDelayed.cpp; sourceTree = "<group>"; };
 		9A011B491A9F000929E1677C /* GamepadDevice.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GamepadDevice.mm; sourceTree = "<group>"; };
 		9A011D1A54C2070D923E1061 /* GamepadDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GamepadDevice.h; sourceTree = "<group>"; };
+		9A011E482AD5A0EA4F082005 /* LocalNotificationDelayed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationDelayed.h; sourceTree = "<group>"; };
 		9A011F9F2BA83F7B090CBCFF /* GamepadManager.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GamepadManager.mm; sourceTree = "<group>"; };
 		A61171411860C24D00E18F8C /* StaticOcclusion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusion.cpp; sourceTree = "<group>"; };
 		A61171421860C24D00E18F8C /* StaticOcclusion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusion.h; sourceTree = "<group>"; };
@@ -1952,6 +1998,12 @@
 		AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		B4C29D50199B933F001B83FE /* SceneCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneCache.cpp; sourceTree = "<group>"; };
 		B4C29D51199B933F001B83FE /* SceneCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneCache.h; sourceTree = "<group>"; };
+		B78601471A08EAD40041F817 /* libunibreak_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_ios.a; path = ../../Libs/libs/libunibreak_ios.a; sourceTree = "<group>"; };
+		B786014B1A08EB140041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
+		B786014C1A08EB140041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
+		B79723EC1A125F96009421F3 /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
+		B79723ED1A125F96009421F3 /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
+		B7D6C97319C9856B0095250A /* libfribidi_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_ios.a; path = ../../Libs/libs/libfribidi_ios.a; sourceTree = "<group>"; };
 		C13E6DB6186861FA00D1B2CE /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C13E6DB7186861FA00D1B2CE /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
 		C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextBlockDistanceRender.cpp; sourceTree = "<group>"; };
@@ -2007,12 +2059,19 @@
 		CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchToRenerObjectConverter.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D751821719BF03E400BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
-		D7B50F2719ACB28900F8C0C9 /* Notification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Notification.cpp; sourceTree = "<group>"; };
-		D7B50F2819ACB28900F8C0C9 /* Notification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Notification.h; sourceTree = "<group>"; };
-		D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NotificationAndroid.cpp; sourceTree = "<group>"; };
-		D7B50F2A19ACB28900F8C0C9 /* NotificationAndroid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotificationAndroid.h; sourceTree = "<group>"; };
-		D7B50F2B19ACB28900F8C0C9 /* NotificationNotImplemented.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NotificationNotImplemented.cpp; sourceTree = "<group>"; };
-		D7B50F2C19ACB28900F8C0C9 /* NotificationNotImplemented.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotificationNotImplemented.h; sourceTree = "<group>"; };
+		D7CC264F19C517E500A3B754 /* LocalNotification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotification.cpp; sourceTree = "<group>"; };
+		D7CC265019C517E500A3B754 /* LocalNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotification.h; sourceTree = "<group>"; };
+		D7CC265319C517E500A3B754 /* LocalNotificationController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationController.cpp; sourceTree = "<group>"; };
+		D7CC265419C517E500A3B754 /* LocalNotificationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationController.h; sourceTree = "<group>"; };
+		D7CC265519C517E500A3B754 /* LocalNotificationIOS.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = LocalNotificationIOS.cpp; sourceTree = "<group>"; };
+		D7CC265619C517E500A3B754 /* LocalNotificationIOS.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = LocalNotificationIOS.h; sourceTree = "<group>"; };
+		D7CC265919C517E500A3B754 /* LocalNotificationProgress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationProgress.cpp; sourceTree = "<group>"; };
+		D7CC265A19C517E500A3B754 /* LocalNotificationProgress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationProgress.h; sourceTree = "<group>"; };
+		D7CC265B19C517E500A3B754 /* LocalNotificationText.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationText.cpp; sourceTree = "<group>"; };
+		D7CC265C19C517E500A3B754 /* LocalNotificationText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationText.h; sourceTree = "<group>"; };
+		D7D3A2C219C8313300CD6B51 /* NSStringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStringUtils.h; sourceTree = "<group>"; };
+		D7D3A2C319C8313300CD6B51 /* NSStringUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NSStringUtils.mm; sourceTree = "<group>"; };
+		D7D3A2CB19CAB6C000CD6B51 /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
 		D7FEF12319864E5C00B2C7AF /* DLC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DLC.cpp; sourceTree = "<group>"; };
 		D7FEF12419864E5C00B2C7AF /* DLC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLC.h; sourceTree = "<group>"; };
 		D7FEF12619864E5C00B2C7AF /* CurlDownloader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CurlDownloader.cpp; sourceTree = "<group>"; };
@@ -2039,7 +2098,12 @@
 		E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
 		E8373BD717268CD9001A9770 /* UIAggregatorControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAggregatorControl.h; sourceTree = "<group>"; };
 		E845D4E51732B7C9000DA8E7 /* FilePathObjective.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FilePathObjective.mm; sourceTree = "<group>"; };
+		E84B1A6619FA394700E4D4BC /* UITextFieldHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldHolder.h; sourceTree = "<group>"; };
+		E84B1A6719FA394700E4D4BC /* UITextFieldHolder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldHolder.mm; sourceTree = "<group>"; };
 		E84E5BE61988D99000686C14 /* OGLHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLHelpers.cpp; sourceTree = "<group>"; };
+		E8586C3F19F8FEBA004FD709 /* BackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BackgroundView.h; sourceTree = "<group>"; };
+		E8586C4019F8FEBA004FD709 /* BackgroundView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BackgroundView.mm; sourceTree = "<group>"; };
+		E8586C4519F924D1004FD709 /* NativeViewPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NativeViewPool.h; sourceTree = "<group>"; };
 		E867917A175F620400C5A6A2 /* GlobalEnum.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalEnum.cpp; sourceTree = "<group>"; };
 		E867917B175F620400C5A6A2 /* GlobalEnum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalEnum.h; sourceTree = "<group>"; };
 		E867917E175F621E00C5A6A2 /* GPUFamilyDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GPUFamilyDescriptor.cpp; sourceTree = "<group>"; };
@@ -2233,22 +2297,6 @@
 		E8B3C89416B9326D002BD35F /* Spline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Spline.cpp; sourceTree = "<group>"; };
 		E8B3C89516B9326D002BD35F /* Spline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Spline.h; sourceTree = "<group>"; };
 		E8B3C89616B9326D002BD35F /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
-		E8B3C89816B9326D002BD35F /* BaseNetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseNetworkConnection.h; sourceTree = "<group>"; };
-		E8B3C89916B9326D002BD35F /* BaseNetworkConnection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BaseNetworkConnection.mm; sourceTree = "<group>"; };
-		E8B3C89A16B9326D002BD35F /* BTNetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BTNetworkConnection.h; sourceTree = "<group>"; };
-		E8B3C89B16B9326D002BD35F /* BTNetworkConnection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BTNetworkConnection.mm; sourceTree = "<group>"; };
-		E8B3C89C16B9326D002BD35F /* NetworkConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkConnection.cpp; sourceTree = "<group>"; };
-		E8B3C89D16B9326D002BD35F /* NetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkConnection.h; sourceTree = "<group>"; };
-		E8B3C89E16B9326D002BD35F /* NetworkConnectionIPhone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkConnectionIPhone.h; sourceTree = "<group>"; };
-		E8B3C89F16B9326D002BD35F /* NetworkConnectionIPhone.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NetworkConnectionIPhone.mm; sourceTree = "<group>"; };
-		E8B3C8A016B9326D002BD35F /* NetworkDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkDelegate.cpp; sourceTree = "<group>"; };
-		E8B3C8A116B9326D002BD35F /* NetworkDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkDelegate.h; sourceTree = "<group>"; };
-		E8B3C8A216B9326D002BD35F /* NetworkPacket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkPacket.cpp; sourceTree = "<group>"; };
-		E8B3C8A316B9326D002BD35F /* NetworkPacket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkPacket.h; sourceTree = "<group>"; };
-		E8B3C8A416B9326D002BD35F /* TCPServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPServer.h; sourceTree = "<group>"; };
-		E8B3C8A516B9326D002BD35F /* TCPServer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TCPServer.mm; sourceTree = "<group>"; };
-		E8B3C8A616B9326D002BD35F /* WFNetworkConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNetworkConnection.h; sourceTree = "<group>"; };
-		E8B3C8A716B9326D002BD35F /* WFNetworkConnection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WFNetworkConnection.mm; sourceTree = "<group>"; };
 		E8B3C8A916B9326D002BD35F /* Particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Particle.cpp; sourceTree = "<group>"; };
 		E8B3C8AA16B9326D002BD35F /* Particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Particle.h; sourceTree = "<group>"; };
 		E8B3C8AB16B9326D002BD35F /* ParticleEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleEmitter.cpp; sourceTree = "<group>"; };
@@ -2570,9 +2618,6 @@
 		E8B3CA7D16B9326E002BD35F /* UtilsMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UtilsMacOS.mm; sourceTree = "<group>"; };
 		E8B6B3C41705DEB4004F665E /* DeviceInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceInfo.cpp; sourceTree = "<group>"; };
 		E8B6B3C51705DEB4004F665E /* DeviceInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceInfo.h; sourceTree = "<group>"; };
-		E8BD1F0916DE4A9C00499E18 /* MailSender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MailSender.cpp; sourceTree = "<group>"; };
-		E8BD1F0A16DE4A9C00499E18 /* MailSender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailSender.h; sourceTree = "<group>"; };
-		E8BD1F0B16DE4A9C00499E18 /* MailSenderMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MailSenderMacOS.mm; sourceTree = "<group>"; };
 		E8C0A6F817D5D8B300F8F93C /* UIScrollView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScrollView.cpp; sourceTree = "<group>"; };
 		E8C0A6F917D5D8B300F8F93C /* UIScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollView.h; sourceTree = "<group>"; };
 		E8C0A6FC17D5D8EC00F8F93C /* UIScrollViewContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScrollViewContainer.cpp; sourceTree = "<group>"; };
@@ -2598,7 +2643,6 @@
 		EA56555117CE00E100426EB8 /* PerformanceSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PerformanceSettings.cpp; sourceTree = "<group>"; };
 		EA56555217CE00E100426EB8 /* PerformanceSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PerformanceSettings.h; sourceTree = "<group>"; };
 		EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype_ios.a; path = ../../Libs/freetype/lib/libfreetype_ios.a; sourceTree = "<group>"; };
-		EA7DEDDC1448550100D9E652 /* libfreetype_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype_ios.a; path = ../../Libs/freetype/lib/libfreetype_ios.a; sourceTree = "<group>"; };
 		EA84E17317FAC20100304C3C /* SpatialTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpatialTree.cpp; sourceTree = "<group>"; };
 		EA84E17417FAC20100304C3C /* SpatialTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpatialTree.h; sourceTree = "<group>"; };
 		EAAC98BA1937354800549BAD /* MeshUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshUtils.cpp; sourceTree = "<group>"; };
@@ -2622,12 +2666,14 @@
 				02FD81F71924997C007762C0 /* libfmodex_iphonesimulator.a in Frameworks */,
 				02FD81F81924997C007762C0 /* libTextureConverter_macos.a in Frameworks */,
 				02FD81F91924997C007762C0 /* liblua_ios.a in Frameworks */,
+				B786014A1A08EAEB0041F817 /* libfribidi_ios.a in Frameworks */,
 				02FD81FA1924997C007762C0 /* libcurl_ios.a in Frameworks */,
 				02FD81FB1924997C007762C0 /* libdxt_ios.a in Frameworks */,
 				02FD81FC1924997C007762C0 /* libogg_ios.a in Frameworks */,
 				02FD81FD1924997C007762C0 /* libogg_macos.a in Frameworks */,
 				02FD81FE1924997C007762C0 /* libtheora_ios.a in Frameworks */,
 				02FD81FF1924997C007762C0 /* libtheora_macos.a in Frameworks */,
+				B78601491A08EAE60041F817 /* libunibreak_ios.a in Frameworks */,
 				02FD82001924997C007762C0 /* libmongodb_ios.a in Frameworks */,
 				02FD82011924997C007762C0 /* libxml_ios.a in Frameworks */,
 				02FD82021924997C007762C0 /* libyaml_ios.a in Frameworks */,
@@ -2642,6 +2688,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B78601481A08EAD40041F817 /* libunibreak_ios.a in Frameworks */,
+				B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */,
 				8402AB9E19B9FFB000111F35 /* libmongodb_ios.a in Frameworks */,
 				CC677BA5197D46390089547A /* SystemConfiguration.framework in Frameworks */,
 				6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */,
@@ -2723,6 +2771,8 @@
 				5C97964514E3E75000FFFA14 /* libxml_ios.a */,
 				5C97964614E3E75000FFFA14 /* libyaml_ios.a */,
 				5C77ABBE14C7703800E92D28 /* libpng_ios.a */,
+				B7D6C97319C9856B0095250A /* libfribidi_ios.a */,
+				B78601471A08EAD40041F817 /* libunibreak_ios.a */,
 				FEF4D38112C91A3A004B850E /* Box2D_iPhone.xcodeproj */,
 				FECFB1D912E5904400C71562 /* External */,
 				FECFB32D12E5904400C71562 /* Internal */,
@@ -2739,7 +2789,6 @@
 				CC677BA4197D46390089547A /* SystemConfiguration.framework */,
 				6252BF2518ED506E00058754 /* libjpeg_ios.a */,
 				87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */,
-				EA7DEDDC1448550100D9E652 /* libfreetype_ios.a */,
 				9A0118E18AC6866222998E4C /* GameController.framework */,
 			);
 			name = Frameworks;
@@ -2844,6 +2893,26 @@
 				CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */,
 			);
 			path = Converters;
+			sourceTree = "<group>";
+		};
+		D7CC264E19C517E500A3B754 /* Notification */ = {
+			isa = PBXGroup;
+			children = (
+				D7CC264F19C517E500A3B754 /* LocalNotification.cpp */,
+				D7CC265019C517E500A3B754 /* LocalNotification.h */,
+				D7CC265319C517E500A3B754 /* LocalNotificationController.cpp */,
+				D7CC265419C517E500A3B754 /* LocalNotificationController.h */,
+				D7CC265519C517E500A3B754 /* LocalNotificationIOS.cpp */,
+				D7CC265619C517E500A3B754 /* LocalNotificationIOS.h */,
+				D7CC265919C517E500A3B754 /* LocalNotificationProgress.cpp */,
+				D7CC265A19C517E500A3B754 /* LocalNotificationProgress.h */,
+				D7CC265B19C517E500A3B754 /* LocalNotificationText.cpp */,
+				D7CC265C19C517E500A3B754 /* LocalNotificationText.h */,
+				D7D3A2CB19CAB6C000CD6B51 /* LocalNotificationImpl.h */,
+				9A011A8135D9BBBADF8E3299 /* LocalNotificationDelayed.cpp */,
+				9A011E482AD5A0EA4F082005 /* LocalNotificationDelayed.h */,
+			);
+			path = Notification;
 			sourceTree = "<group>";
 		};
 		D7FEF12519864E5C00B2C7AF /* Downloader */ = {
@@ -3209,34 +3278,6 @@
 			path = Neon;
 			sourceTree = "<group>";
 		};
-		E8B3C89716B9326D002BD35F /* Network */ = {
-			isa = PBXGroup;
-			children = (
-				62BAA491178EF952003DE32C /* MailComposeDelegate.mm */,
-				62BAA48D178EF915003DE32C /* MailComposeDelegate.h */,
-				E8BD1F0916DE4A9C00499E18 /* MailSender.cpp */,
-				E8BD1F0A16DE4A9C00499E18 /* MailSender.h */,
-				E8BD1F0B16DE4A9C00499E18 /* MailSenderMacOS.mm */,
-				E8B3C89816B9326D002BD35F /* BaseNetworkConnection.h */,
-				E8B3C89916B9326D002BD35F /* BaseNetworkConnection.mm */,
-				E8B3C89A16B9326D002BD35F /* BTNetworkConnection.h */,
-				E8B3C89B16B9326D002BD35F /* BTNetworkConnection.mm */,
-				E8B3C89C16B9326D002BD35F /* NetworkConnection.cpp */,
-				E8B3C89D16B9326D002BD35F /* NetworkConnection.h */,
-				E8B3C89E16B9326D002BD35F /* NetworkConnectionIPhone.h */,
-				E8B3C89F16B9326D002BD35F /* NetworkConnectionIPhone.mm */,
-				E8B3C8A016B9326D002BD35F /* NetworkDelegate.cpp */,
-				E8B3C8A116B9326D002BD35F /* NetworkDelegate.h */,
-				E8B3C8A216B9326D002BD35F /* NetworkPacket.cpp */,
-				E8B3C8A316B9326D002BD35F /* NetworkPacket.h */,
-				E8B3C8A416B9326D002BD35F /* TCPServer.h */,
-				E8B3C8A516B9326D002BD35F /* TCPServer.mm */,
-				E8B3C8A616B9326D002BD35F /* WFNetworkConnection.h */,
-				E8B3C8A716B9326D002BD35F /* WFNetworkConnection.mm */,
-			);
-			path = Network;
-			sourceTree = "<group>";
-		};
 		E8B3C8A816B9326D002BD35F /* Particles */ = {
 			isa = PBXGroup;
 			children = (
@@ -3261,12 +3302,6 @@
 			isa = PBXGroup;
 			children = (
 				D751821719BF03E400BB88E0 /* ThreadPosix.cpp */,
-				D7B50F2719ACB28900F8C0C9 /* Notification.cpp */,
-				D7B50F2819ACB28900F8C0C9 /* Notification.h */,
-				D7B50F2919ACB28900F8C0C9 /* NotificationAndroid.cpp */,
-				D7B50F2A19ACB28900F8C0C9 /* NotificationAndroid.h */,
-				D7B50F2B19ACB28900F8C0C9 /* NotificationNotImplemented.cpp */,
-				D7B50F2C19ACB28900F8C0C9 /* NotificationNotImplemented.h */,
 				6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */,
 				624C87F018C6160F00E1049D /* DateTime.cpp */,
 				624C87F118C6160F00E1049D /* DateTime.h */,
@@ -3289,6 +3324,11 @@
 		E8B3C8D916B9326D002BD35F /* TemplateiOS */ = {
 			isa = PBXGroup;
 			children = (
+				E84B1A6619FA394700E4D4BC /* UITextFieldHolder.h */,
+				E84B1A6719FA394700E4D4BC /* UITextFieldHolder.mm */,
+				E8586C4519F924D1004FD709 /* NativeViewPool.h */,
+				E8586C3F19F8FEBA004FD709 /* BackgroundView.h */,
+				E8586C4019F8FEBA004FD709 /* BackgroundView.mm */,
 				17D411681973E4B700CF6BC0 /* Reachability.h */,
 				17D411691973E4B700CF6BC0 /* Reachability.mm */,
 				84E5E100174D02F60001C74F /* OpenUDIDios.h */,
@@ -3450,6 +3490,8 @@
 		E8B3C92316B9326D002BD35F /* Highlevel */ = {
 			isa = PBXGroup;
 			children = (
+				026A1DEA19DAF26600813AEF /* SkinnedMesh.cpp */,
+				026A1DEB19DAF26600813AEF /* SkinnedMesh.h */,
 				64493DDB19476F4700AB2715 /* Vegetation */,
 				A6AFDEFA1871C3D1006E43A1 /* SpeedTreeObject.cpp */,
 				A6AFDEFB1871C3D1006E43A1 /* SpeedTreeObject.h */,
@@ -3651,6 +3693,8 @@
 		E8B3C9AC16B9326E002BD35F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				026A1DDE19DAF24A00813AEF /* SkeletonComponent.cpp */,
+				026A1DDF19DAF24A00813AEF /* SkeletonComponent.h */,
 				1146E10C19D0066F009E5FAB /* AnimationComponent.cpp */,
 				1146E10D19D0066F009E5FAB /* AnimationComponent.h */,
 				022AA8DC1934CECD009A4B84 /* WaveComponent.cpp */,
@@ -3700,6 +3744,8 @@
 		E8B3C9FD16B9326E002BD35F /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				026A1DE419DAF25700813AEF /* SkeletonSystem.cpp */,
+				026A1DE519DAF25700813AEF /* SkeletonSystem.h */,
 				1146E10619D00649009E5FAB /* AnimationSystem.cpp */,
 				1146E10719D00649009E5FAB /* AnimationSystem.h */,
 				022AA8E21934CED9009A4B84 /* WaveSystem.cpp */,
@@ -3764,6 +3810,16 @@
 		E8B3CA2E16B9326E002BD35F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */,
+				150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */,
+				150353911A02D5AA00C90B4F /* AbstractUIPackageBuilder.h */,
+				150353921A02D5AA00C90B4F /* AbstractUIPackageBuilder.cpp */,
+				32B074B719E53C0C0069981A /* UIControlHelpers.cpp */,
+				32B074B819E53C0C0069981A /* UIControlHelpers.h */,
+				32B074B919E53C0C0069981A /* UIPackage.cpp */,
+				32B074BA19E53C0C0069981A /* UIPackage.h */,
+				32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */,
+				32B074BC19E53C0C0069981A /* UIPackageLoader.h */,
 				EAADA0031892A48E001E1AA2 /* UIParticles.cpp */,
 				EAADA0041892A48E001E1AA2 /* UIParticles.h */,
 				17DC600717DE16D40075813E /* IMovieViewControl.h */,
@@ -3851,6 +3907,10 @@
 		E8B3CA7016B9326E002BD35F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				B79723EC1A125F96009421F3 /* BiDiHelper.cpp */,
+				B79723ED1A125F96009421F3 /* BiDiHelper.h */,
+				B786014B1A08EB140041F817 /* StringUtils.cpp */,
+				B786014C1A08EB140041F817 /* StringUtils.h */,
 				02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */,
 				02864522197960F200ABCAA0 /* VirtualToPhysicalHelper.h */,
 				A6A1E8671785688600AA3A86 /* CRC32.cpp */,
@@ -3867,6 +3927,8 @@
 				E8B3CA7B16B9326E002BD35F /* Utils.cpp */,
 				E8B3CA7C16B9326E002BD35F /* Utils.h */,
 				E8B3CA7D16B9326E002BD35F /* UtilsMacOS.mm */,
+				D7D3A2C219C8313300CD6B51 /* NSStringUtils.h */,
+				D7D3A2C319C8313300CD6B51 /* NSStringUtils.mm */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -3890,6 +3952,7 @@
 		FECFB32D12E5904400C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				D7CC264E19C517E500A3B754 /* Notification */,
 				E8B3C7A116B9326D002BD35F /* Animation */,
 				E8B3C7B116B9326D002BD35F /* Autotesting */,
 				E8B3C7BD16B9326D002BD35F /* Base */,
@@ -3909,7 +3972,6 @@
 				E8B3C86716B9326D002BD35F /* Input */,
 				CC84B03518211BB600934482 /* Job */,
 				E8B3C87216B9326D002BD35F /* Math */,
-				E8B3C89716B9326D002BD35F /* Network */,
 				E8B3C8A816B9326D002BD35F /* Particles */,
 				E8B3C8BB16B9326D002BD35F /* Platform */,
 				E8B3C8F916B9326D002BD35F /* Render */,
@@ -3979,10 +4041,12 @@
 				02FD7F2D1924997C007762C0 /* Meta.h in Headers */,
 				02FD7F2E1924997C007762C0 /* ObjectCreator.h in Headers */,
 				02E9B4C719407C41001DBDDF /* TreeToAnimatedTreeConverter.h in Headers */,
+				32B074C819E53C0C0069981A /* UIPackageLoader.h in Headers */,
 				02FD7F2F1924997C007762C0 /* ObjectFactory.h in Headers */,
 				02FD7F301924997C007762C0 /* Observable.h in Headers */,
 				02FD7F311924997C007762C0 /* Observer.h in Headers */,
 				02FD7F321924997C007762C0 /* Radix.h in Headers */,
+				E8586C4819F924D1004FD709 /* NativeViewPool.h in Headers */,
 				64493E1D19476F4700AB2715 /* VegetationSpatialData.h in Headers */,
 				02FD7F331924997C007762C0 /* RefPtr.h in Headers */,
 				02FD7F341924997C007762C0 /* ScopedPtr.h in Headers */,
@@ -4023,6 +4087,7 @@
 				02FD7F551924997C007762C0 /* File.h in Headers */,
 				02FD7F561924997C007762C0 /* FileList.h in Headers */,
 				02FD7F571924997C007762C0 /* FilePath.h in Headers */,
+				150353981A02D5AA00C90B4F /* AbstractUIPackageBuilder.h in Headers */,
 				64493E0D19476F4700AB2715 /* VegetationGeometry.h in Headers */,
 				02FD7F581924997C007762C0 /* FileSystem.h in Headers */,
 				02FD7F5A1924997C007762C0 /* KeyedArchive.h in Headers */,
@@ -4044,6 +4109,7 @@
 				02FD7F671924997C007762C0 /* InputSystem.h in Headers */,
 				64493E0F19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
 				02FD7F681924997C007762C0 /* KeyboardDevice.h in Headers */,
+				E8586C4219F8FEBA004FD709 /* BackgroundView.h in Headers */,
 				02FD7F691924997C007762C0 /* AABBox2.h in Headers */,
 				02FD7F6A1924997C007762C0 /* AABBox3.h in Headers */,
 				022AA8E11934CECD009A4B84 /* WaveComponent.h in Headers */,
@@ -4065,11 +4131,13 @@
 				02FD7F7A1924997C007762C0 /* NeonMath.h in Headers */,
 				02FD7F7B1924997C007762C0 /* OOBBox.h in Headers */,
 				64493E1719476F4700AB2715 /* VegetationRenderData.h in Headers */,
+				D7D3A2CF19CAB6C000CD6B51 /* LocalNotificationImpl.h in Headers */,
 				02FD7F7C1924997C007762C0 /* Plane.h in Headers */,
 				02FD7F7D1924997C007762C0 /* Polygon2.h in Headers */,
 				02FD7F7E1924997C007762C0 /* Polygon3.h in Headers */,
 				02FD7F7F1924997C007762C0 /* ParticleGroup.h in Headers */,
 				02FD7F801924997C007762C0 /* Quaternion.h in Headers */,
+				150353941A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */,
 				02FD7F811924997C007762C0 /* Ray.h in Headers */,
 				02864526197960F200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */,
 				D7FEF15019864E5C00B2C7AF /* bs_common.h in Headers */,
@@ -4079,18 +4147,11 @@
 				02FD7F851924997C007762C0 /* ES3Renderer.h in Headers */,
 				02FD7F861924997C007762C0 /* Spline.h in Headers */,
 				02FD7F871924997C007762C0 /* Vector.h in Headers */,
-				02FD7F881924997C007762C0 /* BaseNetworkConnection.h in Headers */,
-				02FD7F891924997C007762C0 /* BTNetworkConnection.h in Headers */,
 				15D311931982861500919AAA /* YamlEmitter.h in Headers */,
-				02FD7F8A1924997C007762C0 /* NetworkConnection.h in Headers */,
-				02FD7F8B1924997C007762C0 /* NetworkConnectionIPhone.h in Headers */,
-				02FD7F8C1924997C007762C0 /* NetworkDelegate.h in Headers */,
+				D7CC267419C517E500A3B754 /* LocalNotificationProgress.h in Headers */,
 				D7FEF15C19864E5C00B2C7AF /* PatchFile.h in Headers */,
 				17675C1C19472C1400054F8F /* Image.h in Headers */,
-				02FD7F8D1924997C007762C0 /* NetworkPacket.h in Headers */,
-				02FD7F8E1924997C007762C0 /* TCPServer.h in Headers */,
 				02FD7F8F1924997C007762C0 /* StaticOcclusion.h in Headers */,
-				02FD7F901924997C007762C0 /* WFNetworkConnection.h in Headers */,
 				02FD7F911924997C007762C0 /* Particle.h in Headers */,
 				B4C29D55199B933F001B83FE /* SceneCache.h in Headers */,
 				02FD7F921924997C007762C0 /* ParticleEmitter.h in Headers */,
@@ -4118,8 +4179,11 @@
 				02FD7FA61924997C007762C0 /* AnimatedMesh.h in Headers */,
 				02FD7FA81924997C007762C0 /* OcclusionQuery.h in Headers */,
 				02FD7FA91924997C007762C0 /* EdgeAdjacency.h in Headers */,
+				D7CC266C19C517E500A3B754 /* LocalNotificationIOS.h in Headers */,
 				02FD7FAA1924997C007762C0 /* PolygonGroup.h in Headers */,
+				026A1DEF19DAF26600813AEF /* SkinnedMesh.h in Headers */,
 				02FD7FAB1924997C007762C0 /* StaticMesh.h in Headers */,
+				D7D3A2C519C8313300CD6B51 /* NSStringUtils.h in Headers */,
 				02FD7FAC1924997C007762C0 /* Cursor.h in Headers */,
 				02FD7FAD1924997C007762C0 /* ColorOnlyEffect.h in Headers */,
 				02FD7FAE1924997C007762C0 /* MultiTextureEffect.h in Headers */,
@@ -4129,6 +4193,7 @@
 				02FD7FB21924997C007762C0 /* Camera.h in Headers */,
 				02FD7FB31924997C007762C0 /* CullingSystem.h in Headers */,
 				02FD7FB41924997C007762C0 /* Heightmap.h in Headers */,
+				32B074C419E53C0C0069981A /* UIPackage.h in Headers */,
 				64493E0919476F4700AB2715 /* VegetationFixedGeometry.h in Headers */,
 				64493DFD19476F4700AB2715 /* VegetationCustomGeometry.h in Headers */,
 				02FD7FB51924997C007762C0 /* IRenderUpdatable.h in Headers */,
@@ -4136,7 +4201,6 @@
 				17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */,
 				02FD7FB71924997C007762C0 /* LandscapeCursor.h in Headers */,
 				02FD7FB81924997C007762C0 /* Light.h in Headers */,
-				D7B50F3019ACB28900F8C0C9 /* Notification.h in Headers */,
 				02FD7FB91924997C007762C0 /* Mesh.h in Headers */,
 				02FD7FBA1924997C007762C0 /* RenderBatch.h in Headers */,
 				02FD7FBB1924997C007762C0 /* RenderDataSource.h in Headers */,
@@ -4200,7 +4264,6 @@
 				02FD7FFB1924997C007762C0 /* RenderComponent.h in Headers */,
 				02FD7FFC1924997C007762C0 /* SwitchComponent.h in Headers */,
 				02FD7FFD1924997C007762C0 /* TransformComponent.h in Headers */,
-				D7B50F3419ACB28900F8C0C9 /* NotificationAndroid.h in Headers */,
 				02FD7FFE1924997C007762C0 /* UpdatableComponent.h in Headers */,
 				02FD7FFF1924997C007762C0 /* DataNode.h in Headers */,
 				02FD80001924997C007762C0 /* Drawable.h in Headers */,
@@ -4230,6 +4293,7 @@
 				02FD80171924997C007762C0 /* BaseProcessSystem.h in Headers */,
 				02FD80181924997C007762C0 /* DebugRenderSystem.h in Headers */,
 				02FD80191924997C007762C0 /* EventSystem.h in Headers */,
+				D7CC266819C517E500A3B754 /* LocalNotificationController.h in Headers */,
 				02AD131919767DFB00567AD2 /* VersionInfo.h in Headers */,
 				02FD801A1924997C007762C0 /* LightUpdateSystem.h in Headers */,
 				02FD801B1924997C007762C0 /* LodSystem.h in Headers */,
@@ -4238,6 +4302,7 @@
 				02FD801E1924997C007762C0 /* RenderUpdateSystem.h in Headers */,
 				02FD801F1924997C007762C0 /* SwitchSystem.h in Headers */,
 				02FD80201924997C007762C0 /* TransformSystem.h in Headers */,
+				026A1DE319DAF24A00813AEF /* SkeletonComponent.h in Headers */,
 				02FD80211924997C007762C0 /* UserNode.h in Headers */,
 				1146E10B19D0064F009E5FAB /* AnimationSystem.h in Headers */,
 				02E9B4CD19407C68001DBDDF /* WindSystem.h in Headers */,
@@ -4253,6 +4318,7 @@
 				02FD80291924997C007762C0 /* UIControlSystem.h in Headers */,
 				02FD802A1924997C007762C0 /* UIEvent.h in Headers */,
 				647EFC76195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
+				026A1DE919DAF25700813AEF /* SkeletonSystem.h in Headers */,
 				02FD802B1924997C007762C0 /* UIFadeTransition.h in Headers */,
 				02FD802C1924997C007762C0 /* JobQueue.h in Headers */,
 				02FD802D1924997C007762C0 /* UIFileSystemDialog.h in Headers */,
@@ -4266,6 +4332,7 @@
 				02FD80341924997C007762C0 /* UIListCell.h in Headers */,
 				02FD80351924997C007762C0 /* UILoadingTransition.h in Headers */,
 				02FD80361924997C007762C0 /* UIMoveInTransition.h in Headers */,
+				D7CC267819C517E500A3B754 /* LocalNotificationText.h in Headers */,
 				02FD80371924997C007762C0 /* ShadowBlendMode.h in Headers */,
 				02FD80381924997C007762C0 /* UIPopup.h in Headers */,
 				647EFC72195F0AC40073B3CB /* NMaterialHelper.h in Headers */,
@@ -4280,7 +4347,6 @@
 				02FD803E1924997C007762C0 /* SpeedTreeObject.h in Headers */,
 				02FD803F1924997C007762C0 /* UIScreenTransition.h in Headers */,
 				02FD80401924997C007762C0 /* UIScrollBar.h in Headers */,
-				D7B50F3819ACB28900F8C0C9 /* NotificationNotImplemented.h in Headers */,
 				02FD80411924997C007762C0 /* UISlider.h in Headers */,
 				02FD80421924997C007762C0 /* UIStaticText.h in Headers */,
 				02FD80431924997C007762C0 /* UITextField.h in Headers */,
@@ -4312,7 +4378,7 @@
 				02FD805A1924997C007762C0 /* UIAlertView_Modal.h in Headers */,
 				02FD805B1924997C007762C0 /* UserComponent.h in Headers */,
 				02FD805C1924997C007762C0 /* NMaterialTemplate.h in Headers */,
-				02FD805D1924997C007762C0 /* MailSender.h in Headers */,
+				E84B1A6919FA394700E4D4BC /* UITextFieldHolder.h in Headers */,
 				02FD805E1924997C007762C0 /* UISpinner.h in Headers */,
 				02FD805F1924997C007762C0 /* VectorSpinnerAdapter.h in Headers */,
 				02FD80601924997C007762C0 /* UISwitch.h in Headers */,
@@ -4321,6 +4387,7 @@
 				02FD80621924997C007762C0 /* Landscape.h in Headers */,
 				02FD80631924997C007762C0 /* RenderFastNames.h in Headers */,
 				02FD80641924997C007762C0 /* RenderState.h in Headers */,
+				32B074C019E53C0C0069981A /* UIControlHelpers.h in Headers */,
 				02FD80651924997C007762C0 /* Entity.h in Headers */,
 				02FD80661924997C007762C0 /* UpdateSystem.h in Headers */,
 				D7FEF14219864E5C00B2C7AF /* CurlDownloader.h in Headers */,
@@ -4333,8 +4400,8 @@
 				02FD806D1924997C007762C0 /* SoundUpdateSystem.h in Headers */,
 				02FD806E1924997C007762C0 /* LodToLod2Converter.h in Headers */,
 				02FD806F1924997C007762C0 /* OpenUDIDApple.h in Headers */,
+				B78601501A08EB140041F817 /* StringUtils.h in Headers */,
 				02FD80701924997C007762C0 /* OpenUDIDios.h in Headers */,
-				02FD80711924997C007762C0 /* MailComposeDelegate.h in Headers */,
 				02FD80721924997C007762C0 /* GlobalEnum.h in Headers */,
 				02FD80731924997C007762C0 /* GPUFamilyDescriptor.h in Headers */,
 				02FD80741924997C007762C0 /* EnumMap.h in Headers */,
@@ -4356,12 +4423,14 @@
 				02FD80841924997C007762C0 /* UIMovieView.h in Headers */,
 				647EFC7E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				02FD80851924997C007762C0 /* MovieViewControliOS.h in Headers */,
+				D7CC266019C517E500A3B754 /* LocalNotification.h in Headers */,
 				02FD80861924997C007762C0 /* SpatialTree.h in Headers */,
 				D7FEF13E19864E5C00B2C7AF /* DLC.h in Headers */,
 				02FD80871924997C007762C0 /* FMODSoundEvent.h in Headers */,
 				02FD80881924997C007762C0 /* AutotestingDB.h in Headers */,
 				02FD80891924997C007762C0 /* GameAPI.h in Headers */,
 				02FD808A1924997C007762C0 /* ShaderCache.h in Headers */,
+				B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */,
 				02FD808B1924997C007762C0 /* RenderBatchArray.h in Headers */,
 				02FD808C1924997C007762C0 /* RenderHierarchy.h in Headers */,
 				02FD808D1924997C007762C0 /* SerializationContext.h in Headers */,
@@ -4372,6 +4441,7 @@
 				02FD80911924997C007762C0 /* TextureStateData.h in Headers */,
 				02FD80921924997C007762C0 /* GamepadDevice.h in Headers */,
 				02FD80931924997C007762C0 /* GamepadManager.h in Headers */,
+				9A0116D5BCEED06B84CA6928 /* LocalNotificationDelayed.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4390,6 +4460,7 @@
 				E8B3CA8716B9326E002BD35F /* Interpolation.h in Headers */,
 				4F25831019BDC94000C28926 /* Bind.h in Headers */,
 				E8B3CA8916B9326E002BD35F /* KeyframeAnimation.h in Headers */,
+				B786014F1A08EB140041F817 /* StringUtils.h in Headers */,
 				E8B3CA8B16B9326E002BD35F /* LinearAnimation.h in Headers */,
 				E8B3CA8C16B9326E002BD35F /* NamedAnimationsList.h in Headers */,
 				E8B3CA9216B9326E002BD35F /* AutotestingSystem.h in Headers */,
@@ -4399,16 +4470,19 @@
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
 				E8B3CA9D16B9326E002BD35F /* BaseObjectChecker.h in Headers */,
 				E8B3CA9E16B9326E002BD35F /* BaseTypes.h in Headers */,
+				32B074C319E53C0C0069981A /* UIPackage.h in Headers */,
 				641A620018CE0F61003359E7 /* FoliageSystem.h in Headers */,
 				E8B3CAA016B9326E002BD35F /* Data.h in Headers */,
 				E8B3CAA216B9326E002BD35F /* DynamicObjectCache.h in Headers */,
 				E8B3CAA416B9326E002BD35F /* EventDispatcher.h in Headers */,
 				E8B3CAA516B9326E002BD35F /* Exception.h in Headers */,
 				E8B3CAA716B9326E002BD35F /* FastName.h in Headers */,
+				026A1DEE19DAF26600813AEF /* SkinnedMesh.h in Headers */,
 				E8B3CAA816B9326E002BD35F /* FastNameMap.h in Headers */,
 				E8B3CAAA16B9326E002BD35F /* FixedSizePoolAllocator.h in Headers */,
 				02FD7EBC19237D33007762C0 /* SpeedTreeComponent.h in Headers */,
 				E8B3CAAB16B9326E002BD35F /* Hash.h in Headers */,
+				D7D3A2C419C8313300CD6B51 /* NSStringUtils.h in Headers */,
 				E8C486F6196BD2390082E634 /* LockGuard.h in Headers */,
 				E8B3CAAC16B9326E002BD35F /* HashMap.h in Headers */,
 				E8B3CAAD16B9326E002BD35F /* Introspection.h in Headers */,
@@ -4429,6 +4503,7 @@
 				84D18BFF19201BEF009E3E90 /* ImageFormatInterface.h in Headers */,
 				E8B3CABE16B9326E002BD35F /* RefPtr.h in Headers */,
 				E8B3CABF16B9326E002BD35F /* ScopedPtr.h in Headers */,
+				B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */,
 				E8B3CAC016B9326E002BD35F /* Singleton.h in Headers */,
 				E8B3CAC116B9326E002BD35F /* StaticSingleton.h in Headers */,
 				E8B3CAC216B9326E002BD35F /* TemplateHelpers.h in Headers */,
@@ -4446,7 +4521,6 @@
 				E8B3CADD16B9326E002BD35F /* List.h in Headers */,
 				E8B3CADE16B9326E002BD35F /* ListAllocator.h in Headers */,
 				647EFC75195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
-				D7B50F3319ACB28900F8C0C9 /* NotificationAndroid.h in Headers */,
 				0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */,
 				E8B3CAE016B9326E002BD35F /* MemoryManager.h in Headers */,
 				E8B3CAE216B9326E002BD35F /* Replay.h in Headers */,
@@ -4472,11 +4546,11 @@
 				D7FEF14119864E5C00B2C7AF /* CurlDownloader.h in Headers */,
 				E8B3CB2616B9326E002BD35F /* LocalizationSystem.h in Headers */,
 				C172EC3118C9F9D4004309CF /* TextBlockSoftwareRender.h in Headers */,
-				D7B50F2F19ACB28900F8C0C9 /* Notification.h in Headers */,
 				E8B3CB2816B9326E002BD35F /* Logger.h in Headers */,
 				E8B3CB2E16B9326E002BD35F /* ResourceArchive.h in Headers */,
 				E8B3CB3016B9326E002BD35F /* VariantType.h in Headers */,
 				E8B3CB3216B9326E002BD35F /* XMLParser.h in Headers */,
+				D7CC266719C517E500A3B754 /* LocalNotificationController.h in Headers */,
 				E8B3CB3516B9326E002BD35F /* YamlArchive.h in Headers */,
 				E8B3CB3716B9326E002BD35F /* YamlParser.h in Headers */,
 				E8B3CB3916B9326E002BD35F /* Accelerometer.h in Headers */,
@@ -4523,18 +4597,11 @@
 				E8983CC618C8A540002FB974 /* ES3Renderer.h in Headers */,
 				E8B3CB6316B9326E002BD35F /* Spline.h in Headers */,
 				E8B3CB6416B9326E002BD35F /* Vector.h in Headers */,
-				E8B3CB6516B9326E002BD35F /* BaseNetworkConnection.h in Headers */,
-				E8B3CB6716B9326E002BD35F /* BTNetworkConnection.h in Headers */,
-				E8B3CB6A16B9326E002BD35F /* NetworkConnection.h in Headers */,
+				026A1DE219DAF24A00813AEF /* SkeletonComponent.h in Headers */,
 				1146E10F19D0066F009E5FAB /* AnimationComponent.h in Headers */,
 				D7FEF14919864E5C00B2C7AF /* DownloaderCommon.h in Headers */,
 				022AA8E61934CED9009A4B84 /* WaveSystem.h in Headers */,
-				E8B3CB6B16B9326E002BD35F /* NetworkConnectionIPhone.h in Headers */,
-				E8B3CB6E16B9326E002BD35F /* NetworkDelegate.h in Headers */,
-				E8B3CB7016B9326E002BD35F /* NetworkPacket.h in Headers */,
-				E8B3CB7116B9326E002BD35F /* TCPServer.h in Headers */,
 				A61171481860C24D00E18F8C /* StaticOcclusion.h in Headers */,
-				E8B3CB7316B9326E002BD35F /* WFNetworkConnection.h in Headers */,
 				C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */,
 				E8B3CB7616B9326E002BD35F /* Particle.h in Headers */,
 				E8B3CB7816B9326E002BD35F /* ParticleEmitter.h in Headers */,
@@ -4545,6 +4612,7 @@
 				E8B3CBA016B9326E002BD35F /* EAGLView.h in Headers */,
 				E8B3CBA216B9326E002BD35F /* EAGLViewController.h in Headers */,
 				E8B3CBA416B9326E002BD35F /* ES1Renderer.h in Headers */,
+				32B074BF19E53C0C0069981A /* UIControlHelpers.h in Headers */,
 				E8B3CBA616B9326E002BD35F /* ES2Renderer.h in Headers */,
 				E8B3CBA816B9326E002BD35F /* ESRenderer.h in Headers */,
 				E8B3CBA916B9326E002BD35F /* HelperAppDelegate.h in Headers */,
@@ -4559,6 +4627,7 @@
 				A6DBFA7F1887E3D5006BE11C /* NMaterialNames.h in Headers */,
 				E8B3CBCB16B9326E002BD35F /* AnimatedMesh.h in Headers */,
 				505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */,
+				32B074C719E53C0C0069981A /* UIPackageLoader.h in Headers */,
 				E8B3CBCD16B9326E002BD35F /* EdgeAdjacency.h in Headers */,
 				E8B3CBCF16B9326E002BD35F /* PolygonGroup.h in Headers */,
 				E8B3CBD116B9326E002BD35F /* StaticMesh.h in Headers */,
@@ -4584,16 +4653,19 @@
 				E8ADAEC918CA1325000B251C /* PixelFormatDescriptor.h in Headers */,
 				E8B3CBFE16B9326E002BD35F /* RenderObject.h in Headers */,
 				E8B3CC0016B9326E002BD35F /* RenderPass.h in Headers */,
+				150353971A02D5AA00C90B4F /* AbstractUIPackageBuilder.h in Headers */,
 				E8B3CC0216B9326E002BD35F /* RenderSystem.h in Headers */,
 				E8B3CC0416B9326E002BD35F /* ShadowRect.h in Headers */,
 				E8B3CC0616B9326E002BD35F /* ShadowVolume.h in Headers */,
 				E8B3CC0816B9326E002BD35F /* ShadowVolumeRenderPass.h in Headers */,
+				E84B1A6819FA394700E4D4BC /* UITextFieldHolder.h in Headers */,
 				C172EC2D18C9F9D4004309CF /* TextBlockGraphicsRender.h in Headers */,
 				E8B3CC0F16B9326E002BD35F /* IndexBuffer.h in Headers */,
 				EAAC98BE1937354800549BAD /* MeshUtils.h in Headers */,
 				E8B3CC1716B9326E002BD35F /* MaterialCompiler.h in Headers */,
 				155D77EA197DD265006AEBCD /* YamlNode.h in Headers */,
 				021414171819851100925E51 /* DAVAClassRegistrator.h in Headers */,
+				150353931A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */,
 				1146E10919D00649009E5FAB /* AnimationSystem.h in Headers */,
 				E8B3CC1916B9326E002BD35F /* MaterialGraph.h in Headers */,
 				E8B3CC1B16B9326E002BD35F /* MaterialGraphNode.h in Headers */,
@@ -4671,9 +4743,12 @@
 				02FD7EBE19237D33007762C0 /* WindComponent.h in Headers */,
 				E8B3CCA616B9326E002BD35F /* SceneManager.h in Headers */,
 				D7FEF15719864E5C00B2C7AF /* BSDiff.h in Headers */,
+				E8586C4719F924D1004FD709 /* NativeViewPool.h in Headers */,
 				E8B3CCAA16B9326E002BD35F /* SceneNodeAnimation.h in Headers */,
 				E8B3CCAC16B9326E002BD35F /* SceneNodeAnimationKey.h in Headers */,
+				D7CC267719C517E500A3B754 /* LocalNotificationText.h in Headers */,
 				E8B3CCAE16B9326E002BD35F /* SceneNodeAnimationList.h in Headers */,
+				D7CC265F19C517E500A3B754 /* LocalNotification.h in Headers */,
 				15D311921982861500919AAA /* YamlEmitter.h in Headers */,
 				E8B3CCB016B9326E002BD35F /* ShadowVolumeNode.h in Headers */,
 				E8B3CCB216B9326E002BD35F /* SkeletonNode.h in Headers */,
@@ -4703,9 +4778,11 @@
 				E8B3CCF216B9326E002BD35F /* UIControlBackground.h in Headers */,
 				E8B3CCF416B9326E002BD35F /* UIControlSystem.h in Headers */,
 				E8B3CCF616B9326E002BD35F /* UIEvent.h in Headers */,
+				026A1DE819DAF25700813AEF /* SkeletonSystem.h in Headers */,
 				E8B3CCF816B9326E002BD35F /* UIFadeTransition.h in Headers */,
 				CC84B04318211BCE00934482 /* JobQueue.h in Headers */,
 				E8B3CCFA16B9326E002BD35F /* UIFileSystemDialog.h in Headers */,
+				D7CC266B19C517E500A3B754 /* LocalNotificationIOS.h in Headers */,
 				E8B3CCFC16B9326E002BD35F /* UIHierarchy.h in Headers */,
 				E8B3CCFE16B9326E002BD35F /* UIHierarchyCell.h in Headers */,
 				E8B3CD0016B9326E002BD35F /* UIHierarchyNode.h in Headers */,
@@ -4748,6 +4825,7 @@
 				E8B3CD3316B9326E002BD35F /* Utils.h in Headers */,
 				E8F21DD116C1971F007F957A /* GlobalEventSystem.h in Headers */,
 				E89CE92B16C54A36006BEFF4 /* SpriteObject.h in Headers */,
+				D7D3A2CE19CAB6C000CD6B51 /* LocalNotificationImpl.h in Headers */,
 				E89CE92D16C54A36006BEFF4 /* SpriteRenderBatch.h in Headers */,
 				CCB4C44716CBC65D00F2B085 /* ComponentHelpers.h in Headers */,
 				022AA8E01934CECD009A4B84 /* WaveComponent.h in Headers */,
@@ -4762,7 +4840,6 @@
 				CC24801616DD17F300183D40 /* UserComponent.h in Headers */,
 				A69C9398186C377C00EAC8BC /* NMaterialTemplate.h in Headers */,
 				6272153E192265C7007B7DE9 /* CRCAdditionInterface.h in Headers */,
-				E8BD1F0D16DE4A9C00499E18 /* MailSender.h in Headers */,
 				E95B4C5D16DF78EE00880713 /* UISpinner.h in Headers */,
 				CC24804616E0E34300183D40 /* VectorSpinnerAdapter.h in Headers */,
 				E9E7983016F0B45100745AF5 /* UISwitch.h in Headers */,
@@ -4770,6 +4847,7 @@
 				CCC7A4A216F1D80C0061EA5D /* Landscape.h in Headers */,
 				CCC7A4A316F1D80C0061EA5D /* RenderFastNames.h in Headers */,
 				CCC7A4A716F1D8200061EA5D /* RenderState.h in Headers */,
+				D7CC267319C517E500A3B754 /* LocalNotificationProgress.h in Headers */,
 				B4C29D54199B933F001B83FE /* SceneCache.h in Headers */,
 				02FD7EC419237D43007762C0 /* SpeedTreeUpdateSystem.h in Headers */,
 				CCC7A4AB16F1D8480061EA5D /* Entity.h in Headers */,
@@ -4785,7 +4863,6 @@
 				64493E0419476F4700AB2715 /* VegetationCustomSLGeometry.h in Headers */,
 				84E5E0FE174D02EA0001C74F /* OpenUDIDApple.h in Headers */,
 				84E5E102174D02F60001C74F /* OpenUDIDios.h in Headers */,
-				62BAA48F178EF915003DE32C /* MailComposeDelegate.h in Headers */,
 				E867917D175F620400C5A6A2 /* GlobalEnum.h in Headers */,
 				E8679181175F621E00C5A6A2 /* GPUFamilyDescriptor.h in Headers */,
 				E8679185175F62D600C5A6A2 /* EnumMap.h in Headers */,
@@ -4797,6 +4874,7 @@
 				A66BC2F217AB98E800B6252E /* SkyboxSystem.h in Headers */,
 				647EFC79195F0AC40073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				17816B8117B2748900B067E1 /* AllocatorFactory.h in Headers */,
+				E8586C4119F8FEBA004FD709 /* BackgroundView.h in Headers */,
 				A679102A17B3CF2D000AA2F2 /* SkyboxRenderObject.h in Headers */,
 				17D7E5F617A6C06B00861981 /* UIDismissionHandlerAlertView.h in Headers */,
 				EA56555417CE00E100426EB8 /* PerformanceSettings.h in Headers */,
@@ -4805,7 +4883,6 @@
 				CC84B04118211BCE00934482 /* JobManager.h in Headers */,
 				17DC600A17DE16D40075813E /* IMovieViewControl.h in Headers */,
 				17DC600C17DE16D40075813E /* UIMovieView.h in Headers */,
-				D7B50F3719ACB28900F8C0C9 /* NotificationNotImplemented.h in Headers */,
 				17DC601017DE18460075813E /* MovieViewControliOS.h in Headers */,
 				EA84E17617FAC20100304C3C /* SpatialTree.h in Headers */,
 				02D4CFC118055E29007EC9EC /* FMODSoundEvent.h in Headers */,
@@ -4822,6 +4899,7 @@
 				4F25831219BDC94000C28926 /* NullType.h in Headers */,
 				9A011FF039AF222095F1FFD4 /* GamepadDevice.h in Headers */,
 				9A011EB2802FEC4E0A4AA289 /* GamepadManager.h in Headers */,
+				9A0110663B88BCD0451F54EF /* LocalNotificationDelayed.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4940,6 +5018,7 @@
 				02FD80A81924997C007762C0 /* Message.cpp in Sources */,
 				02FD80A91924997C007762C0 /* ObjectFactory.cpp in Sources */,
 				8402ABA219BA033200111F35 /* TextBlockDistanceRender.cpp in Sources */,
+				1503539A1A02D5AA00C90B4F /* AbstractUIPackageBuilder.cpp in Sources */,
 				02FD80AA1924997C007762C0 /* Observable.cpp in Sources */,
 				02FD80AB1924997C007762C0 /* Radix.cpp in Sources */,
 				02FD80AC1924997C007762C0 /* CollisionObject2.cpp in Sources */,
@@ -4949,6 +5028,7 @@
 				02FD80B01924997C007762C0 /* Core.cpp in Sources */,
 				02FD80B11924997C007762C0 /* MongodbClient.cpp in Sources */,
 				02FD80B21924997C007762C0 /* MongodbObject.cpp in Sources */,
+				D7D3A2C719C8313300CD6B51 /* NSStringUtils.mm in Sources */,
 				02FD80B31924997C007762C0 /* UIParticles.cpp in Sources */,
 				02FD80B41924997C007762C0 /* DAVAEngine.cpp in Sources */,
 				02FD80B51924997C007762C0 /* Backtrace.cpp in Sources */,
@@ -4967,6 +5047,7 @@
 				02FD80C21924997C007762C0 /* FilePath.cpp in Sources */,
 				155D77E9197DD265006AEBCD /* YamlNode.cpp in Sources */,
 				02FD80C31924997C007762C0 /* FileSystem.cpp in Sources */,
+				E84B1A6B19FA394700E4D4BC /* UITextFieldHolder.mm in Sources */,
 				D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */,
 				17D4116C1973E7BE00CF6BC0 /* Reachability.mm in Sources */,
 				D7FEF15219864E5C00B2C7AF /* bs_diff.c in Sources */,
@@ -4990,6 +5071,7 @@
 				02FD80D21924997C007762C0 /* YamlArchive.cpp in Sources */,
 				02FD80D31924997C007762C0 /* YamlParser.cpp in Sources */,
 				02FD80D41924997C007762C0 /* Accelerometer.cpp in Sources */,
+				026A1DED19DAF26600813AEF /* SkinnedMesh.cpp in Sources */,
 				02FD80D51924997C007762C0 /* AccelerometeriPhone.mm in Sources */,
 				02FD80D61924997C007762C0 /* InputSystem.cpp in Sources */,
 				64493E0B19476F4700AB2715 /* VegetationGeometry.cpp in Sources */,
@@ -5003,21 +5085,14 @@
 				02FD80DE1924997C007762C0 /* NeonMath.cpp in Sources */,
 				8402ABA319BA033600111F35 /* TextBlockGraphicsRender.cpp in Sources */,
 				02FD80DF1924997C007762C0 /* Polygon2.cpp in Sources */,
+				B79723EF1A125F96009421F3 /* BiDiHelper.cpp in Sources */,
 				02FD80E01924997C007762C0 /* Polygon3.cpp in Sources */,
 				02FD80E11924997C007762C0 /* RectPacker.cpp in Sources */,
 				1146E10A19D0064B009E5FAB /* AnimationSystem.cpp in Sources */,
 				17675C1B19472C1400054F8F /* Image.cpp in Sources */,
 				02FD80E21924997C007762C0 /* Spline.cpp in Sources */,
-				02FD80E31924997C007762C0 /* BaseNetworkConnection.mm in Sources */,
-				02FD80E41924997C007762C0 /* BTNetworkConnection.mm in Sources */,
-				02FD80E51924997C007762C0 /* NetworkConnection.cpp in Sources */,
-				02FD80E61924997C007762C0 /* NetworkConnectionIPhone.mm in Sources */,
 				02AD131719767DFB00567AD2 /* VersionInfo.cpp in Sources */,
 				D7FEF15E19864E5C00B2C7AF /* ZLibStream.cpp in Sources */,
-				02FD80E71924997C007762C0 /* NetworkDelegate.cpp in Sources */,
-				02FD80E81924997C007762C0 /* NetworkPacket.cpp in Sources */,
-				02FD80E91924997C007762C0 /* TCPServer.mm in Sources */,
-				02FD80EA1924997C007762C0 /* WFNetworkConnection.mm in Sources */,
 				8402ABA619BA033E00111F35 /* DFFont.cpp in Sources */,
 				02FD80EB1924997C007762C0 /* Particle.cpp in Sources */,
 				02FD80EC1924997C007762C0 /* ParticleEmitter.cpp in Sources */,
@@ -5041,6 +5116,7 @@
 				02FD80FD1924997C007762C0 /* TextBlock.cpp in Sources */,
 				02FD80FE1924997C007762C0 /* AnimatedMesh.cpp in Sources */,
 				02FD80FF1924997C007762C0 /* EdgeAdjacency.cpp in Sources */,
+				D7CC265E19C517E500A3B754 /* LocalNotification.cpp in Sources */,
 				02FD81001924997C007762C0 /* RenderLayerManager.cpp in Sources */,
 				64493DFF19476F4700AB2715 /* VegetationCustomGeometrySerializationData.cpp in Sources */,
 				02FD81011924997C007762C0 /* PolygonGroup.cpp in Sources */,
@@ -5057,10 +5133,12 @@
 				02FD810A1924997C007762C0 /* Heightmap.cpp in Sources */,
 				02FD810B1924997C007762C0 /* LandscapeChunk.cpp in Sources */,
 				02FD810C1924997C007762C0 /* LandscapeCursor.cpp in Sources */,
+				32B074BE19E53C0C0069981A /* UIControlHelpers.cpp in Sources */,
 				02FD810D1924997C007762C0 /* Light.cpp in Sources */,
 				02FD810E1924997C007762C0 /* Mesh.cpp in Sources */,
 				02FD810F1924997C007762C0 /* RenderBatch.cpp in Sources */,
 				02FD81101924997C007762C0 /* RenderLayer.cpp in Sources */,
+				026A1DE719DAF25700813AEF /* SkeletonSystem.cpp in Sources */,
 				02FD81111924997C007762C0 /* StaticOcclusion.cpp in Sources */,
 				02FD81131924997C007762C0 /* RenderObject.cpp in Sources */,
 				02FD81141924997C007762C0 /* RenderPass.cpp in Sources */,
@@ -5072,11 +5150,13 @@
 				02FD811F1924997C007762C0 /* MaterialCompiler.cpp in Sources */,
 				02FD81201924997C007762C0 /* MaterialGraph.cpp in Sources */,
 				02FD81211924997C007762C0 /* JobQueue.cpp in Sources */,
+				150353961A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp in Sources */,
 				02FD81221924997C007762C0 /* MaterialGraphNode.cpp in Sources */,
 				02FD81231924997C007762C0 /* NMaterial.cpp in Sources */,
 				02FD81241924997C007762C0 /* Material.cpp in Sources */,
 				02FD81251924997C007762C0 /* RenderBase.cpp in Sources */,
 				02FD81261924997C007762C0 /* StaticOcclusionComponent.cpp in Sources */,
+				D7CC266619C517E500A3B754 /* LocalNotificationController.cpp in Sources */,
 				02FD81271924997C007762C0 /* RenderDataObject.cpp in Sources */,
 				02FD81281924997C007762C0 /* RenderEffect.cpp in Sources */,
 				02FD81291924997C007762C0 /* RenderGrayscaleEffect.cpp in Sources */,
@@ -5084,6 +5164,7 @@
 				02FD812B1924997C007762C0 /* RenderManager.cpp in Sources */,
 				02FD812C1924997C007762C0 /* RenderManagerFactory.cpp in Sources */,
 				02FD812D1924997C007762C0 /* RenderManagerGL.cpp in Sources */,
+				32B074C619E53C0C0069981A /* UIPackageLoader.cpp in Sources */,
 				02FD812E1924997C007762C0 /* RenderOptions.cpp in Sources */,
 				02FD812F1924997C007762C0 /* RenderResource.cpp in Sources */,
 				02FD81301924997C007762C0 /* Shader.cpp in Sources */,
@@ -5121,6 +5202,7 @@
 				02FD814C1924997C007762C0 /* StaticOcclusionSystem.cpp in Sources */,
 				02FD814D1924997C007762C0 /* ES3Renderer.mm in Sources */,
 				02FD814E1924997C007762C0 /* ParticleEffectComponent.cpp in Sources */,
+				D7CC267619C517E500A3B754 /* LocalNotificationText.cpp in Sources */,
 				02FD814F1924997C007762C0 /* RenderComponent.cpp in Sources */,
 				647EFC74195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
 				02FD81501924997C007762C0 /* SwitchComponent.cpp in Sources */,
@@ -5131,6 +5213,7 @@
 				02FD81531924997C007762C0 /* DataNode.cpp in Sources */,
 				02FD81541924997C007762C0 /* ImposterManager.cpp in Sources */,
 				02FD81551924997C007762C0 /* ImposterNode.cpp in Sources */,
+				D7CC266A19C517E500A3B754 /* LocalNotificationIOS.cpp in Sources */,
 				02FD81561924997C007762C0 /* LodNode.cpp in Sources */,
 				02FD81571924997C007762C0 /* MeshInstance.cpp in Sources */,
 				02FD81581924997C007762C0 /* MeshInstanceNode.cpp in Sources */,
@@ -5144,7 +5227,6 @@
 				02FD815E1924997C007762C0 /* AtomicMacOS.mm in Sources */,
 				02FD815F1924997C007762C0 /* JobManager.cpp in Sources */,
 				02FD81601924997C007762C0 /* PolygonGroupInstance.cpp in Sources */,
-				D7B50F3219ACB28900F8C0C9 /* NotificationAndroid.cpp in Sources */,
 				02FD81611924997C007762C0 /* ProxyNode.cpp in Sources */,
 				02FD81621924997C007762C0 /* Scene.cpp in Sources */,
 				02FD81631924997C007762C0 /* SceneAnimationMixer.cpp in Sources */,
@@ -5164,6 +5246,7 @@
 				02FD816F1924997C007762C0 /* BaseProcessSystem.cpp in Sources */,
 				02FD81701924997C007762C0 /* DebugRenderSystem.cpp in Sources */,
 				EAAC98BD1937354800549BAD /* MeshUtils.cpp in Sources */,
+				E8586C4419F8FEBA004FD709 /* BackgroundView.mm in Sources */,
 				02FD81711924997C007762C0 /* QualitySettingsComponent.cpp in Sources */,
 				02FD81721924997C007762C0 /* EventSystem.cpp in Sources */,
 				022AA8DF1934CECD009A4B84 /* WaveComponent.cpp in Sources */,
@@ -5176,6 +5259,7 @@
 				02FD81791924997C007762C0 /* RenderUpdateSystem.cpp in Sources */,
 				02FD817A1924997C007762C0 /* SwitchSystem.cpp in Sources */,
 				02FD817B1924997C007762C0 /* TransformSystem.cpp in Sources */,
+				026A1DE119DAF24A00813AEF /* SkeletonComponent.cpp in Sources */,
 				02FD817C1924997C007762C0 /* UserNode.cpp in Sources */,
 				D7FEF15A19864E5C00B2C7AF /* PatchFile.cpp in Sources */,
 				02FD817D1924997C007762C0 /* ScrollHelper.cpp in Sources */,
@@ -5216,13 +5300,12 @@
 				02FD819E1924997C007762C0 /* HTTPDownloader.mm in Sources */,
 				02FD819F1924997C007762C0 /* MD5.cpp in Sources */,
 				02FD81A01924997C007762C0 /* LodToLod2Converter.cpp in Sources */,
+				32B074C219E53C0C0069981A /* UIPackage.cpp in Sources */,
 				02FD81A11924997C007762C0 /* StringFormat.cpp in Sources */,
 				02FD81A21924997C007762C0 /* Utils.cpp in Sources */,
 				02FD81A31924997C007762C0 /* UtilsMacOS.mm in Sources */,
 				02FD81A41924997C007762C0 /* IntrospectionBase.cpp in Sources */,
 				02FD81A51924997C007762C0 /* GlobalEventSystem.cpp in Sources */,
-				D7B50F3619ACB28900F8C0C9 /* NotificationNotImplemented.cpp in Sources */,
-				D7B50F2E19ACB28900F8C0C9 /* Notification.cpp in Sources */,
 				02FD81A61924997C007762C0 /* SpriteObject.cpp in Sources */,
 				02FD81A71924997C007762C0 /* SpriteRenderBatch.cpp in Sources */,
 				02FD81A81924997C007762C0 /* ComponentHelpers.cpp in Sources */,
@@ -5243,12 +5326,11 @@
 				64493DFB19476F4700AB2715 /* VegetationCustomGeometry.cpp in Sources */,
 				02FD81B61924997C007762C0 /* RenderPassManager.cpp in Sources */,
 				02FD81B71924997C007762C0 /* UserComponent.cpp in Sources */,
-				02FD81B81924997C007762C0 /* MailSender.cpp in Sources */,
 				02FD81B91924997C007762C0 /* FMODFileSoundEvent.cpp in Sources */,
-				02FD81BA1924997C007762C0 /* MailSenderMacOS.mm in Sources */,
 				02FD81BC1924997C007762C0 /* QualitySettingsSystem.cpp in Sources */,
 				02FD81BD1924997C007762C0 /* UISpinner.cpp in Sources */,
 				02FD81BE1924997C007762C0 /* SpeedTreeObject.cpp in Sources */,
+				D7CC267219C517E500A3B754 /* LocalNotificationProgress.cpp in Sources */,
 				02FD81BF1924997C007762C0 /* NMaterialNames.cpp in Sources */,
 				17675C1D19472C1400054F8F /* Image.mm in Sources */,
 				02FD81C01924997C007762C0 /* UTF8UtilsMac.mm in Sources */,
@@ -5269,8 +5351,8 @@
 				02FD81CD1924997C007762C0 /* OpenUDIDApple.mm in Sources */,
 				02FD81CE1924997C007762C0 /* OpenUDIDios.mm in Sources */,
 				D7FEF14819864E5C00B2C7AF /* DownloaderCommon.cpp in Sources */,
+				B786014E1A08EB140041F817 /* StringUtils.cpp in Sources */,
 				02FD81CF1924997C007762C0 /* KeyedArchiveSwig.cpp in Sources */,
-				02FD81D01924997C007762C0 /* MailComposeDelegate.mm in Sources */,
 				02FD81D11924997C007762C0 /* GlobalEnum.cpp in Sources */,
 				02FD81D21924997C007762C0 /* GPUFamilyDescriptor.cpp in Sources */,
 				02FD81D31924997C007762C0 /* EnumMap.cpp in Sources */,
@@ -5305,6 +5387,7 @@
 				02FD81EE1924997C007762C0 /* GamepadDevice.mm in Sources */,
 				02FD81EF1924997C007762C0 /* DateTime.cpp in Sources */,
 				02FD81F01924997C007762C0 /* GamepadManager.mm in Sources */,
+				9A0110F1302925F60E1FB064 /* LocalNotificationDelayed.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5317,7 +5400,6 @@
 				E8ADAEC818CA1325000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				E8B3CA8216B9326E002BD35F /* AnimationManager.cpp in Sources */,
 				D7FEF14319864E5C00B2C7AF /* Downloader.cpp in Sources */,
-				D7B50F3519ACB28900F8C0C9 /* NotificationNotImplemented.cpp in Sources */,
 				E8B3CA8416B9326E002BD35F /* BezierSplineAnimation.cpp in Sources */,
 				E8B3CA8616B9326E002BD35F /* Interpolation.cpp in Sources */,
 				E8B3CA8816B9326E002BD35F /* KeyframeAnimation.cpp in Sources */,
@@ -5333,11 +5415,13 @@
 				E8B3CAA116B9326E002BD35F /* DynamicObjectCache.cpp in Sources */,
 				84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */,
 				E8B3CAA316B9326E002BD35F /* EventDispatcher.cpp in Sources */,
+				B786014D1A08EB140041F817 /* StringUtils.cpp in Sources */,
 				E8B3CAA616B9326E002BD35F /* FastName.cpp in Sources */,
 				E8B3CAA916B9326E002BD35F /* FixedSizePoolAllocator.cpp in Sources */,
 				E8B3CAB316B9326E002BD35F /* Message.cpp in Sources */,
 				E8B3CAB716B9326E002BD35F /* ObjectFactory.cpp in Sources */,
 				84D18BFD19201BEF009E3E90 /* Image.mm in Sources */,
+				150353991A02D5AA00C90B4F /* AbstractUIPackageBuilder.cpp in Sources */,
 				E8B3CAB916B9326E002BD35F /* Observable.cpp in Sources */,
 				E8B3CABC16B9326E002BD35F /* Radix.cpp in Sources */,
 				E8B3CAC316B9326E002BD35F /* CollisionObject2.cpp in Sources */,
@@ -5386,8 +5470,10 @@
 				029BAE591859C80500478671 /* musicios.mm in Sources */,
 				64493E1019476F4700AB2715 /* VegetationPropertyNames.cpp in Sources */,
 				E8B3CB4216B9326E002BD35F /* AABBox2.cpp in Sources */,
+				D7CC265D19C517E500A3B754 /* LocalNotification.cpp in Sources */,
 				E8B3CB4416B9326E002BD35F /* AABBox3.cpp in Sources */,
 				E8B3CB4616B9326E002BD35F /* BezierSpline.cpp in Sources */,
+				026A1DEC19DAF26600813AEF /* SkinnedMesh.cpp in Sources */,
 				E8B3CB4A16B9326E002BD35F /* Math2D.cpp in Sources */,
 				E8B3CB5216B9326E002BD35F /* Matrix4.cpp in Sources */,
 				E8B3CB5416B9326E002BD35F /* NeonMath.cpp in Sources */,
@@ -5396,21 +5482,14 @@
 				E890390C196D4FB9003126C8 /* ImageFormatInterface.cpp in Sources */,
 				E8B3CB5F16B9326E002BD35F /* RectPacker.cpp in Sources */,
 				E8B3CB6216B9326E002BD35F /* Spline.cpp in Sources */,
-				E8B3CB6616B9326E002BD35F /* BaseNetworkConnection.mm in Sources */,
-				E8B3CB6816B9326E002BD35F /* BTNetworkConnection.mm in Sources */,
-				E8B3CB6916B9326E002BD35F /* NetworkConnection.cpp in Sources */,
-				E8B3CB6C16B9326E002BD35F /* NetworkConnectionIPhone.mm in Sources */,
 				84D18C0019201BEF009E3E90 /* ImageSystem.cpp in Sources */,
-				E8B3CB6D16B9326E002BD35F /* NetworkDelegate.cpp in Sources */,
-				E8B3CB6F16B9326E002BD35F /* NetworkPacket.cpp in Sources */,
 				D7FEF14B19864E5C00B2C7AF /* DownloadManager.cpp in Sources */,
-				E8B3CB7216B9326E002BD35F /* TCPServer.mm in Sources */,
-				E8B3CB7416B9326E002BD35F /* WFNetworkConnection.mm in Sources */,
 				E8B3CB7516B9326E002BD35F /* Particle.cpp in Sources */,
 				E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */,
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,
 				D7FEF15919864E5C00B2C7AF /* PatchFile.cpp in Sources */,
 				E8B3CB8316B9326E002BD35F /* ParticlePropertyLine.cpp in Sources */,
+				B79723EE1A125F96009421F3 /* BiDiHelper.cpp in Sources */,
 				D7FEF15119864E5C00B2C7AF /* bs_diff.c in Sources */,
 				E8B3CB8E16B9326E002BD35F /* Mutex.cpp in Sources */,
 				E8B3CB9E16B9326E002BD35F /* SystemTimer.cpp in Sources */,
@@ -5427,6 +5506,7 @@
 				E8B3CBC316B9326E002BD35F /* GraphicsFont.cpp in Sources */,
 				E84E5BE71988D99000686C14 /* OGLHelpers.cpp in Sources */,
 				E8B3CBC616B9326E002BD35F /* Sprite.cpp in Sources */,
+				E8586C4319F8FEBA004FD709 /* BackgroundView.mm in Sources */,
 				022AA8E41934CED9009A4B84 /* WaveSystem.cpp in Sources */,
 				E8B3CBC816B9326E002BD35F /* TextBlock.cpp in Sources */,
 				E8B3CBCA16B9326E002BD35F /* AnimatedMesh.cpp in Sources */,
@@ -5438,6 +5518,7 @@
 				CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */,
 				E8B3CBDB16B9326E002BD35F /* ColorOnlyEffect.cpp in Sources */,
 				E8B3CBDD16B9326E002BD35F /* MultiTextureEffect.cpp in Sources */,
+				D7CC266519C517E500A3B754 /* LocalNotificationController.cpp in Sources */,
 				E8B3CBDF16B9326E002BD35F /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				E8B3CBE116B9326E002BD35F /* TextureMulColorEffect.cpp in Sources */,
 				E8B3CBE316B9326E002BD35F /* Camera.cpp in Sources */,
@@ -5445,6 +5526,7 @@
 				E8B3CBE516B9326E002BD35F /* CullingSystem.cpp in Sources */,
 				E8B3CBE716B9326E002BD35F /* Heightmap.cpp in Sources */,
 				E8B3CBEA16B9326E002BD35F /* LandscapeChunk.cpp in Sources */,
+				D7D3A2C619C8313300CD6B51 /* NSStringUtils.mm in Sources */,
 				E8B3CBEC16B9326E002BD35F /* LandscapeCursor.cpp in Sources */,
 				E8B3CBF216B9326E002BD35F /* Light.cpp in Sources */,
 				E8B3CBF416B9326E002BD35F /* Mesh.cpp in Sources */,
@@ -5455,10 +5537,12 @@
 				E8B3CBFD16B9326E002BD35F /* RenderObject.cpp in Sources */,
 				E8B3CBFF16B9326E002BD35F /* RenderPass.cpp in Sources */,
 				E8B3CC0116B9326E002BD35F /* RenderSystem.cpp in Sources */,
+				32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */,
 				E8B3CC0316B9326E002BD35F /* ShadowRect.cpp in Sources */,
 				02FD7EC319237D43007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
 				E8B3CC0516B9326E002BD35F /* ShadowVolume.cpp in Sources */,
 				E8B3CC0716B9326E002BD35F /* ShadowVolumeRenderPass.cpp in Sources */,
+				026A1DE619DAF25700813AEF /* SkeletonSystem.cpp in Sources */,
 				C172EC2C18C9F9D4004309CF /* TextBlockGraphicsRender.cpp in Sources */,
 				E8B3CC1616B9326E002BD35F /* MaterialCompiler.cpp in Sources */,
 				E8B3CC1816B9326E002BD35F /* MaterialGraph.cpp in Sources */,
@@ -5471,6 +5555,7 @@
 				E8B3CC2316B9326E002BD35F /* RenderBase.cpp in Sources */,
 				50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */,
 				E8B3CC2516B9326E002BD35F /* RenderDataObject.cpp in Sources */,
+				150353951A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp in Sources */,
 				64493DF619476F4700AB2715 /* TextureSheet.cpp in Sources */,
 				E8B3CC2716B9326E002BD35F /* RenderEffect.cpp in Sources */,
 				E8B3CC2916B9326E002BD35F /* RenderGrayscaleEffect.cpp in Sources */,
@@ -5482,6 +5567,7 @@
 				E8B3CC3116B9326E002BD35F /* RenderManagerGL.cpp in Sources */,
 				E8B3CC3416B9326E002BD35F /* RenderOptions.cpp in Sources */,
 				E8B3CC3616B9326E002BD35F /* RenderResource.cpp in Sources */,
+				32B074C519E53C0C0069981A /* UIPackageLoader.cpp in Sources */,
 				E8B3CC3B16B9326E002BD35F /* Shader.cpp in Sources */,
 				E8B3CC3D16B9326E002BD35F /* ShaderDX.cpp in Sources */,
 				E8B3CC3E16B9326E002BD35F /* ShaderGL.cpp in Sources */,
@@ -5495,6 +5581,7 @@
 				E8B3CC4816B9326E002BD35F /* TextureDescriptor.cpp in Sources */,
 				E8B3CC4B16B9326E002BD35F /* UberShader.cpp in Sources */,
 				E8B3CC4E16B9326E002BD35F /* Box2DDebugDraw.cpp in Sources */,
+				D7CC267519C517E500A3B754 /* LocalNotificationText.cpp in Sources */,
 				E8B3CC5016B9326E002BD35F /* Box2DGameObject.cpp in Sources */,
 				E8B3CC5216B9326E002BD35F /* Box2DGameObjectManager.cpp in Sources */,
 				E8B3CC5416B9326E002BD35F /* Box2DHelper.cpp in Sources */,
@@ -5571,9 +5658,11 @@
 				E8B3CCEB16B9326E002BD35F /* UI3DView.cpp in Sources */,
 				E8B3CCED16B9326E002BD35F /* UIButton.cpp in Sources */,
 				E8B3CCEF16B9326E002BD35F /* UIControl.cpp in Sources */,
+				D7CC267119C517E500A3B754 /* LocalNotificationProgress.cpp in Sources */,
 				E8B3CCF116B9326E002BD35F /* UIControlBackground.cpp in Sources */,
 				64493E1819476F4700AB2715 /* VegetationRenderObject.cpp in Sources */,
 				64493E0219476F4700AB2715 /* VegetationCustomSLGeometry.cpp in Sources */,
+				026A1DE019DAF24A00813AEF /* SkeletonComponent.cpp in Sources */,
 				E8B3CCF316B9326E002BD35F /* UIControlSystem.cpp in Sources */,
 				E8B3CCF516B9326E002BD35F /* UIEvent.cpp in Sources */,
 				E8B3CCF716B9326E002BD35F /* UIFadeTransition.cpp in Sources */,
@@ -5614,30 +5703,30 @@
 				E8F21DD016C1971F007F957A /* GlobalEventSystem.cpp in Sources */,
 				E89CE92A16C54A36006BEFF4 /* SpriteObject.cpp in Sources */,
 				E89CE92C16C54A36006BEFF4 /* SpriteRenderBatch.cpp in Sources */,
+				32B074C119E53C0C0069981A /* UIPackage.cpp in Sources */,
 				CCB4C44616CBC65D00F2B085 /* ComponentHelpers.cpp in Sources */,
 				1799E51A16CCEBDA0058061F /* ParticleForce.cpp in Sources */,
 				C7E76D3116DF69370041ED9A /* AutotestingSystemLua.cpp in Sources */,
 				C7E76D3316DF69370041ED9A /* AutotestingSystemSwig.cpp in Sources */,
 				C7E76D3816DF69370041ED9A /* RectSwig.cpp in Sources */,
-				D7B50F3119ACB28900F8C0C9 /* NotificationAndroid.cpp in Sources */,
 				C7E76D3B16DF69370041ED9A /* UIControlSwig.cpp in Sources */,
+				E84B1A6A19FA394700E4D4BC /* UITextFieldHolder.mm in Sources */,
 				C7E76D3E16DF69370041ED9A /* VectorSwig.cpp in Sources */,
 				17F53E3016D36FF3004D5099 /* UIWebView.cpp in Sources */,
 				17F53E3516D3705E004D5099 /* WebViewControliOS.mm in Sources */,
 				840ED3C916D506F900D2BA6C /* DPIHelperiOS.mm in Sources */,
 				CC247FF116D69F1700183D40 /* DVAssertMessage.cpp in Sources */,
+				D7CC266919C517E500A3B754 /* LocalNotificationIOS.cpp in Sources */,
 				CC247FF316D69F1700183D40 /* DVAssertMessageApple.mm in Sources */,
 				CC247FF516D69F1700183D40 /* UIAlertView_Modal.m in Sources */,
 				64493E0619476F4700AB2715 /* VegetationFixedGeometry.cpp in Sources */,
 				A6AFDEDA187187D3006E43A1 /* RenderPassManager.cpp in Sources */,
 				CC24801516DD17F300183D40 /* UserComponent.cpp in Sources */,
-				E8BD1F0C16DE4A9C00499E18 /* MailSender.cpp in Sources */,
 				11CB614919C338DF00B48A92 /* AnimationData.cpp in Sources */,
 				0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				647EFC73195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
 				D7FEF14719864E5C00B2C7AF /* DownloaderCommon.cpp in Sources */,
 				D7FEF13F19864E5C00B2C7AF /* CurlDownloader.cpp in Sources */,
-				E8BD1F0E16DE4A9C00499E18 /* MailSenderMacOS.mm in Sources */,
 				E8FC1307186972C80095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				E95B4C5C16DF78EE00880713 /* UISpinner.cpp in Sources */,
 				D7FEF15319864E5C00B2C7AF /* bs_patch.c in Sources */,
@@ -5663,13 +5752,11 @@
 				84E5E0FF174D02EA0001C74F /* OpenUDIDApple.mm in Sources */,
 				84E5E103174D02F60001C74F /* OpenUDIDios.mm in Sources */,
 				C70B565B1753CB5E008966FA /* KeyedArchiveSwig.cpp in Sources */,
-				62BAA492178EF952003DE32C /* MailComposeDelegate.mm in Sources */,
 				E867917C175F620400C5A6A2 /* GlobalEnum.cpp in Sources */,
 				E8679180175F621E00C5A6A2 /* GPUFamilyDescriptor.cpp in Sources */,
 				E8679184175F62D600C5A6A2 /* EnumMap.cpp in Sources */,
 				A6E4FDF31761D40200B48E41 /* ActionComponent.cpp in Sources */,
 				A6E4FDF51761D40200B48E41 /* CustomPropertiesComponent.cpp in Sources */,
-				D7B50F2D19ACB28900F8C0C9 /* Notification.cpp in Sources */,
 				A6E4FDFB1761D83100B48E41 /* ActionUpdateSystem.cpp in Sources */,
 				A6A1E8691785688600AA3A86 /* CRC32.cpp in Sources */,
 				84D18C0619201BEF009E3E90 /* LibPngHelpers.cpp in Sources */,
@@ -5704,6 +5791,7 @@
 				842D49CE19E43B8800098682 /* Polygon2Swig.cpp in Sources */,
 				B4C29D52199B933F001B83FE /* SceneCache.cpp in Sources */,
 				9A011FD535036524CA050EF7 /* GamepadManager.mm in Sources */,
+				9A0116C9D40C6F4C8F6D62D2 /* LocalNotificationDelayed.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5904,14 +5992,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
 				);
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -5951,6 +6037,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Debug;
 		};
@@ -5958,13 +6045,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
 				);
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
@@ -6002,13 +6087,14 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Release;
 		};
 		1DEB922308733DC00010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_C_LANGUAGE_STANDARD = c99;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6056,7 +6142,7 @@
 		1DEB922408733DC00010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_C_LANGUAGE_STANDARD = c99;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6102,7 +6188,7 @@
 		785662DF109B65FE00DAF688 /* AdHoc */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_C_LANGUAGE_STANDARD = c99;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6149,13 +6235,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
 				);
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
@@ -6186,13 +6270,14 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = AdHoc;
 		};
 		FEFB031611CA5F1B00B65B8B /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_C_LANGUAGE_STANDARD = c99;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6239,13 +6324,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
 				);
-				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
@@ -6276,6 +6359,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Distribution;
 		};

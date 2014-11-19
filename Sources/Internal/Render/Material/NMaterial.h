@@ -238,6 +238,8 @@ public:
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
+
+    static const FastName FLAG_SKINNING;
     
 	static const FastName FLAG_LIGHTMAPONLY;
 	static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY
@@ -1079,7 +1081,7 @@ inline uint32 NMaterial::GetChildrenCount() const
 
 inline NMaterial* NMaterial::GetChild(uint32 index) const
 {
-    DVASSERT(index >= 0 && index < children.size());
+    DVASSERT(index < children.size());
     return children[index];
 }
 

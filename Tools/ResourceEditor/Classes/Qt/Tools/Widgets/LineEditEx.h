@@ -6,6 +6,7 @@
 #include <QPointer>
 #include <QTimer>
 #include <QMap>
+#include <QSet>
 
 
 class QAbstractButton;
@@ -20,6 +21,7 @@ class LineEditEx
 
 private:
     typedef QMap< QAction *, QAbstractButton * > ButtonsMap;
+    typedef QSet< QWidget * > Widgets;
 
 signals:
     void textUpdated(const QString& text);
@@ -38,6 +40,8 @@ protected:
     virtual void SyncButtonWithAction( const QAction *action, QAbstractButton *button);
 
     int ButtonsWidth() const;
+    void AddCustomWidget(QWidget *w); // LineEditEx takes ownership
+    void RemoveCustomWidget(QWidget *w);
 
 private slots:
     void OnTextEdit();
@@ -58,6 +62,7 @@ private:
 
     // Extra actions
     ButtonsMap buttons;
+    Widgets widgets;
     int buttonsWidth;
 };
 

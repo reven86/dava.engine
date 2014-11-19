@@ -127,12 +127,35 @@ void ColorPickerHSV::OnAlpha()
 
 void ColorPickerHSV::UpdateColor()
 {
-    const int h = pal->GetHue();
-    const int s = pal->GetSat();
-    const int v = int(255 - val->GetValue() * 255); // HSV, max V = 255
-    const int a = int(255 - alpha->GetValue() * 255); // Transparency, max = 255
+    qreal ho, so, vo, ao;
+    color.getHsvF(&ho, &so, &vo, &ao);
+
+    const qreal hn = pal->GetHue() / 360.0;
+    const qreal sn = pal->GetSat() / 256.0;
+    const qreal vn = 1.0 - val->GetValue();
+    const qreal an = 1.0 - alpha->GetValue();
+
+    qreal h = ho;
+    qreal s = so;
+    qreal v = vo;
+    qreal a = ao;
+
+    // We should update only changed values to reduce rounding
+    if ( sender() == pal )
+    {
+        h = hn;
+        s = sn;
+    }
+    else if ( sender() == val )
+    {
+        v = vn;
+    }
+    else if ( sender() == alpha )
+    {
+        a = an;
+    }
 
     QColor c;
-    c.setHsv(h, s, v, a);
+    c.setHsvF(h, s, v, a);
     color = c;
 }

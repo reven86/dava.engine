@@ -64,7 +64,6 @@ public:
 	// Overloaded virtual methods.
 	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);
 	virtual void SetSize(const Vector2 &newSize);
-	virtual void SetVisible(bool isVisible, bool hierarchic = true);
 
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
@@ -106,6 +105,10 @@ protected:
 private:
     bool isNativeControlVisible;
     int32 dataDetectorTypes;
+public:
+    INTROSPECTION_EXTEND(UIWebView, UIControl,
+            PROPERTY("dataDetectorTypes", "dataDetectorTypes", GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT)
+    );
 };
 };
 

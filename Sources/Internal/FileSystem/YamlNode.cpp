@@ -719,6 +719,11 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
             InternalSetString(UTF8Utils::EncodeToUTF8(varType.AsWideString()), SR_DOUBLE_QUOTED_REPRESENTATION);
         }
         break;
+    case VariantType::TYPE_FILEPATH:
+        {
+            InternalSetString(varType.AsFilePath().GetAbsolutePathname(), SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
+        break;
     case VariantType::TYPE_UINT32:
         {
             InternalSetString(Format("%u", varType.AsUInt32()), SR_PLAIN_REPRESENTATION);
@@ -871,6 +876,7 @@ DAVA::YamlNode::eType YamlNode::VariantTypeToYamlNodeType(VariantType::eVariantT
     case VariantType::TYPE_UINT32:
     case VariantType::TYPE_INT64:
     case VariantType::TYPE_UINT64:
+    case VariantType::TYPE_FILEPATH:
         return TYPE_STRING;
 
     case VariantType::TYPE_BYTE_ARRAY:

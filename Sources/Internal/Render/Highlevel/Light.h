@@ -51,6 +51,7 @@ public:
         TYPE_SPOT,
         TYPE_POINT,
 		TYPE_SKY,
+        TYPE_AMBIENT,
 
 		TYPE_COUNT
     };

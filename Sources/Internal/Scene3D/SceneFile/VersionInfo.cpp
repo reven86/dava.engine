@@ -28,6 +28,7 @@
 
 #include "VersionInfo.h"
 #include "Utils/StringFormat.h"
+#include "SerializationContext.h"
 
 #include <sstream>
 
@@ -148,7 +149,7 @@ VersionInfo::VersionMap VersionInfo::GetVersionHistory()
 
     // Current version
     SceneVersion currentVersion;
-    currentVersion.version = 14;    // Current version of scene file
+    currentVersion.version = SCENE_FILE_CURRENT_VERSION;    // Current version of scene file
     AddVersion(versions, currentVersion);
 
     return versions;

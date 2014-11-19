@@ -51,7 +51,7 @@ QDialog(parent)
     widthSpinBox->setSingleStep(1);
     
     heightLbl = new QLabel(this);
-    heightLbl->setText("Width:");
+    heightLbl->setText("Height:");
     
     heightSpinBox = new QSpinBox(this);
     heightSpinBox->setMinimum(1);

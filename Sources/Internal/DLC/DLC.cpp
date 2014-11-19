@@ -759,6 +759,8 @@ void DLC::StepPatchBegin()
 
 void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
 {
+	bool errors = true;
+
     patchingThread->Join();
     SafeRelease(patchingThread);
 
@@ -768,6 +770,7 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
     switch(dlcContext.patchingError)
     {
         case PatchFileReader::ERROR_NO:
+			errors = false;
             PostEvent(EVENT_PATCH_OK);
             break;
 
@@ -783,6 +786,11 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
             (dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl) ? PostError(DE_PATCH_ERROR_FULL) : PostError(DE_PATCH_ERROR_LITE);
             break;
     }
+
+	if(errors)
+	{
+		Logger::Error("DLC: Error applying patch: %u", dlcContext.patchingError);
+	}
 }
 
 void DLC::StepPatchCancel()
@@ -866,8 +874,10 @@ bool DLC::ReadUint32(const FilePath &path, uint32 &value)
         tmp[0] = 0;
         if(f->ReadLine(tmp, sizeof(tmp)) > 0)
         {
-            value = atoi(tmp);
-            ret = true;
+			if(sscanf(tmp, "%u", &value) > 0)
+			{
+				ret = true;
+			}
         }
         SafeRelease(f);
     }

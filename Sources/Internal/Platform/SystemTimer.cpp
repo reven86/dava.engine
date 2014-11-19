@@ -54,18 +54,15 @@ static int frameCount;
 #if defined(__DAVAENGINE_ANDROID__)
 void SystemTimer::InitTickCount()
 {
-	tickMutex.Lock();
-	struct timeval tv; 
+	struct timeval tv;
 	gettimeofday(&tv,NULL); 
 	savedSec = tv.tv_sec;
-	tickMutex.Unlock();
 
 	Logger::FrameworkDebug("[SystemTimer::InitTickCount] savedSec = %ld", savedSec);
 }
 
 uint64 SystemTimer::GetTickCount() 
-{ 
-	tickMutex.Lock();
+{
 	struct timeval tv; 
 	gettimeofday(&tv,NULL);
 
@@ -75,8 +72,7 @@ uint64 SystemTimer::GetTickCount()
 	msec = msec / 1000;
 	uint64 ret = sec + msec;
 
-	tickMutex.Unlock();
- 	return  ret;
+    return  ret;
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
