@@ -185,10 +185,13 @@ DownloadError CurlDownloader::CreateDownload()
    
 DownloadError CurlDownloader::SetupDownload(uint64 seek, uint32 size)
 {
+    DownloadError retCode = DLE_NO_ERROR;
     uint32 partSize = size / currentDownloadPartsCount;
 
     for (uint8 i = 0; i < currentDownloadPartsCount; i++)
     {
+        curl_multi_remove_handle(multiHandle, easyHandles[i]);
+
         uint32 currentPartSize = partSize;
         if (i == currentDownloadPartsCount - 1)
         {
@@ -205,8 +208,14 @@ DownloadError CurlDownloader::SetupDownload(uint64 seek, uint32 size)
         downloadParts[i]->SetSeekPos(currentPartSeekPos);
 
         SetupEasyHandle(easyHandles[i],downloadParts[i]);
-    }
-    
+
+        if (CURLM_OK != curl_multi_add_handle(multiHandle, easyHandles[i]))
+        {
+            retCode = DLE_INIT_ERROR;
+            break;
+        }
+    }  
+
     return DLE_NO_ERROR;
 }
 
@@ -448,9 +457,10 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     
     uint32 chunksInList = 0;
     
+    retCode = CreateDownload();
     for (uint64 i = 0; i < fileChunksCount; ++i)
     {
-        retCode = CreateDownload();
+        
         
         if (DLE_NO_ERROR != retCode)
         {
@@ -495,13 +505,14 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
             }
         }
         
-        CleanupDownload();
+        
         
         if (DLE_NO_ERROR != retCode)
         {
             break;
         }
     }
+    CleanupDownload();
     
     // wait for save of rest file part from memory
     // if data saving is slower than data downloading
