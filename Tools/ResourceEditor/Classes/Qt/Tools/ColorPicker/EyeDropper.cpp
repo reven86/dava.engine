@@ -7,7 +7,7 @@
 #include <QPainter>
 #include <QKeyEvent>
 #include <QDebug>
-
+#include <QScreen>
 #include <QTimer>
 
 
@@ -46,13 +46,13 @@ void EyeDropper::OnDone()
 void EyeDropper::InitShades()
 {
     QDesktopWidget* desktop = QApplication::desktop();
-    const int n = desktop->screenCount();
+    const int n = qApp->screens().size();
 
     ScreenArray screens;
     screens.reserve(n);
     for (int i = 0; i < n; i++)
     {
-        const QRect& screenRect = desktop->screenGeometry(i);
+        const QRect& screenRect = qApp->screens().at(i)->geometry();
         ScreenData data = { i, screenRect };
         screens.push_back(data);
     }
@@ -60,8 +60,9 @@ void EyeDropper::InitShades()
     shades.resize(n);
     for (int i = 0; i < n; i++)
     {
-        QWidget *s = desktop->screen(i);
-        const double scale = DAVA::DPIHelper::GetDpiScaleFactor(i);
+        QScreen *s = qApp->screens().at(i);
+        //const double scale = DAVA::DPIHelper::GetDpiScaleFactor(i);
+		const double scale = s->devicePixelRatio();
         
         QRect rc = screens[i].rc;
         const bool scaled = scale > 1.0;
@@ -71,18 +72,18 @@ void EyeDropper::InitShades()
             rc.setHeight( int(scale * screens[i].rc.height()) );
         }
 
-        int l, t, r, b;
-        FindExtraOfs(screens, i, l, t, r, b);
-        rc.adjust(l, t, r, b);
+        //int l, t, r, b;
+        //FindExtraOfs(screens, i, l, t, r, b);
+        //rc.adjust(l, t, r, b);
 
         QPixmap pix;
         if (scaled)
         {
-            pix = QPixmap::grabWindow(s->winId(), rc.left(), rc.top(), rc.width(), rc.height() ).scaled(screens[i].rc.size());
+            pix = s->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height() ).scaled(screens[i].rc.size());
         }
         else
         {
-            pix = QPixmap::grabWindow(s->winId(), rc.left(), rc.top(), rc.width(), rc.height());
+            pix = s->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
         }
         const QImage img = pix.toImage();
         
