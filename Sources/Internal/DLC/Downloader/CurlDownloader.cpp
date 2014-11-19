@@ -30,9 +30,6 @@
 
 namespace DAVA
 {
-    
-#define DOWNLOAD_IN_MEMORY_CACHE_SIZE 10 * 1024 * 1024
-
 bool CurlDownloader::isCURLInit = false;
 
 CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
@@ -442,13 +439,14 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     // rest part of file to download
     uint64 sizeToDownload = remoteFileSize - currentFileSize;
 
+    uint32 inMemoryBufferChunkSize = Max<uint32>(GetMaxChunkSize(), static_cast<uint32>(remoteFileSize/100));
     // a part of file to parallel download
     // cast is needed because it is garanteed that download part is lesser than 4Gb
-    uint32 fileChunkSize = static_cast<uint32>(Min<uint64>(DOWNLOAD_IN_MEMORY_CACHE_SIZE, sizeToDownload));
+    uint32 fileChunkSize = Min<uint32>(GetMinChunkSize(), inMemoryBufferChunkSize);
     // quantity of paralleled file parts
     // if file size is 0 - we don't need more than 1 download thread.
     // if file exists
-    uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : sizeToDownload / fileChunkSize;
+    uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : Max<uint32>(1, sizeToDownload / fileChunkSize);
     // part size could not be bigger than 4Gb
     uint32 lastFileChunkSize =  fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount*fileChunkSize);
 
@@ -458,58 +456,52 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     uint32 chunksInList = 0;
     
     retCode = CreateDownload();
-    for (uint64 i = 0; i < fileChunksCount; ++i)
+    if (DLE_NO_ERROR == retCode)
     {
-        
-        
-        if (DLE_NO_ERROR != retCode)
+        for (uint64 i = 0; i < fileChunksCount; ++i)
         {
-            return retCode;
-        }
-        
-        // download from seek pos
-        uint64 seek = currentFileSize + fileChunkSize * i;
-        
-        // last download part considers the inaccuracy of division of file to parts
-        if (i == fileChunksCount - 1)
-        {
-            fileChunkSize = lastFileChunkSize;
-        }
-        
-        chunkInfo = new DataChunkInfo(fileChunkSize);
-        
-        // download a part of file
-        retCode = DownloadRangeOfFile(seek, fileChunkSize);
-
-        if (DLE_NO_ERROR == retCode)
-        {
-            uint32 chunksInList = 0;
-            do
-            {
-                Thread::Sleep(1);
-                chunksMutex.Lock();
-                chunksInList = chunksToSave.size();
-                chunksMutex.Unlock();
-            } while(allowedBuffersInMemory <= chunksInList && DLE_NO_ERROR != saveResult);
+            // download from seek pos
+            uint64 seek = currentFileSize + fileChunkSize * i;
             
-            if (DLE_NO_ERROR != saveResult)
+            // last download part considers the inaccuracy of division of file to parts
+            if (i == fileChunksCount - 1)
             {
-                retCode = saveResult;
-                SafeRelease(chunkInfo);
+                fileChunkSize = lastFileChunkSize;
             }
-            else
+            
+            chunkInfo = new DataChunkInfo(fileChunkSize);
+            
+            // download a part of file
+            retCode = DownloadRangeOfFile(seek, fileChunkSize);
+
+            if (DLE_NO_ERROR == retCode)
             {
-                chunksMutex.Lock();
-                chunksToSave.push_back(chunkInfo);
-                chunksMutex.Unlock();
+                uint32 chunksInList = 0;
+                do
+                {
+                    Thread::Sleep(1);
+                    chunksMutex.Lock();
+                    chunksInList = chunksToSave.size();
+                    chunksMutex.Unlock();
+                } while(allowedBuffersInMemory <= chunksInList && DLE_NO_ERROR != saveResult);
+                
+                if (DLE_NO_ERROR != saveResult)
+                {
+                    retCode = saveResult;
+                    SafeRelease(chunkInfo);
+                }
+                else
+                {
+                    chunksMutex.Lock();
+                    chunksToSave.push_back(chunkInfo);
+                    chunksMutex.Unlock();
+                }
             }
-        }
-        
-        
-        
-        if (DLE_NO_ERROR != retCode)
-        {
-            break;
+            
+            if (DLE_NO_ERROR != retCode)
+            {
+                break;
+            }
         }
     }
     CleanupDownload();

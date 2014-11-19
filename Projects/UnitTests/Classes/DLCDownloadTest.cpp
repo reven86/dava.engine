@@ -151,12 +151,28 @@ void DLCDownloadTest::TestFunction(PerfFuncData * data)
     // POSITIVE CHECK 
     {
 
-        uint32 multiHttpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, RESUMED, 2, 2);
+        uint64 startTest1Time = SystemTimer::Instance()->AbsoluteMS();
+        
+        uint32 multiHttpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, FULL, 4, 2);
         DownloadManager::Instance()->Wait(multiHttpID);
 
         DownloadManager::Instance()->GetError(multiHttpID, error);
         DownloadManager::Instance()->GetTotal(multiHttpID, total);
+        
+        uint64 test1Time = SystemTimer::Instance()->AbsoluteMS() - startTest1Time;
+        
+        uint64 startTest2Time = SystemTimer::Instance()->AbsoluteMS();
+        multiHttpID = DownloadManager::Instance()->Download(srcUrl, dstHttp, FULL, 1, 2);
+        DownloadManager::Instance()->Wait(multiHttpID);
+        
+        DownloadManager::Instance()->GetError(multiHttpID, error);
+        DownloadManager::Instance()->GetTotal(multiHttpID, total);
 
+        uint64 test2Time = SystemTimer::Instance()->AbsoluteMS() - startTest2Time;
+        
+        Logger::FrameworkDebug("time for 4 threads = %d", test1Time);
+        Logger::FrameworkDebug("time for 1 thread1 = %d", test2Time);
+        
         // FULL DOWNLOAD
         // Make sure that file is missing
         FileSystem::Instance()->DeleteFile(dstHttp); 

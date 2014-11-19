@@ -69,6 +69,14 @@ protected:
 
 private:
     /**
+     \brief Returns maximum download chunk size
+     */
+    inline static uint32 GetMaxChunkSize();
+    /**
+     \brief Returns minimum download chunk size
+     */
+    inline static uint32 GetMinChunkSize();
+    /**
      \brief Method for save downloaded data in a separate thread
      */
     void SaveChunkHandler(BaseObject *caller, void *callerData, void *userData);
@@ -107,14 +115,15 @@ private:
      */
     void SetupEasyHandle(CURL *handle, DownloadPart *part);
     /**
-        \brief Prepare all we need to start or resume download
-        \param[in] multiHandle - pointer to Curl multi interface handle
-        \param[in] seek - position inside remote file to download from
-        \param[in] size - size of data do download
-    */
+     \brief Init curl download handles and DownloadParts
+     */
     DownloadError CreateDownload();
+    /**
+     \brief Prepare all we need to start or resume download
+     \param[in] seek - position inside remote file to download from
+     \param[in] size - size of data do download
+     */
     DownloadError SetupDownload(uint64 seek, uint32 size);
-    void SetupDownloadPart(DownloadPart *part, uint64 seek, uint32 size);
     /**
         \brief Do a prepared download. Do nothing and returnes DLE_NO_ERROR if there is no easy handles.
         \param[in] multiHandle - pointer to Curl multi interface handle
@@ -172,6 +181,18 @@ private:
     Thread *saveThread;
     const uint8 allowedBuffersInMemory;
 };
+    
+uint32 CurlDownloader::GetMaxChunkSize()
+{
+    static const uint32 maxChunkSize = 20 * 1024 * 1024;
+    return maxChunkSize;
+}
+
+uint32 CurlDownloader::GetMinChunkSize()
+{
+    static const uint32 minChunkSize = 1024 * 1024;
+    return minChunkSize;
+}
     
 }
 
