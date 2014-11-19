@@ -52,12 +52,18 @@
 		0282B87918BC72BE006F1EE4 /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0282B87318BC72BE006F1EE4 /* FMODFileSoundEvent.h */; };
 		0282B87A18BC72C6006F1EE4 /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0256F3DA185B4CAA00D22ADF /* SoundEvent.h */; };
 		0282B87B18BC72C6006F1EE4 /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0256F3DA185B4CAA00D22ADF /* SoundEvent.h */; };
-		0286451319795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0286451119795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp */; };
-		0286451419795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0286451119795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp */; };
-		0286451519795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0286451119795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp */; };
-		0286451619795E1200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 0286451219795E1200ABCAA0 /* VirtualToPhysicalHelper.h */; };
-		0286451719795E1200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 0286451219795E1200ABCAA0 /* VirtualToPhysicalHelper.h */; };
-		0286451819795E1200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 0286451219795E1200ABCAA0 /* VirtualToPhysicalHelper.h */; };
+		028C58131A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */; };
+		028C58141A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */; };
+		028C58151A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */; };
+		028C58161A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */; };
+		028C58171A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */; };
+		028C58181A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */; };
+		028C58191A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */; };
+		028C581A1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */; };
+		028C581B1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */; };
+		028C581C1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */; };
+		028C581D1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */; };
+		028C581E1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */; };
 		02A03DA91871C37B00FA72CE /* SpeedTreeObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02A03DA71871C37B00FA72CE /* SpeedTreeObject.cpp */; };
 		02A03DAA1871C37B00FA72CE /* SpeedTreeObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A03DA81871C37B00FA72CE /* SpeedTreeObject.h */; };
 		02A03DAB1871C49C00FA72CE /* SpeedTreeObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A03DA81871C37B00FA72CE /* SpeedTreeObject.h */; };
@@ -80,12 +86,6 @@
 		02E9E438173964DA00C501BC /* SoundUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E435173964DA00C501BC /* SoundUpdateSystem.cpp */; };
 		02E9E439173964DA00C501BC /* SoundUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E436173964DA00C501BC /* SoundUpdateSystem.h */; };
 		02E9E43A173964DA00C501BC /* SoundUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E436173964DA00C501BC /* SoundUpdateSystem.h */; };
-		02EC80D91999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
-		02EC80DA1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
-		02EC80DB1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
-		02EC80DC1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
-		02EC80DD1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
-		02EC80DE1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
 		02FD7ED319237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7ECF19237D96007762C0 /* SpeedTreeUpdateSystem.cpp */; };
 		02FD7ED419237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7ECF19237D96007762C0 /* SpeedTreeUpdateSystem.cpp */; };
 		02FD7ED519237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7ECF19237D96007762C0 /* SpeedTreeUpdateSystem.cpp */; };
@@ -786,7 +786,6 @@
 		322FFD5119C042880000ED71 /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322FFD3C19C042880000ED71 /* UIPackage.cpp */; };
 		322FFD5219C042880000ED71 /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322FFD3C19C042880000ED71 /* UIPackage.cpp */; };
 		322FFD5319C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
-		322FFD5419C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
 		322FFD5519C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
@@ -2548,8 +2547,10 @@
 		026A1DCF19DAF1B700813AEF /* SkinnedMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkinnedMesh.h; sourceTree = "<group>"; };
 		0282B87218BC72BE006F1EE4 /* FMODFileSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODFileSoundEvent.cpp; sourceTree = "<group>"; };
 		0282B87318BC72BE006F1EE4 /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
-		0286451119795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualToPhysicalHelper.cpp; sourceTree = "<group>"; };
-		0286451219795E1200ABCAA0 /* VirtualToPhysicalHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualToPhysicalHelper.h; sourceTree = "<group>"; };
+		028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderSystem2D.cpp; sourceTree = "<group>"; };
+		028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderSystem2D.h; sourceTree = "<group>"; };
+		028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualCoordinatesSystem.cpp; sourceTree = "<group>"; };
+		028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualCoordinatesSystem.h; sourceTree = "<group>"; };
 		02A03DA71871C37B00FA72CE /* SpeedTreeObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedTreeObject.cpp; sourceTree = "<group>"; };
 		02A03DA81871C37B00FA72CE /* SpeedTreeObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpeedTreeObject.h; sourceTree = "<group>"; };
 		02A2FC3018D2E7460039E66A /* TreeToAnimatedTreeConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TreeToAnimatedTreeConverter.cpp; path = Converters/TreeToAnimatedTreeConverter.cpp; sourceTree = "<group>"; };
@@ -2559,8 +2560,6 @@
 		02E9E4221739616800C501BC /* SoundComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundComponent.h; sourceTree = "<group>"; };
 		02E9E435173964DA00C501BC /* SoundUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundUpdateSystem.cpp; sourceTree = "<group>"; };
 		02E9E436173964DA00C501BC /* SoundUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundUpdateSystem.h; sourceTree = "<group>"; };
-		02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualCoordinatesTransformSystem.cpp; sourceTree = "<group>"; };
-		02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualCoordinatesTransformSystem.h; sourceTree = "<group>"; };
 		02FD7ECF19237D96007762C0 /* SpeedTreeUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedTreeUpdateSystem.cpp; sourceTree = "<group>"; };
 		02FD7ED019237D96007762C0 /* SpeedTreeUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpeedTreeUpdateSystem.h; sourceTree = "<group>"; };
 		02FD7ED119237D96007762C0 /* WindSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WindSystem.cpp; sourceTree = "<group>"; };
@@ -3507,6 +3506,17 @@
 			name = FMOD;
 			sourceTree = "<group>";
 		};
+		028C580E1A1CD8FB00EA80AD /* RenderSystem2D */ = {
+			isa = PBXGroup;
+			children = (
+				028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */,
+				028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */,
+				028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */,
+				028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */,
+			);
+			path = RenderSystem2D;
+			sourceTree = "<group>";
+		};
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -4225,8 +4235,7 @@
 		E8989C1616BD24E400732C04 /* 2D */ = {
 			isa = PBXGroup;
 			children = (
-				02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */,
-				02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */,
+				028C580E1A1CD8FB00EA80AD /* RenderSystem2D */,
 				C172EC0018C9F1E9004309CF /* DFFont.cpp */,
 				C172EC0118C9F1E9004309CF /* DFFont.h */,
 				C172EC0218C9F1E9004309CF /* TextBlockDistanceRender.cpp */,
@@ -4696,8 +4705,6 @@
 			children = (
 				B78601371A08B6170041F817 /* StringUtils.cpp */,
 				B78601381A08B6170041F817 /* StringUtils.h */,
-				0286451119795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp */,
-				0286451219795E1200ABCAA0 /* VirtualToPhysicalHelper.h */,
 				E8989D8D16BD24E500732C04 /* HTTPDownloader.h */,
 				E8989D8E16BD24E500732C04 /* HTTPDownloader.mm */,
 				74A909A91701FA51003FDB31 /* CRC32.cpp */,
@@ -4789,6 +4796,7 @@
 				176DE8F9174B5561007A983B /* AnimatedObject.h in Headers */,
 				176DE8FA174B5561007A983B /* Animation.h in Headers */,
 				176DE8FB174B5561007A983B /* AnimationManager.h in Headers */,
+				028C581E1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */,
 				176DE8FC174B5561007A983B /* BezierSplineAnimation.h in Headers */,
 				1146E12219D00887009E5FAB /* AnimationSystem.h in Headers */,
 				176DE8FD174B5561007A983B /* Interpolation.h in Headers */,
@@ -4807,6 +4815,7 @@
 				4F53ED3F19A23BEE00D3869D /* BSDiff.h in Headers */,
 				176DE90A174B5561007A983B /* BaseTypes.h in Headers */,
 				176DE90B174B5561007A983B /* Data.h in Headers */,
+				028C58181A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */,
 				176DE90C174B5561007A983B /* DynamicObjectCache.h in Headers */,
 				176DE90D174B5561007A983B /* EventDispatcher.h in Headers */,
 				176DE90E174B5561007A983B /* Exception.h in Headers */,
@@ -4928,7 +4937,6 @@
 				176DE97B174B5561007A983B /* Mutex.h in Headers */,
 				176DE97C174B5561007A983B /* SystemTimer.h in Headers */,
 				176DE97D174B5561007A983B /* AppDelegate.h in Headers */,
-				0286451819795E1200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */,
 				176DE97F174B5561007A983B /* MainWindowController.h in Headers */,
 				176DE980174B5561007A983B /* NSFullScreenWindow.h in Headers */,
 				176DE981174B5561007A983B /* OpenGLView.h in Headers */,
@@ -5162,7 +5170,6 @@
 				644C86E119476A7100964F91 /* VegetationFixedGeometry.h in Headers */,
 				176DEA35174B5561007A983B /* RenderState.h in Headers */,
 				76199F3C192DF73D008A47E2 /* VersionInfo.h in Headers */,
-				02EC80DE1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
 				176DEA36174B5561007A983B /* UpdateSystem.h in Headers */,
 				176DEA37174B5561007A983B /* Entity.h in Headers */,
 				176DEA38174B5561007A983B /* CRC32.h in Headers */,
@@ -5339,7 +5346,6 @@
 				E8989E7516BD24E500732C04 /* Polygon2.h in Headers */,
 				E8989E7716BD24E500732C04 /* Polygon3.h in Headers */,
 				E8989E7816BD24E500732C04 /* Quaternion.h in Headers */,
-				02EC80DC1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
 				E8989E7916BD24E500732C04 /* Ray.h in Headers */,
 				E8989E7A16BD24E500732C04 /* Rect.h in Headers */,
 				E8989E7C16BD24E500732C04 /* RectPacker.h in Headers */,
@@ -5372,6 +5378,7 @@
 				E8989EE016BD24E500732C04 /* GraphicsFont.h in Headers */,
 				E8989EE116BD24E500732C04 /* GridSprite.h in Headers */,
 				E8989EE316BD24E500732C04 /* Sprite.h in Headers */,
+				028C581C1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */,
 				E8989EE516BD24E500732C04 /* TextBlock.h in Headers */,
 				E8989EE716BD24E500732C04 /* AnimatedMesh.h in Headers */,
 				E8989EE916BD24E500732C04 /* EdgeAdjacency.h in Headers */,
@@ -5399,6 +5406,7 @@
 				E8989F4216BD24E500732C04 /* RenderDataObject.h in Headers */,
 				E8989F4416BD24E500732C04 /* RenderEffect.h in Headers */,
 				E8989F4616BD24E500732C04 /* RenderGrayscaleEffect.h in Headers */,
+				028C58161A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */,
 				E8989F4816BD24E500732C04 /* RenderHelper.h in Headers */,
 				E8989F4A16BD24E500732C04 /* RenderManager.h in Headers */,
 				E8989F5116BD24E500732C04 /* RenderOptions.h in Headers */,
@@ -5565,7 +5573,6 @@
 				CCC7A43916F1D6170061EA5D /* Landscape.h in Headers */,
 				644C86E519476A7100964F91 /* VegetationGeometry.h in Headers */,
 				CCC7A43D16F1D6170061EA5D /* LandscapeChunk.h in Headers */,
-				0286451619795E1200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */,
 				62BD24C118C621EB00D2F0D3 /* DateTime.h in Headers */,
 				CCC7A44116F1D6170061EA5D /* LandscapeCursor.h in Headers */,
 				647EFC4C195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
@@ -5649,6 +5656,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E898A05516BD265400732C04 /* AnimatedObject.h in Headers */,
+				028C58171A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */,
 				E898A05616BD265400732C04 /* Animation.h in Headers */,
 				E898A05716BD265400732C04 /* AnimationManager.h in Headers */,
 				76199F3B192DF73D008A47E2 /* VersionInfo.h in Headers */,
@@ -5769,6 +5777,7 @@
 				E898A0B416BD265400732C04 /* Math2D.h in Headers */,
 				E898A0B516BD265400732C04 /* Math2DTemplateClasses.h in Headers */,
 				E898A0B616BD265400732C04 /* MathConstants.h in Headers */,
+				028C581D1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */,
 				E898A0B716BD265400732C04 /* MathDefines.h in Headers */,
 				E898A0B816BD265400732C04 /* MathHelpers.h in Headers */,
 				505EB4121824CEC5009BEA3C /* OcclusionQuery.h in Headers */,
@@ -5927,7 +5936,6 @@
 				E898A16416BD265400732C04 /* LightUpdateSystem.h in Headers */,
 				E898A16516BD265400732C04 /* LodSystem.h in Headers */,
 				E898A16616BD265400732C04 /* ParticleEffectSystem.h in Headers */,
-				02EC80DD1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
 				E898A16816BD265400732C04 /* RenderUpdateSystem.h in Headers */,
 				E898A16916BD265400732C04 /* SwitchSystem.h in Headers */,
 				644C86CE19476A7100964F91 /* VegetationCustomGeometry.h in Headers */,
@@ -5943,7 +5951,6 @@
 				E898A17B16BD265400732C04 /* UIControl.h in Headers */,
 				CC84B01A18211A9000934482 /* Job.h in Headers */,
 				E898A17C16BD265400732C04 /* UIControlBackground.h in Headers */,
-				0286451719795E1200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */,
 				E898A17D16BD265400732C04 /* UIControlSystem.h in Headers */,
 				84E975C4191FCDFF0054CCF9 /* ImageFormatInterface.h in Headers */,
 				E898A17E16BD265400732C04 /* UIEvent.h in Headers */,
@@ -6273,7 +6280,6 @@
 				176DEA8D174B5561007A983B /* Spline.cpp in Sources */,
 				4F53ED3619A23BE700D3869D /* DownloadManager.cpp in Sources */,
 				644C86E419476A7100964F91 /* VegetationGeometry.cpp in Sources */,
-				02EC80DB1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
 				176DEA96174B5561007A983B /* Particle.cpp in Sources */,
 				176DEA97174B5561007A983B /* ParticleEmitter.cpp in Sources */,
 				176DEA9A174B5561007A983B /* ParticleLayer.cpp in Sources */,
@@ -6344,6 +6350,7 @@
 				176DEAD1174B5561007A983B /* Box2DDebugDraw.cpp in Sources */,
 				176DEAD2174B5561007A983B /* Box2DGameObject.cpp in Sources */,
 				644C86D219476A7100964F91 /* VegetationCustomGeometrySerializationData.cpp in Sources */,
+				028C58151A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */,
 				176DEAD3174B5561007A983B /* Box2DGameObjectManager.cpp in Sources */,
 				176DEAD4174B5561007A983B /* Box2DHelper.cpp in Sources */,
 				176DEAD5174B5561007A983B /* Box2DTileCollider.cpp in Sources */,
@@ -6432,12 +6439,10 @@
 				176DEB0E174B5561007A983B /* UIButton.cpp in Sources */,
 				4F53ED3219A23BE700D3869D /* Downloader.cpp in Sources */,
 				320A4B2F19E6B5B80049D713 /* AbstractUIPackageBuilder.cpp in Sources */,
-				D7631A5C19AB41070065B1CB /* NotificationNotImplemented.cpp in Sources */,
 				176DEB0F174B5561007A983B /* UIControl.cpp in Sources */,
 				176DEB10174B5561007A983B /* UIControlBackground.cpp in Sources */,
 				176DEB11174B5561007A983B /* UIControlSystem.cpp in Sources */,
 				17FB4BB81923B9AB00F3E3BC /* UIMovieView.cpp in Sources */,
-				0286451519795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */,
 				176DEB12174B5561007A983B /* UIEvent.cpp in Sources */,
 				176DEB13174B5561007A983B /* UIFadeTransition.cpp in Sources */,
 				176DEB14174B5561007A983B /* UIFileSystemDialog.cpp in Sources */,
@@ -6460,6 +6465,7 @@
 				176DEB24174B5561007A983B /* UIStaticText.cpp in Sources */,
 				A6D8279A187716F30006A5DD /* Color.cpp in Sources */,
 				176DEB25174B5561007A983B /* UITextField.cpp in Sources */,
+				028C581B1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */,
 				176DEB26174B5561007A983B /* UIYamlLoader.cpp in Sources */,
 				02FD8266192A3859007762C0 /* WaveSystem.cpp in Sources */,
 				176DEB27174B5561007A983B /* HTTPDownloader.mm in Sources */,
@@ -6625,6 +6631,7 @@
 				E8989E3816BD24E500732C04 /* FileSystemObjective.mm in Sources */,
 				A6931ACD1868569D00006294 /* RenderTechnique.cpp in Sources */,
 				E8989E3916BD24E500732C04 /* KeyedArchive.cpp in Sources */,
+				028C58131A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */,
 				E8989E3B16BD24E500732C04 /* KeyedArchiver.cpp in Sources */,
 				E8989E3D16BD24E500732C04 /* KeyedUnarchiver.cpp in Sources */,
 				E8989E4116BD24E500732C04 /* LocalizationSystem.cpp in Sources */,
@@ -6634,6 +6641,7 @@
 				E8989E4B16BD24E500732C04 /* VariantType.cpp in Sources */,
 				7A169353180EE75A005F1FBC /* GameAPI.cpp in Sources */,
 				E8989E4D16BD24E500732C04 /* XMLParser.cpp in Sources */,
+				028C58191A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */,
 				E8989E4F16BD24E500732C04 /* XMLParser.mm in Sources */,
 				E8989E5016BD24E500732C04 /* YamlArchive.cpp in Sources */,
 				E8989E5216BD24E500732C04 /* YamlParser.cpp in Sources */,
@@ -6645,7 +6653,6 @@
 				320A4B3519E6BA3C0049D713 /* DefaultUIPackageBuilder.cpp in Sources */,
 				E8989E6216BD24E500732C04 /* BezierSpline.cpp in Sources */,
 				CC931B26188EC95F000375F9 /* SwitchToRenerObjectConverter.cpp in Sources */,
-				02EC80D91999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
 				E8989E6616BD24E500732C04 /* Math2D.cpp in Sources */,
 				E8989E6E16BD24E500732C04 /* Matrix4.cpp in Sources */,
 				E8989E7016BD24E500732C04 /* NeonMath.cpp in Sources */,
@@ -6675,7 +6682,6 @@
 				E8989ED916BD24E500732C04 /* Font.cpp in Sources */,
 				D7E6C5B7198255C000B96D1A /* ZLibStream.cpp in Sources */,
 				E8989EDB16BD24E500732C04 /* FontManager.cpp in Sources */,
-				0286451319795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */,
 				E8989EDD16BD24E500732C04 /* FTFont.cpp in Sources */,
 				E8989EDF16BD24E500732C04 /* GraphicsFont.cpp in Sources */,
 				E8989EE216BD24E500732C04 /* Sprite.cpp in Sources */,
@@ -6976,6 +6982,7 @@
 				E898A1A916BD265400732C04 /* BaseObjectChecker.cpp in Sources */,
 				E898A1AA16BD265400732C04 /* Data.cpp in Sources */,
 				50B06921186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
+				028C581A1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */,
 				E8BAD5B1185213F100C98C8D /* IntrospectionDynamic.cpp in Sources */,
 				CC931B27188EC95F000375F9 /* SwitchToRenerObjectConverter.cpp in Sources */,
 				E898A1AB16BD265400732C04 /* DynamicObjectCache.cpp in Sources */,
@@ -7051,6 +7058,7 @@
 				E898A1E416BD265400732C04 /* Polygon2.cpp in Sources */,
 				E898A1E516BD265400732C04 /* Polygon3.cpp in Sources */,
 				E898A1E616BD265400732C04 /* RectPacker.cpp in Sources */,
+				028C58141A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */,
 				E898A1E716BD265400732C04 /* Spline.cpp in Sources */,
 				647EFC52195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				1146E11619D00874009E5FAB /* AnimationComponent.cpp in Sources */,
@@ -7280,7 +7288,6 @@
 				CCC7A44816F1D6170061EA5D /* Mesh.cpp in Sources */,
 				CCC7A45016F1D6170061EA5D /* RenderBatch.cpp in Sources */,
 				CCC7A45816F1D6170061EA5D /* RenderLayer.cpp in Sources */,
-				02EC80DA1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
 				02FD7EEA19237DA2007762C0 /* WindComponent.cpp in Sources */,
 				CCC7A45C16F1D6170061EA5D /* RenderObject.cpp in Sources */,
 				155D77D9197DD22E006AEBCD /* YamlNode.cpp in Sources */,
@@ -7321,7 +7328,6 @@
 				A6E4FE131761D9E000B48E41 /* ActionUpdateSystem.cpp in Sources */,
 				4FFE5CB11779E09300728624 /* MipmapReplacer.cpp in Sources */,
 				C18577F017A2600300331A95 /* MaterialOptimazer.cpp in Sources */,
-				0286451419795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */,
 				A68B3EF117AA8C4000E129C1 /* SkyboxSystem.cpp in Sources */,
 				4F64848E17AFCAFC00034454 /* AllocatorFactory.cpp in Sources */,
 				A679102017B3C71B000AA2F2 /* SkyboxRenderObject.cpp in Sources */,
