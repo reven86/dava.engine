@@ -1487,7 +1487,7 @@ void NMaterial::BindActivePassRenderState()
 }
 
 
-void NMaterial::BindActivePassMaterialProperties(bool bindInstanced/* = true*/)
+void NMaterial::BindActivePassMaterialProperties()
 {
     Shader* shader = activePassInstance->GetShader();
     for(size_t i = 0, sz = activePassInstance->activeUniformsCache.size(); i < sz; ++i)
@@ -1495,7 +1495,7 @@ void NMaterial::BindActivePassMaterialProperties(bool bindInstanced/* = true*/)
         UniformCacheEntry& uniformEntry = activePassInstance->activeUniformsCache[i];
         Shader::Uniform* uniform = uniformEntry.uniform;
 
-        if(uniformEntry.prop && (bindInstanced||(!uniform->supportInstancing)))
+        if(uniformEntry.prop)
         {
             RENDERER_UPDATE_STATS(materialParamUniformBindCount++);
             shader->SetUniformValueByUniform(uniform, uniform->type, uniform->size, uniformEntry.prop->data);

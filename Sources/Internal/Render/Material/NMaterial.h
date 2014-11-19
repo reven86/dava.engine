@@ -376,7 +376,7 @@ public:
     void UpdateActivePassProperties();
 
     void BindActivePassRenderState();
-    void BindActivePassMaterialProperties(bool bindInstanced = true);
+    void BindActivePassMaterialProperties();
 
 
     /**

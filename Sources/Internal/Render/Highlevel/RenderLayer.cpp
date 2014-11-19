@@ -106,6 +106,7 @@ void RenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera 
 
 void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
 {
+    DVASSERT(currInstancesCount==0);
     NMaterial *material = batch->GetMaterial();
     if (!material->IsInstancingSupported())//just draw and forget
     {        
@@ -114,12 +115,12 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
     }    
     batch->GetRenderObject()->BindDynamicParameters(camera);
     material->SetActiveMaterialTechnique(ownerRenderPass, NMaterial::EF_INSTANCING);
-    material->BindActivePassRenderState();
-    Shader *shader = material->GetActivePassShader();
-    shader->Bind();    
-    shader->BindDynamicParameters(false); //instanced properties would be bound later
-    material->BindActivePassMaterialProperties(false); //instanced properties would be bound later
+    material->BindActivePassRenderState();    
+    /*shader->Bind();    
+    shader->BindDynamicParameters();*/
+    material->BindActivePassMaterialProperties();
 
+    Shader *shader = material->GetActivePassShader();
     int32 instancedUniformesCount = shader->GetInstancingUniformCount();
     incomingUniformValues.clear();
     incomingUniformValues.resize(instancedUniformesCount);
@@ -180,17 +181,18 @@ void InstancedRenderLayer::CollectInstanceParams(NMaterial *material)
     {
         Shader::Uniform* uniform = incomingUniformValues[i].first;        
         uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type);
-        if (Shader::IsAutobindUniform(uniform->shaderSemantic))
+        eShaderSemantic originalSemantic = INSTANCE_PARAM_DESCRIPTORS[uniform->instanceSemantic].originalSemantic;
+        if (Shader::IsAutobindUniform(originalSemantic))
         {
-            const void *data = RenderManager::GetDynamicParam(uniform->shaderSemantic);
+            const void *data = RenderManager::GetDynamicParam(originalSemantic);
             DVASSERT(data);
-            Memcpy(&incomingUniformValues[i].second[currInstancesCount], data, uniformDataSize);
+            Memcpy(&incomingUniformValues[i].second[currInstancesCount*uniformDataSize], data, uniformDataSize);
         }
         else
         {
-            NMaterialProperty *property = material->GetPropertyValue(uniform->name);
+            NMaterialProperty *property = material->GetPropertyValue(INSTANCE_PARAM_DESCRIPTORS[uniform->instanceSemantic].originalName);
             DVASSERT(property);
-            Memcpy(&incomingUniformValues[i].second[currInstancesCount], property->data, uniformDataSize);
+            Memcpy(&incomingUniformValues[i].second[currInstancesCount*uniformDataSize], property->data, uniformDataSize);
         }
     }
 }
@@ -218,15 +220,22 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
         renderData = dataSource->renderDataObject;    
     
     if (!renderData) //TEST!!!! remove it naher!
+    {
+        incomingGroup = NULL;
+        currInstancesCount = 0;
         return;
+    }
     DVASSERT(renderData);    
     RenderManager::Instance()->SetRenderData(renderData);
     RenderManager::Instance()->AttachRenderData();    
     
     void * indices = 0;
     if (!renderData->GetIndexBufferID())
-        indices = renderData->GetIndices();    
-    RenderManager::Instance()->HWDrawElementsInstanced(PRIMITIVETYPE_TRIANGLELIST, renderData->GetIndexCount(), renderData->GetIndexFormat(), indices, currInstancesCount);
+        indices = renderData->GetIndices();   
+    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION))
+        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, renderData->GetIndexCount(), renderData->GetIndexFormat(), indices);
+    else
+        RenderManager::Instance()->HWDrawElementsInstanced(PRIMITIVETYPE_TRIANGLELIST, renderData->GetIndexCount(), renderData->GetIndexFormat(), indices, currInstancesCount);
 
     incomingGroup = NULL;
     currInstancesCount = 0;

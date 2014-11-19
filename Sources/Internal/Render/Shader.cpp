@@ -136,14 +136,14 @@ eShaderSemantic Shader::GetShaderSemanticByName(const FastName & name)
     return UNKNOWN_SEMANTIC;
 };
 
-bool Shader::SupportInstancingByName(const FastName &name)
+int32 Shader::GetInstanceSemanticByName(const FastName &name)
 {
     for (int32 k = 0; k < INSTANCE_PARAMETERS_COUNT; ++k)
     {
-        if (name == INSTANCE_PARAM_NAMES[k])
-            return true;
+        if (name == INSTANCE_PARAM_DESCRIPTORS[k].paramName)
+            return k;
     }
-    return false;
+    return 0;
 }
 
 int32 Shader::GetUniformTypeSize(eUniformType type)
@@ -424,7 +424,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         FastName attrName(attributeName);
         eShaderSemantic shaderSemantic = GetShaderSemanticByName(attrName);
         uniformStruct->name = attrName;
-        uniformStruct->supportInstancing = SupportInstancingByName(attrName);
+        uniformStruct->instanceSemantic = GetInstanceSemanticByName(attrName);
         uniformStruct->location = glGetUniformLocation(program, uniformStruct->name.c_str());
         uniformStruct->shaderSemantic = shaderSemantic;
         uniformStruct->type = (eUniformType)type;
@@ -448,7 +448,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
             Logger::FrameworkDebug(Format("Autobind: %s %d", attrName.c_str(), shaderSemantic).c_str());
             autobindUniformCount++;
         }                
-        if (uniformStruct->supportInstancing)
+        if (uniformStruct->instanceSemantic)
             instancingUniformCount++;
         //VI: initialize cacheValue with value from shader
         switch(uniformStruct->type)
@@ -605,7 +605,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
                 autobindUniforms[autobindUniformIndex] = currentUniform;
                 autobindUniformIndex++;
             }
-            if(currentUniform->supportInstancing)
+            if(currentUniform->instanceSemantic)
             {
                 instancingUniforms[instancingUniformIndex] = currentUniform;
                 instancingUniformIndex++;
@@ -1063,7 +1063,7 @@ void Shader::Bind()
 }
     
     
-void Shader::BindDynamicParameters(bool bindInstanced/* = true*/)
+void Shader::BindDynamicParameters()
 {
     for(uint8 k = 0; k < autobindUniformCount; ++k)
     {
@@ -1074,9 +1074,8 @@ void Shader::BindDynamicParameters(bool bindInstanced/* = true*/)
         {
             RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
             
-            int32 count = RenderManager::GetDynamicParamArraySize(currentUniform->shaderSemantic, currentUniform->size);
-            if (bindInstanced||(!currentUniform->supportInstancing))
-                SetUniformValueByUniform(currentUniform, currentUniform->type, count, data);
+            int32 count = RenderManager::GetDynamicParamArraySize(currentUniform->shaderSemantic, currentUniform->size);            
+            SetUniformValueByUniform(currentUniform, currentUniform->type, count, data);
             currentUniform->updateSemantic = _updateSemantic;
         }
         
@@ -1092,7 +1091,7 @@ bool Shader::TestDynamicParamsInstancing()
         Uniform* currentUniform = autobindUniforms[k];
         const void *data = RenderManager::GetDynamicParam(currentUniform->shaderSemantic); //as it can recompute param and change update semantic
         pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
-        result &= (currentUniform->supportInstancing) || (_updateSemantic == currentUniform->updateSemantic);        
+        result &= (_updateSemantic == currentUniform->updateSemantic);        
     }
     return result;
 }

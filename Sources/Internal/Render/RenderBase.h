@@ -514,13 +514,6 @@ enum eShaderSemantic
     
     DYNAMIC_PARAMETERS_COUNT = AUTOBIND_UNIFORMS_END,
 };
-
-enum
-{
-    INSTANCE_PARAMETERS_COUNT = 5,
-};
-
-extern const FastName INSTANCE_PARAM_NAMES[INSTANCE_PARAMETERS_COUNT];
     
 extern const FastName DYNAMIC_PARAM_NAMES[DYNAMIC_PARAMETERS_COUNT];
 
@@ -528,6 +521,18 @@ enum
 {
     UPDATE_SEMANTIC_ALWAYS = 0,
 };
+
+const static uint32 INSTANCE_PARAMETERS_COUNT = 6;
+
+struct InstanceParamDescriptor
+{
+    FastName paramName;
+    FastName originalName;
+    eShaderSemantic originalSemantic;
+    InstanceParamDescriptor(FastName paramName, FastName originalName, eShaderSemantic originalSemantic);
+};
+
+extern const InstanceParamDescriptor INSTANCE_PARAM_DESCRIPTORS[INSTANCE_PARAMETERS_COUNT];
     
     
 enum eCullOrder

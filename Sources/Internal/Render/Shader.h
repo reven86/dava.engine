@@ -164,7 +164,7 @@ public:
     struct Uniform
     {
         eShaderSemantic shaderSemantic;
-        bool supportInstancing;
+        int32           instanceSemantic;
         //eUpdateFreq     updateFreq;
         FastName        name;
         GLint           location;
@@ -232,7 +232,7 @@ public:
     void ClearLastBindedCaches();
 
     void Bind();
-    void BindDynamicParameters(bool bindInstanced = true);
+    void BindDynamicParameters();
     bool TestDynamicParamsInstancing();    
 
     static void Unbind();
@@ -251,8 +251,10 @@ public:
     inline int32 GetInstancingUniformCount();
     inline Uniform * GetInstancingUniform(int32 index);
 
+    static eShaderSemantic GetShaderSemanticByName(const FastName &name);
     static int32 GetUniformTypeSize(eUniformType type);
     static const char * GetUniformTypeSLName(eUniformType type);
+    static int32 GetInstanceSemanticByName(const FastName &name);
 
     int32 GetUniformLocationByIndex(int32 index);
     //int32 FindUniformLocationByName(const FastName & name);
@@ -334,10 +336,8 @@ private:
 		GLuint fragmentShader;
 	};
 	void DeleteShadersInternal(BaseObject * caller, void * param, void *callerData);
-
-    eShaderSemantic GetShaderSemanticByName(const FastName &name);
-    int32 GetAttributeIndexByName(const FastName &name);
-    bool SupportInstancingByName(const FastName &name);
+    
+    int32 GetAttributeIndexByName(const FastName &name);    
     
     static GLuint activeProgram;    
     Data * vertexShaderData;

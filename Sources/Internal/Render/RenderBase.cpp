@@ -313,22 +313,23 @@ const FastName DYNAMIC_PARAM_NAMES[] =
 //        FastName("objectScale"),
     };
 
-const FastName INSTANCE_PARAM_NAMES[] =
+InstanceParamDescriptor::InstanceParamDescriptor(FastName _paramName, FastName _originalName, eShaderSemantic _originalSemantic):paramName(_paramName), originalName(_originalName), originalSemantic(_originalSemantic){}
+
+const InstanceParamDescriptor INSTANCE_PARAM_DESCRIPTORS[] =
 {
+    InstanceParamDescriptor(FastName("nonInstanced"), FastName("nonInstanced"), UNKNOWN_SEMANTIC),
     //lightmaps - may be we should unite them into 1 uniform
-    FastName("uvOffset"),
-    FastName("uvScale"),
-
-    //trees
-    /*FastName("worldScale"),
-    FastName("leafOscillationParams"),
-    FastName("treeLeafOcclusionMul"),
-    FastName("treeLeafColorMul"),*/
-
+    InstanceParamDescriptor(FastName("uvOffset[0]"), FastName("uvOffset"), UNKNOWN_SEMANTIC),
+    InstanceParamDescriptor(FastName("uvScale[0]"), FastName("uvScale"), UNKNOWN_SEMANTIC),
     //fog - in current maps - on all objects
-    FastName("worldMatrix"),
-    FastName("worldViewMatrix"),
-    FastName("worldViewProjMatrix")
+    InstanceParamDescriptor(FastName("worldMatrix[0]"), FastName("worldMatrix"), PARAM_WORLD),
+    InstanceParamDescriptor(FastName("worldViewMatrix[0]"), FastName("worldViewMatrix"), PARAM_WORLD_VIEW),
+    InstanceParamDescriptor(FastName("worldViewProjMatrix[0]"), FastName("worldViewProjMatrix"), PARAM_WORLD_VIEW_PROJ)
+    //trees
+    /*InstanceParamDescriptor(FastName("worldScale[0]"), FastName("worldScale")),
+    InstanceParamDescriptor(FastName("leafOscillationParams[0]"), FastName("leafOscillationParams")),
+    InstanceParamDescriptor(FastName("treeLeafOcclusionMul[0]"), FastName("treeLeafOcclusionMul")),
+    InstanceParamDescriptor(FastName("treeLeafColorMul[0]"), FastName("treeLeafColorMul"))*/        
 };
 
 RenderGuard::RenderGuard()
