@@ -132,6 +132,8 @@ void UITextField::SetupDefaults()
     SetTextColor(GetTextColor());
     SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     
+    SetFontSize(26); //12 is default size for IOS
+    
     SetText(L"");
 }
 
