@@ -31,6 +31,7 @@
 
 #include "Platform/DateTime.h"
 #include "TexturePacker/CommandLineParser.h"
+#include "Utils/Utils.h"
 
 #include "Config.h"
 #include "BaseScreen.h"
@@ -257,7 +258,7 @@ void GameCore::RunTests()
     for(int32 iScr = 0; iScr < screensSize; ++iScr)
     {
         BaseScreen& screen = *screens[iScr];
-        if (isNeedSkipTest(screen))
+        if (IsNeedSkipTest(screen))
         {
             continue;
         }
@@ -328,7 +329,7 @@ void GameCore::ProcessTests()
 
                     currentScreen = screens[currentScreenIndex];
 
-                    while (isNeedSkipTest(*currentScreen))
+                    while (IsNeedSkipTest(*currentScreen))
                     {
                         ++currentScreenIndex;
                         if (currentScreenIndex == screens.size())
@@ -409,7 +410,6 @@ void GameCore::InitLogging()
     if (CommandLineParser::Instance()->CommandIsFound("-only_test"))
     {
         runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
-        std::transform(runOnlyThisTest.begin(), runOnlyThisTest.end(), runOnlyThisTest.begin(), ::tolower);
     }
 
     teamCityOutput.Connect(host, port);
@@ -417,21 +417,14 @@ void GameCore::InitLogging()
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
 }
 
-bool GameCore::isNeedSkipTest(const BaseScreen& screen) const
+bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 {
     if (runOnlyThisTest.empty())
     {
         return false;
     }
 
-    String name = screen.GetTestName();
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    const String& name = screen.GetTestName();
 
-    if (runOnlyThisTest == name)
-    {
-        return false;
-    } else
-    {
-        return true;
-    }
+    return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
