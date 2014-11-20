@@ -118,6 +118,8 @@ const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialState
                          shaderSemantic == PARAM_WORLD_SCALE)
                        // <--
                        &&
+                       (!uniform->instanceSemantic) //no instance uniform arrays
+                       &&
                        uniform->type != Shader::UT_SAMPLER_2D && uniform->type != Shader::UT_SAMPLER_CUBE) // isn't texture
                     {
                         FastName propName = uniform->name;

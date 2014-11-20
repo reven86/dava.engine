@@ -107,17 +107,15 @@ void RenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera 
 void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
 {
     DVASSERT(currInstancesCount==0);
-    NMaterial *material = batch->GetMaterial();
-    if (!material->IsInstancingSupported())//just draw and forget
+    NMaterial *material = batch->GetMaterial();    
+    if ((!material->IsInstancingSupported())||(!(batch->GetPolygonGroup()||batch->GetRenderDataObject())))//just draw and forget
     {        
         batch->Draw(ownerRenderPass, camera);            
         return;
     }    
     batch->GetRenderObject()->BindDynamicParameters(camera);
     material->SetActiveMaterialTechnique(ownerRenderPass, NMaterial::EF_INSTANCING);
-    material->BindActivePassRenderState();    
-    /*shader->Bind();    
-    shader->BindDynamicParameters();*/
+    material->BindActivePassRenderState();        
     material->BindActivePassMaterialProperties();
 
     Shader *shader = material->GetActivePassShader();
@@ -146,6 +144,8 @@ bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & o
         return false;
     NMaterial *material = batch->GetMaterial();
     if (!material->IsInstancingSupported())
+        return false;
+    if (!(batch->GetPolygonGroup()||batch->GetRenderDataObject())) //no geometry - custom draw
         return false;
     if ((batch->GetPolygonGroup()!=incomingGroup->GetPolygonGroup())
         ||((!incomingGroup->GetPolygonGroup())&&(batch->GetRenderDataObject()!=incomingGroup->GetRenderDataObject())))
@@ -218,13 +218,7 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
     PolygonGroup *dataSource = incomingGroup->GetPolygonGroup();
     if (dataSource)
         renderData = dataSource->renderDataObject;    
-    
-    if (!renderData) //TEST!!!! remove it naher!
-    {
-        incomingGroup = NULL;
-        currInstancesCount = 0;
-        return;
-    }
+        
     DVASSERT(renderData);    
     RenderManager::Instance()->SetRenderData(renderData);
     RenderManager::Instance()->AttachRenderData();    

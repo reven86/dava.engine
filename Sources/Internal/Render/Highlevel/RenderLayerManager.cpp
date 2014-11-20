@@ -82,7 +82,7 @@ RenderLayerManager::RenderLayerManager()
                                                            RENDER_LAYER_AFTER_OPAQUE_ID);
     InsertLayer(renderLayerAfterOpaque);
     
-    RenderLayer * renderLayerAlphaTest = new RenderLayer(LAYER_ALPHA_TEST_LAYER,
+    RenderLayer * renderLayerAlphaTest = new InstancedRenderLayer(LAYER_ALPHA_TEST_LAYER,
                                                            RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
                                                            RENDER_LAYER_ALPHA_TEST_LAYER_ID);
     InsertLayer(renderLayerAlphaTest);

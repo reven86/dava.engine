@@ -324,12 +324,12 @@ const InstanceParamDescriptor INSTANCE_PARAM_DESCRIPTORS[] =
     //fog - in current maps - on all objects
     InstanceParamDescriptor(FastName("worldMatrix[0]"), FastName("worldMatrix"), PARAM_WORLD),
     InstanceParamDescriptor(FastName("worldViewMatrix[0]"), FastName("worldViewMatrix"), PARAM_WORLD_VIEW),
-    InstanceParamDescriptor(FastName("worldViewProjMatrix[0]"), FastName("worldViewProjMatrix"), PARAM_WORLD_VIEW_PROJ)
+    InstanceParamDescriptor(FastName("worldViewProjMatrix[0]"), FastName("worldViewProjMatrix"), PARAM_WORLD_VIEW_PROJ),
     //trees
-    /*InstanceParamDescriptor(FastName("worldScale[0]"), FastName("worldScale")),
-    InstanceParamDescriptor(FastName("leafOscillationParams[0]"), FastName("leafOscillationParams")),
-    InstanceParamDescriptor(FastName("treeLeafOcclusionMul[0]"), FastName("treeLeafOcclusionMul")),
-    InstanceParamDescriptor(FastName("treeLeafColorMul[0]"), FastName("treeLeafColorMul"))*/        
+    InstanceParamDescriptor(FastName("worldScale[0]"), FastName("worldScale"), PARAM_WORLD_SCALE),
+    InstanceParamDescriptor(FastName("leafOscillationParams[0]"), FastName("leafOscillationParams"), PARAM_SPEED_TREE_LEAFS_OSCILLATION),
+    InstanceParamDescriptor(FastName("treeLeafOcclusionMul[0]"), FastName("treeLeafOcclusionMul"), UNKNOWN_SEMANTIC),
+    InstanceParamDescriptor(FastName("treeLeafColorMul[0]"), FastName("treeLeafColorMul"), UNKNOWN_SEMANTIC)        
 };
 
 RenderGuard::RenderGuard()

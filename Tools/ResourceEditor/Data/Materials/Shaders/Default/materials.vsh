@@ -154,18 +154,37 @@ uniform mediump vec2 trunkOscillationParams;
 
 #if defined(SPEED_TREE_LEAF)
 uniform vec3 worldViewTranslate;
+#if defined(INSTANCING)
+uniform vec3 worldScale[MAX_INSTANCES];
+#define worldScale worldScale[gl_InstanceID]
+#else
 uniform vec3 worldScale;
+#endif
+
 uniform mat4 projMatrix;
 uniform float cutDistance;
 
 	#if !defined(SPHERICAL_LIT) //legacy for old tree lighting
-		uniform lowp vec3 treeLeafColorMul;
-		uniform lowp float treeLeafOcclusionOffset;
-		uniform lowp float treeLeafOcclusionMul;
+        #if defined(INSTANCING)
+            uniform lowp vec3 treeLeafColorMul[MAX_INSTANCES];
+            #define treeLeafColorMul treeLeafColorMul[gl_InstanceID]
+            uniform lowp float treeLeafOcclusionMul[MAX_INSTANCES];
+            #define treeLeafOcclusionMul treeLeafOcclusionMul[gl_InstanceID]            
+        #else
+            uniform lowp vec3 treeLeafColorMul;
+            uniform lowp float treeLeafOcclusionMul;
+        #endif
+        uniform lowp float treeLeafOcclusionOffset;
 	#endif
 	
 	#if defined(WIND_ANIMATION)
-		uniform mediump vec2 leafOscillationParams; //x: A*sin(T); y: A*cos(T);
+        #if defined(INSTANCING)
+            uniform mediump vec2 leafOscillationParams[MAX_INSTANCES];
+            #define leafOscillationParams leafOscillationParams[gl_InstanceID]
+        #else
+            uniform mediump vec2 leafOscillationParams; //x: A*sin(T); y: A*cos(T);
+        #endif
+		
 	#endif
 	
 	#if defined(SPHERICAL_LIT)
