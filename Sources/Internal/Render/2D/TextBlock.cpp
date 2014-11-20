@@ -354,7 +354,6 @@ void TextBlock::Prepare(Texture *texture /*=NULL*/)
 
 	Function<void()> fn = DAVA::Bind(MakeFunction(this, &TextBlock::PrepareInternal), SafeRetain(texture));
 	JobManager::Instance()->CreateMainJob(fn);
-	JobManager::Instance()->WaitMainJobs();
 }
 
 void TextBlock::PrepareInternal(Texture * texture)
