@@ -797,6 +797,10 @@ void TextBlock::CalculateCacheParams()
                 textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx);
             }
             textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
+            if(0 == line)
+            {
+                textSize.drawRect.y = stringSize.drawRect.y;
+            }
         }
     }
 

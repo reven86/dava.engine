@@ -348,7 +348,7 @@ void UITextField::SetTextUseRtlAlign(bool useRtlAlign)
 #endif
 }
 
-void UITextField::SetFontSize(float size)
+void UITextField::SetFontSize(float32 size)
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->SetFontSize(size);
@@ -1082,6 +1082,10 @@ void UITextField::SetFontPresetName( const String &presetName )
     }
 
     SetFont(font);
+    if (font)
+    {
+        SetFontSize((float32)font->GetFontHeight());
+    }
 }
 
 }; // namespace
