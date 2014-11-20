@@ -235,7 +235,7 @@ void Sprite::InitFromFile(File *file)
 	int32 width, height;
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d %d", &width, &height);
-    size = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)width, (float32)height), resourceSizeIndex);
+    size = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)width, (float32)height), resourceSizeIndex);
     
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d", &frameCount);
@@ -260,10 +260,10 @@ void Sprite::InitFromFile(File *file)
 		rectsAndOffsets[i][0] = (float32)x;
 		rectsAndOffsets[i][1] = (float32)y;
 
-        Vector2 vx1 = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)xOff, (float32)yOff), resourceSizeIndex);
-        Vector2 vx2 = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)(xOff + dx), (float32)yOff), resourceSizeIndex);
-        Vector2 vx3 = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)xOff, (float32)yOff + dy), resourceSizeIndex);
-        Vector2 vx4 = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)(xOff + dx), (float32)(yOff + dy)), resourceSizeIndex);
+        Vector2 vx1 = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)xOff, (float32)yOff), resourceSizeIndex);
+        Vector2 vx2 = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)(xOff + dx), (float32)yOff), resourceSizeIndex);
+        Vector2 vx3 = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)xOff, (float32)yOff + dy), resourceSizeIndex);
+        Vector2 vx4 = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)(xOff + dx), (float32)(yOff + dy)), resourceSizeIndex);
         
 		frameVertices[i][0] = vx1.x;
 		frameVertices[i][1] = vx1.y;
@@ -290,7 +290,7 @@ void Sprite::InitFromFile(File *file)
 			}
 		}
 
-        Rect rect = VirtualCoordinates::ConvertResourceToVirtual(Rect((float32)dx, (float32)dy, (float32)xOff, (float32)yOff), resourceSizeIndex);
+        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect((float32)dx, (float32)dy, (float32)xOff, (float32)yOff), resourceSizeIndex);
 		rectsAndOffsets[i][2] = rect.x;
 		rectsAndOffsets[i][3] = rect.y;
 		rectsAndOffsets[i][4] = rect.dx;
@@ -340,7 +340,7 @@ void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat
     Vector2 spriteSize(sprWidth, sprHeight);
 	if (!contentScaleIncluded)
 	{
-        spriteSize = VirtualCoordinates::ConvertVirtualToPhysical(spriteSize);
+        spriteSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(spriteSize);
 	}
 
 	Texture *t = Texture::CreateFBO((int32)ceilf(spriteSize.x), (int32)ceilf(spriteSize.y), textureFormat, Texture::DEPTH_NONE);
@@ -390,7 +390,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
         Vector2 sprSize((float32)width, (float32)height);
         if(inVirtualSpace)
         {
-            sprSize = VirtualCoordinates::ConvertPhysicalToVirtual(sprSize);
+            sprSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(sprSize);
         }
         
         sprite = Sprite::CreateFromTexture(texture, 0, 0, sprSize.x, sprSize.y, contentScaleIncluded);
@@ -487,11 +487,11 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
     size = Vector2(sprWidth, sprHeight);
 	if (!contentScaleIncluded)
 	{
-        offset = VirtualCoordinates::ConvertVirtualToPhysical(offset);
+        offset = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(offset);
 	}
 	else
 	{
-        size = VirtualCoordinates::ConvertPhysicalToVirtual(size);
+        size = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(size);
 	}
 
 	resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
@@ -527,8 +527,8 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 		float32 x, y, dx,dy, xOff, yOff;
 		x = offset.x;
 		y = offset.y;
-		dx = size.x * VirtualCoordinates::GetVirtualToPhysicalFactor();
-		dy = size.y * VirtualCoordinates::GetVirtualToPhysicalFactor();
+        dx = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x);
+        dy = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y);
 		xOff = 0;
 		yOff = 0;
 
@@ -836,26 +836,32 @@ void Sprite::SetClipPolygon(Polygon2 * _clipPolygon)
 
 void Sprite::ConvertToVirtualSize()
 {
-	float32 virtualToPhysicalFactor = VirtualCoordinates::GetVirtualToPhysicalFactor();
-	float32 resourceToVirtualFactor = VirtualCoordinates::GetResourceToVirtualFactor(GetResourceSizeIndex());
+    frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][0]);
+    frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][1]);
+    frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][2]);
+    frameVertices[0][3] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][3]);
+    frameVertices[0][4] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][4]);
+    frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][5]);
+    frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][6]);
+    frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][7]);
 
-	frameVertices[0][0] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][1] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][2] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][3] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][4] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][5] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][6] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][7] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+    frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][0], resourceSizeIndex);
+    frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][1], resourceSizeIndex);
+    frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][2], resourceSizeIndex);
+    frameVertices[0][3] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][3], resourceSizeIndex);
+    frameVertices[0][4] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][4], resourceSizeIndex);
+    frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][5], resourceSizeIndex);
+    frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][6], resourceSizeIndex);
+    frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][7], resourceSizeIndex);
 
-	texCoords[0][0] *= resourceToVirtualFactor;
-	texCoords[0][1] *= resourceToVirtualFactor;
-	texCoords[0][2] *= resourceToVirtualFactor;
-	texCoords[0][3] *= resourceToVirtualFactor;
-	texCoords[0][4] *= resourceToVirtualFactor;
-	texCoords[0][5] *= resourceToVirtualFactor;
-	texCoords[0][6] *= resourceToVirtualFactor;
-	texCoords[0][7] *= resourceToVirtualFactor;
+    texCoords[0][0] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][0], resourceSizeIndex);
+    texCoords[0][1] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][1], resourceSizeIndex);
+    texCoords[0][2] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][2], resourceSizeIndex);
+    texCoords[0][3] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][3], resourceSizeIndex);
+    texCoords[0][4] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][4], resourceSizeIndex);
+    texCoords[0][5] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][5], resourceSizeIndex);
+    texCoords[0][6] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][6], resourceSizeIndex);
+    texCoords[0][7] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][7], resourceSizeIndex);
 }
 
 const FilePath & Sprite::GetRelativePathname() const

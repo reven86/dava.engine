@@ -156,8 +156,8 @@
 		}
         
 		DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
-        DAVA::RenderManager::Instance()->Init(DAVA::ScreenSizes::GetPhysicalScreenSize().dx,
-                                              DAVA::ScreenSizes::GetPhysicalScreenSize().dy);
+        DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
         
 		self.multipleTouchEnabled = YES;

@@ -86,7 +86,7 @@ void MovieViewControl::SetRect(const Rect& rect)
 
 	CGRect playerViewRect = player.view.frame;
     
-    Rect physicalRect = VirtualCoordinates::ConvertVirtualToPhysical(rect);
+    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
     playerViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
     playerViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
     playerViewRect.size.width = physicalRect.dx;

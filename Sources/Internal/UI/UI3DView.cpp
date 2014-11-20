@@ -94,7 +94,7 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinates::ConvertVirtualToPhysical(viewportRect);
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
     
     int32 renderOrientation = RenderManager::Instance()->GetRenderOrientation();
     

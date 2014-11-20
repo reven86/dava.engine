@@ -190,6 +190,9 @@ void RenderSystem2D::Reset()
     
     Setup2DMatrices();
 
+    defaultSpriteDrawState.Reset();
+    defaultSpriteDrawState.renderState = RenderState::RENDERSTATE_2D_BLEND;
+    defaultSpriteDrawState.shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
     batches.clear();
     batches.reserve(1024);
     currentBatch.Reset();
@@ -210,18 +213,18 @@ void RenderSystem2D::ScreenSizeChanged()
 {
     Matrix4 glTranslate, glScale;
     
-    float32 scale = VirtualCoordinates::GetVirtualToPhysicalFactor();
+    Vector2 scale = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(Vector2(1.f, 1.f));
     Vector2 realDrawOffset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
     
     glTranslate.glTranslate(realDrawOffset.x, realDrawOffset.y, 0.0f);
-    glScale.glScale(scale, scale, 1.0f);
+    glScale.glScale(scale.x, scale.y, 1.0f);
     viewMatrix = glScale * glTranslate;
 }
 
 void RenderSystem2D::SetClip(const Rect &rect)
 {
     currentClip = rect;
-    RenderManager::Instance()->SetHWClip(VirtualCoordinates::ConvertVirtualToPhysical(currentClip));
+    RenderManager::Instance()->SetHWClip(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(currentClip));
 }
 
 void RenderSystem2D::RemoveClip()
@@ -235,17 +238,17 @@ void RenderSystem2D::ClipRect(const Rect &rect)
     Rect r = currentClip;
     if(r.dx < 0)
     {
-        r.dx = (float32)ScreenSizes::GetVirtualScreenSize().dx;
+        r.dx = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx;
     }
     if(r.dy < 0)
     {
-        r.dy = (float32)ScreenSizes::GetVirtualScreenSize().dy;
+        r.dy = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
     }
     
     r = r.Intersection(rect);
     
     currentClip = r;
-    RenderManager::Instance()->SetHWClip(VirtualCoordinates::ConvertVirtualToPhysical(currentClip));
+    RenderManager::Instance()->SetHWClip(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(currentClip));
 }
 
 void RenderSystem2D::ClipPush()
@@ -390,7 +393,7 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
 }
 
 
-void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
+void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 */)
 {
     if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
@@ -398,6 +401,12 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 	}
     
     Setup2DMatrices();
+    
+    Sprite::DrawState * state = drawState;
+    if (!state)
+    {
+        state = &defaultSpriteDrawState;
+    }
     
 	float32 x, y;
     float32 scaleX = 1.0f;
@@ -444,8 +453,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                 }
                 else
                 {
-                    spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
-                    spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
+                    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x) + 0.5f));//x2
+                    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y) + 0.5f));//y2
                     spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2];//x1
                     spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5];//y1
                 }
@@ -463,8 +472,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                 }
                 else
                 {
-                    spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
-                    spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
+                    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[frame][0] + x) + 0.5f));//x2
+                    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[frame][1] + y) + 0.5f));//y2
                     spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2];//x1
                     spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5];//y1
                 }
@@ -486,9 +495,9 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                     }
                     else
                     {
-                        spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
+                        spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x) + 0.5f));//x2
                         spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2];//x1
-                        spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
+                        spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y) + 0.5f));//y1
                         spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1];//y2
                     }
                 }
@@ -504,9 +513,9 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                     }
                     else
                     {
-                        spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
+                        spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[frame][0] + x) + 0.5f));//x2
                         spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2];//x1
-                        spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
+                        spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[frame][1] + y) + 0.5f));//y1
                         spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1];//y2
                     }
                 }
@@ -525,8 +534,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                     }
                     else
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
+                        spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x) + 0.5f));//x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y) + 0.5f));//y2
                         spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0];//x2
                         spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5];//y1
                     }
@@ -543,8 +552,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                     }
                     else
                     {
-                        spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
+                        spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[frame][0] + x) + 0.5f));//x1
+                        spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[frame][1] + y) + 0.5f));//y2
                         spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0];//x2
                         spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5];//y1
                     }
@@ -566,8 +575,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
             }
             else
             {
-                spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
-                spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
+                spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[frame][0] * scaleX + x) + 0.5f));//x1
+                spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[frame][1] * scaleY + y) + 0.5f));//y1
                 spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0];//x2
                 spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1];//y2
             }
@@ -583,8 +592,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
             }
             else
             {
-                spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
-                spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
+                spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[frame][0] + x) + 0.5f));//x1
+                spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(floorf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[frame][1] + y) + 0.5f));//y1
                 spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0];//x2
                 spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1];//y2
             }
@@ -669,7 +678,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
         spriteClippedTexCoords.reserve(sprite->clipPolygon->GetPointCount());
         
         Texture * t = sprite->GetTexture(frame);
-        Vector2 virtualTexSize = VirtualCoordinates::ConvertResourceToVirtual(Vector2((float32)t->width, (float32)t->height), sprite->GetResourceSizeIndex());
+        Vector2 virtualTexSize = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)t->width, (float32)t->height), sprite->GetResourceSizeIndex());
         float32 adjWidth = 1.f / virtualTexSize.x;
         float32 adjHeight = 1.f / virtualTexSize.y;
         

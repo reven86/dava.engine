@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "UI/UITextFieldiPhone.h"
-#include "Core/Core.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 #import <HelperAppDelegate.h>
 
@@ -45,9 +45,11 @@
 	{
         DAVA::float32 divider = [HelperAppDelegate GetScale];
         
-        self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider);
+        DAVA::Size2i physicalScreenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
         
-		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);
+        self.bounds = CGRectMake(0.0f, 0.0f, physicalScreenSize.dx/divider, physicalScreenSize.dy/divider);
+		self.center = CGPointMake(physicalScreenSize.dx/2.f/divider, physicalScreenSize.dy/2.f/divider);
+        
 		self.userInteractionEnabled = TRUE;
 		textInputAllowed = YES;
         useRtlAlign = NO;
@@ -70,11 +72,8 @@
     cppTextField = tf;
     if(tf)
     {
-        const DAVA::Rect rect = tf->GetRect();
-        textField.frame = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-                                     , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-                                     , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
-                                     , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor());
+        const DAVA::Rect rect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(tf->GetRect());
+        textField.frame = CGRectMake(rect.x, rect.y, rect.dx, rect.dy);
     }
     else
     {
@@ -183,6 +182,19 @@
 - (void)setUseRtlAlign:(bool)value
 {
     useRtlAlign = (value == true);
+    
+    // Set natural alignment if need
+    switch (textField.contentHorizontalAlignment)
+    {
+        case UIControlContentHorizontalAlignmentLeft:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
+            break;
+        case UIControlContentHorizontalAlignmentRight:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
+            break;
+            
+        default: break;
+    }
 }
 
 - (void) setupTraits
@@ -452,15 +464,14 @@
 
 	// Recalculate to virtual coordinates.
 	DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
-	keyboardOrigin *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	keyboardOrigin += DAVA::UIControlSystem::Instance()->GetInputOffset();
+    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 	
-	DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
-	keyboardSize *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	keyboardSize += DAVA::UIControlSystem::Instance()->GetInputOffset();
+    DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
+    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
+
 
 @end
 

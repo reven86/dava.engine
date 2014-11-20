@@ -157,17 +157,17 @@ Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawTe
 	if (textBlock->cacheUseJustify)
 	{
 		return ftFont->DrawStringToBuffer(buf, x, y,
-										  -textBlock->cacheOx + (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * xOffset),
-										  -textBlock->cacheOy + (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * yOffset),
-										  (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * w),
-										  (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * lineSize),
+            -textBlock->cacheOx + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)xOffset)),
+            -textBlock->cacheOy + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)yOffset)),
+            (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)),
+            (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)lineSize)),
 										  drawText,
 										  true);
 	}
 
 	return ftFont->DrawStringToBuffer(buf, x, y,
-								     -textBlock->cacheOx + (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * xOffset),
-								     -textBlock->cacheOy + (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * yOffset),
+        -textBlock->cacheOx + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)xOffset)),
+        -textBlock->cacheOy + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)yOffset)),
 									 0,
 									 0,
 									 drawText,

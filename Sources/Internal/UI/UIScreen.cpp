@@ -69,10 +69,10 @@ void UIScreen::SystemWillAppear()
 {
     UIControl::SystemWillAppear();
 
-    if (fullScreenRect.dx != ScreenSizes::GetFullVirtualScreenRect().dx
-        || fullScreenRect.dy != ScreenSizes::GetFullVirtualScreenRect().dy)
+    if (fullScreenRect.dx != VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx
+        || fullScreenRect.dy != VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy)
     {
-        SystemScreenSizeDidChanged(ScreenSizes::GetFullVirtualScreenRect());
+        SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
     }
 }
 
@@ -121,9 +121,9 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 	drawData.AddToGeometricData(geometricData);
 
 	Rect drawRect = drawData.GetUnrotatedRect();
-    Rect fullRect = ScreenSizes::GetFullVirtualScreenRect();
-    Vector2 virtualSize = Vector2((float32)ScreenSizes::GetVirtualScreenSize().dx,
-                                  (float32)ScreenSizes::GetVirtualScreenSize().dy);
+    Rect fullRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+    Vector2 virtualSize = Vector2((float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
+                                  (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
 	if (fullRect.x < 0)
 	{
 		RenderHelper::Instance()->FillRect(Rect(

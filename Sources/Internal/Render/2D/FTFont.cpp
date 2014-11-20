@@ -316,16 +316,14 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     
 	FT_Error error;
 
-	float32 virtualToPhysicalFactor = VirtualCoordinates::GetVirtualToPhysicalFactor();
-
 	// virtualToPhysicalFactor scaling
 	{
 		FT_Fixed mul = 1<<16;
 		FT_Matrix matrix;
-		matrix.xx = (FT_Fixed)(virtualToPhysicalFactor*mul);
+        matrix.xx = (FT_Fixed)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)mul));
 		matrix.xy = 0;
 		matrix.yx = 0;
-		matrix.yy = (FT_Fixed)(virtualToPhysicalFactor*mul);
+        matrix.yy = (FT_Fixed)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)mul));
 		FT_Set_Transform(face, &matrix, 0);
 	}
 
@@ -334,16 +332,16 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 	
 	if(!contentScaleIncluded) 
 	{
-		bufWidth = (int32)(virtualToPhysicalFactor * bufWidth);
-		bufHeight = (int32)(virtualToPhysicalFactor * bufHeight);
-		offsetY = (int32)(virtualToPhysicalFactor * offsetY);
-		offsetX = (int32)(virtualToPhysicalFactor * offsetX);
+        bufWidth = (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)bufWidth));
+        bufHeight = (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)bufHeight));
+        offsetY = (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)offsetY));
+        offsetX = (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)offsetX));
 	}
 
 	FT_Vector pen;
 	pen.x = offsetX << ftToPixelShift;
 	pen.y = offsetY << ftToPixelShift;
-	pen.y -= (FT_Pos)(virtualToPhysicalFactor*faceBboxYMin);//bring baseline up
+    pen.y -= (FT_Pos)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)faceBboxYMin));//bring baseline up
 	
 
 	uint8 * resultBuf = (uint8*)buffer;
@@ -354,7 +352,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 	Prepare(advances);
 
     float32 bboxSize = ceilf(((float32)(faceBboxYMax-faceBboxYMin)) / ftToPixelScale);
-	int32 baseSize = (int32)ceilf(bboxSize * virtualToPhysicalFactor); 
+    int32 baseSize = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(bboxSize));
 	int32 multilineOffsetY = baseSize + offsetY*2;
 
     int32 justifyOffset = 0;
@@ -368,7 +366,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     }
 
 	Font::StringMetrics metrics;
-	metrics.baseline = (int32)ceilf((float32)faceBboxYMax / ftToPixelScale * virtualToPhysicalFactor);
+    metrics.baseline = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(faceBboxYMax / ftToPixelScale));
 	metrics.height = baseSize;
     metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width
     
@@ -486,14 +484,13 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 
 	if(!contentScaleIncluded) 
 	{
-		float32 physicalToVirtualFactor = VirtualCoordinates::GetPhysicalToVirtualFactor();
-		metrics.drawRect.x = (int32)floorf(metrics.drawRect.x * physicalToVirtualFactor);
-		metrics.drawRect.y = (int32)floorf(metrics.drawRect.y * physicalToVirtualFactor);
-		metrics.drawRect.dx = (int32)ceilf(metrics.drawRect.dx * physicalToVirtualFactor);
-		metrics.drawRect.dy = (int32)ceilf(metrics.drawRect.dy * physicalToVirtualFactor);
-		metrics.baseline = (int32)ceilf(metrics.baseline * physicalToVirtualFactor);
-		metrics.width = (int32)ceilf(metrics.width * physicalToVirtualFactor);
-		metrics.height = (int32)ceilf(metrics.height * physicalToVirtualFactor);
+        metrics.drawRect.x = (int32)floorf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)metrics.drawRect.x));
+        metrics.drawRect.y = (int32)floorf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)metrics.drawRect.y));
+        metrics.drawRect.dx = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)metrics.drawRect.dx));
+        metrics.drawRect.dy = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)metrics.drawRect.dy));
+        metrics.baseline = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)metrics.baseline));
+        metrics.width = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)metrics.width));
+        metrics.height = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((float32)metrics.height));
 	}
 	return metrics;
 }

@@ -128,8 +128,8 @@ int main(int argc, char *argv[])
 		else
 		{
             //Trick for correct loading of sprites.
-            Core::Instance()->UnregisterAllAvailableResourceSizes();
-            Core::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
+            VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+            VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
             
             
 			cmdLine.Process();

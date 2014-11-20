@@ -57,8 +57,8 @@ protected:
 public:
 	UIScreen(const Rect &rect = Rect(0.0f,
                                      0.0f,
-                                     (float32)ScreenSizes::GetVirtualScreenSize().dx,
-                                     (float32)ScreenSizes::GetVirtualScreenSize().dy
+                                     (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
+                                     (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy
                                      ));
 
 	/**

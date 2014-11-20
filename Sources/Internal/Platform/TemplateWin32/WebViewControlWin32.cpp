@@ -626,13 +626,15 @@ void WebViewControl::SetRect(const Rect& rect)
 	RECT browserRect = {0};
 	::GetWindowRect(this->browserWindow, &browserRect);
 
-	browserRect.left = (LONG)(rect.x * VirtualCoordinates::GetVirtualToPhysicalFactor());
-    browserRect.top = (LONG)(rect.y * VirtualCoordinates::GetVirtualToPhysicalFactor());
+    Rect convertedRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+
+    browserRect.left = (LONG)(convertedRect.x);
+    browserRect.top = (LONG)(convertedRect.y);
+    browserRect.right = (LONG)(browserRect.left + convertedRect.dx);
+    browserRect.bottom = (LONG)(browserRect.top + convertedRect.dy);
+
 	browserRect.left  += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
     browserRect.top += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
-
-    browserRect.right = (LONG)(browserRect.left + rect.dx * VirtualCoordinates::GetVirtualToPhysicalFactor());
-    browserRect.bottom = (LONG)(browserRect.top + rect.dy * VirtualCoordinates::GetVirtualToPhysicalFactor());
 
 	::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
 		browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );
