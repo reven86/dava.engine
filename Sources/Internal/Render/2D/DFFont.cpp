@@ -222,7 +222,6 @@ Font * DFFont::Clone() const
     dfFont->fontInternal = SafeRetain(fontInternal);
     dfFont->fontTexture = SafeRetain(fontTexture);
     dfFont->size = size;
-    dfFont->renderSize = renderSize;
     dfFont->fontTextureHandler = fontTextureHandler;
     RenderManager::Instance()->RetainTextureState(fontTextureHandler);
 
@@ -385,7 +384,7 @@ float32 DFFont::GetSpread() const
 
 float32 DFFont::GetSizeScale() const
 {
-    return renderSize / fontInternal->baseSize;
+    return size / fontInternal->baseSize;
 }
     
 bool DFFont::LoadTexture(const FilePath & path)

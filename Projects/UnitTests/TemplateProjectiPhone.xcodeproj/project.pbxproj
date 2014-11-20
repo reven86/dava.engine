@@ -7,9 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		001CF9201A02537B00751045 /* BaseScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF9131A02537B00751045 /* BaseScreen.cpp */; };
+		001CF9211A02537B00751045 /* FrameworkMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF9161A02537B00751045 /* FrameworkMain.cpp */; };
+		001CF9221A02537B00751045 /* GameCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF9181A02537B00751045 /* GameCore.cpp */; };
+		001CF9231A02537B00751045 /* TeamCityTestsOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF91A1A02537B00751045 /* TeamCityTestsOutput.cpp */; };
+		001CF9241A02537B00751045 /* TextureUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF91D1A02537B00751045 /* TextureUtils.cpp */; };
+		001CF9281A02539600751045 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF9261A02539600751045 /* TeamcityOutput.cpp */; };
+		0057A1A419FE580F00DFAEEC /* IpAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18119FE580F00DFAEEC /* IpAddress.cpp */; };
+		0057A1A519FE580F00DFAEEC /* Packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18319FE580F00DFAEEC /* Packet.cpp */; };
+		0057A1A619FE580F00DFAEEC /* Socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18519FE580F00DFAEEC /* Socket.cpp */; };
+		0057A1A719FE580F00DFAEEC /* SocketSelector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18919FE580F00DFAEEC /* SocketSelector.cpp */; };
+		0057A1A819FE580F00DFAEEC /* TcpListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18B19FE580F00DFAEEC /* TcpListener.cpp */; };
+		0057A1A919FE580F00DFAEEC /* TcpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18D19FE580F00DFAEEC /* TcpSocket.cpp */; };
+		0057A1AA19FE580F00DFAEEC /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A18F19FE580F00DFAEEC /* UdpSocket.cpp */; };
+		0057A1AB19FE580F00DFAEEC /* SocketImpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A19219FE580F00DFAEEC /* SocketImpl.cpp */; };
+		0057A1AD19FE580F00DFAEEC /* Err.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A19919FE580F00DFAEEC /* Err.cpp */; };
+		0057A1AE19FE580F00DFAEEC /* String.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A19D19FE580F00DFAEEC /* String.cpp */; };
+		0057A1AF19FE580F00DFAEEC /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0057A19F19FE580F00DFAEEC /* Time.cpp */; };
+		0057A1B019FE580F00DFAEEC /* Utf.inl in Resources */ = {isa = PBXBuildFile; fileRef = 0057A1A219FE580F00DFAEEC /* Utf.inl */; };
 		02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B3D3DD159C8D360082111B /* SoundTest.cpp */; };
 		02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC3C0515E6399C0047F67F /* SplitTest.cpp */; };
 		02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */; };
+		032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 032D348A1A0912B5007509C3 /* CommandLineParser.cpp */; };
 		1146E0EC19D003E4009E5FAB /* MathTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E0EA19D003E4009E5FAB /* MathTest.cpp */; };
 		15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */; };
 		1770DF4517DF446600000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4317DF446600000391 /* UIMovieTest.cpp */; };
@@ -31,7 +50,6 @@
 		4F25830719BDB6B800C28926 /* FunctionBindSingalTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F25830519BDB6B800C28926 /* FunctionBindSingalTest.cpp */; };
 		5035302F194A4026006B66DB /* SceneSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5035302D194A4026006B66DB /* SceneSystemTest.cpp */; };
 		5C8B42A61589D866001B2597 /* SampleTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C8B42A41589D866001B2597 /* SampleTest.cpp */; };
-		5C8D42441580E4D700441032 /* BaseScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C8D42421580E4D700441032 /* BaseScreen.cpp */; };
 		5CA2462E158F472100465879 /* EntityTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA2462C158F472100465879 /* EntityTest.cpp */; };
 		5CDC2530156CDED900742348 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5CDC252F156CDED900742348 /* MainWindow-iPad.xib */; };
 		5CDC2533156CE21000742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2532156CE20F00742348 /* libz.dylib */; };
@@ -53,7 +71,6 @@
 		CEC6DA17162D95A6009E5F1D /* KeyedArchiveYamlTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CEC6DA16162D95A6009E5F1D /* KeyedArchiveYamlTest.cpp */; };
 		D7FEF1171982839600B2C7AF /* DLCDownloadTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF1151982839600B2C7AF /* DLCDownloadTest.cpp */; };
 		E801A588183FAB8E00D5B770 /* ComponentsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E801A586183FAB8E00D5B770 /* ComponentsTest.cpp */; };
-		E80842BA1639147A002A6A77 /* TextureUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E80842B81639147A002A6A77 /* TextureUtils.cpp */; };
 		E81B47DA16F896070025AF23 /* FilePathTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81B47D816F896070025AF23 /* FilePathTest.cpp */; };
 		E81F2AF516BFA4E600C4545E /* MaterialCompilerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81F2AF316BFA4E600C4545E /* MaterialCompilerTest.cpp */; };
 		E832BD95170D5610004D88A0 /* FileListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E832BD93170D5610004D88A0 /* FileListTest.cpp */; };
@@ -62,7 +79,6 @@
 		E8903910196D4FCE003126C8 /* ImageSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E890390E196D4FCE003126C8 /* ImageSizeTest.cpp */; };
 		E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */; };
 		E8B6B3CA1705DED5004F665E /* LocalizationTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */; };
-		E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */; };
 		E8C6B12216692E87001EBE09 /* CloneTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8C6B12016692E87001EBE09 /* CloneTest.cpp */; };
 		E8F98C48161AE9B900B50BDA /* PVRTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F98C46161AE9B900B50BDA /* PVRTest.cpp */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
@@ -70,8 +86,6 @@
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
 		FE76D9FF1163F316009E83B6 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9FE1163F316009E83B6 /* AudioToolbox.framework */; };
 		FE76DA041163F32F009E83B6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76DA031163F32F009E83B6 /* QuartzCore.framework */; };
-		FEC3CBD91284374A00541220 /* FrameworkMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CBC51284374A00541220 /* FrameworkMain.cpp */; };
-		FEC3CBDA1284374A00541220 /* GameCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CBC71284374A00541220 /* GameCore.cpp */; };
 		FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = FEC9200C13BA2D7D006F347F /* iPhoneProjectDelegate.mm */; };
 		FEC9201013BA2D7D006F347F /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = FEC9200D13BA2D7D006F347F /* main.mm */; };
 		FEC9201113BA2D7D006F347F /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = FEC9200E13BA2D7D006F347F /* MainWindow.xib */; };
@@ -105,12 +119,61 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		001CF9131A02537B00751045 /* BaseScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseScreen.cpp; sourceTree = "<group>"; };
+		001CF9141A02537B00751045 /* BaseScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseScreen.h; sourceTree = "<group>"; };
+		001CF9151A02537B00751045 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
+		001CF9161A02537B00751045 /* FrameworkMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FrameworkMain.cpp; sourceTree = "<group>"; };
+		001CF9171A02537B00751045 /* FrameworkMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkMain.h; sourceTree = "<group>"; };
+		001CF9181A02537B00751045 /* GameCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameCore.cpp; sourceTree = "<group>"; };
+		001CF9191A02537B00751045 /* GameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameCore.h; sourceTree = "<group>"; };
+		001CF91A1A02537B00751045 /* TeamCityTestsOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TeamCityTestsOutput.cpp; sourceTree = "<group>"; };
+		001CF91B1A02537B00751045 /* TeamCityTestsOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamCityTestsOutput.h; sourceTree = "<group>"; };
+		001CF91C1A02537B00751045 /* TestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestTemplate.h; sourceTree = "<group>"; };
+		001CF91D1A02537B00751045 /* TextureUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureUtils.cpp; sourceTree = "<group>"; };
+		001CF91E1A02537B00751045 /* TextureUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureUtils.h; sourceTree = "<group>"; };
+		001CF91F1A02537B00751045 /* UITestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITestTemplate.h; sourceTree = "<group>"; };
+		001CF9261A02539600751045 /* TeamcityOutput.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = TeamcityOutput.cpp; sourceTree = "<group>"; };
+		001CF9271A02539600751045 /* TeamcityOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamcityOutput.h; sourceTree = "<group>"; };
+		0057A17E19FE580F00DFAEEC /* Config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Config.hpp; sourceTree = "<group>"; };
+		0057A18019FE580F00DFAEEC /* Export.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Export.hpp; sourceTree = "<group>"; };
+		0057A18119FE580F00DFAEEC /* IpAddress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IpAddress.cpp; sourceTree = "<group>"; };
+		0057A18219FE580F00DFAEEC /* IpAddress.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IpAddress.hpp; sourceTree = "<group>"; };
+		0057A18319FE580F00DFAEEC /* Packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Packet.cpp; sourceTree = "<group>"; };
+		0057A18419FE580F00DFAEEC /* Packet.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Packet.hpp; sourceTree = "<group>"; };
+		0057A18519FE580F00DFAEEC /* Socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Socket.cpp; sourceTree = "<group>"; };
+		0057A18619FE580F00DFAEEC /* Socket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Socket.hpp; sourceTree = "<group>"; };
+		0057A18719FE580F00DFAEEC /* SocketHandle.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SocketHandle.hpp; sourceTree = "<group>"; };
+		0057A18819FE580F00DFAEEC /* SocketImpl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SocketImpl.hpp; sourceTree = "<group>"; };
+		0057A18919FE580F00DFAEEC /* SocketSelector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SocketSelector.cpp; sourceTree = "<group>"; };
+		0057A18A19FE580F00DFAEEC /* SocketSelector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SocketSelector.hpp; sourceTree = "<group>"; };
+		0057A18B19FE580F00DFAEEC /* TcpListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TcpListener.cpp; sourceTree = "<group>"; };
+		0057A18C19FE580F00DFAEEC /* TcpListener.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TcpListener.hpp; sourceTree = "<group>"; };
+		0057A18D19FE580F00DFAEEC /* TcpSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TcpSocket.cpp; sourceTree = "<group>"; };
+		0057A18E19FE580F00DFAEEC /* TcpSocket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TcpSocket.hpp; sourceTree = "<group>"; };
+		0057A18F19FE580F00DFAEEC /* UdpSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UdpSocket.cpp; sourceTree = "<group>"; };
+		0057A19019FE580F00DFAEEC /* UdpSocket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = UdpSocket.hpp; sourceTree = "<group>"; };
+		0057A19219FE580F00DFAEEC /* SocketImpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SocketImpl.cpp; sourceTree = "<group>"; };
+		0057A19319FE580F00DFAEEC /* SocketImpl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SocketImpl.hpp; sourceTree = "<group>"; };
+		0057A19719FE580F00DFAEEC /* Network.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Network.hpp; sourceTree = "<group>"; };
+		0057A19919FE580F00DFAEEC /* Err.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Err.cpp; sourceTree = "<group>"; };
+		0057A19A19FE580F00DFAEEC /* Err.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Err.hpp; sourceTree = "<group>"; };
+		0057A19B19FE580F00DFAEEC /* Export.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Export.hpp; sourceTree = "<group>"; };
+		0057A19C19FE580F00DFAEEC /* NonCopyable.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NonCopyable.hpp; sourceTree = "<group>"; };
+		0057A19D19FE580F00DFAEEC /* String.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = String.cpp; sourceTree = "<group>"; };
+		0057A19E19FE580F00DFAEEC /* String.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = String.hpp; sourceTree = "<group>"; };
+		0057A19F19FE580F00DFAEEC /* Time.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Time.cpp; sourceTree = "<group>"; };
+		0057A1A019FE580F00DFAEEC /* Time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
+		0057A1A119FE580F00DFAEEC /* Utf.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Utf.hpp; sourceTree = "<group>"; };
+		0057A1A219FE580F00DFAEEC /* Utf.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Utf.inl; sourceTree = "<group>"; };
+		0057A1A319FE580F00DFAEEC /* System.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = System.hpp; sourceTree = "<group>"; };
 		02B3D3DD159C8D360082111B /* SoundTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundTest.cpp; sourceTree = "<group>"; };
 		02B3D3DE159C8D360082111B /* SoundTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundTest.h; sourceTree = "<group>"; };
 		02BC3C0515E6399C0047F67F /* SplitTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SplitTest.cpp; sourceTree = "<group>"; };
 		02BC3C0615E6399C0047F67F /* SplitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SplitTest.h; sourceTree = "<group>"; };
 		02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ThreadSyncTest.cpp; sourceTree = "<group>"; };
 		02F8B01B17CF996C00D5A334 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadSyncTest.h; sourceTree = "<group>"; };
+		032D348A1A0912B5007509C3 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.cpp; sourceTree = "<group>"; };
+		032D348B1A0912B5007509C3 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.h; sourceTree = "<group>"; };
 		1146E0EA19D003E4009E5FAB /* MathTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MathTest.cpp; sourceTree = "<group>"; };
 		1146E0EB19D003E4009E5FAB /* MathTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MathTest.h; sourceTree = "<group>"; };
 		15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFormatTest.cpp; sourceTree = "<group>"; };
@@ -144,12 +207,8 @@
 		5035302E194A4026006B66DB /* SceneSystemTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneSystemTest.h; sourceTree = "<group>"; };
 		5C8B42A41589D866001B2597 /* SampleTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SampleTest.cpp; sourceTree = "<group>"; };
 		5C8B42A51589D866001B2597 /* SampleTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SampleTest.h; sourceTree = "<group>"; };
-		5C8D42421580E4D700441032 /* BaseScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseScreen.cpp; sourceTree = "<group>"; };
-		5C8D42431580E4D700441032 /* BaseScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseScreen.h; sourceTree = "<group>"; };
-		5C8D42451580E4ED00441032 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		5CA2462C158F472100465879 /* EntityTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityTest.cpp; sourceTree = "<group>"; };
 		5CA2462D158F472100465879 /* EntityTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityTest.h; sourceTree = "<group>"; };
-		5CDC251F156CD48700742348 /* TestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestTemplate.h; sourceTree = "<group>"; };
 		5CDC252F156CDED900742348 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "MainWindow-iPad.xib"; path = "iOSSpecific/iPad/MainWindow-iPad.xib"; sourceTree = "<group>"; };
 		5CDC2532156CE20F00742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		627C796B18ED9DA900C05154 /* JPEGTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGTest.cpp; sourceTree = "<group>"; };
@@ -186,8 +245,6 @@
 		D7FEF1161982839600B2C7AF /* DLCDownloadTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLCDownloadTest.h; sourceTree = "<group>"; };
 		E801A586183FAB8E00D5B770 /* ComponentsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ComponentsTest.cpp; sourceTree = "<group>"; };
 		E801A587183FAB8E00D5B770 /* ComponentsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ComponentsTest.h; sourceTree = "<group>"; };
-		E80842B81639147A002A6A77 /* TextureUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureUtils.cpp; sourceTree = "<group>"; };
-		E80842B91639147A002A6A77 /* TextureUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureUtils.h; sourceTree = "<group>"; };
 		E80D2FB0164D518100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E81B47D816F896070025AF23 /* FilePathTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FilePathTest.cpp; sourceTree = "<group>"; };
 		E81B47D916F896070025AF23 /* FilePathTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilePathTest.h; sourceTree = "<group>"; };
@@ -205,8 +262,6 @@
 		E8983CC018C89733002FB974 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationTest.cpp; sourceTree = "<group>"; };
 		E8B6B3C91705DED5004F665E /* LocalizationTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationTest.h; sourceTree = "<group>"; };
-		E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = eMailTest.cpp; sourceTree = "<group>"; };
-		E8BD1F0716DE4A7800499E18 /* eMailTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eMailTest.h; sourceTree = "<group>"; };
 		E8C6B12016692E87001EBE09 /* CloneTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CloneTest.cpp; sourceTree = "<group>"; };
 		E8C6B12116692E87001EBE09 /* CloneTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CloneTest.h; sourceTree = "<group>"; };
 		E8F98C46161AE9B900B50BDA /* PVRTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTest.cpp; sourceTree = "<group>"; };
@@ -218,10 +273,6 @@
 		FE76D9FE1163F316009E83B6 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		FE76DA031163F32F009E83B6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		FE9895531163F13500500198 /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../iPhoneFramework/Framework.xcodeproj; sourceTree = SOURCE_ROOT; };
-		FEC3CBC51284374A00541220 /* FrameworkMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FrameworkMain.cpp; sourceTree = "<group>"; };
-		FEC3CBC61284374A00541220 /* FrameworkMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkMain.h; sourceTree = "<group>"; };
-		FEC3CBC71284374A00541220 /* GameCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameCore.cpp; sourceTree = "<group>"; };
-		FEC3CBC81284374A00541220 /* GameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameCore.h; sourceTree = "<group>"; };
 		FEC9200B13BA2D7D006F347F /* iPhoneProjectDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iPhoneProjectDelegate.h; path = iOSSpecific/iPhoneProjectDelegate.h; sourceTree = "<group>"; };
 		FEC9200C13BA2D7D006F347F /* iPhoneProjectDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = iPhoneProjectDelegate.mm; path = iOSSpecific/iPhoneProjectDelegate.mm; sourceTree = "<group>"; };
 		FEC9200D13BA2D7D006F347F /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = main.mm; path = iOSSpecific/main.mm; sourceTree = "<group>"; };
@@ -263,18 +314,116 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		001CF9121A02537B00751045 /* Infrastructure */ = {
+			isa = PBXGroup;
+			children = (
+				001CF9131A02537B00751045 /* BaseScreen.cpp */,
+				001CF9141A02537B00751045 /* BaseScreen.h */,
+				001CF9151A02537B00751045 /* Config.h */,
+				001CF9161A02537B00751045 /* FrameworkMain.cpp */,
+				001CF9171A02537B00751045 /* FrameworkMain.h */,
+				001CF9181A02537B00751045 /* GameCore.cpp */,
+				001CF9191A02537B00751045 /* GameCore.h */,
+				001CF91A1A02537B00751045 /* TeamCityTestsOutput.cpp */,
+				001CF91B1A02537B00751045 /* TeamCityTestsOutput.h */,
+				001CF91C1A02537B00751045 /* TestTemplate.h */,
+				001CF91D1A02537B00751045 /* TextureUtils.cpp */,
+				001CF91E1A02537B00751045 /* TextureUtils.h */,
+				001CF91F1A02537B00751045 /* UITestTemplate.h */,
+			);
+			path = Infrastructure;
+			sourceTree = "<group>";
+		};
+		001CF9251A02539600751045 /* TeamcityOutput */ = {
+			isa = PBXGroup;
+			children = (
+				001CF9261A02539600751045 /* TeamcityOutput.cpp */,
+				001CF9271A02539600751045 /* TeamcityOutput.h */,
+			);
+			name = TeamcityOutput;
+			path = ../../../Sources/Tools/TeamcityOutput;
+			sourceTree = "<group>";
+		};
+		0057A17D19FE580F00DFAEEC /* SFML */ = {
+			isa = PBXGroup;
+			children = (
+				0057A17E19FE580F00DFAEEC /* Config.hpp */,
+				0057A17F19FE580F00DFAEEC /* Network */,
+				0057A19719FE580F00DFAEEC /* Network.hpp */,
+				0057A19819FE580F00DFAEEC /* System */,
+				0057A1A319FE580F00DFAEEC /* System.hpp */,
+			);
+			path = SFML;
+			sourceTree = "<group>";
+		};
+		0057A17F19FE580F00DFAEEC /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				0057A18019FE580F00DFAEEC /* Export.hpp */,
+				0057A18119FE580F00DFAEEC /* IpAddress.cpp */,
+				0057A18219FE580F00DFAEEC /* IpAddress.hpp */,
+				0057A18319FE580F00DFAEEC /* Packet.cpp */,
+				0057A18419FE580F00DFAEEC /* Packet.hpp */,
+				0057A18519FE580F00DFAEEC /* Socket.cpp */,
+				0057A18619FE580F00DFAEEC /* Socket.hpp */,
+				0057A18719FE580F00DFAEEC /* SocketHandle.hpp */,
+				0057A18819FE580F00DFAEEC /* SocketImpl.hpp */,
+				0057A18919FE580F00DFAEEC /* SocketSelector.cpp */,
+				0057A18A19FE580F00DFAEEC /* SocketSelector.hpp */,
+				0057A18B19FE580F00DFAEEC /* TcpListener.cpp */,
+				0057A18C19FE580F00DFAEEC /* TcpListener.hpp */,
+				0057A18D19FE580F00DFAEEC /* TcpSocket.cpp */,
+				0057A18E19FE580F00DFAEEC /* TcpSocket.hpp */,
+				0057A18F19FE580F00DFAEEC /* UdpSocket.cpp */,
+				0057A19019FE580F00DFAEEC /* UdpSocket.hpp */,
+				0057A19119FE580F00DFAEEC /* Unix */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		0057A19119FE580F00DFAEEC /* Unix */ = {
+			isa = PBXGroup;
+			children = (
+				0057A19219FE580F00DFAEEC /* SocketImpl.cpp */,
+				0057A19319FE580F00DFAEEC /* SocketImpl.hpp */,
+			);
+			path = Unix;
+			sourceTree = "<group>";
+		};
+		0057A19819FE580F00DFAEEC /* System */ = {
+			isa = PBXGroup;
+			children = (
+				0057A19919FE580F00DFAEEC /* Err.cpp */,
+				0057A19A19FE580F00DFAEEC /* Err.hpp */,
+				0057A19B19FE580F00DFAEEC /* Export.hpp */,
+				0057A19C19FE580F00DFAEEC /* NonCopyable.hpp */,
+				0057A19D19FE580F00DFAEEC /* String.cpp */,
+				0057A19E19FE580F00DFAEEC /* String.hpp */,
+				0057A19F19FE580F00DFAEEC /* Time.cpp */,
+				0057A1A019FE580F00DFAEEC /* Time.hpp */,
+				0057A1A119FE580F00DFAEEC /* Utf.hpp */,
+				0057A1A219FE580F00DFAEEC /* Utf.inl */,
+			);
+			path = System;
+			sourceTree = "<group>";
+		};
+		032D34881A091285007509C3 /* CommandLineParser */ = {
+			isa = PBXGroup;
+			children = (
+				032D348A1A0912B5007509C3 /* CommandLineParser.cpp */,
+				032D348B1A0912B5007509C3 /* CommandLineParser.h */,
+			);
+			name = CommandLineParser;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				E80842B81639147A002A6A77 /* TextureUtils.cpp */,
-				E80842B91639147A002A6A77 /* TextureUtils.h */,
-				5C8D42451580E4ED00441032 /* Config.h */,
-				5C8D42411580E4C300441032 /* TestSuite */,
+				032D34881A091285007509C3 /* CommandLineParser */,
+				001CF9251A02539600751045 /* TeamcityOutput */,
+				001CF9121A02537B00751045 /* Infrastructure */,
+				0057A17D19FE580F00DFAEEC /* SFML */,
 				5C7BE30F156E0EF400F9F538 /* Tests */,
-				FEC3CBC51284374A00541220 /* FrameworkMain.cpp */,
-				FEC3CBC61284374A00541220 /* FrameworkMain.h */,
-				FEC3CBC71284374A00541220 /* GameCore.cpp */,
-				FEC3CBC81284374A00541220 /* GameCore.h */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -404,8 +553,6 @@
 				E81B47D916F896070025AF23 /* FilePathTest.h */,
 				CC24802416DF6CE000183D40 /* InputTest.cpp */,
 				CC24802516DF6CE000183D40 /* InputTest.h */,
-				E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */,
-				E8BD1F0716DE4A7800499E18 /* eMailTest.h */,
 				84C8F71316D3D16000FAC7DF /* DPITest.cpp */,
 				84C8F71416D3D16000FAC7DF /* DPITest.h */,
 				E81F2AF316BFA4E600C4545E /* MaterialCompilerTest.cpp */,
@@ -440,16 +587,6 @@
 				C166A6F018E31B4700007C2D /* SaveImageTest.h */,
 			);
 			name = Tests;
-			sourceTree = "<group>";
-		};
-		5C8D42411580E4C300441032 /* TestSuite */ = {
-			isa = PBXGroup;
-			children = (
-				5CDC251F156CD48700742348 /* TestTemplate.h */,
-				5C8D42421580E4D700441032 /* BaseScreen.cpp */,
-				5C8D42431580E4D700441032 /* BaseScreen.h */,
-			);
-			name = TestSuite;
 			sourceTree = "<group>";
 		};
 		5CDC252E156CDED400742348 /* iPad */ = {
@@ -558,6 +695,7 @@
 				FEFCD63412AE78D90060A1A1 /* Data in Resources */,
 				FEC9201113BA2D7D006F347F /* MainWindow.xib in Resources */,
 				5CDC2530156CDED900742348 /* MainWindow-iPad.xib in Resources */,
+				0057A1B019FE580F00DFAEEC /* Utf.inl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -584,39 +722,48 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FEC3CBD91284374A00541220 /* FrameworkMain.cpp in Sources */,
-				FEC3CBDA1284374A00541220 /* GameCore.cpp in Sources */,
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
 				15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				1146E0EC19D003E4009E5FAB /* MathTest.cpp in Sources */,
 				8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */,
 				17DD1616193F506500B73BEE /* ParseTextTest.cpp in Sources */,
-				5C8D42441580E4D700441032 /* BaseScreen.cpp in Sources */,
 				5C8B42A61589D866001B2597 /* SampleTest.cpp in Sources */,
 				5CA2462E158F472100465879 /* EntityTest.cpp in Sources */,
 				02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */,
 				FEC95C7015B409E500588BBF /* HashMapTest.cpp in Sources */,
+				0057A1A819FE580F00DFAEEC /* TcpListener.cpp in Sources */,
+				0057A1A419FE580F00DFAEEC /* IpAddress.cpp in Sources */,
 				627C796D18ED9DA900C05154 /* JPEGTest.cpp in Sources */,
 				FEC95C7115B409E500588BBF /* MemoryAllocatorsTest.cpp in Sources */,
 				02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */,
 				E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */,
+				0057A1A719FE580F00DFAEEC /* SocketSelector.cpp in Sources */,
 				E8F98C48161AE9B900B50BDA /* PVRTest.cpp in Sources */,
 				B72EFFE819CB389600D38C33 /* TextSizeTest.cpp in Sources */,
 				E801A588183FAB8E00D5B770 /* ComponentsTest.cpp in Sources */,
-				E80842BA1639147A002A6A77 /* TextureUtils.cpp in Sources */,
+				0057A1A919FE580F00DFAEEC /* TcpSocket.cpp in Sources */,
 				CE1AA0781625B8D40005BE5E /* KeyedArchiveTest.cpp in Sources */,
 				CEC6DA17162D95A6009E5F1D /* KeyedArchiveYamlTest.cpp in Sources */,
 				E8C6B12216692E87001EBE09 /* CloneTest.cpp in Sources */,
+				0057A1AD19FE580F00DFAEEC /* Err.cpp in Sources */,
+				001CF9281A02539600751045 /* TeamcityOutput.cpp in Sources */,
 				49C4331F1675F1A6000EA877 /* DXTTest.cpp in Sources */,
 				B7D6C97819C999A40095250A /* BiDiTest.cpp in Sources */,
 				E81F2AF516BFA4E600C4545E /* MaterialCompilerTest.cpp in Sources */,
 				C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */,
+				0057A1A519FE580F00DFAEEC /* Packet.cpp in Sources */,
+				001CF9221A02537B00751045 /* GameCore.cpp in Sources */,
+				0057A1AF19FE580F00DFAEEC /* Time.cpp in Sources */,
 				84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */,
-				E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */,
+				001CF9201A02537B00751045 /* BaseScreen.cpp in Sources */,
 				D7FEF1171982839600B2C7AF /* DLCDownloadTest.cpp in Sources */,
 				E8903910196D4FCE003126C8 /* ImageSizeTest.cpp in Sources */,
 				CC24802616DF6CE000183D40 /* InputTest.cpp in Sources */,
+				001CF9231A02537B00751045 /* TeamCityTestsOutput.cpp in Sources */,
+				001CF9241A02537B00751045 /* TextureUtils.cpp in Sources */,
+				0057A1AB19FE580F00DFAEEC /* SocketImpl.cpp in Sources */,
+				0057A1AE19FE580F00DFAEEC /* String.cpp in Sources */,
 				4F25830719BDB6B800C28926 /* FunctionBindSingalTest.cpp in Sources */,
 				E81B47DA16F896070025AF23 /* FilePathTest.cpp in Sources */,
 				497BF6EE16F7565B00AC57C6 /* DeviceInfoTest.cpp in Sources */,
@@ -625,13 +772,17 @@
 				E832BD95170D5610004D88A0 /* FileListTest.cpp in Sources */,
 				E832BDA0170D823C004D88A0 /* FileSystemTest.cpp in Sources */,
 				495B66FF1796FA7F0017D8DD /* TransparentWebViewTest.cpp in Sources */,
+				001CF9211A02537B00751045 /* FrameworkMain.cpp in Sources */,
 				4998996B18B238F7007A8DF2 /* RectSpriteTest.cpp in Sources */,
 				E8679179175F607700C5A6A2 /* FormatsTest.cpp in Sources */,
 				5035302F194A4026006B66DB /* SceneSystemTest.cpp in Sources */,
+				0057A1A619FE580F00DFAEEC /* Socket.cpp in Sources */,
 				74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */,
+				032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */,
 				74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */,
 				7497447517B3D61800282DAA /* AlignTest.cpp in Sources */,
 				02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */,
+				0057A1AA19FE580F00DFAEEC /* UdpSocket.cpp in Sources */,
 				1770DF4517DF446600000391 /* UIMovieTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -658,6 +809,13 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Libs/include,
+					./Classes,
+					./../../Sources/Tools,
+				);
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-mno-thumb";
@@ -680,6 +838,13 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Libs/include,
+					./Classes,
+					./../../Sources/Tools,
+				);
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-mno-thumb";
@@ -735,6 +900,13 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					./../../Libs/include,
+					./Classes,
+					./../../Sources/Tools,
+				);
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-mno-thumb";

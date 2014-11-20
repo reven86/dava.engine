@@ -57,7 +57,9 @@ void StringFormatTest::IntegerTestFunction( PerfFuncData * data )
 inline void checkFloatFormat( const WideString &formatStr, float32 value, TestTemplate<StringFormatTest>::PerfFuncData * data )
 {
     WideString testStr = Format(formatStr.c_str() , value);
-    WideString checkStr = StringToWString( Format( WStringToString(formatStr ).c_str(), value) );
+	String tmpStr = WStringToString(formatStr);
+	String tmpFormated = Format(tmpStr.c_str(), value);
+    WideString checkStr = StringToWString(tmpFormated);
     if( data )
         data->testData.message = "\"" + WStringToString(testStr) + "\" == \"" + WStringToString(checkStr) + "\"";
     TEST_VERIFY( testStr == checkStr );

@@ -31,8 +31,8 @@ public:
 
     QPixmap GetIcon(int ll) const;
 
-    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) const;
-    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text) const;
+    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text);
+    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text);
 
 private slots:
     void OnAddMessage(int ll, const QString& text);

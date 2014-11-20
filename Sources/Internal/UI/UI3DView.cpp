@@ -32,6 +32,7 @@
 #include "Scene3D/Scene.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
@@ -90,6 +91,11 @@ void UI3DView::Update(float32 timeElapsed)
 
 void UI3DView::Draw(const UIGeometricData & geometricData)
 {
+	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
+
+	if (uiDrawQueryWasOpen)
+		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+
 #if 1
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
 	
@@ -112,6 +118,9 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderSystem2D::Instance()->Setup2DMatrices();
 #endif
+
+	if (uiDrawQueryWasOpen)
+		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }
     
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)

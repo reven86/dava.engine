@@ -44,11 +44,13 @@
 #include "Render/2D/TextBlockDistanceRender.h"
 
 #include "Utils/StringUtils.h"
+#include <Thread/LockGuard.h>
 
 namespace DAVA 
 {
 
 bool TextBlock::isBiDiSupportEnabled = true;    //!< Enable BiDi support by default
+BiDiHelper TextBlock::bidiHelper;
 
 struct TextBlockData
 {
@@ -105,6 +107,7 @@ TextBlock::TextBlock()
     , cacheOx(0)
     , cacheOy(0)
     , cacheTextSize(0.f,0.f)
+    , renderSize(1.f)
 {
     font = NULL;
     isMultilineEnabled = false;
@@ -148,6 +151,7 @@ void TextBlock::SetFont(Font * _font)
     font = SafeRetain(_font);
 
     originalFontSize = font->GetSize();
+    renderSize = originalFontSize;
     
     SafeRelease(textBlockRender);
     SafeDelete(textureInvalidater);
@@ -250,50 +254,59 @@ void TextBlock::SetFittingOption(int32 _fittingType)
 
 Font * TextBlock::GetFont()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return font;
 }
 
 const Vector<WideString> & TextBlock::GetMultilineStrings()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return multilineStrings;
 }
 
 const WideString & TextBlock::GetText()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return logicalText;
 }
 
 bool TextBlock::GetMultiline()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return isMultilineEnabled;
 }
 
 bool TextBlock::GetMultilineBySymbol()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return isMultilineBySymbolEnabled;
 }
 
 int32 TextBlock::GetFittingOption()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return fittingType;
+}
+
+float32 TextBlock::GetRenderSize()
+{
+    LockGuard<Mutex> guard(mutex);
+    return renderSize;
+}
+
+void TextBlock::SetRenderSize(float32 _renderSize)
+{
+    mutex.Lock();
+    if (renderSize != _renderSize)
+    {
+        renderSize = Max(_renderSize, 0.1f);
+        needRedraw = true;
+
+        mutex.Unlock();
+        Prepare();
+        return;
+    }
+    mutex.Unlock();
 }
 
 void TextBlock::SetAlign(int32 _align)
@@ -327,30 +340,26 @@ void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
 
 bool TextBlock::GetUseRtlAlign()
 {
-    mutex.Lock();
-    mutex.Unlock();
+    LockGuard<Mutex> guard(mutex);
     return useRtlAlign;
 }
 
 bool TextBlock::IsRtl()
 {
-    mutex.Lock();
-    mutex.Unlock();
+    LockGuard<Mutex> guard(mutex);
     return isRtl;
 }
 
 int32 TextBlock::GetAlign()
 {
-    mutex.Lock();
-    mutex.Unlock();
-	return align;
+    LockGuard<Mutex> guard(mutex);
+    return align;
 }
 	
 int32 TextBlock::GetVisualAlign()
 {
-	mutex.Lock();
-    mutex.Unlock();
-	return GetVisualAlignNoMutexLock();
+    LockGuard<Mutex> guard(mutex);
+    return GetVisualAlignNoMutexLock();
 }
 	
 int32 TextBlock::GetVisualAlignNoMutexLock() const
@@ -365,7 +374,7 @@ int32 TextBlock::GetVisualAlignNoMutexLock() const
 
 Sprite * TextBlock::GetSprite()
 {
-    mutex.Lock();
+    LockGuard<Mutex> guard(mutex);
 
     Sprite* sprite = NULL;
     if (textBlockRender)
@@ -378,21 +387,19 @@ Sprite * TextBlock::GetSprite()
         Logger::Error("[Textblock] getting NULL sprite");
     }
 
-    mutex.Unlock();
-
     return sprite;
 }
 
 bool TextBlock::IsSpriteReady()
 {
-    mutex.Lock();
+    LockGuard<Mutex> guard(mutex);
+
     Sprite* sprite = NULL;
     if (textBlockRender)
     {
         sprite = textBlockRender->GetSprite();
     }
 
-    mutex.Unlock();
     return sprite != NULL;
 }
 
@@ -419,7 +426,9 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 
         if(textBlockRender)
         {
+            font->SetSize(renderSize);
             textBlockRender->Prepare(texture);
+            font->SetSize(originalFontSize);
         }
 
         needRedraw = false;
@@ -453,16 +462,17 @@ void TextBlock::CalculateCacheParams()
 
     if (isBiDiSupportEnabled) // Check BiDi support
     {
-        if (StringUtils::BiDiPrepare(logicalText, preparedText, &isRtl))
+        if (bidiHelper.PrepareString(logicalText, preparedText, &isRtl))
         {
             visualText = preparedText;
-            StringUtils::BiDiReorder(visualText, isRtl);
+            bidiHelper.ReorderString(visualText, isRtl);
         }
     }
     CleanLine(visualText);
 
     bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
-    font->SetSize(originalFontSize);
+    renderSize = originalFontSize;
+    font->SetSize(renderSize);
     Vector2 drawSize = rectSize;
 
     if(requestedSize.dx > 0)
@@ -561,11 +571,11 @@ void TextBlock::CalculateCacheParams()
         else if(((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (requestedSize.dy >= 0 || requestedSize.dx >= 0))
         {
             bool isChanged = false;
-            float prevFontSize = font->GetRenderSize();
+            float32 prevFontSize = renderSize;
             while (true)
             {
-                float yMul = 1.0f;
-                float xMul = 1.0f;
+                float32 yMul = 1.0f;
+                float32 xMul = 1.0f;
 
                 bool xBigger = false;
                 bool xLower = false;
@@ -575,9 +585,10 @@ void TextBlock::CalculateCacheParams()
                 {
                     if((isChanged || fittingType & FITTING_REDUCE) && textSize.height > drawSize.y)
                     {
-                        if (prevFontSize < font->GetRenderSize())
+                        if (prevFontSize < renderSize)
                         {
-                            font->SetRenderSize(prevFontSize);
+                            renderSize = prevFontSize;
+                            font->SetSize(renderSize);
                             textSize = font->GetStringMetrics(visualText);
                             break;
                         }
@@ -599,9 +610,10 @@ void TextBlock::CalculateCacheParams()
                 {
                     if((isChanged || fittingType & FITTING_REDUCE) && textSize.width > drawSize.x)
                     {
-                        if (prevFontSize < font->GetRenderSize())
+                        if (prevFontSize < renderSize)
                         {
-                            font->SetRenderSize(prevFontSize);
+                            renderSize = prevFontSize;
+                            font->SetSize(renderSize);
                             textSize = font->GetStringMetrics(visualText);
                             break;
                         }
@@ -625,7 +637,7 @@ void TextBlock::CalculateCacheParams()
                     break;
                 }
 
-                float finalSize = font->GetRenderSize();
+                float32 finalSize = renderSize;
                 prevFontSize = finalSize;
                 isChanged = true;
                 if(xMul < yMul)
@@ -636,7 +648,8 @@ void TextBlock::CalculateCacheParams()
                 {
                     finalSize *= yMul;
                 }
-                font->SetRenderSize(finalSize);
+                renderSize = finalSize;
+                font->SetSize(renderSize);
                 textSize = font->GetStringMetrics(visualText);
             }
         }
@@ -672,7 +685,7 @@ void TextBlock::CalculateCacheParams()
 
             int32 yOffset = font->GetVerticalSpacing();
             int32 fontHeight = font->GetFontHeight() + yOffset;
-            float lastSize = font->GetRenderSize();
+            float32 lastSize = renderSize;
 
             textSize.width = 0;
             textSize.height = fontHeight * (int32)multilineStrings.size() - yOffset;
@@ -680,7 +693,7 @@ void TextBlock::CalculateCacheParams()
             bool isChanged = false;
             while (true)
             {
-                float yMul = 1.0f;
+                float32 yMul = 1.0f;
 
                 bool yBigger = false;
                 bool yLower = false;
@@ -690,9 +703,10 @@ void TextBlock::CalculateCacheParams()
                     {
                         yBigger = true;
                         yMul = drawSize.y / textSize.height;
-                        if(lastSize < font->GetRenderSize())
+                        if (lastSize < renderSize)
                         {
-                            font->SetRenderSize(lastSize);
+                            renderSize = lastSize;
+                            font->SetSize(renderSize);
                             break;
                         }
                     }
@@ -731,11 +745,12 @@ void TextBlock::CalculateCacheParams()
                     break;
                 }
 
-                float finalSize = lastSize = font->GetRenderSize();
+                float32 finalSize = lastSize = renderSize;
                 isChanged = true;
                 finalSize *= yMul;
 
-                font->SetRenderSize(finalSize);
+                renderSize = finalSize;
+                font->SetSize(renderSize);
 
                 if (isMultilineBySymbolEnabled)
                 {
@@ -807,6 +822,10 @@ void TextBlock::CalculateCacheParams()
                 textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx);
             }
             textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
+            if(0 == line)
+            {
+                textSize.drawRect.y = stringSize.drawRect.y;
+            }
         }
     }
 
@@ -862,13 +881,18 @@ void TextBlock::CalculateCacheParams()
         cacheSpriteOffset.y = (float32)textSize.drawRect.y;
     }
 
+    // Restore font size
+    font->SetSize(originalFontSize);
+
 }
 
 void TextBlock::PreDraw()
 {
     if (textBlockRender)
     {
+        font->SetSize(renderSize);
         textBlockRender->PreDraw();
+        font->SetSize(originalFontSize);
     }
 }
 
@@ -876,7 +900,9 @@ void TextBlock::Draw(const Color& textColor, const Vector2* offset/* = NULL*/)
 {
     if (textBlockRender)
     {
+        font->SetSize(renderSize);
         textBlockRender->Draw(textColor, offset);
+        font->SetSize(originalFontSize);
     }
 }
 
@@ -910,16 +936,14 @@ void TextBlock::SetBiDiSupportEnabled(bool value)
     isBiDiSupportEnabled = value;
 }
 
-bool const& TextBlock::IsBiDiSupportEnabled()
+bool TextBlock::IsBiDiSupportEnabled()
 {
     return isBiDiSupportEnabled;
 }
 
 const Vector2 & TextBlock::GetTextSize()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return cacheTextSize;
 }
 
@@ -930,9 +954,7 @@ const Vector<int32> & TextBlock::GetStringSizes() const
 
 const Vector2& TextBlock::GetSpriteOffset()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return cacheSpriteOffset;
 }
 
@@ -976,7 +998,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
                 WideString line = string.substr(fromPos, pos - fromPos + 1);
                 if (isBiDiSupportEnabled)
                 {
-                    StringUtils::BiDiReorder(line, isRtl);
+                    bidiHelper.ReorderString(line, isRtl);
                 }
                 CleanLine(line, pos < textLength - 1);
                 resultVector.push_back(line);
@@ -1003,7 +1025,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
         WideString line = string.substr(fromPos, pos - fromPos + 1);
         if (isBiDiSupportEnabled)
         {
-            StringUtils::BiDiReorder(line, isRtl);
+            bidiHelper.ReorderString(line, isRtl);
         }
         CleanLine(line, true);
         resultVector.push_back(line);
@@ -1047,7 +1069,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
             WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
             if (isBiDiSupportEnabled)
             {
-                StringUtils::BiDiReorder(currentLine, isRtl);
+                bidiHelper.ReorderString(currentLine, isRtl);
             }
             CleanLine(currentLine);
             resultVector.push_back(currentLine);
@@ -1060,7 +1082,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
             WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
             if (isBiDiSupportEnabled)
             {
-                StringUtils::BiDiReorder(currentLine, isRtl);
+                bidiHelper.ReorderString(currentLine, isRtl);
             }
             CleanLine(currentLine);
             resultVector.push_back(currentLine);
@@ -1077,7 +1099,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
             WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
             if (isBiDiSupportEnabled)
             {
-                StringUtils::BiDiReorder(currentLine, isRtl);
+                bidiHelper.ReorderString(currentLine, isRtl);
             }
             CleanLine(currentLine);
             resultVector.push_back(currentLine);
@@ -1095,7 +1117,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
     WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart + 1);
     if (isBiDiSupportEnabled)
     {
-        StringUtils::BiDiReorder(currentLine, isRtl);
+        bidiHelper.ReorderString(currentLine, isRtl);
     }
     CleanLine(currentLine);
     resultVector.push_back(currentLine);

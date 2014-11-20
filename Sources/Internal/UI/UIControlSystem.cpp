@@ -32,6 +32,7 @@
 #include "UI/UIScreen.h"
 #include "FileSystem/Logger.h"
 #include "Render/RenderManager.h"
+#include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
@@ -40,6 +41,9 @@
 
 namespace DAVA 
 {
+
+const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
+
 UIControlSystem::~UIControlSystem()
 {
 	SafeRelease(currentScreen); 
@@ -324,6 +328,8 @@ void UIControlSystem::Draw()
 {
     TIME_PROFILE("UIControlSystem::Draw");
 
+    FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
+
     drawCounter = 0;
     if (!ui3DViewCount)
     {
@@ -346,6 +352,8 @@ void UIControlSystem::Draw()
 		frameSkip--;
 	}
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
+
+    FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)

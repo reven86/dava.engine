@@ -27,69 +27,68 @@
 =====================================================================================*/
 
 
-#ifndef __BASESCREEN_H__
-#define __BASESCREEN_H__
 
-#include "DAVAEngine.h"
-using namespace DAVA;
-
+#include "BaseScreen.h"
 #include "GameCore.h"
 
-#define TEST_VERIFY(command) \
-{\
-    bool passed = command;\
-    if (!passed)\
-    {\
-        GameCore::Instance()->RegisterError(#command, __FILE__, __LINE__, &data->testData); \
-    }\
+int32 BaseScreen::globalScreenId = 1;
+
+BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
+    :   UIScreen(),
+    skipCount(skipBeforeTests),
+    skipCounter(0),
+    readyForTests(false),
+    currentScreenId(globalScreenId++)
+{
+    SetName(_screenName);
+    
+    GameCore::Instance()->RegisterScreen(this);
+}
+
+BaseScreen::BaseScreen()
+    :   UIScreen(), 
+    skipCount(10), 
+    skipCounter(0),
+    readyForTests(false),
+    currentScreenId(globalScreenId++)
+{
+    SetName("BaseScreen");
+    GameCore::Instance()->RegisterScreen(this);
+}
+
+int32 BaseScreen::GetScreenId()
+{
+    return currentScreenId;
+}
+
+void BaseScreen::WillAppear()
+{
+    skipCounter = 0;
+    readyForTests = (skipCounter == skipCount);
 }
 
 
-class TestData
+void BaseScreen::DidAppear()
 {
-public:
+    skipCounter = 0;
+    readyForTests = (skipCounter == skipCount);
+}
 
-    TestData()
+bool BaseScreen::ReadyForTests()
+{
+    return readyForTests;
+}
+
+void BaseScreen::Update(float32 timeElapsed)
+{
+    if(!readyForTests)
     {
-        name = String("");
-        message = String("");
-        userData = NULL;
+        ++skipCounter;
+        if(skipCount == skipCounter)
+        {
+            readyForTests = true;
+        }
     }
-
-    String name;
-    String message;
-    void * userData;
-};
-
-class BaseScreen: public UIScreen
-{
-protected:
-    ~BaseScreen(){}
-public:
-
-	BaseScreen();
-	BaseScreen(const String & screenName, int32 skipBeforeTests = 10);
-    int32 GetScreenId();
-
-    virtual void WillAppear();
-    virtual void DidAppear();
-    virtual void Update(float32 timeElapsed);
     
-    bool ReadyForTests();
-    
-    virtual int32 GetTestCount() = 0;
-    virtual TestData * GetTestData(int32 iTest) = 0;
-    
-    virtual bool RunTest(int32 testNum) = 0;
-    
-private:
-    static int32 globalScreenId; // 1, on create of screen increment  
-    int32 currentScreenId;
-
-    int32 skipCount;
-    int32 skipCounter;
-    bool readyForTests;
-};
-
-
-#endif // __BASESCREEN_H__
+    UIScreen::Update(timeElapsed);
+}

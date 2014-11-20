@@ -26,23 +26,43 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_BIDIHELPER_H__
+#define __DAVAENGINE_BIDIHELPER_H__
 
-
-#include "TeamcityOutput.h"
-
-#if defined(__DAVAENGINE_MACOS__)
-#import <Foundation/Foundation.h>
-
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-    
-void TeamcityOutput::PlatformOutput(const String &text) const
+
+class BiDiWrapper;
+
+class BiDiHelper
 {
-    NSLog(@"%s", text.c_str());
+public:
+    BiDiHelper();
+    virtual ~BiDiHelper();
+
+    /**
+    * \brief Prepare string for BiDi transformation (shape arabic string). Need for correct splitting.
+    * \param [in] logicalStr The logical string.
+    * \param [out] preparedStr The prepared string.
+    * \param [out] isRTL If non-null, store in isRTL true if line contains Right-to-left text.
+    * \return true if it succeeds, false if it fails.
+    */
+    bool PrepareString(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
+
+    /**
+    * \brief Reorder characters in string based.
+    * \param [in,out] string The string.
+    * \param forceRtl (Optional) true if input text is mixed and must be processed as RTL.
+    * \return true if it succeeds, false if it fails.
+    */
+    bool ReorderString(WideString& string, const bool forceRtl = false);
+
+private:
+    BiDiWrapper* wrapper;
+};
+
 }
-    
-}; // end of namespace DAVA
 
-#endif //#if defined(__DAVAENGINE_MACOS__)
-
+#endif

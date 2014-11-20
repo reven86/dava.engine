@@ -31,7 +31,9 @@
 #define __GAMECORE_H__
 
 #include "DAVAEngine.h"
-#include "Database/MongodbClient.h"
+#include "TeamCityTestsOutput.h"
+
+#include <fstream>
 
 using namespace DAVA;
 
@@ -49,30 +51,30 @@ class GameCore : public ApplicationCore
     };
 
 protected:
-	virtual ~GameCore();
-public:	
-	GameCore();
+    virtual ~GameCore();
+public:    
+    GameCore();
 
-	static GameCore * Instance() 
-	{ 
-		return (GameCore*) DAVA::Core::GetApplicationCore();
-	};
-	
-	virtual void OnAppStarted();
-	virtual void OnAppFinished();
-	
-	virtual void OnSuspend();
-	virtual void OnResume();
+    static GameCore * Instance() 
+    { 
+        return (GameCore*) DAVA::Core::GetApplicationCore();
+    };
+    
+    virtual void OnAppStarted();
+    virtual void OnAppFinished();
+    
+    virtual void OnSuspend();
+    virtual void OnResume();
 
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-	virtual void OnBackground();
-	virtual void OnForeground();
-	virtual void OnDeviceLocked();
+    virtual void OnBackground();
+    virtual void OnForeground();
+    virtual void OnDeviceLocked();
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
     virtual void BeginFrame();
-	virtual void Update(DAVA::float32 update);
-	virtual void Draw();
+    virtual void Update(DAVA::float32 update);
+    virtual void Draw();
 
     void RegisterScreen(BaseScreen *screen);
     
@@ -86,25 +88,25 @@ protected:
     void RunTests();
     void ProcessTests();
     void FinishTests();
-    void FlushTestResults();
-    
+
+    String CreateOutputLogFile();
+    String ReadLogFile();
+
+
     int32 TestCount();
     
     void CreateDocumentsFolder();
     File * CreateDocumentsFile(const String &filePathname);
     
-    bool ConnectToDB();
-    MongodbObject * CreateSubObject(const String &objectName, MongodbObject *dbObject, bool needFinished);
-    MongodbObject * CreateLogObject(const String &logName, const String &runTime);
+private:
+    void InitLogging();
 
-    const String GetErrorText(const ErrorData *error);
-    
-    
-protected:
-    
-    File * logFile;
+    bool IsNeedSkipTest(const BaseScreen& screen) const;
 
-    MongodbClient *dbClient;
+    String runOnlyThisTest;
+
+    String logFilePath;
+    std::ofstream logFile;
 
     BaseScreen *currentScreen;
 
@@ -112,8 +114,8 @@ protected:
     Vector<BaseScreen *> screens;
     
     int32 currentTestIndex;
-    
-    Vector<ErrorData *> errors;
+
+    TeamcityTestsOutput teamCityOutput;
 };
 
 

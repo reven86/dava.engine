@@ -70,7 +70,7 @@ namespace DAVA
 		return DEVICE_HANDSET;
 	}
 
-	CorePlatformAndroid::CorePlatformAndroid()
+	CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
 	: Core()
 	{
 		wasCreated = false;
@@ -80,6 +80,8 @@ namespace DAVA
 		screenOrientation = Core::SCREEN_ORIENTATION_PORTRAIT; //no need rotate GL for Android
 
 		foreground = false;
+
+		SetCommandLine(cmdLine);
 	}
 
 	int Core::Run(int argc, char * argv[], AppHandle handle)

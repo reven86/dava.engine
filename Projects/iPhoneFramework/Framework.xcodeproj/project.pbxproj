@@ -865,9 +865,6 @@
 		17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FE16B9326D002BD35F /* MongodbClient.h */; };
 		17FFF906193F03AF003D51DA /* MongodbObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80016B9326D002BD35F /* MongodbObject.h */; };
 		1AD7C35E17D8951C00B9977C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD7C35D17D8951C00B9977C /* Vector.cpp */; };
-		3267C4AD19E5501A003CF16F /* ComponentIndices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3267C4AA19E5501A003CF16F /* ComponentIndices.cpp */; };
-		3267C4AE19E5501A003CF16F /* ComponentIndices.h in Headers */ = {isa = PBXBuildFile; fileRef = 3267C4AB19E5501A003CF16F /* ComponentIndices.h */; };
-		3267C4AF19E5501A003CF16F /* ComponentIndices.h in Headers */ = {isa = PBXBuildFile; fileRef = 3267C4AB19E5501A003CF16F /* ComponentIndices.h */; };
 		32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B719E53C0C0069981A /* UIControlHelpers.cpp */; };
 		32B074BE19E53C0C0069981A /* UIControlHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074B719E53C0C0069981A /* UIControlHelpers.cpp */; };
 		32B074BF19E53C0C0069981A /* UIControlHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074B819E53C0C0069981A /* UIControlHelpers.h */; };
@@ -1060,6 +1057,10 @@
 		B786014E1A08EB140041F817 /* StringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B786014B1A08EB140041F817 /* StringUtils.cpp */; };
 		B786014F1A08EB140041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B786014C1A08EB140041F817 /* StringUtils.h */; };
 		B78601501A08EB140041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B786014C1A08EB140041F817 /* StringUtils.h */; };
+		B79723EE1A125F96009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723EC1A125F96009421F3 /* BiDiHelper.cpp */; };
+		B79723EF1A125F96009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723EC1A125F96009421F3 /* BiDiHelper.cpp */; };
+		B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
+		B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
 		B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
 		C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
 		C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */ = {isa = PBXBuildFile; fileRef = C13E6DB7186861FA00D1B2CE /* DFFont.h */; };
@@ -1857,8 +1858,6 @@
 		17F53E3216D3705E004D5099 /* WebViewControliOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebViewControliOS.h; sourceTree = "<group>"; };
 		17F53E3316D3705E004D5099 /* WebViewControliOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebViewControliOS.mm; sourceTree = "<group>"; };
 		1AD7C35D17D8951C00B9977C /* Vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
-		3267C4AA19E5501A003CF16F /* ComponentIndices.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ComponentIndices.cpp; sourceTree = "<group>"; };
-		3267C4AB19E5501A003CF16F /* ComponentIndices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ComponentIndices.h; sourceTree = "<group>"; };
 		32B074B719E53C0C0069981A /* UIControlHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlHelpers.cpp; sourceTree = "<group>"; };
 		32B074B819E53C0C0069981A /* UIControlHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIControlHelpers.h; sourceTree = "<group>"; };
 		32B074B919E53C0C0069981A /* UIPackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackage.cpp; sourceTree = "<group>"; };
@@ -2008,6 +2007,8 @@
 		B78601471A08EAD40041F817 /* libunibreak_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_ios.a; path = ../../Libs/libs/libunibreak_ios.a; sourceTree = "<group>"; };
 		B786014B1A08EB140041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
 		B786014C1A08EB140041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
+		B79723EC1A125F96009421F3 /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
+		B79723ED1A125F96009421F3 /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
 		B7D6C97319C9856B0095250A /* libfribidi_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_ios.a; path = ../../Libs/libs/libfribidi_ios.a; sourceTree = "<group>"; };
 		C13E6DB6186861FA00D1B2CE /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C13E6DB7186861FA00D1B2CE /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
@@ -3640,8 +3641,6 @@
 		E8B3C9A316B9326E002BD35F /* Scene3D */ = {
 			isa = PBXGroup;
 			children = (
-				3267C4AA19E5501A003CF16F /* ComponentIndices.cpp */,
-				3267C4AB19E5501A003CF16F /* ComponentIndices.h */,
 				CCEB54371886FF0C0018491F /* Converters */,
 				A695E52F18113327008A0F20 /* SceneFile */,
 				11CB614719C338DF00B48A92 /* AnimationData.cpp */,
@@ -3926,6 +3925,8 @@
 		E8B3CA7016B9326E002BD35F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				B79723EC1A125F96009421F3 /* BiDiHelper.cpp */,
+				B79723ED1A125F96009421F3 /* BiDiHelper.h */,
 				B786014B1A08EB140041F817 /* StringUtils.cpp */,
 				B786014C1A08EB140041F817 /* StringUtils.h */,
 				A6A1E8671785688600AA3A86 /* CRC32.cpp */,
@@ -4217,8 +4218,6 @@
 				17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */,
 				02FD7FB71924997C007762C0 /* LandscapeCursor.h in Headers */,
 				02FD7FB81924997C007762C0 /* Light.h in Headers */,
-				3267C4AF19E5501A003CF16F /* ComponentIndices.h in Headers */,
-				D7B50F3019ACB28900F8C0C9 /* Notification.h in Headers */,
 				02FD7FB91924997C007762C0 /* Mesh.h in Headers */,
 				02FD7FBA1924997C007762C0 /* RenderBatch.h in Headers */,
 				02FD7FBB1924997C007762C0 /* RenderDataSource.h in Headers */,
@@ -4448,6 +4447,7 @@
 				02FD80881924997C007762C0 /* AutotestingDB.h in Headers */,
 				02FD80891924997C007762C0 /* GameAPI.h in Headers */,
 				02FD808A1924997C007762C0 /* ShaderCache.h in Headers */,
+				B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */,
 				02FD808B1924997C007762C0 /* RenderBatchArray.h in Headers */,
 				02FD808C1924997C007762C0 /* RenderHierarchy.h in Headers */,
 				02FD808D1924997C007762C0 /* SerializationContext.h in Headers */,
@@ -4520,6 +4520,7 @@
 				84D18BFF19201BEF009E3E90 /* ImageFormatInterface.h in Headers */,
 				E8B3CABE16B9326E002BD35F /* RefPtr.h in Headers */,
 				E8B3CABF16B9326E002BD35F /* ScopedPtr.h in Headers */,
+				B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */,
 				E8B3CAC016B9326E002BD35F /* Singleton.h in Headers */,
 				E8B3CAC116B9326E002BD35F /* StaticSingleton.h in Headers */,
 				E8B3CAC216B9326E002BD35F /* TemplateHelpers.h in Headers */,
@@ -4590,7 +4591,6 @@
 				A611714E1860C2A500E18F8C /* StaticOcclusionSystem.h in Headers */,
 				D7FEF14F19864E5C00B2C7AF /* bs_common.h in Headers */,
 				CC84B04518211BCE00934482 /* JobWaiter.h in Headers */,
-				3267C4AE19E5501A003CF16F /* ComponentIndices.h in Headers */,
 				E8B3CB5116B9326E002BD35F /* Matrix3.h in Headers */,
 				E8B3CB5316B9326E002BD35F /* Matrix4.h in Headers */,
 				E8FC1308186972C80095D8FE /* QualitySettingsSystem.h in Headers */,
@@ -5050,7 +5050,6 @@
 				02FD80B31924997C007762C0 /* UIParticles.cpp in Sources */,
 				02FD80B41924997C007762C0 /* DAVAEngine.cpp in Sources */,
 				02FD80B51924997C007762C0 /* Backtrace.cpp in Sources */,
-				3267C4AD19E5501A003CF16F /* ComponentIndices.cpp in Sources */,
 				02FD80B61924997C007762C0 /* MemoryManager.cpp in Sources */,
 				E84E5BE81988D99200686C14 /* OGLHelpers.cpp in Sources */,
 				02FD80B71924997C007762C0 /* Replay.cpp in Sources */,
@@ -5104,6 +5103,7 @@
 				02FD80DE1924997C007762C0 /* NeonMath.cpp in Sources */,
 				8402ABA319BA033600111F35 /* TextBlockGraphicsRender.cpp in Sources */,
 				02FD80DF1924997C007762C0 /* Polygon2.cpp in Sources */,
+				B79723EF1A125F96009421F3 /* BiDiHelper.cpp in Sources */,
 				02FD80E01924997C007762C0 /* Polygon3.cpp in Sources */,
 				02FD80E11924997C007762C0 /* RectPacker.cpp in Sources */,
 				1146E10A19D0064B009E5FAB /* AnimationSystem.cpp in Sources */,
@@ -5508,6 +5508,7 @@
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,
 				D7FEF15919864E5C00B2C7AF /* PatchFile.cpp in Sources */,
 				E8B3CB8316B9326E002BD35F /* ParticlePropertyLine.cpp in Sources */,
+				B79723EE1A125F96009421F3 /* BiDiHelper.cpp in Sources */,
 				D7FEF15119864E5C00B2C7AF /* bs_diff.c in Sources */,
 				E8B3CB8E16B9326E002BD35F /* Mutex.cpp in Sources */,
 				E8B3CB9E16B9326E002BD35F /* SystemTimer.cpp in Sources */,
@@ -5874,7 +5875,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -5922,7 +5922,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -5963,7 +5962,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -6004,7 +6002,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
