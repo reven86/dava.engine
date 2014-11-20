@@ -89,7 +89,7 @@ namespace DAVA
 		FetchParametersFromDB();
 
 		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s", groupName.c_str(), testFileName.c_str());
-		if (FileSystem::Instance()->IsFile(FilePath(testFilePath).GetAbsolutePathname().c_str()))
+		if (FileSystem::Instance()->IsFile(FilePath(testFilePath)))
 		{
             AutotestingSystemLua::Instance()->InitFromFile(testFilePath);
             return;
