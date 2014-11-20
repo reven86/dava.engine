@@ -201,7 +201,7 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
         if ( compResult == 0 && sortColumn() != MaterialModel::TITLE_COLUMN )
         {
             const int textComp = compareNames(mLeft, mRight);
-            compResult = (sortOrder() == Qt::AscendingOrder) ? textComp : -textComp;   // Always sort text in ascending order
+            compResult = textComp;
         }
 
         if (compResult < 0)
