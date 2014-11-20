@@ -1,4 +1,4 @@
-#include "EyeDropper.h"
+#include "EyeDropperV2.h"
 
 #include <QApplication>
 #include <QCursor>
@@ -14,20 +14,19 @@
 #include "../Helpers/MouseHelper.h"
 
 
-EyeDropper::EyeDropper(QWidget* parent)
-    : QObject(parent)
-    , parentWidget(parent)
+EyeDropperV2::EyeDropperV2(QWidget* parent)
+    : QWidget(parent)
 {
 }
 
-EyeDropper::~EyeDropper()
+EyeDropperV2::~EyeDropperV2()
 {
 }
 
-void EyeDropper::Exec()
+void EyeDropperV2::Exec()
 {
 }
 
-void EyeDropper::OnDone()
+void EyeDropperV2::OnDone()
 {
 }

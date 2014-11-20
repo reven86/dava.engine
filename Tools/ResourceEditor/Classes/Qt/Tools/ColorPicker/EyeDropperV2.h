@@ -8,8 +8,8 @@
 
 
 
-class EyeDropper
-    : public QObject
+class EyeDropperV2
+    : public QWidget
 {
     Q_OBJECT
 
@@ -21,8 +21,8 @@ signals:
     void moved(const QColor& color);
 
 public:
-    explicit EyeDropper(QWidget* parent = NULL);
-    ~EyeDropper();
+    explicit EyeDropperV2(QWidget* parent = NULL);
+    ~EyeDropperV2();
 
 public slots:
     void Exec();
