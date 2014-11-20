@@ -90,7 +90,7 @@ public:
     bool GetTotal(const uint32 &taskId, uint64 &total);
     bool GetProgress(const uint32 &taskId, uint64 &progress);
     bool GetError(const uint32 &taskId, DownloadError &error);
-    DownloadStatistics *GetStatistics() const;
+    const DownloadStatistics * const GetStatistics() const;
 
 private:
     struct CallbackData

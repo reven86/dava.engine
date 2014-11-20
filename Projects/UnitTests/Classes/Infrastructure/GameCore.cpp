@@ -101,7 +101,7 @@ void GameCore::OnAppStarted()
     new DLCDownloadTest();
     new MathTest();
     new FunctionBindSignalTest();
-    //new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
+    new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
 
 
     new ImageSizeTest();

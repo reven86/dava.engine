@@ -98,7 +98,7 @@ protected:
     /**
         \brief Returns download statistics structure
      */
-    inline DownloadStatistics *GetStatistics();
+    inline const DownloadStatistics * const GetStatistics() const;
 
 protected:
     Function<void (uint64)> notifyProgress;
@@ -117,7 +117,7 @@ private:
 
 };
 
-DownloadStatistics *Downloader::GetStatistics()
+const DownloadStatistics * const Downloader::GetStatistics() const
 {
     return &statistics;
 }

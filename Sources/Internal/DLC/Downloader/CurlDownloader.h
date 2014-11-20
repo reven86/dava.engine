@@ -69,14 +69,6 @@ protected:
 
 private:
     /**
-     \brief Returns maximum download chunk size
-     */
-    inline static uint32 GetMaxChunkSize();
-    /**
-     \brief Returns minimum download chunk size
-     */
-    inline static uint32 GetMinChunkSize();
-    /**
      \brief Method for save downloaded data in a separate thread
      */
     void SaveChunkHandler(BaseObject *caller, void *callerData, void *userData);
@@ -182,20 +174,11 @@ private:
     List<DataChunkInfo *> chunksToSave;
     Thread *saveThread;
     const uint8 allowedBuffersInMemory;
+    
+    const uint32 maxChunkSize = 20 * 1024 * 1024;
+    const uint32 minChunkSize = 1024 * 1024;
 };
-    
-uint32 CurlDownloader::GetMaxChunkSize()
-{
-    static const uint32 maxChunkSize = 20 * 1024 * 1024;
-    return maxChunkSize;
-}
 
-uint32 CurlDownloader::GetMinChunkSize()
-{
-    static const uint32 minChunkSize = 1024 * 1024;
-    return minChunkSize;
-}
-    
 }
 
 #endif

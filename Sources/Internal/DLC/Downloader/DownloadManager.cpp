@@ -456,7 +456,7 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
     return true;
 }
     
-DownloadStatistics *DownloadManager::GetStatistics() const
+const DownloadStatistics * const DownloadManager::GetStatistics() const
 {
     return downloader->GetStatistics();
 }

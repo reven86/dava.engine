@@ -85,10 +85,10 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
     }
     else
     {
-        dataSizeToBuffer = dataSizeCame;
+        dataSizeToBuffer = static_cast<uint32>(dataSizeCame);
     }
     
-    if (thisPart->SaveToBuffer(static_cast<char8 *>(ptr), static_cast<size_t>(dataSizeToBuffer)))
+    if (thisPart->SaveToBuffer(static_cast<char8 *>(ptr), dataSizeToBuffer))
     {
         thisDownloader->chunkInfo->progress += dataSizeToBuffer;
         thisDownloader->CalcStatistics(dataSizeToBuffer);
@@ -444,14 +444,14 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     // reset download speed statistics
     ResetStatistics(sizeToDownload);
 
-    uint32 inMemoryBufferChunkSize = Max<uint32>(GetMaxChunkSize(), static_cast<uint32>(remoteFileSize/100));
+    uint32 inMemoryBufferChunkSize = Min<uint32>(maxChunkSize, static_cast<uint32>(remoteFileSize/100));
     // a part of file to parallel download
     // cast is needed because it is garanteed that download part is lesser than 4Gb
-    uint32 fileChunkSize = Min<uint32>(GetMinChunkSize(), inMemoryBufferChunkSize);
+    uint32 fileChunkSize = Max<uint32>(minChunkSize, inMemoryBufferChunkSize);
     // quantity of paralleled file parts
     // if file size is 0 - we don't need more than 1 download thread.
     // if file exists
-    uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : Max<uint32>(1, sizeToDownload / fileChunkSize);
+    uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : Max<uint32>(1, static_cast<uint32>(sizeToDownload / fileChunkSize));
     // part size could not be bigger than 4Gb
     uint32 lastFileChunkSize =  fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount*fileChunkSize);
 
@@ -481,12 +481,11 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
 
             if (DLE_NO_ERROR == retCode)
             {
-                uint32 chunksInList = 0;
                 do
                 {
                     Thread::Sleep(1);
                     chunksMutex.Lock();
-                    chunksInList = chunksToSave.size();
+                    chunksInList = static_cast<uint32>(chunksToSave.size());
                     chunksMutex.Unlock();
                 } while(allowedBuffersInMemory <= chunksInList && DLE_NO_ERROR != saveResult);
                 
@@ -517,7 +516,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     {
         Thread::Sleep(1);
         chunksMutex.Lock();
-        chunksInList = chunksToSave.size();
+        chunksInList = static_cast<uint32>(chunksToSave.size());
         chunksMutex.Unlock();
         
     } while (0 < chunksInList);
