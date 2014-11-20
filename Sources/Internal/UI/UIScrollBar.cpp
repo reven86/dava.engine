@@ -136,7 +136,6 @@ void UIScrollBar::InitControls(const Rect &rect)
 
 void UIScrollBar::LoadFromYamlNodeCompleted()
 {
-	slider = SafeRetain(FindByName(UISCROLLBAR_SLIDER_NAME));
 	if (!slider)
 	{
 		InitControls();
