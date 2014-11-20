@@ -89,23 +89,6 @@ inline bool IsWhitespace(char16 t)
     return iswspace(static_cast<wint_t>(t)) != 0;
 }
 
-/**
- * \brief Prepare string for BiDi transformation (shape arabic string). Need for correct splitting.
- * \param [in] logicalStr The logical string.
- * \param [out] preparedStr The prepared string.
- * \param [out] isRTL If non-null, store in isRTL true if line contains Right-to-left text.
- * \return true if it succeeds, false if it fails.
- */
-bool BiDiPrepare(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
-
-/**
- * \brief Reorder characters in string based.
- * \param [in,out] string The string.
- * \param forceRtl (Optional) true if input text is mixed and must be processed as RTL.
- * \return true if it succeeds, false if it fails.
- */
-bool BiDiReorder(WideString& string, const bool forceRtl = false);
-
 }
 }
 

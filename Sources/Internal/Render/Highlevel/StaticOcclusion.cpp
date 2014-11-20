@@ -46,7 +46,7 @@ namespace DAVA
     
     
     StaticOcclusion::StaticOcclusion()
-    : manager(10000)
+    : queryPool(10000)
     {
         staticOcclusionRenderPass = 0;
         renderTargetSprite = 0;
@@ -202,8 +202,8 @@ namespace DAVA
         //    {
         //        for (uint32 m = 0; m < 3000; ++m)
         //        {
-        //            OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
-        //            manager.ReleaseQueryObject(handle);
+        //            OcclusionQueryPoolHandle handle = queryPool.CreateQueryObject();
+        //            queryPool.ReleaseQueryObject(handle);
         //        }
         //    }
         //
@@ -360,8 +360,8 @@ namespace DAVA
                         {
                             for (size_t k = 0; k < size; ++k)
                             {
-                                std::pair<RenderBatch*, OcclusionQueryManagerHandle> & batchInfo = recordedBatches[k];
-                                OcclusionQuery & query = manager.Get(batchInfo.second);
+                                std::pair<RenderBatch*, OcclusionQueryPoolHandle> & batchInfo = recordedBatches[k];
+                                OcclusionQuery & query = queryPool.Get(batchInfo.second);
                                 
                                 uint64 timeWaiting = SystemTimer::Instance()->GetAbsoluteNano();
                                 while (!query.IsResultAvailable())
@@ -376,7 +376,7 @@ namespace DAVA
                                 {
                                     frameGlobalVisibleInfo.insert(batchInfo.first->GetRenderObject());
                                 }
-                                manager.ReleaseQueryObject(batchInfo.second);
+                                queryPool.ReleaseQueryObject(batchInfo.second);
                             }
                             recordedBatches.clear();
                         }
@@ -395,8 +395,8 @@ namespace DAVA
         //    size_t size = recordedBatches.size();
         //    for (size_t k = 0; k < size; ++k)
         //    {
-        //        std::pair<RenderBatch*, OcclusionQueryManagerHandle> & batchInfo = recordedBatches[k];
-        //        OcclusionQuery & query = manager.Get(batchInfo.second);
+        //        std::pair<RenderBatch*, OcclusionQueryPoolHandle> & batchInfo = recordedBatches[k];
+        //        OcclusionQuery & query = queryPool.Get(batchInfo.second);
         //
         //        uint64 timeWaiting = SystemTimer::Instance()->GetAbsoluteNano();
         //        while (!query.IsResultAvailable())
@@ -490,9 +490,9 @@ namespace DAVA
     }
     
     
-    void StaticOcclusion::RecordFrameQuery(RenderBatch * batch, OcclusionQueryManagerHandle handle)
+    void StaticOcclusion::RecordFrameQuery(RenderBatch * batch, OcclusionQueryPoolHandle handle)
     {
-        recordedBatches.push_back(std::pair<RenderBatch*, OcclusionQueryManagerHandle>(batch, handle));
+        recordedBatches.push_back(std::pair<RenderBatch*, OcclusionQueryPoolHandle>(batch, handle));
     }
     
     

@@ -95,33 +95,6 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 {
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
-    textFieldAndroid->SetVisible(true);
-#elif defined(__DAVAENGINE_IPHONE__)
-	textFieldiPhone = new UITextFieldiPhone(this);
-    textFieldiPhone->SetVisible(true);
-#else
-    staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
-    staticText->SetVisible(false);
-    AddControl(staticText);
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
-#endif
-    
-    cursorTime = 0;
-    showCursor = true;
-
-    SetupDefaults();
-}
-    
-UITextField::UITextField()
-:   delegate(NULL)
-,   cursorBlinkingTime(0.f)
-#if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
-,   textFont(NULL)
-,   staticText(NULL)
-#endif
-{
-#if defined (__DAVAENGINE_ANDROID__)
-	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
 #elif defined(__DAVAENGINE_IPHONE__)
 	textFieldiPhone = new UITextFieldiPhone(this);
@@ -135,14 +108,13 @@ UITextField::UITextField()
     
     cursorTime = 0;
     showCursor = true;
-    
+
     SetupDefaults();
 }
-
     
 void UITextField::SetupDefaults()
 {
-    SetInputEnabled(true);
+    SetInputEnabled(true, false);
     
     SetAutoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES);
     SetAutoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT);
@@ -159,6 +131,8 @@ void UITextField::SetupDefaults()
     SetIsPassword(false);
     SetTextColor(GetTextColor());
     SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    
+    SetFontSize(26); //12 is default size for IOS
     
     SetText(L"");
 }
@@ -374,7 +348,7 @@ void UITextField::SetTextUseRtlAlign(bool useRtlAlign)
 #endif
 }
 
-void UITextField::SetFontSize(float size)
+void UITextField::SetFontSize(float32 size)
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->SetFontSize(size);
@@ -1107,6 +1081,10 @@ void UITextField::SetFontPresetName( const String &presetName )
     }
 
     SetFont(font);
+    if (font)
+    {
+        SetFontSize((float32)font->GetFontHeight());
+    }
 }
 
 }; // namespace

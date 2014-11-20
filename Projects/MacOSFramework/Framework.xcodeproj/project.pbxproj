@@ -1205,6 +1205,12 @@
 		B786013C1A08B6170041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B78601381A08B6170041F817 /* StringUtils.h */; };
 		B786013D1A08B6170041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B78601381A08B6170041F817 /* StringUtils.h */; };
 		B786013E1A08B6170041F817 /* StringUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B78601381A08B6170041F817 /* StringUtils.h */; };
+		B79723FD1A1260E9009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723FB1A1260E9009421F3 /* BiDiHelper.cpp */; };
+		B79723FE1A1260E9009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723FB1A1260E9009421F3 /* BiDiHelper.cpp */; };
+		B79723FF1A1260E9009421F3 /* BiDiHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B79723FB1A1260E9009421F3 /* BiDiHelper.cpp */; };
+		B79724001A1260E9009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723FC1A1260E9009421F3 /* BiDiHelper.h */; };
+		B79724011A1260E9009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723FC1A1260E9009421F3 /* BiDiHelper.h */; };
+		B79724021A1260E9009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723FC1A1260E9009421F3 /* BiDiHelper.h */; };
 		B7BEB94819CB1A47005B4BC7 /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
 		B7BEB94919CB1A48005B4BC7 /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
 		B7D6C98419CAC6980095250A /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
@@ -2771,6 +2777,8 @@
 		B77953CB1A07D528001FB673 /* libunibreak_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libunibreak_macos.a; path = ../../Libs/libs/libunibreak_macos.a; sourceTree = "<group>"; };
 		B78601371A08B6170041F817 /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
 		B78601381A08B6170041F817 /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
+		B79723FB1A1260E9009421F3 /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
+		B79723FC1A1260E9009421F3 /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
 		B7D6C98319CAC6980095250A /* libfribidi_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_macos.a; path = ../../Libs/libs/libfribidi_macos.a; sourceTree = "<group>"; };
 		C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DVAssertMessage.cpp; sourceTree = "<group>"; };
 		C151B17516D3747E00E09BAF /* DVAssertMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DVAssertMessage.h; sourceTree = "<group>"; };
@@ -4703,6 +4711,8 @@
 		E8989D8C16BD24E500732C04 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				B79723FB1A1260E9009421F3 /* BiDiHelper.cpp */,
+				B79723FC1A1260E9009421F3 /* BiDiHelper.h */,
 				B78601371A08B6170041F817 /* StringUtils.cpp */,
 				B78601381A08B6170041F817 /* StringUtils.h */,
 				E8989D8D16BD24E500732C04 /* HTTPDownloader.h */,
@@ -4921,6 +4931,7 @@
 				176DE962174B5561007A983B /* Polygon2.h in Headers */,
 				E8FC12FB1869726A0095D8FE /* QualitySettingsSystem.h in Headers */,
 				176DE963174B5561007A983B /* Polygon3.h in Headers */,
+				B79724021A1260E9009421F3 /* BiDiHelper.h in Headers */,
 				641A61DF18CDC2F4003359E7 /* FoliageSystem.h in Headers */,
 				176DE964174B5561007A983B /* Quaternion.h in Headers */,
 				176DE965174B5561007A983B /* Ray.h in Headers */,
@@ -5420,6 +5431,7 @@
 				E8989F6316BD24E500732C04 /* Texture.h in Headers */,
 				B4C29D42199B592D001B83FE /* SceneCache.h in Headers */,
 				E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
+				B79724001A1260E9009421F3 /* BiDiHelper.h in Headers */,
 				E8989F6516BD24E500732C04 /* TextureDescriptor.h in Headers */,
 				E8989F6816BD24E500732C04 /* UberShader.h in Headers */,
 				CC84B01F18211A9000934482 /* JobManager.h in Headers */,
@@ -6034,6 +6046,7 @@
 				4F53ED3919A23BED00D3869D /* BSDiff.h in Headers */,
 				CCC7A48616F1D6700061EA5D /* UpdateSystem.h in Headers */,
 				CCC7A48C16F1D6B80061EA5D /* Entity.h in Headers */,
+				B79724011A1260E9009421F3 /* BiDiHelper.h in Headers */,
 				C18593DD16F30BF6005D30E2 /* UIAggregatorControl.h in Headers */,
 				7489A9CF1702F5A200D9AE2D /* CRC32.h in Headers */,
 				E8B6B3B11705DB26004F665E /* DeviceInfo.h in Headers */,
@@ -6536,6 +6549,7 @@
 				A6E4FE0C1761D9C600B48E41 /* ActionComponent.cpp in Sources */,
 				A6E4FE101761D9D200B48E41 /* CustomPropertiesComponent.cpp in Sources */,
 				A6E4FE141761D9E100B48E41 /* ActionUpdateSystem.cpp in Sources */,
+				B79723FF1A1260E9009421F3 /* BiDiHelper.cpp in Sources */,
 				4FFE5CB41779E0B400728624 /* MipmapReplacer.cpp in Sources */,
 				0211D551177C26D600EB7011 /* OpenUDIDApple.mm in Sources */,
 				0211D552177C26E000EB7011 /* OpenUDIDMacOS.mm in Sources */,
@@ -6845,6 +6859,7 @@
 				E898A03616BD24E500732C04 /* UIScreenTransition.cpp in Sources */,
 				E898A03816BD24E500732C04 /* UIScrollBar.cpp in Sources */,
 				505EB40E1824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */,
+				B79723FD1A1260E9009421F3 /* BiDiHelper.cpp in Sources */,
 				E8B47D29196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				E898A03A16BD24E500732C04 /* UISlider.cpp in Sources */,
 				C172EC1018C9F1E9004309CF /* TextBlockRender.cpp in Sources */,
@@ -7019,6 +7034,7 @@
 				E898A1C616BD265400732C04 /* SceneSystem.cpp in Sources */,
 				E898A1C716BD265400732C04 /* Bitstream.cpp in Sources */,
 				E898A1C816BD265400732C04 /* DynamicMemoryFile.cpp in Sources */,
+				B79723FE1A1260E9009421F3 /* BiDiHelper.cpp in Sources */,
 				E898A1C916BD265400732C04 /* File.cpp in Sources */,
 				84E975C2191FCDFA0054CCF9 /* Image.mm in Sources */,
 				E898A1CA16BD265400732C04 /* FileList.cpp in Sources */,
@@ -7410,7 +7426,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = FrameworkNPAPI;
 				SDKROOT = macosx;
@@ -7453,7 +7468,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = FrameworkNPAPI;
 				SDKROOT = macosx;
@@ -7493,7 +7507,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = Framework;
 			};
@@ -7530,7 +7543,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = Framework;
 			};
@@ -7640,7 +7652,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				LIBRARY_STYLE = STATIC;
 				OTHER_CFLAGS = (
@@ -7681,7 +7692,6 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
-					/Users/m_polubisok/work/ws2/dava.framework/Libs/libs,
 				);
 				LIBRARY_STYLE = STATIC;
 				OTHER_CFLAGS = (

@@ -168,8 +168,7 @@ public:
 protected:
 	virtual ~UITextField();
 public:
-	UITextField();
-	UITextField(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
 	virtual void WillAppear();
 	virtual void DidAppear();
@@ -259,7 +258,7 @@ public:
 	 \brief Sets the size of the font.
 	 \param[in] size font size to be set.
 	 */
-    void SetFontSize(float size);
+    void SetFontSize(float32 size);
 	/**
 	 \brief Sets shadow offset of text control.
 	 \param[in] offset offset of text shadow relative to base text.

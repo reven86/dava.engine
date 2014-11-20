@@ -48,11 +48,11 @@ Sprite * TextureUtils::CreateSpriteFromTexture(const String &texturePathname)
 
 TextureUtils::CompareResult TextureUtils::CompareSprites(Sprite *first, Sprite *second, PixelFormat format)
 {
-	/*
-	DVASSERT(false);
-	DebugBreak();
-	__debugbreak();
-	*/
+    /*
+    DVASSERT(false);
+    DebugBreak();
+    __debugbreak();
+    */
     DVASSERT(first->GetHeight() == second->GetHeight());
     DVASSERT(first->GetWidth() == second->GetWidth());
     
@@ -62,7 +62,7 @@ TextureUtils::CompareResult TextureUtils::CompareSprites(Sprite *first, Sprite *
     CompareResult compareResult = {0};
 
     
-	compareResult = CompareImages(firstComparer, secondComparer, format);
+    compareResult = CompareImages(firstComparer, secondComparer, format);
  
 //    String documentsPath = FileSystem::Instance()->GetCurrentDocumentsDirectory();
 //    firstComparer->Save(documentsPath + Format("PVRTest/src_number_%d.png", currentTest));
@@ -92,21 +92,21 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *sec
     int32 step = 1;
     int32 startIndex = 0;
     
-	if(FORMAT_A8 == format)
-	{
-		compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
-		step = 4;
-		startIndex = 3;
-	}
-	else
-	{
-		compareResult.bytesCount = imageSizeInBytes;
-	}
+    if(FORMAT_A8 == format)
+    {
+        compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
+        step = 4;
+        startIndex = 3;
+    }
+    else
+    {
+        compareResult.bytesCount = imageSizeInBytes;
+    }
 
-	for(int32 i = startIndex; i < imageSizeInBytes; i += step)
-	{
-		compareResult.difference += abs(first->GetData()[i] - second->GetData()[i]);
-	}
+    for(int32 i = startIndex; i < imageSizeInBytes; i += step)
+    {
+        compareResult.difference += abs(first->GetData()[i] - second->GetData()[i]);
+    }
 
     return compareResult;
 }

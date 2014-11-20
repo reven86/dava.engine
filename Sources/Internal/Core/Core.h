@@ -284,6 +284,9 @@ public:
 protected:
 	int32 screenOrientation;
 
+	void SetCommandLine(int argc, char *argv[]);
+	void SetCommandLine(const DAVA::String& cmdLine);
+
 private:
     KeyedArchive * options;
 
@@ -294,7 +297,6 @@ private:
 
 	bool firstRun;//call begin frame 1st time
 	
-	void SetCommandLine(int argc, char *argv[]);
 	Vector<String> commandLine;
 	bool isConsoleMode;
     

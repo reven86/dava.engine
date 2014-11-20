@@ -27,56 +27,70 @@
 =====================================================================================*/
 
 
+#ifndef __BASESCREEN_H__
+#define __BASESCREEN_H__
+
 #include "DAVAEngine.h"
-#include "GameCore.h"
- 
 using namespace DAVA;
 
+#include "GameCore.h"
 
-void FrameworkDidLaunched()
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    
-#define WIDTH   960
-#define HEIGHT  640
-    
-	KeyedArchive * appOptions = new KeyedArchive();
-	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
-    
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
-	
-    
-	appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
-	appOptions->SetInt32("width", WIDTH);
-	appOptions->SetInt32("height", HEIGHT);
-
-	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
-	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
-
-#else
-	KeyedArchive * appOptions = new KeyedArchive();
-	
-	appOptions->SetInt32("width",	1024);
-	appOptions->SetInt32("height", 768);
-
-// 	appOptions->SetInt("fullscreen.width",	1280);
-// 	appOptions->SetInt("fullscreen.height", 800);
-	
-	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("Unit Tests"));
-
-	DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
-#endif 
-
-	GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
+#define TEST_VERIFY(command) \
+{\
+    bool passed = command;\
+    if (!passed)\
+    {\
+        GameCore::Instance()->RegisterError(#command, __FILE__, __LINE__, &data->testData); \
+    }\
 }
 
 
-void FrameworkWillTerminate()
+class TestData
 {
+public:
 
-}
+    TestData()
+    {
+        name = String("");
+        message = String("");
+        userData = NULL;
+    }
+
+    String name;
+    String message;
+    void * userData;
+};
+
+class BaseScreen: public UIScreen
+{
+protected:
+    ~BaseScreen(){}
+public:
+
+    BaseScreen();
+    BaseScreen(const String & screenName, int32 skipBeforeTests = 10);
+    int32 GetScreenId();
+
+    virtual void WillAppear();
+    virtual void DidAppear();
+    virtual void Update(float32 timeElapsed);
+    
+    bool ReadyForTests();
+    
+    virtual int32 GetTestCount() = 0;
+    virtual TestData * GetTestData(int32 iTest) = 0;
+    virtual const DAVA::String& GetTestName() const = 0;
+    
+    virtual bool RunTest(int32 testNum) = 0;
+    
+private:
+    static int32 globalScreenId; // 1, on create of screen increment  
+    int32 currentScreenId;
+
+    int32 skipCount;
+    int32 skipCounter;
+    bool readyForTests;
+};
+
+
+#endif // __BASESCREEN_H__

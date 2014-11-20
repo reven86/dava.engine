@@ -2721,6 +2721,30 @@ fail:
 }
 
 
+static int _wrap_UIControl_GetPivotPoint(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
+  DAVA::Vector2 *result = 0 ;
+  
+  SWIG_check_num_args("DAVA::UIControl::GetPivotPoint",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetPivotPoint",1,"DAVA::UIControl const *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
+    SWIG_fail_ptr("UIControl_GetPivotPoint",1,SWIGTYPE_p_DAVA__UIControl);
+  }
+  
+  result = (DAVA::Vector2 *) &((DAVA::UIControl const *)arg1)->GetPivotPoint();
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Vector2,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static swig_lua_method swig_DAVA_UIControl_methods[] = {
     {"GetRect", _wrap_UIControl_GetRect}, 
     {"GetPosition", _wrap_UIControl_GetPosition}, 
@@ -2737,6 +2761,7 @@ static swig_lua_method swig_DAVA_UIControl_methods[] = {
     {"GetParent", _wrap_UIControl_GetParent}, 
     {"GetState", _wrap_UIControl_GetState}, 
     {"GetFrame", _wrap_UIControl_GetFrame}, 
+    {"GetPivotPoint", _wrap_UIControl_GetPivotPoint}, 
     {0,0}
 };
 static swig_lua_attribute swig_DAVA_UIControl_attributes[] = {

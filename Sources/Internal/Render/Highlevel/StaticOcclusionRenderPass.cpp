@@ -141,11 +141,11 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 //    glDepthFunc(GL_LEQUAL);
 //    glDepthMask(GL_FALSE);
 
-    OcclusionQueryManager & manager = occlusion->GetOcclusionQueryManager();
+    OcclusionQueryPool & manager = occlusion->GetOcclusionQueryPool();
     size = (uint32)terrainBatches.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
+        OcclusionQueryPoolHandle handle = manager.CreateQueryObject();
         OcclusionQuery & query = manager.Get(handle);
         
         RenderBatch * batch = terrainBatches[k];
@@ -160,7 +160,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
     size = (uint32)batches.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
+        OcclusionQueryPoolHandle handle = manager.CreateQueryObject();
         OcclusionQuery & query = manager.Get(handle);
         
         RenderBatch * batch = batches[k];
