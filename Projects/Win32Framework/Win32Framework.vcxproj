@@ -206,8 +206,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\dava.framework1\Sources\Internal\Platform\FWSemaphore.h" />
-    <ClInclude Include="..\..\..\dava.framework1\Sources\Internal\Platform\FWSpinlock.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2Collision.h" />
@@ -409,6 +407,8 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\FWSemaphore.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\FWSpinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
@@ -704,8 +704,6 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\dava.framework1\Sources\Internal\Platform\FWSemaphore.cpp" />
-    <ClCompile Include="..\..\..\dava.framework1\Sources\Internal\Platform\FWSpinlock.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideCircle.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideEdge.cpp" />
@@ -867,6 +865,8 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\FWSemaphore.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\FWSpinlock.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
