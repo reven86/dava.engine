@@ -840,7 +840,7 @@ const FilePath& NMaterial::GetEffectiveTexturePath(const FastName& textureFastNa
 
 Texture * NMaterial::GetTexture(uint32 index) const
 {
-	DVASSERT(index >= 0 && index < textures.size());
+	DVASSERT(index < textures.size());
 	
 	TextureBucket* bucket = textures.valueByIndex(index);
 	return bucket->GetTexture();
@@ -848,7 +848,7 @@ Texture * NMaterial::GetTexture(uint32 index) const
 
 const FilePath& NMaterial::GetTexturePath(uint32 index) const
 {
-	DVASSERT(index >= 0 && index < textures.size());
+	DVASSERT(index < textures.size());
 	
 	TextureBucket* bucket = textures.valueByIndex(index);
 	return bucket->GetPath();
@@ -856,7 +856,7 @@ const FilePath& NMaterial::GetTexturePath(uint32 index) const
 
 const FastName& NMaterial::GetTextureName(uint32 index) const
 {
-	DVASSERT(index >= 0 && index < textures.size());
+	DVASSERT(index < textures.size());
 	
 	return textures.keyByIndex(index);
 }

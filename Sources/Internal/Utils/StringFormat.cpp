@@ -238,7 +238,14 @@ int32 do_div(int64 &n, int32 base)
         int32 tail = (int32)num;
         
         num -= tail;
-        if (num > 0.5f)
+        if (
+			// tested on gcc 4.8.1, msvc2013, Apple LLVM version 6.0
+#ifdef _MSC_VER
+			num >= 0.5f
+#else
+			num > 0.5f
+#endif
+			)
         {
             if (precision > 0)
                 tail++;

@@ -38,7 +38,7 @@
 #include "Render/2D/Sprite.h"
 #include "Render/2D/Font.h"
 #include "Platform/Mutex.h"
-#include <Utils/StringUtils.h>
+#include <Utils/BiDiHelper.h>
 
 namespace DAVA
 {
@@ -95,6 +95,18 @@ public:
     virtual bool GetMultilineBySymbol();
     virtual int32 GetFittingOption();
     
+    /**
+    \brief Get the render size.
+    \returns size in pixels
+    */
+    virtual float32	GetRenderSize();
+
+    /**
+    \brief Set the render size.
+    \param[in] size in points
+    */
+    virtual void SetRenderSize(float32 renderSize);
+	
     Sprite * GetSprite();
     bool IsSpriteReady();
     const Vector2& GetSpriteOffset();
@@ -120,7 +132,7 @@ public:
      * \brief Is BiDi trasformations support enabled.
      * \return true if BiDi trasformations supported.
      */
-    static const bool & IsBiDiSupportEnabled();
+    static bool IsBiDiSupportEnabled();
     
 protected:
     TextBlock();
@@ -137,8 +149,7 @@ protected:
      * \param string The string.
      * \param targetRectSize Size of the target rectangle.
      * \param [out] resultVector The result vector.
-     * \param forceRtl Flag for force RTL transformation
-     *  splited lines.
+     * \param forceRtl Flag for force RTL transformation splited lines.
      */
     void SplitTextToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
@@ -147,8 +158,7 @@ protected:
      * \param string The string.
      * \param targetRectSize Size of the target rectangle.
      * \param [out] resultVector The result vector.
-     * \param forceRtl Flag for force RTL transformation
-     *  splited lines.
+     * \param forceRtl Flag for force RTL transformation splited lines.
      */
     void SplitTextBySymbolsToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
@@ -168,6 +178,7 @@ protected:
     Vector2 cacheTextSize;
 
     float32 originalFontSize;
+    float32 renderSize;
     
     int32 cacheDx;
     int32 cacheDy;
@@ -197,6 +208,7 @@ protected:
     bool treatMultilineAsSingleLine:1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
+    static BiDiHelper bidiHelper;
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;

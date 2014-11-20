@@ -26,57 +26,43 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_BIDIHELPER_H__
+#define __DAVAENGINE_BIDIHELPER_H__
 
-#include "DAVAEngine.h"
-#include "GameCore.h"
- 
-using namespace DAVA;
+#include "Base/BaseTypes.h"
 
-
-void FrameworkDidLaunched()
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    
-#define WIDTH   960
-#define HEIGHT  640
-    
-	KeyedArchive * appOptions = new KeyedArchive();
-	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
-    
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
-	
-    
-	appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
-	appOptions->SetInt32("width", WIDTH);
-	appOptions->SetInt32("height", HEIGHT);
-
-	DAVA::Core::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
-
-#else
-	KeyedArchive * appOptions = new KeyedArchive();
-	
-	appOptions->SetInt32("width",	1024);
-	appOptions->SetInt32("height", 768);
-
-// 	appOptions->SetInt("fullscreen.width",	1280);
-// 	appOptions->SetInt("fullscreen.height", 800);
-	
-	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("Unit Tests"));
-
-	DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
-#endif 
-
-	GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
-}
-
-
-void FrameworkWillTerminate()
+namespace DAVA
 {
 
+class BiDiWrapper;
+
+class BiDiHelper
+{
+public:
+    BiDiHelper();
+    virtual ~BiDiHelper();
+
+    /**
+    * \brief Prepare string for BiDi transformation (shape arabic string). Need for correct splitting.
+    * \param [in] logicalStr The logical string.
+    * \param [out] preparedStr The prepared string.
+    * \param [out] isRTL If non-null, store in isRTL true if line contains Right-to-left text.
+    * \return true if it succeeds, false if it fails.
+    */
+    bool PrepareString(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
+
+    /**
+    * \brief Reorder characters in string based.
+    * \param [in,out] string The string.
+    * \param forceRtl (Optional) true if input text is mixed and must be processed as RTL.
+    * \return true if it succeeds, false if it fails.
+    */
+    bool ReorderString(WideString& string, const bool forceRtl = false);
+
+private:
+    BiDiWrapper* wrapper;
+};
+
 }
+
+#endif
