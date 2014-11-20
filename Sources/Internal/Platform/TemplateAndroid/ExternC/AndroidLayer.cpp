@@ -53,7 +53,6 @@
 #include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
-#include "Platform/NotificationAndroid.h"
 
 //#if defined(__DAVAENGINE_PROFILE__)
 //#include "prof.h"
@@ -64,7 +63,7 @@ extern "C"
 	jint JNI_OnLoad(JavaVM *vm, void *reserved);
 
 	//JNIApplication
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName, jstring commandLineParams);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnLowMemory(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis);
@@ -125,7 +124,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNILocalization", &DAVA::JniLocalization::gJavaClass, &DAVA::JniLocalization::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIFileList", &DAVA::JniFileList::gJavaClass, &DAVA::JniFileList::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDateTime", &DAVA::JniDateTime::gJavaClass, &DAVA::JniDateTime::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNINotificationProvider", &DAVA::JniLocalNotification::gJavaClass, &DAVA::JniLocalNotification::gJavaClassName);
 	DAVA::Thread::InitMainThread();
 
 
@@ -183,11 +181,11 @@ jstring CreateJString(JNIEnv* env, const DAVA::WideString& string)
 	return env->NewStringUTF(DAVA::UTF8Utils::EncodeToUTF8(string).c_str());
 }
 
-void InitApplication(JNIEnv * env)
+void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
 {
 	if(!core)
 	{
-		core = new DAVA::CorePlatformAndroid();
+		core = new DAVA::CorePlatformAndroid(commandLineParams);
 		if(core)
 		{
 			core->CreateAndroidWindow(documentsFolderPathEx, documentsFolderPathIn, assetsFolderPath, androidLogTag, androidDelegate);
@@ -221,7 +219,7 @@ void DeinitApplication()
 // private static native void OnLowMemory();
 // private static native void OnTerminate()
 
-void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName)
+void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName, jstring commandLineParams)
 {
 	bool retCreateLogTag = CreateStringFromJni(env, logTag, androidLogTag);
 //	LOGI("___ OnCreateApplication __ %d", classthis);
@@ -230,8 +228,10 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
 	bool retCreatedInDocuments = CreateStringFromJni(env, internalPath, documentsFolderPathIn);
 	bool retCreatedAssets = CreateStringFromJni(env, apppath, assetsFolderPath);
 	bool retCreatePackageName = CreateStringFromJni(env, packageName, androidPackageName);
+	DAVA::String commandLine;
+	CreateStringFromJni(env, commandLineParams, commandLine);
 
-	InitApplication(env);
+	InitApplication(env, commandLine);
 }
 
 void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis)

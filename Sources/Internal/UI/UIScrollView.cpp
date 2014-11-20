@@ -33,7 +33,8 @@
 #include "UI/UIScrollViewContainer.h"
 #include "UI/ScrollHelper.h"
 
-#include "UIYamlLoader.h"
+#include "UI/UIYamlLoader.h"
+#include "UI/UIControlHelpers.h"
 
 namespace DAVA 
 {
@@ -82,11 +83,23 @@ void UIScrollView::SetSize(const DAVA::Vector2 &newSize)
 
 void UIScrollView::AddControl(UIControl *control)
 {
-	UIControl::AddControl(control);
-	if (control->GetName() == UISCROLL_VIEW_CONTAINER_NAME)
-	{
-		scrollContainer = (UIScrollViewContainer*)control;
-	}	
+    UIControl::AddControl(control);
+
+    if (control->GetName() == UISCROLL_VIEW_CONTAINER_NAME && scrollContainer != control)
+    {
+        SafeRelease(scrollContainer);
+        scrollContainer = SafeRetain(DynamicTypeCheck<UIScrollViewContainer*>(control));
+    }
+}
+
+void UIScrollView::RemoveControl( UIControl *control )
+{
+    if (control == scrollContainer)
+    {
+        SafeRelease(scrollContainer);
+    }
+
+    UIControl::RemoveControl(control);
 }
 
 void UIScrollView::PushContentToBounds(UIControl *parentControl)
@@ -199,27 +212,7 @@ UIControl* UIScrollView::Clone()
 	
 void UIScrollView::CopyDataFrom(UIControl *srcControl)
 {
-	// Release and remove scrollContainer here - it has to be copied from srcControl
-	// We have to finish this before call UIControl::CopyDataFrom() to avoid release
-	// of unavailable object
-	RemoveControl(scrollContainer);
-  	SafeRelease(scrollContainer);
-	
 	UIControl::CopyDataFrom(srcControl);
-	
-	UIScrollView* t = static_cast<UIScrollView*>(srcControl);
-		
-	scrollContainer = static_cast<UIScrollViewContainer*>(t->scrollContainer->Clone());
-		
-	AddControl(scrollContainer);
-}
-
-void UIScrollView::FindRequiredControls()
-{
-    UIControl * scrollContainerControl = FindByName(UISCROLL_VIEW_CONTAINER_NAME);
-    DVASSERT(scrollContainerControl);
-    scrollContainer = SafeRetain(DynamicTypeCheck<UIScrollViewContainer*>(scrollContainerControl));
-    DVASSERT(scrollContainer);
 }
 
 void UIScrollView::SetPadding(const Vector2 & padding)
@@ -270,8 +263,6 @@ void UIScrollView::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
 
 void UIScrollView::LoadFromYamlNodeCompleted()
 {
-	FindRequiredControls();
-	RecalculateContentSize();
 }
 
 YamlNode * UIScrollView::SaveToYamlNode(UIYamlLoader * loader)
@@ -501,9 +492,9 @@ void UIScrollView::ScrollToPosition( const Vector2& pos, float32 timeSec )
     scrollVertical->ScrollToPosition(pos.y, timeSec);
 }
     
-const String UIScrollView::GetDelegateControlPath() const
+const String UIScrollView::GetDelegateControlPath(const UIControl *rootControl) const
 {
-    return UIYamlLoader::GetControlPath(this);
+    return UIControlHelpers::GetControlPath(this, rootControl);
 }
 
 };

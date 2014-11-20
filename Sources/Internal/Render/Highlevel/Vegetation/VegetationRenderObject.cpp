@@ -504,7 +504,7 @@ void VegetationRenderObject::PrepareToRenderMultipleMaterials(Camera *camera)
             uint32 indexBufferIndex = treeNode->data.rdoIndex;
             Vector<VegetationSortedBufferItem>& indexBufferVector = rdoVector[indexBufferIndex];
             
-            DVASSERT(indexBufferIndex >= 0 && indexBufferIndex < rdoVector.size());
+            DVASSERT(indexBufferIndex < rdoVector.size());
             
             size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
             rb->SetRenderDataObject(indexBufferVector[directionIndex].rdo);
@@ -608,7 +608,7 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
         uint32 indexBufferIndex = treeNode->data.rdoIndex;
         Vector<VegetationSortedBufferItem>& indexBufferVector = rdoVector[indexBufferIndex];
         
-        DVASSERT(indexBufferIndex >= 0 && indexBufferIndex < rdoVector.size());
+        DVASSERT(indexBufferIndex < rdoVector.size());
         
         size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
         rb->SetRenderDataObject(indexBufferVector[directionIndex].rdo);

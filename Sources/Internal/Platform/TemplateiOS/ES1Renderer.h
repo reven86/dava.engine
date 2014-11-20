@@ -26,6 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_ES1RENDERER_H__
+#define __DAVAENGINE_ES1RENDERER_H__
+
 
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
@@ -57,3 +60,5 @@
 
 @end
 #endif //  #if defined(__DAVAENGINE_IPHONE__)
+
+#endif //__DAVAENGINE_ES1RENDERER_H__

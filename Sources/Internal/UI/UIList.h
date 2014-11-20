@@ -207,8 +207,8 @@ public:
     void ScrollToPosition(float32 position, float32 timeSec = 0.3f);
 
 
-    void SetOrientation(eListOrientation orientation);
-    inline eListOrientation GetOrientation() { return orientation; };
+    void SetOrientation(int32 orientation);
+    inline int32 GetOrientation() const { return orientation; };
 
     const List<UIControl*> &GetVisibleCells();
 
@@ -229,7 +229,7 @@ public:
     virtual UIControl *Clone();
     virtual void CopyDataFrom(UIControl *srcControl);
 
-    virtual const String GetDelegateControlPath() const;
+    virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
 
 protected:
     void InitAfterYaml();
@@ -271,6 +271,10 @@ protected:
     FilePath aggregatorPath;
 
     Map<String,Vector<UIListCell*>*> cellStore;
+public:
+    INTROSPECTION_EXTEND(UIList, UIControl,
+        PROPERTY("orientation",  InspDesc("List orientation", GlobalEnumMap<UIList::eListOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)
+        );
 };
 };
 #endif

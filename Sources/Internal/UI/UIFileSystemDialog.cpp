@@ -442,7 +442,7 @@ void UIFileSystemDialog::TextFieldShouldReturn(UITextField * textField)
     SaveFinishing();
 }
 
-bool UIFileSystemDialog::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString)
+bool UIFileSystemDialog::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString)
 {
     if (textField->GetText().size() + replacementLength > 0) 
     {

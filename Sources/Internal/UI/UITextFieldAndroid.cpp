@@ -168,6 +168,19 @@ void JniTextField::SetTextAlign(int32_t align)
 	}
 }
 
+void JniTextField::SetTextUseRtlAlign(bool useRtlAlign)
+{
+	jmethodID mid = GetMethodID("SetTextUseRtlAlign", "(IZ)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				useRtlAlign);
+	}
+}
+
 void JniTextField::SetInputEnabled(bool value)
 {
 	jmethodID mid = GetMethodID("SetInputEnabled", "(IZ)V");
@@ -419,6 +432,18 @@ DAVA::int32 UITextFieldAndroid::GetTextAlign()
 	return align;
 }
 
+void UITextFieldAndroid::SetTextUseRtlAlign(bool useRtlAlign)
+{
+	this->useRtlAlign = useRtlAlign;
+	JniTextField jniTextField(id);
+	jniTextField.SetTextUseRtlAlign(useRtlAlign);
+}
+
+bool UITextFieldAndroid::GetTextUseRtlAlign() const
+{
+	return useRtlAlign;
+}
+
 void UITextFieldAndroid::SetVisible(bool isVisible)
 {
 	JniTextField jniTextField(id);
@@ -517,7 +542,7 @@ WideString UITextFieldAndroid::TruncateText(const WideString& text, int32 maxLen
 	return str;
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)
+bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text)
 {
 	bool res = true;
 	UITextFieldDelegate* delegate = textField->GetDelegate();
@@ -536,7 +561,7 @@ bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 re
 	return res;
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
+bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString &text)
 {
 	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
 	if (!control)

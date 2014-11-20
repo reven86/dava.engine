@@ -1931,11 +1931,19 @@
 				5C190C9E15AEC6F9005731F8 /* Data */,
 				E89DFD2F163ED2A900B51706 /* DataQt */,
 				FB61758D0F0FDA4BA867C3D5 /* Classes */,
-				E89DFBE4163ECBB800B51706 /* GeneratedQt */,
+				15B892E419CCC25B007EABC6 /* New Group */,
 				ED1E82605DD74B483AF3C982 /* External Frameworks and Libraries */,
 				5C190C9615AEC58B005731F8 /* Products */,
 			);
 			name = ResourceEditorQt;
+			sourceTree = "<group>";
+		};
+		15B892E419CCC25B007EABC6 /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+				E89DFBE4163ECBB800B51706 /* GeneratedQt */,
+			);
+			name = "New Group";
 			sourceTree = "<group>";
 		};
 		3353DB0B19A34B24000815E5 /* SceneProcessing */ = {
@@ -5171,9 +5179,9 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
-					"./../../Libs/ImageMagick-6.8.9-Mac/",
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
 					./../../Tools/ColladaConverter/Collada15/FCollada,
 					./../../Tools/ColladaConverter/Collada15/FCollada/LibXML/include,
 					./Classes/Qt,
@@ -5185,8 +5193,8 @@
 					../../Libs/libs/,
 					../../Libs/freetype/lib/,
 					../../Libs/oggvorbis/lib/,
-					"./../../Libs/ImageMagick-6.8.9-Mac/lib/",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
+					"./../../Libs/ImageMagick-6.7.4/lib/",
+					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
@@ -5211,9 +5219,6 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore",
-					"-lMagick++",
-					"-lMagickWand",
 				);
 				PRODUCT_NAME = ResourceEditorQt;
 			};
@@ -5235,9 +5240,9 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore-6.Q16",
-					"-lMagick++-6.Q16",
-					"-lMagickWand-6.Q16",
+					"-lMagickCore",
+					"-lMagick++",
+					"-lMagickWand",
 				);
 			};
 			name = Release;
@@ -5265,9 +5270,9 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore-6.Q16",
-					"-lMagick++-6.Q16",
-					"-lMagickWand-6.Q16",
+					"-lMagickCore",
+					"-lMagick++",
+					"-lMagickWand",
 				);
 			};
 			name = Debug;
@@ -5308,9 +5313,9 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.8.9-Mac/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/include",
-					"./../../Libs/ImageMagick-6.8.9-Mac/",
+					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
+					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					"./../../Libs/ImageMagick-6.7.4/",
 					./../../Tools/ColladaConverter/Collada15/FCollada,
 					./../../Tools/ColladaConverter/Collada15/FCollada/LibXML/include,
 					./Classes/Qt,
@@ -5322,8 +5327,8 @@
 					../../Libs/libs/,
 					../../Libs/freetype/lib/,
 					../../Libs/oggvorbis/lib/,
-					"./../../Libs/ImageMagick-6.8.9-Mac/lib/",
-					"./../../Libs/ImageMagick-6.8.9-Mac/delegates/lib",
+					"./../../Libs/ImageMagick-6.7.4/lib/",
+					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
@@ -5348,9 +5353,6 @@
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore",
-					"-lMagick++",
-					"-lMagickWand",
 				);
 				PRODUCT_NAME = ResourceEditorQt;
 			};

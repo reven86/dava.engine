@@ -153,14 +153,16 @@
     if(UIControlSystem::Instance())
         UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
     
+    Core *core = Core::Instance();
     if(Core::Instance())
     {
-        Core::Instance()->UnregisterAllAvailableResourceSizes();
-        Core::Instance()->RegisterAvailableResourceSize(boundRect.size.width, boundRect.size.height, "Gfx");
+        core->UnregisterAllAvailableResourceSizes();
+        core->RegisterAvailableResourceSize(rect.size.width, rect.size.height, "Gfx");
+        core->RegisterAvailableResourceSize(rect.size.width*2.0f, rect.size.height*2.0f, "Gfx2");
         
-        Core::Instance()->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
-        Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
-        Core::Instance()->CalculateScaleMultipliers();
+        core->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
+        core->SetVirtualScreenSize(rect.size.width, rect.size.height);
+        core->CalculateScaleMultipliers();
     }
 	
     isFirstDraw = true;

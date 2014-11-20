@@ -275,6 +275,11 @@ void UIParticles::Reload()
 
     Load(effectPath);
 }
+    
+void UIParticles::SetEffectPath(const FilePath& path)
+{
+    Load(path);
+}
 
 const FilePath& UIParticles::GetEffectPath() const
 {
@@ -294,7 +299,7 @@ bool UIParticles::IsAutostart() const
    
 YamlNode * UIParticles::SaveToYamlNode(UIYamlLoader * loader)
 {
-    UIParticles* baseControl = new UIParticles();
+    ScopedPtr<UIParticles> baseControl(new UIParticles());
 
     YamlNode *node = UIControl::SaveToYamlNode(loader);
     
