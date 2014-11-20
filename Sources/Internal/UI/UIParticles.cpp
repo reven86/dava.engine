@@ -275,6 +275,11 @@ void UIParticles::Reload()
 
     Load(effectPath);
 }
+    
+void UIParticles::SetEffectPath(const FilePath& path)
+{
+    Load(path);
+}
 
 const FilePath& UIParticles::GetEffectPath() const
 {

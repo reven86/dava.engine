@@ -1564,6 +1564,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\AnimationData.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Utils\StringUtils.h">
+      <Filter>Internal\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h">
       <Filter>Internal\Notification</Filter>
     </ClInclude>
@@ -1597,6 +1600,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h">
       <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h">
+      <Filter>Internal\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2853,6 +2859,9 @@
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\StringUtils.cpp">
+      <Filter>Internal\Utils</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp">
       <Filter>Internal\Notification</Filter>
     </ClCompile>
@@ -2884,6 +2893,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp">
       <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
+      <Filter>Internal\Utils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

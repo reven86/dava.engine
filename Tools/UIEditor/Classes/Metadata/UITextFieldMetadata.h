@@ -96,6 +96,9 @@ protected:
 	virtual int GetTextAlign() const;
     virtual void SetTextAlign(int align);
 	
+	virtual bool GetTextUseRtlAlign();
+	virtual void SetTextUseRtlAlign(bool value);
+	
 	bool GetIsPassword() const;
 	void SetIsPassword(bool value);
 	

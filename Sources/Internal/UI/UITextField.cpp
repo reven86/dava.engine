@@ -92,52 +92,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,   textFont(NULL)
 ,   staticText(NULL)
 #endif
-,   isPassword(false)
-,	autoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES)
-,	autoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT)
-,	spellCheckingType(SPELL_CHECKING_TYPE_DEFAULT)
-,	keyboardAppearanceType(KEYBOARD_APPEARANCE_DEFAULT)
-,	keyboardType(KEYBOARD_TYPE_DEFAULT)
-,	returnKeyType(RETURN_KEY_DEFAULT)
-,	enableReturnKeyAutomatically(false)
-,   maxLength(-1)
 {
 #if defined(__DAVAENGINE_ANDROID__)
-	textFieldAndroid = new UITextFieldAndroid(this);
-    textFieldAndroid->SetVisible(true);
-#elif defined(__DAVAENGINE_IPHONE__)
-	textFieldiPhone = new UITextFieldiPhone(this);
-    textFieldiPhone->SetVisible(true);
-#else
-    staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
-    staticText->SetVisible(false);
-    AddControl(staticText);
-    
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
-#endif
-    
-    cursorTime = 0;
-    showCursor = true;
-}
-
-UITextField::UITextField()
-:   delegate(NULL)
-,   cursorBlinkingTime(0.f)
-#if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
-,   textFont(NULL)
-,   staticText(NULL)
-#endif
-,   isPassword(false)
-,	autoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES)
-,	autoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT)
-,	spellCheckingType(SPELL_CHECKING_TYPE_DEFAULT)
-,	keyboardAppearanceType(KEYBOARD_APPEARANCE_DEFAULT)
-,	keyboardType(KEYBOARD_TYPE_DEFAULT)
-,	returnKeyType(RETURN_KEY_DEFAULT)
-,	enableReturnKeyAutomatically(false)
-,   maxLength(-1)
-{
-#if defined (__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
 #elif defined(__DAVAENGINE_IPHONE__)
@@ -147,12 +103,38 @@ UITextField::UITextField()
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
     staticText->SetVisible(false);
     AddControl(staticText);
-    
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
 #endif
     
     cursorTime = 0;
     showCursor = true;
+
+    SetupDefaults();
+}
+    
+void UITextField::SetupDefaults()
+{
+    SetInputEnabled(true, false);
+    
+    SetAutoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES);
+    SetAutoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT);
+    SetSpellCheckingType(SPELL_CHECKING_TYPE_DEFAULT);
+    SetKeyboardAppearanceType(KEYBOARD_APPEARANCE_DEFAULT);
+    SetKeyboardType(KEYBOARD_TYPE_DEFAULT);
+    SetReturnKeyType(RETURN_KEY_DEFAULT);
+    SetEnableReturnKeyAutomatically(false);
+    SetTextUseRtlAlign(false);
+    
+    SetMaxLength(-1);
+    
+    
+    SetIsPassword(false);
+    SetTextColor(GetTextColor());
+    SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    
+    SetFontSize(26); //12 is default size for IOS
+    
+    SetText(L"");
 }
 
 //void UITextField::InitAfterYaml()
@@ -254,6 +236,7 @@ void UITextField::DidAppear()
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->ShowField();
+    textFieldiPhone->SetVisible(IsOnScreen());
 #endif
 }
 
@@ -352,6 +335,17 @@ void UITextField::SetTextAlign(int32 align)
 #else
     staticText->SetTextAlign(align);
 #endif	
+}
+
+void UITextField::SetTextUseRtlAlign(bool useRtlAlign)
+{
+#ifdef __DAVAENGINE_IPHONE__
+    textFieldiPhone->SetTextUseRtlAlign(useRtlAlign);
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetTextUseRtlAlign(useRtlAlign);
+#else
+    staticText->SetTextUseRtlAlign(useRtlAlign);
+#endif
 }
 
 void UITextField::SetFontSize(float size)
@@ -455,7 +449,17 @@ int32 UITextField::GetTextAlign() const
 #else
     return staticText ? staticText->GetTextAlign() : ALIGN_HCENTER|ALIGN_VCENTER;
 #endif
-    
+}
+
+bool UITextField::GetTextUseRtlAlign() const
+{
+#ifdef __DAVAENGINE_IPHONE__
+    return textFieldiPhone ? textFieldiPhone->GetTextUseRtlAlign() : false;
+#elif defined(__DAVAENGINE_ANDROID__)
+    return textFieldAndroid ? textFieldAndroid->GetTextUseRtlAlign() : false;
+#else
+    return staticText ? staticText->GetTextUseRtlAlign() : false;
+#endif
 }
 
 void UITextField::Input(UIEvent *currentInput)
@@ -672,6 +676,12 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 	{
 		SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
 	}
+
+	const YamlNode * textUseRtlAlign = node->Get("textUseRtlAlign");
+	if(textUseRtlAlign)
+	{
+		SetTextUseRtlAlign(textUseRtlAlign->AsBool());
+	}
     //InitAfterYaml();
 
     const YamlNode* maxLengthNode = node->Get("maxLength");
@@ -734,10 +744,17 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     }
 
 	// Text align
-    if (baseTextField->GetTextAlign() != GetTextAlign())
+	if (baseTextField->GetTextAlign() != GetTextAlign())
     {
         node->SetNodeToMap("textalign", loader->GetAlignNodeValue(GetTextAlign()));
     }
+	
+	// Text use rtl align
+	if (baseTextField->GetTextUseRtlAlign() != GetTextUseRtlAlign())
+    {
+        node->Set("textUseRtlAlign", this->GetTextUseRtlAlign());
+    }
+    
 
 	// Draw Type must be overwritten fot UITextField.
 	UIControlBackground::eDrawType drawType = GetBackground()->GetDrawType();
@@ -801,7 +818,7 @@ List<UIControl* >& UITextField::GetRealChildren()
 	return realChildren;
 }
 
-UIControl* UITextField::Clone()
+UITextField* UITextField::Clone()
 {
 	UITextField *t = new UITextField();
 	t->CopyDataFrom(this);
@@ -837,6 +854,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 	SetKeyboardType(t->GetKeyboardType());
 	SetReturnKeyType(t->GetReturnKeyType());
 	SetEnableReturnKeyAutomatically(t->IsEnableReturnKeyAutomatically());
+	SetTextUseRtlAlign(t->GetTextUseRtlAlign());
 }
     
 void UITextField::SetIsPassword(bool isPassword)

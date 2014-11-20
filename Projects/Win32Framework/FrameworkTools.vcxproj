@@ -131,6 +131,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/IMagickHelpLib;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)/../../Sources/Tools;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,6 +141,7 @@
     </Link>
     <Lib>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
       <AdditionalDependencies>IMagickHelper.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)/../../Libs/IMagickHelpLib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>

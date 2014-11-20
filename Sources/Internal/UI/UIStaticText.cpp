@@ -98,6 +98,7 @@ void UIStaticText::SetText(const WideString& _string, const Vector2 &requestedTe
 {
     textBlock->SetRectSize(size);
     textBlock->SetText(_string, requestedTextRectSize);
+    textBg->SetAlign(textBlock->GetVisualAlign());
     PrepareSprite();
 }
 
@@ -164,13 +165,34 @@ int32 UIStaticText::GetAlign() const
 
 void UIStaticText::SetTextAlign(int32 _align)
 {
-    textBg->SetAlign(_align);
     textBlock->SetAlign(_align);
+    textBg->SetAlign(textBlock->GetVisualAlign());
 }
 
 int32 UIStaticText::GetTextAlign() const
 {
-    return textBg->GetAlign();
+    return textBlock->GetAlign();
+}
+	
+int32 UIStaticText::GetTextVisualAlign() const
+{
+	return textBlock->GetVisualAlign();
+}
+
+bool UIStaticText::GetTextIsRtl() const
+{
+	return textBlock->IsRtl();
+}
+
+void UIStaticText::SetTextUseRtlAlign(bool useRtlAlign)
+{
+    textBlock->SetUseRtlAlign(useRtlAlign);
+	textBg->SetAlign(textBlock->GetVisualAlign());
+}
+
+bool UIStaticText::GetTextUseRtlAlign() const
+{
+    return textBlock->GetUseRtlAlign();
 }
 
 const Vector2 & UIStaticText::GetTextSize()
@@ -267,6 +289,7 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     const YamlNode * shadowColorNode = node->Get("shadowcolor");
     const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
     const YamlNode * textAlignNode = node->Get("textalign");
+	const YamlNode * textUseRtlAlignNode = node->Get("textUseRtlAlign");
     const YamlNode * textColorInheritTypeNode = node->Get("textcolorInheritType");
     const YamlNode * shadowColorInheritTypeNode = node->Get("shadowcolorInheritType");
     const YamlNode * textMarginsNode = node->Get("textMargins");
@@ -307,6 +330,11 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     {
         SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
     }
+	
+	if (textUseRtlAlignNode)
+	{
+		SetTextUseRtlAlign(textUseRtlAlignNode->AsBool());
+	}
 
     if (textNode)
     {
@@ -424,6 +452,12 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
     if (baseControl->GetTextAlign() != this->GetTextAlign())
     {
         node->SetNodeToMap("textalign", loader->GetAlignNodeValue(this->GetTextAlign()));
+    }
+	
+	// Text use rtl align
+    if (baseControl->GetTextAlign() != this->GetTextAlign())
+    {
+        node->Set("textUseRtlAlign", this->GetTextUseRtlAlign());
     }
 
     // Draw type. Must be overriden for UITextControls.

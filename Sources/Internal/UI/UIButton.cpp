@@ -385,6 +385,18 @@ void UIButton::SetStateTextAlign(int32 state, int32 align)
         state >>= 1;
     }
 }
+	
+void UIButton::SetStateTextUseRtlAlign(int32 state, bool value)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            GetOrCreateTextBlock((eButtonDrawState)i)->SetTextUseRtlAlign(value);
+        }
+        state >>= 1;
+    }
+}
 
 void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins)
 {
@@ -703,6 +715,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * stateFontNode = node->Get(Format("stateFont%s", statePostfix.c_str()));
         const YamlNode * stateTextAlignNode = node->Get(Format("stateTextAlign%s", statePostfix.c_str()));
         const YamlNode * stateTextColorNode = node->Get(Format("stateTextcolor%s", statePostfix.c_str()));
+        const YamlNode * stateTextUseRtlAlignNode = node->Get(Format("stateTextUseRtlAlign%s", statePostfix.c_str()));
         const YamlNode * stateShadowColorNode = node->Get(Format("stateShadowcolor%s", statePostfix.c_str()));
         const YamlNode * stateShadowOffsetNode = node->Get(Format("stateShadowoffset%s", statePostfix.c_str()));
         const YamlNode * stateFittingOptionNode = node->Get(Format("stateFittingOption%s", statePostfix.c_str()));
@@ -716,7 +729,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         if (stateFontNode || stateTextAlignNode || stateTextColorNode ||
             stateShadowColorNode || stateShadowOffsetNode || stateFittingOptionNode ||
             stateTextNode || multilineNode || multilineBySymbolNode || textColorInheritTypeNode ||
-            stateTextMarginsNode || textPerPixelAccuracyTypeNode)
+            stateTextMarginsNode || textPerPixelAccuracyTypeNode || stateTextUseRtlAlignNode)
         {
             RefPtr<UIStaticText> stateTextBlock;
             if (drawState == DRAW_STATE_UNPRESSED)
@@ -738,7 +751,12 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
             if (stateTextAlignNode)
             {
-                stateTextBlock->SetAlign(loader->GetAlignFromYamlNode(stateTextAlignNode));
+                stateTextBlock->SetTextAlign(loader->GetAlignFromYamlNode(stateTextAlignNode));
+            }
+			
+			if (stateTextUseRtlAlignNode)
+            {
+                stateTextBlock->SetTextUseRtlAlign(stateTextUseRtlAlignNode->AsBool());
             }
 
             if (stateTextColorNode)
@@ -961,6 +979,12 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             if (baseStaticText->GetTextAlign() != textAlign)
             {
                 node->SetNodeToMap(Format("stateTextAlign%s", statePostfix.c_str()), loader->GetAlignNodeValue(textAlign));
+            }
+			
+			bool textUseRtlAlign = stateTextBlock->GetTextUseRtlAlign();
+            if (baseStaticText->GetTextUseRtlAlign() != textUseRtlAlign)
+            {
+                node->Set(Format("stateTextUseRtlAlign%s", statePostfix.c_str()), textUseRtlAlign);
             }
             
             UIControlBackground::eColorInheritType colorInheritType = stateTextBlock->GetTextBackground()->GetColorInheritType();
