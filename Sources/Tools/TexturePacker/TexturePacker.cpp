@@ -292,6 +292,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 					 bestResolution = currentResolution;
 					 bestXResolution = xResolution;
 					 bestYResolution = yResolution;
+					 break;
 				 }
 		 }
     Logger::FrameworkDebug("\n");
