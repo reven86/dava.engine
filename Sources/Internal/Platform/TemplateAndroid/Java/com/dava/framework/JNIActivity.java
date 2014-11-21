@@ -347,7 +347,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 						}
 					});
 				}
- 	 		}, 1000);
+ 	 		}, 300);
     	}
     	
     	if(hasFocus) {
