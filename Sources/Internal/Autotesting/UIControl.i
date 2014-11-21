@@ -87,6 +87,8 @@ public:
 
 	int32 GetFrame() const;
 
+	const Vector2 & UIControl::GetPivotPoint() const;
+
 protected:
 	virtual ~UIControl();
 

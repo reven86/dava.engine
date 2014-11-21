@@ -180,33 +180,31 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
         MaterialItem *lhsItem = materialModel->itemFromIndex(left.sibling(left.row(), 0));
         MaterialItem *rhsItem = materialModel->itemFromIndex(right.sibling(right.row(), 0));
 
-        const int lodComp = lhsItem->GetLodIndex() - rhsItem->GetLodIndex();
-        const int switchComp = lhsItem->GetSwitchIndex() - rhsItem->GetSwitchIndex();
-        int compAll = 0;
+        int compResult = 0;
 
         switch ( sortColumn() )
         {
-        case 0:
-            compAll = compareNames(mLeft, mRight);
+        case MaterialModel::TITLE_COLUMN:
+            compResult = compareNames(mLeft, mRight);
             break;
-        case 1:
-            compAll = lodComp;
+        case MaterialModel::LOD_COLUMN:
+            compResult = lhsItem->GetLodIndex() - rhsItem->GetLodIndex();
             break;
-        case 2:
-            compAll = switchComp;
+        case MaterialModel::SWITCH_COLUMN:
+            compResult = lhsItem->GetSwitchIndex() - rhsItem->GetSwitchIndex();
             break;
         default:
             break;
         }
 
         // If sorting column data is equal then sort by text
-        if ( compAll == 0 && sortColumn() == 2 )
+        if ( compResult == 0 && sortColumn() != MaterialModel::TITLE_COLUMN )
         {
             const int textComp = compareNames(mLeft, mRight);
-            compAll = (sortOrder() == Qt::AscendingOrder) ? textComp : -textComp;   // Always sort text in ascending order
+            compResult = (sortOrder() == Qt::AscendingOrder) ? textComp : -textComp;   // Always sort text in ascending order
         }
 
-        if (compAll < 0)
+        if (compResult < 0)
         {
             swap = true;
         }

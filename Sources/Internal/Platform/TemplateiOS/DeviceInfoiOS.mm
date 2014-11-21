@@ -154,11 +154,27 @@ String DeviceInfo::GetModel()
 			model = "iPad 5 WiFi";
 		if ([modelName hasPrefix:@"iPad4,2"])
 			model = "iPad 5 GSM CDMA LTE";
+		if ([modelName hasPrefix:@"iPad4,3"])
+			model = "iPad 5 (China)";
 
 		if ([modelName hasPrefix:@"iPad4,4"])
 			model = "iPad Mini 2 WiFi";
 		if ([modelName hasPrefix:@"iPad4,5"])
 			model = "iPad Mini 2 GSM CDMA LTE";
+		if ([modelName hasPrefix:@"iPad4,6"])
+			model = "iPad Mini 2 (China)";
+
+		if ([modelName hasPrefix:@"iPad4,7"])
+			model = "iPad Mini 3 WiFi";
+		if ([modelName hasPrefix:@"iPad4,8"])
+			model = "iPad Mini 3 Cellular";
+		if ([modelName hasPrefix:@"iPad4,9"])
+			model = "iPad Mini 3 (China)";
+
+		if ([modelName hasPrefix:@"iPad5,3"])
+			model = "iPad 6 WiFi";
+		if ([modelName hasPrefix:@"iPad5,4"])
+			model = "iPad 6 Cellular";
 
 		// iPod
 		if ([modelName hasPrefix:@"iPod1,1"])

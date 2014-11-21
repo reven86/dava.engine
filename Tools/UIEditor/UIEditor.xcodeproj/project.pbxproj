@@ -2341,7 +2341,7 @@
 					"-L../../Libs/freetype/lib/",
 					"-L../../Libs/oggvorbis/lib/",
 					"-lMagickCore",
-					"-lMagick++-6",
+					"-lMagick++",
 					"-lMagickWand",
 				);
 				PRODUCT_NAME = TemplateProjectQt;

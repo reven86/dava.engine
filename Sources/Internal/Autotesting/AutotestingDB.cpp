@@ -424,6 +424,9 @@ namespace DAVA
 		{
 			deviceArchive->SetString("Started", "1");
 			deviceArchive->SetString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
+			deviceArchive->SetString("Date", AutotestingSystem::Instance()->testsDate.c_str());
+			deviceArchive->SetString("Framework", AutotestingSystem::Instance()->framework.c_str());
+			deviceArchive->SetString("Branch", AutotestingSystem::Instance()->branch.c_str());
 		}
 		else
 		{

@@ -174,7 +174,12 @@ void JobManager::CheckAndCallWaiterForThreadId(const Thread::Id & threadId)
 	Map<Thread::Id,  ThreadIdJobWaiter *>::iterator it = waitersPerCreatorThread.find(threadId);
 	if(waitersPerCreatorThread.end() != it)
 	{
-		Thread::Broadcast(((*it).second)->GetConditionalVariable());
+		ThreadIdJobWaiter* waiter = it->second;
+
+		waiter->GetMutex()->Lock();
+		Thread::Broadcast(waiter->GetConditionalVariable());
+		waiter->GetMutex()->Unlock();
+
 		waitersPerCreatorThread.erase(it);
 	}
 }
@@ -219,7 +224,12 @@ void JobManager::CheckAndCallWaiterForJobInstance(Job * job)
 	Map<Job *, JobInstanceWaiter *>::iterator it = waitersPerJob.find(job);
 	if(waitersPerJob.end() != it)
 	{
-		Thread::Broadcast(((*it).second)->GetConditionalVariable());
+		JobInstanceWaiter* waiter = it->second;
+
+		waiter->GetMutex()->Lock();
+		Thread::Broadcast(waiter->GetConditionalVariable());
+		waiter->GetMutex()->Unlock();
+
 		waitersPerJob.erase(it);
 	}
 }
