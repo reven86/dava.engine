@@ -656,7 +656,7 @@ function ClickControl(name, time, touchId)
         Log("Control " .. name .. " not found.")
         return false
     end
-    if IsVisible(name) then
+    if IsVisible(name) and IsCenterOnScreen(name) then
         local position = GetCenter(name)
         ClickPosition(position, TIMECLICK, touchId)
         return true
