@@ -201,6 +201,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 				uint32 currentResolution = xResolution * yResolution;
 
 				if ((currentResolution < bestResolution) || (currentResolution == bestResolution && !packWasSuccessfull))
+				{
 					if (TryToPack(textureRect, defsList))
 					{
 						packWasSuccessfull = true;
@@ -209,6 +210,9 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 						bestYResolution = yResolution;
 						break;
 					}
+				}
+				else
+					break;
 			}
 
         Logger::FrameworkDebug("");
@@ -290,6 +294,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 			 uint32 currentResolution = xResolution * yResolution;
 
 			 if (currentResolution < bestResolution || (currentResolution == bestResolution && !packWasSuccessfull))
+			 {
 				 if (TryToPack(textureRect, defsList))
 				 {
 					 packWasSuccessfull = true;
@@ -298,6 +303,9 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 					 bestYResolution = yResolution;
 					 break;
 				 }
+			 }
+			 else
+				 break;
 		 }
     Logger::FrameworkDebug("\n");
 
