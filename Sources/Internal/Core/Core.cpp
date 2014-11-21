@@ -53,6 +53,7 @@
 #include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -153,6 +154,7 @@ void Core::CreateSingletons()
     new VersionInfo();
     new ImageSystem();
     new SceneCache();
+    new FrameOcclusionQueryManager();
 	
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -177,7 +179,7 @@ void Core::CreateSingletons()
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
     new LocalNotificationController();
-    
+
     RegisterDAVAClasses();
     CheckDataTypeSizes();
 }
@@ -211,6 +213,7 @@ void Core::ReleaseSingletons()
     SoundSystem::Instance()->Release();
 	Random::Instance()->Release();
 	RenderLayerManager::Instance()->Release();
+    FrameOcclusionQueryManager::Instance()->Release();
 	RenderManager::Instance()->Release();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();
@@ -799,12 +802,8 @@ void Core::SetCommandLine(int argc, char *argv[])
 
 void Core::SetCommandLine(const DAVA::String& cmdLine)
 {
-	std::stringstream ss(cmdLine);
-	std::string param;
-	while (std::getline(ss, param, ' '))
-	{
-		commandLine.push_back(param);
-	}
+    commandLine.clear();
+    Split(cmdLine, " ", commandLine);
 }
 
 Vector<String> & Core::GetCommandLine()

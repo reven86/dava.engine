@@ -86,6 +86,8 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 			JNIActivity.GetActivity().OnFirstFrameAfterDraw();
 			JNITextField.ShowVisibleTextFields();
 		}
+		
+		
 	}
 	
 	public void OnPause()

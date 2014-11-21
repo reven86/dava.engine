@@ -75,11 +75,12 @@ namespace DAVA
 	{
 		Logger::Debug("AutotestingSystem::OnAppStarted");
 
-
-		if(isInit)
+		if (isInit)
 		{
 			Logger::Error("AutotestingSystem::OnAppStarted App already initialized. Skip autotest initialization");
+			return;
 		}
+
 		FetchParametersFromIdTxt();
 		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
 
@@ -88,7 +89,12 @@ namespace DAVA
 		FetchParametersFromDB();
 
 		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s", groupName.c_str(), testFileName.c_str());
-		AutotestingSystemLua::Instance()->InitFromFile(testFilePath);
+		if (FileSystem::Instance()->IsFile(FilePath(testFilePath)))
+		{
+            AutotestingSystemLua::Instance()->InitFromFile(testFilePath);
+            return;
+        }
+        Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", testFilePath.c_str());
 	}
 
 	void AutotestingSystem::OnAppFinished()
@@ -128,11 +134,11 @@ namespace DAVA
 		}
 
 		buildId = option->GetString("BuildId");
-		buildDate = option->GetString("date");
-		branch = option->GetString("branch");
-		framework = option->GetString("framework");
-		branchRev = option->GetString("branchRev");
-		frameworkRev = option->GetString("frameworkRev");
+		buildDate = option->GetString("Date");
+		branch = option->GetString("Branch");
+		framework = option->GetString("Framework");
+		branchRev = option->GetString("BranchRev");
+		frameworkRev = option->GetString("FrameworkRev");
 
 		SafeRelease(option);
 	}
