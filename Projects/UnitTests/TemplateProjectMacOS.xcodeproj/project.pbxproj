@@ -1079,11 +1079,7 @@
 				0042F48F19F9416100ABDD1D /* UdpSocket.cpp in Sources */,
 				008348761A024B1300F51E2D /* GameCore.cpp in Sources */,
 				C177F28016D227A70036F02B /* InputTest.cpp in Sources */,
-<<<<<<< .mine
-
-=======
 				B7D6C98E19CAC7EB0095250A /* BiDiTest.cpp in Sources */,
->>>>>>> .theirs
 				C18046CA16D52ECA00DC24D8 /* DPITest.cpp in Sources */,
 				0083487A1A024C1C00F51E2D /* TextureUtils.cpp in Sources */,
 				008348741A024B1300F51E2D /* BaseScreen.cpp in Sources */,
