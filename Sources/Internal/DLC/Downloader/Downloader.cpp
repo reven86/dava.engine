@@ -87,7 +87,7 @@ void Downloader::CalcStatistics(uint32 dataCame)
 {
     dataToDownloadLeft -= dataCame;
     
-    static const uint32 currentSpeedWindowRange = 100;
+    static const uint32 currentSpeedWindowRange = 500;
     
     static uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
     static uint64 prevTime = curTime;
@@ -116,7 +116,7 @@ void Downloader::CalcStatistics(uint32 dataCame)
         totalTime += (*i).deltaTime;
     }
     
-    static const uint32 averageSpeedWindowRange = 50;
+    static const uint32 averageSpeedWindowRange = 100;
     
     if (0 != totalSize && 0 != totalTime)
     {

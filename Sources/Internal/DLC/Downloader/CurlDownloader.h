@@ -176,7 +176,7 @@ private:
     const uint8 allowedBuffersInMemory;
     
     const uint32 maxChunkSize = 20 * 1024 * 1024;
-    const uint32 minChunkSize = 1024 * 1024;
+    const uint32 minChunkSize = 16 * 1024;
 };
 
 }
