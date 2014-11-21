@@ -17,6 +17,8 @@ precision highp float;
 
 #if defined(INSTANCING)
 #version 140
+#define attribute in
+#define varying out
 #endif
 
 
