@@ -557,7 +557,7 @@ function SelectItemInContainer(containerName, item, notInCenter, __condition)
         if position.x <= startPoint.x then
             break
         end
-        HorizontalScroll(containerName)
+        HorizontalScroll(containerName, true)
         if __click() then
             return true
         end
@@ -656,7 +656,7 @@ function ClickControl(name, time, touchId)
         Log("Control " .. name .. " not found.")
         return false
     end
-    if IsCenterOnScreen(name) then
+    if IsVisible(name) then
         local position = GetCenter(name)
         ClickPosition(position, TIMECLICK, touchId)
         return true
