@@ -39,17 +39,34 @@ bool Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 siz
     File *destFile = File::Create(storePath, File::OPEN | File::WRITE | File::APPEND);
     if (destFile)
     {
-        written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
-        notifyProgress(written);
         DownloadManager::Instance()->ResetRetriesCount();
+#if defined(__DAVAENGINE_ANDROID__) 
+        uint32 posBeforeWrite = destFile->GetPos();
+#endif
+        written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
+
+#if defined(__DAVAENGINE_ANDROID__) 
+        //for Android value returned by 'Write()' is incorrect in case of full disk, that's why we calculate 'written' using 'GetPos()'
+        DVASSERT(destFile->GetPos() >= posBeforeWrite);
+        written = destFile->GetPos() - posBeforeWrite;
+#endif
         SafeRelease(destFile);
-        return true;
+        
+        notifyProgress(written);
+        
+        if (written != size)
+        {
+            Logger::Error("[Downloader::SaveData] Cannot save data to the file");
+            return false;
+        }
     }
     else
     {
         Logger::Error("[Downloader::SaveData] Cannot open file to save data");
         return false;
     }
+
+    return true;
 }
     
 void Downloader::SetProgressNotificator(Function<void (uint64)> progressNotifier)
