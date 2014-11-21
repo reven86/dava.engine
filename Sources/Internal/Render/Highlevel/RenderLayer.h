@@ -54,17 +54,11 @@ public:
 
     void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
     
-    inline uint32 GetFragmentStats() const;
-    
 protected:
     FastName name;
     uint32 flags;
     RenderLayerID id;
     
-    OcclusionQuery* occlusionQuery;
-    uint32 lastFragmentsRenderedValue;
-    bool queryPending;
-
     virtual void DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
     
 public:
@@ -110,11 +104,6 @@ inline uint32 RenderLayer::GetFlags() const
     return flags;
 }
 
-inline uint32 RenderLayer::GetFragmentStats() const
-{
-    return lastFragmentsRenderedValue;
-}
-    
 } // ns
 
 #endif	/* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */

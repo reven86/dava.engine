@@ -240,8 +240,6 @@ private:
 	// Check control's visibility.
 	bool IsControlVisible(const UIControl* uiControl) const;
 
-    bool IsControlContentVisible( const UIControl *control ) const;
-
     // Calculate the stick to guides for different input modes.
     int32 CalculateStickToGuides(Vector2& offset) const;
     int32 CalculateStickToGuidesDrag(Vector2& offset) const;

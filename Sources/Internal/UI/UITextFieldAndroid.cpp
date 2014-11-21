@@ -168,6 +168,19 @@ void JniTextField::SetTextAlign(int32_t align)
 	}
 }
 
+void JniTextField::SetTextUseRtlAlign(bool useRtlAlign)
+{
+	jmethodID mid = GetMethodID("SetTextUseRtlAlign", "(IZ)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				useRtlAlign);
+	}
+}
+
 void JniTextField::SetInputEnabled(bool value)
 {
 	jmethodID mid = GetMethodID("SetInputEnabled", "(IZ)V");
@@ -377,7 +390,8 @@ void UITextFieldAndroid::SetText(const WideString & string)
 {
 	if (text.compare(string) != 0)
 	{
-		text = string;
+		text = TruncateText(string, textField->GetMaxLength());
+
 		JniTextField jniTextField(id);
 		String utfText = UTF8Utils::EncodeToUTF8(text);
 		jniTextField.SetText(utfText.c_str());
@@ -416,6 +430,18 @@ void UITextFieldAndroid::SetTextAlign(DAVA::int32 align)
 DAVA::int32 UITextFieldAndroid::GetTextAlign()
 {
 	return align;
+}
+
+void UITextFieldAndroid::SetTextUseRtlAlign(bool useRtlAlign)
+{
+	this->useRtlAlign = useRtlAlign;
+	JniTextField jniTextField(id);
+	jniTextField.SetTextUseRtlAlign(useRtlAlign);
+}
+
+bool UITextFieldAndroid::GetTextUseRtlAlign() const
+{
+	return useRtlAlign;
 }
 
 void UITextFieldAndroid::SetVisible(bool isVisible)
@@ -494,10 +520,29 @@ void UITextFieldAndroid::SetCursorPos(uint32 pos)
 void UITextFieldAndroid::SetMaxLength(DAVA::int32 value)
 {
 	JniTextField jniTextField(id);
+
+	WideString truncated = TruncateText(text, value);
+	if (truncated != text)
+	{
+		SetText(truncated);
+	}
+
 	return jniTextField.SetMaxLength(value);
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)
+WideString UITextFieldAndroid::TruncateText(const WideString& text, int32 maxLength)
+{
+	WideString str = text;
+
+	if (maxLength >= 0 && maxLength < str.length())
+	{
+		str.resize(maxLength);
+	}
+
+	return str;
+}
+
+bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text)
 {
 	bool res = true;
 	UITextFieldDelegate* delegate = textField->GetDelegate();
@@ -516,7 +561,7 @@ bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 re
 	return res;
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
+bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString &text)
 {
 	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
 	if (!control)

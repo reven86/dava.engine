@@ -110,7 +110,7 @@ inline TextureStateData& TextureStateData::operator=(const TextureStateData& src
 
 inline void TextureStateData::SetTexture(uint32 index, Texture* tx)
 {
-    DVASSERT(index >= 0 && index < MAX_TEXTURE_COUNT);
+    DVASSERT(index < MAX_TEXTURE_COUNT);
     
     if(textures[index] != tx)
     {
@@ -134,7 +134,7 @@ inline void TextureStateData::SetTexture(uint32 index, Texture* tx)
 
 inline Texture* TextureStateData::GetTexture(uint32 index)
 {
-    DVASSERT(index >= 0 && index < MAX_TEXTURE_COUNT);
+    DVASSERT(index < MAX_TEXTURE_COUNT);
     return textures[index];
 }
 

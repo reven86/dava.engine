@@ -41,16 +41,12 @@ RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags, RenderLaye
     :	name(_name)
     ,   flags(sortingFlags)
     ,   id(_id)
-    ,   queryPending(false)
-    ,   lastFragmentsRenderedValue(0)
-    ,   occlusionQuery(NULL)
 {
     
 }
     
 RenderLayer::~RenderLayer()
 {
-    SafeRelease(occlusionQuery);
 }
 
 void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
@@ -58,41 +54,10 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
     TIME_PROFILE("RenderLayer::Draw");
     
     renderLayerBatchArray->Sort(camera);
-            
-    RenderOptions* options = RenderManager::Instance()->GetOptions();
-    bool layerOcclustionStatsEnabled = options->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS);
-    
-    if(layerOcclustionStatsEnabled)
-    {
-        if(NULL == occlusionQuery)
-        {
-            occlusionQuery = new OcclusionQuery();
-            occlusionQuery->Init();
-        }
-    
-        if(false == queryPending)
-        {
-            occlusionQuery->BeginQuery();
-        }
-    }
-    
+
+    FrameOcclusionQueryManager::Instance()->BeginQuery(name);    
     DrawRenderBatchArray(ownerRenderPass, camera, renderLayerBatchArray);
-    
-    if(layerOcclustionStatsEnabled)
-    {
-        if(false == queryPending)
-        {
-            occlusionQuery->EndQuery();
-            queryPending = true;
-        }
-        
-        if((true == queryPending) &&
-           occlusionQuery->IsResultAvailable())
-        {
-            occlusionQuery->GetQuery(&lastFragmentsRenderedValue);
-            queryPending = false;
-        }
-    }   
+    FrameOcclusionQueryManager::Instance()->EndQuery(name);    
 }
 
 void RenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
@@ -124,7 +89,7 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
     incomingUniformValues.resize(instancedUniformesCount);
         
    
-    for (int32 i=0; i<instancedUniformesCount; i++)
+    for (int32 i=0; i<instancedUniformesCount; i++)    
     {
         Shader::Uniform* uniform = shader->GetInstancingUniform(i);
         incomingUniformValues[i].first = uniform;

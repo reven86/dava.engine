@@ -566,8 +566,7 @@ public:
     void HWglDeleteBuffers(GLsizei count, const GLuint * buffers);
     
     int32 HWglGetLastTextureID(int textureType);
-	void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
-	void HWglForceBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
+    void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
     int32 lastBindedTexture[Texture::TEXTURE_TYPE_COUNT];
 	uint32 lastBindedTextureType;
 

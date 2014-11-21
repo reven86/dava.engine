@@ -1624,6 +1624,7 @@ void QtMainWindow::OnCameraDialog()
 	camera->SetTarget(DAVA::Vector3(1.0f, 0.0f, 0.0f));
 	camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
 	camera->SetAspect(1.0f);
+    camera->RebuildCameraFromValues();
 
 	sceneNode->AddComponent(new CameraComponent(camera));
 	sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
@@ -2088,6 +2089,25 @@ void QtMainWindow::OnBeastAndSave()
 {
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
+
+	if(scene->GetEnabledTools())
+	{
+		if(QMessageBox::Yes == QMessageBox::question(this, "Starting Beast", "Disable landscape editor and start beasting?", (QMessageBox::Yes | QMessageBox::No), QMessageBox::No))
+		{
+			scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+			bool success = !scene->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+			if (!success )
+			{
+				ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+				return;
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
 
     if (!scene->IsLoaded() || scene->IsChanged())
     {

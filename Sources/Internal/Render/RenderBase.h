@@ -88,6 +88,7 @@
     #include <android/api-level.h>
 	#include <GLES/gl.h>
 	#include <GLES/glext.h>
+    #include <EGL/egl.h>
 #if (__ANDROID_API__ < 18)
     #include <GLES2/gl2.h>
     #include <GLES2/gl2ext.h>

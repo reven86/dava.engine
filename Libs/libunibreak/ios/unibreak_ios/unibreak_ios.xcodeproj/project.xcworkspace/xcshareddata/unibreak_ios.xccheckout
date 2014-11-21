@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>9B16095C-B587-45DE-98EE-1130C513C50E</string>
+	<key>IDESourceControlProjectName</key>
+	<string>unibreak_ios</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>62289F3C472C02540432B448FB463096A6264DBD</key>
+		<string>https://github.com/dava/dava.framework</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Libs/libunibreak/ios/unibreak_ios/unibreak_ios.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>62289F3C472C02540432B448FB463096A6264DBD</key>
+		<string>../../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/dava/dava.framework</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>62289F3C472C02540432B448FB463096A6264DBD</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>62289F3C472C02540432B448FB463096A6264DBD</string>
+			<key>IDESourceControlWCCName</key>
+			<string>dava.framework</string>
+		</dict>
+	</array>
+</dict>
+</plist>
