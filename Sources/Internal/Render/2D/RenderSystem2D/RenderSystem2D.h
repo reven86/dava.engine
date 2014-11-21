@@ -170,6 +170,8 @@ private:
     int32 spriteVertexCount;
     int32 spriteIndexCount;
 
+    Sprite::DrawState defaultSpriteDrawState;
+
     Vector<float32> vertexBuffer2;
     Vector<uint16> indexBuffer2;
 

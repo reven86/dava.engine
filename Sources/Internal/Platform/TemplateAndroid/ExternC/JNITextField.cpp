@@ -61,12 +61,10 @@ extern "C"
 	{
 	    // Recalculate to virtual coordinates.
 	    DAVA::Vector2 keyboardOrigin(x, y);
-	    keyboardOrigin *= DAVA::VirtualCoordinatesSystem::Instance()->GetInputScaleFactor();
-	    keyboardOrigin += DAVA::VirtualCoordinatesSystem::Instance()->GetInputOffset();
+	    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 
 	    DAVA::Vector2 keyboardSize(dx, dy);
-	    keyboardSize *= DAVA::VirtualCoordinatesSystem::Instance()->GetInputScaleFactor();
-	    keyboardSize += DAVA::VirtualCoordinatesSystem::Instance()->GetInputOffset();
+	    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
 	    DAVA::UITextFieldAndroid::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
 	}

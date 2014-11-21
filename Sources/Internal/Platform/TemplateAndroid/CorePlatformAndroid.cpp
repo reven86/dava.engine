@@ -58,8 +58,8 @@ namespace DAVA
 
 	Core::eDeviceFamily Core::GetDeviceFamily()
 	{
-		float32 width = ScreenSizes::GetPhysicalScreenSize().dx;
-		float32 height = ScreenSizes::GetPhysicalScreenSize().dy;
+		float32 width = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
+		float32 height = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 		float32 dpi = GetScreenDPI();
 
 		float32 inches = sqrt((width * width) + (height * height)) / dpi;
