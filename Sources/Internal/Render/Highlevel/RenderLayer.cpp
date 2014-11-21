@@ -180,10 +180,13 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
 
     //TODO this is mostly copy from RenderBatch::draw - rethink this
     RenderDataObject *renderData = incomingGroup->GetRenderDataObject();
-    PolygonGroup *dataSource = incomingGroup->GetPolygonGroup();
+    ePrimitiveType primType = PRIMITIVETYPE_TRIANGLELIST;
+    PolygonGroup *dataSource = incomingGroup->GetPolygonGroup();       
     if (dataSource)
+    {
+        primType = dataSource->primitiveType;
         renderData = dataSource->renderDataObject;    
-        
+    }            
     DVASSERT(renderData);    
     RenderManager::Instance()->SetRenderData(renderData);
     RenderManager::Instance()->AttachRenderData();    
@@ -192,9 +195,9 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
     if (!renderData->GetIndexBufferID())
         indices = renderData->GetIndices();   
     if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION))
-        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, renderData->GetIndexCount(), renderData->GetIndexFormat(), indices);
+        RenderManager::Instance()->HWDrawElements(primType, renderData->GetIndexCount(), renderData->GetIndexFormat(), indices);
     else
-        RenderManager::Instance()->HWDrawElementsInstanced(PRIMITIVETYPE_TRIANGLELIST, renderData->GetIndexCount(), renderData->GetIndexFormat(), indices, currInstancesCount);
+        RenderManager::Instance()->HWDrawElementsInstanced(primType, renderData->GetIndexCount(), renderData->GetIndexFormat(), indices, currInstancesCount);
 
     incomingGroup = NULL;
     currInstancesCount = 0;

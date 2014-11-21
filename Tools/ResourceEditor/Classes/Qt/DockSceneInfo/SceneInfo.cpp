@@ -150,6 +150,8 @@ void SceneInfo::Initialize3DDrawSection()
     AddChild("Occluded Object Count",  header);
     AddChild("ArraysCalls", header);
     AddChild("ElementsCalls",  header);
+    AddChild("InstancedElementsCalls",  header);
+    AddChild("InstancedElementsOriginalCount",  header);
     AddChild("PointsList", header);
     AddChild("LineList", header);
     AddChild("LineStrip", header);
@@ -176,8 +178,10 @@ void SceneInfo::Refresh3DDrawInfo()
     SetChild("Occluded Object Count", renderStats.occludedRenderObjectCount, header);
 
     
-    SetChild("ArraysCalls", renderStats.drawArraysCalls, header);
-    SetChild("ElementsCalls", renderStats.drawElementsCalls, header);
+    SetChild("ArraysCalls", renderStats.drawTypeCalls[RenderManager::DC_DRAW_ARRAYS], header);
+    SetChild("ElementsCalls", renderStats.drawTypeCalls[RenderManager::DC_DRAW_ELEMENTS], header);
+    SetChild("InstancedElementsCalls", renderStats.drawTypeCalls[RenderManager::DC_DRAW_ELEMENTS_INSTANCED], header);
+    SetChild("InstancedElementsOriginalCount", renderStats.drawTypeCalls[RenderManager::DC_DRAW_ELEMENTS_INSTANCED_ORIGINAL_COUNT], header);    
     SetChild("PointsList", renderStats.primitiveCount[PRIMITIVETYPE_POINTLIST], header);
     SetChild("LineList", renderStats.primitiveCount[PRIMITIVETYPE_LINELIST], header);
     SetChild("LineStrip", renderStats.primitiveCount[PRIMITIVETYPE_LINESTRIP], header);

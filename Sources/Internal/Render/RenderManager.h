@@ -88,7 +88,14 @@ public:
     static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
     static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
     
-    
+    enum eDrawCommandType
+    {
+        DC_DRAW_ARRAYS,
+        DC_DRAW_ELEMENTS,
+        DC_DRAW_ELEMENTS_INSTANCED,
+        DC_DRAW_ELEMENTS_INSTANCED_ORIGINAL_COUNT,
+        DC_DRAW_COMMAND_TYPES_COUNT
+    };
     struct Caps
 	{
 		Caps() 
@@ -130,8 +137,7 @@ public:
     {
         void Clear();
         
-        uint32 drawArraysCalls;
-        uint32 drawElementsCalls;
+        uint32 drawTypeCalls[DC_DRAW_COMMAND_TYPES_COUNT];        
         uint32 shaderBindCount;
         uint32 occludedRenderBatchCount;
         uint32 primitiveCount[PRIMITIVETYPE_COUNT];
@@ -230,7 +236,7 @@ public:
 #endif 
     
 protected:
-    void AddDrawCallToStats(ePrimitiveType type, int32 count);
+    void AddDrawCallToStats(eDrawCommandType command, ePrimitiveType type, int32 count);
 
 	RenderManager::Caps caps;
     RenderManager::Stats stats;

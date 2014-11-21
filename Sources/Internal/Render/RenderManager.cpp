@@ -733,8 +733,8 @@ void RenderManager::Stats::Clear()
 {
 	//uint32 matrixMultiplicationCount = Matrix4::matrixMultiplicationCounter;
 	//Matrix4::matrixMultiplicationCounter = 0;
-    drawArraysCalls = 0;
-    drawElementsCalls = 0;
+    for (int32 i=0; i<DC_DRAW_COMMAND_TYPES_COUNT; i++)
+        drawTypeCalls[i]=0;
     shaderBindCount = 0;
     occludedRenderBatchCount = 0;
 	renderStateSwitches = 0;
@@ -765,22 +765,11 @@ void RenderManager::ProcessStats()
     if (statsFrameCountToShowDebug >= frameToShowDebugStats)
     {
         statsFrameCountToShowDebug = 0;
-        Logger::FrameworkDebug("== Frame stats: DrawArraysCount: %d DrawElementCount: %d ==", stats.drawArraysCalls, stats.drawElementsCalls);
+        Logger::FrameworkDebug("== Frame stats: DrawArraysCount: %d DrawElementCount: %d  DrawElementInstancedCount: %d==", stats.drawTypeCalls[DC_DRAW_ARRAYS], stats.drawTypeCalls[DC_DRAW_ELEMENTS], stats.drawTypeCalls[DC_DRAW_ELEMENTS_INSTANCED]);
         for (int32 k = 0; k < PRIMITIVETYPE_COUNT; ++k)
             Logger::FrameworkDebug("== Primitive Stats: %d ==", stats.primitiveCount[k]);
     }
 }
-    
-    /*void RenderManager::EnableAlphaTest(bool isEnabled)
-{
-    alphaTestEnabled = isEnabled;
-}
-
- 
-void RenderManager::EnableCulling(bool isEnabled)
-{
-    cullingEnabled = isEnabled;
-}*/
     
 
 RenderOptions * RenderManager::GetOptions()
@@ -875,7 +864,7 @@ const void * RenderManager::GetDynamicParam(eShaderSemantic shaderSemantic)
         ComputeWorldInvTransposeMatrixIfRequired();            
         break;        
     case PARAM_WORLD_VIEW_OBJECT_CENTER:
-        RenderManager::Instance()->ComputeWorldViewMatrixIfRequired();            
+        ComputeWorldViewObjectCenterIfRequired();
         break;        
     case PARAM_BOUNDING_BOX_SIZE:        
         ComputeLocalBoundingBoxSizeIfRequired();            

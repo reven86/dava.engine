@@ -461,9 +461,10 @@ void RenderManager::FlushState(RenderState * stateBlock)
 	stateBlock->Flush(&hardwareState);
 }
 
-void RenderManager::AddDrawCallToStats(ePrimitiveType type, int32 count)
+void RenderManager::AddDrawCallToStats(eDrawCommandType command, ePrimitiveType type, int32 count)
 {
-    stats.drawArraysCalls++;
+    DVASSERT(command<DC_DRAW_COMMAND_TYPES_COUNT);
+    stats.drawTypeCalls[command]++;
     switch(type)
     {
     case PRIMITIVETYPE_POINTLIST: 
@@ -497,7 +498,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 	}
 
     RENDER_VERIFY(glDrawArrays(mode, first, count));
-    AddDrawCallToStats(type, count);
+    AddDrawCallToStats(DC_DRAW_ARRAYS, type, count);
 }
 
 void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices)
@@ -510,7 +511,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 	}
 	
 	RENDER_VERIFY(glDrawElements(mode, count, indexTypes[indexFormat], indices));
-    AddDrawCallToStats(type, count);
+    AddDrawCallToStats(DC_DRAW_ELEMENTS, type, count);
 }
 
 void RenderManager::HWDrawElementsInstanced(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices, int32 instanceCount)
@@ -523,7 +524,8 @@ void RenderManager::HWDrawElementsInstanced(ePrimitiveType type, int32 count, eI
     }
 
     RENDER_VERIFY(glDrawElementsInstancedARB(mode, count, indexTypes[indexFormat], indices, instanceCount));
-    AddDrawCallToStats(type, count);
+    AddDrawCallToStats(DC_DRAW_ELEMENTS_INSTANCED, type, count*instanceCount);
+    stats.drawTypeCalls[DC_DRAW_ELEMENTS_INSTANCED_ORIGINAL_COUNT]+=instanceCount;
 }
 
 void RenderManager::ClearWithColor(float32 r, float32 g, float32 b, float32 a)

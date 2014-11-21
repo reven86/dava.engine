@@ -102,9 +102,13 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
     material->BindActivePassMaterialProperties();
     
     //draw code
+    ePrimitiveType primType = PRIMITIVETYPE_TRIANGLELIST;
     RenderDataObject *renderData = renderDataObject;
     if (dataSource)
+    {
+        primType = dataSource->primitiveType;
         renderData = dataSource->renderDataObject;    
+    }
     DVASSERT(renderData);    
     RenderManager::Instance()->SetRenderData(renderData);
     RenderManager::Instance()->AttachRenderData();    
@@ -113,7 +117,7 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
     void * indices = 0;
     if (!renderData->GetIndexBufferID())
         indices = renderData->indices;    
-    RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, renderData->indexCount, renderData->GetIndexFormat(), indices);
+    RenderManager::Instance()->HWDrawElements(primType, renderData->indexCount, renderData->GetIndexFormat(), indices);
 }
     
 void RenderBatch::SetRenderObject(RenderObject * _renderObject)
