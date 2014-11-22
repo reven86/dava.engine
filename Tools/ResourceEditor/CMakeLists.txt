@@ -1,14 +1,19 @@
 cmake_minimum_required (VERSION 3.0)
 project ( ResourceEditor )
 
-set(ENV_QT5_HOME "$ENV{QT5_HOME}")
-if( NOT ENV_QT5_HOME )        
-   message(FATAL_ERROR "Error: Undefined QT5_HOME env var. Sample QT5_HOME=D:/Tools/QT5/5.3/msvc2010_opengl")
-   exit()
-endif()
+set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
+include      ( CMake-common )
+
+find_package ( DavaFramework REQUIRED )
 
 if( WIN32 )
+
+    set(ENV_QT5_HOME "$ENV{QT5_HOME}")
+    if( NOT ENV_QT5_HOME )        
+       message(FATAL_ERROR "Error: Undefined QT5_HOME env var. Sample QT5_HOME=D:/Tools/QT5/5.3/msvc2010_opengl")
+       exit()
+    endif()
 
     set ( QT5_PATH ${ENV_QT5_HOME} CACHE PATH "Path to Qt5")
 
@@ -20,14 +25,10 @@ endif()
 
 set ( QT5_MODULE_PATH ${QT5_PATH}/lib/cmake)
 set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
-
-set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 set ( QT_FOUND 1 )
 
 
-find_package ( DavaFramework REQUIRED )
 
-include      ( CMake-common )
 
 find_package ( Qt5Core REQUIRED )
 find_package ( Qt5Concurrent REQUIRED )
