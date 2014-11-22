@@ -9,13 +9,14 @@
 #include <Shlobj.h>
 #include <tchar.h>
 
-#else defined(MACOS)
+#else
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include <copyfile.h>
 #include <libproc.h>
 #include <libgen.h>
+
 #endif 
 
 using namespace std;
@@ -34,8 +35,9 @@ bool IsDirectory(const string& pathToCheck)
     {
         return (0 != (s.st_mode & S_IFDIR));
     }
-#endif //#if defined (WIN32)
-
+#endif
+    
+    return false;
 }
 
 eCreateDirectoryResult CreateDir( const string& dirPath )
