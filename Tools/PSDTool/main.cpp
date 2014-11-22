@@ -1,8 +1,6 @@
 #include <vector>
 #include <string>
 
-#include "FileSystem/Logger.h"
-
 #include "IMagickHelper.h"
 
 
@@ -82,8 +80,8 @@ unsigned ImageConverter::ConvertImage( const std::string &image_path )
 
         for( unsigned i = 0; i < cropped_data.rects_array_size; i++ )
         {
-            DAVA::Rect2i &rect = cropped_data.rects_array[ i ];
-            DAVA::Logger::FrameworkDebug( "CroppedRect[%i] %i %i %i %i\n", i, rect.x, rect.y, rect.dx, rect.dy );
+            IMagickHelper::Rect &rect = cropped_data.rects_array[ i ];
+            printf ( "CroppedRect[%i] %i %i %i %i\n", i, rect.x, rect.y, rect.dx, rect.dy );
         }
     }
     else
@@ -97,9 +95,7 @@ unsigned ImageConverter::ConvertImage( const std::string &image_path )
 //D:\Dava\wot.blitz\DataSource\Gfx\Particles\exp_anim_one.psd -out_dir D:\png -cropped_layers true
 int main( int argc, const char **argv )
 {
-    new DAVA::Logger();
     ImageConverter converter;
     converter.ComandLineProcessing( argc, argv );
-    DAVA::Logger::Instance()->Release();
     return 1;
 }

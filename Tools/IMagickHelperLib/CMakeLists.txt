@@ -4,11 +4,8 @@ project      ( IMagickHelper )
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
-set          ( DISABLE_SOUNDS 1 )
-set          ( DISABLE_MT     1 )
 
 include      ( CMake-common         )
-include      ( FindDavaFramework    )
 include      ( GenerateExportHeader )
 
 set_property ( GLOBAL PROPERTY USE_FOLDERS ON )
@@ -18,9 +15,11 @@ add_definitions (
     -D_MAGICKLIB_   
     -D_LIB 
     -D_CONSOLE
+    -D__SECURE_SCL 
     -D_SCL_SECURE_NO_WARNING
     -D_CRT_SECURE_NO_DEPRECATE 
     -D_CRT_NON_CONFORMING_SWPRINTFS
+    -D_ITERATOR_DEBUG_LEVEL=0
 )
 
 
@@ -54,8 +53,7 @@ elseif( WIN32 )
     "${LIBRARIES_DIR}/${IMAGE_MAGICK}/lib" )  
 
     file ( GLOB IMAGE_MAGICK_LIBRARIES_RELEASE  "${IMAGE_MAGICK_LIBRARIES_PATH}/CORE_RL_*.lib" )
-    file ( GLOB IMAGE_MAGICK_LIBRARIES_DEBUG    "${IMAGE_MAGICK_LIBRARIES_PATH}/CORE_DB_*.lib" )
-
+    file ( GLOB IMAGE_MAGICK_LIBRARIES_DEBUG    "${IMAGE_MAGICK_LIBRARIES_PATH}/CORE_RL_*.lib" )
 
 endif  ()
 
@@ -64,6 +62,7 @@ include_directories ( ${IMAGE_MAGICK_INCLUDES_PATH} )
 include_directories ( ${DAVA_INCLUDE_DIR} ) 
 
 file ( GLOB LIB_SOURCES "*.h" "*.cpp" )
+generate_source_groups_project ()
 
 add_library( ${PROJECT_NAME} SHARED  ${LIB_SOURCES} )
 
@@ -87,7 +86,7 @@ elseif( APPLE )
 
 endif()
 
-target_link_libraries( ${PROJECT_NAME} ${LIBRARIES}  ${DAVA_LIBRARY} )
+target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
 
 foreach ( FILE ${IMAGE_MAGICK_LIBRARIES_DEBUG} ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )

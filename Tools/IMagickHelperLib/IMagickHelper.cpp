@@ -4,16 +4,30 @@
 #include <magick/MagickCore.h>
 #include <magick/property.h>
 
-#include "FileSystem/FilePath.h"
-#include "FileSystem/FileSystem.h"
-
+#include <FileTools.h>
 #include <stdio.h>
-#include <string>
+#include <vector>
 
-using namespace DAVA;
+using namespace std;
 
 namespace IMagickHelper
 {
+
+Rect::Rect()
+{
+    x  = 0;
+    y  = 0;
+    dx = 0;
+    dy = 0;
+}
+
+Rect::Rect( int _x, int _y, int _dx, int _dy )
+{
+    x  = _x;
+    y  = _y;
+    dx = _dx;
+    dy = _dy;
+}
 
 void CroppedData::Reset()
 {
@@ -39,49 +53,34 @@ CroppedData::~CroppedData()
     Reset();
 }
 
-class Initialization
-{
-public:
-    Initialization()
-    {
-        new FileSystem();
-
-    }
-    ~Initialization()
-    {
-        FileSystem::Instance()->Release();
-    }
-
-} _Initialization;
-
-
 bool ConvertToPNG ( const char *in_image_path, const char *out_path )
 {
+
     try 
     {
         unsigned  out_path_len = out_path != 0 ? strlen( out_path ) : 0;
 
         if(    out_path_len
-            && !FileSystem::Instance()->CreateDirectory( out_path, true )
+            && !FileTool::CreateDir( out_path )
           )
         {
-             Logger::Error("Can't create directory: %s", out_path );
+             printf("Can't create directory: %s", out_path );
              return false;
         }
 
-        Vector<Magick::Image> layers;
-        FilePath out_image_path = FilePath::CreateWithNewExtension( in_image_path, ".png" );
+        std::vector<Magick::Image> layers;
+        string out_image_path = FileTool::WithNewExtension( in_image_path, ".png" );
 
         if( out_path_len )
         {
-            out_image_path.ReplaceDirectory( String( out_path )  );
+            out_image_path = FileTool::ReplaceDirectory( out_image_path, out_path  );
         }
 
         Magick::readImages( &layers, in_image_path );
 
         if (layers.size() == 0)
         {
-            Logger::Error("Number of layers is too low: %s",in_image_path );
+            printf("Number of layers is too low: %s",in_image_path );
             return false;
         }
 
@@ -93,11 +92,11 @@ bool ConvertToPNG ( const char *in_image_path, const char *out_path )
         image.crop(Magick::Geometry(width,height, 0, 0));
         image.magick( "PNG" );
 
-        image.write( out_image_path.GetAbsolutePathname() );
+        image.write( out_image_path.c_str() );
     }
     catch( Magick::Exception &error_ )
     {
-        Logger::Error("Caught exception: %s file: %s", error_.what(), in_image_path );
+        printf("Caught exception: %s file: %s", error_.what(), in_image_path );
         return false;
     }
 
@@ -109,22 +108,23 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
 {
     try 
     {
+
         unsigned  out_path_len = out_path != 0 ? strlen( out_path ) : 0;
 
         if(    out_path_len
-            && !FileSystem::Instance()->CreateDirectory( out_path, true )
+            && !FileTool::CreateDir( out_path )
           )
         {
-            Logger::Error( "Can't create directory: %s", out_path );
+            printf( "Can't create directory: %s", out_path );
             return false;
         }
 
-        Vector<Magick::Image> layers;
+        std::vector<Magick::Image> layers;
         Magick::readImages( &layers, in_image_path );
 
         if (layers.size() == 0)
         {
-            Logger::Error("Number of layers is too low: %s",in_image_path );
+            printf("Number of layers is too low: %s",in_image_path );
             return false;
         }
 
@@ -138,20 +138,22 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
         int width = (int)layers[0].columns();
         int height = (int)layers[0].rows();
 
-        FilePath out_image_base_path = FilePath::CreateWithNewExtension( in_image_path, ".png" );
+        std::string out_image_base_path = FileTool::WithNewExtension( in_image_path, ".png" );
+
+        std::string out_image_basename = FileTool::GetBasename( out_image_base_path );
 
         for(int k = skip_first_layer ? 1 : 0; k < (int)layers.size(); ++k)
         {
-            FilePath out_image_path = out_image_base_path;
+            std::string out_image_path = out_image_base_path;
             
             if( out_path_len )
             {
-                out_image_path.ReplaceDirectory( String( out_path )  );
+                out_image_path = FileTool::ReplaceDirectory( out_image_path, out_path  );
             }
                         
             sprintf( c_buf, "%i", k - (skip_first_layer ? 1 : 0 ) );
             
-            out_image_path.ReplaceBasename( out_image_path.GetBasename()
+            out_image_path = FileTool::ReplaceBasename( out_image_path, out_image_basename
                                           + "_"
                                           + c_buf
                                           );
@@ -161,7 +163,7 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
             const Magick::Geometry croppedGeometry( width, height, 0, 0 );
             currentLayer.crop( croppedGeometry );
             currentLayer.magick( "PNG" );
-            currentLayer.write( out_image_path.GetAbsolutePathname().c_str()  );
+            currentLayer.write( out_image_path.c_str()  );
         }
 
         if( out_cropped_data != 0 )
@@ -170,9 +172,9 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
             out_cropped_data->layer_width       = width;
             out_cropped_data->layer_height      = height;
             out_cropped_data->rects_array_size  = (unsigned) layers.size();
-            out_cropped_data->rects_array       = (Rect2i*)malloc(  layers.size() * sizeof( Rect2i ) );
+            out_cropped_data->rects_array       = (Rect*)malloc(  layers.size() * sizeof( Rect ) );
 
-            Rect2i *rects_array = out_cropped_data->rects_array;
+            Rect *rects_array = out_cropped_data->rects_array;
 
             for(int k = 0; k < (int)layers.size(); ++k)
             {
@@ -182,13 +184,13 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
                 int xOff = (int)bbox.xOff() * ( bbox.xNegative() ? -1 : 1 );
                 int yOff = (int)bbox.yOff() * ( bbox.yNegative() ? -1 : 1 );
 
-                rects_array[ k ] = Rect2i(xOff, yOff, (int32)bbox.width(), (int32)bbox.height());
+                rects_array[ k ] = Rect(xOff, yOff, (int)bbox.width(), (int)bbox.height());
             }
         }
     }
     catch( Magick::Exception &error_ )
     {
-        Logger::Error("Caught exception: %s file: %s", error_.what(), in_image_path );
+        printf("Caught exception: %s file: %s", error_.what(), in_image_path );
         return 0;
     }
 

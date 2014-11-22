@@ -232,7 +232,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 		
 	for(int k = 1; k < (int)cropped_data.rects_array_size; ++k)
 	{
-		defFile->frameRects[k - 1] = cropped_data.rects_array[k];
+		defFile->frameRects[k - 1] = Rect2i(cropped_data.rects_array[k].x, cropped_data.rects_array[k].y, cropped_data.rects_array[k].dx, cropped_data.rects_array[k].dy) ;
 			
 		//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
 			
