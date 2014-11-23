@@ -26,12 +26,13 @@ add_definitions (
 set ( LIBRARIES_DIR  "${CMAKE_CURRENT_LIST_DIR}" )
 
 if( APPLE ) 
+    
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
     set( IMAGE_MAGICK ImageMagick_mac )
 
     set ( IMAGE_MAGICK_INCLUDES_PATH  
-         "${LIBRARIES_DIR}/${IMAGE_MAGICK}/include/ImageMagick-6"
+         "${LIBRARIES_DIR}/${IMAGE_MAGICK}/include/ImageMagick"
          "${LIBRARIES_DIR}/${IMAGE_MAGICK}/" 
          )
 
@@ -42,6 +43,12 @@ if( APPLE )
     file ( GLOB IMAGE_MAGICK_LIBRARIES_DEBUG    ${IMAGE_MAGICK_LIBRARIES_PATH}/lib/*.a )
 
     list ( APPEND LIBRARIES libbz2.dylib ) 
+
+    find_package(ZLIB )
+    list (APPEND LIBRARIES          ${ZLIB_LIBRARY}     )
+
+    find_package(PNG)
+    list (APPEND LIBRARIES          ${PNG_LIBRARY}     )
 
 elseif( WIN32 )
     set( IMAGE_MAGICK ImageMagick_win )
