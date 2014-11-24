@@ -7,14 +7,31 @@
 #include <QPixmap>
 
 
+class DropperShade;
+
+
 class DropperLens
     : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit DropperLens(QWidget* parent);
+    explicit DropperLens(DropperShade* shade);
     ~DropperLens();
+
+    QRect lensGeometry() const;
+    int ZoomFactor() const;
+    void SetZoomFactor( int zoom );
+
+private slots:
+    void updatePreview();
+
+private:
+    void paintEvent(QPaintEvent *e) override;
+
+    QImage preview;
+    QPointer<DropperShade> shade;
+    int zoomFactor;
 };
 
 

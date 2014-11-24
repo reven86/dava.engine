@@ -7,6 +7,7 @@
 
 
 class MouseHelper;
+class DropperLens;
 
 class DropperShade
     : public QWidget
@@ -21,6 +22,9 @@ public:
     DropperShade();
     ~DropperShade();
 
+    const QImage& screenImage() const;
+    QPoint CursorPos() const;
+
 private slots:
     void OnMouseMove(const QPoint& pos);
     void OnClicked(const QPoint& pos);
@@ -29,8 +33,10 @@ private slots:
 private:
     void paintEvent( QPaintEvent *e ) override;
 
-    QPixmap m_screen;
+    QPixmap screen;
+    QImage screenData;
     QPointer<MouseHelper> mouse;
+    QPointer<DropperLens> lens;
 
 private:
     static QPixmap screenShot();
