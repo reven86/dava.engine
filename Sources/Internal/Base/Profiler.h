@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __PROFILER_H__
 
     #include <Base/BaseTypes.h>
-    #include "Hash.hpp"
+    #include "Hash.h"
 
     #define PROFILER_ENABLED        1
 
@@ -38,18 +38,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace profiler
 {
 
-void    Init( unsigned max_counter_count=64, unsigned history_len=128 );
+/**
 
-void    Start();
+
+Init the profiler.
+Called once, on app startup.
+
+@max_counter_count max amount of counters that will be available
+@history_length amount of previous counter-values to keep (used for computing average values)
+*/
+
+void    Init( unsigned max_counter_count=64, unsigned history_length=128 );
+
+
+void    Start(); 
 void    Stop();
 
+void    Dump();
+
+/**
+
+Dump average values from history.
+Note, that average-values can't be dumped at any time, 
+only when Profiler has exactly 'history_length' measurements in history.
+
+@return true if average-values successfully dumped, false if average-values can't be dumped at the moment.
+*/
+bool    DumpAverage(); 
+
+
+
+// don't call these directly, use macros defined below
 void    SetCounterName( unsigned counter_id, const char* counter_name );
 void    StartCounter( unsigned counter_id );
 void    StartCounter( unsigned counter_id, const char* counter_name );
 void    StopCounter( unsigned counter_id );
 
-void    Dump();
-bool    DumpAverage();
 
 
 //==============================================================================
@@ -88,7 +112,7 @@ ScopedTiming
 
 // utils, used by actual timing macros
 #define PROF_FUNCTION_ID(name_ptr)      (((int(name_ptr))>>4)&(64-1))
-#define PROF_STRING_ID(str)             (((L_HASH(str))>>4)&(64-1))
+#define PROF_STRING_ID(str)             (((DV_HASH(str))>>4)&(64-1))
 
 
 // name (regular) counters BEFORE using them

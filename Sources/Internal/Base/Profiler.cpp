@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
     #include "Profiler.h"
+    #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
     #include "Platform/FWSpinlock.h"
     #include "BaseTypes.h"
@@ -105,13 +106,12 @@ static unsigned         MaxCounterCount     = 64;
 static unsigned         HistoryCount        = 100;
 
 static Counter*         CurCounter          = 0;
+static bool             Started             = false;
 static Counter**        ActiveCounter       = 0;
 static unsigned         ActiveCounterCount  = 0;
-static bool             DumpPending         = false;
 static long             TotalTime0          = 0;
 static long             TotalTime           = 0;
 static unsigned         MaxNameLen          = 32;
-//static CASLock          CounterSync;
 static Spinlock         CounterSync;
 
 
@@ -346,6 +346,8 @@ StopCounter( unsigned counter_id )
 void
 Start()
 {
+    DVASSERT(!Started);
+
     if( CurCounter )
     {
         CurCounter += MaxCounterCount;
@@ -365,6 +367,7 @@ Start()
         c->used = false;
     }
 
+    Started             = true;
     ActiveCounterCount  = 0;
     TotalTime0          = _CurTimeUs();
 }
@@ -375,13 +378,10 @@ Start()
 void
 Stop()
 {
-    TotalTime = _CurTimeUs() - TotalTime0;
+    DVASSERT(Started);
 
-    if( DumpPending )
-    {
-        Dump();
-        DumpPending = false;
-    }
+    TotalTime = _CurTimeUs() - TotalTime0;
+    Started   = false;
 }
 
 
@@ -471,6 +471,8 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
 void
 Dump()
 {
+    DVASSERT(!Started);
+
     static std::vector<CounterInfo> result;
 
     GetCounters( &result );
@@ -544,8 +546,7 @@ _CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
             }
 
             if( do_add )
-                top.push_back( c );
-                        
+                top.push_back( c );                        
         }
     }    
         
@@ -599,8 +600,6 @@ GetAverageCounters( std::vector<CounterInfo>* info )
 
     if( CurCounter == _Counter + MaxCounterCount*(HistoryCount-1) )
     {
-        static std::vector<Counter*>    result;
-
         for( Counter* c=_Average,*c_end=_Average+MaxCounterCount; c!=c_end; ++c )
         {
             Counter*    src = _Counter + (c-_Average);
@@ -633,6 +632,8 @@ GetAverageCounters( std::vector<CounterInfo>* info )
             c->t     /= HistoryCount;
         }
 
+        
+        static std::vector<Counter*>    result;
         
         _CollectActiveCounters( _Average, &result );
 
