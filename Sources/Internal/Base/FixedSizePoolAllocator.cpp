@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #endif
 
+#include <cstdlib>
 
 namespace DAVA 
 {

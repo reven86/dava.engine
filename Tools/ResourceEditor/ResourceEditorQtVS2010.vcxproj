@@ -62,14 +62,14 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(QT_HOME)\include\QtCore;$(QT_HOME)\include\QtNetwork;$(QT_HOME)\include\QtGui;$(QT_HOME)\include\QtOpenGL;$(QT_HOME)\include\ActiveQt;$(QT_HOME)\include;$(QT_HOME)\mkspecs\default;$(DXSDK_DIR)/include;..\..\Sources\Tools;..\..\Sources\Internal;..\..\Sources\External;../../Libs/include;..\..\Libs\glew\include;./Classes/bullet;Classes/Qt;Classes;$(ProjectDir)/_GeneratedQt;_GeneratedQt;.;./../../Libs/ImageMagick-6.7.4-Windows;./../../Libs/ImageMagick-6.7.4-Windows/Magick++/lib;./../ColladaConverter/Collada15/FCollada;./../ColladaConverter/Collada15/FCollada/LibXML/include;./../ColladaConverter/Collada15/External/Cg/include;../../../dava.resourceeditor.beast/beast/include;../../../dava.resourceeditor.beast/wrapper;$Configuration;../../../dava.speedtree/Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Libs/IMagickHelpLib;$(QT_HOME)\include\QtCore;$(QT_HOME)\include\QtNetwork;$(QT_HOME)\include\QtGui;$(QT_HOME)\include\QtOpenGL;$(QT_HOME)\include\ActiveQt;$(QT_HOME)\include;$(QT_HOME)\mkspecs\default;$(DXSDK_DIR)/include;..\..\Sources\Tools;..\..\Sources\Internal;..\..\Sources\External;../../Libs/include;..\..\Libs\glew\include;./Classes/bullet;Classes/Qt;Classes;$(ProjectDir)/_GeneratedQt;_GeneratedQt;.;./../ColladaConverter/Collada15/FCollada;./../ColladaConverter/Collada15/FCollada/LibXML/include;./../ColladaConverter/Collada15/External/Cg/include;../../../dava.resourceeditor.beast/beast/include;../../../dava.resourceeditor.beast/wrapper;$Configuration;../../../dava.speedtree/Sources;../../Libs/IMagickHelpLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_BEAST__;__DAVAENGINE_SPEEDTREE__;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_BEAST__;__DAVAENGINE_SPEEDTREE__;DAVA_FMOD;_DISABLE_IMAGE_MAGICK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -83,8 +83,8 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glu32.lib;opengl32.lib;gdi32.lib;user32.lib;Win32Framework.lib;FrameworkTools.lib;glew32.lib;$(DXSDK_DIR)/Lib/x86/DxErr.lib;$(DXSDK_DIR)/Lib/x86/d3d9.lib;shfolder.lib;Shell32.lib;qtmaind.lib;QtOpenGLd4.lib;QtGuid4.lib;QtNetworkd4.lib;QtCored4.lib;CORE_DB_Magick++_.lib;CORE_DB_magick_.lib;CORE_DB_bzlib_.lib;CORE_DB_coders_.lib;CORE_DB_filters_.lib;CORE_DB_jbig_.lib;CORE_DB_jp2_.lib;CORE_DB_jpeg_.lib;CORE_DB_lcms_.lib;CORE_DB_libxml_.lib;CORE_DB_tiff_.lib;CORE_DB_ttf_.lib;CORE_DB_wand_.lib;CORE_DB_wmf_.lib;CORE_DB_xlib_.lib;CORE_DB_zlib_.lib;X11.lib;Xext.lib;kernel32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;FColladaVS2010.lib;msvcmrtd.lib;msvcrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>./../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/lib;./../ColladaConverter/Collada15/External/Cg/lib;./../ColladaConverter/Collada15/FCollada/Output/Debug Win32;../../../dava.resourceeditor.beast/beast/lib;../../Projects\Win32Framework\FrameworkTools\DebugQt;$(QT_HOME)\lib;../../Projects\Win32Framework\DebugQt;../../Libs/glew/lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glu32.lib;opengl32.lib;gdi32.lib;user32.lib;Win32Framework.lib;FrameworkTools.lib;glew32.lib;$(DXSDK_DIR)/Lib/x86/DxErr.lib;$(DXSDK_DIR)/Lib/x86/d3d9.lib;shfolder.lib;Shell32.lib;qtmaind.lib;QtOpenGLd4.lib;QtGuid4.lib;QtNetworkd4.lib;QtCored4.lib;kernel32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;FColladaVS2010.lib;msvcmrtd.lib;msvcrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./../ColladaConverter/Collada15/External/Cg/lib;./../ColladaConverter/Collada15/FCollada/Output/Debug Win32;../../../dava.resourceeditor.beast/beast/lib;../../Projects\Win32Framework\FrameworkTools\DebugQt;$(QT_HOME)\lib;../../Projects\Win32Framework\DebugQt;../../Libs/glew/lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -122,14 +122,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./../../Sources/Internal;./../../Sources/Tools;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;./../../Libs/ImageMagick-6.7.4-Windows;./../../Libs/ImageMagick-6.7.4-Windows/Magick++/lib;./../ColladaConverter/Collada15/FCollada;./../ColladaConverter/Collada15/FCollada/LibXML/include;./../ColladaConverter/Collada15/External/Cg/include;./Classes/bullet;../../../dava.resourceeditor.beast/beast/include;../../../dava.resourceeditor.beast/wrapper;./Classes;$(DXSDK_DIR)/include;$(QT_HOME)\include\QtCore;$(QT_HOME)\include\QtNetwork;$(QT_HOME)\include\QtGui;$(QT_HOME)\include\QtOpenGL;$(QT_HOME)\include;$(QT_HOME)\include\ActiveQt;$(QT_HOME)\mkspecs\default;Classes/Qt;_GeneratedQt;.;$(Configuration);../../../dava.speedtree/Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Libs/IMagickHelpLib;./../../Sources/Internal;./../../Sources/Tools;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;./../ColladaConverter/Collada15/FCollada;./../ColladaConverter/Collada15/FCollada/LibXML/include;./../ColladaConverter/Collada15/External/Cg/include;./Classes/bullet;../../../dava.resourceeditor.beast/beast/include;../../../dava.resourceeditor.beast/wrapper;./Classes;$(DXSDK_DIR)/include;$(QT_HOME)\include\QtCore;$(QT_HOME)\include\QtNetwork;$(QT_HOME)\include\QtGui;$(QT_HOME)\include\QtOpenGL;$(QT_HOME)\include;$(QT_HOME)\include\ActiveQt;$(QT_HOME)\mkspecs\default;Classes/Qt;_GeneratedQt;.;$(Configuration);../../../dava.speedtree/Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_DLL;QT_NO_DEBUG;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;NDEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_SPEEDTREE__;__DAVAENGINE_BEAST__;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_DLL;QT_NO_DEBUG;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;NDEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_SPEEDTREE__;__DAVAENGINE_BEAST__;DAVA_FMOD;_DISABLE_IMAGE_MAGICK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -142,8 +142,8 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>FrameworkTools.lib;Win32Framework.lib;CORE_RL_Magick++_.lib;CORE_RL_magick_.lib;CORE_RL_bzlib_.lib;CORE_RL_coders_.lib;CORE_RL_filters_.lib;CORE_RL_jbig_.lib;CORE_RL_jp2_.lib;CORE_RL_jpeg_.lib;CORE_RL_lcms_.lib;CORE_RL_libxml_.lib;CORE_RL_png_.lib;CORE_RL_tiff_.lib;CORE_RL_ttf_.lib;CORE_RL_wand_.lib;CORE_RL_wmf_.lib;CORE_RL_xlib_.lib;CORE_RL_zlib_.lib;X11.lib;Xext.lib;kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;FColladaVS2010.lib;glu32.lib;opengl32.lib;qtmain.lib;glew32.lib;$(DXSDK_DIR)/Lib/x86/DxErr.lib;$(DXSDK_DIR)/Lib/x86/d3d9.lib;shfolder.lib;Shell32.lib;QtOpenGL4.lib;QtGui4.lib;QtNetwork4.lib;QtCore4.lib;msvcmrt.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../Projects\Win32Framework\FrameworkTools\ReleaseQt;./../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/lib;./../ColladaConverter/Collada15/External/Cg/lib;./../ColladaConverter/Collada15/FCollada/Output/Release Win32;../../../dava.resourceeditor.beast/beast/lib;$(QT_HOME)\lib;../../Projects\Win32Framework\ReleaseQt;../../Libs/glew/lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>FrameworkTools.lib;Win32Framework.lib;kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;FColladaVS2010.lib;glu32.lib;opengl32.lib;qtmain.lib;glew32.lib;$(DXSDK_DIR)/Lib/x86/DxErr.lib;$(DXSDK_DIR)/Lib/x86/d3d9.lib;shfolder.lib;Shell32.lib;QtOpenGL4.lib;QtGui4.lib;QtNetwork4.lib;QtCore4.lib;msvcmrt.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../Projects\Win32Framework\FrameworkTools\ReleaseQt;./../ColladaConverter/Collada15/External/Cg/lib;./../ColladaConverter/Collada15/FCollada/Output/Release Win32;../../../dava.resourceeditor.beast/beast/lib;$(QT_HOME)\lib;../../Projects\Win32Framework\ReleaseQt;../../Libs/glew/lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
