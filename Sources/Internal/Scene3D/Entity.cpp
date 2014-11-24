@@ -80,7 +80,6 @@ Entity::Entity()
 	for (uint32 k = 0; k < COMPONENTS_IN_VECTOR_COUNT; ++k)
 		components[k] = 0;
 		
-	defaultLocalTransform.Identity();
 	//animation = 0;
 	//debugFlags = DEBUG_DRAW_NONE;
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
@@ -692,14 +691,6 @@ Entity *	Entity::FindByName(const char * searchName)
 // 	}
 // }
 	
-void Entity::RestoreOriginalTransforms()
-{
-	SetLocalTransform(GetDefaultLocalTransform());
-		
-	uint32 size = (uint32)children.size();
-	for (uint32 c = 0; c < size; ++c)
-		children[c]->RestoreOriginalTransforms();
-}
     
 void Entity::BakeTransforms()
 {
@@ -709,7 +700,6 @@ void Entity::BakeTransforms()
 		for (uint32 c = 0; c < size; ++c)
 		{
 			children[c]->SetLocalTransform(children[c]->GetLocalTransform() * GetLocalTransform());
-			children[c]->SetDefaultLocalTransform(children[c]->GetDefaultLocalTransform() * defaultLocalTransform);
 		}
 		SetLocalTransform(Matrix4::IDENTITY);
 		AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
@@ -892,7 +882,6 @@ Entity* Entity::Clone(Entity *dstNode)
 		DVASSERT_MSG(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
 		dstNode = new Entity();
 	}
-	dstNode->defaultLocalTransform = defaultLocalTransform;
 		
 	dstNode->RemoveAllComponents();
 	for (uint32 k = 0; k < COMPONENTS_IN_VECTOR_COUNT;++k)
@@ -1089,7 +1078,6 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 	archive->SetString("name", String(name.c_str()));
 	archive->SetInt32("tag", tag);
 	archive->SetByteArrayAsType("localTransform", GetLocalTransform());
-	archive->SetByteArrayAsType("defaultLocalTransform", defaultLocalTransform);
 		
 	archive->SetUInt32("flags", flags);
 	//    archive->SetUInt32("debugFlags", debugFlags);
@@ -1180,7 +1168,6 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
 		
 	const Matrix4 & localTransform = archive->GetByteArrayAsType("localTransform", GetLocalTransform());
 	SetLocalTransform(localTransform);
-	defaultLocalTransform = archive->GetByteArrayAsType("defaultLocalTransform", defaultLocalTransform);
 		
 	/// InvalidateLocalTransform();
 	//    debugFlags = archive->GetUInt32("debugFlags", 0);
