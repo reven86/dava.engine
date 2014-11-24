@@ -3,6 +3,7 @@ project ( ResourceEditor )
 
 set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
+set ( QT_FOUND 1 )
 include      ( CMake-common )
 
 find_package ( DavaFramework REQUIRED )
@@ -25,8 +26,6 @@ endif()
 
 set ( QT5_MODULE_PATH ${QT5_PATH}/lib/cmake)
 set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
-set ( QT_FOUND 1 )
-
 
 
 
