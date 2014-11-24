@@ -57,7 +57,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     DVASSERT(!gameVersion.empty());
 
     //  we suppose that downloaded data should not be media data and exclude it from index.
-	FileSystem::Instance()->MarkFolderAsNoMedia(destinationDir);
+    FileSystem::Instance()->MarkFolderAsNoMedia(destinationDir);
 
     // initial values
     dlcContext.remoteUrl = url;
@@ -91,19 +91,19 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
 
-	// last state was 'Patching'?
-	if(DS_PATCHING == dlcContext.prevState)
-	{
-		if(dlcContext.remotePatchStorePath.Exists())
-		{
-			Logger::Info("DLC: Patch-file already exists, will go straight to the patching state.\n");
-		}
-		else
-		{
-			// no patch file, so go by the regular way
-			dlcContext.prevState = 0;
-		}
-	}
+    // last state was 'Patching'?
+    if(DS_PATCHING == dlcContext.prevState)
+    {
+        if(dlcContext.remotePatchStorePath.Exists())
+        {
+            Logger::Info("DLC: Patch-file already exists, will go straight to the patching state.\n");
+        }
+        else
+        {
+            // no patch file, so go by the regular way
+            dlcContext.prevState = 0;
+        }
+    }
 
     // FSM variables
     fsmAutoReady = false;
@@ -267,16 +267,16 @@ void DLC::FSM(DLCEvent event)
                     // automatically start download after check?
                     if(fsmAutoReady)
                     {
-						if(DS_PATCHING == dlcContext.prevState)
-						{
-							// if last time stopped on the patching state and patch file exists - continue patching
-							dlcState = DS_PATCHING;
-						}
-						else
-						{
-							// download patch
-							dlcState = DS_DOWNLOADING;
-						}
+                        if(DS_PATCHING == dlcContext.prevState)
+                        {
+                            // if last time stopped on the patching state and patch file exists - continue patching
+                            dlcState = DS_PATCHING;
+                        }
+                        else
+                        {
+                            // download patch
+                            dlcState = DS_DOWNLOADING;
+                        }
                     }
                     else
                     {
@@ -299,17 +299,17 @@ void DLC::FSM(DLCEvent event)
             switch(event)
             {
                 case EVENT_DOWNLOAD_START:
-					if(DS_PATCHING == dlcContext.prevState)
-					{
-						// if last time stopped on the patching state and patch file exists - continue patching
-						dlcState = DS_PATCHING;
-					}
-					else
-					{
-						// download patch
-						dlcState = DS_DOWNLOADING;
-					}
-					break;
+                    if(DS_PATCHING == dlcContext.prevState)
+                    {
+                        // if last time stopped on the patching state and patch file exists - continue patching
+                        dlcState = DS_PATCHING;
+                    }
+                    else
+                    {
+                        // download patch
+                        dlcState = DS_DOWNLOADING;
+                    }
+                    break;
                 case EVENT_CANCEL:
                     dlcError = DE_WAS_CANCELED;
                     dlcState = DS_DONE;
@@ -507,7 +507,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
             }
             else
             {
-            	Logger::FrameworkDebug("DLC: error %d", downloadError);
+                Logger::FrameworkDebug("DLC: error %d", downloadError);
                 if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
                 {
                     // connection problem
@@ -780,7 +780,7 @@ void DLC::StepPatchBegin()
 
 void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
 {
-	bool errors = true;
+    bool errors = true;
 
     patchingThread->Join();
     SafeRelease(patchingThread);
@@ -791,7 +791,7 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
     switch(dlcContext.patchingError)
     {
         case PatchFileReader::ERROR_NO:
-			errors = false;
+            errors = false;
             PostEvent(EVENT_PATCH_OK);
             break;
 
@@ -808,10 +808,10 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
             break;
     }
 
-	if(errors)
-	{
-		Logger::Error("DLC: Error applying patch: %u", dlcContext.patchingError);
-	}
+    if(errors)
+    {
+        Logger::Error("DLC: Error applying patch: %u", dlcContext.patchingError);
+    }
 }
 
 void DLC::StepPatchCancel()
@@ -895,10 +895,10 @@ bool DLC::ReadUint32(const FilePath &path, uint32 &value)
         tmp[0] = 0;
         if(f->ReadLine(tmp, sizeof(tmp)) > 0)
         {
-			if(sscanf(tmp, "%u", &value) > 0)
-			{
-				ret = true;
-			}
+            if(sscanf(tmp, "%u", &value) > 0)
+            {
+                ret = true;
+            }
         }
         SafeRelease(f);
     }
