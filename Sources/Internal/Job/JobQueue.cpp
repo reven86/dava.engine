@@ -35,18 +35,15 @@ namespace DAVA
 
 JobQueueWorker::JobQueueWorker(uint32 maxCount /* = 1024 */)
 : jobsMaxCount(maxCount)
-, jobsInQueue(0)
 , nextPopIndex(0)
 , nextPushIndex(0)
 , processingCount(0)
 {
 	jobs = new Function<void()>[jobsMaxCount];
-	jobsInQueueMutex.Lock();
 }
 
 JobQueueWorker::~JobQueueWorker()
 {
-	jobsInQueueMutex.Unlock();
 	SafeDeleteArray(jobs);
 }
 
@@ -97,40 +94,31 @@ bool JobQueueWorker::PopAndExec()
 	return ret;
 }
 
-bool JobQueueWorker::IsEmpty()
+bool JobQueueWorker::IsEmpty() const
 {
 	LockGuard<Spinlock> guard(lock);
 	return (nextPopIndex == nextPushIndex && 0 == processingCount);
 }
 
-void JobQueueWorker::Signal()
+void JobQueueWorker::Signal() const
 {
-	jobsInQueue.Post();
-
-	//jobsInQueueMutex.Lock();
-	//Thread::Signal(&jobsInQueueCV);
-	//jobsInQueueMutex.Unlock();
+	jobsInQueueMutex.Lock();
+	Thread::Signal(&jobsInQueueCV);
+	jobsInQueueMutex.Unlock();
 }
 
-void JobQueueWorker::Broadcast()
+void JobQueueWorker::Broadcast() const
 {
-	for(uint32 i = JobManager::Instance()->GetWorkersCount(); i > 0; i--)
-	{
-		jobsInQueue.Post();
-	}
-
-	//jobsInQueueMutex.Lock();
-	//Thread::Broadcast(&jobsInQueueCV);
-	//jobsInQueueMutex.Unlock();
+	jobsInQueueMutex.Lock();
+	Thread::Broadcast(&jobsInQueueCV);
+	jobsInQueueMutex.Unlock();
 }
 
-void JobQueueWorker::Wait()
+void JobQueueWorker::Wait() const
 {
-	jobsInQueue.Wait();
-
-	//jobsInQueueMutex.Lock();
-	//Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
-	//jobsInQueueMutex.Unlock();
+	jobsInQueueMutex.Lock();
+	Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
+	jobsInQueueMutex.Unlock();
 }
 
 };

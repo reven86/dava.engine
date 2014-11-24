@@ -82,7 +82,7 @@ private:
 	 Function remove all animations for given object from update and delete objects and their references
 	 */
 	void DeleteAnimations(AnimatedObject * _owner, int32 track = -1);
-	void DeleteAnimationInternal(AnimatedObject * owner, int track);
+	void DeleteAnimationInternal(AnimatedObject * owner, int32 track);
     struct DeleteAnimationsData
     {
         AnimatedObject * owner;

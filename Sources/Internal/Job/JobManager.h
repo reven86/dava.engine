@@ -38,13 +38,12 @@
 #include "Platform/Thread.h"
 #include "Platform/Mutex.h"
 #include "JobQueue.h"
+#include "JobThread.h"
 
 namespace DAVA
 {
 class JobManager : public Singleton<JobManager>
 {
-	friend struct WorkerThread2;
-
 public:
 	/*! Available types of main-thread job. */
 	enum eMainJobType
@@ -78,7 +77,7 @@ public:
 		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
 		\return Return true if there are some jobs, otherwise false.
 	*/
-    bool HasMainJobs(Thread::Id invokerThreadId = 0);
+    bool HasMainJobs(Thread::Id invokerThreadId = 0) const;
 
 	/*! Returns the number of available worker-threads. */
 	uint32 GetWorkersCount() const;
@@ -94,7 +93,7 @@ public:
 	/*!  Check in there are some not executed worker-thread jobs.
 		\return Return true if there are some jobs, otherwise false.
 	*/
-    bool HasWorkerJobs();
+    bool HasWorkerJobs() const;
 
 protected:
     struct MainJob
@@ -107,28 +106,13 @@ protected:
         Function<void ()> fn;
     };
 
-	struct WorkerThread
-	{
-		WorkerThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
-		~WorkerThread();
-
-		void Cancel();
-
-	protected:
-		Thread *thread;
-		JobQueueWorker *workerQueue;
-		Semaphore *workerDoneSem;
-
-		void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
-	};
-
-    Mutex mainQueueMutex;
-    Mutex mainCVMutex;
+    mutable Mutex mainQueueMutex;
+	mutable Mutex mainCVMutex;
     Deque<MainJob> mainJobs;
     ConditionalVariable mainCV;
     MainJob curMainJob;
 
-	Semaphore workerDoneSem;
+	mutable Semaphore workerDoneSem;
 	JobQueueWorker workerQueue;
 	Vector<WorkerThread*> workerThreads;
 };

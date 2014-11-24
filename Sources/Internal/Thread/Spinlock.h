@@ -27,38 +27,73 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SEMAPHORE_H__
-#define __DAVAENGINE_SEMAPHORE_H__
+#ifndef __DAVAENGINE_SPINLOCK_H__
+#define __DAVAENGINE_SPINLOCK_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/Atomic.h"
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-#include <dispatch/dispatch.h>
-#elif defined(__DAVAENGINE_ANDROID__)
-#include "semaphore.h"
+#include <libkern/OSAtomic.h>
 #endif //PLATFORMS
 
 namespace DAVA
 {
-	class Semaphore
-	{
-	public:
-		Semaphore(uint32 value);
-		~Semaphore();
 
-		void Post();
-		void Wait();
+/*! brief Spinlock wrapper class compatible with Thread class. Supports Win32, MacOS, iPhone, Android platforms. */
+class Spinlock
+{
+public:
+	Spinlock() : spin(0) {};
 
-	protected:
-#if defined(__DAVAENGINE_WIN32__)
-		HANDLE semaphore;
+	void Lock();
+	void Unlock();
+
+protected:
+
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
+	int32 spin;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-        dispatch_semaphore_t semaphore;
-#elif defined(__DAVAENGINE_ANDROID__)
-		sem_t semaphore;
+    OSSpinLock spin;
 #endif //PLATFORMS
-	};
+
 };
 
-#endif // __DAVAENGINE_SEMAPHORE_H__
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
+
+// ##########################################################################################################
+// Windows/Android implementation
+// ##########################################################################################################
+
+inline void Spinlock::Lock()
+{
+	while(!AtomicCompareAndSwap(0, 1, spin))
+	{ }
+}
+
+inline void Spinlock::Unlock()
+{
+	AtomicCompareAndSwap(1, 0, spin);
+}
+
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+
+// ##########################################################################################################
+// MacOS/IOS implementation
+// ##########################################################################################################
+
+inline void Spinlock::Lock()
+{
+	OSSpinLockLock(&spin);
+}
+
+inline void Spinlock::Unlock()
+{
+	OSSpinLockUnlock(&spin);
+}
+
+#endif //PLATFORMS
+
+};
+
+#endif // __DAVAENGINE_SPINLOCK_H__

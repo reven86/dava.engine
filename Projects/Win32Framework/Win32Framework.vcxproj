@@ -364,6 +364,7 @@
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h" />
+    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox3.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\BezierSpline.h" />
@@ -407,8 +408,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\FWSemaphore.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\FWSpinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
@@ -646,6 +645,8 @@
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
@@ -842,6 +843,7 @@
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox3.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\BezierSpline.cpp" />
@@ -865,8 +867,6 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\FWSemaphore.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\FWSpinlock.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />

@@ -87,7 +87,7 @@ void AnimationManager::DeleteAnimations(AnimatedObject * owner, int32 track)
 	JobManager::Instance()->CreateMainJob(fn);
 }
     
-void AnimationManager::DeleteAnimationInternal(AnimatedObject * owner, int track)
+void AnimationManager::DeleteAnimationInternal(AnimatedObject * owner, int32 track)
 {
 	for(Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{

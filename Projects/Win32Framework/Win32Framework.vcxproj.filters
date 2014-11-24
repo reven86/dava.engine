@@ -1598,11 +1598,14 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h">
       <Filter>Internal\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\FWSemaphore.h">
-      <Filter>Internal\Platform</Filter>
+    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h">
+      <Filter>Internal\Thread</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\FWSpinlock.h">
-      <Filter>Internal\Platform</Filter>
+    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h">
+      <Filter>Internal\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
+      <Filter>Internal\Job</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2891,11 +2894,8 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\FWSemaphore.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\FWSpinlock.cpp">
-      <Filter>Internal\Platform</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp">
+      <Filter>Internal\Job</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

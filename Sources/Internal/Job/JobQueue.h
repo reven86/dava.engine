@@ -32,10 +32,10 @@
 #include "Base/BaseTypes.h"
 #include "Base/Atomic.h"
 #include "Base/Function.h"
-#include "Platform/FWSpinlock.h"
-#include "Platform/FWSemaphore.h"
 #include "Platform/Mutex.h"
 #include "Platform/Thread.h"
+#include "Thread/Spinlock.h"
+#include "Thread/Semaphore.h"
 
 namespace DAVA
 {
@@ -53,11 +53,12 @@ public:
 
 	void Push(const Function<void ()> &fn);
 	bool PopAndExec();
-	bool IsEmpty();
 
-	void Signal();
-	void Broadcast();
-	void Wait();
+	bool IsEmpty() const;
+
+	void Signal() const;
+	void Broadcast() const;
+	void Wait() const;
 
 protected:
 	uint32 jobsMaxCount;
@@ -67,14 +68,9 @@ protected:
 	uint32 nextPopIndex;
 	int32 processingCount;
 
-	Spinlock lock;
-
-	// primitives, used for Signal, Broadcast, Wait methods
-	Semaphore jobsInQueue;
-	ConditionalVariable jobsInQueueCV;
-	Mutex jobsInQueueMutex;
-
-	void UpdateIndexes();
+	mutable Spinlock lock;
+	mutable ConditionalVariable jobsInQueueCV;
+	mutable Mutex jobsInQueueMutex;
 };
 
 }

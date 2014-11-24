@@ -91,10 +91,11 @@ void JobManager::Update()
 			curMainJob = MainJob();
 		}
 
-		// signal that jobs are finished
-		mainCVMutex.Lock();
-		Thread::Broadcast(&mainCV);
-		mainCVMutex.Unlock();
+		{
+			// signal that jobs are finished
+			LockGuard<Mutex> cvguard(mainCVMutex);
+			Thread::Broadcast(&mainCV);
+		}
 	}
 }
 
@@ -105,19 +106,24 @@ uint32 JobManager::GetWorkersCount() const
 
 void JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJobType)
 {
+	// if we are already in main thread and requested job shouldn't executed lazy
+	// perform that job immediately
     if(Thread::IsMainThread() && mainJobType != JOB_MAINLAZY)
     {
         fn();
     }
     else
     {
-        LockGuard<Mutex> guard(mainQueueMutex);
-
+		// push requested job into queue
         MainJob job;
         job.fn = fn;
         job.invokerThreadId = Thread::GetCurrentId();
-        job.type = mainJobType;
-        mainJobs.push_back(job);
+		job.type = mainJobType;
+
+		{
+			LockGuard<Mutex> guard(mainQueueMutex);
+			mainJobs.push_back(job);
+		}
     }
 }
 
@@ -144,34 +150,36 @@ void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 	}
 }
 
-bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
+bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */) const
 {
     bool ret = false;
 
+	// tread id = 0 as current thread id, so we should get it
     if(0 == invokerThreadId)
     {
         invokerThreadId = Thread::GetCurrentId();
     }
 
-    LockGuard<Mutex> guard(mainQueueMutex);
-
-	if(curMainJob.invokerThreadId == invokerThreadId)
-    {
-        ret = true;
-    }
-    else
-    {
-        Deque<MainJob>::iterator i = mainJobs.begin();
-        Deque<MainJob>::iterator end = mainJobs.end();
-        for(; i != end; ++i)
-        {
-            if(i->invokerThreadId == invokerThreadId)
-            {
-                ret = true;
-                break;
-            }
-        }
-    }
+	{
+		LockGuard<Mutex> guard(mainQueueMutex);
+		if(curMainJob.invokerThreadId == invokerThreadId)
+		{
+			ret = true;
+		}
+		else
+		{
+			Deque<MainJob>::const_iterator i = mainJobs.begin();
+			Deque<MainJob>::const_iterator end = mainJobs.end();
+			for(; i != end; ++i)
+			{
+				if(i->invokerThreadId == invokerThreadId)
+				{
+					ret = true;
+					break;
+				}
+			}
+		}
+	}
 
     return ret;
 }
@@ -188,6 +196,14 @@ void JobManager::WaitWorkerJobs()
 	{
 		if(Thread::IsMainThread())
 		{
+			// We want to be able to wait worker jobs, but at the same time
+			// allow any worker job execute main job. Potentially this will cause
+			// dead lock, but there is a simple solution:
+			// 
+			// Every time, worker job is trying to execute WaitMainJobs it will 
+			// post workerDoneSem semaphore, that will give a chance to execute main jobs
+			// in the following Update() call
+			//
 			Update();
 		}
 
@@ -195,38 +211,9 @@ void JobManager::WaitWorkerJobs()
 	}
 }
 
-bool JobManager::HasWorkerJobs()
+bool JobManager::HasWorkerJobs() const
 {
 	return !workerQueue.IsEmpty();
-}
-
-JobManager::WorkerThread::WorkerThread(JobQueueWorker *_workerQueue, Semaphore *_workerDoneSem)
-: workerQueue(_workerQueue)
-, workerDoneSem(_workerDoneSem)
-{
-	thread = Thread::Create(Message(this, &WorkerThread::ThreadFunc));
-	thread->Start();
-}
-
-JobManager::WorkerThread::~WorkerThread()
-{
-	thread->Cancel();
-	workerQueue->Broadcast();
-	thread->Join();
-	SafeRelease(thread);
-}
-
-void JobManager::WorkerThread::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
-{
-	while(thread->GetState() != Thread::STATE_CANCELLING)
-	{
-		workerQueue->Wait();
-
-		while(workerQueue->PopAndExec())
-		{ }
-
-		workerDoneSem->Post();
-	}
 }
 
 }
