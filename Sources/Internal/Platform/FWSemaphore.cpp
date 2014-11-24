@@ -55,7 +55,29 @@ void Semaphore::Wait()
 	WaitForSingleObject(semaphore, INFINITE);
 }
 
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) 
+    
+Semaphore::Semaphore(uint32 value)
+{
+    semaphore = dispatch_semaphore_create(value);
+}
+    
+Semaphore::~Semaphore()
+{
+    dispatch_release(semaphore);
+}
+    
+void Semaphore::Post()
+{
+    dispatch_semaphore_signal(semaphore);
+}
+    
+void Semaphore::Wait()
+{
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+}
+    
+#elif defined(__DAVAENGINE_ANDROID__)
     
 Semaphore::Semaphore(uint32 value)
 {

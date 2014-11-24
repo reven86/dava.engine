@@ -33,7 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/BaseTypes.h"
 #include "Base/Atomic.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#include <dispatch/dispatch.h>
+#elif defined(__DAVAENGINE_ANDROID__)
 #include "semaphore.h"
 #endif //PLATFORMS
 
@@ -51,7 +53,9 @@ namespace DAVA
 	protected:
 #if defined(__DAVAENGINE_WIN32__)
 		HANDLE semaphore;
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+        dispatch_semaphore_t semaphore;
+#elif defined(__DAVAENGINE_ANDROID__)
 		sem_t semaphore;
 #endif //PLATFORMS
 	};

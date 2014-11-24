@@ -780,9 +780,20 @@
 		322FFD5119C042880000ED71 /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322FFD3C19C042880000ED71 /* UIPackage.cpp */; };
 		322FFD5219C042880000ED71 /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322FFD3C19C042880000ED71 /* UIPackage.cpp */; };
 		322FFD5319C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
-		322FFD5419C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
 		322FFD5519C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
+		4F3429601A1E584900373251 /* FWSemaphore.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34295C1A1E584900373251 /* FWSemaphore.h */; };
+		4F3429611A1E584900373251 /* FWSpinlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34295D1A1E584900373251 /* FWSpinlock.cpp */; };
+		4F3429621A1E584900373251 /* FWSpinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34295E1A1E584900373251 /* FWSpinlock.h */; };
+		4F3429631A1E584900373251 /* FWSemaphore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34295F1A1E584900373251 /* FWSemaphore.cpp */; };
+		4F3429651A1E584E00373251 /* FWSpinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34295E1A1E584900373251 /* FWSpinlock.h */; };
+		4F3429661A1E584F00373251 /* FWSpinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34295E1A1E584900373251 /* FWSpinlock.h */; };
+		4F3429671A1E585200373251 /* FWSpinlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34295D1A1E584900373251 /* FWSpinlock.cpp */; };
+		4F3429681A1E585200373251 /* FWSpinlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34295D1A1E584900373251 /* FWSpinlock.cpp */; };
+		4F3429691A1E585500373251 /* FWSemaphore.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34295C1A1E584900373251 /* FWSemaphore.h */; };
+		4F34296A1A1E585600373251 /* FWSemaphore.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34295C1A1E584900373251 /* FWSemaphore.h */; };
+		4F34296B1A1E585800373251 /* FWSemaphore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34295F1A1E584900373251 /* FWSemaphore.cpp */; };
+		4F34296C1A1E585800373251 /* FWSemaphore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34295F1A1E584900373251 /* FWSemaphore.cpp */; };
 		4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
 		4F53ED2519A23BE100D3869D /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7E6C58F198255BF00B96D1A /* DLC.h */; };
 		4F53ED2619A23BE200D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
@@ -1257,12 +1268,6 @@
 		CC24804216E0DF2800183D40 /* VectorSpinnerAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24804116E0DF2800183D40 /* VectorSpinnerAdapter.h */; };
 		CC2C2F83197D4B960001E75D /* UIMovieView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17DC5FFE17DE11650075813E /* UIMovieView.cpp */; };
 		CC2C2F84197D4B960001E75D /* MovieViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4E17DF67E500000391 /* MovieViewControlMacOS.mm */; };
-		CC84B01618211A9000934482 /* Job.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B00E18211A9000934482 /* Job.cpp */; };
-		CC84B01718211A9000934482 /* Job.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B00E18211A9000934482 /* Job.cpp */; };
-		CC84B01818211A9000934482 /* Job.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B00E18211A9000934482 /* Job.cpp */; };
-		CC84B01918211A9000934482 /* Job.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B00F18211A9000934482 /* Job.h */; };
-		CC84B01A18211A9000934482 /* Job.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B00F18211A9000934482 /* Job.h */; };
-		CC84B01B18211A9000934482 /* Job.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B00F18211A9000934482 /* Job.h */; };
 		CC84B01C18211A9000934482 /* JobManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B01018211A9000934482 /* JobManager.cpp */; };
 		CC84B01D18211A9000934482 /* JobManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B01018211A9000934482 /* JobManager.cpp */; };
 		CC84B01E18211A9000934482 /* JobManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B01018211A9000934482 /* JobManager.cpp */; };
@@ -1275,12 +1280,6 @@
 		CC84B02518211A9000934482 /* JobQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B01318211A9000934482 /* JobQueue.h */; };
 		CC84B02618211A9000934482 /* JobQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B01318211A9000934482 /* JobQueue.h */; };
 		CC84B02718211A9000934482 /* JobQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B01318211A9000934482 /* JobQueue.h */; };
-		CC84B02818211A9000934482 /* JobWaiter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B01418211A9000934482 /* JobWaiter.cpp */; };
-		CC84B02918211A9000934482 /* JobWaiter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B01418211A9000934482 /* JobWaiter.cpp */; };
-		CC84B02A18211A9000934482 /* JobWaiter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B01418211A9000934482 /* JobWaiter.cpp */; };
-		CC84B02B18211A9000934482 /* JobWaiter.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B01518211A9000934482 /* JobWaiter.h */; };
-		CC84B02C18211A9000934482 /* JobWaiter.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B01518211A9000934482 /* JobWaiter.h */; };
-		CC84B02D18211A9000934482 /* JobWaiter.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B01518211A9000934482 /* JobWaiter.h */; };
 		CC92A8B3189FBE6900C5DFEF /* ParticleRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = EA106061188921FC00CB99A3 /* ParticleRenderObject.h */; };
 		CC92A8B5189FBE6F00C5DFEF /* ParticleGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = EA10605F188921FC00CB99A3 /* ParticleGroup.h */; };
 		CC931B22188EC95F000375F9 /* LodToLod2Converter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC931B1E188EC95F000375F9 /* LodToLod2Converter.cpp */; };
@@ -2622,6 +2621,10 @@
 		322FFD3D19C042880000ED71 /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
+		4F34295C1A1E584900373251 /* FWSemaphore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FWSemaphore.h; sourceTree = "<group>"; };
+		4F34295D1A1E584900373251 /* FWSpinlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FWSpinlock.cpp; sourceTree = "<group>"; };
+		4F34295E1A1E584900373251 /* FWSpinlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FWSpinlock.h; sourceTree = "<group>"; };
+		4F34295F1A1E584900373251 /* FWSemaphore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FWSemaphore.cpp; sourceTree = "<group>"; };
 		4F64847F17AFB73C00034454 /* AllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorFactory.cpp; sourceTree = "<group>"; };
 		4F64848017AFB73C00034454 /* AllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorFactory.h; sourceTree = "<group>"; };
 		4FA5CDBD1757AF430040CC6E /* EnumMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EnumMap.cpp; sourceTree = "<group>"; };
@@ -2806,14 +2809,10 @@
 		CC24800616DD174E00183D40 /* UserComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UserComponent.cpp; sourceTree = "<group>"; };
 		CC24800716DD174E00183D40 /* UserComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserComponent.h; sourceTree = "<group>"; };
 		CC24804116E0DF2800183D40 /* VectorSpinnerAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VectorSpinnerAdapter.h; sourceTree = "<group>"; };
-		CC84B00E18211A9000934482 /* Job.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Job.cpp; path = Job/Job.cpp; sourceTree = "<group>"; };
-		CC84B00F18211A9000934482 /* Job.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Job.h; path = Job/Job.h; sourceTree = "<group>"; };
 		CC84B01018211A9000934482 /* JobManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobManager.cpp; path = Job/JobManager.cpp; sourceTree = "<group>"; };
 		CC84B01118211A9000934482 /* JobManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobManager.h; path = Job/JobManager.h; sourceTree = "<group>"; };
 		CC84B01218211A9000934482 /* JobQueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobQueue.cpp; path = Job/JobQueue.cpp; sourceTree = "<group>"; };
 		CC84B01318211A9000934482 /* JobQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobQueue.h; path = Job/JobQueue.h; sourceTree = "<group>"; };
-		CC84B01418211A9000934482 /* JobWaiter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobWaiter.cpp; path = Job/JobWaiter.cpp; sourceTree = "<group>"; };
-		CC84B01518211A9000934482 /* JobWaiter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobWaiter.h; path = Job/JobWaiter.h; sourceTree = "<group>"; };
 		CC931B1E188EC95F000375F9 /* LodToLod2Converter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LodToLod2Converter.cpp; path = Converters/LodToLod2Converter.cpp; sourceTree = "<group>"; };
 		CC931B1F188EC95F000375F9 /* LodToLod2Converter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LodToLod2Converter.h; path = Converters/LodToLod2Converter.h; sourceTree = "<group>"; };
 		CC931B20188EC95F000375F9 /* SwitchToRenerObjectConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SwitchToRenerObjectConverter.cpp; path = Converters/SwitchToRenerObjectConverter.cpp; sourceTree = "<group>"; };
@@ -3646,14 +3645,10 @@
 		CC84B00D18211A5600934482 /* Job */ = {
 			isa = PBXGroup;
 			children = (
-				CC84B00E18211A9000934482 /* Job.cpp */,
-				CC84B00F18211A9000934482 /* Job.h */,
 				CC84B01018211A9000934482 /* JobManager.cpp */,
 				CC84B01118211A9000934482 /* JobManager.h */,
 				CC84B01218211A9000934482 /* JobQueue.cpp */,
 				CC84B01318211A9000934482 /* JobQueue.h */,
-				CC84B01418211A9000934482 /* JobWaiter.cpp */,
-				CC84B01518211A9000934482 /* JobWaiter.h */,
 			);
 			name = Job;
 			sourceTree = "<group>";
@@ -4074,6 +4069,10 @@
 		E8989BD716BD24E400732C04 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				4F34295C1A1E584900373251 /* FWSemaphore.h */,
+				4F34295D1A1E584900373251 /* FWSpinlock.cpp */,
+				4F34295E1A1E584900373251 /* FWSpinlock.h */,
+				4F34295F1A1E584900373251 /* FWSemaphore.cpp */,
 				D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */,
 				6280BAA818D6F909007809B7 /* DateTimeApple.mm */,
 				62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */,
@@ -4894,7 +4893,6 @@
 				176DE954174B5561007A983B /* BezierSpline.h in Headers */,
 				176DE955174B5561007A983B /* Circle.h in Headers */,
 				320A4B3219E6B5B80049D713 /* AbstractUIPackageBuilder.h in Headers */,
-				CC84B01B18211A9000934482 /* Job.h in Headers */,
 				4F53ED4319A23BEE00D3869D /* ZLibStream.h in Headers */,
 				176DE956174B5561007A983B /* Color.h in Headers */,
 				176DE957174B5561007A983B /* Math2D.h in Headers */,
@@ -4922,6 +4920,7 @@
 				176DE969174B5561007A983B /* Spline.h in Headers */,
 				176DE96A174B5561007A983B /* Vector.h in Headers */,
 				7A169352180EE75A005F1FBC /* AutotestingDB.h in Headers */,
+				4F34296A1A1E585600373251 /* FWSemaphore.h in Headers */,
 				176DE973174B5561007A983B /* Particle.h in Headers */,
 				176DE974174B5561007A983B /* ParticleEmitter.h in Headers */,
 				176DE977174B5561007A983B /* ParticleLayer.h in Headers */,
@@ -4972,7 +4971,6 @@
 				6435963D18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
 				176DE99F174B5561007A983B /* Material.h in Headers */,
 				176DE9A0174B5561007A983B /* OGLHelpers.h in Headers */,
-				CC84B02D18211A9000934482 /* JobWaiter.h in Headers */,
 				176DE9A1174B5561007A983B /* PVRDefines.h in Headers */,
 				176DE9A2174B5561007A983B /* RenderBase.h in Headers */,
 				176DE9A3174B5561007A983B /* RenderDataObject.h in Headers */,
@@ -5006,6 +5004,7 @@
 				176DE9BA174B5561007A983B /* GameObjectManager.h in Headers */,
 				B786013E1A08B6170041F817 /* StringUtils.h in Headers */,
 				E8ACC88218A29FBB00F26ABC /* ParticleRenderObject.h in Headers */,
+				4F3429651A1E584E00373251 /* FWSpinlock.h in Headers */,
 				176DE9BB174B5561007A983B /* TextGameObject.h in Headers */,
 				176DE9BC174B5561007A983B /* BillboardNode.h in Headers */,
 				A650F4BD1864A10100D3278D /* NMaterialTemplate.h in Headers */,
@@ -5238,7 +5237,6 @@
 				E8989DC416BD24E500732C04 /* FastNameMap.h in Headers */,
 				E8989DC616BD24E500732C04 /* FixedSizePoolAllocator.h in Headers */,
 				E8989DC716BD24E500732C04 /* Hash.h in Headers */,
-				CC84B02B18211A9000934482 /* JobWaiter.h in Headers */,
 				C172EC0B18C9F1E9004309CF /* DFFont.h in Headers */,
 				E8989DC816BD24E500732C04 /* HashMap.h in Headers */,
 				E8989DC916BD24E500732C04 /* Introspection.h in Headers */,
@@ -5334,7 +5332,6 @@
 				02A03DAA1871C37B00FA72CE /* SpeedTreeObject.h in Headers */,
 				E8989E7116BD24E500732C04 /* NeonMath.h in Headers */,
 				E8989E7216BD24E500732C04 /* OOBBox.h in Headers */,
-				CC84B01918211A9000934482 /* Job.h in Headers */,
 				E8989E7316BD24E500732C04 /* Plane.h in Headers */,
 				E8989E7516BD24E500732C04 /* Polygon2.h in Headers */,
 				E8989E7716BD24E500732C04 /* Polygon3.h in Headers */,
@@ -5345,6 +5342,7 @@
 				E8989E7D16BD24E500732C04 /* Sphere.h in Headers */,
 				E8989E7F16BD24E500732C04 /* Spline.h in Headers */,
 				E8989E8016BD24E500732C04 /* Vector.h in Headers */,
+				4F3429621A1E584900373251 /* FWSpinlock.h in Headers */,
 				647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				84CB671A191FC8850086483D /* Image.h in Headers */,
 				E8989E9216BD24E500732C04 /* Particle.h in Headers */,
@@ -5502,6 +5500,7 @@
 				E898A00E16BD24E500732C04 /* UIControlBackground.h in Headers */,
 				E898A01016BD24E500732C04 /* UIControlSystem.h in Headers */,
 				E898A01216BD24E500732C04 /* UIEvent.h in Headers */,
+				4F3429601A1E584900373251 /* FWSemaphore.h in Headers */,
 				E898A01416BD24E500732C04 /* UIFadeTransition.h in Headers */,
 				E898A01616BD24E500732C04 /* UIFileSystemDialog.h in Headers */,
 				E898A01816BD24E500732C04 /* UIHierarchy.h in Headers */,
@@ -5680,7 +5679,6 @@
 				7A169357180EE75A005F1FBC /* GameAPI.h in Headers */,
 				E898A06F16BD265400732C04 /* HashMap.h in Headers */,
 				E898A07016BD265400732C04 /* Introspection.h in Headers */,
-				CC84B02C18211A9000934482 /* JobWaiter.h in Headers */,
 				644C86FE19476A7100964F91 /* VegetationSpatialData.h in Headers */,
 				E898A07116BD265400732C04 /* IntrospectionBase.h in Headers */,
 				E898A07216BD265400732C04 /* IntrospectionCollection.h in Headers */,
@@ -5698,6 +5696,7 @@
 				E898A07C16BD265400732C04 /* Radix.h in Headers */,
 				E898A07D16BD265400732C04 /* RefPtr.h in Headers */,
 				E898A07E16BD265400732C04 /* ScopedPtr.h in Headers */,
+				4F3429691A1E585500373251 /* FWSemaphore.h in Headers */,
 				322FFD4819C042880000ED71 /* UIControlHelpers.h in Headers */,
 				E898A07F16BD265400732C04 /* Singleton.h in Headers */,
 				E898A08016BD265400732C04 /* StaticSingleton.h in Headers */,
@@ -5764,6 +5763,7 @@
 				E898A0B016BD265400732C04 /* AABBox3.h in Headers */,
 				647EFC5D195EEF2A0073B3CB /* NMaterialHelper.h in Headers */,
 				E898A0B116BD265400732C04 /* BezierSpline.h in Headers */,
+				4F3429661A1E584F00373251 /* FWSpinlock.h in Headers */,
 				E898A0B216BD265400732C04 /* Circle.h in Headers */,
 				E898A0B316BD265400732C04 /* Color.h in Headers */,
 				E898A0B416BD265400732C04 /* Math2D.h in Headers */,
@@ -5940,7 +5940,6 @@
 				D7CC264419C43C7C00A3B754 /* LocalNotificationProgress.h in Headers */,
 				E898A17A16BD265400732C04 /* UIButton.h in Headers */,
 				E898A17B16BD265400732C04 /* UIControl.h in Headers */,
-				CC84B01A18211A9000934482 /* Job.h in Headers */,
 				E898A17C16BD265400732C04 /* UIControlBackground.h in Headers */,
 				0286451719795E1200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */,
 				E898A17D16BD265400732C04 /* UIControlSystem.h in Headers */,
@@ -6278,7 +6277,6 @@
 				176DEA9A174B5561007A983B /* ParticleLayer.cpp in Sources */,
 				176DEA9C174B5561007A983B /* ParticlePropertyLine.cpp in Sources */,
 				176DEA9E174B5561007A983B /* Mutex.cpp in Sources */,
-				CC84B01818211A9000934482 /* Job.cpp in Sources */,
 				0282B87618BC72BE006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				176DEA9F174B5561007A983B /* SystemTimer.cpp in Sources */,
 				176DEAA0174B5561007A983B /* AppDelegate.mm in Sources */,
@@ -6290,6 +6288,7 @@
 				644C86F319476A7100964F91 /* VegetationRenderData.cpp in Sources */,
 				176DEAA7174B5561007A983B /* Font.cpp in Sources */,
 				176DEAA8174B5561007A983B /* FontManager.cpp in Sources */,
+				4F34296B1A1E585800373251 /* FWSemaphore.cpp in Sources */,
 				176DEAA9174B5561007A983B /* FTFont.cpp in Sources */,
 				4F53ED4919A23BF300D3869D /* bs_patch.c in Sources */,
 				176DEAAA174B5561007A983B /* GraphicsFont.cpp in Sources */,
@@ -6370,7 +6369,6 @@
 				176DEAE4174B5561007A983B /* TransformComponent.cpp in Sources */,
 				50B06922186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
 				4F53ED4219A23BEE00D3869D /* ZLibStream.cpp in Sources */,
-				CC84B02A18211A9000934482 /* JobWaiter.cpp in Sources */,
 				176DEAE5174B5561007A983B /* UpdatableComponent.cpp in Sources */,
 				176DEAE6174B5561007A983B /* DataNode.cpp in Sources */,
 				176DEAE7174B5561007A983B /* ImposterManager.cpp in Sources */,
@@ -6431,7 +6429,6 @@
 				176DEB0E174B5561007A983B /* UIButton.cpp in Sources */,
 				4F53ED3219A23BE700D3869D /* Downloader.cpp in Sources */,
 				320A4B2F19E6B5B80049D713 /* AbstractUIPackageBuilder.cpp in Sources */,
-				D7631A5C19AB41070065B1CB /* NotificationNotImplemented.cpp in Sources */,
 				176DEB0F174B5561007A983B /* UIControl.cpp in Sources */,
 				176DEB10174B5561007A983B /* UIControlBackground.cpp in Sources */,
 				176DEB11174B5561007A983B /* UIControlSystem.cpp in Sources */,
@@ -6498,6 +6495,7 @@
 				176DEB47174B5561007A983B /* RenderObject.cpp in Sources */,
 				176DEB48174B5561007A983B /* RenderPass.cpp in Sources */,
 				176DEB49174B5561007A983B /* RenderSystem.cpp in Sources */,
+				4F3429681A1E585200373251 /* FWSpinlock.cpp in Sources */,
 				76199F3F192DF73D008A47E2 /* VersionInfo.cpp in Sources */,
 				176DEB4A174B5561007A983B /* ShadowRect.cpp in Sources */,
 				026A1DC219DAF09700813AEF /* SkeletonComponent.cpp in Sources */,
@@ -6654,7 +6652,6 @@
 				E8BAD5B0185213F100C98C8D /* IntrospectionDynamic.cpp in Sources */,
 				E8989E7B16BD24E500732C04 /* RectPacker.cpp in Sources */,
 				E8989E7E16BD24E500732C04 /* Spline.cpp in Sources */,
-				CC84B02818211A9000934482 /* JobWaiter.cpp in Sources */,
 				E8989E9116BD24E500732C04 /* Particle.cpp in Sources */,
 				E8989E9316BD24E500732C04 /* ParticleEmitter.cpp in Sources */,
 				E8989E9916BD24E500732C04 /* ParticleLayer.cpp in Sources */,
@@ -6791,7 +6788,6 @@
 				E8989FD616BD24E500732C04 /* DebugRenderSystem.cpp in Sources */,
 				5022951C186DD1BC00F55478 /* RenderPassManager.cpp in Sources */,
 				E8989FDA16BD24E500732C04 /* EventSystem.cpp in Sources */,
-				CC84B01618211A9000934482 /* Job.cpp in Sources */,
 				E8989FDC16BD24E500732C04 /* LightUpdateSystem.cpp in Sources */,
 				E8989FDE16BD24E500732C04 /* LodSystem.cpp in Sources */,
 				E8989FE016BD24E500732C04 /* ParticleEffectSystem.cpp in Sources */,
@@ -6916,10 +6912,12 @@
 				E845D4E11732B5DF000DA8E7 /* FilePathObjective.mm in Sources */,
 				E8951B741738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */,
 				02E9E4231739616800C501BC /* SoundComponent.cpp in Sources */,
+				4F3429631A1E584900373251 /* FWSemaphore.cpp in Sources */,
 				02E9E437173964DA00C501BC /* SoundUpdateSystem.cpp in Sources */,
 				1789108E1740DFBC007B72BA /* NMaterialConsts.cpp in Sources */,
 				4FE7D3591745056700D2FCE6 /* GlobalEnum.cpp in Sources */,
 				846CFE60174D1A64004ECE3C /* OpenUDIDApple.mm in Sources */,
+				4F3429611A1E584900373251 /* FWSpinlock.cpp in Sources */,
 				846CFE64174D1A75004ECE3C /* OpenUDIDMacOS.mm in Sources */,
 				4FA5CDBF1757AF430040CC6E /* EnumMap.cpp in Sources */,
 				644C86F719476A7100964F91 /* VegetationRenderObject.cpp in Sources */,
@@ -7072,6 +7070,7 @@
 				E898A20716BD265400732C04 /* Font.cpp in Sources */,
 				E898A20816BD265400732C04 /* FontManager.cpp in Sources */,
 				E898A20916BD265400732C04 /* FTFont.cpp in Sources */,
+				4F34296C1A1E585800373251 /* FWSemaphore.cpp in Sources */,
 				E898A20A16BD265400732C04 /* GraphicsFont.cpp in Sources */,
 				17FB4BBD1923B9DB00F3E3BC /* MovieViewControlMacOS.mm in Sources */,
 				E898A20B16BD265400732C04 /* Sprite.cpp in Sources */,
@@ -7189,7 +7188,6 @@
 				E898A27616BD265400732C04 /* SpriteNode.cpp in Sources */,
 				E898A27716BD265400732C04 /* SwitchNode.cpp in Sources */,
 				E898A27816BD265400732C04 /* BaseProcessSystem.cpp in Sources */,
-				CC84B01718211A9000934482 /* Job.cpp in Sources */,
 				0282B87518BC72BE006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				E898A27916BD265400732C04 /* DebugRenderSystem.cpp in Sources */,
 				E898A27B16BD265400732C04 /* EventSystem.cpp in Sources */,
@@ -7226,6 +7224,7 @@
 				E898A29B16BD265400732C04 /* UIHoleTransition.cpp in Sources */,
 				E898A29C16BD265400732C04 /* UIJoypad.cpp in Sources */,
 				E879E2471988EF8D0026191D /* OGLHelpers.cpp in Sources */,
+				4F3429671A1E585200373251 /* FWSpinlock.cpp in Sources */,
 				E898A29D16BD265400732C04 /* UIList.cpp in Sources */,
 				7A16933C180EE618005F1FBC /* AutotestingSystemLua.cpp in Sources */,
 				E898A29E16BD265400732C04 /* UIListCell.cpp in Sources */,
@@ -7236,7 +7235,6 @@
 				E898A2A116BD265400732C04 /* UIPopup.cpp in Sources */,
 				E898A2A216BD265400732C04 /* UIScreen.cpp in Sources */,
 				E898A2A316BD265400732C04 /* UIScreenManagerMacOS.cpp in Sources */,
-				CC84B02918211A9000934482 /* JobWaiter.cpp in Sources */,
 				E898A2A416BD265400732C04 /* UIScreenTransition.cpp in Sources */,
 				E898A2A516BD265400732C04 /* UIScrollBar.cpp in Sources */,
 				02A03DAD1871C49E00FA72CE /* SpeedTreeObject.cpp in Sources */,

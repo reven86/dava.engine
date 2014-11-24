@@ -70,29 +70,20 @@ namespace DAVA
 
 #elif defined(__DAVAENGINE_ANDROID__)
     Spinlock::Spinlock() : spin(0)
-    {
-		pthread_mutex_init(&spinMutex, 0);
-	}
+    { }
 
     Spinlock::~Spinlock()
-    { 
-		pthread_mutex_destroy(&spinMutex);
-	}
+    { }
 
     void Spinlock::Lock()
     {
-    	//static int volatile a = 0;
-        //while(!AtomicCompareAndSwap(0, 1, spin))
-        //{
-        //	a = a | 1;
-        //}
-		pthread_mutex_lock(&spinMutex);
+        while(!AtomicCompareAndSwap(0, 1, spin))
+        { }
     }
 
     void Spinlock::Unlock()
     {
-    	//AtomicCompareAndSwap(1, 0, spin);
-		pthread_mutex_unlock(&spinMutex);
+    	AtomicCompareAndSwap(1, 0, spin);
 	}
 #endif //PLATFORMS
 
