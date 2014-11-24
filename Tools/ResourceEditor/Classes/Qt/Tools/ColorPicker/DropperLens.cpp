@@ -58,39 +58,23 @@ void DropperLens::updatePreview()
 {
     const QImage& src = shade->screenImage();
     const QPoint& pos = shade->CursorPos();
-    const int scale = zoomFactor * 2 + 1;
-    const int nDstPixels = lensGeometry().width();
-    const int nSrcPixels = nDstPixels / scale;
-    const QRect srcRect(pos.x() - nSrcPixels / 2, pos.y() - nSrcPixels / 2, nSrcPixels, nSrcPixels);
-    const QRect dstRect(0, 0, nDstPixels, nDstPixels);
 
-    const int srcWidth = src.width();
-    const QRgb* const from = reinterpret_cast<const QRgb *>(src.constScanLine(0));
-    QRgb *to = reinterpret_cast<QRgb *>(preview.scanLine(0));
+    const int dstDim = zoomFactor * 2 + 1;
 
-    for ( int sx = 0; sx < srcRect.width(); sx++ )
+    const int xSrc = pos.x() - lensGeometry().width() / dstDim / 2;
+    const int ySrc = pos.y() - lensGeometry().height() / dstDim / 2;
+
+    for ( int dx = 0; dx < lensGeometry().width(); dx++ )
     {
-        const int realSx = sx + srcRect.x();
-        if ( realSx < 0 )
-            continue;
+        const int sx = xSrc + dx / dstDim;
 
-        for ( int sy = 0; sy < srcRect.height(); sy++ )
+        for ( int dy = 0; dy < lensGeometry().height(); dy++ )
         {
-            const int realSy = sy + srcRect.y();
-            if ( realSy < 0 )
-                continue;
+            const int sy = ySrc + dy / dstDim;
 
-            const QRgb pixel = *(from + realSy * srcWidth + realSx);
-
-            for ( int dx = 0; dx < scale; dx++ )
-            {
-                for ( int dy = 0; dy < scale; dy++ )
-                {
-                    const int realDx = sx * scale + dx;
-                    const int realDy = sy * scale + dy;
-                    *(to + realDy * dstRect.width() + realDx) = pixel;
-                }
-            }
+            const bool isValid = ( sx >= 0 && sy >= 0 );
+            const QRgb pixel = isValid ? src.pixel(sx, sy) : Qt::black;
+            preview.setPixel(dx, dy, pixel);
         }
     }
 }

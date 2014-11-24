@@ -31,12 +31,15 @@ private slots:
     void OnMouseWheel(int delta);
 
 private:
-    void paintEvent( QPaintEvent *e ) override;
+    void paintEvent(QPaintEvent* e) override;
+    void closeEvent(QCloseEvent* e) override;
+    void keyReleaseEvent(QKeyEvent* e) override;
 
     QPixmap screen;
     QImage screenData;
     QPointer<MouseHelper> mouse;
     QPointer<DropperLens> lens;
+    QColor color;
 
 private:
     static QPixmap screenShot();

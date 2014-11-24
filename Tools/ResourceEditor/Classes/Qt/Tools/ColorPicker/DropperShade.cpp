@@ -15,7 +15,7 @@
 
 namespace
 {
-    const int cMaxZoom = 10;
+    const int cMaxZoom = 20;
 }
 
 
@@ -24,9 +24,9 @@ DropperShade::DropperShade()
     : QWidget( NULL, Qt::Window | Qt::FramelessWindowHint/* | Qt::WindowStaysOnTopHint*/ )
     , mouse(new MouseHelper(this))
 {
-    setAttribute( Qt::WA_DeleteOnClose );
-    setFocusPolicy( Qt::WheelFocus );
-    setMouseTracking( true );
+    setAttribute(Qt::WA_DeleteOnClose);
+    setFocusPolicy(Qt::WheelFocus);
+    setMouseTracking(true);
     setCursor(Qt::BlankCursor);
 
     QDesktopWidget* desktop = QApplication::desktop();
@@ -42,6 +42,7 @@ DropperShade::DropperShade()
     lens->SetZoomFactor(1);
 
     connect( mouse, &MouseHelper::mouseMove, this, &DropperShade::OnMouseMove );
+    connect( mouse, &MouseHelper::mousePress, this, &DropperShade::OnClicked );
     connect( mouse, &MouseHelper::mouseWheel, this, &DropperShade::OnMouseWheel );
 }
 
@@ -61,14 +62,16 @@ QPoint DropperShade::CursorPos() const
 
 void DropperShade::OnMouseMove(const QPoint& pos)
 {
-    QPoint pt( pos );
-    pt.rx() -= lens->width() / 2;
-    pt.ry() -= lens->height() / 2;
+    QPoint pt(pos);
+    pt.rx() -= lens->lensGeometry().width() / 2;
+    pt.ry() -= lens->lensGeometry().height() / 2;
     lens->move(pt);
 }
 
 void DropperShade::OnClicked(const QPoint& pos)
 {
+    color = screenData.pixel(pos);
+    close();
 }
 
 void DropperShade::OnMouseWheel(int delta)
@@ -91,6 +94,29 @@ void DropperShade::paintEvent(QPaintEvent* e)
 
     const QRect& updateRect = e->rect();
     p.drawPixmap( updateRect, screen, updateRect );
+}
+
+void DropperShade::closeEvent(QCloseEvent* e)
+{
+    Q_UNUSED(e);
+    if (color.isValid())
+    {
+        emit picked(color);
+    }
+    else
+    {
+        emit canceled();
+    }
+}
+
+void DropperShade::keyReleaseEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Escape)
+    {
+        close();
+    }
+
+    QWidget::keyPressEvent(e);
 }
 
 QPixmap DropperShade::screenShot()

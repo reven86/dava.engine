@@ -27,5 +27,7 @@ EyeDropper::~EyeDropper()
 void EyeDropper::Exec()
 {
     DropperShade *shade = new DropperShade();
+    connect( shade, &DropperShade::picked, this, &EyeDropper::picked );
+    connect( shade, &DropperShade::canceled, this, &EyeDropper::canceled );
     shade->show();
 }
