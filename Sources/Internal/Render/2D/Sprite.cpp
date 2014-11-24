@@ -1147,19 +1147,23 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 void Sprite::Draw(DrawState * state)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
-	{
-		return;
-	}
-    
+    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    {
+        return;
+    }
+
     RENDERER_UPDATE_STATS(spriteDrawCount++);
 
 #if !defined (NEW_PPA)
-	if (state->usePerPixelAccuracy)
-		RenderManager::Instance()->PushMappingMatrix();
+    if (state->usePerPixelAccuracy)
+        RenderManager::Instance()->PushMappingMatrix();
 #endif
 
-	PrepareSpriteRenderData(state);
+    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION) && state && *state != cachedState)
+    {
+        PrepareSpriteRenderData(state);
+        cachedState = *state;
+    }
 
 	if( clipPolygon )
 	{

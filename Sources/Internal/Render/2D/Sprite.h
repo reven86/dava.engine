@@ -106,8 +106,47 @@ public:
         inline Shader* GetShader() const;
         inline UniqueHandle GetRenderState() const;
 
-        
-    private:
+	    friend bool operator==(const DrawState& lhs, const DrawState& rhs)
+	    {
+	        return lhs.position == rhs.position
+	            && lhs.pivotPoint == rhs.pivotPoint
+	            && lhs.scale == rhs.scale
+	            && lhs.angle == rhs.angle
+	            && lhs.frame == rhs.frame
+	            && lhs.flags == rhs.flags
+	            && lhs.sinA == rhs.sinA
+	            && lhs.cosA == rhs.cosA
+	            && lhs.precomputedAngle == rhs.precomputedAngle
+	            && lhs.usePerPixelAccuracy == rhs.usePerPixelAccuracy
+	            && lhs.shader == rhs.shader
+	            && lhs.renderState == rhs.renderState;
+	    }
+
+	    friend bool operator!=(const DrawState& lhs, const DrawState& rhs)
+	    {
+	        return !(lhs == rhs);
+	    }
+
+	    DrawState& operator=(const DrawState& other)
+	    {
+	        if (this == &other)
+	            return *this;
+	        position = other.position;
+	        pivotPoint = other.pivotPoint;
+	        scale = other.scale;
+	        angle = other.angle;
+	        frame = other.frame;
+	        flags = other.flags;
+	        sinA = other.sinA;
+	        cosA = other.cosA;
+	        precomputedAngle = other.precomputedAngle;
+	        usePerPixelAccuracy = other.usePerPixelAccuracy;
+	        shader = other.shader;
+	        renderState = other.renderState;
+	        return *this;
+	    }
+
+	private:
     
         Shader* shader;
         UniqueHandle renderState;
@@ -387,6 +426,8 @@ protected:
 	//static bool batchingEnabled;
 	//static Vector<Vector2>
     
+    DrawState cachedState;
+
 private:
     FilePath  relativePathname;
 };
