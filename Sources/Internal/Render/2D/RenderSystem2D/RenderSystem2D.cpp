@@ -48,8 +48,8 @@ namespace DAVA
 #define xGL_WRITE_FLAG GL_WRITE_ONLY
 #endif
 
-#define USE_MAPPING 1
-#define USE_BATCHING true
+#define USE_MAPPING 0
+#define USE_BATCHING false
 
 VboPool::VboPool(uint32 size, uint8 count)
 {
