@@ -185,7 +185,7 @@ private:
     bool useBatching;
     bool useVBO;
 
-    VboPool pool;
+    VboPool* pool;
 
 };
     
