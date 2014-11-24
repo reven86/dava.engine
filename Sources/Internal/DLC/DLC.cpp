@@ -91,6 +91,20 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
 
+	// last state was 'Patching'?
+	if(DS_PATCHING == dlcContext.prevState)
+	{
+		if(dlcContext.remotePatchStorePath.Exists())
+		{
+			Logger::Info("DLC: Patch-file already exists, will go straight to the patching state.\n");
+		}
+		else
+		{
+			// no patch file, so go by the regular way
+			dlcContext.prevState = 0;
+		}
+	}
+
     // FSM variables
     fsmAutoReady = false;
 }
@@ -253,7 +267,16 @@ void DLC::FSM(DLCEvent event)
                     // automatically start download after check?
                     if(fsmAutoReady)
                     {
-                        dlcState = DS_DOWNLOADING;
+						if(DS_PATCHING == dlcContext.prevState)
+						{
+							// if last time stopped on the patching state and patch file exists - continue patching
+							dlcState = DS_PATCHING;
+						}
+						else
+						{
+							// download patch
+							dlcState = DS_DOWNLOADING;
+						}
                     }
                     else
                     {
@@ -276,8 +299,17 @@ void DLC::FSM(DLCEvent event)
             switch(event)
             {
                 case EVENT_DOWNLOAD_START:
-                    dlcState = DS_DOWNLOADING;
-                    break;
+					if(DS_PATCHING == dlcContext.prevState)
+					{
+						// if last time stopped on the patching state and patch file exists - continue patching
+						dlcState = DS_PATCHING;
+					}
+					else
+					{
+						// download patch
+						dlcState = DS_DOWNLOADING;
+					}
+					break;
                 case EVENT_CANCEL:
                     dlcError = DE_WAS_CANCELED;
                     dlcState = DS_DONE;
@@ -630,59 +662,48 @@ void DLC::StepDownloadPatchBegin()
         return;
     }
 
-    // last state was 'Patching'?
-    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists())
-    {
-        Logger::Info("DLC: Patch-file already exists\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
+    // what mode should be used for download?
+    // by default - full download
+    DownloadType donwloadType = FULL;
 
-        // we should patch without downloading
-        PostEvent(EVENT_DOWNLOAD_OK);
-    }
-    else
+    // check what URL was downloaded last time
+    File *downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::OPEN | File::READ);
+    if(NULL != downloadInfoFile)
     {
-        // what mode should be used for download?
-        // by default - full download
-        DownloadType donwloadType = FULL;
+        String lastUrl;
+        String lastSizeStr;
+        uint32 lastSize;
 
-        // check what URL was downloaded last time
-        File *downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::OPEN | File::READ);
-        if(NULL != downloadInfoFile)
+        downloadInfoFile->ReadString(lastSizeStr);
+        downloadInfoFile->ReadString(lastUrl);
+
+        lastSize = atoi(lastSizeStr.c_str());
+
+        // last url is same as we are trying to download now
+        if(lastUrl == dlcContext.remotePatchUrl && lastSize == dlcContext.remotePatchSize)
         {
-            String lastUrl;
-            String lastSizeStr;
-            uint32 lastSize;
-
-            downloadInfoFile->ReadString(lastSizeStr);
-            downloadInfoFile->ReadString(lastUrl);
-
-            lastSize = atoi(lastSizeStr.c_str());
-
-            // last url is same as we are trying to download now
-            if(lastUrl == dlcContext.remotePatchUrl && lastSize == dlcContext.remotePatchSize)
-            {
-                // now we can resume last download
-                donwloadType = RESUMED;
-            }
-
-            SafeRelease(downloadInfoFile);
+            // now we can resume last download
+            donwloadType = RESUMED;
         }
 
-        // save URL that we gonna download
-        downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::CREATE | File::WRITE);
-        if(NULL != downloadInfoFile)
-        {
-            String sizeStr = Format("%u", dlcContext.remotePatchSize);
-            downloadInfoFile->WriteString(sizeStr);
-            downloadInfoFile->WriteString(dlcContext.remotePatchUrl);
-            SafeRelease(downloadInfoFile);
-        }
-
-        Logger::Info("DLC: Downloading patch-file\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
-
-        // start download and notify about download status into StepDownloadPatchFinish
-        DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepDownloadPatchFinish));
-        dlcContext.remotePatchDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
+        SafeRelease(downloadInfoFile);
     }
+
+    // save URL that we gonna download
+    downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::CREATE | File::WRITE);
+    if(NULL != downloadInfoFile)
+    {
+        String sizeStr = Format("%u", dlcContext.remotePatchSize);
+        downloadInfoFile->WriteString(sizeStr);
+        downloadInfoFile->WriteString(dlcContext.remotePatchUrl);
+        SafeRelease(downloadInfoFile);
+    }
+
+    Logger::Info("DLC: Downloading patch-file\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
+
+    // start download and notify about download status into StepDownloadPatchFinish
+    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepDownloadPatchFinish));
+    dlcContext.remotePatchDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
 }
 
 void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status)
