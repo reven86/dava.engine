@@ -62,11 +62,13 @@ namespace profiler
 
 class Counter;
 
-Counter*    GetCounter( uint32 id );
+static Counter* GetCounter( uint32 id );
 
 static unsigned         MaxCounterCount     = 64;
 static unsigned         HistoryCount        = 100;
 
+static Counter*         _Counter            = 0;
+static Counter*         _Average            = 0;
 static Counter*         CurCounter          = 0;
 static bool             Started             = false;
 static Counter**        ActiveCounter       = 0;
@@ -183,8 +185,6 @@ private:
     int         useCount:4;
 };
 
-static Counter*         _Counter    = 0;
-static Counter*         _Average    = 0;
 
 
 
@@ -369,7 +369,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
     for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
     {
         unsigned    pi          = result[i].parentIndex;
-        unsigned    indent      = 0;\
+        unsigned    indent      = 0;
         char        text[256];  memset( text, ' ', sizeof(text) );
         unsigned    len         = 0;
 
