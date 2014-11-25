@@ -51,9 +51,7 @@ const unsigned  InvalidIndex = (unsigned)(-1);
 static inline long
 _CurTimeUs()
 {
-    static SystemTimer timer;
-
-    return (long)(timer.GetAbsoluteUs());
+    return (long)(SystemTimer::Instance()->GetAbsoluteUs());
 }
 
 
