@@ -91,20 +91,6 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
 
-    // last state was 'Patching'?
-    if(DS_PATCHING == dlcContext.prevState)
-    {
-        if(dlcContext.remotePatchStorePath.Exists())
-        {
-            Logger::Info("DLC: Patch-file already exists, will go straight to the patching state.\n");
-        }
-        else
-        {
-            // no patch file, so go by the regular way
-            dlcContext.prevState = 0;
-        }
-    }
-
     // FSM variables
     fsmAutoReady = false;
 }
@@ -199,10 +185,19 @@ void DLC::FSM(DLCEvent event)
             {
                 case EVENT_DOWNLOAD_START:
                     fsmAutoReady = true;
-                    dlcState = DS_CHECKING_INFO;
-                    break;
+                    // don't break here
+
                 case EVENT_CHECK_START:
-                    dlcState = DS_CHECKING_INFO;
+                    // if last time stopped on the patching state and patch file exists - continue patching
+                    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists())
+                    {
+                        dlcContext.prevState = 0;
+                        dlcState = DS_PATCHING;
+                    }
+                    else
+                    {
+                        dlcState = DS_CHECKING_INFO;
+                    }
                     break;
                 case EVENT_CANCEL:
                     dlcError = DE_WAS_CANCELED;
@@ -267,16 +262,8 @@ void DLC::FSM(DLCEvent event)
                     // automatically start download after check?
                     if(fsmAutoReady)
                     {
-                        if(DS_PATCHING == dlcContext.prevState)
-                        {
-                            // if last time stopped on the patching state and patch file exists - continue patching
-                            dlcState = DS_PATCHING;
-                        }
-                        else
-                        {
-                            // download patch
-                            dlcState = DS_DOWNLOADING;
-                        }
+                        // download patch
+                        dlcState = DS_DOWNLOADING;
                     }
                     else
                     {
@@ -299,16 +286,7 @@ void DLC::FSM(DLCEvent event)
             switch(event)
             {
                 case EVENT_DOWNLOAD_START:
-                    if(DS_PATCHING == dlcContext.prevState)
-                    {
-                        // if last time stopped on the patching state and patch file exists - continue patching
-                        dlcState = DS_PATCHING;
-                    }
-                    else
-                    {
-                        // download patch
-                        dlcState = DS_DOWNLOADING;
-                    }
+                    dlcState = DS_DOWNLOADING;
                     break;
                 case EVENT_CANCEL:
                     dlcError = DE_WAS_CANCELED;
@@ -684,6 +662,11 @@ void DLC::StepDownloadPatchBegin()
         {
             // now we can resume last download
             donwloadType = RESUMED;
+        }
+        else
+        {
+            // ensure that there is no already downloaded file with another version
+            FileSystem::Instance()->DeleteFile(dlcContext.remotePatchStorePath);
         }
 
         SafeRelease(downloadInfoFile);
