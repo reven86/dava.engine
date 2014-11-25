@@ -1159,10 +1159,17 @@ void Sprite::Draw(DrawState * state)
         RenderManager::Instance()->PushMappingMatrix();
 #endif
 
-    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION) && state && *state != cachedState)
+    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
+    {
+        if (state && *state != cachedState)
+        {
+            PrepareSpriteRenderData(state);
+            cachedState = *state;
+        }
+    }
+    else
     {
         PrepareSpriteRenderData(state);
-        cachedState = *state;
     }
 
 	if( clipPolygon )
