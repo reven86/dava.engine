@@ -35,8 +35,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-struct JobThread
+class JobThread
 {
+public:
     JobThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
     ~JobThread();
 
