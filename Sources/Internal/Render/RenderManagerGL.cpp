@@ -46,15 +46,8 @@
 
 namespace DAVA
 {
-	
-#if defined(__DAVAENGINE_WIN32__)
-
-static HDC hDC;
-static HGLRC hRC;
-static HWND hWnd;
-static HINSTANCE hInstance;
-
-static const int32 primitiveTypes[PRIMITIVETYPE_COUNT] = 
+    
+static const int32 primitiveTypes[PRIMITIVETYPE_COUNT] =
 {
     GL_POINTS,			// 		PRIMITIVETYPE_POINTLIST = 0,
     GL_LINES,			// 		PRIMITIVETYPE_LINELIST,
@@ -64,17 +57,27 @@ static const int32 primitiveTypes[PRIMITIVETYPE_COUNT] =
     GL_TRIANGLE_FAN,	// 		PRIMITIVETYPE_TRIANGLEFAN,
 };
 
+
+static const int32 indexTypes[2] =
+{
+    GL_UNSIGNED_SHORT, 
+    GL_UNSIGNED_INT,
+};
+	
+#if defined(__DAVAENGINE_WIN32__)
+
+static HDC hDC;
+static HGLRC hRC;
+static HWND hWnd;
+static HINSTANCE hInstance;
+
 #if defined(__DAVAENGINE_IPHONE__)
 #if not defined(GL_UNSIGNED_INT)
 #define GL_UNSIGNED_INT 0
 #endif //not defined(GL_UNSIGNED_INT)
 #endif // __DAVAENGINE_IPHONE__
 
-static const int32 indexTypes[2] = 
-{
-    GL_UNSIGNED_SHORT, 
-    GL_UNSIGNED_INT,
-};
+
 
 
 bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)

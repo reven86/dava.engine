@@ -885,7 +885,9 @@ const void * RenderManager::GetDynamicParam(eShaderSemantic shaderSemantic)
         break;        
     case PARAM_GLOBAL_TIME:
         UpdateGlobalTimeIfRequired();
-        break;        
+        break;
+    default:
+        break;
     }
     DVASSERT(dynamicParameters[shaderSemantic].value != 0);
     return dynamicParameters[shaderSemantic].value;
