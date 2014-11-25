@@ -232,7 +232,9 @@ void UITextField::Update(float32 timeElapsed)
 	if(this == UIControlSystem::Instance()->GetFocusedControl())
 	{
         WideString txt = GetVisibleText();
+#ifndef __DAVAENGINE_NACL__ //TODO: PPAPI GL WARNING
         txt += showCursor ? L"_" : L" ";
+#endif
         staticText->SetText(txt);
 	}
 	else

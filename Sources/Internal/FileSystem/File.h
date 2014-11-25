@@ -39,7 +39,7 @@
 	#include "zip/zip.h"
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-namespace DAVA 
+namespace DAVA
 {
 
 class File;

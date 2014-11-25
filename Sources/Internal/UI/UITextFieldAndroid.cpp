@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-
+#if defined(__DAVAENGINE_ANDROID__)
 #include "UITextFieldAndroid.h"
 #include "Utils/UTF8Utils.h"
 
@@ -595,61 +595,4 @@ UITextFieldAndroid* UITextFieldAndroid::GetUITextFieldAndroid(uint32_t id)
 	return NULL;
 }
 
-void UITextFieldAndroid::TextFieldKeyboardShown(const Rect& rect)
-{
-    UITextFieldDelegate* delegate = textField->GetDelegate();
-    if (delegate)
-        delegate->OnKeyboardShown(rect);
-}
-
-void UITextFieldAndroid::TextFieldKeyboardShown(uint32_t id, const Rect& rect)
-{
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
-    if (!control)
-        return;
-    control->TextFieldKeyboardShown(rect);
-}
-
-void UITextFieldAndroid::TextFieldKeyboardHidden()
-{
-    UITextFieldDelegate* delegate = textField->GetDelegate();
-    if (delegate)
-        delegate->OnKeyboardHidden();
-}
-
-void UITextFieldAndroid::TextFieldKeyboardHidden(uint32_t id)
-{
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
-    if (!control)
-        return;
-    control->TextFieldKeyboardHidden();
-}
-
-void UITextFieldAndroid::TextFieldFocusChanged(bool hasFocus)
-{
-    if(textField)
-    {
-        if(hasFocus)
-        {
-            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != textField)
-            {
-                DAVA::UIControlSystem::Instance()->SetFocusedControl(textField, false);
-            }
-        }
-        else
-        {
-            if (DAVA::UIControlSystem::Instance()->GetFocusedControl() == textField)
-            {
-                DAVA::UIControlSystem::Instance()->SetFocusedControl(NULL, false);
-            }
-        }
-    }
-}
-
-void UITextFieldAndroid::TextFieldFocusChanged(uint32_t id, bool hasFocus)
-{
-    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
-    if (!control)
-        return;
-    control->TextFieldFocusChanged(hasFocus);
-}
+#endif //#if defined(__DAVAENGINE_ANDROID__)

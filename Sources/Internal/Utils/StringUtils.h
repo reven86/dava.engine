@@ -86,7 +86,11 @@ WideString TrimRight(const WideString& string);
  */
 inline bool IsWhitespace(char16 t)
 {
+#ifndef __DAVAENGINE_NACL__
     return iswspace(static_cast<wint_t>(t)) != 0;
+#else
+    return false; // need implement
+#endif
 }
 
 /**

@@ -533,7 +533,12 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
              if (forceVariation)
              {
                  Vector3 varriationToAdd = forceVariation->GetValue(0);
-                 Vector<typename PropertyLine<Vector3>::PropertyKey> &keys = force->GetValues();		                 
+#ifndef __DAVAENGINE_NACL__
+                 Vector< typename PropertyLine<Vector3>::PropertyKey > &keys = force->GetValues();
+#else
+                 typedef PropertyLine<Vector3>::PropertyKey tmpName;
+                 Vector< tmpName > &keys = force->GetValues();
+#endif
                  for (int i=0, sz = keys.size(); i<sz; ++i)
                  {			
                      keys[i].value+=varriationToAdd;
@@ -673,8 +678,12 @@ void ParticleLayer::UpdateSizeLine(PropertyLine<Vector2> *line, bool rescaleSize
 	//conversion from old format
 	if (!line) return;
 	if ((!rescaleSize)&&(!swapXY)) return; //nothing to update
-    
-	Vector<typename PropertyLine<Vector2>::PropertyKey> &keys = PropertyLineHelper::GetValueLine(line)->GetValues();		
+#ifndef __DAVAENGINE_NACL__
+	Vector<typename PropertyLine<Vector2>::PropertyKey> &keys = PropertyLineHelper::GetValueLine(line)->GetValues();
+#else
+    typedef PropertyLine<Vector2>::PropertyKey tmpName;
+    Vector< tmpName > &keys = PropertyLineHelper::GetValueLine(line)->GetValues();
+#endif
 	for (int i=0, sz = keys.size(); i<sz; ++i)
 	{			
 		if (rescaleSize)

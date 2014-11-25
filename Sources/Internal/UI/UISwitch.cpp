@@ -50,7 +50,7 @@ protected:
     }
 public:
     TogglePositionAnimation(bool _isCausedByTap, UISwitch * _uiSwitch, float32 * _var, float32 _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
-        : LinearAnimation(_uiSwitch->GetToggle(), _var, _endValue, _animationTimeLength, _iType)
+        : LinearAnimation<float32>(_uiSwitch->GetToggle(), _var, _endValue, _animationTimeLength, _iType)
         , uiSwitch(SafeRetain(_uiSwitch))
         , centerPos(0.f)
         , centerNotPassed(_isCausedByTap) //center is not yet passed by in this case
@@ -65,7 +65,7 @@ public:
     
     virtual void Update(float32 timeElapsed)
     {
-        LinearAnimation::Update(timeElapsed);
+        LinearAnimation<float32>::Update(timeElapsed);
         if (centerNotPassed)
         {
             if (isFromLeftToRight ^ (*var < centerPos))

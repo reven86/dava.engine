@@ -89,6 +89,18 @@ namespace DAVA
 		OGLDebugBreak(); \
     }\
 }
+#elif (defined(__DAVAENGINE_NACL__) && defined (__DAVAENGINE_DEBUG__))
+#define RENDER_VERIFY(command) \
+    { \
+        command;\
+        GLenum err = glGetError();\
+        if (err != GL_NO_ERROR)\
+        {  \
+            Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", #command, __FILE__, __LINE__, err);\
+            DVASSERT(false);\
+            OGLDebugBreak(); \
+        }\
+    }
 #else // RELEASE VERSION
 /* 
     If you want to have ability to disable all rendering functions in release build you should uncomment the line below.
@@ -172,6 +184,8 @@ namespace DAVA
     
 #elif defined(__DAVAENGINE_WIN32__)
 	#define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT
+#elif defined(__DAVAENGINE_NACL__)
+    #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT
 #endif //#if defined (__DAVAENGINE_IPHONE__)
     
     

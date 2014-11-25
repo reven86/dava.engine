@@ -430,8 +430,8 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
 	texture->FlushDataToRenderer(images);
 
 	return texture;
-}
-    
+}		
+	
 Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
 {
 	Texture * texture = new Texture();
@@ -843,7 +843,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
 	if(loaded)
 	{
 		loadedAsFile = gpuForLoading;
-
+        
 		SetParamsFromImages(images);
 		FlushDataToRenderer(images);
 	}
@@ -953,7 +953,10 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
         if (RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
 #endif
         {
+#ifndef __DAVAENGINE_NACL__        
             RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+#endif            
+        }
         }
 #if defined(__DAVAENGINE_ANDROID__)
         else
@@ -975,7 +978,6 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
             }
         }
 #endif
-	}
 
 	RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0));
 

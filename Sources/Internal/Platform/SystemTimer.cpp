@@ -33,6 +33,17 @@
 #include "DAVAConfig.h"
 #include "Debug/Replay.h"
 
+
+//#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
+//#include "Platform/Mutex.h"
+//#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+#if defined(__DAVAENGINE_NACL__)
+#include <time.h>
+#include <sys/time.h>
+#include "nacl_io/ostime.h"
+#endif
+
 namespace DAVA 
 {
 
@@ -51,7 +62,7 @@ static int frameCount;
 #endif //#ifdef SHOW_FRAME_TIME
 
 
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 void SystemTimer::InitTickCount()
 {
 	struct timeval tv;
@@ -88,7 +99,8 @@ SystemTimer::SystemTimer()
 	{
 		Logger::FrameworkDebug("[SystemTimer] High frequency timer support enabled\n");
 	}
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
+//	tickMutex = new Mutex();
 	savedSec = 0;
 	InitTickCount();
  	t0 = (float32)(GetTickCount() / 1000.0f);
@@ -114,6 +126,10 @@ SystemTimer::SystemTimer()
 
 SystemTimer::~SystemTimer()
 {
+//#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
+//	SafeRelease(tickMutex);
+//#endif //#if defined(__DAVAENGINE_ANDROID__)
+
 }
 
 void SystemTimer::Start()
@@ -142,6 +158,9 @@ void SystemTimer::Start()
 	{
 		t0 = (float32)(GetTickCount() / 1000.0f);
 	}
+
+#elif  defined(__DAVAENGINE_NACL__)
+        t0 = (float32)(GetTickCount() / 1000.0f);
 
 #elif defined (__DAVAENGINE_ANDROID__)
 
@@ -184,7 +203,7 @@ float32 SystemTimer::ElapsedSec()
 		Logger::FrameworkDebug("delta %f", currentTime - t0);
 		return currentTime - t0;
 	}
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 	float32 currentTime = (float32)(GetTickCount() / 1000.0f);
 	return (currentTime - t0);
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
@@ -227,7 +246,7 @@ uint64 SystemTimer::GetAbsoluteNano()
 		return 0;
 	}
     
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 	struct timespec now;
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	return now.tv_sec * 1000000000 + now.tv_nsec;
@@ -259,7 +278,7 @@ uint64 SystemTimer::AbsoluteMS()
 		return 0;
 	}
 
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 	return GetTickCount();
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	uint64_t numer = timebase.numer;

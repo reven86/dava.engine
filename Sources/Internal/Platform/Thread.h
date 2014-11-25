@@ -35,7 +35,7 @@
 #include "Base/BaseObject.h"
 #include "Mutex.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
     #define __DAVAENGINE_PTHREAD__
 #endif
 
@@ -45,6 +45,12 @@
 #elif defined(__DAVAENGINE_PTHREAD__)
 #include <pthread.h>
 #endif
+
+
+#if defined(__DAVAENGINE_NACL__)
+//	#include "ppapi/c/pp_resource.h"
+//	#include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
+#endif//#if defined(__DAVAENGINE_NACL__)
 
 namespace DAVA
 {

@@ -17,7 +17,7 @@ namespace DAVA
     
     DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
     {
-        for (auto it = importedPackages.begin(); it != importedPackages.end(); ++it)
+        for (Map<String, UIPackage*>::iterator it = importedPackages.begin(); it != importedPackages.end(); ++it)
             it->second->Release();
         importedPackages.clear();
     }
@@ -39,7 +39,7 @@ namespace DAVA
         UIPackage *result;
         UIPackage *prevPackage = package;
         package = NULL;
-        auto it = importedPackages.find(packagePath);
+        Map<String, UIPackage*>::iterator  it = importedPackages.find(packagePath);
         if (it != importedPackages.end())
         {
             result = it->second;

@@ -138,6 +138,37 @@ void KeyboardDevice::PrepareKeyTranslator()
     
 #endif
 
+#if defined (__DAVAENGINE_NACL__)
+    keyTranslator[0x08] = DVKEY_BACKSPACE;
+    keyTranslator[0x09] = DVKEY_TAB;
+    keyTranslator[0x1B] = DVKEY_ESCAPE;
+    keyTranslator[0x20] = DVKEY_SPACE;
+    keyTranslator[0x23] = DVKEY_END;
+    keyTranslator[0x24] = DVKEY_HOME;
+    keyTranslator[0x25] = DVKEY_LEFT;
+    keyTranslator[0x26] = DVKEY_UP;
+    keyTranslator[0x27] = DVKEY_RIGHT;
+    keyTranslator[0x28] = DVKEY_DOWN;
+    keyTranslator[0x2E] = DVKEY_DELETE;
+    keyTranslator[0x0D] = DVKEY_ENTER;
+    keyTranslator[0x11] = DVKEY_CTRL;
+	keyTranslator[0x12] = DVKEY_ALT;
+	keyTranslator[0x10] = DVKEY_SHIFT;
+    
+    // alpha keys
+    for(int32 i = 0; i < 26; ++i)
+    {
+        keyTranslator[0x41 + i] = DVKEY_A + i;
+    }
+    
+    // numeric keys & keys at num pad
+    for(int32 i = 0; i < 10; ++i)
+    {
+        keyTranslator[0x30 + i] = DVKEY_0 + i;
+        keyTranslator[0x60 + i] = DVKEY_NUMPAD0 + i;
+    }
+#endif
+    
 #if defined(__DAVAENGINE_MACOS__)
     keyTranslator[0x7B] = DVKEY_LEFT;
     keyTranslator[0x7C] = DVKEY_RIGHT;

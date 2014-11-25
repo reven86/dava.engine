@@ -131,10 +131,10 @@ void Cursor::ShowSystemCursor(bool show)
 		CGDisplayHideCursor(displayID);
 	}
 #else
-    if(show)
+   /* if(show)
         [NSCursor unhide];
     else
-        [NSCursor hide];
+        [NSCursor hide];*/
 #endif
 }
     

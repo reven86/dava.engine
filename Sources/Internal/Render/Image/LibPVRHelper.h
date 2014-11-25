@@ -45,7 +45,7 @@
 #include <objc/objc.h>
 #endif
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_NACL__)
 #include "Render/PVRDefines.h"
 #else //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 //    #include "libpvr/PVRTError.h"
@@ -200,3 +200,4 @@ protected:
 
 
 #endif //#ifndef __DAVAENGINE_LIBPVRHELPER_H__
+

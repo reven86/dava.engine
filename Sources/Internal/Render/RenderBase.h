@@ -90,13 +90,19 @@
 	#include <GLES/glext.h>
     #include <EGL/egl.h>
 #if (__ANDROID_API__ < 18)
-    #include <GLES2/gl2.h>
-    #include <GLES2/gl2ext.h>
+ 	#include <GLES2/gl2.h>
+ 	#include <GLES2/gl2ext.h>
 #else
     #include <GLES3/gl3.h>
     #include <GLES3/gl3ext.h>
 #endif
 
+#elif  defined (__DAVAENGINE_NACL__)
+    #define __DAVAENGINE_OPENGL__
+    #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
+    #include <GLES2/gl2.h>
+    #include <GLES2/gl2ext.h>
+    
 #else //PLATFORMS
 	//other platforms
 #endif//PLATFORMS 
@@ -451,7 +457,7 @@ eCmpFunc GetCmpFuncByName(const String & cmpFuncStr);
 eFace GetFaceByName(const String & faceStr);
 eStencilOp GetStencilOpByName(const String & stencilOpStr);
 eFillMode GetFillModeByName(const String & fillModeStr);
-    
+
 enum eShaderSemantic
 {
     UNKNOWN_SEMANTIC = 0,

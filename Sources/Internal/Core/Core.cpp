@@ -55,6 +55,13 @@
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Notification/LocalNotificationController.h"
 
+#if defined (__DAVAENGINE_NACL__)
+#include "FileSystem/LocalizationSystem.h"
+#include "Animation/AnimationManager.h"
+#include "Utils/Random.h"
+#include "Render/2D/FontManager.h"
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif

@@ -36,7 +36,7 @@
 namespace DAVA
 {
 
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
     
     
 #define PVRT_MIN(a,b)            (((a) < (b)) ? (a) : (b))

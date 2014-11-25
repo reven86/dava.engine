@@ -32,13 +32,15 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 #include "Platform/Mutex.h"
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA 
 {
-
+//#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
+//class Mutex;
+//#endif //#if defined(__DAVAENGINE_ANDROID__)
 class SystemTimer : public Singleton<SystemTimer> 
 {
     friend class Core;
@@ -48,7 +50,7 @@ class SystemTimer : public Singleton<SystemTimer>
 	LARGE_INTEGER	tLi;
 	BOOL			bHighTimerSupport;
 	float32			t0;
-#elif defined (__DAVAENGINE_ANDROID__)
+#elif defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 	float32			t0;
 	uint64 savedSec;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
@@ -100,7 +102,7 @@ public:
     inline void PauseGlobalTime(bool isPaused);
     
     
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 	uint64 GetTickCount();
 	void InitTickCount();
 #endif //#if defined(__DAVAENGINE_ANDROID__)

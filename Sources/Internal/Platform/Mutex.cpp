@@ -69,7 +69,7 @@ void Mutex::Unlock()
     }
 }
 
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_NACL__)
 
 Mutex::Mutex()
 {

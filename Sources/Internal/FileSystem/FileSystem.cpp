@@ -62,7 +62,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/errno.h>
-
+#elif defined(__DAVAENGINE_NACL__)
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <sys/stat.h>
 #endif //PLATFORMS
 
 namespace DAVA
@@ -142,7 +146,7 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
 #ifdef __DAVAENGINE_WIN32__
     BOOL res = ::CreateDirectoryA(filePath.GetAbsolutePathname().c_str(), 0);
     return (res == 0) ? DIRECTORY_CANT_CREATE : DIRECTORY_CREATED;
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
     int res = mkdir(filePath.GetAbsolutePathname().c_str(), 0777);
     return (res == 0) ? (DIRECTORY_CREATED) : (DIRECTORY_CANT_CREATE);
 #endif //PLATFORMS
@@ -156,7 +160,7 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
 #ifdef __DAVAENGINE_WIN32__
 	BOOL ret = ::CopyFileA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), !overwriteExisting);
 	return ret != 0;
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 
 	bool copied = false;
 
@@ -199,6 +203,23 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
 
 	return copied;
 
+/*#elif defined(__DAVAENGINE_NACL__)
+    
+    std::ifstream source(existingFile.GetAbsolutePathname().c_str(), std::ios::binary);
+    std::ofstream dest(newFile.GetAbsolutePathname().c_str(), std::ios::binary);
+    if(source.is_open() && dest.is_open())
+    {
+        std::istreambuf_iterator<char> begin_source(source);
+        std::istreambuf_iterator<char> end_source;
+        std::ostreambuf_iterator<char> begin_dest(dest);
+        copy(begin_source, end_source, begin_dest);
+    
+        source.close();
+        dest.close();
+        return true;
+    }
+    return false;
+*/
 #else //iphone & macos
     int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, overwriteExisting ? COPYFILE_ALL : COPYFILE_ALL | COPYFILE_EXCL);
     return ret==0;
@@ -221,6 +242,27 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 	remove(newFile.GetAbsolutePathname().c_str());
 	int ret = rename(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str());
 	return ret == 0;
+#elif defined(__DAVAENGINE_NACL__)
+    
+    std::ifstream source(existingFile.GetAbsolutePathname().c_str(), std::ios::binary);
+    std::ofstream dest(newFile.GetAbsolutePathname().c_str(), std::ios::binary);
+    if(source.is_open() && dest.is_open())
+    {
+        std::istreambuf_iterator<char> begin_source(source);
+        std::istreambuf_iterator<char> end_source;
+        std::ostreambuf_iterator<char> begin_dest(dest);
+        copy(begin_source, end_source, begin_dest);
+        
+        
+        source.close();
+        dest.close();
+        if(remove(existingFile.GetAbsolutePathname().c_str()) == 0)
+        {
+            return true;
+        }
+        return false;
+    }
+    return false;
 #else //iphone & macos
 	int flags = COPYFILE_ALL | COPYFILE_MOVE;
 	if(!overwriteExisting)
@@ -307,7 +349,7 @@ bool FileSystem::DeleteDirectory(const FilePath & path, bool isRecursive)
 		Logger::Warning("Failed to delete directory: %s error: 0x%x", path.c_str(), GetLastError());
 	}
 	return (res != 0);*/
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_NACL__)
 	int32 res = rmdir(path.GetAbsolutePathname().c_str());
 	return (res == 0);
 #endif //PLATFORMS
@@ -375,7 +417,7 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 	currentWorkingDirectory = FilePath(tempDir);
 	currentWorkingDirectory.MakeDirectoryPathname();
 	return currentWorkingDirectory;
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
 	getcwd(tempDir, 2048);
 	currentWorkingDirectory = FilePath(tempDir);
 	currentWorkingDirectory.MakeDirectoryPathname();
@@ -423,13 +465,28 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 	if (IsAPKPath(path))
 		return (fileSet.find(path) != fileSet.end());
 #endif
+//#ifndef __DAVAENGINE_NACL__
 	struct stat s;
 	if(stat(pathToCheck.GetAbsolutePathname().c_str(),&s) == 0)
-	{
-		return (0 != (s.st_mode & S_IFREG));
-	}
 
- 	return false;
+	{
+#ifndef __DAVAENGINE_NACL__
+        return (0 != (s.st_mode & S_IFREG));
+    
+#else
+        const String& pathTo = pathToCheck.GetAbsolutePathname();
+        // TODO: nacl_io httpfs always s.st_mode=0
+        if((strcmp(&pathTo[pathTo.length()-1],"\\")==0)||(strcmp(&pathTo[pathTo.length()-1],"/")==0))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+#endif //#ifndef __DAVAENGINE_NACL__
+    }
+	return false;
 }
 
 bool FileSystem::IsDirectory(const FilePath & pathToCheck)
@@ -447,12 +504,26 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 	if (IsAPKPath(path))
 		return (dirSet.find(path) != dirSet.end());
 #endif //#if defined(__DAVAENGINE_ANDROID__)
-
 	struct stat s;
-	if(stat(pathToCheck.GetAbsolutePathname().c_str(), &s) == 0)
+    const String pathTo = pathToCheck.GetAbsolutePathname();
+	if(stat(pathTo.c_str(), &s) == 0)
 	{
+#ifndef __DAVAENGINE_NACL__
 		return (0 != (s.st_mode & S_IFDIR));
-	}
+#else
+        // TODO: nacl_io always s.st_mode=0
+        const String pathTo = pathToCheck.GetAbsolutePathname();
+        if((strcmp(&pathTo[pathTo.length()-1],"\\")==0)||(strcmp(&pathTo[pathTo.length()-1],"/")==0))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+#endif //#ifndef __DAVAENGINE_NACL__
+        
+    }
 #endif //#if defined (__DAVAENGINE_WIN32__)
 
 	return false;
@@ -600,6 +671,17 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 }
 #endif //#if defined(__DAVAENGINE_WIN32__)
 
+#if defined(__DAVAENGINE_NACL__)
+const FilePath FileSystem::GetUserDocumentsPath()
+{
+    return FilePath("/");
+}
+
+const FilePath FileSystem::GetPublicDocumentsPath()
+{
+    return FilePath("/");
+}
+#endif //#if defined(__DAVAENGINE_FLASH__)
     
 #if defined(__DAVAENGINE_ANDROID__)
 const FilePath FileSystem::GetUserDocumentsPath()

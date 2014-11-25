@@ -45,16 +45,21 @@
 #include "musicios.h"
 #endif
 
+#ifdef __DAVAENGINE_NACL__
+#include "fmodnacl.h"
+#include "ppapi_simple/ps_main.h"
+#endif
+
 #define MAX_SOUND_CHANNELS 48
 #define MAX_SOUND_VIRTUAL_CHANNELS 64
 
 namespace DAVA
 {
     
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char * name, int unicode, unsigned int * filesize, void ** handle, void ** userdata);
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void * handle, void * buffer, unsigned int sizebytes, unsigned int * bytesread, void * userdata);
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void * handle, unsigned int pos, void * userdata);
-FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userdata);
+    FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char * name, int unicode, unsigned int * filesize, void ** handle, void ** userdata);
+    FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void * handle, void * buffer, unsigned int sizebytes, unsigned int * bytesread, void * userdata);
+    FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void * handle, unsigned int pos, void * userdata);
+    FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userdata);
 
 static const FastName SEREALIZE_EVENTTYPE_EVENTFILE("eventFromFile");
 static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
@@ -66,13 +71,20 @@ SoundSystem::SoundSystem()
     DVASSERT(sizeof(FMOD_VECTOR) == sizeof(Vector3));
 
     void * extraDriverData = 0;
-#ifdef __DAVAENGINE_IPHONE__
+#if defined(__DAVAENGINE_IPHONE__)
     FMOD_IPHONE_EXTRADRIVERDATA iphoneDriverData;
     Memset(&iphoneDriverData, 0, sizeof(FMOD_IPHONE_EXTRADRIVERDATA));
     
     iphoneDriverData.sessionCategory = FMOD_IPHONE_SESSIONCATEGORY_AMBIENTSOUND;
     
     extraDriverData = &iphoneDriverData;
+#endif   
+
+#if defined(__DAVAENGINE_NACL__)
+    FMOD_NACL_EXTRADRIVERDATA naclDriverData;
+    memset(&naclDriverData, 0, sizeof(FMOD_NACL_EXTRADRIVERDATA));
+    naclDriverData.instance = PSGetInstanceId();
+    extraDriverData = &naclDriverData;
 #endif
     
 	FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
@@ -396,7 +408,7 @@ int32 SoundSystem::GetChannelsMax() const
 
     return softChannels;
 }
-    
+
 void SoundSystem::Suspend()
 {
 #ifdef __DAVAENGINE_ANDROID__
@@ -617,7 +629,7 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
 
     soundGroupsMutex.Unlock();
 }
-    
+
 #ifdef __DAVAENGINE_IPHONE__
 bool SoundSystem::IsSystemMusicPlaying()
 {

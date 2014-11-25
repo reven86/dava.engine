@@ -25,7 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
+#ifndef __DAVAENGINE_NACL__
 
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
@@ -1458,3 +1458,6 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vec
 }
 
 };
+
+
+#endif //#ifndef __DAVAENGINE_NACL__

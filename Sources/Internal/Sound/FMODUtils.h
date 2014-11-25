@@ -42,7 +42,10 @@ namespace DAVA
 	FMOD_RESULT result = command; \
 	if(result != FMOD_OK && result != FMOD_ERR_EVENT_FAILED) \
 	{ \
-		Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(result)); \
+		/*Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(result));*/ \
+Logger::Error("%s",FMOD_ErrorString(result));\
+\
+\
 	} \
 } \
 

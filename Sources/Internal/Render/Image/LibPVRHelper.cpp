@@ -136,7 +136,7 @@ eErrorCode LibPVRHelper::WriteFile(const FilePath & fileName, const Vector<Image
     
 uint32 LibPVRHelper::GetBitsPerPixel(uint64 pixelFormat)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || (__DAVAENGINE_NACL__)
     if((pixelFormat & PVRTEX_PFHIGHMASK) != 0)
     {
         uint8 *pixelFormatChar = (uint8 *)&pixelFormat;
@@ -190,7 +190,7 @@ uint32 LibPVRHelper::GetBitsPerPixel(uint64 pixelFormat)
     
 void LibPVRHelper::GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &minY, uint32 &minZ)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || (__DAVAENGINE_NACL__)
     switch(pixelFormat)
     {
         case ePVRTPF_DXT1:
@@ -259,7 +259,7 @@ void LibPVRHelper::GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &mi
     
 uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLevel, bool allSurfaces, bool allFaces)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || (__DAVAENGINE_NACL__)
     //The smallest divisible sizes for a pixel format
     uint32 uiSmallestWidth = 1;
     uint32 uiSmallestHeight = 1;
@@ -330,7 +330,7 @@ uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLeve
     
 void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint64& newType, EPVRTColourSpace& newCSpace, EPVRTVariableType& newChanType, bool& isPreMult)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || (__DAVAENGINE_NACL__)
     //Default value.
     isPreMult=false;
         
@@ -2476,7 +2476,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
                 
             if((FORMAT_PVR4 == formatDescriptor.formatID) || (FORMAT_PVR2 == formatDescriptor.formatID))
             {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || (__DAVAENGINE_NACL__)
                 DVASSERT_MSG(false, "Must be hardware supported PVR Compression");
                 image->Release();
                 return false;
@@ -2490,7 +2490,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             else if (FORMAT_ETC1 == formatDescriptor.formatID)
             {
                 //Create a near-identical texture header for the decompressed header.
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__) || (__DAVAENGINE_NACL__)
                 DVASSERT_MSG(false, "Must be hardware supported ETC1");
                 image->Release();
                 return false;
@@ -2512,4 +2512,5 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
 }
     
 };
+
 

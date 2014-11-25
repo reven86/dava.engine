@@ -82,10 +82,13 @@ public:
 	void * GetMacOSXCursor();
     static void MoveToCenterOfWindow();
 #endif 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_NACL__)
     static void ShowSystemCursor(bool show);
 #endif
-    
+#if defined(__DAVAENGINE_NACL__)
+	static void CursorHided(void* cursor, int flags);
+	static void MoveToCenterOfWindow();
+#endif
 private:
 	void HardwareSet();
 	

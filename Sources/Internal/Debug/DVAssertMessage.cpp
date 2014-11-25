@@ -65,6 +65,11 @@ void DVAssertMessage::ShowMessage(eModalType /*modalType*/, const char8 * /*text
 
 #endif	// ENABLE_ASSERT_MESSAGE
 
+#if defined (__DAVAENGINE_NACL__)
+void  DVAssertMessage::InnerShow(eModalType modalType, const char* content)
+{
 
+}
+#endif
 
 

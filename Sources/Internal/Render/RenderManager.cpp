@@ -148,6 +148,7 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     SetDynamicParam(PARAM_PROJ, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+
 }
 	
 RenderManager::~RenderManager()
@@ -165,10 +166,10 @@ RenderManager::~RenderManager()
 void RenderManager::InitDefaultRenderStates()
 {
     RenderState::InitDefaultStates();
-    
+	
 	hardwareState.stateHandle = RenderState::RENDERSTATE_DEFAULT;
 }
-
+	
 void RenderManager::SetDebug(bool isDebugEnabled)
 {
 	debugEnabled = isDebugEnabled;
@@ -205,14 +206,14 @@ FastName RenderManager::TEXTURE_MUL_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dT
 void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 {
     DetectRenderingCapabilities();
-    
+
     
     if (!FLAT_COLOR)
     {
         FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
     }
     
-    if (!TEXTURE_MUL_FLAT_COLOR)
+    if (!TEXTURE_MUL_FLAT_COLOR) 
     {
         TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, FastNameSet()));
 
@@ -239,17 +240,16 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
     hardwareState.Reset(true);
 
 #if defined(__DAVAENGINE_OPENGL__)
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)//Dizz: glDisableClientState functions are not supported by GL ES 2.0
-    RENDER_VERIFY(glDisableClientState(GL_VERTEX_ARRAY));
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_NACL__)//Dizz:     RENDER_VERIFY(glDisableClientState(GL_VERTEX_ARRAY));
     RENDER_VERIFY(glDisableClientState(GL_NORMAL_ARRAY));
     RENDER_VERIFY(glDisableClientState(GL_COLOR_ARRAY));
-	for (int k = 0; k < RenderState::MAX_TEXTURE_LEVELS; ++k)
+    for (int k = 0; k < RenderState::MAX_TEXTURE_LEVELS; ++k)
     {
         RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0 + k));
         RENDER_VERIFY(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
     }
     RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0));
-#endif
+#endif    
 #endif
     
 	frameBufferWidth = _frameBufferWidth;
@@ -705,7 +705,7 @@ void RenderManager::RectFromRenderOrientationToViewport(Rect & rect)
 //    }
 //    return uniformMatrixNormal;
 //}
-
+        
 //const Matrix4 & RenderManager::GetUniformMatrix(eUniformMatrixType type)
 //{
 //    if (uniformMatrixFlags[type] == 0)
@@ -826,7 +826,7 @@ void RenderManager::VerifyRenderContext()
 	
 #endif
 }
-    
+	
     
 void RenderManager::Setup2DMatrices()
 {

@@ -32,6 +32,10 @@
 #include "Render/Texture.h"
 #include "Render/RenderDataObject.h"
 
+#ifdef __DAVAENGINE_NACL__
+    #define glPointSize(x) {Logger::Debug("DAVAENGINE_NACL glPointSize error"); }
+#endif
+
 namespace DAVA
 {
 	/*

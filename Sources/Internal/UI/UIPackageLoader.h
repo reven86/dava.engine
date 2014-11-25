@@ -1,5 +1,12 @@
 #ifndef __DAVAENGINE_UI_PACKAGE_LOADER_H__
 #define __DAVAENGINE_UI_PACKAGE_LOADER_H__
+
+#if defined(__DAVAENGINE_NACL__)
+// to C98 standard for GoogleNativeClient
+#define override
+#endif
+
+
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"

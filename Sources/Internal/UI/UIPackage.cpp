@@ -14,11 +14,11 @@ UIPackage::UIPackage(const FilePath &path)
 
 UIPackage::~UIPackage()
 {
-    for (auto iter = controls.begin(); iter != controls.end(); ++iter)
+    for (Vector<UIControl *>::iterator iter = controls.begin(); iter != controls.end(); ++iter)
         SafeRelease(*iter);
     controls.clear();
     
-    for (auto it = importedPackages.begin(); it != importedPackages.end(); ++it)
+    for (Vector<UIPackage*>::iterator it = importedPackages.begin(); it != importedPackages.end(); ++it)
         SafeRelease(*it);
     importedPackages.clear();
 }
@@ -58,7 +58,7 @@ void UIPackage::AddControl(UIControl *control)
     
 void UIPackage::InsertControlBelow(UIControl *control, const UIControl *belowThis)
 {
-    auto it = find(controls.begin(), controls.end(), belowThis);
+    Vector<UIControl *>::iterator it = find(controls.begin(), controls.end(), belowThis);
     if (it != controls.end())
     {
         ++it;
@@ -92,7 +92,7 @@ UIPackage *UIPackage::GetPackage(int32 index) const
 
 UIPackage *UIPackage::GetPackage(const String name) const
 {
-    for (auto it = importedPackages.begin(); it != importedPackages.end(); ++it)
+    for (Vector<UIPackage*>::const_iterator it = importedPackages.begin(); it != importedPackages.end(); ++it)
     {
         if ((*it)->GetName() == name)
             return *it;

@@ -49,7 +49,7 @@ void TextureDescriptor::TextureDrawSettings::SetDefaultValues()
 {
     wrapModeS = Texture::WRAP_REPEAT;
     wrapModeT = Texture::WRAP_REPEAT;
-
+    
     minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
     magFilter = Texture::FILTER_LINEAR;
 }
@@ -75,7 +75,7 @@ void TextureDescriptor::TextureDataSettings::SetIsNormalMap(const bool & isNorma
 {
     EnableFlag(isNormalMap, FLAG_IS_NORMAL_MAP);
 }
-
+    
 bool TextureDescriptor::TextureDataSettings::GetIsNormalMap() const
 {
     return IsFlagEnabled(FLAG_IS_NORMAL_MAP);
@@ -113,7 +113,7 @@ void TextureDescriptor::Compression::Clear()
 //================   TextureDescriptor  ===================
 const String TextureDescriptor::DESCRIPTOR_EXTENSION = ".tex";
 const String TextureDescriptor::SOURCEFILE_EXTENSION = ".png";
-
+    
 
 TextureDescriptor::TextureDescriptor()
 {
@@ -149,7 +149,7 @@ TextureDescriptor * TextureDescriptor::CreateDescriptor(Texture::TextureWrap wra
 
 	return descriptor;
 }
-    
+
     
 void TextureDescriptor::SetDefaultValues()
 {
@@ -334,7 +334,7 @@ void TextureDescriptor::LoadVersion6(int32 signature, DAVA::File *file)
 	file->Read(&dataSettings.textureFlags);
 	file->Read(&drawSettings.minFilter);
 	file->Read(&drawSettings.magFilter);
-
+    
     if(signature == COMPRESSED_FILE)
     {
 		file->Read(&exportedAsGpuFamily);
@@ -495,7 +495,7 @@ bool TextureDescriptor::GetGenerateMipMaps() const
 {
     return dataSettings.GetGenerateMipMaps();
 }
-
+    
 FilePath TextureDescriptor::GetSourceTexturePathname() const
 {
     if(pathname.IsEmpty())
@@ -550,7 +550,7 @@ bool TextureDescriptor::IsCubeMap() const
 {
 	return (dataSettings.faceDescription != 0);
 }
-
+	
 uint32 TextureDescriptor::ReadSourceCRC() const
 {
 	uint32 crc = 0;
@@ -591,6 +591,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
 {
 	if(compression[forGPU].format == FORMAT_INVALID) return 0;
 
+#ifndef __DAVAENGINE_NACL__
 	FilePath filePath = GPUFamilyDescriptor::CreatePathnameForGPU(this, forGPU);
 	if(filePath.IsEqualToExtension(".pvr"))
 	{
@@ -605,6 +606,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     
     Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get converted crc for file %s", filePath.GetStringValue().c_str());
     DVASSERT(0);//converted means only pvr or dds
+#endif
     return 0;
 }
 
@@ -700,6 +702,6 @@ uint32 TextureDescriptor::GenerateDescriptorCRC() const
 
 	return CRC32::ForBuffer((const char8 *)crcBuffer, CRC_BUFFER_SIZE);
 }
-
-
+    
+    
 };

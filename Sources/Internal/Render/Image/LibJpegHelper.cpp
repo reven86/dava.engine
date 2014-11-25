@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-
+#ifndef __DAVAENGINE_NACL_
 #include "Render/Image/Image.h"
 #include "Render/Image/LibJpegHelper.h"
 #include "Render/Image/ImageConvert.h"
@@ -314,3 +314,4 @@ eErrorCode LibJpegWrapper::WriteFile(const FilePath & fileName, const Vector<Ima
    
     
 };
+#endif //__DAVAENGINE_NACL__

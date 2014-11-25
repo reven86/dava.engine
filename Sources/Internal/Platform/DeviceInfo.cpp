@@ -52,7 +52,8 @@ DeviceInfo::ePlatform DeviceInfo::GetPlatform()
 
 #elif defined(__DAVAENGINE_ANDROID__)
 	platform = PLATFORM_ANDROID;
-
+#elif defined(__DAVAENGINE_NACL__)
+	platform = PLATFORM_MACOS;
 #elif defined(__DAVAENGINE_WIN32__)
 	platform = PLATFORM_WIN32;
 #endif

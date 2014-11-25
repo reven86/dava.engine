@@ -321,7 +321,7 @@ String File::GetModificationDate(const FilePath & filePathname)
     int32 ret = stat(realPathname.c_str(), &fileInfo);
     if(0 == ret)
     {
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_NACL__)
 		tm* utcTime = gmtime(&fileInfo.st_mtime);
 #elif defined (__DAVAENGINE_ANDROID__)
 		tm* utcTime = gmtime((const time_t *)&fileInfo.st_mtime);

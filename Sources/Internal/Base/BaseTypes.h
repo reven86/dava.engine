@@ -135,7 +135,22 @@
 //#endif 
 //#define __DAVAENGINE_IPHONE__
 
+#ifdef __DAVAENGINE_NACL__
+    #include <string.h>
+    #include <stdio.h>
+    #include <stdarg.h>
+    #include <limits.h>
+#endif
 
+#if defined(__DAVAENGINE_PNACL__)
+    #include <cstdarg>
+    #include <cstdlib>
+    #include <cstdio>
+    #include <cwchar>
+    #include <unistd.h>
+    #include <sys/stat.h>
+    #include <pthread.h>
+#endif
 
 namespace DAVA
 {

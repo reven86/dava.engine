@@ -1,6 +1,12 @@
 #ifndef __DAVAENGINE_UI_DEFAULT_PACKAGE_LOADER_H__
 #define __DAVAENGINE_UI_DEFAULT_PACKAGE_LOADER_H__
 
+
+#if defined(__DAVAENGINE_NACL__)
+// to C98 standard for GoogleNativeClient
+#define override
+#endif
+
 #include "AbstractUIPackageBuilder.h"
 #include "UIPackage.h"
 

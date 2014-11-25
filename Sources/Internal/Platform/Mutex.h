@@ -29,7 +29,9 @@
 
 #ifndef __DAVAENGINE_MUTEX_H__
 #define __DAVAENGINE_MUTEX_H__
-
+#ifdef __DAVAENGINE_PNACL__
+#include <pthread.h>
+#endif
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
@@ -64,7 +66,7 @@ public:
 
 #if defined(__DAVAENGINE_WIN32__)
 	HANDLE mutex;
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_NACL__)
 	pthread_mutex_t mutex;
 #endif //PLATFORMS
 };

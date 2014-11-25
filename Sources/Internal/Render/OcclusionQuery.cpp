@@ -38,22 +38,30 @@ OcclusionQuery::OcclusionQuery()
     
 void OcclusionQuery::Init()
 {
+#if !defined(__DAVAENGINE_NACL__)
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glGenQueries(1, &id));
 #else
         RENDER_VERIFY(glGenQueriesEXT(1, &id));
 #endif
         //Logger::Debug("Init query: %d", id);
+#else
+    Logger::Error("OcclusionQuery::Init() stub");
+#endif //!defined(__DAVAENGINE_NACL__)
 }
     
 void OcclusionQuery::Release()
 {
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_NACL__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
         RENDER_VERIFY(glDeleteQueries(1, &id));
 #else
         RENDER_VERIFY(glDeleteQueriesEXT(1, &id));
 #endif
         //Logger::Debug("Release query: %d", id);
+#else
+    Logger::Error("OcclusionQuery::Release() stub");
+#endif //!defined(__DAVAENGINE_NACL__)
 }
 
 OcclusionQuery::~OcclusionQuery()
@@ -65,32 +73,41 @@ OcclusionQuery::~OcclusionQuery()
 void OcclusionQuery::BeginQuery()
 {
 // Temporarly written, should be refactored and moved to RenderBase.h defines
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_NACL__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
     RENDER_VERIFY(glBeginQuery(GL_SAMPLES_PASSED, id));
 #else
     RENDER_VERIFY(glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id));
 #endif
+#else
+    Logger::Error("OcclusionQuery::BeginQuery() stub");
+#endif //!defined(__DAVAENGINE_NACL__)
 }
     
 void OcclusionQuery::EndQuery()
 {
+#if !defined(__DAVAENGINE_NACL__)
 // Temporarly written, should be refactored and moved to RenderBase.h defines
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
     RENDER_VERIFY(glEndQuery(GL_SAMPLES_PASSED));
 #else
     RENDER_VERIFY(glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT));
 #endif
+#else
+    Logger::Error("OcclusionQuery::EndQuery() stub");
+#endif //!defined(__DAVAENGINE_NACL__)
 }
     
 bool OcclusionQuery::IsResultAvailable()
 {
+#if !defined(__DAVAENGINE_NACL__)
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     GLint available;
     RENDER_VERIFY(glGetQueryObjectiv(id,
                           GL_QUERY_RESULT_AVAILABLE_ARB,
                           &available));
     return (available != 0);
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
     GLuint available;
     RENDER_VERIFY(glGetQueryObjectuiv(id,
                                      GL_QUERY_RESULT_AVAILABLE,
@@ -103,16 +120,23 @@ bool OcclusionQuery::IsResultAvailable()
                                      &available));
     return (available != 0);
 #endif
+#else
+    Logger::Error("OcclusionQuery::IsResultAvailable() stub");
+#endif //!defined(__DAVAENGINE_NACL__)
 	return false;
 }
     
 void OcclusionQuery::GetQuery(uint32 * resultValue)
 {
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_NACL__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_NACL__)
     RENDER_VERIFY(glGetQueryObjectuiv(id, GL_QUERY_RESULT_ARB, resultValue));
 #else
     RENDER_VERIFY(glGetQueryObjectuivEXT(id, GL_QUERY_RESULT_EXT, resultValue));
 #endif
+#else
+    Logger::Error("OcclusionQuery::GetQuery stub");
+#endif //!defined(__DAVAENGINE_NACL__)
 }
     
     

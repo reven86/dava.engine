@@ -134,6 +134,15 @@ void FilePath::InitializeBundleName()
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
+#if defined(__DAVAENGINE_NACL__)
+    //TODO:
+    void FilePath::InitializeBundleName()
+    {
+        SetBundleName(FilePath("/"));
+    }
+#endif
+    
+    
 FilePath FilePath::FilepathInDocuments(const char * relativePathname)
 {
 	FilePath path(FileSystem::Instance()->GetCurrentDocumentsDirectory() + relativePathname);
