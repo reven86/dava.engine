@@ -695,12 +695,9 @@ Entity *	Entity::FindByName(const char * searchName)
 void Entity::BakeTransforms()
 {
 	uint32 size = (uint32)children.size();
-	if(size == 1 && (0 == GetComponent(Component::LOD_COMPONENT)) && (0 == GetComponent(Component::SWITCH_COMPONENT))) // propagate matrices
+	if(size == 1 && (0 == GetComponent(Component::RENDER_COMPONENT))) // propagate matrices
 	{
-		for (uint32 c = 0; c < size; ++c)
-		{
-			children[c]->SetLocalTransform(children[c]->GetLocalTransform() * GetLocalTransform());
-		}
+		children[0]->SetLocalTransform(children[0]->GetLocalTransform() * GetLocalTransform());
 		SetLocalTransform(Matrix4::IDENTITY);
 		AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
 	}
