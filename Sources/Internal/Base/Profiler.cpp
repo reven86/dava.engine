@@ -34,13 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #include "Platform/SystemTimer.h"
     using namespace DAVA;
 
-    #ifdef __DAVAENGINE_WIN32__
-        #define WIN32_LEAN_AND_MEAN
-        #include <windows.h>
-    #elif __DAVAENGINE_ANDROID__
-        #include <time.h>
-        #include <sys/atomics.h>
-    #endif
 
     #include <stdio.h>
     #include <string.h>
@@ -49,47 +42,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //==============================================================================
 
-const unsigned                      InvalidIndex = (unsigned)(-1);
-#if defined __DAVAENGINE_WIN32__
-static LARGE_INTEGER                TimerFreq;
-#elif defined(__DAVAENGINE_IPHONE__)  ||  defined(__DAVAENGINE_MACOS__)
-static mach_timebase_info_data_t    TimeBase;
-#endif 
+const unsigned  InvalidIndex = (unsigned)(-1);
 
 
 
 //==============================================================================
 
-static long
+static inline long
 _CurTimeUs()
 {
-    #ifdef __DAVAENGINE_WIN32__
+    static SystemTimer timer;
 
-        LARGE_INTEGER t;
-
-        ::QueryPerformanceCounter( &t );
-    
-        return long(((t.QuadPart)*1000000) / TimerFreq.QuadPart);
-
-    #elif defined __DAVAENGINE_ANDROID__
-
-        timespec    ts;
-
-        clock_gettime( CLOCK_REALTIME, &ts );
-        //   this gives more correct time, but slow-as-Hell on lots of devices
-        //   clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts );
-
-        return long(ts.tv_sec*1000000 + ts.tv_nsec/1000);
-    
-    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-	    
-	    return (mach_absolute_time() * timebase.numer) / timebase.denom;
-
-    #else
-
-    #error high-resolution timer must be defined!
-
-    #endif
+    return (long)(timer.GetAbsoluteUs());
 }
 
 
@@ -261,22 +225,6 @@ Init( unsigned max_counter_count, unsigned history_len )
 
         counter += MaxCounterCount;
     }
-
-    #if defined __DAVAENGINE_WIN32__
-
-        ::QueryPerformanceFrequency( &TimerFreq );
-    
-    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-	    
-        (void) mach_timebase_info( &TimeBase );
-    
-	    while( ((TimeBase.numer % 10) == 0)  &&  ((TimeBase.denom % 10) == 0) )
-	    {
-		    TimeBase.numer /= 10;
-		    TimeBase.denom /= 10;
-	    }
-    
-    #endif
 }
 
 
