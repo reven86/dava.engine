@@ -24,7 +24,7 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+    =====================================================================================*/
 
 #include "Job/JobQueue.h"
 #include "Job/JobManager.h"
@@ -34,92 +34,88 @@ namespace DAVA
 {
 
 JobQueueWorker::JobQueueWorker(uint32 maxCount /* = 1024 */)
-: jobsMaxCount(maxCount)
-, nextPopIndex(0)
-, nextPushIndex(0)
-, processingCount(0)
+    : jobsMaxCount(maxCount)
+    , nextPopIndex(0)
+    , nextPushIndex(0)
+    , processingCount(0)
 {
-	jobs = new Function<void()>[jobsMaxCount];
+    jobs = new Function<void()>[jobsMaxCount];
 }
 
 JobQueueWorker::~JobQueueWorker()
 {
-	SafeDeleteArray(jobs);
+    SafeDeleteArray(jobs);
 }
 
 void JobQueueWorker::Push(const Function<void()> &fn)
 {
-	if(fn != NULL)
-	{
-		LockGuard<Spinlock> guard(lock);
-		if(nextPushIndex == nextPopIndex && 0 == processingCount)
-		{
-			nextPushIndex = 0;
-			nextPopIndex = 0;
-		}
+    if(fn != NULL)
+    {
+        LockGuard<Spinlock> guard(lock);
+        if(nextPushIndex == nextPopIndex && 0 == processingCount)
+        {
+            nextPushIndex = 0;
+            nextPopIndex = 0;
+        }
 
-		DVASSERT(nextPushIndex < jobsMaxCount);
+        DVASSERT(nextPushIndex < jobsMaxCount);
 
-		jobs[nextPushIndex++] = fn;
-		processingCount++;
-	}
+        jobs[nextPushIndex++] = fn;
+        processingCount++;
+    }
 }
 
 bool JobQueueWorker::PopAndExec()
 {
-	bool ret = false;
-	Function<void()> fn;
+    bool ret = false;
+    Function<void()> fn;
 
-	{
-		LockGuard<Spinlock> guard(lock);
-		if(nextPopIndex < nextPushIndex)
-		{
-			fn = jobs[nextPopIndex++];
-		}
-	}
+    {
+        LockGuard<Spinlock> guard(lock);
+        if(nextPopIndex < nextPushIndex)
+        {
+            fn = jobs[nextPopIndex++];
+        }
+    }
 
-	if(fn != NULL)
-	{
-		fn();
+    if(fn != NULL)
+    {
+        fn();
 
-		{
-			LockGuard<Spinlock> guard(lock);
-			DVASSERT(processingCount > 0);
-			processingCount--;
-		}
+        {
+            LockGuard<Spinlock> guard(lock);
+            DVASSERT(processingCount > 0);
+            processingCount--;
+        }
 
-		ret = true;
-	}
+        ret = true;
+    }
 
-	return ret;
+    return ret;
 }
 
-bool JobQueueWorker::IsEmpty() const
+bool JobQueueWorker::IsEmpty()
 {
-	LockGuard<Spinlock> guard(lock);
-	return (nextPopIndex == nextPushIndex && 0 == processingCount);
+    LockGuard<Spinlock> guard(lock);
+    return (nextPopIndex == nextPushIndex && 0 == processingCount);
 }
 
-void JobQueueWorker::Signal() const
+void JobQueueWorker::Signal()
 {
-	jobsInQueueMutex.Lock();
-	Thread::Signal(&jobsInQueueCV);
-	jobsInQueueMutex.Unlock();
+    LockGuard<Mutex> guard(jobsInQueueMutex);
+    Thread::Signal(&jobsInQueueCV);
 }
 
-void JobQueueWorker::Broadcast() const
+void JobQueueWorker::Broadcast()
 {
-	jobsInQueueMutex.Lock();
-	Thread::Broadcast(&jobsInQueueCV);
-	jobsInQueueMutex.Unlock();
+    LockGuard<Mutex> guard(jobsInQueueMutex);
+    Thread::Broadcast(&jobsInQueueCV);
 }
 
-void JobQueueWorker::Wait() const
+void JobQueueWorker::Wait()
 {
-	jobsInQueueMutex.Lock();
-	Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
-	jobsInQueueMutex.Unlock();
+    LockGuard<Mutex> guard(jobsInQueueMutex);
+    Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
 }
 
-};
-
+}

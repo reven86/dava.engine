@@ -77,7 +77,7 @@ public:
 		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
 		\return Return true if there are some jobs, otherwise false.
 	*/
-    bool HasMainJobs(Thread::Id invokerThreadId = 0) const;
+    bool HasMainJobs(Thread::Id invokerThreadId = 0);
 
 	/*! Returns the number of available worker-threads. */
 	uint32 GetWorkersCount() const;
@@ -93,7 +93,7 @@ public:
 	/*!  Check in there are some not executed worker-thread jobs.
 		\return Return true if there are some jobs, otherwise false.
 	*/
-    bool HasWorkerJobs() const;
+    bool HasWorkerJobs();
 
 protected:
     struct MainJob
@@ -106,15 +106,15 @@ protected:
         Function<void ()> fn;
     };
 
-    mutable Mutex mainQueueMutex;
-	mutable Mutex mainCVMutex;
+    Mutex mainQueueMutex;
+    Mutex mainCVMutex;
     Deque<MainJob> mainJobs;
     ConditionalVariable mainCV;
     MainJob curMainJob;
 
-	mutable Semaphore workerDoneSem;
-	JobQueueWorker workerQueue;
-	Vector<WorkerThread*> workerThreads;
+    Semaphore workerDoneSem;
+    JobQueueWorker workerQueue;
+    Vector<JobThread*> workerThreads;
 };
 
 }

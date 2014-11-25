@@ -24,7 +24,7 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+    =====================================================================================*/
 
 #ifndef __DAVAENGINE_JOB_QUEUE_H__
 #define __DAVAENGINE_JOB_QUEUE_H__
@@ -40,37 +40,32 @@
 namespace DAVA
 {
 
-class JobQueueMain
-{
-	
-};
-
 class JobQueueWorker
 {
 public:
-	JobQueueWorker(uint32 maxCount = 1024);
-	virtual ~JobQueueWorker();
+    JobQueueWorker(uint32 maxCount = 1024);
+    virtual ~JobQueueWorker();
 
-	void Push(const Function<void ()> &fn);
-	bool PopAndExec();
+    void Push(const Function<void()> &fn);
+    bool PopAndExec();
 
-	bool IsEmpty() const;
+    bool IsEmpty();
 
-	void Signal() const;
-	void Broadcast() const;
-	void Wait() const;
+    void Signal();
+    void Broadcast();
+    void Wait();
 
 protected:
-	uint32 jobsMaxCount;
-	Function<void()> *jobs;
+    uint32 jobsMaxCount;
+    Function<void()> *jobs;
 
-	uint32 nextPushIndex;
-	uint32 nextPopIndex;
-	int32 processingCount;
+    uint32 nextPushIndex;
+    uint32 nextPopIndex;
+    int32 processingCount;
 
-	mutable Spinlock lock;
-	mutable ConditionalVariable jobsInQueueCV;
-	mutable Mutex jobsInQueueMutex;
+    Spinlock lock;
+    ConditionalVariable jobsInQueueCV;
+    Mutex jobsInQueueMutex;
 };
 
 }

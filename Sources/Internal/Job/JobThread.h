@@ -24,7 +24,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/ 
+=====================================================================================*/
 
 #ifndef __DAVAENGINE_JOB_THREAD_H__
 #define __DAVAENGINE_JOB_THREAD_H__
@@ -35,19 +35,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-struct WorkerThread
+struct JobThread
 {
-	WorkerThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
-	~WorkerThread();
+    JobThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
+    ~JobThread();
 
-	void Cancel();
+    void Cancel();
 
 protected:
-	Thread *thread;
-	JobQueueWorker *workerQueue;
-	Semaphore *workerDoneSem;
+    Thread *thread;
+    JobQueueWorker *workerQueue;
+    Semaphore *workerDoneSem;
 
-	void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
+    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
 };
 
 }

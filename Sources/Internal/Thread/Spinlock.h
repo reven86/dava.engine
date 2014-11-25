@@ -44,15 +44,16 @@ namespace DAVA
 class Spinlock
 {
 public:
-	Spinlock() : spin(0) {};
+    Spinlock() : spin(0) {};
 
-	void Lock();
-	void Unlock();
+    void Lock();
+    void Unlock();
+    bool TryLock();
 
 protected:
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
-	int32 spin;
+    int32 spin;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
     OSSpinLock spin;
 #endif //PLATFORMS
@@ -67,13 +68,25 @@ protected:
 
 inline void Spinlock::Lock()
 {
-	while(!AtomicCompareAndSwap(0, 1, spin))
-	{ }
+    // try to set spin = 1
+    while(!AtomicCompareAndSwap(0, 1, spin))
+    {
+        // wait till spin become equal to 0
+        while(0 != spin) 
+        { }
+    }
 }
 
 inline void Spinlock::Unlock()
 {
-	AtomicCompareAndSwap(1, 0, spin);
+    // set spin = 0
+    AtomicCompareAndSwap(1, 0, spin);
+}
+
+inline bool Spinlock::TryLock()
+{
+    // try to set spin = 1
+    return AtomicCompareAndSwap(0, 1, spin);
 }
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
@@ -84,12 +97,17 @@ inline void Spinlock::Unlock()
 
 inline void Spinlock::Lock()
 {
-	OSSpinLockLock(&spin);
+    OSSpinLockLock(&spin);
 }
 
 inline void Spinlock::Unlock()
 {
-	OSSpinLockUnlock(&spin);
+    OSSpinLockUnlock(&spin);
+}
+
+inline bool Spinlock::TryLock()
+{
+    return OSSpinLockTry(&spin);
 }
 
 #endif //PLATFORMS

@@ -31,33 +31,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-WorkerThread::WorkerThread(JobQueueWorker *_workerQueue, Semaphore *_workerDoneSem)
-: workerQueue(_workerQueue)
-, workerDoneSem(_workerDoneSem)
+JobThread::JobThread(JobQueueWorker *_workerQueue, Semaphore *_workerDoneSem)
+    : workerQueue(_workerQueue)
+    , workerDoneSem(_workerDoneSem)
 {
-	thread = Thread::Create(Message(this, &WorkerThread::ThreadFunc));
-	thread->Start();
+    thread = Thread::Create(Message(this, &JobThread::ThreadFunc));
+    thread->Start();
 }
 
-WorkerThread::~WorkerThread()
+JobThread::~JobThread()
 {
-	thread->Cancel();
-	workerQueue->Broadcast();
-	thread->Join();
-	SafeRelease(thread);
+    thread->Cancel();
+    workerQueue->Broadcast();
+    thread->Join();
+    SafeRelease(thread);
 }
 
-void WorkerThread::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
+void JobThread::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
 {
-	while(thread->GetState() != Thread::STATE_CANCELLING)
-	{
-		workerQueue->Wait();
+    while(thread->GetState() != Thread::STATE_CANCELLING)
+    {
+        workerQueue->Wait();
 
-		while(workerQueue->PopAndExec())
-		{ }
+        while(workerQueue->PopAndExec())
+        { }
 
-		workerDoneSem->Post();
-	}
+        workerDoneSem->Post();
+    }
 }
 
 };
