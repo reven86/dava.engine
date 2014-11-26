@@ -57,6 +57,8 @@ CurlDownloader::CurlDownloader()
     , chunkInfo(NULL)
     , saveThread(NULL)
     , allowedBuffersInMemory(3)
+    , maxChunkSize(20 * 1024 * 1024)
+    , minChunkSize(16 * 1024)
 {
     if (!isCURLInit && CURLE_OK == curl_global_init(CURL_GLOBAL_ALL))
     {

@@ -138,7 +138,7 @@ void Downloader::CalcStatistics(uint32 dataCame)
     if (0 < currentSpeeds.size())
     {
         statistics.downloadSpeedBytesPerSec = speedsSumm / currentSpeeds.size();
-        statistics.timeLeftSecs = dataToDownloadLeft / statistics.downloadSpeedBytesPerSec;
+        statistics.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / statistics.downloadSpeedBytesPerSec);
     }
 }
     
