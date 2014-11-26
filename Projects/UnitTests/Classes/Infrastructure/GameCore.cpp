@@ -111,7 +111,7 @@ void GameCore::OnAppStarted()
 
     RenderManager::Instance()->SetFPS(60);
 
-    new DLCDownloadTest();
+    //new DLCDownloadTest();
     new MathTest();
     new FunctionBindSignalTest();
     new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
