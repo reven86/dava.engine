@@ -207,46 +207,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     }
     
     @Override
-    protected void onResume() 
+    protected void onPause()
     {
-        super.onResume();
-        // The activity has become visible (it is now "resumed").
-		Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
-
-		
-		JNITextField.HideAllTextFields();
-		
-		if(mController != null)
-		{
-			mController.onResume();
-		}
-		
-        // activate accelerometer
-        if(null != accelerometer)
-        {
-        	if(accelerometer.IsSupported())
-        	{
-        		accelerometer.Start();
-        	}
-        }
-        
-        // activate GLView 
-        if(null != glView && null == splashView) {
-        	glView.onResume();
-        }
-        
-        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
-        
-        JNIUtils.onResume();
-    }
-
-    
-    @Override
-    protected void onPause() 
-    {
-        super.onPause();
         // Another activity is taking focus (this activity is about to be "paused").
-
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] start");
 
 		if(mController != null)
@@ -275,8 +238,45 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         {
         	nativeIsFinishing();
         }
+        
+        super.onPause();
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] finish");
+    }
+    
+    @Override
+    protected void onResume() 
+    {
+    	// recreate eglContext (also eglSurface, eglScreen) should be first
+        super.onResume();
+        // The activity has become visible (it is now "resumed").
+		Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
+
+		
+		JNITextField.HideAllTextFields();
+		
+		if(mController != null)
+		{
+			mController.onResume();
+		}
+		
+        // activate accelerometer
+        if(null != accelerometer)
+        {
+        	if(accelerometer.IsSupported())
+        	{
+        		accelerometer.Start();
+        	}
+        }
+        
+        // activate GLView 
+        if(null != glView && null == splashView) {
+        	glView.onResume();
+        }
+        
+        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
+        
+        JNIUtils.keepScreenOnOnResume();
     }
 
     @Override

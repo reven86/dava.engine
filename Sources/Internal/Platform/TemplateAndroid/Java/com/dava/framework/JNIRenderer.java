@@ -17,17 +17,9 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	private native void nativeOnResumeView();
 	private native void nativeOnPauseView(boolean isLock);
 	
-	private boolean skipFirstFrame = false;
 	private boolean isFirstFrameAfterDraw = false;
-
-	private int width = 0;
-	private int height = 0;
 	
 	private boolean isRenderRecreated = false;
-	
-	public JNIRenderer()
-	{
-	}
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -35,7 +27,6 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 		
 		JNIDeviceInfo.SetGPUFamily(gl);
 
-		isRenderRecreated = true;
 		nativeRenderRecreated();
 
 		LogExtensions();
@@ -55,16 +46,9 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
-		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged");
-		if (isRenderRecreated || width != w || height != h) {
-			if (width != w || height != h) {
-				skipFirstFrame = true;
-				width = w;
-				height = h;
-			}
-			nativeResize(width, height);
-			isRenderRecreated = false;
-		}
+		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged: w = " + w + " h = " + h);
+
+		nativeResize(w, h);
 		OnResume();
 		isFirstFrameAfterDraw = true;
 
@@ -73,11 +57,6 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
-		if (skipFirstFrame) {
-			skipFirstFrame = false; //skip first frame for correct unlock device in landscape mode, after unlock device in first frame draw in portrait mode
-			return;
-		}
-
 		nativeRender();
 		
 		if(isFirstFrameAfterDraw)
@@ -86,8 +65,6 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 			JNIActivity.GetActivity().OnFirstFrameAfterDraw();
 			JNITextField.ShowVisibleTextFields();
 		}
-		
-		
 	}
 	
 	public void OnPause()

@@ -67,7 +67,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	{
 		this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
-		//setPreserveEGLContextOnPause(true);
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
+		{
+			setPreserveEGLContextOnPause(true);
+		}
 		setEGLContextFactory(new JNIContextFactory());
 		setEGLConfigChooser(new JNIConfigChooser());
 
@@ -76,11 +79,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		setRenderMode(RENDERMODE_CONTINUOUSLY);
 		
 		mogaListener = new MOGAListener(this);
-		
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-		{
-			setPreserveEGLContextOnPause(true);
-		}
 		
 		setDebugFlags(0);
 		
@@ -107,15 +105,26 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	@Override
 	public void onPause()
 	{
-		super.onPause();
 		setRenderMode(RENDERMODE_WHEN_DIRTY);
-		mRenderer.OnPause();
+		queueEvent(new Runnable() {
+            public void run() {
+                mRenderer.OnPause();
+            }
+        });
+		// destroy eglCondext(or unbind), eglScreen, eglSurface
+		super.onPause();
 	}
 	
 	@Override
 	public void onResume()
 	{
+        // first call parent to restore eglContext
 		super.onResume();
+		queueEvent(new Runnable() {
+            public void run() {
+                mRenderer.OnResume();
+            }
+        });
 		setRenderMode(RENDERMODE_CONTINUOUSLY);
 	};
 
