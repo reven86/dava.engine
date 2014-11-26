@@ -21,6 +21,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -36,6 +37,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.dava.framework.JNIConst;
 import com.dava.framework.SoftKeyboardStateHelper.SoftKeyboardStateListener;
 
 public class JNITextField {
@@ -48,7 +50,7 @@ public class JNITextField {
 	static private volatile int lastClosedTextField = NO_ACTIVE_TEXTFIELD;
 	static private volatile boolean readyToClose = false;
 	static private SoftKeyboardStateHelper keyboardHelper = null;
-	static private FrameLayout keyboardLayout = null;
+	static private AttachedFrameLayout keyboardLayout = null;
 	static private Handler handler = new Handler();
 	static private int lastSelectedImeMode = 0;
     static private int lastSelectedInputType = 0;
@@ -60,6 +62,47 @@ public class JNITextField {
 		public boolean visible = false;
 	}
 	static Map<Integer, NativeEditText> controls = new HashMap<Integer, NativeEditText>();
+	
+	static class AttachedFrameLayout extends FrameLayout implements View.OnAttachStateChangeListener {
+		
+		private boolean isAttached = false;
+		
+		public AttachedFrameLayout(Context context) {
+	        super(context);
+	        addOnAttachStateChangeListener(this);
+	    }
+		
+		public AttachedFrameLayout(Context context, AttributeSet attrs,
+				int defStyle) {
+			super(context, attrs, defStyle);
+			addOnAttachStateChangeListener(this);
+		}
+
+		public AttachedFrameLayout(Context context, AttributeSet attrs) {
+			super(context, attrs);
+			addOnAttachStateChangeListener(this);
+		}
+
+		public boolean isAttached() {
+			return isAttached;
+		}
+
+		@Override
+		public void onViewAttachedToWindow(View v) {
+			if(v == this) {
+				isAttached = true;
+			}
+		}
+
+		@Override
+		public void onViewDetachedFromWindow(View v) {
+			if(v == this) {
+				isAttached = false;
+			}
+		}
+		
+		
+	}
 	
 	private static NativeEditText GetNativeEditText(int id) {
 		if (!controls.containsKey(id)) {
@@ -159,8 +202,11 @@ public class JNITextField {
 	        params.gravity = Gravity.LEFT | Gravity.TOP;
 	        params.token = windowToken;
 	        
-	        keyboardLayout = new FrameLayout(JNIActivity.GetActivity());
+	        keyboardLayout = new AttachedFrameLayout(JNIActivity.GetActivity());
 	        manager.addView(keyboardLayout, params);	
+
+	        // Set UI flags for detect correct size when navigation bar hiden
+	        JNIActivity.HideNavigationBar(keyboardLayout);
 		}
 		
 		if(keyboardHelper == null && keyboardLayout != null)
@@ -224,7 +270,14 @@ public class JNITextField {
 	
 	public static void DestroyKeyboardLayout(WindowManager manager) {
 		if(manager != null && keyboardLayout != null) {
-			manager.removeView(keyboardLayout);
+			try {
+				if(keyboardLayout.isAttached()) {
+					manager.removeView(keyboardLayout);
+				}
+			} catch (IllegalArgumentException ex) {
+				// Handle situation when keyboardLayout deleated from manager already
+				Log.w(JNIConst.LOG_TAG, "DestroyKeyboardLayout: " + ex.getMessage());
+			}
 			keyboardLayout = null;
 		}
 		if(keyboardHelper != null) {
@@ -633,6 +686,22 @@ public class JNITextField {
 		task.AsyncRun();
 	}
 
+	public static void SetTextUseRtlAlign(int id, final boolean useRtlAlign) {
+		final EditText text = GetEditText(id);
+		if (text == null)
+			return;
+
+		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+			@Override
+			public Void call() throws Exception {
+				int gravity = text.getGravity();
+				text.setGravity(useRtlAlign ? (gravity | Gravity.RELATIVE_LAYOUT_DIRECTION) : (gravity & ~Gravity.RELATIVE_LAYOUT_DIRECTION));
+				return null;
+			}
+		});
+		task.AsyncRun();
+	}
+	
 	public static void SetTextAlign(int id, final int align) {
 		final EditText text = GetEditText(id);
 		if (text == null)
@@ -641,7 +710,8 @@ public class JNITextField {
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-
+				boolean isRelative = (text.getGravity() & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) > 0;
+				
 				int gravityH = Gravity.LEFT;
 				int gravityV = Gravity.CENTER_VERTICAL;
 				if ((align & 0x01) > 0) // ALIGN_LEFT
@@ -657,6 +727,9 @@ public class JNITextField {
 				if ((align & 0x20) > 0) // ALIGN_BOTTOM
 					gravityV = Gravity.BOTTOM;
 
+				if(isRelative) {
+					gravityH |= Gravity.RELATIVE_LAYOUT_DIRECTION;
+				}
 				text.setGravity(gravityH | gravityV);
 				return null;
 			}

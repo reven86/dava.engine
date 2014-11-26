@@ -132,7 +132,7 @@ void JPEGTest::ReloadSprites()
     Image* imgJpeg = imageSet[0];
     Texture* tex = Texture::CreateFromData(imgJpeg->GetPixelFormat(), imgJpeg->data, imgJpeg->width, imgJpeg->height, false);
     SafeRelease(imgJpeg);
-    jpegSprite = Sprite::CreateFromTexture(tex, 0, 0, tex->width, tex->width);
+    jpegSprite = Sprite::CreateFromTexture(tex, 0, 0, static_cast<float32>(tex->width), static_cast<float32>(tex->width));
     SafeRelease(tex);
 }
 

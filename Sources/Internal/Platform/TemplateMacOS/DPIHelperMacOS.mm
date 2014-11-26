@@ -62,4 +62,14 @@ namespace DAVA
         return scale;
     }
     
+    Size2i DPIHelper::GetScreenSize()
+    {
+        Size2i screenSize;
+        NSScreen *screen = [NSScreen mainScreen];
+        NSRect screenRect = [screen frame];
+        screenSize.dx = screenRect.size.width;
+        screenSize.dy = screenRect.size.height;
+        
+        return screenSize;
+    }
 }

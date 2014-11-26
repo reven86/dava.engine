@@ -89,6 +89,9 @@ void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 	//ui->alignComboBox->setEnabled(enableTextAlignComboBox);
     ui->alignComboBox->setEnabled(true); // in any case metadata is one of: UIStaticTextMetadata, UITextFieldMetadata, UIButtonMetadata
     
+	RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_USE_RTL_ALIGN_PROPERTY_NAME, ui->useRtlAlignCheckBox, false, true);
+	ui->useRtlAlignCheckBox->setEnabled(true);
+    
     // register font and size to display selected font and size, disable editing
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_SIZE_PROPERTY_NAME, ui->fontSizeSpinBox, false, true);
     RegisterPushButtonWidgetForProperty(propertiesMap, PropertyNames::FONT_PROPERTY_NAME, ui->fontSelectButton, false, true);
@@ -112,7 +115,8 @@ void TextPropertyGridWidget::Cleanup()
     UnregisterColorWidget(ui->shadowColorWidget);
     
     UnregisterComboBoxWidget(ui->alignComboBox);
-    
+    UnregisterCheckBoxWidget(ui->useRtlAlignCheckBox);
+	
     UnregisterComboBoxWidget(ui->fontPresetComboBox);
     UnregisterPushButtonWidget(ui->fontPresetEditButton);
     

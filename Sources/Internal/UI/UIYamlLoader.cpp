@@ -42,6 +42,10 @@
 #include "Render/2D/TextBlock.h"
 #include "Utils/Utils.h"
 #include "Render/2D/FTFont.h"
+#include "UI/UIPackage.h"
+#include "UI/DefaultUIPackageBuilder.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/UIControlHelpers.h"
 
 namespace DAVA
 {
@@ -415,6 +419,23 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
 
 void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound /* = true */)
 {
+    DefaultUIPackageBuilder builder;
+    RefPtr<UIPackage> package(UIPackageLoader(&builder).LoadPackage(yamlPathname));
+    if (package.Valid())
+    {
+        DVASSERT(package->GetControlsCount() == 1);
+        UIControl *control = package->GetControl(0);
+        DVASSERT(control);
+        while (!control->GetChildren().empty())
+        {
+            rootControl->AddControl(control->GetChildren().front());
+        }
+
+        if (rootControl->GetSize() != control->GetSize())
+            rootControl->UpdateLayout();
+        return;
+    }
+
     UIYamlLoader * loader = new UIYamlLoader();
     loader->SetAssertIfCustomControlNotFound(assertIfCustomControlNotFound);
 
@@ -488,7 +509,7 @@ void UIYamlLoader::SetScrollBarDelegates(UIControl * rootControl)
     Map<UIScrollBar*,String>::iterator it = scrollsToLink.begin();
     for (; it!=scrollsToLink.end(); ++it)
     {
-        UIControl * control = GetControlByPath(it->second, rootControl);
+        UIControl * control = UIControlHelpers::GetControlByPath(it->second, rootControl);
         it->first->SetDelegate( dynamic_cast<UIScrollBarDelegate*>(control));
     }
     scrollsToLink.clear();
@@ -675,7 +696,7 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
         bool hasCustomType = (!type.empty() && !baseType.empty() && (type != baseType));
         if (hasCustomType)
         {
-            control->SetCustomControlType(type);
+            control->SetCustomControlClassName(type);
         }
 
         return control;
@@ -696,7 +717,7 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
         if (control)
         {
             // Even if the control of the base type was created, we have to store its custom type.
-            control->SetCustomControlType(type);
+            control->SetCustomControlClassName(type);
         }
     }
 
@@ -749,52 +770,5 @@ void UIYamlLoader::AddScrollBarToLink(UIScrollBar* scroll, const String& delegat
 {
     scrollsToLink.insert(std::pair<UIScrollBar*,String>(scroll,delegatePath));
 }
-    
-String UIYamlLoader::GetControlPath(const UIControl* control)
-{
-    String controlPath = "";
-    if (control)
-    {
-        controlPath = control->GetName();
-        UIControl * parent = control->GetParent();
-        while (parent)
-        {
-            String parentName = parent->GetName();
-            parent=parent->GetParent();
-            if (parent)
-            {
-                parentName += "/";
-                controlPath = parentName += controlPath;
-            }
-            
-        }
-    }
-    return controlPath;
-}
-    
-UIControl* UIYamlLoader::GetControlByPath(const String& controlPath, UIControl* rootControl)
-{
-    UIControl* control = rootControl;
-    Vector<String> controlNames;
-    Split(controlPath, "/", controlNames, false, true);
-    Vector<String>::const_iterator it_name = controlNames.begin();
-    if (rootControl->GetName() != *it_name)
-    {
-        Logger::Error("[UIYamlLoader::GetControlByPath] wrong root control |%s| |%s|",rootControl->GetName().c_str(),(*it_name).c_str());
-        return NULL;
-    } else
-    {
-        ++it_name;
-    }
-    for (; it_name!=controlNames.end(); ++it_name)
-    {
-        control = control->FindByName(*it_name,false);
-        if (NULL == control)
-        {
-            break;
-        }
-    }
-    return control;
-}
-	
+
 }

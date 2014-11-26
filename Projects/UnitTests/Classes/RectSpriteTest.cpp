@@ -175,7 +175,8 @@ void RectSpriteTest::TestFunction(TestTemplate<RectSpriteTest>::PerfFuncData *da
         if (images[i] && sprites[i])
         {
             Vector2 spriteSize = sprites[i]->GetSize();
-            Vector2 imageSize = Vector2(images[i]->GetWidth(), images[i]->GetHeight());
+            Vector2 imageSize = Vector2(static_cast<float32>(images[i]->GetWidth()), 
+				static_cast<float32>(images[i]->GetHeight()));
 
             if (spriteSize != imageSize)
             {

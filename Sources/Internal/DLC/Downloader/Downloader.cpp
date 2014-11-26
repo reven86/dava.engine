@@ -27,34 +27,119 @@
 =====================================================================================*/
 
 #include "Downloader.h"
-#include "DownloadManager.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "Platform/SystemTimer.h"
 
 namespace DAVA
 {
 
-size_t Downloader::SaveData(void *ptr, size_t size, size_t nmemb)
+bool Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 size)
 {
-    DownloadManager *mgr = DownloadManager::Instance();
-    
-    // SaveData performs when task is in IN_PROCESS state, so currentTask should be NOT NULL.
-    DVASSERT(mgr->currentTask);
-
-    FilePath storePath = mgr->currentTask->storePath;
-
     size_t written = 0;
-    File *destFile = File::Create(storePath, File::APPEND | File::WRITE);
+    File *destFile = File::Create(storePath, File::OPEN | File::WRITE | File::APPEND);
     if (destFile)
     {
-        written = destFile->Write(ptr, size * nmemb);
-        mgr->currentTask->downloadProgress += written;
+        DownloadManager::Instance()->ResetRetriesCount();
+#if defined(__DAVAENGINE_ANDROID__) 
+        uint32 posBeforeWrite = destFile->GetPos();
+#endif
+        written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
+
+#if defined(__DAVAENGINE_ANDROID__) 
+        //for Android value returned by 'Write()' is incorrect in case of full disk, that's why we calculate 'written' using 'GetPos()'
+        DVASSERT(destFile->GetPos() >= posBeforeWrite);
+        written = destFile->GetPos() - posBeforeWrite;
+#endif
         SafeRelease(destFile);
+        
+        notifyProgress(written);
+        
+        if (written != size)
+        {
+            Logger::Error("[Downloader::SaveData] Cannot save data to the file");
+            return false;
+        }
+    }
+    else
+    {
+        Logger::Error("[Downloader::SaveData] Cannot open file to save data");
+        return false;
     }
 
-    // maybee not ideal, but only Manager can use Downloader, so maybee callback is not required.
-    if (written != 0)
-        DownloadManager::Instance()->ResetRetriesCount();
-
-    return written;
+    return true;
+}
+    
+void Downloader::SetProgressNotificator(Function<void (uint64)> progressNotifier)
+{
+    notifyProgress = progressNotifier;
 }
 
+void Downloader::ResetStatistics(uint64 sizeToDownload)
+{
+    sizeTime.clear();
+    currentSpeeds.clear();
+    dataToDownloadLeft = sizeToDownload;
+    statistics.downloadSpeedBytesPerSec = 0;
+    statistics.timeLeftSecs = 0;
+}
+
+void Downloader::CalcStatistics(uint32 dataCame)
+{
+    dataToDownloadLeft -= dataCame;
+    
+    static const uint32 currentSpeedWindowRange = 500;
+    
+    static uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
+    static uint64 prevTime = curTime;
+    static uint64 timeDelta = 0;
+    
+    curTime = SystemTimer::Instance()->AbsoluteMS();
+    timeDelta = curTime - prevTime;
+    prevTime = curTime;
+
+    MeasureSpeedUnit currentMeasure = {dataCame, timeDelta};
+    sizeTime.push_back(currentMeasure);
+    
+    if (currentSpeedWindowRange < sizeTime.size())
+    {
+        sizeTime.pop_front();
+    }
+    
+    float64 currentSpeed = 0;
+    uint64 totalTime = 0;
+    uint64 totalSize = 0;
+    
+    auto end = sizeTime.end();
+    for (auto i = sizeTime.begin(); i != end; ++i)
+    {
+        totalSize += (*i).dataSizeCame;
+        totalTime += (*i).deltaTime;
+    }
+    
+    static const uint32 averageSpeedWindowRange = 100;
+    
+    if (0 != totalSize && 0 != totalTime)
+    {
+        currentSpeed = totalSize / (static_cast<float64>(totalTime)/1000);
+        currentSpeeds.push_back(currentSpeed);
+        if (averageSpeedWindowRange < currentSpeeds.size())
+        {
+            currentSpeeds.pop_front();
+        }
+    }
+
+    float64 speedsSumm = 0;
+    auto speedsEnd = currentSpeeds.end();
+    for (auto i = currentSpeeds.begin(); i != speedsEnd; ++i)
+    {
+        speedsSumm += (*i);
+    }
+    
+    if (0 < currentSpeeds.size())
+    {
+        statistics.downloadSpeedBytesPerSec = speedsSumm / currentSpeeds.size();
+        statistics.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / statistics.downloadSpeedBytesPerSec);
+    }
+}
+    
 }

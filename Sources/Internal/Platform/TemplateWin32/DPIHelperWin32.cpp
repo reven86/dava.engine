@@ -49,4 +49,13 @@ namespace DAVA
         return 1.0;
     }
 
+    Size2i DPIHelper::GetScreenSize()
+    {
+        Size2i screenSize;
+        HDC screen = GetDC(NULL);
+        screenSize.dx = GetDeviceCaps(screen, HORZRES);
+        screenSize.dy = GetDeviceCaps(screen, VERTRES);
+        ReleaseDC(NULL, screen);
+        return screenSize;
+    }
 }
