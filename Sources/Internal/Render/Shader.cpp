@@ -1034,7 +1034,7 @@ bool Shader::TestDynamicParamsInstancing()
     for(uint8 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform* currentUniform = autobindUniforms[k];
-        const void *data = RenderManager::GetDynamicParam(currentUniform->shaderSemantic); //as it can recompute param and change update semantic
+        RenderManager::GetDynamicParam(currentUniform->shaderSemantic); //as it can recompute param and change update semantic
         pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
         result &= (_updateSemantic == currentUniform->updateSemantic);        
     }
