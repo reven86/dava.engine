@@ -256,6 +256,8 @@ public:
     static const char * GetUniformTypeSLName(eUniformType type);
     static int32 GetInstanceSemanticByName(const FastName &name);
 
+    static bool GetUseValueCache(const FastName &name);
+
     int32 GetUniformLocationByIndex(int32 index);
     //int32 FindUniformLocationByName(const FastName & name);
     int32 FindUniformIndexByName(const FastName & name);

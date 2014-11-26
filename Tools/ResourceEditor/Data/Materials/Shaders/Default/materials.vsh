@@ -19,6 +19,7 @@ precision highp float;
 #version 140
 #define attribute in
 #define varying out
+#define texture2DLod textureLod
 #endif
 
 

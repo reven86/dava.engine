@@ -146,6 +146,11 @@ int32 Shader::GetInstanceSemanticByName(const FastName &name)
     return 0;
 }
 
+bool Shader::GetUseValueCache(const FastName &name)
+{
+    return (GetShaderSemanticByName(name)==UNKNOWN_SEMANTIC)&&(GetInstanceSemanticByName(name)==0);
+}
+
 int32 Shader::GetUniformTypeSize(eUniformType type)
 {
     switch(type)
@@ -405,8 +410,13 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         
         uniformOffsets[k] = (uint16)totalSize;
         
-        int32 uniformDataSize = GetUniformTypeSize((eUniformType)type);
-        totalSize += sizeof(Uniform) + (uniformDataSize * size);
+        totalSize += sizeof(Uniform);
+        if (GetUseValueCache(FastName(attributeName)))
+        {
+            int32 uniformDataSize = GetUniformTypeSize((eUniformType)type);
+            totalSize += (uniformDataSize * size);
+        }
+        
     }
     
     
@@ -435,17 +445,24 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         uniformStruct->size = size;
         uniformStruct->updateSemantic = 0;
 
-        void* value = uniformData + uniformOffsets[k] + sizeof(Uniform);
-        uint16 valueSize = GetUniformTypeSize((eUniformType)type) * size;
+        uint16 valueSize = 0;
+        void* value = NULL;
+        if (GetUseValueCache(FastName(attributeName)))
+        {
+            void* value = uniformData + uniformOffsets[k] + sizeof(Uniform);
+            uint16 valueSize = GetUniformTypeSize((eUniformType)type) * size;
 #ifdef USE_CRC_COMPARE
-        uniformStruct->crc = CRC32::ForBuffer((const char*)(value), valueSize);
-#else
-        uniformStruct->cacheValueSize = valueSize;
-        uniformStruct->cacheValue = value;
+            uniformStruct->crc = CRC32::ForBuffer((const char*)(value), valueSize);
+            
 #endif
 #ifdef USE_NEON_MATRIX_COMPARE
-        uniformStruct->matrixCRC = vmovq_n_u32(0);
+            uniformStruct->matrixCRC = vmovq_n_u32(0);
 #endif
+        }
+        uniformStruct->cacheValueSize = valueSize;
+        uniformStruct->cacheValue = value;
+        
+
         
         if(IsAutobindUniform(shaderSemantic))
         {
@@ -455,78 +472,82 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         if (uniformStruct->instanceSemantic)
             instancingUniformCount++;
 
-        switch(uniformStruct->type)
+        if (value)
         {
-            case UT_FLOAT:
+        
+            switch(uniformStruct->type)
             {
-                RENDER_VERIFY(glUniform1fv(uniformStruct->location, uniformStruct->size, (float32*)value));
-                break;
-            }
+                case UT_FLOAT:
+                {
+                    RENDER_VERIFY(glUniform1fv(uniformStruct->location, uniformStruct->size, (float32*)value));
+                    break;
+                }
                 
-            case UT_FLOAT_VEC2:
-            {
-                RENDER_VERIFY(glUniform2fv(uniformStruct->location, uniformStruct->size, (float32*)value));
-                break;
-            }
+                case UT_FLOAT_VEC2:
+                {
+                    RENDER_VERIFY(glUniform2fv(uniformStruct->location, uniformStruct->size, (float32*)value));
+                    break;
+                }
                 
-            case UT_FLOAT_VEC3:
-            {
-                RENDER_VERIFY(glUniform3fv(uniformStruct->location, uniformStruct->size, (float32*)value));
-                break;
-            }
+                case UT_FLOAT_VEC3:
+                {
+                    RENDER_VERIFY(glUniform3fv(uniformStruct->location, uniformStruct->size, (float32*)value));
+                    break;
+                }
                 
-            case UT_FLOAT_VEC4:
-            {
-                RENDER_VERIFY(glUniform4fv(uniformStruct->location, uniformStruct->size, (float32*)value));
-                break;
-            }
+                case UT_FLOAT_VEC4:
+                {
+                    RENDER_VERIFY(glUniform4fv(uniformStruct->location, uniformStruct->size, (float32*)value));
+                    break;
+                }
                 
-            case UT_BOOL:
-            case UT_INT:
-            case UT_SAMPLER_2D:
-            case UT_SAMPLER_CUBE:
-            {
-                RENDER_VERIFY(glUniform1iv(uniformStruct->location, uniformStruct->size, (int32*)value));
-                break;
-            }
+                case UT_BOOL:
+                case UT_INT:
+                case UT_SAMPLER_2D:
+                case UT_SAMPLER_CUBE:
+                {
+                    RENDER_VERIFY(glUniform1iv(uniformStruct->location, uniformStruct->size, (int32*)value));
+                    break;
+                }
                 
-            case UT_BOOL_VEC2:
-            case UT_INT_VEC2:
-            {
-                RENDER_VERIFY(glUniform2iv(uniformStruct->location, uniformStruct->size, (int32*)value));
-                break;
-            }
+                case UT_BOOL_VEC2:
+                case UT_INT_VEC2:
+                {
+                    RENDER_VERIFY(glUniform2iv(uniformStruct->location, uniformStruct->size, (int32*)value));
+                    break;
+                }
                 
-            case UT_BOOL_VEC3:
-            case UT_INT_VEC3:
-            {
-                RENDER_VERIFY(glUniform3iv(uniformStruct->location, uniformStruct->size, (int32*)value));
-                break;
-            }
+                case UT_BOOL_VEC3:
+                case UT_INT_VEC3:
+                {
+                    RENDER_VERIFY(glUniform3iv(uniformStruct->location, uniformStruct->size, (int32*)value));
+                    break;
+                }
                 
-            case UT_BOOL_VEC4:
-            case UT_INT_VEC4:
-            {
-                RENDER_VERIFY(glUniform4iv(uniformStruct->location, uniformStruct->size, (int32*)value));
-                break;
-            }
+                case UT_BOOL_VEC4:
+                case UT_INT_VEC4:
+                {
+                    RENDER_VERIFY(glUniform4iv(uniformStruct->location, uniformStruct->size, (int32*)value));
+                    break;
+                }
             
-            case UT_FLOAT_MAT2:
-            {
-                RENDER_VERIFY(glUniformMatrix2fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
-                break;
-            }
+                case UT_FLOAT_MAT2:
+                {
+                    RENDER_VERIFY(glUniformMatrix2fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
+                    break;
+                }
                 
-            case UT_FLOAT_MAT3:
-            {
-                RENDER_VERIFY(glUniformMatrix3fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
-                break;
-            }
+                case UT_FLOAT_MAT3:
+                {
+                    RENDER_VERIFY(glUniformMatrix3fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
+                    break;
+                }
                 
-            case UT_FLOAT_MAT4:
-            {
-                RENDER_VERIFY(glUniformMatrix4fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
-                break;
+                case UT_FLOAT_MAT4:
+                {
+                    RENDER_VERIFY(glUniformMatrix4fv(uniformStruct->location, uniformStruct->size, GL_FALSE, (float32*)value));
+                    break;
+                }
             }
         }
     }
@@ -1161,6 +1182,8 @@ void Shader::Invalidate()
 
 bool Shader::Uniform::ValidateCache(int32 value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value, sizeof(int32));
 #else
@@ -1178,6 +1201,8 @@ bool Shader::Uniform::ValidateCache(int32 value)
 
 bool Shader::Uniform::ValidateCache(float32 value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value, sizeof(float32));
 #else
@@ -1195,6 +1220,8 @@ bool Shader::Uniform::ValidateCache(float32 value)
 
 bool Shader::Uniform::ValidateCache(const Vector2 & value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.data, sizeof(float32) * 2);
 #else
@@ -1213,6 +1240,8 @@ bool Shader::Uniform::ValidateCache(const Vector2 & value)
 
 bool Shader::Uniform::ValidateCache(const Vector3 & value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.data, sizeof(float32) * 3);
 #else
@@ -1231,6 +1260,8 @@ bool Shader::Uniform::ValidateCache(const Vector3 & value)
 
 bool Shader::Uniform::ValidateCacheColor3(const Color & value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.color, sizeof(float32) * 3);
 #else
@@ -1251,6 +1282,8 @@ bool Shader::Uniform::ValidateCacheColor3(const Color & value)
 
 bool Shader::Uniform::ValidateCacheColor4(const Color & value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.color, sizeof(float32) * 4);
 #else
@@ -1272,6 +1305,8 @@ bool Shader::Uniform::ValidateCacheColor4(const Color & value)
 
 bool Shader::Uniform::ValidateCache(const Vector4 & value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.data, sizeof(float32) * 4);
 #else
@@ -1290,6 +1325,8 @@ bool Shader::Uniform::ValidateCache(const Vector4 & value)
 
 bool Shader::Uniform::ValidateCache(const Matrix4 & value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
 #ifdef USE_NEON_MATRIX_COMPARE
     uint64 a0;// = (uint32)value._00 << 32 | (uint32)value._11;
@@ -1374,6 +1411,8 @@ bool Shader::Uniform::ValidateCache(const Matrix4 & value)
 
 bool Shader::Uniform::ValidateCache(const Matrix3 & value)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     uint32 crc32 = CRC32::ForBuffer((const char*)value.data, sizeof(float32) * 9);
     bool result = crc == crc32;
@@ -1396,6 +1435,8 @@ bool Shader::Uniform::ValidateCache(const Matrix3 & value)
 
 bool Shader::Uniform::ValidateCache(const void* value, uint16 valueSize)
 {
+    if (!cacheValue)
+        return false;
 #ifdef USE_CRC_COMPARE
     uint32 crc32 = CRC32::ForBuffer((const char*)value, valueSize);
     bool result = crc == crc32;
