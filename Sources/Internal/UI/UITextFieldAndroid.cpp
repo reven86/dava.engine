@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-
+#if defined(__DAVAENGINE_ANDROID__)
 #include "UITextFieldAndroid.h"
 #include "Utils/UTF8Utils.h"
 
@@ -653,3 +653,4 @@ void UITextFieldAndroid::TextFieldFocusChanged(uint32_t id, bool hasFocus)
         return;
     control->TextFieldFocusChanged(hasFocus);
 }
+#endif

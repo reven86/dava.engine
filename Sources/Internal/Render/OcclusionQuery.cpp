@@ -25,6 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
 #include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/RenderFastNames.h"
@@ -44,22 +45,26 @@ OcclusionQuery::OcclusionQuery()
     
 void OcclusionQuery::Init()
 {
+#if !defined(__DAVAENGINE_HTML5__)
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glGenQueries(1, &id));
 #else
         RENDER_VERIFY(glGenQueriesEXT(1, &id));
 #endif
         //Logger::Debug("Init query: %d", id);
+#endif
 }
     
 void OcclusionQuery::Release()
 {
+#if !defined(__DAVAENGINE_HTML5__)
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glDeleteQueries(1, &id));
 #else
         RENDER_VERIFY(glDeleteQueriesEXT(1, &id));
 #endif
         //Logger::Debug("Release query: %d", id);
+#endif
 }
 
 OcclusionQuery::~OcclusionQuery()
@@ -73,26 +78,31 @@ OcclusionQuery::~OcclusionQuery()
 
 void OcclusionQuery::BeginQuery()
 {
+#if !defined(__DAVAENGINE_HTML5__)
 // Temporarly written, should be refactored and moved to RenderBase.h defines
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBeginQuery(GL_SAMPLES_PASSED, id));
 #else
     RENDER_VERIFY(glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id));
 #endif
+#endif
 }
     
 void OcclusionQuery::EndQuery()
 {
+#if !defined(__DAVAENGINE_HTML5__)
 // Temporarly written, should be refactored and moved to RenderBase.h defines
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glEndQuery(GL_SAMPLES_PASSED));
 #else
     RENDER_VERIFY(glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT));
 #endif
+#endif
 }
     
 bool OcclusionQuery::IsResultAvailable()
 {
+#if !defined(__DAVAENGINE_HTML5__)
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     GLint available;
     RENDER_VERIFY(glGetQueryObjectiv(id,
@@ -112,15 +122,18 @@ bool OcclusionQuery::IsResultAvailable()
                                      &available));
     return (available != 0);
 #endif
+#endif
 	return false;
 }
     
 void OcclusionQuery::GetQuery(uint32 * resultValue)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glGetQueryObjectuiv(id, GL_QUERY_RESULT_ARB, resultValue));
 #else
     RENDER_VERIFY(glGetQueryObjectuivEXT(id, GL_QUERY_RESULT_EXT, resultValue));
+#endif
 #endif
 }
    

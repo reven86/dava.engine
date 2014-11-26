@@ -302,7 +302,9 @@ void RenderHelper::DrawLines(const Vector<float32>& linePoints, UniqueHandle ren
 void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle renderState)
 {
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
     glPointSize(ptSize);
+#endif
 #endif 
     vertexStream->Set(TYPE_FLOAT, 2, 0, (void*)&pt);
     
@@ -311,14 +313,18 @@ void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle re
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
     glPointSize(1.0f);
+#endif
 #endif
 }
 	
 void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle renderState)
 {
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
     glPointSize(ptSize);
+#endif
 #endif 
     vertexStream->Set(TYPE_FLOAT, 3, 0, (void*)&pt);
     
@@ -327,7 +333,9 @@ void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle re
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
     glPointSize(1.0f);
+#endif
 #endif		
 }
 	
@@ -473,7 +481,9 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
 	if (ptCount >= 1)
 	{
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
         glPointSize(3.0f);
+#endif
 #endif 
         
 		vertexStream->Set(TYPE_FLOAT, 2, 0, polygon.GetPoints());
@@ -482,7 +492,9 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
 		glPointSize(1.0f);
+#endif
 #endif		
 	}
 }
@@ -493,7 +505,9 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
 	if (ptCount >= 1)
 	{
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
         glPointSize(3.0f);
+#endif
 #endif 
 		vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
         RenderManager::Instance()->SetRenderState(renderState);
@@ -501,7 +515,9 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
 		glPointSize(1.0f);
+#endif
 #endif		
 	}
 	

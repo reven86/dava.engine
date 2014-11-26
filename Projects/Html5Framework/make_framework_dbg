@@ -1,0 +1,5 @@
+mkdir Debug
+make -j6 COMPILE_FLAGS="-g -O0 -Werror -Wno-write-strings -Wno-trigraphs" \
+      BUILD_FLAGS="-DDAVA_DEBUG "\
+      --directory=Debug \
+      --makefile=../makefile

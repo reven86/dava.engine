@@ -44,7 +44,8 @@ class TextureDescriptorTool: public CommandLineTool
         ACTION_COPY_COMPRESSION,
         ACTION_CREATE_DESCRIPTORS,
 		ACTION_SET_COMPRESSION_FOR_FOLDER,
-		ACTION_SET_COMPRESSION_FOR_DESCRIPTOR
+		ACTION_SET_COMPRESSION_FOR_DESCRIPTOR,
+        ACTION_CHANGE_COMPRESSION_FOR_DESCRIPTOR
     };
     
 public:
@@ -61,6 +62,7 @@ protected:
 	DAVA::FilePath ReadFilePathname() const;
 
 	void ReadCompressionParams();
+    void ReadCompressionChangeParams();
 
 protected:
 
@@ -76,6 +78,9 @@ protected:
     DAVA::TextureConverter::eConvertQuality quality;
     
 	DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
+    
+    DAVA::Map<DAVA::eGPUFamily, std::pair<DAVA::TextureDescriptor::Compression,
+                                DAVA::TextureDescriptor::Compression> > compressionChangeParams;
 };
 
 

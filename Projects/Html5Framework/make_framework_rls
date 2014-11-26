@@ -1,0 +1,4 @@
+mkdir Release
+python $EMSCRIPTEN_ROOT/emmake make -j6 COMPILE_FLAGS="" \
+      --directory=Release \
+      --makefile=../makefile

@@ -209,6 +209,10 @@ public:
 private:
 	FILE	*	file;
 	uint32		size;
+#if defined(__DAVAENGINE_HTML5__)
+    bool bChanged;
+#endif
+    
 protected:
 	FilePath	filename;
 };

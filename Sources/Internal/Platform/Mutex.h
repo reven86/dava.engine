@@ -69,7 +69,7 @@ public:
 
 #if defined(__DAVAENGINE_WIN32__)
 	HANDLE mutex;
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 	pthread_mutex_t mutex;
 #endif //PLATFORMS
 };

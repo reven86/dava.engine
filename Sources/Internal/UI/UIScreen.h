@@ -78,6 +78,10 @@ public:
     
     virtual void SystemWillAppear();
     virtual void SystemScreenSizeDidChanged(const Rect &newFullScreenSize);
+    
+#if defined(__DAVAENGINE_HTML5__)
+    bool IsAllResourcesLoaded() {return bAllResourcesLoaded;}
+#endif
 
 protected:
 	virtual void LoadResources() {};
@@ -92,6 +96,11 @@ protected:
 
 
 	int32 groupId;
+
+#if defined(__DAVAENGINE_HTML5__)
+    bool bAllResourcesLoaded;
+#endif
+    
 private:
 	bool  isLoaded;
 	static List<UIScreen*>	appScreens;

@@ -138,6 +138,34 @@ void KeyboardDevice::PrepareKeyTranslator()
     
 #endif
 
+#if defined(__DAVAENGINE_HTML5__)
+    keyTranslator[0x08] = DVKEY_BACKSPACE;
+    keyTranslator[0x09] = DVKEY_TAB;
+    keyTranslator[0x1B] = DVKEY_ESCAPE;
+    keyTranslator[0x20] = DVKEY_SPACE;
+    keyTranslator[0x23] = DVKEY_END;
+    keyTranslator[0x24] = DVKEY_HOME;
+    keyTranslator[0x50] = DVKEY_LEFT;
+    keyTranslator[0x52] = DVKEY_UP;
+    keyTranslator[0x4F] = DVKEY_RIGHT;
+    keyTranslator[0x51] = DVKEY_DOWN;
+    keyTranslator[0x7F] = DVKEY_DELETE;
+    keyTranslator[0x0D] = DVKEY_ENTER;
+    keyTranslator[0xE1] = DVKEY_SHIFT;
+    
+
+    keyTranslator[0x61] = DVKEY_A;
+    keyTranslator[0x64] = DVKEY_D;
+    keyTranslator[0x65] = DVKEY_E;
+    keyTranslator[0x71] = DVKEY_Q;
+    keyTranslator[0x72] = DVKEY_R;
+    keyTranslator[0x73] = DVKEY_S;
+    keyTranslator[0x74] = DVKEY_T;
+    keyTranslator[0x75] = DVKEY_U;
+    keyTranslator[0x76] = DVKEY_V;
+    keyTranslator[0x77] = DVKEY_W;
+#endif
+    
 #if defined(__DAVAENGINE_MACOS__)
     keyTranslator[0x7B] = DVKEY_LEFT;
     keyTranslator[0x7C] = DVKEY_RIGHT;

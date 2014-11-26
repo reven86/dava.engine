@@ -200,6 +200,14 @@ void RenderManager::DetectRenderingCapabilities()
 	caps.isBGRA8888Supported = IsGLExtensionSupported("GL_IMG_texture_format_BGRA8888");
     caps.isFloat16Supported = IsGLExtensionSupported("GL_ARB_half_float_pixel");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_ARB_texture_float");
+#elif defined(__DAVAENGINE_HTML5__)
+    caps.isPVRTCSupported = false;
+	caps.isDXTSupported = true;
+    caps.isETCSupported = false;
+    caps.isBGRA8888Supported = false;
+    caps.isFloat16Supported = false;
+    caps.isFloat32Supported = false;
+	caps.isATCSupported = false;
 #endif
 
     caps.isOpenGLES3Supported = (renderer == Core::RENDERER_OPENGL_ES_3_0);
@@ -552,7 +560,7 @@ void RenderManager::ClearWithColor(float32 r, float32 g, float32 b, float32 a)
 
 void RenderManager::ClearDepthBuffer(float32 depth)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepth(depth));
@@ -569,7 +577,7 @@ void RenderManager::ClearStencilBuffer(int32 stencil)
 void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 {
     RENDER_VERIFY(glClearColor(color.r, color.g, color.b, color.a));
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepth(depth));

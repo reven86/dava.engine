@@ -97,6 +97,13 @@
     #include <GLES3/gl3ext.h>
 #endif
 
+#elif defined (__DAVAENGINE_HTML5__)
+#define __DAVAENGINE_OPENGL__
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #else //PLATFORMS
 	//other platforms
 #endif//PLATFORMS 

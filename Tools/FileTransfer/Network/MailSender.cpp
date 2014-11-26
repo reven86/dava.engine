@@ -57,6 +57,16 @@ bool MailSender::SendEmail(const WideString& email, const WideString& subject, c
 
 };
 
+#elif defined(__DAVAENGINE_HTML5__)
+
+namespace DAVA
+{
+    bool MailSender::SendEmail(const WideString& email, const WideString& subject, const WideString& messageText)
+    {
+        return false;
+    }
+};
+
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"

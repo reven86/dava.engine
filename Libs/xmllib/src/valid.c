@@ -1348,8 +1348,14 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
  *
  * Deallocate the memory used by an element definition
  */
+#if defined(EMSCRIPTEN)
+static void
+xmlFreeElement(void *vElem, xmlChar *name) {
+	xmlElementPtr elem = (xmlElementPtr)vElem;
+#else
 static void
 xmlFreeElement(xmlElementPtr elem) {
+#endif
     if (elem == NULL) return;
     xmlUnlinkNode((xmlNodePtr) elem);
     xmlFreeDocElementContent(elem->doc, elem->content);
@@ -1473,7 +1479,11 @@ xmlAddElementDecl(xmlValidCtxtPtr ctxt,
 	    oldAttributes = ret->attributes;
 	    ret->attributes = NULL;
 	    xmlHashRemoveEntry2(dtd->doc->intSubset->elements, name, ns, NULL);
-	    xmlFreeElement(ret);
+#if defined(EMSCRIPTEN)
+	    xmlFreeElement((void*)ret, NULL);
+#else
+		xmlFreeElement(ret);
+#endif
 	}
     }
 
@@ -1543,7 +1553,11 @@ xmlAddElementDecl(xmlValidCtxtPtr ctxt,
 	                    "Redefinition of element %s\n",
 			    name, NULL, NULL);
 #endif /* LIBXML_VALID_ENABLED */
+#if defined(EMSCRIPTEN)
+		xmlFreeElement((void*)ret, NULL);
+#else
 	    xmlFreeElement(ret);
+#endif
 	    if (uqname != NULL)
 		xmlFree(uqname);
 	    return(NULL);
@@ -1611,8 +1625,14 @@ xmlFreeElementTable(xmlElementTablePtr table) {
  * 
  * Returns the new xmlElementPtr or NULL in case of error.
  */
+#if defined(EMSCRIPTEN)
+static void*
+xmlCopyElement(void *vElem, xmlChar *name) {
+	xmlElementPtr elem = (xmlElementPtr)vElem;
+#else
 static xmlElementPtr
 xmlCopyElement(xmlElementPtr elem) {
+#endif
     xmlElementPtr cur;
 
     cur = (xmlElementPtr) xmlMalloc(sizeof(xmlElement));
@@ -1634,7 +1654,11 @@ xmlCopyElement(xmlElementPtr elem) {
     cur->content = xmlCopyElementContent(elem->content);
     /* TODO : rebuild the attribute list on the copy */
     cur->attributes = NULL;
+#if defined(EMSCRIPTEN)
+	return (void*)(cur);
+#else
     return(cur);
+#endif
 }
 
 /**
@@ -1868,8 +1892,14 @@ xmlScanIDAttributeDecl(xmlValidCtxtPtr ctxt, xmlElementPtr elem, int err) {
  *
  * Deallocate the memory used by an attribute definition
  */
+#if defined(EMSCRIPTEN)
+static void
+xmlFreeAttribute(void *vAttr, xmlChar *name) {
+	xmlAttributePtr attr = (xmlAttributePtr)vAttr;
+#else
 static void
 xmlFreeAttribute(xmlAttributePtr attr) {
+#endif
     xmlDictPtr dict;
 
     if (attr == NULL) return;
@@ -2070,7 +2100,11 @@ xmlAddAttributeDecl(xmlValidCtxtPtr ctxt,
 		 "Attribute %s of element %s: already defined\n",
 		 name, elem, NULL);
 #endif /* LIBXML_VALID_ENABLED */
+#if defined(EMSCRIPTEN)
+	xmlFreeAttribute((void*)ret, NULL);
+#else
 	xmlFreeAttribute(ret);
+#endif
 	return(NULL);
     }
 
@@ -2156,8 +2190,14 @@ xmlFreeAttributeTable(xmlAttributeTablePtr table) {
  * 
  * Returns the new xmlAttributePtr or NULL in case of error.
  */
+#if defined(EMSCRIPTEN)
+static void*
+xmlCopyAttribute(void *vAttr, xmlChar *name) {
+	xmlAttributePtr attr = (xmlAttributePtr)vAttr;
+#else
 static xmlAttributePtr
 xmlCopyAttribute(xmlAttributePtr attr) {
+#endif
     xmlAttributePtr cur;
 
     cur = (xmlAttributePtr) xmlMalloc(sizeof(xmlAttribute));
@@ -2178,7 +2218,11 @@ xmlCopyAttribute(xmlAttributePtr attr) {
 	cur->prefix = xmlStrdup(attr->prefix);
     if (attr->defaultValue != NULL)
 	cur->defaultValue = xmlStrdup(attr->defaultValue);
+#if defined(EMSCRIPTEN)
+	return (void*)(cur);
+#else
     return(cur);
+#endif
 }
 
 /**
@@ -2317,8 +2361,14 @@ xmlDumpAttributeTable(xmlBufferPtr buf, xmlAttributeTablePtr table) {
  *
  * Deallocate the memory used by an notation definition
  */
+#if defined(EMSCRIPTEN)
+static void
+xmlFreeNotation(void *vNota, xmlChar *name) {
+	xmlNotationPtr nota = (xmlNotationPtr) vNota;
+#else
 static void
 xmlFreeNotation(xmlNotationPtr nota) {
+#endif
     if (nota == NULL) return;
     if (nota->name != NULL)
 	xmlFree((xmlChar *) nota->name);
@@ -2402,7 +2452,11 @@ xmlAddNotationDecl(xmlValidCtxtPtr ctxt, xmlDtdPtr dtd,
 		    "xmlAddNotationDecl: %s already defined\n",
 		    (const char *) name);
 #endif /* LIBXML_VALID_ENABLED */
+#if defined(EMSCRIPTEN)
+	xmlFreeNotation((void*)ret, NULL);
+#else
 	xmlFreeNotation(ret);
+#endif
 	return(NULL);
     }
     return(ret);
@@ -2428,8 +2482,14 @@ xmlFreeNotationTable(xmlNotationTablePtr table) {
  * 
  * Returns the new xmlNotationPtr or NULL in case of error.
  */
+#if defined(EMSCRIPTEN)
+static void*
+xmlCopyNotation(void *vNota, xmlChar *name) {
+	xmlNotationPtr nota = (xmlNotationPtr) vNota;
+#else
 static xmlNotationPtr
 xmlCopyNotation(xmlNotationPtr nota) {
+#endif
     xmlNotationPtr cur;
 
     cur = (xmlNotationPtr) xmlMalloc(sizeof(xmlNotation));
@@ -2449,7 +2509,11 @@ xmlCopyNotation(xmlNotationPtr nota) {
 	cur->SystemID = xmlStrdup(nota->SystemID);
     else
 	cur->SystemID = NULL;
+#if defined(EMSCRIPTEN)
+	return (void*)(cur);
+#else
     return(cur);
+#endif
 }
 
 /**
@@ -2545,8 +2609,14 @@ xmlDumpNotationTable(xmlBufferPtr buf, xmlNotationTablePtr table) {
  *
  * Deallocate the memory used by an id definition
  */
+#if defined(EMSCRIPTEN)
+static void
+xmlFreeID(void *vId, xmlChar *name) {
+	xmlIDPtr id = (xmlIDPtr) vId;
+#else
 static void
 xmlFreeID(xmlIDPtr id) {
+#endif
     xmlDictPtr dict = NULL;
 
     if (id == NULL) return;
@@ -2639,7 +2709,11 @@ xmlAddID(xmlValidCtxtPtr ctxt, xmlDocPtr doc, const xmlChar *value,
 			    value, NULL, NULL);
 	}
 #endif /* LIBXML_VALID_ENABLED */
+#if defined(EMSCRIPTEN)
+	xmlFreeID((void*)ret, NULL);
+#else
 	xmlFreeID(ret);
+#endif
 	return(NULL);
     }
     if (attr != NULL)
@@ -2843,8 +2917,14 @@ xmlFreeRef(xmlLinkPtr lk) {
  *
  * Deallocate the memory used by a list of references
  */
+#if defined(EMSCRIPTEN)
+static void
+xmlFreeRefList(void *vList_ref, xmlChar *name) {
+	xmlListPtr list_ref = (xmlListPtr)vList_ref;
+#else
 static void
 xmlFreeRefList(xmlListPtr list_ref) {
+#endif
     if (list_ref == NULL) return;
     xmlListDelete(list_ref);
 }

@@ -33,7 +33,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_HTML5__)
 #include "UI/UIScreenManagerMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/UIScreenManageriPhone.h"

@@ -52,6 +52,10 @@ class ChannelGroup;
 
 namespace DAVA
 {
+#if defined(__DAVAENGINE_HTML5__)
+    void SoundChannelFinishedPlaying(int nChannelID);
+#endif
+    
 
 #ifdef DAVA_FMOD
 class FMODFileSoundEvent;

@@ -31,7 +31,7 @@
 #include "UI/TheoraPlayer.h"
 #include "FileSystem/YamlNode.h"
 
-#if !defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_ANDROID__) &&  !defined (__DAVAENGINE_HTML5__)
 
 #include <theora/theoradec.h>
 

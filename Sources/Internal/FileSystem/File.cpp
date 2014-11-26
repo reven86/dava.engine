@@ -38,12 +38,19 @@
 #include <time.h>
 
 
+#if defined(__DAVAENGINE_HTML5__)
+#include <emscripten.h>
+#endif
+
 namespace DAVA 
 {
 	
 File::File()
 {
 	file = NULL;
+#if defined(__DAVAENGINE_HTML5__)
+    bChanged = false;
+#endif
 }
 
 File::~File()
@@ -53,6 +60,16 @@ File::~File()
 		fclose(file);
 		file = 0;
 	}
+#if defined(__DAVAENGINE_HTML5__)
+    if(bChanged)
+    {
+        EM_ASM(
+               FS.syncfs(function (err) {
+            if (err) console.error(err);
+        });
+               );
+    }
+#endif
 }
 	
 File * File::Create(const FilePath &filePath, uint32 attributes)
@@ -159,6 +176,9 @@ uint32 File::Write(const void * pointerToData, uint32 dataSize)
 #endif
 
 	size += lSize;
+#if defined(__DAVAENGINE_HTML5__)
+    bChanged = true;
+#endif
 	return lSize;
 }
 
@@ -333,7 +353,7 @@ String File::GetModificationDate(const FilePath & filePathname)
     {
 #if defined (__DAVAENGINE_WIN32__)
 		tm* utcTime = gmtime(&fileInfo.st_mtime);
-#elif defined (__DAVAENGINE_ANDROID__)
+#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
 		tm* utcTime = gmtime((const time_t *)&fileInfo.st_mtime);
 #elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
         tm* utcTime = gmtime(&fileInfo.st_mtimespec.tv_sec);

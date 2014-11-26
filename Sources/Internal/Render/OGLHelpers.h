@@ -126,7 +126,7 @@ namespace DAVA
     #define glGenerateMipmap glGenerateMipmapOES
 	#define glBindFramebuffer glBindFramebufferOES
     #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
     
     #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
     #ifndef GL_HALF_FLOAT

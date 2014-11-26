@@ -60,6 +60,10 @@
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
 
+#if defined(__DAVAENGINE_HTML5__)
+#include <Platform/TemplateHtml5/ScriptLoadHelper.h>
+#endif
+
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Input/AccelerometeriPhone.h"
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -179,6 +183,10 @@ void Core::CreateSingletons()
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
     new LocalNotificationController();
+    
+#if defined(__DAVAENGINE_HTML5__)
+    new ScriptLoadHelper();
+#endif
 
     RegisterDAVAClasses();
     CheckDataTypeSizes();

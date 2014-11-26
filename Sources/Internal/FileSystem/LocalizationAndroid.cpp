@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/LocalizationAndroid.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "ExternC/AndroidLayer.h"
@@ -72,3 +73,4 @@ String LocalizationAndroid::GetDeviceLang(void)
     return jniLocalization.GetLocale();
 }
 };
+#endif

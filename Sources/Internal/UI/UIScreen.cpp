@@ -42,6 +42,9 @@ int32			UIScreen::groupIdCounter = -1;
 UIScreen::UIScreen(const Rect &rect)
 	:UIControl(rect)
 ,	groupId(groupIdCounter)
+#if defined(__DAVAENGINE_HTML5__)
+    ,bAllResourcesLoaded(true)
+#endif
 {
 	// add screen to list
 	appScreens.push_back(this);

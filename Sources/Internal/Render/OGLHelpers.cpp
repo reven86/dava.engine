@@ -38,7 +38,7 @@ namespace DAVA
     
 int32 GetHalfFloatID()
 {
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     return GL_HALF_FLOAT_OES;
 #elif defined(__DAVAENGINE_IPHONE__)
     const Core::eRenderer renderer = RenderManager::Instance()->GetRenderer();
