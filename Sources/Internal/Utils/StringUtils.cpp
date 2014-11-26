@@ -101,6 +101,7 @@ bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& prepared
     FriBidiLevel* embedding_levels = new FriBidiLevel[fribidi_len];
     if (!embedding_levels)
     {
+        SAFE_DELETE_ARRAY(bidi_types);
         SAFE_DELETE_ARRAY(logical);
         return false;
     }
@@ -109,6 +110,8 @@ bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& prepared
     FriBidiLevel max_level = fribidi_get_par_embedding_levels(bidi_types, fribidi_len, &base_dir, embedding_levels) - 1;
     if (max_level < 0)
     {
+        SAFE_DELETE_ARRAY(bidi_types);
+        SAFE_DELETE_ARRAY(embedding_levels);
         SAFE_DELETE_ARRAY(logical);
         return false;
     }
@@ -131,6 +134,8 @@ bool StringUtils::BiDiPrepare(const WideString& logicalStr, WideString& prepared
         *isRTL = FRIBIDI_IS_RTL(base_dir);
     }
 
+    SAFE_DELETE_ARRAY(bidi_types);
+    SAFE_DELETE_ARRAY(embedding_levels);
     SAFE_DELETE_ARRAY(logical);
     SAFE_DELETE_ARRAY(visual);
     return true;
@@ -164,6 +169,7 @@ bool StringUtils::BiDiReorder(WideString& string, const bool forceRtl)
     FriBidiLevel* embedding_levels = new FriBidiLevel[fribidi_len];
     if (!embedding_levels)
     {
+        SAFE_DELETE_ARRAY(bidi_types);
         SAFE_DELETE_ARRAY(logical);
         return false;
     }
@@ -172,6 +178,8 @@ bool StringUtils::BiDiReorder(WideString& string, const bool forceRtl)
     FriBidiLevel max_level = fribidi_get_par_embedding_levels(bidi_types, fribidi_len, &base_dir, embedding_levels) - 1;
     if (max_level < 0)
     {
+        SAFE_DELETE_ARRAY(bidi_types);
+        SAFE_DELETE_ARRAY(embedding_levels);
         SAFE_DELETE_ARRAY(logical);
         return false;
     }
@@ -186,6 +194,8 @@ bool StringUtils::BiDiReorder(WideString& string, const bool forceRtl)
     utf_len = fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, visual, fribidi_len, outstring);
     UTF8Utils::EncodeToWideString(reinterpret_cast<unsigned char*>(outstring), utf_len, string);
 
+    SAFE_DELETE_ARRAY(bidi_types);
+    SAFE_DELETE_ARRAY(embedding_levels);
     SAFE_DELETE_ARRAY(logical);
     SAFE_DELETE_ARRAY(visual);
     return status != 0;

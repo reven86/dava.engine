@@ -95,10 +95,10 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 {
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
-    textFieldAndroid->SetVisible(true);
+    textFieldAndroid->SetVisible(false);
 #elif defined(__DAVAENGINE_IPHONE__)
 	textFieldiPhone = new UITextFieldiPhone(this);
-    textFieldiPhone->SetVisible(true);
+    textFieldiPhone->SetVisible(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
     staticText->SetVisible(false);
@@ -131,6 +131,8 @@ void UITextField::SetupDefaults()
     SetIsPassword(false);
     SetTextColor(GetTextColor());
     SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    
+    SetFontSize(26); //12 is default size for IOS
     
     SetText(L"");
 }
@@ -346,7 +348,7 @@ void UITextField::SetTextUseRtlAlign(bool useRtlAlign)
 #endif
 }
 
-void UITextField::SetFontSize(float size)
+void UITextField::SetFontSize(float32 size)
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->SetFontSize(size);
@@ -1079,6 +1081,10 @@ void UITextField::SetFontPresetName( const String &presetName )
     }
 
     SetFont(font);
+    if (font)
+    {
+        SetFontSize((float32)font->GetFontHeight());
+    }
 }
 
 }; // namespace
