@@ -46,7 +46,19 @@ public:
         MULTILINE_ENABLED,
         MULTILINE_ENABLED_BY_SYMBOL
     };
-    
+#if defined(LOCALIZATION_DEBUG)
+    static const Color  HIGHLITE_COLORS[];
+    enum DebugHighliteColor
+    {
+        RED = 0,
+        BLUE,
+        YELLOW,
+        WHITE,
+        MAGENTA,
+        NONE
+    };
+    static const float32 LOCALIZATION_RESERVED_PORTION;
+#endif
 protected:
     virtual ~UIStaticText();
 public:
@@ -117,12 +129,17 @@ protected:
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
 #if defined(LOCALIZATION_DEBUG)
     void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;
+    void RecalculateDebugColoring();
 #endif
 protected:
     TextBlock *textBlock;
     Vector2 shadowOffset;
     UIControlBackground *shadowBg;
     UIControlBackground *textBg;
+#if defined(LOCALIZATION_DEBUG)
+    DebugHighliteColor rectangelColor;
+    DebugHighliteColor fillColor;
+#endif
 
 public:
     void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);

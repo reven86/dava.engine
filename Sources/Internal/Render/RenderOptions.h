@@ -75,7 +75,9 @@ public:
         UPDATE_PARTICLE_EMMITERS,
         PARTICLES_DRAW,
         PARTICLES_PREPARE_BUFFERS,
-        
+#if defined(LOCALIZATION_DEBUG)
+        DRAW_LOCALIZATION_DEBUG,
+#endif
 		OPTIONS_COUNT
 	};
 

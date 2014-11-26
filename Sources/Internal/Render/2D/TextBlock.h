@@ -109,6 +109,9 @@ public:
     const Vector<int32> & GetStringSizes() const;
     
     void ForcePrepare(Texture *texture);
+#if defined(LOCALIZATION_DEBUG)
+    int32 GetFittingOptionUsed();
+#endif
 
     /**
      * \brief Sets BiDi transformation support enabled.
@@ -176,6 +179,9 @@ protected:
     int32 cacheOy;
 
     int32 fittingType;
+#if defined(LOCALIZATION_DEBUG)
+    int32 fittingTypeUsed;
+#endif //LOCALIZATION_DEBUG
     Vector2 position;
     Vector2 pivotPoint;
     int32 align;

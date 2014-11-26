@@ -39,10 +39,17 @@
 #include "Render/RenderHelper.h"
 #include "Animation/LinearAnimation.h"
 
-#define LOCALIZATION_RESERVED_PORTION (0.6f)
+
 namespace DAVA
 {
-
+#if defined(LOCALIZATION_DEBUG)
+    const float32 UIStaticText::LOCALIZATION_RESERVED_PORTION = 0.6f;
+    const Color UIStaticText::HIGHLITE_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0.4f), 
+                                                    DAVA::Color(0.0f, 0.0f, 1.0f, 0.4f), 
+                                                    DAVA::Color(1.0f, 1.0f, 0.0f, 0.4f),
+                                                    DAVA::Color(1.0f, 1.0f, 1.0f, 0.4f),
+                                                    DAVA::Color(1.0f,0.0f,1.0f,0.4f)};
+#endif
 UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 :	UIControl(rect, rectInAbsoluteCoordinates)
     , shadowOffset(0, 0)
@@ -248,84 +255,14 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 
     textBlock->Draw(textBg->GetDrawColor());
 #if defined(LOCALIZATION_DEBUG)
-    DrawLocalizationDebug(textGeomData);
+    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_DEBUG))
+    {
+        RecalculateDebugColoring();
+        DrawLocalizationDebug(textGeomData);
+    }
 #endif
 	textBg->Draw(textGeomData);
 }
-#if defined(LOCALIZATION_DEBUG)
-void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) const
-{
-    if (!textBlock->GetMultiline())
-    {
-        if (textBg->GetSprite() != NULL && GetSize().x*LOCALIZATION_RESERVED_PORTION < textBg->GetSprite()->GetSize().x)
-        {
-            RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.f);
-            RenderHelper::Instance()->DrawRect(textGeomData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
-            RenderManager::Instance()->ResetColor();
-        }
-        if (textBg->GetSprite() != NULL && GetSize().x < textBg->GetSprite()->GetSize().x)
-        {
-            RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 0.5f);
-            RenderHelper::Instance()->FillRect(textGeomData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
-            RenderManager::Instance()->ResetColor();
-        }
-    }
-    else
-    {
-        DAVA::Color highliteColor(0.0f, 0.0f, 0.0f, 0.5f);
-        const auto & strings = textBlock->GetMultilineStrings();
-        const auto & text = textBlock->GetText();
-        size_t subStringIndx = 0;
-        bool needHighlite = false;
-        size_t substrC = 0;
-        for (size_t textC = 0; textC < text.size(); textC++)
-        {
-            if (substrC >= strings[subStringIndx].size())
-            {
-                substrC = 0;
-                subStringIndx++;
-            }
-            if (subStringIndx >= strings.size())
-            {
-                needHighlite = true;
-                highliteColor.r = 1.0f;
-                break;
-            }
-            if (!iswspace(text[textC]))
-            {
-                if (strings[subStringIndx][substrC] != text[textC])
-                {
-                    needHighlite = true;
-                    highliteColor.r = 1.0f;
-                    break;
-                }
-                substrC++;
-            }
-            //we are lenient at the beginning of substring so that we can skip whitespace characters
-            else if (substrC != 0)
-                substrC++;
-
-        }
-        if (GetSize().y < textBg->GetSprite()->GetSize().y)
-        {
-            highliteColor.b = 1.0f;
-            needHighlite = true;
-        }
-        if (GetSize().y*LOCALIZATION_RESERVED_PORTION< textBg->GetSprite()->GetSize().y)
-        {
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.f);
-            RenderHelper::Instance()->DrawRect(textGeomData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
-            RenderManager::Instance()->ResetColor();
-        }
-        if (needHighlite)
-        {
-            RenderManager::Instance()->SetColor(highliteColor);
-            RenderHelper::Instance()->FillRect(textGeomData.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
-            RenderManager::Instance()->ResetColor();
-        }
-    }
-}
-#endif
 void UIStaticText::SetParentColor(const Color &parentColor)
 {
     UIControl::SetParentColor(parentColor);
@@ -605,6 +542,7 @@ void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, 
         shadowBg->SetSprite(NULL, 0);
         textBg->SetSprite(NULL, 0);
     }
+    
 }
 
 Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) const
@@ -693,5 +631,120 @@ void UIStaticText::SetMultilineType(int32 multilineType)
             break;
     }
 }
-    
+#if defined(LOCALIZATION_DEBUG)
+void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) const
+{
+
+    if (rectangelColor != NONE)
+    {
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[rectangelColor]);
+        DAVA::Polygon2 polygon;
+        textGeomData.GetPolygon(polygon);
+
+        RenderHelper::Instance()->DrawPolygon(polygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
+        RenderManager::Instance()->ResetColor();
+    }
+    if (fillColor != NONE)
+    {
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[fillColor]);
+        DAVA::Polygon2 polygon;
+        textGeomData.GetPolygon(polygon);
+
+        RenderHelper::Instance()->FillPolygon(polygon, RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->ResetColor();
+    }
+    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED)
+    {
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[WHITE]);
+        if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)
+        {
+            if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_REDUCE)
+                RenderManager::Instance()->SetColor(HIGHLITE_COLORS[RED]);
+            if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_ENLARGE)
+                RenderManager::Instance()->SetColor(HIGHLITE_COLORS[YELLOW]);
+            if (textBlock->GetFittingOptionUsed() & TextBlock::FITTING_POINTS)
+                RenderManager::Instance()->SetColor(HIGHLITE_COLORS[BLUE]);
+        }
+        DAVA::Polygon2 polygon;
+        textGeomData.GetPolygon(polygon);
+        DVASSERT(polygon.GetPointCount() == 4);
+        RenderHelper::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->ResetColor();
+    }
+
+}
+void UIStaticText::RecalculateDebugColoring()
+{
+    rectangelColor = NONE;
+    fillColor = NONE;
+    if (textBlock->GetFont() == NULL)
+        return;
+    Font::StringMetrics stringMetrics = textBlock->GetFont()->GetStringMetrics(textBlock->GetText());
+    if (!textBlock->GetMultiline())
+    {
+
+        Font::StringMetrics stringMetrics = textBlock->GetFont()->GetStringMetrics(textBlock->GetText());
+        if (GetSize().x*LOCALIZATION_RESERVED_PORTION < static_cast<float32>(stringMetrics.drawRect.x + stringMetrics.drawRect.dx))
+        {
+            rectangelColor = RED;
+        }
+        if (GetSize().x < static_cast<float32>(stringMetrics.drawRect.x + stringMetrics.drawRect.dx))
+        {
+            fillColor = RED;
+        }
+    }
+    else
+    {
+
+        const Vector<WideString> &  strings = textBlock->GetMultilineStrings();
+        const WideString & text = textBlock->GetText();
+        float32 accumulatedHeight = 0.0f;
+        float32 maxWidth = 0.0f;
+        if (!text.empty())
+        {
+            WideString textNoSpaces(text);
+
+            auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), iswspace);
+            textNoSpaces.erase(res, textNoSpaces.end());
+
+            WideString concatinatedStringsNoSpaces = L"";
+            for (Vector<WideString>::const_iterator string = strings.begin();
+                string != strings.end(); string++)
+            {
+
+                WideString toFilter = *string;
+                Font::StringMetrics stringMetrics = textBlock->GetFont()->GetStringMetrics(toFilter);
+                maxWidth = DAVA::Max(static_cast<float32>(stringMetrics.drawRect.x + stringMetrics.drawRect.dx), maxWidth);
+                accumulatedHeight += static_cast<float32>(stringMetrics.drawRect.dy);
+                toFilter.erase(remove_if(toFilter.begin(), toFilter.end(), iswspace), toFilter.end());
+                concatinatedStringsNoSpaces += toFilter;
+            }
+
+            if (concatinatedStringsNoSpaces != textNoSpaces)
+            {
+                fillColor = RED;
+            }
+        }
+        if (GetSize().y < accumulatedHeight)
+        {
+            fillColor = YELLOW;
+        }
+        if (GetSize().y*LOCALIZATION_RESERVED_PORTION < accumulatedHeight)
+        {
+            rectangelColor = YELLOW;
+            if (GetSize().x < maxWidth)
+            {
+                rectangelColor = MAGENTA;
+            }
+        }
+        else if (GetSize().x < maxWidth)
+        {
+            rectangelColor = BLUE;
+        }
+
+
+
+    }
+}
+#endif
 };

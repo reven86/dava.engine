@@ -67,6 +67,9 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
     FastName("Update Particle Emitters"),
     FastName("Draw Particles"),
     FastName("Particle Prepare Buffers")
+#if defined(LOCALIZATION_DEBUG)
+    ,FastName("Draw Localization Debug")
+#endif
 };
 
 RenderOptions::RenderOptions()
@@ -78,6 +81,9 @@ RenderOptions::RenderOptions()
 
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
     options[LAYER_OCCLUSION_STATS] = false;
+#if defined(LOCALIZATION_DEBUG)
+    options[DRAW_LOCALIZATION_DEBUG] = false;
+#endif
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)

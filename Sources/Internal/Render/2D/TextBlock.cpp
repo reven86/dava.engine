@@ -295,7 +295,15 @@ int32 TextBlock::GetFittingOption()
 
     return fittingType;
 }
+#if defined(LOCALIZATION_DEBUG)
+int32 TextBlock::GetFittingOptionUsed()
+{
+    mutex.Lock();
+    mutex.Unlock();
 
+    return fittingTypeUsed;
+}
+#endif
 void TextBlock::SetAlign(int32 _align)
 {
     mutex.Lock();
@@ -432,6 +440,9 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 
 void TextBlock::CalculateCacheParams()
 {
+#if defined(LOCALIZATION_DEBUG)
+    fittingTypeUsed = FITTING_DISABLED;
+#endif
     if (logicalText.empty())
     {
         visualText.clear();
@@ -509,7 +520,9 @@ void TextBlock::CalculateCacheParams()
                     pointsStr.clear();
                     pointsStr.append(visualText, 0, i);
                     pointsStr += L"...";
-
+#if defined(LOCALIZATION_DEBUG)
+                    fittingTypeUsed = FITTING_POINTS;
+#endif
                     textSize = font->GetStringMetrics(pointsStr);
                     if(textSize.width <= drawSize.x)
                     {
@@ -582,6 +595,7 @@ void TextBlock::CalculateCacheParams()
                             break;
                         }
                         yBigger = true;
+
                         yMul = drawSize.y / textSize.height;
                     }
                     else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.height < drawSize.y * 0.9)
@@ -636,6 +650,15 @@ void TextBlock::CalculateCacheParams()
                 {
                     finalSize *= yMul;
                 }
+#if defined(LOCALIZATION_DEBUG)
+                {
+                    float mult = DAVA::Min(xMul, yMul);
+                    if (mult > 1.0f)
+                        fittingTypeUsed |= FITTING_ENLARGE;
+                    else if (mult < 1.0f)
+                        fittingTypeUsed |= FITTING_REDUCE;
+                }
+#endif
                 font->SetRenderSize(finalSize);
                 textSize = font->GetStringMetrics(visualText);
             }
@@ -734,7 +757,12 @@ void TextBlock::CalculateCacheParams()
                 float finalSize = lastSize = font->GetRenderSize();
                 isChanged = true;
                 finalSize *= yMul;
-
+#if defined(LOCALIZATION_DEBUG)
+                if (yMul > 1.0f)
+                    fittingTypeUsed |= FITTING_ENLARGE;
+                if (yMul < 1.0f)
+                    fittingTypeUsed |= FITTING_REDUCE;
+#endif
                 font->SetRenderSize(finalSize);
 
                 if (isMultilineBySymbolEnabled)
