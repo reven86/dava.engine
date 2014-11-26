@@ -118,14 +118,14 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
 	}
 }
 
-void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image)
+void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, bool useTwoSideMargin)
 {
 	// printf("0x%08x 0x%08x %d %d\n", data, image->data, sx, sy);
 	
     uint32 * destData32 = (uint32*)GetData();
 	uint32 * srcData32 = (uint32*)image->GetData();
 
-	if(CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
+	if(useTwoSideMargin)
 	{
 		destData32[sx + sy * GetWidth()] = srcData32[0];
 		destData32[sx + (sy + 1 + image->GetHeight())* GetWidth()] = srcData32[(image->GetHeight() - 1) * image->GetWidth()];
@@ -146,20 +146,20 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image)
 		sy++;
 	}
     
-    for (uint32 y = 0; y < image->GetHeight(); ++y)
-		for (uint32 x = 0; x < image->GetWidth(); ++x)
+	uint32 srcPos = 0;
+	uint32 destPos = sx + sy * GetWidth();
+	for (uint32 y = 0; y < image->GetHeight(); ++y, destPos += GetWidth() - image->GetWidth())
+		for (uint32 x = 0; x < image->GetWidth(); ++x, ++srcPos, ++destPos)
 		{
 			if (int32(sx + x) < 0)continue;
 			if ((sx + x) >= (int32)GetWidth())continue;
 			if (int32(sy + y) < 0)continue;
 			if ((sy + y) >= (int32)GetHeight())continue;
 			
-			uint32 srcRead  = srcData32[x + y * image->GetWidth()];
-			destData32[(sx + x) + (sy + y) * GetWidth()] = srcRead;
+			destData32[destPos] = srcData32[srcPos];
 			//printf("%04x ", srcData32[x + y * image->width]);
 		}
 }
-
 
 bool PngImageExt::IsHorzLineOpaque(int32 y)
 {

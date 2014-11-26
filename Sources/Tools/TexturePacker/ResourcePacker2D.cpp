@@ -201,7 +201,7 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 	return isChanged;
 }
 
-DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName)
+DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
@@ -283,34 +283,17 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 				defFile->frameRects[k - 1].dx = width;
 				defFile->frameRects[k - 1].dy = height;
 			}
-				
-			if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-			{
-				
-			}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-			{
-				defFile->frameRects[k - 1].dx++;
-				defFile->frameRects[k - 1].dy++;
-			}
-			else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-			{
-				defFile->frameRects[k - 1].dx+=2;
-				defFile->frameRects[k - 1].dy+=2;
-			}
-			else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-			{
-				defFile->frameRects[k - 1].dx+=4;
-				defFile->frameRects[k - 1].dy+=4;
-			}
-			else if(CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
+
+			// add borders
+			if ( twoSideMargin )
 			{
 				defFile->frameRects[k - 1].dx+=2;
 				defFile->frameRects[k - 1].dy+=2;
 			}
 			else
 			{
-				defFile->frameRects[k - 1].dx++;
-				defFile->frameRects[k - 1].dy++;	
+				defFile->frameRects[k - 1].dx += texturesMargin;
+				defFile->frameRects[k - 1].dy += texturesMargin;
 			}
 		}
 		
@@ -478,6 +461,28 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		//if (Core::Instance()->IsConsoleMode())
 		//	printf("[Directory changed - rebuild: %s]\n", inputGfxDirectory.c_str());
 	}
+	else if (CommandLineParser::CommandIsFound(String("-forceModify")))
+		modified = true;
+
+	// read textures margins settings
+	bool useTwoSideMargin = false;
+	uint32 marginInPixels = 1;
+	if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
+		useTwoSideMargin = true;
+	else
+	{
+		useTwoSideMargin = false;
+		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+			marginInPixels = 0;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+			marginInPixels = 1;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+			marginInPixels = 2;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+			marginInPixels = 4;
+		else
+			marginInPixels = 1;
+	}
 
 	bool needPackResourcesInThisDir = true;
 	if (modified)
@@ -492,7 +497,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				if (fullname.IsEqualToExtension(".psd"))
 				{
                     //TODO: check if we need filename or pathname
-					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename());
+					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(),useTwoSideMargin,marginInPixels);
 					if (!defFile)
 					{
 						// An error occured while converting this PSD file - cancel converting in this directory.
@@ -511,7 +516,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				else if (fullname.IsEqualToExtension(".pngdef"))
 				{
 					DefinitionFile * defFile = new DefinitionFile();
-					if (defFile->LoadPNGDef(fullname, processDirectoryPath))
+					if (defFile->LoadPNGDef(fullname, processDirectoryPath,useTwoSideMargin,marginInPixels))
 					{
 						definitionFileList.push_back(defFile);
 					}
@@ -542,13 +547,16 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                 DefinitionFile * def = definitionFileList.front();
                 if(def->frameCount == 1)
                 {
-                    if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel") == false)
+                    if (!useTwoSideMargin)
                     {
-                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
-                        CommandLineParser::Instance()->AddArgument("--add0pixel");
+                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0],marginInPixels,marginInPixels);
+                        marginInPixels = 0;
                     }
                 }
             }
+
+			packer.SetTwoSideMargin(useTwoSideMargin);
+			packer.SetTexturesMargin(marginInPixels);
 
 			if (CommandLineParser::Instance()->IsFlagSet("--split"))
 			{

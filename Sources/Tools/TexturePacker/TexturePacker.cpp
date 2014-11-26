@@ -93,11 +93,13 @@ TexturePacker::TexturePacker()
 	maxTextureSize = DEFAULT_TEXTURE_SIZE;
 	onlySquareTextures = false;
 	errors.clear();
+	useTwoSideMargin = false;
+	texturesMargin = 1;
 }
 
 bool TexturePacker::TryToPack(const Rect2i & textureRect, List<DefinitionFile*> & /*defsList*/)
 {
-	ImagePacker * packer = new ImagePacker(textureRect);
+	ImagePacker * packer = new ImagePacker(textureRect,useTwoSideMargin,texturesMargin);
 	
 	// Packing of sorted by size images
 	for (int i = 0; i < (int)sortVector.size(); ++i)
@@ -169,6 +171,8 @@ bool sortFn(const SizeSortItem & a, const SizeSortItem & b)
 
 void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU)
 {
+	Logger::FrameworkDebug("Packing to separate textures");
+
 	lastPackedPacker = 0;
 	int textureIndex = 0;
 	for (List<DefinitionFile*>::iterator dfi = defsList.begin(); dfi != defsList.end(); ++dfi)
@@ -248,11 +252,15 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
             textureName.ReplaceExtension(".png");
             ExportImage(&finalImage, FilePath(textureName), forGPU);
 		}
+		else
+			AddError(Format("* ERROR: Failed to pack '%s' to separate output texture", defFile->filename.GetFilename().c_str()));
 	}
 }
 
 void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU)
 {
+	Logger::FrameworkDebug("Packing to single output texture");
+
 	lastPackedPacker = 0;
 	for (List<DefinitionFile*>::iterator dfi = defsList.begin(); dfi != defsList.end(); ++dfi)
 	{
@@ -336,16 +344,18 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
         ExportImage(&finalImage, textureName, forGPU);
 	}else
 	{
-		// 
+		Logger::FrameworkDebug("Can't pack to single output texture");
 		PackToMultipleTextures(excludeFolder, outputPath, defsList, forGPU);
 	}
 }
 
 void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defList, eGPUFamily forGPU)
 {
+	Logger::FrameworkDebug("Packing to multiple output textures");
+
 	if (defList.size() == 1)
 	{
-		AddError(Format("* ERROR: Failed to pack to multiple textures for path - %s.", outputPath.GetAbsolutePathname().c_str()));
+		Logger::Warning("Failed to pack single texture for path '%s'. Trying to pack as multiple texture", outputPath.GetAbsolutePathname().c_str());
 	}
 
 	for (int i = 0; i < (int)sortVector.size(); ++i)
@@ -378,7 +388,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 				if (needOnlySquareTexture && (xResolution != yResolution))continue;
 				
 				Rect2i textureRect = Rect2i(0, 0, xResolution, yResolution);
-				ImagePacker * packer = new ImagePacker(textureRect);
+				ImagePacker * packer = new ImagePacker(textureRect,useTwoSideMargin,texturesMargin);
 				
 				Vector<SizeSortItem> tempSortVector = sortVectorWork;
 				float n = TryToPackFromSortVectorWeight(packer, tempSortVector);
@@ -474,38 +484,21 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 }
 
 
-Rect2i TexturePacker::ReduceRectToOriginalSize(const Rect2i & _input)
+Rect2i TexturePacker::ReduceRectToOriginalSize(const Rect2i & _input, uint32 rmargin, uint32 bmargin)
 {
 	Rect2i r = _input;
-	if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-	{
-	}
-	else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-	{
-		r.dx--;
-		r.dy--;
-	}
-	else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-	{
-		r.dx-=2;
-		r.dy-=2;
-	}
-	else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-	{
-		r.dx-=4;
-		r.dy-=4;
-	}
-	else if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
+
+	if ( useTwoSideMargin )
 	{
 		r.x+=1;
 		r.y+=1;
 		r.dx-=2;
 		r.dy-=2;
 	}
-	else		// add 1 pixel by default
+	else
 	{
-		r.dx--;
-		r.dy--;
+		r.dx -= rmargin;
+		r.dy -= bmargin;
 	}
 	return r;
 }
@@ -528,9 +521,11 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 	fprintf(fp, "%d\n", defFile->frameCount); 
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
-		Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
+		uint32 rmargin;
+		uint32 bmargin;
+		Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame],rmargin,bmargin);
 		Rect2i origRect = defFile->frameRects[frame];
-		Rect2i writeRect = ReduceRectToOriginalSize(*destRect);
+		Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
 		WriteDefinitionString(fp, writeRect, origRect, 0);
 
 		if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
@@ -602,16 +597,18 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
 		Rect2i * destRect = 0;
+		uint32 rmargin;
+		uint32 bmargin;
 		for (int packerIndex = 0; packerIndex < (int)usedPackers.size(); ++packerIndex)
 		{
-			destRect = usedPackers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
+			destRect = usedPackers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame],rmargin,bmargin);
 			if (destRect)break;
 		}
 		int packerIndex = packerIndexToFileIndex[packerIndexArray[frame]]; // here get real index in file for our used texture
 		if (destRect)
 		{
 			Rect2i origRect = defFile->frameRects[frame];
-			Rect2i writeRect = ReduceRectToOriginalSize(*destRect);
+			Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
 			WriteDefinitionString(fp, writeRect, origRect, packerIndex);
 
             if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
@@ -818,11 +815,11 @@ void TexturePacker::DrawToFinalImage( PngImageExt & finalImage, PngImageExt & dr
 {
 	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
 	{
-		finalImage.DrawImage(drawRect.x + frameRect.x, drawRect.y + frameRect.y, &drawedImage);
+		finalImage.DrawImage(drawRect.x + frameRect.x, drawRect.y + frameRect.y, &drawedImage, useTwoSideMargin);
 	}
 	else
 	{
-		finalImage.DrawImage(drawRect.x, drawRect.y, &drawedImage);
+		finalImage.DrawImage(drawRect.x, drawRect.y, &drawedImage, useTwoSideMargin);
 	}
 
 	if (CommandLineParser::Instance()->IsFlagSet("--debug"))

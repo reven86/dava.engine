@@ -89,13 +89,19 @@ public:
 	int TryToPackFromSortVector(ImagePacker * packer, Vector<SizeSortItem> & tempSortVector);
 	float TryToPackFromSortVectorWeight(ImagePacker * packer, Vector<SizeSortItem> & tempSortVector);
 
-	Rect2i ReduceRectToOriginalSize(const Rect2i & _input);
+	Rect2i ReduceRectToOriginalSize(const Rect2i & _input, uint32 rmargin, uint32 bmargin);
 
 	void UseOnlySquareTextures();
 
 	void SetMaxTextureSize(uint32 maxTextureSize);
 	
     void SetConvertQuality(TextureConverter::eConvertQuality quality);
+
+	// set visible 1 pixel border for each texture
+	void SetTwoSideMargin(bool val=true) { useTwoSideMargin = val; }
+
+	// set space in pixels between two neighboring textures. value is omitted if two-side margin is set
+	void SetTexturesMargin(uint32 margin) { texturesMargin = margin; }
 
 	const Set<String>& GetErrors() const;
 	
@@ -124,6 +130,9 @@ private:
 	bool IsFormatSupportedForGPU(PixelFormat format, eGPUFamily forGPU);
 	
     TextureConverter::eConvertQuality quality;
+
+	bool useTwoSideMargin;
+	uint32 texturesMargin;
     
 	Set<String> errors;
 	void AddError(const String& errorMsg);
