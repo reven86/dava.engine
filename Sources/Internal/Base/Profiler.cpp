@@ -65,8 +65,8 @@ class Counter;
 static Counter* GetCounter( uint32 id );
 
 static bool             ProfilerInited      = false;
-static unsigned         MaxCounterCount     = 64;
-static unsigned         HistoryCount        = 100;
+static unsigned         MaxCounterCount     = 0;
+static unsigned         HistoryCount        = 0;
 
 static Counter*         _Counter            = 0;
 static Counter*         _Average            = 0;
@@ -228,6 +228,18 @@ Init( unsigned max_counter_count, unsigned history_len )
     }
 
     ProfilerInited = true;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+EnsureInited( unsigned max_counter_count, unsigned history_length )
+{
+    if( !ProfilerInited )
+    {
+        Init( max_counter_count, history_length );
+    }
 }
 
 

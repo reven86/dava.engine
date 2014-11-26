@@ -42,13 +42,15 @@ namespace profiler
 
 
 Init the profiler.
-Called once, on app startup.
+Should be called once, on app startup.
 
 @max_counter_count max amount of counters that will be available
 @history_length amount of previous counter-values to keep (used for computing average values)
 */
 
+void    EnsureInited( unsigned max_counter_count=64, unsigned history_length=128 );
 void    Init( unsigned max_counter_count=64, unsigned history_length=128 );
+
 void    Uninit();
 
 
