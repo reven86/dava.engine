@@ -152,7 +152,10 @@ void TCPTransport::ClearQueue()
 {
     // Don't forget to notify about current package
     if (curPackage.buffer)
+    {
         listener->OnTransportSendComplete(this, curPackage.channelId, curPackage.buffer, curPackage.totalLength);
+        curPackage.buffer = NULL;
+    }
 
     for (Deque<Package>::iterator i = sendQueue.begin(), e = sendQueue.end();i != e;++i)
     {
