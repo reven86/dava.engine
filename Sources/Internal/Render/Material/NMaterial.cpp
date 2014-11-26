@@ -47,6 +47,15 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Material/NMaterialNames.h"
 
+#include "Base/Profiler.hpp"
+#define PROF__RHI_SETUNIFORM    10
+#define PROF__RHI_SETDYNPARAM   11
+#define PROF__RHI_SETMATPARAM   12
+#define PROF__GL_DIP            20
+#define PROF__GL_SET_PROG       21
+#define PROF__GL_SET_UNIFORM    22
+#define PROF__GL_SET_UNIFORM2   23
+
 namespace DAVA
 {
 
@@ -1466,6 +1475,7 @@ void NMaterial::BindMaterialTextures(RenderPassInstance* passInstance)
 
 void NMaterial::BindMaterialProperties(RenderPassInstance* passInstance)
 {
+START_TIMING(PROF__RHI_SETMATPARAM);
 	//TODO: think of a way to re-bind only changed properties. (Move dirty flag to UniformCacheEntry or something?)
 	if(passInstance->propsDirty)
 	{
@@ -1487,12 +1497,74 @@ void NMaterial::BindMaterialProperties(RenderPassInstance* passInstance)
 		if(uniformEntry.prop)
 		{
 			RENDERER_UPDATE_STATS(materialParamUniformBindCount++);
+#if DV_MATERIAL_UNIFORM_CACHING
 			shader->SetUniformValueByUniform(uniform,
 											 uniform->type,
 											 uniform->size,
 											 uniformEntry.prop->data);
+
+#else		
+START_TIMING(PROF__GL_SET_UNIFORM); 
+void* data = uniformEntry.prop->data;
+switch(uniform->type)
+{
+    case Shader::UT_FLOAT:
+        RENDER_VERIFY(glUniform1fv(uniform->location, uniform->size, (float*)data));
+        break;
+    case Shader::UT_FLOAT_VEC2:
+        RENDER_VERIFY(glUniform2fv(uniform->location, uniform->size, (float*)data));
+        break;
+    case Shader::UT_FLOAT_VEC3:
+        RENDER_VERIFY(glUniform3fv(uniform->location, uniform->size, (float*)data));
+        break;
+    case Shader::UT_FLOAT_VEC4:
+        RENDER_VERIFY(glUniform4fv(uniform->location, uniform->size, (float*)data));
+        break;
+    case Shader::UT_INT:
+        RENDER_VERIFY(glUniform1iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_INT_VEC2:
+        RENDER_VERIFY(glUniform2iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_INT_VEC3:
+        RENDER_VERIFY(glUniform3iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_INT_VEC4:
+        RENDER_VERIFY(glUniform4iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_BOOL:
+        RENDER_VERIFY(glUniform1iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_BOOL_VEC2:
+        RENDER_VERIFY(glUniform2iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_BOOL_VEC3:
+        RENDER_VERIFY(glUniform3iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_BOOL_VEC4:
+        RENDER_VERIFY(glUniform4iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_FLOAT_MAT2:
+        RENDER_VERIFY(glUniformMatrix2fv(uniform->location, uniform->size, GL_FALSE, (float32*)data));
+        break;
+    case Shader::UT_FLOAT_MAT3:
+        RENDER_VERIFY(glUniformMatrix3fv(uniform->location, uniform->size, GL_FALSE, (float32*)data));
+        break;
+    case Shader::UT_FLOAT_MAT4:
+        RENDER_VERIFY(glUniformMatrix4fv(uniform->location, uniform->size, GL_FALSE, (float32*)data));
+        break;
+    case Shader::UT_SAMPLER_2D:
+        RENDER_VERIFY(glUniform1iv(uniform->location, uniform->size, (int32*)data));
+        break;
+    case Shader::UT_SAMPLER_CUBE:
+        RENDER_VERIFY(glUniform1iv(uniform->location, uniform->size, (int32*)data));
+        break;
+}
+STOP_TIMING(PROF__GL_SET_UNIFORM); 
+#endif
 		}
 	}
+STOP_TIMING(PROF__RHI_SETMATPARAM);
 }
 
 void NMaterial::OnMaterialPropertyAdded(const FastName& propName)
@@ -1538,13 +1610,19 @@ void NMaterial::InvalidateProperties()
 
 void NMaterial::Draw(PolygonGroup * polygonGroup)
 {
+//SCOPED_TIMING(PROF__TEST1);
+SCOPED_FUNCTION_TIMING();
+SCOPED_NAMED_TIMING("blam!");
+START_NAMED_TIMING("smack1");
 	// TODO: Remove support of OpenGL ES 1.0 from attach render data
 	RenderManager::Instance()->SetRenderData(polygonGroup->renderDataObject);
 	RenderManager::Instance()->AttachRenderData();
+STOP_NAMED_TIMING("smack1");
 	
 	//Logger::FrameworkDebug("[Material::Draw] %s", baseTechnique->GetName().c_str());
 	
 	// TODO: rethink this code
+START_NAMED_TIMING("smack2");
 	if(polygonGroup->renderDataObject->GetIndexBufferID() != 0)
 	{
 		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), 0);
@@ -1553,6 +1631,7 @@ void NMaterial::Draw(PolygonGroup * polygonGroup)
 	{
 		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), polygonGroup->indexArray);
 	}
+STOP_NAMED_TIMING("smack2");
 }
 
 void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 indexCount)

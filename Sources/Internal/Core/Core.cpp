@@ -56,6 +56,21 @@
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 
+#include "Base/Profiler.hpp"
+#define PROF__FRAME             0
+#define PROF__FRAME_UPDATE      1
+#define PROF__FRAME_DRAW        2
+#define PROF__RHI_SETUNIFORM    10
+#define PROF__RHI_SETDYNPARAM   11
+#define PROF__RHI_SETMATPARAM   12
+#define PROF__GL_DIP            20
+#define PROF__GL_SET_PROG       21
+#define PROF__GL_SET_UNIFORM    22
+#define PROF__GL_SET_UNIFORM2   23
+
+#define PROF__TEST1             40
+
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
@@ -622,6 +637,18 @@ ApplicationCore * Core::GetApplicationCore()
 	
 void Core::SystemAppStarted()
 {
+profiler::Init();
+NAME_COUNTER(PROF__FRAME,"frame");
+NAME_COUNTER(PROF__FRAME_UPDATE,"frame-update");
+NAME_COUNTER(PROF__FRAME_DRAW,"frame-draw");
+NAME_COUNTER(PROF__GL_DIP,"gl.dip");
+NAME_COUNTER(PROF__GL_SET_UNIFORM,"gl.set-uniform");
+NAME_COUNTER(PROF__GL_SET_UNIFORM2,"gl.set-uniform2");
+NAME_COUNTER(PROF__RHI_SETUNIFORM,"rhi.set-uniform");
+NAME_COUNTER(PROF__RHI_SETDYNPARAM,"shader.bind-dyn-param");
+NAME_COUNTER(PROF__RHI_SETMATPARAM,"material.bind-param");
+
+
 	if (Core::Instance()->NeedToRecalculateMultipliers()) 
 	{
 		Core::Instance()->CalculateScaleMultipliers();
@@ -657,6 +684,7 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
+profiler::Start();
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	static bool isInit = false;
 	static EGLuint64NV frequency;
@@ -729,14 +757,18 @@ void Core::SystemProcessFrame()
 			}
 		}
 		
+START_TIMING(PROF__FRAME_UPDATE);
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
+STOP_TIMING(PROF__FRAME_UPDATE);
+START_TIMING(PROF__FRAME_DRAW);
 		core->Draw();
 
 		core->EndFrame();
+STOP_TIMING(PROF__FRAME_DRAW);
 // #ifdef __DAVAENGINE_DIRECTX9__
 // 		core->BeginFrame();
 // #endif
@@ -748,6 +780,51 @@ void Core::SystemProcessFrame()
 	EGLuint64NV end = eglGetSystemTimeNV() / frequency;
 	EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+STOP_TIMING(PROF__FRAME);
+profiler::Stop();
+{
+std::vector<profiler::CounterInfo>  result;
+/*
+GetCounters( &result );
+Logger::Debug( "\nprof\n---" );
+for( unsigned i=0; i!=result.size(); ++i )
+{
+    unsigned    pi          = result[i].parent_i;
+    char        indent[128] = "";
+
+    while( pi != unsigned(-1) )
+    {
+        pi  = result[pi].parent_i;
+        strcat( indent, "  " );
+    }
+
+    Logger::Debug( "%s%-30s %-5u %u us", indent, result[i].name, result[i].count, result[i].time_us );
+}
+Logger::Debug( "\n" );
+*/
+/*
+if( profiler::GetAverageCounters( &result ) )
+{
+    Logger::Debug( "\nprof\n---" );
+    for( unsigned i=0; i!=result.size(); ++i )
+    {
+        unsigned    pi          = result[i].parent_i;
+        char        indent[128] = "";
+
+        while( pi != unsigned(-1) )
+        {
+            pi  = result[pi].parent_i;
+            strcat( indent, "  " );
+        }
+
+        Logger::Debug( "%s%-30s %-5u %u us", indent, result[i].name, result[i].count, result[i].time_us );
+    }
+    Logger::Debug( "\n" );
+}
+*/
+}
+//profiler::Dump();
+profiler::DumpAverage();
 }
 
 	

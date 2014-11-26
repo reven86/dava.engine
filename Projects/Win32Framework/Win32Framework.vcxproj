@@ -266,6 +266,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Functor.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Hash.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Hash.hpp" />
     <ClInclude Include="..\..\Sources\Internal\Base\HashMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Introspection.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionBase.h" />
@@ -277,6 +278,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Profiler.hpp" />
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
@@ -406,6 +408,7 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\FWSpinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
@@ -768,6 +771,7 @@
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Base\Profiler.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
@@ -869,6 +873,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\FWSpinlock.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
