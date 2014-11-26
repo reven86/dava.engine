@@ -91,16 +91,20 @@ public class JNINotificationProvider {
         intent.putExtra("icon", icon);
         intent.putExtra("title", title);
         intent.putExtra("text", text);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_ONE_SHOT);
+		if(JNIActivity.GetActivity() != null) {
+			intent.putExtra("activityClassName", JNIActivity.GetActivity().getClass().getName());
+		}
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0 /*(int) System.currentTimeMillis()*/, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.set(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + delaySeconds * 1000, pendingIntent);
     }
 
     static void RemoveAllDelayedNotifications() {
         Context context = JNIApplication.GetApplication();
         Intent intent = new Intent(context, ScheduledNotificationReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
+		notificationManager.cancelAll();
     }
 
     static void HideNotification(String uid) {
