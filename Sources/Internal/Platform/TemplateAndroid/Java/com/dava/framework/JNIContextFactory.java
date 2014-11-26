@@ -20,6 +20,7 @@ public class JNIContextFactory implements GLSurfaceView.EGLContextFactory
     private static int glVersion30 = 3;
     private static int glVersion20 = 2;
     
+    @Override
 	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) 
     {
         JNIConfigChooser.printConfig(egl, display, eglConfig);
@@ -46,10 +47,11 @@ public class JNIContextFactory implements GLSurfaceView.EGLContextFactory
         return context;
     }
 
+	@Override
 	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) 
     {
         egl.eglDestroyContext(display, context);
-        JNIActivity.GetActivity().OnRenderDestroyed();
+        JNIActivity.GetActivity().onEglContextDestroyed();
     }
 	
 	private EGLContext createOpenGLESContext(int openglESVersion, EGL10 egl, EGLDisplay display, EGLConfig eglConfig)

@@ -34,17 +34,17 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	public int lastDoubleActionIdx = -1;
 	
 	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
-		JNIGLSurfaceView view;
+		JNIGLSurfaceView glview;
 		
 		DoubleTapListener(JNIGLSurfaceView view) {
-			this.view = view;
+			this.glview = view;
 		}
 		
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
 			lastDoubleActionIdx = e.getActionIndex();
 			
-			view.queueEvent(new InputRunnable(e, 2));
+			glview.queueEvent(new InputRunnable(e, 2));
 			return true;
 		}
 	}

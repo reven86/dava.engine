@@ -1,13 +1,7 @@
 package com.dava.framework;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.fmod.FMODAudioDevice;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +11,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -25,8 +18,6 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.bda.controller.Controller;
-
-import java.util.Calendar;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
 {
@@ -44,12 +35,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private native void nativeOnStart();
 	private native void nativeOnStop();
 	private native void nativeOnDestroy();
-	private native void nativeIsFinishing();
+	private native void nativeFinishing();
 	private native void nativeOnAccelerometer(float x, float y, float z);
     
     private boolean isFirstRun = true;
     private static String commandLineParams = null;
-    private static boolean isRenderDestroy = false;
+    private static boolean isEglContextDestroyed = false;
     
 	public abstract JNIGLSurfaceView GetSurfaceView();
     
@@ -64,6 +55,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
+        // The activity is being created.
+        Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] start");
+        
     	activity = this;
         super.onCreate(savedInstanceState);
         
@@ -78,9 +72,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         {
         	isFirstRun = savedInstanceState.getBoolean("isFirstRun");
         }
-        
-    	// The activity is being created.
-        Log.i(JNIConst.LOG_TAG, "[Activity::onCreate]");
         
         // initialize accelerometer
         SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
@@ -150,9 +141,13 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 				JNINotificationProvider.NotificationPressed(uid);
 			}
 		}
-
-        if (splashView != null && !isRenderDestroy)
-			splashView.setVisibility(View.GONE);
+		
+		if (splashView != null && !isEglContextDestroyed)
+		{
+		    splashView.setVisibility(View.GONE);
+		}
+        // The activity is being created.
+        Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] finish");
     }
     
 	private String initCommandLineParams() {
@@ -173,37 +168,30 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     @Override
     protected void onStart()
     {
+        Log.i(JNIConst.LOG_TAG, "[Activity::onStart] start");
     	super.onStart();
     	fmodDevice.start();
-    	// The activity is about to become visible.
-    	
-        Log.i(JNIConst.LOG_TAG, "[Activity::onStart]");
-        
-        //editText.setVisibility(EditText.INVISIBLE);
-        
-        //call native method
         nativeOnStart();
+        Log.i(JNIConst.LOG_TAG, "[Activity::onStart] finish");
     }
     
     @Override
     protected void onRestart()
     {
-    	super.onRestart();
-    	// The activity is about to become visible.
-    	
-        Log.i(JNIConst.LOG_TAG, "[Activity::onRestart]");
-        
-        //TODO: VK: may be usefull
+        Log.i(JNIConst.LOG_TAG, "[Activity::onRestart] start");
+        super.onRestart();
+        Log.i(JNIConst.LOG_TAG, "[Activity::onRestart] start");
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) 
     {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onSaveInstanceState]");
+        Log.i(JNIConst.LOG_TAG, "[Activity::onSaveInstanceState] start");
 
         outState.putBoolean("isFirstRun", isFirstRun);
     	
     	super.onSaveInstanceState(outState);
+    	Log.i(JNIConst.LOG_TAG, "[Activity::onSaveInstanceState] finish");
     }
     
     @Override
@@ -212,32 +200,29 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // Another activity is taking focus (this activity is about to be "paused").
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] start");
 
-		if(mController != null)
-		{
-			mController.onPause();
-		}
-		
-        // deactivate accelerometer
-        if(null != accelerometer)
+        if(mController != null)
         {
-        	if(accelerometer.IsActive())
-        	{
-        		accelerometer.Stop();
-        	}
+            mController.onPause();
         }
 
-        // deactivate GLView 
-        if(null != glView)
+        // deactivate accelerometer
+        if(accelerometer != null)
         {
-        	glView.onPause();
+            if(accelerometer.IsActive())
+            {
+                accelerometer.Stop();
+            }
         }
         
         boolean isActivityFinishing = isFinishing();
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] isActivityFinishing is " + isActivityFinishing);
         if(isActivityFinishing)
         {
-        	nativeIsFinishing();
+        	nativeFinishing();
         }
+        
+        // can destroy eglContext
+        glView.onPause();
         
         super.onPause();
 
@@ -247,36 +232,30 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     @Override
     protected void onResume() 
     {
-    	// recreate eglContext (also eglSurface, eglScreen) should be first
+        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
+        // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
         // The activity has become visible (it is now "resumed").
-		Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
+        glView.onResume();
 
-		
-		JNITextField.HideAllTextFields();
-		
-		if(mController != null)
-		{
-			mController.onResume();
-		}
-		
         // activate accelerometer
-        if(null != accelerometer)
+        if(accelerometer != null)
         {
-        	if(accelerometer.IsSupported())
-        	{
-        		accelerometer.Start();
-        	}
+            if(accelerometer.IsSupported())
+            {
+                accelerometer.Start();
+            }
         }
         
-        // activate GLView 
-        if(null != glView && null == splashView) {
-        	glView.onResume();
+        if(mController != null)
+        {
+            mController.onResume();
         }
+
+        JNIUtils.keepScreenOnOnResume();
+        JNITextField.HideAllTextFields();
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
-        
-        JNIUtils.keepScreenOnOnResume();
     }
 
     @Override
@@ -284,18 +263,17 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     {
         Log.i(JNIConst.LOG_TAG, "[Activity::onStop] start");
         
-        fmodDevice.stop();
-        
         //call native method
         nativeOnStop();
+        
+        fmodDevice.stop();
         
         // Destroy keyboard layout if its hasn't been destroyed by lost focus (samsung lock workaround)
         JNITextField.DestroyKeyboardLayout(getWindowManager());
         
-        Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
-        
         super.onStop();
     	// The activity is no longer visible (it is now "stopped")
+        Log.i(JNIConst.LOG_TAG, "[Activity::onStop] finish");
     }
     
     
@@ -305,23 +283,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] start");
 
         if(mController != null)
-        	mController.exit();
-        
+        {
+            mController.exit();
+        }
         //call native method
         nativeOnDestroy();
 
-        Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] finish");
-
         super.onDestroy();
+        Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] finish");
     	// The activity is about to be destroyed.
-    }
-
-    @Override
-    protected void onPostResume() 
-    {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onPostResume] ****");
-        
-    	super.onPostResume();
     }
     
     @Override
@@ -330,32 +300,28 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
-    	super.onWindowFocusChanged(hasFocus);
-    	
-    	isRenderDestroy = false;
-    	if (hasFocus) {
-    		new Timer().schedule(new TimerTask() {
-				
-				@Override
-				public void run() {
-					runOnUiThread(new Runnable() {
-						public void run() {
-							if (splashView != null) {
-								glView.setVisibility(View.VISIBLE);
-								JNIActivity.GetActivity().glView.onResume();
-							}
-						}
-					});
-				}
- 	 		}, 300);
-    	}
-    	
+        Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] start");
+        // clear key tracking state, so should always be called
+        // http://developer.android.com/reference/android/app/Activity.html#onWindowFocusChanged(boolean)
+        super.onWindowFocusChanged(hasFocus);
+        
+        runOnUiThread(new Runnable() {
+            public void run() {
+                if (splashView != null) {
+                    glView.setVisibility(View.VISIBLE);
+                    // Do I need call onResume here? Why?
+                    glView.onResume();
+                }
+            }
+        });
+    
     	if(hasFocus) {
     		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
 			HideNavigationBar(getWindow().getDecorView());
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
     	}
+    	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
     
     public void onAccelerationChanged(float x, float y, float z)
@@ -412,8 +378,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		return null;
 	}
 	
-	protected void OnRenderDestroyed() {
-		isRenderDestroy = true;
+	protected void onEglContextDestroyed() {
+		isEglContextDestroyed = true;
     	runOnUiThread(new Runnable() {
 			
 			@Override

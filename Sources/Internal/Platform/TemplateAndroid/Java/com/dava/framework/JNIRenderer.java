@@ -46,13 +46,24 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
-		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged: w = " + w + " h = " + h);
+	    Log.w(JNIConst.LOG_TAG, "Activity Render onSurfaceChanged: w = " + w + " h = " + h + " start");
+	    // while we always in landscape mode, but some devices 
+        // call this method on lock screen with portrait w and h
+        // then call this method second time with correct portrait w and h
+        // I assume width always more then height
+	    // we need skip portrait w and h because text in engine can be
+	    // pre render into texture with incorrect aspect and on second
+	    // call with correct w and h such text textures stays incorrect
+        // http://stackoverflow.com/questions/8556332/is-it-safe-to-assume-that-in-landscape-mode-height-is-always-less-than-width
+	    // https://jira.wargaming.net/browse/DF-5068
+        if (w > h)
+        {
+            nativeResize(w, h);
+            nativeOnResumeView();
+            isFirstFrameAfterDraw = true; // Do we need this?
+        }
 
-		nativeResize(w, h);
-		OnResume();
-		isFirstFrameAfterDraw = true;
-
-		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged__DONE___");
+		Log.w(JNIConst.LOG_TAG, "Activity Render onSurfaceChanged finish");
 	}
 
 	@Override
