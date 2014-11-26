@@ -6,9 +6,26 @@
 //
 //
 
-#ifndef __Framework__UILayoutSystem__
-#define __Framework__UILayoutSystem__
+#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
 
-#include <stdio.h>
+namespace DAVA
+{
+    
+    class UIControl;
+    
+    class UILayoutSystem
+    {
+    public:
+        UILayoutSystem();
+        virtual ~UILayoutSystem();
+        
+        void ApplayLayout(UIControl *control);
+        
+    private:
+        void MeasureChildren(UIControl *control);
+        void LayoutChildren(UIControl *control);
+    };
+}
 
-#endif /* defined(__Framework__UILayoutSystem__) */
+#endif // __DAVAENGINE_UI_LAYOUT_SYSTEM_H__

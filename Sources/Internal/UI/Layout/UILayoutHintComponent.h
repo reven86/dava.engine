@@ -6,9 +6,32 @@
 //
 //
 
-#ifndef __Framework__UILayoutHintComponent__
-#define __Framework__UILayoutHintComponent__
+#ifndef __DAVAENGINE_UI_LAYOUT_HINT_COMPONENT_H__
+#define __DAVAENGINE_UI_LAYOUT_HINT_COMPONENT_H__
 
-#include <stdio.h>
+#include "UIComponent.h"
 
-#endif /* defined(__Framework__UILayoutHintComponent__) */
+#include "Math/Vector.h"
+
+namespace DAVA
+{
+    class UILayoutHintComponent : public UIComponent
+    {
+    public:
+        static const eType TYPE;
+        
+    public:
+        UILayoutHintComponent();
+        virtual ~UILayoutHintComponent();
+        
+        virtual eType GetType() const override;
+        
+        const Vector2 &GetMeasuredSize() const;
+        void SetMeasuredSize(const Vector2 &size);
+
+    private:
+        Vector2 measuredSize;
+    };
+}
+
+#endif // __DAVAENGINE_UI_LAYOUT_HINT_COMPONENT_H__

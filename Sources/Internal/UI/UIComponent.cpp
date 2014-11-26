@@ -7,3 +7,14 @@
 //
 
 #include "UIComponent.h"
+
+namespace DAVA
+{
+    UIComponent::UIComponent()
+    {
+    }
+    
+    UIComponent::~UIComponent()
+    {
+    }
+}

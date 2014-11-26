@@ -42,7 +42,6 @@ namespace DAVA
 {
 
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-        : customData(NULL)
     {
         parent = NULL;
         controlState = STATE_NORMAL;
@@ -104,7 +103,7 @@ namespace DAVA
         SafeRelease(background);
         SafeRelease(eventDispatcher);
         RemoveAllControls();
-        SafeRelease(customData);
+        RemoveAllComponents();
     }
 
     void UIControl::SetParent(UIControl *newParent)
@@ -2893,22 +2892,55 @@ namespace DAVA
         {
             (*it)->DumpInputs(depthLevel + 1);
         }
-    }    
-
-    BaseObject *UIControl::GetCustomData() const
-    {
-        return customData;
     }
     
-    void UIControl::SetCustomData(BaseObject *data)
+    void UIControl::PutComponent(UIComponent *component)
     {
-        if (data != customData)
+        for (auto it = components.begin(); it != components.end(); ++it)
         {
-            SafeRelease(customData);
-            customData = SafeRetain(data);
+            if ((*it)->GetType() == component->GetType())
+            {
+                if ((*it) != component)
+                    SafeRelease(*it);
+                *it = SafeRetain(component);
+                return;
+            }
+        }
+        components.push_back(SafeRetain(component));
+    }
+    
+    UIComponent *UIControl::GetComponent(UIComponent::eType type) const
+    {
+        for (auto it = components.begin(); it != components.end(); ++it)
+        {
+            if ((*it)->GetType() == type)
+            {
+                return *it;
+            }
+        }
+        return NULL;
+    }
+    
+    void UIControl::RemoveComponent(UIComponent::eType type)
+    {
+        for (auto it = components.begin(); it != components.end(); ++it)
+        {
+            if ((*it)->GetType() == type)
+            {
+                (*it)->Release();
+                components.erase(it);
+                break;
+            }
         }
     }
     
+    void UIControl::RemoveAllComponents()
+    {
+        for (auto it = components.begin(); it != components.end(); ++it)
+            (*it)->Release();
+        
+        components.clear();
+    }
 
     int32 UIControl::GetBackgroundComponentsCount() const
     {

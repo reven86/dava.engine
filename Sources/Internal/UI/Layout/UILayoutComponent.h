@@ -6,9 +6,34 @@
 //
 //
 
-#ifndef __Framework__UILayoutComponent__
-#define __Framework__UILayoutComponent__
+#ifndef __DAVAENGINE_UI_LAYOUT_COMPONENT_H__
+#define __DAVAENGINE_UI_LAYOUT_COMPONENT_H__
 
-#include <stdio.h>
+#include "../UIComponent.h"
+#include "Math/Vector.h"
 
-#endif /* defined(__Framework__UILayoutComponent__) */
+namespace DAVA
+{
+    class UIControl;
+    class UILayout;
+    
+    class UILayoutComponent : public UIComponent
+    {
+    public:
+        static const eType TYPE;
+        
+    public:
+        UILayoutComponent();
+        virtual ~UILayoutComponent();
+        
+        virtual eType GetType() const override;
+        
+        Vector2 MeasureSize(UIControl *control);
+        void ApplayLayout(UIControl *control);
+        
+    private:
+        UILayout *layout;
+    };
+}
+
+#endif // __DAVAENGINE_UI_LAYOUT_COMPONENT_H__

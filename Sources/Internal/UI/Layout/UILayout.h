@@ -6,9 +6,25 @@
 //
 //
 
-#ifndef __Framework__UILayout__
-#define __Framework__UILayout__
+#ifndef __DAVAENGINE_UI_LAYOUT_H__
+#define __DAVAENGINE_UI_LAYOUT_H__
 
-#include <stdio.h>
+#include "Base/BaseObject.h"
+#include "Math/Vector.h"
 
-#endif /* defined(__Framework__UILayout__) */
+namespace DAVA
+{
+    class UIControl;
+    
+    class UILayout : public BaseObject
+    {
+    public:
+        UILayout();
+        virtual ~UILayout();
+        
+        virtual Vector2 MeasureSize(UIControl *control) = 0;
+        virtual void Apply(UIControl *control) = 0;
+    };
+}
+
+#endif // __DAVAENGINE_UI_LAYOUT_H__

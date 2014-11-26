@@ -34,6 +34,7 @@
 #include "UI/UIControlBackground.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
+#include "UIComponent.h"
 
 namespace DAVA
 {
@@ -1321,9 +1322,18 @@ public:
     virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
+
+    void PutComponent(UIComponent *component);
+    UIComponent *GetComponent(UIComponent::eType type) const;
+    void RemoveComponent(UIComponent::eType type);
+    void RemoveAllComponents();
     
-    BaseObject *GetCustomData() const;
-    void SetCustomData(BaseObject *data);
+    template<class C>
+    C* GetComponent() const
+    {
+        return DynamicTypeCheck<C*>(GetComponent(C::TYPE));
+    }
+    
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1407,9 +1417,6 @@ protected:
     void DrawPivotPoint(const Rect &drawRect);
     
 private:
-    BaseObject *customData;
-
-private:
     String name;
     int32  tag;
     bool inputEnabled : 1;
@@ -1428,6 +1435,9 @@ private:
     float32 GetRelativeX(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
     float32 GetRelativeY(UIControl *parent, int32 align);
     float32 GetRelativeY(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
+    
+private:
+    Vector<UIComponent*> components;
     
 public:
     inline bool GetSystemVisible() const;
