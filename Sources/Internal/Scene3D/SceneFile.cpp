@@ -571,7 +571,6 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 	if (def.nodeType == SceneNodeDef::SCENE_NODE_BASE)
 	{
 		node = new Entity();
-        node->SetDefaultLocalTransform(def.localTransform);
 		node->SetLocalTransform(def.localTransform);
 		node->SetName(name);
         if (parentNode != scene) 
@@ -587,7 +586,6 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 		
 		currentSkeletonNode = new SkeletonNode();
 		node = currentSkeletonNode;
-        node->SetDefaultLocalTransform(def.localTransform);
 		node->SetLocalTransform(def.localTransform);
 		currentSkeletonNode->inverse0Matrix = inverse0;
 		node->SetName(name);
@@ -603,7 +601,6 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 
 		BoneNode * boneNode = new BoneNode(currentSkeletonNode);
 		node = boneNode;
-        node->SetDefaultLocalTransform(def.localTransform);
 		node->SetLocalTransform(def.localTransform);
 		node->SetName(name);
 
@@ -640,7 +637,6 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 		MeshInstanceNode* meshNode = new MeshInstanceNode();
 		node = meshNode;
         
-        node->SetDefaultLocalTransform(def.localTransform);
 		node->SetLocalTransform(def.localTransform);
 		node->SetName(name);
         

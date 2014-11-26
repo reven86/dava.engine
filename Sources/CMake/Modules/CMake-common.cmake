@@ -156,7 +156,7 @@ macro (define_source_folders )
                 IF( FIND_CMAKELIST )
                     add_subdirectory (${FOLDER_NAME})
                     list ( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_CPP_FILES} ${${FOLDER_NAME}_H_FILES} )    
-    		    list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
+    		        list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
                     list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
                 ELSE()
                     list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
@@ -171,21 +171,68 @@ endmacro ()
 #
 macro ( generate_source_groups_project )
 
-    file (GLOB_RECURSE FILE_LIST "*" )
-    
-    FOREACH( ITEM ${FILE_LIST} )
-        get_filename_component ( FILE_PATH ${ITEM} PATH ) 
+    cmake_parse_arguments ( ARG "RECURSIVE_CALL"  "ROOT_DIR;GROUP_PREFIX" "SRC_ROOT;GROUP_FOLDERS" ${ARGN} )
 
-        IF( "${FILE_PATH}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}" )
-            STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}" "" FILE_GROUP ${FILE_PATH} )
-        ELSE()
-            STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" FILE_GROUP ${FILE_PATH} )
-            STRING(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
-        ENDIF()
+    IF( ARG_ROOT_DIR )
+        get_filename_component ( ROOT_DIR ${ARG_ROOT_DIR} REALPATH ) 
 
-        source_group( "${FILE_GROUP}" FILES ${ITEM} )
+    else()
+        set( ROOT_DIR ${CMAKE_CURRENT_LIST_DIR} )
+
+    ENDIF()
+
+    IF( ARG_GROUP_PREFIX )
+        set( GROUP_PREFIX  "${ARG_GROUP_PREFIX}\\" )
+    else()
+        set( GROUP_PREFIX "" )
+    ENDIF()
+
+
+    IF( ARG_SRC_ROOT ) 
+        set( SRC_ROOT_LIST  )
+
+        FOREACH( SRC_ITEM ${ARG_SRC_ROOT} )
+
+            IF( "${SRC_ITEM}" STREQUAL "*" )
+                list ( APPEND SRC_ROOT_LIST "*" )
+            ELSE()
+                get_filename_component ( SRC_ITEM ${SRC_ITEM} REALPATH ) 
+                list ( APPEND SRC_ROOT_LIST ${SRC_ITEM}/* )
+            ENDIF()
+        ENDFOREACH()
+
+    else()
+        set( SRC_ROOT_LIST "*" )
+
+    ENDIF()
+
+
+    FOREACH( SRC_ROOT_ITEM ${SRC_ROOT_LIST} )
+      
+        file ( GLOB_RECURSE FILE_LIST ${SRC_ROOT_ITEM} )        
+
+        FOREACH( ITEM ${FILE_LIST} )
+            get_filename_component ( FILE_PATH ${ITEM} PATH ) 
+
+            IF( "${FILE_PATH}" STREQUAL "${ROOT_DIR}" )
+                STRING(REGEX REPLACE "${ROOT_DIR}" "" FILE_GROUP ${FILE_PATH} )
+            ELSE()
+                STRING(REGEX REPLACE "${ROOT_DIR}/" "" FILE_GROUP ${FILE_PATH} )
+                STRING(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
+            ENDIF()
+            source_group( "${GROUP_PREFIX}${FILE_GROUP}" FILES ${ITEM} )
+
+            #message( "<> " ${GROUP_PREFIX}" ][ "${FILE_GROUP} " ][ " ${ITEM} )
+        ENDFOREACH()
+
     ENDFOREACH()
-    
+
+    IF( NOT ARG_RECURSIVE_CALL )
+        FOREACH( GROUP_ITEM ${ARG_GROUP_FOLDERS} )
+            generate_source_groups_project( RECURSIVE_CALL GROUP_PREFIX ${GROUP_ITEM}  ROOT_DIR ${${GROUP_ITEM}}  SRC_ROOT ${${GROUP_ITEM}}  )
+        ENDFOREACH()
+    ENDIF()
+
 endmacro ()
 
 
