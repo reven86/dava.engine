@@ -205,10 +205,11 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
 
 void InstancedRenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
 {
-    /*
-    RenderLayer::DrawRenderBatchArray(ownerRenderPass, camera, renderLayerBatchArray);
-    return;
-    */
+    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEST_OPTION))
+    {    
+        RenderLayer::DrawRenderBatchArray(ownerRenderPass, camera, renderLayerBatchArray);
+        return;
+    }        
 
     incomingGroup = NULL;
     currInstancesCount = 0;
