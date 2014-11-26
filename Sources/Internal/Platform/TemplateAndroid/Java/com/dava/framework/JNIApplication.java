@@ -6,19 +6,20 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.util.Log;
-import com.dava.framework.JNINotificationProvider;
 
 public class JNIApplication extends Application
 {
 	static JNIApplication app;
 	
-	private native void OnCreateApplication(String externalDocumentPath, String internalExternalDocumentsPath, String appPath, String logTag, String packageName); 
+	private native void OnCreateApplication(String externalDocumentPath, 
+			String internalExternalDocumentsPath, String appPath, 
+			String logTag, String packageName, String commandLineParams); 
 	private native void OnConfigurationChanged(); 
 	private native void OnLowMemory(); 
 	private native void OnTerminate(); 
 	
 	private String externalDocumentsDir;
-	private String internalDocumentsDir; 
+	private String internalDocumentsDir;
 	private Locale launchLocale;
 	private boolean firstLaunch = true;
 
@@ -26,12 +27,14 @@ public class JNIApplication extends Application
 	 * Initialize native framework core in first time.
 	 * Should be called on activity starting.
 	 */
-	public void InitFramework()
+	public void InitFramework(final String commandLineParams)
 	{
 	    if (firstLaunch) {
             ApplicationInfo info = getApplicationInfo();
             Log.w(JNIConst.LOG_TAG, String.format("[Application::InitFramework] Create Application. apkFilePath is %s", info.publicSourceDir)); 
-            OnCreateApplication(externalDocumentsDir, internalDocumentsDir, info.publicSourceDir, JNIConst.LOG_TAG, info.packageName);
+            OnCreateApplication(externalDocumentsDir, internalDocumentsDir, 
+            		info.publicSourceDir, JNIConst.LOG_TAG, 
+            		info.packageName, commandLineParams);
             firstLaunch = false;
         }
 	}

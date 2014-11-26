@@ -168,6 +168,17 @@ void StaticOcclusionBuildSystem::Cancel()
     SceneForceLod(LodComponent::INVALID_LOD_LAYER);
     RestoreOcclusionMaterials();
 }
+
+void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity)
+{
+    if (GetAnimationComponent(entity)) //skip animated hierarchies
+        return;
+    if (GetRenderComponent(entity))
+        dest.push_back(entity);
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        CollectEntitiesForOcclusionRecursively(dest, entity->GetChild(i));
+}
     
 void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData)
 {
@@ -187,7 +198,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
     Vector<Entity*> entities;
     Vector<RenderObject*> renderObjectsArray;
     Landscape * landscape = 0;
-    GetScene()->GetChildEntitiesWithComponent(entities, Component::RENDER_COMPONENT);
+    CollectEntitiesForOcclusionRecursively(entities, GetScene());    
     
     uint32 size = (uint32)entities.size();
     renderObjectsArray.reserve(size);
@@ -507,24 +518,27 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
         if ((position.x>=data->bbox.min.x)&&(position.x<=data->bbox.max.x)&&(position.y>=data->bbox.min.y)&&(position.y<=data->bbox.max.y))
         {        
             uint32 x = (uint32)((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * (float32)data->sizeX);
-            uint32 y = (uint32)((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * (float32)data->sizeY);            
-            float32 dH = data->cellHeightOffset?data->cellHeightOffset[x+y*data->sizeX]:0;  
-            if ((position.z>=(data->bbox.min.z+dH))&&(position.z<=(data->bbox.max.z+dH)))
+            uint32 y = (uint32)((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * (float32)data->sizeY);   
+            if ((x < data->sizeX) && (y < data->sizeY)) //
             {
-
-                uint32 z = (uint32)((position.z - (data->bbox.min.z+dH)) / (data->bbox.max.z - data->bbox.min.z) * (float32)data->sizeZ);                    
-            
-                if ((x < data->sizeX) && (y < data->sizeY) && (z < data->sizeZ))
+                float32 dH = data->cellHeightOffset?data->cellHeightOffset[x+y*data->sizeX]:0;  
+                if ((position.z>=(data->bbox.min.z+dH))&&(position.z<=(data->bbox.max.z+dH)))
                 {
-                    uint32 blockIndex = z * (data->sizeX * data->sizeY) + y * (data->sizeX) + (x);
 
-                    if ((activePVSSet != data) || (activeBlockIndex != blockIndex))
+                    uint32 z = (uint32)((position.z - (data->bbox.min.z+dH)) / (data->bbox.max.z - data->bbox.min.z) * (float32)data->sizeZ);                    
+            
+                    if (z < data->sizeZ)
                     {
-                        activePVSSet = data;
-                        activeBlockIndex = blockIndex;
-                        needUpdatePVS = true;
+                        uint32 blockIndex = z * (data->sizeX * data->sizeY) + y * (data->sizeX) + (x);
+
+                        if ((activePVSSet != data) || (activeBlockIndex != blockIndex))
+                        {
+                            activePVSSet = data;
+                            activeBlockIndex = blockIndex;
+                            needUpdatePVS = true;
+                        }
+                        notInPVS = false;
                     }
-                    notInPVS = false;
                 }
             }
         }

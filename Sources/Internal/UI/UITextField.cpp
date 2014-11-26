@@ -92,60 +92,13 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,   textFont(NULL)
 ,   staticText(NULL)
 #endif
-,   isPassword(false)
-,	autoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES)
-,	autoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT)
-,	spellCheckingType(SPELL_CHECKING_TYPE_DEFAULT)
-,	keyboardAppearanceType(KEYBOARD_APPEARANCE_DEFAULT)
-,	keyboardType(KEYBOARD_TYPE_DEFAULT)
-,	returnKeyType(RETURN_KEY_DEFAULT)
-,	enableReturnKeyAutomatically(false)
-,   maxLength(-1)
 {
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
-    textFieldAndroid->SetVisible(true);
-    SetTextUseRtlAlign(false);
-#elif defined(__DAVAENGINE_IPHONE__)
-	textFieldiPhone = new UITextFieldiPhone(this);
-    textFieldiPhone->SetVisible(true);
-    SetTextUseRtlAlign(false);
-#else
-    staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
-    staticText->SetVisible(false);
-    AddControl(staticText);
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
-#endif
-    
-    cursorTime = 0;
-    showCursor = true;
-}
-
-UITextField::UITextField()
-:   delegate(NULL)
-,   cursorBlinkingTime(0.f)
-#if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
-,   textFont(NULL)
-,   staticText(NULL)
-#endif
-,   isPassword(false)
-,	autoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES)
-,	autoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT)
-,	spellCheckingType(SPELL_CHECKING_TYPE_DEFAULT)
-,	keyboardAppearanceType(KEYBOARD_APPEARANCE_DEFAULT)
-,	keyboardType(KEYBOARD_TYPE_DEFAULT)
-,	returnKeyType(RETURN_KEY_DEFAULT)
-,	enableReturnKeyAutomatically(false)
-,   maxLength(-1)
-{
-#if defined (__DAVAENGINE_ANDROID__)
-	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
-    SetTextUseRtlAlign(false);
 #elif defined(__DAVAENGINE_IPHONE__)
 	textFieldiPhone = new UITextFieldiPhone(this);
     textFieldiPhone->SetVisible(false);
-    SetTextUseRtlAlign(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
     staticText->SetVisible(false);
@@ -155,6 +108,33 @@ UITextField::UITextField()
     
     cursorTime = 0;
     showCursor = true;
+
+    SetupDefaults();
+}
+    
+void UITextField::SetupDefaults()
+{
+    SetInputEnabled(true, false);
+    
+    SetAutoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES);
+    SetAutoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT);
+    SetSpellCheckingType(SPELL_CHECKING_TYPE_DEFAULT);
+    SetKeyboardAppearanceType(KEYBOARD_APPEARANCE_DEFAULT);
+    SetKeyboardType(KEYBOARD_TYPE_DEFAULT);
+    SetReturnKeyType(RETURN_KEY_DEFAULT);
+    SetEnableReturnKeyAutomatically(false);
+    SetTextUseRtlAlign(false);
+    
+    SetMaxLength(-1);
+    
+    
+    SetIsPassword(false);
+    SetTextColor(GetTextColor());
+    SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    
+    SetFontSize(26); //12 is default size for IOS
+    
+    SetText(L"");
 }
 
 //void UITextField::InitAfterYaml()
@@ -368,7 +348,7 @@ void UITextField::SetTextUseRtlAlign(bool useRtlAlign)
 #endif
 }
 
-void UITextField::SetFontSize(float size)
+void UITextField::SetFontSize(float32 size)
 {
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->SetFontSize(size);
@@ -1101,6 +1081,10 @@ void UITextField::SetFontPresetName( const String &presetName )
     }
 
     SetFont(font);
+    if (font)
+    {
+        SetFontSize((float32)font->GetFontHeight());
+    }
 }
 
 }; // namespace
