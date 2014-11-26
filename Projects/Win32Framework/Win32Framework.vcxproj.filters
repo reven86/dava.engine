@@ -154,6 +154,9 @@
     <Filter Include="Internal\Notification">
       <UniqueIdentifier>{4b5695b8-6b14-4d0c-8f8d-86535f5de24e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Network\Base">
+      <UniqueIdentifier>{c78a86b8-08be-4c63-9fe8-c175ec409a6b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1598,56 +1601,56 @@
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\AsyncRequest.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Buffer.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimer.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\DeadlineTimerTemplate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Endpoint.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\HandleBase.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\HandleTraits.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\IOLoop.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\IPAddress.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkUtils.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptor.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPAcceptorTemplate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocket.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPSocketTemplate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocket.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\UDPSocketTemplate.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Noncopyable.h">
       <Filter>Internal\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\AsyncRequest.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\Endpoint.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\HandleBase.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\HandleTraits.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IOLoop.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IPAddress.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\NetworkUtils.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPAcceptorTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocket.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocketTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocket.h">
+      <Filter>Internal\Network\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocketTemplate.h">
+      <Filter>Internal\Network\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2936,35 +2939,35 @@
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\AsyncRequest.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\AsyncRequest.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\DeadlineTimer.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Endpoint.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\HandleBase.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\HandleBase.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\IOLoop.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IOLoop.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\IPAddress.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IPAddress.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\TCPAcceptor.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\NetworkUtils.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\TCPSocket.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\UDPSocket.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPSocket.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkUtils.cpp">
-      <Filter>Internal\Network</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\UDPSocket.cpp">
+      <Filter>Internal\Network\Base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
