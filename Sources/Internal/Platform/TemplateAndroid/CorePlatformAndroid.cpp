@@ -138,19 +138,21 @@ namespace DAVA
 			Core::SystemProcessFrame();
 			DAVA::RenderManager::Instance()->Unlock();
 
-			uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
-            int32 sleepMs = 1;
-
             int32 fps = RenderManager::Instance()->GetFPS();
             if(fps > 0)
             {
-                sleepMs = (1000 / fps) - elapsedTime;
-                if(sleepMs < 1)
+            	uint32 elapsedTime = static_cast<uint32>(
+            			SystemTimer::Instance()->AbsoluteMS() - startTime);
+
+            	int32 sleepMs = (1000 / fps) - elapsedTime;
+            	// check > 1 because integer value for 60 fps will be 16
+            	// 1000/60fps = 16.666 -> 16(integer int32) so we lose 0.6ms
+            	// 0.6 round to 1
+                if(sleepMs > 1)
                 {
-                    sleepMs = 1;
+                	Thread::Sleep(sleepMs);
                 }
             }
-            Thread::Sleep(sleepMs);
 		}
 	}
 
