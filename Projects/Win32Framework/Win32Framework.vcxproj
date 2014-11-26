@@ -403,6 +403,13 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocketTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocket.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocketTemplate.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\BasicProtoDecoder.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\ChannelManager.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\IChannel.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\ITransport.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\NetworkCommon.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPTransport.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\TransportFactory.h" />
     <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h" />
     <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationController.h" />
     <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.h" />
@@ -877,6 +884,10 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPSocket.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\UDPSocket.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\BasicProtoDecoder.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\ChannelManager.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\TCPTransport.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\TransportFactory.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.cpp" />

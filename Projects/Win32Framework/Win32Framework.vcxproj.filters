@@ -1652,6 +1652,27 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocketTemplate.h">
       <Filter>Internal\Network\Base</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\BasicProtoDecoder.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\ChannelManager.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\IChannel.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\ITransport.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetworkCommon.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TCPTransport.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\TransportFactory.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2968,6 +2989,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Base\UDPSocket.cpp">
       <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\BasicProtoDecoder.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\ChannelManager.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\TCPTransport.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\TransportFactory.cpp">
+      <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
