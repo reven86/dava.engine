@@ -49,6 +49,7 @@ Called once, on app startup.
 */
 
 void    Init( unsigned max_counter_count=64, unsigned history_length=128 );
+void    Uninit();
 
 
 void    Start(); 

@@ -64,6 +64,7 @@ class Counter;
 
 static Counter* GetCounter( uint32 id );
 
+static bool             ProfilerInited      = false;
 static unsigned         MaxCounterCount     = 64;
 static unsigned         HistoryCount        = 100;
 
@@ -203,6 +204,8 @@ GetCounter( uint32 id )
 void 
 Init( unsigned max_counter_count, unsigned history_len )
 {
+    DVASSERT(!ProfilerInited);
+
     HistoryCount    = history_len;
     MaxCounterCount = max_counter_count;
 
@@ -223,6 +226,38 @@ Init( unsigned max_counter_count, unsigned history_len )
 
         counter += MaxCounterCount;
     }
+
+    ProfilerInited = true;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+Uninit()
+{
+    if( _Counter )
+    {
+        delete[] _Counter;
+        _Counter = 0;
+    }
+
+    if( _Average )
+    {
+        delete[] _Average;
+        _Average = 0;
+    }
+
+    if( ActiveCounter )
+    {
+        delete[] ActiveCounter;
+        ActiveCounter = 0;
+    }
+
+    HistoryCount    = 0;
+    MaxCounterCount = 0;
+
+    ProfilerInited = false;
 }
 
 
@@ -231,15 +266,14 @@ Init( unsigned max_counter_count, unsigned history_len )
 void
 SetCounterName( unsigned counter_id, const char* name )
 {
-    if( counter_id < MaxCounterCount )
-    {
-        Counter*    counter = _Counter + counter_id;
+    DVASSERT( counter_id < MaxCounterCount );
 
-        for( unsigned h=0; h!=HistoryCount; ++h )
-        {
-            counter->setName( name );
-            counter += MaxCounterCount;
-        }
+    Counter*    counter = _Counter + counter_id;
+
+    for( unsigned h=0; h!=HistoryCount; ++h )
+    {
+        counter->setName( name );
+        counter += MaxCounterCount;
     }
 }
 
@@ -249,12 +283,11 @@ SetCounterName( unsigned counter_id, const char* name )
 void
 StartCounter( unsigned counter_id )
 {
-    if( counter_id < MaxCounterCount )
-    {
-        Counter*    counter = CurCounter + counter_id;
+    DVASSERT( counter_id < MaxCounterCount );
+
+    Counter*    counter = CurCounter + counter_id;
         
-        counter->start();
-    }
+    counter->start();
 }
 
 
@@ -263,13 +296,12 @@ StartCounter( unsigned counter_id )
 void
 StartCounter( unsigned counter_id, const char* counter_name )
 {
-    if( counter_id < MaxCounterCount )
-    {
-        Counter*    counter = CurCounter + counter_id;
+    DVASSERT( counter_id < MaxCounterCount );
+
+    Counter*    counter = CurCounter + counter_id;
         
-        counter->setName( counter_name );
-        counter->start();
-    }
+    counter->setName( counter_name );
+    counter->start();
 }
 
 
@@ -278,12 +310,11 @@ StartCounter( unsigned counter_id, const char* counter_name )
 void
 StopCounter( unsigned counter_id )
 {
-    if( counter_id < MaxCounterCount )
-    {
-        Counter*    counter = CurCounter + counter_id;
+    DVASSERT( counter_id < MaxCounterCount );
+
+    Counter*    counter = CurCounter + counter_id;
         
-        counter->stop();
-    }
+    counter->stop();
 }
 
 
@@ -350,7 +381,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
         unsigned    indent  = 0;
         unsigned    len     = 0;
 
-        while( pi != unsigned(-1) )
+        while( pi != InvalidIndex )
         {
             pi = result[pi].parentIndex;
             ++indent;
@@ -373,7 +404,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
         char        text[256];  memset( text, ' ', sizeof(text) );
         unsigned    len         = 0;
 
-        while( pi != unsigned(-1) )
+        while( pi != InvalidIndex )
         {
             pi = result[pi].parentIndex;
             ++indent;
