@@ -128,13 +128,13 @@ elseif ( MSVC )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
-    if( OUTPUT_TO_BIN )
-        set( OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/bin )
+    if( OUTPUT_TO_BUILD_DIR )
+        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR} )
         foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
             string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
             set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-    endif()
+     endif()
 
 endif()
 
