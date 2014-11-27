@@ -357,7 +357,7 @@
 		52F4216CE5F81A8073DE30C0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = /System/Library/Frameworks/OpenAL.framework; sourceTree = "<absolute>"; };
 		548C5E52292D4DA256C12EBD /* png_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = png_macos; path = ../dava.framework/Libs/libs/libpng_macos.a; sourceTree = "<group>"; };
 		5B2DE73738F678B7C6177179 /* curl_ios_mac */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = curl_ios_mac; path = ../dava.framework/Libs/libs/libcurl_ios_mac.a; sourceTree = "<group>"; };
-		5C190C9515AEC58B005731F8 /* UIEditor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UIEditor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5C190C9515AEC58B005731F8 /* QuickEd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickEd.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C190C9E15AEC6F9005731F8 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data; sourceTree = "<group>"; };
 		5C190CA015AEC704005731F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5CCC10E615B460BF00DA83EB /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -731,7 +731,7 @@
 		5C190C9615AEC58B005731F8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5C190C9515AEC58B005731F8 /* UIEditor.app */,
+				5C190C9515AEC58B005731F8 /* QuickEd.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -853,9 +853,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C44821495B0959249FEE50BE /* UIEditor */ = {
+		C44821495B0959249FEE50BE /* QuickEd */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 17B3380A4D6A7D415E7F2E1E /* Build configuration list for PBXNativeTarget "UIEditor" */;
+			buildConfigurationList = 17B3380A4D6A7D415E7F2E1E /* Build configuration list for PBXNativeTarget "QuickEd" */;
 			buildPhases = (
 				5C42E09515B42E1C00F71425 /* Qt Qmake */,
 				5C42E09615B42E2E00F71425 /* Qt Preprocessors */,
@@ -870,9 +870,9 @@
 			dependencies = (
 				C107916616D78CC20081E58C /* PBXTargetDependency */,
 			);
-			name = UIEditor;
+			name = QuickEd;
 			productName = TemplateProjectQt;
-			productReference = 5C190C9515AEC58B005731F8 /* UIEditor.app */;
+			productReference = 5C190C9515AEC58B005731F8 /* QuickEd.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -883,7 +883,7 @@
 			attributes = {
 				LastUpgradeCheck = 0460;
 			};
-			buildConfigurationList = CC82A9286117DFED018F418F /* Build configuration list for PBXProject "UIEditor" */;
+			buildConfigurationList = CC82A9286117DFED018F418F /* Build configuration list for PBXProject "QuickEd" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -905,7 +905,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				C44821495B0959249FEE50BE /* UIEditor */,
+				C44821495B0959249FEE50BE /* QuickEd */,
 			);
 		};
 /* End PBXProject section */
@@ -1241,7 +1241,7 @@
 					"-L../../Libs/IMagickHelpLib",
 					"-L../../Libs/oggvorbis/lib/",
 				);
-				PRODUCT_NAME = UIEditor;
+				PRODUCT_NAME = QuickEd;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
 			};
@@ -1296,7 +1296,7 @@
 					"-L../../Libs/IMagickHelpLib",
 					"-L../../Libs/oggvorbis/lib/",
 				);
-				PRODUCT_NAME = UIEditor;
+				PRODUCT_NAME = QuickEd;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
 			};
@@ -1379,7 +1379,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		17B3380A4D6A7D415E7F2E1E /* Build configuration list for PBXNativeTarget "UIEditor" */ = {
+		17B3380A4D6A7D415E7F2E1E /* Build configuration list for PBXNativeTarget "QuickEd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BEC09A62E69C3553534FF35E /* Debug */,
@@ -1388,7 +1388,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		CC82A9286117DFED018F418F /* Build configuration list for PBXProject "UIEditor" */ = {
+		CC82A9286117DFED018F418F /* Build configuration list for PBXProject "QuickEd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4B72B24813252891014BCF61 /* Debug */,
