@@ -255,6 +255,7 @@ public:
     static int32 GetUniformTypeSize(eUniformType type);
     static const char * GetUniformTypeSLName(eUniformType type);
     static int32 GetInstanceSemanticByName(const FastName &name);
+    static bool SupportInstancingByName(const FastName &name);
 
     static bool GetUseValueCache(const FastName &name);
 

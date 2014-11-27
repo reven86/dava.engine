@@ -1230,6 +1230,7 @@ void NMaterial::BuildTextureParamsCache()
     
 void NMaterial::BuildActiveUniformsCacheParamsCache()
 {
+    supportsInstancing = true;
     HashMap<PassInstanceKeyType, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
     HashMap<PassInstanceKeyType, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
     while(it != endIt)
@@ -1262,6 +1263,9 @@ void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInst
 			entry.prop = prop;
 			
 			passInstance->activeUniformsCache.push_back(entry);
+            //material is instance && property defined locally && property is not supported by instancing
+            if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniform->name)&&(!Shader::SupportInstancingByName(uniform->name)))
+                supportsInstancing = false;
 		}
 	}		
 }

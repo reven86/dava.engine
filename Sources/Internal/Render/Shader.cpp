@@ -146,6 +146,16 @@ int32 Shader::GetInstanceSemanticByName(const FastName &name)
     return 0;
 }
 
+bool Shader::SupportInstancingByName(const FastName &name)
+{
+    for (int32 k = 0; k < INSTANCE_PARAMETERS_COUNT; ++k)
+    {
+        if (name == INSTANCE_PARAM_DESCRIPTORS[k].originalName)
+            return true;
+    }
+    return false;
+}
+
 bool Shader::GetUseValueCache(const FastName &name)
 {
     return (GetShaderSemanticByName(name)==UNKNOWN_SEMANTIC)&&(GetInstanceSemanticByName(name)==0);
