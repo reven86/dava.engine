@@ -3,7 +3,7 @@ import shutil
 import os
 from os.path import expanduser
 
-app = "UIEditor"
+app = "QuickEd"
 appPath = app + ".app"
 frameworkPath = appPath + "/Contents/Frameworks/"
 qtPath = expanduser("~") + "/QtSDK/Desktop/Qt/4.8.1/gcc/lib/"

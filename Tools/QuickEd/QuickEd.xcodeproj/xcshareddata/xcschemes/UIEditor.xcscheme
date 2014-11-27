@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C44821495B0959249FEE50BE"
-               BuildableName = "UIEditor.app"
-               BlueprintName = "UIEditor"
-               ReferencedContainer = "container:UIEditor.xcodeproj">
+               BuildableName = "QuickEd.app"
+               BlueprintName = "QuickEd"
+               ReferencedContainer = "container:QuickEd.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C44821495B0959249FEE50BE"
-            BuildableName = "UIEditor.app"
-            BlueprintName = "UIEditor"
-            ReferencedContainer = "container:UIEditor.xcodeproj">
+            BuildableName = "QuickEd.app"
+            BlueprintName = "QuickEd"
+            ReferencedContainer = "container:QuickEd.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -52,9 +52,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C44821495B0959249FEE50BE"
-            BuildableName = "UIEditor.app"
-            BlueprintName = "UIEditor"
-            ReferencedContainer = "container:UIEditor.xcodeproj">
+            BuildableName = "QuickEd.app"
+            BlueprintName = "QuickEd"
+            ReferencedContainer = "container:QuickEd.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -70,9 +70,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C44821495B0959249FEE50BE"
-            BuildableName = "UIEditor.app"
-            BlueprintName = "UIEditor"
-            ReferencedContainer = "container:UIEditor.xcodeproj">
+            BuildableName = "QuickEd.app"
+            BlueprintName = "QuickEd"
+            ReferencedContainer = "container:QuickEd.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

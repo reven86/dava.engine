@@ -187,7 +187,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		00BD80432B2C7B49A27A3DC5 /* UIEditor.pro */ = {isa = PBXFileReference; lastKnownFileType = text; path = UIEditor.pro; sourceTree = "<group>"; };
+		00BD80432B2C7B49A27A3DC5 /* QuickEd.pro */ = {isa = PBXFileReference; lastKnownFileType = text; path = QuickEd.pro; sourceTree = "<group>"; };
 		02E9E447173A3AED00C501BC /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		02E9E448173A3AED00C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		1541251419C8E62E00FC2883 /* PackageDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PackageDocument.h; sourceTree = "<group>"; };
@@ -739,7 +739,7 @@
 		7CABE3C80E79AD2B307756D2 /* Sources [qmake] */ = {
 			isa = PBXGroup;
 			children = (
-				00BD80432B2C7B49A27A3DC5 /* UIEditor.pro */,
+				00BD80432B2C7B49A27A3DC5 /* QuickEd.pro */,
 			);
 			name = "Sources [qmake]";
 			sourceTree = "<group>";
