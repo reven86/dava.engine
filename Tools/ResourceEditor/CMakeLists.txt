@@ -160,7 +160,17 @@ if( APPLE )
                           )
 
 elseif( MSVC )
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")
+
+    if( OUTPUT_TO_BIN )
+        set( OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/bin )
+        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
+        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+     endif()
 
 endif()
 
@@ -171,11 +181,6 @@ target_link_libraries ( ${PROJECT_NAME}
     ${LIBRARIES} 
     TextureTool
 )
-
-if (MSVC) 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
-endif()
  
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )

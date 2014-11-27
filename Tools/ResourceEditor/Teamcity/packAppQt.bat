@@ -6,9 +6,9 @@ if exist app.zip del /q app.zip
 mkdir app\ResourceEditor\dava.framework\Tools\ResourceEditor\Data
 mkdir app\ResourceEditor\dava.resourceeditor.beast
 call git log --since=3.days --branches="development" --pretty=format:"%%%%s (%%%%an, %%%%ar) " >> app/ResourceEditor/changes.txt
-echo cd .\dava.framework\Tools\ResourceEditor > app/ResourceEditor/start.cmd
-echo start ResourceEditorQtVS2010.exe >> app/ResourceEditor/start.cmd
-
+echo cd .\dava.framework\Tools\ResourceEditor\bin > app/ResourceEditor/start.cmd
+echo start ResourceEditor.exe >> app/ResourceEditor/start.cmd
+           
 xcopy /e ..\Data\*.* app\ResourceEditor\dava.framework\Tools\ResourceEditor\Data 
 xcopy *.exe app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy *.pdb app\ResourceEditor\dava.framework\Tools\ResourceEditor
