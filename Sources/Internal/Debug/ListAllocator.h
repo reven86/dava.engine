@@ -32,6 +32,8 @@
 
 #include "Base/BaseTypes.h"
 
+#include <cstdlib>
+
 namespace DAVA 
 {
 	

@@ -12,9 +12,14 @@ set ( FRAMEWORK_DEFINITIONS
 -D_CRT_SECURE_NO_DEPRECATE 
 -D_CRT_NON_CONFORMING_SWPRINTFS
 -DCURL_STATICLIB
--DDAVA_FMOD
 )
 
+if( NOT DISABLE_SOUNDS )
+    list( APPEND FRAMEWORK_DEFINITIONS -DDAVA_FMOD )
+
+endif()
+
+set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
 
@@ -140,6 +145,11 @@ elseif( IOS )
 
 elseif( WIN32 ) 
     set ( LIBRARY_TYPE STATIC ) 
+
+    if( NOT DISABLE_MT )
+        set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
+        set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" )
+    endif()
     
     if ( MSVC )
         file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
@@ -149,9 +159,6 @@ elseif( WIN32 )
         list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
         set  ( LIST_SHARED_LIBRARIES "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib"  )
-
-        set( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP"  )
-        set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP /fp:fast /Zi /GS- /D _SECURE_SCL=0" )
   
     endif()
 

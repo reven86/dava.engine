@@ -38,6 +38,7 @@
 #pragma comment(lib, "Dbghelp.lib")
 #endif
 
+#include <cstdlib>
 
 namespace DAVA 
 {
