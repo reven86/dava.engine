@@ -1475,6 +1475,9 @@ void NMaterial::UpdateActivePassProperties()
 		{
 			UniformCacheEntry& uniformEntry = activePassInstance->activeUniformsCache[i];
 			uniformEntry.prop = GetPropertyValue(uniformEntry.uniform->name);
+            //material is instance && property defined locally && property is not supported by instancing
+            if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniformEntry.uniform->name)&&(!Shader::SupportInstancingByName(uniformEntry.uniform->name)))
+                supportsInstancing = false;
 		}		
 		activePassInstance->propsDirty = false;
 	}
@@ -1520,6 +1523,7 @@ void NMaterial::OnMaterialPropertyRemoved(const FastName& propName)
     // should be processed only one - propName
     // ...
 
+    supportsInstancing = true; //it would be later reset in update properties if instancing is still not supported
     InvalidateProperties();
 }
 
