@@ -825,7 +825,6 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = "armv7 i386";
 			};
 			name = Debug;
 		};
@@ -854,7 +853,6 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = "armv7 i386";
 			};
 			name = Release;
 		};
@@ -917,7 +915,6 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = "armv7 i386";
 			};
 			name = AdHoc;
 		};
