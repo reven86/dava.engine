@@ -106,6 +106,8 @@
 		A641262F17D0C98B004D3C5E /* libFrameworkToolsQt.a in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = A641262C17D0C97C004D3C5E /* libFrameworkToolsQt.a */; };
 		A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 419FFB6CDDEB353FF0A4F469 /* QtCore.framework */; };
 		B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */; };
+		B0B2BE581A1270850012536C /* libIMagickHelper.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = B0B2BE571A1270850012536C /* libIMagickHelper.dylib */; };
+		B0B2BE5E1A1270B40012536C /* libIMagickHelper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = B0B2BE571A1270850012536C /* libIMagickHelper.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		BCEF71E1EDFB18DA77DC750B /* OpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = DA18A6831232F53228631AD1 /* OpenGL.framework */; };
 		C107916716D78CCD0081E58C /* libFrameworkQt.a in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = C107916416D78C9E0081E58C /* libFrameworkQt.a */; };
 		C15C2FED162AD6E400818631 /* FrameworkMain.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C15C2FE1162AD6E400818631 /* FrameworkMain.cpp */; };
@@ -176,6 +178,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				B0B2BE5E1A1270B40012536C /* libIMagickHelper.dylib in CopyFiles */,
 				020AB22C17463AA70082F336 /* libfmodevent.dylib in CopyFiles */,
 				020AB22D17463AA70082F336 /* libfmodex.dylib in CopyFiles */,
 			);
@@ -374,6 +377,7 @@
 		82153068A36B6EA46DD82A06 /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = ../../../../QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtNetwork.framework; sourceTree = "<group>"; };
 		9B8EE51E126C761F3F797428 /* QtGui.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtGui.framework; path = ../../../../QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtGui.framework; sourceTree = "<group>"; };
 		A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../../Projects/MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
+		B0B2BE571A1270850012536C /* libIMagickHelper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libIMagickHelper.dylib; path = ../../Libs/IMagickHelpLib/libIMagickHelper.dylib; sourceTree = "<group>"; };
 		C107915B16D78C9E0081E58C /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../../Projects/MacOSFramework/Framework.xcodeproj; sourceTree = "<group>"; };
 		C15C2FE1162AD6E400818631 /* FrameworkMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FrameworkMain.cpp; sourceTree = "<group>"; };
 		C15C2FE2162AD6E400818631 /* FrameworkMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkMain.h; sourceTree = "<group>"; };
@@ -417,6 +421,7 @@
 				77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */,
 				17183C4118C8833A00491E66 /* CoreMedia.framework in Frameworks & Libraries */,
 				1723533E19A24EBB00E3212C /* Security.framework in Frameworks & Libraries */,
+				B0B2BE581A1270850012536C /* libIMagickHelper.dylib in Frameworks & Libraries */,
 			);
 			name = "Frameworks & Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -434,6 +439,7 @@
 				A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */,
 				02E9E447173A3AED00C501BC /* libfmodevent.dylib */,
 				02E9E448173A3AED00C501BC /* libfmodex.dylib */,
+				B0B2BE571A1270850012536C /* libIMagickHelper.dylib */,
 				C107915B16D78C9E0081E58C /* Framework.xcodeproj */,
 				5C190C9E15AEC6F9005731F8 /* Data */,
 				157BA42019CCE96D00E47682 /* UI */,
@@ -974,7 +980,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\n";
+			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\n";
 			showEnvVarsInLog = 0;
 		};
 		5C42E09515B42E1C00F71425 /* Qt Qmake */ = {
@@ -1149,16 +1155,9 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
 				);
 				INFOPLIST_FILE = Info.plist;
-				LIBRARY_SEARCH_PATHS = (
-					/System/Library/Frameworks/,
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
-				);
+				LIBRARY_SEARCH_PATHS = /System/Library/Frameworks/;
 				OTHER_CFLAGS = (
 					"-pipe",
 					"-g",
@@ -1188,10 +1187,8 @@
 					"-lz",
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/IMagickHelpLib",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore",
-					"-lMagick++",
-					"-lMagickWand",
 				);
 				PRODUCT_NAME = TemplateProjectQt;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
@@ -1228,18 +1225,22 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
 					"${SYMROOT}",
+					../../Libs/IMagickHelpLib,
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"../../Libs/ImageMagick-6.7.4/lib/",
-					"../../Libs/ImageMagick-6.7.4/delegates/lib",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
-				);
+				LIBRARY_SEARCH_PATHS = "$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)";
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LDFLAGS = (
+					"-headerpad_max_install_names",
+					"-L~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-F~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-lz",
+					"-L../../Libs/libs/",
+					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/IMagickHelpLib",
+					"-L../../Libs/oggvorbis/lib/",
+				);
 				PRODUCT_NAME = UIEditor;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
@@ -1279,18 +1280,22 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
 					"${SYMROOT}",
+					../../Libs/IMagickHelpLib,
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"../../Libs/ImageMagick-6.7.4/lib/",
-					"../../Libs/ImageMagick-6.7.4/delegates/lib",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
-				);
+				LIBRARY_SEARCH_PATHS = "$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)";
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LDFLAGS = (
+					"-headerpad_max_install_names",
+					"-L~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-F~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
+					"-lz",
+					"-L../../Libs/libs/",
+					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/IMagickHelpLib",
+					"-L../../Libs/oggvorbis/lib/",
+				);
 				PRODUCT_NAME = UIEditor;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
@@ -1330,16 +1335,9 @@
 					.,
 					/usr/local/include,
 					/System/Library/Frameworks/CarbonCore.framework/Headers,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
-					"./../../Libs/ImageMagick-6.7.4/",
 				);
 				INFOPLIST_FILE = Info.plist;
-				LIBRARY_SEARCH_PATHS = (
-					/System/Library/Frameworks/,
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
-				);
+				LIBRARY_SEARCH_PATHS = /System/Library/Frameworks/;
 				OTHER_CFLAGS = (
 					"-pipe",
 					"-g",
@@ -1369,10 +1367,8 @@
 					"-lz",
 					"-L../../Libs/libs/",
 					"-L../../Libs/freetype/lib/",
+					"-L../../Libs/IMagickHelpLib",
 					"-L../../Libs/oggvorbis/lib/",
-					"-lMagickCore",
-					"-lMagick++",
-					"-lMagickWand",
 				);
 				PRODUCT_NAME = TemplateProjectQt;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
