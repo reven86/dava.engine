@@ -40,7 +40,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     private boolean isFirstRun = true;
     private static String commandLineParams = null;
-    private static boolean isEglContextDestroyed = false;
+    // on Activity start context not created
+    private static boolean isEglContextDestroyed = true;
     
 	public abstract JNIGLSurfaceView GetSurfaceView();
     
@@ -142,9 +143,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			}
 		}
 		
-		if (splashView != null && !isEglContextDestroyed)
+		if (splashView != null && !isEglContextDestroyed())
 		{
 		    splashView.setVisibility(View.GONE);
+		    Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] hide splash screen");
 		}
         // The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] finish");
@@ -224,6 +226,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // can destroy eglContext
         glView.onPause();
         
+        // we can show splash after switch running app
+//        if (splashView != null)
+//        {
+//            splashView.setVisibility(View.VISIBLE);
+//        }
+        
         super.onPause();
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] finish");
@@ -236,6 +244,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
         // The activity has become visible (it is now "resumed").
+        
+        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
         glView.onResume();
 
         // activate accelerometer
@@ -302,19 +312,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     public void onWindowFocusChanged(boolean hasFocus) {
         Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] start");
         // clear key tracking state, so should always be called
+        // now we definitely shown on screen
         // http://developer.android.com/reference/android/app/Activity.html#onWindowFocusChanged(boolean)
         super.onWindowFocusChanged(hasFocus);
         
-        runOnUiThread(new Runnable() {
-            public void run() {
-                if (splashView != null) {
-                    glView.setVisibility(View.VISIBLE);
-                    // Do I need call onResume here? Why?
-                    glView.onResume();
-                }
-            }
-        });
-    
     	if(hasFocus) {
     		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
 			HideNavigationBar(getWindow().getDecorView());
@@ -378,6 +379,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		return null;
 	}
 	
+	public boolean isEglContextDestroyed() {
+	    return isEglContextDestroyed;
+	}
+	
+	protected void onEglContextCreated() {
+        isEglContextDestroyed = false;
+    }
+	
 	protected void onEglContextDestroyed() {
 		isEglContextDestroyed = true;
     	runOnUiThread(new Runnable() {
@@ -385,7 +394,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			@Override
 			public void run() {
 				if (splashView != null) {
-					glView.setVisibility(View.GONE);
+				    glView.setVisibility(View.GONE);
+				    Log.i(JNIConst.LOG_TAG, "[Activity::onEglContextDestroyed] splashView set visible");
 					splashView.setVisibility(View.VISIBLE);
 				}
 			}
@@ -398,6 +408,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			@Override
 			public void run() {
 				if (splashView != null) {
+				    Log.i(JNIConst.LOG_TAG, "[Activity::OnFirstFrameAfterDraw] splashView hide");
 					splashView.setVisibility(View.GONE);
 				}
 			}

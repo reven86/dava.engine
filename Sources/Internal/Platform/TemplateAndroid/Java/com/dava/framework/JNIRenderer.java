@@ -18,12 +18,11 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	private native void nativeOnPauseView(boolean isLock);
 	
 	private boolean isFirstFrameAfterDraw = false;
-	
-	private boolean isRenderRecreated = false;
+	private long framesCounter = 0;
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		Log.w(JNIConst.LOG_TAG, "_________onSurfaceCreated_____!!!!_____");
+		Log.w(JNIConst.LOG_TAG, "Activity Render onSurfaceCreated started");
 		
 		JNIDeviceInfo.SetGPUFamily(gl);
 
@@ -31,7 +30,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
 		LogExtensions();
 
-		Log.w(JNIConst.LOG_TAG, "_________onSurfaceCreated_____DONE_____");
+		Log.w(JNIConst.LOG_TAG, "Activity Render onSurfaceCreated finished");
 	}
 
 	private void LogExtensions() {
@@ -47,6 +46,9 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 	    Log.w(JNIConst.LOG_TAG, "Activity Render onSurfaceChanged: w = " + w + " h = " + h + " start");
+	    
+	    long startTime = System.nanoTime();
+	        
 	    // while we always in landscape mode, but some devices 
         // call this method on lock screen with portrait w and h
         // then call this method second time with correct portrait w and h
@@ -55,38 +57,69 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	    // pre render into texture with incorrect aspect and on second
 	    // call with correct w and h such text textures stays incorrect
         // http://stackoverflow.com/questions/8556332/is-it-safe-to-assume-that-in-landscape-mode-height-is-always-less-than-width
-	    // https://jira.wargaming.net/browse/DF-5068
-        if (w > h)
-        {
-            nativeResize(w, h);
-            nativeOnResumeView();
+	    // DF-5068
+        if (w > h) {
+            // nativeResize call core->RenderRecreated(w, h); in c++
+            // it take 2.5 seconds on samsung galaxy S 3 so 
+            // check if eglContext not recreated and skip this step
+            if (JNIActivity.GetActivity().isEglContextDestroyed())
+            {
+                nativeResize(w, h);
+                JNIActivity.GetActivity().onEglContextCreated();
+            }
             isFirstFrameAfterDraw = true; // Do we need this?
         }
 
-		Log.w(JNIConst.LOG_TAG, "Activity Render onSurfaceChanged finish");
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime) / 1000000L;  //divide by 1000000 to get milliseconds.
+        
+		Log.w(JNIConst.LOG_TAG, "Activity Render onSurfaceChanged finish " + duration + "ms");
+	}
+	
+	public void skipRenderingWhileSplashQuicklyFirstRender()
+	{
+	    framesCounter = 0;
 	}
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
-		nativeRender();
-		
-		if(isFirstFrameAfterDraw)
-		{
-			isFirstFrameAfterDraw = false;
-			JNIActivity.GetActivity().OnFirstFrameAfterDraw();
-			JNITextField.ShowVisibleTextFields();
-		}
+	    // skip first frame after resume, we want show on start splash view
+	    // as quickly as possible, so skip first frame
+	    if (framesCounter > 1)
+	    {
+    		nativeRender();
+    		
+    		if(isFirstFrameAfterDraw)
+    		{
+    			isFirstFrameAfterDraw = false;
+    			JNIActivity.GetActivity().OnFirstFrameAfterDraw();
+    			JNITextField.ShowVisibleTextFields();
+    		}
+	    }
+	    ++framesCounter;
 	}
 	
 	public void OnPause()
 	{
 		PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
 		nativeOnPauseView(!pm.isScreenOn());
+		
+		isFirstFrameAfterDraw = true;
+		// reset counter for frames to quickly show splash on resume
+		framesCounter = 0;
 	}
 	
 	public void OnResume()
 	{
+	    // reset counter for frames to quickly show splash on resume
+	    framesCounter = 0;
+	    
+		long startTime = System.nanoTime();
 		nativeOnResumeView();
+		long endTime = System.nanoTime();
+
+		long duration = (endTime - startTime) / 1000000L;  //divide by 1000000 to get milliseconds.
+		Log.i(JNIConst.LOG_TAG, "Activity Render nativeOnResumeView time " + duration + "ms");
 	}
 	
 }

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -105,6 +106,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	@Override
 	public void onPause()
 	{
+	    Log.i(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onPause");
 		setRenderMode(RENDERMODE_WHEN_DIRTY);
 		queueEvent(new Runnable() {
             public void run() {
@@ -118,6 +120,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	@Override
 	public void onResume()
 	{
+	    Log.i(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
         // first call parent to restore eglContext
 		super.onResume();
 		queueEvent(new Runnable() {
