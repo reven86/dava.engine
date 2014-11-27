@@ -5,7 +5,7 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>745828FC-2730-49D3-8DB8-83B37DE92537</string>
+	<string>AAC0292B-3FA4-4BAB-952A-C689CEEF3137</string>
 	<key>IDESourceControlProjectName</key>
 	<string>QuickEd</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
@@ -14,7 +14,7 @@
 		<string>https://github.com/dava/dava.framework.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>Tools/QuickEd/QuickEd.xcodeproj</string>
+	<string>Tools/QuickEd/QuickEd.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>62289F3C472C02540432B448FB463096A6264DBD</key>
