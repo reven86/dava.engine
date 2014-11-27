@@ -8,7 +8,7 @@
 
 
 DropperShade::DropperShade( const QImage& src, const QRect& rect )
-    : QWidget(NULL, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
+: QWidget(NULL, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip)
     , cache( src )
     , cursorSize(151, 151)
     , zoomFactor(3)
@@ -18,9 +18,9 @@ DropperShade::DropperShade( const QImage& src, const QRect& rect )
     setAttribute(Qt::WA_DeleteOnClose);
     setFocusPolicy(Qt::WheelFocus);
     setMouseTracking(true);
-    setCursor(Qt::BlankCursor);
-    setFixedSize( rect.size() );
-    move( rect.topLeft() );
+    setCursor(Qt::CrossCursor);
+    setFixedSize(rect.size());
+    move(rect.topLeft());
     cursorPos = mapFromGlobal(QCursor::pos());
 
     connect(mouse, SIGNAL( mouseMove( const QPoint& ) ), SLOT( OnMouseMove( const QPoint& ) ));
