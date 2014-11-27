@@ -190,7 +190,7 @@
 		1D6058910D05DD3D006BFB54 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		32CA4F630368D1EE00C91783 /* TemplateProjectiPhone_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TemplateProjectiPhone_Prefix.pch; sourceTree = "<group>"; };
+		32CA4F630368D1EE00C91783 /* UnitTests_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitTests_Prefix.pch; sourceTree = "<group>"; };
 		495B66FD1796FA7F0017D8DD /* TransparentWebViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransparentWebViewTest.cpp; sourceTree = "<group>"; };
 		495B66FE1796FA7F0017D8DD /* TransparentWebViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransparentWebViewTest.h; sourceTree = "<group>"; };
 		496ABE8C179E6FEB00BCA6E9 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
@@ -225,7 +225,7 @@
 		8475938C18DA3FAC00C464CB /* DateTimeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTimeTest.h; sourceTree = "<group>"; };
 		84C8F71316D3D16000FAC7DF /* DPITest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DPITest.cpp; sourceTree = "<group>"; };
 		84C8F71416D3D16000FAC7DF /* DPITest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPITest.h; sourceTree = "<group>"; };
-		8D1107310486CEB800E47090 /* TemplateProjectiPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TemplateProjectiPhone-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+		8D1107310486CEB800E47090 /* UnitTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "UnitTests-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		B72EFFE619CB389600D38C33 /* TextSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextSizeTest.cpp; sourceTree = "<group>"; };
 		B72EFFE719CB389600D38C33 /* TextSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextSizeTest.h; sourceTree = "<group>"; };
 		B7D6C97619C999A40095250A /* BiDiTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiTest.cpp; sourceTree = "<group>"; };
@@ -457,7 +457,7 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				32CA4F630368D1EE00C91783 /* TemplateProjectiPhone_Prefix.pch */,
+				32CA4F630368D1EE00C91783 /* UnitTests_Prefix.pch */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -469,7 +469,7 @@
 				FEC9200C13BA2D7D006F347F /* iPhoneProjectDelegate.mm */,
 				FEC9200D13BA2D7D006F347F /* main.mm */,
 				FEC9200E13BA2D7D006F347F /* MainWindow.xib */,
-				8D1107310486CEB800E47090 /* TemplateProjectiPhone-Info.plist */,
+				8D1107310486CEB800E47090 /* UnitTests-Info.plist */,
 			);
 			name = "Platform Dependant";
 			sourceTree = "<group>";
@@ -645,7 +645,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TemplateProjectiPhone" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "UnitTestsiOS" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -808,7 +808,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				GCC_PREFIX_HEADER = UnitTests_Prefix.pch;
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,
@@ -816,7 +816,7 @@
 					./Classes,
 					./../../Sources/Tools,
 				);
-				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
+				INFOPLIST_FILE = "UnitTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -837,7 +837,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				GCC_PREFIX_HEADER = UnitTests_Prefix.pch;
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,
@@ -845,7 +845,7 @@
 					./Classes,
 					./../../Sources/Tools,
 				);
-				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
+				INFOPLIST_FILE = "UnitTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -865,6 +865,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Entitlements.plist;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -899,7 +900,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
+				GCC_PREFIX_HEADER = UnitTests_Prefix.pch;
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,
@@ -907,7 +908,7 @@
 					./Classes,
 					./../../Sources/Tools,
 				);
-				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
+				INFOPLIST_FILE = "UnitTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -927,6 +928,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -959,6 +961,7 @@
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -998,7 +1001,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TemplateProjectiPhone" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "UnitTestsiOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
