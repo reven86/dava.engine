@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 #include <dispatch/dispatch.h>
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "semaphore.h"
+#include <semaphore.h>
 #endif //PLATFORMS
 
 namespace DAVA
@@ -123,7 +123,7 @@ inline void Semaphore::Wait()
 // ##########################################################################################################
 // Android implementation
 // ##########################################################################################################
-
+/*
 inline Semaphore::Semaphore(uint32 value)
 {
 	sem_init(&semaphore, 0, value);
@@ -143,7 +143,7 @@ inline void Semaphore::Wait()
 {
 	sem_wait(&semaphore);
 }
-
+*/
 #endif
 
 };
