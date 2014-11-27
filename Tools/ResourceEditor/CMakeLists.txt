@@ -29,7 +29,6 @@ set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
 
 
 
-
 find_package ( Qt5Core REQUIRED )
 find_package ( Qt5Concurrent REQUIRED )
 find_package ( Qt5Gui REQUIRED )
