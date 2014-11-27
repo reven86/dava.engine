@@ -104,6 +104,11 @@ public:
 	 \brief Get registered fonts.
 	 */
 	const Map<Font*, String>& GetRegisteredFonts() const;
+    
+    /**
+     \brief Get name->font map.
+     */
+    const Map<String, Font*>& GetFontMap() const;
 	
     
 private:
