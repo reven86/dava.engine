@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QKeyEvent>
 #include <QCursor>
+#include <QLabel>
 
 #include "../Helpers/MouseHelper.h"
 
@@ -55,19 +56,18 @@ void DropperShade::paintEvent(QPaintEvent* e)
     }
 }
 
-void DropperShade::DrawCursor(const QPoint& pos, QPainter* p)
+void DropperShade::DrawCursor(const QPoint& _pos, QPainter* p)
 {
+    const int scale = static_cast<int>(cache.devicePixelRatio());
+    const QPoint pos(_pos.x(), _pos.y());
+    
     const int sx = cursorSize.width() / 2 - 1;
     const int sy = cursorSize.height() / 2 - 1;
     const QColor c = GetPixel(pos);
 
     QRect rc(QPoint(pos.x() - sx, pos.y() - sy), QPoint(pos.x() + sx, pos.y() + sy));
+    const int fc = zoomFactor / scale;
 
-    const int fc = zoomFactor;
-    QRect rcZoom(QPoint(pos.x() - sx / fc, pos.y() - sy / fc), QPoint(pos.x() + sx / fc, pos.y() + sy / fc));
-    const QImage& zoomed = cache.copy(rcZoom).scaled(rc.size(), Qt::KeepAspectRatio, Qt::FastTransformation);
-
-    p->drawImage(rc, zoomed);
     p->setPen(QPen(Qt::black, 1.0));
 
     const int midX = (rc.left() + rc.right()) / 2;

@@ -72,15 +72,6 @@ void EyeDropper::InitShades()
         
         QRect rc = screens[i].rc;
         const bool scaled = scale > 1.0;
-        if (scaled)
-        {
-            rc.setWidth( int(scale * screens[i].rc.width()) );
-            rc.setHeight( int(scale * screens[i].rc.height()) );
-        }
-
-        //int l, t, r, b;
-        //FindExtraOfs(screens, i, l, t, r, b);
-        //rc.adjust(l, t, r, b);
 
         QPixmap pix;
         if (scaled)
@@ -91,6 +82,8 @@ void EyeDropper::InitShades()
         {
             pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
         }
+        pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
+        pix.setDevicePixelRatio(scale);
         const QImage img = pix.toImage();
         
         DropperShade *shade = new DropperShade( img, screens[i].rc );
@@ -118,31 +111,3 @@ void EyeDropper::InitShades()
 
 }
 
-void EyeDropper::FindExtraOfs(const ScreenArray& screens, int id, int& l, int& t, int& r, int& b)
-{
-    l = 0;
-    t = 0;
-    r = 0;
-    b = 0;
-
-#ifdef Q_OS_MAC
-    const ScreenData& scr = screens[id];
-    const QRect& rc = scr.rc.adjusted(-1, -1, 1, 1);
-
-    for (int i = 0; i < screens.size(); i++)
-    {
-        if (i == id)
-            continue;
-        const QRect& sRc = screens[i].rc;
-
-        if ( rc.left() >= sRc.left() && rc.left() < sRc.right() )
-            l = -1;
-        if ( rc.right() >= sRc.left() && rc.right() < sRc.right() )
-            r = 1;
-        if ( rc.top() >= sRc.top() && rc.top() < sRc.bottom() )
-            t = -1;
-        if ( rc.bottom() >= sRc.top() && rc.bottom() < sRc.bottom() )
-            b = 1;
-    }
-#endif
-}
