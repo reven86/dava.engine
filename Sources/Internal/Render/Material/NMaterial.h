@@ -870,7 +870,7 @@ protected:
 	RenderTechnique* baseTechnique;       
 
 	HashMap<PassInstanceKeyType, RenderPassInstance*> instancePasses;
-	HashMap<FastName, UniqueHandle> instancePassRenderStates;
+	HashMap<PassInstanceKeyType, UniqueHandle> instancePassRenderStates;
 	
 	RenderPassInstance* activePassInstance;
 	RenderTechniquePass* activeRenderPass;

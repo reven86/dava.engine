@@ -235,9 +235,7 @@ NMaterial::~NMaterial()
 	SetParentInternal(NULL);
 	ReleaseInstancePasses();
 	
-	for(HashMap<FastName, UniqueHandle>::iterator it = instancePassRenderStates.begin();
-		it != instancePassRenderStates.end();
-		++it)
+	for(HashMap<PassInstanceKeyType, UniqueHandle>::iterator it = instancePassRenderStates.begin(), e = instancePassRenderStates.end(); it != e; ++it)
 	{
 		RenderManager::Instance()->ReleaseRenderState(it->second);
 	}
@@ -703,9 +701,7 @@ NMaterial* NMaterial::Clone()
 		}
 	}
 	
-	for(HashMap<FastName, UniqueHandle>::iterator it = instancePassRenderStates.begin();
-		it != instancePassRenderStates.end();
-		++it)
+	for(HashMap<PassInstanceKeyType, UniqueHandle>::iterator it = instancePassRenderStates.begin(), e = instancePassRenderStates.end(); it != e; ++it)
 	{
 		clonedMaterial->instancePassRenderStates.insert(it->first, it->second);
 		RenderManager::Instance()->RetainRenderState(it->second);
@@ -1169,11 +1165,11 @@ void NMaterial::AddRenderPassInstance(const FastName& passName, uint8 flags,
 	RenderState* parentRenderState = pass->GetRenderState();
 	
 	RenderPassInstance* passInstance = new RenderPassInstance();
-	passInstance->dirtyState = (instancePassRenderStates.count(passName) != 0);
+	passInstance->dirtyState = (instancePassRenderStates.count(PassInstanceKeyType(passName, flags)) != 0);
 	
 	if(passInstance->dirtyState)
 	{
-		passInstance->SetRenderStateHandle(instancePassRenderStates.at(passName));
+		passInstance->SetRenderStateHandle(instancePassRenderStates.at(PassInstanceKeyType(passName, flags)));
 	}
 	else
 	{
@@ -1644,7 +1640,7 @@ void NMaterial::SubclassRenderState(const FastName& passName, uint8 flags, Rende
 	
 	if(pass)
 	{
-		DVASSERT(!pass->dirtyState || (pass->GetRenderStateHandle() == instancePassRenderStates.at(passName)));
+		DVASSERT(!pass->dirtyState || (pass->GetRenderStateHandle() == instancePassRenderStates.at(PassInstanceKeyType(passName, flags))));
 		
 		UniqueHandle stateHandle = RenderManager::Instance()->CreateRenderState(newState);
 		pass->SetRenderStateHandle(stateHandle);
@@ -1652,19 +1648,19 @@ void NMaterial::SubclassRenderState(const FastName& passName, uint8 flags, Rende
 		
 		pass->dirtyState = true;
 		
-		if(instancePassRenderStates.count(passName) > 0)
+		if(instancePassRenderStates.count(PassInstanceKeyType(passName, flags)) > 0)
 		{
-			UniqueHandle currentState = instancePassRenderStates.at(passName);
+			UniqueHandle currentState = instancePassRenderStates.at(PassInstanceKeyType(passName, flags));
 			
 			RenderManager::Instance()->RetainRenderState(stateHandle);
-			instancePassRenderStates.insert(passName, stateHandle);
+			instancePassRenderStates.insert(PassInstanceKeyType(passName, flags), stateHandle);
 			
 			RenderManager::Instance()->ReleaseRenderState(currentState);
 		}
 		else
 		{
 			RenderManager::Instance()->RetainRenderState(stateHandle);
-			instancePassRenderStates.insert(passName, stateHandle);
+			instancePassRenderStates.insert(PassInstanceKeyType(passName, flags), stateHandle);
 		}
 	}
 }
