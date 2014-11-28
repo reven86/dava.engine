@@ -49,7 +49,7 @@ const unsigned  InvalidIndex = (unsigned)(-1);
 //==============================================================================
 
 static inline long
-_CurTimeUs()
+curTimeUs()
 {
     return (long)(SystemTimer::Instance()->GetAbsoluteUs());
 }
@@ -64,20 +64,20 @@ class Counter;
 
 static Counter* GetCounter( uint32 id );
 
-static bool             ProfilerInited      = false;
-static unsigned         MaxCounterCount     = 0;
-static unsigned         HistoryCount        = 0;
+static bool             profilerInited      = false;
+static unsigned         maxCounterCount     = 0;
+static unsigned         historyCount        = 0;
 
-static Counter*         _Counter            = 0;
-static Counter*         _Average            = 0;
-static Counter*         CurCounter          = 0;
-static bool             Started             = false;
-static Counter**        ActiveCounter       = 0;
-static unsigned         ActiveCounterCount  = 0;
-static long             TotalTime0          = 0;
-static long             TotalTime           = 0;
-static unsigned         MaxNameLen          = 32;
-static Spinlock         CounterSync;
+static Counter*         profCounter         = 0;
+static Counter*         profAverage         = 0;
+static Counter*         curCounter          = 0;
+static bool             profStarted         = false;
+static Counter**        activeCounter       = 0;
+static unsigned         activeCounterCount  = 0;
+static long             totalTime0          = 0;
+static long             totalTime           = 0;
+static unsigned         maxNameLen          = 32;
+static Spinlock         counterSync;
 
 
 
@@ -101,7 +101,7 @@ public:
 
     void        reset()                         
                                                 { 
-                                                    CounterSync.Lock();
+                                                    counterSync.Lock();
 
                                                     t         = 0; 
                                                     count     = 0; 
@@ -109,45 +109,45 @@ public:
                                                     useCount  = 0;
                                                     parentId  = InvalidIndex;
                                                     
-                                                    CounterSync.Unlock();
+                                                    counterSync.Unlock();
                                                 }
     void        start()
                                                 {
-                                                    CounterSync.Lock();
+                                                    counterSync.Lock();
 
                                                     if( !useCount ) 
                                                     {
-                                                        if( ActiveCounterCount )
-                                                            parentId = ActiveCounter[ActiveCounterCount-1]->id;
+                                                        if( activeCounterCount )
+                                                            parentId = activeCounter[activeCounterCount-1]->id;
                                                         else
                                                             parentId = InvalidIndex;
 
-                                                        ActiveCounter[ActiveCounterCount] = this;
-                                                        ++ActiveCounterCount;
+                                                        activeCounter[activeCounterCount] = this;
+                                                        ++activeCounterCount;
                                                         
-                                                        t0 = _CurTimeUs();
+                                                        t0 = curTimeUs();
                                                     }
 
                                                     used = true;
                                                     ++count;
                                                     ++useCount;
                                                     
-                                                    CounterSync.Unlock();
+                                                    counterSync.Unlock();
                                                 }
     void        stop()                          
                                                 { 
-                                                    CounterSync.Lock();
+                                                    counterSync.Lock();
 
                                                     if( useCount == 1 )
                                                     {
-                                                        if( ActiveCounterCount )
-                                                            --ActiveCounterCount; 
+                                                        if( activeCounterCount )
+                                                            --activeCounterCount; 
                                                     }
 
                                                     if( --useCount == 0 )
-                                                        t += _CurTimeUs() - t0; 
+                                                        t += curTimeUs() - t0; 
                                                     
-                                                    CounterSync.Unlock();
+                                                    counterSync.Unlock();
                                                 }
 
 
@@ -195,7 +195,7 @@ private:
 static Counter*
 GetCounter( uint32 id )
 {
-    return (id < MaxCounterCount)  ? CurCounter+id  : 0;
+    return (id < maxCounterCount)  ? curCounter+id  : 0;
 }
 
 
@@ -204,30 +204,30 @@ GetCounter( uint32 id )
 void 
 Init( unsigned max_counter_count, unsigned history_len )
 {
-    DVASSERT(!ProfilerInited);
+    DVASSERT(!profilerInited);
 
-    HistoryCount    = history_len;
-    MaxCounterCount = max_counter_count;
+    historyCount    = history_len;
+    maxCounterCount = max_counter_count;
 
-    _Counter        = new Counter[MaxCounterCount*HistoryCount];
-    _Average        = new Counter[MaxCounterCount];
-    ActiveCounter   = new Counter*[MaxCounterCount];
+    profCounter     = new Counter[maxCounterCount*historyCount];
+    profAverage     = new Counter[maxCounterCount];
+    activeCounter   = new Counter*[maxCounterCount];
 
-    Counter*    counter = _Counter;
+    Counter*    counter = profCounter;
     
-    for( unsigned h=0; h!=HistoryCount; ++h )
+    for( unsigned h=0; h!=historyCount; ++h )
     {
-        for( Counter* c=counter,*c_end=counter+MaxCounterCount; c!=c_end; ++c )
+        for( Counter* c=counter,*c_end=counter+maxCounterCount; c!=c_end; ++c )
         {        
             c->id        = c - counter;
             c->parentId  = InvalidIndex;
             c->used      = false;
         }
 
-        counter += MaxCounterCount;
+        counter += maxCounterCount;
     }
 
-    ProfilerInited = true;
+    profilerInited = true;
 }
 
 
@@ -236,7 +236,7 @@ Init( unsigned max_counter_count, unsigned history_len )
 void
 EnsureInited( unsigned max_counter_count, unsigned history_length )
 {
-    if( !ProfilerInited )
+    if( !profilerInited )
     {
         Init( max_counter_count, history_length );
     }
@@ -248,28 +248,28 @@ EnsureInited( unsigned max_counter_count, unsigned history_length )
 void
 Uninit()
 {
-    if( _Counter )
+    if( profCounter )
     {
-        delete[] _Counter;
-        _Counter = 0;
+        delete[] profCounter;
+        profCounter = 0;
     }
 
-    if( _Average )
+    if( profAverage )
     {
-        delete[] _Average;
-        _Average = 0;
+        delete[] profAverage;
+        profAverage = 0;
     }
 
-    if( ActiveCounter )
+    if( activeCounter )
     {
-        delete[] ActiveCounter;
-        ActiveCounter = 0;
+        delete[] activeCounter;
+        activeCounter = 0;
     }
 
-    HistoryCount    = 0;
-    MaxCounterCount = 0;
+    historyCount    = 0;
+    maxCounterCount = 0;
 
-    ProfilerInited = false;
+    profilerInited = false;
 }
 
 
@@ -278,14 +278,14 @@ Uninit()
 void
 SetCounterName( unsigned counter_id, const char* name )
 {
-    DVASSERT( counter_id < MaxCounterCount );
+    DVASSERT( counter_id < maxCounterCount );
 
-    Counter*    counter = _Counter + counter_id;
+    Counter*    counter = profCounter + counter_id;
 
-    for( unsigned h=0; h!=HistoryCount; ++h )
+    for( unsigned h=0; h!=historyCount; ++h )
     {
         counter->setName( name );
-        counter += MaxCounterCount;
+        counter += maxCounterCount;
     }
 }
 
@@ -295,9 +295,9 @@ SetCounterName( unsigned counter_id, const char* name )
 void
 StartCounter( unsigned counter_id )
 {
-    DVASSERT( counter_id < MaxCounterCount );
+    DVASSERT( counter_id < maxCounterCount );
 
-    Counter*    counter = CurCounter + counter_id;
+    Counter*    counter = curCounter + counter_id;
         
     counter->start();
 }
@@ -308,9 +308,9 @@ StartCounter( unsigned counter_id )
 void
 StartCounter( unsigned counter_id, const char* counter_name )
 {
-    DVASSERT( counter_id < MaxCounterCount );
+    DVASSERT( counter_id < maxCounterCount );
 
-    Counter*    counter = CurCounter + counter_id;
+    Counter*    counter = curCounter + counter_id;
         
     counter->setName( counter_name );
     counter->start();
@@ -322,9 +322,9 @@ StartCounter( unsigned counter_id, const char* counter_name )
 void
 StopCounter( unsigned counter_id )
 {
-    DVASSERT( counter_id < MaxCounterCount );
+    DVASSERT( counter_id < maxCounterCount );
 
-    Counter*    counter = CurCounter + counter_id;
+    Counter*    counter = curCounter + counter_id;
         
     counter->stop();
 }
@@ -335,30 +335,30 @@ StopCounter( unsigned counter_id )
 void
 Start()
 {
-    DVASSERT(!Started);
+    DVASSERT(!profStarted);
 
-    if( CurCounter )
+    if( curCounter )
     {
-        CurCounter += MaxCounterCount;
-        if( CurCounter >= _Counter+MaxCounterCount*HistoryCount )
+        curCounter += maxCounterCount;
+        if( curCounter >= profCounter+maxCounterCount*historyCount )
         {
-            CurCounter = _Counter;
+            curCounter = profCounter;
         }
     }
     else
     {
-        CurCounter = _Counter;
+        curCounter = profCounter;
     }
 
-    for( Counter* c=CurCounter,*c_end=CurCounter+MaxCounterCount; c!=c_end; ++c )
+    for( Counter* c=curCounter,*c_end=curCounter+maxCounterCount; c!=c_end; ++c )
     {
         c->reset();
         c->used = false;
     }
 
-    Started             = true;
-    ActiveCounterCount  = 0;
-    TotalTime0          = _CurTimeUs();
+    profStarted         = true;
+    activeCounterCount  = 0;
+    totalTime0          = curTimeUs();
 }
 
 
@@ -367,10 +367,10 @@ Start()
 void
 Stop()
 {
-    DVASSERT(Started);
+    DVASSERT(profStarted);
 
-    TotalTime = _CurTimeUs() - TotalTime0;
-    Started   = false;
+    totalTime   = curTimeUs() - totalTime0;
+    profStarted = false;
 }
 
 
@@ -434,8 +434,8 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
 
         if( show_percents )
         {
-            float               pg  = (TotalTime)  
-                                      ? 100.0f*float(result[i].timeUs)/float(TotalTime)
+            float               pg  = (totalTime)  
+                                      ? 100.0f*float(result[i].timeUs)/float(totalTime)
                                       : 0;
             const CounterInfo*  pc  = (result[i].parentIndex != InvalidIndex)  ? &(result[0]) + result[i].parentIndex  : 0;
             float               pl  = (pc  &&  pc->timeUs)  
@@ -460,7 +460,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
 void
 Dump()
 {
-    DVASSERT(!Started);
+    DVASSERT(!profStarted);
 
     static std::vector<CounterInfo> result;
 
@@ -492,7 +492,7 @@ DumpAverage()
 static void 
 _CollectCountersWithChilds( const Counter* base, const Counter* counter, std::vector<Counter*>* result )
 {
-    for( const Counter* c=base,*c_end=base+MaxCounterCount; c!=c_end; ++c )
+    for( const Counter* c=base,*c_end=base+maxCounterCount; c!=c_end; ++c )
     {
         if(     c->isUsed()  
             &&  c->getParentId() == counter->getId() 
@@ -515,7 +515,7 @@ _CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
     static std::vector<Counter*>  top;
 
     top.clear();
-    for( Counter* c=cur_counter,*c_end=cur_counter+MaxCounterCount; c!=c_end; ++c )
+    for( Counter* c=cur_counter,*c_end=cur_counter+maxCounterCount; c!=c_end; ++c )
     {
         if( !c->isUsed() )
           continue;
@@ -558,7 +558,7 @@ GetCounters( std::vector<CounterInfo>* info )
 {
     static std::vector<Counter*>  result;
     
-    _CollectActiveCounters( CurCounter, &result );
+    _CollectActiveCounters( curCounter, &result );
 
     info->resize( result.size() );
     for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
@@ -587,11 +587,11 @@ GetAverageCounters( std::vector<CounterInfo>* info )
 {
     bool    success = false;
 
-    if( CurCounter == _Counter + MaxCounterCount*(HistoryCount-1) )
+    if( curCounter == profCounter + maxCounterCount*(historyCount-1) )
     {
-        for( Counter* c=_Average,*c_end=_Average+MaxCounterCount; c!=c_end; ++c )
+        for( Counter* c=profAverage,*c_end=profAverage+maxCounterCount; c!=c_end; ++c )
         {
-            Counter*    src = _Counter + (c-_Average);
+            Counter*    src = profCounter + (c-profAverage);
             
             c->reset();
             c->setName( src->getName() );
@@ -603,11 +603,11 @@ GetAverageCounters( std::vector<CounterInfo>* info )
             c->used      = src->used;
         }
     
-        for( unsigned h=0; h!=HistoryCount; ++h )
+        for( unsigned h=0; h!=historyCount; ++h )
         {
-            Counter*    counter = _Counter + h*MaxCounterCount;
+            Counter*    counter = profCounter + h*maxCounterCount;
             
-            for( Counter* c=counter,*c_end=counter+MaxCounterCount,*a=_Average; c!=c_end; ++c,++a )
+            for( Counter* c=counter,*c_end=counter+maxCounterCount,*a=profAverage; c!=c_end; ++c,++a )
             {        
                 a->count += c->count;
                 a->t0     = 0;
@@ -615,16 +615,16 @@ GetAverageCounters( std::vector<CounterInfo>* info )
             }
         }
 
-        for( Counter* c=_Average,*c_end=_Average+MaxCounterCount; c!=c_end; ++c )
+        for( Counter* c=profAverage,*c_end=profAverage+maxCounterCount; c!=c_end; ++c )
         {
-            c->count /= HistoryCount;
-            c->t     /= HistoryCount;
+            c->count /= historyCount;
+            c->t     /= historyCount;
         }
 
         
         static std::vector<Counter*>    result;
         
-        _CollectActiveCounters( _Average, &result );
+        _CollectActiveCounters( profAverage, &result );
 
         info->resize( result.size() );
         for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
