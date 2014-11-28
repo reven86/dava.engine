@@ -27,55 +27,39 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SCENE3D_WAVESYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_WAVESYSTEM_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/Observer.h"
-#include "Entity/SceneSystem.h"
+#include "RotationControllerComponent.h"
 
 namespace DAVA
 {
-
-class Entity;
-class WaveComponent;
-class WaveSystem : public SceneSystem, public Observer
-{
-    struct WaveInfo
-    {
-        WaveInfo(WaveComponent * component);
-
-        WaveComponent * component;
-        float32 maxRadius;
-        float32 maxRadiusSq;
-        Vector3 center;
-        float32 currentWaveRadius;
-    };
-
-public:
-    WaveSystem(Scene * scene);
-    virtual ~WaveSystem();
-
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
-    virtual void Process(float32 timeElapsed);
-
-    Vector3 GetWaveDisturbance(const Vector3 & inPosition) const;
-
-    virtual void HandleEvent(Observable * observable);
-
-protected:
-    void ClearWaves();
-
-    bool isWavesEnabled;
-    bool isVegetationAnimationEnabled;
-
-    Vector<WaveInfo *> waves;
-
-    friend class WaveComponent;
-};
     
-} // ns
+RotationControllerComponent::RotationControllerComponent()
+    : Component()
+{
+    
+}
 
-#endif	/* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */
+RotationControllerComponent::~RotationControllerComponent()
+{
+    
+}
 
+Component * RotationControllerComponent::Clone(Entity * toEntity)
+{
+    RotationControllerComponent * component = new RotationControllerComponent();
+    component->SetEntity(toEntity);
+    
+    return component;
+}
+
+void RotationControllerComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+{
+    Component::Serialize(archive, serializationContext);
+}
+
+void RotationControllerComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+{
+    Component::Deserialize(archive, serializationContext);
+}
+
+
+};

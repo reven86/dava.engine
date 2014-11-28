@@ -26,56 +26,52 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "SnapToLandscapeControllerSystem.h"
 
-#ifndef __DAVAENGINE_SCENE3D_WAVESYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_WAVESYSTEM_H__
+#include "Scene3D/Components/ComponentHelpers.h"
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/Observer.h"
-#include "Entity/SceneSystem.h"
+#include "Scene3D/Entity.h"
+#include "Scene3D/Scene.h"
+
 
 namespace DAVA
 {
-
-class Entity;
-class WaveComponent;
-class WaveSystem : public SceneSystem, public Observer
-{
-    struct WaveInfo
-    {
-        WaveInfo(WaveComponent * component);
-
-        WaveComponent * component;
-        float32 maxRadius;
-        float32 maxRadiusSq;
-        Vector3 center;
-        float32 currentWaveRadius;
-    };
-
-public:
-    WaveSystem(Scene * scene);
-    virtual ~WaveSystem();
-
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
-    virtual void Process(float32 timeElapsed);
-
-    Vector3 GetWaveDisturbance(const Vector3 & inPosition) const;
-
-    virtual void HandleEvent(Observable * observable);
-
-protected:
-    void ClearWaves();
-
-    bool isWavesEnabled;
-    bool isVegetationAnimationEnabled;
-
-    Vector<WaveInfo *> waves;
-
-    friend class WaveComponent;
-};
     
-} // ns
+SnapToLandscapeControllerSystem::SnapToLandscapeControllerSystem(Scene * scene)
+    : SceneSystem(scene)
+{
+}
 
-#endif	/* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */
+SnapToLandscapeControllerSystem::~SnapToLandscapeControllerSystem()
+{
+}
 
+void SnapToLandscapeControllerSystem::AddEntity(Entity * entity)
+{
+    DVASSERT(GetCamera(entity) != NULL && "Right now system works with camera only");
+
+    entities.push_back(entity);
+}
+
+void SnapToLandscapeControllerSystem::RemoveEntity(Entity * entity)
+{
+    uint32 size = entities.size();
+    for(uint32 i = 0; i < size; ++i)
+    {
+        if(entities[i] == entity)
+        {
+            entities[i] = entities[size-1];
+            entities.pop_back();
+            return;
+        }
+    }
+    DVASSERT(0);
+}
+
+void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
+{
+    
+}
+    
+    
+};

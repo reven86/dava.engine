@@ -71,6 +71,11 @@
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+
+
 #include "Sound/SoundSystem.h"
 
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
@@ -83,13 +88,6 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/SceneCache.h"
 
-//#include "Entity/Entity.h"
-//#include "Entity/EntityManager.h"
-//#include "Entity/Components.h"
-//
-//#include "Entity/VisibilityAABBoxSystem.h"
-//#include "Entity/MeshInstanceDrawSystem.h"
-//#include "Entity/LandscapeGeometrySystem.h"
 
 namespace DAVA 
 {
@@ -121,6 +119,9 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , foliageSystem(0)
     , windSystem(0)
     , animationSystem(0)
+    , rotationSystem(0)
+    , snapToLandscapeSystem(0)
+    , wasdSystem(0)
     , staticOcclusionDebugDrawSystem(0)
 	, sceneGlobalMaterial(0)
     , isDefaultGlobalMaterial(true)
@@ -369,6 +370,26 @@ void Scene::CreateSystems()
         skeletonSystem = new SkeletonSystem(this);
         AddSystem(skeletonSystem, (1 << Component::SKELETON_COMPONENT), true);
     }
+    
+    
+    if(SCENE_SYSTEM_ROTATION_CONTROLLER_FLAG & systemsMask)
+    {
+        rotationSystem = new RotationControllerSystem(this);
+        AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), true);
+    }
+
+    if(SCENE_SYSTEM_SNAP_TO_LANDSCAPE_CONTROLLER_FLAG & systemsMask)
+    {
+        snapToLandscapeSystem = new SnapToLandscapeControllerSystem(this);
+        AddSystem(snapToLandscapeSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)), true);
+    }
+
+    if(SCENE_SYSTEM_WASD_CONTROLLER_FLAG & systemsMask)
+    {
+        wasdSystem = new WASDControllerSystem(this);
+        AddSystem(wasdSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::WASD_CONTROLLER_COMPONENT)), true);
+    }
+
 }
 
 Scene::~Scene()
@@ -423,6 +444,10 @@ Scene::~Scene()
     windSystem = 0;
     waveSystem = 0;
     animationSystem = 0;
+    
+    rotationSystem = 0;
+    snapToLandscapeSystem = 0;
+    wasdSystem = 0;
     
     uint32 size = (uint32)systems.size();
     for (uint32 k = 0; k < size; ++k)

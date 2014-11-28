@@ -27,55 +27,32 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SCENE3D_WAVESYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_WAVESYSTEM_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/Observer.h"
+#ifndef __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
+#define __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
+
 #include "Entity/SceneSystem.h"
 
 namespace DAVA
 {
 
-class Entity;
-class WaveComponent;
-class WaveSystem : public SceneSystem, public Observer
+class RotationControllerSystem: public SceneSystem
 {
-    struct WaveInfo
-    {
-        WaveInfo(WaveComponent * component);
-
-        WaveComponent * component;
-        float32 maxRadius;
-        float32 maxRadiusSq;
-        Vector3 center;
-        float32 currentWaveRadius;
-    };
-
+    
 public:
-    WaveSystem(Scene * scene);
-    virtual ~WaveSystem();
-
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    RotationControllerSystem(Scene * scene);
+    ~RotationControllerSystem();
+    
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    
     virtual void Process(float32 timeElapsed);
-
-    Vector3 GetWaveDisturbance(const Vector3 & inPosition) const;
-
-    virtual void HandleEvent(Observable * observable);
-
-protected:
-    void ClearWaves();
-
-    bool isWavesEnabled;
-    bool isVegetationAnimationEnabled;
-
-    Vector<WaveInfo *> waves;
-
-    friend class WaveComponent;
+    
+private:
+    
+    Vector<Entity *> entities;
 };
     
-} // ns
+};
 
-#endif	/* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */
-
+#endif //__DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__

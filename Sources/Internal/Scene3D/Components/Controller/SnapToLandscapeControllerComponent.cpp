@@ -26,56 +26,44 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_SCENE3D_WAVESYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_WAVESYSTEM_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/Observer.h"
-#include "Entity/SceneSystem.h"
+#include "SnapToLandscapeControllerComponent.h"
+#include "FileSystem/KeyedArchive.h"
 
 namespace DAVA
 {
-
-class Entity;
-class WaveComponent;
-class WaveSystem : public SceneSystem, public Observer
-{
-    struct WaveInfo
-    {
-        WaveInfo(WaveComponent * component);
-
-        WaveComponent * component;
-        float32 maxRadius;
-        float32 maxRadiusSq;
-        Vector3 center;
-        float32 currentWaveRadius;
-    };
-
-public:
-    WaveSystem(Scene * scene);
-    virtual ~WaveSystem();
-
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
-    virtual void Process(float32 timeElapsed);
-
-    Vector3 GetWaveDisturbance(const Vector3 & inPosition) const;
-
-    virtual void HandleEvent(Observable * observable);
-
-protected:
-    void ClearWaves();
-
-    bool isWavesEnabled;
-    bool isVegetationAnimationEnabled;
-
-    Vector<WaveInfo *> waves;
-
-    friend class WaveComponent;
-};
     
-} // ns
+SnapToLandscapeControllerComponent::SnapToLandscapeControllerComponent()
+    : Component()
+    , heightOnLandscape(0.f)
+{
+    
+}
 
-#endif	/* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */
+SnapToLandscapeControllerComponent::~SnapToLandscapeControllerComponent()
+{
+    
+}
+
+Component * SnapToLandscapeControllerComponent::Clone(Entity * toEntity)
+{
+    SnapToLandscapeControllerComponent * component = new SnapToLandscapeControllerComponent();
+    component->SetEntity(toEntity);
+    component->heightOnLandscape = heightOnLandscape;
+    
+    return component;
+}
+
+void SnapToLandscapeControllerComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+{
+    Component::Serialize(archive, serializationContext);
+    archive->SetFloat("heightOnLandscape", heightOnLandscape);
+}
+
+void SnapToLandscapeControllerComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+{
+    Component::Deserialize(archive, serializationContext);
+    heightOnLandscape = archive->GetFloat("heightOnLandscape", 0.f);
+}
+    
+};
 
