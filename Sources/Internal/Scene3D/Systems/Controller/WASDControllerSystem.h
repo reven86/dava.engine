@@ -36,7 +36,7 @@
 namespace DAVA 
 {
 
-    
+class Camera;
 class WASDControllerSystem: public SceneSystem
 {
     
@@ -48,11 +48,32 @@ public:
     virtual void RemoveEntity(Entity * entity);
     
     virtual void Process(float32 timeElapsed);
+
+    inline float32 GetMoveSpeeed() const;
+    inline void SetMoveSpeed(float32 moveSpeed);
     
 private:
     
+    void MoveForward(Camera *camera, float32 speed, bool inverseDirection);
+    void MoveRight(Camera *camera, float32 speed, bool inverseDirection);
+    
+
+    float32 moveSpeed;
+    
     Vector<Entity *> entities;
 };
+
+inline float32 WASDControllerSystem::GetMoveSpeeed() const
+{
+    return moveSpeed;
+    
+}
+    
+inline void WASDControllerSystem::SetMoveSpeed(float32 _moveSpeed)
+{
+    moveSpeed = _moveSpeed;
+}
+
     
 };
 

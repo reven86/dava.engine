@@ -34,6 +34,10 @@
 #include "Qt/Settings/SettingsManager.h"
 #include "../Qt/Main/QtUtils.h"
 
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+
+
 
 namespace DAVA 
 {
@@ -54,6 +58,15 @@ void CameraController::SetScene(Scene *_scene)
 {
     SafeRelease(currScene);
     currScene = SafeRetain(_scene);
+
+    if(currScene)
+    {
+        WASDControllerSystem *wasdSystem = currScene->wasdSystem;
+        if(wasdSystem)
+        {
+            wasdSystem->SetMoveSpeed(speed);
+        }
+    }
 }
 
 void CameraController::Input(UIEvent *)
@@ -64,6 +77,14 @@ void CameraController::Input(UIEvent *)
 void CameraController::SetSpeed(float32 newSpeed)
 {
     speed = newSpeed;
+    if(currScene)
+    {
+        WASDControllerSystem *wasdSystem = currScene->wasdSystem;
+        if(wasdSystem)
+        {
+            wasdSystem->SetMoveSpeed(speed);
+        }
+    }
 }
 
     
@@ -85,7 +106,8 @@ void WASDCameraController::Update(float32 timeElapsed)
 {
     if (currScene == 0)
 		return;
-    UITextField *tf = dynamic_cast<UITextField *>(UIControlSystem::Instance()->GetFocusedControl());
+    
+//    UITextField *tf = dynamic_cast<UITextField *>(UIControlSystem::Instance()->GetFocusedControl());
 	Camera * camera = currScene->GetCurrentCamera();
 
 	if(camera != lastCamera)
@@ -94,71 +116,71 @@ void WASDCameraController::Update(float32 timeElapsed)
 		UpdateAngels(camera);
 	}
 
-	if(!tf && camera)
-    {
-        float32 moveSpeed = speed * timeElapsed;        
-
-		if(!IsKeyModificatorsPressed())
-        {
-            bool moveUp = (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_UP) | 
-                           InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_W));
-            if(moveUp)
-            {
-                Vector3 pos = camera->GetPosition();
-                Vector3 direction = camera->GetDirection();
-                //Logger::FrameworkDebug("oldpos: %f %f %f olddir: %f %f %f", pos.x, pos.y, pos.z, direction.x, direction.y, direction.z);
-                
-                direction.Normalize();
-                pos += direction * moveSpeed;
-                camera->SetPosition(pos);
-                camera->SetDirection(direction);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
-                
-                //Logger::FrameworkDebug("newpos: %f %f %f", pos.x, pos.y, pos.z);
-            }
- 
-            bool moveLeft = (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_LEFT) | 
-                           InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_A));
-            if(moveLeft)
-            {
-                Vector3 pos = camera->GetPosition();
-                Vector3 dir = camera->GetDirection();
-                Vector3 left = camera->GetLeft();
-                
-                pos -= left * moveSpeed;
-                camera->SetPosition(pos);
-                camera->SetDirection(dir);
-            }
-            
-            
-            bool moveDown = (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_DOWN) | 
-                             InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_S));
-            if(moveDown)
-            {
-                Vector3 pos = camera->GetPosition();
-                Vector3 direction = camera->GetDirection();
-                //Logger::FrameworkDebug("oldpos: %f %f %f olddir: %f %f %f", pos.x, pos.y, pos.z, direction.x, direction.y, direction.z);
-                
-                pos -= direction * moveSpeed;
-                camera->SetPosition(pos);
-                camera->SetDirection(direction);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
-                //Logger::FrameworkDebug("newpos: %f %f %f olddir: %f %f %f", pos.x, pos.y, pos.z, direction.x, direction.y, direction.z);
-            }
-
-            
-            bool moveRight = (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_RIGHT) | 
-                             InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_D));
-            if(moveRight)
-            {
-                Vector3 pos = camera->GetPosition();
-                Vector3 dir = camera->GetDirection();
-                Vector3 left = camera->GetLeft();
-                
-                pos += left * moveSpeed;
-                camera->SetPosition(pos);
-                camera->SetDirection(dir);
-            }
-        }
-    }
+//	if(!tf && camera)
+//    {
+//        float32 moveSpeed = speed * timeElapsed;        
+//
+//		if(!IsKeyModificatorsPressed())
+//        {
+//            bool moveUp = (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_UP) |
+//                           InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_W));
+//            if(moveUp)
+//            {
+//                Vector3 pos = camera->GetPosition();
+//                Vector3 direction = camera->GetDirection();
+//                //Logger::FrameworkDebug("oldpos: %f %f %f olddir: %f %f %f", pos.x, pos.y, pos.z, direction.x, direction.y, direction.z);
+//                
+//                direction.Normalize();
+//                pos += direction * moveSpeed;
+//                camera->SetPosition(pos);
+//                camera->SetDirection(direction);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
+//                
+//                //Logger::FrameworkDebug("newpos: %f %f %f", pos.x, pos.y, pos.z);
+//            }
+// 
+//            bool moveLeft = (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_LEFT) | 
+//                           InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_A));
+//            if(moveLeft)
+//            {
+//                Vector3 pos = camera->GetPosition();
+//                Vector3 dir = camera->GetDirection();
+//                Vector3 left = camera->GetLeft();
+//                
+//                pos -= left * moveSpeed;
+//                camera->SetPosition(pos);
+//                camera->SetDirection(dir);
+//            }
+//            
+//            
+//            bool moveDown = (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_DOWN) | 
+//                             InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_S));
+//            if(moveDown)
+//            {
+//                Vector3 pos = camera->GetPosition();
+//                Vector3 direction = camera->GetDirection();
+//                //Logger::FrameworkDebug("oldpos: %f %f %f olddir: %f %f %f", pos.x, pos.y, pos.z, direction.x, direction.y, direction.z);
+//                
+//                pos -= direction * moveSpeed;
+//                camera->SetPosition(pos);
+//                camera->SetDirection(direction);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
+//                //Logger::FrameworkDebug("newpos: %f %f %f olddir: %f %f %f", pos.x, pos.y, pos.z, direction.x, direction.y, direction.z);
+//            }
+//
+//            
+//            bool moveRight = (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_RIGHT) | 
+//                             InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_D));
+//            if(moveRight)
+//            {
+//                Vector3 pos = camera->GetPosition();
+//                Vector3 dir = camera->GetDirection();
+//                Vector3 left = camera->GetLeft();
+//                
+//                pos += left * moveSpeed;
+//                camera->SetPosition(pos);
+//                camera->SetDirection(dir);
+//            }
+//        }
+//    }
     
     CameraController::Update(timeElapsed);
 }

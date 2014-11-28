@@ -44,6 +44,11 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+
+
+
 #include "../StringConstants.h"
 
 #include "../../Main/QtUtils.h"
@@ -227,6 +232,15 @@ void SceneCameraSystem::MoveTo(const DAVA::Vector3 &pos, const DAVA::Vector3 &ta
 
 void SceneCameraSystem::Process(float timeElapsed)
 {
+    //TODO: set move speed
+    WASDControllerSystem *wasdSystem = GetScene()->wasdSystem;
+    if(wasdSystem)
+    {
+        wasdSystem->SetMoveSpeed(GetMoveSpeed());
+    }
+    //TODO: set move speed
+
+    
 	if(!debugCamerasCreated)
 	{
 		CreateDebugCameras();
@@ -399,57 +413,57 @@ void SceneCameraSystem::ProcessKeyboardMove(DAVA::float32 timeElapsed)
         }
         cameraShouldIgnoreKeyboard |= IsModifiersPressed();
 
-		if(!cameraShouldIgnoreKeyboard)
-		{
-			DAVA::KeyboardDevice *kd = DAVA::InputSystem::Instance()->GetKeyboard();
-
-			if(kd->IsKeyPressed(DAVA::DVKEY_UP) || kd->IsKeyPressed(DAVA::DVKEY_W))
-			{
-				DAVA::Vector3 pos = curSceneCamera->GetPosition();
-				DAVA::Vector3 dir = curSceneCamera->GetDirection();
-
-				dir.Normalize();
-				pos += dir * moveSpeed;
-				curSceneCamera->SetPosition(pos);
-				curSceneCamera->SetDirection(dir);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
-                UpdateDistanceToCamera();
-			}
-
-			if(kd->IsKeyPressed(DAVA::DVKEY_LEFT) || kd->IsKeyPressed(DAVA::DVKEY_A))
-			{
-				DAVA::Vector3 pos = curSceneCamera->GetPosition();
-				DAVA::Vector3 dir = curSceneCamera->GetDirection();
-				DAVA::Vector3 left = curSceneCamera->GetLeft();
-
-				pos -= left * moveSpeed;
-				curSceneCamera->SetPosition(pos);
-				curSceneCamera->SetDirection(dir);
-                UpdateDistanceToCamera();
-			}
-
-			if(kd->IsKeyPressed(DAVA::DVKEY_DOWN) || kd->IsKeyPressed(DAVA::DVKEY_S))
-			{
-				DAVA::Vector3 pos = curSceneCamera->GetPosition();
-				DAVA::Vector3 dir = curSceneCamera->GetDirection();
-
-				pos -= dir * moveSpeed;
-				curSceneCamera->SetPosition(pos);
-				curSceneCamera->SetDirection(dir);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
-                UpdateDistanceToCamera();
-			}
-
-			if(kd->IsKeyPressed(DAVA::DVKEY_RIGHT) || kd->IsKeyPressed(DAVA::DVKEY_D))
-			{
-				DAVA::Vector3 pos = curSceneCamera->GetPosition();
-				DAVA::Vector3 dir = curSceneCamera->GetDirection();
-				DAVA::Vector3 left = curSceneCamera->GetLeft();
-
-				pos += left * moveSpeed;
-				curSceneCamera->SetPosition(pos);
-				curSceneCamera->SetDirection(dir);
-                UpdateDistanceToCamera();
-			}
-		}
+//		if(!cameraShouldIgnoreKeyboard)
+//		{
+//			DAVA::KeyboardDevice *kd = DAVA::InputSystem::Instance()->GetKeyboard();
+//
+//			if(kd->IsKeyPressed(DAVA::DVKEY_UP) || kd->IsKeyPressed(DAVA::DVKEY_W))
+//			{
+//				DAVA::Vector3 pos = curSceneCamera->GetPosition();
+//				DAVA::Vector3 dir = curSceneCamera->GetDirection();
+//
+//				dir.Normalize();
+//				pos += dir * moveSpeed;
+//				curSceneCamera->SetPosition(pos);
+//				curSceneCamera->SetDirection(dir);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
+//                UpdateDistanceToCamera();
+//			}
+//
+//			if(kd->IsKeyPressed(DAVA::DVKEY_LEFT) || kd->IsKeyPressed(DAVA::DVKEY_A))
+//			{
+//				DAVA::Vector3 pos = curSceneCamera->GetPosition();
+//				DAVA::Vector3 dir = curSceneCamera->GetDirection();
+//				DAVA::Vector3 left = curSceneCamera->GetLeft();
+//
+//				pos -= left * moveSpeed;
+//				curSceneCamera->SetPosition(pos);
+//				curSceneCamera->SetDirection(dir);
+//                UpdateDistanceToCamera();
+//			}
+//
+//			if(kd->IsKeyPressed(DAVA::DVKEY_DOWN) || kd->IsKeyPressed(DAVA::DVKEY_S))
+//			{
+//				DAVA::Vector3 pos = curSceneCamera->GetPosition();
+//				DAVA::Vector3 dir = curSceneCamera->GetDirection();
+//
+//				pos -= dir * moveSpeed;
+//				curSceneCamera->SetPosition(pos);
+//				curSceneCamera->SetDirection(dir);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
+//                UpdateDistanceToCamera();
+//			}
+//
+//			if(kd->IsKeyPressed(DAVA::DVKEY_RIGHT) || kd->IsKeyPressed(DAVA::DVKEY_D))
+//			{
+//				DAVA::Vector3 pos = curSceneCamera->GetPosition();
+//				DAVA::Vector3 dir = curSceneCamera->GetDirection();
+//				DAVA::Vector3 left = curSceneCamera->GetLeft();
+//
+//				pos += left * moveSpeed;
+//				curSceneCamera->SetPosition(pos);
+//				curSceneCamera->SetDirection(dir);
+//                UpdateDistanceToCamera();
+//			}
+//		}
 	}
 }
 
@@ -462,24 +476,7 @@ void SceneCameraSystem::CreateDebugCameras()
 	// there already can be other cameras in scene
 	if(NULL != scene)
 	{
-		DAVA::Camera *mainCamera = NULL;
-		DAVA::Camera *topCamera = NULL;
-
-		/*
-		mainCamera = new DAVA::Camera();
-		mainCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
-		mainCamera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
-		mainCamera->SetTarget(DAVA::Vector3(0.0f, 1.0f, 0.0f));
-		mainCamera->SetAspect(1.0f);
-		mainCamera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
-
-		DAVA::Entity *mainCameraEntity = new DAVA::Entity();
-		mainCameraEntity->SetName(ResourceEditor::EDITOR_MAIN_CAMERA);
-		mainCameraEntity->AddComponent(new DAVA::CameraComponent(mainCamera));
-		scene->InsertBeforeNode(mainCameraEntity, scene->GetChild(0));
-		*/
-
-		topCamera = new DAVA::Camera();
+		DAVA::Camera *topCamera = topCamera = new DAVA::Camera();
 		topCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
 		topCamera->SetPosition(DAVA::Vector3(-50.0f, 0.0f, 50.0f));
 		topCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
@@ -492,6 +489,7 @@ void SceneCameraSystem::CreateDebugCameras()
 		DAVA::Entity *topCameraEntity = new DAVA::Entity();
 		topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
+        topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
 		scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
 
 		// set current default camera
@@ -500,7 +498,6 @@ void SceneCameraSystem::CreateDebugCameras()
 			scene->SetCurrentCamera(topCamera);
 		}
 
-		SafeRelease(mainCamera);
 		SafeRelease(topCamera);
 
 		debugCamerasCreated = true;

@@ -29,16 +29,22 @@
 #include "WASDControllerSystem.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
 
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 
+#include "Render/Highlevel/Camera.h"
+
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
 
 namespace DAVA
 {
     
 WASDControllerSystem::WASDControllerSystem(Scene * scene)
     : SceneSystem(scene)
+    , moveSpeed(1.f)
 {
 }
 
@@ -70,7 +76,83 @@ void WASDControllerSystem::RemoveEntity(Entity * entity)
 
 void WASDControllerSystem::Process(float32 timeElapsed)
 {
+    const uint32 size = entities.size();
+    if(0 == size) return;
+    
+    Camera * camera = GetScene()->GetDrawCamera();
+    if(!camera) return;
+    
+    Entity * cameraHolder = NULL;
+    for(uint32 i = 0; i < size; ++i)
+    {
+        if(GetCamera(entities[i]) == camera)
+        {
+            cameraHolder = entities[i];
+            break;
+        }
+    }
 
+    DVASSERT(cameraHolder);
+
+    WASDControllerComponent *wasdController = static_cast<WASDControllerComponent *>(cameraHolder->GetComponent(Component::WASD_CONTROLLER_COMPONENT));
+    DVASSERT(wasdController);
+    
+    const float32 actualMoveSpeed = moveSpeed * timeElapsed;
+    
+    KeyboardDevice *keyboard = InputSystem::Instance()->GetKeyboard();
+    if(keyboard->IsKeyPressed(DVKEY_UP) || keyboard->IsKeyPressed(DVKEY_W))
+    {
+        MoveForward(camera, actualMoveSpeed, false);
+    }
+    if(keyboard->IsKeyPressed(DAVA::DVKEY_DOWN) || keyboard->IsKeyPressed(DAVA::DVKEY_S))
+    {
+        MoveForward(camera, actualMoveSpeed, true);
+    }
+    if(keyboard->IsKeyPressed(DAVA::DVKEY_RIGHT) || keyboard->IsKeyPressed(DAVA::DVKEY_D))
+    {
+        MoveRight(camera, actualMoveSpeed, false);
+    }
+    if(keyboard->IsKeyPressed(DVKEY_LEFT) || keyboard->IsKeyPressed(DVKEY_A))
+    {
+        MoveRight(camera, actualMoveSpeed, true);
+    }
+}
+    
+void WASDControllerSystem::MoveForward(Camera *camera, float32 speed, bool inverseDirection)
+{
+    Vector3 pos = camera->GetPosition();
+    const Vector3 dir = camera->GetDirection();
+    
+    if(inverseDirection)
+    {
+        pos -= dir * speed;
+    }
+    else
+    {
+        pos += dir * speed;
+    }
+    
+    camera->SetPosition(pos);
+    camera->SetDirection(dir);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
+}
+    
+void WASDControllerSystem::MoveRight(Camera *camera, float32 speed, bool inverseDirection)
+{
+    Vector3 pos = camera->GetPosition();
+    const Vector3 dir = camera->GetDirection();
+    Vector3 left = camera->GetLeft();
+    
+    if(inverseDirection)
+    {
+        pos -= left * speed;
+    }
+    else
+    {
+        pos += left * speed;
+    }
+    
+    camera->SetPosition(pos);
+    camera->SetDirection(dir);    // right now required because camera rebuild direction to target, and if position & target is equal after set position it produce wrong results
 }
 
     

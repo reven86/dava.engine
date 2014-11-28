@@ -32,6 +32,9 @@
 #include "Deprecated/SceneValidator.h"
 #include "Scene3D/Components/CameraComponent.h"
 
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+
+
 // ***************** PreviewCameraController *************** //
 PreviewCameraController::PreviewCameraController()
     :   CameraController(35)
@@ -282,6 +285,7 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
                 ScopedPtr<Entity> node(new Entity());
                 node->SetName("preview-camera");
                 node->AddComponent(new CameraComponent(cam));
+                node->AddComponent(new DAVA::WASDControllerComponent());
                 editorScene->AddNode(node);
                 editorScene->AddCamera(cam);
                 editorScene->SetCurrentCamera(cam);
