@@ -459,8 +459,8 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         void* value = NULL;
         if (GetUseValueCache(FastName(attributeName)))
         {
-            void* value = uniformData + uniformOffsets[k] + sizeof(Uniform);
-            uint16 valueSize = GetUniformTypeSize((eUniformType)type) * size;
+            value = uniformData + uniformOffsets[k] + sizeof(Uniform);
+            valueSize = GetUniformTypeSize((eUniformType)type) * size;
 #ifdef USE_CRC_COMPARE
             uniformStruct->crc = CRC32::ForBuffer((const char*)(value), valueSize);
             
