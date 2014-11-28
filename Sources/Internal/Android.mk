@@ -56,6 +56,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
