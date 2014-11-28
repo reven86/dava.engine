@@ -7,6 +7,8 @@
 
 
 class MouseHelper;
+class QLabel;
+
 
 class DropperShade
     : public QWidget
@@ -45,6 +47,8 @@ private:
     int zoomFactor;
     QPointer<MouseHelper> mouse;
     bool drawCursor;
+
+    QPointer<QLabel> label;
 };
 
 

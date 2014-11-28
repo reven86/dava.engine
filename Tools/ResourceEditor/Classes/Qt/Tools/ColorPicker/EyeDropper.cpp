@@ -28,7 +28,6 @@ EyeDropper::~EyeDropper()
 
 void EyeDropper::Exec()
 {
-    //QApplication::setOverrideCursor(Qt::BlankCursor);
     InitShades();
 }
 
@@ -42,7 +41,6 @@ void EyeDropper::OnDone()
             shades[i]->deleteLater();
         }
     }
-    //QApplication::restoreOverrideCursor();
 }
 
 void EyeDropper::InitShades()
@@ -57,8 +55,6 @@ void EyeDropper::InitShades()
         const QRect& screenRect = desktop->screenGeometry(i);
         ScreenData data = { i, screenRect };
         screens.push_back(data);
-        
-        qDebug() << QString( "Rect[%1] = " ).arg(i) << screenRect;
     }
 
     shades.resize(n);
@@ -67,9 +63,6 @@ void EyeDropper::InitShades()
         QWidget *s = desktop->screen(i);
         QScreen *screen = QApplication::screens()[i];
         const double scale = screen->devicePixelRatio();
-
-        qDebug() << QString( "Scale[%1] = " ).arg(i) << scale;
-        
         QRect rc = screens[i].rc;
         const bool scaled = scale > 1.0;
 
