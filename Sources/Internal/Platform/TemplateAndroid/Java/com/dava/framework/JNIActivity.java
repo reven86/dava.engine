@@ -244,8 +244,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
         // The activity has become visible (it is now "resumed").
-        
-        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
+        // glView on resume should be called in Activity.onResume!!!
         glView.onResume();
 
         // activate accelerometer
@@ -319,6 +318,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	if(hasFocus) {
     		JNITextField.InitializeKeyboardLayout(getWindowManager(), glView.getWindowToken());
 			HideNavigationBar(getWindow().getDecorView());
+			
+			// glView on resume should be called in Activity.onResume!!!
+			// but then game crush in PushNotificationBridgeImplAndroid.cpp(15);
+//	        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
+//	        glView.onResume();
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
     	}

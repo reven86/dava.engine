@@ -67,6 +67,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
                 nativeResize(w, h);
                 JNIActivity.GetActivity().onEglContextCreated();
             }
+            nativeOnResumeView();
             isFirstFrameAfterDraw = true; // Do we need this?
         }
 
@@ -83,9 +84,18 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
-	    // skip first frame after resume, we want show on start splash view
-	    // as quickly as possible, so skip first frame
-	    if (framesCounter > 1)
+	    // if we need quickly show splash screen, we can try do it three ways:
+	    // 1. skip first render frame in glView, so only splashView is visible
+	    // 2. skip resume glView in Activity resume and resume it later
+	    // in Activity.onWindowsFocusChande(true)
+	    // 3. set splash in styles.xml and AndroidManifest (not worked)
+	    // Workaround:
+	    // a) if you choose 1 way:
+	    // game will crush in PushNotificationBridgeImplAndroid.cpp line 15 assert
+	    // b) if you choose 2 way and remove skip first frame:
+	    // video intro on game start will be skipped (you will see several 
+	    // video frames)
+	    if (framesCounter > 0)
 	    {
     		nativeRender();
     		
@@ -105,8 +115,6 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 		nativeOnPauseView(!pm.isScreenOn());
 		
 		isFirstFrameAfterDraw = true;
-		// reset counter for frames to quickly show splash on resume
-		framesCounter = 0;
 	}
 	
 	public void OnResume()
