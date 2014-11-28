@@ -1574,7 +1574,7 @@ int32 UIControl::GetTag() const
 
 Rect UIControl::GetRect() const
 {
-    return Rect(relativePosition - pivotPoint, size);
+    return Rect(GetPosition() - GetPivotPoint(), GetSize());
 }
 
 bool UIControl::GetVisible() const
