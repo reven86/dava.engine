@@ -245,7 +245,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onResume();
         // The activity has become visible (it is now "resumed").
         // glView on resume should be called in Activity.onResume!!!
-        glView.onResume();
+//        glView.onResume();
 
         // activate accelerometer
         if(accelerometer != null)
@@ -321,8 +321,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			
 			// glView on resume should be called in Activity.onResume!!!
 			// but then game crush in PushNotificationBridgeImplAndroid.cpp(15);
-//	        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
-//	        glView.onResume();
+	        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] call glView.onResume");
+	        glView.onResume();
     	} else {
     		JNITextField.DestroyKeyboardLayout(getWindowManager());
     	}
