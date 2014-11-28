@@ -144,10 +144,7 @@ namespace DAVA
                 uint32 elapsedTime = static_cast<uint32>(
                         SystemTimer::Instance()->AbsoluteMS() - startTime);
 
-                // + 1 because integer value for 60 fps will be 16
-                // 1000/60fps = 16.666 -> 16(integer int32) so we lose 0.6ms
-                // 0.6 round to 1
-                int32 sleepMs = (1000 / fps) + 1 - elapsedTime;
+                int32 sleepMs = (1000 / fps) - elapsedTime;
                 if(sleepMs > 0)
                 {
                 	Thread::Sleep(sleepMs);
