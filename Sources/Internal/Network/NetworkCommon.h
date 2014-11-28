@@ -46,8 +46,7 @@ enum eTransportType
 enum eTransportRole
 {
     TRANSPORT_SERVER_ROLE,
-    TRANSPORT_CLIENT_ROLE,
-    TRANSPORT_ROLE_BOTH         // Trabnsport can act as server and client simultaneously, e.g. UDP transport
+    TRANSPORT_CLIENT_ROLE
 };
 
 // Possible reasons for deactivation of transports and channels

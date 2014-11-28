@@ -96,11 +96,7 @@ void TCPTransport::Send(uint32 channelId, const uint8* buffer, size_t length)
         if (true == LockSender())
         {
             // We can send buffer directly without queueing
-            curPackage.channelId   = channelId;
-            curPackage.buffer      = buffer;
-            curPackage.totalLength = length;
-            curPackage.sentLength  = 0;
-            curPackage.partLength  = 0;
+            PreparePackage(&curPackage, channelId, buffer, length);
 
             sendFlag = true;
             async.WakeLoop();
@@ -176,14 +172,19 @@ void TCPTransport::CloseSocket()
         socket.Close(MakeFunction(this, &TCPTransport::SocketHandleClose));
 }
 
+void TCPTransport::PreparePackage(Package* package, uint32 channelId, const uint8* buffer, size_t length)
+{
+    package->channelId   = channelId;
+    package->buffer      = buffer;
+    package->totalLength = length;
+    package->sentLength  = 0;
+    package->partLength  = 0;
+}
+
 bool TCPTransport::Enqueue(uint32 channelId, const uint8* buffer, size_t length)
 {
     Package package;
-    package.channelId   = channelId;
-    package.buffer      = buffer;
-    package.totalLength = length;
-    package.partLength  = 0;
-    package.sentLength  = 0;
+    PreparePackage(&package, channelId, buffer, length);
 
     bool queueWasEmpty = false;
 

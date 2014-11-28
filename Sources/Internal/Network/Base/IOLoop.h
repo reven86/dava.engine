@@ -57,7 +57,7 @@ public:
 
     ~IOLoop();
 
-    uv_loop_t* Handle();
+    uv_loop_t* Handle() const;
 
     int32 Run(eRunMode runMode = RUN_DEFAULT);
     void Stop();
@@ -71,7 +71,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline uv_loop_t* IOLoop::Handle()
+inline uv_loop_t* IOLoop::Handle() const
 {
     return actualLoop;
 }
