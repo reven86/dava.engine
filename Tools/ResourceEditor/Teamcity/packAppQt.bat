@@ -15,9 +15,9 @@ xcopy *.pdb app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\glew32.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\Teamcity\imagesplitter\*.bat app\ResourceEditor\dava.framework\Tools\ResourceEditor
 
-xcopy %QT5_HOME%\lib\Qt5Core.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
-xcopy %QT5_HOME%\lib\Qt5Gui.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
-xcopy %QT5_HOME%\lib\Qt5Widgets.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy %QT5_HOME%\bin\Qt5Core.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy %QT5_HOME%\bin\Qt5Gui.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy %QT5_HOME%\bin\Qt5Widgets.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 
 xcopy ..\..\..\..\dava.resourceeditor.beast\beast\bin\beast32.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy /e ..\..\..\..\dava.resourceeditor.beast\*.* app\ResourceEditor\dava.resourceeditor.beast\
