@@ -30,6 +30,8 @@ void EyeDropper::Exec()
 {
     lens = new DropperLens();
     InitShades();
+    lens->show();
+    lens->moveTo(QCursor::pos());
 }
 
 void EyeDropper::OnDone()
@@ -82,7 +84,7 @@ void EyeDropper::InitShades()
         pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
         pix.setDevicePixelRatio(scale);
         
-        DropperShade *shade = new DropperShade( pix, screens[i].rc );
+        DropperShade *shade = new DropperShade( pix, screens[i].rc, lens );
         shades[i] = shade;
         shade->show();
 
@@ -96,7 +98,6 @@ void EyeDropper::InitShades()
 
     for (int i = 0; i < shades.size(); i++ )
     {
-        connect(shades[i], &DropperShade::zoomFactorChanged, lens, &DropperLens::changeZoom);
         connect(shades[i], &DropperShade::moved, lens, &DropperLens::moveTo);
     }
 

@@ -25,6 +25,7 @@ public:
     ~MouseHelper();
 
     bool IsPressed() const;
+    QPoint Pos() const;
 
 private:
     bool eventFilter(QObject* obj, QEvent* e);

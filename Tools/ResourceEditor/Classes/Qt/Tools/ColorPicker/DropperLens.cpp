@@ -2,6 +2,8 @@
 
 #include <QPainter>
 #include <QCursor>
+#include <QDebug>
+#include <QLabel>
 
 
 namespace
@@ -13,7 +15,7 @@ namespace
 
 
 DropperLens::DropperLens()
-    : QWidget(NULL, Qt::Window | Qt::FramelessWindowHint/* | Qt::WindowStaysOnTopHint | Qt::ToolTip*/)
+    : QWidget(NULL, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip)
     , zoomFactor(0)
 {
     setAttribute(Qt::WA_TranslucentBackground);
@@ -22,6 +24,13 @@ DropperLens::DropperLens()
     setFocusPolicy(Qt::NoFocus);
     setCursor(Qt::BlankCursor);
     setFixedSize(cLensSize);
+
+    label = new QLabel(this);
+    label->setFixedSize(400, 40);
+    label->move(0, 0);
+
+    pixmap = QPixmap(width(), height());
+    pixmap.fill(Qt::blue);
 }
 
 DropperLens::~DropperLens()
@@ -33,10 +42,13 @@ int DropperLens::ZoomFactor() const
     return zoomFactor;
 }
 
+QPixmap& DropperLens::preview()
+{
+    return pixmap;
+}
+
 void DropperLens::changeZoom( int delta )
 {
-    const int oldZoom = zoomFactor;
-
     zoomFactor += delta > 0 ? 1 : -1;
     if (zoomFactor < 0)
     {
@@ -46,17 +58,6 @@ void DropperLens::changeZoom( int delta )
     {
         zoomFactor = maxZoom;
     }
-
-    if (oldZoom != zoomFactor)
-    {
-        update();
-    }
-}
-
-void DropperLens::updatePreview(const QPixmap& preview)
-{
-    pixmap = preview;
-    update();
 }
 
 void DropperLens::moveTo(const QPoint& pos)
@@ -66,6 +67,7 @@ void DropperLens::moveTo(const QPoint& pos)
     pt.ry() -= height() / 2;
 
     move(pt);
+    update();
 }
 
 void DropperLens::paintEvent(QPaintEvent* e)
@@ -73,8 +75,8 @@ void DropperLens::paintEvent(QPaintEvent* e)
     Q_UNUSED( e );
 
     QPainter p(this);
-    p.drawPixmap(QRectF(geometry()), pixmap, QRectF(pixmap.rect()));
+    p.drawPixmap(0, 0, pixmap);
 
     p.setPen(QPen(Qt::red, 3.0));
-    p.drawRect(QRectF(geometry()));
+    p.drawRect(0, 0, width() - 1, height() - 1);
 }

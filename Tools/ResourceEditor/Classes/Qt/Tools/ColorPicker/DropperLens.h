@@ -5,6 +5,8 @@
 #include <QPointer>
 
 
+class QLabel;
+
 
 class DropperLens
     : public QWidget
@@ -16,10 +18,10 @@ public:
     ~DropperLens();
 
     int ZoomFactor() const;
+    QPixmap& preview();
 
 public slots:
     void changeZoom(int delta);
-    void updatePreview(const QPixmap& preview);
     void moveTo(const QPoint& pos);
 
 private:
@@ -27,6 +29,7 @@ private:
 
     int zoomFactor;
     QPixmap pixmap;
+    QPointer<QLabel> label;
 };
 
 

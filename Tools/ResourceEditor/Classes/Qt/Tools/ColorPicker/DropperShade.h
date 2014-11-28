@@ -8,6 +8,8 @@
 
 
 class MouseHelper;
+class QLabel;
+class DropperLens;
 
 class DropperShade
     : public QWidget
@@ -22,7 +24,7 @@ signals:
     void zoomFactorChanged(int delta);
 
 public:
-    DropperShade( const QPixmap& src, const QRect& rect );
+    DropperShade( const QPixmap& src, const QRect& rect, DropperLens* lens );
     ~DropperShade();
 
 private slots:
@@ -34,10 +36,13 @@ private:
     void paintEvent(QPaintEvent* e);
     void keyPressEvent(QKeyEvent* e);
     QColor GetPixel(const QPoint& pos) const;
+    void updateLens();
 
     const QPixmap pixmap;
     const QImage image;
     QPointer<MouseHelper> mouse;
+    QPointer<QLabel> label;
+    QPointer<DropperLens> lens;
 };
 
 

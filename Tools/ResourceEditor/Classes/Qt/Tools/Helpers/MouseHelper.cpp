@@ -24,6 +24,11 @@ bool MouseHelper::IsPressed() const
     return isPressed;
 }
 
+QPoint MouseHelper::Pos() const
+{
+    return pos;
+}
+
 bool MouseHelper::eventFilter(QObject* obj, QEvent* e)
 {
     if (obj == w)
