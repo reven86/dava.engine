@@ -90,20 +90,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     dlcContext.prevState = 0;
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
-
-    // last state was 'Patching'?
-    if(DS_PATCHING == dlcContext.prevState)
-    {
-        if(dlcContext.remotePatchStorePath.Exists())
-        {
-            Logger::Info("DLC: Patch-file already exists, will go straight to the patching state.\n");
-        }
-        else
-        {
-            // no patch file, so go by the regular way
-            dlcContext.prevState = 0;
-        }
-    }
+    ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
 
     // FSM variables
     fsmAutoReady = false;
@@ -199,10 +186,19 @@ void DLC::FSM(DLCEvent event)
             {
                 case EVENT_DOWNLOAD_START:
                     fsmAutoReady = true;
-                    dlcState = DS_CHECKING_INFO;
-                    break;
+                    // don't break here
+
                 case EVENT_CHECK_START:
-                    dlcState = DS_CHECKING_INFO;
+                    // if last time stopped on the patching state and patch file exists - continue patching
+                    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists() && dlcContext.remoteVerStotePath.Exists())
+                    {
+                        dlcContext.prevState = 0;
+                        dlcState = DS_PATCHING;
+                    }
+                    else
+                    {
+                        dlcState = DS_CHECKING_INFO;
+                    }
                     break;
                 case EVENT_CANCEL:
                     dlcError = DE_WAS_CANCELED;
@@ -267,16 +263,8 @@ void DLC::FSM(DLCEvent event)
                     // automatically start download after check?
                     if(fsmAutoReady)
                     {
-                        if(DS_PATCHING == dlcContext.prevState)
-                        {
-                            // if last time stopped on the patching state and patch file exists - continue patching
-                            dlcState = DS_PATCHING;
-                        }
-                        else
-                        {
-                            // download patch
-                            dlcState = DS_DOWNLOADING;
-                        }
+                        // download patch
+                        dlcState = DS_DOWNLOADING;
                     }
                     else
                     {
@@ -299,16 +287,7 @@ void DLC::FSM(DLCEvent event)
             switch(event)
             {
                 case EVENT_DOWNLOAD_START:
-                    if(DS_PATCHING == dlcContext.prevState)
-                    {
-                        // if last time stopped on the patching state and patch file exists - continue patching
-                        dlcState = DS_PATCHING;
-                    }
-                    else
-                    {
-                        // download patch
-                        dlcState = DS_DOWNLOADING;
-                    }
+                    dlcState = DS_DOWNLOADING;
                     break;
                 case EVENT_CANCEL:
                     dlcError = DE_WAS_CANCELED;
@@ -481,7 +460,7 @@ void DLC::StepCheckInfoBegin()
     Logger::Info("DLC: Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
 
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckInfoFinish));
-    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL);
+    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL, 1);
 }
 
 // downloading DLC version file finished. need to read removeVersion
@@ -508,7 +487,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
             else
             {
                 Logger::FrameworkDebug("DLC: error %d", downloadError);
-                if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
+                if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
                 {
                     // connection problem
                     PostError(DE_CONNECT_ERROR);
@@ -581,7 +560,7 @@ void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
                 }
                 else
                 {
-                    if(DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_CANNOT_CONNECT == downloadErrorFull)
+                    if(DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_COULDNT_CONNECT == downloadErrorFull)
                     {
                         // connection problem
                         PostError(DE_CONNECT_ERROR);
@@ -616,7 +595,7 @@ void DLC::StepCheckMetaBegin()
 
     FileSystem::Instance()->DeleteFile(dlcContext.remoteMetaStorePath);
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckMetaFinish));
-    dlcContext.remoteMetaDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL);
+    dlcContext.remoteMetaDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL, 1);
 }
 
 void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
@@ -628,7 +607,7 @@ void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
             DownloadError downloadError;
             DownloadManager::Instance()->GetError(dlcContext.remoteMetaDownloadId, downloadError);
 
-            if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
+            if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
             {
                 // connection problem
                 PostError(DE_CONNECT_ERROR);
@@ -685,6 +664,11 @@ void DLC::StepDownloadPatchBegin()
             // now we can resume last download
             donwloadType = RESUMED;
         }
+        else
+        {
+            // ensure that there is no already downloaded file with another version
+            FileSystem::Instance()->DeleteFile(dlcContext.remotePatchStorePath);
+        }
 
         SafeRelease(downloadInfoFile);
     }
@@ -724,7 +708,7 @@ void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status
                     break;
 
                 case DAVA::DLE_COULDNT_RESOLVE_HOST:
-                case DAVA::DLE_CANNOT_CONNECT:
+                case DAVA::DLE_COULDNT_CONNECT:
                     // connection problem
                     PostError(DE_CONNECT_ERROR);
                     break;
