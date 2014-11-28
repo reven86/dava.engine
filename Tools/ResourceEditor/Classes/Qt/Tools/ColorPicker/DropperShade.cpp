@@ -1,80 +1,109 @@
 #include "DropperShade.h"
 
 #include <QPainter>
-#include <QPaintEvent>
 #include <QKeyEvent>
 #include <QCursor>
 #include <QLabel>
 
 #include "../Helpers/MouseHelper.h"
 
-#include "DropperLens.h"
 
-
-DropperShade::DropperShade( const QPixmap& src, const QRect& rect, DropperLens* _lens )
-: QWidget(NULL, Qt::Window | Qt::FramelessWindowHint/* | Qt::WindowStaysOnTopHint | Qt::ToolTip*/)
-    , pixmap(src)
-    , image(src.toImage())
+DropperShade::DropperShade( const QImage& src, const QRect& rect )
+: QWidget(NULL, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip)
+    , cache( src )
+    , cursorSize(151, 151)
+    , zoomFactor(3)
     , mouse(new MouseHelper(this))
-    , lens(_lens)
+    , drawCursor(false)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setFocusPolicy(Qt::WheelFocus);
     setMouseTracking(true);
-    setCursor(Qt::BlankCursor);
+    setCursor(Qt::CrossCursor);
     setFixedSize(rect.size());
     move(rect.topLeft());
+    cursorPos = mapFromGlobal(QCursor::pos());
 
-    connect(mouse, &MouseHelper::mouseMove, this, &DropperShade::OnMouseMove);
-    connect(mouse, &MouseHelper::mouseRelease, this, &DropperShade::OnClicked);
-    connect(mouse, &MouseHelper::mouseWheel, this, &DropperShade::OnMouseWheel);
-
-    label = new QLabel(this);
-    label->setStyleSheet( "background: white;" );
-    label->setFixedSize(200, 30);
-    label->move(0, 0);
+    connect(mouse, SIGNAL( mouseMove( const QPoint& ) ), SLOT( OnMouseMove( const QPoint& ) ));
+    connect(mouse, SIGNAL( mouseRelease( const QPoint& ) ), SLOT( OnClicked( const QPoint& ) ));
+    connect(mouse, SIGNAL( mouseWheel( int ) ), SLOT( OnMouseWheel( int ) ));
+    connect(mouse, SIGNAL( mouseEntered() ), SLOT( OnMouseEnter() ));
+    connect(mouse, SIGNAL( mouseLeaved() ), SLOT( OnMouseLeave() ));
 }
 
 DropperShade::~DropperShade()
 {
 }
 
+void DropperShade::SetZoomFactor(int zoom)
+{
+    if ( (sender() != this) && (zoomFactor != zoom) )
+    {
+        zoomFactor = zoom;
+        update();
+    }
+}
+
 void DropperShade::paintEvent(QPaintEvent* e)
 {
+    Q_UNUSED( e );
+
     QPainter p(this);
-    p.drawPixmap(e->rect(),pixmap,e->rect());
+    p.drawImage(0, 0, cache);
+    if (drawCursor)
+    {
+        DrawCursor(cursorPos, &p);
+    }
+}
+
+void DropperShade::DrawCursor(const QPoint& _pos, QPainter* p)
+{
+    const int scale = static_cast<int>(cache.devicePixelRatio());
+    const QPoint pos(_pos.x(), _pos.y());
+    
+    const int sx = cursorSize.width() / 2 - 1;
+    const int sy = cursorSize.height() / 2 - 1;
+    const QColor c = GetPixel(pos);
+
+    QRect rc(QPoint(pos.x() - sx, pos.y() - sy), QPoint(pos.x() + sx, pos.y() + sy));
+    const int fc = zoomFactor / scale;
+
+    p->setPen(QPen(Qt::black, 1.0));
+
+    const int midX = (rc.left() + rc.right()) / 2;
+    const int midY = (rc.bottom() + rc.top()) / 2;
+
+    p->drawLine(rc.left(), midY, rc.right(), midY);
+    p->drawLine(midX, rc.top(), midX, rc.bottom());
+    p->fillRect(pos.x() - 1, pos.y() - 1, 3, 3, c);
+
+    p->setPen(Qt::white);
+    p->drawRect(rc);
+    rc.adjust(-1, -1, 1, 1);
+    p->setPen(Qt::black);
+    p->drawRect(rc);
 }
 
 QColor DropperShade::GetPixel(const QPoint& pos) const
 {
-    const QColor c = image.pixel(pos);
+    const QColor c = cache.pixel(pos);
     return c;
-}
-
-void DropperShade::updateLens()
-{
-    const int scale = static_cast<int>(pixmap.devicePixelRatio());
-    const int zoom = lens->ZoomFactor() * 2 + 1;
-    const int ptX = mouse->Pos().x() * scale;
-    const int ptY = mouse->Pos().y() * scale;
-    const int w = lens->width() * scale / zoom;
-    const int h = lens->height() * scale / zoom;
-    const int x = ptX - w / 2;
-    const int y = ptY - h / 2;
-
-    const QPixmap& crop = pixmap.copy(x, y, w, h).scaled( w * zoom, h * zoom );
-    lens->preview() = crop;
-
-    const QString text = QString( "%1 x %2" ).arg( ptX ).arg( ptY );
-    label->setText(text);
 }
 
 void DropperShade::OnMouseMove(const QPoint& pos)
 {
-    updateLens();
+    const int sx = cursorSize.width() / 2;
+    const int sy = cursorSize.height() / 2;
+    QRect rcOld(QPoint(cursorPos.x() - sx, cursorPos.y() - sy), cursorSize);
+    rcOld.adjust(-1, -1, 2, 2);
+    QRect rcNew(QPoint(pos.x() - sx, pos.y() - sy), cursorSize);
+    rcNew.adjust(-1, -1, 2, 2);
 
-    emit moved(mapToGlobal(pos));
-    emit changed(GetPixel(pos));
+    cursorPos = pos;
+    update(rcOld);
+    update(rcNew);
+
+    emit moved(GetPixel(pos));
 }
 
 void DropperShade::OnClicked(const QPoint& pos)
@@ -84,9 +113,37 @@ void DropperShade::OnClicked(const QPoint& pos)
 
 void DropperShade::OnMouseWheel(int delta)
 {
-    lens->changeZoom(delta);
-    updateLens();
-    lens->update();
+    const int old = zoomFactor;
+
+    const int maxDpi = 5;
+    const int max = qMin(cursorSize.width() / maxDpi, cursorSize.height() / maxDpi);
+    const int sign = delta > 0 ? 1 : -1;
+    const double step = (zoomFactor - 1) / 2.0;
+
+    zoomFactor += sign * qMax( int(step), 1 );
+    if (zoomFactor < 1)
+        zoomFactor = 1;
+    if (zoomFactor > max )
+        zoomFactor = max;
+
+    if (old != zoomFactor)
+    {
+        update();
+        emit zoonFactorChanged(zoomFactor);
+    }
+}
+
+void DropperShade::OnMouseEnter()
+{
+    drawCursor = true;
+    setFocus();
+    update();
+}
+
+void DropperShade::OnMouseLeave()
+{
+    drawCursor = false;
+    update();
 }
 
 void DropperShade::keyPressEvent(QKeyEvent* e)

@@ -13,7 +13,7 @@
 
 #include "../Helpers/MouseHelper.h"
 #include "DropperShade.h"
-#include "DropperLens.h"
+#include "Platform/DpiHelper.h"
 
 
 EyeDropper::EyeDropper(QWidget* parent)
@@ -28,10 +28,8 @@ EyeDropper::~EyeDropper()
 
 void EyeDropper::Exec()
 {
-    lens = new DropperLens();
+    //QApplication::setOverrideCursor(Qt::BlankCursor);
     InitShades();
-    lens->show();
-    lens->moveTo(QCursor::pos());
 }
 
 void EyeDropper::OnDone()
@@ -44,8 +42,7 @@ void EyeDropper::OnDone()
             shades[i]->deleteLater();
         }
     }
-
-    lens->deleteLater();
+    //QApplication::restoreOverrideCursor();
 }
 
 void EyeDropper::InitShades()
@@ -60,6 +57,8 @@ void EyeDropper::InitShades()
         const QRect& screenRect = desktop->screenGeometry(i);
         ScreenData data = { i, screenRect };
         screens.push_back(data);
+        
+        qDebug() << QString( "Rect[%1] = " ).arg(i) << screenRect;
     }
 
     shades.resize(n);
@@ -68,29 +67,32 @@ void EyeDropper::InitShades()
         QWidget *s = desktop->screen(i);
         QScreen *screen = QApplication::screens()[i];
         const double scale = screen->devicePixelRatio();
+
+        qDebug() << QString( "Scale[%1] = " ).arg(i) << scale;
         
         QRect rc = screens[i].rc;
         const bool scaled = scale > 1.0;
 
         QPixmap pix;
-        //if (scaled)
-        //{
-        //    pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height() ).scaled(screens[i].rc.size());
-        //}
-        //else
-        //{
-        //    pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
-        //}
+        if (scaled)
+        {
+            pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height() ).scaled(screens[i].rc.size());
+        }
+        else
+        {
+            pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
+        }
         pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
         pix.setDevicePixelRatio(scale);
+        const QImage img = pix.toImage();
         
-        DropperShade *shade = new DropperShade( pix, screens[i].rc, lens );
+        DropperShade *shade = new DropperShade( img, screens[i].rc );
         shades[i] = shade;
         shade->show();
 
         connect( shade, SIGNAL( canceled() ), SIGNAL( canceled() ) );
         connect( shade, SIGNAL( picked(const QColor&) ), SIGNAL( picked(const QColor&) ) );
-        connect( shade, SIGNAL( changed(const QColor&) ), SIGNAL( moved(const QColor&) ) );
+        connect( shade, SIGNAL( moved(const QColor&) ), SIGNAL( moved(const QColor&) ) );
 
         connect( shade, SIGNAL( canceled() ), SLOT( OnDone() ) );
         connect( shade, SIGNAL( picked(const QColor&) ), SLOT( OnDone() ) );
@@ -98,7 +100,14 @@ void EyeDropper::InitShades()
 
     for (int i = 0; i < shades.size(); i++ )
     {
-        connect(shades[i], &DropperShade::moved, lens, &DropperLens::moveTo);
+        for (int j = 0; j < shades.size(); j++)
+        {
+            if (i != j)
+            {
+                connect(shades[i], SIGNAL( zoonFactorChanged(int) ), shades[j], SLOT( SetZoomFactor(int) ));
+            }
+        }
     }
 
 }
+

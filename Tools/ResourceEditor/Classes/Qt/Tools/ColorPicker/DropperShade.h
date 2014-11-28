@@ -4,12 +4,9 @@
 #include <QWidget>
 #include <QPointer>
 #include <QImage>
-#include <QPixmap>
 
 
 class MouseHelper;
-class QLabel;
-class DropperLens;
 
 class DropperShade
     : public QWidget
@@ -19,30 +16,35 @@ class DropperShade
 signals:
     void canceled();
     void picked(const QColor& color);
-    void changed(const QColor& color);
-    void moved(const QPoint& pos);
-    void zoomFactorChanged(int delta);
+    void moved(const QColor& color);
+    void zoonFactorChanged(int zoom);
 
 public:
-    DropperShade( const QPixmap& src, const QRect& rect, DropperLens* lens );
+    DropperShade( const QImage& src, const QRect& rect );
     ~DropperShade();
+
+public slots:
+    void SetZoomFactor(int zoom);
 
 private slots:
     void OnMouseMove(const QPoint& pos);
     void OnClicked(const QPoint& pos);
     void OnMouseWheel(int delta);
+    void OnMouseEnter();
+    void OnMouseLeave();
 
 private:
     void paintEvent(QPaintEvent* e);
     void keyPressEvent(QKeyEvent* e);
+    void DrawCursor(const QPoint& pos, QPainter* p);
     QColor GetPixel(const QPoint& pos) const;
-    void updateLens();
 
-    const QPixmap pixmap;
-    const QImage image;
+    const QImage cache;
+    QSize cursorSize;
+    QPoint cursorPos;
+    int zoomFactor;
     QPointer<MouseHelper> mouse;
-    QPointer<QLabel> label;
-    QPointer<DropperLens> lens;
+    bool drawCursor;
 };
 
 
