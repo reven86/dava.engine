@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
 	int ret = 0;
 
     QApplication a(argc, argv);
+    
+    a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);

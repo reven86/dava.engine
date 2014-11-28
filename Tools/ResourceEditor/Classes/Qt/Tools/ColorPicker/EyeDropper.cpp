@@ -13,7 +13,7 @@
 
 #include "../Helpers/MouseHelper.h"
 #include "DropperShade.h"
-#include "Platform/DpiHelper.h"
+#include "DropperLens.h"
 
 
 EyeDropper::EyeDropper(QWidget* parent)
@@ -28,6 +28,7 @@ EyeDropper::~EyeDropper()
 
 void EyeDropper::Exec()
 {
+    lens = new DropperLens();
     InitShades();
 }
 
@@ -41,18 +42,20 @@ void EyeDropper::OnDone()
             shades[i]->deleteLater();
         }
     }
+
+    lens->deleteLater();
 }
 
 void EyeDropper::InitShades()
 {
     QDesktopWidget* desktop = QApplication::desktop();
-    const int n = qApp->screens().size();
+    const int n = desktop->screenCount();
 
     ScreenArray screens;
     screens.reserve(n);
     for (int i = 0; i < n; i++)
     {
-        const QRect& screenRect = qApp->screens().at(i)->geometry();
+        const QRect& screenRect = desktop->screenGeometry(i);
         ScreenData data = { i, screenRect };
         screens.push_back(data);
     }
@@ -60,40 +63,32 @@ void EyeDropper::InitShades()
     shades.resize(n);
     for (int i = 0; i < n; i++)
     {
-        QScreen *s = qApp->screens().at(i);
-        //const double scale = DAVA::DPIHelper::GetDpiScaleFactor(i);
-		const double scale = s->devicePixelRatio();
+        QWidget *s = desktop->screen(i);
+        QScreen *screen = QApplication::screens()[i];
+        const double scale = screen->devicePixelRatio();
         
         QRect rc = screens[i].rc;
         const bool scaled = scale > 1.0;
-        if (scaled)
-        {
-            rc.setWidth( int(scale * screens[i].rc.width()) );
-            rc.setHeight( int(scale * screens[i].rc.height()) );
-        }
-
-        //int l, t, r, b;
-        //FindExtraOfs(screens, i, l, t, r, b);
-        //rc.adjust(l, t, r, b);
 
         QPixmap pix;
-        if (scaled)
-        {
-            pix = s->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height() ).scaled(screens[i].rc.size());
-        }
-        else
-        {
-            pix = s->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
-        }
-        const QImage img = pix.toImage();
+        //if (scaled)
+        //{
+        //    pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height() ).scaled(screens[i].rc.size());
+        //}
+        //else
+        //{
+        //    pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
+        //}
+        pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
+        pix.setDevicePixelRatio(scale);
         
-        DropperShade *shade = new DropperShade( img, screens[i].rc );
+        DropperShade *shade = new DropperShade( pix, screens[i].rc );
         shades[i] = shade;
         shade->show();
 
         connect( shade, SIGNAL( canceled() ), SIGNAL( canceled() ) );
         connect( shade, SIGNAL( picked(const QColor&) ), SIGNAL( picked(const QColor&) ) );
-        connect( shade, SIGNAL( moved(const QColor&) ), SIGNAL( moved(const QColor&) ) );
+        connect( shade, SIGNAL( changed(const QColor&) ), SIGNAL( moved(const QColor&) ) );
 
         connect( shade, SIGNAL( canceled() ), SLOT( OnDone() ) );
         connect( shade, SIGNAL( picked(const QColor&) ), SLOT( OnDone() ) );
@@ -101,42 +96,8 @@ void EyeDropper::InitShades()
 
     for (int i = 0; i < shades.size(); i++ )
     {
-        for (int j = 0; j < shades.size(); j++)
-        {
-            if (i != j)
-            {
-                connect(shades[i], SIGNAL( zoonFactorChanged(int) ), shades[j], SLOT( SetZoomFactor(int) ));
-            }
-        }
+        connect(shades[i], &DropperShade::zoomFactorChanged, lens, &DropperLens::changeZoom);
+        connect(shades[i], &DropperShade::moved, lens, &DropperLens::moveTo);
     }
 
-}
-
-void EyeDropper::FindExtraOfs(const ScreenArray& screens, int id, int& l, int& t, int& r, int& b)
-{
-    l = 0;
-    t = 0;
-    r = 0;
-    b = 0;
-
-#ifdef Q_OS_MAC
-    const ScreenData& scr = screens[id];
-    const QRect& rc = scr.rc.adjusted(-1, -1, 1, 1);
-
-    for (int i = 0; i < screens.size(); i++)
-    {
-        if (i == id)
-            continue;
-        const QRect& sRc = screens[i].rc;
-
-        if ( rc.left() >= sRc.left() && rc.left() < sRc.right() )
-            l = -1;
-        if ( rc.right() >= sRc.left() && rc.right() < sRc.right() )
-            r = 1;
-        if ( rc.top() >= sRc.top() && rc.top() < sRc.bottom() )
-            t = -1;
-        if ( rc.bottom() >= sRc.top() && rc.bottom() < sRc.bottom() )
-            b = 1;
-    }
-#endif
 }

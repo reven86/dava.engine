@@ -45,6 +45,8 @@
 
 #include "Utils/StringUtils.h"
 #include <Thread/LockGuard.h>
+#include "fribidi/fribidi-bidi-types.h"
+#include "fribidi/fribidi-unicode.h"
 
 namespace DAVA 
 {
@@ -965,6 +967,12 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
 
     Vector<float32> sizes;
     font->GetStringSize(string, &sizes);
+    for(uint32 i = 0; i < sizes.size(); ++i)
+        if (FRIBIDI_IS_EXPLICIT_OR_BN (fribidi_get_bidi_type (string[i]))
+	    || string[i] == FRIBIDI_CHAR_LRM || string[i] == FRIBIDI_CHAR_RLM)
+        {
+            sizes[i] = 0.0f;
+        }
     if (sizes.size() != string.length())
     {
         return;

@@ -1,14 +1,20 @@
 cmake_minimum_required (VERSION 3.0)
 project ( ResourceEditor )
 
-set(ENV_QT5_HOME "$ENV{QT5_HOME}")
-if( NOT ENV_QT5_HOME )        
-   message(FATAL_ERROR "Error: Undefined QT5_HOME env var. Sample QT5_HOME=D:/Tools/QT5/5.3/msvc2010_opengl")
-   exit()
-endif()
+set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
+set ( QT_FOUND 1 )
+include      ( CMake-common )
+
+find_package ( DavaFramework REQUIRED )
 
 if( WIN32 )
+
+    set(ENV_QT5_HOME "$ENV{QT5_HOME}")
+    if( NOT ENV_QT5_HOME )        
+       message(FATAL_ERROR "Error: Undefined QT5_HOME env var. Sample QT5_HOME=D:/Tools/QT5/5.3/msvc2010_opengl")
+       exit()
+    endif()
 
     set ( QT5_PATH ${ENV_QT5_HOME} CACHE PATH "Path to Qt5")
 
@@ -21,13 +27,7 @@ endif()
 set ( QT5_MODULE_PATH ${QT5_PATH}/lib/cmake)
 set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
 
-set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-set ( QT_FOUND 1 )
 
-
-find_package ( DavaFramework REQUIRED )
-
-include      ( CMake-common )
 
 find_package ( Qt5Core REQUIRED )
 find_package ( Qt5Concurrent REQUIRED )
@@ -35,8 +35,14 @@ find_package ( Qt5Gui REQUIRED )
 find_package ( Qt5Widgets REQUIRED )
 find_package ( Qt5OpenGL REQUIRED )
 
-define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
-generate_source_groups_project ()
+set( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+set( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
+set( Generated          ${CMAKE_CURRENT_BINARY_DIR}  )
+
+
+define_source_folders ( SRC_ROOT "Classes" )
+generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated Data )
+
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
@@ -45,7 +51,7 @@ include_directories   ( "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/include" )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
-include_directories   ( ${DAVA_IMAGE_MAGICK_INCLUDES_PATH} ) 
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/FCollada )
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/External/Cg/include )
 
@@ -78,13 +84,11 @@ add_definitions       (
 -DDAVA_QT
 #-D__DAVAENGINE_BEAST__
 -DDAVA_FMOD
+-D_DISABLE_IMAGE_MAGICK
 -DDAVA_DEBUG
 )
 
 if( MSVC )
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP /fp:fast /Zi /GS- /D _SECURE_SCL=0" )
-    
     set( LIBRARIES "gdi32.lib" "glu32.lib" #"winmm.lib" "opengl32.lib"
                    "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib"  )
 
@@ -127,6 +131,7 @@ if( MACOS )
 
 
     file ( GLOB DYLIB_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
+    list ( APPEND DYLIB_FILES   ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib ) 
 
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
 
@@ -137,6 +142,9 @@ if( MACOS )
 
     
 elseif( WIN32 )
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" )
+
     file ( GLOB_RECURSE BEAST_LIST "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.cpp"  
                                    "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.h" 
                                   )
@@ -168,6 +176,9 @@ if( APPLE )
 
         COMMAND   
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
+
+        COMMAND   
+        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}           
     )
 
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
@@ -177,7 +188,17 @@ if( APPLE )
                           )
 
 elseif( MSVC )
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")
+
+    if( OUTPUT_TO_BUILD_DIR )
+        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR} )
+        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
+        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+     endif()
 
 endif()
 
@@ -188,11 +209,6 @@ target_link_libraries ( ${PROJECT_NAME}
     ${LIBRARIES} 
     TextureTool
 )
-
-if (MSVC) 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
-endif()
  
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
