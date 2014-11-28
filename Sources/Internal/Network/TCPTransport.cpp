@@ -47,6 +47,8 @@ TCPTransport::TCPTransport(IOLoop* loop, ITransportListener* aListener, eTranspo
                                                 , isActive(false)
                                                 , terminateFlag(false)
                                                 , sendFlag(false)
+                                                , totalDataSize(0)
+                                                , accumulatedSize(0)
                                                 , totalRead(0)
                                                 , sendInProgress()
                                                 , curPackage()
@@ -145,6 +147,9 @@ void TCPTransport::CleanUp(eDeactivationReason reason, int32 error)
     else
         CloseSocket();
 
+    sendFlag      = false;
+    totalRead     = 0;
+    totalDataSize = 0;
     UnlockSender();
 }
 
@@ -204,8 +209,7 @@ void TCPTransport::SendPackage(Package* package)
 {
     DVASSERT(package->sentLength < package->totalLength);
 
-    size_t nleft = package->totalLength - package->sentLength;
-    package->partLength = BasicProtoDecoder::Encode(&header, package->channelId, nleft);
+    package->partLength = BasicProtoDecoder::Encode(&header, package->channelId, package->totalLength, package->sentLength);
 
     Buffer buffers[2];
     buffers[0] = CreateBuffer(&header);
@@ -305,7 +309,22 @@ void TCPTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread
             switch(status)
             {
             case BasicProtoDecoder::STATUS_OK:
-                listener->OnTransportReceive(this, result.header->channelId, result.data, result.dataSize);
+                if (0 == totalDataSize)     // Prepare for new data block
+                {
+                    totalDataSize   = result.header->totalSize;
+                    accumulatedSize = 0;
+                    if (accum.size() < totalDataSize)
+                        accum.resize(totalDataSize);
+                }
+
+                Memcpy(&*accum.begin() + accumulatedSize, result.packetData, result.packetDataSize);
+                accumulatedSize += result.packetDataSize;
+                if (accumulatedSize == totalDataSize)
+                {
+                    listener->OnTransportReceive(this, result.header->channelId, &*accum.begin(), totalDataSize);
+                    totalDataSize = 0;
+                }
+
                 DVASSERT(totalRead >= result.decodedSize);
                 totalRead -= result.decodedSize;
                 Memmove(inbuf, inbuf + result.decodedSize, totalRead);

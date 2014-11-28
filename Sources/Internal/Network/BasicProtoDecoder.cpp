@@ -38,19 +38,18 @@ BasicProtoDecoder::eStatus BasicProtoDecoder::Decode(uint8* buffer, std::size_t 
     DVASSERT(buffer != NULL && result != NULL);
 
     eStatus status = STATUS_INCOMPLETE;
-    Memset(result, 0, sizeof(DecodeResult));
     if (bufferSize >= sizeof(BasicProtoHeader))
     {
         BasicProtoHeader* header = reinterpret_cast<BasicProtoHeader*>(buffer);
-        DVASSERT(header->packetSize >= sizeof(BasicProtoHeader));
-        if (header->packetSize >= sizeof(BasicProtoHeader) && protoMagic == header->packetMagic)
+        DVASSERT(header->packetSize >= sizeof(BasicProtoHeader) && PROTO_MAGIC == header->packetMagic);
+        if (header->packetSize >= sizeof(BasicProtoHeader) && PROTO_MAGIC == header->packetMagic)
         {
             if (bufferSize >= header->packetSize)
             {
-                result->decodedSize = header->packetSize;
-                result->dataSize    = result->decodedSize - sizeof(BasicProtoHeader);
-                result->header      = header;
-                result->data        = buffer + sizeof(BasicProtoHeader);
+                result->decodedSize    = header->packetSize;
+                result->packetDataSize = result->decodedSize - sizeof(BasicProtoHeader);
+                result->packetData     = buffer + sizeof(BasicProtoHeader);
+                result->header         = header;
                 status = STATUS_OK;
             }
         }
@@ -62,17 +61,18 @@ BasicProtoDecoder::eStatus BasicProtoDecoder::Decode(uint8* buffer, std::size_t 
     return status;
 }
 
-size_t BasicProtoDecoder::Encode(BasicProtoHeader* header, uint32 channelId, size_t bufferSize)
+size_t BasicProtoDecoder::Encode(BasicProtoHeader* header, uint32 channelId, size_t totalSize, size_t encodedSize)
 {
-    DVASSERT(header != NULL && bufferSize > 0);
+    DVASSERT(header != NULL && totalSize > 0 && encodedSize < totalSize);
 
-    size_t dataSize = Min(bufferSize, maxDataSize);
+    // Compute size of user data that can fit in packet
+    size_t sizeToEncode = Min(totalSize - encodedSize, MAX_DATA_SIZE);
 
-    Memset(header, 0, sizeof(BasicProtoHeader));
-    header->packetSize  = static_cast<uint16>(sizeof(BasicProtoHeader) + dataSize);
-    header->packetMagic = protoMagic;
+    header->packetSize  = static_cast<uint16>(sizeof(BasicProtoHeader) + sizeToEncode);
+    header->packetMagic = PROTO_MAGIC;
+    header->totalSize   = totalSize;
     header->channelId   = channelId;
-    return dataSize;
+    return sizeToEncode;
 }
 
 }   // namespace DAVA

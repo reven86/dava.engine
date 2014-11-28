@@ -134,8 +134,12 @@ private:
     bool terminateFlag;
     bool sendFlag;
 
-    uint8  inbuf[BasicProtoDecoder::maxPacketSize];
-    size_t totalRead;
+    size_t        totalDataSize;                // Total data size to accumulate before sending it to client
+    size_t        accumulatedSize;              // Number of accumulated bytes
+    Vector<uint8> accum;                        // Buffer to accumulate entire data that have been sent by other side
+
+    uint8  inbuf[BasicProtoDecoder::MAX_PACKET_SIZE];   // Read buffer
+    size_t totalRead;                                   // Number of bytes in read buffer
 
     Spinlock         sendInProgress;    // Transition 
     Package          curPackage;        // Current package to send

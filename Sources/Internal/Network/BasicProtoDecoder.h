@@ -49,16 +49,16 @@ struct BasicProtoHeader
 {
     uint16 packetSize;          // Packet length: header + data
     uint16 packetMagic;         // Magic number to distinguish packets
+    uint32 totalSize;           // Total size of user data
     uint32 channelId;           // Channel identifier
 };
 
 class BasicProtoDecoder
 {
 public:
-    static const std::size_t headerSize    = sizeof(BasicProtoHeader);
-    static const std::size_t maxPacketSize = 1024 * 64 - 1;
-    static const std::size_t maxDataSize   = maxPacketSize - headerSize;
-    static const uint16      protoMagic    = 0xBAAB;
+    static const size_t MAX_PACKET_SIZE = 1024 * 64 - 1;
+    static const size_t MAX_DATA_SIZE   = MAX_PACKET_SIZE - sizeof(BasicProtoHeader);
+    static const uint16 PROTO_MAGIC     = 0xBAAB;
 
     // Possible status of packet decoding
     enum eStatus
@@ -68,17 +68,18 @@ public:
         STATUS_INVALID      // packet invalid, e.g. magic unrecognizable number
     };
 
+    // Result of buffer decoding
     struct DecodeResult
     {
-        std::size_t decodedSize;
-        std::size_t dataSize;
+        size_t decodedSize;
+        size_t packetDataSize;
+        uint8* packetData;
         BasicProtoHeader* header;
-        uint8* data;
     };
 
 public:
-    static eStatus Decode(uint8* buffer, std::size_t bufferSize, DecodeResult* result);
-    static std::size_t Encode(BasicProtoHeader* header, uint32 channelId, std::size_t bufferSize);
+    static eStatus Decode(uint8* buffer, size_t bufferSize, DecodeResult* result);
+    static size_t Encode(BasicProtoHeader* header, uint32 channelId, size_t totalSize, size_t encodedSize);
 };
 
 }   // namespace DAVA

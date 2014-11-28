@@ -51,7 +51,7 @@ ChannelManager::~ChannelManager()
 {
     DVASSERT(0 == nonConfirmed && false == isRunning);
     for (TransportListType::iterator i = transportList.begin(), e = transportList.end();i != e;++i)
-        delete (*i);
+        TransportFactory::Release(*i);
 }
 
 bool ChannelManager::Start()
