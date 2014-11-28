@@ -107,20 +107,9 @@ const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialState
                 {
                     Shader::Uniform *uniform = shader->GetUniform(i);
                     eShaderSemantic shaderSemantic = uniform->shaderSemantic;
-                    if( //!Shader::IsAutobindUniform(uniform->id) && // isn't auto-bind
-                       // we can't use IsAutobindUniform, because we need color to change
-                       // so this is copy from IsAutobindUniform with color excluded -->
-                       !(shaderSemantic == PARAM_WORLD_VIEW_PROJ ||
-                         shaderSemantic == PARAM_WORLD_VIEW ||
-                         shaderSemantic == PARAM_PROJ ||
-                         shaderSemantic == PARAM_WORLD_VIEW_INV_TRANSPOSE ||
-                         shaderSemantic == PARAM_GLOBAL_TIME ||
-                         shaderSemantic == PARAM_WORLD_SCALE)
-                       // <--
-                       &&
-                       (!uniform->instanceSemantic) //no instance uniform arrays
-                       &&
-                       uniform->type != Shader::UT_SAMPLER_2D && uniform->type != Shader::UT_SAMPLER_CUBE) // isn't texture
+                    if((!Shader::IsAutobindUniform(shaderSemantic)) &&   //not autobind uniform
+                      (!uniform->instanceSemantic) &&                   //not instance uniform
+                       (uniform->type != Shader::UT_SAMPLER_2D) && (uniform->type != Shader::UT_SAMPLER_CUBE)) // not texture
                     {
                         FastName propName = uniform->name;
                         

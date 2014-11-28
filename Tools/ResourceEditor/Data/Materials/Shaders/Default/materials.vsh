@@ -17,6 +17,7 @@ precision highp float;
 
 #if defined(INSTANCING)
 #extension GL_EXT_draw_instanced : enable 
+//#extension GL_EXT_gpu_shader4 : enable 
 #endif
 
 

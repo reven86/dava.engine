@@ -8,7 +8,7 @@ precision highp float;
 #endif
 
 uniform sampler2D sampler2d;
-uniform lowp vec4 flatColor;
+uniform lowp vec4 renderColor;
 varying mediump vec2 varTexCoord;
 
 void main()
@@ -20,8 +20,8 @@ void main()
 #endif
 
 #ifdef IMAGE_A8
-    gl_FragColor = vec4(flatColor.rgb, texColor.a * flatColor.a);
+    gl_FragColor = vec4(renderColor.rgb, texColor.a * renderColor.a);
 #else
-    gl_FragColor = texColor * flatColor;
+    gl_FragColor = texColor * renderColor;
 #endif
 }

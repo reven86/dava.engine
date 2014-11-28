@@ -278,7 +278,7 @@ const FastName DYNAMIC_PARAM_NAMES[] =
         FastName("worldViewProjMatrix"), //PARAM_WORLD_VIEW_PROJ,
         FastName("invWorldViewProjMatrix"), //PARAM_INV_WORLD_VIEW_PROJ,
         
-        FastName("flatColor"),
+        FastName("renderColor"),
         FastName("globalTime"),
         FastName("worldScale"),
 
