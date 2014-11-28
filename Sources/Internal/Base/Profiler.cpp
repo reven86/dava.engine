@@ -49,7 +49,7 @@ const unsigned  InvalidIndex = (unsigned)(-1);
 //==============================================================================
 
 static inline long
-curTimeUs()
+CurTimeUs()
 {
     return (long)(SystemTimer::Instance()->GetAbsoluteUs());
 }
@@ -125,7 +125,7 @@ public:
                                                         activeCounter[activeCounterCount] = this;
                                                         ++activeCounterCount;
                                                         
-                                                        t0 = curTimeUs();
+                                                        t0 = CurTimeUs();
                                                     }
 
                                                     used = true;
@@ -145,7 +145,7 @@ public:
                                                     }
 
                                                     if( --useCount == 0 )
-                                                        t += curTimeUs() - t0; 
+                                                        t += CurTimeUs() - t0; 
                                                     
                                                     counterSync.Unlock();
                                                 }
@@ -358,7 +358,7 @@ Start()
 
     profStarted         = true;
     activeCounterCount  = 0;
-    totalTime0          = curTimeUs();
+    totalTime0          = CurTimeUs();
 }
 
 
@@ -369,7 +369,7 @@ Stop()
 {
     DVASSERT(profStarted);
 
-    totalTime   = curTimeUs() - totalTime0;
+    totalTime   = CurTimeUs() - totalTime0;
     profStarted = false;
 }
 
