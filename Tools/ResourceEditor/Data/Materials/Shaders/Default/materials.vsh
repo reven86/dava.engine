@@ -16,10 +16,7 @@ precision highp float;
 #define MAX_INSTANCES 32
 
 #if defined(INSTANCING)
-#version 140
-#define attribute in
-#define varying out
-#define texture2DLod textureLod
+#extension GL_EXT_draw_instanced : enable 
 #endif
 
 

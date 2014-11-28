@@ -227,7 +227,8 @@ void RenderState::Flush(RenderState * hardwareState) const
 	
     if (color != hardwareState->color)
     {
-        hardwareState->color = color;
+        hardwareState->color = color;        
+        RenderManager::Instance()->SetDynamicParam(PARAM_COLOR, &hardwareState->color, UPDATE_SEMANTIC_ALWAYS);        
     }
 
     if(textureState != hardwareState->textureState &&

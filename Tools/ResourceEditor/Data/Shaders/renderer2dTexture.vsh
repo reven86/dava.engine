@@ -12,13 +12,10 @@ attribute vec4 inPosition;
 attribute vec2 inTexCoord0;
 
 uniform mat4 worldViewProjMatrix;
-uniform lowp vec4 flatColor;
-varying lowp vec4 varColor;
 varying mediump vec2 varTexCoord;
 
 void main()
 {
-	gl_Position = worldViewProjMatrix * inPosition;
-	varColor = flatColor;
+	gl_Position = worldViewProjMatrix * inPosition;	
 	varTexCoord = inTexCoord0;
 }

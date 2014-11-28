@@ -868,10 +868,7 @@ const void * RenderManager::GetDynamicParam(eShaderSemantic shaderSemantic)
         break;        
     case PARAM_BOUNDING_BOX_SIZE:        
         ComputeLocalBoundingBoxSizeIfRequired();            
-        break;           
-    case PARAM_COLOR:
-        SetDynamicParam(PARAM_COLOR, &RenderManager::Instance()->currentState.color, UPDATE_SEMANTIC_ALWAYS);        
-        break;        
+        break;               
     case PARAM_GLOBAL_TIME:
         UpdateGlobalTimeIfRequired();
         break;
