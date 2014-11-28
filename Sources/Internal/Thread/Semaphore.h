@@ -123,7 +123,6 @@ inline void Semaphore::Wait()
 // ##########################################################################################################
 // Android implementation
 // ##########################################################################################################
-/*
 inline Semaphore::Semaphore(uint32 value)
 {
 	sem_init(&semaphore, 0, value);
@@ -143,7 +142,6 @@ inline void Semaphore::Wait()
 {
 	sem_wait(&semaphore);
 }
-*/
 #endif
 
 };
