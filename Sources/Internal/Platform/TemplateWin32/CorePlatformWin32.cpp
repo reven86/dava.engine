@@ -255,7 +255,7 @@ namespace DAVA
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
 		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-		Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
 		return true;
 	}
@@ -400,7 +400,7 @@ namespace DAVA
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
 		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-		Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 	}
 
 	Core::eScreenMode CoreWin32Platform::GetScreenMode()

@@ -38,6 +38,7 @@
 #include <QDialogButtonBox>
 #include <QDropEvent>
 #include <QMenu>
+#include <QDebug>
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
@@ -1264,9 +1265,13 @@ void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileNa
     {
         FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
         QString particlesPath = defaultPath.IsEmpty()?ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str():defaultPath.GetAbsolutePathname().c_str();
+
+        FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+        
+        QString emitterPathname = particlesPath + defaultName;
         QString filePath = QtFileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ")+QString(emitter->name.c_str()),
-                                                        particlesPath+defaultName, QString("YAML File (*.yaml)"));
-		
+                                                         emitterPathname, QString("YAML File (*.yaml)"));
+
         if (filePath.isEmpty())
         {
             return;

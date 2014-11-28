@@ -14,7 +14,7 @@ define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
-include_directories   ( ${DAVA_IMAGE_MAGICK_INCLUDES_PATH} ) 
+include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 include_directories   (.)
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Models" )
@@ -127,6 +127,15 @@ elseif ( MSVC )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")    
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
+
+    if( OUTPUT_TO_BUILD_DIR )
+        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR} )
+        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
+        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+     endif()
+
 endif()
 
 target_link_libraries( ${PROJECT_NAME}

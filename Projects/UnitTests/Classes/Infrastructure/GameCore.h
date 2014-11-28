@@ -82,7 +82,6 @@ public:
 
     void LogMessage(const String &message);
     
-    
 protected:
     
     void RunTests();
@@ -101,6 +100,8 @@ protected:
 private:
     void InitLogging();
 
+    void RunOnlyThisTest();
+    void OnError();
     bool IsNeedSkipTest(const BaseScreen& screen) const;
 
     String runOnlyThisTest;
