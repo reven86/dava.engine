@@ -52,7 +52,7 @@ ITransport* TransportFactory::Create(IOLoop* loop, ITransportListener* listener,
     }
 }
 
-void TransportFactory::Release(ITransport* transport)
+void TransportFactory::Destroy(ITransport* transport)
 {
     if (transport)
         delete transport;

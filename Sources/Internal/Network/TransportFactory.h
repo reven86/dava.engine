@@ -49,7 +49,7 @@ class TransportFactory
 {
 public:
     static ITransport* Create(IOLoop* loop, ITransportListener* listener, eTransportType type, eTransportRole role, const Endpoint& endpoint);
-    static void Release(ITransport* transport);
+    static void Destroy(ITransport* transport);
 };
 
 }   // namespace DAVA
