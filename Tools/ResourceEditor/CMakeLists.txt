@@ -18,7 +18,7 @@ set( Generated          ${CMAKE_CURRENT_BINARY_DIR}  )
 
 
 define_source_folders ( SRC_ROOT "Classes" )
-generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated Data )
+generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated )
 
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
