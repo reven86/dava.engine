@@ -5,9 +5,11 @@
 #include <QPointer>
 #include <QPixmap>
 #include <QList>
+#include <QScopedPointer>
 
 
 class DropperShade;
+class DropperLens;
 
 class EyeDropper
     : public QObject
@@ -42,6 +44,7 @@ private:
     void InitShades();
 
     QPointer<QWidget> parentWidget;
+    QPointer<DropperLens> lens;
     Shades shades;
 };
 
