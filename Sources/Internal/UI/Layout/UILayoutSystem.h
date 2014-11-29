@@ -35,6 +35,10 @@ namespace DAVA
         void LayoutChildren(UIControl *control);
         
         UILayout *GetLayout(UIControl *control);
+        
+    private:
+        UILayout *alignLayout;
+        UILayout *linearLayout;
     };
 }
 

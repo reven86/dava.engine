@@ -22,7 +22,8 @@ namespace DAVA
     public:
         enum eLayoutType {
             LAYOUT_ALIGN,
-            LAYOUT_LINEAR
+            LAYOUT_HORIZONTAL,
+            LAYOUT_VERTICAL,
         };
         
     public:

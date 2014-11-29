@@ -12,17 +12,22 @@
 #include "UILayoutComponent.h"
 #include "UILayoutSizeHintComponent.h"
 #include "UILayout.h"
+#include "UIAlignLayout.h"
+#include "UILinearLayout.h"
 
 namespace DAVA
 {
     UILayoutSystem::UILayoutSystem()
+        : alignLayout(new UIAlignLayout())
+        , linearLayout(new UILinearLayout())
     {
         
     }
     
     UILayoutSystem::~UILayoutSystem()
     {
-        
+        SafeRelease(alignLayout);
+        SafeRelease(linearLayout);
     }
     
     void UILayoutSystem::ApplayLayout(UIControl *control)
@@ -133,10 +138,13 @@ namespace DAVA
         switch (layoutComponent->GetLayout())
         {
             case UILayoutComponent::LAYOUT_ALIGN:
-                return NULL;
+                return linearLayout;
                 
-            case UILayoutComponent::LAYOUT_LINEAR:
-                return NULL;
+            case UILayoutComponent::LAYOUT_HORIZONTAL:
+                return linearLayout;
+                
+            case UILayoutComponent::LAYOUT_VERTICAL:
+                return linearLayout;
                 
             default:
                 DVASSERT(false);

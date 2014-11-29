@@ -823,6 +823,18 @@
 		32E12D4F1A29C0D700EEC916 /* UILayoutConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */; };
 		32E12D501A29C0D700EEC916 /* UILayoutConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */; };
 		32E12D511A29C0D700EEC916 /* UILayoutConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */; };
+		32E12D541A29D42800EEC916 /* UIAlignLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D521A29D42800EEC916 /* UIAlignLayout.cpp */; };
+		32E12D551A29D42800EEC916 /* UIAlignLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D521A29D42800EEC916 /* UIAlignLayout.cpp */; };
+		32E12D561A29D42800EEC916 /* UIAlignLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D521A29D42800EEC916 /* UIAlignLayout.cpp */; };
+		32E12D571A29D42800EEC916 /* UIAlignLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D531A29D42800EEC916 /* UIAlignLayout.h */; };
+		32E12D581A29D42800EEC916 /* UIAlignLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D531A29D42800EEC916 /* UIAlignLayout.h */; };
+		32E12D591A29D42800EEC916 /* UIAlignLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D531A29D42800EEC916 /* UIAlignLayout.h */; };
+		32E12D5C1A29D43400EEC916 /* UILinearLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D5A1A29D43400EEC916 /* UILinearLayout.cpp */; };
+		32E12D5D1A29D43400EEC916 /* UILinearLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D5A1A29D43400EEC916 /* UILinearLayout.cpp */; };
+		32E12D5E1A29D43400EEC916 /* UILinearLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D5A1A29D43400EEC916 /* UILinearLayout.cpp */; };
+		32E12D5F1A29D43400EEC916 /* UILinearLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D5B1A29D43400EEC916 /* UILinearLayout.h */; };
+		32E12D601A29D43400EEC916 /* UILinearLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D5B1A29D43400EEC916 /* UILinearLayout.h */; };
+		32E12D611A29D43400EEC916 /* UILinearLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D5B1A29D43400EEC916 /* UILinearLayout.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
 		4F53ED2519A23BE100D3869D /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7E6C58F198255BF00B96D1A /* DLC.h */; };
@@ -2676,6 +2688,10 @@
 		32E12D431A28F04000EEC916 /* UILayoutSizeHintComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UILayoutSizeHintComponent.h; sourceTree = "<group>"; };
 		32E12D4A1A29C0D700EEC916 /* UILayoutConstants.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UILayoutConstants.cpp; sourceTree = "<group>"; };
 		32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UILayoutConstants.h; sourceTree = "<group>"; };
+		32E12D521A29D42800EEC916 /* UIAlignLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAlignLayout.cpp; sourceTree = "<group>"; };
+		32E12D531A29D42800EEC916 /* UIAlignLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAlignLayout.h; sourceTree = "<group>"; };
+		32E12D5A1A29D43400EEC916 /* UILinearLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UILinearLayout.cpp; sourceTree = "<group>"; };
+		32E12D5B1A29D43400EEC916 /* UILinearLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UILinearLayout.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		4F64847F17AFB73C00034454 /* AllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorFactory.cpp; sourceTree = "<group>"; };
 		4F64848017AFB73C00034454 /* AllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorFactory.h; sourceTree = "<group>"; };
@@ -3639,6 +3655,10 @@
 				325CDD091A250CD0003CFFE3 /* UILayoutHintComponent.h */,
 				325CDD001A250AAA003CFFE3 /* UILayout.cpp */,
 				325CDD011A250AAA003CFFE3 /* UILayout.h */,
+				32E12D5A1A29D43400EEC916 /* UILinearLayout.cpp */,
+				32E12D5B1A29D43400EEC916 /* UILinearLayout.h */,
+				32E12D521A29D42800EEC916 /* UIAlignLayout.cpp */,
+				32E12D531A29D42800EEC916 /* UIAlignLayout.h */,
 				32E12D421A28F04000EEC916 /* UILayoutSizeHintComponent.cpp */,
 				32E12D431A28F04000EEC916 /* UILayoutSizeHintComponent.h */,
 			);
@@ -4944,6 +4964,7 @@
 				176DE93F174B5561007A983B /* Bitstream.h in Headers */,
 				176DE940174B5561007A983B /* DynamicMemoryFile.h in Headers */,
 				176DE941174B5561007A983B /* File.h in Headers */,
+				32E12D611A29D43400EEC916 /* UILinearLayout.h in Headers */,
 				176DE942174B5561007A983B /* FileList.h in Headers */,
 				176DE943174B5561007A983B /* FilePath.h in Headers */,
 				176DE944174B5561007A983B /* FileSystem.h in Headers */,
@@ -4979,6 +5000,7 @@
 				176DE958174B5561007A983B /* Math2DTemplateClasses.h in Headers */,
 				176DE959174B5561007A983B /* MathConstants.h in Headers */,
 				176DE95A174B5561007A983B /* MathDefines.h in Headers */,
+				32E12D591A29D42800EEC916 /* UIAlignLayout.h in Headers */,
 				176DE95B174B5561007A983B /* MathHelpers.h in Headers */,
 				4F53ED2719A23BE200D3869D /* DLC.h in Headers */,
 				176DE95C174B5561007A983B /* Matrix2.h in Headers */,
@@ -5292,6 +5314,7 @@
 				647EFC54195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				E8989D9B16BD24E500732C04 /* AnimatedObject.h in Headers */,
 				E8989D9D16BD24E500732C04 /* Animation.h in Headers */,
+				32E12D5F1A29D43400EEC916 /* UILinearLayout.h in Headers */,
 				E8989D9F16BD24E500732C04 /* AnimationManager.h in Headers */,
 				E8989DA116BD24E500732C04 /* BezierSplineAnimation.h in Headers */,
 				E8989DA316BD24E500732C04 /* Interpolation.h in Headers */,
@@ -5513,6 +5536,7 @@
 				E8989F7116BD24E500732C04 /* Box2DHelper.h in Headers */,
 				322FFD4719C042880000ED71 /* UIControlHelpers.h in Headers */,
 				E8989F7316BD24E500732C04 /* Box2DTileCollider.h in Headers */,
+				32E12D571A29D42800EEC916 /* UIAlignLayout.h in Headers */,
 				E8FC12F91869726A0095D8FE /* QualitySettingsSystem.h in Headers */,
 				E8989F7516BD24E500732C04 /* GameObject.h in Headers */,
 				E8989F7716BD24E500732C04 /* GameObjectAnimations.h in Headers */,
@@ -5911,6 +5935,7 @@
 				E898A0E816BD265400732C04 /* GraphicsFont.h in Headers */,
 				E898A0E916BD265400732C04 /* GridSprite.h in Headers */,
 				E898A0EA16BD265400732C04 /* Sprite.h in Headers */,
+				32E12D581A29D42800EEC916 /* UIAlignLayout.h in Headers */,
 				5043DDAC18706828005E3584 /* VisibilityArray.h in Headers */,
 				E898A0EB16BD265400732C04 /* TextBlock.h in Headers */,
 				E898A0EC16BD265400732C04 /* AnimatedMesh.h in Headers */,
@@ -6061,6 +6086,7 @@
 				644C86E019476A7100964F91 /* VegetationFixedGeometry.h in Headers */,
 				641A61DE18CDC2F4003359E7 /* FoliageSystem.h in Headers */,
 				E898A18E16BD265400732C04 /* UIScreenTransition.h in Headers */,
+				32E12D601A29D43400EEC916 /* UILinearLayout.h in Headers */,
 				4F53ED2F19A23BE700D3869D /* DownloadManager.h in Headers */,
 				155D77DC197DD22E006AEBCD /* YamlNode.h in Headers */,
 				E898A18F16BD265400732C04 /* UIScrollBar.h in Headers */,
@@ -6284,6 +6310,7 @@
 				176DEA47174B5561007A983B /* KeyframeAnimation.cpp in Sources */,
 				176DEA48174B5561007A983B /* LinearAnimation.cpp in Sources */,
 				176DEA4B174B5561007A983B /* AutotestingSystem.cpp in Sources */,
+				32E12D561A29D42800EEC916 /* UIAlignLayout.cpp in Sources */,
 				C172EC5018CA0AE4004309CF /* TextBlockSoftwareRender.cpp in Sources */,
 				176DEA4C174B5561007A983B /* MongodbUpdateObject.cpp in Sources */,
 				176DEA4E174B5561007A983B /* BaseMath.cpp in Sources */,
@@ -6545,6 +6572,7 @@
 				176DEB18174B5561007A983B /* UIHoleTransition.cpp in Sources */,
 				176DEB19174B5561007A983B /* UIJoypad.cpp in Sources */,
 				11CB615219C3391B00B48A92 /* AnimationData.cpp in Sources */,
+				32E12D5E1A29D43400EEC916 /* UILinearLayout.cpp in Sources */,
 				176DEB1A174B5561007A983B /* UIList.cpp in Sources */,
 				176DEB1B174B5561007A983B /* UIListCell.cpp in Sources */,
 				32E12D4E1A29C0D700EEC916 /* UILayoutConstants.cpp in Sources */,
@@ -6691,6 +6719,7 @@
 				32E12D4C1A29C0D700EEC916 /* UILayoutConstants.cpp in Sources */,
 				E8989DBF16BD24E500732C04 /* EventDispatcher.cpp in Sources */,
 				E8989DC216BD24E500732C04 /* FastName.cpp in Sources */,
+				32E12D5C1A29D43400EEC916 /* UILinearLayout.cpp in Sources */,
 				E8989DC516BD24E500732C04 /* FixedSizePoolAllocator.cpp in Sources */,
 				E8989DCF16BD24E500732C04 /* Message.cpp in Sources */,
 				E8989DD316BD24E500732C04 /* ObjectFactory.cpp in Sources */,
@@ -7031,6 +7060,7 @@
 				4FE7D3591745056700D2FCE6 /* GlobalEnum.cpp in Sources */,
 				846CFE60174D1A64004ECE3C /* OpenUDIDApple.mm in Sources */,
 				846CFE64174D1A75004ECE3C /* OpenUDIDMacOS.mm in Sources */,
+				32E12D541A29D42800EEC916 /* UIAlignLayout.cpp in Sources */,
 				4FA5CDBF1757AF430040CC6E /* EnumMap.cpp in Sources */,
 				644C86F719476A7100964F91 /* VegetationRenderObject.cpp in Sources */,
 				A6E4FE031761D96C00B48E41 /* ActionComponent.cpp in Sources */,
@@ -7155,6 +7185,7 @@
 				E898A1DC16BD265400732C04 /* InputSystem.cpp in Sources */,
 				E898A1DD16BD265400732C04 /* KeyboardDevice.cpp in Sources */,
 				E898A1DE16BD265400732C04 /* AABBox2.cpp in Sources */,
+				32E12D5D1A29D43400EEC916 /* UILinearLayout.cpp in Sources */,
 				E898A1DF16BD265400732C04 /* AABBox3.cpp in Sources */,
 				E898A1E016BD265400732C04 /* BezierSpline.cpp in Sources */,
 				E898A1E116BD265400732C04 /* Math2D.cpp in Sources */,
@@ -7285,6 +7316,7 @@
 				E898A26516BD265400732C04 /* PathManip.cpp in Sources */,
 				E898A26616BD265400732C04 /* PolygonGroupInstance.cpp in Sources */,
 				B786013A1A08B6170041F817 /* StringUtils.cpp in Sources */,
+				32E12D551A29D42800EEC916 /* UIAlignLayout.cpp in Sources */,
 				E898A26716BD265400732C04 /* ProxyNode.cpp in Sources */,
 				84E975C9191FCE100054CCF9 /* LibJpegHelper.cpp in Sources */,
 				E898A26B16BD265400732C04 /* Scene.cpp in Sources */,
