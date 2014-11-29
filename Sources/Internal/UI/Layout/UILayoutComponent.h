@@ -20,6 +20,12 @@ namespace DAVA
     class UILayoutComponent : public UIComponent
     {
     public:
+        enum eLayoutType {
+            LAYOUT_ALIGN,
+            LAYOUT_LINEAR
+        };
+        
+    public:
         static const eType TYPE;
         
     public:
@@ -28,11 +34,11 @@ namespace DAVA
         
         virtual eType GetType() const override;
         
-        Vector2 MeasureSize(UIControl *control);
-        void ApplayLayout(UIControl *control);
+        eLayoutType GetLayout() const;
+        void SetLayout(eLayoutType _layoutType);
         
     private:
-        UILayout *layout;
+        eLayoutType layoutType;
     };
 }
 

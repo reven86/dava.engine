@@ -811,6 +811,18 @@
 		325CDD0D1A250CD0003CFFE3 /* UILayoutHintComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 325CDD091A250CD0003CFFE3 /* UILayoutHintComponent.h */; };
 		325CDD0E1A250CD0003CFFE3 /* UILayoutHintComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 325CDD091A250CD0003CFFE3 /* UILayoutHintComponent.h */; };
 		325CDD0F1A250CD0003CFFE3 /* UILayoutHintComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 325CDD091A250CD0003CFFE3 /* UILayoutHintComponent.h */; };
+		32E12D441A28F04000EEC916 /* UILayoutSizeHintComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D421A28F04000EEC916 /* UILayoutSizeHintComponent.cpp */; };
+		32E12D451A28F04000EEC916 /* UILayoutSizeHintComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D421A28F04000EEC916 /* UILayoutSizeHintComponent.cpp */; };
+		32E12D461A28F04000EEC916 /* UILayoutSizeHintComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D421A28F04000EEC916 /* UILayoutSizeHintComponent.cpp */; };
+		32E12D471A28F04000EEC916 /* UILayoutSizeHintComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D431A28F04000EEC916 /* UILayoutSizeHintComponent.h */; };
+		32E12D481A28F04000EEC916 /* UILayoutSizeHintComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D431A28F04000EEC916 /* UILayoutSizeHintComponent.h */; };
+		32E12D491A28F04000EEC916 /* UILayoutSizeHintComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D431A28F04000EEC916 /* UILayoutSizeHintComponent.h */; };
+		32E12D4C1A29C0D700EEC916 /* UILayoutConstants.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D4A1A29C0D700EEC916 /* UILayoutConstants.cpp */; };
+		32E12D4D1A29C0D700EEC916 /* UILayoutConstants.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D4A1A29C0D700EEC916 /* UILayoutConstants.cpp */; };
+		32E12D4E1A29C0D700EEC916 /* UILayoutConstants.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E12D4A1A29C0D700EEC916 /* UILayoutConstants.cpp */; };
+		32E12D4F1A29C0D700EEC916 /* UILayoutConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */; };
+		32E12D501A29C0D700EEC916 /* UILayoutConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */; };
+		32E12D511A29C0D700EEC916 /* UILayoutConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
 		4F53ED2519A23BE100D3869D /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7E6C58F198255BF00B96D1A /* DLC.h */; };
@@ -2660,6 +2672,10 @@
 		325CDD081A250CD0003CFFE3 /* UILayoutHintComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UILayoutHintComponent.cpp; sourceTree = "<group>"; };
 		325CDD091A250CD0003CFFE3 /* UILayoutHintComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UILayoutHintComponent.h; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = "<group>"; };
+		32E12D421A28F04000EEC916 /* UILayoutSizeHintComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UILayoutSizeHintComponent.cpp; sourceTree = "<group>"; };
+		32E12D431A28F04000EEC916 /* UILayoutSizeHintComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UILayoutSizeHintComponent.h; sourceTree = "<group>"; };
+		32E12D4A1A29C0D700EEC916 /* UILayoutConstants.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UILayoutConstants.cpp; sourceTree = "<group>"; };
+		32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UILayoutConstants.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		4F64847F17AFB73C00034454 /* AllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorFactory.cpp; sourceTree = "<group>"; };
 		4F64848017AFB73C00034454 /* AllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorFactory.h; sourceTree = "<group>"; };
@@ -3615,12 +3631,16 @@
 			children = (
 				325CDCF81A250669003CFFE3 /* UILayoutSystem.cpp */,
 				325CDCF91A250669003CFFE3 /* UILayoutSystem.h */,
+				32E12D4A1A29C0D700EEC916 /* UILayoutConstants.cpp */,
+				32E12D4B1A29C0D700EEC916 /* UILayoutConstants.h */,
 				325CDCF01A2505AA003CFFE3 /* UILayoutComponent.cpp */,
 				325CDCF11A2505AA003CFFE3 /* UILayoutComponent.h */,
 				325CDD081A250CD0003CFFE3 /* UILayoutHintComponent.cpp */,
 				325CDD091A250CD0003CFFE3 /* UILayoutHintComponent.h */,
 				325CDD001A250AAA003CFFE3 /* UILayout.cpp */,
 				325CDD011A250AAA003CFFE3 /* UILayout.h */,
+				32E12D421A28F04000EEC916 /* UILayoutSizeHintComponent.cpp */,
+				32E12D431A28F04000EEC916 /* UILayoutSizeHintComponent.h */,
 			);
 			path = Layout;
 			sourceTree = "<group>";
@@ -4891,6 +4911,7 @@
 				176DE921174B5561007A983B /* RefPtr.h in Headers */,
 				176DE922174B5561007A983B /* ScopedPtr.h in Headers */,
 				176DE923174B5561007A983B /* Singleton.h in Headers */,
+				32E12D491A28F04000EEC916 /* UILayoutSizeHintComponent.h in Headers */,
 				176DE924174B5561007A983B /* StaticSingleton.h in Headers */,
 				176DE925174B5561007A983B /* TemplateHelpers.h in Headers */,
 				E89C58E618B2458E002C25FE /* Atomic.h in Headers */,
@@ -5086,6 +5107,7 @@
 				176DE9CA174B5561007A983B /* ImposterManager.h in Headers */,
 				176DE9CB174B5561007A983B /* ImposterNode.h in Headers */,
 				176DE9CC174B5561007A983B /* LodNode.h in Headers */,
+				32E12D511A29C0D700EEC916 /* UILayoutConstants.h in Headers */,
 				176DE9CD174B5561007A983B /* MeshInstance.h in Headers */,
 				176DE9CE174B5561007A983B /* MeshInstanceNode.h in Headers */,
 				176DE9CF174B5561007A983B /* ParticleEffectNode.h in Headers */,
@@ -5431,6 +5453,7 @@
 				E8989EDE16BD24E500732C04 /* FTFont.h in Headers */,
 				D7E6C5AF198255C000B96D1A /* DownloadManager.h in Headers */,
 				644C86E819476A7100964F91 /* VegetationMaterialTransformer.h in Headers */,
+				32E12D4F1A29C0D700EEC916 /* UILayoutConstants.h in Headers */,
 				E8989EE016BD24E500732C04 /* GraphicsFont.h in Headers */,
 				E8989EE116BD24E500732C04 /* GridSprite.h in Headers */,
 				E8989EE316BD24E500732C04 /* Sprite.h in Headers */,
@@ -5651,6 +5674,7 @@
 				CCC7A46D16F1D6170061EA5D /* ShadowVolume.h in Headers */,
 				CCC7A47116F1D6170061EA5D /* ShadowVolumeRenderPass.h in Headers */,
 				CCC7A47516F1D6170061EA5D /* SpriteObject.h in Headers */,
+				32E12D471A28F04000EEC916 /* UILayoutSizeHintComponent.h in Headers */,
 				CCC7A47916F1D6170061EA5D /* SpriteRenderBatch.h in Headers */,
 				CCC7A47F16F1D64D0061EA5D /* RenderState.h in Headers */,
 				D7C1C1D619CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */,
@@ -6043,6 +6067,7 @@
 				0282B87A18BC72C6006F1EE4 /* SoundEvent.h in Headers */,
 				E898A19016BD265400732C04 /* UISlider.h in Headers */,
 				E898A19116BD265400732C04 /* UIStaticText.h in Headers */,
+				32E12D501A29C0D700EEC916 /* UILayoutConstants.h in Headers */,
 				E898A19216BD265400732C04 /* UITextField.h in Headers */,
 				E898A19316BD265400732C04 /* UIYamlLoader.h in Headers */,
 				E898A19416BD265400732C04 /* HTTPDownloader.h in Headers */,
@@ -6109,6 +6134,7 @@
 				02E9E43A173964DA00C501BC /* SoundUpdateSystem.h in Headers */,
 				CCC7A4FA17579C680061EA5D /* GlobalEnum.h in Headers */,
 				CCC7A4FC17579C6D0061EA5D /* EnumMap.h in Headers */,
+				32E12D481A28F04000EEC916 /* UILayoutSizeHintComponent.h in Headers */,
 				A6E4FE0D1761D9CB00B48E41 /* ActionComponent.h in Headers */,
 				A6E4FE111761D9D700B48E41 /* CustomPropertiesComponent.h in Headers */,
 				A6E4FE151761D9E500B48E41 /* ActionUpdateSystem.h in Headers */,
@@ -6392,6 +6418,7 @@
 				A650F4BA1864A10100D3278D /* NMaterialTemplate.cpp in Sources */,
 				176DEAC1174B5561007A983B /* RenderDataObject.cpp in Sources */,
 				176DEAC2174B5561007A983B /* RenderEffect.cpp in Sources */,
+				32E12D461A28F04000EEC916 /* UILayoutSizeHintComponent.cpp in Sources */,
 				4F53ED4019A23BEE00D3869D /* PatchFile.cpp in Sources */,
 				02FD7ED519237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
 				EAADA01F189FCB30001E1AA2 /* ParticleRenderObject.cpp in Sources */,
@@ -6520,6 +6547,7 @@
 				11CB615219C3391B00B48A92 /* AnimationData.cpp in Sources */,
 				176DEB1A174B5561007A983B /* UIList.cpp in Sources */,
 				176DEB1B174B5561007A983B /* UIListCell.cpp in Sources */,
+				32E12D4E1A29C0D700EEC916 /* UILayoutConstants.cpp in Sources */,
 				176DEB1C174B5561007A983B /* UILoadingTransition.cpp in Sources */,
 				176DEB1D174B5561007A983B /* UIMoveInTransition.cpp in Sources */,
 				176DEB1E174B5561007A983B /* UIPopup.cpp in Sources */,
@@ -6660,6 +6688,7 @@
 				84CB6722191FC8850086483D /* LibJpegHelper.cpp in Sources */,
 				E8989DBB16BD24E500732C04 /* Data.cpp in Sources */,
 				E8989DBD16BD24E500732C04 /* DynamicObjectCache.cpp in Sources */,
+				32E12D4C1A29C0D700EEC916 /* UILayoutConstants.cpp in Sources */,
 				E8989DBF16BD24E500732C04 /* EventDispatcher.cpp in Sources */,
 				E8989DC216BD24E500732C04 /* FastName.cpp in Sources */,
 				E8989DC516BD24E500732C04 /* FixedSizePoolAllocator.cpp in Sources */,
@@ -6763,6 +6792,7 @@
 				E8989EE816BD24E500732C04 /* EdgeAdjacency.cpp in Sources */,
 				E8989EEA16BD24E500732C04 /* PolygonGroup.cpp in Sources */,
 				E8989EEC16BD24E500732C04 /* StaticMesh.cpp in Sources */,
+				32E12D441A28F04000EEC916 /* UILayoutSizeHintComponent.cpp in Sources */,
 				E8989EEF16BD24E500732C04 /* CursorMacOS.mm in Sources */,
 				E8989EF716BD24E500732C04 /* ColorOnlyEffect.cpp in Sources */,
 				E8989EF916BD24E500732C04 /* MultiTextureEffect.cpp in Sources */,
@@ -7209,6 +7239,7 @@
 				B4C29D40199B592D001B83FE /* SceneCache.cpp in Sources */,
 				D751822219BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */,
 				E898A24316BD265400732C04 /* UberShader.cpp in Sources */,
+				32E12D451A28F04000EEC916 /* UILayoutSizeHintComponent.cpp in Sources */,
 				E898A24416BD265400732C04 /* Box2DDebugDraw.cpp in Sources */,
 				E898A24516BD265400732C04 /* Box2DGameObject.cpp in Sources */,
 				E898A24616BD265400732C04 /* Box2DGameObjectManager.cpp in Sources */,
@@ -7277,6 +7308,7 @@
 				0282B87518BC72BE006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				E898A27916BD265400732C04 /* DebugRenderSystem.cpp in Sources */,
 				E898A27B16BD265400732C04 /* EventSystem.cpp in Sources */,
+				32E12D4D1A29C0D700EEC916 /* UILayoutConstants.cpp in Sources */,
 				E898A27C16BD265400732C04 /* LightUpdateSystem.cpp in Sources */,
 				E898A27D16BD265400732C04 /* LodSystem.cpp in Sources */,
 				E898A27E16BD265400732C04 /* ParticleEffectSystem.cpp in Sources */,

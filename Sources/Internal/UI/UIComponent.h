@@ -19,7 +19,8 @@ namespace DAVA
         enum eType
         {
             COMPONENT_LAYOUT,
-            COMPONENT_LAYOUT_HINT,
+            COMPONENT_LAYOUT_SIZE_HINT,
+            COMPONENT_LAYOUT_ALIGN_HINT,
         };
         
     public:

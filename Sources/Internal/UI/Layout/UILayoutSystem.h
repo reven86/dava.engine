@@ -9,10 +9,14 @@
 #ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
 #define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
 
+#include "Math/Vector.h"
+#include "UILayoutConstants.h"
+
 namespace DAVA
 {
     
     class UIControl;
+    class UILayout;
     
     class UILayoutSystem
     {
@@ -24,7 +28,13 @@ namespace DAVA
         
     private:
         void MeasureChildren(UIControl *control);
+        void MeasureControlSize(UIControl *control);
+        float GetControlSize(const UIControl *control, eUIOrientation orientation) const;
+        float GetControlContentSize(const UIControl *control, eUIOrientation orientation) const;
+
         void LayoutChildren(UIControl *control);
+        
+        UILayout *GetLayout(UIControl *control);
     };
 }
 

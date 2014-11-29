@@ -22,7 +22,6 @@ namespace DAVA
         UILayout();
         virtual ~UILayout();
         
-        virtual Vector2 MeasureSize(UIControl *control) = 0;
         virtual void Apply(UIControl *control) = 0;
     };
 }

@@ -14,14 +14,13 @@ namespace DAVA
 {
     const UIComponent::eType UILayoutComponent::TYPE = UIComponent::COMPONENT_LAYOUT;
     
-    UILayoutComponent::UILayoutComponent() : layout(NULL)
+    UILayoutComponent::UILayoutComponent() : layoutType(LAYOUT_ALIGN)
     {
         
     }
     
     UILayoutComponent::~UILayoutComponent()
     {
-        SafeRelease(layout);
     }
     
     UIComponent::eType UILayoutComponent::GetType() const
@@ -29,17 +28,13 @@ namespace DAVA
         return TYPE;
     }
     
-    Vector2 UILayoutComponent::MeasureSize(UIControl *control)
+    UILayoutComponent::eLayoutType UILayoutComponent::GetLayout() const
     {
-        if (layout)
-            return layout->MeasureSize(control);
-        return Vector2(0, 0);
+        return layoutType;
     }
-
-    void UILayoutComponent::ApplayLayout(UIControl *control)
+    
+    void UILayoutComponent::SetLayout(eLayoutType _layoutType)
     {
-        if (layout)
-            layout->Apply(control);
+        layoutType = _layoutType;
     }
-
 }
