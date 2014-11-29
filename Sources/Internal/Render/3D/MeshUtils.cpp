@@ -370,7 +370,7 @@ SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::J
             vxCount += data[dataIndex].batch->GetPolygonGroup()->GetVertexCount();
             indCount += data[dataIndex].batch->GetPolygonGroup()->GetIndexCount();
 
-            DVASSERT(meshFormat == data[dataIndex].batch->GetPolygonGroup()->GetFormat());
+            DVASSERT_MSG(meshFormat == data[dataIndex].batch->GetPolygonGroup()->GetFormat(), Format("Invalid Entity: %s", fromEntity->GetName().c_str()).c_str());
         }
 
         PolygonGroup * polygonGroup = new PolygonGroup();
