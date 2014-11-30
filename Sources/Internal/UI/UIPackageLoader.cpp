@@ -192,6 +192,7 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node);
         LoadBgPropertiesFromYamlNode(control, node);
         LoadInternalControlPropertiesFromYamlNode(control, node);
+        LoadComponentsFromYamlNode(control, node);
 
         // load children
         const YamlNode * childrenNode = node->Get("children");
@@ -230,6 +231,33 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     builder->EndControlPropertiesSection();
 }
     
+void UIPackageLoader::LoadComponentsFromYamlNode(UIControl *control, const YamlNode *node)
+{
+    const YamlNode *componentsNode = node ? node->Get("components") : NULL;
+    if (componentsNode)
+    {
+        for (uint32 i = 0; i < componentsNode->GetCount(); i++)
+        {
+            UIComponent *component = builder->BeginComponentPropertiesSection(componentsNode->GetItemKeyName(i));
+            if (component)
+            {
+                const YamlNode *componentNode = componentsNode->Get(i);
+                const InspInfo *insp = component->GetTypeInfo();
+                for (int j = 0; j < insp->MembersCount(); j++)
+                {
+                    const InspMember *member = insp->Member(j);
+                    VariantType res;
+                    if (componentNode)
+                        res = ReadVariantTypeFromYamlNode(member, componentNode);
+                    builder->ProcessProperty(member, res);
+                }
+
+            }
+            builder->EndComponentPropertiesSection();
+        }
+    }
+}
+
 void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
     const YamlNode *componentsNode = node ? node->Get("components") : NULL;

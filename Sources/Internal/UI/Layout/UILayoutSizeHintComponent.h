@@ -16,7 +16,7 @@
 namespace DAVA
 {
     
-    class UILayoutSizeHintComponent : UIComponent
+    class UILayoutSizeHintComponent : public UIComponent
     {
     public:
         static const eType TYPE;
@@ -34,8 +34,9 @@ namespace DAVA
         UILayoutSizeHintComponent();
         virtual ~UILayoutSizeHintComponent();
         
-        virtual eType GetType() const = 0;
-        
+        virtual eType GetType() const override;
+        virtual UILayoutSizeHintComponent *Clone() const override;
+
         eSizePolicy GetHorizontalPolicy() const;
         void SetHorizontalPolicy(eSizePolicy policy);
         
@@ -62,8 +63,44 @@ namespace DAVA
         float verticalValue;
         
         Vector2 measuredSize;
+        
+    private:
+        inline int32 GetHorizontalPolicyInt() const;
+        inline void SetHorizontalPolicyInt(int32 val);
+
+        inline int32 GetVerticalPolicyInt() const;
+        inline void SetVerticalPolicyInt(int32 val);
+        
+    public:
+        INTROSPECTION_EXTEND(UILayoutSizeHintComponent, UIComponent,
+                             PROPERTY("horizontalPolicy", InspDesc("Horizontal Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetHorizontalPolicyInt, SetHorizontalPolicyInt, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("horizontalValue", "Horizontal Value", GetHorizontalValue, SetHorizontalValue, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("verticalPolicy", InspDesc("Vertical Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetVerticalPolicyInt, SetVerticalPolicyInt, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("verticalValue", "Vertical Value", GetVerticalValue, SetVerticalValue, I_SAVE | I_VIEW | I_EDIT)
+                             );
+
     };
     
+    int32 UILayoutSizeHintComponent::GetVerticalPolicyInt() const
+    {
+        return GetVerticalPolicy();
+    }
+    
+    void UILayoutSizeHintComponent::SetVerticalPolicyInt(int32 val)
+    {
+        SetVerticalPolicy((eSizePolicy) val);
+    }
+    
+    int32 UILayoutSizeHintComponent::GetHorizontalPolicyInt() const
+    {
+        return GetHorizontalPolicy();
+    }
+    
+    void UILayoutSizeHintComponent::SetHorizontalPolicyInt(int32 val)
+    {
+        SetHorizontalPolicy((eSizePolicy) val);
+    }
+
 }
 
 #endif // __DAVAENGINE_UI_LAYOUT_SIZE_HINT_COMPONENT_H__

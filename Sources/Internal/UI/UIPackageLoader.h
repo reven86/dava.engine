@@ -59,6 +59,7 @@ private:
     void LoadControl(const YamlNode *node, bool root);
 
     void LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node);
+    void LoadComponentsFromYamlNode(UIControl *control, const YamlNode *node);
     void LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node);
     void LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node);
     virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node);

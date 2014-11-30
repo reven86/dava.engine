@@ -29,6 +29,9 @@ public:
     virtual void BeginControlPropretiesSection(const DAVA::String &name) override;
     virtual void EndControlPropertiesSection() override;
     
+    virtual DAVA::UIComponent *BeginComponentPropertiesSection(const DAVA::String &name) override;
+    virtual void EndComponentPropertiesSection() override;
+    
     virtual DAVA::UIControlBackground *BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
     virtual void EndBgPropertiesSection() override;
     

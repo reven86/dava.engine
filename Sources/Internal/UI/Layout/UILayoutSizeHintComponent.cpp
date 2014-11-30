@@ -31,6 +31,17 @@ namespace DAVA
         return TYPE;
     }
 
+    UILayoutSizeHintComponent *UILayoutSizeHintComponent::Clone() const
+    {
+        UILayoutSizeHintComponent *newComponent = new UILayoutSizeHintComponent();
+        newComponent->SetHorizontalPolicy(horizontalPolicy);
+        newComponent->SetHorizontalValue(horizontalValue);
+        newComponent->SetVerticalPolicy(verticalPolicy);
+        newComponent->SetVerticalValue(verticalValue);
+        newComponent->SetMeasuredSize(measuredSize);
+        return newComponent;
+    }
+
     UILayoutSizeHintComponent::eSizePolicy UILayoutSizeHintComponent::GetHorizontalPolicy() const
     {
         return horizontalPolicy;

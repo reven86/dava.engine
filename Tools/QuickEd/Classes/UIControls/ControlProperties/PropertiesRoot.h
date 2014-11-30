@@ -6,6 +6,7 @@
 class ControlPropertiesSection;
 class BackgroundPropertiesSection;
 class InternalControlPropertiesSection;
+class ComponentPropertiesSection;
 
 class PropertiesRoot : public BaseProperty
 {
@@ -18,6 +19,10 @@ public:
     virtual BaseProperty *GetProperty(int index) const override;
     
     ControlPropertiesSection *GetControlPropertiesSection(const DAVA::String &name) const;
+    
+    ComponentPropertiesSection *GetComponentPropertiesSection(const DAVA::String &name) const;
+    void PutComponentPropertiesSection(ComponentPropertiesSection *section);
+    
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
     InternalControlPropertiesSection *GetInternalControlPropertiesSection(int num) const;
     
@@ -28,6 +33,7 @@ public:
     
 private:
     void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const PropertiesRoot *sourceProperties);
+    void MakeComponentPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties);
     void MakeBackgroundPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties);
     void MakeInternalControlPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties);
 
@@ -35,6 +41,7 @@ private:
     DAVA::Vector<ControlPropertiesSection*> controlProperties;
     DAVA::Vector<BackgroundPropertiesSection*> backgroundProperties;
     DAVA::Vector<InternalControlPropertiesSection*> internalControlProperties;
+    DAVA::Vector<ComponentPropertiesSection*> componentProperties;
 };
 
 #endif // __UI_EDITOR_PROPERTIES_ROOT_H__

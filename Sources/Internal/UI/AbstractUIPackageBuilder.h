@@ -40,6 +40,7 @@ namespace DAVA
     class UIPackage;
     class UIControl;
     class UIControlBackground;
+    class UIComponent;
     class YamlNode;
     
     class AbstractUIPackageLoader
@@ -70,6 +71,9 @@ namespace DAVA
         
         virtual void BeginControlPropretiesSection(const String &name) = 0;
         virtual void EndControlPropertiesSection() = 0;
+        
+        virtual UIComponent *BeginComponentPropertiesSection(const String &name) = 0;
+        virtual void EndComponentPropertiesSection() = 0;
         
         virtual UIControlBackground *BeginBgPropertiesSection(int index, bool sectionHasProperties) = 0;
         virtual void EndBgPropertiesSection() = 0;

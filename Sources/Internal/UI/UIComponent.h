@@ -28,6 +28,12 @@ namespace DAVA
         virtual ~UIComponent();
         
         virtual eType GetType() const = 0;
+        virtual UIComponent *Clone() const = 0;
+        
+        static UIComponent *CreateByType(eType type);
+    public:
+        INTROSPECTION_EXTEND(UIComponent, BaseObject,
+                      );
     };
 }
 

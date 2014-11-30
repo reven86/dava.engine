@@ -1,6 +1,7 @@
 #include "PropertiesRoot.h"
 
 #include "ControlPropertiesSection.h"
+#include "ComponentPropertiesSection.h"
 #include "BackgroundPropertiesSection.h"
 #include "InternalControlPropertiesSection.h"
 #include "ValueProperty.h"
@@ -20,6 +21,7 @@ PropertiesRoot::PropertiesRoot(UIControl *control, const PropertiesRoot *sourceP
     MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties);
     MakeBackgroundPropertiesSection(control, sourceProperties);
     MakeInternalControlPropertiesSection(control, sourceProperties);
+    MakeComponentPropertiesSection(control, sourceProperties);
 }
 
 PropertiesRoot::~PropertiesRoot()
@@ -30,6 +32,13 @@ PropertiesRoot::~PropertiesRoot()
         (*it)->Release();
     }
     controlProperties.clear();
+
+    for (auto it = componentProperties.begin(); it != componentProperties.end(); ++it)
+    {
+        (*it)->SetParent(NULL);
+        (*it)->Release();
+    }
+    componentProperties.clear();
 
     for (auto it = backgroundProperties.begin(); it != backgroundProperties.end(); ++it)
     {
@@ -48,7 +57,7 @@ PropertiesRoot::~PropertiesRoot()
 
 int PropertiesRoot::GetCount() const
 {
-    return (int) (controlProperties.size() + backgroundProperties.size() + internalControlProperties.size());
+    return (int) (controlProperties.size() + backgroundProperties.size() + internalControlProperties.size() + componentProperties.size());
 }
 
 BaseProperty *PropertiesRoot::GetProperty(int index) const
@@ -56,6 +65,10 @@ BaseProperty *PropertiesRoot::GetProperty(int index) const
     if (index < (int) controlProperties.size())
         return controlProperties[index];
     index -= controlProperties.size();
+    
+    if (index < (int) componentProperties.size())
+        return componentProperties[index];
+    index -= componentProperties.size();
     
     if (index < (int) backgroundProperties.size())
         return backgroundProperties[index];
@@ -72,6 +85,30 @@ ControlPropertiesSection *PropertiesRoot::GetControlPropertiesSection(const DAVA
             return *it;
     }
     return NULL;
+}
+
+ComponentPropertiesSection *PropertiesRoot::GetComponentPropertiesSection(const DAVA::String &name) const
+{
+    for (auto it = componentProperties.begin(); it != componentProperties.end(); ++it)
+    {
+        if ((*it)->GetName() == name)
+            return *it;
+    }
+    return NULL;
+}
+
+void PropertiesRoot::PutComponentPropertiesSection(ComponentPropertiesSection *section) 
+{
+    for (auto it = componentProperties.begin(); it != componentProperties.end(); ++it)
+    {
+        if ((*it)->GetName() == section->GetName())
+        {
+            (*it)->Release();
+            componentProperties.erase(it);
+            break;
+        }
+    }
+    componentProperties.push_back(SafeRetain(section));
 }
 
 BackgroundPropertiesSection *PropertiesRoot::GetBackgroundPropertiesSection(int num) const
@@ -94,6 +131,24 @@ String PropertiesRoot::GetName() const {
 
 BaseProperty::ePropertyType PropertiesRoot::GetType() const {
     return TYPE_HEADER;
+}
+
+void PropertiesRoot::AddPropertiesToNode(YamlNode *node) const
+{
+    for (auto it = controlProperties.begin(); it != controlProperties.end(); ++it)
+        (*it)->AddPropertiesToNode(node);
+    
+    YamlNode *componentsNode = YamlNode::CreateMapNode(false);
+    for (auto it = componentProperties.begin(); it != componentProperties.end(); ++it)
+        (*it)->AddPropertiesToNode(componentsNode);
+    for (auto it = backgroundProperties.begin(); it != backgroundProperties.end(); ++it)
+        (*it)->AddPropertiesToNode(componentsNode);
+    for (auto it = internalControlProperties.begin(); it != internalControlProperties.end(); ++it)
+        (*it)->AddPropertiesToNode(componentsNode);
+    if (componentsNode->GetCount() > 0)
+        node->Add("components", componentsNode);
+    else
+        SafeRelease(componentsNode);
 }
 
 void PropertiesRoot::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const PropertiesRoot *sourceProperties)
@@ -121,20 +176,17 @@ void PropertiesRoot::MakeControlPropertiesSection(DAVA::UIControl *control, cons
     }
 }
 
-void PropertiesRoot::AddPropertiesToNode(YamlNode *node) const
+void PropertiesRoot::MakeComponentPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties)
 {
-    for (auto it = controlProperties.begin(); it != controlProperties.end(); ++it)
-        (*it)->AddPropertiesToNode(node);
-
-    YamlNode *componentsNode = YamlNode::CreateMapNode(false);
-    for (auto it = backgroundProperties.begin(); it != backgroundProperties.end(); ++it)
-        (*it)->AddPropertiesToNode(componentsNode);
-    for (auto it = internalControlProperties.begin(); it != internalControlProperties.end(); ++it)
-        (*it)->AddPropertiesToNode(componentsNode);
-    if (componentsNode->GetCount() > 0)
-        node->Add("components", componentsNode);
-    else
-        SafeRelease(componentsNode);
+    if (sourceProperties)
+    {
+        for (auto it = sourceProperties->componentProperties.begin(); it != sourceProperties->componentProperties.end(); ++it)
+        {
+            ComponentPropertiesSection *section = new ComponentPropertiesSection(control, (*it)->GetName(), (*it));
+            section->SetParent(this);
+            componentProperties.push_back(section);
+        }
+    }
 }
 
 void PropertiesRoot::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties)

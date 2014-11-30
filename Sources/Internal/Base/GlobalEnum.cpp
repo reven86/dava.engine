@@ -39,6 +39,8 @@
 #include "Render/2D/TextBlock.h"
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
+#include "UI/Layout/UILayoutComponent.h"
+#include "UI/Layout/UILayoutSizeHintComponent.h"
 
 using namespace DAVA;
 
@@ -277,6 +279,30 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_YAHOO         , "RETURN_KEY_YAHOO"         );
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_DONE          , "RETURN_KEY_DONE"          );
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_EMERGENCY_CALL, "RETURN_KEY_EMERGENCY_CALL");
+};
+
+ENUM_DECLARE(UILayoutComponent::eLayoutType)
+{
+    ENUM_ADD_DESCR(UILayoutComponent::LAYOUT_ALIGN, "ALIGN");
+    ENUM_ADD_DESCR(UILayoutComponent::LAYOUT_HORIZONTAL, "HORIZONTAL");
+    ENUM_ADD_DESCR(UILayoutComponent::LAYOUT_VERTICAL, "VERTICAL");
+};
+
+ENUM_DECLARE(UILayoutSizeHintComponent::eSizePolicy)
+{
+    ENUM_ADD_DESCR(UILayoutSizeHintComponent::FIXED_SIZE, "FIXED_SIZE");
+    ENUM_ADD_DESCR(UILayoutSizeHintComponent::SIZE_FROM_CONTENT, "SIZE_FROM_CONTENT");
+    ENUM_ADD_DESCR(UILayoutSizeHintComponent::SIZE_FROM_MAX_CHILDREN, "SIZE_FROM_MAX_CHILDREN");
+    ENUM_ADD_DESCR(UILayoutSizeHintComponent::SUM_SIZE_FROM_ALL_CHILDREN, "SUM_SIZE_FROM_ALL_CHILDREN");
+    ENUM_ADD_DESCR(UILayoutSizeHintComponent::FIRST_CHILDREN, "FIRST_CHILDREN");
+    ENUM_ADD_DESCR(UILayoutSizeHintComponent::PERCENT_OF_PARENT, "PERCENT_OF_PARENT");
+};
+
+ENUM_DECLARE(UIComponent::eType)
+{
+    ENUM_ADD_DESCR(UIComponent::COMPONENT_LAYOUT, "Layout");
+    ENUM_ADD_DESCR(UIComponent::COMPONENT_LAYOUT_SIZE_HINT, "LayoutSizeHint");
+    ENUM_ADD_DESCR(UIComponent::COMPONENT_LAYOUT_ALIGN_HINT, "LayoutAlignHint");
 };
 
 /*

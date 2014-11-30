@@ -56,6 +56,9 @@ namespace DAVA
         virtual void BeginControlPropretiesSection(const String &name) override;
         virtual void EndControlPropertiesSection() override;
         
+        virtual UIComponent *BeginComponentPropertiesSection(const String &name) override;
+        virtual void EndComponentPropertiesSection() override;
+        
         virtual UIControlBackground *BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
         virtual void EndBgPropertiesSection() override;
         

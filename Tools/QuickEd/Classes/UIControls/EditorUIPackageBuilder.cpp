@@ -4,6 +4,7 @@
 #include "PackageHierarchy/ImportedPackagesNode.h"
 #include "PackageHierarchy/PackageControlsNode.h"
 #include "UIControls/ControlProperties/ControlPropertiesSection.h"
+#include "UIControls/ControlProperties/ComponentPropertiesSection.h"
 #include "UIControls/ControlProperties/BackgroundPropertiesSection.h"
 #include "UIControls/ControlProperties/InternalControlPropertiesSection.h"
 #include "UIControls/ControlProperties/ValueProperty.h"
@@ -176,6 +177,31 @@ void EditorUIPackageBuilder::BeginControlPropretiesSection(const String &name)
 }
 
 void EditorUIPackageBuilder::EndControlPropertiesSection()
+{
+    currentSection = NULL;
+    currentObject = NULL;
+}
+
+UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSection(const DAVA::String &name)
+{
+    int val = -1;
+    if (GlobalEnumMap<UIComponent::eType>::Instance()->ToValue(name.c_str(), val))
+    {
+        ControlNode *node = controlsStack.back().node;
+        ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), name, NULL);
+        node->GetPropertiesRoot()->PutComponentPropertiesSection(section);
+        UIComponent *res = section->GetComponent();
+        
+        currentSection = section;
+        currentObject = res;
+        
+        SafeRelease(section);
+        return res;
+    }
+    return NULL;
+}
+
+void EditorUIPackageBuilder::EndComponentPropertiesSection()
 {
     currentSection = NULL;
     currentObject = NULL;

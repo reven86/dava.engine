@@ -1307,6 +1307,15 @@ namespace DAVA
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
+        RemoveAllComponents();
+        const Vector<UIComponent*> &components = srcControl->components;
+        for (auto it = components.begin(); it != components.end(); ++it)
+        {
+            UIComponent *component = (*it)->Clone();
+            PutComponent(component);
+            SafeRelease(component);
+        }
+        
         SafeRelease(eventDispatcher);
         if(srcControl->eventDispatcher)
         {

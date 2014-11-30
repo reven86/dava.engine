@@ -28,6 +28,13 @@ namespace DAVA
         return TYPE;
     }
     
+    UILayoutComponent *UILayoutComponent::Clone() const 
+    {
+        UILayoutComponent *newComponent = new UILayoutComponent();
+        newComponent->SetLayout(layoutType);
+        return newComponent;
+    }
+    
     UILayoutComponent::eLayoutType UILayoutComponent::GetLayout() const
     {
         return layoutType;

@@ -210,6 +210,31 @@ namespace DAVA
         currentObject = NULL;
     }
     
+    UIComponent *DefaultUIPackageBuilder::BeginComponentPropertiesSection(const String &name)
+    {
+        int typeIndex = -1;
+        if (GlobalEnumMap<UIComponent::eType>::Instance()->ToValue(name.c_str(), typeIndex))
+        {
+            UIComponent::eType type = (UIComponent::eType) typeIndex;
+            UIComponent *component = UIComponent::CreateByType(type);
+            if (component)
+            {
+                controlsStack.back().control->PutComponent(component);
+                SafeRelease(component);
+            }
+            UIComponent *res = controlsStack.back().control->GetComponent(type);
+            currentObject = res;
+            return res;
+        }
+        
+        return NULL;
+    }
+    
+    void DefaultUIPackageBuilder::EndComponentPropertiesSection()
+    {
+        currentObject = NULL;
+    }
+    
     UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
     {
         if (sectionHasProperties)
