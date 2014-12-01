@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     #include <Base/BaseTypes.h>
     using DAVA::uint32;
+    using DAVA::uint64;
     #include "Hash.h"
 
     #define PROFILER_ENABLED        1
@@ -86,7 +87,7 @@ struct
 CounterInfo
 {
     const char* name;
-    uint32      timeUs;
+    uint64      timeUs;
     uint32      count;
     uint32      parentIndex; // in vector<CounterInfo>
 };
