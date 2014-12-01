@@ -328,7 +328,7 @@ void Shader::ReleaseShaderData(bool deleteShader/* = true*/)
     SafeDeleteArray(autobindUniforms);
     SafeDeleteArray(instancingUniforms);
     autobindUniformCount = 0;
-    instancingUniforms = 0;
+    instancingUniformCount = 0;
     
     for (int32 ki = 0; ki < VERTEX_FORMAT_STREAM_MAX_COUNT; ++ki)
         vertexFormatAttribIndeces[ki] = -1;
