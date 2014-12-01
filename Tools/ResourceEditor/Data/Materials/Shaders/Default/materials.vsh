@@ -17,8 +17,7 @@ precision highp float;
 #define MAX_INSTANCES 32
 
 #if defined(INSTANCING)
-#extension GL_EXT_draw_instanced : enable 
-//#extension GL_EXT_gpu_shader4 : enable 
+#extension GL_EXT_draw_instanced : require 
 #endif
 
 
