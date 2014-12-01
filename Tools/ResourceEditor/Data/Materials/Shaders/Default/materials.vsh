@@ -5,6 +5,7 @@ uniform vec2 decalTileCoordScale = vec2(1.0, 1.0);
 #ifdef GL_ES
 // define default precision for float, vec, mat.
 precision highp float;
+#define gl_InstanceID gl_InstanceIDEXT
 #else
 #define lowp
 #define highp
