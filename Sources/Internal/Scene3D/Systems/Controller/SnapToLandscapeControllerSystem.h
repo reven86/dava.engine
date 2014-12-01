@@ -41,7 +41,7 @@ class SnapToLandscapeControllerSystem: public SceneSystem
     
 public:
     SnapToLandscapeControllerSystem(Scene * scene);
-    ~SnapToLandscapeControllerSystem();
+    virtual ~SnapToLandscapeControllerSystem();
     
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);

@@ -28,22 +28,38 @@
 
 #include "RotationControllerSystem.h"
 
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 
+#include "Render/Highlevel/Camera.h"
+
+#include "Input/InputSystem.h"
+#include "UI/UIEvent.h"
+
+
 
 namespace DAVA
 {
+const float32 RotationControllerSystem::maxViewAngle = 89.0f;
+    
     
 RotationControllerSystem::RotationControllerSystem(Scene * scene)
     : SceneSystem(scene)
+    , rotationSpeed(0.15f)
+    , curViewAngleZ(0)
+    , curViewAngleY(0)
 {
+    inputCallback = new InputCallback(this, &RotationControllerSystem::Input, InputSystem::INPUT_DEVICE_TOUCH);
+//    InputSystem::Instance()->AddInputCallback(*inputCallback);
 }
 
 RotationControllerSystem::~RotationControllerSystem()
 {
+//    InputSystem::Instance()->RemoveInputCallback(*inputCallback);
+    SafeDelete(inputCallback);
 }
 
 void RotationControllerSystem::AddEntity(Entity * entity)
@@ -70,7 +86,67 @@ void RotationControllerSystem::RemoveEntity(Entity * entity)
 
 void RotationControllerSystem::Process(float32 timeElapsed)
 {
-    
+}
+
+void RotationControllerSystem::Input(UIEvent *event)
+{
+    const uint32 size = entities.size();
+    if(0 == size) return;
+
+    if(event->tid == DAVA::UIEvent::BUTTON_2)
+    {
+        if(DAVA::UIEvent::PHASE_BEGAN == event->phase)
+        {
+            rotateStartPoint = event->point;
+            rotateStopPoint = event->point;
+        }
+        else if(DAVA::UIEvent::PHASE_DRAG == event->phase || DAVA::UIEvent::PHASE_ENDED == event->phase)
+        {
+            rotateStartPoint = rotateStopPoint;
+            rotateStopPoint = event->point;
+            
+            //TODO: this code need to check if system used correct for camera and wasd
+            Camera * camera = GetScene()->GetDrawCamera();
+            if(!camera) return;
+            
+            //Find active wasd component
+            Entity * cameraHolder = NULL;
+            for(uint32 i = 0; i < size; ++i)
+            {
+                if(GetCamera(entities[i]) == camera)
+                {
+                    cameraHolder = entities[i];
+                    break;
+                }
+            }
+            
+            DVASSERT(cameraHolder);
+            
+            RotationControllerComponent *rotationController = static_cast<RotationControllerComponent *>(cameraHolder->GetComponent(Component::ROTATION_CONTROLLER_COMPONENT));
+            DVASSERT(rotationController);
+            //end of TODO
+            
+            Rotate(camera);
+        }
+    }
+}
+
+void RotationControllerSystem::Rotate(Camera * camera)
+{
+    if(NULL != camera && !camera->GetIsOrtho())
+    {
+        DAVA::Vector2 dp = rotateStopPoint - rotateStartPoint;
+        curViewAngleZ += dp.x * rotationSpeed;
+        curViewAngleY = Clamp(curViewAngleY + dp.y * rotationSpeed, -maxViewAngle, maxViewAngle);
+        
+        DAVA::Matrix4 mt, mt2;
+        mt.CreateRotation(DAVA::Vector3(0.f,0.f,1.f), DAVA::DegToRad(curViewAngleZ));
+        mt2.CreateRotation(DAVA::Vector3(1.f,0.f,0.f), DAVA::DegToRad(curViewAngleY));
+        mt2 *= mt;
+        
+        DAVA::Vector3 dir = DAVA::Vector3(0.f, 10.f, 0.f) * mt2;
+        camera->SetDirection(dir);
+    }
 }
 
 

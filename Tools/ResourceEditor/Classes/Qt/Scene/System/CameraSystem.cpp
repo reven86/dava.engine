@@ -47,6 +47,8 @@
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
 
 
 #include "../StringConstants.h"
@@ -238,6 +240,11 @@ void SceneCameraSystem::Process(float timeElapsed)
     {
         wasdSystem->SetMoveSpeed(GetMoveSpeed());
     }
+    RotationControllerSystem *rotationSystem = GetScene()->rotationSystem;
+    if(rotationSystem)
+    {
+        rotationSystem->SetRotationSpeeed(0.15f);
+    }
     //TODO: set move speed
 
     
@@ -290,7 +297,6 @@ void SceneCameraSystem::ProcessUIEvent(DAVA::UIEvent *event)
 	}
     else if(DAVA::UIEvent::PHASE_WHEEL == event->phase)
     {
-        printf("%d %d\n", event->point.x, event->point.y);
     }
 	else if(DAVA::UIEvent::PHASE_DRAG == event->phase || DAVA::UIEvent::PHASE_ENDED == event->phase)
 	{
@@ -299,7 +305,7 @@ void SceneCameraSystem::ProcessUIEvent(DAVA::UIEvent *event)
 
 		if(event->tid == DAVA::UIEvent::BUTTON_2)
 		{
-			MouseMoveCameraDirection();
+//			MouseMoveCameraDirection();
 		}
 		else if(event->tid == DAVA::UIEvent::BUTTON_3)
 		{
@@ -490,6 +496,7 @@ void SceneCameraSystem::CreateDebugCameras()
 		topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
+        topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
 		scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
 
 		// set current default camera

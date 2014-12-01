@@ -480,7 +480,6 @@
 		E8C9929E184CD0EC00AFBF3F /* TilemaskEditorCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C9904A184CD0EB00AFBF3F /* TilemaskEditorCommands.cpp */; };
 		E8C9929F184CD0EC00AFBF3F /* TransformCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C9904C184CD0EB00AFBF3F /* TransformCommand.cpp */; };
 		E8C992A0184CD0EC00AFBF3F /* VisibilityToolActions.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C9904E184CD0EB00AFBF3F /* VisibilityToolActions.cpp */; };
-		E8C992A1184CD0EC00AFBF3F /* CameraController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C99053184CD0EB00AFBF3F /* CameraController.cpp */; };
 		E8C992A2184CD0EC00AFBF3F /* ControlsFactory.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C99055184CD0EB00AFBF3F /* ControlsFactory.cpp */; };
 		E8C992A3184CD0EC00AFBF3F /* DraggableDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C99057184CD0EB00AFBF3F /* DraggableDialog.cpp */; };
 		E8C992A4184CD0EC00AFBF3F /* EditorConfig.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C99059184CD0EB00AFBF3F /* EditorConfig.cpp */; };
@@ -1544,8 +1543,6 @@
 		E8C9904F184CD0EB00AFBF3F /* VisibilityToolActions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityToolActions.h; sourceTree = "<group>"; };
 		E8C99050184CD0EB00AFBF3F /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = Classes/config.h; sourceTree = "<group>"; };
 		E8C99051184CD0EB00AFBF3F /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Constants.h; path = Classes/Constants.h; sourceTree = "<group>"; };
-		E8C99053184CD0EB00AFBF3F /* CameraController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CameraController.cpp; sourceTree = "<group>"; };
-		E8C99054184CD0EB00AFBF3F /* CameraController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraController.h; sourceTree = "<group>"; };
 		E8C99055184CD0EB00AFBF3F /* ControlsFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ControlsFactory.cpp; sourceTree = "<group>"; };
 		E8C99056184CD0EB00AFBF3F /* ControlsFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ControlsFactory.h; sourceTree = "<group>"; };
 		E8C99057184CD0EB00AFBF3F /* DraggableDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DraggableDialog.cpp; sourceTree = "<group>"; };
@@ -3542,8 +3539,6 @@
 		E8C99052184CD0EB00AFBF3F /* Deprecated */ = {
 			isa = PBXGroup;
 			children = (
-				E8C99053184CD0EB00AFBF3F /* CameraController.cpp */,
-				E8C99054184CD0EB00AFBF3F /* CameraController.h */,
 				E8C99055184CD0EB00AFBF3F /* ControlsFactory.cpp */,
 				E8C99056184CD0EB00AFBF3F /* ControlsFactory.h */,
 				E8C99057184CD0EB00AFBF3F /* DraggableDialog.cpp */,
@@ -4609,7 +4604,6 @@
 				76405ED019D1D0ED000E470B /* LineEditEx_moc.cpp in Build Sources */,
 				76405EC219D1D068000E470B /* LogFilterModel.cpp in Build Sources */,
 				E8EA8DBF185C38040064906E /* MaterialTree.cpp in Build Sources */,
-				E8C992A1184CD0EC00AFBF3F /* CameraController.cpp in Build Sources */,
 				E8BAD7241859F50300C98C8D /* LabeledSlider_moc.cpp in Build Sources */,
 				E8C99237184CD0EC00AFBF3F /* btTriangleShapeEx.cpp in Build Sources */,
 				E8C99258184CD0EC00AFBF3F /* Bullet-C-API.cpp in Build Sources */,

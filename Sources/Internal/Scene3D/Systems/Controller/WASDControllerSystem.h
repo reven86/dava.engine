@@ -37,12 +37,15 @@ namespace DAVA
 {
 
 class Camera;
+class UIEvent;
+class InputCallback;
+
 class WASDControllerSystem: public SceneSystem
 {
     
 public:
     WASDControllerSystem(Scene * scene);
-    ~WASDControllerSystem();
+    virtual ~WASDControllerSystem();
     
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
@@ -52,6 +55,7 @@ public:
     inline float32 GetMoveSpeeed() const;
     inline void SetMoveSpeed(float32 moveSpeed);
     
+    void Input(UIEvent *event);
 private:
     
     void MoveForward(Camera *camera, float32 speed, bool inverseDirection);
@@ -59,6 +63,9 @@ private:
     
 
     float32 moveSpeed;
+    float32 actualMoveSpeed;
+    
+    InputCallback * inputCallback;
     
     Vector<Entity *> entities;
 };

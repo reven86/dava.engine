@@ -32,26 +32,64 @@
 #define __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
 
 #include "Entity/SceneSystem.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
-
+    
+class Camera;
+class UIEvent;
+class InputCallback;
 class RotationControllerSystem: public SceneSystem
 {
+    static const float32 maxViewAngle;
+
     
 public:
     RotationControllerSystem(Scene * scene);
-    ~RotationControllerSystem();
+    virtual ~RotationControllerSystem();
     
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
     
     virtual void Process(float32 timeElapsed);
     
+    inline float32 GetRotationSpeeed() const;
+    inline void SetRotationSpeeed(float32 rotateSpeed);
+    
+    void Input(UIEvent *event);
+
 private:
     
+    
+    void Rotate(Camera * camera);
+
+    
+    Vector2 rotateStartPoint;
+    Vector2 rotateStopPoint;
+    
+    float32 curViewAngleZ;
+    float32 curViewAngleY;
+
+    
+    float32 rotationSpeed;
+    
+    InputCallback * inputCallback;
+
     Vector<Entity *> entities;
 };
+
+inline float32 RotationControllerSystem::GetRotationSpeeed() const
+{
+    return rotationSpeed;
+    
+}
+
+inline void RotationControllerSystem::SetRotationSpeeed(float32 rotateSpeed)
+{
+    rotationSpeed = rotateSpeed;
+}
+
     
 };
 

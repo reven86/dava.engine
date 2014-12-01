@@ -28,10 +28,13 @@
 
 #include "SnapToLandscapeControllerSystem.h"
 
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
+
+#include "Render/Highlevel/Camera.h"
 
 
 namespace DAVA
@@ -70,7 +73,21 @@ void SnapToLandscapeControllerSystem::RemoveEntity(Entity * entity)
 
 void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
 {
-    
+    uint32 size = entities.size();
+    for(uint32 i = 0; i < size; ++i)
+    {
+        SnapToLandscapeControllerComponent *snapController = static_cast<SnapToLandscapeControllerComponent *>(entities[i]->GetComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
+
+        Camera *camera =  GetCamera(entities[i]);
+        DVASSERT(snapController && camera);
+
+        if(camera && snapController)
+        {
+            Vector3 pos = camera->GetPosition();
+            
+            camera->SetPosition(pos);
+        }
+    }
 }
     
     

@@ -147,11 +147,13 @@ public:
 		: DAVA::UI3DView(rect)
 		, tabWidget(tw)
 	{
-		SetInputEnabled(true);
+		SetInputEnabled(true, true);
 	}
 
 	virtual void Input(DAVA::UIEvent *event)
 	{
+        DAVA::UI3DView::Input(event);
+        
 		if(NULL != tabWidget)
 		{
 			tabWidget->ProcessDAVAUIEvent(event);

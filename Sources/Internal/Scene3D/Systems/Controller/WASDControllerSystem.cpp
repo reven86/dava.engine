@@ -38,6 +38,9 @@
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
+#include "UI/UIEvent.h"
+
+
 
 namespace DAVA
 {
@@ -45,11 +48,16 @@ namespace DAVA
 WASDControllerSystem::WASDControllerSystem(Scene * scene)
     : SceneSystem(scene)
     , moveSpeed(1.f)
+    , actualMoveSpeed(1.f)
 {
+    inputCallback = new InputCallback(this, &WASDControllerSystem::Input, InputSystem::INPUT_DEVICE_KEYBOARD);
+//    InputSystem::Instance()->AddInputCallback(*inputCallback);
 }
 
 WASDControllerSystem::~WASDControllerSystem()
 {
+//    InputSystem::Instance()->RemoveInputCallback(*inputCallback);
+    SafeDelete(inputCallback);
 }
 
 void WASDControllerSystem::AddEntity(Entity * entity)
@@ -76,12 +84,16 @@ void WASDControllerSystem::RemoveEntity(Entity * entity)
 
 void WASDControllerSystem::Process(float32 timeElapsed)
 {
+    actualMoveSpeed = moveSpeed * timeElapsed;
+
     const uint32 size = entities.size();
     if(0 == size) return;
     
+    //TODO: this code need to check if system used correct for camera and wasd
     Camera * camera = GetScene()->GetDrawCamera();
     if(!camera) return;
     
+    //Find active wasd component
     Entity * cameraHolder = NULL;
     for(uint32 i = 0; i < size; ++i)
     {
@@ -91,32 +103,85 @@ void WASDControllerSystem::Process(float32 timeElapsed)
             break;
         }
     }
-
+    
     DVASSERT(cameraHolder);
-
+    
     WASDControllerComponent *wasdController = static_cast<WASDControllerComponent *>(cameraHolder->GetComponent(Component::WASD_CONTROLLER_COMPONENT));
     DVASSERT(wasdController);
-    
-    const float32 actualMoveSpeed = moveSpeed * timeElapsed;
+    //end of TODO
     
     KeyboardDevice *keyboard = InputSystem::Instance()->GetKeyboard();
-    if(keyboard->IsKeyPressed(DVKEY_UP) || keyboard->IsKeyPressed(DVKEY_W))
+    if(keyboard->IsKeyPressed(DVKEY_W) || keyboard->IsKeyPressed(DVKEY_UP))
     {
         MoveForward(camera, actualMoveSpeed, false);
     }
-    if(keyboard->IsKeyPressed(DAVA::DVKEY_DOWN) || keyboard->IsKeyPressed(DAVA::DVKEY_S))
+    if(keyboard->IsKeyPressed(DVKEY_S) || keyboard->IsKeyPressed(DVKEY_DOWN))
     {
         MoveForward(camera, actualMoveSpeed, true);
     }
-    if(keyboard->IsKeyPressed(DAVA::DVKEY_RIGHT) || keyboard->IsKeyPressed(DAVA::DVKEY_D))
+    if(keyboard->IsKeyPressed(DVKEY_D) || keyboard->IsKeyPressed(DVKEY_RIGHT))
     {
         MoveRight(camera, actualMoveSpeed, false);
     }
-    if(keyboard->IsKeyPressed(DVKEY_LEFT) || keyboard->IsKeyPressed(DVKEY_A))
+    if(keyboard->IsKeyPressed(DVKEY_A) || keyboard->IsKeyPressed(DVKEY_LEFT))
     {
         MoveRight(camera, actualMoveSpeed, true);
     }
 }
+
+
+void WASDControllerSystem::Input(UIEvent *event)
+{
+//    if(UIEvent::PHASE_KEYCHAR == event->phase)
+//    {
+//        const uint32 size = entities.size();
+//        if(0 == size) return;
+//        
+//        //TODO: this code need to check if system used correct for camera and wasd
+//        Camera * camera = GetScene()->GetDrawCamera();
+//        if(!camera) return;
+//        
+//        //Find active wasd component
+//        Entity * cameraHolder = NULL;
+//        for(uint32 i = 0; i < size; ++i)
+//        {
+//            if(GetCamera(entities[i]) == camera)
+//            {
+//                cameraHolder = entities[i];
+//                break;
+//            }
+//        }
+//        
+//        DVASSERT(cameraHolder);
+//        
+//        WASDControllerComponent *wasdController = static_cast<WASDControllerComponent *>(cameraHolder->GetComponent(Component::WASD_CONTROLLER_COMPONENT));
+//        DVASSERT(wasdController);
+//        //end of TODO
+//        
+//        if((DVKEY_UP == event->tid) || (DVKEY_W == event->tid))
+//        {
+//            Logger::Info("up: phase = %d, tapCount = %d", event->phase, event->tapCount);
+//
+//            MoveForward(camera, actualMoveSpeed, false);
+//        }
+//        if((DVKEY_DOWN == event->tid) || (DVKEY_S == event->tid))
+//        {
+//            Logger::Info("down: phase = %d, tapCount = %d", event->phase, event->tapCount);
+//            MoveForward(camera, actualMoveSpeed, true);
+//        }
+//        if((DVKEY_RIGHT == event->tid) || (DVKEY_D == event->tid))
+//        {
+//            Logger::Info("right: phase = %d, tapCount = %d", event->phase, event->tapCount);
+//            MoveRight(camera, actualMoveSpeed, false);
+//        }
+//        if((DVKEY_LEFT == event->tid) || (DVKEY_A == event->tid))
+//        {
+//            Logger::Info("left: phase = %d, tapCount = %d", event->phase, event->tapCount);
+//            MoveRight(camera, actualMoveSpeed, true);
+//        }
+//    }
+}
+
     
 void WASDControllerSystem::MoveForward(Camera *camera, float32 speed, bool inverseDirection)
 {

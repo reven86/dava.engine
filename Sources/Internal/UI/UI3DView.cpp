@@ -36,6 +36,9 @@
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
 namespace DAVA 
 {
@@ -172,5 +175,27 @@ void UI3DView::WillBecomeInvisible()
         UIControlSystem::Instance()->UI3DViewRemoved();
     }
 }
+    
+void UI3DView::Input(UIEvent *currentInput)
+{
+    if(scene)
+    {
+        if(scene->wasdSystem)
+        {
+            scene->wasdSystem->Input(currentInput);
+        }
+        if(scene->rotationSystem)
+        {
+            scene->rotationSystem->Input(currentInput);
+        }
+//        if(scene->wasdSystem)
+//        {
+//            scene->wasdSystem->Input(currentInput);
+//        }
+    }
+    
+    UIControl::Input(currentInput);
+}
+    
 
 }
