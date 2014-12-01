@@ -530,7 +530,7 @@ void TextBlock::CalculateCacheParams()
                 }
             }
         }
-        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textSize.width) && (requestedSize.x >= 0))
+        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x + 1 < textSize.width) && (requestedSize.x >= 0))
         {
             Size2i textSizePoints;
             int32 length = (int32)visualText.length();
