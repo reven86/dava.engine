@@ -64,19 +64,19 @@ class Counter;
 
 static Counter* GetCounter( uint32 id );
 
-static bool             profilerInited      = false;
-static unsigned         maxCounterCount     = 0;
-static unsigned         historyCount        = 0;
+static uint32           profilerInited      = false;
+static uint32           maxCounterCount     = 0;
+static uint32           historyCount        = 0;
 
 static Counter*         profCounter         = 0;
 static Counter*         profAverage         = 0;
 static Counter*         curCounter          = 0;
-static bool             profStarted         = false;
+static uint32           profStarted         = false;
 static Counter**        activeCounter       = 0;
-static unsigned         activeCounterCount  = 0;
-static long             totalTime0          = 0;
-static long             totalTime           = 0;
-static unsigned         maxNameLen          = 32;
+static uint32           activeCounterCount  = 0;
+static uint64           totalTime0          = 0;
+static uint64           totalTime           = 0;
+static uint32           maxNameLen          = 32;
 static Spinlock         counterSync;
 
 
@@ -153,18 +153,18 @@ public:
 
     const char* getName() const                 { return name; }
 
-    unsigned    getCount() const                { return count; }
-    long        getTimeUs() const               { return t; }
+    uint32      getCount() const                { return count; }
+    uint64      getTimeUs() const               { return t; }
 
     uint32      getId() const                   { return id; }
     uint32      getParentId() const             { return parentId; }
     bool        isUsed() const                  { return (used)  ? true  : false; }
-    unsigned    nestingLevel() const            { return _nesting_level(); }
+    uint32      nestingLevel() const            { return _nesting_level(); }
 
 
 
 private :
-friend void Init( unsigned max_counter_count, unsigned history_len );
+friend void Init( uint32 max_counter_count, uint32 history_len );
 friend void Start();
 friend void Stop();
 friend bool DumpAverage();
@@ -172,18 +172,18 @@ friend bool GetAverageCounters( std::vector<CounterInfo>* info );
 
 private:
 
-    unsigned    _nesting_level() const          { return (parentId != InvalidIndex)  ? GetCounter(parentId)->_nesting_level()+1  : 0; }
+    uint32      _nesting_level() const          { return (parentId != InvalidIndex)  ? GetCounter(parentId)->_nesting_level()+1  : 0; }
 
-    long        t0;
-    long        t;
-    unsigned    count;
+    uint64      t0;
+    uint64      t;
+    uint32      count;
 
     uint32      id;
     uint32      parentId;
     const char* name;      // ref-only, expected to be immutable string
 
-    int         used:1;
-    int         useCount:4;
+    uint32      used:1;
+    uint32      useCount:4;
 };
 
 
@@ -202,7 +202,7 @@ GetCounter( uint32 id )
 //------------------------------------------------------------------------------
 
 void 
-Init( unsigned max_counter_count, unsigned history_len )
+Init( uint32 max_counter_count, uint32 history_len )
 {
     DVASSERT(!profilerInited);
 
@@ -215,7 +215,7 @@ Init( unsigned max_counter_count, unsigned history_len )
 
     Counter*    counter = profCounter;
     
-    for( unsigned h=0; h!=historyCount; ++h )
+    for( uint32 h=0; h!=historyCount; ++h )
     {
         for( Counter* c=counter,*c_end=counter+maxCounterCount; c!=c_end; ++c )
         {        
@@ -234,7 +234,7 @@ Init( unsigned max_counter_count, unsigned history_len )
 //------------------------------------------------------------------------------
 
 void
-EnsureInited( unsigned max_counter_count, unsigned history_length )
+EnsureInited( uint32 max_counter_count, uint32 history_length )
 {
     if( !profilerInited )
     {
@@ -282,7 +282,7 @@ SetCounterName( unsigned counter_id, const char* name )
 
     Counter*    counter = profCounter + counter_id;
 
-    for( unsigned h=0; h!=historyCount; ++h )
+    for( uint32 h=0; h!=historyCount; ++h )
     {
         counter->setName( name );
         counter += maxCounterCount;
@@ -293,7 +293,7 @@ SetCounterName( unsigned counter_id, const char* name )
 //------------------------------------------------------------------------------
 
 void
-StartCounter( unsigned counter_id )
+StartCounter( uint32 counter_id )
 {
     DVASSERT( counter_id < maxCounterCount );
 
@@ -306,7 +306,7 @@ StartCounter( unsigned counter_id )
 //------------------------------------------------------------------------------
 
 void
-StartCounter( unsigned counter_id, const char* counter_name )
+StartCounter( uint32 counter_id, const char* counter_name )
 {
     DVASSERT( counter_id < maxCounterCount );
 
@@ -320,7 +320,7 @@ StartCounter( unsigned counter_id, const char* counter_name )
 //------------------------------------------------------------------------------
 
 void
-StopCounter( unsigned counter_id )
+StopCounter( uint32 counter_id )
 {
     DVASSERT( counter_id < maxCounterCount );
 
@@ -389,9 +389,9 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
     
     for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
     {
-        unsigned    pi      = result[i].parentIndex;
-        unsigned    indent  = 0;
-        unsigned    len     = 0;
+        uint32  pi      = result[i].parentIndex;
+        uint32  indent  = 0;
+        uint32  len     = 0;
 
         while( pi != InvalidIndex )
         {
@@ -411,10 +411,10 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
     Logger::Info( "===================================================" );
     for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
     {
-        unsigned    pi          = result[i].parentIndex;
-        unsigned    indent      = 0;
-        char        text[256];  memset( text, ' ', sizeof(text) );
-        unsigned    len         = 0;
+        uint32  pi          = result[i].parentIndex;
+        uint32  indent      = 0;
+        char    text[256];  memset( text, ' ', sizeof(text) );
+        uint32  len         = 0;
 
         while( pi != InvalidIndex )
         {
@@ -524,7 +524,7 @@ _CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
 
         if( c->getParentId() == InvalidIndex )
         {
-            for( unsigned i=0,i_end=top.size(); i!=i_end; ++i )
+            for( uint32 i=0,i_end=top.size(); i!=i_end; ++i )
             {
                 if( c->getTimeUs() > top[i]->getTimeUs() )
                 {
@@ -543,7 +543,7 @@ _CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
     // fill active-counter list
 
     result->clear();
-    for( unsigned i=0; i!=top.size(); ++i )
+    for( uint32 i=0; i!=top.size(); ++i )
     {
         result->push_back( top[i] );
         _CollectCountersWithChilds( cur_counter, top[i], result );
@@ -561,7 +561,7 @@ GetCounters( std::vector<CounterInfo>* info )
     _CollectActiveCounters( curCounter, &result );
 
     info->resize( result.size() );
-    for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
+    for( uint32 i=0,i_end=result.size(); i!=i_end; ++i )
     {
         (*info)[i].name         = result[i]->getName();
         (*info)[i].count        = result[i]->getCount();
@@ -603,7 +603,7 @@ GetAverageCounters( std::vector<CounterInfo>* info )
             c->used      = src->used;
         }
     
-        for( unsigned h=0; h!=historyCount; ++h )
+        for( uint32 h=0; h!=historyCount; ++h )
         {
             Counter*    counter = profCounter + h*maxCounterCount;
             
@@ -627,14 +627,14 @@ GetAverageCounters( std::vector<CounterInfo>* info )
         _CollectActiveCounters( profAverage, &result );
 
         info->resize( result.size() );
-        for( unsigned i=0,i_end=result.size(); i!=i_end; ++i )
+        for( uint32 i=0,i_end=result.size(); i!=i_end; ++i )
         {
             (*info)[i].name         = result[i]->getName();
             (*info)[i].count        = result[i]->getCount();
             (*info)[i].timeUs       = result[i]->getTimeUs();
             (*info)[i].parentIndex  = InvalidIndex;
         
-            for( unsigned k=0,k_end=info->size(); k!=k_end; ++k )
+            for( uint32 k=0,k_end=info->size(); k!=k_end; ++k )
             {
                 if( result[i]->getParentId() == result[k]->getId() )
                 {

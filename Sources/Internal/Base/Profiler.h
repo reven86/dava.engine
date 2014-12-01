@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __PROFILER_H__
 
     #include <Base/BaseTypes.h>
+    using DAVA::uint32;
     #include "Hash.h"
 
     #define PROFILER_ENABLED        1
@@ -48,8 +49,8 @@ Should be called once, on app startup.
 @history_length amount of previous counter-values to keep (used for computing average values)
 */
 
-void    EnsureInited( unsigned max_counter_count=64, unsigned history_length=128 );
-void    Init( unsigned max_counter_count=64, unsigned history_length=128 );
+void    EnsureInited( uint32 max_counter_count=64, uint32 history_length=128 );
+void    Init( uint32 max_counter_count=64, uint32 history_length=128 );
 
 void    Uninit();
 
@@ -72,10 +73,10 @@ bool    DumpAverage();
 
 
 // don't call these directly, use macros defined below
-void    SetCounterName( unsigned counter_id, const char* counter_name );
-void    StartCounter( unsigned counter_id );
-void    StartCounter( unsigned counter_id, const char* counter_name );
-void    StopCounter( unsigned counter_id );
+void    SetCounterName( uint32 counter_id, const char* counter_name );
+void    StartCounter( uint32 counter_id );
+void    StartCounter( uint32 counter_id, const char* counter_name );
+void    StopCounter( uint32 counter_id );
 
 
 
@@ -85,9 +86,9 @@ struct
 CounterInfo
 {
     const char* name;
-    unsigned    timeUs;
-    unsigned    count;
-    unsigned    parentIndex; // in vector<CounterInfo>
+    uint32      timeUs;
+    uint32      count;
+    uint32      parentIndex; // in vector<CounterInfo>
 };
 
 
