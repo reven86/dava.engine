@@ -89,7 +89,35 @@ void DropperShade::DrawCursor(const QPoint& _pos, QPainter* p)
 
     p->drawImage(rcVirtual, scaled);
 
-    p->setPen( QPen( Qt::red, 3.0 ) );
+    int xl = rcVirtual.left();
+    int xm = rcVirtual.center().x();
+    int xr = rcVirtual.right();
+    int yt = rcVirtual.top();
+    int ym = rcVirtual.center().y();
+    int yb = rcVirtual.bottom();
+
+    p->setPen( QPen( Qt::black, 1.0 ) );
+    p->drawLine(xl, yt, xr, yt);
+    p->drawLine(xl, yb, xr, yb);
+    p->drawLine(xl, yt, xl, yb);
+    p->drawLine(xr, yt, xr, yb);
+    
+    p->drawLine(xl, ym, xr, ym);
+    p->drawLine(xm, yt, xm, yb);
+
+    xl++;
+    xr--;
+    yt++;
+    yb--;
+
+    p->setPen( QPen( Qt::white, 1.0 ) );
+    p->drawLine(xl, yt, xr, yt);
+    p->drawLine(xl, yb, xr, yb);
+    p->drawLine(xl, yt, xl, yb);
+    p->drawLine(xr, yt, xr, yb);
+
+    const int size = 2;
+    p->fillRect(xm - size, ym - size, size * 2, size * 2, c);
 
     const QString text = QString(
         "Virtual: %1x%2 : %3x%4\n"
