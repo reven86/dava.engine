@@ -550,6 +550,7 @@
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					i386,
+					arm64,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "arm64 armv7 armv7s i386";
@@ -563,6 +564,7 @@
 					"$(ARCHS_STANDARD)",
 					armv7s,
 					i386,
+					arm64,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "arm64 armv7 armv7s i386";
@@ -672,6 +674,11 @@
 		B7D6C86619C88B740095250A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64,
+				);
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -680,6 +687,11 @@
 		B7D6C86719C88B740095250A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64,
+				);
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

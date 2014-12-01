@@ -38,6 +38,7 @@
 #include <netinet/tcp.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 #endif
 
 #ifndef NI_MAXSERV
