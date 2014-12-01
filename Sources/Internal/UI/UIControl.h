@@ -1321,9 +1321,6 @@ public:
     virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
-    
-    BaseObject *GetCustomData() const;
-    void SetCustomData(BaseObject *data);
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1405,9 +1402,6 @@ protected:
 
     void DrawDebugRect(const UIGeometricData &geometricData, bool useAlpha = false);
     void DrawPivotPoint(const Rect &drawRect);
-    
-private:
-    BaseObject *customData;
 
 private:
     String name;
