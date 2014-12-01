@@ -340,7 +340,7 @@ public:
      \brief Sets left align of control relative to its parent.
      \param[in] align left align of control.
      */
-    virtual void SetLeftAlign(float32 align);
+    virtual void SetLeftAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns left align of control relative to its parent.
      \returns left align of control.
@@ -350,7 +350,7 @@ public:
      \brief Sets horizontal central align of control relative to its parent.
      \param[in] align horizontal central align of control.
      */
-    virtual void SetHCenterAlign(float32 align);
+    virtual void SetHCenterAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns horizontal central align of control relative to its parent.
      \returns horizontal central align of control.
@@ -360,7 +360,7 @@ public:
      \brief Sets right align of control relative to its parent.
      \param[in] align right align of control.
      */
-    virtual void SetRightAlign(float32 align);
+    virtual void SetRightAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns right align of control relative to its parent.
      \returns right align of control.
@@ -370,7 +370,7 @@ public:
      \brief Sets top align of control relative to its parent.
      \param[in] align top align of control.
      */
-    virtual void SetTopAlign(float32 align);
+    virtual void SetTopAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns top align of control relative to its parent.
      \returns top align of control.
@@ -380,7 +380,7 @@ public:
      \brief Sets vertical central align of control relative to its parent.
      \param[in] align l vertical central align of control.
      */
-    virtual void SetVCenterAlign(float32 align);
+    virtual void SetVCenterAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns vertical central align of control relative to its parent.
      \returns vertical central align of control.
@@ -390,7 +390,7 @@ public:
      \brief Sets bottom align of control relative to its parent.
      \param[in] align bottom align of control.
      */
-    virtual void SetBottomAlign(float32 align);
+    virtual void SetBottomAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns bottom align of control relative to its parent.
      \returns bottom align of control.
@@ -400,7 +400,7 @@ public:
      \brief Sets control ability to change left align.
      \param[in] isEnabled left align availability.
      */
-    virtual void SetLeftAlignEnabled(bool isEnabled);
+    virtual void SetLeftAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns availability of left align of control.
      \returns ability to change left align.
@@ -410,7 +410,7 @@ public:
      \brief Sets horizontal central align of control relative to its parent.
      \param[in] align horizontal central align of control.
      */
-    virtual void SetHCenterAlignEnabled(bool isEnabled);
+    virtual void SetHCenterAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns horizontal central align of control relative to its parent.
      \returns horizontal central align of control.
@@ -420,7 +420,7 @@ public:
      \brief Sets right align of control relative to its parent.
      \param[in] align right align of control.
      */
-    virtual void SetRightAlignEnabled(bool isEnabled);
+    virtual void SetRightAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns right align of control relative to its parent.
      \returns right align of control.
@@ -430,7 +430,7 @@ public:
      \brief Sets top align of control relative to its parent.
      \param[in] align top align of control.
      */
-    virtual void SetTopAlignEnabled(bool isEnabled);
+    virtual void SetTopAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns top align of control relative to its parent.
      \returns top align of control.
@@ -440,7 +440,7 @@ public:
      \brief Sets vertical central align of control relative to its parent.
      \param[in] align l vertical central align of control.
      */
-    virtual void SetVCenterAlignEnabled(bool isEnabled);
+    virtual void SetVCenterAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns vertical central align of control relative to its parent.
      \returns vertical central align of control.
@@ -450,7 +450,7 @@ public:
      \brief Sets bottom align of control relative to its parent.
      \param[in] align bottom align of control.
      */
-    virtual void SetBottomAlignEnabled(bool isEnabled);
+    virtual void SetBottomAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns bottom align of control relative to its parent.
      \returns bottom align of control.
@@ -1472,7 +1472,21 @@ public:
     {
         SetDebugDraw(val, false);
     }
-    
+
+    inline void SetAndApplyLeftAlign(float32 align);
+    inline void SetAndApplyRightAlign(float32 align);
+    inline void SetAndApplyBottomAlign(float32 align);
+    inline void SetAndApplyTopAlign(float32 align);
+    inline void SetAndApplyHCenterAlign(float32 align);
+    inline void SetAndApplyVCenterAlign(float32 align);
+
+    inline void SetAndApplyLeftAlignEnabled(bool isEnabled);
+    inline void SetAndApplyHCenterAlignEnabled(bool isEnabled);
+    inline void SetAndApplyRightAlignEnabled(bool isEnabled);
+    inline void SetAndApplyTopAlignEnabled(bool isEnabled);
+    inline void SetAndApplyVCenterAlignEnabled(bool isEnabled);
+    inline void SetAndApplyBottomAlignEnabled(bool isEnabled);
+
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
                          PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
@@ -1486,23 +1500,23 @@ public:
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("initialState", "Initial State", GetInitialState, SetInitialState, I_SAVE | I_VIEW | I_EDIT)
                          
-                         PROPERTY("leftAlignEnabled", "Left Align Enabled", GetLeftAlignEnabled, SetLeftAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("leftAlign", "Left Align", GetLeftAlign, SetLeftAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("leftAlignEnabled", "Left Align Enabled", GetLeftAlignEnabled, SetAndApplyLeftAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("leftAlign", "Left Align", GetLeftAlign, SetAndApplyLeftAlign, I_SAVE | I_VIEW | I_EDIT)
 
-                         PROPERTY("rightAlignEnabled", "Right Align Enabled", GetRightAlignEnabled, SetRightAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("rightAlign", "Right Align", GetRightAlign, SetRightAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("rightAlignEnabled", "Right Align Enabled", GetRightAlignEnabled, SetAndApplyRightAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("rightAlign", "Right Align", GetRightAlign, SetAndApplyRightAlign, I_SAVE | I_VIEW | I_EDIT)
 
-                         PROPERTY("bottomAlignEnabled", "Bottom Align Enabled", GetBottomAlignEnabled, SetBottomAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("bottomAlign", "Bottom Align", GetBottomAlign, SetBottomAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("bottomAlignEnabled", "Bottom Align Enabled", GetBottomAlignEnabled, SetAndApplyBottomAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("bottomAlign", "Bottom Align", GetBottomAlign, SetAndApplyBottomAlign, I_SAVE | I_VIEW | I_EDIT)
 
-                         PROPERTY("topAlignEnabled", "Top Align Enabled", GetTopAlignEnabled, SetTopAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("topAlign", "Top Align", GetTopAlign, SetTopAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("topAlignEnabled", "Top Align Enabled", GetTopAlignEnabled, SetAndApplyTopAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("topAlign", "Top Align", GetTopAlign, SetAndApplyTopAlign, I_SAVE | I_VIEW | I_EDIT)
 
-                         PROPERTY("hcenterAlignEnabled", "Horizontal Center Align Enabled", GetHCenterAlignEnabled, SetHCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("hcenterAlign", "Horizontal Center Align", GetHCenterAlign, SetHCenterAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("hcenterAlignEnabled", "Horizontal Center Align Enabled", GetHCenterAlignEnabled, SetAndApplyHCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("hcenterAlign", "Horizontal Center Align", GetHCenterAlign, SetAndApplyHCenterAlign, I_SAVE | I_VIEW | I_EDIT)
 
-                         PROPERTY("vcenterAlignEnabled", "Vertical Center Align Enabled", GetVCenterAlignEnabled, SetVCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("vcenterAlign", "Vertical Center Align", GetVCenterAlign, SetVCenterAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("vcenterAlignEnabled", "Vertical Center Align Enabled", GetVCenterAlignEnabled, SetAndApplyVCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("vcenterAlign", "Vertical Center Align", GetVCenterAlign, SetAndApplyVCenterAlign, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("debugDraw", "Debug Draw", IsDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
                          PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
                          );
@@ -1617,6 +1631,65 @@ bool UIControl::GetSystemVisible() const
     return visible & visibleForUIEditor;
 }
 
+void UIControl::SetAndApplyLeftAlign(float32 align)
+{
+    SetLeftAlign(align, true);
+}
+
+void UIControl::SetAndApplyRightAlign(float32 align)
+{
+    SetRightAlign(align, true);
+}
+
+void UIControl::SetAndApplyBottomAlign(float32 align)
+{
+    SetBottomAlign(align, true);
+}
+
+void UIControl::SetAndApplyTopAlign(float32 align)
+{
+    SetTopAlign(align, true);
+}
+
+void UIControl::SetAndApplyHCenterAlign(float32 align)
+{
+    SetHCenterAlign(align, true);
+}
+
+void UIControl::SetAndApplyVCenterAlign(float32 align)
+{
+    SetVCenterAlign(align, true);
+}
+
+void UIControl::SetAndApplyLeftAlignEnabled(bool isEnabled)
+{
+    SetLeftAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyHCenterAlignEnabled(bool isEnabled)
+{
+    SetHCenterAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyRightAlignEnabled(bool isEnabled)
+{
+    SetRightAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyTopAlignEnabled(bool isEnabled)
+{
+    SetTopAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyVCenterAlignEnabled(bool isEnabled)
+{
+    SetVCenterAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyBottomAlignEnabled(bool isEnabled)
+{
+    SetBottomAlignEnabled(isEnabled, true);
+}
 };
 
 #endif

@@ -322,15 +322,15 @@ namespace DAVA
         background->SetAlign(align);
     }
 
-    void UIControl::SetLeftAlign(float32 align)
+    void UIControl::SetLeftAlign(float32 align, bool applyAlign/* = true*/)
     {
         // Set a property value
         leftAlign = align;
 
-        if (!leftAlignEnabled)
-            return;
-
-        ApplyAlignSettings();
+        if (leftAlignEnabled && applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     float32 UIControl::GetLeftAlign() const
@@ -338,14 +338,14 @@ namespace DAVA
         return leftAlign;
     }
 
-    void UIControl::SetHCenterAlign(float32 align)
+    void UIControl::SetHCenterAlign(float32 align, bool applyAlign/* = true*/)
     {
         hcenterAlign = align;
 
-        if (!hcenterAlignEnabled)
-            return;
-
-        ApplyAlignSettings();
+        if (hcenterAlignEnabled && applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     float32 UIControl::GetHCenterAlign() const
@@ -353,14 +353,14 @@ namespace DAVA
         return hcenterAlign;
     }
 
-    void UIControl::SetRightAlign(float32 align)
+    void UIControl::SetRightAlign(float32 align, bool applyAlign/* = true*/)
     {
         rightAlign = align;
 
-        if (!rightAlignEnabled)
-            return;
-
-        ApplyAlignSettings();
+        if (rightAlignEnabled && applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     float32 UIControl::GetRightAlign() const
@@ -368,14 +368,14 @@ namespace DAVA
         return rightAlign;
     }
 
-    void UIControl::SetTopAlign(float32 align)
+    void UIControl::SetTopAlign(float32 align, bool applyAlign/* = true*/)
     {
         topAlign = align;
 
-        if (!topAlignEnabled)
-            return;
-
-        ApplyAlignSettings();
+        if (topAlignEnabled && applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     float32 UIControl::GetTopAlign() const
@@ -383,14 +383,14 @@ namespace DAVA
         return topAlign;
     }
 
-    void UIControl::SetVCenterAlign(float32 align)
+    void UIControl::SetVCenterAlign(float32 align, bool applyAlign/* = true*/)
     {
         vcenterAlign = align;
 
-        if (!vcenterAlignEnabled)
-            return;
-
-        ApplyAlignSettings();
+        if (vcenterAlignEnabled && applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     float32 UIControl::GetVCenterAlign() const
@@ -398,14 +398,14 @@ namespace DAVA
         return vcenterAlign;
     }
 
-    void UIControl::SetBottomAlign(float32 align)
+    void UIControl::SetBottomAlign(float32 align, bool applyAlign/* = true*/)
     {
         bottomAlign = align;
 
-        if (!bottomAlignEnabled)
-            return;
-
-        ApplyAlignSettings();
+        if (bottomAlignEnabled && applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     float32 UIControl::GetBottomAlign() const
@@ -414,11 +414,14 @@ namespace DAVA
     }
 
     // Enable align options methods
-    void UIControl::SetLeftAlignEnabled(bool isEnabled)
+    void UIControl::SetLeftAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
         leftAlignEnabled = isEnabled;
 
-        ApplyAlignSettings();
+        if (applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     bool UIControl::GetLeftAlignEnabled() const
@@ -426,11 +429,14 @@ namespace DAVA
         return leftAlignEnabled;
     }
 
-    void UIControl::SetHCenterAlignEnabled(bool isEnabled)
+    void UIControl::SetHCenterAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
         hcenterAlignEnabled = isEnabled;
 
-        ApplyAlignSettings();
+        if (applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     bool UIControl::GetHCenterAlignEnabled() const
@@ -438,11 +444,14 @@ namespace DAVA
         return hcenterAlignEnabled;
     }
 
-    void UIControl::SetRightAlignEnabled(bool isEnabled)
+    void UIControl::SetRightAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
         rightAlignEnabled = isEnabled;
 
-        ApplyAlignSettings();
+        if (applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     bool UIControl::GetRightAlignEnabled() const
@@ -450,11 +459,14 @@ namespace DAVA
         return rightAlignEnabled;
     }
 
-    void UIControl::SetTopAlignEnabled(bool isEnabled)
+    void UIControl::SetTopAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
         topAlignEnabled = isEnabled;
 
-        ApplyAlignSettings();
+        if (applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     bool UIControl::GetTopAlignEnabled() const
@@ -462,11 +474,14 @@ namespace DAVA
         return topAlignEnabled;
     }
 
-    void UIControl::SetVCenterAlignEnabled(bool isEnabled)
+    void UIControl::SetVCenterAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
         vcenterAlignEnabled = isEnabled;
 
-        ApplyAlignSettings();
+        if (applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     bool UIControl::GetVCenterAlignEnabled() const
@@ -474,11 +489,14 @@ namespace DAVA
         return vcenterAlignEnabled;
     }
 
-    void UIControl::SetBottomAlignEnabled(bool isEnabled)
+    void UIControl::SetBottomAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
         bottomAlignEnabled = isEnabled;
 
-        ApplyAlignSettings();
+        if (applyAlign)
+        {
+            ApplyAlignSettings();
+        }
     }
 
     bool UIControl::GetBottomAlignEnabled() const
@@ -581,6 +599,9 @@ namespace DAVA
 
     void UIControl::SetSize(const Vector2 &newSize)
     {
+        if (size == newSize)
+            return;
+
         Vector2 oldPivot = GetPivot();
         size = newSize;
         SetPivot(oldPivot);
@@ -2064,48 +2085,48 @@ namespace DAVA
         if (leftAlignNode)
         {
             float32 leftAlign = leftAlignNode->AsFloat();
-            SetLeftAlignEnabled(true);
-            SetLeftAlign(leftAlign);
+            SetLeftAlignEnabled(true, false);
+            SetLeftAlign(leftAlign, false);
         }
 
         const YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
         if (hcenterAlignNode)
         {
             float32 hcenterAlign = hcenterAlignNode->AsFloat();
-            SetHCenterAlignEnabled(true);
-            SetHCenterAlign(hcenterAlign);
+            SetHCenterAlignEnabled(true, false);
+            SetHCenterAlign(hcenterAlign, false);
         }
 
         const YamlNode * rightAlignNode = node->Get("rightAlign");
         if (rightAlignNode)
         {
             float32 rightAlign = rightAlignNode->AsFloat();
-            SetRightAlignEnabled(true);
-            SetRightAlign(rightAlign);
+            SetRightAlignEnabled(true, false);
+            SetRightAlign(rightAlign, false);
         }
 
         const YamlNode * topAlignNode = node->Get("topAlign");
         if (topAlignNode)
         {
             float32 topAlign = topAlignNode->AsFloat();
-            SetTopAlignEnabled(true);
-            SetTopAlign(topAlign);
+            SetTopAlignEnabled(true, false);
+            SetTopAlign(topAlign, false);
         }
 
         const YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
         if (vcenterAlignNode)
         {
             float32 vcenterAlign = vcenterAlignNode->AsFloat();
-            SetVCenterAlignEnabled(true);
-            SetVCenterAlign(vcenterAlign);
+            SetVCenterAlignEnabled(true, false);
+            SetVCenterAlign(vcenterAlign, false);
         }
 
         const YamlNode * bottomAlignNode = node->Get("bottomAlign");
         if (bottomAlignNode)
         {
             float32 bottomAlign = bottomAlignNode->AsFloat();
-            SetBottomAlignEnabled(true);
-            SetBottomAlign(bottomAlign);
+            SetBottomAlignEnabled(true, false);
+            SetBottomAlign(bottomAlign, false);
         }
 
         const YamlNode * visibleNode = node->Get("visible");
