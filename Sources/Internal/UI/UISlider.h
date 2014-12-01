@@ -133,6 +133,8 @@ public:
                          PROPERTY("maxValue", "Max Value", GetMaxValue, SetMaxValue, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("value", "Value", GetValue, SetValue, I_SAVE | I_VIEW | I_EDIT)
                          );
+private:
+    static const int32 BACKGROUND_COMPONENTS_COUNT = 3;
 
 };
     
