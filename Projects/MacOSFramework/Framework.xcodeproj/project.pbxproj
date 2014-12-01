@@ -16,6 +16,18 @@
 		0214140B181984D600925E51 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 02141406181984D600925E51 /* DAVAClassRegistrator.h */; };
 		0214140C181984D600925E51 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 02141406181984D600925E51 /* DAVAClassRegistrator.h */; };
 		0224B70015989F7400CDEF9E /* libtheora_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B6FF15989F7400CDEF9E /* libtheora_macos.a */; };
+		024BD5981A2C8371000BECC1 /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024BD5941A2C8371000BECC1 /* RenderSystem2D.cpp */; };
+		024BD5991A2C8371000BECC1 /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024BD5941A2C8371000BECC1 /* RenderSystem2D.cpp */; };
+		024BD59A1A2C8371000BECC1 /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024BD5941A2C8371000BECC1 /* RenderSystem2D.cpp */; };
+		024BD59B1A2C8371000BECC1 /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 024BD5951A2C8371000BECC1 /* RenderSystem2D.h */; };
+		024BD59C1A2C8371000BECC1 /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 024BD5951A2C8371000BECC1 /* RenderSystem2D.h */; };
+		024BD59D1A2C8371000BECC1 /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 024BD5951A2C8371000BECC1 /* RenderSystem2D.h */; };
+		024BD59E1A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024BD5961A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp */; };
+		024BD59F1A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024BD5961A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp */; };
+		024BD5A01A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024BD5961A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp */; };
+		024BD5A11A2C8371000BECC1 /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 024BD5971A2C8371000BECC1 /* VirtualCoordinatesSystem.h */; };
+		024BD5A21A2C8371000BECC1 /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 024BD5971A2C8371000BECC1 /* VirtualCoordinatesSystem.h */; };
+		024BD5A31A2C8371000BECC1 /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 024BD5971A2C8371000BECC1 /* VirtualCoordinatesSystem.h */; };
 		024DF6E917FDE4C400138748 /* FMODSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024DF6DD17FDE4C400138748 /* FMODSoundEvent.cpp */; };
 		024DF6EA17FDE4C400138748 /* FMODSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024DF6DD17FDE4C400138748 /* FMODSoundEvent.cpp */; };
 		024DF6EB17FDE4C400138748 /* FMODSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 024DF6DD17FDE4C400138748 /* FMODSoundEvent.cpp */; };
@@ -52,18 +64,6 @@
 		0282B87918BC72BE006F1EE4 /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0282B87318BC72BE006F1EE4 /* FMODFileSoundEvent.h */; };
 		0282B87A18BC72C6006F1EE4 /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0256F3DA185B4CAA00D22ADF /* SoundEvent.h */; };
 		0282B87B18BC72C6006F1EE4 /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0256F3DA185B4CAA00D22ADF /* SoundEvent.h */; };
-		028C58131A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */; };
-		028C58141A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */; };
-		028C58151A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */; };
-		028C58161A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */; };
-		028C58171A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */; };
-		028C58181A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */; };
-		028C58191A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */; };
-		028C581A1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */; };
-		028C581B1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */; };
-		028C581C1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */; };
-		028C581D1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */; };
-		028C581E1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */; };
 		02A03DA91871C37B00FA72CE /* SpeedTreeObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02A03DA71871C37B00FA72CE /* SpeedTreeObject.cpp */; };
 		02A03DAA1871C37B00FA72CE /* SpeedTreeObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A03DA81871C37B00FA72CE /* SpeedTreeObject.h */; };
 		02A03DAB1871C49C00FA72CE /* SpeedTreeObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A03DA81871C37B00FA72CE /* SpeedTreeObject.h */; };
@@ -2541,6 +2541,10 @@
 		02141405181984D600925E51 /* DAVAClassRegistrator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DAVAClassRegistrator.cpp; sourceTree = "<group>"; };
 		02141406181984D600925E51 /* DAVAClassRegistrator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAVAClassRegistrator.h; sourceTree = "<group>"; };
 		0224B6FF15989F7400CDEF9E /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_macos.a; path = ../../Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
+		024BD5941A2C8371000BECC1 /* RenderSystem2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderSystem2D.cpp; sourceTree = "<group>"; };
+		024BD5951A2C8371000BECC1 /* RenderSystem2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderSystem2D.h; sourceTree = "<group>"; };
+		024BD5961A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualCoordinatesSystem.cpp; sourceTree = "<group>"; };
+		024BD5971A2C8371000BECC1 /* VirtualCoordinatesSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualCoordinatesSystem.h; sourceTree = "<group>"; };
 		024DF6DD17FDE4C400138748 /* FMODSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODSoundEvent.cpp; sourceTree = "<group>"; };
 		024DF6DE17FDE4C400138748 /* FMODSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODSoundEvent.h; sourceTree = "<group>"; };
 		024DF6E117FDE4C400138748 /* FMODSoundSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODSoundSystem.cpp; sourceTree = "<group>"; };
@@ -2553,10 +2557,6 @@
 		026A1DCF19DAF1B700813AEF /* SkinnedMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkinnedMesh.h; sourceTree = "<group>"; };
 		0282B87218BC72BE006F1EE4 /* FMODFileSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODFileSoundEvent.cpp; sourceTree = "<group>"; };
 		0282B87318BC72BE006F1EE4 /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
-		028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderSystem2D.cpp; sourceTree = "<group>"; };
-		028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderSystem2D.h; sourceTree = "<group>"; };
-		028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualCoordinatesSystem.cpp; sourceTree = "<group>"; };
-		028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualCoordinatesSystem.h; sourceTree = "<group>"; };
 		02A03DA71871C37B00FA72CE /* SpeedTreeObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedTreeObject.cpp; sourceTree = "<group>"; };
 		02A03DA81871C37B00FA72CE /* SpeedTreeObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpeedTreeObject.h; sourceTree = "<group>"; };
 		02A2FC3018D2E7460039E66A /* TreeToAnimatedTreeConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TreeToAnimatedTreeConverter.cpp; path = Converters/TreeToAnimatedTreeConverter.cpp; sourceTree = "<group>"; };
@@ -3501,6 +3501,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		024BD5931A2C8371000BECC1 /* Systems */ = {
+			isa = PBXGroup;
+			children = (
+				024BD5941A2C8371000BECC1 /* RenderSystem2D.cpp */,
+				024BD5951A2C8371000BECC1 /* RenderSystem2D.h */,
+				024BD5961A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp */,
+				024BD5971A2C8371000BECC1 /* VirtualCoordinatesSystem.h */,
+			);
+			path = Systems;
+			sourceTree = "<group>";
+		};
 		024DF6FB17FDE4CF00138748 /* FMOD */ = {
 			isa = PBXGroup;
 			children = (
@@ -3512,17 +3523,6 @@
 				02E9E3AA17296D4200C501BC /* FMODUtils.h */,
 			);
 			name = FMOD;
-			sourceTree = "<group>";
-		};
-		028C580E1A1CD8FB00EA80AD /* RenderSystem2D */ = {
-			isa = PBXGroup;
-			children = (
-				028C580F1A1CD8FB00EA80AD /* RenderSystem2D.cpp */,
-				028C58101A1CD8FB00EA80AD /* RenderSystem2D.h */,
-				028C58111A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp */,
-				028C58121A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h */,
-			);
-			path = RenderSystem2D;
 			sourceTree = "<group>";
 		};
 		034768DFFF38A50411DB9C8B /* Products */ = {
@@ -4243,7 +4243,7 @@
 		E8989C1616BD24E400732C04 /* 2D */ = {
 			isa = PBXGroup;
 			children = (
-				028C580E1A1CD8FB00EA80AD /* RenderSystem2D */,
+				024BD5931A2C8371000BECC1 /* Systems */,
 				C172EC0018C9F1E9004309CF /* DFFont.cpp */,
 				C172EC0118C9F1E9004309CF /* DFFont.h */,
 				C172EC0218C9F1E9004309CF /* TextBlockDistanceRender.cpp */,
@@ -4806,7 +4806,7 @@
 				176DE8F9174B5561007A983B /* AnimatedObject.h in Headers */,
 				176DE8FA174B5561007A983B /* Animation.h in Headers */,
 				176DE8FB174B5561007A983B /* AnimationManager.h in Headers */,
-				028C581E1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */,
+				024BD5A31A2C8371000BECC1 /* VirtualCoordinatesSystem.h in Headers */,
 				176DE8FC174B5561007A983B /* BezierSplineAnimation.h in Headers */,
 				1146E12219D00887009E5FAB /* AnimationSystem.h in Headers */,
 				176DE8FD174B5561007A983B /* Interpolation.h in Headers */,
@@ -4825,7 +4825,7 @@
 				4F53ED3F19A23BEE00D3869D /* BSDiff.h in Headers */,
 				176DE90A174B5561007A983B /* BaseTypes.h in Headers */,
 				176DE90B174B5561007A983B /* Data.h in Headers */,
-				028C58181A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */,
+				024BD59D1A2C8371000BECC1 /* RenderSystem2D.h in Headers */,
 				176DE90C174B5561007A983B /* DynamicObjectCache.h in Headers */,
 				176DE90D174B5561007A983B /* EventDispatcher.h in Headers */,
 				176DE90E174B5561007A983B /* Exception.h in Headers */,
@@ -5389,7 +5389,7 @@
 				E8989EE016BD24E500732C04 /* GraphicsFont.h in Headers */,
 				E8989EE116BD24E500732C04 /* GridSprite.h in Headers */,
 				E8989EE316BD24E500732C04 /* Sprite.h in Headers */,
-				028C581C1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */,
+				024BD5A11A2C8371000BECC1 /* VirtualCoordinatesSystem.h in Headers */,
 				E8989EE516BD24E500732C04 /* TextBlock.h in Headers */,
 				E8989EE716BD24E500732C04 /* AnimatedMesh.h in Headers */,
 				E8989EE916BD24E500732C04 /* EdgeAdjacency.h in Headers */,
@@ -5417,7 +5417,7 @@
 				E8989F4216BD24E500732C04 /* RenderDataObject.h in Headers */,
 				E8989F4416BD24E500732C04 /* RenderEffect.h in Headers */,
 				E8989F4616BD24E500732C04 /* RenderGrayscaleEffect.h in Headers */,
-				028C58161A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */,
+				024BD59B1A2C8371000BECC1 /* RenderSystem2D.h in Headers */,
 				E8989F4816BD24E500732C04 /* RenderHelper.h in Headers */,
 				E8989F4A16BD24E500732C04 /* RenderManager.h in Headers */,
 				E8989F5116BD24E500732C04 /* RenderOptions.h in Headers */,
@@ -5668,7 +5668,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E898A05516BD265400732C04 /* AnimatedObject.h in Headers */,
-				028C58171A1CD8FB00EA80AD /* RenderSystem2D.h in Headers */,
+				024BD59C1A2C8371000BECC1 /* RenderSystem2D.h in Headers */,
 				E898A05616BD265400732C04 /* Animation.h in Headers */,
 				E898A05716BD265400732C04 /* AnimationManager.h in Headers */,
 				76199F3B192DF73D008A47E2 /* VersionInfo.h in Headers */,
@@ -5789,7 +5789,7 @@
 				E898A0B416BD265400732C04 /* Math2D.h in Headers */,
 				E898A0B516BD265400732C04 /* Math2DTemplateClasses.h in Headers */,
 				E898A0B616BD265400732C04 /* MathConstants.h in Headers */,
-				028C581D1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.h in Headers */,
+				024BD5A21A2C8371000BECC1 /* VirtualCoordinatesSystem.h in Headers */,
 				E898A0B716BD265400732C04 /* MathDefines.h in Headers */,
 				E898A0B816BD265400732C04 /* MathHelpers.h in Headers */,
 				505EB4121824CEC5009BEA3C /* OcclusionQuery.h in Headers */,
@@ -6363,7 +6363,7 @@
 				176DEAD1174B5561007A983B /* Box2DDebugDraw.cpp in Sources */,
 				176DEAD2174B5561007A983B /* Box2DGameObject.cpp in Sources */,
 				644C86D219476A7100964F91 /* VegetationCustomGeometrySerializationData.cpp in Sources */,
-				028C58151A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */,
+				024BD59A1A2C8371000BECC1 /* RenderSystem2D.cpp in Sources */,
 				176DEAD3174B5561007A983B /* Box2DGameObjectManager.cpp in Sources */,
 				176DEAD4174B5561007A983B /* Box2DHelper.cpp in Sources */,
 				176DEAD5174B5561007A983B /* Box2DTileCollider.cpp in Sources */,
@@ -6478,8 +6478,8 @@
 				176DEB24174B5561007A983B /* UIStaticText.cpp in Sources */,
 				A6D8279A187716F30006A5DD /* Color.cpp in Sources */,
 				176DEB25174B5561007A983B /* UITextField.cpp in Sources */,
-				028C581B1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */,
 				176DEB26174B5561007A983B /* UIYamlLoader.cpp in Sources */,
+				024BD5A01A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				02FD8266192A3859007762C0 /* WaveSystem.cpp in Sources */,
 				176DEB27174B5561007A983B /* HTTPDownloader.mm in Sources */,
 				176DEB28174B5561007A983B /* MD5.cpp in Sources */,
@@ -6645,7 +6645,7 @@
 				E8989E3816BD24E500732C04 /* FileSystemObjective.mm in Sources */,
 				A6931ACD1868569D00006294 /* RenderTechnique.cpp in Sources */,
 				E8989E3916BD24E500732C04 /* KeyedArchive.cpp in Sources */,
-				028C58131A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */,
+				024BD5981A2C8371000BECC1 /* RenderSystem2D.cpp in Sources */,
 				E8989E3B16BD24E500732C04 /* KeyedArchiver.cpp in Sources */,
 				E8989E3D16BD24E500732C04 /* KeyedUnarchiver.cpp in Sources */,
 				E8989E4116BD24E500732C04 /* LocalizationSystem.cpp in Sources */,
@@ -6655,7 +6655,7 @@
 				E8989E4B16BD24E500732C04 /* VariantType.cpp in Sources */,
 				7A169353180EE75A005F1FBC /* GameAPI.cpp in Sources */,
 				E8989E4D16BD24E500732C04 /* XMLParser.cpp in Sources */,
-				028C58191A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */,
+				024BD59E1A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				E8989E4F16BD24E500732C04 /* XMLParser.mm in Sources */,
 				E8989E5016BD24E500732C04 /* YamlArchive.cpp in Sources */,
 				E8989E5216BD24E500732C04 /* YamlParser.cpp in Sources */,
@@ -6997,7 +6997,7 @@
 				E898A1A916BD265400732C04 /* BaseObjectChecker.cpp in Sources */,
 				E898A1AA16BD265400732C04 /* Data.cpp in Sources */,
 				50B06921186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
-				028C581A1A1CD8FB00EA80AD /* VirtualCoordinatesSystem.cpp in Sources */,
+				024BD59F1A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				E8BAD5B1185213F100C98C8D /* IntrospectionDynamic.cpp in Sources */,
 				CC931B27188EC95F000375F9 /* SwitchToRenerObjectConverter.cpp in Sources */,
 				E898A1AB16BD265400732C04 /* DynamicObjectCache.cpp in Sources */,
@@ -7073,8 +7073,8 @@
 				E898A1E316BD265400732C04 /* NeonMath.cpp in Sources */,
 				E898A1E416BD265400732C04 /* Polygon2.cpp in Sources */,
 				E898A1E516BD265400732C04 /* Polygon3.cpp in Sources */,
+				024BD5991A2C8371000BECC1 /* RenderSystem2D.cpp in Sources */,
 				E898A1E616BD265400732C04 /* RectPacker.cpp in Sources */,
-				028C58141A1CD8FB00EA80AD /* RenderSystem2D.cpp in Sources */,
 				E898A1E716BD265400732C04 /* Spline.cpp in Sources */,
 				647EFC52195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				1146E11619D00874009E5FAB /* AnimationComponent.cpp in Sources */,
