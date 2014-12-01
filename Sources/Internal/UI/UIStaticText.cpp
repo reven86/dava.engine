@@ -552,7 +552,7 @@ String UIStaticText::GetFontPresetName() const
     return FontManager::Instance()->GetFontName(font);
 }
 
-void UIStaticText::SetFontPresetName(const String &presetName)
+void UIStaticText::SetFontByPresetName(const String &presetName)
 {
     Font *font = NULL;
 
@@ -588,10 +588,11 @@ void UIStaticText::SetTextPerPixelAccuracyType(int32 type)
 
 int32 UIStaticText::GetMultilineType() const
 {
-    if (GetMultiline())
+    bool multiline = GetMultiline();
+    if (multiline)
         return GetMultilineBySymbol() ? MULTILINE_ENABLED_BY_SYMBOL : MULTILINE_ENABLED;
     else
-        return GetMultiline();
+        return multiline;
 }
     
 void UIStaticText::SetMultilineType(int32 multilineType)

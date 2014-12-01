@@ -132,7 +132,7 @@ public:
     }
     
     String GetFontPresetName() const;
-    void SetFontPresetName(const String &presetName);
+    void SetFontByPresetName(const String &presetName);
     
     int32 GetTextColorInheritType() const;
     void SetTextColorInheritType(int32 type);
@@ -146,7 +146,7 @@ public:
     
     INTROSPECTION_EXTEND(UIStaticText, UIControl,
                          PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("font", "Font", GetFontPresetName, SetFontPresetName, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          
                          PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
