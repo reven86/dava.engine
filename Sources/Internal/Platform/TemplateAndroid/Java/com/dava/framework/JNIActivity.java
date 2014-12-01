@@ -245,7 +245,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onResume();
         // The activity has become visible (it is now "resumed").
         // glView on resume should be called in Activity.onResume!!!
-//        glView.onResume();
+        // if context exist call glView.onResume as soon as possible
+        // else skip glView.onResume here, and call it in 
+        // windowsFocusChanded(has_focus)
+        // it is HACK to speedup show splash first and later create gl
+        // resources such textures, shaders etc.
+        if (!isEglContextDestroyed())
+        {
+            glView.onResume();
+        }
 
         // activate accelerometer
         if(accelerometer != null)

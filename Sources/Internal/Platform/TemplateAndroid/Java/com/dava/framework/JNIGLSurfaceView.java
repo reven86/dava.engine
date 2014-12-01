@@ -23,6 +23,9 @@ import com.bda.controller.StateEvent;
 public class JNIGLSurfaceView extends GLSurfaceView
 {
 	private JNIRenderer mRenderer = null;
+	// we have to add flag to distinguish second call to onResume()
+	// during Activity.onResume or Activity.onWindowsFocusChanged(focus)
+	private boolean alreadyResumed = false;
 
 	private native void nativeOnInput(int action, int id, float x, float y, double time, int source, int tapCount);
 	private native void nativeOnKeyDown(int keyCode);
@@ -115,20 +118,25 @@ public class JNIGLSurfaceView extends GLSurfaceView
         });
 		// destroy eglCondext(or unbind), eglScreen, eglSurface
 		super.onPause();
+		alreadyResumed = false;
 	}
 	
 	@Override
 	public void onResume()
 	{
 	    Log.i(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
-        // first call parent to restore eglContext
-		super.onResume();
-		queueEvent(new Runnable() {
-            public void run() {
-                mRenderer.OnResume();
-            }
-        });
-		setRenderMode(RENDERMODE_CONTINUOUSLY);
+	    if (!alreadyResumed)
+	    {
+            // first call parent to restore eglContext
+    		super.onResume();
+    		queueEvent(new Runnable() {
+                public void run() {
+                    mRenderer.OnResume();
+                }
+            });
+    		setRenderMode(RENDERMODE_CONTINUOUSLY);
+    		alreadyResumed = true;
+	    }
 	};
 
 	Map<Integer, Integer> tIdMap = new HashMap<Integer, Integer>();
