@@ -48,7 +48,7 @@ namespace DAVA
 #define xGL_WRITE_FLAG GL_WRITE_ONLY
 #endif
 
-#define USE_MAPPING 1
+#define USE_MAPPING 0
 #define USE_BATCHING true
 
 VboPool::VboPool(uint32 size, uint8 count)
@@ -64,13 +64,9 @@ VboPool::VboPool(uint32 size, uint8 count)
         obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, 0);
         obj->BuildVertexBuffer(size, false);
-        obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
-        obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
-        obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
         obj->SetIndices(EIF_16, 0, size * 2);
         obj->BuildIndexBuffer(false);
 #endif
-
         dataObjects.push_back(obj);
     }
     currentDataObjectIndex = 0;
@@ -88,16 +84,13 @@ void VboPool::SetVertexData(uint32 count, float32* data)
     currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, data);
     currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, data + 2);
     currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, data + 4);
-    currentDataObject->BuildVertexBuffer(count, true);
-    currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
-    currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
-    currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
+    currentDataObject->UpdateVertexBuffer(count);
 }
 
 void VboPool::SetIndexData(uint32 count, uint8* data)
 {
     currentDataObject->SetIndices(EIF_16, data, count);
-    currentDataObject->BuildIndexBuffer(true);
+    currentDataObject->UpdateIndexBuffer();
 }
 
 void VboPool::MapBuffers()
@@ -307,6 +300,10 @@ void RenderSystem2D::ClipPop()
 
 void RenderSystem2D::Flush()
 {
+    /*
+    Called on each EndFrame, particle draw, screen transitions preparing, screen borders draw
+    */
+
     if (!useBatching)
     {
         return;
@@ -331,6 +328,7 @@ void RenderSystem2D::Flush()
     pool->SetVertexData(vertexIndex, &vertexBuffer2[0]);
     pool->SetIndexData(indexIndex, (uint8*)&indexBuffer2[0]);
 #else
+    // Need set streams because on pool constructor we can't set they (deadlock)
     pool->GetDataObject()->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 32, 0);
     pool->GetDataObject()->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 32, (void*)8);
     pool->GetDataObject()->SetStream(EVF_COLOR, TYPE_FLOAT, 4, 32, (void*)16);
