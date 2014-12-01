@@ -4,6 +4,8 @@ if exist app rmdir /s /q app
 if exist app.zip del /q app.zip
 
 mkdir app\ResourceEditor\dava.framework\Tools\ResourceEditor\Data
+mkdir app\ResourceEditor\dava.framework\Tools\ResourceEditor\platforms
+
 mkdir app\ResourceEditor\dava.resourceeditor.beast
 call git log --since=3.days --branches="development" --pretty=format:"%%%%s (%%%%an, %%%%ar) " >> app/ResourceEditor/changes.txt
 echo cd .\dava.framework\Tools\ResourceEditor > app/ResourceEditor/start.cmd
@@ -21,6 +23,7 @@ xcopy %QT5_HOME%\bin\Qt5Widgets.dll app\ResourceEditor\dava.framework\Tools\Reso
 xcopy %QT5_HOME%\bin\icudt52.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy %QT5_HOME%\bin\icuin52.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy %QT5_HOME%\bin\icuuc52.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy %QT5_HOME%\plugins\platforms\qwindows.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor\platforms
 
 xcopy ..\..\..\..\dava.resourceeditor.beast\beast\bin\beast32.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy /e ..\..\..\..\dava.resourceeditor.beast\*.* app\ResourceEditor\dava.resourceeditor.beast\
