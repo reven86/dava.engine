@@ -18,3 +18,6 @@
 %import "UI/UIEvent.h"
 %import "UI/UIScrollBar.h"
 %import "UI/UIList.h"
+
+%include "KeyedArchive.i"
+%include "AutotestingSystemLua.h"
