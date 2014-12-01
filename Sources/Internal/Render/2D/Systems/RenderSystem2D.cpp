@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "RenderSystem2D.h"
 #include "VirtualCoordinatesSystem.h"
 #include "Render/RenderManager.h"
 

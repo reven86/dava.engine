@@ -38,7 +38,7 @@
 #include "Core/Core.h"
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Render/2D/TextBlockDistanceRender.h"

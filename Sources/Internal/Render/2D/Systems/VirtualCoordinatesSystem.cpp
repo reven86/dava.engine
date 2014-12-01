@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "VirtualCoordinatesSystem.h"
+#include "RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Sprite.h"

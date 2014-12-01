@@ -38,8 +38,8 @@
 #include "Core/Core.h"
 #include "UI/UIEvent.h"
 #include "UI/UIYamlLoader.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {

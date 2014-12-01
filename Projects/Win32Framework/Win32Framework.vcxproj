@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -435,8 +435,8 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h" />
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\RenderSystem2D.h" />
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\VirtualCoordinatesSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockRender.h" />
@@ -902,8 +902,8 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\RenderSystem2D.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\VirtualCoordinatesSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockRender.cpp" />

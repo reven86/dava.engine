@@ -266,15 +266,11 @@ public:
 	
 	virtual void GoBackground(bool isLock);
 	virtual void GoForeground();
-	
-//	bool NeedToRecalculateMultipliers();
     
 	/**
      \brief Get device familty
      */
     eDeviceFamily GetDeviceFamily();
-    
-//    void EnableReloadResourceOnResize(bool enable);
 	
 	// Needs to be overriden for the platforms where it has sence (MacOS only for now).
 	virtual void* GetOpenGLView() { return NULL; };

@@ -73,15 +73,15 @@ public:
     inline float32 ConvertPhysicalToVirtualY(const float32 & value) const;
     inline float32 ConvertVirtualToPhysicalX(const float32 & value) const;
     inline float32 ConvertVirtualToPhysicalY(const float32 & value) const;
-    inline float32 ConvertResourceToVirtualX(const float32 & value, DAVA::int32 resourceIndex) const;
-    inline float32 ConvertResourceToVirtualY(const float32 & value, DAVA::int32 resourceIndex) const;
-    inline float32 ConvertVirtualToResourceX(const float32 & value, DAVA::int32 resourceIndex) const;
-    inline float32 ConvertVirtualToResourceY(const float32 & value, DAVA::int32 resourceIndex) const;
+    inline float32 ConvertResourceToVirtualX(const float32 & value, int32 resourceIndex) const;
+    inline float32 ConvertResourceToVirtualY(const float32 & value, int32 resourceIndex) const;
+    inline float32 ConvertVirtualToResourceX(const float32 & value, int32 resourceIndex) const;
+    inline float32 ConvertVirtualToResourceY(const float32 & value, int32 resourceIndex) const;
 
     inline Vector2 ConvertPhysicalToVirtual(const Vector2 & vector) const;
     inline Vector2 ConvertVirtualToPhysical(const Vector2 & vector) const;
-    inline Vector2 ConvertResourceToVirtual(const Vector2 & vector, DAVA::int32 resourceIndex) const;
-    inline Vector2 ConvertResourceToPhysical(const Vector2 & vector, DAVA::int32 resourceIndex) const;
+    inline Vector2 ConvertResourceToVirtual(const Vector2 & vector, int32 resourceIndex) const;
+    inline Vector2 ConvertResourceToPhysical(const Vector2 & vector, int32 resourceIndex) const;
     inline Vector2 ConvertInputToVirtual(const Vector2 & vector) const;
     inline Vector2 ConvertInputToPhysical(const Vector2 & vector) const;
 
@@ -118,7 +118,7 @@ private:
     float32 physicalToVirtual;
 	Vector2 drawOffset;
     
-	int desirableIndex;
+	int32 desirableIndex;
 	bool fixedProportions;
     
 	bool wasScreenResized;

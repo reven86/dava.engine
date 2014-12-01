@@ -151,7 +151,7 @@
     <Filter Include="Internal\Notification">
       <UniqueIdentifier>{4b5695b8-6b14-4d0c-8f8d-86535f5de24e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Render\2D\RenderSystem2D">
+    <Filter Include="Internal\Render\2D\Systems">
       <UniqueIdentifier>{012e0df1-1251-4d03-8523-68ada6fd9f72}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -1543,9 +1543,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\RenderSystem2D.h">
-      <Filter>Internal\Render\2D\RenderSystem2D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
@@ -1566,9 +1563,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Utils\StringUtils.h">
       <Filter>Internal\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\VirtualCoordinatesSystem.h">
-      <Filter>Internal\Render\2D\RenderSystem2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h">
       <Filter>Internal\Notification</Filter>
@@ -1611,6 +1605,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h">
+      <Filter>Internal\Render\2D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h">
+      <Filter>Internal\Render\2D\Systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2851,9 +2851,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\RenderSystem2D.cpp">
-      <Filter>Internal\Render\2D\RenderSystem2D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
@@ -2903,14 +2900,17 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\RenderSystem2D\VirtualCoordinatesSystem.cpp">
-      <Filter>Internal\Render\2D\RenderSystem2D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp">
       <Filter>Internal\Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp">
+      <Filter>Internal\Render\2D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp">
+      <Filter>Internal\Render\2D\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

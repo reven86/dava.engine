@@ -34,7 +34,7 @@
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include <algorithm>
 #include "Render/2D/FTFont.h"
 

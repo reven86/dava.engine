@@ -130,8 +130,8 @@
 #include "Render/RenderHelper.h"
 #include "Render/Cursor.h"
 #include "Render/MipmapReplacer.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 // Fonts
 #include "Render/2D/Font.h"
