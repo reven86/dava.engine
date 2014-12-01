@@ -106,38 +106,35 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		super.onSizeChanged(w, h, oldw, oldh);
 	}
 	
-	@Override
-	public void onPause()
-	{
-	    Log.i(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onPause");
-		setRenderMode(RENDERMODE_WHEN_DIRTY);
-		queueEvent(new Runnable() {
+    @Override
+    public void onPause() {
+        Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onPause");
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
+        queueEvent(new Runnable() {
             public void run() {
                 mRenderer.OnPause();
             }
         });
-		// destroy eglCondext(or unbind), eglScreen, eglSurface
-		super.onPause();
-		alreadyResumed = false;
-	}
-	
-	@Override
-	public void onResume()
-	{
-	    Log.i(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
-	    if (!alreadyResumed)
-	    {
+        // destroy eglCondext(or unbind), eglScreen, eglSurface
+        super.onPause();
+        alreadyResumed = false;
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
+        if (!alreadyResumed) {
             // first call parent to restore eglContext
-    		super.onResume();
-    		queueEvent(new Runnable() {
+            super.onResume();
+            queueEvent(new Runnable() {
                 public void run() {
                     mRenderer.OnResume();
                 }
             });
-    		setRenderMode(RENDERMODE_CONTINUOUSLY);
-    		alreadyResumed = true;
-	    }
-	};
+            setRenderMode(RENDERMODE_CONTINUOUSLY);
+            alreadyResumed = true;
+        }
+    };
 
 	Map<Integer, Integer> tIdMap = new HashMap<Integer, Integer>();
 	int nexttId = 1;

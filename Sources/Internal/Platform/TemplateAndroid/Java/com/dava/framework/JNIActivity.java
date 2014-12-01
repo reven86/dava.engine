@@ -163,7 +163,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 			}
 			commandLine = commandLine.trim();
 		}
-		Log.i("DAVA", "command line params: " + commandLine);
+		Log.i(JNIConst.LOG_TAG, "command line params: " + commandLine);
 		return commandLine;
 	}
     
@@ -199,6 +199,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     @Override
     protected void onPause()
     {
+        // reverse order of onResume
         // Another activity is taking focus (this activity is about to be "paused").
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] start");
 
@@ -225,12 +226,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         // can destroy eglContext
         glView.onPause();
-        
-        // we can show splash after switch running app
-//        if (splashView != null)
-//        {
-//            splashView.setVisibility(View.VISIBLE);
-//        }
         
         super.onPause();
 
