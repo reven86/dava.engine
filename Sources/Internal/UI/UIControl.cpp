@@ -581,9 +581,6 @@ namespace DAVA
 
     void UIControl::SetSize(const Vector2 &newSize)
     {
-        if (newSize == size)
-            return;
-
         Vector2 oldPivot = GetPivot();
         size = newSize;
         SetPivot(oldPivot);
