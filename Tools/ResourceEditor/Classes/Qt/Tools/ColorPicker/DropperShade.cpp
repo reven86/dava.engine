@@ -2,9 +2,11 @@
 
 #include <QPainter>
 #include <QKeyEvent>
+#include <QPixmap>
 #include <QCursor>
 #include <QLabel>
 #include <QPaintEvent>
+#include <QDebug>
 
 #include "../Helpers/MouseHelper.h"
 
@@ -19,7 +21,7 @@ DropperShade::DropperShade( const QImage& src, const QRect& rect )
 : QWidget(NULL, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip)
     , cache(src)
     , cursorSize(cCursorRadius * 2 + 1, cCursorRadius * 2 + 1)
-    , zoomFactor(0)
+    , zoomFactor(1)
     , mouse(new MouseHelper(this))
     , drawCursor(false)
 {
@@ -36,11 +38,6 @@ DropperShade::DropperShade( const QImage& src, const QRect& rect )
     connect(mouse, SIGNAL( mouseWheel( int ) ), SLOT( OnMouseWheel( int ) ));
     connect(mouse, SIGNAL( mouseEntered() ), SLOT( OnMouseEnter() ));
     connect(mouse, SIGNAL( mouseLeaved() ), SLOT( OnMouseLeave() ));
-
-    label = new QLabel(this);
-    label->setStyleSheet("background: white;");
-    label->resize(300, 45);
-    label->move(0, 0);
 }
 
 DropperShade::~DropperShade()
@@ -59,7 +56,7 @@ void DropperShade::SetZoomFactor(int zoom)
 void DropperShade::paintEvent(QPaintEvent* e)
 {
     QPainter p(this);
-    p.drawImage(e->rect(), cache, e->rect());
+    p.drawImage(0, 0, cache);
     if (drawCursor)
     {
         DrawCursor(cursorPos, &p);
@@ -69,25 +66,24 @@ void DropperShade::paintEvent(QPaintEvent* e)
 void DropperShade::DrawCursor(const QPoint& _pos, QPainter* p)
 {
     const int scale = static_cast<int>(cache.devicePixelRatio());
-    const QPoint scaledPos(_pos.x() * scale, _pos.y() * scale);
-    const QColor c = GetPixel(scaledPos);
+    const QColor c = GetPixel(_pos);
 
-    const int zf = zoomFactor * 2 + 1;
+    const int zf = (zoomFactor * 2 + 1);
     const QRect rcVirtual(
         _pos.x() - cursorSize.width() / 2,
         _pos.y() - cursorSize.height() / 2,
         cursorSize.width(),
         cursorSize.height());
     const QRect rcReal(
-        (_pos.x() - cursorSize.width() / zf / 2) * scale,
-        (_pos.y() - cursorSize.height() / zf / 2) * scale,
-        cursorSize.width() / (zf * scale),
-        cursorSize.height() / (zf * scale));
+        (_pos.x() - cursorSize.width() / 2 / zf) * scale,
+        (_pos.y() - cursorSize.height() / 2 / zf) * scale,
+        (rcVirtual.width() / zf) * scale + 1,
+        (rcVirtual.height() / zf) * scale + 1);
 
     const QImage& crop = cache.copy(rcReal);
-    const QImage& scaled = crop.scaled(cursorSize.width(), cursorSize.height(), Qt::KeepAspectRatio, Qt::FastTransformation);
+    const QImage& scaled = crop.scaled(cursorSize.width() * scale, cursorSize.height() * scale, Qt::KeepAspectRatio, Qt::FastTransformation);
 
-    p->drawImage(rcVirtual, scaled);
+    p->drawImage(rcVirtual.topLeft(), scaled);
 
     int xl = rcVirtual.left();
     int xm = rcVirtual.center().x();
@@ -118,22 +114,13 @@ void DropperShade::DrawCursor(const QPoint& _pos, QPainter* p)
 
     const int size = 2;
     p->fillRect(xm - size, ym - size, size * 2, size * 2, c);
-
-    const QString text = QString(
-        "Virtual: %1x%2 : %3x%4\n"
-        "Scale :%5\n"
-        "Real: %6x%7 : %8x%9"
-        )
-        .arg( rcVirtual.x() ).arg( rcVirtual.y() ).arg( rcVirtual.width() ).arg( rcVirtual.height() )
-        .arg( scale )
-        .arg( rcReal.x() ).arg( rcReal.y() ).arg( rcReal.width() ).arg( rcReal.height() );
-
-    label->setText(text);
 }
 
 QColor DropperShade::GetPixel(const QPoint& pos) const
 {
-    const QColor c = cache.pixel(pos);
+    const int scale = static_cast<int>(cache.devicePixelRatio());
+    const QPoint pt(pos.x() * scale, pos.y() * scale);
+    const QColor c = cache.pixel(pt);
     return c;
 }
 
