@@ -36,7 +36,7 @@
 #include "UI/UITextFieldiPhone.h"
 #include "Platform/TemplateiOS/UITextFieldHolder.h"
 #include "Core/Core.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #import <HelperAppDelegate.h>
 

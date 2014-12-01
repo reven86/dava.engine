@@ -38,13 +38,15 @@
 #include "Core/Core.h"
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Render/2D/TextBlockDistanceRender.h"
 
 #include "Utils/StringUtils.h"
 #include <Thread/LockGuard.h>
+#include "fribidi/fribidi-bidi-types.h"
+#include "fribidi/fribidi-unicode.h"
 
 namespace DAVA 
 {
@@ -528,7 +530,7 @@ void TextBlock::CalculateCacheParams()
                 }
             }
         }
-        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textSize.width) && (requestedSize.x >= 0))
+        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x + 1 < textSize.width) && (requestedSize.x >= 0))
         {
             Size2i textSizePoints;
             int32 length = (int32)visualText.length();
@@ -964,6 +966,12 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
 
     Vector<float32> sizes;
     font->GetStringSize(string, &sizes);
+    for(uint32 i = 0; i < sizes.size(); ++i)
+        if (FRIBIDI_IS_EXPLICIT_OR_BN (fribidi_get_bidi_type (string[i]))
+	    || string[i] == FRIBIDI_CHAR_LRM || string[i] == FRIBIDI_CHAR_RLM)
+        {
+            sizes[i] = 0.0f;
+        }
     if (sizes.size() != string.length())
     {
         return;

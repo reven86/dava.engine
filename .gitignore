@@ -21,6 +21,7 @@ _DebugQt
 Release
 ReleaseQt
 _ReleaseQt
+_build
 *Generated*
 *.vcxproj.user
 *.suo
@@ -36,6 +37,3 @@ ddd
 /testproj/
 fmod.log
 *.user
-/Tools/ResourceEditor/_build
-/Tools/UIEditor/_build
-/Projects/UnitTests/_build

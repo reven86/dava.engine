@@ -61,7 +61,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Render/2D/RenderSystem2D/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/2D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Effects/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Highlevel/*.cpp) \
@@ -98,6 +98,7 @@ endif
 endif
 
 # set build flags
+LOCAL_CFLAGS += -Dnullptr=0
 LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 LOCAL_CFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD

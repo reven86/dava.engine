@@ -82,6 +82,18 @@
 
 using namespace DAVA;
 
+
+void GameCore::RunOnlyThisTest()
+{
+    //runOnlyThisTest = "TestClassName";
+    //runOnlyThisTest = "TextSizeTest";
+}
+
+void GameCore::OnError()
+{
+    DebugBreak();
+}
+
 GameCore::GameCore():currentScreen(NULL),
     currentScreenIndex(0),
     currentTestIndex(0)
@@ -95,13 +107,14 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     InitLogging();
+    RunOnlyThisTest();
 
     RenderManager::Instance()->SetFPS(60);
 
+    //new DLCDownloadTest();
     new MathTest();
     new FunctionBindSignalTest();
-    //new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
-    //new DLCDownloadTest();
+    new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
 
 
     new ImageSizeTest();
@@ -121,7 +134,7 @@ void GameCore::OnAppStarted()
     //new RectSpriteTest();
 
     new ComponentsTest();
-    new FilePathTest();
+    //new FilePathTest();
     new FileListTest();
     new FileSystemTest();
     
@@ -153,7 +166,7 @@ void GameCore::OnAppStarted()
     //new UIScrollViewTest();
  
 
-    new SceneSystemTest();
+    //new SceneSystemTest();
 
     RunTests();
 }
@@ -353,6 +366,8 @@ void GameCore::ProcessTests()
 
 void GameCore::RegisterError(const String &command, const String &fileName, int32 line, TestData *testData)
 {
+    OnError();
+
     const char* testName = currentScreen->GetTestName().c_str();
 
     String errorString = String(Format("%s(%d): ",
@@ -428,3 +443,7 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
+
+
+
+

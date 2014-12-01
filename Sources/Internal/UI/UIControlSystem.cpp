@@ -37,7 +37,7 @@
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {

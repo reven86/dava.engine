@@ -137,7 +137,7 @@ void JniTextField::SetFontSize(float size)
 				GetJavaClass(),
 				mid,
 				id,
-				VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size));
+				VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size));
 	}
 }
 

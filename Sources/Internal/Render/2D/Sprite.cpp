@@ -43,7 +43,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "Render/Texturedescriptor.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NEW_PPA
 
@@ -57,8 +57,6 @@ namespace DAVA
 	SpriteMap spriteMap;
 
 static int32 fboCounter = 0;
-//Vector<Vector2> Sprite::clippedTexCoords;
-//Vector<Vector2> Sprite::clippedVertices;
 
 Mutex Sprite::spriteMapMutex;
 
@@ -68,8 +66,6 @@ Sprite::DrawState::DrawState()
     
     renderState = RenderState::RENDERSTATE_2D_BLEND;
     shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
-    //RenderManager::Instance()->RetainRenderState(renderState);
-    //shader = SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 }
 
 Sprite::Sprite()
@@ -86,7 +82,6 @@ Sprite::Sprite()
 	size.dx = 24;
 	size.dy = 24;
 	frameCount = 0;
-	//frame = 0;
 
 	isPreparedForTiling = false;
 
@@ -96,11 +91,6 @@ Sprite::Sprite()
 
 	clipPolygon = 0;
 
-//	spriteRenderObject = new RenderDataObject();
-//	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-//	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-
-	//pivotPoint = Vector2(0.0f, 0.0f);
 	defaultPivotPoint = Vector2(0.0f, 0.0f);
 }
 
@@ -252,27 +242,28 @@ void Sprite::InitFromFile(File *file)
 		texCoords[i] = new GLfloat[8];
 		rectsAndOffsets[i] = new GLfloat[6];
 
-		int32 x, y, dx,dy, xOff, yOff;
+		int32 x, y, dx, dy, xOff, yOff;
 
 		file->ReadLine(tempBuf, 1024);
 		sscanf(tempBuf, "%d %d %d %d %d %d %d", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i]);
 
-		rectsAndOffsets[i][0] = (float32)x;
-		rectsAndOffsets[i][1] = (float32)y;
+        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect((float32)xOff, (float32)yOff, (float32)dx, (float32)dy), resourceSizeIndex);
 
-        Vector2 vx1 = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)xOff, (float32)yOff), resourceSizeIndex);
-        Vector2 vx2 = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)(xOff + dx), (float32)yOff), resourceSizeIndex);
-        Vector2 vx3 = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)xOff, (float32)yOff + dy), resourceSizeIndex);
-        Vector2 vx4 = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)(xOff + dx), (float32)(yOff + dy)), resourceSizeIndex);
+		rectsAndOffsets[i][0] = (float32)x;
+        rectsAndOffsets[i][1] = (float32)y;
+        rectsAndOffsets[i][2] = rect.dx;
+        rectsAndOffsets[i][3] = rect.dy;
+        rectsAndOffsets[i][4] = rect.x;
+        rectsAndOffsets[i][5] = rect.y;
         
-		frameVertices[i][0] = vx1.x;
-		frameVertices[i][1] = vx1.y;
-		frameVertices[i][2] = vx2.x;
-		frameVertices[i][3] = vx2.y;
-		frameVertices[i][4] = vx3.x;
-		frameVertices[i][5] = vx3.y;
-		frameVertices[i][6] = vx4.x;
-		frameVertices[i][7] = vx4.y;
+        frameVertices[i][0] = rect.x;
+        frameVertices[i][1] = rect.y;
+        frameVertices[i][2] = rect.x + rect.dx;
+        frameVertices[i][3] = rect.y;
+        frameVertices[i][4] = rect.x;
+        frameVertices[i][5] = rect.y + rect.dy;
+        frameVertices[i][6] = rect.x + rect.dx;
+        frameVertices[i][7] = rect.y + rect.dy;
 
 		float32 xof = 0;
 		float32 yof = 0;
@@ -289,12 +280,6 @@ void Sprite::InitFromFile(File *file)
 				yof = 0.45f;
 			}
 		}
-
-        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect((float32)dx, (float32)dy, (float32)xOff, (float32)yOff), resourceSizeIndex);
-		rectsAndOffsets[i][2] = rect.x;
-		rectsAndOffsets[i][3] = rect.y;
-		rectsAndOffsets[i][4] = rect.dx;
-		rectsAndOffsets[i][5] = rect.dy;
 
 		dx += x;
 		dy += y;
@@ -624,7 +609,6 @@ void Sprite::Clear()
 Sprite::~Sprite()
 {
     spriteMapMutex.Lock();
-//    SafeRelease(spriteRenderObject);
     spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     spriteMapMutex.Unlock();
 	Clear();
@@ -836,15 +820,6 @@ void Sprite::SetClipPolygon(Polygon2 * _clipPolygon)
 
 void Sprite::ConvertToVirtualSize()
 {
-    frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][0]);
-    frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][1]);
-    frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][2]);
-    frameVertices[0][3] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][3]);
-    frameVertices[0][4] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][4]);
-    frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][5]);
-    frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][6]);
-    frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][7]);
-
     frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][0], resourceSizeIndex);
     frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][1], resourceSizeIndex);
     frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][2], resourceSizeIndex);
@@ -853,6 +828,15 @@ void Sprite::ConvertToVirtualSize()
     frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][5], resourceSizeIndex);
     frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][6], resourceSizeIndex);
     frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][7], resourceSizeIndex);
+
+    frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][0]);
+    frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][1]);
+    frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][2]);
+    frameVertices[0][3] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][3]);
+    frameVertices[0][4] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][4]);
+    frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][5]);
+    frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][6]);
+    frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][7]);
 
     texCoords[0][0] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][0], resourceSizeIndex);
     texCoords[0][1] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][1], resourceSizeIndex);
@@ -921,7 +905,6 @@ void Sprite::Reload()
 		if(fp)
 		{
 			InitFromFile(fp);
-//			SetFrame(frame);
 			SafeRelease(fp);
 		}
 		else

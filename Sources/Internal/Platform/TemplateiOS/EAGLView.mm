@@ -31,7 +31,7 @@
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 

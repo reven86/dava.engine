@@ -34,8 +34,8 @@
 #include "Core/Core.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #include <limits>
 
@@ -291,7 +291,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         geometricData.size += Vector2(-(margins->right + margins->left), -(margins->bottom + margins->top));
     }
 
-    geometricData.AddToGeometricData(parentGeometricData);
+    geometricData.AddGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);

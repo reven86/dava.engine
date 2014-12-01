@@ -36,7 +36,7 @@
 #include "Render/RenderManager.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {

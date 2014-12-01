@@ -30,8 +30,8 @@
 #include "Render/RenderManager.h"
 #include "Core/Core.h"
 #include "Render/ShaderCache.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -143,7 +143,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	{
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
-    const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
+
     Matrix4 offsetMatrix;
     offsetMatrix.glTranslate((float32)xOffset, (float32)yOffset, 0.f);
     RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
@@ -164,8 +164,6 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     shader->SetUniformColor4ByIndex(idx, textColor);
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
-    
-    RenderManager::SetDynamicParam(PARAM_WORLD, oldMatrix, UPDATE_SEMANTIC_ALWAYS);
 }
 	
 Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
