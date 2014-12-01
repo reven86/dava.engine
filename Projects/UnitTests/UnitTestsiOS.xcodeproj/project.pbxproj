@@ -102,13 +102,6 @@
 			remoteGlobalIDString = 02FD820C1924997C007762C0;
 			remoteInfo = FrameworkTesting;
 		};
-		02FD8258192A10AD007762C0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FE9895531163F13500500198 /* Framework.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 02FD7F061924997C007762C0;
-			remoteInfo = FrameworkTesting;
-		};
 		FE9895571163F13500500198 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = FE9895531163F13500500198 /* Framework.xcodeproj */;
@@ -621,7 +614,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				02FD8259192A10AD007762C0 /* PBXTargetDependency */,
 			);
 			name = UnitTests;
 			productName = TemplateProjectiPhone;
@@ -789,14 +781,6 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		02FD8259192A10AD007762C0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = FrameworkTesting;
-			targetProxy = 02FD8258192A10AD007762C0 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
 		1D6058940D05DD3E006BFB54 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -886,7 +870,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = armv7;
 			};
 			name = AdHoc;
 		};
@@ -948,7 +932,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = armv7;
 			};
 			name = Debug;
 		};
@@ -981,7 +965,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = armv7;
 			};
 			name = Release;
 		};
