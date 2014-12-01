@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 # start application on device or PC(Mac) 
 # then start server inside this script to listen unit test log output
@@ -16,6 +16,7 @@
 #> python start_unit_tests.py android
 # iOS:
 # deploy application on device first
+# "Enable UI Automation" must be turned on in the "Developer" section of the "Settings" app on device
 #> python start_unit_tests.py ios
 
 import socket
@@ -57,7 +58,7 @@ popen_obj = None
 
 if start_on_ios:
     app_name = "com.davaconsulting." + PRJ_NAME_BASE
-    device_name = "iPadMini1FW"  # TODO put your device name here
+    device_name = "Framework iPad Air2"  # TODO put your device name here
     test_run_file = "testRun.js"  # file with content: var target = UIATarget.localTarget(); target.delay( 7200 );
     popen_obj = subprocess.Popen(["instruments", "-t",
                                   "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate",

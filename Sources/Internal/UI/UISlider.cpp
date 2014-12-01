@@ -77,7 +77,7 @@ void UISlider::InitThumb()
 
 	thumbButton->SetInputEnabled(false);
 	thumbButton->relativePosition.y = size.y * 0.5f;
-    thumbButton->pivotPoint = thumbButton->size*0.5f;
+    thumbButton->SetPivot(Vector2(0.5f, 0.5f));
 	
 	SetValue(currentValue);
 }
@@ -107,7 +107,7 @@ void UISlider::SetThumb(UIControl *newThumb)
 	thumbButton->SetInputEnabled(false);
 	
 	thumbButton->relativePosition.y = size.y * 0.5f;
-    thumbButton->pivotPoint = thumbButton->size*0.5f;
+    thumbButton->SetPivot(Vector2(0.5f, 0.5f));
 	
 	UIControl::AddControl(thumbButton);
 	
