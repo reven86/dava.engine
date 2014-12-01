@@ -315,7 +315,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         geometricData.size += Vector2(-(margins->right + margins->left), -(margins->bottom + margins->top));
     }
 
-    geometricData.AddToGeometricData(parentGeometricData);
+    geometricData.AddGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);

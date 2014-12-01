@@ -146,8 +146,18 @@ const FilePath & File::GetFilename()
 
 uint32 File::Write(const void * pointerToData, uint32 dataSize)
 {
-	//! Do not change order fread return not bytes -- items
+#if defined(__DAVAENGINE_ANDROID__) 
+    uint32 posBeforeWrite = GetPos();
+#endif
+
+    //! Do not change order fread return not bytes -- items
 	uint32 lSize = (uint32) fwrite(pointerToData, 1, dataSize, file);
+
+#if defined(__DAVAENGINE_ANDROID__) 
+    //for Android value returned by 'fwrite()' is incorrect in case of full disk, that's why we calculate 'lSize' using 'GetPos()'
+    lSize = GetPos() - posBeforeWrite;
+#endif
+
 	size += lSize;
 	return lSize;
 }

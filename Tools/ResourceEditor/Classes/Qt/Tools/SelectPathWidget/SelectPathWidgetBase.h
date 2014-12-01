@@ -101,7 +101,7 @@ protected:
 	QToolButton* CreateToolButton(const DAVA::String& iconPath);
 
 	void dragEnterEvent(QDragEnterEvent* event);
-	
+	void dragMoveEvent(QDragMoveEvent* event);
 	void dropEvent(QDropEvent * event);
 	
 	DAVA::FilePath			relativePath;

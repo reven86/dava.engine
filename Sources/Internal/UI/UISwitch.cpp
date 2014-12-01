@@ -101,7 +101,9 @@ UISwitch::UISwitch(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     Vector2 leftAndRightSize(size.dx / 2, size.dy);
     buttonLeft->SetSize(leftAndRightSize);
     buttonRight->SetSize(leftAndRightSize);
-    buttonRight->pivotPoint.x = leftAndRightSize.dx;
+    Vector2 newPivotPoint = buttonRight->GetPivotPoint();
+    newPivotPoint.x = leftAndRightSize.dx;
+    buttonRight->SetPivotPoint(newPivotPoint);
     buttonRight->SetPosition(Vector2(size.x, buttonRight->relativePosition.y));
 }
 
@@ -264,7 +266,7 @@ void UISwitch::Input(UIEvent *currentInput)
             CheckToggleSideChange(true);
 
             float32 newToggleX = touchPos.x - dragAnchorX;
-            float32 newToggleLeftEdge = newToggleX - toggle->pivotPoint.x;
+            float32 newToggleLeftEdge = newToggleX - toggle->GetPivotPoint().x;
 
             float32 leftBound = buttonLeft->relativePosition.x;
             float32 rightBound = buttonRight->relativePosition.x;
@@ -334,7 +336,7 @@ float32 UISwitch::GetToggleUttermostPosition()
     float32 leftBound = buttonLeft->relativePosition.x;
     float32 rightBound = buttonRight->relativePosition.x;
     float32 result = isLeftSelected ? leftBound : rightBound - toggle->size.dx;
-    result += toggle->pivotPoint.x;
+    result += toggle->GetPivotPoint().x;
     return result;
 }
 
@@ -342,7 +344,7 @@ void UISwitch::CheckToggleSideChange(bool isFromUI)
 {
     float32 leftBound = buttonLeft->relativePosition.x;
     float32 rightBound = buttonRight->relativePosition.x;
-    float32 toggleCenter = toggle->relativePosition.x - toggle->pivotPoint.x + toggle->size.dx / 2;
+    float32 toggleCenter = toggle->relativePosition.x - toggle->GetPivotPoint().x + toggle->size.dx / 2;
     float32 toggleSpaceCenter = (leftBound + rightBound) / 2;
     InternalSetIsLeftSelected(toggleCenter < toggleSpaceCenter, true, isFromUI);
 }

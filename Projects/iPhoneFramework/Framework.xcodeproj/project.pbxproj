@@ -6154,7 +6154,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -6200,7 +6200,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 				WARNING_CFLAGS = "";
 			};
 			name = Release;
@@ -6246,7 +6246,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 				WARNING_CFLAGS = "";
 			};
 			name = AdHoc;
@@ -6335,7 +6335,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 				WARNING_CFLAGS = "";
 			};
 			name = Distribution;
