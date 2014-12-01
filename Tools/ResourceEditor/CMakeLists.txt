@@ -1,9 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 project ( ResourceEditor )
 
-set          ( CMakeHelloWorld_VERSION_MAJOR 1 )
-set          ( CMakeHelloWorld_VERSION_MINOR 0 )
-
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
 find_package ( Qt4           REQUIRED )
@@ -59,11 +56,12 @@ add_definitions       (
 -D_CRT_SECURE_NO_DEPRECATE
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
-#-D__DAVAENGINE_BEAST__
 -DDAVA_FMOD
 -D_DISABLE_IMAGE_MAGICK
--DDAVA_DEBUG
 )
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
+
 
 if( MSVC )
     set( LIBRARIES "gdi32.lib" "glu32.lib" #"winmm.lib" "opengl32.lib"
