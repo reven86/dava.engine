@@ -90,6 +90,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     dlcContext.prevState = 0;
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
+    ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
 
     // FSM variables
     fsmAutoReady = false;
@@ -189,7 +190,7 @@ void DLC::FSM(DLCEvent event)
 
                 case EVENT_CHECK_START:
                     // if last time stopped on the patching state and patch file exists - continue patching
-                    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists())
+                    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists() && dlcContext.remoteVerStotePath.Exists())
                     {
                         dlcContext.prevState = 0;
                         dlcState = DS_PATCHING;
