@@ -32,6 +32,7 @@
 
 #include <QWidget>
 #include <QTimer>
+#include "Math/Vector.h"
 
 #include "Platform/Qt/QtLayer.h"
 
