@@ -523,7 +523,7 @@ enum
     UPDATE_SEMANTIC_ALWAYS = 0,
 };
 
-const static uint32 INSTANCE_PARAMETERS_COUNT = 10;
+const static uint32 INSTANCE_PARAMETERS_COUNT = 11;
 
 struct InstanceParamDescriptor
 {

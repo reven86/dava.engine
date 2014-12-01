@@ -170,12 +170,14 @@ uniform float cutDistance;
             uniform lowp vec3 treeLeafColorMul[MAX_INSTANCES];
             #define treeLeafColorMul treeLeafColorMul[gl_InstanceID]
             uniform lowp float treeLeafOcclusionMul[MAX_INSTANCES];
-            #define treeLeafOcclusionMul treeLeafOcclusionMul[gl_InstanceID]            
+            #define treeLeafOcclusionMul treeLeafOcclusionMul[gl_InstanceID]
+            uniform lowp float treeLeafOcclusionOffset[MAX_INSTANCES];
+            #define treeLeafOcclusionOffset treeLeafOcclusionOffset[gl_InstanceID]
         #else
             uniform lowp vec3 treeLeafColorMul;
             uniform lowp float treeLeafOcclusionMul;
-        #endif
-        uniform lowp float treeLeafOcclusionOffset;
+            uniform lowp float treeLeafOcclusionOffset;
+        #endif        
 	#endif
 	
 	#if defined(WIND_ANIMATION)

@@ -97,7 +97,7 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
     DVASSERT(renderObject);    	    
     
     renderObject->BindDynamicParameters(camera);
-    material->SetActiveMaterialTechnique(ownerRenderPass);
+    material->SetActiveMaterialTechnique(ownerRenderPass, NMaterial::EF_NONE);
     material->BindActivePassRenderState();
     material->BindActivePassMaterialProperties();
     

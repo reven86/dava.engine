@@ -369,7 +369,7 @@ public:
 	 \brief sets active render technique using pass name and validates that all cached properties are up-to-date     
      \param[in] passName name of the render pass.     
 	 */
-	void SetActiveMaterialTechnique(const FastName & passName, uint8 flags = EF_NONE);         
+	void SetActiveMaterialTechnique(const FastName & passName, uint8 flags);
     
     void UpdateActivePass(const FastName& passName, uint8 flags);
     void UpdateActivePassTextures();

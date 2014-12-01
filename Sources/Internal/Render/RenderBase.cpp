@@ -329,7 +329,8 @@ const InstanceParamDescriptor INSTANCE_PARAM_DESCRIPTORS[] =
     InstanceParamDescriptor(FastName("worldScale[0]"), FastName("worldScale"), PARAM_WORLD_SCALE),
     InstanceParamDescriptor(FastName("leafOscillationParams[0]"), FastName("leafOscillationParams"), PARAM_SPEED_TREE_LEAFS_OSCILLATION),
     InstanceParamDescriptor(FastName("treeLeafOcclusionMul[0]"), FastName("treeLeafOcclusionMul"), UNKNOWN_SEMANTIC),
-    InstanceParamDescriptor(FastName("treeLeafColorMul[0]"), FastName("treeLeafColorMul"), UNKNOWN_SEMANTIC)        
+    InstanceParamDescriptor(FastName("treeLeafColorMul[0]"), FastName("treeLeafColorMul"), UNKNOWN_SEMANTIC), 
+    InstanceParamDescriptor(FastName("treeLeafOcclusionOffset[0]"), FastName("treeLeafOcclusionOffset"), UNKNOWN_SEMANTIC)        
 };
 
 RenderGuard::RenderGuard()

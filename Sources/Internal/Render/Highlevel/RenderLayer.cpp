@@ -117,7 +117,7 @@ bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & o
     {
         return false;
     }
-    material->SetActiveMaterialTechnique(ownerRenderPass);
+    material->SetActiveMaterialTechnique(ownerRenderPass, NMaterial::EF_INSTANCING);
     NMaterial *incomingMaterial = incomingGroup->GetMaterial();
     if ((material->GetParent()!=incomingMaterial->GetParent())
       ||(material->GetActivePassRenderStateHandle()!=incomingMaterial->GetActivePassRenderStateHandle())

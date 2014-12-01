@@ -130,7 +130,7 @@ void SpriteRenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 
 	RenderManager::SetDynamicParam(PARAM_WORLD, &finalMatrix, (pointer_size)worldTransformPtr);
 		
-    material->SetActiveMaterialTechnique(ownerRenderPass);
+    material->SetActiveMaterialTechnique(ownerRenderPass, NMaterial::EF_NONE);
     material->BindActivePassRenderState();
     material->BindActivePassMaterialProperties();
 	RenderManager::Instance()->SetRenderData(renderDataObject);
