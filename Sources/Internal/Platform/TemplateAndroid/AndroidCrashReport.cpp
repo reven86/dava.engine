@@ -37,6 +37,10 @@
 
 
 #include "ExternC/AndroidLayer.h"
+#include "libunwind_stab.h"
+#include "AndroidCrashUtility.h"
+
+
 
 /* Maximum value of a caught signal. */
 #define SIG_NUMBER_MAX 32
@@ -44,14 +48,7 @@
 namespace DAVA
 {
 
-typedef uint32_t  kernel_sigmask_t[2];
-typedef struct ucontext {
-	uint32_t uc_flags;
-	struct ucontext* uc_link;
-	stack_t uc_stack;
-	sigcontext uc_mcontext;
-	kernel_sigmask_t uc_sigmask;
-} ucontext_t;
+
 
 static int fatalSignals[] = {
 	SIGABRT,
@@ -65,7 +62,8 @@ static int fatalSignals[] = {
 static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 
 stack_t AndroidCrashReport::s_sigstk;
-
+bool AndroidCrashReport::s_libunwindLoaded = false;
+    
 jclass JniCrashReporter::gJavaClass = NULL;
 jclass JniCrashReporter::gStringClass = NULL;
 const char* JniCrashReporter::gJavaClassName = NULL;
@@ -155,9 +153,7 @@ void AndroidCrashReport::Init()
 	 *
 	 * define DESYM_STACK for desybolicating callstack with libcorkscrew
 	 */
-#if defined(DAVA_DEBUG) && defined(USE_NDKSTACK_TOOL)
-	return;
-#endif
+
 	void* libcorkscrew = dlopen("/system/lib/libcorkscrew.so", RTLD_NOW);
 	if (libcorkscrew)
 	{
@@ -180,7 +176,9 @@ void AndroidCrashReport::Init()
 	{
 		LOGE("libcorkscrew not found");
 	}
-
+#if defined(__arm__)
+    s_libunwindLoaded = DynLoadLibunwind();
+#endif
 	s_sigstk.ss_size = 64 * 1024;
 	s_sigstk.ss_sp = malloc(s_sigstk.ss_size);
 	s_sigstk.ss_flags = 0;
@@ -213,7 +211,18 @@ const map_info_t* find_map_info(const map_info_t* milist, uintptr_t addr) {
     }
     return mi;
 }
-
+JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int signal, siginfo_t *siginfo,int32 addr)
+{
+    JniCrashReporter::CrashStep buildId;
+#ifdef TEAMCITY_BUILD_TYPE_ID
+    buildId.module = TEAMCITY_BUILD_TYPE_ID;
+#endif
+    char fakeFunction[64];
+    snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%08x()",signal,siginfo->si_addr);
+    buildId.function = std::string(fakeFunction);
+    buildId.fileLine = (addr);
+    return buildId;
+}
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
 	if(signal<SIG_NUMBER_MAX)
@@ -225,28 +234,19 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 	//kill the app if it freezes
 
 	Vector<JniCrashReporter::CrashStep> crashSteps;
+    // Android from 4.2 till 5.0(excluding)
 	if (unwind_backtrace_signal_arch != NULL)
 	{
 		map_info_t *map_info = acquire_my_map_info_list();
 		backtrace_frame_t frames[256] = {0};
 
 		const ssize_t size = unwind_backtrace_signal_arch(siginfo, sigcontext, map_info, frames, 0, 255);
-#ifdef DESYM_STACK
-		backtrace_symbol_t symbols[256] = {0};
-		get_backtrace_symbols(frames, size, symbols);
-#endif
+
 
 		for (int i = 0; i < size; ++i)
 		{
 			JniCrashReporter::CrashStep step;
-#ifdef DESYM_STACK
-			step.module = symbols[i].map_name;
-			if (symbols[i].demangled_name)
-				step.function = symbols[i].demangled_name;
-			else if (symbols[i].symbol_name)
-				step.function = symbols[i].symbol_name;
-			step.fileLine = symbols[i].relative_pc;
-#else
+
 			const map_info_t* mi = find_map_info(map_info, frames[i].absolute_pc);
 			if (mi)
 			{
@@ -261,32 +261,77 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 #ifdef TEAMCITY_BUILD_TYPE_ID				
 				if (i == 0)
 				{
-					JniCrashReporter::CrashStep buildId;
-					buildId.module = TEAMCITY_BUILD_TYPE_ID;
-					char fakeFunction[64];
-					snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%08x()",signal,siginfo->si_addr);
-					buildId.function = std::string(fakeFunction);
-					buildId.fileLine = (frame->absolute_pc - mi->start);
-					crashSteps.push_back(buildId);
+                    crashSteps.push_back(FormatTeamcityIdStep(signal,siginfo,(frame->absolute_pc - mi->start)));
 				}
 #endif				
 
 			}
 
 			step.fileLine = 0;
-#endif
+
 			crashSteps.push_back(step);
+            if(!step.function.empty())
+                LOGE("CRASH-STACK-TRACE:%s",step.function.c_str());
 		}
 		//free_backtrace_symbols(symbols, size);
 		//release_my_map_info_list(map_info);
+        
 	}
+#if defined(__arm__)
+    // Android 5.0 and up hopefully
+    else if (s_libunwindLoaded == true)
+    {
+        LOGE("Alternative Crash reporting is on!");
+        // mapping can change so we can't preload it
+        DAVA::UnwindProcMaps unwindMap;
+       
+        unw_word_t ipInstructionsStack[256] = {0};
+        
+        //custom format context for libunwind
+        unw_context_t uctx;
+        
+        ConvertContextARM((ucontext_t*)sigcontext,&uctx);
+        size_t foundFrames = GetBacktrace(&uctx, ipInstructionsStack, 255);
+        char * libName = NULL;
+        unw_word_t addresInLib;
+        LOGE("ALTERNATIVE-CRASH-REPORT: %d",foundFrames);
+        for (size_t i=0;i<foundFrames; i++)
+        {
+            JniCrashReporter::CrashStep step;
+            unwindMap.FindLocalAddresInfo(ipInstructionsStack[i],&libName,&addresInLib);
+            char s[256];
+            
+            snprintf(s,256, "0x%08x", addresInLib);
+            step.function = std::string(s);
+            step.fileLine = 0;
+            if (libName != NULL)
+            {
+                step.module = std::string(libName) + " ";
+            }
+#ifdef TEAMCITY_BUILD_TYPE_ID
+            if ( i =0 )
+            {
+                crashSteps.push_back(FormatTeamcityIdStep(signal,siginfo,addresInLib));
+            }
+#endif
+            LOGE("ALTERNATIVE-CRASH-REPORT: ADRESS 0x%08x",addresInLib);
+            crashSteps.push_back(step);
+            if(!step.function.empty())
+                LOGE("CRASH-STACK-TRACE:%s",step.function.c_str());
+            if(!step.module.empty())
+                LOGE("CRASH-STACK-TRACE:%s",step.module.c_str());
+            
+        }
+        
+    }
+#endif //#if defined(__arm__)
 	else
 	{
 		JniCrashReporter::CrashStep step;
 		step.module = "There is no cpp stack";
 		crashSteps.push_back(step);
 	}
-
+    
 	JniCrashReporter crashReport;
 	crashReport.ThrowJavaExpetion(crashSteps);
 }

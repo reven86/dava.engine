@@ -41,7 +41,27 @@ namespace DAVA
 {
 
 class File;
-
+class JniCrashReporter: public JniExtension
+{
+public:
+    struct CrashStep
+    {
+        String module;
+        String function;
+        int32 fileLine;
+    };
+    void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
+        
+protected:
+    virtual jclass GetJavaClass() const;
+    virtual const char* GetJavaClassName() const;
+        
+public:
+    static jclass gJavaClass;
+    static const char* gJavaClassName;
+    static jclass gStringClass;
+};
+    
 class AndroidCrashReport
 {
 public:
@@ -50,30 +70,11 @@ public:
 
 private:
 	static void SignalHandler(int signal, siginfo_t *info, void *uapVoid);
+    static JniCrashReporter::CrashStep FormatTeamcityIdStep(int signal, siginfo_t *siginfo,int32 addr);
 
 private:
 	static stack_t s_sigstk;
-};
-
-class JniCrashReporter: public JniExtension
-{
-public:
-	struct CrashStep
-	{
-		String module;
-		String function;
-		int32 fileLine;
-	};
-	void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
-
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
-	static jclass gStringClass;
+    static bool s_libunwindLoaded;
 };
 
 
