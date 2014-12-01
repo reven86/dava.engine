@@ -340,62 +340,62 @@ public:
      \brief Sets left align of control relative to its parent.
      \param[in] align left align of control.
      */
-    virtual void SetLeftAlign(int32 align);
+    virtual void SetLeftAlign(float32 align);
     /**
      \brief Returns left align of control relative to its parent.
      \returns left align of control.
      */
-    virtual int32 GetLeftAlign() const;
+    virtual float32 GetLeftAlign() const;
     /**
      \brief Sets horizontal central align of control relative to its parent.
      \param[in] align horizontal central align of control.
      */
-    virtual void SetHCenterAlign(int32 align);
+    virtual void SetHCenterAlign(float32 align);
     /**
      \brief Returns horizontal central align of control relative to its parent.
      \returns horizontal central align of control.
      */
-    virtual int32 GetHCenterAlign() const;
+    virtual float32 GetHCenterAlign() const;
     /**
      \brief Sets right align of control relative to its parent.
      \param[in] align right align of control.
      */
-    virtual void SetRightAlign(int32 align);
+    virtual void SetRightAlign(float32 align);
     /**
      \brief Returns right align of control relative to its parent.
      \returns right align of control.
      */
-    virtual int32 GetRightAlign() const;
+    virtual float32 GetRightAlign() const;
         /**
      \brief Sets top align of control relative to its parent.
      \param[in] align top align of control.
      */
-    virtual void SetTopAlign(int32 align);
+    virtual void SetTopAlign(float32 align);
     /**
      \brief Returns top align of control relative to its parent.
      \returns top align of control.
      */
-    virtual int32 GetTopAlign() const;
+    virtual float32 GetTopAlign() const;
         /**
      \brief Sets vertical central align of control relative to its parent.
      \param[in] align l vertical central align of control.
      */
-    virtual void SetVCenterAlign(int32 align);
+    virtual void SetVCenterAlign(float32 align);
     /**
      \brief Returns vertical central align of control relative to its parent.
      \returns vertical central align of control.
      */
-    virtual int32 GetVCenterAlign() const;
+    virtual float32 GetVCenterAlign() const;
         /**
      \brief Sets bottom align of control relative to its parent.
      \param[in] align bottom align of control.
      */
-    virtual void SetBottomAlign(int32 align);
+    virtual void SetBottomAlign(float32 align);
     /**
      \brief Returns bottom align of control relative to its parent.
      \returns bottom align of control.
      */
-    virtual int32 GetBottomAlign() const;
+    virtual float32 GetBottomAlign() const;
     /**
      \brief Sets control ability to change left align.
      \param[in] isEnabled left align availability.
@@ -1369,12 +1369,12 @@ protected:
     int32 totalTouches;
 
     // Align options
-    int32 leftAlign;
-    int32 hcenterAlign;
-    int32 rightAlign;
-    int32 topAlign;
-    int32 vcenterAlign;
-    int32 bottomAlign;
+    float32 leftAlign;
+    float32 hcenterAlign;
+    float32 rightAlign;
+    float32 topAlign;
+    float32 vcenterAlign;
+    float32 bottomAlign;
 
     UIGeometricData tempGeometricData;
 
@@ -1415,19 +1415,19 @@ private:
     bool inputEnabled : 1;
     bool focusEnabled : 1;
 
+    void CalculateAlignSettings();
 
-    void RecalculateAlignProperties();
+    void ApplyAlignSettings();
 
-    float32 GetSizeX(UIControl *parent, int32 leftAlign, int32 rightAlign, bool useHalfParentSize = false);
-    float32 GetSizeY(UIControl *parent, int32 topAlign, int32 bottomAlign, bool useHalfParentSize = false);
+    void GetAxisDataByAlignData(float32 size, float32 parentSize,
+                                bool firstSideAlignEnabled, float32 firstSideAlign,
+                                bool centerAlignEnabled, float32 centerAlign,
+                                bool secondSideAlignEnabled, float32 secondSideAlign,
+                                float32 &newPos, float32 &newSize);
 
-    float32 GetCenterX(UIControl *parent, int32 centerAlign, UIControl* child);
-    float32 GetCenterY(UIControl *parent, int32 centerAlign, UIControl* child);
-
-    float32 GetRelativeX(UIControl *parent, int32 align);
-    float32 GetRelativeX(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
-    float32 GetRelativeY(UIControl *parent, int32 align);
-    float32 GetRelativeY(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
+    void GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize,
+                                bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled,
+                                float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign);
     
 public:
     inline bool GetSystemVisible() const;
