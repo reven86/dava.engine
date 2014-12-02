@@ -99,7 +99,7 @@ TexturePacker::TexturePacker()
 
 bool TexturePacker::TryToPack(const Rect2i & textureRect, List<DefinitionFile*> & /*defsList*/)
 {
-	ImagePacker * packer = new ImagePacker(textureRect,useTwoSideMargin,texturesMargin);
+	ImagePacker * packer = new ImagePacker(textureRect, useTwoSideMargin, texturesMargin);
 	
 	// Packing of sorted by size images
 	for (int i = 0; i < (int)sortVector.size(); ++i)
@@ -235,13 +235,15 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 									frame,
 									fileName.c_str()));
 				}
-				
-				FilePath withoutExt(defFile->filename);
-                withoutExt.TruncateExtension();
+				else
+				{
+					FilePath withoutExt(defFile->filename);
+					withoutExt.TruncateExtension();
 
-				PngImageExt image;
-				image.Read(FramePathHelper::GetFramePathRelative(withoutExt, frame));
-				DrawToFinalImage(finalImage, image, *destRect, defFile->frameRects[frame]);
+					PngImageExt image;
+					image.Read(FramePathHelper::GetFramePathRelative(withoutExt, frame));
+					DrawToFinalImage(finalImage, image, *destRect, defFile->frameRects[frame]);
+				}
 			}
 			
 			if (!WriteDefinition(excludeFolder, outputPath, textureNameWithIndex, defFile))
@@ -324,14 +326,15 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 									frame,
 									fileName.c_str()));
 				}
-				
-				
-                FilePath withoutExt(defFile->filename);
-                withoutExt.TruncateExtension();
+				else
+				{
+					FilePath withoutExt(defFile->filename);
+					withoutExt.TruncateExtension();
 
-				PngImageExt image;
-				image.Read(FramePathHelper::GetFramePathRelative(withoutExt, frame));
-				DrawToFinalImage(finalImage, image, *destRect, defFile->frameRects[frame]);
+					PngImageExt image;
+					image.Read(FramePathHelper::GetFramePathRelative(withoutExt, frame));
+					DrawToFinalImage(finalImage, image, *destRect, defFile->frameRects[frame]);
+				}
 			}
 			
 			if (!WriteDefinition(excludeFolder, outputPath, "texture", defFile))
@@ -521,17 +524,26 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 	fprintf(fp, "%d\n", defFile->frameCount); 
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
-		uint32 rmargin;
-		uint32 bmargin;
+		uint32 rmargin = TexturePacker::DEFAULT_MARGIN;
+		uint32 bmargin = TexturePacker::DEFAULT_MARGIN;
 		Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame],rmargin,bmargin);
-		Rect2i origRect = defFile->frameRects[frame];
-		Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
-		WriteDefinitionString(fp, writeRect, origRect, 0);
+		if (!destRect)
+		{
+			AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s. ",
+				frame,
+				fileName.c_str()));
+		}
+		else
+		{
+			Rect2i origRect = defFile->frameRects[frame];
+			Rect2i writeRect = ReduceRectToOriginalSize(*destRect,rmargin,bmargin);
+			WriteDefinitionString(fp, writeRect, origRect, 0);
 
-		if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
-        {
-            Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile->filename.GetBasename().c_str(), frame);
-        }
+			if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
+			{
+				Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile->filename.GetBasename().c_str(), frame);
+			}
+		}
 	}
 	
 	for (int pathInfoLine = 0; pathInfoLine < (int)defFile->pathsInfo.size(); ++pathInfoLine)
@@ -597,8 +609,8 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 	for (int frame = 0; frame < defFile->frameCount; ++frame)
 	{
 		Rect2i * destRect = 0;
-		uint32 rmargin;
-		uint32 bmargin;
+		uint32 rmargin = TexturePacker::DEFAULT_MARGIN;
+		uint32 bmargin = TexturePacker::DEFAULT_MARGIN;
 		for (int packerIndex = 0; packerIndex < (int)usedPackers.size(); ++packerIndex)
 		{
 			destRect = usedPackers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame],rmargin,bmargin);

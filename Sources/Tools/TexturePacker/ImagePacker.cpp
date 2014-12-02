@@ -54,7 +54,7 @@ ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i & imageSize)
 
 		if ( dw < 0 )
 		{
-			if (touchesRightBorder && !packer->useTwoSideMargin && dw + rightMargin >= 0)
+			if (touchesRightBorder && !packer->useTwoSideMargin && (dw + rightMargin) >= 0)
 			{
 				rightMargin += dw; // actually rightMargin is reduced as dw is negative there
 				dw = 0;
@@ -65,7 +65,7 @@ ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i & imageSize)
 
 		if ( dh < 0 )
 		{
-			if (touchesBottomBorder && !packer->useTwoSideMargin && dh + bottomMargin >= 0)
+			if (touchesBottomBorder && !packer->useTwoSideMargin && (dh + bottomMargin) >= 0)
 			{
 				bottomMargin += dh; // actually bottomMargin is reduced as dh is negative there
 				dh = 0;
@@ -87,22 +87,21 @@ ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i & imageSize)
 		child[0] = new ImagePacker::PackNode(packer);
 		child[1] = new ImagePacker::PackNode(packer);
 
+		child[1]->touchesRightBorder &= 1;
+		child[1]->touchesBottomBorder &= 1;
+
 		if (dw > dh)
 		{
 			child[0]->rect = Rect2i(	rect.x, rect.y, imageSize.dx, rect.dy);
 			child[1]->rect = Rect2i(	rect.x + imageSize.dx, rect.y, rect.dx - imageSize.dx, rect.dy);
 			child[0]->touchesBottomBorder &= 1;
 			child[0]->touchesRightBorder = 0;
-			child[1]->touchesRightBorder &= 1;
-			child[1]->touchesBottomBorder &= 1;
 		}else
 		{
 			child[0]->rect = Rect2i(	rect.x, rect.y, rect.dx, imageSize.dy);
 			child[1]->rect = Rect2i(	rect.x, rect.y + imageSize.dy, rect.dx, rect.dy - imageSize.dy);
 			child[0]->touchesRightBorder &= 1;
 			child[0]->touchesBottomBorder = 0;
-			child[1]->touchesRightBorder &= 1;
-			child[1]->touchesBottomBorder &= 1;
 		}
 		return child[0]->Insert(imageSize);
 	}

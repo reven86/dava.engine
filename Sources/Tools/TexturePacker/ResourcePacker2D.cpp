@@ -419,11 +419,9 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		modified = true;
 
 	// read textures margins settings
-	bool useTwoSideMargin = false;
-	uint32 marginInPixels = 1;
-	if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
-		useTwoSideMargin = true;
-	else
+	bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
+	uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
+	if (!useTwoSideMargin)
 	{
 		useTwoSideMargin = false;
 		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
@@ -434,8 +432,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 			marginInPixels = 2;
 		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
 			marginInPixels = 4;
-		else
-			marginInPixels = 1;
 	}
 
 	bool needPackResourcesInThisDir = true;

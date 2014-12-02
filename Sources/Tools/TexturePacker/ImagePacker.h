@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Math/Math2D.h"
+#include "TexturePacker.h"
 
 namespace DAVA
 {
@@ -80,8 +81,8 @@ private:
 			searchPtr = 0;
 			touchesRightBorder = true;
 			touchesBottomBorder = true;
-			rightMargin = 1;
-			bottomMargin = 1;
+			rightMargin = TexturePacker::DEFAULT_MARGIN;
+			bottomMargin = TexturePacker::DEFAULT_MARGIN;
 		}
 	
 		bool			isImageSet;

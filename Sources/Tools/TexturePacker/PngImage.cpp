@@ -148,7 +148,8 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, bool useTwo
     
 	uint32 srcPos = 0;
 	uint32 destPos = sx + sy * GetWidth();
-	for (uint32 y = 0; y < image->GetHeight(); ++y, destPos += GetWidth() - image->GetWidth())
+	uint32 destPosInc = GetWidth() - image->GetWidth();
+	for (uint32 y = 0; y < image->GetHeight(); ++y, destPos += destPosInc)
 		for (uint32 x = 0; x < image->GetWidth(); ++x, ++srcPos, ++destPos)
 		{
 			if (int32(sx + x) < 0)continue;
