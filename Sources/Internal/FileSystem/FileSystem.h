@@ -252,7 +252,8 @@ public:
 	 \brief Marks folder as contains no media files to exclude it from index
 	 */
 	void MarkFolderAsNoMedia(const FilePath &folder);
-
+    
+    
 private:
     
 	virtual eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);
