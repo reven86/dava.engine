@@ -8,7 +8,7 @@
 # > python start_unit_tests.py
 # mac os x: 
 # make DerivedData relative to project go to Xcode->Preferences->Location->DerivedData select relative
-#  build project
+# build project
 # > cd to dava.framework/Projects/UnitTests/Reports
 # > python start_unit_tests.py
 # android:
@@ -48,14 +48,9 @@ if len(sys.argv) > 1:
 sub_process = None
 
 if start_on_ios:
-    app_name = "com.davaconsulting." + PRJ_NAME_BASE
-    device_name = "Framework iPad Air2"  # TODO put your device name here
-    test_run_file = "testRun.js"  # file with content: var target = UIATarget.localTarget(); target.delay( 7200 );
-    sub_process = subprocess.Popen(["instruments", "-t",
-                                    "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns \
-                                  /AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate",
-                                    "-w", device_name, app_name, "-e",
-                                    "UIASCRIPT", test_run_file])
+    # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
+    sub_process = subprocess.Popen(["../build/ios-deploy", "-d", "--noninteractive", "-b", "../build/UnitTests.app"],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 elif start_on_android:
     sub_process = subprocess.Popen(
         ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests." + PRJ_NAME_BASE])
@@ -72,13 +67,15 @@ elif sys.platform == "darwin":
         # run on local machine from dir: UnitTests/Report
         # Warning! To make DerivedData relative to project go to
         # Xcode->Preferences->Location->DerivedData select relative
-        app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/UnitTests.app/Contents/MacOS/"\
+        app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/UnitTests.app/Contents/MacOS/" \
                    + PRJ_NAME_BASE
     sub_process = subprocess.Popen([app_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-app_exit_code = -1
+app_exit_code = None
 
-while True:
+continue_process_stdout = True
+
+while continue_process_stdout:
     try:
         line = sub_process.stdout.readline()
         if line != '':
@@ -87,14 +84,16 @@ while True:
                 teamcity_line = line[teamcity_line_index:]
                 sys.stdout.write(teamcity_line)
                 sys.stdout.flush()
+            if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
+                                                        #  finish tests on ios device (run with lldb)
+                app_exit_code = 0
         else:
-            break
-        line = sub_process.stderr.readline()
-        if line != '' and line.find("exited with status = 0") != -1:
-            app_exit_code = 0
-
+            continue_process_stdout = False
     except IOError:
         sys.stdout.write(IOError.message)
         sys.stdout.flush()
+
+if app_exit_code is None:
+    app_exit_code = sub_process.poll()
 
 sys.exit(app_exit_code)
