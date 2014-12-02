@@ -291,11 +291,11 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
         unw_context_t uctx;
         
         ConvertContextARM((ucontext_t*)sigcontext,&uctx);
-        size_t foundFrames = GetBacktrace(&uctx, ipInstructionsStack, 255);
+        int32 foundFrames = GetAndroidBacktrace(&uctx, ipInstructionsStack, 255);
         char * libName = NULL;
         unw_word_t addresInLib;
         LOGE("ALTERNATIVE-CRASH-REPORT: %d",foundFrames);
-        for (size_t i=0;i<foundFrames; i++)
+        for (int32 i=0;i<foundFrames; i++)
         {
             JniCrashReporter::CrashStep step;
             unwindMap.FindLocalAddresInfo(ipInstructionsStack[i],&libName,&addresInLib);

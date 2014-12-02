@@ -28,6 +28,8 @@ t_unw_map_cursor_get_next unw_map_cursor_get_next;
 
 bool DynLoadLibunwind()
 {
+    if (unw_init_local != NULL)
+        return true;
     void * libunwind = dlopen("/system/lib/libunwind.so",RTLD_NOW);
     if (libunwind == NULL)
         return false;

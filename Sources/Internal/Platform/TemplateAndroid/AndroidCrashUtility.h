@@ -16,11 +16,11 @@ namespace DAVA
 void ConvertContextARM(ucontext_t * from,unw_context_t * to);
 
 
-size_t GetBacktrace(unw_context_t * context, unw_word_t * outIpStack, int maxSize);
+DAVA::int32 GetAndroidBacktrace(unw_context_t * context, unw_word_t * outIpStack, DAVA::int32 maxSize);
 
-size_t GetBacktrace(unw_word_t * outIpStack, int maxSize);
+DAVA::int32 GetAndroidBacktrace(unw_word_t * outIpStack, DAVA::int32 maxSize);
 
-void PrintBacktrace();
+void PrintAndroidBacktrace();
  
 //uses added to libunwind functionality to create memory map of
 // process
@@ -32,6 +32,7 @@ public:
     ~UnwindProcMaps();
     
 private:
+    unw_map_cursor mapCursor;
     std::list<unw_map_t> processMap;
     
 };

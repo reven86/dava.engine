@@ -36,6 +36,8 @@
 #elif defined(__DAVAENGINE_WIN32__)
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")
+#elif defined(__DAVAENGINE_ANDROID__) && defined(__arm__)
+#include "../Platform/TemplateAndroid/AndroidCrashUtility.h"
 #endif
 
 #include <cstdlib>
@@ -265,6 +267,9 @@ public:
          __out_opt  PULONG BackTraceHash
          );        
      */
+#endif
+#if defined(__DAVAENGINE_ANDROID__) && defined(__arm__)
+        PrintAndroidBacktrace();
 #endif
     }
 //}

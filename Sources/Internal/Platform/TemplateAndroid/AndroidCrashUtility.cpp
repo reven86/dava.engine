@@ -36,12 +36,12 @@ void ConvertContextARM(ucontext_t * from,unw_context_t * to)
     to->regs[15] = from->uc_mcontext.arm_pc;
 }
     
-size_t GetBacktrace(unw_context_t * uc, unw_word_t * outIpStack, int maxSize)
+DAVA::int32 GetAndroidBacktrace(unw_context_t * uc, unw_word_t * outIpStack, int maxSize)
 {
     unw_cursor_t cursor;
     unw_word_t ip, sp;
     
-    size_t counter = 0;
+    int counter = 0;
     unw_init_local(&cursor, uc);
     do
     {
@@ -66,40 +66,54 @@ size_t GetBacktrace(unw_context_t * uc, unw_word_t * outIpStack, int maxSize)
     return counter;
 }
     
-size_t GetBacktrace(unw_word_t * ipStack, int maxSize)
+DAVA::int32 GetAndroidBacktrace(unw_word_t * ipStack, DAVA::int32 maxSize)
 {
-    return 0;
+    unw_context_t uc;
+    
+    unw_tdep_getcontext(&uc);
+    return GetAndroidBacktrace(&uc,ipStack,maxSize);
 }
     
-void PrintBacktrace()
+void PrintAndroidBacktrace()
 {
-        
+    if(!DynLoadLibunwind())
+        return;
+    unw_word_t ipStack[256];
+    DAVA::int32 sizeOut = GetAndroidBacktrace(ipStack,255);
+    
+    UnwindProcMaps processMap;
+    
+    char * libName;
+    for (DAVA::int32 i=0;i < sizeOut; i++)
+    {
+        unw_word_t resultAddres;
+        processMap.FindLocalAddresInfo(ipStack[i],&libName,&resultAddres);
+        LOGE("CALL-STACK-TRACE %s 0x%08x",libName,resultAddres);
+    }
 }
     
 UnwindProcMaps::UnwindProcMaps()
 {
 
     //loop through all info and ad them to the list
-    unw_map_cursor mapCursor;
+    
     unw_map_cursor_create(&mapCursor,getpid());
     
     // must be called even after create
     unw_map_cursor_reset(&mapCursor);
-    
     unw_map_t map;
     //int log = unw_map_local_cursor_valid(&mapCursor);
     while(unw_map_cursor_get_next(&mapCursor,&map) > 0)
     {
         processMap.push_back(map);
+
+    
     }
-    
-    
-    unw_map_cursor_destroy(&mapCursor);
 
 }
 bool UnwindProcMaps::FindLocalAddresInfo(unw_word_t addres, char ** libName, unw_word_t * addresInLib)
 {
-    for( auto map = processMap.begin();map != processMap.end();map++)
+    for( std::list<unw_map_t>::const_iterator map = processMap.begin();map != processMap.end();++map)
     {
         if(map->start < addres && map->end > addres)
         {
@@ -114,11 +128,9 @@ bool UnwindProcMaps::FindLocalAddresInfo(unw_word_t addres, char ** libName, unw
 }
 UnwindProcMaps::~UnwindProcMaps()
 {
-    for(auto m = processMap.begin();m != processMap.end();m++)
-    {
-        // path is allocated using strdup see unw_map_cursor_get_next source
-        free(m->path);
-    }
+    
+    unw_map_cursor_destroy(&mapCursor);
+    processMap.clear();
 }
     
 }
