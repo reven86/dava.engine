@@ -42,6 +42,12 @@ class InputCallback;
 
 class WASDControllerSystem: public SceneSystem
 {
+    enum eDirection
+    {
+        DIRECTION_STRIGHT = 1,
+        DIRECTION_INVERSE = -1
+    };
+    
     
 public:
     WASDControllerSystem(Scene * scene);
@@ -55,17 +61,12 @@ public:
     inline float32 GetMoveSpeeed() const;
     inline void SetMoveSpeed(float32 moveSpeed);
     
-    void Input(UIEvent *event);
 private:
     
-    void MoveForward(Camera *camera, float32 speed, bool inverseDirection);
-    void MoveRight(Camera *camera, float32 speed, bool inverseDirection);
+    void MoveForward(Camera *camera, float32 speed, eDirection direction);
+    void MoveRight(Camera *camera, float32 speed, eDirection direction);
     
-
     float32 moveSpeed;
-    float32 actualMoveSpeed;
-    
-    InputCallback * inputCallback;
     
     Vector<Entity *> entities;
 };

@@ -374,22 +374,24 @@ void Scene::CreateSystems()
     
     if(SCENE_SYSTEM_ROTATION_CONTROLLER_FLAG & systemsMask)
     {
-        rotationSystem = new RotationControllerSystem(this);
-        AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), true);
+        //INFO: this stuf is moved to application level
+//        rotationSystem = new RotationControllerSystem(this);
+//        AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), true);
     }
 
     if(SCENE_SYSTEM_SNAP_TO_LANDSCAPE_CONTROLLER_FLAG & systemsMask)
     {
-        snapToLandscapeSystem = new SnapToLandscapeControllerSystem(this);
-        AddSystem(snapToLandscapeSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)), true);
+        //INFO: this stuf is moved to application level
+//        snapToLandscapeSystem = new SnapToLandscapeControllerSystem(this);
+//        AddSystem(snapToLandscapeSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)), true);
     }
 
     if(SCENE_SYSTEM_WASD_CONTROLLER_FLAG & systemsMask)
     {
-        wasdSystem = new WASDControllerSystem(this);
-        AddSystem(wasdSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::WASD_CONTROLLER_COMPONENT)), true);
+        //INFO: this stuf is moved to application level
+//        wasdSystem = new WASDControllerSystem(this);
+//        AddSystem(wasdSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::WASD_CONTROLLER_COMPONENT)), true);
     }
-
 }
 
 Scene::~Scene()

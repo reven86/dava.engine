@@ -74,11 +74,13 @@ void ScenePreviewControl::RecreateScene()
     
     editorScene = new Scene();
     editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
-    
-    if(editorScene->wasdSystem)
+
+    if(!editorScene->rotationSystem)
     {
-        editorScene->wasdSystem->SetMoveSpeed(35.f);
+        editorScene->rotationSystem = new RotationControllerSystem(editorScene);
+        editorScene->AddSystem(editorScene->rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), true);
     }
+
     if(editorScene->rotationSystem)
     {
         editorScene->rotationSystem->SetRotationSpeeed(0.10f);
@@ -155,7 +157,6 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
                 ScopedPtr<Entity> node(new Entity());
                 node->SetName("preview-camera");
                 node->AddComponent(new CameraComponent(cam));
-                node->AddComponent(new DAVA::WASDControllerComponent());
                 node->AddComponent(new DAVA::RotationControllerComponent());
                 editorScene->AddNode(node);
                 editorScene->AddCamera(cam);

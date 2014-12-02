@@ -376,7 +376,6 @@ void SceneCameraSystem::CreateDebugCameras()
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
-        topCameraEntity->AddComponent(new DAVA::SnapToLandscapeControllerComponent());
 		scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
 
 		// set current default camera

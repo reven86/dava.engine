@@ -48,6 +48,11 @@
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+
+
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
@@ -69,6 +74,24 @@ SceneEditor2::SceneEditor2()
     cameraSystem = new SceneCameraSystem(this);
     AddSystem(cameraSystem, (1 << DAVA::Component::CAMERA_COMPONENT), true, transformSystem);
 
+    if((SCENE_SYSTEM_ROTATION_CONTROLLER_FLAG & systemsMask) && !rotationSystem)
+    {
+        rotationSystem = new RotationControllerSystem(this);
+        AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), true);
+    }
+    
+    if((SCENE_SYSTEM_SNAP_TO_LANDSCAPE_CONTROLLER_FLAG & systemsMask) && !snapToLandscapeSystem)
+    {
+        snapToLandscapeSystem = new SnapToLandscapeControllerSystem(this);
+        AddSystem(snapToLandscapeSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)), true);
+    }
+    
+    if((SCENE_SYSTEM_WASD_CONTROLLER_FLAG & systemsMask) && !wasdSystem)
+    {
+        wasdSystem = new WASDControllerSystem(this);
+        AddSystem(wasdSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::WASD_CONTROLLER_COMPONENT)), true);
+    }
+    
 	collisionSystem = new SceneCollisionSystem(this);
 	AddSystem(collisionSystem, 0, true, renderUpdateSystem);
 
