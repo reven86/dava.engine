@@ -35,6 +35,7 @@
 #include "Scene3D/Scene.h"
 
 #include "Render/Highlevel/Camera.h"
+#include "Render/Highlevel/Landscape.h"
 
 
 namespace DAVA
@@ -90,7 +91,11 @@ void SnapToLandscapeControllerSystem::RemoveEntity(Entity * entity)
 
 void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
 {
-    uint32 size = entities.size();
+    const uint32 size = entities.size();
+    if(0 == size) return;
+    
+    Landscape *landscape = FindLandscape(GetScene()); //need to use landscape system to get landscape faster
+
     for(uint32 i = 0; i < size; ++i)
     {
         SnapToLandscapeControllerComponent *snapController = static_cast<SnapToLandscapeControllerComponent *>(entities[i]->GetComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
@@ -100,13 +105,26 @@ void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
 
         if(camera && snapController)
         {
-            Vector3 pos = camera->GetPosition();
+            const Vector3 & pos = camera->GetPosition();
             if (pos != positions[camera])
             {
-                pos.z = snapController->heightOnLandscape;
-                camera->SetPosition(pos);
+                const Vector3 & direction = camera->GetDirection();
+
+                Vector3 pointOnLandscape;
+                if (landscape && landscape->PlacePoint(pos, pointOnLandscape))
+                {
+                    pointOnLandscape.z += snapController->heightOnLandscape;
+                }
+                else
+                {
+                    pointOnLandscape = pos;
+                    pointOnLandscape.z = snapController->heightOnLandscape;
+                }
+
+                camera->SetPosition(pointOnLandscape);
+                camera->SetDirection(direction);
                 
-                positions[camera] = pos;
+                positions[camera] = pointOnLandscape;
             }
         }
     }

@@ -50,6 +50,9 @@
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
+
+
 
 #include "../StringConstants.h"
 
@@ -373,6 +376,7 @@ void SceneCameraSystem::CreateDebugCameras()
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
+        topCameraEntity->AddComponent(new DAVA::SnapToLandscapeControllerComponent());
 		scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
 
 		// set current default camera
