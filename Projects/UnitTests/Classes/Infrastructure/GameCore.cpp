@@ -300,7 +300,7 @@ void GameCore::RunTests()
 void GameCore::FinishTests()
 {
     // inform teamcity script we just finished all tests
-    // usefull on ios devices (run with lldb)
+    // useful on ios devices (run with lldb)
     teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
     Core::Instance()->Quit();
 }

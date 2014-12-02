@@ -56,9 +56,11 @@ elif start_on_android:
         ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests." + PRJ_NAME_BASE])
 elif sys.platform == 'win32':
     if os.path.isfile("..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX):  # run on build server (TeamCity)
-        sub_process = subprocess.Popen(["..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..")
+        sub_process = subprocess.Popen(["..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..",
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        sub_process = subprocess.Popen(["..\\Release\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..")
+        sub_process = subprocess.Popen(["..\\Release\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..",
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 elif sys.platform == "darwin":
     if os.path.exists("./" + PRJ_NAME_BASE + PRJ_POSTFIX):
         # if run on teamcity current dir is: Projects/UnitTests/DerivedData/TemplateProjectMacOS/Build/Products/Release
@@ -89,8 +91,8 @@ while continue_process_stdout:
                 app_exit_code = 0
         else:
             continue_process_stdout = False
-    except IOError:
-        sys.stdout.write(IOError.message)
+    except IOError as err:
+        sys.stdout.write(err.message)
         sys.stdout.flush()
 
 if app_exit_code is None:
