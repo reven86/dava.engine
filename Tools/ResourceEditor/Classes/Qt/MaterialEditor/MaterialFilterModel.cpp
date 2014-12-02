@@ -204,10 +204,7 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
             compResult = textComp;
         }
 
-        if (compResult < 0)
-        {
-            swap = true;
-        }
+        swap = (compResult < 0);
     }
 
     return swap;
@@ -227,5 +224,6 @@ int MaterialFilteringModel::compareNames(DAVA::NMaterial* left, DAVA::NMaterial*
     const QString lhsText = QString(left->GetMaterialName().c_str());
     const QString rhsText = QString(right->GetMaterialName().c_str());
     const int textComp = lhsText.compare( rhsText, Qt::CaseInsensitive );
+
     return textComp;
 }
