@@ -212,7 +212,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
     
     IMagickHelper::ConvertToPNGCroppedGeometry( psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str() , &cropped_data, true );
 		
-	if ( cropped_data.rects_array_size == 0 )
+	if ( cropped_data.layers_array_size == 0 )
 	{
 		AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
 		return 0;
@@ -227,12 +227,12 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
 	defFile->spriteWidth = width;
 	defFile->spriteHeight = height;
-	defFile->frameCount = (int)cropped_data.rects_array_size -1;
+	defFile->frameCount = (int)cropped_data.layers_array_size -1;
 	defFile->frameRects = new Rect2i[defFile->frameCount];
 		
-	for(int k = 1; k < (int)cropped_data.rects_array_size; ++k)
+	for(int k = 1; k < (int)cropped_data.layers_array_size; ++k)
 	{
-		defFile->frameRects[k - 1] = Rect2i(cropped_data.rects_array[k].x, cropped_data.rects_array[k].y, cropped_data.rects_array[k].dx, cropped_data.rects_array[k].dy) ;
+		defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy) ;
 			
 		//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
 			
