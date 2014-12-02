@@ -230,32 +230,17 @@ bool DefinitionFile::Load(const FilePath & _filename)
 
 DAVA::Size2i DefinitionFile::GetFrameSize(int frame) const
 {
-	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
-	{
-		return Size2i(spriteWidth, spriteHeight);
-	}
-
 	return Size2i(frameRects[frame].dx, frameRects[frame].dy);
 }
 
 
 int DefinitionFile::GetFrameWidth(int frame) const
 {
-	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
-	{
-		return spriteWidth;
-	}
-
 	return frameRects[frame].dx;
 }
 
 int DefinitionFile::GetFrameHeight(int frame) const
 {
-	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
-	{
-		return spriteHeight;
-	}
-
 	return frameRects[frame].dy;
 }
 
