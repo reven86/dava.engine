@@ -102,6 +102,9 @@ public slots:
     void OnAddWaveComponent();
     void OnAddModelTypeComponent();
     void OnAddSkeletonComponent();
+    void OnAddRotationControllerComponent();
+    void OnAddSnapToLandscapeControllerComponent();
+    void OnAddWASDControllerComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
 	

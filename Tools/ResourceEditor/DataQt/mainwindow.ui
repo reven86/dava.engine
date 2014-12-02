@@ -1945,6 +1945,30 @@
     <string>Create Test Skinned Object</string>
    </property>
   </action>
+  <action name="actionAddWASDComponent">
+   <property name="text">
+    <string>Add WASD Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add WASD Component</string>
+   </property>
+  </action>
+  <action name="actionAddRotationComponent">
+   <property name="text">
+    <string>Add Rotation Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Rotation Component</string>
+   </property>
+  </action>
+  <action name="actionAddSnapToLandscapeComponent">
+   <property name="text">
+    <string>Add Snap to Landscape Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Snap to Landscape Component</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

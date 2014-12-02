@@ -93,7 +93,11 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
     connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
     connect(mainUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
     connect(mainUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
-
+    connect(mainUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
+    connect(mainUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
+    connect(mainUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
+    
+    
 	SetUpdateTimeout(5000);
 	SetEditTracking(true);
 	setMouseTracking(true);
@@ -1374,6 +1378,21 @@ void PropertyEditor::OnAddModelTypeComponent()
 void PropertyEditor::OnAddSkeletonComponent()
 {
     OnAddComponent(Component::SKELETON_COMPONENT);
+}
+
+void PropertyEditor::OnAddRotationControllerComponent()
+{
+    OnAddComponent(Component::ROTATION_CONTROLLER_COMPONENT);
+}
+
+void PropertyEditor::OnAddSnapToLandscapeControllerComponent()
+{
+    OnAddComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT);
+}
+
+void PropertyEditor::OnAddWASDControllerComponent()
+{
+    OnAddComponent(Component::WASD_CONTROLLER_COMPONENT);
 }
 
 void PropertyEditor::OnRemoveComponent()
