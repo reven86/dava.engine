@@ -39,6 +39,7 @@ namespace DAVA
     
 class SnapToLandscapeControllerComponent: public Component
 {
+    friend class SnapToLandscapeControllerSystem;
 public:
     
     IMPLEMENT_COMPONENT_TYPE(SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT);

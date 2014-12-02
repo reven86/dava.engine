@@ -84,20 +84,11 @@ protected:
 	virtual void AddEntity(DAVA::Entity * entity);
 	virtual void RemoveEntity(DAVA::Entity * entity);
 
-    void ProcessKeyboardMove(float timeElapsed);
-    
 	void CreateDebugCameras();
-	void RecalcCameraViewAngles();
 	void RecalcCameraAspect();
-	void MouseMoveCameraPosition();
-	void MouseMoveCameraDirection();
-	void MouseMoveCameraPosAroundPoint(const DAVA::Vector3 &point);
     
 	void MoveAnimate(DAVA::float32 timeElapsed);
 	DAVA::Entity* GetEntityFromCamera(DAVA::Camera *camera) const;
-
-    bool IsCameraMovementKeyPressed();
-    bool IsModifiersPressed();
 
 protected:
 	DAVA::Rect viewportRect;
@@ -105,16 +96,10 @@ protected:
 
 	DAVA::Camera* curSceneCamera;
 
-	DAVA::Vector2 rotateStartPoint;
-	DAVA::Vector2 rotateStopPoint;
-
 	bool animateToNewPos;
 	DAVA::float32 animateToNewPosTime;
 	DAVA::Vector3 newPos;
 	DAVA::Vector3 newTar;
-
-	DAVA::float32 curViewAngleZ, curViewAngleY;
-	const DAVA::float32 maxViewAngle;
 
 	DAVA::Set<DAVA::Entity *> sceneCameras;
 
@@ -122,8 +107,6 @@ protected:
 
     DAVA::UniqueHandle renderState;
 	DAVA::uint32 activeSpeedIndex;
-    
-    bool cameraShouldIgnoreKeyboard;
 };
 
 #endif

@@ -53,6 +53,9 @@ void SnapToLandscapeControllerSystem::AddEntity(Entity * entity)
 {
     DVASSERT(GetCamera(entity) != NULL && "Right now system works with camera only");
 
+    Camera *camera = GetCamera(entity);
+    positions[camera] = Vector3();
+    
     entities.push_back(entity);
 }
 
@@ -63,6 +66,20 @@ void SnapToLandscapeControllerSystem::RemoveEntity(Entity * entity)
     {
         if(entities[i] == entity)
         {
+            Camera *camera = GetCamera(entity);
+            if(camera)
+            {
+                Map<Camera *, Vector3>::iterator it = positions.find(camera);
+                if(it != positions.end())
+                {
+                    positions.erase(it);
+                }
+                else
+                {
+                    DVASSERT(false);
+                }
+            }
+            
             entities[i] = entities[size-1];
             entities.pop_back();
             return;
@@ -84,8 +101,13 @@ void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
         if(camera && snapController)
         {
             Vector3 pos = camera->GetPosition();
-            
-            camera->SetPosition(pos);
+            if (pos != positions[camera])
+            {
+                pos.z = snapController->heightOnLandscape;
+                camera->SetPosition(pos);
+                
+                positions[camera] = pos;
+            }
         }
     }
 }

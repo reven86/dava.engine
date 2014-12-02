@@ -34,6 +34,8 @@
 
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
 
 ScenePreviewControl::ScenePreviewControl(const Rect & rect)
@@ -43,10 +45,8 @@ ScenePreviewControl::ScenePreviewControl(const Rect & rect)
     sceCamera = false;
     rootNode = NULL;
     
-    editorScene = new Scene();
-    editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
-
-    SetScene(editorScene);
+    editorScene = NULL;
+    RecreateScene();
     
     SetInputEnabled(true, true);
 }
@@ -74,6 +74,16 @@ void ScenePreviewControl::RecreateScene()
     
     editorScene = new Scene();
     editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
+    
+    if(editorScene->wasdSystem)
+    {
+        editorScene->wasdSystem->SetMoveSpeed(35.f);
+    }
+    if(editorScene->rotationSystem)
+    {
+        editorScene->rotationSystem->SetRotationSpeeed(0.10f);
+    }
+
     SetScene(editorScene);
 }
 
@@ -188,11 +198,7 @@ void ScenePreviewControl::SetupCamera()
         Vector3 target = sceneBox.GetCenter();
         camera->SetTarget(target);
         Vector3 dir = (sceneBox.max - sceneBox.min); 
-        float32 radius = dir.Length();
-        if(sceCamera)
-        {
-            radius = 5.f;
-        }
+        camera->SetPosition(target + dir);
         
         editorScene->SetCurrentCamera(camera);        
     }

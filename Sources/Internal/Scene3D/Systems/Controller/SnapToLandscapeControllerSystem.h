@@ -32,10 +32,13 @@
 #define __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_SYSTEM_H__
 
 #include "Entity/SceneSystem.h"
+#include "Math/Vector.h"
+
 
 namespace DAVA
 {
     
+class Camera;
 class SnapToLandscapeControllerSystem: public SceneSystem
 {
     
@@ -51,6 +54,8 @@ public:
 private:
     
     Vector<Entity *> entities;
+    Map<Camera *, Vector3> positions;
+    
 };
     
 };
