@@ -83,7 +83,7 @@ public:
     inline Vector2 ConvertResourceToVirtual(const Vector2 & vector, int32 resourceIndex) const;
     inline Vector2 ConvertResourceToPhysical(const Vector2 & vector, int32 resourceIndex) const;
     inline Vector2 ConvertInputToVirtual(const Vector2 & vector) const;
-    inline Vector2 ConvertInputToPhysical(const Vector2 & vector) const;
+    inline Vector2 ConvertVirtualToInput(const Vector2 & vector) const;
 
     inline Rect ConvertPhysicalToVirtual(const Rect & rect) const;
     inline Rect ConvertVirtualToPhysical(const Rect & rect) const;
@@ -248,7 +248,7 @@ inline Rect VirtualCoordinatesSystem::ConvertRect(const Rect & rect, float32 fac
     return newRect;
 }
 
-inline Vector2 VirtualCoordinatesSystem::ConvertInputToPhysical(const Vector2 &point) const
+inline Vector2 VirtualCoordinatesSystem::ConvertVirtualToInput(const Vector2 &point) const
 {
     Vector2 calcPoint(point);
     

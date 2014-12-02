@@ -625,7 +625,7 @@ namespace DAVA
 		touchDown.phase = UIEvent::PHASE_BEGAN;
 		touchDown.tid = touchId;
 		touchDown.tapCount = 1;
-        touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertInputToPhysical(point);
+        touchDown.physPoint = point;
         touchDown.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point);
 		ProcessInput(touchDown);
 	}
@@ -635,7 +635,7 @@ namespace DAVA
 		UIEvent touchMove;
 		touchMove.tid = touchId;
 		touchMove.tapCount = 1;
-        touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertInputToPhysical(point);
+        touchMove.physPoint = point;
         touchMove.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point);
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
