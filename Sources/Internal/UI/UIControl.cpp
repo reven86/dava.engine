@@ -42,7 +42,6 @@ namespace DAVA
 {
 
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-        : customData(NULL)
     {
         parent = NULL;
         controlState = STATE_NORMAL;
@@ -104,7 +103,6 @@ namespace DAVA
         SafeRelease(background);
         SafeRelease(eventDispatcher);
         RemoveAllControls();
-        SafeRelease(customData);
     }
 
     void UIControl::SetParent(UIControl *newParent)
@@ -2779,20 +2777,6 @@ namespace DAVA
         return position;
     }
 
-    void UIControl::RecalculatePivotPoint(const Rect &newRect)
-    {
-        Rect oldRect = this->GetRect();
-        // DF-2009 - Change proportianal pivot point accodring to new size
-        if ((oldRect.dx > 0 && oldRect.dy > 0))
-        {
-            float32 xMultiup = pivotPoint.x / oldRect.dx;
-            float32 yMultiup = pivotPoint.y / oldRect.dy;
-
-            pivotPoint.x = xMultiup * newRect.dx;
-            pivotPoint.y = yMultiup * newRect.dy;
-        }
-    }
-
     void UIControl::ApplyAlignSettingsForChildren()
     {
         UpdateChildrenLayout();
@@ -2908,21 +2892,6 @@ namespace DAVA
             (*it)->DumpInputs(depthLevel + 1);
         }
     }    
-
-    BaseObject *UIControl::GetCustomData() const
-    {
-        return customData;
-    }
-    
-    void UIControl::SetCustomData(BaseObject *data)
-    {
-        if (data != customData)
-        {
-            SafeRelease(customData);
-            customData = SafeRetain(data);
-        }
-    }
-    
 
     int32 UIControl::GetBackgroundComponentsCount() const
     {

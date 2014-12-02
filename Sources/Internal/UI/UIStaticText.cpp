@@ -239,7 +239,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 	UIGeometricData textGeomData;
 	textGeomData.position = textBlock->GetSpriteOffset();
 	textGeomData.size = GetSize();
-	textGeomData.AddToGeometricData(geometricData);
+    textGeomData.AddGeometricData(geometricData);
 
     if(!FLOAT_EQUAL(shadowBg->GetDrawColor().a, 0.0f) && (!FLOAT_EQUAL(shadowOffset.dx, 0.0f) || !FLOAT_EQUAL(shadowOffset.dy, 0.0f)))
     {
@@ -247,7 +247,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         UIGeometricData shadowGeomData;
         shadowGeomData.position = shadowOffset;
         shadowGeomData.size = GetSize();
-        shadowGeomData.AddToGeometricData(textGeomData);
+        shadowGeomData.AddGeometricData(textGeomData);
 
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->Draw(shadowGeomData);
@@ -568,7 +568,7 @@ String UIStaticText::GetFontPresetName() const
     return FontManager::Instance()->GetFontName(font);
 }
 
-void UIStaticText::SetFontPresetName(const String &presetName)
+void UIStaticText::SetFontByPresetName(const String &presetName)
 {
     Font *font = NULL;
 
@@ -604,10 +604,11 @@ void UIStaticText::SetTextPerPixelAccuracyType(int32 type)
 
 int32 UIStaticText::GetMultilineType() const
 {
-    if (GetMultiline())
+    bool multiline = GetMultiline();
+    if (multiline)
         return GetMultilineBySymbol() ? MULTILINE_ENABLED_BY_SYMBOL : MULTILINE_ENABLED;
     else
-        return GetMultiline();
+        return multiline;
 }
     
 void UIStaticText::SetMultilineType(int32 multilineType)

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -158,12 +158,14 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_win.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">
@@ -261,7 +263,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\FastNameMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Function.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Functor.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Hash.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\HashMap.h" />
@@ -690,6 +691,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIWebView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\VectorSpinnerAdapter.h" />
+    <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\CRC32.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\MD5.h" />
@@ -1138,6 +1140,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\MD5.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\StringFormat.cpp" />

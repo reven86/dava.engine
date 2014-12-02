@@ -30,6 +30,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Platform/Thread.h"
 #include "Platform/Mutex.h"
+#include "Base/FunctionTraits.h"
 
 #include "DownloadManager.h"
 #include "Downloader.h"
@@ -51,7 +52,6 @@ DownloadManager::DownloadManager()
     , isThreadStarted(false)
     , currentTask(NULL)
     , downloader(0)
-    , remoteFileSize(0)
     , downloadedTotal(0)
 {
 }
@@ -84,6 +84,7 @@ void DownloadManager::SetDownloader(Downloader *_downloader)
 
     SafeDelete(downloader);
     downloader = _downloader;
+    downloader->SetProgressNotificator(MakeFunction(this, &DownloadManager::OnCurrentTaskProgressChanged));
 }
 
 Downloader *DownloadManager::GetDownloader()
@@ -165,9 +166,9 @@ void DownloadManager::Update()
     callbackMutex.Unlock();
 }
 
-uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode, int32 timeout, int32 retriesCount)
+uint32 DownloadManager::Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode, const uint8 partsCount , int32 timeout, int32 retriesCount)
 {
-    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount);
+    DownloadTaskDescription *task = new DownloadTaskDescription(srcUrl, storeToFilePath, downloadMode, timeout, retriesCount, partsCount);
  
     static uint32 prevId = 1;
     task->id = prevId++;
@@ -454,6 +455,11 @@ bool DownloadManager::GetError(const uint32 &taskId, DownloadError &error)
 
     return true;
 }
+    
+const DownloadStatistics * const DownloadManager::GetStatistics() const
+{
+    return downloader->GetStatistics();
+}
 
 void DownloadManager::ClearQueue(Deque<DownloadTaskDescription *> &queue)
 {
@@ -560,7 +566,9 @@ DownloadError DownloadManager::Download()
     {
         error = TryDownload();
 
-        if (DLE_CONTENT_NOT_FOUND == error || DLE_CANCELLED == error)
+        if (DLE_CONTENT_NOT_FOUND == error
+            || DLE_CANCELLED == error
+            || DLE_FILE_ERROR == error)
             break;
         
         currentTask->type = RESUMED;
@@ -573,87 +581,88 @@ DownloadError DownloadManager::Download()
 
 DownloadError DownloadManager::TryDownload()
 {
-    int64 loadFrom = 0;
-
     // retrieve remote file size
-    DownloadError error = downloader->GetSize(currentTask->url, remoteFileSize, currentTask->timeout);
-    if (DLE_NO_ERROR != error)
-    {
-        currentTask->error = error;
-        return error;
+    currentTask->error = downloader->GetSize(currentTask->url, currentTask->downloadTotal, currentTask->timeout);
+    if (DLE_NO_ERROR != currentTask->error)
+    {        
+        return currentTask->error;
     }
 
     if (GET_SIZE == currentTask->type)
     {
-        currentTask->downloadTotal = remoteFileSize;
-        currentTask->error = error;
-        return error;
-    }
-
-    DVASSERT(GET_SIZE != currentTask->type);
-
-    // get downloaded part of file size
-    if (RESUMED == currentTask->type)
-    {
-        // if file is particulary downloaded, we will try to download rest part of it        
-        File *fileToGetSize = File::Create(currentTask->storePath, File::OPEN | File::READ);
-        if (!fileToGetSize)
-        {
-            // create new file if there is no file.
-            SafeRelease(fileToGetSize);
-            fileToGetSize = File::Create(currentTask->storePath, File::CREATE | File::WRITE | File::READ);
-            if (!fileToGetSize)
-                return DLE_FILE_ERROR;
-        }
-
-        loadFrom = fileToGetSize->GetSize();
-        currentTask->downloadProgress = loadFrom;
-        SafeRelease(fileToGetSize);
-    }
-    else
-    {
-        MakeFullDownload(currentTask);
-    }
-
-    currentTask->downloadTotal = remoteFileSize;
-    
-    downloadedTotal = loadFrom;
-
-    // if downloaded part of file is larger or equals to expected size
-    if (loadFrom > remoteFileSize)
-    {        
-        // here we can interrupt download or reload file for example
-        MakeFullDownload(currentTask);
-        loadFrom = 0;
-    }
-    else if (loadFrom == remoteFileSize)
-    {
-        currentTask->error = DLE_NO_ERROR;
         return currentTask->error;
     }
 
-    error = downloader->Download(currentTask->url, loadFrom, currentTask->timeout);
+    DVASSERT(GET_SIZE != currentTask->type);
+    currentTask->downloadProgress = 0;
 
-    // seems server doesn't supports download resuming. So we need to download whole file.
-    if (DLE_CANNOT_RESUME == error)
+    if (RESUMED == currentTask->type)
     {
-        loadFrom = 0;
-        MakeFullDownload(currentTask);
-        error = downloader->Download(currentTask->url, loadFrom, currentTask->timeout);
+        MakeResumedDownload();
+    }
+    else    
+    {
+        MakeFullDownload();
     }
 
-    currentTask->error = error;
+    if (DLE_NO_ERROR != currentTask->error)
+    {
+        return currentTask->error;
+    }
+    
+    currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
 
-    return error;
+    // seems server doesn't supports download resuming. So we need to download whole file.
+    if (DLE_COULDNT_RESUME == currentTask->error)
+    {
+        MakeFullDownload();
+        if (DLE_NO_ERROR == currentTask->error)
+        {
+            currentTask->error = downloader->Download(currentTask->url, currentTask->storePath, currentTask->partsCount, currentTask->timeout);
+        }
+    }
+
+    return currentTask->error;
 }
 
-void DownloadManager::MakeFullDownload(DownloadTaskDescription *task)
+void DownloadManager::MakeFullDownload()
 {
-    task->type = FULL;
-    FileSystem::Instance()->DeleteFile(task->storePath);
-    File *file = File::Create(task->storePath, File::CREATE | File::WRITE);
-    SafeRelease(file);
-    task->downloadProgress = 0;
+    currentTask->type = FULL;
+
+    if (currentTask->storePath.Exists())
+    {
+        if (FileSystem::Instance()->DeleteFile(currentTask->storePath))
+        {
+            currentTask->error = DLE_NO_ERROR;
+        }
+        else
+        {
+            currentTask->error = DLE_FILE_ERROR;
+        }
+    }
+    currentTask->downloadProgress = 0;
+}
+
+void DownloadManager::MakeResumedDownload()
+{
+    currentTask->type = RESUMED;
+    // if file is particulary downloaded, we will try to download rest part of it        
+    File *file = File::Create(currentTask->storePath, File::OPEN | File::READ);
+    if (NULL == static_cast<File *>(file))
+    {
+        // download fully if there is no file.
+        MakeFullDownload();
+    }
+    else
+    {
+        currentTask->downloadProgress = file->GetSize();
+        SafeRelease(file);
+        // if exsisted file have not the same size as downloading file
+        if (currentTask->downloadProgress > currentTask->downloadTotal)
+        {
+            MakeFullDownload();
+        }
+    }
 }
 
 void DownloadManager::ResetRetriesCount()
@@ -661,5 +670,9 @@ void DownloadManager::ResetRetriesCount()
     currentTask->retriesLeft = currentTask->retriesCount;
 }
 
+void DownloadManager::OnCurrentTaskProgressChanged(uint64 progressDelta)
+{
+    currentTask->downloadProgress += progressDelta;
 }
-
+    
+}

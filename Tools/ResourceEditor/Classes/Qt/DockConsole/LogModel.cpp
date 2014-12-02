@@ -17,12 +17,12 @@ LogModel::~LogModel()
 {
 }
 
-void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) const
+void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
     emit const_cast<LogModel *>(this)->logged(ll, QString::fromStdString(std::string(text)));
 }
 
-void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text) const
+void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text)
 {
     const DAVA::WideString wide(text);
     const DAVA::String utf8 = DAVA::UTF8Utils::EncodeToUTF8(wide);

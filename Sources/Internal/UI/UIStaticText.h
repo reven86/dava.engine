@@ -151,7 +151,7 @@ public:
     }
     
     String GetFontPresetName() const;
-    void SetFontPresetName(const String &presetName);
+    void SetFontByPresetName(const String &presetName);
     
     int32 GetTextColorInheritType() const;
     void SetTextColorInheritType(int32 type);
@@ -165,7 +165,7 @@ public:
     
     INTROSPECTION_EXTEND(UIStaticText, UIControl,
                          PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("font", "Font", GetFontPresetName, SetFontPresetName, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          
                          PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
@@ -177,6 +177,7 @@ public:
                          PROPERTY("multiline", InspDesc("Multi Line", GlobalEnumMap<eMultiline>::Instance()), GetMultilineType, SetMultilineType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("fitting", InspDesc("Fitting", GlobalEnumMap<TextBlock::eFitType>::Instance(), InspDesc::T_FLAGS), GetFittingOption, SetFittingOption, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
                          );
 
 };

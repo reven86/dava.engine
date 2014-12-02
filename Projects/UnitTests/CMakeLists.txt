@@ -50,6 +50,7 @@ endif()
 
 
 include_directories   ( "Classes" )
+include_directories   ( "Classes/Infrastructure" )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
@@ -58,7 +59,7 @@ add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 
 
-define_source_folders ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER} GLOB_ERASE_FOLDERS "_build" )
+define_source_folders ( SRC_ROOT "Classes" ${PLATFORM_SPECIFIC_FOLDER} GLOB_ERASE_FOLDERS "_build" "Unix" )
 generate_source_groups_project ()
                                
 add_executable  ( UnitTest MACOSX_BUNDLE

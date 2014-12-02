@@ -1507,9 +1507,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Function.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Functor.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
       <Filter>Internal\DLC</Filter>
     </ClInclude>
@@ -1600,6 +1597,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h">
       <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h">
+      <Filter>Internal\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2890,6 +2890,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp">
       <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
+      <Filter>Internal\Utils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

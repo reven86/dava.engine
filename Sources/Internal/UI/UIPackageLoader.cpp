@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "UIPackageLoader.h"
 
 #include "Base/ObjectFactory.h"
@@ -20,7 +49,7 @@ UIPackageLoader::UIPackageLoader(AbstractUIPackageBuilder *builder) : builder(bu
 
 UIPackageLoader::~UIPackageLoader()
 {
-    this->builder = NULL;
+    builder = NULL;
 }
     
 UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
@@ -48,12 +77,13 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (versionNode == NULL || versionNode->GetType() != YamlNode::TYPE_STRING)
         return NULL;
     
-    UIPackage *package = builder->BeginPackage(packagePath);
+    UIPackage *package = SafeRetain(builder->BeginPackage(packagePath));
 
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
     {
-        for (int32 i = 0; i < (int32) importedPackagesNode->GetCount(); i++)
+        int32 count = (int32) importedPackagesNode->GetCount();
+        for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
 
@@ -80,10 +110,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
-        for (int32 i = 0; i < count; i++)
-        {
-            DVASSERT(loadingQueue[i].status == STATUS_LOADED);
-        }
+
         loadingQueue.clear();
     }
     builder->EndPackage();
@@ -93,7 +120,8 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     
 bool UIPackageLoader::LoadControlByName(const String &name)
 {
-    for (size_t index = 0; index < loadingQueue.size(); index++)
+    size_t size = loadingQueue.size();
+    for (size_t index = 0; index < size; index++)
     {
         if (loadingQueue[index].name == name)
         {
@@ -192,8 +220,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     for (int i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
-        String memberName = member->Name();
-        
+
         VariantType res;
         if (node)
             res = ReadVariantTypeFromYamlNode(member, node);
@@ -243,13 +270,11 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
         if (internalControl)
         {
             const InspInfo *insp = internalControl->GetTypeInfo();
-            String bgName = control->GetInternalControlName(i);
-            
+
             for (int j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
-                String memberName = member->Name();
-                
+
                 VariantType value;
                 if (componentNode)
                     value = ReadVariantTypeFromYamlNode(member, componentNode);

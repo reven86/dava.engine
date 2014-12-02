@@ -107,7 +107,7 @@ public:
      \returns bounding rect for string in pixels
      */
     virtual Font::StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = 0) const;
-    
+
     /**
      \brief Checks if symbol is present in font.
      \param[in] ch - tested symbol
@@ -120,7 +120,7 @@ public:
      \returns height in pixels
      */
     virtual uint32 GetFontHeight() const;
-    
+
     /**
      \brief Clone font.
      */
@@ -160,6 +160,7 @@ public:
                               Vector<float32> *charSizes = NULL,
                               int32 justifyWidth = 0,
                               int32 spaceAddon = 0) const;
+
     float32 GetSpread() const;
     
 protected:

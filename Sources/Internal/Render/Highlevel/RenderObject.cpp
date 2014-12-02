@@ -177,7 +177,7 @@ void RenderObject::ReplaceRenderBatch(uint32 batchIndex, RenderBatch * newBatch)
 void RenderObject::SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex)
 {
     uint32 size = (uint32)renderBatchArray.size();
-    DVASSERT(batchIndex < size && batchIndex >= 0);
+    DVASSERT(batchIndex < size);
 
     IndexedRenderBatch & iBatch = renderBatchArray[batchIndex];
     iBatch.lodIndex = newLodIndex;
@@ -188,7 +188,7 @@ void RenderObject::SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex)
 void RenderObject::SetRenderBatchSwitchIndex(uint32 batchIndex, int32 newSwitchIndex)
 {
     uint32 size = (uint32)renderBatchArray.size();
-    DVASSERT(batchIndex < size && batchIndex >= 0);
+    DVASSERT(batchIndex < size);
 
     IndexedRenderBatch & iBatch = renderBatchArray[batchIndex];
     iBatch.switchIndex = newSwitchIndex;

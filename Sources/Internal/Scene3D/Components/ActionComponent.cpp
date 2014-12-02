@@ -328,7 +328,7 @@ namespace DAVA
 	
 	ActionComponent::Action& ActionComponent::Get(uint32 index)
 	{
-		DVASSERT(index >= 0 && index < actions.size());
+		DVASSERT(index < actions.size());
 		return actions[index].action;
 	}
 	
