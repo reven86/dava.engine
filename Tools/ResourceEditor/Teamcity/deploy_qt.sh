@@ -1,3 +1,3 @@
 # !/bin/bash
 
-/Users/i_bratchik/Qt/5.3/clang_64/bin/
+/Users/Admin/QtSDK/Desktop/Qt/474/gcc/bin/macdeployqt $1
