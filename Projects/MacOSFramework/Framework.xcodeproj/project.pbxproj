@@ -161,7 +161,6 @@
 		176DE8FF174B5561007A983B /* LinearAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACB16BD24E400732C04 /* LinearAnimation.h */; };
 		176DE900174B5561007A983B /* NamedAnimationsList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACC16BD24E400732C04 /* NamedAnimationsList.h */; };
 		176DE903174B5561007A983B /* AutotestingSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD316BD24E400732C04 /* AutotestingSystem.h */; };
-		176DE904174B5561007A983B /* Config.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD416BD24E400732C04 /* Config.h */; };
 		176DE905174B5561007A983B /* MongodbUpdateObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */; };
 		176DE907174B5561007A983B /* BaseMath.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADB16BD24E400732C04 /* BaseMath.h */; };
 		176DE908174B5561007A983B /* BaseObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADD16BD24E400732C04 /* BaseObject.h */; };
@@ -1479,7 +1478,6 @@
 		E8989DA816BD24E500732C04 /* NamedAnimationsList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACC16BD24E400732C04 /* NamedAnimationsList.h */; };
 		E8989DAD16BD24E500732C04 /* AutotestingSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD216BD24E400732C04 /* AutotestingSystem.cpp */; };
 		E8989DAE16BD24E500732C04 /* AutotestingSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD316BD24E400732C04 /* AutotestingSystem.h */; };
-		E8989DAF16BD24E500732C04 /* Config.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD416BD24E400732C04 /* Config.h */; };
 		E8989DB016BD24E500732C04 /* MongodbUpdateObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD516BD24E400732C04 /* MongodbUpdateObject.cpp */; };
 		E8989DB116BD24E500732C04 /* MongodbUpdateObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */; };
 		E8989DB416BD24E500732C04 /* BaseMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADA16BD24E400732C04 /* BaseMath.cpp */; };
@@ -1925,7 +1923,6 @@
 		E898A05B16BD265400732C04 /* LinearAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACB16BD24E400732C04 /* LinearAnimation.h */; };
 		E898A05C16BD265400732C04 /* NamedAnimationsList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACC16BD24E400732C04 /* NamedAnimationsList.h */; };
 		E898A05F16BD265400732C04 /* AutotestingSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD316BD24E400732C04 /* AutotestingSystem.h */; };
-		E898A06016BD265400732C04 /* Config.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD416BD24E400732C04 /* Config.h */; };
 		E898A06116BD265400732C04 /* MongodbUpdateObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */; };
 		E898A06316BD265400732C04 /* BaseMath.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADB16BD24E400732C04 /* BaseMath.h */; };
 		E898A06416BD265400732C04 /* BaseObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADD16BD24E400732C04 /* BaseObject.h */; };
@@ -2925,7 +2922,6 @@
 		E8989ACC16BD24E400732C04 /* NamedAnimationsList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NamedAnimationsList.h; sourceTree = "<group>"; };
 		E8989AD216BD24E400732C04 /* AutotestingSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingSystem.cpp; sourceTree = "<group>"; };
 		E8989AD316BD24E400732C04 /* AutotestingSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingSystem.h; sourceTree = "<group>"; };
-		E8989AD416BD24E400732C04 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		E8989AD516BD24E400732C04 /* MongodbUpdateObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MongodbUpdateObject.cpp; sourceTree = "<group>"; };
 		E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MongodbUpdateObject.h; sourceTree = "<group>"; };
 		E8989ADA16BD24E400732C04 /* BaseMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseMath.cpp; sourceTree = "<group>"; };
@@ -3771,7 +3767,6 @@
 				C7FBCFB216CD1FE5006F1B3F /* VectorSwig.cpp */,
 				E8989AD216BD24E400732C04 /* AutotestingSystem.cpp */,
 				E8989AD316BD24E400732C04 /* AutotestingSystem.h */,
-				E8989AD416BD24E400732C04 /* Config.h */,
 				E8989AD516BD24E400732C04 /* MongodbUpdateObject.cpp */,
 				E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */,
 			);
@@ -4798,7 +4793,6 @@
 				176DE900174B5561007A983B /* NamedAnimationsList.h in Headers */,
 				176DE903174B5561007A983B /* AutotestingSystem.h in Headers */,
 				D7C1C1D819CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */,
-				176DE904174B5561007A983B /* Config.h in Headers */,
 				176DE905174B5561007A983B /* MongodbUpdateObject.h in Headers */,
 				176DE907174B5561007A983B /* BaseMath.h in Headers */,
 				647EFC46195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
@@ -5218,7 +5212,6 @@
 				E8989DA716BD24E500732C04 /* LinearAnimation.h in Headers */,
 				E8989DA816BD24E500732C04 /* NamedAnimationsList.h in Headers */,
 				E8989DAE16BD24E500732C04 /* AutotestingSystem.h in Headers */,
-				E8989DAF16BD24E500732C04 /* Config.h in Headers */,
 				84CB6727191FC8850086483D /* LibPVRHelper.h in Headers */,
 				0214140A181984D600925E51 /* DAVAClassRegistrator.h in Headers */,
 				E8989DB116BD24E500732C04 /* MongodbUpdateObject.h in Headers */,
@@ -5659,7 +5652,6 @@
 				E898A05B16BD265400732C04 /* LinearAnimation.h in Headers */,
 				E898A05C16BD265400732C04 /* NamedAnimationsList.h in Headers */,
 				E898A05F16BD265400732C04 /* AutotestingSystem.h in Headers */,
-				E898A06016BD265400732C04 /* Config.h in Headers */,
 				E898A06116BD265400732C04 /* MongodbUpdateObject.h in Headers */,
 				E898A06316BD265400732C04 /* BaseMath.h in Headers */,
 				15D31184198285C800919AAA /* YamlEmitter.h in Headers */,

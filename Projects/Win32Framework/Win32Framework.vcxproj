@@ -171,7 +171,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)__DAVAENGINE_AUTOTESTING__;AUTOTESTING_LUA;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
