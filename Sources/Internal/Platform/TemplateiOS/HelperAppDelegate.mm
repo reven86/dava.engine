@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "Base/BaseTypes.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
 

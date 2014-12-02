@@ -269,6 +269,12 @@
 		B7395D3E1A161F0600FB5356 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					arm64,
+					i386,
+					armv7s,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "arm64 armv7 armv7s i386";
 			};
@@ -277,6 +283,12 @@
 		B7395D3F1A161F0600FB5356 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					arm64,
+					i386,
+					armv7s,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "arm64 armv7 armv7s i386";
 			};
@@ -378,6 +390,7 @@
 				ARCHS = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
+					arm64,
 				);
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = unibreak_iphone;
@@ -390,6 +403,7 @@
 				ARCHS = (
 					"$(ARCHS_STANDARD)",
 					armv7s,
+					arm64,
 				);
 				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = unibreak_iphone;

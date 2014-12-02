@@ -105,6 +105,9 @@ public:
 
     inline eIndexFormat GetIndexFormat() const;
     
+    void UpdateVertexBuffer(int32 vertexCount);
+    void UpdateIndexBuffer();
+
 private:
     Map<eVertexFormat, RenderDataStream *> streamMap;
     Vector<RenderDataStream *> streamArray;

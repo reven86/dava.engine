@@ -95,8 +95,8 @@ void SplitTest::SplitBySymbols(PerfFuncData * data)
     staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING, LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
     Vector<WideString> resultStrings;
     resultStrings.push_back(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTIN");
-    resultStrings.push_back(L"G, LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR ");
-    resultStrings.push_back(L"IMPLIED WARRANTIES");
+    resultStrings.push_back(L"G, LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR");
+    resultStrings.push_back(L" IMPLIED WARRANTIES");
     
     staticText->SetMultiline(true, true);
     
@@ -126,7 +126,7 @@ void SplitTest::SplitBySymbols(PerfFuncData * data)
 
 void SplitTest::SplitByWordsWithNewLine(PerfFuncData * data)
 {
-    staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY\nTHE DAVA CONSULTING\\nLLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
+    staticText->SetText(L"THIS SOFTWARE IS PROVIDED BY\nTHE DAVA CONSULTING\nLLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
     Vector<WideString> resultStrings;
     resultStrings.push_back(L"THIS SOFTWARE IS PROVIDED BY");
     resultStrings.push_back(L"THE DAVA CONSULTING");

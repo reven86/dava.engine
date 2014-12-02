@@ -268,6 +268,11 @@ String FontManager::GetFontHashName(Font* font)
 {
 	return Format("Font_%X", font->GetHashCode());
 }
+    
+const Map<String, Font*>& FontManager::GetFontMap() const
+{
+    return fontMap;
+}
 
 };
 

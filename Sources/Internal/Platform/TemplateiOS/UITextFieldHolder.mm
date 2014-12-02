@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "UI/UITextFieldiPhone.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #import <HelperAppDelegate.h>
 

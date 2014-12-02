@@ -41,7 +41,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/OGLHelpers.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #if defined(__DAVAENGINE_IPHONE__) 
 #include <CoreGraphics/CoreGraphics.h>
