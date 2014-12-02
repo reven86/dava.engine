@@ -78,9 +78,19 @@ namespace MeshUtils
 
         bool operator<(const SkinnedMeshWorkKey & data) const
         {
-            pointer_size p1 = (pointer_size)materialParent + ((pointer_size)(lodIndex) << 8) + ((pointer_size)(switchIndex) << 16);
-            pointer_size p2 = (pointer_size)data.materialParent + ((pointer_size)(data.lodIndex) << 8) + ((pointer_size)(data.switchIndex) << 16);
-            return p1 < p2;
+            if (materialParent == data.materialParent)
+            {
+                if (lodIndex == data.lodIndex)
+                {
+                    return switchIndex < data.switchIndex;
+                }
+                else
+                {
+                    return lodIndex < data.lodIndex;
+                }
+            }
+         
+            return materialParent < data.materialParent;
         }
 
         int32 lodIndex;
