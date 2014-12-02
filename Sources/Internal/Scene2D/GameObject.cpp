@@ -38,7 +38,7 @@
 #include "Collision/CollisionObject2.h"
 #include "Animation/KeyframeAnimation.h"
 #include "Scene2D/GameObjectAnimations.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {

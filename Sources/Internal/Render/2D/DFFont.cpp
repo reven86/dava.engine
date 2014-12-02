@@ -34,7 +34,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Thread/LockGuard.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NOT_DEF_CHAR 0xffff
 

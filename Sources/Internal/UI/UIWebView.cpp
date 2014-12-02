@@ -31,8 +31,8 @@
 #include "UIWebView.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/YamlNode.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "../Platform/TemplateMacOS/WebViewControlMacOS.h"

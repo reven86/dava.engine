@@ -38,7 +38,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/FilePath.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #include <ft2build.h>
 #include <freetype/ftglyph.h>

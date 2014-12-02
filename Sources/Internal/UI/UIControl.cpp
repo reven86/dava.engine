@@ -37,14 +37,13 @@
 #include "Render/RenderHelper.h"
 #include "Render/RenderManager.h"
 #include "Utils/StringFormat.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA
 {
 
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-        : customData(NULL)
     {
         parent = NULL;
         controlState = STATE_NORMAL;
@@ -106,7 +105,6 @@ namespace DAVA
         SafeRelease(background);
         SafeRelease(eventDispatcher);
         RemoveAllControls();
-        SafeRelease(customData);
     }
 
     void UIControl::SetParent(UIControl *newParent)
@@ -2896,21 +2894,6 @@ namespace DAVA
             (*it)->DumpInputs(depthLevel + 1);
         }
     }    
-
-    BaseObject *UIControl::GetCustomData() const
-    {
-        return customData;
-    }
-    
-    void UIControl::SetCustomData(BaseObject *data)
-    {
-        if (data != customData)
-        {
-            SafeRelease(customData);
-            customData = SafeRetain(data);
-        }
-    }
-    
 
     int32 UIControl::GetBackgroundComponentsCount() const
     {

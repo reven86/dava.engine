@@ -211,14 +211,11 @@ public:
 	void ResetModification();
 	void Reset();//Reset do not resets the pivot point
 
-	//void Draw(DrawState * state);
 	/**
 	 \brief	Draw sprite by the 4 verticies.
 		The vertices sequence is (xLeft,yTop), (xRight,yTop), (xLeft,yBottom), (xRight,yBottom)
 	 \param v poiterto the array of the four Vector2 objects.
 	 */
-//	void DrawPoints(Vector2 *verticies, DrawState* drawState);
-//	void DrawPoints(Vector2 *verticies, Vector2 *textureCoordinates, DrawState* drawState);
 
 	inline int32 GetResourceSizeIndex() const;
 
@@ -265,9 +262,6 @@ public:
 	void ConvertToVirtualSize();
 
 	const FilePath & GetRelativePathname() const;
-
-	//inline void PrepareSpriteRenderData(Sprite::DrawState * drawState);
-	//RenderDataObject * spriteRenderObject;
 
     /**
 	 \brief Removes all sprite data.
@@ -324,12 +318,10 @@ protected:
 	Polygon2 * clipPolygon;
 
 	void PrepareForNewSize();
-    //void SetFrame(int32 frm);
 
 	Vector2	size;
 
 	int32 frameCount;
-	//int32	frame;
 
 	Vector2	defaultPivotPoint;
 
@@ -344,15 +336,6 @@ protected:
 	eSpriteType type;
 
 	float32 **rectsAndOffsets;
-
-//	RenderDataStream * vertexStream;
-//	RenderDataStream * texCoordStream;
-//	ePrimitiveType primitiveToDraw;
-//	int32 vertexCount;
-//
-//	// For rendering of clipped objects
-//	static Vector<Vector2> clippedTexCoords;
-//	static Vector<Vector2> clippedVertices;
     
 private:
     FilePath  relativePathname;

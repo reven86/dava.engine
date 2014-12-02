@@ -30,7 +30,7 @@
 
 #include "UI/TheoraPlayer.h"
 #include "FileSystem/YamlNode.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 

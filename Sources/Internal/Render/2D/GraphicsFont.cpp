@@ -29,8 +29,8 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/2D/GraphicsFont.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/File.h"
 #include "Debug/DVAssert.h"
