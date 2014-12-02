@@ -94,8 +94,7 @@ void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
     const uint32 size = entities.size();
     if(0 == size) return;
     
-    Landscape *landscape = FindLandscape(GetScene()); //need to use landscape system to get landscape faster
-
+    Landscape *landscape = FindLandscape(GetScene());
     for(uint32 i = 0; i < size; ++i)
     {
         SnapToLandscapeControllerComponent *snapController = static_cast<SnapToLandscapeControllerComponent *>(entities[i]->GetComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));

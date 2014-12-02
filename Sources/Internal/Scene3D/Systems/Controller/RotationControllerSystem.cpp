@@ -113,42 +113,32 @@ void RotationControllerSystem::Input(UIEvent *event)
             rotateStartPoint = rotateStopPoint;
             rotateStopPoint = event->point;
             
-            //TODO: this code need to check if system used correct for camera and wasd
             Camera * camera = GetScene()->GetDrawCamera();
             if(!camera) return;
             
             //Find active wasd component
-            Entity * cameraHolder = NULL;
             for(uint32 i = 0; i < size; ++i)
             {
                 if(GetCamera(entities[i]) == camera)
                 {
-                    cameraHolder = entities[i];
+                    if(event->tid == DAVA::UIEvent::BUTTON_2)
+                    {
+                        RotateDirection(camera);
+                    }
+                    else if(event->tid == DAVA::UIEvent::BUTTON_3)
+                    {
+                        KeyboardDevice *keyboard = InputSystem::Instance()->GetKeyboard();
+                        if(keyboard->IsKeyPressed(DVKEY_ALT))
+                        {
+                            RotatePositionAroundPoint(camera, rotationPoint);
+                        }
+                        else
+                        {
+                            RotatePosition(camera);
+                        }
+                    }
+
                     break;
-                }
-            }
-            
-            DVASSERT(cameraHolder);
-            
-            RotationControllerComponent *rotationController = static_cast<RotationControllerComponent *>(cameraHolder->GetComponent(Component::ROTATION_CONTROLLER_COMPONENT));
-            DVASSERT(rotationController);
-            //end of TODO
-            
-            
-            if(event->tid == DAVA::UIEvent::BUTTON_2)
-            {
-                RotateDirection(camera);
-            }
-            else if(event->tid == DAVA::UIEvent::BUTTON_3)
-            {
-                KeyboardDevice *keyboard = InputSystem::Instance()->GetKeyboard();
-                if(keyboard->IsKeyPressed(DVKEY_ALT))
-                {
-                    RotatePositionAroundPoint(camera, rotationPoint);
-                }
-                else
-                {
-                    RotatePosition(camera);
                 }
             }
         }
