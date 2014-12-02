@@ -118,7 +118,7 @@ void WASDControllerSystem::MoveForward(Camera *camera, float32 speed, eDirection
     Vector3 pos = camera->GetPosition();
     const Vector3 dir = camera->GetDirection();
     
-    pos += (dir * speed * direction);
+    pos += (dir * speed * (float32)direction);
     
     camera->SetPosition(pos);
     camera->SetDirection(dir);
@@ -130,7 +130,7 @@ void WASDControllerSystem::MoveRight(Camera *camera, float32 speed, eDirection d
     const Vector3 dir = camera->GetDirection();
     Vector3 left = camera->GetLeft();
     
-    pos += (left * speed * direction);
+    pos += (left * speed * (float32)direction);
     
     camera->SetPosition(pos);
     camera->SetDirection(dir);
