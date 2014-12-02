@@ -77,6 +77,7 @@ UIControl * UIPackage::GetControl(const String &name) const
 
 UIControl * UIPackage::GetControl(int32 index) const
 {
+    DVASSERT(0 <= index && index < (int32)controls.size());
     return controls[index];
 }
 
