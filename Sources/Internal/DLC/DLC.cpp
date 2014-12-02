@@ -90,6 +90,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     dlcContext.prevState = 0;
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
+    ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
 
     // FSM variables
     fsmAutoReady = false;
@@ -189,7 +190,7 @@ void DLC::FSM(DLCEvent event)
 
                 case EVENT_CHECK_START:
                     // if last time stopped on the patching state and patch file exists - continue patching
-                    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists())
+                    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists() && dlcContext.remoteVerStotePath.Exists())
                     {
                         dlcContext.prevState = 0;
                         dlcState = DS_PATCHING;
@@ -459,7 +460,7 @@ void DLC::StepCheckInfoBegin()
     Logger::Info("DLC: Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
 
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckInfoFinish));
-    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL);
+    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL, 1);
 }
 
 // downloading DLC version file finished. need to read removeVersion
@@ -486,7 +487,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
             else
             {
                 Logger::FrameworkDebug("DLC: error %d", downloadError);
-                if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
+                if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
                 {
                     // connection problem
                     PostError(DE_CONNECT_ERROR);
@@ -559,7 +560,7 @@ void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
                 }
                 else
                 {
-                    if(DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_CANNOT_CONNECT == downloadErrorFull)
+                    if(DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_COULDNT_CONNECT == downloadErrorFull)
                     {
                         // connection problem
                         PostError(DE_CONNECT_ERROR);
@@ -594,7 +595,7 @@ void DLC::StepCheckMetaBegin()
 
     FileSystem::Instance()->DeleteFile(dlcContext.remoteMetaStorePath);
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckMetaFinish));
-    dlcContext.remoteMetaDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL);
+    dlcContext.remoteMetaDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL, 1);
 }
 
 void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
@@ -606,7 +607,7 @@ void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
             DownloadError downloadError;
             DownloadManager::Instance()->GetError(dlcContext.remoteMetaDownloadId, downloadError);
 
-            if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
+            if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
             {
                 // connection problem
                 PostError(DE_CONNECT_ERROR);
@@ -707,7 +708,7 @@ void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status
                     break;
 
                 case DAVA::DLE_COULDNT_RESOLVE_HOST:
-                case DAVA::DLE_CANNOT_CONNECT:
+                case DAVA::DLE_COULDNT_CONNECT:
                     // connection problem
                     PostError(DE_CONNECT_ERROR);
                     break;

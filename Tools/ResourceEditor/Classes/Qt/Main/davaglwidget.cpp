@@ -222,6 +222,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
 {
+    event->setDropAction(Qt::LinkAction);
 	event->accept();
 }
 
@@ -239,6 +240,7 @@ void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
 
 	DAVA::UIControlSystem::Instance()->OnInput(DAVA::UIEvent::PHASE_MOVE, emptyTouches, touches);
 
+    event->setDropAction(Qt::LinkAction);
 	event->accept();
 }
 
@@ -246,6 +248,9 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 {
 	const QMimeData *mimeData = event->mimeData();
 	emit OnDrop(mimeData);
+
+    event->setDropAction(Qt::LinkAction);
+	event->accept();
 }
 
 #if defined (Q_OS_MAC)

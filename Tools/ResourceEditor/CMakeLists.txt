@@ -33,7 +33,6 @@ find_package ( Qt5Core REQUIRED )
 find_package ( Qt5Concurrent REQUIRED )
 find_package ( Qt5Gui REQUIRED )
 find_package ( Qt5Widgets REQUIRED )
-find_package ( Qt5OpenGL REQUIRED )
 
 set( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 set( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
@@ -41,7 +40,7 @@ set( Generated          ${CMAKE_CURRENT_BINARY_DIR}  )
 
 
 define_source_folders ( SRC_ROOT "Classes" )
-generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated Data )
+generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated )
 
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
@@ -82,11 +81,12 @@ add_definitions       (
 -D_CRT_SECURE_NO_DEPRECATE
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
-#-D__DAVAENGINE_BEAST__
 -DDAVA_FMOD
 -D_DISABLE_IMAGE_MAGICK
--DDAVA_DEBUG
 )
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
+
 
 if( MSVC )
     set( LIBRARIES "gdi32.lib" "glu32.lib" #"winmm.lib" "opengl32.lib"
@@ -223,4 +223,4 @@ target_link_libraries ( ResourceEditor Qt5::Core )
 target_link_libraries ( ResourceEditor Qt5::Gui )
 target_link_libraries ( ResourceEditor Qt5::Widgets )
 target_link_libraries ( ResourceEditor Qt5::Concurrent )
-target_link_libraries ( ResourceEditor Qt5::OpenGL )
+
