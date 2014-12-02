@@ -144,6 +144,8 @@ public class JNITextField {
 			});
 			JNIActivity.GetActivity().runOnUiThread(inTask);
 			try {
+				if (JNIActivity.GetActivity().GetIsPausing())
+					return null;
 				return inTask.get();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
