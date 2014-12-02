@@ -387,7 +387,6 @@
     <ClCompile Include="Classes\Commands2\TilemaskEditorCommands.cpp" />
     <ClCompile Include="Classes\Commands2\TransformCommand.cpp" />
     <ClCompile Include="Classes\Commands2\VisibilityToolActions.cpp" />
-    <ClCompile Include="Classes\Deprecated\CameraController.cpp" />
     <ClCompile Include="Classes\Deprecated\ControlsFactory.cpp" />
     <ClCompile Include="Classes\Deprecated\DraggableDialog.cpp" />
     <ClCompile Include="Classes\Deprecated\EditorConfig.cpp" />
@@ -1084,7 +1083,6 @@
     <ClInclude Include="Classes\Commands2\VisibilityToolActions.h" />
     <ClInclude Include="Classes\config.h" />
     <ClInclude Include="Classes\Constants.h" />
-    <ClInclude Include="Classes\Deprecated\CameraController.h" />
     <ClInclude Include="Classes\Deprecated\ControlsFactory.h" />
     <ClInclude Include="Classes\Deprecated\DraggableDialog.h" />
     <ClInclude Include="Classes\Deprecated\EditorConfig.h" />
