@@ -63,6 +63,7 @@ namespace Settings
 	static const DAVA::FastName Scene_CameraFOV("Scene/CameraFOV");
 	static const DAVA::FastName Scene_CameraNear("Scene/CameraNear");
 	static const DAVA::FastName Scene_CameraFar("Scene/CameraFar");
+    static const DAVA::FastName Scene_CameraHeightOnLandscape("Scene/HeightOnLandscape");
     static const DAVA::FastName Scene_SelectionSequent("Scene/SelectionSequent");
     static const DAVA::FastName Scene_SelectionDrawMode("Scene/SelectionDrawMode");
     static const DAVA::FastName Scene_CollisionDrawMode("Scene/CollisionDrawMode");

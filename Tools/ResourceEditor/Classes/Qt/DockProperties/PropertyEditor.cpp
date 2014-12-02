@@ -65,6 +65,9 @@
 #include "ActionComponentEditor.h"
 #include "SoundComponentEditor/SoundComponentEditor.h"
 
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
+
+
 #include "Deprecated/SceneValidator.h"
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
@@ -1342,7 +1345,15 @@ void PropertyEditor::OnAddComponent(Component::eType type)
             Entity* node = curNodes.at(i);
             if (node->GetComponentCount(type) == 0)
             {
-                curScene->Exec(new AddComponentCommand(curNodes.at(i), Component::CreateByType(type)));
+                Component *c = Component::CreateByType(type);
+                if(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT == type)
+                {
+                    float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
+                    SnapToLandscapeControllerComponent *snapComponent = static_cast<SnapToLandscapeControllerComponent *>(c);
+                    snapComponent->SetHeightOnLandscape(height);
+                }
+                
+                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
             }
         }
 

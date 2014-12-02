@@ -80,6 +80,7 @@ void SettingsManager::Init()
 	CreateValue(Settings::Scene_CameraFOV, DAVA::VariantType(70.0f));
 	CreateValue(Settings::Scene_CameraNear, DAVA::VariantType(1.0f));
 	CreateValue(Settings::Scene_CameraFar, DAVA::VariantType(5000.0f));
+    CreateValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(2.0f));
     CreateValue(Settings::Scene_SelectionSequent, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SelectionDrawMode, DAVA::VariantType((DAVA::int32) SS_DRAW_DEFAULT), DAVA::InspDesc("Selection draw modes", GlobalEnumMap<SelectionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
     CreateValue(Settings::Scene_CollisionDrawMode, DAVA::VariantType((DAVA::int32) CS_DRAW_DEFAULT), DAVA::InspDesc("Collision draw modes", GlobalEnumMap<CollisionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));

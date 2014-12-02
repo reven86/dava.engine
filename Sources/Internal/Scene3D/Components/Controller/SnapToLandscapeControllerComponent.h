@@ -51,6 +51,9 @@ public:
     virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
     virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
+    inline float32 GetHeightOnLandscape() const;
+    inline void SetHeightOnLandscape(float32 height);
+    
 protected:
     
     float32 heightOnLandscape;
@@ -61,6 +64,15 @@ public:
     );
 };
     
+inline float32 SnapToLandscapeControllerComponent::GetHeightOnLandscape() const
+{
+    return heightOnLandscape;
+}
+
+inline void SnapToLandscapeControllerComponent::SetHeightOnLandscape(float32 height)
+{
+    heightOnLandscape = height;
+}
     
     
 };
