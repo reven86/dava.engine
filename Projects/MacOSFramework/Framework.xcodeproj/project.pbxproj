@@ -779,6 +779,7 @@
 		322FFD5119C042880000ED71 /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322FFD3C19C042880000ED71 /* UIPackage.cpp */; };
 		322FFD5219C042880000ED71 /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322FFD3C19C042880000ED71 /* UIPackage.cpp */; };
 		322FFD5319C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
+		322FFD5419C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
 		322FFD5519C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C58E198255BF00B96D1A /* DLC.cpp */; };
@@ -6422,6 +6423,7 @@
 				176DEB0E174B5561007A983B /* UIButton.cpp in Sources */,
 				4F53ED3219A23BE700D3869D /* Downloader.cpp in Sources */,
 				320A4B2F19E6B5B80049D713 /* AbstractUIPackageBuilder.cpp in Sources */,
+				D7631A5C19AB41070065B1CB /* NotificationNotImplemented.cpp in Sources */,
 				176DEB0F174B5561007A983B /* UIControl.cpp in Sources */,
 				176DEB10174B5561007A983B /* UIControlBackground.cpp in Sources */,
 				176DEB11174B5561007A983B /* UIControlSystem.cpp in Sources */,
