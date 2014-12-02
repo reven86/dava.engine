@@ -706,7 +706,7 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
         break;
     case VariantType::TYPE_FLOAT:
         {
-            InternalSetString(Format("%.8f", varType.AsFloat()), SR_PLAIN_REPRESENTATION);
+            InternalSetString(Format("%g", varType.AsFloat()), SR_PLAIN_REPRESENTATION);
         }
         break;
     case VariantType::TYPE_STRING:
