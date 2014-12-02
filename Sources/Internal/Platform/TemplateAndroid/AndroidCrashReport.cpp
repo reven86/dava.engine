@@ -218,7 +218,7 @@ JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int signal,
     buildId.module = TEAMCITY_BUILD_TYPE_ID;
 #endif
     char fakeFunction[64];
-    snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%08x()",signal,siginfo->si_addr);
+    snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%08x()",signal,reinterpret_cast<int32>(siginfo->si_addr));
     buildId.function = std::string(fakeFunction);
     buildId.fileLine = (addr);
     return buildId;
