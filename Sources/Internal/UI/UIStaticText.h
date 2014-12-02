@@ -55,6 +55,7 @@ public:
         YELLOW,
         WHITE,
         MAGENTA,
+        GREEN,
         NONE
     };
     static const float32 LOCALIZATION_RESERVED_PORTION;

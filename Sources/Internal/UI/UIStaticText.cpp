@@ -38,7 +38,7 @@
 #include "Render/2D/FontManager.h"
 #include "Render/RenderHelper.h"
 #include "Animation/LinearAnimation.h"
-
+#include "Utils/StringUtils.h"
 
 namespace DAVA
 {
@@ -48,6 +48,7 @@ namespace DAVA
                                                     DAVA::Color(0.0f, 0.0f, 1.0f, 0.4f), 
                                                     DAVA::Color(1.0f, 1.0f, 0.0f, 0.4f),
                                                     DAVA::Color(1.0f, 1.0f, 1.0f, 0.4f),
+                                                    DAVA::Color(0.0f, 1.0f, 0.0f, 0.4f),
                                                     DAVA::Color(1.0f,0.0f,1.0f,0.4f)};
 #endif
 UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
@@ -685,11 +686,19 @@ void UIStaticText::RecalculateDebugColoring()
     {
 
         Font::StringMetrics stringMetrics = textBlock->GetFont()->GetStringMetrics(textBlock->GetText());
-        if (GetSize().x*LOCALIZATION_RESERVED_PORTION < static_cast<float32>(stringMetrics.drawRect.x + stringMetrics.drawRect.dx))
+        int32 metricsWidth = stringMetrics.drawRect.dx;
+        metricsWidth += DAVA::Max(0, stringMetrics.drawRect.x);
+
+        if (stringMetrics.drawRect.x < 0)
+        {
+            rectangelColor = GREEN;
+        }
+        // this is higher priority warning
+        if (GetSize().x*LOCALIZATION_RESERVED_PORTION < static_cast<float32>(metricsWidth))
         {
             rectangelColor = RED;
         }
-        if (GetSize().x < static_cast<float32>(stringMetrics.drawRect.x + stringMetrics.drawRect.dx))
+        if (GetSize().x < static_cast<float32>(metricsWidth))
         {
             fillColor = RED;
         }
@@ -705,7 +714,7 @@ void UIStaticText::RecalculateDebugColoring()
         {
             WideString textNoSpaces(text);
 
-            auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), iswspace);
+            auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
             textNoSpaces.erase(res, textNoSpaces.end());
 
             WideString concatinatedStringsNoSpaces = L"";
@@ -715,9 +724,16 @@ void UIStaticText::RecalculateDebugColoring()
 
                 WideString toFilter = *string;
                 Font::StringMetrics stringMetrics = textBlock->GetFont()->GetStringMetrics(toFilter);
-                maxWidth = DAVA::Max(static_cast<float32>(stringMetrics.drawRect.x + stringMetrics.drawRect.dx), maxWidth);
-                accumulatedHeight += static_cast<float32>(stringMetrics.drawRect.dy);
-                toFilter.erase(remove_if(toFilter.begin(), toFilter.end(), iswspace), toFilter.end());
+                
+                int32 metricsWidth = stringMetrics.drawRect.dx;
+                metricsWidth += DAVA::Max(0, stringMetrics.drawRect.x);
+                if (stringMetrics.drawRect.x < 0 || stringMetrics.drawRect.y < 0)
+                {
+                    rectangelColor = GREEN;
+                }
+                maxWidth = DAVA::Max(static_cast<float32>(metricsWidth), maxWidth);
+                accumulatedHeight += static_cast<float32>(stringMetrics.drawRect.dy + DAVA::Max(0, stringMetrics.drawRect.y));
+                toFilter.erase(remove_if(toFilter.begin(), toFilter.end(), StringUtils::IsWhitespace), toFilter.end());
                 concatinatedStringsNoSpaces += toFilter;
             }
 
