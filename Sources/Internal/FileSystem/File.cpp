@@ -1,10 +1,8 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +11,6 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -146,8 +143,18 @@ const FilePath & File::GetFilename()
 
 uint32 File::Write(const void * pointerToData, uint32 dataSize)
 {
-	//! Do not change order fread return not bytes -- items
+#if defined(__DAVAENGINE_ANDROID__) 
+    uint32 posBeforeWrite = GetPos();
+#endif
+
+    //! Do not change order fread return not bytes -- items
 	uint32 lSize = (uint32) fwrite(pointerToData, 1, dataSize, file);
+
+#if defined(__DAVAENGINE_ANDROID__) 
+    //for Android value returned by 'fwrite()' is incorrect in case of full disk, that's why we calculate 'lSize' using 'GetPos()'
+    lSize = GetPos() - posBeforeWrite;
+#endif
+
 	size += lSize;
 	return lSize;
 }
