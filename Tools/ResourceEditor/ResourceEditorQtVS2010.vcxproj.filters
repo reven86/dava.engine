@@ -1212,9 +1212,6 @@
     <ClCompile Include="Classes\Commands2\LandscapeSetTexturesCommands.cpp">
       <Filter>Classes\Commands2</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Deprecated\CameraController.cpp">
-      <Filter>Classes\Deprecated</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Deprecated\ControlsFactory.cpp">
       <Filter>Classes\Deprecated</Filter>
     </ClCompile>
@@ -3361,9 +3358,6 @@
     </ClInclude>
     <ClInclude Include="Classes\Commands2\LandscapeSetTexturesCommands.h">
       <Filter>Classes\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Deprecated\CameraController.h">
-      <Filter>Classes\Deprecated</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Deprecated\ControlsFactory.h">
       <Filter>Classes\Deprecated</Filter>

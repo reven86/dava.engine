@@ -151,6 +151,12 @@
     <Filter Include="Internal\Notification">
       <UniqueIdentifier>{4b5695b8-6b14-4d0c-8f8d-86535f5de24e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Scene3D\Components\Controller">
+      <UniqueIdentifier>{6afa475c-0f57-439a-846d-ec49837bac87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Scene3D\Systems\Controller">
+      <UniqueIdentifier>{dc214c6e-aa38-43ad-93ff-6dc237488743}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1601,6 +1607,24 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h">
       <Filter>Internal\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2893,6 +2917,24 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
       <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
