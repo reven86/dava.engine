@@ -5870,6 +5870,7 @@
 					"\"$(SRCROOT)/../../..\"",
 				);
 				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -5917,6 +5918,7 @@
 					"\"$(SRCROOT)/../../..\"",
 				);
 				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
@@ -5957,6 +5959,7 @@
 					"\"$(SRCROOT)/../../..\"",
 				);
 				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
@@ -6051,6 +6054,7 @@
 					"\"$(SRCROOT)/../../..\"",
 				);
 				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -6241,6 +6245,7 @@
 					"\"$(SRCROOT)/../../..\"",
 				);
 				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
@@ -6330,6 +6335,7 @@
 					"\"$(SRCROOT)/../../..\"",
 				);
 				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
