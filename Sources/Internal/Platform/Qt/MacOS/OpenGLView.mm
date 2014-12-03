@@ -233,17 +233,8 @@
 
 - (BOOL)resignFirstResponder
 {	
-//	return YES;
     return NO;
 }
-
- - (void)resignKeyWindow
-{
-    NSWindow *w = [self window];
-    //[w makeFirstResponder:nil];
-}
-
-
 
 static Vector<DAVA::UIEvent> activeTouches;
 
