@@ -1856,7 +1856,7 @@ void QtMainWindow::LoadGPUFormat()
 	{
 		QAction *actionN = allActions[i];
 
-		if (actionN->data().isNull() &&
+		if (actionN->data().isValid() &&
 		    actionN->data().toInt() == curGPU)
 		{
 			actionN->setChecked(true);
