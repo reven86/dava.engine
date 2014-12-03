@@ -74,6 +74,7 @@ public:
 protected:
     virtual void WillBecomeVisible();
     virtual void WillBecomeInvisible();
+    virtual void DidAppear();
 
 public:
     void SetNativeControlVisible(bool isVisible);
