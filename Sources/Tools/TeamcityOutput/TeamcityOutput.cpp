@@ -91,7 +91,11 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
 
 void TeamcityOutput::PlatformOutput(const String &text) const
 {
+#ifdef __DAVAENGINE_IPHONE__
+    NSLog(@"%s", text.c_str());
+#else
     std::cout << text << std::endl;
+#endif
 }
     
 }; // end of namespace DAVA

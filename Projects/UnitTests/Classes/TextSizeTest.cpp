@@ -75,5 +75,7 @@ void TextSizeTest::TestFunction(PerfFuncData* data)
 	{
 		charsSum += charSizes[i];
 	}
+    
+    charsSum *= Core::Instance()->GetPhysicalToVirtualFactor();
 	TEST_VERIFY(fabsf(size.dx - charsSum) < TEST_ACCURACY);
 }
