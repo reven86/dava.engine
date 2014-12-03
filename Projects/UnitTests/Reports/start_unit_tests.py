@@ -92,7 +92,7 @@ elif sys.platform == 'win32':
 elif sys.platform == "darwin":
     if os.path.exists("./" + PRJ_NAME_BASE + PRJ_POSTFIX):
         # if run on teamcity current dir is: Projects/UnitTests/DerivedData/TemplateProjectMacOS/Build/Products/Release
-        app_path = "./" + PRJ_NAME_BASE + PRJ_POSTFIX
+        app_path = "./" + PRJ_NAME_BASE + PRJ_POSTFIX + "/Contents/MacOS/" + PRJ_NAME_BASE
     else:
         # run on local machine from dir: UnitTests/Report
         # Warning! To make DerivedData relative to project go to
