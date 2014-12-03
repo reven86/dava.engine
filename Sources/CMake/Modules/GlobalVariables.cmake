@@ -19,6 +19,7 @@ set ( DAVA_THIRD_PARTY_INCLUDES_PATH   "${DAVA_THIRD_PARTY_ROOT_PATH}/include"
                                        "${DAVA_ENGINE_DIR}/../Tools" 
                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/glew/include" 
                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include" 
+                                       "${DAVA_THIRD_PARTY_ROOT_PATH}/lua/include" 
                                       ) 
 
 set ( DAVA_TOOL_DIR                   "${DAVA_ENGINE_DIR}/../Tools" )
