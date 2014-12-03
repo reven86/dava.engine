@@ -63,9 +63,9 @@ public:
     // Possible status of packet decoding
     enum eStatus
     {
-        STATUS_OK,          // packet decoded
-        STATUS_INCOMPLETE,  // packet incomplete, need more data
-        STATUS_INVALID      // packet invalid, e.g. magic unrecognizable number
+        PACKET_OK,          // packet decoded
+        PACKET_INCOMPLETE,  // packet incomplete, need more data
+        PACKET_INVALID      // packet invalid, e.g. magic unrecognizable number
     };
 
     // Result of buffer decoding

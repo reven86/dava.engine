@@ -45,19 +45,19 @@ enum eTransportType
 // Transport roles
 enum eTransportRole
 {
-    TRANSPORT_SERVER_ROLE,
-    TRANSPORT_CLIENT_ROLE
+    SERVER_ROLE,
+    CLIENT_ROLE
 };
 
-// Possible reasons for deactivation of transports and channels
+// Possible reasons for transport deactivation and channel closing
 enum eDeactivationReason
 {
-    REASON_REQUEST,     // Deactivated by user request
-    REASON_OTHERSIDE,   // Deactivated by closing connection from other side
-    REASON_INITERROR,   // Deactivated on initialization error
-    REASON_NETERROR,    // Deactivated on network error
-    REASON_TIMEOUT,     // Deactivated on timeout
-    REASON_PACKETERROR  // Deactivated on invalid packet
+    REQUEST,     // Deactivated by user request
+    OTHERSIDE,   // Deactivated by closing connection from other side
+    INITERROR,   // Deactivated on initialization error
+    NETERROR,    // Deactivated on network error
+    TIMEOUT,     // Deactivated on timeout
+    PACKETERROR  // Deactivated on invalid packet
 };
 
 // Default channel ID is suitable for cases when ChannelManager's client simply wants

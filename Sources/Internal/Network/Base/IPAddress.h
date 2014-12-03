@@ -36,17 +36,27 @@
 namespace DAVA
 {
 
+/*
+ Class IPAddress represents IPv4 address.
+ IPAddress can be constructed from 32-bit integer or from string.
+ Requirements on string IPAddress should be constructed from:
+    - must be in the form XXX.XXX.XXX.XXX with no more than 3 decimal digits in a group
+    - each group can contain only decimal numbers from 0 to 255 with no starting zeros
+ Also address can be converted to string.
+
+ IPAddress accepts and returns numeric parameters in host byte order
+*/
 class IPAddress
 {
 public:
     IPAddress(uint32 address = 0) : addr(htonl(address)) {}
 
-    uint32 ToUInt() const;
+    uint32 ToUInt() const { return ntohl(addr); }
 
-    bool IsUnspecified() const;
-    bool IsMulticast() const;
+    bool IsUnspecified() const { return 0 == addr; }
+    bool IsMulticast() const { return 0xE0000000 == (ToUInt() & 0xF0000000); }
 
-    bool ToString(char8* buffer, std::size_t size) const;
+    bool ToString(char8* buffer, size_t size) const;
     String ToString() const;
 
     static IPAddress FromString(const char8* addr);
@@ -54,22 +64,6 @@ public:
 private:
     uint32 addr;
 };
-
-//////////////////////////////////////////////////////////////////////////
-inline uint32 IPAddress::ToUInt() const
-{
-    return ntohl(addr);
-}
-
-inline bool IPAddress::IsUnspecified() const
-{
-    return 0 == addr;
-}
-
-inline bool IPAddress::IsMulticast() const
-{
-    return 0xE0000000 == (ToUInt() & 0xF0000000);
-}
 
 }	// namespace DAVA
 

@@ -36,26 +36,35 @@
 namespace DAVA
 {
 
+/*
+ Class Endpoint represents a endpoint - simple and clear description :)
+ Endpoint is a pair of IP address and port number.
+*/
 class Endpoint
 {
 public:
+    // Construct using port number, address part wil be any address (INADDR_ANY)
     explicit Endpoint(uint16 port = 0);
+    // Construct using IPAddress object and port number
     Endpoint(const IPAddress& address, uint16 port);
+    // Construct using IP address represented as string (see IPAddress::FromString) and port number
     Endpoint(const char8* address, uint16 port);
+    // Construct using low level structures, purpose is to closely interact with libuv
     Endpoint(const sockaddr* sa);
     Endpoint(const sockaddr_in* sin);
 
     IPAddress Address() const;
     uint16 Port() const;
-    std::size_t Size() const;
+    size_t Size() const;
 
-    bool ToString(char8* buffer, std::size_t size) const;
+    bool ToString(char8* buffer, size_t size) const;
     String ToString() const;
 
-          sockaddr* CastToSockaddr();
+    // These methods are used for close interaction with libuv
+    sockaddr* CastToSockaddr();
     const sockaddr* CastToSockaddr() const;
     
-          sockaddr_in* CastToSockaddrIn();
+    sockaddr_in* CastToSockaddrIn();
     const sockaddr_in* CastToSockaddrIn() const;
 
 private:
@@ -87,15 +96,15 @@ inline uint16 Endpoint::Port() const
     return ntohs(data.sin_port);
 }
 
-inline std::size_t Endpoint::Size() const
+inline size_t Endpoint::Size() const
 {
     return sizeof(data);
 }
 
-inline       sockaddr* Endpoint::CastToSockaddr()       { return reinterpret_cast<sockaddr*>(&data); }
+inline sockaddr* Endpoint::CastToSockaddr() { return reinterpret_cast<sockaddr*>(&data); }
 inline const sockaddr* Endpoint::CastToSockaddr() const { return reinterpret_cast<const sockaddr*>(&data); }
 
-inline       sockaddr_in* Endpoint::CastToSockaddrIn()       { return reinterpret_cast<sockaddr_in*>(&data); }
+inline sockaddr_in* Endpoint::CastToSockaddrIn() { return reinterpret_cast<sockaddr_in*>(&data); }
 inline const sockaddr_in* Endpoint::CastToSockaddrIn() const { return reinterpret_cast<const sockaddr_in*>(&data); }
 
 }	// namespace DAVA

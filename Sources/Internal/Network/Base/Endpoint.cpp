@@ -54,7 +54,7 @@ Endpoint::Endpoint(const sockaddr_in* sin)
     Memcpy(&data, sin, sizeof(data));
 }
 
-bool Endpoint::ToString(char8* buffer, std::size_t size) const
+bool Endpoint::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);
     if(Address().ToString(buffer, size))
@@ -66,8 +66,8 @@ bool Endpoint::ToString(char8* buffer, std::size_t size) const
         snprintf(port, COUNT_OF(port), ":%hu", Port());
 #endif  // __DAVAENGINE_WIN32__
 
-        std::size_t addrLen = strlen(buffer);
-        std::size_t portLen = strlen(port);
+        size_t addrLen = strlen(buffer);
+        size_t portLen = strlen(port);
         if(addrLen + portLen < size)
         {
             strcat(buffer + addrLen, port);

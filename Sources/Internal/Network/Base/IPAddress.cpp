@@ -34,7 +34,7 @@
 namespace DAVA
 {
 
-bool IPAddress::ToString(char8* buffer, std::size_t size) const
+bool IPAddress::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);
     return 0 == uv_ip4_name(Endpoint(*this, 0).CastToSockaddrIn(), buffer, size);
@@ -42,10 +42,9 @@ bool IPAddress::ToString(char8* buffer, std::size_t size) const
 
 String IPAddress::ToString() const
 {
-    char8 buf[50];
-    if(ToString(buf, COUNT_OF(buf)))
-        return String(buf);
-    return String();
+    char8 buf[20];  // This should be enough for IPv4 address
+    return ToString(buf, COUNT_OF(buf)) ? String(buf)
+                                        : String();
 }
 
 IPAddress IPAddress::FromString(const char8* addr)

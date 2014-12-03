@@ -37,7 +37,7 @@ BasicProtoDecoder::eStatus BasicProtoDecoder::Decode(uint8* buffer, std::size_t 
 {
     DVASSERT(buffer != NULL && result != NULL);
 
-    eStatus status = STATUS_INCOMPLETE;
+    eStatus status = PACKET_INCOMPLETE;
     if (bufferSize >= sizeof(BasicProtoHeader))
     {
         BasicProtoHeader* header = reinterpret_cast<BasicProtoHeader*>(buffer);
@@ -50,12 +50,12 @@ BasicProtoDecoder::eStatus BasicProtoDecoder::Decode(uint8* buffer, std::size_t 
                 result->packetDataSize = result->decodedSize - sizeof(BasicProtoHeader);
                 result->packetData     = buffer + sizeof(BasicProtoHeader);
                 result->header         = header;
-                status = STATUS_OK;
+                status = PACKET_OK;
             }
         }
         else
         {
-            status = STATUS_INVALID;
+            status = PACKET_INVALID;
         }
     }
     return status;
