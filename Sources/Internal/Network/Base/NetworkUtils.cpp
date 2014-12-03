@@ -35,7 +35,7 @@ namespace DAVA
 namespace Net
 {
 
-const char8* NetworkErrorToString(int32 error)
+const char8* ErrorToString(int32 error)
 {
     return uv_strerror(error);
 }
