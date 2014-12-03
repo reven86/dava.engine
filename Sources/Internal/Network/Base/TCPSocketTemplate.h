@@ -38,6 +38,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Template class TCPSocketTemplate wraps TCP socket from underlying network library and provides interface to user
@@ -248,6 +250,7 @@ void TCPSocketTemplate<T>::HandleWriteThunk(uv_write_t* request, int error)
     self->writeBufferCount = 0;
 }
 
+}   // namespace Net
 }	// namespace DAVA
 
 #endif  // __DAVAENGINE_TCPSOCKETTEMPLATE_H__

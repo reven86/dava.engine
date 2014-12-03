@@ -33,6 +33,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 bool IPAddress::ToString(char8* buffer, size_t size) const
 {
@@ -57,4 +59,5 @@ IPAddress IPAddress::FromString(const char8* addr)
     return IPAddress();
 }
 
+}   // namespace Net
 }   // namespace DAVA

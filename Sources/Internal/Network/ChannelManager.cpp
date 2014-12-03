@@ -38,6 +38,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 ChannelManager::ChannelManager(IOLoop* ioLoop) : loop(ioLoop)
                                                , isRunning(false)
@@ -279,4 +281,5 @@ ChannelManager::ChannelBind* ChannelManager::GetChannelBind(IChannelListener* li
     return NULL;
 }
 
+}   // namespace Net
 }   // namespace DAVA

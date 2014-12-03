@@ -33,6 +33,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Interface should be implemented by transports :)
@@ -67,6 +69,7 @@ struct ITransportListener
     virtual void OnTransportSendComplete(ITransport* transport, uint32 channelId, const uint8* buffer, size_t length) = 0;
 };
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_ITRANSPORT_H__

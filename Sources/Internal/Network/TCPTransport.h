@@ -44,8 +44,8 @@
 
 namespace DAVA
 {
-
-class IOLoop;
+namespace Net
+{
 
 /*
  Class TCPTransport implements data transfer over TCP using basic packet protocol.
@@ -70,6 +70,7 @@ class IOLoop;
 
  All operations are performed in context of the thread running IOLoop's method Run (as required by libuv).
 */
+class IOLoop;
 class TCPTransport : public ITransport
                    , private Noncopyable
 {
@@ -146,6 +147,7 @@ private:
     BasicProtoHeader header;            // Header which is filled for each sending packet
 };
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_TCPTRANSPORT_H__

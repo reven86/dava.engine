@@ -34,6 +34,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
                                       , actualLoop(NULL)
@@ -120,4 +122,5 @@ void IOLoop::HandleAsyncThunk(uv_async_t* handle)
     self->HandleAsync();
 }
 
+}   // namespace Net
 }   // namespace DAVA

@@ -42,9 +42,8 @@
 
 namespace DAVA
 {
-
-class IOLoop;
-struct IChannelListener;
+namespace Net
+{
 
 /*
  Class ChannelManager implements concept of data channels hiding details about how data is transfered.
@@ -65,6 +64,8 @@ struct IChannelListener;
  ChannelManager has completed its activity through callback passed as parameter to Stop method.
  In that callback it is safe to delete ChannelManager instance.
 */
+class IOLoop;
+struct IChannelListener;
 class ChannelManager : public ITransportListener
                      , public IChannelSender
                      , private Noncopyable
@@ -127,6 +128,7 @@ private:
     BindListType      bindOrderByTransport;     // Bindings ordered by transport and channel ID
 };
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_CHANNELMANAGER_H__

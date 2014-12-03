@@ -31,6 +31,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 TCPAcceptor::TCPAcceptor(IOLoop* ioLoop) : TCPAcceptorTemplate(ioLoop)
                                          , closeHandler()
@@ -90,4 +92,5 @@ void TCPAcceptor::HandleConnect(int32 error)
     connectHandler(this, error);
 }
 
+}   // namespace Net
 }   // namespace DAVA

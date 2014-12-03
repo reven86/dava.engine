@@ -37,6 +37,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Template class TCPAcceptorTemplate wraps TCP acceptor from underlying network library and provides interface to user
@@ -151,6 +153,7 @@ void TCPAcceptorTemplate<T>::HandleConnectThunk(uv_stream_t* handle, int error)
     static_cast<T*>(self)->HandleConnect(error);
 }
 
+}   // namespace Net
 }	// namespace DAVA
 
 #endif  // __DAVAENGINE_TCPACCEPTORTEMPLATE_H__

@@ -30,6 +30,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 UDPSocket::UDPSocket(IOLoop* ioLoop) : UDPSocketTemplate<UDPSocket>(ioLoop)
                                      , readBuffer()
@@ -105,4 +107,5 @@ void UDPSocket::HandleSend(int32 error, const Buffer* buffers, size_t bufferCoun
     sendHandler(this, error, buffers, bufferCount);
 }
 
+}   // namespace Net
 }   // namespace DAVA

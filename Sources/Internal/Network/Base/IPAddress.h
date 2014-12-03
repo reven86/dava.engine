@@ -35,6 +35,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Class IPAddress represents IPv4 address.
@@ -65,6 +67,7 @@ private:
     uint32 addr;
 };
 
+}   // namespace Net
 }	// namespace DAVA
 
 #endif  // __DAVAENGINE_IPADDRESS_H__

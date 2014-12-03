@@ -32,6 +32,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 BasicProtoDecoder::eStatus BasicProtoDecoder::Decode(uint8* buffer, std::size_t bufferSize, DecodeResult* result)
 {
@@ -75,4 +77,5 @@ size_t BasicProtoDecoder::Encode(BasicProtoHeader* header, uint32 channelId, siz
     return sizeToEncode;
 }
 
+}   // namespace Net
 }   // namespace DAVA

@@ -38,6 +38,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Template class UDPSocketTemplate wraps UDP socket from underlying network library and provides interface to user
@@ -229,6 +231,7 @@ void UDPSocketTemplate<T>::HandleSendThunk(uv_udp_send_t* request, int error)
     self->sendBufferCount = 0;
 }
 
+}   // namespace Net
 }	// namespace DAVA
 
 #endif  // __DAVAENGINE_UDPSOCKETTEMPLATE_H__

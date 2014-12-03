@@ -36,6 +36,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 TCPTransport::TCPTransport(IOLoop* ioLoop, ITransportListener* aListener, eTransportRole aRole, const Endpoint& endp)
                                                 : role(aRole)
@@ -354,4 +356,5 @@ void TCPTransport::SocketHandleWrite(TCPSocket* socket, int32 error, const Buffe
     }
 }
 
+}   // namespace Net
 }   // namespace DAVA

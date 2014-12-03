@@ -30,6 +30,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 TCPSocket::TCPSocket(IOLoop* ioLoop) : TCPSocketTemplate<TCPSocket>(ioLoop)
                                      , readBuffer()
@@ -116,4 +118,5 @@ void TCPSocket::HandleWrite(int32 error, const Buffer* buffers, size_t bufferCou
     writeHandler(this, error, buffers, bufferCount);
 }
 
+}   // namespace Net
 }   // namespace DAVA

@@ -35,6 +35,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Class TCPSocket provides a TCP socket.
@@ -114,6 +116,7 @@ private:
     WriteHandlerType writeHandler;
 };
 
+}   // namespace Net
 }	// namespace DAVA
 
 #endif  // __DAVAENGINE_TCPSOCKET_H__

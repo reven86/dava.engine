@@ -32,10 +32,13 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 const char8* NetworkErrorToString(int32 error)
 {
     return uv_strerror(error);
 }
 
-}
+}   // namespace Net
+}   // namespace DAVA

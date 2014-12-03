@@ -32,6 +32,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 DeadlineTimer::DeadlineTimer(IOLoop* loop) : DeadlineTimerTemplate<DeadlineTimer>(loop)
                                            , closeHandler()
@@ -67,4 +69,5 @@ void DeadlineTimer::HandleTimer()
     waitHandler(this);
 }
 
+}   // namespace Net
 }   // namespace DAVA

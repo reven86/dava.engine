@@ -33,12 +33,15 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Returns string describing network error
 */
 const char8* NetworkErrorToString(int32 error);
 
-}
+}   // namespace Net
+}   // namespace DAVA
 
 #endif  // __DAVAENGINE_NETWORKUTILS_H__

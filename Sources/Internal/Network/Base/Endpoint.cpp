@@ -36,6 +36,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 Endpoint::Endpoint(const char8* address, uint16 port) : data()
 {
@@ -105,4 +107,5 @@ uint32 Endpoint::GetSockaddrAddr() const
 #endif  // __DAVAENGINE_WIN32__
 }
 
+}   // namespace Net
 }   // namespace DAVA

@@ -35,6 +35,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Class UDPSocket provides a UDP socket.
@@ -103,6 +105,7 @@ private:
     SendHandlerType sendHandler;
 };
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_UDPSOCKET_H__

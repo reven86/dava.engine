@@ -35,6 +35,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 typedef uv_buf_t Buffer;
 
@@ -63,6 +65,7 @@ inline Buffer CreateBuffer(const void* rawBuffer, std::size_t size)
     return uv_buf_init(static_cast<char8*>(const_cast<void*>(rawBuffer)), static_cast<uint32>(size));
 }
 
-}
+}   // namespace Net
+}   // namespace DAVA
 
 #endif  // __DAVAENGINE_BUFFER_H__

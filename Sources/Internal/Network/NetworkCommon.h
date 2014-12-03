@@ -33,6 +33,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 // Transport types, used by TransportFactory to create transport objects
 enum eTransportType
@@ -64,6 +66,7 @@ enum eDeactivationReason
 // to send data with no concern of real channel ID he has been registered to
 const uint32 DEFAULT_CHANNEL_ID = 0;
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_NETWORKCOMMON_H__

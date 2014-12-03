@@ -35,6 +35,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Class Endpoint represents a endpoint - simple and clear description :)
@@ -107,6 +109,7 @@ inline const sockaddr* Endpoint::CastToSockaddr() const { return reinterpret_cas
 inline sockaddr_in* Endpoint::CastToSockaddrIn() { return reinterpret_cast<sockaddr_in*>(&data); }
 inline const sockaddr_in* Endpoint::CastToSockaddrIn() const { return reinterpret_cast<const sockaddr_in*>(&data); }
 
+}   // namespace Net
 }	// namespace DAVA
 
 #endif  // __DAVAENGINE_ENDPOINT_H__

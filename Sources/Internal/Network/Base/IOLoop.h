@@ -39,6 +39,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Class IOLoop provides event loop which polls for events and schedules handlers (callback) to be run.
@@ -89,6 +91,7 @@ private:
     Mutex mutex;
 };
 
+}   // namespace Net
 }	// namespace DAVA
 
 #endif  // __DAVAENGINE_IOLOOP_H__

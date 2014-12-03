@@ -35,6 +35,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Class TCPAcceptor provides a TCP acceptor type.
@@ -90,6 +92,7 @@ private:
     ConnectHandlerType connectHandler;
 };
 
+}   // namespace Net
 }	// namespace DAVA
 
 #endif  // __DAVAENGINE_TCPACCEPTOR_H__

@@ -33,6 +33,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 struct IChannelListener;
 
@@ -57,6 +59,7 @@ struct IChannelListener
     virtual void OnChannelSendComplete(uint32 channelId, const uint8* buffer, size_t length) = 0;
 };
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_ICHANNEL_H__

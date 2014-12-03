@@ -35,6 +35,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Basic transport protocol is intended to carry data over network
@@ -82,6 +84,7 @@ public:
     static size_t Encode(BasicProtoHeader* header, uint32 channelId, size_t totalSize, size_t encodedSize);
 };
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_BASICPROTODECODER_H__

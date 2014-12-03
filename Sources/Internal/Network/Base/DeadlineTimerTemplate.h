@@ -36,6 +36,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Template class DeadlineTimerTemplate wraps timer from underlying network library and provides interface to user
@@ -140,6 +142,7 @@ void DeadlineTimerTemplate<T>::HandleTimerThunk(uv_timer_t* handle)
     static_cast<T*>(self)->HandleTimer();
 }
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_DEADLINETIMERTEMPLATE_H__

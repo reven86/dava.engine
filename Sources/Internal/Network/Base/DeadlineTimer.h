@@ -35,6 +35,8 @@
 
 namespace DAVA
 {
+namespace Net
+{
 
 /*
  Class DeadlineTimer provides a waitable timer.
@@ -77,6 +79,7 @@ private:
     WaitHandlerType waitHandler;
 };
 
+}   // namespace Net
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_DEADLINETIMER_H__
