@@ -29,7 +29,6 @@
 #ifndef __DAVAENGINE_DEADLINETIMER_H__
 #define __DAVAENGINE_DEADLINETIMER_H__
 
-#include <Base/BaseTypes.h>
 #include <Base/Function.h>
 
 #include "DeadlineTimerTemplate.h"
@@ -37,25 +36,27 @@
 namespace DAVA
 {
 
-class IOLoop;
-
 /*
- Class DeadlineTimer - fully functional waitable timer implementation which can be used in most cases.
- User can provide functional objects for tracking operation completion on timer.
- Following operation can be tracked:
- 1. Timer close, called when timer has been closed
-        void (DeadlineTimer* timer)
- 2. Wait completed, called on timeout has expired
-        void(DeadlineTimer* timer)
+ Class DeadlineTimer provides a waitable timer.
+ DeadlineTimer allows to wait for specified amount of time.
+ All operations are executed asynchronously and all these operations must be started in thread context
+ where IOLoop is running, i.e. they can be started during handler processing or using IOLoop Post method.
+ List of methods starting async operations:
+    Wait
+    Close
 
- Functional objects are executed in IOLoop's thread context, and they should not block to allow other operation to complete.
+ DeadlineTimer notifies user about wait or close  operation completion through user-supplied functional objects (handlers or callbacks).
+ Handlers are called with one parameter: pointer to DeadlineTimer instance.
 
- Methods AsyncWait and Close should be called from IOLoop's thread, e.g. from inside user's functional objects
+ Note: handlers should not block, this will cause all network system to freeze.
+
+ To start working with DeadlineTimer simply call Wait with desired amount of time in ms.
+
+ Close also is executed asynchronously and in its handler it is allowed to destroy DeadlineTimer object.
 */
 class DeadlineTimer : public DeadlineTimerTemplate<DeadlineTimer>
 {
-private:
-    typedef DeadlineTimerTemplate<DeadlineTimer> BaseClassType;
+    friend DeadlineTimerTemplate<DeadlineTimer>;    // Make base class friend to allow it to call my Handle... methods
 
 public:
     typedef Function<void(DeadlineTimer* timer)> CloseHandlerType;
@@ -63,20 +64,17 @@ public:
 
 public:
     DeadlineTimer(IOLoop* loop);
-    ~DeadlineTimer() {}
 
-    // Overload Close member to accept handler and unhide Close from base class
-    using BaseClassType::Close;
-    void Close(CloseHandlerType handler);
+    int32 Wait(uint32 timeout, WaitHandlerType handler);
+    void Close(CloseHandlerType handler = CloseHandlerType());
 
-    int32 AsyncWait(uint32 timeout, WaitHandlerType handler);
-
+private:
     void HandleClose();
     void HandleTimer();
 
 private:
     CloseHandlerType closeHandler;
-    WaitHandlerType  waitHandler;
+    WaitHandlerType waitHandler;
 };
 
 }   // namespace DAVA

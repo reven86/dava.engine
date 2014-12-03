@@ -37,45 +37,56 @@ namespace DAVA
 {
 
 /*
- Class TCPAcceptor - fully functional incoming TCP connection acceptor implementation which can be used in most cases.
- User can provide functional objects for tracking operation completion on acceptor.
- Following operation can be tracked:
- 1. Acceptor close, called when acceptor has been closed
-        void (TCPAcceptor* acceptor)
- 2. Connection established, called when remote peer has connected
-        void(TCPAcceptor* acceptor, int32 error)
+ Class TCPAcceptor provides a TCP acceptor type.
+ TCPAcceptor allows to listen at specified port and accept incoming connection putting TCPSocket into connected state.
+ All operations are executed asynchronously and all these operations must be started in thread context
+ where IOLoop is running, i.e. they can be started during handler processing or using IOLoop Post method.
+ List of methods starting async operations:
+    StartListen
+    Close
 
- Functional objects are executed in IOLoop's thread context, and they should not block to allow other operation to complete.
- User is responsible for error processing.
+ TCPAcceptor notifies user about operation completion and its status through user-supplied functional objects (handlers or callbacks).
+ Handlers are called with some parameters depending on operation. Each handler besides specific parameters is passed a
+ pointer to TCPAcceptor instance.
 
- Methods AsyncListen and Close should be called from IOLoop's thread, e.g. from inside user's functional objects
+ Note: handlers should not block, this will cause all network system to freeze.
+
+ To start working with TCPAcceptor you should call one of the Bind methods and call StartListen and in its handler
+ call Accept.
+
+ Listen operation is started only once, it will be automatically restarted after executing handler. To stop listening
+ call Close method.
+
+ Close also is executed asynchronously and in its handler it is allowed to destroy TCPSocket object.
 */
+class TCPSocket;
 class TCPAcceptor : public TCPAcceptorTemplate<TCPAcceptor>
 {
 private:
-    typedef TCPAcceptorTemplate<TCPAcceptor> BaseClassType;
-    friend BaseClassType;   // Make base class friend to allow him to call my Handle... methods
+    friend TCPAcceptorTemplate<TCPAcceptor>;   // Make base class friend to allow it to call my Handle... methods
 
 public:
-    typedef Function<void(TCPAcceptor* acceptor)>              CloseHandlerType;
+    typedef Function<void(TCPAcceptor* acceptor)> CloseHandlerType;
 	typedef Function<void(TCPAcceptor* acceptor, int32 error)> ConnectHandlerType;
 
 public:
     TCPAcceptor(IOLoop* ioLoop);
-    ~TCPAcceptor() {}
 
-    // Overload Close member to accept handler and unhide Close from base class
-    using BaseClassType::Close;
-    void Close(CloseHandlerType handler);
+    int32 StartListen(ConnectHandlerType handler, int32 backlog = SOMAXCONN);
+    void Close(CloseHandlerType handler = CloseHandlerType());
 
-    int32 StartAsyncListen(ConnectHandlerType handler, int32 backlog = SOMAXCONN);
+    int32 Bind(const Endpoint& endpoint);
+    int32 Bind(const char8* ipaddr, uint16 port);
+    int32 Bind(uint16 port);
+
+    int32 Accept(TCPSocket* socket);
 
 private:
     void HandleClose();
     void HandleConnect(int32 error);
 
 private:
-    CloseHandlerType   closeHandler;
+    CloseHandlerType closeHandler;
     ConnectHandlerType connectHandler;
 };
 

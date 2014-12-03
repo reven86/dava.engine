@@ -27,31 +27,54 @@
 =====================================================================================*/
 
 #include "TCPAcceptor.h"
+#include "TCPSocket.h"
 
 namespace DAVA
 {
 
-TCPAcceptor::TCPAcceptor(IOLoop* ioLoop) : BaseClassType(ioLoop)
+TCPAcceptor::TCPAcceptor(IOLoop* ioLoop) : TCPAcceptorTemplate(ioLoop)
                                          , closeHandler()
                                          , connectHandler()
 {
 
 }
 
-void TCPAcceptor::Close(CloseHandlerType handler)
+int32 TCPAcceptor::StartListen(ConnectHandlerType handler, int32 backlog)
 {
     DVASSERT(handler != 0);
-
-    closeHandler = handler;
-    BaseClassType::Close();
+    connectHandler = handler;
+    return DoStartListen(backlog);
 }
 
-int32 TCPAcceptor::StartAsyncListen(ConnectHandlerType handler, int32 backlog)
+void TCPAcceptor::Close(CloseHandlerType handler)
 {
-    DVASSERT(backlog > 0 && handler != 0);
+    closeHandler = handler;
+    IsOpen() ? DoClose()
+             : HandleClose();   // Execute user handle in any case
+}
 
-    connectHandler = handler;
-    return InternalStartAsyncListen(backlog);
+int32 TCPAcceptor::Bind(const Endpoint& endpoint)
+{
+    return DoBind(endpoint);
+}
+
+int32 TCPAcceptor::Bind(const char8* ipaddr, uint16 port)
+{
+    return DoBind(Endpoint(IPAddress::FromString(ipaddr), port));
+}
+
+int32 TCPAcceptor::Bind(uint16 port)
+{
+    return DoBind(Endpoint(port));
+}
+
+int32 TCPAcceptor::Accept(TCPSocket* socket)
+{
+    DVASSERT(socket != NULL);
+    // To do the following TCPAcceptor must be friend of TCPSocket
+    DVASSERT(false == socket->IsOpen());
+    socket->DoOpen();
+    return DoAccept(&socket->uvhandle);
 }
 
 void TCPAcceptor::HandleClose()

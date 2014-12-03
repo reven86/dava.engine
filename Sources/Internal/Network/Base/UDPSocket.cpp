@@ -31,7 +31,7 @@
 namespace DAVA
 {
 
-UDPSocket::UDPSocket(IOLoop* ioLoop) : BaseClassType(ioLoop)
+UDPSocket::UDPSocket(IOLoop* ioLoop) : UDPSocketTemplate<UDPSocket>(ioLoop)
                                      , readBuffer()
                                      , closeHandler()
                                      , receiveHandler()
@@ -39,31 +39,44 @@ UDPSocket::UDPSocket(IOLoop* ioLoop) : BaseClassType(ioLoop)
 
 }
 
-void UDPSocket::Close(CloseHandlerType handler)
-{
-    DVASSERT(handler != 0);
-
-    closeHandler = handler;
-    BaseClassType::Close();
-}
-
-int32 UDPSocket::StartAsyncReceive(Buffer buffer, ReceiveHandlerType handler)
+int32 UDPSocket::StartReceive(Buffer buffer, ReceiveHandlerType handler)
 {
     DVASSERT(buffer.base != NULL && buffer.len > 0 && handler != 0);
-
-    readBuffer     = buffer;
+    readBuffer = buffer;
     receiveHandler = handler;
-    return BaseClassType::InternalStartAsyncReceive();
+    return DoStartReceive();
 }
 
-int32 UDPSocket::AsyncSend(const Endpoint& endpoint, const Buffer* buffers, std::size_t bufferCount, SendHandlerType handler)
+int32 UDPSocket::Send(const Endpoint& endpoint, const Buffer* buffers, size_t bufferCount, SendHandlerType handler)
 {
     DVASSERT(buffers != NULL && bufferCount > 0 && handler != 0);
-
-    return BaseClassType::InternalAsyncSend(buffers, bufferCount, endpoint, handler);
+    sendHandler = handler;
+    return DoSend(buffers, bufferCount, endpoint);
 }
 
-void UDPSocket::AdjustReadBuffer(Buffer buffer)
+void UDPSocket::Close(CloseHandlerType handler)
+{
+    closeHandler = handler;
+    IsOpen() ? DoClose()
+             : HandleClose();   // Execute user handle in any case
+}
+
+int32 UDPSocket::Bind(const Endpoint& endpoint, bool reuseAddrOption)
+{
+    return DoBind(endpoint, reuseAddrOption);
+}
+
+int32 UDPSocket::Bind(const char8* ipaddr, uint16 port, bool reuseAddrOption)
+{
+    return DoBind(Endpoint(IPAddress::FromString(ipaddr), port), reuseAddrOption);
+}
+
+int32 UDPSocket::Bind(uint16 port, bool reuseAddrOption)
+{
+    return DoBind(Endpoint(port), reuseAddrOption);
+}
+
+void UDPSocket::ReceiveHere(Buffer buffer)
 {
     DVASSERT(buffer.base != NULL && buffer.len > 0);
     readBuffer = buffer;
@@ -82,14 +95,14 @@ void UDPSocket::HandleAlloc(Buffer* buffer)
     *buffer = readBuffer;
 }
 
-void UDPSocket::HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial)
+void UDPSocket::HandleReceive(int32 error, size_t nread, const Endpoint& endpoint, bool partial)
 {
     receiveHandler(this, error, nread, endpoint, partial);
 }
 
-void UDPSocket::HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount, SendHandlerType& handler)
+void UDPSocket::HandleSend(int32 error, const Buffer* buffers, size_t bufferCount)
 {
-    handler(this, error, buffers, bufferCount);
+    sendHandler(this, error, buffers, bufferCount);
 }
 
 }   // namespace DAVA

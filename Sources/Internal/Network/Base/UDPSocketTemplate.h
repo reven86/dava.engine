@@ -26,226 +26,183 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_UDPSocketTemplate_H__
-#define __DAVAENGINE_UDPSocketTemplate_H__
+#ifndef __DAVAENGINE_UDPSOCKETTEMPLATE_H__
+#define __DAVAENGINE_UDPSOCKETTEMPLATE_H__
 
+#include <Base/Noncopyable.h>
+#include <Debug/DVAssert.h>
+
+#include "IOLoop.h"
 #include "Endpoint.h"
 #include "Buffer.h"
-#include "HandleBase.h"
 
 namespace DAVA
 {
 
-class IOLoop;
-
 /*
- Template class UDPSocketTemplate provides basic datagram socket capabilities
- Template parameter T specifies type that inherits UDPSocketTemplate and implements necessary methods (CRTP idiom).
-
- Type specified by T should implement methods:
-    1. void HandleClose(), called after socket handle has been closed by libuv
-    2. void HandleAlloc(Buffer* buffer), called before read operation to allow specify read buffer
-        Parameters:
-            buffer - new read buffer
-    3. void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial), called after datagram has been arrived
-        Parameters:
-            error    - nonzero if error has occured
-            nread    - number of bytes placed in read buffer
-            endpoint - who sent data
-            partial  - if true only part of datagram has been placed in read buffer, remaining part has been discarded by OS
-    4.template<typename U>
-      void HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData), called after data have been sent to destination
-        Parameters:
-            error       - nonzero if error has occured
-            buffers     - buffers that have been sent (opportunity to delete them)
-            bufferCount - number of buffers
-            requestData - some data specified by derived class when issuing send request
+ Template class UDPSocketTemplate wraps UDP socket from underlying network library and provides interface to user
+ through CRTP idiom. Class specified by template parameter T should inherit UDPSocketTemplate and provide some
+ members that will be called by base class (UDPSocketTemplate) using compile-time polymorphism.
 */
 template <typename T>
-class UDPSocketTemplate : public HandleBase<uv_udp_t>
+class UDPSocketTemplate : private Noncopyable
 {
-public:
-    typedef HandleBase<uv_udp_t> BaseClassType;
-    typedef T                    DerivedClassType;
-
-protected:
     // Maximum write buffers that can be sent in one operation
-    static const std::size_t maxWriteBuffers = 6;
-
-    /*
-     UDPSendRequest - wrapper for libuv's uv_udp_send_t request with some necessary fields and
-     auxilliary data specified by derived class
-    */
-    template<typename U>
-    struct UDPSendRequest
-    {
-        UDPSendRequest (DerivedClassType* derived, U& reqData) : request()
-                                                               , pthis(derived)
-                                                               , requestData(reqData)
-        {
-            request.data = this;
-        }
-        uv_udp_send_t     request;
-        DerivedClassType* pthis;
-        Buffer            buffers[maxWriteBuffers];
-        std::size_t       bufferCount;
-        U                 requestData;
-    };
+    static const size_t MAX_WRITE_BUFFERS = 10;
 
 public:
     UDPSocketTemplate(IOLoop* ioLoop);
-    ~UDPSocketTemplate() {}
+    ~UDPSocketTemplate();
 
-    void Close();
+    int32 LocalEndpoint(Endpoint& endpoint);
 
-    int32 Bind(const Endpoint& endpoint, bool reuseAddrOption = false);
-    int32 Bind(const char8* ipaddr, uint16 port, bool reuseAddrOption = false);
-    int32 Bind(uint16 port, bool reuseAddrOption = false);
+    size_t SendQueueSize() const { return uvhandle.send_queue_size; }
+    size_t SendRequestCount() const { return uvhandle.send_queue_count; }
 
     int32 JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr = NULL);
     int32 LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr = NULL);
 
-    std::size_t SendQueueSize() const;
-    std::size_t SendRequestCount() const;
-
-    int32 LocalEndpoint(Endpoint& endpoint);
-
 protected:
-    int32 InternalStartAsyncReceive();
-    template<typename U>
-    int32 InternalAsyncSend(const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint, U& requestData);
+    bool IsOpen() const { return isOpen; }
+    void DoOpen();
+    int32 DoBind(const Endpoint& endpoint, bool reuseAddrOption);
+
+    int32 DoStartReceive();
+    int32 DoSend(const Buffer* buffers, size_t bufferCount, const Endpoint& endpoint);
+    void DoClose();
 
 private:
-    // Methods should be implemented in derived class
-    void HandleClose();
-    void HandleAlloc(Buffer* buffer);
-    void HandleReceive(int32 error, std::size_t nread, const Endpoint& endpoint, bool partial);
-    template<typename U>
-    void HandleSend(int32 error, const Buffer* buffers, std::size_t bufferCount, U& requestData);
-
     // Thunks between C callbacks and C++ class methods
-    static void HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer);
     static void HandleCloseThunk(uv_handle_t* handle);
+    static void HandleAllocThunk(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buffer);
     static void HandleReceiveThunk(uv_udp_t* handle, ssize_t nread, const uv_buf_t* buffer, const sockaddr* addr, unsigned int flags);
-    template<typename U>
     static void HandleSendThunk(uv_udp_send_t* request, int error);
+
+private:
+    uv_udp_t uvhandle;                      // libuv handle itself
+    IOLoop* loop;                           // IOLoop object handle is attached to
+    bool isOpen;                            // Handle has been initialized and can be used in operations
+    bool isClosing;                         // Close has been issued and waiting for close operation complete, used mainly for asserts
+    uv_udp_send_t uvsend;                   // libuv request for send
+    Buffer sendBuffers[MAX_WRITE_BUFFERS];  // Send buffers participating in current send operation
+    size_t sendBufferCount;                 // Number of send buffers participating in current send operation
 };
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
-UDPSocketTemplate<T>::UDPSocketTemplate(IOLoop* ioLoop) : BaseClassType(ioLoop)
+UDPSocketTemplate<T>::UDPSocketTemplate(IOLoop* ioLoop) : uvhandle()
+                                                        , loop(ioLoop)
+                                                        , isOpen(false)
+                                                        , isClosing(false)
+                                                        , uvsend()
+                                                        , sendBufferCount(0)
 {
-    SetHandleData(static_cast<DerivedClassType*>(this));
+    DVASSERT(ioLoop != NULL);
+    Memset(sendBuffers, 0, sizeof(sendBuffers));
 }
 
 template <typename T>
-void UDPSocketTemplate<T>::Close()
+UDPSocketTemplate<T>::~UDPSocketTemplate()
 {
-    BaseClassType::InternalClose(&HandleCloseThunk);
-}
-
-template <typename T>
-int32 UDPSocketTemplate<T>::Bind(const Endpoint& endpoint, bool reuseAddrOption)
-{
-    return uv_udp_bind(Handle<uv_udp_t>(), endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
-}
-
-template <typename T>
-int32 UDPSocketTemplate<T>::Bind(const char8* ipaddr, uint16 port, bool reuseAddrOption)
-{
-    DVASSERT(ipaddr != NULL);
-
-    Endpoint endpoint;
-    int32 result = uv_ip4_addr(ipaddr, port, endpoint.CastToSockaddrIn());
-    if(0 == result)
-    {
-        result = Bind(endpoint, reuseAddrOption);
-    }
-    return result;
-}
-
-template <typename T>
-int32 UDPSocketTemplate<T>::Bind(uint16 port, bool reuseAddrOption)
-{
-    return Bind(Endpoint(port), reuseAddrOption);
-}
-
-template <typename T>
-int32 UDPSocketTemplate<T>::JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
-{
-    DVASSERT(multicastAddr != NULL);
-    return uv_udp_set_membership(Handle<uv_udp_t>(), multicastAddr, interfaceAddr, UV_JOIN_GROUP);
-}
-
-template <typename T>
-int32 UDPSocketTemplate<T>::LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
-{
-    DVASSERT(multicastAddr != NULL);
-    return uv_udp_set_membership(Handle<uv_udp_t>(), multicastAddr, interfaceAddr, UV_LEAVE_GROUP);
-}
-
-template <typename T>
-std::size_t UDPSocketTemplate<T>::SendQueueSize() const
-{
-    return handle.send_queue_size;
-}
-
-template <typename T>
-std::size_t UDPSocketTemplate<T>::SendRequestCount() const
-{
-    return handle.send_queue_count;
+    // libuv handle should be closed before destroying object
+    DVASSERT(false == isOpen && false == isClosing);
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
+    DVASSERT(true == isOpen && false == isClosing);
     int size = static_cast<int> (endpoint.Size());
-    return uv_udp_getsockname(Handle(), endpoint.CastToSockaddr(), &size);
+    return uv_udp_getsockname(&uvhandle, endpoint.CastToSockaddr(), &size);
 }
 
 template <typename T>
-int32 UDPSocketTemplate<T>::InternalStartAsyncReceive()
+int32 UDPSocketTemplate<T>::JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
-    return uv_udp_recv_start(Handle<uv_udp_t>(), &HandleAllocThunk, &HandleReceiveThunk);
+    DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
+    return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_JOIN_GROUP);
 }
 
 template <typename T>
-template<typename U>
-int32 UDPSocketTemplate<T>::InternalAsyncSend(const Buffer* buffers, std::size_t bufferCount, const Endpoint& endpoint, U& requestData)
+int32 UDPSocketTemplate<T>::LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
-    DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= maxWriteBuffers);
+    DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
+    return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_LEAVE_GROUP);
+}
 
-    UDPSendRequest<U>* sendRequest = new UDPSendRequest<U>(static_cast<DerivedClassType*>(this), requestData);
-    sendRequest->bufferCount = bufferCount;
-    for (std::size_t i = 0;i < bufferCount;++i)
+template <typename T>
+void UDPSocketTemplate<T>::DoOpen()
+{
+    DVASSERT(false == isOpen && false == isClosing);
+    uv_udp_init(loop->Handle(), &uvhandle);
+    isOpen = true;
+    uvhandle.data = this;
+    uvsend.data = this;
+}
+
+template <typename T>
+int32 UDPSocketTemplate<T>::DoBind(const Endpoint& endpoint, bool reuseAddrOption)
+{
+    DVASSERT(false == isClosing);
+    if (!isOpen)
+        DoOpen();
+    return uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
+}
+
+template <typename T>
+int32 UDPSocketTemplate<T>::DoStartReceive()
+{
+    DVASSERT(false == isClosing);
+    if (!isOpen)
+        DoOpen();
+    return uv_udp_recv_start(&uvhandle, &HandleAllocThunk, &HandleReceiveThunk);
+}
+
+template <typename T>
+int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, const Endpoint& endpoint)
+{
+    DVASSERT(true == isOpen && false == isClosing);
+    DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
+
+    sendBufferCount = bufferCount;
+    for (size_t i = 0;i < bufferCount;++i)
     {
         DVASSERT(buffers[i].base != NULL && buffers[i].len > 0);
-        sendRequest->buffers[i] = buffers[i];
+        sendBuffers[i] = buffers[i];
     }
 
-    int32 error = uv_udp_send(&sendRequest->request, Handle<uv_udp_t>(), sendRequest->buffers
-                                                                       , sendRequest->bufferCount
-                                                                       , endpoint.CastToSockaddr()
-                                                                       , &HandleSendThunk<U>);
-    if (error != 0)
-        delete sendRequest;
-    return error;
+    return uv_udp_send(&uvsend, &uvhandle, sendBuffers, sendBufferCount, endpoint.CastToSockaddr(), &HandleSendThunk);
+}
+
+template <typename T>
+void UDPSocketTemplate<T>::DoClose()
+{
+    DVASSERT(true == isOpen && false == isClosing);
+    if (isOpen)
+    {
+        isOpen = false;
+        isClosing = true;
+        uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+    }
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////
 template <typename T>
-void UDPSocketTemplate<T>::HandleAllocThunk(uv_handle_t* handle, std::size_t suggested_size, uv_buf_t* buffer)
+void UDPSocketTemplate<T>::HandleAllocThunk(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buffer)
 {
-    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->HandleAlloc(buffer);
+    UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(handle->data);
+    static_cast<T*>(self)->HandleAlloc(buffer);
 }
 
 template <typename T>
 void UDPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
-    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->InternalInit();
-    pthis->HandleClose();
+    UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(handle->data);
+    self->isClosing = false;    // Mark socket has been closed and clear handle
+    Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
+    Memset(&self->uvsend, 0, sizeof(self->uvsend));
+
+    static_cast<T*>(self)->HandleClose();
 }
 
 template <typename T>
@@ -260,21 +217,18 @@ void UDPSocketTemplate<T>::HandleReceiveThunk(uv_udp_t* handle, ssize_t nread, c
         error = nread;
         nread = 0;
     }
-    DerivedClassType* pthis = static_cast<DerivedClassType*>(handle->data);
-    pthis->HandleReceive(error, nread, Endpoint(addr), UV_UDP_PARTIAL == flags);
+    UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(handle->data);
+    static_cast<T*>(self)->HandleReceive(error, nread, Endpoint(addr), UV_UDP_PARTIAL == flags);
 }
 
 template <typename T>
-template<typename U>
 void UDPSocketTemplate<T>::HandleSendThunk(uv_udp_send_t* request, int error)
 {
-    UDPSendRequest<U>* sendRequest = static_cast<UDPSendRequest<U>*>(request->data);
-    DVASSERT(sendRequest != NULL && sendRequest->pthis != NULL);
-
-    sendRequest->pthis->HandleSend(error, sendRequest->buffers, sendRequest->bufferCount, sendRequest->requestData);
-    delete sendRequest;
+    UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(request->data);
+    static_cast<T*>(self)->HandleSend(error, self->sendBuffers, self->sendBufferCount);
+    self->sendBufferCount = 0;
 }
 
 }	// namespace DAVA
 
-#endif  // __DAVAENGINE_UDPSocketTemplate_H__
+#endif  // __DAVAENGINE_UDPSOCKETTEMPLATE_H__

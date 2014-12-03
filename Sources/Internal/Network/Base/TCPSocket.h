@@ -37,52 +37,65 @@ namespace DAVA
 {
 
 /*
- Class TCPSocket - fully functional TCP socket implementation which can be used in most cases.
- User can provide functional objects for tracking operation completion on socket.
- Following operation can be tracked:
- 1. Socket close, called when socket has been closed
-        void (TCPSocket* socket)
- 2. Socket shutdown, called when socket has been shutdown
-        void(TCPSocket* socket, int32 error)
- 3. Connection established
-        void(TCPSocket* socket, int32 error)
- 4. Some data has arrived
-        void (TCPSocket* socket, int32 error, std::size_t nread)
- 5. Data has been sent
-        void (TCPSocket* socket, int32 error, const Buffer* buffers, std::size_t bufferCount)
+ Class TCPSocket provides a TCP socket.
+ TCPSocket allows to establish connection and transfer data.
+ All operations are executed asynchronously and all these operations must be started in thread context
+ where IOLoop is running, i.e. they can be started during handler processing or using IOLoop Post method.
+ List of methods starting async operations:
+    Connect
+    StartRead
+    Write
+    Shutdown
+    Close
 
- Functional objects are executed in IOLoop's thread context, and they should not block to allow other operation to complete.
- User is responsible for error processing.
+ TCPSocket notifies user about operation completion and its status through user-supplied functional objects (handlers or callbacks).
+ Handlers are called with some parameters depending on operation. Each handler besides specific parameters is passed a
+ pointer to TCPSocket instance.
 
- Methods AsyncConnect, AsyncRead, AsyncWrite and Close should be called from IOLoop's thread, e.g. from inside user's functional objects
+ Note: handlers should not block, this will cause all network system to freeze.
+
+ To start working with TCPSocket you should do one of the following:
+    1. call Connect method and in its handler (if not failed) you can start reading and writing to socket
+    2. pass it to Accept method of TCPAcceptor class while handling acceptor's connect callback
+
+ Read operation is started only once, it will be automatically restarted after executing handler. User should
+ only provide new destination buffer through ReadHere method if neccesary while in read handler. To stop reading and
+ of course any other activity call Close method.
+
+ Write operation supports sending of several buffers at a time. Write handler receives these buffers back and you get
+ a chance to free buffers if neccesary.
+ Note 1: user should ensure that buffers stay valid and untouched during write operation.
+ Note 2: next write must be issued only after completion of previous write operation.
+
+ Shutdown used for gracefull disconnect before calling Close, it shutdowns sending side of socket and waits for
+ pending write operations to complete.
+
+ Close also is executed asynchronously and in its handler it is allowed to destroy TCPSocket object.
 */
+class TCPAcceptor;
 class TCPSocket : public TCPSocketTemplate<TCPSocket>
 {
-private:
-    typedef TCPSocketTemplate<TCPSocket> BaseClassType;
-    friend BaseClassType;   // Make base class friend to allow him to call my Handle... methods
+    friend TCPSocketTemplate<TCPSocket>;    // Make base class friend to allow it to call my Handle... methods
+    friend TCPAcceptor;                     // Make TCPAcceptor friend to allow it to do useful work in its Accept
 
 public:
-    typedef Function<void(TCPSocket* socket)>                                                              CloseHandlerType;
-    typedef Function<void(TCPSocket* socket, int32 error)>                                                 ShutdownHandlerType;
-    typedef Function<void(TCPSocket* socket, int32 error)>                                                 ConnectHandlerType;
-    typedef Function<void(TCPSocket* socket, int32 error, std::size_t nread)>                              ReadHandlerType;
-    typedef Function<void(TCPSocket* socket, int32 error, const Buffer* buffers, std::size_t bufferCount)> WriteHandlerType;
+    // Handler types
+    typedef Function<void(TCPSocket* socket)> CloseHandlerType;
+    typedef Function<void(TCPSocket* socket, int32 error)> ShutdownHandlerType;
+    typedef Function<void(TCPSocket* socket, int32 error)> ConnectHandlerType;
+    typedef Function<void(TCPSocket* socket, int32 error, size_t nread)> ReadHandlerType;
+    typedef Function<void(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)> WriteHandlerType;
 
 public:
-    explicit TCPSocket(IOLoop* ioLoop);
-    ~TCPSocket() {}
+    TCPSocket(IOLoop* ioLoop);
 
-    // Overload Close member to accept handler and unhide Close from base class
-    using BaseClassType::Close;
-    void Close(CloseHandlerType handler);
-
+    int32 Connect(const Endpoint& endpoint, ConnectHandlerType handler);
+    int32 StartRead(Buffer buffer, ReadHandlerType handler);
+    int32 Write(const Buffer* buffers, size_t bufferCount, WriteHandlerType handler);
     int32 Shutdown(ShutdownHandlerType handler);
-    int32 StartAsyncConnect(const Endpoint& endpoint, ConnectHandlerType handler);
-    int32 StartAsyncRead(Buffer buffer, ReadHandlerType handler);
-    int32 AsyncWrite(const Buffer* buffers, std::size_t bufferCount, WriteHandlerType handler);
+    void Close(CloseHandlerType handler = CloseHandlerType());
 
-    void AdjustReadBuffer(Buffer buffer);
+    void ReadHere(Buffer buffer);
 
 private:
     void HandleClose();
@@ -90,14 +103,15 @@ private:
     void HandleShutdown(int32 error);
     void HandleAlloc(Buffer* buffer);
     void HandleRead(int32 error, size_t nread);
-    void HandleWrite(int32 error, const Buffer* buffers, std::size_t bufferCount, WriteHandlerType& handler);
+    void HandleWrite(int32 error, const Buffer* buffers, size_t bufferCount);
 
 private:
-    Buffer              readBuffer;
-    CloseHandlerType    closeHandler;
+    Buffer readBuffer;
+    CloseHandlerType closeHandler;
     ShutdownHandlerType shutdownHandler;
-    ConnectHandlerType  connectHandler;
-    ReadHandlerType     readHandler;
+    ConnectHandlerType connectHandler;
+    ReadHandlerType readHandler;
+    WriteHandlerType writeHandler;
 };
 
 }	// namespace DAVA

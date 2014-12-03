@@ -33,27 +33,25 @@
 namespace DAVA
 {
 
-DeadlineTimer::DeadlineTimer(IOLoop* loop) : BaseClassType(loop)
+DeadlineTimer::DeadlineTimer(IOLoop* loop) : DeadlineTimerTemplate<DeadlineTimer>(loop)
                                            , closeHandler()
                                            , waitHandler()
 {
 
 }
 
-void DeadlineTimer::Close(CloseHandlerType handler)
+int32 DeadlineTimer::Wait(uint32 timeout, WaitHandlerType handler)
 {
     DVASSERT(handler != 0);
-
-    closeHandler = handler;
-    BaseClassType::Close();
+    waitHandler = handler;
+    return DoWait(timeout);
 }
 
-int32 DeadlineTimer::AsyncWait(uint32 timeout, WaitHandlerType handler)
+void DeadlineTimer::Close(CloseHandlerType handler)
 {
-    DVASSERT(handler != 0);
-
-    waitHandler = handler;
-    return BaseClassType::InternalAsyncWait(timeout, 0);
+    closeHandler = handler;
+    IsOpen() ? DoClose()
+             : HandleClose();   // Execute user handle in any case
 }
 
 void DeadlineTimer::HandleClose()
