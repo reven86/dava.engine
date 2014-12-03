@@ -181,7 +181,12 @@ bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, lon
 
 void DavaGLWidget::paintEvent(QPaintEvent *event)
 {
-	Q_UNUSED(event);
+	//Q_UNUSED(event);
+
+    if (!isEnabled())
+    {
+        QWidget::paintEvent(event);
+    }
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent *e)
@@ -224,6 +229,23 @@ void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
 {
     event->setDropAction(Qt::LinkAction);
 	event->accept();
+}
+
+void DavaGLWidget::changeEvent(QEvent* e)
+{
+    switch (e->type())
+    {
+    case QEvent::EnabledChange:
+	    setAttribute(Qt::WA_OpaquePaintEvent, isEnabled());
+	    setAttribute(Qt::WA_NoSystemBackground, isEnabled());
+	    setAttribute(Qt::WA_PaintOnScreen, isEnabled());
+	    setAttribute(Qt::WA_TranslucentBackground, isEnabled());
+        update();
+        break;
+
+    default:
+        break;
+    }
 }
 
 void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)

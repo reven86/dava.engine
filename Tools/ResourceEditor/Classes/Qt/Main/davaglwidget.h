@@ -77,6 +77,8 @@ private:
 	virtual void dropEvent(QDropEvent *);
 	virtual void dragMoveEvent(QDragMoveEvent *);
 	virtual void dragEnterEvent(QDragEnterEvent *);
+
+    virtual void changeEvent(QEvent *e);
     
 #if defined (Q_OS_MAC)
     virtual void mouseMoveEvent(QMouseEvent *);
