@@ -64,14 +64,14 @@ class Counter;
 
 static Counter* GetCounter( uint32 id );
 
-static uint32           profilerInited      = false;
+static bool             profilerInited      = false;
 static uint32           maxCounterCount     = 0;
 static uint32           historyCount        = 0;
 
 static Counter*         profCounter         = 0;
 static Counter*         profAverage         = 0;
 static Counter*         curCounter          = 0;
-static uint32           profStarted         = false;
+static bool             profStarted         = false;
 static Counter**        activeCounter       = 0;
 static uint32           activeCounterCount  = 0;
 static uint64           totalTime0          = 0;
