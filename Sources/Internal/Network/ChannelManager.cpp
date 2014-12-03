@@ -33,7 +33,7 @@
 
 #include <Network/Base/NetworkUtils.h>
 
-#include "TransportFactory.h"
+#include "TCPTransport.h"
 #include "ChannelManager.h"
 
 namespace DAVA
@@ -51,7 +51,7 @@ ChannelManager::~ChannelManager()
 {
     DVASSERT(0 == nonConfirmed && false == isRunning);
     for (TransportListType::iterator i = transportList.begin(), e = transportList.end();i != e;++i)
-        TransportFactory::Destroy(*i);
+        delete *i;
 }
 
 bool ChannelManager::Start()
@@ -95,7 +95,7 @@ bool ChannelManager::CreateTransport(eTransportType type, eTransportRole role, c
             return false;
     }
 
-    ITransport* transport = TransportFactory::Create(loop, this, type, role, endpoint);
+    ITransport* transport = CreateTransport(type, role, endpoint);
     if (NULL == transport)
         return false;
     transportList.push_back(transport);
@@ -204,6 +204,24 @@ void ChannelManager::OnTransportSendComplete(ITransport* transport, uint32 chann
     if (bind && bind->listener)
     {
         bind->listener->OnChannelSendComplete(channelId, buffer, length);
+    }
+}
+
+ITransport* ChannelManager::CreateTransport(eTransportType type, eTransportRole role, const Endpoint& endpoint)
+{
+    switch(type)
+    {
+    case TRANSPORT_TCP:
+        return new TCPTransport(loop, this, role, endpoint);
+    case TRANSPORT_RDP:
+        DVASSERT(0 && "TRANSPORT_RDP not yet implemented");
+        return NULL;
+    case TRANSPORT_UDP:
+        DVASSERT(0 && "TRANSPORT_UDP not yet implemented");
+        return NULL;
+    default:
+        DVASSERT(0 && "Unknown transport type");
+        return NULL;
     }
 }
 

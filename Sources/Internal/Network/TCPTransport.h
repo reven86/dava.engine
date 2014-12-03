@@ -84,14 +84,10 @@ private:
         size_t       partLength;    // Number of bytes transfered in last iteration
     };
 
-protected:
-    // Make constructor and destructor protected to allow only friend TransportFactory to create and destroy transports
-    friend class TransportFactory;
-
+public:
     TCPTransport(IOLoop* ioLoop, ITransportListener* aListener, eTransportRole aRole, const Endpoint& endp);
     virtual ~TCPTransport();
 
-public:
     // ITransport
     virtual bool IsActive() const;
     virtual void Activate();

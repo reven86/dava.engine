@@ -111,6 +111,8 @@ public:
     virtual void OnTransportSendComplete(ITransport* transport, uint32 channelId, const uint8* buffer, size_t length);
 
 private:
+    ITransport* CreateTransport(eTransportType type, eTransportRole role, const Endpoint& endpoint);
+
     RangeType GetTransportChannels(ITransport* transport) const;
     ChannelBind* GetChannelBind(ITransport* transport, uint32 channelId);
     ChannelBind* GetChannelBind(uint32 channelId);
