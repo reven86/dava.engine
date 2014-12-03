@@ -49,7 +49,7 @@ UIPackageLoader::UIPackageLoader(AbstractUIPackageBuilder *builder) : builder(bu
 
 UIPackageLoader::~UIPackageLoader()
 {
-    this->builder = NULL;
+    builder = NULL;
 }
     
 UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
@@ -77,12 +77,13 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (versionNode == NULL || versionNode->GetType() != YamlNode::TYPE_STRING)
         return NULL;
     
-    UIPackage *package = builder->BeginPackage(packagePath);
+    UIPackage *package = SafeRetain(builder->BeginPackage(packagePath));
 
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
     {
-        for (int32 i = 0; i < (int32) importedPackagesNode->GetCount(); i++)
+        int32 count = (int32) importedPackagesNode->GetCount();
+        for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
 
@@ -109,10 +110,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
-        for (int32 i = 0; i < count; i++)
-        {
-            DVASSERT(loadingQueue[i].status == STATUS_LOADED);
-        }
+
         loadingQueue.clear();
     }
     builder->EndPackage();
@@ -122,7 +120,8 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     
 bool UIPackageLoader::LoadControlByName(const String &name)
 {
-    for (size_t index = 0; index < loadingQueue.size(); index++)
+    size_t size = loadingQueue.size();
+    for (size_t index = 0; index < size; index++)
     {
         if (loadingQueue[index].name == name)
         {

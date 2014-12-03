@@ -849,10 +849,9 @@ void DLC::StepClean()
 
 void DLC::StepDone()
 {
-    FileSystem::Instance()->DeleteFile(dlcContext.remoteVerStotePath);
-
     if(DE_NO_ERROR == dlcError)
     {
+        FileSystem::Instance()->DeleteFile(dlcContext.remoteVerStotePath);
         FileSystem::Instance()->DeleteFile(dlcContext.stateInfoStorePath);
     }
 

@@ -31,14 +31,14 @@
 
 namespace DAVA
 {
-    AbstractUIPackageBuilder::AbstractUIPackageBuilder()
-    {
-        
-    }
+AbstractUIPackageBuilder::AbstractUIPackageBuilder()
+{
     
-    AbstractUIPackageBuilder::~AbstractUIPackageBuilder()
-    {
-        
-    }
+}
+
+AbstractUIPackageBuilder::~AbstractUIPackageBuilder()
+{
+    
+}
 
 }

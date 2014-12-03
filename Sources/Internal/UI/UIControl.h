@@ -1441,31 +1441,12 @@ public:
     virtual String GetInternalControlDescriptions() const;
 
     // for introspection
-    bool GetEnabled() const {
-        return !GetDisabled();
-    }
-    
-    void SetEnabledNotHierarchic(bool enabled) {
-        SetDisabled(!enabled, false);
-    }
-    
-    bool GetNoInput() const {
-        return !GetInputEnabled();
-    }
-    
-    void SetNoInput(bool noInput) {
-        SetInputEnabled(!noInput, false);
-    }
-    
-    bool IsDebugDraw() const
-    {
-        return debugDrawEnabled;
-    }
-    
-    void SetDebugDrawNotHierarchic(bool val)
-    {
-        SetDebugDraw(val, false);
-    }
+    inline bool GetEnabled() const;
+    inline void SetEnabledNotHierarchic(bool enabled);
+    inline bool GetNoInput() const;
+    inline void SetNoInput(bool noInput);
+    inline bool IsDebugDraw() const;
+    inline void SetDebugDrawNotHierarchic(bool val);
     
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
                          PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
@@ -1611,6 +1592,37 @@ bool UIControl::GetSystemVisible() const
     return visible & visibleForUIEditor;
 }
 
+bool UIControl::GetEnabled() const
+{
+    return !GetDisabled();
+}
+
+void UIControl::SetEnabledNotHierarchic(bool enabled)
+{
+    SetDisabled(!enabled, false);
+}
+
+bool UIControl::GetNoInput() const
+{
+    return !GetInputEnabled();
+}
+
+void UIControl::SetNoInput(bool noInput)
+{
+    SetInputEnabled(!noInput, false);
+}
+
+bool UIControl::IsDebugDraw() const
+{
+    return debugDrawEnabled;
+}
+
+void UIControl::SetDebugDrawNotHierarchic(bool val)
+{
+    SetDebugDraw(val, false);
+}
+
 };
+
 
 #endif
