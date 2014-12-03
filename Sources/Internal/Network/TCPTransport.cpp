@@ -37,26 +37,23 @@
 namespace DAVA
 {
 
-TCPTransport::TCPTransport(IOLoop* loop, ITransportListener* aListener, eTransportRole aRole, const Endpoint& endp)
+TCPTransport::TCPTransport(IOLoop* ioLoop, ITransportListener* aListener, eTransportRole aRole, const Endpoint& endp)
                                                 : role(aRole)
-                                                , acceptor(loop)
-                                                , socket(loop)
-                                                , async(loop)
+                                                , loop(ioLoop)
+                                                , acceptor(ioLoop)
+                                                , socket(ioLoop)
                                                 , endpoint(endp)
                                                 , listener(aListener)
                                                 , isActive(false)
-                                                , terminateFlag(false)
-                                                , sendFlag(false)
+                                                , deactivateFlag(false)
                                                 , totalDataSize(0)
                                                 , accumulatedSize(0)
                                                 , totalRead(0)
-                                                , sendInProgress()
+                                                , senderLock()
                                                 , curPackage()
                                                 , header()
 {
-    DVASSERT(aListener != NULL && (TRANSPORT_SERVER_ROLE == aRole || TRANSPORT_CLIENT_ROLE == aRole));
-
-    async.SetAsyncHandler(MakeFunction(this, &TCPTransport::HandleWake));
+    DVASSERT(aListener != NULL && (SERVER_ROLE == aRole || CLIENT_ROLE == aRole));
     Memset(inbuf, 0, sizeof(inbuf));
 }
 
@@ -75,16 +72,16 @@ void TCPTransport::Activate()
     DVASSERT(false == isActive && "Activating transport more than once");
     if (!isActive)
     {
-        async.WakeLoop();
+        loop->Post(MakeFunction(this, &TCPTransport::DoActivate));
     }
 }
 
 void TCPTransport::Deactivate()
 {
-    if (!terminateFlag)
+    if (!deactivateFlag)
     {
-        terminateFlag = true;
-        async.WakeLoop();
+        deactivateFlag = true;
+        loop->Post(MakeFunction(this, &TCPTransport::DoDeactivate));
     }
 }
 
@@ -93,17 +90,33 @@ void TCPTransport::Send(uint32 channelId, const uint8* buffer, size_t length)
     DVASSERT(true == isActive && buffer != NULL && length > 0);
     if (isActive)
     {
-        if (true == LockSender())
+        if (true == senderLock.TryLock())
         {
             // We can send buffer directly without queueing
             PreparePackage(&curPackage, channelId, buffer, length);
 
-            sendFlag = true;
-            async.WakeLoop();
+            loop->Post(MakeFunction(this, &TCPTransport::DoSend));
         }
         else 
             Enqueue(channelId, buffer, length);
     }
+}
+
+void TCPTransport::DoActivate()
+{
+    SERVER_ROLE == role ? StartAsServer()
+                        : StartAsClient();
+}
+
+void TCPTransport::DoDeactivate()
+{
+    SERVER_ROLE == role ? acceptor.Close(MakeFunction(this, &TCPTransport::AcceptorHandleClose))
+                        : CloseSocket();
+}
+
+void TCPTransport::DoSend()
+{
+    SendPackage(&curPackage);
 }
 
 void TCPTransport::StartAsServer()
@@ -111,19 +124,19 @@ void TCPTransport::StartAsServer()
     int32 error = acceptor.Bind(endpoint.Port());
     if (0 == error)
     {
-        error = acceptor.StartAsyncListen(MakeFunction(this, &TCPTransport::AcceptorHandleConnect), 1);
+        error = acceptor.StartListen(MakeFunction(this, &TCPTransport::AcceptorHandleConnect), 1);
         if (0 == error)
             return;
     }
-    CleanUp(REASON_INITERROR, error);
+    CleanUp(INITERROR, error);
 }
 
 void TCPTransport::StartAsClient()
 {
-    int32 error = socket.StartAsyncConnect(endpoint, MakeFunction(this, &TCPTransport::SocketHandleConnect));
+    int32 error = socket.Connect(endpoint, MakeFunction(this, &TCPTransport::SocketHandleConnect));
     if (error != 0)
     {
-        CleanUp(REASON_INITERROR, error);
+        CleanUp(INITERROR, error);
     }
 }
 
@@ -131,22 +144,14 @@ void TCPTransport::CleanUp(eDeactivationReason reason, int32 error)
 {
     isActive = false;
     listener->OnTransportDeactivated(this, reason, error);
+    ClearQueue();
 
-    if (terminateFlag)
-    {
-        async.Close();
-        if (TRANSPORT_SERVER_ROLE == role)
-            acceptor.Close(MakeFunction(this, &TCPTransport::AcceptorHandleClose));
-        else
-            CloseSocket();
-    }
-    else
-        CloseSocket();
-
-    sendFlag      = false;
-    totalRead     = 0;
+    totalRead = 0;
     totalDataSize = 0;
-    UnlockSender();
+    senderLock.Unlock();
+
+    if (!deactivateFlag)
+        CloseSocket();
 }
 
 void TCPTransport::ClearQueue()
@@ -215,31 +220,12 @@ void TCPTransport::SendPackage(Package* package)
     Buffer buffers[2];
     buffers[0] = CreateBuffer(&header);
     buffers[1] = CreateBuffer(package->buffer + package->sentLength, package->partLength);
-    socket.AsyncWrite(buffers, 2, MakeFunction(this, &TCPTransport::SocketHandleWrite));
-}
-
-void TCPTransport::HandleWake(AsyncRequest* async)
-{
-    if (terminateFlag)
-    {
-        CleanUp(REASON_REQUEST, 0);
-        return;
-    }
-
-    if (sendFlag)
-    {
-        sendFlag = false;
-        SendPackage(&curPackage);
-        return;
-    }
-
-    TRANSPORT_SERVER_ROLE == role ? StartAsServer()
-                                  : StartAsClient();
+    DVVERIFY(0 == socket.Write(buffers, 2, MakeFunction(this, &TCPTransport::SocketHandleWrite)));
 }
 
 void TCPTransport::AcceptorHandleClose(TCPAcceptor* acceptor)
 {
-    if (terminateFlag)
+    if (deactivateFlag)
         CloseSocket();
 }
 
@@ -252,28 +238,28 @@ void TCPTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
         {
             isActive = true;
             listener->OnTransportActivated(this);
-            DVVERIFY(0 == socket.StartAsyncRead(CreateBuffer(inbuf, sizeof(inbuf)), MakeFunction(this, &TCPTransport::SocketHandleRead)));
+            DVVERIFY(0 == socket.StartRead(CreateBuffer(inbuf, sizeof(inbuf)), MakeFunction(this, &TCPTransport::SocketHandleRead)));
 
             // Close acceptor to stop receiving incoming connections
             acceptor->Close(MakeFunction(this, &TCPTransport::AcceptorHandleClose));
             return;
         }
     }
-    CleanUp(REASON_NETERROR, error);
+    CleanUp(NETERROR, error);
 }
 
 void TCPTransport::SocketHandleClose(TCPSocket* socket)
 {
-    ClearQueue();
-    if (terminateFlag)
+    if (deactivateFlag)
     {
         // I ensure that this is the last method called on termination
+        listener->OnTransportDeactivated(this, REQUEST, 0);
         listener->OnTransportTerminated(this);
-        return;
     }
-
-    TRANSPORT_SERVER_ROLE == role ? StartAsServer() 
-                                  : StartAsClient();
+    else
+    {
+        DoActivate();
+    }
 }
 
 void TCPTransport::SocketHandleShutdown(TCPSocket* socket, int32 error)
@@ -288,12 +274,12 @@ void TCPTransport::SocketHandleConnect(TCPSocket* socket, int32 error)
         isActive = true;
         listener->OnTransportActivated(this);
 
-        DVVERIFY(0 == socket->StartAsyncRead(CreateBuffer(inbuf, sizeof(inbuf)), MakeFunction(this, &TCPTransport::SocketHandleRead)));
+        DVVERIFY(0 == socket->StartRead(CreateBuffer(inbuf, sizeof(inbuf)), MakeFunction(this, &TCPTransport::SocketHandleRead)));
     }
     else
     {
-        // TODO: should I notify about connection failure
-        CleanUp(REASON_NETERROR, error);
+        // TODO: should I notify about connection failure every time
+        CleanUp(NETERROR, error);
     }
 }
 
@@ -303,13 +289,13 @@ void TCPTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread
     {
         totalRead += nread;
         BasicProtoDecoder::DecodeResult result;
-        BasicProtoDecoder::eStatus status = BasicProtoDecoder::STATUS_OK;
+        BasicProtoDecoder::eStatus status = BasicProtoDecoder::PACKET_OK;
 
         do {
             status = BasicProtoDecoder::Decode(inbuf, totalRead, &result);
             switch(status)
             {
-            case BasicProtoDecoder::STATUS_OK:
+            case BasicProtoDecoder::PACKET_OK:
                 if (0 == totalDataSize)     // Prepare for new data block
                 {
                     totalDataSize   = result.header->totalSize;
@@ -330,20 +316,20 @@ void TCPTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread
                 totalRead -= result.decodedSize;
                 Memmove(inbuf, inbuf + result.decodedSize, totalRead);
                 break;
-            case BasicProtoDecoder::STATUS_INCOMPLETE:
+            case BasicProtoDecoder::PACKET_INCOMPLETE:
                 // Wait until full packet gathered
                 break;
-            case BasicProtoDecoder::STATUS_INVALID:
-                CleanUp(REASON_PACKETERROR, 0);
+            case BasicProtoDecoder::PACKET_INVALID:
+                CleanUp(PACKETERROR, 0);
                 break;
             }
-            socket->AdjustReadBuffer(CreateBuffer(inbuf + totalRead, sizeof(inbuf) - totalRead));
-        } while (BasicProtoDecoder::STATUS_OK == status && totalRead > 0);
+            socket->ReadHere(CreateBuffer(inbuf + totalRead, sizeof(inbuf) - totalRead));
+        } while (BasicProtoDecoder::PACKET_OK == status && totalRead > 0);
     }
     else
     {
-        socket->IsEOF(error) ? CleanUp(REASON_OTHERSIDE, 0)
-                             : CleanUp(REASON_NETERROR, error);
+        socket->IsEOF(error) ? CleanUp(OTHERSIDE, 0)
+                             : CleanUp(NETERROR, error);
     }
 }
 
@@ -357,14 +343,14 @@ void TCPTransport::SocketHandleWrite(TCPSocket* socket, int32 error, const Buffe
             listener->OnTransportSendComplete(this, curPackage.channelId, curPackage.buffer, curPackage.totalLength);
             curPackage.buffer = NULL;   // Mark buffer sent
             Dequeue(&curPackage) ? SendPackage(&curPackage)
-                                 : UnlockSender();
+                                 : senderLock.Unlock();
         }
         else
             SendPackage(&curPackage);
     }
     else
     {
-        CleanUp(REASON_NETERROR, error);
+        CleanUp(NETERROR, error);
     }
 }
 

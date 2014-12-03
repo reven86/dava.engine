@@ -37,7 +37,6 @@
 #include <Network/Base/Buffer.h>
 #include <Network/Base/TCPAcceptor.h>
 #include <Network/Base/TCPSocket.h>
-#include <Network/Base/AsyncRequest.h>
 
 #include "NetworkCommon.h"
 #include "ITransport.h"
@@ -89,7 +88,7 @@ protected:
     // Make constructor and destructor protected to allow only friend TransportFactory to create and destroy transports
     friend class TransportFactory;
 
-    TCPTransport(IOLoop* loop, ITransportListener* aListener, eTransportRole aRole, const Endpoint& endp);
+    TCPTransport(IOLoop* ioLoop, ITransportListener* aListener, eTransportRole aRole, const Endpoint& endp);
     virtual ~TCPTransport();
 
 public:
@@ -100,6 +99,10 @@ public:
     virtual void Send(uint32 channelId, const uint8* buffer, size_t length);
 
 private:
+    void DoActivate();
+    void DoDeactivate();
+    void DoSend();
+
     void StartAsServer();
     void StartAsClient();
 
@@ -113,8 +116,6 @@ private:
     bool Dequeue(Package* target);
     void SendPackage(Package* package);
 
-    void HandleWake(AsyncRequest* async);
-
     void AcceptorHandleClose(TCPAcceptor* acceptor);
     void AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error);
 
@@ -124,45 +125,30 @@ private:
     void SocketHandleRead(TCPSocket* socket, int32 error, size_t nread);
     void SocketHandleWrite(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount);
 
-    inline bool LockSender();
-    inline void UnlockSender();
-
 private:
-    eTransportRole      role;
-    TCPAcceptor         acceptor;
-    TCPSocket           socket;
-    AsyncRequest        async;
-    Endpoint            endpoint;
+    eTransportRole role;
+    IOLoop* loop;
+    TCPAcceptor acceptor;
+    TCPSocket socket;
+    Endpoint endpoint;
     ITransportListener* listener;
 
     bool isActive;
-    bool terminateFlag;
-    bool sendFlag;
+    bool deactivateFlag;                // Flag indicating that deactivation request has been recieved
 
-    size_t        totalDataSize;                // Total data size to accumulate before sending it to client
-    size_t        accumulatedSize;              // Number of accumulated bytes
-    Vector<uint8> accum;                        // Buffer to accumulate entire data that have been sent by other side
+    size_t totalDataSize;               // Total data size to accumulate before sending it to client
+    size_t accumulatedSize;             // Number of accumulated bytes
+    Vector<uint8> accum;                // Buffer to accumulate entire data that have been sent by other side
 
-    uint8  inbuf[BasicProtoDecoder::MAX_PACKET_SIZE];   // Read buffer
+    uint8 inbuf[BasicProtoDecoder::MAX_PACKET_SIZE];    // Read buffer
     size_t totalRead;                                   // Number of bytes in read buffer
 
-    Spinlock         sendInProgress;    // Transition 
-    Package          curPackage;        // Current package to send
-    Deque<Package>   sendQueue;
-    Mutex            queueMutex;
+    Spinlock senderLock;                // Lock used to flag that send operation is in progress
+    Package curPackage;                 // Current package to send
+    Deque<Package> sendQueue;           // Queued packages
+    Mutex queueMutex;                   // Mutex to serialize access to queue
     BasicProtoHeader header;            // Header which is filled for each sending packet
 };
-
-//////////////////////////////////////////////////////////////////////////
-inline bool TCPTransport::LockSender()
-{
-    return sendInProgress.TryLock();
-}
-
-inline void TCPTransport::UnlockSender()
-{
-    sendInProgress.Unlock();
-}
 
 }   // namespace DAVA
 
