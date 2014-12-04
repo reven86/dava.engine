@@ -78,19 +78,18 @@ namespace MeshUtils
 
         bool operator<(const SkinnedMeshWorkKey & data) const
         {
-            if (materialParent == data.materialParent)
+            if (materialParent != data.materialParent)
             {
-                if (lodIndex == data.lodIndex)
-                {
-                    return switchIndex < data.switchIndex;
-                }
-                else
-                {
-                    return lodIndex < data.lodIndex;
-                }
+                return materialParent < data.materialParent;
             }
-         
-            return materialParent < data.materialParent;
+            else if (lodIndex != data.lodIndex)
+            {
+                return lodIndex < data.lodIndex;
+            }
+            else
+            {
+                return switchIndex < data.switchIndex;
+            }
         }
 
         int32 lodIndex;
