@@ -69,6 +69,8 @@ public:
     sockaddr_in* CastToSockaddrIn();
     const sockaddr_in* CastToSockaddrIn() const;
 
+    friend bool operator == (const Endpoint& left, const Endpoint& right);
+
 private:
     void InitSockaddrIn(uint32 addr, uint16 port);
 	uint32 GetSockaddrAddr() const;
@@ -108,6 +110,11 @@ inline const sockaddr* Endpoint::CastToSockaddr() const { return reinterpret_cas
 
 inline sockaddr_in* Endpoint::CastToSockaddrIn() { return reinterpret_cast<sockaddr_in*>(&data); }
 inline const sockaddr_in* Endpoint::CastToSockaddrIn() const { return reinterpret_cast<const sockaddr_in*>(&data); }
+
+inline bool operator == (const Endpoint& left, const Endpoint& right)
+{
+    return left.Address() == right.Address() && left.Port() == right.Port();
+}
 
 }   // namespace Net
 }	// namespace DAVA

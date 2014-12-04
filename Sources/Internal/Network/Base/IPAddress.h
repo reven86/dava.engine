@@ -63,6 +63,8 @@ public:
 
     static IPAddress FromString(const char8* addr);
 
+    friend bool operator == (const IPAddress& left, const IPAddress& right);
+
 private:
     uint32 addr;
 };
@@ -86,6 +88,11 @@ inline bool IPAddress::IsUnspecified() const
 inline bool IPAddress::IsMulticast() const
 {
     return 0xE0000000 == (ToUInt() & 0xF0000000);
+}
+
+inline bool operator == (const IPAddress& left, const IPAddress& right)
+{
+    return left.addr == right.addr;
 }
 
 }   // namespace Net
