@@ -153,7 +153,7 @@ bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, lon
 		case WM_KEYUP:
 		case WM_KEYDOWN:
 		case WM_CHAR:
-			processMessage = core->IsFocused();
+			processMessage = core->IsFocused() && hasFocus();
 			break;
 
 		default:
@@ -213,8 +213,14 @@ void DavaGLWidget::hideEvent(QHideEvent *e)
 
 void DavaGLWidget::focusInEvent(QFocusEvent *e)
 {
-
 	DAVA::QtLayer::Instance()->LockKeyboardInput(true);
+
+#if defined(Q_OS_WIN)
+	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
+	DVASSERT(core);
+    core->SetFocused(true);
+#endif
+
     QWidget::focusInEvent(e);
 }
 
@@ -222,6 +228,13 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
 	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
+
+#if defined(Q_OS_WIN)
+	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
+	DVASSERT(core);
+    core->SetFocused(false);
+#endif
+
     QWidget::focusOutEvent(e);
 }
 
