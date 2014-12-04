@@ -48,19 +48,6 @@ if len(sys.argv) > 1:
 sub_process = None
 
 
-def is_unittests_running_on_android_device():
-    output = subprocess.check_output(["adb", "shell", "pgrep", "com.dava.unittests"])
-    # output look like:
-    # C:\Users\l_chayka>adb shell pgrep com.dava.unittests
-    # 20047
-    try:
-        # if we can convert to int process id good
-        int(output)
-    except ValueError:
-        return False
-    return True
-
-
 def start_unittests_on_android_device():
     global sub_process
     # clear log before start tests
@@ -78,8 +65,10 @@ def start_unittests_on_android_device():
 
 if start_on_ios:
     # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
-    sub_process = subprocess.Popen(["../build/ios-deploy", "-d", "--noninteractive", "-b", "../build/UnitTests.app"],
+    sub_process = subprocess.Popen(["./ios-deploy", "-d", "--noninteractive", "-b", "../build/" +
+                                    PRJ_NAME_BASE + PRJ_POSTFIX],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")
 elif start_on_android:
     sub_process = start_unittests_on_android_device()
 elif sys.platform == 'win32':
