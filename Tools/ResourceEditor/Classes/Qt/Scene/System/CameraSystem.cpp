@@ -361,7 +361,7 @@ void SceneCameraSystem::CreateDebugCameras()
 	// there already can be other cameras in scene
 	if(NULL != scene)
 	{
-		DAVA::Camera *topCamera = topCamera = new DAVA::Camera();
+		DAVA::Camera *topCamera = new DAVA::Camera();
 		topCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
 		topCamera->SetPosition(DAVA::Vector3(-50.0f, 0.0f, 50.0f));
 		topCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
@@ -383,6 +383,8 @@ void SceneCameraSystem::CreateDebugCameras()
 		{
 			scene->SetCurrentCamera(topCamera);
 		}
+        
+        scene->AddCamera(topCamera);
 
 		SafeRelease(topCamera);
 
@@ -515,3 +517,56 @@ void SceneCameraSystem::GetRayTo2dPoint(const DAVA::Vector2 &point, DAVA::float3
         }
     }
 }
+
+
+DAVA::Entity* SceneCameraSystem::GetEntityWidthEditorCamera() const
+{
+    int32 cameraCount = GetScene()->GetCameraCount();
+    for(int32 i = 0; i < cameraCount; ++i)
+    {
+        Camera *c = GetScene()->GetCamera(i);
+        Entity *e = GetEntityFromCamera(c);
+        if(e && e->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
+        {
+            return e;
+        }
+    }
+    
+    return NULL;
+}
+
+
+bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
+{
+    Entity *entity = GetEntityWidthEditorCamera();
+    if(!entity) return false;
+    
+    SnapToLandscapeControllerComponent *snapComponent = GetSnapToLandscapeControllerComponent(entity);
+    
+    if(snap)
+    {
+        if(!snapComponent)
+        {
+            float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
+            
+            snapComponent = static_cast<SnapToLandscapeControllerComponent *>(Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
+            snapComponent->SetHeightOnLandscape(height);
+
+            entity->AddComponent(snapComponent);
+        }
+    }
+    else if(snapComponent)
+    {
+        entity->RemoveComponent(snapComponent);
+    }
+    
+    return true;
+}
+
+bool SceneCameraSystem::IsEditorCameraSnappedToLandscape() const
+{
+    Entity *entity = GetEntityWidthEditorCamera();
+    return (GetSnapToLandscapeControllerComponent(entity) != NULL);
+}
+
+

@@ -74,6 +74,9 @@ public:
     void UpdateDistanceToCamera();
 
     virtual void Process(DAVA::float32 timeElapsed);
+    
+    bool SnapEditorCameraToLandscape(bool snap);
+    bool IsEditorCameraSnappedToLandscape() const;
 
 protected:
 	void Draw();
@@ -89,6 +92,7 @@ protected:
     
 	void MoveAnimate(DAVA::float32 timeElapsed);
 	DAVA::Entity* GetEntityFromCamera(DAVA::Camera *camera) const;
+    DAVA::Entity* GetEntityWidthEditorCamera() const;
 
 protected:
 	DAVA::Rect viewportRect;

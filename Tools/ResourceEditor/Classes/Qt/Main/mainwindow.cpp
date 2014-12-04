@@ -457,6 +457,7 @@ void QtMainWindow::SetupToolBars()
 	ui->menuToolbars->addAction(actionLandscapeToolbar);
 	ui->menuToolbars->addAction(ui->sceneToolBar->toggleViewAction());
     ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
+    ui->menuToolbars->addAction(ui->cameraToolBar->toggleViewAction());
 
 	// undo/redo
 	QToolButton *undoBtn = (QToolButton *) ui->mainToolBar->widgetForAction(ui->actionUndo);
@@ -785,6 +786,8 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionSwitchesWithDifferentLODs, SIGNAL(triggered(bool)), this, SLOT(OnSwitchWithDifferentLODs(bool)));
     
     QObject::connect(ui->actionBatchProcess, SIGNAL(triggered(bool)), this, SLOT(OnBatchProcessScene()));
+    
+    QObject::connect(ui->actionSnapCameraToLandscape, SIGNAL(triggered(bool)), this, SLOT(OnSnapCameraToLandscape(bool)));
 }
 
 void QtMainWindow::SetupShortCuts()
@@ -883,10 +886,16 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 	UpdateConflictingActionsState(tools == 0);
     UpdateModificationActionsState();
 
-    ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
-
+    ui->actionSwitchesWithDifferentLODs->setChecked(false);
+    ui->actionSnapCameraToLandscape->setChecked(false);
     if(NULL != scene)
     {
+        if(scene->debugDrawSystem)
+            ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
+
+        if(scene->cameraSystem)
+            ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+        
         EntityGroup curSelection = scene->selectionSystem->GetSelection();
         SceneSelectionChanged(scene, &curSelection, NULL);
     }
@@ -987,6 +996,8 @@ void QtMainWindow::EnableSceneActions(bool enable)
     
     ui->actionReloadShader->setEnabled(enable);
     ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
+    
+    ui->actionSnapCameraToLandscape->setEnabled(enable);
 }
 
 void QtMainWindow::UpdateModificationActionsState()
@@ -3029,5 +3040,22 @@ void QtMainWindow::OnBatchProcessScene()
     if (sceneProcessor.Execute(sceneEditor))
     {
         SaveScene(sceneEditor);
+    }
+}
+
+void QtMainWindow::OnSnapCameraToLandscape(bool snap)
+{
+    SceneEditor2 *scene = GetCurrentScene();
+    if(!scene) return;
+
+    bool toggleProcessed = false;
+    if(scene->cameraSystem)
+    {
+        toggleProcessed = scene->cameraSystem->SnapEditorCameraToLandscape(snap);
+    }
+    
+    if(!toggleProcessed)
+    {
+        ui->actionSnapCameraToLandscape->setChecked(!snap);
     }
 }
