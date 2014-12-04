@@ -106,7 +106,7 @@ private:
 private:
     void CleanUp(eDeactivationReason reason, int32 error);
     void ClearQueue();
-    void CloseSocket();
+    void CloseSocket(bool shouldShutdown);
 
     void PreparePackage(Package* package, uint32 channelId, const uint8* buffer, size_t length);
     bool Enqueue(uint32 channelId, const uint8* buffer, size_t length);

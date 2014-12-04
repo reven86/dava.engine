@@ -30,8 +30,6 @@
 #include <Debug/DVAssert.h>
 #include <Thread/LockGuard.h>
 
-#include <Network/Base/NetworkUtils.h>
-
 #include "TCPTransport.h"
 
 namespace DAVA
@@ -113,7 +111,7 @@ void TCPTransport::DoActivate()
 void TCPTransport::DoDeactivate()
 {
     SERVER_ROLE == role ? acceptor.Close(MakeFunction(this, &TCPTransport::AcceptorHandleClose))
-                        : CloseSocket();
+                        : CloseSocket(isActive);
 }
 
 void TCPTransport::DoSend()
@@ -123,7 +121,7 @@ void TCPTransport::DoSend()
 
 void TCPTransport::StartAsServer()
 {
-    int32 error = acceptor.Bind(endpoint.Port());
+    int32 error = acceptor.Bind(endpoint);
     if (0 == error)
     {
         error = acceptor.StartListen(MakeFunction(this, &TCPTransport::AcceptorHandleConnect), 1);
@@ -144,6 +142,7 @@ void TCPTransport::StartAsClient()
 
 void TCPTransport::CleanUp(eDeactivationReason reason, int32 error)
 {
+    bool shouldShutdown = isActive;
     isActive = false;
     listener->OnTransportDeactivated(this, reason, error);
     ClearQueue();
@@ -153,7 +152,7 @@ void TCPTransport::CleanUp(eDeactivationReason reason, int32 error)
     senderLock.Unlock();
 
     if (!deactivateFlag)
-        CloseSocket();
+        CloseSocket(shouldShutdown);
 }
 
 void TCPTransport::ClearQueue()
@@ -173,10 +172,10 @@ void TCPTransport::ClearQueue()
     sendQueue.clear();
 }
 
-void TCPTransport::CloseSocket()
+void TCPTransport::CloseSocket(bool shouldShutdown)
 {
-    if (socket.Shutdown(MakeFunction(this, &TCPTransport::SocketHandleShutdown)) != 0)
-        socket.Close(MakeFunction(this, &TCPTransport::SocketHandleClose));
+    true == shouldShutdown ? socket.Shutdown(MakeFunction(this, &TCPTransport::SocketHandleShutdown)) != 0
+                           : socket.Close(MakeFunction(this, &TCPTransport::SocketHandleClose));
 }
 
 void TCPTransport::PreparePackage(Package* package, uint32 channelId, const uint8* buffer, size_t length)
