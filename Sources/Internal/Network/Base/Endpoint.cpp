@@ -59,22 +59,12 @@ Endpoint::Endpoint(const sockaddr_in* sin)
 bool Endpoint::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);
-    if(Address().ToString(buffer, size))
+    char8 addr[20];
+    if(Address().ToString(addr, COUNT_OF(addr)))
     {
-        char port[20];
-#ifdef __DAVAENGINE_WIN32__
-        _snprintf_s(port, COUNT_OF(port), _TRUNCATE, ":%hu", Port());
-#else   // __DAVAENGINE_WIN32__
-        snprintf(port, COUNT_OF(port), ":%hu", Port());
-#endif  // __DAVAENGINE_WIN32__
-
-        size_t addrLen = strlen(buffer);
-        size_t portLen = strlen(port);
-        if(addrLen + portLen < size)
-        {
-            strcat(buffer + addrLen, port);
-            return true;
-        }
+        // TODO: Snprintf on Win32 do not conform standard
+        Snprintf(buffer, size, "%s:%hu", addr, Port());
+        return true;
     }
     return false;
 }
