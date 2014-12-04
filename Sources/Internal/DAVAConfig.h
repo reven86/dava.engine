@@ -40,7 +40,8 @@
     #define __DAVAENGINE_DEBUG__
 #endif
 
-
+#define __DAVAENGINE_AUTOTESTING__
+#define AUTOTESTING_LUA
 
 
 //#define ENABLE_MEMORY_MANAGER
