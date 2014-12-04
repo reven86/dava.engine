@@ -51,12 +51,12 @@ namespace Net
 class IPAddress
 {
 public:
-    IPAddress(uint32 address = 0) : addr(htonl(address)) {}
+    IPAddress(uint32 address = 0);
 
-    uint32 ToUInt() const { return ntohl(addr); }
+    uint32 ToUInt() const;
 
-    bool IsUnspecified() const { return 0 == addr; }
-    bool IsMulticast() const { return 0xE0000000 == (ToUInt() & 0xF0000000); }
+    bool IsUnspecified() const;
+    bool IsMulticast() const;
 
     bool ToString(char8* buffer, size_t size) const;
     String ToString() const;
@@ -66,6 +66,27 @@ public:
 private:
     uint32 addr;
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline IPAddress::IPAddress(uint32 address) : addr(htonl(address))
+{
+
+}
+
+inline uint32 IPAddress::ToUInt() const
+{
+    return ntohl(addr);
+}
+
+inline bool IPAddress::IsUnspecified() const
+{
+    return 0 == addr;
+}
+
+inline bool IPAddress::IsMulticast() const
+{
+    return 0xE0000000 == (ToUInt() & 0xF0000000);
+}
 
 }   // namespace Net
 }	// namespace DAVA

@@ -59,11 +59,11 @@ public:
     int32 LocalEndpoint(Endpoint& endpoint);
     int32 RemoteEndpoint(Endpoint& endpoint);
 
-    size_t WriteQueueSize() const { return uvhandle.write_queue_size; }
-    bool IsEOF(int32 error) const { return UV_EOF == error; }
+    size_t WriteQueueSize() const;
+    bool IsEOF(int32 error) const;
 
 protected:
-    bool IsOpen() const { return isOpen; }
+    bool IsOpen() const;
     void DoOpen();
 
     int32 DoConnect(const Endpoint& endpoint);
@@ -109,14 +109,26 @@ TCPSocketTemplate<T>::TCPSocketTemplate(IOLoop* ioLoop) : uvhandle()
 }
 
 template <typename T>
-inline TCPSocketTemplate<T>::~TCPSocketTemplate()
+TCPSocketTemplate<T>::~TCPSocketTemplate()
 {
     // libuv handle should be closed before destroying object
     DVASSERT(false == isOpen && false == isClosing);
 }
 
 template <typename T>
-inline int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
+size_t TCPSocketTemplate<T>::WriteQueueSize() const
+{
+    return uvhandle.write_queue_size;
+}
+
+template <typename T>
+bool TCPSocketTemplate<T>::IsEOF(int32 error) const
+{
+    return UV_EOF == error;
+}
+
+template <typename T>
+int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
     DVASSERT(true == isOpen && false == isClosing);
     int size = endpoint.Size();
@@ -124,11 +136,17 @@ inline int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 }
 
 template <typename T>
-inline int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
+int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 {
     DVASSERT(true == isOpen && false == isClosing);
     int size = endpoint.Size();
     return uv_tcp_getpeername(&uvhandle, endpoint.CastToSockaddr(), &size);
+}
+
+template <typename T>
+bool TCPSocketTemplate<T>::IsOpen() const
+{
+    return isOpen;
 }
 
 template <typename T>

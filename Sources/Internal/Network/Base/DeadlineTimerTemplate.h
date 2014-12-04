@@ -52,7 +52,7 @@ public:
     ~DeadlineTimerTemplate();
 
 protected:
-    bool IsOpen() const { return isOpen; }
+    bool IsOpen() const;
     void DoOpen();
 
     int32 DoWait(uint32 timeout);
@@ -85,6 +85,12 @@ DeadlineTimerTemplate<T>::~DeadlineTimerTemplate()
 {
     // libuv handle should be closed before destroying object
     DVASSERT(false == isOpen && false == isClosing);
+}
+
+template<typename T>
+bool DeadlineTimerTemplate<T>::IsOpen() const
+{
+    return isOpen;
 }
 
 template<typename T>

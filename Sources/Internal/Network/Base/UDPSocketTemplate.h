@@ -58,14 +58,14 @@ public:
 
     int32 LocalEndpoint(Endpoint& endpoint);
 
-    size_t SendQueueSize() const { return uvhandle.send_queue_size; }
-    size_t SendRequestCount() const { return uvhandle.send_queue_count; }
+    size_t SendQueueSize() const;
+    size_t SendRequestCount() const;
 
     int32 JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr = NULL);
     int32 LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr = NULL);
 
 protected:
-    bool IsOpen() const { return isOpen; }
+    bool IsOpen() const;
     void DoOpen();
     int32 DoBind(const Endpoint& endpoint, bool reuseAddrOption);
 
@@ -119,6 +119,18 @@ int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 }
 
 template <typename T>
+size_t UDPSocketTemplate<T>::SendQueueSize() const
+{
+    return uvhandle.send_queue_size;
+}
+
+template <typename T>
+size_t UDPSocketTemplate<T>::SendRequestCount() const
+{
+    return uvhandle.send_queue_count;
+}
+
+template <typename T>
 int32 UDPSocketTemplate<T>::JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
@@ -130,6 +142,12 @@ int32 UDPSocketTemplate<T>::LeaveMulticastGroup(const char8* multicastAddr, cons
 {
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
     return uv_udp_set_membership(&uvhandle, multicastAddr, interfaceAddr, UV_LEAVE_GROUP);
+}
+
+template <typename T>
+bool UDPSocketTemplate<T>::IsOpen() const
+{
+    return isOpen;
 }
 
 template <typename T>

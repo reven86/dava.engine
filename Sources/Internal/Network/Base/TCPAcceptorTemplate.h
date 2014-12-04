@@ -53,7 +53,7 @@ public:
     ~TCPAcceptorTemplate();
 
 protected:
-    bool IsOpen() const { return isOpen; }
+    bool IsOpen() const;
     void DoOpen();
     int32 DoBind(const Endpoint& endpoint);
     int32 DoAccept(uv_tcp_t* client);
@@ -84,10 +84,16 @@ TCPAcceptorTemplate<T>::TCPAcceptorTemplate(IOLoop* ioLoop) : uvhandle()
 }
 
 template <typename T>
-inline TCPAcceptorTemplate<T>::~TCPAcceptorTemplate()
+TCPAcceptorTemplate<T>::~TCPAcceptorTemplate()
 {
     // libuv handle should be closed before destroying object
     DVASSERT(false == isOpen && false == isClosing);
+}
+
+template <typename T>
+bool TCPAcceptorTemplate<T>::IsOpen() const
+{
+    return isOpen;
 }
 
 template <typename T>
@@ -100,7 +106,7 @@ void TCPAcceptorTemplate<T>::DoOpen()
 }
 
 template <typename T>
-inline int32 TCPAcceptorTemplate<T>::DoBind(const Endpoint& endpoint)
+int32 TCPAcceptorTemplate<T>::DoBind(const Endpoint& endpoint)
 {
     DVASSERT(false == isClosing);
     if (!isOpen)
@@ -109,14 +115,14 @@ inline int32 TCPAcceptorTemplate<T>::DoBind(const Endpoint& endpoint)
 }
 
 template <typename T>
-inline int32 TCPAcceptorTemplate<T>::DoAccept(uv_tcp_t* client)
+int32 TCPAcceptorTemplate<T>::DoAccept(uv_tcp_t* client)
 {
     DVASSERT(true == isOpen && false == isClosing && client != NULL);
     return uv_accept(reinterpret_cast<uv_stream_t*>(&uvhandle), reinterpret_cast<uv_stream_t*>(client));
 }
 
 template <typename T>
-inline int32 TCPAcceptorTemplate<T>::DoStartListen(int32 backlog)
+int32 TCPAcceptorTemplate<T>::DoStartListen(int32 backlog)
 {
     // Acceptor should be bound first
     DVASSERT(true == isOpen && false == isClosing && backlog > 0);
