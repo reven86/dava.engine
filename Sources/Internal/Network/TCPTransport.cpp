@@ -111,7 +111,7 @@ void TCPTransport::DoActivate()
 void TCPTransport::DoDeactivate()
 {
     SERVER_ROLE == role ? acceptor.Close(MakeFunction(this, &TCPTransport::AcceptorHandleClose))
-                        : CloseSocket(isActive);
+                        : CloseSocket(isActive);    // We should shutdown and close socket first to cancel any pending operations
 }
 
 void TCPTransport::DoSend()
@@ -142,7 +142,6 @@ void TCPTransport::StartAsClient()
 
 void TCPTransport::CleanUp(eDeactivationReason reason, int32 error)
 {
-    bool shouldShutdown = isActive;
     isActive = false;
     listener->OnTransportDeactivated(this, reason, error);
     ClearQueue();
@@ -151,8 +150,8 @@ void TCPTransport::CleanUp(eDeactivationReason reason, int32 error)
     totalDataSize = 0;
     senderLock.Unlock();
 
-    if (!deactivateFlag)
-        CloseSocket(shouldShutdown);
+    if (!deactivateFlag)    // Do not close socket twice
+        CloseSocket(false); // We enter CleanUp on some kind of error and should not shutdown
 }
 
 void TCPTransport::ClearQueue()
@@ -174,8 +173,10 @@ void TCPTransport::ClearQueue()
 
 void TCPTransport::CloseSocket(bool shouldShutdown)
 {
-    true == shouldShutdown ? socket.Shutdown(MakeFunction(this, &TCPTransport::SocketHandleShutdown)) != 0
-                           : socket.Close(MakeFunction(this, &TCPTransport::SocketHandleClose));
+    // Shutdown socket if flag is set
+    // Close socket if flag is not set or shutdown has failed
+    if (false == shouldShutdown || socket.Shutdown(MakeFunction(this, &TCPTransport::SocketHandleShutdown)) != 0)
+        socket.Close(MakeFunction(this, &TCPTransport::SocketHandleClose));
 }
 
 void TCPTransport::PreparePackage(Package* package, uint32 channelId, const uint8* buffer, size_t length)
@@ -227,7 +228,7 @@ void TCPTransport::SendPackage(Package* package)
 void TCPTransport::AcceptorHandleClose(TCPAcceptor* acceptor)
 {
     if (deactivateFlag)
-        CloseSocket();
+        CloseSocket(isActive);
 }
 
 void TCPTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
