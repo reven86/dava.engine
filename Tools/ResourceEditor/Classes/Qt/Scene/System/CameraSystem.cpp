@@ -289,6 +289,26 @@ void SceneCameraSystem::Process(float timeElapsed)
 
 void SceneCameraSystem::ProcessUIEvent(DAVA::UIEvent *event)
 {
+    if(event->phase == UIEvent::PHASE_KEYCHAR)
+    {
+        if(('+' == event->keyChar)|| ('-' == event->keyChar))
+        {
+            Entity *entity = GetEntityWidthEditorCamera();
+            SnapToLandscapeControllerComponent *snapComponent = GetSnapToLandscapeControllerComponent(entity);
+            if(snapComponent)
+            {
+                float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscapeStep).AsFloat();
+                if('+' == event->keyChar)
+                {
+                    snapComponent->SetHeightOnLandscape(snapComponent->GetHeightOnLandscape() + height);
+                }
+                else
+                {
+                    snapComponent->SetHeightOnLandscape(snapComponent->GetHeightOnLandscape() - height);
+                }
+            }
+        }
+    }
 }
 
 void SceneCameraSystem::Draw()

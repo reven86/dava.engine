@@ -29,6 +29,10 @@
 #include "SnapToLandscapeControllerComponent.h"
 #include "FileSystem/KeyedArchive.h"
 
+#include "Scene3D/Systems/EventSystem.h"
+#include "Scene3D/Systems/GlobalEventSystem.h"
+
+
 namespace DAVA
 {
     
@@ -53,6 +57,13 @@ Component * SnapToLandscapeControllerComponent::Clone(Entity * toEntity)
     return component;
 }
 
+void SnapToLandscapeControllerComponent::SetHeightOnLandscape(float32 height)
+{
+    heightOnLandscape = height;
+    GlobalEventSystem::Instance()->Event(entity, EventSystem::SNAP_TO_LANDSCAPE_HEIGHT_CHANGED);
+}
+
+    
 void SnapToLandscapeControllerComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
     Component::Serialize(archive, serializationContext);

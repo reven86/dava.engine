@@ -39,6 +39,7 @@ namespace DAVA
 {
     
 class Camera;
+class Landscape;
 class SnapToLandscapeControllerSystem: public SceneSystem
 {
     
@@ -50,11 +51,14 @@ public:
     virtual void RemoveEntity(Entity * entity);
     
     virtual void Process(float32 timeElapsed);
-    
+    virtual void ImmediateEvent(Entity * entity, uint32 event);
+
 private:
     
+    void SnapToLandscape(Landscape *landscape, Entity *entity, bool forceSnap = false);
+    
     Vector<Entity *> entities;
-    Map<Camera *, Vector3> positions;
+    Map<Entity *, Vector3> positions;
     
 };
     

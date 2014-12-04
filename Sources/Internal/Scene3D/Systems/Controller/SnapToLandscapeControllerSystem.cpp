@@ -33,6 +33,7 @@
 
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
+#include "Scene3D/Systems/EventSystem.h"
 
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
@@ -44,6 +45,7 @@ namespace DAVA
 SnapToLandscapeControllerSystem::SnapToLandscapeControllerSystem(Scene * scene)
     : SceneSystem(scene)
 {
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SNAP_TO_LANDSCAPE_HEIGHT_CHANGED);
 }
 
 SnapToLandscapeControllerSystem::~SnapToLandscapeControllerSystem()
@@ -54,8 +56,7 @@ void SnapToLandscapeControllerSystem::AddEntity(Entity * entity)
 {
     DVASSERT(GetCamera(entity) != NULL && "Right now system works with camera only");
 
-    Camera *camera = GetCamera(entity);
-    positions[camera] = Vector3();
+    positions[entity] = Vector3();
     
     entities.push_back(entity);
 }
@@ -67,18 +68,14 @@ void SnapToLandscapeControllerSystem::RemoveEntity(Entity * entity)
     {
         if(entities[i] == entity)
         {
-            Camera *camera = GetCamera(entity);
-            if(camera)
+            Map<Entity *, Vector3>::iterator it = positions.find(entity);
+            if(it != positions.end())
             {
-                Map<Camera *, Vector3>::iterator it = positions.find(camera);
-                if(it != positions.end())
-                {
-                    positions.erase(it);
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
+                positions.erase(it);
+            }
+            else
+            {
+                DVASSERT(false);
             }
             
             entities[i] = entities[size-1];
@@ -97,37 +94,50 @@ void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
     Landscape *landscape = FindLandscape(GetScene());
     for(uint32 i = 0; i < size; ++i)
     {
-        SnapToLandscapeControllerComponent *snapController = static_cast<SnapToLandscapeControllerComponent *>(entities[i]->GetComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
-
-        Camera *camera =  GetCamera(entities[i]);
-        DVASSERT(snapController && camera);
-
-        if(camera && snapController)
-        {
-            const Vector3 & pos = camera->GetPosition();
-            if (pos != positions[camera])
-            {
-                const Vector3 & direction = camera->GetDirection();
-
-                Vector3 pointOnLandscape;
-                if (landscape && landscape->PlacePoint(pos, pointOnLandscape))
-                {
-                    pointOnLandscape.z += snapController->heightOnLandscape;
-                }
-                else
-                {
-                    pointOnLandscape = pos;
-                    pointOnLandscape.z = snapController->heightOnLandscape;
-                }
-
-                camera->SetPosition(pointOnLandscape);
-                camera->SetDirection(direction);
-                
-                positions[camera] = pointOnLandscape;
-            }
-        }
+        SnapToLandscape(landscape, entities[i]);
     }
 }
     
+void SnapToLandscapeControllerSystem::ImmediateEvent(Entity * entity, uint32 event)
+{
+    if(EventSystem::SNAP_TO_LANDSCAPE_HEIGHT_CHANGED == event)
+    {
+        Landscape *landscape = FindLandscape(GetScene());
+        SnapToLandscape(landscape, entity, true);
+    }
+}
+    
+void SnapToLandscapeControllerSystem::SnapToLandscape(Landscape *landscape, Entity *entity, bool forceSnap)
+{
+    SnapToLandscapeControllerComponent *snapController = GetSnapToLandscapeControllerComponent(entity);
+    Camera *camera =  GetCamera(entity);
+    DVASSERT(snapController && camera);
+    
+    if(camera && snapController)
+    {
+        const Vector3 & pos = camera->GetPosition();
+        if ((pos != positions[entity]) || forceSnap)
+        {
+            const Vector3 & direction = camera->GetDirection();
+            
+            Vector3 pointOnLandscape;
+            if (landscape && landscape->PlacePoint(pos, pointOnLandscape))
+            {
+                pointOnLandscape.z += snapController->heightOnLandscape;
+            }
+            else
+            {
+                pointOnLandscape = pos;
+                pointOnLandscape.z = snapController->heightOnLandscape;
+            }
+            
+            camera->SetPosition(pointOnLandscape);
+            camera->SetDirection(direction);
+            
+            positions[entity] = pointOnLandscape;
+        }
+    }
+}
+
     
 };
