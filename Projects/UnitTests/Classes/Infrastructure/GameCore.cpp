@@ -121,9 +121,7 @@ void GameCore::OnAppStarted()
 
     new ImageSizeTest();
     //new DeviceInfoTest();
-#ifndef __DAVAENGINE_ANDROID__
-    new PVRTest(); // TODO crush on android
-#endif
+    new PVRTest();
     new DXTTest();
     new JPEGTest();
 
