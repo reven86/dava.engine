@@ -10,29 +10,29 @@
 	<string>SceneVieweriPhone</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>1A17F0A8-B6F3-4655-8C69-4E7350CCFC6A</key>
+		<key>62289F3C472C02540432B448FB463096A6264DBD</key>
 		<string>https://github.com/dava/dava.framework</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>Projects/SceneViewer/SceneVieweriPhone.xcodeproj/project.xcworkspace</string>
+	<string>Projects/SceneViewer/SceneVieweriPhone.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>1A17F0A8-B6F3-4655-8C69-4E7350CCFC6A</key>
+		<key>62289F3C472C02540432B448FB463096A6264DBD</key>
 		<string>../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/dava/dava.framework</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>1A17F0A8-B6F3-4655-8C69-4E7350CCFC6A</string>
+	<string>62289F3C472C02540432B448FB463096A6264DBD</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>1A17F0A8-B6F3-4655-8C69-4E7350CCFC6A</string>
+			<string>62289F3C472C02540432B448FB463096A6264DBD</string>
 			<key>IDESourceControlWCCName</key>
 			<string>dava.framework</string>
 		</dict>

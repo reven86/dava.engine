@@ -51,17 +51,24 @@ public:
     virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
     virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
+    inline float32 GetHeightOnLandscape() const;
+    void SetHeightOnLandscape(float32 height);
+    
 protected:
     
     float32 heightOnLandscape;
     
 public:
     INTROSPECTION_EXTEND(SnapToLandscapeControllerComponent, Component,
-        MEMBER(heightOnLandscape, "heightOnLandscape", I_VIEW | I_EDIT | I_SAVE)
+        PROPERTY("heightOnLandscape", "Height On Landscape", GetHeightOnLandscape, SetHeightOnLandscape, I_VIEW | I_EDIT | I_SAVE)
     );
 };
     
-    
+inline float32 SnapToLandscapeControllerComponent::GetHeightOnLandscape() const
+{
+    return heightOnLandscape;
+}
+
     
 };
 
