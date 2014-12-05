@@ -13,14 +13,14 @@
 
 namespace
 {
-    const int cCursorRadius = 70;
+    const int cCursorRadius = 151;  // Should be odd
 }
 
 
 DropperShade::DropperShade( const QImage& src, const QRect& rect )
 : QWidget(NULL, Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip)
     , cache(src)
-    , cursorSize(cCursorRadius * 2 + 1, cCursorRadius * 2 + 1)
+    , cursorSize(cCursorRadius, cCursorRadius)
     , zoomFactor(1)
     , mouse(new MouseHelper(this))
     , drawCursor(false)

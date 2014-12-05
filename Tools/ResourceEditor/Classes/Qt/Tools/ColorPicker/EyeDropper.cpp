@@ -66,16 +66,7 @@ void EyeDropper::InitShades()
         QRect rc = screens[i].rc;
         const bool scaled = scale > 1.0;
 
-        QPixmap pix;
-        if (scaled)
-        {
-            pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height() ).scaled(screens[i].rc.size());
-        }
-        else
-        {
-            pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
-        }
-        pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
+        QPixmap pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
         pix.setDevicePixelRatio(scale);
         const QImage img = pix.toImage();
         
