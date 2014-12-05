@@ -56,10 +56,10 @@ namespace DAVA
         virtual void BeginControlPropretiesSection(const String &name) override;
         virtual void EndControlPropertiesSection() override;
         
-        virtual UIControlBackground *BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
+        virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) override;
         virtual void EndBgPropertiesSection() override;
         
-        virtual UIControl *BeginInternalControlSection(int index, bool sectionHasProperties) override;
+        virtual UIControl *BeginInternalControlSection(int32 index, bool sectionHasProperties) override;
         virtual void EndInternalControlSection() override;
         
         virtual void ProcessProperty(const InspMember *member, const VariantType &value) override;

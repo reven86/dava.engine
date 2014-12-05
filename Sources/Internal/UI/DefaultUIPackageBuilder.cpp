@@ -215,7 +215,7 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
     currentObject = NULL;
 }
 
-UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
+UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int32 index, bool sectionHasProperties)
 {
     if (sectionHasProperties)
     {
@@ -238,7 +238,7 @@ void DefaultUIPackageBuilder::EndBgPropertiesSection()
     currentObject = NULL;
 }
 
-UIControl *DefaultUIPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
+UIControl *DefaultUIPackageBuilder::BeginInternalControlSection(int32 index, bool sectionHasProperties)
 {
     if (sectionHasProperties)
     {

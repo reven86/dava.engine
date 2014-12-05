@@ -73,7 +73,7 @@ private:
     struct QueueItem {
         String name;
         const YamlNode *node;
-        int status;
+        int32 status;
     };
     Vector<QueueItem> loadingQueue;
     AbstractUIPackageBuilder *builder;

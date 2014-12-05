@@ -71,10 +71,10 @@ namespace DAVA
         virtual void BeginControlPropretiesSection(const String &name) = 0;
         virtual void EndControlPropertiesSection() = 0;
         
-        virtual UIControlBackground *BeginBgPropertiesSection(int index, bool sectionHasProperties) = 0;
+        virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) = 0;
         virtual void EndBgPropertiesSection() = 0;
         
-        virtual UIControl *BeginInternalControlSection(int index, bool sectionHasProperties) = 0;
+        virtual UIControl *BeginInternalControlSection(int32 index, bool sectionHasProperties) = 0;
         virtual void EndInternalControlSection() = 0;
         
         virtual void ProcessProperty(const InspMember *member, const VariantType &value) = 0;
