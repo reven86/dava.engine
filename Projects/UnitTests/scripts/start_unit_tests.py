@@ -22,6 +22,7 @@
 import subprocess
 import sys
 import os.path
+import signal
 
 
 def get_postfix(platform):
@@ -31,7 +32,6 @@ def get_postfix(platform):
         return '.app'
     else:
         return ''
-
 
 PRJ_NAME_BASE = "UnitTests"
 PRJ_POSTFIX = get_postfix(sys.platform)
@@ -47,13 +47,30 @@ if len(sys.argv) > 1:
 
 sub_process = None
 
+
+def start_unittests_on_android_device():
+    global sub_process
+    # clear log before start tests
+    subprocess.check_call(["adb", "logcat", "-c"])
+    # start adb logcat and gather output DO NOT filter by TeamcityOutput tag
+    # because we need interrupt gather log when unittests process finished
+    sub_process = subprocess.Popen(
+        ["adb", "logcat", "-s", "TeamcityOutput"],
+        stdout=subprocess.PIPE)
+    # start unittests on device
+    subprocess.Popen(
+        ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests." + PRJ_NAME_BASE])
+    return sub_process
+
+
 if start_on_ios:
     # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
-    sub_process = subprocess.Popen(["../build/ios-deploy", "-d", "--noninteractive", "-b", "../build/UnitTests.app"],
+    sub_process = subprocess.Popen(["./ios-deploy", "-d", "--noninteractive", "-b", "../build/" +
+                                    PRJ_NAME_BASE + PRJ_POSTFIX],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")
 elif start_on_android:
-    sub_process = subprocess.Popen(
-        ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests." + PRJ_NAME_BASE])
+    sub_process = start_unittests_on_android_device()
 elif sys.platform == 'win32':
     if os.path.isfile("..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX):  # run on build server (TeamCity)
         sub_process = subprocess.Popen(["..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..",
@@ -89,6 +106,11 @@ while continue_process_stdout:
             if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
                                                         #  finish tests on ios device (run with lldb)
                 app_exit_code = 0
+                if start_on_android:
+                    # we want to exit from logcat process because sub_process.stdout.readline() will block
+                    # current thread
+                    sub_process.send_signal(signal.CTRL_C_EVENT)
+                    continue_process_stdout = False
         else:
             continue_process_stdout = False
     except IOError as err:
