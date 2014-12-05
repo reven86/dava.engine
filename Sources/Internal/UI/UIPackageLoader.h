@@ -64,13 +64,15 @@ private:
     virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node);
 
 private:
-    enum eItemStatus {
+    enum eItemStatus
+    {
         STATUS_WAIT,
         STATUS_LOADING,
         STATUS_LOADED
     };
     
-    struct QueueItem {
+    struct QueueItem
+    {
         String name;
         const YamlNode *node;
         int32 status;

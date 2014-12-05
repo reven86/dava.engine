@@ -1071,7 +1071,7 @@ String UITextField::GetFontPresetName() const
     return FontManager::Instance()->GetFontName(font);
 }
 
-void UITextField::SetFontPresetName( const String &presetName )
+void UITextField::SetFontByPresetName( const String &presetName )
 {
     Font *font = NULL;
 
