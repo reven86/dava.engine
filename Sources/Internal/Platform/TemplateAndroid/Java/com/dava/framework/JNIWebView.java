@@ -30,6 +30,9 @@ public class JNIWebView {
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
+			JNIActivity activity = JNIActivity.GetActivity();
+			if (null == activity || activity.GetIsPausing())
+				return;
 			JNIActivity.GetActivity().PostEventToGL(new Runnable() {
 				@Override
 				public void run() {
@@ -54,6 +57,9 @@ public class JNIWebView {
 		
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, final String url) {
+			if (null == JNIActivity.GetActivity() || JNIActivity.GetActivity().GetIsPausing())
+				return false;
+			
 			FutureTask<Integer> task = PostOnUrlChangeTask(url);
 			
 			while (!task.isDone()) {
@@ -111,6 +117,9 @@ public class JNIWebView {
 	public static void Initialize(final int id, final float x, final float y, final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -141,6 +150,9 @@ public class JNIWebView {
 	public static void Deinitialize(final int id)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -160,6 +172,9 @@ public class JNIWebView {
 	public static void OpenURL(final int id, final String url)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -177,8 +192,10 @@ public class JNIWebView {
 	public static void OpenFromBuffer(final int id, final String data, final String baseUrl)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
-		activity.runOnUiThread(new Runnable() {
-			
+		if (null == activity || activity.GetIsPausing())
+			return;
+
+		activity.runOnUiThread(new Runnable() {			
 			@Override
 			public void run() {
 				if (!views.containsKey(id))
@@ -196,6 +213,9 @@ public class JNIWebView {
 	public static void SetRect(final int id, final float x, final float y, final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -219,6 +239,9 @@ public class JNIWebView {
 	public static void SetVisible(final int id, final boolean isVisible)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -236,6 +259,9 @@ public class JNIWebView {
 	public static void SetBackgroundTransparency(final int id, final boolean enabled)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable()
 		{
 			@Override
