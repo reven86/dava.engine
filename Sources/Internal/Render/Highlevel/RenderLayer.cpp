@@ -69,6 +69,13 @@ void RenderLayer::DrawRenderBatchArray(const FastName & ownerRenderPass, Camera 
     }
 }
 
+
+InstancedRenderLayer::InstancedRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id) : RenderLayer(name, sortingFlags, id)
+{
+    incomingUniformValues.resize(INSTANCE_PARAMETERS_COUNT);
+    incomingAutobindUniforms.reserve(INSTANCE_PARAMETERS_COUNT);
+}
+
 void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastName & ownerRenderPass, Camera * camera)
 {
     DVASSERT(currInstancesCount==0);
@@ -83,18 +90,17 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
     material->BindActivePassRenderState();        
     material->BindActivePassMaterialProperties();
 
+    incomingAutobindUniforms.clear();
     Shader *shader = material->GetActivePassShader();
-    int32 instancedUniformesCount = shader->GetInstancingUniformCount();
-    incomingUniformValues.clear();
-    incomingUniformValues.resize(instancedUniformesCount);
-        
+    int32 instancedUniformesCount = shader->GetInstancingUniformCount();            
    
     for (int32 i=0; i<instancedUniformesCount; i++)    
     {
         Shader::Uniform* uniform = shader->GetInstancingUniform(i);
-        incomingUniformValues[i].first = uniform;
+        if (Shader::IsAutobindUniform(uniform->shaderSemantic))
+            incomingAutobindUniforms.push_back(uniform);
         uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type);
-        incomingUniformValues[i].second.resize(uniformDataSize*MAX_INSTANCES_COUNT);
+        incomingUniformValues[uniform->instanceSemantic].resize(uniformDataSize*MAX_INSTANCES_COUNT);
     }
 
     CollectInstanceParams(material);
@@ -141,7 +147,7 @@ bool InstancedRenderLayer::AppendInstance(RenderBatch *batch, const FastName & o
 
 void InstancedRenderLayer::CollectInstanceParams(NMaterial *material)
 {
-    int32 instancedUniformesCount = incomingUniformValues.size();    
+    /*int32 instancedUniformesCount = incomingUniformValues.size();    
     for (int32 i=0; i<instancedUniformesCount; i++)
     {
         Shader::Uniform* uniform = incomingUniformValues[i].first;        
@@ -159,6 +165,15 @@ void InstancedRenderLayer::CollectInstanceParams(NMaterial *material)
             DVASSERT(property);
             Memcpy(&incomingUniformValues[i].second[currInstancesCount*uniformDataSize], property->data, uniformDataSize);
         }
+    }*/
+
+    for (int32 i = 0, sz = incomingAutobindUniforms.size(); i<sz; ++i)
+    {
+        Shader::Uniform* uniform = incomingAutobindUniforms[i];
+        uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type);        
+        const void *data = RenderManager::GetDynamicParam(INSTANCE_PARAM_DESCRIPTORS[uniform->instanceSemantic].originalSemantic);
+        DVASSERT(data);
+        Memcpy(&incomingUniformValues[uniform->instanceSemantic][currInstancesCount*uniformDataSize], data, uniformDataSize);
     }
 }
 
@@ -171,10 +186,11 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
     //incomingGroup->Draw(ownerRenderPass, camera);
     NMaterial *incomingMaterial = incomingGroup->GetMaterial();
     Shader *shader = incomingMaterial->GetActivePassShader(); 
-    for (int32 i=0, sz = incomingUniformValues.size(); i<sz; ++i)
+    for (int32 i=0, sz = shader->GetInstancingUniformCount(); i<sz; ++i)
     {
-        Shader::Uniform *uniform = incomingUniformValues[i].first;
-        void *data = &incomingUniformValues[i].second[0];
+        Shader::Uniform *uniform = shader->GetInstancingUniform(i);
+        void *data = &incomingUniformValues[uniform->instanceSemantic];
+        DVASSERT(incomingUniformValues[uniform->instanceSemantic].size()>=Shader::GetUniformTypeSize(uniform->type)*currInstancesCount);
         shader->SetUniformValueByUniform(uniform, uniform->type, currInstancesCount, data);
     }
 

@@ -73,7 +73,7 @@ class InstancedRenderLayer : public RenderLayer
 {
 public:
     const static int32 MAX_INSTANCES_COUNT = 32;
-    InstancedRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id) : RenderLayer(name, sortingFlags, id){}
+    InstancedRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
 
     virtual void DrawRenderBatchArray(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
 
@@ -84,7 +84,8 @@ protected:
     void CollectInstanceParams(NMaterial *material);
     
 private:
-    Vector<std::pair<Shader::Uniform* , Vector<uint8> > > incomingUniformValues; //anyway we are to collect this to data arrays.
+    Vector<Shader::Uniform*> incomingAutobindUniforms;
+    Vector<Vector<uint8> > incomingUniformValues; 
     RenderBatch * incomingGroup;
     int32 currInstancesCount;    
 };

@@ -833,7 +833,8 @@ protected:
         bool propsDirty;
 		
 		HashMap<FastName, int32> textureIndexMap;
-		Vector<UniformCacheEntry> activeUniformsCache;        
+		Vector<UniformCacheEntry> activeUniformsCache;
+        Vector<UniformCacheEntry> instanceUniformsCache;
 
         
     private:
@@ -854,15 +855,8 @@ protected:
 	
 	NMaterial* parent;
 	Vector<NMaterial*> children;
-	
-	//TODO: fill it from configuration
-	uint32 requiredVertexFormat;
-
- 	//{TODO: these should be removed and changed to a generic system
-	//setting properties via special setters
-    uint32 lightCount;
-    Light * lights[8];
-	//}END TODO
+		
+	uint32 requiredVertexFormat; 	
     
     uint8 dynamicBindFlags;
 

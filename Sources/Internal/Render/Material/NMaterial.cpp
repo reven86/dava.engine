@@ -211,7 +211,6 @@ materialType(NMaterial::MATERIALTYPE_NONE),
 materialKey(0),
 parent(NULL),
 requiredVertexFormat(0),
-lightCount(0),
 illuminationParams(NULL),
 materialSetFlags(8),
 baseTechnique(NULL),
@@ -226,8 +225,7 @@ materialProperties(16),
 instancePassRenderStates(4),
 materialSortKey(0),
 supportsInstancing(true)
-{
-	memset(lights, 0, sizeof(lights));
+{	
 }
 
 NMaterial::~NMaterial()
@@ -1244,28 +1242,35 @@ void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInst
 {
 	Shader* shader = passInstance->GetShader();
 	passInstance->activeUniformsCache.clear();    
+    passInstance->instanceUniformsCache.clear();
 	
 	uint32 uniformCount = shader->GetUniformCount();
 	for(uint32 uniformIndex = 0; uniformIndex < uniformCount; ++uniformIndex)
 	{
 		Shader::Uniform * uniform = shader->GetUniform(uniformIndex);
 		
-		if((UNKNOWN_SEMANTIC == uniform->shaderSemantic ||
-			PARAM_COLOR == uniform->shaderSemantic) &&
-		   (Shader::UT_SAMPLER_2D != uniform->type &&
-			Shader::UT_SAMPLER_CUBE != uniform->type)) //TODO: do something with conditional binding
-		{
-			NMaterialProperty* prop = GetPropertyValue(uniform->name);
-			
+		if(  (UNKNOWN_SEMANTIC == uniform->shaderSemantic)           
+		   &&(Shader::UT_SAMPLER_2D != uniform->type )
+		   &&(Shader::UT_SAMPLER_CUBE != uniform->type)) 
+		{						
 			UniformCacheEntry entry;
 			entry.uniform = uniform;
 			entry.index = uniformIndex;
-			entry.prop = prop;
+						
+            if (!uniform->instanceSemantic)
+            {
+                entry.prop = GetPropertyValue(uniform->name);
+                passInstance->activeUniformsCache.push_back(entry);
+                //material is instance && property defined locally
+                if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniform->name))
+                    supportsInstancing = false;
+            }
+            else
+            {
+                entry.prop = GetPropertyValue(INSTANCE_PARAM_DESCRIPTORS[uniform->instanceSemantic].originalName);
+                passInstance->instanceUniformsCache.push_back(entry);
+            }
 			
-			passInstance->activeUniformsCache.push_back(entry);
-            //material is instance && property defined locally && property is not supported by instancing
-            if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniform->name)&&(!Shader::SupportInstancingByName(uniform->name)))
-                supportsInstancing = false;
 		}
 	}		
 }
@@ -1475,10 +1480,17 @@ void NMaterial::UpdateActivePassProperties()
 		{
 			UniformCacheEntry& uniformEntry = activePassInstance->activeUniformsCache[i];
 			uniformEntry.prop = GetPropertyValue(uniformEntry.uniform->name);
-            //material is instance && property defined locally && property is not supported by instancing
-            if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniformEntry.uniform->name)&&(!Shader::SupportInstancingByName(uniformEntry.uniform->name)))
+            //material is instance && property defined locally
+            if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniformEntry.uniform->name))
                 supportsInstancing = false;
 		}		
+
+        for(size_t i = 0, sz = activePassInstance->instanceUniformsCache.size(); i < sz; ++i)
+        {
+            UniformCacheEntry& uniformEntry = activePassInstance->instanceUniformsCache[i];
+            uniformEntry.prop = GetPropertyValue(INSTANCE_PARAM_DESCRIPTORS[uniformEntry.uniform->instanceSemantic].originalName);
+            
+        }        
 		activePassInstance->propsDirty = false;
 	}
 		
