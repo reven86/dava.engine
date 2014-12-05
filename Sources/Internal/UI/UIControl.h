@@ -1612,7 +1612,7 @@ void UIControl::SetNoInput(bool noInput)
     SetInputEnabled(!noInput, false);
 }
 
-bool UIControl::IsDebugDraw() const
+bool UIControl::GetDebugDraw() const
 {
     return debugDrawEnabled;
 }
