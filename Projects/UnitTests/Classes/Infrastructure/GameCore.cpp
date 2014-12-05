@@ -153,17 +153,14 @@ void GameCore::OnAppStarted()
     new HashMapTest();
     //new SoundTest();
     new SplitTest();
-#ifndef __DAVAENGINE_ANDROID__
-    new AlignTest(); // TODO crush on android
-#endif
+    new AlignTest();
+
     //new EMailTest();
     //new DPITest();
     new MaterialCompilerTest(); // TODO empty
     new CloneTest(); // TODO empty
     new BiDiTest();
-#ifndef __DAVAENGINE_ANDROID__
-    new TextSizeTest(); // TODO crush on android
-#endif
+    new TextSizeTest();
 
     new EntityTest(); // TODO empty
     new KeyedArchiveYamlTest();
