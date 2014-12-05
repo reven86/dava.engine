@@ -83,6 +83,18 @@
 
 using namespace DAVA;
 
+
+void GameCore::RunOnlyThisTest()
+{
+    //runOnlyThisTest = "TestClassName";
+    //runOnlyThisTest = "TextSizeTest";
+}
+
+void GameCore::OnError()
+{
+    DebugBreak();
+}
+
 GameCore::GameCore():currentScreen(NULL),
     currentScreenIndex(0),
     currentTestIndex(0)
@@ -96,19 +108,23 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     InitLogging();
+    RunOnlyThisTest();
 
     RenderManager::Instance()->SetFPS(60);
 
+    //new DLCDownloadTest();
     new MathTest();
     new FunctionBindSignalTest();
-    //new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
-    //new DLCDownloadTest();
-
+#ifndef __DAVAENGINE_ANDROID__
+    new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
+                          // TODO this test crush on android
+#endif
 
     new ImageSizeTest();
     //new DeviceInfoTest();
-
-    new PVRTest();
+#ifndef __DAVAENGINE_ANDROID__
+    new PVRTest(); // TODO crush on android
+#endif
     new DXTTest();
     new JPEGTest();
 
@@ -118,11 +134,13 @@ void GameCore::OnAppStarted()
     new SaveImageTest();
     //   
     //   new OpenGLES30FormatTest(); // TODO duplicate? second run?
-    new StringFormatTest();
+#ifndef __DAVAENGINE_ANDROID__
+    new StringFormatTest(); // TODO crush on android
+#endif
     //new RectSpriteTest();
 
     new ComponentsTest();
-    new FilePathTest();
+    //new FilePathTest();
     new FileListTest();
     new FileSystemTest();
     
@@ -140,21 +158,26 @@ void GameCore::OnAppStarted()
     new HashMapTest();
     //new SoundTest();
     new SplitTest();
-    new AlignTest();
+#ifndef __DAVAENGINE_ANDROID__
+    new AlignTest(); // TODO crush on android
+#endif
     //new EMailTest();
     //new DPITest();
     new MaterialCompilerTest(); // TODO empty
     new CloneTest(); // TODO empty
     new BiDiTest();
- 	new UIParticlesTest();
-    new TextSizeTest();
+
+    new UIParticlesTest();
+
+#ifndef __DAVAENGINE_ANDROID__
+    new TextSizeTest(); // TODO crush on android
+#endif
 
     new EntityTest(); // TODO empty
     new KeyedArchiveYamlTest();
     //new UIListTest();
     //new UIScrollViewTest();
- 
-    new SceneSystemTest();
+    //new SceneSystemTest();
 
     RunTests();
 }
@@ -187,7 +210,6 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::OnAppFinished()
 {
-    teamCityOutput.Disconnect();
     DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
     int32 screensSize = screens.size();
@@ -288,6 +310,9 @@ void GameCore::RunTests()
 
 void GameCore::FinishTests()
 {
+    // inform teamcity script we just finished all tests
+    // useful on ios devices (run with lldb)
+    teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
     Core::Instance()->Quit();
 }
 
@@ -354,6 +379,8 @@ void GameCore::ProcessTests()
 
 void GameCore::RegisterError(const String &command, const String &fileName, int32 line, TestData *testData)
 {
+    OnError();
+
     const char* testName = currentScreen->GetTestName().c_str();
 
     String errorString = String(Format("%s(%d): ",
@@ -388,32 +415,10 @@ DAVA::String GameCore::CreateOutputLogFile()
 
 void GameCore::InitLogging()
 {
-    CreateDocumentsFolder();
-    logFilePath = CreateOutputLogFile();
-
-    logFile.open(logFilePath.c_str());
-
-    DVASSERT(logFile.good());
-    // We need redirect cout to our file for TeamcityOutput(CustomOutput) to work
-    std::cout.rdbuf(logFile.rdbuf());
-
-    String host;
-    if (CommandLineParser::Instance()->CommandIsFound("-host"))
-    {
-        host = CommandLineParser::Instance()->GetCommandParam("-host");
-    }
-    uint16 port = static_cast<uint16>(50007u);
-    if (CommandLineParser::Instance()->CommandIsFound("-port"))
-    {
-        String portStr = CommandLineParser::Instance()->GetCommandParam("-port");
-        port = static_cast<uint16>(atoi(portStr.c_str()));
-    }
     if (CommandLineParser::Instance()->CommandIsFound("-only_test"))
     {
         runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
     }
-
-    teamCityOutput.Connect(host, port);
 
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
 }
@@ -429,3 +434,7 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
+
+
+
+

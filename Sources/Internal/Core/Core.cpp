@@ -53,6 +53,7 @@
 #include "Scene3D/SceneCache.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 
@@ -155,6 +156,7 @@ void Core::CreateSingletons()
     new VersionInfo();
     new ImageSystem();
     new SceneCache();
+    new FrameOcclusionQueryManager();
 	
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -221,6 +223,7 @@ void Core::ReleaseSingletons()
     SoundSystem::Instance()->Release();
 	Random::Instance()->Release();
 	RenderLayerManager::Instance()->Release();
+    FrameOcclusionQueryManager::Instance()->Release();
 	RenderManager::Instance()->Release();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();
@@ -802,9 +805,7 @@ float32 GetScreenHeight()
 	
 void Core::SetCommandLine(int argc, char *argv[])
 {
-    commandLine.reserve(argc);
-	for (int k = 0; k < argc; ++k)
-		commandLine.push_back(argv[k]);
+    commandLine.assign(argv, argv + argc);
 }
 
 void Core::SetCommandLine(const DAVA::String& cmdLine)

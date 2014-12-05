@@ -70,10 +70,12 @@ void TextSizeTest::TestFunction(PerfFuncData* data)
 	const WideString* test = static_cast<const WideString*>(data->testData.userData);
 	Vector<float32> charSizes;
 	Size2i size = font->GetStringSize(*test, &charSizes);
-	int32 charsSum = 0;
+	float32 charsSum = 0;
 	for(uint32 i = 0; i < charSizes.size(); ++i)
 	{
 		charsSum += charSizes[i];
 	}
+    
+    charsSum *= Core::Instance()->GetPhysicalToVirtualFactor();
 	TEST_VERIFY(fabsf(size.dx - charsSum) < TEST_ACCURACY);
 }

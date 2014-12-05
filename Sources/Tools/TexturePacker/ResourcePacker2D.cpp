@@ -38,12 +38,10 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 
-#include <Magick++.h>
-#include <magick/MagickCore.h>
-#include <magick/property.h>
-
 #include "Render/GPUFamilyDescriptor.h"
 #include "FramePathHelper.h"
+
+#include "IMagickHelper.h"
 
 namespace DAVA
 {
@@ -207,136 +205,92 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
     
 	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 	
-	// TODO: Check CRC32
-	Vector<Magick::Image> layers;
-	
     FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
     psdNameWithoutExtension.TruncateExtension();
 	
-	try 
+    IMagickHelper::CroppedData cropped_data;
+    
+    IMagickHelper::ConvertToPNGCroppedGeometry( psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str() , &cropped_data, true );
+		
+	if ( cropped_data.layers_array_size == 0 )
 	{
-		Magick::readImages(&layers, psdPathname.GetAbsolutePathname());
-		
-		if (layers.size() == 0)
-		{
-			AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
-			
-			return 0;
-		}
-		
-		if (layers.size() == 1)
-		{
-			layers.push_back(layers[0]);
-		}
-		
-		//Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
-		
-		int width = (int)layers[0].columns();
-		int height = (int)layers[0].rows();
-		
-		for(int k = 1; k < (int)layers.size(); ++k)
-		{
-			FilePath outputFile = FramePathHelper::GetFramePathRelative(psdNameWithoutExtension, k - 1);
-
-			Magick::Image & currentLayer = layers[k];
-
-			const Magick::Geometry bbox = currentLayer.page();
-			const Magick::Geometry croppedGeometry(width,height, 0, 0);
-			currentLayer.crop(croppedGeometry);
-//TODO: disabled for future investigation of correct cropping in different situations
-// 			if(bbox.width() > (size_t)width || bbox.height() > (size_t)height)
-// 			{
-// 				currentLayer.page(croppedGeometry);
-// 			}
-
-			currentLayer.magick("PNG");
-			currentLayer.write(outputFile.GetAbsolutePathname());
-		}
-
-		DefinitionFile * defFile = new DefinitionFile;
-		defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
-		defFile->spriteWidth = width;
-		defFile->spriteHeight = height;
-		defFile->frameCount = (int)layers.size() -1;
-		defFile->frameRects = new Rect2i[defFile->frameCount];
-		
-		for(int k = 1; k < (int)layers.size(); ++k)
-		{
-			Magick::Image & currentLayer = layers[k];
-			Magick::Geometry bbox = currentLayer.page();
-			int xOff = (int)bbox.xOff();
-			if (bbox.xNegative())
-				xOff = -xOff;
-			int yOff = (int)bbox.yOff();
-			if (bbox.yNegative())
-				yOff = -yOff;
-            
-			// Get and save layer name
-            String layerName = currentLayer.label();
-            if (layerName.empty())
-            {
-            	Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
-            }
-            // Check if layer name is unique
-            Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
-			if (it != defFile->frameNames.end())
-            {
-            	Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
-            }
-
-            defFile->frameNames.push_back(layerName);
-			defFile->frameRects[k - 1] = Rect2i(xOff, yOff, (int32)bbox.width(), (int32)bbox.height());
-			
-			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
-			
-			if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
-			{
-				Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
-					   , defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
-                
-				defFile->frameRects[k - 1].dx = width;
-				defFile->frameRects[k - 1].dy = height;
-			}
-				
-			if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-			{
-				
-			}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-			{
-				defFile->frameRects[k - 1].dx++;
-				defFile->frameRects[k - 1].dy++;
-			}
-			else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-			{
-				defFile->frameRects[k - 1].dx+=2;
-				defFile->frameRects[k - 1].dy+=2;
-			}
-			else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-			{
-				defFile->frameRects[k - 1].dx+=4;
-				defFile->frameRects[k - 1].dy+=4;
-			}
-			else if(CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
-			{
-				defFile->frameRects[k - 1].dx+=2;
-				defFile->frameRects[k - 1].dy+=2;
-			}
-			else
-			{
-				defFile->frameRects[k - 1].dx++;
-				defFile->frameRects[k - 1].dy++;	
-			}
-		}
-		
-		return defFile;
-	}
-	catch( Magick::Exception &error_ )
-    {
-		AddError(Format("Caught exception: %s file: %s", error_.what(), psdPathname.GetAbsolutePathname().c_str()));
-
+		AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
 		return 0;
-    }
-	return 0;
+	}
+		
+	//Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
+		
+	int width  = cropped_data.layer_width;
+	int height = cropped_data.layer_height;
+		
+	DefinitionFile * defFile = new DefinitionFile;
+	defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
+	defFile->spriteWidth = width;
+	defFile->spriteHeight = height;
+	defFile->frameCount = (int)cropped_data.layers_array_size -1;
+	defFile->frameRects = new Rect2i[defFile->frameCount];
+
+	for(int k = 1; k < (int)cropped_data.layers_array_size; ++k)
+	{
+		String layerName = String(cropped_data.layers_array[k].name);
+		if (layerName.empty())
+		{
+			Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
+		}
+		// Check if layer name is unique
+		Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
+		if (it != defFile->frameNames.end())
+		{
+			Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
+		}
+
+
+		defFile->frameNames.push_back(layerName);
+		defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy) ;
+			
+		//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
+			
+		if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
+		{
+			Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
+					, defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
+                
+			defFile->frameRects[k - 1].dx = width;
+			defFile->frameRects[k - 1].dy = height;
+		}
+				
+		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+		{
+				
+		}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+		{
+			defFile->frameRects[k - 1].dx++;
+			defFile->frameRects[k - 1].dy++;
+		}
+		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+		{
+			defFile->frameRects[k - 1].dx+=2;
+			defFile->frameRects[k - 1].dy+=2;
+		}
+		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+		{
+			defFile->frameRects[k - 1].dx+=4;
+			defFile->frameRects[k - 1].dy+=4;
+		}
+		else if(CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
+		{
+			defFile->frameRects[k - 1].dx+=2;
+			defFile->frameRects[k - 1].dy+=2;
+		}
+		else
+		{
+			defFile->frameRects[k - 1].dx++;
+			defFile->frameRects[k - 1].dy++;	
+		}
+	}
+		
+	return defFile;
+
 }
 
 Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)

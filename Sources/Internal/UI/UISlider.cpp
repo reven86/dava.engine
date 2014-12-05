@@ -77,7 +77,7 @@ void UISlider::InitThumb()
 
 	thumbButton->SetInputEnabled(false);
 	thumbButton->relativePosition.y = size.y * 0.5f;
-    thumbButton->pivotPoint = thumbButton->size*0.5f;
+    thumbButton->SetPivot(Vector2(0.5f, 0.5f));
 	
 	SetValue(currentValue);
 }
@@ -107,7 +107,7 @@ void UISlider::SetThumb(UIControl *newThumb)
 	thumbButton->SetInputEnabled(false);
 	
 	thumbButton->relativePosition.y = size.y * 0.5f;
-    thumbButton->pivotPoint = thumbButton->size*0.5f;
+    thumbButton->SetPivot(Vector2(0.5f, 0.5f));
 	
 	UIControl::AddControl(thumbButton);
 	
@@ -615,7 +615,7 @@ void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackgrou
 
 int32 UISlider::GetBackgroundComponentsCount() const
 {
-    return 3;
+    return BACKGROUND_COMPONENTS_COUNT;
 }
 
 UIControlBackground *UISlider::GetBackgroundComponent(int32 index) const
@@ -639,7 +639,7 @@ UIControlBackground *UISlider::GetBackgroundComponent(int32 index) const
 
 UIControlBackground *UISlider::CreateBackgroundComponent(int32 index) const
 {
-    DVASSERT(0 <= index && index < 3);
+    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
     return new UIControlBackground();
 }
 
@@ -650,21 +650,9 @@ void UISlider::SetBackgroundComponent(int32 index, UIControlBackground *bg)
 
 String UISlider::GetBackgroundComponentName(int32 index) const
 {
-    switch (index)
-    {
-        case 0:
-            return "Background";
-            
-        case 1:
-            return "min";
-            
-        case 2:
-            return "max";
-            
-        default:
-            DVASSERT(false);
-            return NULL;
-    }
+    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
+    static const String names[BACKGROUND_COMPONENTS_COUNT] = {"Background", "min", "max"};
+    return names[index];
 }
 
 } // ns
