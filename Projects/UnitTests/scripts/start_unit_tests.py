@@ -50,6 +50,13 @@ sub_process = None
 
 def start_unittests_on_android_device():
     global sub_process
+    # if screen turned off
+    device_state = subprocess.check_output(['adb', 'shell', 'dumpsys', 'power'])
+    if device_state.find("mScreenOn=false") != -1:
+        # turn screen on
+        subprocess.check_call(['adb', 'shell', 'input', 'keyevent', '26'])
+    # unlock device screen
+    subprocess.check_call(['adb', 'shell', 'input', 'keyevent', '82'])
     # clear log before start tests
     subprocess.check_call(["adb", "logcat", "-c"])
     # start adb logcat and gather output DO NOT filter by TeamcityOutput tag
