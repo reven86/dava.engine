@@ -109,7 +109,10 @@ while continue_process_stdout:
                 if start_on_android:
                     # we want to exit from logcat process because sub_process.stdout.readline() will block
                     # current thread
-                    sub_process.send_signal(signal.CTRL_C_EVENT)
+                    if sys.platform == "win32":
+                        sub_process.send_signal(signal.CTRL_C_EVENT)
+                    else:
+                        sub_process.send_signal(signal.SIGINT)
                     continue_process_stdout = False
         else:
             continue_process_stdout = False
