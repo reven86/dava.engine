@@ -48,21 +48,15 @@ if len(sys.argv) > 1:
 sub_process = None
 
 
-def is_unittests_running_on_android_device():
-    output = subprocess.check_output(["adb", "shell", "pgrep", "com.dava.unittests"])
-    # output look like:
-    # C:\Users\l_chayka>adb shell pgrep com.dava.unittests
-    # 20047
-    try:
-        # if we can convert to int process id good
-        int(output)
-    except ValueError:
-        return False
-    return True
-
-
 def start_unittests_on_android_device():
     global sub_process
+    # if screen turned off
+    device_state = subprocess.check_output(['adb', 'shell', 'dumpsys', 'power'])
+    if device_state.find("mScreenOn=false") != -1:
+        # turn screen on
+        subprocess.check_call(['adb', 'shell', 'input', 'keyevent', '26'])
+    # unlock device screen
+    subprocess.check_call(['adb', 'shell', 'input', 'keyevent', '82'])
     # clear log before start tests
     subprocess.check_call(["adb", "logcat", "-c"])
     # start adb logcat and gather output DO NOT filter by TeamcityOutput tag
@@ -78,8 +72,10 @@ def start_unittests_on_android_device():
 
 if start_on_ios:
     # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
-    sub_process = subprocess.Popen(["../build/ios-deploy", "-d", "--noninteractive", "-b", "../build/UnitTests.app"],
+    sub_process = subprocess.Popen(["./ios-deploy", "-d", "--noninteractive", "-b", "../build/" +
+                                    PRJ_NAME_BASE + PRJ_POSTFIX],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")
 elif start_on_android:
     sub_process = start_unittests_on_android_device()
 elif sys.platform == 'win32':
@@ -120,7 +116,10 @@ while continue_process_stdout:
                 if start_on_android:
                     # we want to exit from logcat process because sub_process.stdout.readline() will block
                     # current thread
-                    sub_process.send_signal(signal.CTRL_C_EVENT)
+                    if sys.platform == "win32":
+                        sub_process.send_signal(signal.CTRL_C_EVENT)
+                    else:
+                        sub_process.send_signal(signal.SIGINT)
                     continue_process_stdout = False
         else:
             continue_process_stdout = False
