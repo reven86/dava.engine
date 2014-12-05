@@ -30,14 +30,7 @@
 #ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 #define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
-/**
-    \defgroup utils Utilities
- */
-
 #include "TeamcityOutput/TeamcityOutput.h"
-
-#include "SFML/Network/IpAddress.hpp"
-#include "SFML/Network/TcpSocket.hpp"
 
 namespace DAVA 
 {
@@ -46,23 +39,13 @@ namespace DAVA
 class TeamcityTestsOutput: public TeamcityOutput
 {
 public:
-    TeamcityTestsOutput():connected(false){}
-
     virtual void Output(Logger::eLogLevel ll, const char8* text);
 
     static String FormatTestStarted(const String& testName);
     static String FormatTestFinished(const String& testName);
     static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
-
-    void Connect(const String& host, uint16 port);
-    void SendTestResult(const String& testResult);
-    void Disconnect();
-
 private:
     void TestOutput(const String& data);
-
-    sf::TcpSocket socket;
-    bool connected;
 };
 
 
