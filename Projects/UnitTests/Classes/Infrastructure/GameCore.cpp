@@ -131,9 +131,7 @@ void GameCore::OnAppStarted()
     new SaveImageTest();
     //   
     //   new OpenGLES30FormatTest(); // TODO duplicate? second run?
-#ifndef __DAVAENGINE_ANDROID__
-    new StringFormatTest(); // TODO crush on android
-#endif
+    new StringFormatTest();
     //new RectSpriteTest();
 
     new ComponentsTest();
