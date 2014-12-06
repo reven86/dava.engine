@@ -1,18 +1,11 @@
 cmake_minimum_required (VERSION 3.0)
+
 project      ( ResourceEditor )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
 find_package ( QT5           REQUIRED )
 find_package ( DavaFramework REQUIRED )
-
-set         ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
-set         ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
-set         ( Generated          ${CMAKE_CURRENT_BINARY_DIR}  )
-
-define_source_folders ( SRC_ROOT "Classes" )
-generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated )
-
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
@@ -37,7 +30,7 @@ include_directories   ( "Classes/Qt/TextureBrowser" )
 include_directories   ( "Classes/Collada" )
 
 
-add_definitions       ( 
+add_definitions ( 
 -D__DAVAENGINE_SPEEDTREE__ 
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
@@ -87,14 +80,19 @@ qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
+set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
+set ( Generated          ${CMAKE_CURRENT_BINARY_DIR}  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+
+define_source_folders          ( SRC_ROOT "Classes" )
+generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
+
 if( MACOS )
 
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
   
     set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
     set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
-
-
 
     file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
     foreach ( FILE ${RESOURCES_LIST} )

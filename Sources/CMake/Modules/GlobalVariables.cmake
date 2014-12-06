@@ -44,7 +44,10 @@ endif  ()
 
 set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
-file(STRINGS ${DAVA_ROOT_DIR}/DavaConfig.in ConfigContents)
+configure_file( ${DAVA_ROOT_DIR}/DavaConfig.in 
+                ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in )
+
+file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in ConfigContents)
 foreach(NameAndValue ${ConfigContents})
   string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
   string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
@@ -53,6 +56,5 @@ foreach(NameAndValue ${ConfigContents})
   string(REGEX REPLACE " " "" Value  "${Value}")
   set( ${Name} "${Value}" )
 #  message("---" [${Name}] "  " [${Value}] )
-
 endforeach()                                     
 
