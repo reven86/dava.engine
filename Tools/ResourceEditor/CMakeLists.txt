@@ -56,6 +56,13 @@ add_definitions       (
 -D_DISABLE_IMAGE_MAGICK
 )
 
+if( MSVC )
+add_definitions( 
+    -D__DAVAENGINE_BEAST__ 
+)
+endif()
+
+
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 if( MSVC )
     set( LIBRARIES "gdi32.lib" "glu32.lib" #"winmm.lib" "opengl32.lib"

@@ -396,6 +396,9 @@ void MaterialEditor::FillBase()
                 QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
                 baseRoot->MergeChild(group, MATERIAL_GROUP_LABEL);
 
+                // Add unknown value:
+                group->AddAllowedValue(VariantType(String()), "Unknown");
+
                 // fill allowed values for material group
                 for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
                 {
