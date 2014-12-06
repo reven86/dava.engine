@@ -1,43 +1,14 @@
 cmake_minimum_required (VERSION 3.0)
-project ( ResourceEditor )
-
-set ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-
-set ( QT_FOUND 1 )
+project      ( ResourceEditor )
+set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
+find_package ( QT5           REQUIRED )
 find_package ( DavaFramework REQUIRED )
 
-if( WIN32 )
-
-    set(ENV_QT5_HOME "$ENV{QT5_HOME}")
-    if( NOT ENV_QT5_HOME )        
-       message(FATAL_ERROR "Error: Undefined QT5_HOME env var. Sample QT5_HOME=D:/Tools/QT5/5.3/msvc2010_opengl")
-       exit()
-    endif()
-
-    set ( QT5_PATH ${ENV_QT5_HOME} CACHE PATH "Path to Qt5")
-
-elseif( MACOS )
-
-    set ( QT5_PATH $ENV{HOME}/Qt/5.3/clang_64/ CACHE PATH "Path to Qt5")
-
-endif()
-
-set ( QT5_MODULE_PATH ${QT5_PATH}/lib/cmake)
-set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
-
-
-
-find_package ( Qt5Core REQUIRED )
-find_package ( Qt5Concurrent REQUIRED )
-find_package ( Qt5Gui REQUIRED )
-find_package ( Qt5Widgets REQUIRED )
-
-set( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
-set( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
-set( Generated          ${CMAKE_CURRENT_BINARY_DIR}  )
-
+set         ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+set         ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
+set         ( Generated          ${CMAKE_CURRENT_BINARY_DIR}  )
 
 define_source_folders ( SRC_ROOT "Classes" )
 generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated )
@@ -218,9 +189,4 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
 
-
-target_link_libraries ( ResourceEditor Qt5::Core )
-target_link_libraries ( ResourceEditor Qt5::Gui )
-target_link_libraries ( ResourceEditor Qt5::Widgets )
-target_link_libraries ( ResourceEditor Qt5::Concurrent )
 
