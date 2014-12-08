@@ -66,8 +66,6 @@ if( MSVC )
 
 endif()
 
-set ( PROJECT_SOURCE_FILES ${PROJECT_SOURCE_FILES} "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.h" 
-                                                   "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.cpp" )
 
 file              ( GLOB_RECURSE QT_LIST "Classes/Qt/*.h"  )
 qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
@@ -82,10 +80,13 @@ add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURR
 
 set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
 set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
-set ( Generated          ${CMAKE_CURRENT_BINARY_DIR}  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set ( Generated          ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
 define_source_folders          ( SRC_ROOT "Classes" )
-generate_source_groups_project ( GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
+generate_source_groups_project ( SRC_ROOT "Classes" "Data" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
+
+list ( APPEND PROJECT_SOURCE_FILES  ${DYLIB_FILES} "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.h" 
+                                                   "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.cpp" ) 
 
 if( MACOS )
 
@@ -110,7 +111,6 @@ if( MACOS )
     set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
 
     list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
-    list ( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
     list ( APPEND RESOURCES_LIST  ${MACOS_ICO} )
     list ( APPEND LIBRARIES       ${DYLIB_FILES} )
 
@@ -131,7 +131,6 @@ add_executable  ( ${PROJECT_NAME} MACOSX_BUNDLE
     ${UI_APP_HDRS} 
     ${RCC_APP_SRCS} 
     ${PROJECT_SOURCE_FILES} 
-    "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.cpp"
     ${BEAST_LIST}
     ${RESOURCES_LIST} 
 )
