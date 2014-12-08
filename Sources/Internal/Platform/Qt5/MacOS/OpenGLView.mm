@@ -16,7 +16,7 @@
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
 
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 

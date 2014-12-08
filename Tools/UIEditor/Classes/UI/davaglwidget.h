@@ -34,7 +34,7 @@
 #include <QTimer>
 #include "Math/Vector.h"
 
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 
 namespace Ui {
 	class DavaGLWidget;

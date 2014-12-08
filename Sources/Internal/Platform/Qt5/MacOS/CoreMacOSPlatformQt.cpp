@@ -28,9 +28,9 @@
 
 
 #include "Base/BaseTypes.h"
-#include "Platform/Qt/MacOS/CoreMacOSPlatformQt.h"
-#include "Platform/Qt/QtLayer.h"
-#include "Platform/Qt/MacOS/QTLayerMacOS.h"
+#include "MacOS/CoreMacOSPlatformQt.h"
+#include "QtLayer.h"
+#include "MacOS/QTLayerMacOS.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 

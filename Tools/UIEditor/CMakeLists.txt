@@ -1,15 +1,13 @@
-cmake_minimum_required (VERSION 2.8)
-project      ( UIEditor )
+cmake_minimum_required (VERSION 3.0)
 
+project      ( UIEditor )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+include      ( CMake-common )
 
 find_package ( Qt4           REQUIRED )
 find_package ( DavaFramework REQUIRED )
-
-include      ( CMake-common )
 include      ( ${QT_USE_FILE} )
 
-define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
@@ -26,6 +24,7 @@ include_directories   ( "Classes/UI" )
 include_directories   ( "Classes/UI/Dialogs" )
 include_directories   ( "Classes/UI/PropertyGridWidgets" )
 
+message( "---> "  ${DAVA_INCLUDE_DIR} )
 
 add_definitions       ( 
 -D_CRT_SECURE_NO_DEPRECATE
@@ -89,6 +88,7 @@ qt4_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 file              ( GLOB RCC_LIST "Data/*.qrc" )
 qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
+define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 generate_source_groups_project ()
