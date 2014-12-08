@@ -42,12 +42,7 @@ public:
     
     IMPLEMENT_COMPONENT_TYPE(ROTATION_CONTROLLER_COMPONENT);
     
-    RotationControllerComponent();
-    virtual ~RotationControllerComponent();
-    
     virtual Component* Clone(Entity * toEntity);
-    virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-    virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
     
 public:
     INTROSPECTION_EXTEND(RotationControllerComponent, Component,

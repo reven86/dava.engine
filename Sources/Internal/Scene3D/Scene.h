@@ -86,9 +86,8 @@ class WaveSystem;
 class SkeletonSystem;
 class AnimationSystem;
     
-class WASDControllerSystem;
-class SnapToLandscapeControllerSystem;
-class RotationControllerSystem;
+class UIEvent;
+    
 /**
     \ingroup scene3d
     \brief This class is a code of our 3D Engine scene graph. 
@@ -124,15 +123,18 @@ public:
         SCENE_SYSTEM_WAVE_UPDATE_FLAG       = 1 << 16,
         SCENE_SYSTEM_SKELETON_UPDATE_FLAG   = 1 << 17,
         SCENE_SYSTEM_ANIMATION_FLAG         = 1 << 18,
-        SCENE_SYSTEM_ROTATION_CONTROLLER_FLAG = 1 << 19,
-        SCENE_SYSTEM_SNAP_TO_LANDSCAPE_CONTROLLER_FLAG = 1 << 20,
-        SCENE_SYSTEM_WASD_CONTROLLER_FLAG   = 1 << 21,
-
-        
         
         SCENE_SYSTEM_ALL_MASK               = 0xFFFFFFFF
     };
 
+    
+    enum eSceneProcessFlags
+    {
+        SCENE_SYSTEM_REQUIRE_PROCESS = 1 << 0,
+        SCENE_SYSTEM_REQUIRE_INPUT = 1 << 1
+    };
+    
+    
 	Scene(uint32 systemsMask = SCENE_SYSTEM_ALL_MASK);
 	
     /**
@@ -153,13 +155,14 @@ public:
      */
     void    UnregisterComponent(Entity * entity, Component * component);
     
-    virtual void    AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool needProcess = false, SceneSystem * insertBeforeSceneForProcess = NULL);
+    virtual void    AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, uint32 processFlags = 0, SceneSystem * insertBeforeSceneForProcess = NULL);
     virtual void    RemoveSystem(SceneSystem * sceneSystem);    
     
 	//virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
 
     Vector<SceneSystem*> systems;
     Vector<SceneSystem*> systemsToProcess;
+    Vector<SceneSystem*> systemsToInput;
     //HashMap<uint32, Set<SceneSystem*> > componentTypeMapping;
     TransformSystem * transformSystem;
     RenderUpdateSystem * renderUpdateSystem;
@@ -184,11 +187,6 @@ public:
     AnimationSystem * animationSystem;
     StaticOcclusionDebugDrawSystem *staticOcclusionDebugDrawSystem;
     SkeletonSystem *skeletonSystem;
-    
-    WASDControllerSystem *wasdSystem;
-    RotationControllerSystem *rotationSystem;
-    SnapToLandscapeControllerSystem *snapToLandscapeSystem;
-    
     
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
@@ -285,6 +283,10 @@ public:
     void SetClearBuffers(uint32 buffers);
     uint32 GetClearBuffers() const;
 
+    
+    void Input(UIEvent *event);
+    
+    
 protected:
     void UpdateLights();
 

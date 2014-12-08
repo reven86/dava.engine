@@ -54,7 +54,7 @@ public:
 
     virtual void Process(float32 timeElapsed);
 
-    void Input(UIEvent *event);
+    virtual void Input(UIEvent *event);
     
     inline float32 GetRotationSpeeed() const;
     inline void SetRotationSpeeed(float32 rotateSpeed);

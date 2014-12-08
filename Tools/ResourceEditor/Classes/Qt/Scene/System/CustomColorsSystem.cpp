@@ -165,7 +165,7 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void CustomColorsSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void CustomColorsSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

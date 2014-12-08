@@ -43,12 +43,7 @@ public:
 
     IMPLEMENT_COMPONENT_TYPE(WASD_CONTROLLER_COMPONENT);
 
-    WASDControllerComponent();
-    virtual ~WASDControllerComponent();
-    
     virtual Component* Clone(Entity * toEntity);
-    virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-    virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
     
 public:
     INTROSPECTION_EXTEND(WASDControllerComponent, Component,

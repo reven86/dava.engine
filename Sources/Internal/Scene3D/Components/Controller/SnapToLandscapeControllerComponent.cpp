@@ -43,10 +43,6 @@ SnapToLandscapeControllerComponent::SnapToLandscapeControllerComponent()
     
 }
 
-SnapToLandscapeControllerComponent::~SnapToLandscapeControllerComponent()
-{
-    
-}
 
 Component * SnapToLandscapeControllerComponent::Clone(Entity * toEntity)
 {

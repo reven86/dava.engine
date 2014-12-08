@@ -39,6 +39,8 @@
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
+#include "Utils/Utils.h"
+
 namespace DAVA
 {
     
@@ -61,17 +63,7 @@ void WASDControllerSystem::AddEntity(Entity * entity)
 
 void WASDControllerSystem::RemoveEntity(Entity * entity)
 {
-    uint32 size = entities.size();
-    for(uint32 i = 0; i < size; ++i)
-    {
-        if(entities[i] == entity)
-        {
-            entities[i] = entities[size-1];
-            entities.pop_back();
-            return;
-        }
-    }
-    DVASSERT(0);
+    DVVERIFY(FindAndRemoveExchangingWithLast(entities, entity));
 }
 
 void WASDControllerSystem::Process(float32 timeElapsed)
@@ -92,7 +84,7 @@ void WASDControllerSystem::Process(float32 timeElapsed)
         {
             if(keyboard->IsKeyPressed(DVKEY_W) || keyboard->IsKeyPressed(DVKEY_UP))
             {
-                MoveForward(camera, actualMoveSpeed, DIRECTION_STRIGHT);
+                MoveForward(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
             }
             if(keyboard->IsKeyPressed(DVKEY_S) || keyboard->IsKeyPressed(DVKEY_DOWN))
             {
@@ -100,7 +92,7 @@ void WASDControllerSystem::Process(float32 timeElapsed)
             }
             if(keyboard->IsKeyPressed(DVKEY_D) || keyboard->IsKeyPressed(DVKEY_RIGHT))
             {
-                MoveRight(camera, actualMoveSpeed, DIRECTION_STRIGHT);
+                MoveRight(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
             }
             if(keyboard->IsKeyPressed(DVKEY_A) || keyboard->IsKeyPressed(DVKEY_LEFT))
             {

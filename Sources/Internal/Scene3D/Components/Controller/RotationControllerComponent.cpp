@@ -32,33 +32,12 @@
 namespace DAVA
 {
     
-RotationControllerComponent::RotationControllerComponent()
-    : Component()
-{
-    
-}
-
-RotationControllerComponent::~RotationControllerComponent()
-{
-    
-}
-
 Component * RotationControllerComponent::Clone(Entity * toEntity)
 {
     RotationControllerComponent * component = new RotationControllerComponent();
     component->SetEntity(toEntity);
     
     return component;
-}
-
-void RotationControllerComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-    Component::Serialize(archive, serializationContext);
-}
-
-void RotationControllerComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-    Component::Deserialize(archive, serializationContext);
 }
 
 

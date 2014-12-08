@@ -31,33 +31,12 @@
 namespace DAVA
 {
 
-WASDControllerComponent::WASDControllerComponent()
-    : Component()
-{
-    
-}
-    
-WASDControllerComponent::~WASDControllerComponent()
-{
-    
-}
-
 Component * WASDControllerComponent::Clone(Entity * toEntity)
 {
     WASDControllerComponent * component = new WASDControllerComponent();
     component->SetEntity(toEntity);
     
     return component;
-}
-
-void WASDControllerComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-    Component::Serialize(archive, serializationContext);
-}
-
-void WASDControllerComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-    Component::Deserialize(archive, serializationContext);
 }
 
   

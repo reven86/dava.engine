@@ -74,14 +74,15 @@ public:
     void UpdateDistanceToCamera();
 
     virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent *event);
     
     bool SnapEditorCameraToLandscape(bool snap);
     bool IsEditorCameraSnappedToLandscape() const;
 
+    
 protected:
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	virtual void AddEntity(DAVA::Entity * entity);

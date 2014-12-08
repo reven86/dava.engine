@@ -75,16 +75,9 @@ void ScenePreviewControl::RecreateScene()
     editorScene = new Scene();
     editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
-    if(!editorScene->rotationSystem)
-    {
-        editorScene->rotationSystem = new RotationControllerSystem(editorScene);
-        editorScene->AddSystem(editorScene->rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), true);
-    }
-
-    if(editorScene->rotationSystem)
-    {
-        editorScene->rotationSystem->SetRotationSpeeed(0.10f);
-    }
+    RotationControllerSystem * rotationSystem = new RotationControllerSystem(editorScene);
+    rotationSystem->SetRotationSpeeed(0.10f);
+    editorScene->AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
     SetScene(editorScene);
 }

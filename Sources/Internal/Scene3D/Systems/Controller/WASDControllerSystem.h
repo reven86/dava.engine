@@ -44,7 +44,7 @@ class WASDControllerSystem: public SceneSystem
 {
     enum eDirection
     {
-        DIRECTION_STRIGHT = 1,
+        DIRECTION_STRAIGHT = 1,
         DIRECTION_INVERSE = -1
     };
     

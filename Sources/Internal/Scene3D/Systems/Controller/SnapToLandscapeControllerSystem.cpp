@@ -123,12 +123,12 @@ void SnapToLandscapeControllerSystem::SnapToLandscape(Landscape *landscape, Enti
             Vector3 pointOnLandscape;
             if (landscape && landscape->PlacePoint(pos, pointOnLandscape))
             {
-                pointOnLandscape.z += snapController->heightOnLandscape;
+                pointOnLandscape.z += snapController->GetHeightOnLandscape();
             }
             else
             {
                 pointOnLandscape = pos;
-                pointOnLandscape.z = snapController->heightOnLandscape;
+                pointOnLandscape.z = snapController->GetHeightOnLandscape();
             }
             
             camera->SetPosition(pointOnLandscape);

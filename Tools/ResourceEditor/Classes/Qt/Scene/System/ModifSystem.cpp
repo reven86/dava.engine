@@ -163,7 +163,7 @@ bool EntityModificationSystem::InCloneState() const
 void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
 { }
 
-void EntityModificationSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void EntityModificationSystem::Input(DAVA::UIEvent *event)
 {
 	if (IsLocked())
 	{

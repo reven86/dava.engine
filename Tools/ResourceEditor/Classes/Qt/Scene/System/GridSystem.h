@@ -52,7 +52,6 @@ public:
 protected:
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 	
 	DAVA::UniqueHandle renderState;

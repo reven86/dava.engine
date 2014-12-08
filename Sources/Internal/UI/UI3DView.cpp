@@ -180,10 +180,7 @@ void UI3DView::Input(UIEvent *currentInput)
 {
     if(scene)
     {
-        if(scene->rotationSystem)
-        {
-            scene->rotationSystem->Input(currentInput);
-        }
+        scene->Input(currentInput);
     }
     
     UIControl::Input(currentInput);

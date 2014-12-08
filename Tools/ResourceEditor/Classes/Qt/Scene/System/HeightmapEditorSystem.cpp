@@ -138,7 +138,7 @@ void HeightmapEditorSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void HeightmapEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

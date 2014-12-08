@@ -234,17 +234,19 @@ void SceneCameraSystem::MoveTo(const DAVA::Vector3 &pos, const DAVA::Vector3 &ta
 void SceneCameraSystem::Process(float timeElapsed)
 {
     //TODO: set move speed
-    WASDControllerSystem *wasdSystem = GetScene()->wasdSystem;
+    SceneEditor2 *scene = static_cast<SceneEditor2 *>(GetScene());
+
+    WASDControllerSystem *wasdSystem = scene->wasdSystem;
     if(wasdSystem)
     {
         wasdSystem->SetMoveSpeed(GetMoveSpeed());
     }
-    RotationControllerSystem *rotationSystem = GetScene()->rotationSystem;
+    RotationControllerSystem *rotationSystem = scene->rotationSystem;
     if(rotationSystem)
     {
         rotationSystem->SetRotationSpeeed(0.15f);
         
-        HoodSystem *hoodSystem = ((SceneEditor2 *) GetScene())->hoodSystem;
+        HoodSystem *hoodSystem = scene->hoodSystem;
         if(NULL != hoodSystem)
         {
             rotationSystem->SetRotationPoint(hoodSystem->GetPosition());
@@ -258,7 +260,6 @@ void SceneCameraSystem::Process(float timeElapsed)
 		CreateDebugCameras();
 	}
 
-	DAVA::Scene *scene = GetScene();
 	if(NULL != scene)
 	{
 		DAVA::Camera* camera = scene->GetDrawCamera();
@@ -287,7 +288,7 @@ void SceneCameraSystem::Process(float timeElapsed)
 	MoveAnimate(timeElapsed);
 }
 
-void SceneCameraSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void SceneCameraSystem::Input(DAVA::UIEvent *event)
 {
     if(event->phase == UIEvent::PHASE_KEYCHAR)
     {
@@ -465,11 +466,8 @@ void SceneCameraSystem::MoveAnimate(DAVA::float32 timeElapsed)
 			curSceneCamera->SetTarget(newTar);
 			curSceneCamera->SetPosition(newPos);
 
-            RotationControllerSystem *rotationSystem = GetScene()->rotationSystem;
-            if(rotationSystem)
-            {
-                rotationSystem->RecalcCameraViewAngles(curSceneCamera);
-            }
+            SceneEditor2 *sc = static_cast<SceneEditor2 *>(GetScene());
+            sc->rotationSystem->RecalcCameraViewAngles(curSceneCamera);
 		}
         
         UpdateDistanceToCamera();

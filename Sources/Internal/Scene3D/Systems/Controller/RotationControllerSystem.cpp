@@ -73,17 +73,7 @@ void RotationControllerSystem::AddEntity(Entity * entity)
 
 void RotationControllerSystem::RemoveEntity(Entity * entity)
 {
-    uint32 size = entities.size();
-    for(uint32 i = 0; i < size; ++i)
-    {
-        if(entities[i] == entity)
-        {
-            entities[i] = entities[size-1];
-            entities.pop_back();
-            return;
-        }
-    }
-    DVASSERT(0);
+    DVVERIFY(FindAndRemoveExchangingWithLast(entities, entity));
 }
 
 void RotationControllerSystem::Process(float32 timeElapsed)
