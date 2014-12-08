@@ -628,6 +628,65 @@ void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 	RebuildIndexesCache();
 }
 
+void SceneTreeModel::SetFilter(const QString& text)
+{
+    ResetFilter();
+    QRegExp regExp(text, Qt::CaseInsensitive, QRegExp::FixedString);
+    
+    const int n = rowCount();
+    for (int i = 0; i < n; i++)
+    {
+        const QModelIndex _index = index(i, 0);
+        SetFilterInternal(_index, text);
+    }
+}
+
+void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString& text)
+{
+    SceneTreeItem *item = GetItem(_index);
+    const QString& name = item->ItemName();
+
+    if (!item->isFilterAccepted)
+    {
+        const bool accept = (text.isEmpty() || name.contains(text,Qt::CaseInsensitive));
+        if (accept)
+        {
+            item->isFilterAccepted = true;
+        
+            QModelIndex p = _index.parent();
+            while (p.isValid())
+            {
+                SceneTreeItem *parentItem = GetItem(p);
+                if (parentItem->isFilterAccepted)
+                {
+                    break;
+                }
+                parentItem->isFilterAccepted = true;
+                p = p.parent();
+            }
+        }
+    }
+
+    const int n = rowCount(_index);
+    for ( int i = 0; i < n; i++)
+    {
+        const QModelIndex child = _index.child(i, 0);
+        SetFilterInternal(child, text);
+    }
+}
+
+void SceneTreeModel::ResetFilter(const QModelIndex& parent)
+{
+    const int n = rowCount(parent);
+    for (int i = 0; i < n; i++)
+    {
+        const QModelIndex _index = index(i, 0, parent);
+        SceneTreeItem *item = GetItem(_index);
+        item->isFilterAccepted = false;
+        ResetFilter(_index);
+    }
+}
+
 void SceneTreeModel::RebuildIndexesCache()
 {
 	indexesCacheEntities.clear();
@@ -686,26 +745,6 @@ void SceneTreeModel::AddIndexesCache(SceneTreeItem *item)
 	for(int i = 0; i < item->rowCount(); ++i)
 	{
 		AddIndexesCache((SceneTreeItem *) item->child(i));
-	}
-}
-
-void SceneTreeModel::ResetFilterAcceptFlag()
-{
-	for(int i = 0; i < invisibleRootItem()->rowCount(); ++i)
-	{
-		ResetFilterAcceptFlagInternal(GetItem(index(i, 0)));
-	}
-}
-
-void SceneTreeModel::ResetFilterAcceptFlagInternal(SceneTreeItem *item)
-{
-	if(NULL != item)
-	{
-		item->SetAcceptedByFilter(false);
-		for(int i = 0; i < item->rowCount(); ++i)
-		{
-			ResetFilterAcceptFlagInternal((SceneTreeItem *) item->child(i));
-		}
 	}
 }
 
@@ -772,72 +811,9 @@ SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QOb
 
 bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-	if(NULL != treeModel)
-	{
-		// check self accept
-		if(selfAcceptRow(sourceRow, sourceParent))
-		{
-			return true;
-		}
+    const QModelIndex& _index = treeModel->index(sourceRow, 0, sourceParent);
+    SceneTreeItem *item = treeModel->GetItem(_index);
+    DVASSERT(item);
 
-		//accept if any of the parents is accepted
-		QModelIndex parent = sourceParent;
-		while(parent.isValid()) 
-		{
-			if(selfAcceptRow(parent.row(), parent.parent()))
-			{
-				return true;
-			}
-
-			parent = parent.parent();
-		}
-
-		// accept if any child is accepted
-		if(childrenAcceptRow(sourceRow, sourceParent))
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool SceneTreeFilteringModel::selfAcceptRow(int sourceRow, const QModelIndex &sourceParent) const
-{
-	bool accepted = QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
-	SceneTreeItem *item = treeModel->GetItem(treeModel->index(sourceRow, 0, sourceParent));
-
-	if(NULL != item)
-	{
-		if(accepted && !filterRegExp().isEmpty())
-		{
-			item->SetAcceptedByFilter(accepted);
-		}
-		else
-		{
-			item->SetAcceptedByFilter(false);
-		}
-	}
-
-	return accepted;
-}
-
-bool SceneTreeFilteringModel::childrenAcceptRow(int sourceRow, const QModelIndex &sourceParent) const
-{
-	bool ret = false;
-
-	QModelIndex index = treeModel->index(sourceRow, 0, sourceParent);
-	if(treeModel->rowCount(index) > 0)
-	{
-		for(int i = 0; i < treeModel->rowCount(index); i++)
-		{
-			if(selfAcceptRow(i, index) || childrenAcceptRow(i, index))
-			{
-				ret = true;
-				break;
-			}
-		}
-	}
-
-	return ret;
+	return item->isFilterAccepted;
 }

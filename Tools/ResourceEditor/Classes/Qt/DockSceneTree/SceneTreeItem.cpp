@@ -37,8 +37,8 @@
 
 SceneTreeItem::SceneTreeItem(eItemType _type)
 	: type(_type)
+    , isFilterAccepted(true)
 { 
-	SetAcceptedByFilter(false);
 }
 
 SceneTreeItem::~SceneTreeItem()
@@ -62,9 +62,6 @@ QVariant SceneTreeItem::data(int role) const
 	case EIDR_Data:
 		v = ItemData();
 		break;
-	case Qt::BackgroundColorRole:
-        v = ItemBackgroundColor();
-        break;
 	default:
 		break;
 	}
@@ -87,32 +84,6 @@ QIcon SceneTreeItem::ItemIcon() const
 {
 	static QIcon icon = QIcon(":/QtIcons/node.png");
 	return icon;
-}
-
-QVariant SceneTreeItem::ItemBackgroundColor() const
-{
-	QVariant ret;
-
-	if(IsAcceptedByFilter())
-	{
-		ret.setValue(QColor(0, 255, 0, 20));
-	}
-	else
-	{
-		ret = QStandardItem::data(Qt::BackgroundColorRole);
-	}
-
-	return ret;
-}
-
-bool SceneTreeItem::IsAcceptedByFilter() const
-{
-	return data(EIDR_AcceptedByFilter).toBool();
-}
-
-void SceneTreeItem::SetAcceptedByFilter(bool accepted)
-{
-	setData(accepted, EIDR_AcceptedByFilter);
 }
 
 // =========================================================================================
@@ -519,15 +490,6 @@ QIcon SceneTreeItemParticleEmitter::ItemIcon() const
 {
 	static QIcon icon = QIcon(":/QtIcons/emitter_particle.png");
 	return icon;
-}
-
-QVariant SceneTreeItemParticleEmitter::ItemBackgroundColor() const
-{			
-	if(emitter && emitter->shortEffect)
-	{
-		return QColor(245, 215, 210);
-	}	
-	return SceneTreeItem::ItemBackgroundColor();
 }
 
 // =========================================================================================
