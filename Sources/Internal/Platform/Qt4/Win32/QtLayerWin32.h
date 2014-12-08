@@ -31,7 +31,7 @@
 #define __DAVAENGINE_QT_LAYER_WIN32_H__
 
 #include "DAVAEngine.h"
-#include "Platform/Qt/Qtlayer.h"
+#include "Qtlayer.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 

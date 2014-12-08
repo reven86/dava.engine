@@ -31,7 +31,7 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
+#include "Win32/CorePlatformWin32Qt.h"
 #include "Platform/DPIHelper.h"
 
 
