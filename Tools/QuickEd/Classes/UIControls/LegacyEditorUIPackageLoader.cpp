@@ -69,13 +69,17 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
         builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType("LegacyControl"));
     }
     builder->EndControlPropertiesSection();
-    
-    for (int i = 0; i < (int) rootNode->GetCount(); i++)
+
+    const YamlNode *childrenNode = rootNode->Get("children");
+    if (!childrenNode)
+        childrenNode = rootNode;
+
+    for (int i = 0; i < (int)childrenNode->GetCount(); i++)
     {
-        const YamlNode *childNode = rootNode->Get(i);
+        const YamlNode *childNode = childrenNode->Get(i);
         if (childNode->Get("type"))
         {
-            String name = rootNode->GetItemKeyName(i);
+            String name = childrenNode->GetItemKeyName(i);
             LoadControl(name, childNode);
         }
     }

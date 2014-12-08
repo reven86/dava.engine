@@ -122,9 +122,7 @@ void GameCore::OnAppStarted()
 
     new ImageSizeTest();
     //new DeviceInfoTest();
-#ifndef __DAVAENGINE_ANDROID__
-    new PVRTest(); // TODO crush on android
-#endif
+    new PVRTest();
     new DXTTest();
     new JPEGTest();
 
@@ -134,9 +132,7 @@ void GameCore::OnAppStarted()
     new SaveImageTest();
     //   
     //   new OpenGLES30FormatTest(); // TODO duplicate? second run?
-#ifndef __DAVAENGINE_ANDROID__
-    new StringFormatTest(); // TODO crush on android
-#endif
+    new StringFormatTest();
     //new RectSpriteTest();
 
     new ComponentsTest();
@@ -158,9 +154,8 @@ void GameCore::OnAppStarted()
     new HashMapTest();
     //new SoundTest();
     new SplitTest();
-#ifndef __DAVAENGINE_ANDROID__
-    new AlignTest(); // TODO crush on android
-#endif
+    new AlignTest();
+
     //new EMailTest();
     //new DPITest();
     new MaterialCompilerTest(); // TODO empty
@@ -169,9 +164,7 @@ void GameCore::OnAppStarted()
 
     new UIParticlesTest();
 
-#ifndef __DAVAENGINE_ANDROID__
-    new TextSizeTest(); // TODO crush on android
-#endif
+    new TextSizeTest();
 
     new EntityTest(); // TODO empty
     new KeyedArchiveYamlTest();

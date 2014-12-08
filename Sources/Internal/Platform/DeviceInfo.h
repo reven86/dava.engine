@@ -122,7 +122,11 @@ public:
         FilePath path;
 
         StorageInfo()
-        :   type(STORAGE_TYPE_UNKNOWN)
+            : type(STORAGE_TYPE_UNKNOWN)
+            , totalSpace(0)
+            , freeSpace(0)
+            , readOnly(false)
+            , emulated(false)
         {}
     };
 

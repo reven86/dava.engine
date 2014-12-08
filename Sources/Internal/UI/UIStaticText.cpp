@@ -593,11 +593,10 @@ void UIStaticText::SetTextPerPixelAccuracyType(int32 type)
 
 int32 UIStaticText::GetMultilineType() const
 {
-    bool multiline = GetMultiline();
-    if (multiline)
+    if (GetMultiline())
         return GetMultilineBySymbol() ? MULTILINE_ENABLED_BY_SYMBOL : MULTILINE_ENABLED;
     else
-        return multiline;
+        return MULTILINE_DISABLED;
 }
     
 void UIStaticText::SetMultilineType(int32 multilineType)
