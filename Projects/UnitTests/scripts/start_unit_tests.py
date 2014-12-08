@@ -50,6 +50,13 @@ sub_process = None
 
 def start_unittests_on_android_device():
     global sub_process
+    # if screen turned off
+    device_state = subprocess.check_output(['adb', 'shell', 'dumpsys', 'power'])
+    if device_state.find("mScreenOn=false") != -1:
+        # turn screen on
+        subprocess.check_call(['adb', 'shell', 'input', 'keyevent', '26'])
+    # unlock device screen
+    subprocess.check_call(['adb', 'shell', 'input', 'keyevent', '82'])
     # clear log before start tests
     subprocess.check_call(["adb", "logcat", "-c"])
     # start adb logcat and gather output DO NOT filter by TeamcityOutput tag
@@ -109,7 +116,10 @@ while continue_process_stdout:
                 if start_on_android:
                     # we want to exit from logcat process because sub_process.stdout.readline() will block
                     # current thread
-                    sub_process.send_signal(signal.CTRL_C_EVENT)
+                    if sys.platform == "win32":
+                        sub_process.send_signal(signal.CTRL_C_EVENT)
+                    else:
+                        sub_process.send_signal(signal.SIGINT)
                     continue_process_stdout = False
         else:
             continue_process_stdout = False
