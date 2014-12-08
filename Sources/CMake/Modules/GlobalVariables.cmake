@@ -27,7 +27,6 @@ set ( DAVA_TOOL_DIR                   "${DAVA_ENGINE_DIR}/../Tools" )
 set( DAVA_SPEEDTREE_ROOT_DIR            "${DAVA_ROOT_DIR}/../dava.speedtree" )                                      
 set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast" )                                      
 
-                                     
 
 if     ( ANDROID )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/${ANDROID_NDK_ABI_NAME}" ) 
@@ -45,6 +44,17 @@ endif  ()
 
 set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
+configure_file( ${DAVA_ROOT_DIR}/DavaConfig.in 
+                ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in )
 
-
+file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in ConfigContents)
+foreach(NameAndValue ${ConfigContents})
+  string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
+  string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
+  string(REPLACE "${Name}=" "" Value ${NameAndValue})
+  string(REGEX REPLACE " " "" Name   "${Name}")
+  string(REGEX REPLACE " " "" Value  "${Value}")
+  set( ${Name} "${Value}" )
+#  message("---" [${Name}] "  " [${Value}] )
+endforeach()                                     
 

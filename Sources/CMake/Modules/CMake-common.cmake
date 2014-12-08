@@ -230,7 +230,12 @@ macro ( generate_source_groups_project )
 
     IF( NOT ARG_RECURSIVE_CALL )
         FOREACH( GROUP_ITEM ${ARG_GROUP_FOLDERS} )
-            generate_source_groups_project( RECURSIVE_CALL GROUP_PREFIX ${GROUP_ITEM}  ROOT_DIR ${${GROUP_ITEM}}  SRC_ROOT ${${GROUP_ITEM}}  )
+            if( IS_DIRECTORY "${${GROUP_ITEM}}" )
+                generate_source_groups_project( RECURSIVE_CALL GROUP_PREFIX ${GROUP_ITEM}  ROOT_DIR ${${GROUP_ITEM}}  SRC_ROOT ${${GROUP_ITEM}}  )
+            else()
+                source_group( "${GROUP_ITEM} " FILES ${${GROUP_ITEM}} )
+            endif()
+
         ENDFOREACH()
     ENDIF()
 
