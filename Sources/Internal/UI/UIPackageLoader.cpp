@@ -49,7 +49,7 @@ UIPackageLoader::UIPackageLoader(AbstractUIPackageBuilder *builder) : builder(bu
 
 UIPackageLoader::~UIPackageLoader()
 {
-    this->builder = NULL;
+    builder = NULL;
 }
     
 UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
@@ -77,12 +77,13 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (versionNode == NULL || versionNode->GetType() != YamlNode::TYPE_STRING)
         return NULL;
     
-    UIPackage *package = builder->BeginPackage(packagePath);
+    UIPackage *package = SafeRetain(builder->BeginPackage(packagePath));
 
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
     {
-        for (int32 i = 0; i < (int32) importedPackagesNode->GetCount(); i++)
+        int32 count = (int32) importedPackagesNode->GetCount();
+        for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
 
@@ -109,10 +110,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
-        for (int32 i = 0; i < count; i++)
-        {
-            DVASSERT(loadingQueue[i].status == STATUS_LOADED);
-        }
+
         loadingQueue.clear();
     }
     builder->EndPackage();
@@ -122,7 +120,8 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     
 bool UIPackageLoader::LoadControlByName(const String &name)
 {
-    for (size_t index = 0; index < loadingQueue.size(); index++)
+    size_t size = loadingQueue.size();
+    for (size_t index = 0; index < size; index++)
     {
         if (loadingQueue[index].name == name)
         {
@@ -218,7 +217,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
         LoadControlPropertiesFromYamlNode(control, baseInfo, node);
     
     builder->BeginControlPropretiesSection(typeInfo->Name());
-    for (int i = 0; i < typeInfo->MembersCount(); i++)
+    for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
 
@@ -234,7 +233,7 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
 {
     const YamlNode *componentsNode = node ? node->Get("components") : NULL;
     
-    for (int i = 0; i < control->GetBackgroundComponentsCount(); i++)
+    for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
         const YamlNode *componentNode = NULL;
         
@@ -245,7 +244,7 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
         if (bg)
         {
             const InspInfo *insp = bg->GetTypeInfo();
-            for (int j = 0; j < insp->MembersCount(); j++)
+            for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
                 VariantType res;
@@ -261,7 +260,7 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
 void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
     const YamlNode *componentsNode = node ? node->Get("components") : NULL;
-    for (int i = 0; i < control->GetInternalControlsCount(); i++)
+    for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
     {
         const YamlNode *componentNode = NULL;
         if (componentsNode)
@@ -272,7 +271,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
         {
             const InspInfo *insp = internalControl->GetTypeInfo();
 
-            for (int j = 0; j < insp->MembersCount(); j++)
+            for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
 
@@ -293,7 +292,7 @@ VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *membe
     {
         if (member->Desc().type == InspDesc::T_ENUM)
         {
-            int val = 0;
+            int32 val = 0;
             if (member->Desc().enumMap->ToValue(valueNode->AsString().c_str(), val))
             {
                 return VariantType(val);
@@ -305,11 +304,11 @@ VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *membe
         }
         else if (member->Desc().type == InspDesc::T_FLAGS)
         {
-            int val = 0;
+            int32 val = 0;
             for (uint32 i = 0; i < valueNode->GetCount(); i++)
             {
                 const YamlNode *flagNode = valueNode->Get(i);
-                int flag = 0;
+                int32 flag = 0;
                 if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
                 {
                     val |= flag;

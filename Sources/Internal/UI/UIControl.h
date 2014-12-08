@@ -1441,31 +1441,12 @@ public:
     virtual String GetInternalControlDescriptions() const;
 
     // for introspection
-    bool GetEnabled() const {
-        return !GetDisabled();
-    }
-    
-    void SetEnabledNotHierarchic(bool enabled) {
-        SetDisabled(!enabled, false);
-    }
-    
-    bool GetNoInput() const {
-        return !GetInputEnabled();
-    }
-    
-    void SetNoInput(bool noInput) {
-        SetInputEnabled(!noInput, false);
-    }
-    
-    bool IsDebugDraw() const
-    {
-        return debugDrawEnabled;
-    }
-    
-    void SetDebugDrawNotHierarchic(bool val)
-    {
-        SetDebugDraw(val, false);
-    }
+    inline bool GetEnabled() const;
+    inline void SetEnabledNotHierarchic(bool enabled);
+    inline bool GetNoInput() const;
+    inline void SetNoInput(bool noInput);
+    inline bool GetDebugDraw() const;
+    inline void SetDebugDrawNotHierarchic(bool val);
     
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
                          PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
@@ -1497,7 +1478,7 @@ public:
 
                          PROPERTY("vcenterAlignEnabled", "Vertical Center Align Enabled", GetVCenterAlignEnabled, SetVCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("vcenterAlign", "Vertical Center Align", GetVCenterAlign, SetVCenterAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("debugDraw", "Debug Draw", IsDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
+                         PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
                          PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
                          );
 
@@ -1611,6 +1592,37 @@ bool UIControl::GetSystemVisible() const
     return visible & visibleForUIEditor;
 }
 
+bool UIControl::GetEnabled() const
+{
+    return !GetDisabled();
+}
+
+void UIControl::SetEnabledNotHierarchic(bool enabled)
+{
+    SetDisabled(!enabled, false);
+}
+
+bool UIControl::GetNoInput() const
+{
+    return !GetInputEnabled();
+}
+
+void UIControl::SetNoInput(bool noInput)
+{
+    SetInputEnabled(!noInput, false);
+}
+
+bool UIControl::GetDebugDraw() const
+{
+    return debugDrawEnabled;
+}
+
+void UIControl::SetDebugDrawNotHierarchic(bool val)
+{
+    SetDebugDraw(val, false);
+}
+
 };
+
 
 #endif
