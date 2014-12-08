@@ -24,8 +24,6 @@ include_directories   ( "Classes/UI" )
 include_directories   ( "Classes/UI/Dialogs" )
 include_directories   ( "Classes/UI/PropertyGridWidgets" )
 
-message( "---> "  ${DAVA_INCLUDE_DIR} )
-
 add_definitions       ( 
 -D_CRT_SECURE_NO_DEPRECATE
 -DDAVA_QT
@@ -132,7 +130,7 @@ elseif ( MSVC )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )    
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor.in
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor_QT4.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
     if( OUTPUT_TO_BUILD_DIR )
