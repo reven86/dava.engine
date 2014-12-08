@@ -78,11 +78,14 @@
 
         #define DebugBreak() { __debugbreak(); }
 
-    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+    // see http://stackoverflow.com/questions/3644465/can-i-create-a-breakpoint-in-code-in-ios-like-asmint-3-on-vc-and-conti
+    #define DebugBreak() __builtin_trap();
+
+#elif defined(__DAVAENGINE_ANDROID__)
 
         #include <signal.h>
-        #include <unistd.h>
-        #define DebugBreak() { kill( getpid(), SIGINT ) ; }
+        #define DebugBreak() raise(SIGTRAP);
 
     #else //PLATFORMS
         //other platforms
@@ -104,9 +107,13 @@
 #endif //ENABLE_ASSERT_LOGGING
 
 #if defined(ENABLE_ASSERT_MESSAGE)
-    #define MessageFunction(messagetype, assertType, expr, msg, file, line) { DAVA::DVAssertMessage::ShowMessage(messagetype, "%s\n\n%s\n%s\n\nFile: %s\nLine: %d", assertType, expr, msg, file, line); }
+    #define MessageFunction(messagetype, assertType, expr, msg, file, line) \
+        DAVA::DVAssertMessage::ShowMessage(messagetype, \
+            "%s\n\n%s\n%s\n\nFile: %s\nLine: %d", assertType, expr, msg, file, \
+            line)
 #else //ENABLE_ASSERT_MESSAGE
-    #define MessageFunction(messagetype, assertType, expr, msg, file, line)
+    #define MessageFunction(messagetype, assertType, expr, msg, file, line) \
+        false
 #endif //ENABLE_ASSERT_MESSAGE
 
 
@@ -127,16 +134,20 @@
 	if (!(expr))\
 	{\
         LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
-		MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, "", __FILE__, __LINE__);\
-		DebugBreak()\
+		if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, "", __FILE__, __LINE__))\
+        { \
+            DebugBreak()\
+        } \
 	}\
 
 #define DVASSERT_MSG(expr, msg)\
 	if (!(expr))\
 	{\
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
-		MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
-		DebugBreak()\
+		if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, msg, __FILE__, __LINE__))\
+        { \
+            DebugBreak()\
+        } \
 	}\
 
 #define DVWARNING(expr, msg)\

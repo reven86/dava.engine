@@ -40,17 +40,25 @@
 #endif
 
 
-void DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
+bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
+    bool breakExecution = false;
 #if defined(__DAVAENGINE_MACOS__)
     NSString *contents = [NSString stringWithUTF8String:content];
     
     NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText:@"Assert"];
     [alert setInformativeText:contents];
-	
+    [alert addButtonWithTitle:@"Ok"];
+    if (ALWAYS_MODAL == modalType)
+    {
+        [alert addButtonWithTitle:@"Break"];
+    }
 	// Modal Types are ignored on MacOS - there is no way to show non-modal alerts on this platform.
-    [alert runModal];
+    if ([alert runModal] == NSAlertSecondButtonReturn)
+    {
+        breakExecution = true;
+    }
     [alert release];
 	//VI: no need to release contents since its created on autorelease pool
     //[contents release];
@@ -67,8 +75,15 @@ void DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 			UIScreenManager::Instance()->BlockDrawing();
 			
 			// Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.
-			UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
-			[alert performSelectorOnMainThread:@selector(showModal) withObject:nil waitUntilDone:YES];
+			UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Assert" message:contents delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:@"Break", nil];
+            
+            long breakButtonIndex = [alert firstOtherButtonIndex];
+            
+            [alert performSelectorOnMainThread:@selector(showModal) withObject:nil waitUntilDone:YES];
+			if ( [alert getClickedButtonIndex] == breakButtonIndex)
+            {
+                breakExecution = true;
+            }
 			break;
 		}
 
@@ -95,7 +110,7 @@ void DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 				{
 					// Leave the current Alert View as-is.
 					needRecreateAlertView = false;
-					return;
+					return breakExecution;
 				}
 			}
 
@@ -115,6 +130,6 @@ void DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 	}
     
 #endif
-
+    return breakExecution;
 }
 

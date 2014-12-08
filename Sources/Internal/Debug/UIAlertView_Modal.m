@@ -42,4 +42,9 @@ NSInteger returnButtonIndex;
     returnButtonIndex = buttonIndex;
 }
 
+- (NSInteger)getClickedButtonIndex
+{
+    return returnButtonIndex;
+}
+
 @end
