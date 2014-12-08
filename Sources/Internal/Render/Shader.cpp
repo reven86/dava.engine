@@ -354,6 +354,8 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     
     char attributeName[512];
     char unifromArrayPostfix[] = "[0]";
+    size_t unifromArrayPostfixSize = strlen(unifromArrayPostfix);
+    
     DVASSERT(attributeNames == NULL);
     attributeNames = new FastName[activeAttributes];
 
@@ -410,10 +412,10 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         if (size > 1)
         {
             size_t uniformNameSize = strlen(attributeName);
-            size_t postfixSize = strlen(unifromArrayPostfix);
-            if (strcmp(&attributeName[uniformNameSize - postfixSize], unifromArrayPostfix))
+            if (uniformNameSize >= unifromArrayPostfixSize &&
+                strcmp(&attributeName[uniformNameSize - unifromArrayPostfixSize], unifromArrayPostfix))
             {
-                Memcpy(&attributeName[uniformNameSize], unifromArrayPostfix, postfixSize + 1);
+                Memcpy(&attributeName[uniformNameSize], unifromArrayPostfix, unifromArrayPostfixSize + 1);
             }
         }
 
