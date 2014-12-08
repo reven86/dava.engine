@@ -194,6 +194,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 		// try to pack for each resolution
 		uint32 bestResolution = (maxTextureSize) * (maxTextureSize);
 		uint32 bestXResolution, bestYResolution;
+		bool packWasSuccessfull = false;
 		
         Logger::FrameworkDebug("* Packing tries started: ");
 		
@@ -201,19 +202,26 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
 			{
 				Rect2i textureRect = Rect2i(0, 0, xResolution, yResolution);
-				
-				if (xResolution * yResolution < bestResolution)
+				uint32 currentResolution = xResolution * yResolution;
+
+				if ((currentResolution < bestResolution) || (currentResolution == bestResolution && !packWasSuccessfull))
+				{
 					if (TryToPack(textureRect, defsList))
 					{
-						bestResolution = xResolution * yResolution;
+						packWasSuccessfull = true;
+						bestResolution = currentResolution;
 						bestXResolution = xResolution;
 						bestYResolution = yResolution;
+						break;
 					}
+				}
+				else
+					break;
 			}
 
         Logger::FrameworkDebug("");
         
-		if (bestResolution != (maxTextureSize) * (maxTextureSize))
+		if (packWasSuccessfull)
 		{
 			char textureNameWithIndex[50];
 			sprintf(textureNameWithIndex, "texture%d", textureIndex++);
@@ -282,6 +290,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 	// try to pack for each resolution
 	uint32 bestResolution = (maxTextureSize) * (maxTextureSize);
 	uint32 bestXResolution = 0, bestYResolution = 0;
+	bool packWasSuccessfull = false;
 	
     Logger::FrameworkDebug("* Packing tries started: ");
 	
@@ -292,18 +301,25 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 			 if (needOnlySquareTexture && (xResolution != yResolution))continue;
 			 
 			 Rect2i textureRect = Rect2i(0, 0, xResolution, yResolution);
-			 
-			 if (xResolution * yResolution < bestResolution)
+			 uint32 currentResolution = xResolution * yResolution;
+
+			 if (currentResolution < bestResolution || (currentResolution == bestResolution && !packWasSuccessfull))
+			 {
 				 if (TryToPack(textureRect, defsList))
 				 {
-					 bestResolution = xResolution * yResolution;
+					 packWasSuccessfull = true;
+					 bestResolution = currentResolution;
 					 bestXResolution = xResolution;
 					 bestYResolution = yResolution;
+					 break;
 				 }
+			 }
+			 else
+				 break;
 		 }
     Logger::FrameworkDebug("\n");
 
-	if (bestResolution != (maxTextureSize) * (maxTextureSize))
+	if ( packWasSuccessfull )
 	{
 		FilePath textureName = outputPath + "texture";
         Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
