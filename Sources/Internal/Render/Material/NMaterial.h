@@ -311,6 +311,12 @@ public:
 	//setting properties via special setters
 	inline uint8 GetDynamicBindFlags() const;
 	//}END TODO
+
+    /**
+    \brief Returns using material flags.
+    \returns hash map with pairs <Flag Name, eFlagValue>.
+    */
+    inline const HashMap<FastName, int32>& GetFlags() const;
 	
     /**
 	 \brief Renders given polygon group with the current material.
@@ -1123,6 +1129,11 @@ inline const NMaterialTemplate* NMaterial::GetMaterialTemplate() const
 inline uint8 NMaterial::GetDynamicBindFlags() const
 {
     return dynamicBindFlags;
+}
+
+inline const HashMap<FastName, int32>& NMaterial::GetFlags() const
+{
+    return materialSetFlags;
 }
 
 inline IlluminationParams::IlluminationParams(NMaterial* parentMaterial) :
