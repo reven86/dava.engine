@@ -100,55 +100,55 @@ public:
     void        setName( const char* n )        { name = n; }
 
     void        reset()                         
-                                                { 
-                                                    counterSync.Lock();
+                { 
+                    counterSync.Lock();
 
-                                                    t         = 0; 
-                                                    count     = 0; 
-                                                    used      = false;
-                                                    useCount  = 0;
-                                                    parentId  = InvalidIndex;
+                    t         = 0; 
+                    count     = 0; 
+                    used      = false;
+                    useCount  = 0;
+                    parentId  = InvalidIndex;
                                                     
-                                                    counterSync.Unlock();
-                                                }
+                    counterSync.Unlock();
+                }
     void        start()
-                                                {
-                                                    counterSync.Lock();
+                {
+                    counterSync.Lock();
 
-                                                    if( !useCount ) 
-                                                    {
-                                                        if( activeCounterCount )
-                                                            parentId = activeCounter[activeCounterCount-1]->id;
-                                                        else
-                                                            parentId = InvalidIndex;
+                    if( !useCount ) 
+                    {
+                        if( activeCounterCount )
+                            parentId = activeCounter[activeCounterCount-1]->id;
+                        else
+                            parentId = InvalidIndex;
 
-                                                        activeCounter[activeCounterCount] = this;
-                                                        ++activeCounterCount;
+                        activeCounter[activeCounterCount] = this;
+                        ++activeCounterCount;
                                                         
-                                                        t0 = CurTimeUs();
-                                                    }
+                        t0 = CurTimeUs();
+                    }
 
-                                                    used = true;
-                                                    ++count;
-                                                    ++useCount;
+                    used = true;
+                    ++count;
+                    ++useCount;
                                                     
-                                                    counterSync.Unlock();
-                                                }
+                    counterSync.Unlock();
+                }
     void        stop()                          
-                                                { 
-                                                    counterSync.Lock();
+                { 
+                    counterSync.Lock();
 
-                                                    if( useCount == 1 )
-                                                    {
-                                                        if( activeCounterCount )
-                                                            --activeCounterCount; 
-                                                    }
+                    if( useCount == 1 )
+                    {
+                        if( activeCounterCount )
+                            --activeCounterCount; 
+                    }
 
-                                                    if( --useCount == 0 )
-                                                        t += CurTimeUs() - t0; 
+                    if( --useCount == 0 )
+                        t += CurTimeUs() - t0; 
                                                     
-                                                    counterSync.Unlock();
-                                                }
+                    counterSync.Unlock();
+                }
 
 
     const char* getName() const                 { return name; }
@@ -159,20 +159,18 @@ public:
     uint32      getId() const                   { return id; }
     uint32      getParentId() const             { return parentId; }
     bool        isUsed() const                  { return (used)  ? true  : false; }
-    uint32      nestingLevel() const            { return _nesting_level(); }
+    uint32      nestingLevel() const            { return (parentId != InvalidIndex)  ? GetCounter(parentId)->nestingLevel()+1  : 0; }
 
 
 
 private :
-friend void Init( uint32 max_counter_count, uint32 history_len );
+friend void Init( uint32, uint32 );
 friend void Start();
 friend void Stop();
 friend bool DumpAverage();
-friend bool GetAverageCounters( std::vector<CounterInfo>* info );
+friend bool GetAverageCounters( std::vector<CounterInfo>* );
 
 private:
-
-    uint32      _nesting_level() const          { return (parentId != InvalidIndex)  ? GetCounter(parentId)->_nesting_level()+1  : 0; }
 
     uint64      t0;
     uint64      t;
@@ -202,12 +200,12 @@ GetCounter( uint32 id )
 //------------------------------------------------------------------------------
 
 void 
-Init( uint32 max_counter_count, uint32 history_len )
+Init( uint32 _maxCounterCount, uint32 _historyCount )
 {
     DVASSERT(!profilerInited);
 
-    historyCount    = history_len;
-    maxCounterCount = max_counter_count;
+    historyCount    = _historyCount;
+    maxCounterCount = _maxCounterCount;
 
     profCounter     = new Counter[maxCounterCount*historyCount];
     profAverage     = new Counter[maxCounterCount];
@@ -234,11 +232,11 @@ Init( uint32 max_counter_count, uint32 history_len )
 //------------------------------------------------------------------------------
 
 void
-EnsureInited( uint32 max_counter_count, uint32 history_length )
+EnsureInited( uint32 _maxCounterCount, uint32 _historyCount )
 {
     if( !profilerInited )
     {
-        Init( max_counter_count, history_length );
+        Init( _maxCounterCount, _historyCount );
     }
 }
 
@@ -276,11 +274,11 @@ Uninit()
 //------------------------------------------------------------------------------
 
 void
-SetCounterName( unsigned counter_id, const char* name )
+SetCounterName( unsigned counterId, const char* name )
 {
-    DVASSERT( counter_id < maxCounterCount );
+    DVASSERT( counterId < maxCounterCount );
 
-    Counter*    counter = profCounter + counter_id;
+    Counter*    counter = profCounter + counterId;
 
     for( uint32 h=0; h!=historyCount; ++h )
     {
@@ -293,11 +291,11 @@ SetCounterName( unsigned counter_id, const char* name )
 //------------------------------------------------------------------------------
 
 void
-StartCounter( uint32 counter_id )
+StartCounter( uint32 counterId )
 {
-    DVASSERT( counter_id < maxCounterCount );
+    DVASSERT( counterId < maxCounterCount );
 
-    Counter*    counter = curCounter + counter_id;
+    Counter*    counter = curCounter + counterId;
         
     counter->start();
 }
@@ -306,13 +304,13 @@ StartCounter( uint32 counter_id )
 //------------------------------------------------------------------------------
 
 void
-StartCounter( uint32 counter_id, const char* counter_name )
+StartCounter( uint32 counterId, const char* counterName )
 {
-    DVASSERT( counter_id < maxCounterCount );
+    DVASSERT( counterId < maxCounterCount );
 
-    Counter*    counter = curCounter + counter_id;
+    Counter*    counter = curCounter + counterId;
         
-    counter->setName( counter_name );
+    counter->setName( counterName );
     counter->start();
 }
 
@@ -320,11 +318,11 @@ StartCounter( uint32 counter_id, const char* counter_name )
 //------------------------------------------------------------------------------
 
 void
-StopCounter( uint32 counter_id )
+StopCounter( uint32 counterId )
 {
-    DVASSERT( counter_id < maxCounterCount );
+    DVASSERT( counterId < maxCounterCount );
 
-    Counter*    counter = curCounter + counter_id;
+    Counter*    counter = curCounter + counterId;
         
     counter->stop();
 }
@@ -377,13 +375,13 @@ Stop()
 //------------------------------------------------------------------------------
 
 static inline int
-flt_dec( float f )
+fltDec( float f )
 {
     return int((f - float(int(f)))*10.0f);
 }
 
 static void
-_Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
+DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
 {
     unsigned    max_name_len = 0;
     
@@ -432,7 +430,7 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
         text[indent*2+text_len] = ' ';
         text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %u us", result[i].count, result[i].timeUs );
 
-        if( show_percents )
+        if( showPercents )
         {
             float               pg  = (totalTime)  
                                       ? 100.0f*float(result[i].timeUs)/float(totalTime)
@@ -445,8 +443,8 @@ _Dump( const std::vector<CounterInfo>& result, bool show_percents=false )
             text[text_len] = ' ';
             text_len = max_name_len + 2 + 1 + 5 + 2 + 5+1+2;
 
-            if( pc )    text_len += Snprinf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pl),flt_dec(pl), int(pg),flt_dec(pg) );
-            else        text_len += Snprinf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pg),flt_dec(pg), int(pg),flt_dec(pg) );
+            if( pc )    text_len += Snprinf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pl),fltDec(pl), int(pg),fltDec(pg) );
+            else        text_len += Snprinf( text+text_len, sizeof(text)-text_len, "   %02i.%i    %02i.%i", int(pg),fltDec(pg), int(pg),fltDec(pg) );
         }
 
         Logger::Info( text );
@@ -465,7 +463,7 @@ Dump()
     static std::vector<CounterInfo> result;
 
     GetCounters( &result );
-    _Dump( result, true );
+    DumpInternal( result, true );
 }
 
 
@@ -479,7 +477,7 @@ DumpAverage()
 
     if( GetAverageCounters( &result ) )
     {
-        _Dump( result, false );
+        DumpInternal( result, false );
         success = true;
     }
 
@@ -490,7 +488,7 @@ DumpAverage()
 //------------------------------------------------------------------------------
 
 static void 
-_CollectCountersWithChilds( const Counter* base, const Counter* counter, std::vector<Counter*>* result )
+CollectCountersWithChilds( const Counter* base, const Counter* counter, std::vector<Counter*>* result )
 {
     for( const Counter* c=base,*c_end=base+maxCounterCount; c!=c_end; ++c )
     {
@@ -499,7 +497,7 @@ _CollectCountersWithChilds( const Counter* base, const Counter* counter, std::ve
           )
         {
             result->push_back( (Counter*)c );
-            _CollectCountersWithChilds( base, c, result );
+            CollectCountersWithChilds( base, c, result );
         }
     }
 }
@@ -508,7 +506,7 @@ _CollectCountersWithChilds( const Counter* base, const Counter* counter, std::ve
 //------------------------------------------------------------------------------
 
 static void
-_CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
+CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
 {
     // get top-level counters, sorted by time
 
@@ -546,7 +544,7 @@ _CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
     for( uint32 i=0; i!=top.size(); ++i )
     {
         result->push_back( top[i] );
-        _CollectCountersWithChilds( cur_counter, top[i], result );
+        CollectCountersWithChilds( cur_counter, top[i], result );
     }
 }
 
@@ -558,7 +556,7 @@ GetCounters( std::vector<CounterInfo>* info )
 {
     static std::vector<Counter*>  result;
     
-    _CollectActiveCounters( curCounter, &result );
+    CollectActiveCounters( curCounter, &result );
 
     info->resize( result.size() );
     for( uint32 i=0,i_end=result.size(); i!=i_end; ++i )
@@ -624,7 +622,7 @@ GetAverageCounters( std::vector<CounterInfo>* info )
         
         static std::vector<Counter*>    result;
         
-        _CollectActiveCounters( profAverage, &result );
+        CollectActiveCounters( profAverage, &result );
 
         info->resize( result.size() );
         for( uint32 i=0,i_end=result.size(); i!=i_end; ++i )
