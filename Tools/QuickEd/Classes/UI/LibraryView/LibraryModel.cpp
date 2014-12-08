@@ -16,6 +16,15 @@ LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractItemMo
     defaultControls.push_back("UIControl");
     defaultControls.push_back("UIButton");
     defaultControls.push_back("UIStaticText");
+    defaultControls.push_back("UITextField");
+    defaultControls.push_back("UISlider");
+    defaultControls.push_back("UIList");
+    defaultControls.push_back("UIListCell");
+    defaultControls.push_back("UIScrollBar");
+    defaultControls.push_back("UIScrollView");
+    defaultControls.push_back("UISpinner");
+    defaultControls.push_back("UISwitch");
+
     defaultControlsCount = defaultControls.size();
     
     PackageControlsNode *packageControls = node->GetPackageControlsNode();
