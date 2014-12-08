@@ -389,8 +389,8 @@ public:
     
     inline int GetBgDrawType() const;
     inline void SetBgDrawType(int type);
-    inline FilePath GetBgSprite() const;
-    inline void SetBgSprite(const FilePath &path);
+    inline FilePath GetBgSpritePath() const;
+    inline void SetBgSpriteFromPath(const FilePath &path);
     inline int32 GetBgColorInherit() const;
     inline void SetBgColorInherit(int32 type);
     inline int32 GetBgPerPixelAccuracy() const;
@@ -398,7 +398,7 @@ public:
     
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("sprite", "Sprite", GetBgSprite, SetBgSprite, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("sprite", "Sprite", GetBgSpritePath, SetBgSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("spriteModification", "Spirte Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
@@ -469,7 +469,7 @@ void UIControlBackground::SetBgDrawType(int type)
     SetDrawType((UIControlBackground::eDrawType) type);
 }
 
-FilePath UIControlBackground::GetBgSprite() const
+FilePath UIControlBackground::GetBgSpritePath() const
 {
     if (GetSprite() == NULL)
         return "";
@@ -479,7 +479,7 @@ FilePath UIControlBackground::GetBgSprite() const
         return Sprite::GetPathString(GetSprite());
 }
 
-void UIControlBackground::SetBgSprite(const FilePath &path)
+void UIControlBackground::SetBgSpriteFromPath(const FilePath &path)
 {
     if (path == "")
         SetSprite(NULL, 0);
