@@ -50,9 +50,9 @@ void GameCore::OnAppStarted()
     selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();
     
-//    SetScenePath("~res:/3d/Maps/medvedkovo/medvedkovoTanks.sc2");
+    SetScenePath("~res:/3d/sphere_sh.sc2");
 //    UIScreenManager::Instance()->SetFirst(viewSceneScreen->GetScreenID());
-    UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());
+    UIScreenManager::Instance()->SetFirst(viewSceneScreen->GetScreenID());
 }
 
 void GameCore::OnAppFinished()
