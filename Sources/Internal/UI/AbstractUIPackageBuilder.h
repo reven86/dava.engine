@@ -68,7 +68,7 @@ public:
     virtual UIControl *BeginUnknownControl(const YamlNode *node) = 0;
     virtual void EndControl() = 0;
     
-    virtual void BeginControlPropretiesSection(const String &name) = 0;
+    virtual void BeginControlPropertiesSection(const String &name) = 0;
     virtual void EndControlPropertiesSection() = 0;
     
     virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) = 0;
