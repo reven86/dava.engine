@@ -38,6 +38,8 @@ ViewSceneScreen::ViewSceneScreen()
     , framesTime(0.f)
     , drawTime(0)
     , updateTime(0)
+    , viewXAngle(0.f)
+    , viewYAngle(0.f)
 {
 }
 
@@ -64,8 +66,9 @@ void ViewSceneScreen::LoadResources()
 
 
     //TODO: debug
-    camera->SetPosition(Vector3(18.7855f, 111.0697f, 57.0635f));
-    camera->SetDirection(Vector3(-1.2904f, 9.0496f, -4.0545f));
+    camera->SetPosition(Vector3(9.75595284f, -2.68314862f, 7.53798962f));
+    viewXAngle = -71.f;
+    viewYAngle = 27.4f;
     //ENDOFTODO
 
     
@@ -96,9 +99,6 @@ void ViewSceneScreen::LoadResources()
     viewJoyPAD->GetBackground()->SetSprite("~res:/Gfx/Joypad/joypad", 0);
     viewJoyPAD->SetStickSprite("~res:/Gfx/Joypad/joypad", 1);
     AddControl(viewJoyPAD);
-    
-    viewXAngle = 0;
-    viewYAngle = 0;
     
     DVASSERT(info == NULL);
     info = new UIStaticText(Rect(0, 0, screenRect.dx, 30.f));
