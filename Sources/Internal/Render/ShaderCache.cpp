@@ -103,8 +103,8 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
                                             defines);
 	
 		Function<void()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::CompileShaderInternal), shader, defines);
-		JobManager::Instance()->CreateMainJob(fn);
-		JobManager::Instance()->WaitMainJobs();
+		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
+		JobManager::Instance()->WaitMainJobs(jobId);
 	}
     
 	compileShaderMutex.Unlock();
@@ -122,8 +122,8 @@ void ShaderAsset::ReloadShaders()
 		shader->Reload(vertexShaderData, fragmentShaderData, vertexShaderDataStart, vertexShaderDataSize, fragmentShaderDataStart, fragmentShaderDataSize);
 
 		Function<void()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::ReloadShaderInternal), shader);
-		JobManager::Instance()->CreateMainJob(fn);
-		JobManager::Instance()->WaitMainJobs();
+		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
+		JobManager::Instance()->WaitMainJobID(jobId);
 	}
 }
 

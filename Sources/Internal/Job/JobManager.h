@@ -42,6 +42,7 @@
 
 namespace DAVA
 {
+class JobManager;
 class JobManager : public Singleton<JobManager>
 {
 public:
@@ -65,19 +66,24 @@ public:
 	/*! Add function to execute in the main-thread.
 		\param [in] fn Function to execute.
 		\param [in] mainJobType Type of execution. See ::eMainJobType for detailed description.
+        \return id Created job id. This id can be used to wait until this job finished.
 	*/
-    void CreateMainJob(const Function<void ()>& fn, eMainJobType mainJobType = JOB_MAIN);
+    uint32 CreateMainJob(const Function<void ()>& fn, eMainJobType mainJobType = JOB_MAIN);
 
 	/*! Wait for the main-thread jobs, that were added from other thread with the given ID. 
 		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
 	*/
     void WaitMainJobs(Thread::Id invokerThreadId = 0);
 
+    void WaitMainJobID(uint32 mainJobID);
+
 	/*! Check in there are some main-thread jobs in the queue, that were added from thread with the given ID.
 		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
 		\return Return true if there are some jobs, otherwise false.
 	*/
     bool HasMainJobs(Thread::Id invokerThreadId = 0);
+
+    bool HasMainJobID(uint32 mainJobID);
 
 	/*! Returns the number of available worker-threads. */
 	uint32 GetWorkersCount() const;
@@ -100,11 +106,15 @@ protected:
     {
         MainJob() : type(JOB_MAIN), invokerThreadId(0) {}
 
+        uint32 id;
         eMainJobType type;
         Thread::Id invokerThreadId;
 
         Function<void ()> fn;
     };
+
+    uint32 mainJobIDCounter;
+    uint32 mainJobLastExecutedID;
 
     Mutex mainQueueMutex;
     Mutex mainCVMutex;
@@ -115,6 +125,8 @@ protected:
     Semaphore workerDoneSem;
     JobQueueWorker workerQueue;
     Vector<JobThread*> workerThreads;
+
+    void CommonWaitMainJob(const Function<bool()> &checkFn);
 };
 
 }

@@ -530,8 +530,8 @@ void Shader::RecompileInternal(bool silentDelete)
 bool Shader::Recompile(bool silentDelete)
 {
 	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Shader::RecompileInternal), silentDelete);
-	JobManager::Instance()->CreateMainJob(fn);
-	JobManager::Instance()->WaitMainJobs();
+	uint32 id = JobManager::Instance()->CreateMainJob(fn);
+	JobManager::Instance()->WaitMainJobID(id);
 
     return true;
 }

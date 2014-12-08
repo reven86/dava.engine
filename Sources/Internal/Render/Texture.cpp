@@ -261,7 +261,7 @@ void Texture::ReleaseTextureData()
     isRenderTarget = false;
 }
 
-void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 id, uint32 fboID, uint32 rboID, uint32 stencilRboID)
+void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, uint32 fboID, uint32 rboID, uint32 stencilRboID)
 {
 #if defined(__DAVAENGINE_OPENGL__)
 	//if(RenderManager::Instance()->GetTexture() == this)
@@ -271,7 +271,7 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 id, uint32 f
 
 	//VI: reset texture for the current texture type in order to avoid
 	//issue when cubemap texture was deleted while being binded to the state
-	if(RenderManager::Instance()->lastBindedTexture[textureType] == id)
+    if(RenderManager::Instance()->lastBindedTexture[textureType] == textureID)
 	{
 		RenderManager::Instance()->HWglBindTexture(0, textureType);
 	}
@@ -293,9 +293,9 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 id, uint32 f
 		RENDER_VERIFY(glDeleteRenderbuffers(1, &rboID));
 	}
 
-	if(id)
+    if(textureID)
 	{
-		RENDER_VERIFY(glDeleteTextures(1, &id));
+        RENDER_VERIFY(glDeleteTextures(1, &textureID));
 	}
 	
 #elif defined(__DAVAENGINE_DIRECTX9__)
@@ -482,8 +482,8 @@ void Texture::SetMinMagFilter(TextureFilter minFilter, TextureFilter magFilter)
 	
 void Texture::GenerateMipmaps()
 {
-	JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::GenerateMipmapsInternal));
-	JobManager::Instance()->WaitMainJobs();
+	uint32 jobId = JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::GenerateMipmapsInternal));
+	JobManager::Instance()->WaitMainJobID(jobId);
 }
 
 void Texture::GenerateMipmapsInternal()
@@ -528,8 +528,8 @@ void Texture::GenerateMipmapsInternal()
 
 void Texture::GeneratePixelesation()
 {
-	JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::GeneratePixelesationInternal));
-	JobManager::Instance()->WaitMainJobs();
+	uint32 jobId = JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::GeneratePixelesationInternal));
+	JobManager::Instance()->WaitMainJobID(jobId);
 }
 
 void Texture::GeneratePixelesationInternal()

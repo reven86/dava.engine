@@ -36,7 +36,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-JobManager::JobManager() : workerDoneSem(0)
+JobManager::JobManager() 
+: workerDoneSem(0)
+, mainJobIDCounter(1)
+, mainJobLastExecutedID(0)
 {
     uint32 cpuCoresCount = DeviceInfo::GetCpuCount();
     workerThreads.reserve(cpuCoresCount);
@@ -74,6 +77,7 @@ void JobManager::Update()
             {
                 // TODO:
                 // need implementation
+                // be careful with job ID, because waiting depends on id order
                 // ...
 
                 DVASSERT(false);
@@ -84,6 +88,7 @@ void JobManager::Update()
                 // unlock queue mutex until function execution finished
                 mainQueueMutex.Unlock();
                 curMainJob.fn();
+                mainJobLastExecutedID = curMainJob.id;
                 mainQueueMutex.Lock();
             }
 
@@ -103,8 +108,10 @@ uint32 JobManager::GetWorkersCount() const
     return workerThreads.size();
 }
 
-void JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJobType)
+uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJobType)
 {
+    uint32 jobID = 0;
+
     // if we are already in main thread and requested job shouldn't executed lazy
     // perform that job immediately
     if(Thread::IsMainThread() && mainJobType != JOB_MAINLAZY)
@@ -113,20 +120,36 @@ void JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJobT
     }
     else
     {
+        // reserve job ID
+        jobID = AtomicIncrement((int32&) mainJobIDCounter);
+
         // push requested job into queue
         MainJob job;
         job.fn = fn;
         job.invokerThreadId = Thread::GetCurrentId();
         job.type = mainJobType;
+        job.id = jobID;
 
         {
             LockGuard<Mutex> guard(mainQueueMutex);
             mainJobs.push_back(job);
         }
     }
+
+    return jobID;
 }
 
 void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
+{
+    CommonWaitMainJob(Bind(&JobManager::HasMainJobs, this, invokerThreadId));
+}
+
+void JobManager::WaitMainJobID(uint32 mainJobID)
+{
+    CommonWaitMainJob(Bind(&JobManager::HasMainJobID, this, mainJobID));
+}
+
+void JobManager::CommonWaitMainJob(const Function<bool()> &checkFn)
 {
     if(Thread::IsMainThread())
     {
@@ -142,7 +165,7 @@ void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
         // Now check if there are some jobs in the queue and wait for them
         LockGuard<Mutex> guard(mainCVMutex);
-        while(HasMainJobs(invokerThreadId))
+        while(checkFn())
         {
             Thread::Wait(&mainCV, &mainCVMutex);
         }
@@ -181,6 +204,11 @@ bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
     }
 
     return ret;
+}
+
+bool JobManager::HasMainJobID(uint32 mainJobID)
+{
+    return (mainJobID >= mainJobLastExecutedID);
 }
 
 void JobManager::CreateWorkerJob(const Function<void()>& fn)
