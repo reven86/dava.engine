@@ -412,7 +412,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         if (size > 1)
         {
             size_t uniformNameSize = strlen(attributeName);
-            if (uniformNameSize >= unifromArrayPostfixSize &&
+            if (uniformNameSize < unifromArrayPostfixSize ||
                 strcmp(&attributeName[uniformNameSize - unifromArrayPostfixSize], unifromArrayPostfix))
             {
                 Memcpy(&attributeName[uniformNameSize], unifromArrayPostfix, unifromArrayPostfixSize + 1);
