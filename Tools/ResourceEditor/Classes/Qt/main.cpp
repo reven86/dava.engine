@@ -54,10 +54,10 @@
 #include "Deprecated/ControlsFactory.h"
 
 #if defined (__DAVAENGINE_MACOS__)
-	#include "Platform/Qt/MacOS/QtLayerMacOS.h"
+	#include "MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
-	#include "Platform/Qt/Win32/QtLayerWin32.h"
-	#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
+	#include "Win32/QtLayerWin32.h"
+	#include "Win32/CorePlatformWin32Qt.h"
 #endif
 
 #ifdef __DAVAENGINE_BEAST__

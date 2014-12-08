@@ -125,7 +125,7 @@
 #include "Tools/ColorPicker/ColorPicker.h"
 
 #include "SceneProcessing/SceneProcessor.h"
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 #include "davaglwidget.h"
 
 

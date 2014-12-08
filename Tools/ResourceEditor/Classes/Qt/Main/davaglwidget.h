@@ -36,7 +36,7 @@
 #include <QMimeData>
 #include <QAbstractNativeEventFilter>
 
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 
 
 class DavaGLWidget

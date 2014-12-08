@@ -44,7 +44,7 @@
 
 #include "FileSystem/FileSystem.h"
 
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 #include "Main/QtUtils.h"
 #include "Scene/SceneHelper.h"
 #include "ImageTools/ImageTools.h"

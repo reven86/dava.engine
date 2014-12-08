@@ -8,7 +8,7 @@ elseif( MACOS )
 
 endif()
 
-set ( QT_FOUND 0 )
+set ( QT5_FOUND 0 )
 
 find_path( QT5_LIB_PATH 
   NAMES 
@@ -38,7 +38,7 @@ if( QT5_LIB_PATH )
             Qt5Gui_FOUND        AND
             Qt5Widgets_FOUND   )
     
-            set ( QT_FOUND     1 )
+            set ( QT5_FOUND    1 )
             set ( QT_LIBRARIES Qt5::Core 
                                Qt5::Gui 
                                Qt5::Widgets 
@@ -50,7 +50,7 @@ if( QT5_LIB_PATH )
 
 endif()
 
-if( NOT QT_FOUND )
+if( NOT QT5_FOUND )
     message( "Error !!!: Please set the correct path to QT5 in file DavaConfig.in"  )
     message( " " )
     exit()
