@@ -82,11 +82,11 @@ namespace DAVA
 	static bool useAutodetectContentScaleFactor = false;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-	float Core::virtualToPhysical = 0;
-	float Core::physicalToVirtual = 0;
-	Vector2 Core::drawOffset;
+float32 Core::virtualToPhysical = 0;
+float32 Core::physicalToVirtual = 0;
+Vector2 Core::drawOffset;
 
-	static ApplicationCore * core = 0;
+static ApplicationCore * core = 0;
 
 Core::Core()
 {

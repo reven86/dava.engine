@@ -52,7 +52,7 @@ UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates)
     , isNativeControlVisible(false)
 {
     Rect newRect = GetRect(true);
-    this->webViewControl->Initialize(newRect);
+    webViewControl->Initialize(newRect);
     UpdateControlRect();
 
     UpdateNativeControlVisible(false); // will be displayed in WillAppear.
