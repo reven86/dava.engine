@@ -48,7 +48,7 @@ struct ITransport
     // Shutdown transport
     virtual void Deactivate() = 0;
     // Send some data with given channel ID
-    virtual void Send(uint32 channelId, const uint8* buffer, size_t length) = 0;
+    virtual void Send(uint32 channelId, const uint8* buffer, size_t length, uint32* packetId) = 0;
 };
 
 /*
@@ -67,6 +67,8 @@ struct ITransportListener
     virtual void OnTransportReceive(ITransport* transport, uint32 channelId, const uint8* buffer, size_t length) = 0;
     // Buffer has been sent and client has a chance to free it or do something useful else
     virtual void OnTransportSendComplete(ITransport* transport, uint32 channelId, const uint8* buffer, size_t length) = 0;
+    // Packet with given ID has been delivered and confirmed to other side
+    virtual void OnTransportPacketDelivered(ITransport* transport, uint32 channelId, uint32 packetId) = 0;
 };
 
 }   // namespace Net

@@ -102,7 +102,7 @@ public:
     bool InstallListener(uint32 channelId, IChannelListener* listener);
 
     // IChannelSender
-    virtual bool Send(IChannelListener* source, uint32 channelId, const uint8* buffer, size_t length);
+    virtual bool Send(IChannelListener* source, uint32 channelId, const uint8* buffer, size_t length, uint32* packetId);
 
     // ITransportListener
     virtual void OnTransportActivated(ITransport* transport);
@@ -110,6 +110,7 @@ public:
     virtual void OnTransportTerminated(ITransport* transport);
     virtual void OnTransportReceive(ITransport* transport, uint32 channelId, const uint8* buffer, size_t length);
     virtual void OnTransportSendComplete(ITransport* transport, uint32 channelId, const uint8* buffer, size_t length);
+    virtual void OnTransportPacketDelivered(ITransport* transport, uint32 channelId, uint32 packetId);
 
 private:
     ITransport* CreateTransport(eTransportType type, eTransportRole role, const Endpoint& endpoint);

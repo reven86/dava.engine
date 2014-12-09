@@ -45,7 +45,8 @@ struct IChannelListener;
 */
 struct IChannelSender
 {
-    virtual bool Send(IChannelListener* source, uint32 channelId, const uint8* buffer, size_t length) = 0;
+    // Send data packet to channel and get packet ID for it if needed (packetId can be NULL)
+    virtual bool Send(IChannelListener* source, uint32 channelId, const uint8* buffer, size_t length, uint32* packetId) = 0;
 };
 
 /*
@@ -53,10 +54,16 @@ struct IChannelSender
 */
 struct IChannelListener
 {
+    // Channel is open (underlying transport has connection) and can receive and send data through IChannelSender
     virtual void OnChannelOpen(uint32 channelId, IChannelSender* sender) = 0;
+    // Channel is closed (underlying transport has disconnected)
     virtual void OnChannelClosed(uint32 channelId, eDeactivationReason reason, int32 error) = 0;
+    // Some data arrived into channel
     virtual void OnChannelReceive(uint32 channelId, const uint8* buffer, size_t length) = 0;
+    // Buffer has been sent and can be reused or freed
     virtual void OnChannelSendComplete(uint32 channelId, const uint8* buffer, size_t length) = 0;
+    // Data packet with given ID has been delivered to other side
+    virtual void OnChannelDelivered(uint32 channelId, uint32 packetId) = 0;
 };
 
 }   // namespace Net

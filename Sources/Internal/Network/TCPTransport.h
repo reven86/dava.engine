@@ -37,6 +37,7 @@
 #include <Network/Base/Buffer.h>
 #include <Network/Base/TCPAcceptor.h>
 #include <Network/Base/TCPSocket.h>
+#include <Network/Base/DeadlineTimer.h>
 
 #include "NetworkCommon.h"
 #include "ITransport.h"
@@ -79,6 +80,7 @@ private:
     struct Package
     {
         uint32       channelId;
+        int32        packageId;
         const uint8* buffer;        // Buffer and
         size_t       totalLength;   //  its length
         size_t       sentLength;    // Number of bytes that have been already transfered
@@ -93,7 +95,7 @@ public:
     virtual bool IsActive() const;
     virtual void Activate();
     virtual void Deactivate();
-    virtual void Send(uint32 channelId, const uint8* buffer, size_t length);
+    virtual void Send(uint32 channelId, const uint8* buffer, size_t length, uint32* packetId);
 
 private:
     void DoActivate();
@@ -108,10 +110,15 @@ private:
     void ClearQueue();
     void CloseSocket(bool shouldShutdown);
 
-    void PreparePackage(Package* package, uint32 channelId, const uint8* buffer, size_t length);
-    bool Enqueue(uint32 channelId, const uint8* buffer, size_t length);
+    void PreparePackage(Package* package, uint32 channelId, uint32 packageId, const uint8* buffer, size_t length);
+    bool Enqueue(uint32 channelId, uint32 packageId, const uint8* buffer, size_t length);
     bool Dequeue(Package* target);
     void SendPackage(Package* package);
+
+    void SendSpecial(BasicProtoHeader* header);
+    bool DequeueSpecial(BasicProtoHeader* target);
+
+    void HandleTimer(DeadlineTimer* timer);
 
     void AcceptorHandleClose(TCPAcceptor* acceptor);
     void AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error);
@@ -127,11 +134,14 @@ private:
     IOLoop* loop;
     TCPAcceptor acceptor;
     TCPSocket socket;
+    DeadlineTimer timer;
     Endpoint endpoint;
+    uint32 readTimeout;                 // Read timeout, ms
     ITransportListener* listener;
 
     bool isActive;
     bool deactivateFlag;                // Flag indicating that deactivation request has been recieved
+    bool pendingPong;                   // Flag indicating that PING has been sent
 
     size_t totalDataSize;               // Total data size to accumulate before sending it to client
     size_t accumulatedSize;             // Number of accumulated bytes
@@ -141,8 +151,13 @@ private:
     size_t totalRead;                                   // Number of bytes in read buffer
 
     Spinlock senderLock;                // Lock used to flag that send operation is in progress
+    uint32 nextPackageId;
+    bool sendingDataPacket;             // Flag indicating what kind of packet is sending: true - data packet, false - special packet
     Package curPackage;                 // Current package to send
+    BasicProtoHeader curSpec;           // Current special packet
     Deque<Package> sendQueue;           // Queued packages
+    Deque<BasicProtoHeader> specQueue;  // Queue of special packets (PING, PONG and ACK)
+    Deque<uint32> pendingAckQueue;      // Queue of packet IDs waiting acknowledgement from other side
     Mutex queueMutex;                   // Mutex to serialize access to queue
     BasicProtoHeader header;            // Header which is filled for each sending packet
 };

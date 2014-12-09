@@ -43,16 +43,39 @@ BasicProtoDecoder::eStatus BasicProtoDecoder::Decode(uint8* buffer, std::size_t 
     if (bufferSize >= sizeof(BasicProtoHeader))
     {
         BasicProtoHeader* header = reinterpret_cast<BasicProtoHeader*>(buffer);
-        DVASSERT(header->packetSize >= sizeof(BasicProtoHeader) && PROTO_MAGIC == header->packetMagic);
-        if (header->packetSize >= sizeof(BasicProtoHeader) && PROTO_MAGIC == header->packetMagic)
+        DVASSERT(header->packetSize >= sizeof(BasicProtoHeader) && TYPE_FIRST <= header->packetType && header->packetType <= TYPE_LAST);
+        if (header->packetSize >= sizeof(BasicProtoHeader))
         {
-            if (bufferSize >= header->packetSize)
+            switch(header->packetType)
             {
-                result->decodedSize    = header->packetSize;
-                result->packetDataSize = result->decodedSize - sizeof(BasicProtoHeader);
-                result->packetData     = buffer + sizeof(BasicProtoHeader);
-                result->header         = header;
-                status = PACKET_OK;
+            case TYPE_DATA:
+                if (bufferSize >= header->packetSize)
+                {
+                    result->decodedSize    = header->packetSize;
+                    result->packetDataSize = result->decodedSize - sizeof(BasicProtoHeader);
+                    result->packetData     = buffer + sizeof(BasicProtoHeader);
+                    result->header         = header;
+                    status = PACKET_OK;
+                }
+                break;
+            case TYPE_PING:
+            case TYPE_PONG:
+            case TYPE_ACK:
+                if (sizeof(BasicProtoHeader) == header->packetSize)
+                {
+                    result->decodedSize    = header->packetSize;
+                    result->packetDataSize = 0;
+                    result->packetData     = NULL;
+                    result->header         = header;
+                    status = PACKET_OK;
+                }
+                else
+                    status = PACKET_INVALID;
+                break;
+            default:
+                DVASSERT(0);
+                status = PACKET_INVALID;
+                break;
             }
         }
         else
@@ -63,7 +86,7 @@ BasicProtoDecoder::eStatus BasicProtoDecoder::Decode(uint8* buffer, std::size_t 
     return status;
 }
 
-size_t BasicProtoDecoder::Encode(BasicProtoHeader* header, uint32 channelId, size_t totalSize, size_t encodedSize)
+size_t BasicProtoDecoder::Encode(BasicProtoHeader* header, uint32 channelId, uint32 packetId, size_t totalSize, size_t encodedSize)
 {
     DVASSERT(header != NULL && totalSize > 0 && encodedSize < totalSize);
 
@@ -71,10 +94,44 @@ size_t BasicProtoDecoder::Encode(BasicProtoHeader* header, uint32 channelId, siz
     size_t sizeToEncode = Min(totalSize - encodedSize, MAX_DATA_SIZE);
 
     header->packetSize  = static_cast<uint16>(sizeof(BasicProtoHeader) + sizeToEncode);
-    header->packetMagic = PROTO_MAGIC;
+    header->packetType  = TYPE_DATA;
     header->totalSize   = totalSize;
     header->channelId   = channelId;
+    header->packetId    = packetId;
     return sizeToEncode;
+}
+
+size_t BasicProtoDecoder::EncodePing(BasicProtoHeader* header)
+{
+    DVASSERT(header != NULL);
+    header->packetSize = sizeof(BasicProtoHeader);
+    header->packetType = TYPE_PING;
+    header->totalSize  = 0;
+    header->channelId  = 0;
+    header->packetId   = 0;
+    return sizeof(BasicProtoHeader);
+}
+
+size_t BasicProtoDecoder::EncodePong(BasicProtoHeader* header)
+{
+    DVASSERT(header != NULL);
+    header->packetSize = sizeof(BasicProtoHeader);
+    header->packetType = TYPE_PONG;
+    header->totalSize  = 0;
+    header->channelId  = 0;
+    header->packetId   = 0;
+    return sizeof(BasicProtoHeader);
+}
+
+size_t BasicProtoDecoder::EncodeAck(BasicProtoHeader* header, uint32 channelId, uint32 packetId)
+{
+    DVASSERT(header != NULL);
+    header->packetSize = sizeof(BasicProtoHeader);
+    header->packetType = TYPE_ACK;
+    header->totalSize  = 0;
+    header->channelId  = channelId;
+    header->packetId   = packetId;
+    return sizeof(BasicProtoHeader);
 }
 
 }   // namespace Net

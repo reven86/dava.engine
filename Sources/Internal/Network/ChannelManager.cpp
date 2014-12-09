@@ -135,7 +135,7 @@ bool ChannelManager::InstallListener(uint32 channelId, IChannelListener* listene
     return false;
 }
 
-bool ChannelManager::Send(IChannelListener* source, uint32 channelId, const uint8* buffer, size_t length)
+bool ChannelManager::Send(IChannelListener* source, uint32 channelId, const uint8* buffer, size_t length, uint32* packetId)
 {
     DVASSERT(isRunning && source != NULL && buffer != NULL && length > 0);
 
@@ -146,7 +146,7 @@ bool ChannelManager::Send(IChannelListener* source, uint32 channelId, const uint
     // Simple check that only registered listener can send to channel
     if (bind && bind->listener == source)
     {
-        bind->transport->Send(bind->channelId, buffer, length);
+        bind->transport->Send(bind->channelId, buffer, length, packetId);
         return true;
     }
     return false;
@@ -206,6 +206,16 @@ void ChannelManager::OnTransportSendComplete(ITransport* transport, uint32 chann
     if (bind && bind->listener)
     {
         bind->listener->OnChannelSendComplete(channelId, buffer, length);
+    }
+}
+
+void ChannelManager::OnTransportPacketDelivered(ITransport* transport, uint32 channelId, uint32 packetId)
+{
+    ChannelBind* bind = GetChannelBind(transport, channelId);
+    DVASSERT(bind != NULL);
+    if (bind && bind->listener)
+    {
+        bind->listener->OnChannelDelivered(channelId, packetId);
     }
 }
 

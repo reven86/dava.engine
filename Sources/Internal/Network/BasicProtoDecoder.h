@@ -50,9 +50,11 @@ namespace Net
 struct BasicProtoHeader
 {
     uint16 packetSize;          // Packet length: header + data
-    uint16 packetMagic;         // Magic number to distinguish packets
+    //uint16 packetMagic;         // Magic number to distinguish packets
+    uint16 packetType;          // Packet type
     uint32 totalSize;           // Total size of user data
     uint32 channelId;           // Channel identifier
+    uint32 packetId;            // Packet Id for acknoledgements
 };
 
 class BasicProtoDecoder
@@ -70,6 +72,17 @@ public:
         PACKET_INVALID      // packet invalid, e.g. magic unrecognizable number
     };
 
+    enum ePacketType
+    {
+        TYPE_DATA,
+        TYPE_PING,
+        TYPE_PONG,
+        TYPE_ACK,
+
+        TYPE_FIRST = TYPE_DATA,
+        TYPE_LAST  = TYPE_ACK
+    };
+
     // Result of buffer decoding
     struct DecodeResult
     {
@@ -81,7 +94,10 @@ public:
 
 public:
     static eStatus Decode(uint8* buffer, size_t bufferSize, DecodeResult* result);
-    static size_t Encode(BasicProtoHeader* header, uint32 channelId, size_t totalSize, size_t encodedSize);
+    static size_t Encode(BasicProtoHeader* header, uint32 channelId, uint32 packetId, size_t totalSize, size_t encodedSize);
+    static size_t EncodePing(BasicProtoHeader* header);
+    static size_t EncodePong(BasicProtoHeader* header);
+    static size_t EncodeAck(BasicProtoHeader* header, uint32 channelId, uint32 packetId);
 };
 
 }   // namespace Net
