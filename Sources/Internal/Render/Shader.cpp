@@ -352,8 +352,8 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     
     RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes));
     
-    char attributeName[512];
-    char unifromArrayPostfix[] = "[0]";
+    char8 attributeName[512];
+    char8 unifromArrayPostfix[] = "[0]";
     size_t unifromArrayPostfixSize = strlen(unifromArrayPostfix);
     
     DVASSERT(attributeNames == NULL);
