@@ -3,17 +3,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@QT5_PATH_WIN@/bin</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@QT5_PATH_WIN@/bin;@DAVA_PATH@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@QT5_PATH_WIN@/bin</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@QT5_PATH_WIN@/bin;@DAVA_PATH@</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebinfo|Win32'">
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerEnvironment>PATH=@QT5_PATH_WIN@/bin</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>PATH=@QT5_PATH_WIN@/bin;@DAVA_PATH@</LocalDebuggerEnvironment>
   </PropertyGroup>
-
 </Project>
