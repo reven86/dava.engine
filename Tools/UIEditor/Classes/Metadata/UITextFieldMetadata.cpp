@@ -83,7 +83,6 @@ void UITextFieldMetadata::SetFont(Font * font)
     }
     if (font)
     {
-        font->SetSize(GetFontSize());
         GetActiveUITextField()->SetFont(font);
     }
 }

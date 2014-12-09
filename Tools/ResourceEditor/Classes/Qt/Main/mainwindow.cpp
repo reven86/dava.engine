@@ -1856,15 +1856,12 @@ void QtMainWindow::LoadGPUFormat()
 	{
 		QAction *actionN = allActions[i];
 
-		if(!actionN->data().isNull() &&
-			actionN->data().toInt() == curGPU)
+		if (actionN->data().isValid() &&
+		    actionN->data().toInt() == curGPU)
 		{
 			actionN->setChecked(true);
 			ui->actionReloadTextures->setText(actionN->text());
-		}
-		else
-		{
-			actionN->setChecked(false);
+            break;
 		}
 	}
 }
