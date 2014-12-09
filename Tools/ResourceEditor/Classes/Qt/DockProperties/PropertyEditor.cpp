@@ -1336,27 +1336,44 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 void PropertyEditor::OnAddComponent(Component::eType type)
 {
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    if(curNodes.size() > 0)
+    int size = curNodes.size();
+    if(size > 0)
     {
-        curScene->BeginBatch("Add Component");
+        curScene->BeginBatch(Format("Add Component: %d", type));
 
-        for(int i = 0; i < curNodes.size(); ++i)
+        for(int i = 0; i < size; ++i)
         {
             Entity* node = curNodes.at(i);
             if (node->GetComponentCount(type) == 0)
             {
                 Component *c = Component::CreateByType(type);
-                if(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT == type)
-                {
-                    float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
-                    SnapToLandscapeControllerComponent *snapComponent = static_cast<SnapToLandscapeControllerComponent *>(c);
-                    snapComponent->SetHeightOnLandscape(height);
-                }
-                
                 curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
             }
         }
 
+        curScene->EndBatch();
+    }
+}
+
+void PropertyEditor::OnAddComponent(DAVA::Component *component)
+{
+    DVASSERT(component);
+    if(!component) return;
+    
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    int size = curNodes.size();
+    if(size > 0)
+    {
+        curScene->BeginBatch(Format("Add Component: %d", component->GetType()));
+        
+        for(int i = 0; i < size; ++i)
+        {
+            Entity* node = curNodes.at(i);
+            Component *c = component->Clone(node);
+            
+            curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
+        }
+        
         curScene->EndBatch();
     }
 }
@@ -1398,7 +1415,14 @@ void PropertyEditor::OnAddRotationControllerComponent()
 
 void PropertyEditor::OnAddSnapToLandscapeControllerComponent()
 {
-    OnAddComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT);
+    SnapToLandscapeControllerComponent *snapComponent = static_cast<SnapToLandscapeControllerComponent *> (Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
+
+    float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
+    snapComponent->SetHeightOnLandscape(height);
+
+    OnAddComponent(snapComponent);
+    
+    SafeDelete(snapComponent);
 }
 
 void PropertyEditor::OnAddWASDControllerComponent()
