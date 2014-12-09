@@ -10,4 +10,10 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerEnvironment>PATH=@QT5_PATH_WIN@/bin</LocalDebuggerEnvironment>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebinfo|Win32'">
+    <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerEnvironment>PATH=@QT5_PATH_WIN@/bin</LocalDebuggerEnvironment>
+  </PropertyGroup>
+
 </Project>
