@@ -413,6 +413,11 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 	blockDrawView = true;
 }
 
+- (void) unblockDrawing
+{
+    blockDrawView = false;
+}
+
 - (void)keyboardWillChangeFrame:(NSNotification *)notification
 {
 	blockDrawView = true;

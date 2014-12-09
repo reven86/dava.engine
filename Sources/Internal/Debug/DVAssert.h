@@ -78,18 +78,15 @@
 
         #define DebugBreak() { __debugbreak(); }
 
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
     // see http://stackoverflow.com/questions/3644465/can-i-create-a-breakpoint-in-code-in-ios-like-asmint-3-on-vc-and-conti
-    #define DebugBreak() __builtin_trap();
-
-#elif defined(__DAVAENGINE_ANDROID__)
+        #include <signal.h>
+        #define DebugBreak() __builtin_trap();
+    #elif defined(__DAVAENGINE_ANDROID__)
 
         #include <signal.h>
         #define DebugBreak() raise(SIGTRAP);
-
-    #else //PLATFORMS
-        //other platforms
-    #endif //PLATFORMS
+    #endif
 
 #else
 

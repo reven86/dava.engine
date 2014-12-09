@@ -80,41 +80,21 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
             long breakButtonIndex = [alert firstOtherButtonIndex];
             
             [alert performSelectorOnMainThread:@selector(showModal) withObject:nil waitUntilDone:YES];
-			if ( [alert getClickedButtonIndex] == breakButtonIndex)
+            
+            if ( [alert getClickedButtonIndex] == breakButtonIndex)
             {
                 breakExecution = true;
             }
+            
+            UIScreenManager::Instance()->UnblockDrawing();
 			break;
 		}
 
 		default:
 		{
-			bool needRecreateAlertView = true;
-			if (messageBoxPtr)
-			{
-				// An alert already opened - dismiss it and re-create with the new message.
-				UIDismissionHandlerAlertView* alert = (UIDismissionHandlerAlertView*)messageBoxPtr;
-				NSString* curAlertMessage = [alert getMessage];
-				if (curAlertMessage)
-				{
-					contents = [curAlertMessage stringByAppendingFormat:@"%@\n", contents];
-				}
-				
-				// Don't allow too long strings.
-				if ([contents length] <= MAX_WARNING_MESSAGE_LENGTH)
-				{
-					[alert dismiss:NO];
-					messageBoxPtr = NULL;
-				}
-				else
-				{
-					// Leave the current Alert View as-is.
-					needRecreateAlertView = false;
-					return breakExecution;
-				}
-			}
-
-			if (needRecreateAlertView)
+            // if we already open one Alert messagebox skip all new
+            // while waiting user click Ok
+			if (NULL == messageBoxPtr)
 			{
 				// Create the new alert message and show it.
 				UIDismissionHandlerAlertView* alert =
