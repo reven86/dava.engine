@@ -101,6 +101,7 @@ public:
 	void ResyncStructure(QStandardItem *item, DAVA::Entity *entity);
 
     void SetFilter(const QString& text);
+    bool IsFilterSet() const;
 
 private slots:
 	void ItemChanged(QStandardItem * item);
@@ -116,12 +117,12 @@ private:
 
     SceneEditor2 * curScene;
 	bool dropAccepted;
+    QString filterText;
 
 	QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
     QMap<DAVA::ParticleEmitter*, QModelIndex> indexesCacheEmitters;
 	QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
 	QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
-
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel
@@ -129,6 +130,7 @@ class SceneTreeFilteringModel : public QSortFilterProxyModel
 public:
 	SceneTreeFilteringModel(SceneTreeModel *treeModel, QObject *parent = NULL);
 	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
+    QVariant data(const QModelIndex& index, int role) const;
 
 protected:
 	SceneTreeModel *treeModel;

@@ -37,7 +37,8 @@
 
 SceneTreeItem::SceneTreeItem(eItemType _type)
 	: type(_type)
-    , isFilterAccepted(true)
+    , isAcceptedByFilter(false)
+    , isHighlighted(false)
 { 
 }
 
@@ -85,6 +86,27 @@ QIcon SceneTreeItem::ItemIcon() const
 	static QIcon icon = QIcon(":/QtIcons/node.png");
 	return icon;
 }
+
+bool SceneTreeItem::IsAcceptedByFilter() const
+{
+    return isAcceptedByFilter;
+}
+
+void SceneTreeItem::SetAcceptByFilter(bool state)
+{
+    isAcceptedByFilter = state;
+}
+
+bool SceneTreeItem::IsHighlighed() const
+{
+    return isHighlighted;
+}
+
+void SceneTreeItem::SetHighlight(bool state)
+{
+    isHighlighted = state;
+}
+
 
 // =========================================================================================
 // SceneTreeItemEntity
