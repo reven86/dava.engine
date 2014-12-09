@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 
+set          ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
+
 project      ( ResourceEditor )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
@@ -92,8 +94,8 @@ if( MACOS )
 
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
   
-    set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
-    set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
+    set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
+    set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 
     file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
     foreach ( FILE ${RESOURCES_LIST} )
@@ -162,6 +164,8 @@ if( APPLE )
                           )
 
 elseif( MSVC )
+
+    set( DAVA_PATH  "${DAVA_TOOLS_BIN_DIR};${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin" )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor_QT5.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )
