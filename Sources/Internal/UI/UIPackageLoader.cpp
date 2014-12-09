@@ -216,7 +216,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     if (baseInfo)
         LoadControlPropertiesFromYamlNode(control, baseInfo, node);
     
-    builder->BeginControlPropretiesSection(typeInfo->Name());
+    builder->BeginControlPropertiesSection(typeInfo->Name());
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);

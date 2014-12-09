@@ -169,7 +169,7 @@ void EditorUIPackageBuilder::EndControl()
     SafeRelease(lastControl);
 }
 
-void EditorUIPackageBuilder::BeginControlPropretiesSection(const String &name)
+void EditorUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 {
     currentSection = controlsStack.back().node->GetPropertiesRoot()->GetControlPropertiesSection(name);
     currentObject = controlsStack.back().node->GetControl();

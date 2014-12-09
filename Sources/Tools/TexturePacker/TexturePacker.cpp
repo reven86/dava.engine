@@ -816,16 +816,9 @@ bool TexturePacker::CheckFrameSize(const Size2i &spriteSize, const Size2i &frame
     return isSizeCorrect;
 }
 
-void TexturePacker::DrawToFinalImage( PngImageExt & finalImage, PngImageExt & drawedImage, const Rect2i & drawRect, const Rect2i &frameRect )
+void TexturePacker::DrawToFinalImage( PngImageExt & finalImage, PngImageExt & drawedImage, const Rect2i & drawRect, const Rect2i &alphaOffsetRect )
 {
-	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
-	{
-		finalImage.DrawImage(drawRect.x + frameRect.x, drawRect.y + frameRect.y, &drawedImage);
-	}
-	else
-	{
-		finalImage.DrawImage(drawRect.x, drawRect.y, &drawedImage);
-	}
+	finalImage.DrawImage(drawRect, alphaOffsetRect, &drawedImage);
 
 	if (CommandLineParser::Instance()->IsFlagSet("--debug"))
 	{

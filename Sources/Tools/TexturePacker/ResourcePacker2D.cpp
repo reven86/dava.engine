@@ -204,6 +204,8 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
 	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+
+	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
 	
     FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
     psdNameWithoutExtension.TruncateExtension();
@@ -232,6 +234,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 
 	for(int k = 1; k < (int)cropped_data.layers_array_size; ++k)
 	{
+		//save layer names
 		String layerName = String(cropped_data.layers_array[k].name);
 		if (layerName.empty())
 		{
@@ -243,22 +246,29 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 		{
 			Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
 		}
-
-
 		defFile->frameNames.push_back(layerName);
-		defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy) ;
-			
-		//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
-			
-		if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
+
+
+		//save layer rects
+		if ( !withAlpha )
 		{
-			Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
+			defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy) ;
+
+			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
+
+			if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
+			{
+				Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
 					, defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
-                
-			defFile->frameRects[k - 1].dx = width;
-			defFile->frameRects[k - 1].dy = height;
+
+				defFile->frameRects[k - 1].dx = width;
+				defFile->frameRects[k - 1].dy = height;
+			}
 		}
+		else
+			defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
 				
+
 		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
 		{
 				
