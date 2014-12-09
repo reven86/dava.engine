@@ -54,24 +54,34 @@ const char* JniDVAssertMessage::GetJavaClassName() const
 }
 
 
-void JniDVAssertMessage::ShowMessage(const char* message)
+bool JniDVAssertMessage::ShowMessage(bool isModal, const char* message)
 {
-	jmethodID mid = GetMethodID("Assert", "(Ljava/lang/String;)V");
+    bool result = false;
+	jmethodID mid = GetMethodID("Assert", "(Ljava/lang/String;Ljava/lang/String;)Z");
 	if (mid)
 	{
 		jstring jStrMessage = GetEnvironment()->NewStringUTF(message);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jStrMessage);
+		jboolean r = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, jStrMessage);
+		result = JNI_FALSE == r ? false : true; // no warning on conversion
 		GetEnvironment()->DeleteLocalRef(jStrMessage);
 	}
+	return result;
 }
 
 
-void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
 	JniDVAssertMessage msg;
-	msg.ShowMessage(message);
-
-	AndroidCrashReport::ThrowExeption(message);
+	bool result = false;
+	if (ALWAYS_MODAL == modalType)
+	{
+	    result = msg.ShowMessage( true /*modal*/, message);
+	} else
+	{
+	    result = msg.ShowMessage(false /*not wait*/, message);
+	}
+	return result;
+	// TODO move AndroidCrashReport::ThrowExeption(message);
 }
 
 #endif
