@@ -254,7 +254,7 @@ struct FuncTraits<R(P1::*)() const>
 {
     typedef R ReturnType;
     typedef const P1* ParamType1;
-    typedef const P1 ObjType;
+    typedef P1 ObjType;
     typedef Function<R()> ObjFunctionType;
     typedef Function<R(P1*)> FunctionType;
 };
@@ -265,7 +265,7 @@ struct FuncTraits<R(P1::*)(P2) const>
     typedef R ReturnType;
     typedef const P1* ParamType1;
     typedef P2 ParamType2;
-    typedef const P1 ObjType;
+    typedef P1 ObjType;
     typedef Function<R(P2)> ObjFunctionType;
     typedef Function<R(P1*, P2)> FunctionType;
 };
@@ -277,7 +277,7 @@ struct FuncTraits<R(P1::*)(P2, P3) const>
     typedef const P1* ParamType1;
     typedef P2 ParamType2;
     typedef P3 ParamType3;
-    typedef const P1 ObjType;
+    typedef P1 ObjType;
     typedef Function<R(P2, P3)> ObjFunctionType;
     typedef Function<R(P1*, P2, P3)> FunctionType;
 };
@@ -290,7 +290,7 @@ struct FuncTraits<R(P1::*)(P2, P3, P4) const>
     typedef P2 ParamType2;
     typedef P3 ParamType3;
     typedef P4 ParamType4;
-    typedef const P1 ObjType;
+    typedef P1 ObjType;
     typedef Function<R(P2, P3, P4)> ObjFunctionType;
     typedef Function<R(P1*, P2, P3, P4)> FunctionType;
 };
@@ -304,7 +304,7 @@ struct FuncTraits<R(P1::*)(P2, P3, P4, P5) const>
     typedef P3 ParamType3;
     typedef P4 ParamType4;
     typedef P5 ParamType5;
-    typedef const P1 ObjType;
+    typedef P1 ObjType;
     typedef Function<R(P2, P3, P4, P5)> ObjFunctionType;
     typedef Function<R(P1*, P2, P3, P4, P5)> FunctionType;
 };
@@ -319,7 +319,7 @@ struct FuncTraits<R(P1::*)(P2, P3, P4, P5, P6) const>
     typedef P4 ParamType4;
     typedef P5 ParamType5;
     typedef P6 ParamType6;
-    typedef const P1 ObjType;
+    typedef P1 ObjType;
     typedef Function<R(P2, P3, P4, P5, P6)> ObjFunctionType;
     typedef Function<R(P1*, P2, P3, P4, P5, P6)> FunctionType;
 };
@@ -335,7 +335,7 @@ struct FuncTraits<R(P1::*)(P2, P3, P4, P5, P6, P7) const>
     typedef P5 ParamType5;
     typedef P6 ParamType6;
     typedef P7 ParamType7;
-    typedef const P1 ObjType;
+    typedef P1 ObjType;
     typedef Function<R(P2, P3, P4, P5, P6, P7)> ObjFunctionType;
     typedef Function<R(P1*, P2, P3, P4, P5, P6, P7)> FunctionType;
 };
@@ -352,7 +352,7 @@ struct FuncTraits<R(P1::*)(P2, P3, P4, P5, P6, P7, P8) const>
     typedef P6 ParamType6;
     typedef P7 ParamType7;
     typedef P8 ParamType8;
-    typedef const P1 ObjType;
+    typedef P1 ObjType;
     typedef Function<R(P2, P3, P4, P5, P6, P7, P8)> ObjFunctionType;
     typedef Function<R(P1*, P2, P3, P4, P5, P6, P7, P8)> FunctionType;
 };
@@ -473,7 +473,7 @@ typename FuncTraits<F>::FunctionType MakeFunction(const F &fn)
 }
 
 template<typename F>
-typename FuncTraits<F>::ObjFunctionType MakeFunction(typename FuncTraits<F>::ObjType *obj, const F& fn)
+typename FuncTraits<F>::ObjFunctionType MakeFunction(typename FuncTraits<F>::ParamType1 obj, const F& fn)
 {
     return typename FuncTraits<F>::ObjFunctionType(obj, fn);
 }
