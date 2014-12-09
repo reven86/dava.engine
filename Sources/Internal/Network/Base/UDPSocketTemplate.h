@@ -64,10 +64,11 @@ public:
     int32 JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr = NULL);
     int32 LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr = NULL);
 
+    int32 Bind(const Endpoint& endpoint, bool reuseAddrOption = false);
+
 protected:
     bool IsOpen() const;
     void DoOpen();
-    int32 DoBind(const Endpoint& endpoint, bool reuseAddrOption);
 
     int32 DoStartReceive();
     int32 DoSend(const Buffer* buffers, size_t bufferCount, const Endpoint& endpoint);
@@ -145,6 +146,15 @@ int32 UDPSocketTemplate<T>::LeaveMulticastGroup(const char8* multicastAddr, cons
 }
 
 template <typename T>
+int32 UDPSocketTemplate<T>::Bind(const Endpoint& endpoint, bool reuseAddrOption)
+{
+    DVASSERT(false == isClosing);
+    if (!isOpen)
+        DoOpen();
+    return uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
+}
+
+template <typename T>
 bool UDPSocketTemplate<T>::IsOpen() const
 {
     return isOpen;
@@ -158,15 +168,6 @@ void UDPSocketTemplate<T>::DoOpen()
     isOpen = true;
     uvhandle.data = this;
     uvsend.data = this;
-}
-
-template <typename T>
-int32 UDPSocketTemplate<T>::DoBind(const Endpoint& endpoint, bool reuseAddrOption)
-{
-    DVASSERT(false == isClosing);
-    if (!isOpen)
-        DoOpen();
-    return uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
 }
 
 template <typename T>

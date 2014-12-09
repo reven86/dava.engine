@@ -55,21 +55,6 @@ void TCPAcceptor::Close(CloseHandlerType handler)
              : HandleClose();   // Execute user handle in any case
 }
 
-int32 TCPAcceptor::Bind(const Endpoint& endpoint)
-{
-    return DoBind(endpoint);
-}
-
-int32 TCPAcceptor::Bind(const char8* ipaddr, uint16 port)
-{
-    return DoBind(Endpoint(IPAddress::FromString(ipaddr), port));
-}
-
-int32 TCPAcceptor::Bind(uint16 port)
-{
-    return DoBind(Endpoint(port));
-}
-
 int32 TCPAcceptor::Accept(TCPSocket* socket)
 {
     DVASSERT(socket != NULL);

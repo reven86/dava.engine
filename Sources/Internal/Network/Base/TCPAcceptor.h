@@ -77,10 +77,6 @@ public:
     int32 StartListen(ConnectHandlerType handler, int32 backlog = SOMAXCONN);
     void Close(CloseHandlerType handler = CloseHandlerType());
 
-    int32 Bind(const Endpoint& endpoint);
-    int32 Bind(const char8* ipaddr, uint16 port);
-    int32 Bind(uint16 port);
-
     int32 Accept(TCPSocket* socket);
 
 private:

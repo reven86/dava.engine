@@ -52,10 +52,11 @@ public:
     TCPAcceptorTemplate(IOLoop* ioLoop);
     ~TCPAcceptorTemplate();
 
+    int32 Bind(const Endpoint& endpoint);
+
 protected:
     bool IsOpen() const;
     void DoOpen();
-    int32 DoBind(const Endpoint& endpoint);
     int32 DoAccept(uv_tcp_t* client);
 
     int32 DoStartListen(int32 backlog);
@@ -91,6 +92,15 @@ TCPAcceptorTemplate<T>::~TCPAcceptorTemplate()
 }
 
 template <typename T>
+int32 TCPAcceptorTemplate<T>::Bind(const Endpoint& endpoint)
+{
+    DVASSERT(false == isClosing);
+    if (!isOpen)
+        DoOpen();
+    return uv_tcp_bind(&uvhandle, endpoint.CastToSockaddr(), 0);
+}
+
+template <typename T>
 bool TCPAcceptorTemplate<T>::IsOpen() const
 {
     return isOpen;
@@ -103,15 +113,6 @@ void TCPAcceptorTemplate<T>::DoOpen()
     uv_tcp_init(loop->Handle(), &uvhandle);
     isOpen = true;
     uvhandle.data = this;
-}
-
-template <typename T>
-int32 TCPAcceptorTemplate<T>::DoBind(const Endpoint& endpoint)
-{
-    DVASSERT(false == isClosing);
-    if (!isOpen)
-        DoOpen();
-    return uv_tcp_bind(&uvhandle, endpoint.CastToSockaddr(), 0);
 }
 
 template <typename T>

@@ -63,21 +63,6 @@ void UDPSocket::Close(CloseHandlerType handler)
              : HandleClose();   // Execute user handle in any case
 }
 
-int32 UDPSocket::Bind(const Endpoint& endpoint, bool reuseAddrOption)
-{
-    return DoBind(endpoint, reuseAddrOption);
-}
-
-int32 UDPSocket::Bind(const char8* ipaddr, uint16 port, bool reuseAddrOption)
-{
-    return DoBind(Endpoint(IPAddress::FromString(ipaddr), port), reuseAddrOption);
-}
-
-int32 UDPSocket::Bind(uint16 port, bool reuseAddrOption)
-{
-    return DoBind(Endpoint(port), reuseAddrOption);
-}
-
 void UDPSocket::ReceiveHere(Buffer buffer)
 {
     DVASSERT(buffer.base != NULL && buffer.len > 0);

@@ -86,10 +86,6 @@ public:
     int32 Send(const Endpoint& endpoint, const Buffer* buffers, size_t bufferCount, SendHandlerType handler);
     void Close(CloseHandlerType handler = CloseHandlerType());
 
-    int32 Bind(const Endpoint& endpoint, bool reuseAddrOption = false);
-    int32 Bind(const char8* ipaddr, uint16 port, bool reuseAddrOption = false);
-    int32 Bind(uint16 port, bool reuseAddrOption = false);
-
     void ReceiveHere(Buffer buffer);
 
 private:
