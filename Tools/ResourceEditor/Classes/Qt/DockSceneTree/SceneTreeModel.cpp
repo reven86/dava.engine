@@ -630,15 +630,24 @@ void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 
 void SceneTreeModel::SetFilter(const QString& text)
 {
+    filterText = text;
+
     ResetFilter();
-    QRegExp regExp(text, Qt::CaseInsensitive, QRegExp::FixedString);
-    
-    const int n = rowCount();
-    for (int i = 0; i < n; i++)
+
+    if (!filterText.isEmpty())
     {
-        const QModelIndex _index = index(i, 0);
-        SetFilterInternal(_index, text);
+        const int n = rowCount();
+        for (int i = 0; i < n; i++)
+        {
+            const QModelIndex _index = index(i, 0);
+            SetFilterInternal(_index, text);
+        }
     }
+}
+
+bool SceneTreeModel::IsFilterSet() const
+{
+    return !filterText.isEmpty();
 }
 
 void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString& text)
@@ -646,22 +655,25 @@ void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString&
     SceneTreeItem *item = GetItem(_index);
     const QString& name = item->ItemName();
 
-    if (!item->isFilterAccepted)
+    if (!item->IsAcceptedByFilter())
     {
-        const bool accept = (text.isEmpty() || name.contains(text,Qt::CaseInsensitive));
-        if (accept)
-        {
-            item->isFilterAccepted = true;
+        const bool match = (text.isEmpty() || name.contains(text, Qt::CaseInsensitive));
+        const bool isChild = _index.parent().isValid();
+
+        item->SetAcceptByFilter(isChild || match);
+        item->SetHighlight(match);
         
+        if (match)
+        {
             QModelIndex p = _index.parent();
             while (p.isValid())
             {
                 SceneTreeItem *parentItem = GetItem(p);
-                if (parentItem->isFilterAccepted)
+                if (parentItem->IsAcceptedByFilter())
                 {
                     break;
                 }
-                parentItem->isFilterAccepted = true;
+                parentItem->SetAcceptByFilter(true);
                 p = p.parent();
             }
         }
@@ -682,7 +694,8 @@ void SceneTreeModel::ResetFilter(const QModelIndex& parent)
     {
         const QModelIndex _index = index(i, 0, parent);
         SceneTreeItem *item = GetItem(_index);
-        item->isFilterAccepted = false;
+        item->SetAcceptByFilter(false);
+        item->SetHighlight(false);
         ResetFilter(_index);
     }
 }
@@ -811,9 +824,35 @@ SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QOb
 
 bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
+    if (!treeModel->IsFilterSet())
+        return true;
+
     const QModelIndex& _index = treeModel->index(sourceRow, 0, sourceParent);
     SceneTreeItem *item = treeModel->GetItem(_index);
     DVASSERT(item);
 
-	return item->isFilterAccepted;
+	return item->IsAcceptedByFilter();
+}
+
+QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) const
+{
+    QVariant val = QSortFilterProxyModel::data(_index, role);
+
+    if (!treeModel->IsFilterSet())
+        return val;
+
+    switch ( role )
+    {
+    case Qt::BackgroundRole:
+        {
+            SceneTreeItem *item = treeModel->GetItem(mapToSource(_index));
+            if (item->IsHighlighed())
+                val = QBrush(QColor(0, 255, 0, 20));
+        }
+        break;
+    default:
+        break;
+    }
+
+    return val;
 }

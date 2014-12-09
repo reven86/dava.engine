@@ -113,7 +113,7 @@ void SceneTree::SetFilter(const QString &filter)
 
 	if (!filter.isEmpty())
 	{
-        expandAll();
+        ExpandFilteredItems();
 	}
 }
 
@@ -1326,6 +1326,32 @@ void SceneTree::AddCameraActions(QMenu &menu)
 {
     menu.addAction(QIcon(":/QtIcons/eye.png"), "Look from", this, SLOT(SetCurrentCamera()));
     menu.addAction(QIcon(":/QtIcons/camera.png"), "Set custom draw camera", this, SLOT(SetCustomDrawCamera()));
+}
+
+void SceneTree::ExpandFilteredItems()
+{
+    QSet<QModelIndex> indexSet;
+    BuildExpandItemsSet(indexSet);
+
+    for (auto i = indexSet.begin(); i != indexSet.end(); ++i)
+    {
+        expand(*i);
+    }
+}
+
+void SceneTree::BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent)
+{
+    const int n = filteringProxyModel->rowCount(parent);
+    for (int i = 0; i < n; i++)
+    {
+        const QModelIndex _index = filteringProxyModel->index(i, 0, parent);
+        SceneTreeItem *item = treeModel->GetItem(filteringProxyModel->mapToSource(_index));
+        if (item->IsHighlighed())
+        {
+            indexSet << _index.parent();
+        }
+        BuildExpandItemsSet(indexSet, _index);
+    }
 }
 
 void SceneTree::SetCurrentCamera()
