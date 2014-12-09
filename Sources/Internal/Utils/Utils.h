@@ -121,6 +121,8 @@ bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
     
     return false;
 }
+    
+    
 template<class T>
 void RemoveExchangingWithLast(Vector<T> & array, uint32 index)
 {

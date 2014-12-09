@@ -561,29 +561,31 @@ void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, uint32 p
 void Scene::RemoveSystem(SceneSystem * sceneSystem)
 {
     UnregisterEntitiesInSystemRecursively(sceneSystem, this);
-    Vector<SceneSystem*>::iterator endIt = systemsToProcess.end();
-    for(Vector<SceneSystem*>::iterator it = systemsToProcess.begin(); it != endIt; ++it)
-    {
-        if(*it == sceneSystem)
-        {
-            systemsToProcess.erase(it);
-            break;
-        }
-    }
+    
+    RemoveSystem(systemsToProcess, sceneSystem);
+    RemoveSystem(systemsToInput, sceneSystem);
 
-    endIt = systems.end();
-    for(Vector<SceneSystem*>::iterator it = systems.begin(); it != endIt; ++it)
-    {
-        if(*it == sceneSystem)
-        {
-            systems.erase(it);
-            return;
-        }
-    }
-
-    DVASSERT_MSG(false, "System must be at systems array");
+    DVVERIFY(RemoveSystem(systems, sceneSystem));
 }
 
+    
+bool Scene::RemoveSystem(Vector<SceneSystem*> &storage, SceneSystem *system)
+{
+    Vector<SceneSystem*>::iterator endIt = storage.end();
+    for(Vector<SceneSystem*>::iterator it = storage.begin(); it != endIt; ++it)
+    {
+        if(*it == system)
+        {
+            storage.erase(it);
+            return true;
+        }
+    }
+    
+    return false;
+}
+    
+    
+    
 Scene * Scene::GetScene()
 {
     return this;

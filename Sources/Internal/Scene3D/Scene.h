@@ -293,7 +293,11 @@ protected:
     void RegisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
     void UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
 
-	uint64 updateTime;
+    
+    bool RemoveSystem(Vector<SceneSystem*> &storage, SceneSystem *system);
+    
+    
+    uint64 updateTime;
 
     uint64 drawTime;
     uint32 nodeCounter;
