@@ -1445,7 +1445,7 @@ public:
     inline void SetEnabledNotHierarchic(bool enabled);
     inline bool GetNoInput() const;
     inline void SetNoInput(bool noInput);
-    inline bool IsDebugDraw() const;
+    inline bool GetDebugDraw() const;
     inline void SetDebugDrawNotHierarchic(bool val);
     
 
@@ -1493,7 +1493,7 @@ public:
 
                          PROPERTY("vcenterAlignEnabled", "Vertical Center Align Enabled", GetVCenterAlignEnabled, SetAndApplyVCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("vcenterAlign", "Vertical Center Align", GetVCenterAlign, SetAndApplyVCenterAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("debugDraw", "Debug Draw", IsDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
+                         PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
                          PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
                          );
 
@@ -1627,7 +1627,7 @@ void UIControl::SetNoInput(bool noInput)
     SetInputEnabled(!noInput, false);
 }
 
-bool UIControl::IsDebugDraw() const
+bool UIControl::GetDebugDraw() const
 {
     return debugDrawEnabled;
 }

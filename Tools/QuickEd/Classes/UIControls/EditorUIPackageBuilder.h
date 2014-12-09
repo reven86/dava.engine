@@ -26,7 +26,7 @@ public:
     virtual DAVA::UIControl *BeginUnknownControl(const DAVA::YamlNode *node) override;
     virtual void EndControl() override;
     
-    virtual void BeginControlPropretiesSection(const DAVA::String &name) override;
+    virtual void BeginControlPropertiesSection(const DAVA::String &name) override;
     virtual void EndControlPropertiesSection() override;
     
     virtual DAVA::UIControlBackground *BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
