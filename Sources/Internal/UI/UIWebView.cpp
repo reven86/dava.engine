@@ -102,9 +102,9 @@ void UIWebView::DidAppear()
     UpdateControlRect();
 }
 
-void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
+void UIWebView::SetPosition(const Vector2 &position)
 {
-	UIControl::SetPosition(position, positionInAbsoluteCoordinates);
+	UIControl::SetPosition(position);
     UpdateControlRect();
 }
 

@@ -62,7 +62,7 @@ public:
     void OpenFromBuffer(const String& string, const FilePath& basePath);
     
 	// Overloaded virtual methods.
-	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);
+	virtual void SetPosition(const Vector2 &position);
 	virtual void SetSize(const Vector2 &newSize);
 
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
