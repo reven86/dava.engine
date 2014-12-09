@@ -104,7 +104,7 @@ public:
 protected:
     struct MainJob
     {
-        MainJob() : type(JOB_MAIN), invokerThreadId(0) {}
+        MainJob() : id(0), type(JOB_MAIN), invokerThreadId(0) {}
 
         uint32 id;
         eMainJobType type;
