@@ -99,10 +99,22 @@ public:
 	int GetDropType(const QMimeData *data) const;
 
 	void ResyncStructure(QStandardItem *item, DAVA::Entity *entity);
-	void ResetFilterAcceptFlag();
 
-protected:
-	SceneEditor2 * curScene;
+    void SetFilter(const QString& text);
+
+private slots:
+	void ItemChanged(QStandardItem * item);
+
+private:
+    void RebuildIndexesCache();
+	void AddIndexesCache(SceneTreeItem *item);
+	bool AreSameType(const QModelIndexList & indexes) const;
+    void SetFilterInternal(const QModelIndex& parent, const QString& text);
+    void ResetFilter(const QModelIndex& parent = QModelIndex());
+
+    Qt::DropActions supportedDragActions() const;
+
+    SceneEditor2 * curScene;
 	bool dropAccepted;
 
 	QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
@@ -110,19 +122,6 @@ protected:
 	QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
 	QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
 
-	void RebuildIndexesCache();
-	void AddIndexesCache(SceneTreeItem *item);
-	void ResetFilterAcceptFlagInternal(SceneTreeItem *item);
-
-	bool AreSameType(const QModelIndexList & indexes) const;
-    
-    //void DropMaterial(SceneTreeItem *parentItem, const QMimeData *mimeData) const;
-
-protected slots:
-	void ItemChanged(QStandardItem * item);
-
-private:
-	Qt::DropActions supportedDragActions() const;
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel
@@ -133,9 +132,6 @@ public:
 
 protected:
 	SceneTreeModel *treeModel;
-
-	bool selfAcceptRow(int sourceRow, const QModelIndex &sourceParent) const;
-	bool childrenAcceptRow(int sourceRow, const QModelIndex &sourceParent) const;
 };
 
 #endif // __QT_SCENE_TREE_MODEL_H__

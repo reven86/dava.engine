@@ -107,38 +107,13 @@ SceneTree::~SceneTree()
 
 void SceneTree::SetFilter(const QString &filter)
 {
-// 	if(!filter.isEmpty())
-// 	{
-// 		treeModel->ResetFilterAcceptFlag();
-// 	}
-
-	filteringProxyModel->setFilterRegExp(QRegExp(filter, Qt::CaseInsensitive, QRegExp::FixedString));
+    treeModel->SetFilter(filter);
+    filteringProxyModel->invalidate();
     SyncSelectionToTree();
 
-	if(!filter.isEmpty())
+	if (!filter.isEmpty())
 	{
-		for(int i = 0; i < filteringProxyModel->rowCount(); ++i)
-		{
-			ExpandUntilFilterAccepted(filteringProxyModel->index(i, 0));
-		}
-	}
-// 	else
-// 	{
-// 		treeModel->ResetFilterAcceptFlag();
-// 	}
-}
-
-void SceneTree::ExpandUntilFilterAccepted(const QModelIndex &index)
-{
-	SceneTreeItem *item = treeModel->GetItem(filteringProxyModel->mapToSource(index));
-	if(NULL != item && !item->IsAcceptedByFilter())
-	{
-		expand(index);
-
-		for(int i = 0; i < filteringProxyModel->rowCount(index); ++i)
-		{
-			ExpandUntilFilterAccepted(filteringProxyModel->index(i, 0, index));
-		}
+        expandAll();
 	}
 }
 

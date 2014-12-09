@@ -147,8 +147,6 @@ protected:
 
 	// Cleanup the selected Particle Editor items.
 	void CleanupParticleEditorSelectedItems();
-
-	void ExpandUntilFilterAccepted(const QModelIndex &index);
     
     void AddCameraActions(QMenu &menu);
 
