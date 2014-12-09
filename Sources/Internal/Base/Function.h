@@ -225,15 +225,15 @@ namespace DAVA
 		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionType8 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker8 = &ObjectInvokerImpl8<O>; }
 
 		// constructors for object member const functions
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType0 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker0 = &ObjectInvokerImpl0<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType1 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker1 = &ObjectInvokerImpl1<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType2 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker2 = &ObjectInvokerImpl2<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType3 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker3 = &ObjectInvokerImpl3<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType4 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker4 = &ObjectInvokerImpl4<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType5 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker5 = &ObjectInvokerImpl5<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType6 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker6 = &ObjectInvokerImpl6<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType7 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker7 = &ObjectInvokerImpl7<O>; }
-		template<typename O> FunctionBase(O* obj, typename ObjectType<O>::ObjectFunctionConstType8 fn) : objPointerHolder(obj), fnPointerHolder(fn) { invoker8 = &ObjectInvokerImpl8<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType0 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker0 = &ObjectInvokerImpl0<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType1 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker1 = &ObjectInvokerImpl1<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType2 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker2 = &ObjectInvokerImpl2<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType3 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker3 = &ObjectInvokerImpl3<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType4 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker4 = &ObjectInvokerImpl4<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType5 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker5 = &ObjectInvokerImpl5<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType6 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker6 = &ObjectInvokerImpl6<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType7 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker7 = &ObjectInvokerImpl7<O>; }
+		template<typename O> FunctionBase(const O* obj, typename ObjectType<O>::ObjectFunctionConstType8 fn) : objPointerHolder(const_cast<O*>(obj)), fnPointerHolder(fn) { invoker8 = &ObjectInvokerImpl8<O>; }
 
 		// operators
 		bool operator==(const FunctionBase &f) const { return (fnPointerHolder == f.fnPointerHolder && objPointerHolder.object == f.objPointerHolder.object);	}
