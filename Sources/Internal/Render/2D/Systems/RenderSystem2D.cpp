@@ -43,15 +43,15 @@ RenderSystem2D::RenderSystem2D()
 
 RenderSystem2D::~RenderSystem2D()
 {
-	SafeRelease(spriteRenderObject);
+    SafeRelease(spriteRenderObject);
 }
 
 void RenderSystem2D::Reset()
 {
-	currentClip.x = 0;
-	currentClip.y = 0;
-	currentClip.dx = -1;
-	currentClip.dy = -1;
+    currentClip.x = 0;
+    currentClip.y = 0;
+    currentClip.dx = -1;
+    currentClip.dy = -1;
     
     Setup2DMatrices();
 
@@ -131,9 +131,9 @@ void RenderSystem2D::ClipPop()
 void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 */)
 {
     if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
-	{
-		return;
-	}
+    {
+        return;
+    }
 
     Setup2DMatrices();
     
@@ -143,44 +143,44 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
         state = &defaultSpriteDrawState;
     }
 
-	PrepareSpriteRenderData(sprite, state);
+    PrepareSpriteRenderData(sprite, state);
     
-	if(sprite->clipPolygon)
-	{
-		ClipPush();
-		Rect clipRect;
-		if( sprite->flags & Sprite::EST_SCALE )
-		{
-			float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
-			float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
-			clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + x
+    if(sprite->clipPolygon)
+    {
+        ClipPush();
+        Rect clipRect;
+        if( sprite->flags & Sprite::EST_SCALE )
+        {
+            float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
+            float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
+            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + x
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) * state->scale.y + y
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH  ) * state->scale.x
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) * state->scale.y );
-		}
-		else
-		{
-			float32 x = state->position.x - state->pivotPoint.x;
-			float32 y = state->position.y - state->pivotPoint.y;
-			clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) + x
+        }
+        else
+        {
+            float32 x = state->position.x - state->pivotPoint.x;
+            float32 y = state->position.y - state->pivotPoint.y;
+            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) + x
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) + y
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH )
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) );
-		}
+        }
         
-		ClipRect(clipRect);
-	}
+        ClipRect(clipRect);
+    }
     
     RenderManager::Instance()->SetRenderState(state->renderState);
-	RenderManager::Instance()->SetTextureState(sprite->GetTextureHandle(state->frame));
-	RenderManager::Instance()->SetRenderData(spriteRenderObject);
+    RenderManager::Instance()->SetTextureState(sprite->GetTextureHandle(state->frame));
+    RenderManager::Instance()->SetRenderData(spriteRenderObject);
     RenderManager::Instance()->SetRenderEffect(state->shader);
- 	RenderManager::Instance()->DrawArrays(spritePrimitiveToDraw, 0, spriteVertexCount);
+    RenderManager::Instance()->DrawArrays(spritePrimitiveToDraw, 0, spriteVertexCount);
     
-	if(sprite->clipPolygon)
-	{
-		ClipPop();
-	}
+    if(sprite->clipPolygon)
+    {
+        ClipPop();
+    }
 }
     
 void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * state)

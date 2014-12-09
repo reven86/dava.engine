@@ -50,8 +50,6 @@ public:
     virtual ~RenderSystem2D();
     
     void Draw(Sprite * sprite, Sprite::DrawState * drawState = 0);
-    void Draw(TextBlock * textblock);
-    void Draw(Font * font);
     
     void Reset();
     

@@ -154,7 +154,7 @@ void JPEGTest::Draw(const DAVA::UIGeometricData &geometricData)
     {
         state.SetPosition(260.f, 0.f);
         state.SetScaleSize(256.f, 256.f, jpegSprite->GetWidth(), jpegSprite->GetHeight());
-//        jpegSprite->Draw(&state);
+        RenderSystem2D::Instance()->Draw(jpegSprite, &state);
     }
 
     TestTemplate<JPEGTest>::Draw(geometricData);
