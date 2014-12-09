@@ -314,10 +314,10 @@ public:
 
     /**
     \brief Returns using material flags.
-    \returns hash map with pairs <Flag Name, eFlagValue>.
+    \param[in] reference vector
     */
-    inline const HashMap<FastName, int32>& GetFlags() const;
-	
+    inline void GetFlags(Vector<FastName> &flagsCollection) const;
+
     /**
 	 \brief Renders given polygon group with the current material.
      \param[in] polygonGroup polygon group to render.
@@ -1131,9 +1131,15 @@ inline uint8 NMaterial::GetDynamicBindFlags() const
     return dynamicBindFlags;
 }
 
-inline const HashMap<FastName, int32>& NMaterial::GetFlags() const
+inline void NMaterial::GetFlags(Vector<FastName> &flagsCollection) const
 {
-    return materialSetFlags;
+    flagsCollection.reserve(flagsCollection.size() + materialSetFlags.size());
+
+    const HashMap<FastName, int32>& hash = materialSetFlags;
+    for (HashMap<FastName, int32>::iterator it = hash.begin(); it != hash.end(); ++it)
+    {
+        flagsCollection.push_back((*it).first);
+    }
 }
 
 inline IlluminationParams::IlluminationParams(NMaterial* parentMaterial) :
