@@ -62,39 +62,6 @@
     <ClCompile Include="Win32Specific\main.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\IpAddress.cpp">
-      <Filter>SFML\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\Packet.cpp">
-      <Filter>SFML\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\Socket.cpp">
-      <Filter>SFML\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\SocketSelector.cpp">
-      <Filter>SFML\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\TcpListener.cpp">
-      <Filter>SFML\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\TcpSocket.cpp">
-      <Filter>SFML\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\UdpSocket.cpp">
-      <Filter>SFML\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\Win32\SocketImpl.cpp">
-      <Filter>SFML\Network\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\System\Err.cpp">
-      <Filter>SFML\System</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\System\String.cpp">
-      <Filter>SFML\System</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\SFML\System\Time.cpp">
-      <Filter>SFML\System</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\EntityTest.h" />
@@ -164,87 +131,10 @@
     <ClInclude Include="Classes\Infrastructure\UITestTemplate.h">
       <Filter>Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Config.hpp">
-      <Filter>SFML</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network.hpp">
-      <Filter>SFML</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System.hpp">
-      <Filter>SFML</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\Export.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\IpAddress.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\Packet.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\Socket.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\SocketHandle.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\SocketImpl.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\SocketSelector.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\TcpListener.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\TcpSocket.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\UdpSocket.hpp">
-      <Filter>SFML\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\Win32\SocketImpl.hpp">
-      <Filter>SFML\Network\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\Err.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\Export.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\NonCopyable.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\String.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\Time.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\Utf.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="SFML">
-      <UniqueIdentifier>{c71144af-e1f0-4208-9c25-4f800eb19a5c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SFML\Network">
-      <UniqueIdentifier>{8110ff01-16da-4a4f-a60b-8151c0f23b5d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SFML\Network\Win32">
-      <UniqueIdentifier>{5107f7b2-31d2-4d7f-88af-3f5a8ada731a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SFML\System">
-      <UniqueIdentifier>{68933d4e-7e14-4ca0-b5f5-0ed7ccbee298}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Infrastructure">
       <UniqueIdentifier>{c55c0af8-77fb-4293-a9f6-936995a69a69}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Classes\SFML\System\Utf.inl">
-      <Filter>SFML\System</Filter>
-    </None>
   </ItemGroup>
 </Project>

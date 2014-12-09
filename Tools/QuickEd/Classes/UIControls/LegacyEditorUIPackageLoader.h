@@ -52,11 +52,7 @@ private:
     void LoadInternalControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node);
     
 protected:
-//    virtual DAVA::UIPackageSectionLoader *CreateControlSectionLoader(DAVA::UIControl *control, const DAVA::String &name);
-//    virtual DAVA::UIPackageSectionLoader *CreateBackgroundSectionLoader(DAVA::UIControl *control, int bgNum);
-//    virtual DAVA::UIPackageSectionLoader *CreateInternalControlSectionLoader(DAVA::UIControl *control, int internalControlNum);
-//    virtual void ReleaseSectionLoader(DAVA::UIPackageSectionLoader *section);
-    virtual DAVA::VariantType ReadVariantTypeFromYamlNode(const DAVA::InspMember *member, const DAVA::YamlNode *node, int subNodeIndex, const DAVA::String &propertyName);
+    virtual DAVA::VariantType ReadVariantTypeFromYamlNode(const DAVA::InspMember *member, const DAVA::YamlNode *node, DAVA::int32 subNodeIndex, const DAVA::String &propertyName);
     
 private:
     DAVA::String GetOldPropertyName(const DAVA::String controlClassName, const DAVA::String name);
