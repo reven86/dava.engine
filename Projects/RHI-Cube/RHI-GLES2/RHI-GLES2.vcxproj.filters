@@ -22,6 +22,9 @@
     <ClCompile Include="rhi_ProgGLES2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rhi_IndexBufferGLES2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="_gl.h">

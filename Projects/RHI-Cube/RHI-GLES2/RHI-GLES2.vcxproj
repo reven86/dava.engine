@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="rhi_CommandBufferGLES2.cpp" />
     <ClCompile Include="rhi_GLES2.cpp" />
+    <ClCompile Include="rhi_IndexBufferGLES2.cpp" />
     <ClCompile Include="rhi_PipelineStateGLES2.cpp" />
     <ClCompile Include="rhi_ProgGLES2.cpp" />
     <ClCompile Include="rhi_VertexBufferGLES2.cpp" />

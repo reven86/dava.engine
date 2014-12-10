@@ -75,10 +75,16 @@ protected:
         float   x,y,z;
     };
 
-    rhi::Handle vb;
-    rhi::Handle ps;
-    rhi::Handle fp_cb;
+    struct
+    Object
+    {
+        rhi::Handle vb;
+        rhi::Handle ib;
+        rhi::Handle ps;
+        rhi::Handle fp_cb;
+    };
 
+    Object      triangle;
 };
 
 

@@ -41,6 +41,11 @@ namespace VertexBufferGLES2
 void    SetToRHI( Handle vb );
 }
 
+namespace IndexBufferGLES2
+{
+void    SetToRHI( Handle vb );
+}
+
 
 namespace PipelineStateGLES2
 {

@@ -61,6 +61,23 @@ void    Unmap( Handle vb );
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// index-buffer
+
+namespace IndexBuffer
+{
+
+Handle  Create( uint32 size, uint32 options=0 );
+void    Delete( Handle ib );
+
+bool    Update( Handle ib, const void* data, uint32 offset=0, uint32 size=0 );
+
+void*   Map( Handle ib, uint32 offset, uint32 size );
+void    Unmap( Handle ib );
+
+} // namespace IndexBuffer
+
+
+////////////////////////////////////////////////////////////////////////////////
 // pipeline-state
 
 namespace PipelineState

@@ -199,6 +199,18 @@ DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 void
 DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 {
+    unsigned    v_cnt   = 0;
+    int         mode    = GL_TRIANGLES;
+
+    switch( type )
+    {
+        case PRIMITIVE_TRIANGLELIST :
+            v_cnt = count*3;
+            mode  = GL_TRIANGLES;
+            break;
+    }
+
+    CommandBufferPool::Get(cmdBuf)->command( gles2_DrawIndexedPrimitive, uint32(mode), v_cnt );
 }
 
 
@@ -406,6 +418,12 @@ CommandBuffer_t::replay()
                 VertexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
                 c += 2;
             }   break;
+            
+            case gles2_SetIndices :
+            {
+                IndexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
+                c += 1;
+            }   break;
 
             case gles2_SetPipelineState :
             {
@@ -445,6 +463,29 @@ CommandBuffer_t::replay()
                 }
                 
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
+
+                c += 2;    
+            }   break;
+            
+            case gles2_DrawIndexedPrimitive :
+            {
+                unsigned    v_cnt   = arg[1];
+                int         mode    = arg[0];
+
+                PipelineStateGLES2::SetToRHI( cur_ps );
+
+                for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
+                {
+                    if( vp_const[i] != InvalidHandle )
+                        ConstBufferGLES2::SetToRHI( vp_const[i] );
+                }
+                for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
+                {
+                    if( fp_const[i] != InvalidHandle )
+                        ConstBufferGLES2::SetToRHI( fp_const[i] );
+                }
+                
+                GL_CALL(glDrawElements( mode, v_cnt, GL_UNSIGNED_SHORT, NULL ));
 
                 c += 2;    
             }   break;
