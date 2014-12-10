@@ -212,6 +212,18 @@ void UIButton::SetStateColorInheritType(int32 state, UIControlBackground::eColor
         state >>= 1;
     }
 }
+    
+void UIButton::SetStateColorMixType(int32 state, UIControlBackground::eColorMixType value)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            GetOrCreateBackground((eButtonDrawState)i)->SetColorMixType(value);
+        }
+        state >>= 1;
+    }
+}
 
 void UIButton::SetStatePerPixelAccuracyType(int32 state, UIControlBackground::ePerPixelAccuracyType value)
 {
@@ -307,6 +319,21 @@ void UIButton::SetStateTextColorInheritType(int32 state, UIControlBackground::eC
             staticText->GetShadowBackground()->SetColorInheritType(colorInheritType);
         }
 
+        state >>= 1;
+    }
+}
+
+void UIButton::SetStateTextColorMixType(int32 state, UIControlBackground::eColorMixType colorInheritType)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            UIStaticText* staticText = GetOrCreateTextBlock((eButtonDrawState)i);
+            staticText->GetTextBackground()->SetColorMixType(colorInheritType);
+            staticText->GetShadowBackground()->SetColorMixType(colorInheritType);
+        }
+        
         state >>= 1;
     }
 }
@@ -620,6 +647,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * stateDrawTypeNode = node->Get(Format("stateDrawType%s", statePostfix.c_str()));
         const YamlNode * stateAlignNode = node->Get(Format("stateAlign%s", statePostfix.c_str()));
         const YamlNode * colorInheritNode = node->Get(Format("stateColorInherit%s", statePostfix.c_str()));
+        const YamlNode * colorMixNode = node->Get(Format("stateColorMix%s", statePostfix.c_str()));
         const YamlNode * perPixelAccuracyNode = node->Get(Format("statePerPixelAccuracy%s", statePostfix.c_str()));
         const YamlNode * colorNode = node->Get(Format("stateColor%s", statePostfix.c_str()));
         const YamlNode * leftRightStretchCapNode = node->Get(Format("leftRightStretchCap%s", statePostfix.c_str()));
@@ -695,6 +723,12 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
                 stateBackground->SetColorInheritType(type);
             }
             
+            if(colorMixNode)
+            {
+                UIControlBackground::eColorMixType type = (UIControlBackground::eColorMixType)loader->GetColorMixTypeFromNode(colorMixNode);
+                stateBackground->SetColorMixType(type);
+            }
+            
             if (perPixelAccuracyNode)
             {
                 UIControlBackground::ePerPixelAccuracyType type = (UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(perPixelAccuracyNode);
@@ -725,6 +759,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * multilineNode = node->Get(Format("stateMultiline%s", statePostfix.c_str()));
         const YamlNode * multilineBySymbolNode = node->Get(Format("stateMultilineBySymbol%s", statePostfix.c_str()));
         const YamlNode * textColorInheritTypeNode = node->Get(Format("stateTextColorInheritType%s", statePostfix.c_str()));
+        const YamlNode * textColorMixTypeNode = node->Get(Format("stateTextColorMixType%s", statePostfix.c_str()));
         const YamlNode * stateTextMarginsNode = node->Get(Format("stateTextMargins%s", statePostfix.c_str()));
         const YamlNode * textPerPixelAccuracyTypeNode = node->Get(Format("stateTextPerPixelAccuracyType%s", statePostfix.c_str()));
  
@@ -791,6 +826,13 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
                 UIControlBackground::eColorInheritType type = (UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(textColorInheritTypeNode);
                 stateTextBlock->GetTextBackground()->SetColorInheritType(type);
                 stateTextBlock->GetShadowBackground()->SetColorInheritType(type);
+            }
+            
+            if (textColorMixTypeNode)
+            {
+                UIControlBackground::eColorMixType type = (UIControlBackground::eColorMixType)loader->GetColorMixTypeFromNode(textColorMixTypeNode);
+                stateTextBlock->GetTextBackground()->SetColorMixType(type);
+                stateTextBlock->GetShadowBackground()->SetColorMixType(type);
             }
             
             if (textPerPixelAccuracyTypeNode)
@@ -900,6 +942,13 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             {
                 node->Set(Format("stateColorInherit%s", statePostfix.c_str()), loader->GetColorInheritTypeNodeValue(colorInheritType));
             }
+            
+            // State color mix type
+            UIControlBackground::eColorMixType colorMixType = stateBackground->GetColorMixType();
+            if (baseStateBackground->GetColorMixType() != colorMixType)
+            {
+                node->Set(Format("stateColorMix%s", statePostfix.c_str()), loader->GetColorMixTypeNodeValue(colorMixType));
+            }
 
             // State margins.
             const UIControlBackground::UIMargins* margins = stateBackground->GetMargins();
@@ -993,6 +1042,12 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             if (baseStaticText->GetTextBackground()->GetColorInheritType() != colorInheritType)
             {
                 node->Set(Format("stateTextColorInheritType%s", statePostfix.c_str()), loader->GetColorInheritTypeNodeValue(colorInheritType));
+            }
+            
+            UIControlBackground::eColorMixType colorMixType = stateTextBlock->GetTextBackground()->GetColorMixType();
+            if (baseStaticText->GetTextBackground()->GetColorMixType() != colorMixType)
+            {
+                node->Set(Format("stateTextColorMixType%s", statePostfix.c_str()), loader->GetColorMixTypeNodeValue(colorMixType));
             }
 
             // State text margins.

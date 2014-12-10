@@ -96,6 +96,7 @@ public:
 
     int32 GetDrawTypeFromNode(const YamlNode * drawTypeNode) const;
     int32 GetColorInheritTypeFromNode(const YamlNode * colorInheritNode) const;
+    int32 GetColorMixTypeFromNode(const YamlNode * colorMixNode) const;
     int32 GetPerPixelAccuracyTypeFromNode(const YamlNode * perPixelAccuracyNode) const;
     int32 GetAlignFromYamlNode(const YamlNode * align) const;
     int32 GetFittingOptionFromYamlNode(const YamlNode * fittingNode) const;
@@ -103,6 +104,7 @@ public:
     Color GetColorFromYamlNode(const YamlNode * node) const;
 
     String GetColorInheritTypeNodeValue(int32 colorInheritType) const;
+    String GetColorMixTypeNodeValue(int32 colorMixType) const;
     String GetPerPixelAccuracyTypeNodeValue(int32 perPixelAccuracyType) const;
     String GetDrawTypeNodeValue(int32 drawType) const;
     YamlNode * GetAlignNodeValue(int32 align) const;

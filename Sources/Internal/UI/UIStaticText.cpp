@@ -291,7 +291,9 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     const YamlNode * textAlignNode = node->Get("textalign");
 	const YamlNode * textUseRtlAlignNode = node->Get("textUseRtlAlign");
     const YamlNode * textColorInheritTypeNode = node->Get("textcolorInheritType");
+    const YamlNode * textColorMixTypeNode = node->Get("textcolorMixType");
     const YamlNode * shadowColorInheritTypeNode = node->Get("shadowcolorInheritType");
+    const YamlNode * shadowColorMixTypeNode = node->Get("shadowcolorMixType");
     const YamlNode * textMarginsNode = node->Get("textMargins");
     const YamlNode * textPerPixelAccuracyTypeNode = node->Get("textperPixelAccuracyType");
 
@@ -345,10 +347,20 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     {
         GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(textColorInheritTypeNode));
     }
+    
+    if (textColorMixTypeNode)
+    {
+        GetTextBackground()->SetColorMixType((UIControlBackground::eColorMixType)loader->GetColorMixTypeFromNode(textColorMixTypeNode));
+    }
 
     if (shadowColorInheritTypeNode)
     {
         GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(shadowColorInheritTypeNode));
+    }
+    
+    if (shadowColorMixTypeNode)
+    {
+        GetShadowBackground()->SetColorMixType((UIControlBackground::eColorMixType)loader->GetColorMixTypeFromNode(shadowColorMixTypeNode));
     }
     
     if (textMarginsNode)
@@ -513,13 +525,57 @@ void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, 
         Texture *tex = sprite->GetTexture();
         if(tex && tex->GetFormat() == FORMAT_A8)
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            switch (textBg->GetColorMixType())
+            {
+                case UIControlBackground::COLOR_MIX_MULTIPLY:
+                    textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+                    break;
+                case UIControlBackground::COLOR_MIX_ADD:
+                    textBg->SetShader(RenderManager::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8);
+                    break;
+                default:
+                    textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+                    break;
+            }
+            switch (shadowBg->GetColorMixType())
+            {
+                case UIControlBackground::COLOR_MIX_MULTIPLY:
+                    shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+                    break;
+                case UIControlBackground::COLOR_MIX_ADD:
+                    shadowBg->SetShader(RenderManager::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8);
+                    break;
+                default:
+                    shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+                    break;
+            }
         }
         else
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+            switch (textBg->GetColorMixType())
+            {
+                case UIControlBackground::COLOR_MIX_MULTIPLY:
+                    textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+                    break;
+                case UIControlBackground::COLOR_MIX_ADD:
+                    textBg->SetShader(RenderManager::TEXTURE_ADD_FLAT_COLOR);
+                    break;
+                default:
+                    textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+                    break;
+            }
+            switch (shadowBg->GetColorMixType())
+            {
+                case UIControlBackground::COLOR_MIX_MULTIPLY:
+                    shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+                    break;
+                case UIControlBackground::COLOR_MIX_ADD:
+                    shadowBg->SetShader(RenderManager::TEXTURE_ADD_FLAT_COLOR);
+                    break;
+                default:
+                    shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+                    break;
+            }
         }
     }
     else
@@ -573,6 +629,17 @@ void UIStaticText::SetTextColorInheritType(int32 type)
 {
     GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType) type);
     GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType) type);
+}
+    
+int32 UIStaticText::GetTextColorMixType() const
+{
+    return GetTextBackground()->GetColorMixType();
+}
+
+void UIStaticText::SetTextColorMixType(int32 type)
+{
+    GetTextBackground()->SetColorMixType((UIControlBackground::eColorMixType) type);
+    GetShadowBackground()->SetColorMixType((UIControlBackground::eColorMixType) type);
 }
 
 int32 UIStaticText::GetTextPerPixelAccuracyType() const

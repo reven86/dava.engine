@@ -148,6 +148,13 @@ public:
      */
     virtual void SetStateColorInheritType(int32 state, UIControlBackground::eColorInheritType value);
     /**
+     \brief Sets Sprite's color mix type you want to use for draw for the control UIControlBackground object for the requested state.
+     Method creates UIControlBackground object for the state if this is neccesary.
+     \param[in] state state bit mask to set value for.
+     \param[in] value type of color mix.
+     */
+    virtual void SetStateColorMixType(int32 state, UIControlBackground::eColorMixType value);
+    /**
      \brief Sets Sprite's per pixel accuracy type you want to use for draw for the control UIControlBackground object for the requested state.
         Method creates UIControlBackground object for the state if this is neccesary.
      \param[in] state state bit mask to set value for.
@@ -205,6 +212,13 @@ public:
      */
     void SetStateTextColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType);
 
+    /**
+     \brief Sets the color mix type of the text and shadow for particular state.
+     \param[in] state state bit mask to set value for.
+     \param[in] color font used for text draw of the states.
+     */
+    void SetStateTextColorMixType(int32 state, UIControlBackground::eColorMixType colorMixType);
+    
     /**
      \brief Sets the per pixel accuracy type of the text and shadow for particular state.
      \param[in] state state bit mask to set value for.
