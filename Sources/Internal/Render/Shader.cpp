@@ -352,7 +352,10 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     
     RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes));
     
-    char attributeName[512];
+    char8 attributeName[512];
+    char8 unifromArrayPostfix[] = "[0]";
+    size_t unifromArrayPostfixSize = strlen(unifromArrayPostfix);
+    
     DVASSERT(attributeNames == NULL);
     attributeNames = new FastName[activeAttributes];
 
@@ -406,6 +409,16 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         GLenum type = 0;
         RENDER_VERIFY(glGetActiveUniform(program, k, 512, 0, &size, &type, attributeName));
         
+        if (size > 1)
+        {
+            size_t uniformNameSize = strlen(attributeName);
+            if (uniformNameSize < unifromArrayPostfixSize ||
+                strcmp(&attributeName[uniformNameSize - unifromArrayPostfixSize], unifromArrayPostfix))
+            {
+                Memcpy(&attributeName[uniformNameSize], unifromArrayPostfix, unifromArrayPostfixSize + 1);
+            }
+        }
+
         Uniform* uniformStruct = GET_UNIFORM(k);
         new (&uniformStruct->name) FastName(); //VI: FastName is not a POD so a constructor should be called
         
