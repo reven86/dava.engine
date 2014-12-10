@@ -329,7 +329,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
                 InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *) command;
 
                 const QString memberName = inspCommand->member->Name();
-                if (memberName == "materialGroup")
+                if (memberName == "materialGroup" || memberName == "materialTemplate")
                 {
                     for (int i = 0; i < curMaterials.size(); i++)
                     {
