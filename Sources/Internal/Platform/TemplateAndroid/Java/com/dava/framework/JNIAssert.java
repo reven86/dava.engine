@@ -60,6 +60,7 @@ public class JNIAssert {
         			
         			public void onClick(DialogInterface dialog, int which) {
         				synchronized (mutex) {
+        				    breakExecution = true;
         					mutex.notify();
         				}
         			}
@@ -68,7 +69,6 @@ public class JNIAssert {
                     
                     public void onClick(DialogInterface dialog, int which) {
                         synchronized (mutex) {
-                            breakExecution = new Boolean(true);
                             mutex.notify();
                             
                         }

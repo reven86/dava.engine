@@ -57,11 +57,12 @@ const char* JniDVAssertMessage::GetJavaClassName() const
 bool JniDVAssertMessage::ShowMessage(bool isModal, const char* message)
 {
     bool result = false;
-	jmethodID mid = GetMethodID("Assert", "(Ljava/lang/String;Ljava/lang/String;)Z");
+	jmethodID mid = GetMethodID("Assert", "(ZLjava/lang/String;)Z");
 	if (mid)
 	{
 		jstring jStrMessage = GetEnvironment()->NewStringUTF(message);
-		jboolean r = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, jStrMessage);
+		jboolean paramIsModal = static_cast<jboolean>(isModal);
+		jboolean r = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, paramIsModal, jStrMessage);
 		result = JNI_FALSE == r ? false : true; // no warning on conversion
 		GetEnvironment()->DeleteLocalRef(jStrMessage);
 	}
@@ -72,16 +73,16 @@ bool JniDVAssertMessage::ShowMessage(bool isModal, const char* message)
 bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
 	JniDVAssertMessage msg;
-	bool result = false;
-	if (ALWAYS_MODAL == modalType)
+	bool waitUserInput = ALWAYS_MODAL == modalType;
+
+	bool breakExecution = msg.ShowMessage(waitUserInput, message);
+
+	if (breakExecution)
 	{
-	    result = msg.ShowMessage( true /*modal*/, message);
-	} else
-	{
-	    result = msg.ShowMessage(false /*not wait*/, message);
+	    // will this call send crush to crashlytics?
+	    AndroidCrashReport::ThrowExeption(message);
 	}
-	return result;
-	// TODO move AndroidCrashReport::ThrowExeption(message);
+	return breakExecution;
 }
 
 #endif
