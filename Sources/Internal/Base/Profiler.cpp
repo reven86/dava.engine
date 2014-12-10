@@ -97,9 +97,9 @@ public:
                 {
                 }
 
-    void        setName( const char* n )        { name = n; }
+    void        SetName( const char* n )        { name = n; }
 
-    void        reset()                         
+    void        Reset()                         
                 { 
                     counterSync.Lock();
 
@@ -111,7 +111,7 @@ public:
                                                     
                     counterSync.Unlock();
                 }
-    void        start()
+    void        Start()
                 {
                     counterSync.Lock();
 
@@ -134,7 +134,7 @@ public:
                                                     
                     counterSync.Unlock();
                 }
-    void        stop()                          
+    void        Stop()                          
                 { 
                     counterSync.Lock();
 
@@ -151,15 +151,15 @@ public:
                 }
 
 
-    const char* getName() const                 { return name; }
+    const char* GetName() const                 { return name; }
 
-    uint32      getCount() const                { return count; }
-    uint64      getTimeUs() const               { return t; }
+    uint32      GetCount() const                { return count; }
+    uint64      GetTimeUs() const               { return t; }
 
-    uint32      getId() const                   { return id; }
-    uint32      getParentId() const             { return parentId; }
-    bool        isUsed() const                  { return (used)  ? true  : false; }
-    uint32      nestingLevel() const            { return (parentId != InvalidIndex)  ? GetCounter(parentId)->nestingLevel()+1  : 0; }
+    uint32      GetId() const                   { return id; }
+    uint32      GetParentId() const             { return parentId; }
+    bool        IsUsed() const                  { return (used)  ? true  : false; }
+    uint32      NestingLevel() const            { return (parentId != InvalidIndex)  ? GetCounter(parentId)->NestingLevel()+1  : 0; }
 
 
 
@@ -282,7 +282,7 @@ SetCounterName( unsigned counterId, const char* name )
 
     for( uint32 h=0; h!=historyCount; ++h )
     {
-        counter->setName( name );
+        counter->SetName( name );
         counter += maxCounterCount;
     }
 }
@@ -297,7 +297,7 @@ StartCounter( uint32 counterId )
 
     Counter*    counter = curCounter + counterId;
         
-    counter->start();
+    counter->Start();
 }
 
 
@@ -310,8 +310,8 @@ StartCounter( uint32 counterId, const char* counterName )
 
     Counter*    counter = curCounter + counterId;
         
-    counter->setName( counterName );
-    counter->start();
+    counter->SetName( counterName );
+    counter->Start();
 }
 
 
@@ -324,7 +324,7 @@ StopCounter( uint32 counterId )
 
     Counter*    counter = curCounter + counterId;
         
-    counter->stop();
+    counter->Stop();
 }
 
 
@@ -350,7 +350,7 @@ Start()
 
     for( Counter* c=curCounter,*c_end=curCounter+maxCounterCount; c!=c_end; ++c )
     {
-        c->reset();
+        c->Reset();
         c->used = false;
     }
 
@@ -492,8 +492,8 @@ CollectCountersWithChilds( const Counter* base, const Counter* counter, std::vec
 {
     for( const Counter* c=base,*c_end=base+maxCounterCount; c!=c_end; ++c )
     {
-        if(     c->isUsed()  
-            &&  c->getParentId() == counter->getId() 
+        if(     c->IsUsed()  
+            &&  c->GetParentId() == counter->GetId() 
           )
         {
             result->push_back( (Counter*)c );
@@ -515,16 +515,16 @@ CollectActiveCounters( Counter* cur_counter, std::vector<Counter*>* result )
     top.clear();
     for( Counter* c=cur_counter,*c_end=cur_counter+maxCounterCount; c!=c_end; ++c )
     {
-        if( !c->isUsed() )
+        if( !c->IsUsed() )
           continue;
 
         bool    do_add = true;
 
-        if( c->getParentId() == InvalidIndex )
+        if( c->GetParentId() == InvalidIndex )
         {
             for( uint32 i=0,i_end=top.size(); i!=i_end; ++i )
             {
-                if( c->getTimeUs() > top[i]->getTimeUs() )
+                if( c->GetTimeUs() > top[i]->GetTimeUs() )
                 {
                     top.insert( top.begin()+i, c );
                     do_add = false;
@@ -561,14 +561,14 @@ GetCounters( std::vector<CounterInfo>* info )
     info->resize( result.size() );
     for( uint32 i=0,i_end=result.size(); i!=i_end; ++i )
     {
-        (*info)[i].name         = result[i]->getName();
-        (*info)[i].count        = result[i]->getCount();
-        (*info)[i].timeUs       = result[i]->getTimeUs();
+        (*info)[i].name         = result[i]->GetName();
+        (*info)[i].count        = result[i]->GetCount();
+        (*info)[i].timeUs       = result[i]->GetTimeUs();
         (*info)[i].parentIndex  = InvalidIndex;
         
         for( unsigned k=0,k_end=info->size(); k!=k_end; ++k )
         {
-            if( result[i]->getParentId() == result[k]->getId() )
+            if( result[i]->GetParentId() == result[k]->GetId() )
             {
                 (*info)[i].parentIndex = k;
                 break;
@@ -591,8 +591,8 @@ GetAverageCounters( std::vector<CounterInfo>* info )
         {
             Counter*    src = profCounter + (c-profAverage);
             
-            c->reset();
-            c->setName( src->getName() );
+            c->Reset();
+            c->SetName( src->GetName() );
 
             c->id        = src->id;
             c->parentId  = src->parentId;
@@ -609,7 +609,7 @@ GetAverageCounters( std::vector<CounterInfo>* info )
             {        
                 a->count += c->count;
                 a->t0     = 0;
-                a->t     += c->getTimeUs();
+                a->t     += c->GetTimeUs();
             }
         }
 
@@ -627,14 +627,14 @@ GetAverageCounters( std::vector<CounterInfo>* info )
         info->resize( result.size() );
         for( uint32 i=0,i_end=result.size(); i!=i_end; ++i )
         {
-            (*info)[i].name         = result[i]->getName();
-            (*info)[i].count        = result[i]->getCount();
-            (*info)[i].timeUs       = result[i]->getTimeUs();
+            (*info)[i].name         = result[i]->GetName();
+            (*info)[i].count        = result[i]->GetCount();
+            (*info)[i].timeUs       = result[i]->GetTimeUs();
             (*info)[i].parentIndex  = InvalidIndex;
         
             for( uint32 k=0,k_end=info->size(); k!=k_end; ++k )
             {
-                if( result[i]->getParentId() == result[k]->getId() )
+                if( result[i]->GetParentId() == result[k]->GetId() )
                 {
                     (*info)[i].parentIndex = k;
                     break;
