@@ -28,6 +28,7 @@
 
 #include "Job/Job.h"
 #include "Job/JobManager.h"
+#include "Core/Core.h"
 
 namespace DAVA
 {
@@ -43,6 +44,7 @@ Job::Job(const Message & _message, const Thread::Id & _creatorThreadId, uint32 _
 
 void Job::Perform()
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_JOB_PERFORM, 0, 0, 0, message.GetBaseObject());
 	message(this);
 	JobManager::Instance()->OnJobCompleted(this);
 }

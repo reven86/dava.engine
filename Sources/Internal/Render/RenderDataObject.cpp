@@ -220,6 +220,7 @@ void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * par
     }
     
     RENDER_VERIFY(glGenBuffers(1, &vboBuffer));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_GEN_BUFFER, vboBuffer, 1);
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vboBuffer));
 
 	int32 vertexCount = (int32)((int64)param);
@@ -227,6 +228,7 @@ void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * par
     savedVertexCount = vertexCount;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GL_STATIC_DRAW));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_BUFFER_DATA, 1, vertexCount*stride, 0, streamArray[0]->pointer);
 
     streamArray[0]->pointer = 0;
     for (uint32 k = 1; k < size; ++k)
@@ -274,29 +276,39 @@ void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * para
 #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
     if (indexBuffer)
     {
-        RENDER_VERIFY(glDeleteBuffersARB(1, &indexBuffer));
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_DELETE_BUFFER, indexBuffer, 2);
+        RENDER_VERIFY(glDeleteBuffersARB(1, &indexBuffer));        
         indexBuffer = 0;
     }
     
     RENDER_VERIFY(glGenBuffersARB(1, &indexBuffer));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_GEN_BUFFER, indexBuffer, 2);
     RENDER_VERIFY(glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_BIND_BUFFER, indexBuffer, 2);
     RENDER_VERIFY(glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_STATIC_DRAW_ARB));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_BUFFER_DATA, indexBuffer, 2, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices);
 #else
     if (indexBuffer)
     {
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_DELETE_BUFFER, indexBuffer, 2);
         RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &indexBuffer));
         indexBuffer = 0;
     }
     RENDER_VERIFY(glGenBuffers(1, &indexBuffer));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_GEN_BUFFER, indexBuffer, 2);
 //    Logger::FrameworkDebug("glGenBuffers index: %d", indexBuffer);
     RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_BIND_BUFFER, indexBuffer, 2);
     RENDER_VERIFY(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_STATIC_DRAW));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_BUFFER_DATA, indexBuffer, 2, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices);
 #endif
     
 #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
     RENDER_VERIFY(glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_BIND_BUFFER, 0, 2);
 #else
     RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_GL_BIND_BUFFER, 0, 2);
 #endif
     
 #endif // #if defined (__DAVAENGINE_OPENGL__)

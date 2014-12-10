@@ -136,10 +136,11 @@ bool RenderState::IsEqual(RenderState * anotherState)
 
 void RenderState::Flush(RenderState * hardwareState) const
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_FLUSH);
 	RENDERER_UPDATE_STATS(renderStateSwitches++);
 	
 	if(hardwareState->stateHandle != stateHandle)
-	{
+	{        
 		RENDERER_UPDATE_STATS(renderStateFullSwitches++);
 		
 		const RenderStateData& currentData = RenderManager::Instance()->GetRenderStateData(stateHandle);
@@ -147,6 +148,8 @@ void RenderState::Flush(RenderState * hardwareState) const
 		
 		uint32 state = currentData.state;
 		uint32 diffState = state ^ hardwareData.state;
+
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_FLUSH_STATE, state, hardwareData.state, diffState);
 		if (diffState != 0)
 		{
 			if (diffState & RenderStateData::STATE_BLEND)
@@ -233,6 +236,7 @@ void RenderState::Flush(RenderState * hardwareState) const
     if(textureState != hardwareState->textureState &&
        textureState != InvalidUniqueHandle)
     {
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_FLUSH_TS, 0);
         DVASSERT(InvalidUniqueHandle != hardwareState->textureState);
         
         const TextureStateData& currentTextureData = RenderManager::Instance()->GetTextureState(textureState);
@@ -242,6 +246,7 @@ void RenderState::Flush(RenderState * hardwareState) const
         uint32 maxIndex = Max((currentTextureData.minmaxTextureIndex & 0x0000FF00), (hardwareTextureData.minmaxTextureIndex & 0x0000FF00)) >> 8;
         for(size_t i = minIndex; i <= maxIndex; ++i)
         {
+            Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_FLUSH_TS, 1, i);
             if(currentTextureData.textures[i] != hardwareTextureData.textures[i])
             {
                 SetTextureLevelInHW(i, currentTextureData.textures[i]);
@@ -258,8 +263,10 @@ void RenderState::Flush(RenderState * hardwareState) const
         RENDER_VERIFY(glActiveTexture(GL_TEXTURE0));
 #endif
 
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_FLUSH_SHADER, 0, 0, 0, shader);
     if (shader)
     {
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_FLUSH_SHADER, 1, 0, 0 ,shader);
         shader->Bind();
         shader->BindDynamicParameters();
     }
@@ -285,6 +292,7 @@ inline void RenderState::SetColorMaskInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::colormask = %d %d %d %d", redMask, greenMask, blueMask, alphaMask);
 #endif    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_COLOR_MASK, state);
     RENDER_VERIFY(glColorMask(redMask, 
                               greenMask, 
                               blueMask, 
@@ -299,6 +307,7 @@ inline void RenderState::SetStensilTestInHW(uint32 state) const
         Logger::FrameworkDebug("RenderState::stencil = true");
 #endif    
 		RENDER_VERIFY(glEnable(GL_STENCIL_TEST));
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL, 1);
 	}
 	else
 	{
@@ -306,6 +315,7 @@ inline void RenderState::SetStensilTestInHW(uint32 state) const
         Logger::FrameworkDebug("RenderState::stencil = false");
 #endif    
 		RENDER_VERIFY(glDisable(GL_STENCIL_TEST));
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL, 0);
 	}
 }
 
@@ -316,6 +326,7 @@ inline void RenderState::SetEnableBlendingInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::blend = true");
 #endif    
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_BLEND, 1);
         RENDER_VERIFY(glEnable(GL_BLEND));
     }
     else 
@@ -323,6 +334,7 @@ inline void RenderState::SetEnableBlendingInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::blend = false");
 #endif    
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_BLEND, 0);
         RENDER_VERIFY(glDisable(GL_BLEND));
     }
 }
@@ -334,14 +346,15 @@ inline void RenderState::SetCullInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::cullface = true");
 #endif    
-
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_BLEND, 1);
         RENDER_VERIFY(glEnable(GL_CULL_FACE));
     }
     else 
     {
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::cullface = false");
-#endif    
+#endif   
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_BLEND, 0);
         RENDER_VERIFY(glDisable(GL_CULL_FACE));
     }
 }
@@ -351,7 +364,7 @@ inline void RenderState::SetCullModeInHW(eFace cullMode) const
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::cull_mode = %d", cullMode);
 #endif    
-
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_CULL_MODE, cullMode);
     RENDER_VERIFY(glCullFace(CULL_FACE_MAP[cullMode]));
 }
 
@@ -362,24 +375,27 @@ inline void RenderState::SetBlendModeInHW(eBlendMode  sourceFactor,
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::blend_src_dst = (%d, %d)", sourceFactor, destFactor);
 #endif    
-
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_BLEND_MODE, sourceFactor, destFactor);
     RENDER_VERIFY(glBlendFunc(BLEND_MODE_MAP[sourceFactor], BLEND_MODE_MAP[destFactor]));
 }
 
 inline void RenderState::SetTextureLevelInHW(uint32 textureLevel, Texture* texture) const
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_TEXTURE_LEVEL, 1, textureLevel, 0, texture);
 	RENDER_VERIFY(glActiveTexture(GL_TEXTURE0 + textureLevel));
     if(texture)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::bind_texture %d = (%d)", textureLevel, texture->id);
 #endif
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_TEXTURE_LEVEL, 2, textureLevel, texture->id, texture);
         RenderManager::Instance()->HWglBindTexture(texture->id, texture->textureType);
     }else
     {
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::bind_texture %d = (%d)", textureLevel, 0);
 #endif    
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_TEXTURE_LEVEL, 3);
         RenderManager::Instance()->HWglBindTexture(0);
     }    
 }
@@ -390,6 +406,7 @@ inline void RenderState::SetDepthTestInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::depth_test = true");
 #endif    
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_DEPTH_TEST, 1);
         RENDER_VERIFY(glEnable(GL_DEPTH_TEST));
     }
     else
@@ -397,6 +414,7 @@ inline void RenderState::SetDepthTestInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::depth_test = false");
 #endif    
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_DEPTH_TEST, 0);
         RENDER_VERIFY(glDisable(GL_DEPTH_TEST));
     }    
 }
@@ -408,7 +426,7 @@ inline void RenderState::SetDepthWriteInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::depth_mask = true");
 #endif
-
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_DEPTH_WRITE, 1);
         RENDER_VERIFY(glDepthMask(GL_TRUE));
     }
     else
@@ -416,6 +434,7 @@ inline void RenderState::SetDepthWriteInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::depth_mask = false");
 #endif    
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_DEPTH_WRITE, 0);
         RENDER_VERIFY(glDepthMask(GL_FALSE));
     }
 }
@@ -425,7 +444,7 @@ inline void RenderState::SetDepthFuncInHW(eCmpFunc depthFunc) const
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::depth func = (%d)", depthFunc);
 #endif    
-
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_DEPTH_FUNC, depthFunc);
 	RENDER_VERIFY(glDepthFunc(COMPARE_FUNCTION_MAP[depthFunc]));
 }
 
@@ -436,6 +455,7 @@ inline void RenderState::SetScissorTestInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::scissor_test = true");
 #endif  
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_SCISSOR_TEST, 1);
 		RENDER_VERIFY(glEnable(GL_SCISSOR_TEST));
 	}
 	else
@@ -443,6 +463,7 @@ inline void RenderState::SetScissorTestInHW(uint32 state) const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::scissor_test = false");
 #endif  
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_SCISSOR_TEST, 0);
 		RENDER_VERIFY(glDisable(GL_SCISSOR_TEST));
 	}
 }
@@ -450,6 +471,7 @@ inline void RenderState::SetScissorTestInHW(uint32 state) const
 inline void RenderState::SetFillModeInHW(eFillMode fillMode) const
 {
 #if defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_FILL_MODE, fillMode);
 	RENDER_VERIFY(glPolygonMode(GL_FRONT_AND_BACK, FILLMODE_MAP[fillMode]));
 #endif
 }
@@ -466,10 +488,15 @@ inline void RenderState::SetStencilFuncInHW(eCmpFunc stencilFunc0, eCmpFunc sten
 {
 	if(stencilFunc0 == stencilFunc1)
 	{
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL_FUNC, 0);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL_FUNC, stencilFunc0, stencilRef, stencilMask);
 		RENDER_VERIFY(glStencilFunc(COMPARE_FUNCTION_MAP[stencilFunc0], stencilRef, stencilMask));
 	}
 	else
 	{
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL_FUNC, 1);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL_FUNC, stencilFunc0, stencilRef, stencilMask);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL_FUNC, stencilFunc1, stencilRef, stencilMask);
 		RENDER_VERIFY(glStencilFuncSeparate(CULL_FACE_MAP[FACE_FRONT], COMPARE_FUNCTION_MAP[stencilFunc0], stencilRef, stencilMask));
 		RENDER_VERIFY(glStencilFuncSeparate(CULL_FACE_MAP[FACE_BACK], COMPARE_FUNCTION_MAP[stencilFunc1], stencilRef, stencilMask));
 	}
@@ -497,6 +524,8 @@ inline void RenderState::SetStencilOpInHW(eStencilOp stencilFail0,
 										  eStencilOp stencilZFail1,
 										  eStencilOp stencilPass1) const
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL_OP, stencilFail0, stencilZFail0, stencilPass0);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RS_HW_SET_STENCIL_OP, stencilFail1, stencilZFail1, stencilPass1);
 	RENDER_VERIFY(glStencilOpSeparate(CULL_FACE_MAP[FACE_FRONT], STENCIL_OP_MAP[stencilFail0], STENCIL_OP_MAP[stencilZFail0], STENCIL_OP_MAP[stencilPass0]));
 	RENDER_VERIFY(glStencilOpSeparate(CULL_FACE_MAP[FACE_BACK], STENCIL_OP_MAP[stencilFail1], STENCIL_OP_MAP[stencilZFail1], STENCIL_OP_MAP[stencilPass1]));
 }

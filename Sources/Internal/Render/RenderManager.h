@@ -147,7 +147,7 @@ public:
         
         uint32 visibleRenderObjectCount;
         uint32 occludedRenderObjectCount;
-    };
+    };    
     
     static void Create(Core::eRenderer renderer);
 

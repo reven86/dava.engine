@@ -86,6 +86,20 @@ namespace DAVA
 
 	static ApplicationCore * core = 0;
 
+
+
+CommandHistory::CommandHistory()
+{
+    commandBuffer.resize(10000);
+    currSlot = 0;
+}
+void CommandHistory::AddCommand(CommandHistory::Command::CommandType ct, int32 p1, int32 p2, int32 p3, const void* pp)
+{
+    commandBuffer[currSlot++] = CommandHistory::Command(ct, p1, p2, p3, pp);
+    if (currSlot==commandBuffer.size())
+        currSlot = 0;
+}
+
 Core::Core()
 {
 	globalFrameIndex = 1;

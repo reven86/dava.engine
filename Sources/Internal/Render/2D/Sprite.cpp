@@ -1147,6 +1147,7 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 void Sprite::Draw(DrawState * state)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SPRITE_DRAW, 0, 0, 0, this);
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;

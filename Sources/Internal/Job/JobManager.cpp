@@ -33,6 +33,7 @@
 #include "Base/ScopedPtr.h"
 #include "Platform/Thread.h"
 #include "Job/JobWaiter.h"
+#include "Core/Core.h"
 
 namespace DAVA
 {
@@ -54,6 +55,7 @@ void JobManager::Update()
 
 void JobManager::UpdateMainQueue()
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_JOB_MAIN_QUE);
 	mainQueue->Update();
 }
 

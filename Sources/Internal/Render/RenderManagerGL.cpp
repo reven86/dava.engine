@@ -289,6 +289,7 @@ void RenderManager::EndFrame()
     
 void RenderManager::MakeGLScreenShot()
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_MAKE_SCREENSHOT);
     Logger::FrameworkDebug("RenderManager::MakeGLScreenShot");
 #if defined(__DAVAENGINE_OPENGL__)
     
@@ -361,10 +362,12 @@ void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates
         if (currentRenderTarget)
         {
             RENDER_VERIFY(glViewport(0, 0, currentRenderTarget->GetTexture()->GetWidth(), currentRenderTarget->GetTexture()->GetHeight()));
+            Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_SET_VIEWPORT, currentRenderTarget->GetTexture()->GetWidth(), currentRenderTarget->GetTexture()->GetHeight(), 1);
         }
         else
         {
             RENDER_VERIFY(glViewport(0, 0, frameBufferWidth, frameBufferHeight));
+            Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_SET_VIEWPORT, frameBufferWidth, frameBufferHeight, 2);
         }
         return;
     }
@@ -372,6 +375,7 @@ void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates
     {
         viewport = rect;
         RENDER_VERIFY(glViewport((int32)rect.x, (int32)rect.y, (int32)rect.dx, (int32)rect.dy));
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_SET_VIEWPORT, (int32)rect.dx, (int32)rect.dy, 3);
         return;
     }
 
@@ -390,6 +394,7 @@ void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates
     }
     
     RENDER_VERIFY(glViewport(x, y, width, height));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_SET_VIEWPORT, width, height, 4);
     viewport.x = (float32)x;
     viewport.y = (float32)y;
     viewport.dx = (float32)width;
@@ -429,6 +434,7 @@ void RenderManager::SetRenderOrientation(int32 orientation)
 void RenderManager::SetCullOrder(eCullOrder cullOrder)
 {
     glFrontFace(cullOrder);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_CULL_ORDER, cullOrder);
 }
     
 void RenderManager::FlushState()
@@ -465,6 +471,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 	}
 
     RENDER_VERIFY(glDrawArrays(mode, first, count));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_DRAW_ARRAYS, mode, first, count);
     stats.drawArraysCalls++;
     switch(type)
     {
@@ -520,6 +527,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 	};
 	
 	RENDER_VERIFY(glDrawElements(mode, count, indexTypes[indexFormat], indices));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_DRAW_ELEMENTS, mode, count, indexFormat, indices);
     stats.drawElementsCalls++;
     switch(type)
     {
@@ -548,10 +556,12 @@ void RenderManager::ClearWithColor(float32 r, float32 g, float32 b, float32 a)
 {
 	RENDER_VERIFY(glClearColor(r, g, b, a));
 	RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_CLEAR_COLOR);    
 }
 
 void RenderManager::ClearDepthBuffer(float32 depth)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_CLEAR_DEPTH);    
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
@@ -562,12 +572,14 @@ void RenderManager::ClearDepthBuffer(float32 depth)
 
 void RenderManager::ClearStencilBuffer(int32 stencil)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_CLEAR_STENCIL);    
 	RENDER_VERIFY(glClearStencil(stencil));
 	RENDER_VERIFY(glClear(GL_STENCIL_BUFFER_BIT));
 }
     
 void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_CLEAR_ALL);    
     RENDER_VERIFY(glClearColor(color.r, color.g, color.b, color.a));
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepthf(depth));
@@ -586,6 +598,7 @@ void RenderManager::SetHWClip(const Rect &rect)
 	currentClip = rect;
 	if(rect.dx < 0 || rect.dy < 0)
 	{
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_SET_HW_CLIP, 0);
 		RENDER_VERIFY(glDisable(GL_SCISSOR_TEST));
 		return;
 	}
@@ -603,11 +616,13 @@ void RenderManager::SetHWClip(const Rect &rect)
 	
 	RENDER_VERIFY(glEnable(GL_SCISSOR_TEST));
 	RENDER_VERIFY(glScissor(x, y, width, height));
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_SET_HW_CLIP, 1, width, height);
 }
 
 
 void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_SET_HW_RT_SPRITE, 0, 0, 0, renderTarget);
     currentRenderTarget = renderTarget;
     
 	if (renderTarget == NULL)
@@ -671,6 +686,7 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 
 void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_SET_HW_RT_TEXTURE, 0, 0, 0, renderTarget);
     //currentRenderTarget = renderTarget;
 	renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
 	//IdentityModelMatrix();
@@ -682,6 +698,7 @@ void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 
 void RenderManager::DiscardFramebufferHW(uint32 attachments)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_DISCARD_FB, attachments);
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     if (!attachments) 
       return;
@@ -704,20 +721,24 @@ void RenderManager::DiscardFramebufferHW(uint32 attachments)
     
 void RenderManager::HWglDeleteBuffers(GLsizei count, const GLuint * buffers)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_DELETE_BUFFER, count, 0, 0, buffers);
     // TODO: this is, probably, temporary fix.
     for(uint32 n = 0; n < (uint32)count; ++n)
     {
         if(bufferBindingId[0] == buffers[n])
         {
             RENDER_VERIFY(glBindBuffer(GL_ARRAY_BUFFER, 0));
+            Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_GL_BIND_BUFFER, 1, 0);
             bufferBindingId[0] = 0;
         }
         else if (bufferBindingId[1] == buffers[n])
         {
             RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+            Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_GL_BIND_BUFFER, 2, 0);
             bufferBindingId[1] = 0;
         }
     }
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_GL_DELETE_BUFFER, count, 0, 0, buffers);
 #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
     RENDER_VERIFY(glDeleteBuffersARB(count, buffers));
 #else
@@ -727,9 +748,11 @@ void RenderManager::HWglDeleteBuffers(GLsizei count, const GLuint * buffers)
     
 void RenderManager::HWglBindBuffer(GLenum target, GLuint buffer)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_BIND_BUFFER, target - GL_ARRAY_BUFFER, buffer);
     DVASSERT(target - GL_ARRAY_BUFFER <= 1);
     if (bufferBindingId[target - GL_ARRAY_BUFFER] != buffer)
     {
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_GL_BIND_BUFFER, target - GL_ARRAY_BUFFER, buffer);
         RENDER_VERIFY(glBindBuffer(target, buffer));
         bufferBindingId[target - GL_ARRAY_BUFFER] = buffer;
     }
@@ -737,11 +760,13 @@ void RenderManager::HWglBindBuffer(GLenum target, GLuint buffer)
     
 void RenderManager::AttachRenderData()
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_ATTACH_RENDERDATA, 0, 0, 0, currentRenderData);
     if (!currentRenderData)return;
     RENDERER_UPDATE_STATS(attachRenderDataCount++);
     
 	Shader * shader = hardwareState.shader;
     uint32 currentAttributeMask = shader->GetRequiredVertexFormat();
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_ATTACH_RENDERDATA, 1, currentAttributeMask);
     
     if (attachedRenderData == currentRenderData && cachedAttributeMask == currentAttributeMask)
     {
@@ -762,12 +787,14 @@ void RenderManager::AttachRenderData()
     {
         if(iboChanged)
         {
+            Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_ATTACH_RENDERDATA, 2);
             HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentRenderData->indexBuffer);
         }
     
     
         if(vboChanged)
         {
+            Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_ATTACH_RENDERDATA, 3);
             int32 currentEnabledStreams = 0;
             
             HWglBindBuffer(GL_ARRAY_BUFFER, currentRenderData->vboBuffer);
@@ -783,8 +810,8 @@ void RenderManager::AttachRenderData()
             for (int32 k = 0; k < size; ++k)
             {
                 RenderDataStream * stream = currentRenderData->streamArray[k];
-                GLboolean normalized = GL_FALSE;
-                
+                GLboolean normalized = GL_FALSE;                                
+
                 int32 attribIndex = shader->GetAttributeIndex(stream->formatMark);
                 if (attribIndex != -1)
                 {
@@ -794,11 +821,13 @@ void RenderManager::AttachRenderData()
                     {
                         normalized = GL_TRUE;
                     }
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_GL_SET_ATTRIB_POINTER, attribIndex, stream->type, stream->stride, stream->pointer);
                     RENDER_VERIFY(glVertexAttribPointer(attribIndex, stream->size, VERTEX_DATA_TYPE_TO_GL[stream->type], normalized, stream->stride, stream->pointer));
                     if (DEBUG)Logger::FrameworkDebug("shader glVertexAttribPointer: %d", attribIndex);
                     
                     if (!(cachedEnabledStreams & attribIndexBitPos))  // enable only if it was not enabled on previous step
                     {
+                        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_GL_ENABLE_ATTRIB_POINTER, attribIndex);
                         RENDER_VERIFY(glEnableVertexAttribArray(attribIndex));
                         if (DEBUG)Logger::FrameworkDebug("shader glEnableVertexAttribArray: %d", attribIndex);
                     }
@@ -817,6 +846,7 @@ void RenderManager::AttachRenderData()
                     if(streamsToDisable & 0x1)
                     {
                         if(DEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", attribIndex);
+                        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_GL_DISABLE_ATTRIB_POINTER, attribIndex);
                         RENDER_VERIFY(glDisableVertexAttribArray(attribIndex));
                     }
                     
@@ -875,6 +905,7 @@ int32 RenderManager::HWglGetLastTextureID(int textureType)
 	
 void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_BIND_TEXTURE, tId, textureType);
     RENDER_VERIFY(glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId));
 
     lastBindedTexture[textureType] = tId;
@@ -903,6 +934,7 @@ int32 RenderManager::HWglGetLastFBO()
 
 void RenderManager::HWglBindFBO(const int32 fbo)
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_BIND_FBO, fbo);
     //	if(0 != fbo)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);	// Unbind the FBO for now
@@ -928,6 +960,7 @@ void RenderManager::DiscardDepth()
     if (glDiscardFramebufferEXT == NULL)
         return;
 #endif
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RM_HW_DISCARD_DEPTH);
     static const GLenum discards[]  = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
     RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));
 #endif

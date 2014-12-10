@@ -322,6 +322,7 @@ void UIControlSystem::Update()
 void UIControlSystem::Draw()
 {
     TIME_PROFILE("UIControlSystem::Draw");
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_UICONTROLSYSTEM_DRAW, 1);    
 
     drawCounter = 0;
     if (!ui3DViewCount)
@@ -346,6 +347,8 @@ void UIControlSystem::Draw()
 		frameSkip--;
 	}
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
+
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_UICONTROLSYSTEM_DRAW, 1);    
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)

@@ -75,12 +75,15 @@ void ApplicationCore::Update(float32 timeElapsed)
 
 void ApplicationCore::Draw()
 {
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_FRAME_START);
 	TIME_PROFILE("ApplicationCore::Draw");
 
 	UIControlSystem::Instance()->Draw();	
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
+
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_FRAME_END);
 }
 
 void ApplicationCore::BeginFrame()

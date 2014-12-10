@@ -45,6 +45,115 @@
 namespace DAVA 
 {
 	
+
+class CommandHistory
+{
+public:        
+    struct Command
+    {
+        enum CommandType
+        {
+            CHC_UNKNOWN,
+            CHC_FRAME_START,
+            CHC_FRAME_END,
+            CHC_JOB_MAIN_QUE,
+            CHC_JOB_PERFORM,
+            CHC_SPRITE_DRAW,
+            CHC_RDO_GL_GEN_BUFFER,
+            CHC_RDO_GL_BUFFER_DATA,
+            CHC_RDO_GL_BIND_BUFFER,
+            CHC_RDO_GL_DELETE_BUFFER,
+            CHC_RM_MAKE_SCREENSHOT,
+            CHC_RM_SET_VIEWPORT,
+            CHC_RM_CULL_ORDER,
+            CHC_RM_DRAW_ARRAYS,
+            CHC_RM_DRAW_ELEMENTS,
+            CHC_RM_CLEAR_COLOR,
+            CHC_RM_CLEAR_DEPTH,
+            CHC_RM_CLEAR_STENCIL,
+            CHC_RM_CLEAR_ALL,
+            CHC_RM_SET_HW_CLIP,
+            CHC_RM_SET_HW_RT_SPRITE,
+            CHC_RM_SET_HW_RT_TEXTURE,
+            CHC_RM_DISCARD_FB,
+            CHC_RM_HW_BIND_BUFFER,
+            CHC_RM_HW_DELETE_BUFFER,
+            CHC_RM_GL_GEN_BUFFER,
+            CHC_RM_GL_BUFFER_DATA,
+            CHC_RM_GL_BIND_BUFFER,
+            CHC_RM_GL_DELETE_BUFFER,
+
+            CHC_RM_HW_ATTACH_RENDERDATA,
+            CHC_RM_GL_ENABLE_ATTRIB_POINTER,
+            CHC_RM_GL_DISABLE_ATTRIB_POINTER,
+            CHC_RM_GL_SET_ATTRIB_POINTER,
+
+            CHC_RM_HW_BIND_TEXTURE,
+            CHC_RM_HW_BIND_FBO,
+            CHC_RM_HW_DISCARD_DEPTH,
+
+            CHC_RS_FLUSH, 
+            CHC_RS_FLUSH_STATE,
+            CHC_RS_FLUSH_TS,
+            CHC_RS_FLUSH_SHADER,
+            CHC_RS_HW_SET_COLOR_MASK,
+            CHC_RS_HW_SET_STENCIL,
+            CHC_RS_HW_SET_BLEND,
+            CHC_RS_HW_SET_CULL,
+            CHC_RS_HW_SET_CULL_MODE,
+            CHC_RS_HW_SET_BLEND_MODE,
+            CHC_RS_HW_SET_TEXTURE_LEVEL,
+            CHC_RS_HW_SET_DEPTH_TEST,
+            CHC_RS_HW_SET_DEPTH_WRITE,
+            CHC_RS_HW_SET_DEPTH_FUNC,
+            CHC_RS_HW_SET_SCISSOR_TEST,
+            CHC_RS_HW_SET_FILL_MODE,
+            CHC_RS_HW_SET_STENCIL_FUNC,
+            CHC_RS_HW_SET_STENCIL_OP,
+            CHC_SHADER_RECOMPILE,
+            CHC_SHADER_LINK,
+            CHC_SHADER_SET_UNIFORM_BY_INDEX,
+            CHC_SHADER_SET_UNIFORM_BY_UNIFORM,
+            CHC_SHADER_DELETE,
+            CHC_SHADER_COMPILE,
+            CHC_SHADER_BIND,
+            CHC_SHADER_UNBIND,
+            CHC_SHADER_BIND_DP_START,
+            CHC_SHADER_BIND_DP,
+            CHC_TEXTURE_RELEASE,
+            CHC_TEXTURE_CREATE_FROM_DATA,
+            CHC_TEXTURE_CREATE_TEXT_FROM_DATA,
+            CHC_TEXTURE_TEX_IMAGE,
+            CHC_TEXTURE_SET_WRAP,
+            CHC_TEXTURE_SET_FILTER,
+            CHC_TEXTURE_GEN_MM,
+            CHC_TEXTURE_GEN_PIX,
+            CHC_TEXTURE_FLUSH2RENDERER,
+            CHC_TEXTURE_CREATE_FBO,
+            CHC_TEXTURE_CREATE_FBO_BUFFERS,
+            CHC_TEXTURE_READ_DATA_TO_IMG,
+            CHC_TEXTURE_GEN_ID,
+
+            CHC_SCENE_DRAW,
+            CHC_UICONTROLSYSTEM_DRAW,
+
+
+
+            CHC_COMMANDS_END
+        };
+
+        CommandType command;
+        int32 param1, param2, param3;
+        const void *pointer;
+        Command():command(CHC_UNKNOWN), param1(0), param2(0), param3(0), pointer(NULL){}
+        Command(CommandType ct, int32 p1, int32 p2, int32 p3, const void* pp):command(ct), param1(p1), param2(p2), param3(p3), pointer(pp){}
+    };
+
+    CommandHistory();
+    void AddCommand(Command::CommandType ct, int32 p1=0, int32 p2=0, int32 p3=0, const void* pp=NULL);
+    Vector<Command> commandBuffer;
+    int32 currSlot;
+};
 	
 #if defined(__DAVAENGINE_WIN32__)
 	typedef HINSTANCE AppHandle;
@@ -164,6 +273,8 @@ public:
 
 	Vector<String> & GetCommandLine(); 
 	bool IsConsoleMode();
+
+    CommandHistory commandHistory;
 	
 public:
 	void SetOptions(KeyedArchive * archiveOfOptions);

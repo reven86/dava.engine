@@ -821,6 +821,7 @@ void Scene::Update(float timeElapsed)
 void Scene::Draw()
 {
     TIME_PROFILE("Scene::Draw");
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SCENE_DRAW, 1);    
 
 	//float timeElapsed = SystemTimer::Instance()->FrameDelta();
 
@@ -851,6 +852,7 @@ void Scene::Draw()
     //foliageSystem->DebugDrawVegetation();
     
 	drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SCENE_DRAW, 2);    
 }
     
 void Scene::SceneDidLoaded()
