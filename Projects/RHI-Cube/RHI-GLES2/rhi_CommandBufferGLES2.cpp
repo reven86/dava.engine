@@ -18,25 +18,23 @@ namespace rhi
 enum
 CommandGLES2
 {
-    gles2_Begin,
-    gles2_End,
-    gles2_Clear,
+    GLES2__BEGIN,
+    GLES2__END,
+    GLES2__CLEAR,
 
-    gles2_SetStreamSource,
-    gles2_SetIndices,
+    GLES2__SET_STREAM_SOURCE,
+    GLES2__SET_INDICES,
 
-    gles2_SetPipelineState,
-    gles2_SetVertexProgConstBuffer,
-    gles2_SetFragmentProgConstBuffer,
-    gles2_SetFragmentTexture,
+    GLES2__SET_PIPELINE_STATE,
+    GLES2__SET_VERTEX_PROG_CONST_BUFFER,
+    GLES2__SET_FRAGMENT_PROG_CONST_BUFFER,
+    GLES2__SET_TEXTURE,
 
-    gles2_SetBlendState,
-    
-    gles2_DrawPrimitive,
-    gles2_DrawIndexedPrimitive,
+    GLES2__DRAW_PRIMITIVE,
+    GLES2__DRAW_INDEXED_PRIMITIVE,
 
 
-    gles2_Nop
+    GLES2__NOP
 };
 
 
@@ -63,7 +61,7 @@ Default()
 void
 Begin( Handle cmdBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->command( gles2_Begin );
+    CommandBufferPool::Get(cmdBuf)->command( GLES2__BEGIN );
 }
 
 
@@ -72,7 +70,7 @@ Begin( Handle cmdBuf )
 void
 End( Handle cmdBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->command( gles2_End );
+    CommandBufferPool::Get(cmdBuf)->command( GLES2__END );
 }
 
 
@@ -81,7 +79,7 @@ End( Handle cmdBuf )
 void
 Clear( Handle cmdBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->command( gles2_Clear, 0xFF808080, nonaliased_cast<float,uint32>(1.0f) );
+    CommandBufferPool::Get(cmdBuf)->command( GLES2__CLEAR, 0xFF808080, nonaliased_cast<float,uint32>(1.0f) );
 }
 
 
@@ -90,7 +88,7 @@ Clear( Handle cmdBuf )
 void
 SetPipelineState( Handle cmdBuf, Handle ps )
 {
-    CommandBufferPool::Get(cmdBuf)->command( gles2_SetPipelineState, ps );
+    CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_PIPELINE_STATE, ps );
 }
 
 
@@ -99,7 +97,7 @@ SetPipelineState( Handle cmdBuf, Handle ps )
 void
 SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
-    CommandBufferPool::Get(cmdBuf)->command( gles2_SetStreamSource, vb, streamIndex );
+    CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_STREAM_SOURCE, vb, streamIndex );
 }
 
 
@@ -112,7 +110,7 @@ SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->command( gles2_SetVertexProgConstBuffer, bufIndex, buffer );
+        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer );
 }
 
 
@@ -129,7 +127,7 @@ SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 void
 SetIndices( Handle cmdBuf, Handle ib )
 {
-    CommandBufferPool::Get(cmdBuf)->command( gles2_SetIndices, ib );
+    CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_INDICES, ib );
 }
 
 
@@ -142,7 +140,7 @@ SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->command( gles2_SetFragmentProgConstBuffer, bufIndex, buffer );
+        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer );
 }
 
 
@@ -154,7 +152,7 @@ SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 //    L_ASSERT(tex);
 
     if( tex )
-        CommandBufferPool::Get(cmdBuf)->command( gles2_SetFragmentTexture, unitIndex, tex );
+        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_TEXTURE, unitIndex, tex );
 }
 
 
@@ -190,7 +188,7 @@ DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
             break;
     }
 
-    CommandBufferPool::Get(cmdBuf)->command( gles2_DrawPrimitive, uint32(mode), v_cnt );
+    CommandBufferPool::Get(cmdBuf)->command( GLES2__DRAW_PRIMITIVE, uint32(mode), v_cnt );
 }
 
 
@@ -210,7 +208,7 @@ DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
             break;
     }
 
-    CommandBufferPool::Get(cmdBuf)->command( gles2_DrawIndexedPrimitive, uint32(mode), v_cnt );
+    CommandBufferPool::Get(cmdBuf)->command( GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt );
 }
 
 
@@ -385,7 +383,7 @@ CommandBuffer_t::replay()
 
         switch( cmd )
         {
-            case gles2_Begin :
+            case GLES2__BEGIN :
             {
                 GL_CALL(glFrontFace( GL_CW ));
                 GL_CALL(glEnable( GL_CULL_FACE ));
@@ -396,12 +394,12 @@ CommandBuffer_t::replay()
                 GL_CALL(glDepthMask( GL_TRUE ));
             }   break;
             
-            case gles2_End :
+            case GLES2__END :
             {
                 glFlush();
             }   break;
             
-            case gles2_Clear :
+            case GLES2__CLEAR :
             {
                 uint32  clr (arg[0]);
                 float   z   = nonaliased_cast<uint32,float>(arg[1]);
@@ -413,38 +411,38 @@ CommandBuffer_t::replay()
                 c += 2;    
             }   break;
             
-            case gles2_SetStreamSource :
+            case GLES2__SET_STREAM_SOURCE :
             {
                 VertexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
                 c += 2;
             }   break;
             
-            case gles2_SetIndices :
+            case GLES2__SET_INDICES :
             {
                 IndexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
                 c += 1;
             }   break;
 
-            case gles2_SetPipelineState :
+            case GLES2__SET_PIPELINE_STATE :
             {
 //                PipelineState_SetToRHI( (PipelineState*)(arg[0]) );
                 cur_ps = (Handle)(arg[0]);
                 c += 1;
             }   break;
             
-            case gles2_SetVertexProgConstBuffer :
+            case GLES2__SET_VERTEX_PROG_CONST_BUFFER :
             {
                 vp_const[ arg[0] ] = (Handle)(arg[1]);
                 c += 2;
             }   break;
 
-            case gles2_SetFragmentProgConstBuffer :
+            case GLES2__SET_FRAGMENT_PROG_CONST_BUFFER :
             {
                 fp_const[ arg[0] ] = (Handle)(arg[1]);
                 c += 2;
             }   break;
             
-            case gles2_DrawPrimitive :
+            case GLES2__DRAW_PRIMITIVE :
             {
                 unsigned    v_cnt   = arg[1];
                 int         mode    = arg[0];
@@ -467,7 +465,7 @@ CommandBuffer_t::replay()
                 c += 2;    
             }   break;
             
-            case gles2_DrawIndexedPrimitive :
+            case GLES2__DRAW_INDEXED_PRIMITIVE :
             {
                 unsigned    v_cnt   = arg[1];
                 int         mode    = arg[0];

@@ -129,7 +129,7 @@ Create( const PipelineState::Descriptor& desc )
         {
             switch( desc.vertexLayout.ElementDataType(i) )
             {
-                case vdtFloat :
+                case VDT_FLOAT :
                 {
                     vprog->elem[i].type       = GL_FLOAT;
                     vprog->elem[i].normalized = GL_FALSE;
@@ -138,9 +138,9 @@ Create( const PipelineState::Descriptor& desc )
 
             switch( desc.vertexLayout.ElementSemantics(i) )
             {
-                case vsPosition : vprog->elem[i].name = "attr_position"; break;
-                case vsNormal   : vprog->elem[i].name = "attr_normal"; break;
-                case vsTexCoord : vprog->elem[i].name = "attr_texcoord"; break;
+                case VS_POSITION : vprog->elem[i].name = "attr_position"; break;
+                case VS_NORMAL   : vprog->elem[i].name = "attr_normal"; break;
+                case VS_TEXCOORD : vprog->elem[i].name = "attr_texcoord"; break;
             }
             
             vprog->elem[i].count  = desc.vertexLayout.ElementDataCount( i );

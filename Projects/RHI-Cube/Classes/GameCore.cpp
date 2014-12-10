@@ -94,7 +94,7 @@ GameCore::SetupTriangle()
     rhi::PipelineState::Descriptor  psDesc;
 
     psDesc.vertexLayout.Clear();
-    psDesc.vertexLayout.AddElement( rhi::vsPosition, 0, rhi::vdtFloat, 3 );
+    psDesc.vertexLayout.AddElement( rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3 );
     psDesc.vprogUid = FastName("vp-simple");
     psDesc.fprogUid = FastName("fp-simple");
 
@@ -169,9 +169,9 @@ GameCore::SetupCube()
     rhi::PipelineState::Descriptor  psDesc;
 
     psDesc.vertexLayout.Clear();
-    psDesc.vertexLayout.AddElement( rhi::vsPosition, 0, rhi::vdtFloat, 3 );
-    psDesc.vertexLayout.AddElement( rhi::vsNormal, 0, rhi::vdtFloat, 3 );
-    psDesc.vertexLayout.AddElement( rhi::vsTexCoord, 0, rhi::vdtFloat, 2 );
+    psDesc.vertexLayout.AddElement( rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3 );
+    psDesc.vertexLayout.AddElement( rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3 );
+    psDesc.vertexLayout.AddElement( rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2 );
     psDesc.vprogUid = FastName("vp-shaded");
     psDesc.fprogUid = FastName("fp-shaded");
 

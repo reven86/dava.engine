@@ -140,12 +140,12 @@ VertexLayout::ElementSize( unsigned elem_i ) const
 
     switch( e.data_type )
     {
-        case vdtFloat   : return sizeof(float) * e.data_count;
-        case vdtHalf    : return sizeof(uint16) * e.data_count;
-        case vdtInt8N   : return sizeof(int8) * e.data_count;
-        case vdtUint8N  : return sizeof(uint8) * e.data_count;
-        case vdtUint8   : return sizeof(uint8) * e.data_count;
-        case vdtInt16N  : return sizeof(uint16) * e.data_count;
+        case VDT_FLOAT   : return sizeof(float) * e.data_count;
+        case VDT_HALF    : return sizeof(uint16) * e.data_count;
+        case VDT_INT8N   : return sizeof(int8) * e.data_count;
+        case VDT_UINT8N  : return sizeof(uint8) * e.data_count;
+        case VDT_UINT8   : return sizeof(uint8) * e.data_count;
+        case VDT_INT16N  : return sizeof(uint16) * e.data_count;
     }
 
     return 0;

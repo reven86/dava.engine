@@ -85,16 +85,16 @@ enum
 enum
 VertexSemantics
 {
-    vsPosition      = 1,
-    vsNormal        = 2,
-    vsColor         = 3,
-    vsTexCoord      = 4,
-    vsTangent       = 5,
-    vsBinormal      = 6,
-    vsBlendWeight   = 7,
-    vsBlendIndex    = 8,
+    VS_POSITION     = 1,
+    VS_NORMAL       = 2,
+    VS_COLOR        = 3,
+    VS_TEXCOORD     = 4,
+    VS_TANGENT      = 5,
+    VS_BINORMAL     = 6,
+    VS_BLENDWEIGHT  = 7,
+    VS_BLENDINDEX   = 8,
 
-    vsMaxCount      = 16
+    VS_MAXCOUNT     = 16
 };
 
 
@@ -105,14 +105,14 @@ VertexSemanticsName( VertexSemantics vs )
 {
     switch( vs )
     {
-        case vsPosition     : return "position";
-        case vsNormal       : return "normal";
-        case vsColor        : return "color";
-        case vsTexCoord     : return "texcoord";
-        case vsTangent      : return "tangent";
-        case vsBinormal     : return "binormal";
-        case vsBlendWeight  : return "blend_weight";
-        case vsBlendIndex   : return "blend_index";
+        case VS_POSITION    : return "position";
+        case VS_NORMAL      : return "normal";
+        case VS_COLOR       : return "color";
+        case VS_TEXCOORD    : return "texcoord";
+        case VS_TANGENT     : return "tangent";
+        case VS_BINORMAL    : return "binormal";
+        case VS_BLENDWEIGHT : return "blend_weight";
+        case VS_BLENDINDEX  : return "blend_index";
     }
 
     return "<unknown>";
@@ -124,12 +124,12 @@ VertexSemanticsName( VertexSemantics vs )
 enum
 VertexDataType
 {
-    vdtFloat    = 1,
-    vdtUint8    = 2,
-    vdtInt16N   = 3,
-    vdtInt8N    = 4,
-    vdtUint8N   = 5,
-    vdtHalf     = 6
+    VDT_FLOAT   = 1,
+    VDT_UINT8   = 2,
+    VDT_INT16N  = 3,
+    VDT_INT8N   = 4,
+    VDT_UINT8N  = 5,
+    VDT_HALF    = 6
 };
 
 
@@ -140,12 +140,12 @@ VertexDataTypeName( VertexDataType t )
 {
     switch( t )
     {
-        case vdtFloat   : return "float";
-        case vdtUint8   : return "uint8";
-        case vdtInt16N  : return "int16n";
-        case vdtInt8N   : return "int8n";
-        case vdtUint8N  : return "uint8n";
-        case vdtHalf    : return "half";
+        case VDT_FLOAT  : return "float";
+        case VDT_UINT8  : return "uint8";
+        case VDT_INT16N : return "int16n";
+        case VDT_INT8N  : return "int8n";
+        case VDT_UINT8N : return "uint8n";
+        case VDT_HALF   : return "half";
         default         : return "<unknown>";
     }
 }
