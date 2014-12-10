@@ -84,6 +84,7 @@ public:
     
 protected:
     
+    void RegisterTests();
     void RunTests();
     void ProcessTests();
     void FinishTests();

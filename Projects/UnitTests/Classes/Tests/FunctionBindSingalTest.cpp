@@ -41,16 +41,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static String functionBindSignalResultString;
 static bool functionBindSignalResult = true;
 
-#define TEST(expression) test(#expression, expression, __LINE__);
-void test(const char* str, bool res, unsigned int line)
-{
-	if (!res)
-	{
-		functionBindSignalResultString += Format("[Failed] - line %u\n", line);
-		functionBindSignalResult = false;
-	}
-}
-
 int staticFn0() { return 100; }
 int staticFn1(int i1) { return i1; }
 int staticFn2(int i1, int i2) { return i1 + i2; }
@@ -120,39 +110,17 @@ struct C : public M, virtual public V, virtual public A
 // =======================================================================================================================================
 
 FunctionBindSignalTest::FunctionBindSignalTest()
-: UITestTemplate<FunctionBindSignalTest>("FunctionBindSignalTest")
-, textInfoText(NULL)
-, done(false)
+: TestTemplate<FunctionBindSignalTest>("FunctionBindSignalTest")
 {
 	RegisterFunction(this, &FunctionBindSignalTest::TestFunction, Format("FunctionBindSignalTest"), NULL);
 }
 
 void FunctionBindSignalTest::LoadResources()
 {
-	UITestTemplate::LoadResources();
-	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
-	DVASSERT(font);
-	font->SetSize(20);
-
-	Rect textRect = GetRect();
-	textRect.SetPosition(textRect.GetPosition() + Vector2(1.0f, 31.0f));
-	textRect.SetSize(textRect.GetSize() - Vector2(1.0f, 31.0f));
-
-	textInfoText = new UIStaticText(textRect);
-	textInfoText->SetMultiline(true);
-	textInfoText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
-	textInfoText->SetFont(font);
-	textInfoText->SetTextColor(Color::White);
-	textInfoText->SetDebugDraw(true);
-
-	AddControl(textInfoText);
-    SafeRelease(font);
 }
 
 void FunctionBindSignalTest::UnloadResources()
 {
-	UITestTemplate::UnloadResources();
-	SafeRelease(textInfoText);
 }
 
 void FunctionBindSignalTest::DidAppear()
@@ -161,7 +129,6 @@ void FunctionBindSignalTest::DidAppear()
 
 void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::PerfFuncData *data)
 {
-	if (!done)
 	{
 		// ==================================================================================
 		// common functions testing
@@ -177,15 +144,15 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int(int, int, int, int, int, int, int)> static_f7(&staticFn7);
 		Function<int(int, int, int, int, int, int, int, int)> static_f8(&staticFn8);
 
-		TEST(static_f0() == staticFn0());
-		TEST(static_f1(3) == staticFn1(3));
-		TEST(static_f2(3, 8) == staticFn2(3, 8));
-		TEST(static_f3(3, 8, 5) == staticFn3(3, 8, 5));
-		TEST(static_f4(3, 8, 5, 0) == staticFn4(3, 8, 5, 0));
-		TEST(static_f5(3, 8, 5, 0, 2) == staticFn5(3, 8, 5, 0, 2));
-		TEST(static_f6(3, 8, 5, 0, 2, 11) == staticFn6(3, 8, 5, 0, 2, 11));
-		TEST(static_f7(3, 8, 5, 0, 2, 11, 8) == staticFn7(3, 8, 5, 0, 2, 11, 8));
-		TEST(static_f8(3, 8, 5, 0, 2, 11, 8, 2) == staticFn8(3, 8, 5, 0, 2, 11, 8, 2));
+		TEST_VERIFY(static_f0() == staticFn0());
+        TEST_VERIFY(static_f1(3) == staticFn1(3));
+        TEST_VERIFY(static_f2(3, 8) == staticFn2(3, 8));
+        TEST_VERIFY(static_f3(3, 8, 5) == staticFn3(3, 8, 5));
+        TEST_VERIFY(static_f4(3, 8, 5, 0) == staticFn4(3, 8, 5, 0));
+        TEST_VERIFY(static_f5(3, 8, 5, 0, 2) == staticFn5(3, 8, 5, 0, 2));
+        TEST_VERIFY(static_f6(3, 8, 5, 0, 2, 11) == staticFn6(3, 8, 5, 0, 2, 11));
+        TEST_VERIFY(static_f7(3, 8, 5, 0, 2, 11, 8) == staticFn7(3, 8, 5, 0, 2, 11, 8));
+        TEST_VERIFY(static_f8(3, 8, 5, 0, 2, 11, 8, 2) == staticFn8(3, 8, 5, 0, 2, 11, 8, 2));
 
 		A a;
 		Function<int(A*)> class_f0 = &A::classFn0;
@@ -206,23 +173,23 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int(A*, int, int, int, int, int, int)> class_f6c = &A::classFn6_const;
 		Function<int(A*, int, int, int, int, int, int, int)> class_f7c = &A::classFn7_const;
 
-		TEST(class_f0(&a) == a.classFn0());
-		TEST(class_f1(&a, 3) == a.classFn1(3));
-		TEST(class_f2(&a, 3, 8) == a.classFn2(3, 8));
-		TEST(class_f3(&a, 3, 8, 5) == a.classFn3(3, 8, 5));
-		TEST(class_f4(&a, 3, 8, 5, 0) == a.classFn4(3, 8, 5, 0));
-		TEST(class_f5(&a, 3, 8, 5, 0, 2) == a.classFn5(3, 8, 5, 0, 2));
-		TEST(class_f6(&a, 3, 8, 5, 0, 2, 3) == a.classFn6(3, 8, 5, 0, 2, 3));
-		TEST(class_f7(&a, 3, 8, 5, 0, 2, 3, 4) == a.classFn7(3, 8, 5, 0, 2, 3, 4));
+        TEST_VERIFY(class_f0(&a) == a.classFn0());
+        TEST_VERIFY(class_f1(&a, 3) == a.classFn1(3));
+        TEST_VERIFY(class_f2(&a, 3, 8) == a.classFn2(3, 8));
+        TEST_VERIFY(class_f3(&a, 3, 8, 5) == a.classFn3(3, 8, 5));
+        TEST_VERIFY(class_f4(&a, 3, 8, 5, 0) == a.classFn4(3, 8, 5, 0));
+        TEST_VERIFY(class_f5(&a, 3, 8, 5, 0, 2) == a.classFn5(3, 8, 5, 0, 2));
+        TEST_VERIFY(class_f6(&a, 3, 8, 5, 0, 2, 3) == a.classFn6(3, 8, 5, 0, 2, 3));
+        TEST_VERIFY(class_f7(&a, 3, 8, 5, 0, 2, 3, 4) == a.classFn7(3, 8, 5, 0, 2, 3, 4));
 
-		TEST(class_f0c(&a) == a.classFn0_const());
-		TEST(class_f1c(&a, 3) == a.classFn1_const(3));
-		TEST(class_f2c(&a, 3, 8) == a.classFn2_const(3, 8));
-		TEST(class_f3c(&a, 3, 8, 5) == a.classFn3_const(3, 8, 5));
-		TEST(class_f4c(&a, 3, 8, 5, 0) == a.classFn4_const(3, 8, 5, 0));
-		TEST(class_f5c(&a, 3, 8, 5, 0, 2) == a.classFn5_const(3, 8, 5, 0, 2));
-		TEST(class_f6c(&a, 3, 8, 5, 0, 2, 3) == a.classFn6_const(3, 8, 5, 0, 2, 3));
-		TEST(class_f7c(&a, 3, 8, 5, 0, 2, 3, 4) == a.classFn7_const(3, 8, 5, 0, 2, 3, 4));
+        TEST_VERIFY(class_f0c(&a) == a.classFn0_const());
+        TEST_VERIFY(class_f1c(&a, 3) == a.classFn1_const(3));
+        TEST_VERIFY(class_f2c(&a, 3, 8) == a.classFn2_const(3, 8));
+        TEST_VERIFY(class_f3c(&a, 3, 8, 5) == a.classFn3_const(3, 8, 5));
+        TEST_VERIFY(class_f4c(&a, 3, 8, 5, 0) == a.classFn4_const(3, 8, 5, 0));
+        TEST_VERIFY(class_f5c(&a, 3, 8, 5, 0, 2) == a.classFn5_const(3, 8, 5, 0, 2));
+        TEST_VERIFY(class_f6c(&a, 3, 8, 5, 0, 2, 3) == a.classFn6_const(3, 8, 5, 0, 2, 3));
+        TEST_VERIFY(class_f7c(&a, 3, 8, 5, 0, 2, 3, 4) == a.classFn7_const(3, 8, 5, 0, 2, 3, 4));
 
 		// ==================================================================================
 		// function with assigned object
@@ -247,25 +214,25 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int(int, int, int, int, int, int, int)>			object_f7c(&a, &A::classFn7_const);
 		Function<int(int, int, int, int, int, int, int, int)>		object_f8c(&a, &A::classFn8_const);
 
-		TEST(object_f0() == a.classFn0());
-		TEST(object_f1(3) == a.classFn1(3));
-		TEST(object_f2(3, 8) == a.classFn2(3, 8));
-		TEST(object_f3(3, 8, 5) == a.classFn3(3, 8, 5));
-		TEST(object_f4(3, 8, 5, 0) == a.classFn4(3, 8, 5, 0));
-		TEST(object_f5(3, 8, 5, 0, 2) == a.classFn5(3, 8, 5, 0, 2));
-		TEST(object_f6(3, 8, 5, 0, 2, 3) == a.classFn6(3, 8, 5, 0, 2, 3));
-		TEST(object_f7(3, 8, 5, 0, 2, 3, 4) == a.classFn7(3, 8, 5, 0, 2, 3, 4));
-		TEST(object_f8(3, 8, 5, 0, 2, 3, 4, 9) == a.classFn8(3, 8, 5, 0, 2, 3, 4, 9));
+        TEST_VERIFY(object_f0() == a.classFn0());
+        TEST_VERIFY(object_f1(3) == a.classFn1(3));
+        TEST_VERIFY(object_f2(3, 8) == a.classFn2(3, 8));
+        TEST_VERIFY(object_f3(3, 8, 5) == a.classFn3(3, 8, 5));
+        TEST_VERIFY(object_f4(3, 8, 5, 0) == a.classFn4(3, 8, 5, 0));
+        TEST_VERIFY(object_f5(3, 8, 5, 0, 2) == a.classFn5(3, 8, 5, 0, 2));
+        TEST_VERIFY(object_f6(3, 8, 5, 0, 2, 3) == a.classFn6(3, 8, 5, 0, 2, 3));
+        TEST_VERIFY(object_f7(3, 8, 5, 0, 2, 3, 4) == a.classFn7(3, 8, 5, 0, 2, 3, 4));
+        TEST_VERIFY(object_f8(3, 8, 5, 0, 2, 3, 4, 9) == a.classFn8(3, 8, 5, 0, 2, 3, 4, 9));
 
-		TEST(object_f0c() == a.classFn0_const());
-		TEST(object_f1c(3) == a.classFn1_const(3));
-		TEST(object_f2c(3, 8) == a.classFn2_const(3, 8));
-		TEST(object_f3c(3, 8, 5) == a.classFn3_const(3, 8, 5));
-		TEST(object_f4c(3, 8, 5, 0) == a.classFn4_const(3, 8, 5, 0));
-		TEST(object_f5c(3, 8, 5, 0, 2) == a.classFn5_const(3, 8, 5, 0, 2));
-		TEST(object_f6c(3, 8, 5, 0, 2, 3) == a.classFn6_const(3, 8, 5, 0, 2, 3));
-		TEST(object_f7c(3, 8, 5, 0, 2, 3, 4) == a.classFn7_const(3, 8, 5, 0, 2, 3, 4));
-		TEST(object_f8c(3, 8, 5, 0, 2, 3, 4, 9) == a.classFn8_const(3, 8, 5, 0, 2, 3, 4, 9));
+        TEST_VERIFY(object_f0c() == a.classFn0_const());
+        TEST_VERIFY(object_f1c(3) == a.classFn1_const(3));
+        TEST_VERIFY(object_f2c(3, 8) == a.classFn2_const(3, 8));
+        TEST_VERIFY(object_f3c(3, 8, 5) == a.classFn3_const(3, 8, 5));
+        TEST_VERIFY(object_f4c(3, 8, 5, 0) == a.classFn4_const(3, 8, 5, 0));
+        TEST_VERIFY(object_f5c(3, 8, 5, 0, 2) == a.classFn5_const(3, 8, 5, 0, 2));
+        TEST_VERIFY(object_f6c(3, 8, 5, 0, 2, 3) == a.classFn6_const(3, 8, 5, 0, 2, 3));
+        TEST_VERIFY(object_f7c(3, 8, 5, 0, 2, 3, 4) == a.classFn7_const(3, 8, 5, 0, 2, 3, 4));
+        TEST_VERIFY(object_f8c(3, 8, 5, 0, 2, 3, 4, 9) == a.classFn8_const(3, 8, 5, 0, 2, 3, 4, 9));
 
 		// ==================================================================================
 		// MakeFunction helper testing
@@ -301,12 +268,12 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int(A*)> b3_class_getV = &A::getV;
 		Function<int(B*)> b4_class_getV = &B::getV;
 
-		b0_class_setV(&b, 100); TEST(b.getV() == 100);
-		b1_class_setV(&b, 200); TEST(b.getV() == 200);
-		b1_class_setV(&a, 100); TEST(a.getV() == 100);
-		b.setV(300); TEST(b3_class_getV(&b) == 300);
-		a.setV(300); TEST(b3_class_getV(&a) == 300);
-		b.setV(400); TEST(b4_class_getV(&b) == 400);
+        b0_class_setV(&b, 100); TEST_VERIFY(b.getV() == 100);
+        b1_class_setV(&b, 200); TEST_VERIFY(b.getV() == 200);
+        b1_class_setV(&a, 100); TEST_VERIFY(a.getV() == 100);
+        b.setV(300); TEST_VERIFY(b3_class_getV(&b) == 300);
+        a.setV(300); TEST_VERIFY(b3_class_getV(&a) == 300);
+        b.setV(400); TEST_VERIFY(b4_class_getV(&b) == 400);
 
 		// ==================================================================================
 		// virtual functions testing
@@ -318,18 +285,18 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int(C*, int i, long j)> c_f2virt = &C::f2virt;
 
 		c_f2(&c);
-		TEST(c_f2defvirt(&c, 2000, 4454656) == c.f2defvirt(2000, 4454656));
-		TEST(c_f2def(&c, 2000, 4454656) == c.f2def(2000, 4454656));
-		TEST(c_f2virt(&c, 2000, 4454656) == c.f2virt(2000, 4454656));
+        TEST_VERIFY(c_f2defvirt(&c, 2000, 4454656) == c.f2defvirt(2000, 4454656));
+        TEST_VERIFY(c_f2def(&c, 2000, 4454656) == c.f2def(2000, 4454656));
+        TEST_VERIFY(c_f2virt(&c, 2000, 4454656) == c.f2virt(2000, 4454656));
 
 		// ==================================================================================
 		// type casting testing
 		// ==================================================================================
-		TEST(a.incomingFunction(static_f0) == staticFn0());
-		TEST(a.incomingFunctionRef(static_f0) == staticFn0());
-		TEST(a.incomingFunctionConstRef(static_f0) == staticFn0());
-		TEST(a.incomingFunction(&staticFn0) == staticFn0());
-		TEST(a.incomingFunctionConstRef(&staticFn0) == staticFn0());
+        TEST_VERIFY(a.incomingFunction(static_f0) == staticFn0());
+        TEST_VERIFY(a.incomingFunctionRef(static_f0) == staticFn0());
+        TEST_VERIFY(a.incomingFunctionConstRef(static_f0) == staticFn0());
+        TEST_VERIFY(a.incomingFunction(&staticFn0) == staticFn0());
+        TEST_VERIFY(a.incomingFunctionConstRef(&staticFn0) == staticFn0());
 
 		// ==================================================================================
 		// operators
@@ -337,18 +304,18 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int()> null_f0;
 		Function<int()> null_f0_1 = NULL;
 
-		TEST(null_f0 == null_f0_1);
-		TEST(null_f0 == NULL);
-		TEST(null_f0_1 == NULL);
-		TEST(class_f0 == &A::classFn0);
+        TEST_VERIFY(null_f0 == null_f0_1);
+        TEST_VERIFY(null_f0 == NULL);
+        TEST_VERIFY(null_f0_1 == NULL);
+        TEST_VERIFY(class_f0 == &A::classFn0);
 
 		null_f0 = static_f0;
-		TEST(null_f0() == staticFn0());
+        TEST_VERIFY(null_f0() == staticFn0());
 		null_f0 = NULL;
-		TEST(null_f0 == NULL);
+        TEST_VERIFY(null_f0 == NULL);
 
 		null_f0 = object_f0;
-		TEST(null_f0() == object_f0());
+        TEST_VERIFY(null_f0() == object_f0());
 
 		// ==================================================================================
 		// bind testing
@@ -357,8 +324,8 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int()> bound_create_f0 = Bind(&A::classFn0, &aa);
 		Function<int()> bound_create_f1 = Bind(class_f1, &aa, 10);
 
-		TEST(bound_create_f0() == a.classFn0());
-		TEST(bound_create_f1() == class_f1(&aa, 10));
+        TEST_VERIFY(bound_create_f0() == a.classFn0());
+        TEST_VERIFY(bound_create_f1() == class_f1(&aa, 10));
 
 		Function<int()>		bound_f0 = Bind(class_f0, &aa);
 		Function<int(A*)>	bound_f0_1 = Bind(class_f0, _1);
@@ -366,18 +333,18 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
         bound_f0 = bound_f0;
         bound_f0();
 
-		TEST(bound_f0() == class_f0(&aa));
-		TEST(bound_f0_1(&aa) == class_f0(&aa));
+        TEST_VERIFY(bound_f0() == class_f0(&aa));
+        TEST_VERIFY(bound_f0_1(&aa) == class_f0(&aa));
 
 		Function<int()>			bound_f1 = Bind(class_f1, &aa, 10);
 		Function<int(int)>		bound_f1_1 = Bind(class_f1, &aa, _1);
 		Function<int(A*)>		bound_f1_2 = Bind(class_f1, _1, 10);
 		Function<int(int, A*)>	bound_f1_3 = Bind(class_f1, _2, _1);
 
-		TEST(bound_f1() == class_f1(&aa, 10));
-		TEST(bound_f1_1(10) == class_f1(&aa, 10));
-		TEST(bound_f1_2(&aa) == class_f1(&aa, 10));
-		TEST(bound_f1_3(10, &aa) == class_f1(&aa, 10));
+        TEST_VERIFY(bound_f1() == class_f1(&aa, 10));
+        TEST_VERIFY(bound_f1_1(10) == class_f1(&aa, 10));
+        TEST_VERIFY(bound_f1_2(&aa) == class_f1(&aa, 10));
+        TEST_VERIFY(bound_f1_3(10, &aa) == class_f1(&aa, 10));
 
 		Function<int()>			bound_f2 = Bind(class_f2, &aa, 10, 20);
 		Function<int(A*)>		bound_f2_1 = Bind(class_f2, _1, 10, 20);
@@ -388,14 +355,14 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int(int)>		bound_f2_6 = Bind(class_f2, &aa, _1, 20);
 		Function<int(int)>		bound_f2_7 = Bind(class_f2, &aa, 10, _1);
 
-		TEST(bound_f2() == class_f2(&aa, 10, 20));
-		TEST(bound_f2_1(&aa) == class_f2(&aa, 10, 20));
-		TEST(bound_f2_2(10, 20) == class_f2(&aa, 10, 20));
-		TEST(bound_f2_3(20, 10) == class_f2(&aa, 10, 20));
-		TEST(bound_f2_4(&aa, 20) == class_f2(&aa, 10, 20));
-		TEST(bound_f2_5(&aa, 10) == class_f2(&aa, 10, 20));
-		TEST(bound_f2_6(10) == class_f2(&aa, 10, 20));
-		TEST(bound_f2_7(20) == class_f2(&aa, 10, 20));
+        TEST_VERIFY(bound_f2() == class_f2(&aa, 10, 20));
+        TEST_VERIFY(bound_f2_1(&aa) == class_f2(&aa, 10, 20));
+        TEST_VERIFY(bound_f2_2(10, 20) == class_f2(&aa, 10, 20));
+        TEST_VERIFY(bound_f2_3(20, 10) == class_f2(&aa, 10, 20));
+        TEST_VERIFY(bound_f2_4(&aa, 20) == class_f2(&aa, 10, 20));
+        TEST_VERIFY(bound_f2_5(&aa, 10) == class_f2(&aa, 10, 20));
+        TEST_VERIFY(bound_f2_6(10) == class_f2(&aa, 10, 20));
+        TEST_VERIFY(bound_f2_7(20) == class_f2(&aa, 10, 20));
 
 		Function<int(int, int, int)> bound_f3 = Bind(class_f3, &aa, _3, _2, _1);
 		Function<int(int, int, int, int)> bound_f4 = Bind(class_f4, &aa, _4, _3, _2, _1);
@@ -403,11 +370,11 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		Function<int(int, int, int, int, int, int)> bound_f6 = Bind(class_f6, &aa, _6, _5, _4, _3, _2, _1);
 		Function<int(int, int, int, int, int, int, int)> bound_f7 = Bind(class_f7, &aa, _7, _6, _5, _4, _3, _2, _1);
 
-		TEST(bound_f3(30, 20, 10) == class_f3(&aa, 10, 20, 30));
-		TEST(bound_f4(40, 30, 20, 10) == class_f4(&aa, 10, 20, 30, 40));
-		TEST(bound_f5(50, 40, 30, 20, 10) == class_f5(&aa, 10, 20, 30, 40, 50));
-		TEST(bound_f6(60, 50, 40, 30, 20, 10) == class_f6(&aa, 10, 20, 30, 40, 50, 60));
-		TEST(bound_f7(70, 60, 50, 40, 30, 20, 10) == class_f7(&aa, 10, 20, 30, 40, 50, 60, 70));
+        TEST_VERIFY(bound_f3(30, 20, 10) == class_f3(&aa, 10, 20, 30));
+        TEST_VERIFY(bound_f4(40, 30, 20, 10) == class_f4(&aa, 10, 20, 30, 40));
+        TEST_VERIFY(bound_f5(50, 40, 30, 20, 10) == class_f5(&aa, 10, 20, 30, 40, 50));
+        TEST_VERIFY(bound_f6(60, 50, 40, 30, 20, 10) == class_f6(&aa, 10, 20, 30, 40, 50, 60));
+        TEST_VERIFY(bound_f7(70, 60, 50, 40, 30, 20, 10) == class_f7(&aa, 10, 20, 30, 40, 50, 60, 70));
 
 		// ==================================================================================
 		// signals
@@ -427,7 +394,7 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		// ==================================================================================
 		// speed testing
 		// ==================================================================================
-#if 1
+#if 0
 		//std::function<int()> c11_static_f0 = &staticFn0;
 		//std::function<int(int, int, int, int, int, int, int, int)> c11_static_f8 = &staticFn8;
 
@@ -486,14 +453,5 @@ void FunctionBindSignalTest::TestFunction(TestTemplate<FunctionBindSignalTest>::
 		// ==================================================================================
 #endif
 
-		functionBindSignalResultString += Format("\nDone!\n");
-
-		textInfoText->SetText(StringToWString(functionBindSignalResultString));
-		Logger::Debug("********** FunctionBindSignalTest **********");
-		Logger::Debug(functionBindSignalResultString.c_str());
-		Logger::Debug("********** FunctionBindSignalTest **********");
-
-		done = true;
-		TEST_VERIFY(functionBindSignalResult);
 	}
 }

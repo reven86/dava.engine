@@ -37,7 +37,7 @@ using namespace DAVA;
 #include "UITestTemplate.h"
 #include "Platform/DeviceInfo.h"
 
-class FunctionBindSignalTest : public UITestTemplate<FunctionBindSignalTest>
+class FunctionBindSignalTest : public TestTemplate<FunctionBindSignalTest>
 {
 protected:
 	~FunctionBindSignalTest(){}
@@ -50,10 +50,6 @@ public:
 	virtual void DidAppear();
 
 	void TestFunction(PerfFuncData * data);
-
-private:
-	UIStaticText* textInfoText;
-	bool done;
 };
 
 #endif // __FUNCTION_BIND_SIGNAL_TEST__
