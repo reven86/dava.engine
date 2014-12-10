@@ -71,11 +71,6 @@
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 
-#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
-#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
-#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
-
-
 #include "Sound/SoundSystem.h"
 
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
@@ -429,6 +424,7 @@ Scene::~Scene()
     systems.clear();
 
     systemsToProcess.clear();
+    systemsToInput.clear();
 
 	SafeDelete(eventSystem);
 	SafeDelete(renderSystem);

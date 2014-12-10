@@ -31,6 +31,7 @@
 #define __SCENE_PREVIEW_CONTROL_H__
 
 #include "DAVAEngine.h"
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
 using namespace DAVA;
 
@@ -62,6 +63,8 @@ protected:
     
     //scene controls
     Scene * editorScene;
+    RotationControllerSystem * rotationSystem;
+    
 	Camera * activeCamera;
     UI3DView * scene3dView;
     

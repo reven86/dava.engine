@@ -73,14 +73,11 @@ void WASDControllerSystem::Process(float32 timeElapsed)
     const uint32 size = entities.size();
     if(0 == size) return;
     
-    //TODO: this code need to check if system used correct for camera and wasd
-    Camera * camera = GetScene()->GetDrawCamera();
-    if(!camera) return;
-    
     KeyboardDevice *keyboard = InputSystem::Instance()->GetKeyboard();
     for(uint32 i = 0; i < size; ++i)
     {
-        if(GetCamera(entities[i]) == camera)
+        Camera *camera = GetCamera(entities[i]);
+        if(camera)
         {
             if(keyboard->IsKeyPressed(DVKEY_W) || keyboard->IsKeyPressed(DVKEY_UP))
             {

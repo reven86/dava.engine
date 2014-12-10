@@ -109,6 +109,8 @@ void SnapToLandscapeControllerSystem::ImmediateEvent(Entity * entity, uint32 eve
     
 void SnapToLandscapeControllerSystem::SnapToLandscape(Landscape *landscape, Entity *entity, bool forceSnap)
 {
+    if(!landscape) return;
+    
     SnapToLandscapeControllerComponent *snapController = GetSnapToLandscapeControllerComponent(entity);
     Camera *camera =  GetCamera(entity);
     DVASSERT(snapController && camera);
@@ -116,20 +118,31 @@ void SnapToLandscapeControllerSystem::SnapToLandscape(Landscape *landscape, Enti
     if(camera && snapController)
     {
         const Vector3 & pos = camera->GetPosition();
-        if ((pos != positions[entity]) || forceSnap)
+        const Vector3 & prevPos = positions[entity];
+        if ((pos != prevPos) || forceSnap)
         {
             const Vector3 & direction = camera->GetDirection();
             
-            Vector3 pointOnLandscape;
-            if (landscape && landscape->PlacePoint(pos, pointOnLandscape))
+            Vector3 placedPos = pos;
+            Vector3 pointOnLandscape = pos;
+            if(pos != prevPos) //need check landscape edges only in case of position changing
             {
+                const AABBox3 & landBox = landscape->GetBoundingBox();
+                
+                if (    (pos.x > landBox.max.x || pos.x < landBox.min.x)
+                    ||  (pos.y > landBox.max.y || pos.y < landBox.min.y))
+                {
+                    placedPos.x = Clamp(pos.x, landBox.min.x, landBox.max.x);
+                    placedPos.y = Clamp(pos.y, landBox.min.y, landBox.max.y);
+                }
+            }
+
+            bool placed = landscape->PlacePoint(placedPos, pointOnLandscape);
+            if(placed)
                 pointOnLandscape.z += snapController->GetHeightOnLandscape();
-            }
             else
-            {
-                pointOnLandscape = pos;
-                pointOnLandscape.z = snapController->GetHeightOnLandscape();
-            }
+                DVASSERT(false);
+
             
             camera->SetPosition(pointOnLandscape);
             camera->SetDirection(direction);

@@ -46,6 +46,7 @@ ScenePreviewControl::ScenePreviewControl(const Rect & rect)
     rootNode = NULL;
     
     editorScene = NULL;
+    rotationSystem = NULL;
     RecreateScene();
     
     SetInputEnabled(true, true);
@@ -56,6 +57,7 @@ ScenePreviewControl::~ScenePreviewControl()
     ReleaseScene();
 
     SafeRelease(editorScene);
+    rotationSystem = NULL;
 }
 
 
@@ -70,12 +72,13 @@ void ScenePreviewControl::RecreateScene()
     {
         SetScene(NULL);
         SafeRelease(editorScene);
+        rotationSystem = NULL;
     }
     
     editorScene = new Scene();
     editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
-    RotationControllerSystem * rotationSystem = new RotationControllerSystem(editorScene);
+    rotationSystem = new RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);
     editorScene->AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
@@ -194,6 +197,7 @@ void ScenePreviewControl::SetupCamera()
         Vector3 dir = (sceneBox.max - sceneBox.min); 
         camera->SetPosition(target + dir);
         
-        editorScene->SetCurrentCamera(camera);        
+        editorScene->SetCurrentCamera(camera);
+        rotationSystem->RecalcCameraViewAngles(camera);
     }
 }
