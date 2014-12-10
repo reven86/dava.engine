@@ -115,7 +115,7 @@ void FilePathTest::MacTestFunction(PerfFuncData * data)
     TEST_VERIFY(filepath0.GetBasename() == "image");
     TEST_VERIFY(filepath0.GetExtension() == ".doc");
     TEST_VERIFY(filepath0.GetDirectory() == "~res:/Gfx/UI/Screen/");
-    
+
     TEST_VERIFY(filepath0.GetAbsolutePathname() == "/TestProject/Data/Gfx/UI/Screen/image.doc")
 
     
