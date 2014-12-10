@@ -90,6 +90,7 @@ public:
 
     virtual Font * GetFont();
     virtual const WideString & GetText();
+    virtual const WideString & GetVisualText();
     virtual const Vector<WideString> & GetMultilineStrings();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();

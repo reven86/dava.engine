@@ -138,8 +138,9 @@ protected:
     UIControlBackground *shadowBg;
     UIControlBackground *textBg;
 #if defined(LOCALIZATION_DEBUG)
-    DebugHighliteColor rectangelColor;
-    DebugHighliteColor fillColor;
+    DebugHighliteColor warningColor;
+    DebugHighliteColor errorColro;
+    DebugHighliteColor lineBreakError;
 #endif
 
 public:

@@ -68,7 +68,9 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
     FastName("Draw Particles"),
     FastName("Particle Prepare Buffers")
 #if defined(LOCALIZATION_DEBUG)
-    ,FastName("Draw Localization Debug")
+    ,FastName("Localization Warings")
+    ,FastName("Localization Errors")
+    ,FastName("Line Break Errors")
 #endif
 };
 
@@ -82,7 +84,9 @@ RenderOptions::RenderOptions()
     options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
     options[LAYER_OCCLUSION_STATS] = false;
 #if defined(LOCALIZATION_DEBUG)
-    options[DRAW_LOCALIZATION_DEBUG] = false;
+    options[DRAW_LOCALIZATION_ERRORS] = false;
+    options[DRAW_LOCALIZATION_WARINGS] = false;
+    options[DRAW_LINEBREAK_ERRORS] = false;
 #endif
 }
 

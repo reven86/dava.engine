@@ -271,7 +271,11 @@ const WideString & TextBlock::GetText()
     LockGuard<Mutex> guard(mutex);
     return logicalText;
 }
-
+const WideString & TextBlock::GetVisualText()
+{
+    LockGuard<Mutex> guard(mutex);
+    return visualText;
+}
 bool TextBlock::GetMultiline()
 {
     LockGuard<Mutex> guard(mutex);

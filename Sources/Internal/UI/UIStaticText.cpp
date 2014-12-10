@@ -238,7 +238,9 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     UIControl::Draw(geometricData);
 
 	UIGeometricData textGeomData;
-	textGeomData.position = textBlock->GetSpriteOffset();
+    
+    textGeomData.position = textBlock->GetSpriteOffset();
+   
 	textGeomData.size = GetSize();
     textGeomData.AddGeometricData(geometricData);
 
@@ -253,16 +255,21 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->Draw(shadowGeomData);
     }
-
+   
     textBlock->Draw(textBg->GetDrawColor());
 #if defined(LOCALIZATION_DEBUG)
-    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_DEBUG))
+    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_ERRORS)
+        || RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS)
+        || RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS))
     {
         RecalculateDebugColoring();
-        DrawLocalizationDebug(textGeomData);
+        DrawLocalizationDebug(geometricData);
     }
 #endif
-	textBg->Draw(textGeomData);
+   
+    textBg->Draw(textGeomData);
+    
+	
 }
 void UIStaticText::SetParentColor(const Color &parentColor)
 {
@@ -637,25 +644,36 @@ void UIStaticText::SetMultilineType(int32 multilineType)
 void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) const
 {
 
-    if (rectangelColor != NONE)
+    if (warningColor != NONE
+        && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
-        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[rectangelColor]);
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[warningColor]);
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
 
         RenderHelper::Instance()->DrawPolygon(polygon, true, RenderState::RENDERSTATE_2D_OPAQUE);
         RenderManager::Instance()->ResetColor();
     }
-    if (fillColor != NONE)
+    if (errorColro != NONE && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_ERRORS))
     {
-        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[fillColor]);
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[errorColro]);
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
 
         RenderHelper::Instance()->FillPolygon(polygon, RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->ResetColor();
     }
-    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED)
+    if (lineBreakError != NONE && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS))
+    {
+        RenderManager::Instance()->SetColor(HIGHLITE_COLORS[lineBreakError]);
+        DAVA::Polygon2 polygon;
+        textGeomData.GetPolygon(polygon);
+
+        RenderHelper::Instance()->FillPolygon(polygon, RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->ResetColor();
+    }
+    if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED 
+        && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS))
     {
         RenderManager::Instance()->SetColor(HIGHLITE_COLORS[WHITE]);
         if (textBlock->GetFittingOptionUsed() != TextBlock::FITTING_DISABLED)
@@ -677,30 +695,38 @@ void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) 
 }
 void UIStaticText::RecalculateDebugColoring()
 {
-    rectangelColor = NONE;
-    fillColor = NONE;
+    errorColro = NONE;
+    warningColor = NONE;
+    lineBreakError = NONE;
     if (textBlock->GetFont() == NULL)
         return;
-    Font::StringMetrics stringMetrics = textBlock->GetFont()->GetStringMetrics(textBlock->GetText());
+    
     if (!textBlock->GetMultiline())
     {
 
-        Font::StringMetrics stringMetrics = textBlock->GetFont()->GetStringMetrics(textBlock->GetText());
+        Font::StringMetrics stringMetrics = textBlock->GetFont()->GetStringMetrics(textBlock->GetVisualText());
         int32 metricsWidth = stringMetrics.drawRect.dx;
         metricsWidth += DAVA::Max(0, stringMetrics.drawRect.x);
 
+        int32 metricsHeight = stringMetrics.drawRect.dy;
+        metricsHeight += DAVA::Max(0, stringMetrics.drawRect.y);
+
         if (stringMetrics.drawRect.x < 0)
         {
-            rectangelColor = GREEN;
+            warningColor = GREEN;
         }
         // this is higher priority warning
         if (GetSize().x*LOCALIZATION_RESERVED_PORTION < static_cast<float32>(metricsWidth))
         {
-            rectangelColor = RED;
+            warningColor = RED;
+        }
+        if (GetSize().y < static_cast<float32>(metricsHeight))
+        {
+            errorColro = YELLOW;
         }
         if (GetSize().x < static_cast<float32>(metricsWidth))
         {
-            fillColor = RED;
+            errorColro = RED;
         }
     }
     else
@@ -710,10 +736,11 @@ void UIStaticText::RecalculateDebugColoring()
         const WideString & text = textBlock->GetText();
         float32 accumulatedHeight = 0.0f;
         float32 maxWidth = 0.0f;
+        
         if (!text.empty())
         {
             WideString textNoSpaces(text);
-
+           
             auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
             textNoSpaces.erase(res, textNoSpaces.end());
 
@@ -729,7 +756,7 @@ void UIStaticText::RecalculateDebugColoring()
                 metricsWidth += DAVA::Max(0, stringMetrics.drawRect.x);
                 if (stringMetrics.drawRect.x < 0 || stringMetrics.drawRect.y < 0)
                 {
-                    rectangelColor = GREEN;
+                    warningColor = GREEN;
                 }
                 maxWidth = DAVA::Max(static_cast<float32>(metricsWidth), maxWidth);
                 accumulatedHeight += static_cast<float32>(stringMetrics.drawRect.dy + DAVA::Max(0, stringMetrics.drawRect.y));
@@ -739,28 +766,26 @@ void UIStaticText::RecalculateDebugColoring()
 
             if (concatinatedStringsNoSpaces != textNoSpaces)
             {
-                fillColor = RED;
+                lineBreakError = RED;
             }
         }
         if (GetSize().y < accumulatedHeight)
         {
-            fillColor = YELLOW;
+            errorColro = YELLOW;
+        }
+        if (GetSize().x < maxWidth)
+        {
+            errorColro = RED;
         }
         if (GetSize().y*LOCALIZATION_RESERVED_PORTION < accumulatedHeight)
         {
-            rectangelColor = YELLOW;
+            warningColor = YELLOW;
             if (GetSize().x < maxWidth)
             {
-                rectangelColor = MAGENTA;
+                warningColor = MAGENTA;
             }
+                
         }
-        else if (GetSize().x < maxWidth)
-        {
-            rectangelColor = BLUE;
-        }
-
-
-
     }
 }
 #endif
