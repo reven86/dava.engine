@@ -13,9 +13,9 @@ public class JNIAssert {
 	public static boolean Assert(final boolean isModal,
 	        final String message)
 	{
-	    if (isModal && alreadyShowingNonModalDialog)
+	    if (!isModal && alreadyShowingNonModalDialog)
 	    {
-	        // skip follow messages while user looking at first
+	        // skip follow non modal messages while user looking at first
 	        return false;
 	    }
 	    JNIAssert.breakExecution = false;
@@ -39,9 +39,18 @@ public class JNIAssert {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                // close dialog on click outside
+                alertDialog.setCancelable(true);
                 alertDialog.setPositiveButton("Ok", new OnClickListener() {
                     
                     public void onClick(DialogInterface dialog, int which) {
+                        alreadyShowingNonModalDialog = false;
+                    }
+                });
+                alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
                         alreadyShowingNonModalDialog = false;
                     }
                 });
@@ -56,6 +65,8 @@ public class JNIAssert {
         activity.runOnUiThread(new Runnable() {
         	@Override
         	public void run() {
+        	    // click outside dialog do nothing
+        	    alertDialog.setCancelable(false);
         		alertDialog.setPositiveButton("Break", new OnClickListener() {
         			
         			public void onClick(DialogInterface dialog, int which) {

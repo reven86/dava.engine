@@ -79,12 +79,14 @@
         #define DebugBreak() { __debugbreak(); }
 
     #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-    // see http://stackoverflow.com/questions/3644465/can-i-create-a-breakpoint-in-code-in-ios-like-asmint-3-on-vc-and-conti
+        // see http://stackoverflow.com/questions/3644465/can-i-create-a-breakpoint-in-code-in-ios-like-asmint-3-on-vc-and-conti
         #include <signal.h>
         #define DebugBreak() __builtin_trap();
     #elif defined(__DAVAENGINE_ANDROID__)
 
         #include <signal.h>
+        // see http://androidxref.com/5.0.0_r2/xref/system/core/liblog/logd_write.c function: __android_log_assert
+        // works and __builtin_trap(); and raise(SIGTRAP); but prefer more standard way
         #define DebugBreak() raise(SIGTRAP);
     #endif
 

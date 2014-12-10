@@ -77,11 +77,8 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 
 	bool breakExecution = msg.ShowMessage(waitUserInput, message);
 
-	if (breakExecution)
-	{
-	    // will this call send crush to crashlytics?
-	    AndroidCrashReport::ThrowExeption(message);
-	}
+    // leave it alone and DebugBreak() will do it better
+    // AndroidCrashReport::ThrowExeption(message);
 	return breakExecution;
 }
 
