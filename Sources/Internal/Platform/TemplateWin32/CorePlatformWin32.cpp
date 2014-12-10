@@ -191,11 +191,11 @@ namespace DAVA
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 	
 #if defined(__DAVAENGINE_DIRECTX9__)
-		RenderManager::Create(Core::RENDERER_DIRECTX9);
+///		RenderManager::Create(Core::RENDERER_DIRECTX9);
 #elif defined(__DAVAENGINE_OPENGL__)
-		RenderManager::Create(Core::RENDERER_OPENGL);
+///		RenderManager::Create(Core::RENDERER_OPENGL);
 #endif
-		RenderManager::Instance()->Create(hInstance, hWindow);
+///		RenderManager::Instance()->Create(hInstance, hWindow);
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
@@ -252,8 +252,8 @@ namespace DAVA
 
         RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
 
-		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
-		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
+///		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
+///		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
 		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
 		Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
@@ -290,13 +290,13 @@ namespace DAVA
 				}
 			}
 
-            RenderManager::Instance()->Lock();
+///            RenderManager::Instance()->Lock();
 			Core::SystemProcessFrame();
-			RenderManager::Instance()->Unlock();
+///			RenderManager::Instance()->Unlock();
 
             uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
             int32 sleepMs = 1;
-
+/*
             int32 fps = RenderManager::Instance()->GetFPS();
             if(fps > 0)
             {
@@ -308,7 +308,7 @@ namespace DAVA
             }
 
             Sleep(sleepMs);
-
+*/
 			if (willQuit)
 			{	
 				break;
@@ -357,7 +357,7 @@ namespace DAVA
 		wglDeleteContext(hRC);
 		ReleaseDC(hWindow, hDC);		
 	}
-	
+    	
 	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
 	{
 		RECT clientSize;

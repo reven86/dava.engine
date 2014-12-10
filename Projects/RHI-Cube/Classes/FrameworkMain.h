@@ -27,35 +27,4 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
-#define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 
-#include "DAVAEngine.h"
-#if defined(__DAVAENGINE_WIN32__)
-
-#include "WindowsSpecifics.h"
-
-namespace DAVA
-{
-
-class CoreWin32PlatformBase : public Core
-{
-public:
-    CoreWin32PlatformBase();
-
-    void InitArgs();
-    virtual void Quit();
-
-    HINSTANCE GetInstance() const;
-    HWND GetWindow() const;
-
-
-protected:
-    HINSTANCE hInstance;
-    HWND hWindow;
-};
-
-};
-
-#endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__

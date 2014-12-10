@@ -27,74 +27,51 @@
 =====================================================================================*/
 
 
+#ifndef __RHI_COMMANDBUFFERGLES2_H__
+#define __RHI_COMMANDBUFFERGLES2_H__
 
-#include "Render/RenderOptions.h"
+    #include "../rhi_Pool.h"
+    
+//-    #include "Base/BaseTypes.h"
+//-    using DAVA::uint32;
 
-namespace DAVA
+
+namespace rhi
 {
 
-FastName optionsNames[RenderOptions::OPTIONS_COUNT] = 
+class
+CommandBuffer_t
 {
-    FastName("Test Option"),
+public:
+                CommandBuffer_t();
+                ~CommandBuffer_t();
 
-    FastName("Draw Landscape"),
-    FastName("Draw Water Refl/Refr"),
-    FastName("Draw Opaque Layer"),
-    FastName("Draw Transparent Layer"),
-    FastName("Draw Sprites"),
-    FastName("Draw Shadow Volumes"),
-    FastName("Draw Vegetation"),
+    void        begin();
+    void        end();
+    void        replay();
 
-    FastName("Enable Fog"),
+    void        command( uint32 cmd );
+    void        command( uint32 cmd, uint32 arg1 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5, uint32 arg6 );
 
-    FastName("Update LODs"),
-    FastName("Update Landscape LODs"), 
-    FastName("Update Animations"), 
-    FastName("Process Clipping"),
-    FastName("Update UI System"),
 
-    FastName("SpeedTree Animations"),
-    FastName("Waves System Process"),
+private:
 
-    FastName("All Render Enabled"),
-    FastName("Texture Loading"),
+    static const uint32   EndCmd = 0xFFFFFFFF;
 
-    FastName("Occlusion Stats"),
-
-    FastName("Static Occlusion"),
-    FastName("Debug Draw Occlusion"),
-
-    FastName("Update Particle Emitters"),
-    FastName("Draw Particles"),
-    FastName("Particle Prepare Buffers")
+    std::vector<uint32> _cmd;
 };
 
-RenderOptions::RenderOptions()
-{
-	for(int32 i = 0; i < OPTIONS_COUNT; ++i)
-	{
-		options[i] = true;
-	}		
+typedef Pool<CommandBuffer_t>   CommandBufferPool;
 
-    options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
-    options[LAYER_OCCLUSION_STATS] = false;
-}
 
-bool RenderOptions::IsOptionEnabled(RenderOption option)
-{
-///	return options[option];
-return false;
-}
+} // namespace rhi
 
-void RenderOptions::SetOption(RenderOption option, bool value)
-{
-	options[option] = value;
-	NotifyObservers();
-}
 
-FastName RenderOptions::GetOptionName(RenderOption option)
-{
-    return optionsNames[option];
-}
+#endif // __RHI_COMMANDBUFFERGLES2_H__
 
-};
+ 

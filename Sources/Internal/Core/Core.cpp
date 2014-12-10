@@ -55,7 +55,7 @@
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Notification/LocalNotificationController.h"
 
-#include "Base/Profiler.hpp"
+#include "Base/Profiler.h"
 #define PROF__FRAME             0
 #define PROF__FRAME_UPDATE      1
 #define PROF__FRAME_DRAW        2
@@ -630,11 +630,19 @@ ApplicationCore * Core::GetApplicationCore()
 {
 	return core;
 }
+
+struct 
+DummyData
+{
+    uint32  id;
+    char    name[32];
+    char    data[32];
+};
 	
 	
 void Core::SystemAppStarted()
 {
-profiler::Init();
+profiler::EnsureInited();
 NAME_COUNTER(PROF__FRAME,"frame");
 NAME_COUNTER(PROF__FRAME_UPDATE,"frame-update");
 NAME_COUNTER(PROF__FRAME_DRAW,"frame-draw");
@@ -644,7 +652,6 @@ NAME_COUNTER(PROF__GL_SET_UNIFORM2,"gl.set-uniform2");
 NAME_COUNTER(PROF__RHI_SETUNIFORM,"rhi.set-uniform");
 NAME_COUNTER(PROF__RHI_SETDYNPARAM,"shader.bind-dyn-param");
 NAME_COUNTER(PROF__RHI_SETMATPARAM,"material.bind-param");
-
 
 	if (Core::Instance()->NeedToRecalculateMultipliers()) 
 	{

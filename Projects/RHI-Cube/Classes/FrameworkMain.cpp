@@ -27,35 +27,56 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
-#define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
-
 #include "DAVAEngine.h"
-#if defined(__DAVAENGINE_WIN32__)
+#include "GameCore.h"
+ 
+using namespace DAVA;
 
-#include "WindowsSpecifics.h"
 
-namespace DAVA
+void FrameworkDidLaunched()
+{
+#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    
+#define WIDTH   960
+#define HEIGHT  640
+    
+    KeyedArchive * appOptions = new KeyedArchive();
+    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
+    
+    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
+    
+    
+    appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
+    appOptions->SetInt32("width", WIDTH);
+    appOptions->SetInt32("height", HEIGHT);
+
+    DAVA::Core::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
+    DAVA::Core::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
+
+#else
+    KeyedArchive * appOptions = new KeyedArchive();
+    
+    appOptions->SetInt32("width",   1024);
+    appOptions->SetInt32("height", 768);
+
+//  appOptions->SetInt("fullscreen.width",  1280);
+//  appOptions->SetInt("fullscreen.height", 800);
+    
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetString(String("title"), String("RHI Cube"));
+
+    DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
+    DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+#endif 
+
+    GameCore * core = new GameCore();
+    DAVA::Core::SetApplicationCore(core);
+    DAVA::Core::Instance()->SetOptions(appOptions);
+}
+
+
+void FrameworkWillTerminate()
 {
 
-class CoreWin32PlatformBase : public Core
-{
-public:
-    CoreWin32PlatformBase();
-
-    void InitArgs();
-    virtual void Quit();
-
-    HINSTANCE GetInstance() const;
-    HWND GetWindow() const;
-
-
-protected:
-    HINSTANCE hInstance;
-    HWND hWindow;
-};
-
-};
-
-#endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
+}

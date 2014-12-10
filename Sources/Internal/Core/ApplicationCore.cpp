@@ -76,22 +76,23 @@ void ApplicationCore::Update(float32 timeElapsed)
 void ApplicationCore::Draw()
 {
 	TIME_PROFILE("ApplicationCore::Draw");
-
+/*
 	UIControlSystem::Instance()->Draw();	
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
+*/
 }
 
 void ApplicationCore::BeginFrame()
 {
-	RenderManager::Instance()->BeginFrame();
+///	RenderManager::Instance()->BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-	RenderManager::Instance()->EndFrame();
-    RenderManager::Instance()->ProcessStats();
+///	RenderManager::Instance()->EndFrame();
+///    RenderManager::Instance()->ProcessStats();
 }
 
 void ApplicationCore::OnSuspend()

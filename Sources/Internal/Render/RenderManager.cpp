@@ -663,7 +663,8 @@ void RenderManager::SetCursor(Cursor * _cursor)
 
 Cursor * RenderManager::GetCursor()
 {
-	return cursor;
+///	return cursor;
+return NULL;
 }
 	
 const RenderManager::Caps & RenderManager::GetCaps()

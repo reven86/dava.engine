@@ -57,6 +57,12 @@ public:
 	void InitOpenGL();
 	void ReleaseOpenGL();
 
+    virtual void* NativeWindowHandle()
+    {
+        return (void*)hWindow;
+    }
+
+
 	HDC hDC;
 	HGLRC hRC;
 	HANDLE hMutex;
@@ -83,7 +89,6 @@ private:
 
 	RECT GetWindowedRectForDisplayMode(DisplayMode & dm);
 	bool willQuit;
-
 };	
 };
 #endif // #if defined(__DAVAENGINE_WIN32__)

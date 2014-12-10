@@ -27,74 +27,60 @@
 =====================================================================================*/
 
 
+#ifndef __RHI_POOL_H__
+#define __RHI_POOL_H__
 
-#include "Render/RenderOptions.h"
+#include "../rhi_Base.h"
 
-namespace DAVA
+namespace rhi
 {
 
-FastName optionsNames[RenderOptions::OPTIONS_COUNT] = 
+template <class T>
+class
+Pool
 {
-    FastName("Test Option"),
+public:
 
-    FastName("Draw Landscape"),
-    FastName("Draw Water Refl/Refr"),
-    FastName("Draw Opaque Layer"),
-    FastName("Draw Transparent Layer"),
-    FastName("Draw Sprites"),
-    FastName("Draw Shadow Volumes"),
-    FastName("Draw Vegetation"),
+    static Handle   Alloc();
+    static void     Free( Handle h );
 
-    FastName("Enable Fog"),
+    static T*       Get( Handle h );
 
-    FastName("Update LODs"),
-    FastName("Update Landscape LODs"), 
-    FastName("Update Animations"), 
-    FastName("Process Clipping"),
-    FastName("Update UI System"),
 
-    FastName("SpeedTree Animations"),
-    FastName("Waves System Process"),
-
-    FastName("All Render Enabled"),
-    FastName("Texture Loading"),
-
-    FastName("Occlusion Stats"),
-
-    FastName("Static Occlusion"),
-    FastName("Debug Draw Occlusion"),
-
-    FastName("Update Particle Emitters"),
-    FastName("Draw Particles"),
-    FastName("Particle Prepare Buffers")
+private:
 };
 
-RenderOptions::RenderOptions()
-{
-	for(int32 i = 0; i < OPTIONS_COUNT; ++i)
-	{
-		options[i] = true;
-	}		
 
-    options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
-    options[LAYER_OCCLUSION_STATS] = false;
+//------------------------------------------------------------------------------
+
+template <class T>
+inline Handle
+Pool<T>::Alloc()
+{
+    return Handle(new T());
 }
 
-bool RenderOptions::IsOptionEnabled(RenderOption option)
+
+//------------------------------------------------------------------------------
+
+template <class T>
+inline void
+Pool<T>::Free( Handle h )
 {
-///	return options[option];
-return false;
+    delete (T*)h;
 }
 
-void RenderOptions::SetOption(RenderOption option, bool value)
+
+//------------------------------------------------------------------------------
+
+template <class T>
+inline T*
+Pool<T>::Get( Handle h )
 {
-	options[option] = value;
-	NotifyObservers();
+    return (T*)h;
 }
 
-FastName RenderOptions::GetOptionName(RenderOption option)
-{
-    return optionsNames[option];
-}
 
-};
+
+} // namespace rhi
+#endif // __RHI_POOL_H__

@@ -27,35 +27,26 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
-#define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
-
 #include "DAVAEngine.h"
-#if defined(__DAVAENGINE_WIN32__)
 
-#include "WindowsSpecifics.h"
-
-namespace DAVA
+int APIENTRY WinMain(HINSTANCE hInstance,
+					   HINSTANCE hPrevInstance,
+					   LPSTR    lpCmdLine,
+					   int       nCmdShow)
 {
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
 
-class CoreWin32PlatformBase : public Core
+	return DAVA::Core::Run(0, 0, hInstance);
+}
+
+
+/*int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR    lpCmdLine, int       nCmdShow)
 {
-public:
-    CoreWin32PlatformBase();
-
-    void InitArgs();
-    virtual void Quit();
-
-    HINSTANCE GetInstance() const;
-    HWND GetWindow() const;
-
-
-protected:
-    HINSTANCE hInstance;
-    HWND hWindow;
-};
-
-};
-
-#endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
+	// find leaks mega-string: {,,msvcr71d.dll}_crtBreakAlloc
+	//
+	// POSSIBLE LEAKS LIST:
+	// remember -- always clear all allocated data for static STL containers
+	// 
+	return 0;
+}*/

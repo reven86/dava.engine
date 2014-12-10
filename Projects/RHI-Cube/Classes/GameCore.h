@@ -27,35 +27,60 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
-#define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
+#ifndef __GAMECORE_H__
+#define __GAMECORE_H__
 
 #include "DAVAEngine.h"
-#if defined(__DAVAENGINE_WIN32__)
+#include "Database/MongodbClient.h"
 
-#include "WindowsSpecifics.h"
+#include "../rhi_Base.h"
 
-namespace DAVA
+using namespace DAVA;
+
+class GameCore : public ApplicationCore
 {
-
-class CoreWin32PlatformBase : public Core
-{
-public:
-    CoreWin32PlatformBase();
-
-    void InitArgs();
-    virtual void Quit();
-
-    HINSTANCE GetInstance() const;
-    HWND GetWindow() const;
-
-
 protected:
-    HINSTANCE hInstance;
-    HWND hWindow;
-};
+    virtual ~GameCore();
+public: 
+    GameCore();
+
+    static GameCore * Instance() 
+    { 
+        return (GameCore*) DAVA::Core::GetApplicationCore();
+    };
+    
+    virtual void OnAppStarted();
+    virtual void OnAppFinished();
+    
+    virtual void OnSuspend();
+    virtual void OnResume();
+
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    virtual void OnBackground();
+    virtual void OnForeground();
+    virtual void OnDeviceLocked();
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+
+    virtual void BeginFrame();
+    virtual void EndFrame();
+    
+    
+protected:
+
+    void CreateDocumentsFolder();
+
+    struct
+    VertexP
+    {
+        float   x,y,z;
+    };
+
+    rhi::Handle vb;
+    rhi::Handle ps;
+    rhi::Handle fp_cb;
 
 };
 
-#endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
+
+
+#endif // __GAMECORE_H__

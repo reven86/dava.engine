@@ -27,35 +27,36 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
-#define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
+#ifndef __RHI_SHADERCACHE_H__
+#define __RHI_SHADERCACHE_H__
 
-#include "DAVAEngine.h"
-#if defined(__DAVAENGINE_WIN32__)
+    #include "rhi_Base.h"
 
-#include "WindowsSpecifics.h"
+    #include "Base/BaseTypes.h"
+    using DAVA::uint32;
+    using DAVA::uint8;
 
-namespace DAVA
+
+namespace rhi
 {
 
-class CoreWin32PlatformBase : public Core
+typedef bool (*ShaderBuilder)( Api targetApi, ProgType progType, const char* uid, const char* srcText, std::vector<uint8>* bin );
+
+namespace ShaderCache
 {
-public:
-    CoreWin32PlatformBase();
 
-    void InitArgs();
-    virtual void Quit();
+bool    Initialize( ShaderBuilder builder=0 );
+void    Unitialize();
 
-    HINSTANCE GetInstance() const;
-    HWND GetWindow() const;
+void    Clear();
+void    Load( const char* binFileName );
+
+bool    GetProg( const DAVA::FastName& uid, std::vector<uint8>* bin );
+void    UpdateProg( ProgType progType, const DAVA::FastName& uid, const char* srcText );
+
+} // namespace ShaderCache
+} // namespace rhi
 
 
-protected:
-    HINSTANCE hInstance;
-    HWND hWindow;
-};
+#endif // __RHI_SHADERCACHE_H__
 
-};
-
-#endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__

@@ -27,35 +27,33 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
-#define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
+#ifndef __RHI_GLES2_H__
+#define __RHI_GLES2_H__
 
-#include "DAVAEngine.h"
-#if defined(__DAVAENGINE_WIN32__)
+#include "../rhi_Base.h"
 
-#include "WindowsSpecifics.h"
 
-namespace DAVA
+namespace rhi
 {
 
-class CoreWin32PlatformBase : public Core
+namespace VertexBufferGLES2
 {
-public:
-    CoreWin32PlatformBase();
-
-    void InitArgs();
-    virtual void Quit();
-
-    HINSTANCE GetInstance() const;
-    HWND GetWindow() const;
+void    SetToRHI( Handle vb );
+}
 
 
-protected:
-    HINSTANCE hInstance;
-    HWND hWindow;
-};
+namespace PipelineStateGLES2
+{
+void    SetToRHI( Handle ps );
+}
 
-};
+namespace ConstBufferGLES2
+{
+void    SetToRHI( Handle ps );
+}
 
-#endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
+
+//==============================================================================
+}
+#endif // __RHI_GLES2_H__
+

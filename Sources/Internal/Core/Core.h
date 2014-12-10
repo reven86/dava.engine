@@ -335,6 +335,8 @@ public:
 	
 	void EnableConsoleMode();
 
+    virtual void* NativeWindowHandle() { return 0; }
+
 protected:
 	int32 screenOrientation;
 
