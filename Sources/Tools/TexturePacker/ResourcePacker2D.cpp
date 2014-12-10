@@ -227,6 +227,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 		
 	DefinitionFile * defFile = new DefinitionFile;
 	defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
+
 	defFile->spriteWidth = width;
 	defFile->spriteHeight = height;
 	defFile->frameCount = (int)cropped_data.rects_array_size -1;
@@ -247,6 +248,20 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 
 				defFile->frameRects[k - 1].dx = width;
 				defFile->frameRects[k - 1].dy = height;
+			}
+			else
+			{
+				if ((defFile->frameRects[k - 1].dx > width))
+				{
+					Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
+					defFile->frameRects[k - 1].dx = width;
+				}
+
+				if ((defFile->frameRects[k - 1].dy > height))
+				{
+					Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
+					defFile->frameRects[k - 1].dy = height;
+				}
 			}
 		}
 		else
