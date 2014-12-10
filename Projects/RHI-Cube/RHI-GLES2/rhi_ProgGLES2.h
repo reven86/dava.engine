@@ -38,41 +38,36 @@ public:
     public:
 
                             ConstBuf()
-                              : _location(-1),
-                                _count(0),
-                                _data(0),
-                                _is_dirty(false)
+                              : location(-1),
+                                count(0),
+                                data(0),
+                                isDirty(false)
                             {}
                             ~ConstBuf()
                             {
-                                ConstBuf::destroy();
+                                ConstBuf::Destroy();
                             }
     
-        bool                construct( unsigned loc, unsigned count );
-        void                destroy();
+        bool                Construct( unsigned loc, unsigned count );
+        void                Destroy();
 
-        unsigned            const_count() const;
-        bool                set_const( unsigned const_i, unsigned count, const float* data );
-        void                set_to_rhi() const;
+        unsigned            ConstCount() const;
+        bool                SetConst( unsigned const_i, unsigned count, const float* cdata );
+        void                SetToRHI() const;
     
     
     private:        
         
-        unsigned            _location;
+        unsigned            location;
 
-        unsigned            _count;
-        float*              _data;
-        mutable unsigned    _is_dirty:1;
+        unsigned            count;
+        float*              data;
+        mutable unsigned    isDirty:1;
     };
 
 
 
 private:
-
-    enum
-    {
-        MaxConstBufCount    = 8
-    };
 
     struct
     ConstBufInfo
@@ -81,7 +76,7 @@ private:
         unsigned    count;
     };
 
-    ConstBufInfo        cbuf[MaxConstBufCount];
+    ConstBufInfo        cbuf[MAX_CONST_BUFFER_COUNT];
     unsigned            texunitLoc[16];
     
     unsigned            shader;

@@ -215,6 +215,16 @@ Create( const PipelineState::Descriptor& desc )
     return handle;
 } 
 
+
+Handle
+CreateVProgConstBuffer( Handle ps, unsigned bufIndex )
+{
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+    
+    return ps2->vprog->InstanceConstBuffer( bufIndex );
+}
+
+
 Handle
 CreateFProgConstBuffer( Handle ps, unsigned bufIndex )
 {

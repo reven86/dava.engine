@@ -26,7 +26,7 @@ ProgGLES2::ProgGLES2( ProgType t )
     shader(0),
     texunitInited(false)
 {
-    for( unsigned i=0; i!=MaxConstBufCount; ++i )
+    for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
         cbuf[i].location = InvalidIndex;
         cbuf[i].count    = 0;
@@ -98,7 +98,7 @@ ProgGLES2::GetProgParams( unsigned progUid )
     
     glGetProgramiv( progUid, GL_ACTIVE_UNIFORMS, &cnt );
 
-    for( unsigned i=0; i!=MaxConstBufCount; ++i )
+    for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
         cbuf[i].location = InvalidIndex;
         cbuf[i].count    = 0;
@@ -109,12 +109,12 @@ ProgGLES2::GetProgParams( unsigned progUid )
         char    name[64];
         GLsizei length;
         GLint   size;
-        GLenum  type;
+        GLenum  utype;
         
-        glGetActiveUniform( progUid, u, sizeof(name)-1, &length, &size, &type, name );
+        glGetActiveUniform( progUid, u, sizeof(name)-1, &length, &size, &utype, name );
         DVASSERT(glGetError() == GL_NO_ERROR);
         
-        for( unsigned i=0; i!=MaxConstBufCount; ++i )
+        for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
         {
             char    n[16];   sprintf( n, "%s_Buffer%u[0]", (type == PROG_VERTEX)?"VP":"FP", i );
             
@@ -162,7 +162,7 @@ ProgGLES2::InstanceConstBuffer( unsigned bufIndex )
     Handle  handle = InvalidHandle;
 
     DVASSERT(bufIndex < countof(cbuf));
-    DVASSERT(cbuf[bufIndex].location != InvalidIndex);
+//    DVASSERT(cbuf[bufIndex].location != InvalidIndex);
     
     if( bufIndex < countof(cbuf)  &&  cbuf[bufIndex].location != InvalidIndex )
     {
@@ -170,7 +170,7 @@ ProgGLES2::InstanceConstBuffer( unsigned bufIndex )
 
         ConstBuf*   cb = ConstBufGLES2Pool::Get( handle );
 
-        if( !cb->construct( cbuf[bufIndex].location, cbuf[bufIndex].count ) )
+        if( !cb->Construct( cbuf[bufIndex].location, cbuf[bufIndex].count ) )
         {
             ConstBufGLES2Pool::Free( handle );
             handle = InvalidHandle;
@@ -203,13 +203,13 @@ ProgGLES2::SetToRHI() const
 //------------------------------------------------------------------------------
 
 bool
-ProgGLES2::ConstBuf::construct( unsigned loc, unsigned cnt )
+ProgGLES2::ConstBuf::Construct( unsigned loc, unsigned cnt )
 {
-    _location   = loc;
-    _count      = cnt;
+    location = loc;
+    count    = cnt;
 //    _data       = (float*)(VidMem()->alloc_aligned( cnt*4*sizeof(float), 16 ));
-    _data       = (float*)(malloc( cnt*4*sizeof(float) ));
-    _is_dirty   = true;
+    data     = (float*)(malloc( cnt*4*sizeof(float) ));
+    isDirty  = true;
 
     return true;
 }
@@ -218,15 +218,15 @@ ProgGLES2::ConstBuf::construct( unsigned loc, unsigned cnt )
 //------------------------------------------------------------------------------
 
 void
-ProgGLES2::ConstBuf::destroy()
+ProgGLES2::ConstBuf::Destroy()
 {
-    if( _data )
+    if( data )
     {
 //        VidMem()->free( _data );
-        free( _data );
-        _data     = 0;
-        _location = -1;
-        _count    = 0;
+        free( data );
+        data     = 0;
+        location = -1;
+        count    = 0;
     }
 }
 
@@ -234,23 +234,23 @@ ProgGLES2::ConstBuf::destroy()
 //------------------------------------------------------------------------------
 
 unsigned    
-ProgGLES2::ConstBuf::const_count() const
+ProgGLES2::ConstBuf::ConstCount() const
 {
-    return _count;
+    return count;
 }
 
 
 //------------------------------------------------------------------------------
 
 bool
-ProgGLES2::ConstBuf::set_const( unsigned const_i, unsigned const_count, const float* data )
+ProgGLES2::ConstBuf::SetConst( unsigned const_i, unsigned const_count, const float* cdata )
 {
     bool    success = false;
 
-    if( const_i + const_count <= _count )
+    if( const_i + const_count <= count )
     {
-        memcpy( _data + const_i*4, data, const_count*4*sizeof(float) );
-        _is_dirty = true;
+        memcpy( data + const_i*4, cdata, const_count*4*sizeof(float) );
+        isDirty = true;
     }
 
     return success;
@@ -260,12 +260,12 @@ ProgGLES2::ConstBuf::set_const( unsigned const_i, unsigned const_count, const fl
 //------------------------------------------------------------------------------
 
 void
-ProgGLES2::ConstBuf::set_to_rhi() const
+ProgGLES2::ConstBuf::SetToRHI() const
 {
-    if( _data  &&  _is_dirty )
+    if( data  &&  isDirty )
     {
-        GL_CALL(glUniform4fv( _location, _count, _data ));
-        _is_dirty = false;
+        GL_CALL(glUniform4fv( location, count, data ));
+        isDirty = false;
     }
 }
 
@@ -299,7 +299,7 @@ ConstCount( Handle cb )
 {
     const ProgGLES2::ConstBuf*  self = ConstBufGLES2Pool::Get( cb );
 
-    return self->const_count();
+    return self->ConstCount();
 }
 
 
@@ -310,7 +310,7 @@ SetConst( Handle cb, unsigned const_i, unsigned const_count, const float* data )
 {
     ProgGLES2::ConstBuf*  self = ConstBufGLES2Pool::Get( cb );
 
-    return self->set_const( const_i, const_count, data );
+    return self->SetConst( const_i, const_count, data );
 }
 
 }
@@ -326,7 +326,7 @@ SetToRHI( const Handle cb )
 {
     const ProgGLES2::ConstBuf*  self = ConstBufGLES2Pool::Get( cb );
 
-    self->set_to_rhi();
+    self->SetToRHI();
 }
 
 }

@@ -67,7 +67,9 @@ public:
     
 protected:
 
-    void CreateDocumentsFolder();
+    void    SetupTriangle();
+    void    SetupCube();
+
 
     struct
     VertexP
@@ -76,15 +78,28 @@ protected:
     };
 
     struct
+    VertexPNT
+    {
+        float   x,y,z;
+        float   nx,ny,nz;
+        float   u,v;
+    };
+
+    struct
     Object
     {
         rhi::Handle vb;
         rhi::Handle ib;
         rhi::Handle ps;
-        rhi::Handle fp_cb;
+        rhi::Handle vp_const[2];
+        rhi::Handle fp_const;
     };
 
     Object      triangle;
+    
+    Object      cube;
+    uint64      cube_t0;
+    float       cube_angle;
 };
 
 

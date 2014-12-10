@@ -42,12 +42,9 @@ GameCore::GameCore()
 GameCore::~GameCore()
 {
 }
-
-void GameCore::OnAppStarted()
+void    
+GameCore::SetupTriangle()
 {
-    rhi::Initialize();
-    rhi::ShaderCache::Initialize();
-
     triangle.vb = rhi::VertexBuffer::Create( 3*sizeof(VertexP) );
     triangle.ib = rhi::IndexBuffer::Create( 3*sizeof(uint16) );
     
@@ -101,8 +98,99 @@ void GameCore::OnAppStarted()
     psDesc.vprogUid = FastName("vp-simple");
     psDesc.fprogUid = FastName("fp-simple");
 
-    triangle.ps    = rhi::PipelineState::Create( psDesc );
-    triangle.fp_cb = rhi::PipelineState::CreateFProgConstBuffer( triangle.ps, 0 );
+    triangle.ps       = rhi::PipelineState::Create( psDesc );
+    triangle.fp_const = rhi::PipelineState::CreateFProgConstBuffer( triangle.ps, 0 );
+}
+
+
+void
+GameCore::SetupCube()
+{
+    cube.vb = rhi::VertexBuffer::Create( 3*2*6*sizeof(VertexPNT) );
+    cube.ib = rhi::InvalidHandle;
+
+    float       sz    = 0.2f;
+    VertexPNT   v[36] = 
+    {
+        { -sz,-sz,-sz, 0,0,-1, 0,0 }, { -sz,sz,-sz, 0,0,-1, 0,0 }, { sz,-sz,-sz, 0,0,-1, 0,0 },
+        { -sz,sz,-sz, 0,0,-1, 0,0 }, { sz,sz,-sz, 0,0,-1, 0,0 }, { sz,-sz,-sz, 0,0,-1, 0,0 },
+
+        { sz,-sz,-sz, 1,0,0, 0,0 }, { sz,sz,-sz, 1,0,0, 0,0 }, { sz,-sz,sz, 1,0,0, 0,0 },   
+        { sz,sz,-sz, 1,0,0, 0,0 }, { sz,sz,sz, 1,0,0, 0,0 }, { sz,-sz,sz, 1,0,0, 0,0 },
+    
+        { sz,-sz,sz, 0,0,1, 0,0 }, { sz,sz,sz, 0,0,1, 0,0 }, { -sz,-sz,sz, 0,0,1, 0,0 },    
+        { sz,sz,sz, 0,0,1, 0,0 }, { -sz,sz,sz, 0,0,1, 0,0 }, { -sz,-sz,sz, 0,0,1, 0,0 },
+    
+        { -sz,-sz,sz, -1,0,0, 0,0 }, { -sz,sz,sz, -1,0,0, 0,0 }, { -sz,sz,-sz, -1,0,0, 0,0 },    
+        { -sz,sz,-sz, -1,0,0, 0,0 }, { -sz,-sz,-sz, -1,0,0, 0,0 }, { -sz,-sz,sz, -1,0,0, 0,0 },
+
+        { -sz,sz,-sz, 0,1,0, 0,0 }, { -sz,sz,sz, 0,1,0, 0,0 }, { sz,sz,-sz, 0,1,0, 0,0 },
+        { -sz,sz,sz, 0,1,0, 0,0 }, { sz,sz,sz, 0,1,0, 0,0 }, { sz,sz,-sz, 0,1,0, 0,0 },
+                
+        { -sz,-sz,-sz, 0,-1,0, 0,0 }, { sz,-sz,-sz, 0,-1,0, 0,0 }, { -sz,-sz,sz, 0,-1,0, 0,0 },        
+        { sz,-sz,-sz, 0,-1,0, 0,0 }, { sz,-sz,sz, 0,-1,0, 0,0 }, { -sz,-sz,sz, 0,-1,0, 0,0 }
+    };
+
+    rhi::VertexBuffer::Update( cube.vb, v, 0, sizeof(v) );
+
+
+    rhi::ShaderCache::UpdateProg
+    ( 
+        rhi::PROG_VERTEX, FastName("vp-shaded"),
+        "uniform vec4 VP_Buffer0[16];\n"
+        "uniform vec4 VP_Buffer1[16];\n"
+        "attribute vec4 attr_position;\n"
+        "attribute vec3 attr_normal;\n"
+        "attribute vec2 attr_texcoord;\n"
+        "varying vec3 var_Color;\n"
+        "void main()\n"
+        "{\n"
+        "    mat4 ViewProjection = mat4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
+        "    mat4 World = mat4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
+        "    vec4 wpos = World * vec4(attr_position.x,attr_position.y,attr_position.z,1.0);\n"
+        "    float i   = dot( vec3(0,0,-1), normalize(mat3(World)*attr_normal) );\n"
+        "    gl_Position   = ViewProjection * wpos;\n"
+        "    var_Color.rgb = i;\n"
+        "}\n"
+    );
+    rhi::ShaderCache::UpdateProg
+    ( 
+        rhi::PROG_FRAGMENT, FastName("fp-shaded"),
+        "uniform vec4 FP_Buffer0[4];\n"
+        "varying vec3 var_Color;\n"
+        "void main()\n"
+        "{\n"
+        "    gl_FragColor.rgb = FP_Buffer0[0] * var_Color;\n"
+        "    gl_FragColor.a   = FP_Buffer0[0].a;\n"
+        "}\n"
+    );
+
+
+    rhi::PipelineState::Descriptor  psDesc;
+
+    psDesc.vertexLayout.Clear();
+    psDesc.vertexLayout.AddElement( rhi::vsPosition, 0, rhi::vdtFloat, 3 );
+    psDesc.vertexLayout.AddElement( rhi::vsNormal, 0, rhi::vdtFloat, 3 );
+    psDesc.vertexLayout.AddElement( rhi::vsTexCoord, 0, rhi::vdtFloat, 2 );
+    psDesc.vprogUid = FastName("vp-shaded");
+    psDesc.fprogUid = FastName("fp-shaded");
+
+    cube.ps          = rhi::PipelineState::Create( psDesc );
+    cube.vp_const[0] = rhi::PipelineState::CreateVProgConstBuffer( cube.ps, 0 );
+    cube.vp_const[1] = rhi::PipelineState::CreateVProgConstBuffer( cube.ps, 1 );
+    cube.fp_const    = rhi::PipelineState::CreateFProgConstBuffer( cube.ps, 0 );
+
+    cube_t0     = SystemTimer::Instance()->AbsoluteMS();
+    cube_angle  = 0;
+}
+
+void GameCore::OnAppStarted()
+{
+    rhi::Initialize();
+    rhi::ShaderCache::Initialize();
+    
+    SetupTriangle();
+    SetupCube();
 }
 
 void GameCore::OnAppFinished()
@@ -152,13 +240,43 @@ void GameCore::BeginFrame()
     rhi::CommandBuffer::Begin( cb );    
     rhi::CommandBuffer::Clear( cb );
 
+/*
     rhi::ConstBuffer::SetConst( triangle.fp_cb, 0, 1, clr );
 
     rhi::CommandBuffer::SetVertexData( cb, triangle.vb );
     rhi::CommandBuffer::SetIndices( cb, triangle.ib );
     rhi::CommandBuffer::SetPipelineState( cb, triangle.ps );
-    rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, triangle.fp_cb );
+    rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, triangle.fp_const );
     rhi::CommandBuffer::DrawIndexedPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 1 );
+*/
+
+    uint64  cube_t1 = SystemTimer::Instance()->AbsoluteMS();
+    uint64  dt      = cube_t1 - cube_t0;
+
+    cube_angle += 0.001f*float(dt) * (30.0f*3.1415f/180.0f);
+    cube_t0     = cube_t1;
+
+    Matrix4 world;
+    Matrix4 view_proj;
+
+    world.Identity();
+    world.CreateRotation( Vector3(0,1,0), cube_angle );
+//    world.CreateRotation( Vector3(1,0,0), cube_angle );
+    world.SetTranslationVector( Vector3(0,0,5) );
+    view_proj.Identity();
+    view_proj.BuildProjectionFovLH( 75.0f, Core::Instance()->GetPhysicalScreenWidth()/Core::Instance()->GetPhysicalScreenHeight(), 1.0f,1000.0f );
+
+
+    rhi::ConstBuffer::SetConst( cube.fp_const, 0, 1, clr );
+    rhi::ConstBuffer::SetConst( cube.vp_const[0], 0, 4, view_proj.data );
+    rhi::ConstBuffer::SetConst( cube.vp_const[1], 0, 4, world.data );
+
+    rhi::CommandBuffer::SetVertexData( cb, cube.vb );
+    rhi::CommandBuffer::SetPipelineState( cb, cube.ps );
+    rhi::CommandBuffer::SetVertexConstBuffer( cb, 0, cube.vp_const[0] );
+    rhi::CommandBuffer::SetVertexConstBuffer( cb, 1, cube.vp_const[1] );
+    rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, cube.fp_const );
+    rhi::CommandBuffer::DrawPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 12 );
     
     rhi::CommandBuffer::End( cb );
 }
