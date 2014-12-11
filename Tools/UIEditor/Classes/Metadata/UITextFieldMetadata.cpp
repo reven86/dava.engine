@@ -83,7 +83,6 @@ void UITextFieldMetadata::SetFont(Font * font)
     }
     if (font)
     {
-        font->SetSize(GetFontSize());
         GetActiveUITextField()->SetFont(font);
     }
 }
@@ -239,6 +238,26 @@ void UITextFieldMetadata::SetTextAlign(int32 align)
     }
 	
 	GetActiveUITextField()->SetTextAlign(align);
+}
+
+bool UITextFieldMetadata::GetTextUseRtlAlign()
+{
+	if (!VerifyActiveParamID())
+	{
+		return false;
+	}
+	
+	return GetActiveUITextField()->GetTextUseRtlAlign();
+}
+
+void UITextFieldMetadata::SetTextUseRtlAlign(bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+	
+	GetActiveUITextField()->SetTextUseRtlAlign(value);
 }
 
 bool UITextFieldMetadata::GetIsPassword() const

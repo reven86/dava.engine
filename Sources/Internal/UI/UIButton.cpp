@@ -385,6 +385,18 @@ void UIButton::SetStateTextAlign(int32 state, int32 align)
         state >>= 1;
     }
 }
+	
+void UIButton::SetStateTextUseRtlAlign(int32 state, bool value)
+{
+    for(int i = 0; i < DRAW_STATE_COUNT && state; i++)for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if(state & 0x01)
+        {
+            GetOrCreateTextBlock((eButtonDrawState)i)->SetTextUseRtlAlign(value);
+        }
+        state >>= 1;
+    }
+}
 
 void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins)
 {
@@ -495,6 +507,23 @@ UIControlBackground *UIButton::GetOrCreateBackground(eButtonDrawState drawState)
     }
 
     return GetBackground(drawState);
+}
+    
+void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground *newBackground)
+{
+    DVASSERT(0 <= drawState && drawState < DRAW_STATE_COUNT);
+    
+    if (drawState == DRAW_STATE_UNPRESSED)
+    {
+        SafeRelease(background);
+        background = SafeRetain(newBackground);
+    }
+
+    SafeRetain(newBackground);
+    SafeRelease(stateBacks[drawState]);
+    stateBacks[drawState] = newBackground;
+    
+    selectedBackground = GetActualBackgroundForState(controlState);
 }
 
 UIStaticText *UIButton::GetOrCreateTextBlock(eButtonDrawState drawState)
@@ -688,6 +717,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         const YamlNode * stateFontNode = node->Get(Format("stateFont%s", statePostfix.c_str()));
         const YamlNode * stateTextAlignNode = node->Get(Format("stateTextAlign%s", statePostfix.c_str()));
         const YamlNode * stateTextColorNode = node->Get(Format("stateTextcolor%s", statePostfix.c_str()));
+        const YamlNode * stateTextUseRtlAlignNode = node->Get(Format("stateTextUseRtlAlign%s", statePostfix.c_str()));
         const YamlNode * stateShadowColorNode = node->Get(Format("stateShadowcolor%s", statePostfix.c_str()));
         const YamlNode * stateShadowOffsetNode = node->Get(Format("stateShadowoffset%s", statePostfix.c_str()));
         const YamlNode * stateFittingOptionNode = node->Get(Format("stateFittingOption%s", statePostfix.c_str()));
@@ -701,7 +731,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         if (stateFontNode || stateTextAlignNode || stateTextColorNode ||
             stateShadowColorNode || stateShadowOffsetNode || stateFittingOptionNode ||
             stateTextNode || multilineNode || multilineBySymbolNode || textColorInheritTypeNode ||
-            stateTextMarginsNode || textPerPixelAccuracyTypeNode)
+            stateTextMarginsNode || textPerPixelAccuracyTypeNode || stateTextUseRtlAlignNode)
         {
             RefPtr<UIStaticText> stateTextBlock;
             if (drawState == DRAW_STATE_UNPRESSED)
@@ -723,7 +753,12 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
             if (stateTextAlignNode)
             {
-                stateTextBlock->SetAlign(loader->GetAlignFromYamlNode(stateTextAlignNode));
+                stateTextBlock->SetTextAlign(loader->GetAlignFromYamlNode(stateTextAlignNode));
+            }
+			
+			if (stateTextUseRtlAlignNode)
+            {
+                stateTextBlock->SetTextUseRtlAlign(stateTextUseRtlAlignNode->AsBool());
             }
 
             if (stateTextColorNode)
@@ -947,6 +982,12 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             {
                 node->SetNodeToMap(Format("stateTextAlign%s", statePostfix.c_str()), loader->GetAlignNodeValue(textAlign));
             }
+			
+			bool textUseRtlAlign = stateTextBlock->GetTextUseRtlAlign();
+            if (baseStaticText->GetTextUseRtlAlign() != textUseRtlAlign)
+            {
+                node->Set(Format("stateTextUseRtlAlign%s", statePostfix.c_str()), textUseRtlAlign);
+            }
             
             UIControlBackground::eColorInheritType colorInheritType = stateTextBlock->GetTextBackground()->GetColorInheritType();
             if (baseStaticText->GetTextBackground()->GetColorInheritType() != colorInheritType)
@@ -970,19 +1011,6 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
     }
 
     return node;
-}
-
-void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground * newBackground)
-{
-    if (drawState == DRAW_STATE_UNPRESSED)
-    {
-        SafeRelease(background);
-        background = SafeRetain(newBackground);
-    }
-
-    SafeRelease(stateBacks[drawState]);
-    stateBacks[drawState] = SafeRetain(newBackground);
-    selectedBackground = GetActualBackgroundForState(controlState);
 }
 
 void UIButton::SetTextBlock( eButtonDrawState drawState, UIStaticText * newTextBlock )
@@ -1009,6 +1037,69 @@ void UIButton::UpdateStateTextControlSize()
 UIStaticText * UIButton::CreateDefaultTextBlock() const
 {
     return new UIStaticText(Rect(Vector2(), GetSize()));
+}
+
+int32 UIButton::GetBackgroundComponentsCount() const
+{
+    return DRAW_STATE_COUNT;
+}
+    
+UIControlBackground *UIButton::GetBackgroundComponent(int32 index) const
+{
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
+    return stateBacks[index];
+}
+ 
+UIControlBackground *UIButton::CreateBackgroundComponent(int32 index) const
+{
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
+    UIControlBackground *bg = GetActualBackground((eButtonDrawState) index);
+    return bg ? bg->Clone() : CreateDefaultBackground();
+}
+
+void UIButton::SetBackgroundComponent(int32 drawState, UIControlBackground *newBackground)
+{
+    DVASSERT(0 <= drawState && drawState < DRAW_STATE_COUNT);
+    SetBackground((eButtonDrawState) drawState, newBackground);
+}
+
+String UIButton::GetBackgroundComponentName(int32 index) const
+{
+    return statePostfix[index];
+}
+
+int32 UIButton::GetInternalControlsCount() const
+{
+    return DRAW_STATE_COUNT;
+}
+    
+UIControl *UIButton::GetInternalControl(int32 index) const
+{
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
+    return stateTexts[index];
+}
+
+UIControl *UIButton::CreateInternalControl(int32 index) const
+{
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
+    UIStaticText* targetTextBlock = GetActualTextBlock((eButtonDrawState) index);
+    return targetTextBlock ? targetTextBlock->Clone() : CreateDefaultTextBlock();
+}
+    
+void UIButton::SetInternalControl(int32 index, UIControl *control)
+{
+    DVASSERT(0 <= index && index < DRAW_STATE_COUNT);
+    SetTextBlock((eButtonDrawState) index, DynamicTypeCheck<UIStaticText*>(control));
+}
+    
+String UIButton::GetInternalControlName(int32 index) const
+{
+    return statePostfix[index];
+}
+
+String UIButton::GetInternalControlDescriptions() const
+{
+    return "Text";
 }
 
 };

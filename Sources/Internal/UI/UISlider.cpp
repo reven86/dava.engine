@@ -77,7 +77,7 @@ void UISlider::InitThumb()
 
 	thumbButton->SetInputEnabled(false);
 	thumbButton->relativePosition.y = size.y * 0.5f;
-    thumbButton->pivotPoint = thumbButton->size*0.5f;
+    thumbButton->SetPivot(Vector2(0.5f, 0.5f));
 	
 	SetValue(currentValue);
 }
@@ -107,7 +107,7 @@ void UISlider::SetThumb(UIControl *newThumb)
 	thumbButton->SetInputEnabled(false);
 	
 	thumbButton->relativePosition.y = size.y * 0.5f;
-    thumbButton->pivotPoint = thumbButton->size*0.5f;
+    thumbButton->SetPivot(Vector2(0.5f, 0.5f));
 	
 	UIControl::AddControl(thumbButton);
 	
@@ -270,7 +270,7 @@ void UISlider::Draw(const UIGeometricData &geometricData)
     float32 screenYMin = - drawTranslate.y / drawScale.y;
     float32 screenYMax = (GetScreenHeight() - drawTranslate.y) / drawScale.y;
 
-	if (minBackground)
+    if (minBackground)
 	{
 		minBackground->SetParentColor(GetBackground()->GetDrawColor());
 		RenderManager::Instance()->ClipPush();
@@ -440,7 +440,7 @@ List<UIControl*> UISlider::GetSubcontrols()
 	return subControls;
 }
 
-void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, UIYamlLoader* loader)
+void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, const UIYamlLoader* loader)
 {
     const YamlNode * colorNode = rootNode->Get(Format("%scolor", prefix));
     const YamlNode * spriteNode = rootNode->Get(Format("%ssprite", prefix));
@@ -513,7 +513,7 @@ void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background
     }
 }
 
-void UISlider::SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, UIYamlLoader * loader)
+void UISlider::SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader * loader)
 {
     if (!background)
     {
@@ -612,5 +612,47 @@ void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackgrou
     to = from->GetBackground()->Clone();
     RemoveControl(from);
 }
-	
+
+int32 UISlider::GetBackgroundComponentsCount() const
+{
+    return BACKGROUND_COMPONENTS_COUNT;
+}
+
+UIControlBackground *UISlider::GetBackgroundComponent(int32 index) const
+{
+    switch (index)
+    {
+        case 0:
+            return GetBackground();
+            
+        case 1:
+            return minBackground;
+            
+        case 2:
+            return maxBackground;
+            
+        default:
+            DVASSERT(false);
+            return NULL;
+    }
+}
+
+UIControlBackground *UISlider::CreateBackgroundComponent(int32 index) const
+{
+    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
+    return new UIControlBackground();
+}
+
+void UISlider::SetBackgroundComponent(int32 index, UIControlBackground *bg)
+{
+    DVASSERT(false);
+}
+
+String UISlider::GetBackgroundComponentName(int32 index) const
+{
+    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
+    static const String names[BACKGROUND_COMPONENTS_COUNT] = {"Background", "min", "max"};
+    return names[index];
+}
+
 } // ns

@@ -247,6 +247,12 @@ public:
      \param[in] align the align .
      */
     virtual void SetStateTextAlign(int32 state, int32 align);
+	/**
+     \brief Sets text use RTL align flag what will be shown for the requested states.
+     \param[in] state state text bit mask to set value for.
+     \param[in] value using RTL align flag.
+     */
+    virtual void SetStateTextUseRtlAlign(int32 state, bool value);
     /**
      \brief Sets background margins for the requested states.
      \param[in] state state text bit mask to set value for.
@@ -288,6 +294,7 @@ public:
 protected:
     virtual ~UIButton();
 
+public:
     enum eButtonDrawState
     {
             DRAW_STATE_UNPRESSED = 0
@@ -331,6 +338,21 @@ private:
     UIStaticText *CreateDefaultTextBlock() const;
 
     void UpdateStateTextControlSize();
+
+public:
+    virtual int32 GetBackgroundComponentsCount() const;
+    virtual UIControlBackground *GetBackgroundComponent(int32 index) const;
+    virtual UIControlBackground *CreateBackgroundComponent(int32 index) const;
+    virtual void SetBackgroundComponent(int32 index, UIControlBackground *bg);
+    virtual String GetBackgroundComponentName(int32 index) const;
+    
+    virtual int32 GetInternalControlsCount() const;
+    virtual UIControl *GetInternalControl(int32 index) const;
+    virtual UIControl *CreateInternalControl(int32 index) const;
+    virtual void SetInternalControl(int32 index, UIControl *control);
+    virtual String GetInternalControlName(int32 index) const;
+    virtual String GetInternalControlDescriptions() const;
+
 };
 };
 

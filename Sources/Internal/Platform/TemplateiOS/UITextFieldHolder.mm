@@ -50,6 +50,7 @@
 		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);
 		self.userInteractionEnabled = TRUE;
 		textInputAllowed = YES;
+        useRtlAlign = NO;
 
         textField = [[UITextField alloc] initWithFrame: CGRectMake(0.f, 0.f, 0.f, 0.f)];
 		textField.delegate = self;
@@ -179,6 +180,24 @@
 	textInputAllowed = (value == true);
 }
 
+- (void)setUseRtlAlign:(bool)value
+{
+    useRtlAlign = (value == true);
+    
+    // Set natural alignment if need
+    switch (textField.contentHorizontalAlignment)
+    {
+        case UIControlContentHorizontalAlignmentLeft:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
+            break;
+        case UIControlContentHorizontalAlignmentRight:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
+            break;
+            
+        default: break;
+    }
+}
+
 - (void) setupTraits
 {
 	if (!cppTextField || !textField)
@@ -186,16 +205,16 @@
 		return;
 	}
 
-	textField.autocapitalizationType = [self convertAutoCapitalizationType: cppTextField->GetAutoCapitalizationType()];
-	textField.autocorrectionType = [self convertAutoCorrectionType: cppTextField->GetAutoCorrectionType()];
+	textField.autocapitalizationType = [self convertAutoCapitalizationType: (DAVA::UITextField::eAutoCapitalizationType)cppTextField->GetAutoCapitalizationType()];
+	textField.autocorrectionType = [self convertAutoCorrectionType: (DAVA::UITextField::eAutoCorrectionType)cppTextField->GetAutoCorrectionType()];
 	
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
 	textField.spellCheckingType = [self convertSpellCheckingType: cppTextField->GetSpellCheckingType()];
 #endif
 	textField.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
-	textField.keyboardAppearance = [self convertKeyboardAppearanceType: cppTextField->GetKeyboardAppearanceType()];
-	textField.keyboardType = [self convertKeyboardType: cppTextField->GetKeyboardType()];
-	textField.returnKeyType = [self convertReturnKeyType: cppTextField->GetReturnKeyType()];
+	textField.keyboardAppearance = [self convertKeyboardAppearanceType: (DAVA::UITextField::eKeyboardAppearanceType)cppTextField->GetKeyboardAppearanceType()];
+	textField.keyboardType = [self convertKeyboardType: (DAVA::UITextField::eKeyboardType)cppTextField->GetKeyboardType()];
+	textField.returnKeyType = [self convertReturnKeyType: (DAVA::UITextField::eReturnKeyType)cppTextField->GetReturnKeyType()];
 }
 
 - (UITextAutocapitalizationType) convertAutoCapitalizationType:(DAVA::UITextField::eAutoCapitalizationType) davaType
@@ -455,6 +474,7 @@
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
+
 
 @end
 

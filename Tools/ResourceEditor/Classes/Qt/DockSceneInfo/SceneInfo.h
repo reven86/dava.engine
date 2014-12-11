@@ -110,7 +110,6 @@ protected:
     void InitializeVegetationInfoSection();
     
     void InitializeLayersSection();
-    void UpdateLayersSectionStructure(SceneEditor2 *scene);
 
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();

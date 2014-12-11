@@ -31,11 +31,12 @@
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
 #include "Render/RenderManager.h"
+#include "Render/OcclusionQuery.h"
 #include "Sound/SoundSystem.h"
 #include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "DLC/Downloader/DownloadManager.h"
-#include "Platform/Notification.h"
+#include "Notification/LocalNotificationController.h"
 
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -77,10 +78,12 @@ void ApplicationCore::Draw()
 {
 	TIME_PROFILE("ApplicationCore::Draw");
 
+    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
 	UIControlSystem::Instance()->Draw();	
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
+    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
 }
 
 void ApplicationCore::BeginFrame()

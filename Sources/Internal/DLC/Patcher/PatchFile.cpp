@@ -117,22 +117,25 @@ bool PatchInfo::ReadString(File* file, String &str)
     uint32 len = 0;
     uint32 rlen = file->Read(&len);
 
-    if(rlen == sizeof(rlen))
+    if(rlen == sizeof(len))
     {
         if(len > 0)
         {
-            char8 *buffer = new char8[len + 1];
-            buffer[len] = 0;
-            rlen = file->Read(buffer, len);
+			char8 *buffer = new(std::nothrow) char8[len + 1];
+			if(NULL != buffer)
+			{
+				buffer[len] = 0;
+				rlen = file->Read(buffer, len);
 
-            if(rlen == len)
-            {
-                str = buffer;
-                ret = true;
-            }
+				if(rlen == len)
+				{
+					str = buffer;
+					ret = true;
+				}
 
-            SafeDeleteArray(buffer);
-        }
+				SafeDeleteArray(buffer);
+			}
+		}
         else
         {
             str = "";
@@ -603,32 +606,42 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                 if(NULL == origFile)
                 {
                     lastError = ERROR_ORIG_READ;
+                    ret = false;
                 }
                 else
                 {
                     uint32 origSize = origFile->GetSize();
-                    origData = new char8[origSize];
+					origData = new(std::nothrow) char8[origSize];
 
-                    if(origSize != origFile->Read(origData, origSize))
-                    {
-                        lastError = ERROR_ORIG_READ;
-                        ret = false;
-                    }
+					if(NULL != origData)
+					{
+						if(origSize != origFile->Read(origData, origSize))
+						{
+							lastError = ERROR_ORIG_READ;
+							ret = false;
+						}
 
-                    origFile->Release();
+						origFile->Release();
 
-                    // if there was no errors when reading patch file, check for read data CRC
-                    if(ret)
-                    {
-                        uint32 origCRC = CRC32::ForBuffer(origData, origSize);
-                        if(origSize != curInfo.origSize || origCRC != curInfo.origCRC)
-                        {
-                            // source crc differ for expected
-                            lastError = ERROR_ORIG_CRC;
-                            ret = false;
-                        }
-                    }
-                }
+						// if there was no errors when reading patch file, check for read data CRC
+						if(ret)
+						{
+							uint32 origCRC = CRC32::ForBuffer(origData, origSize);
+							if(origSize != curInfo.origSize || origCRC != curInfo.origCRC)
+							{
+								// source crc differ for expected
+								lastError = ERROR_ORIG_CRC;
+								ret = false;
+							}
+						}
+					}
+					else
+					{
+						// can't allocate memory
+						lastError = ERROR_MEMORY;
+						ret = false;
+					}
+				}
             }
 
             if(ret)
@@ -657,15 +670,30 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                     {
                         if(curInfo.newSize > 0)
                         {
-                            newData = new char8[curInfo.newSize];
-                            if(BSDiff::Patch(origData, curInfo.origSize, newData, curInfo.newSize, patchFile))
+							newData = new(std::nothrow) char8[curInfo.newSize];
+
+                            if(NULL != newData)
                             {
-                                if(curInfo.newSize != newFile->Write(newData, curInfo.newSize))
-                                {
-                                    lastError = ERROR_NEW_WRITE;
-                                    ret = false;
-                                }
+								if(BSDiff::Patch(origData, curInfo.origSize, newData, curInfo.newSize, patchFile))
+								{
+									if(curInfo.newSize != newFile->Write(newData, curInfo.newSize))
+									{
+										lastError = ERROR_NEW_WRITE;
+										ret = false;
+									}
+								}
+								else
+								{
+									lastError = ERROR_CORRUPTED;
+									ret = false;
+								}
                             }
+							else
+							{
+								// can't allocate memory
+								lastError = ERROR_MEMORY;
+								ret = false;
+							}
                         }
                         newFile->Release();
 
@@ -695,8 +723,8 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                 }
             }
 
-            SafeDelete(origData);
-            SafeDelete(newData);
+            SafeDeleteArray(origData);
+            SafeDeleteArray(newData);
         }
         // there should be no new file after patching
         else
