@@ -30,20 +30,55 @@
 #include "RenderSystem2D.h"
 #include "VirtualCoordinatesSystem.h"
 #include "Render/RenderManager.h"
+#include "Render/ShaderCache.h"
 
 namespace DAVA
 {
-    
-RenderSystem2D::RenderSystem2D()
+
+FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
+FastName RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
+
+Shader * RenderSystem2D::FLAT_COLOR = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
+
+RenderSystem2D::RenderSystem2D() :
+spriteRenderObject(0),
+spriteVertexStream(0),
+spriteTexCoordStream(0)
 {
-    spriteRenderObject = new RenderDataObject();
-    spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-    spriteTexCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+}
+
+void RenderSystem2D::Init()
+{
+    if (!spriteRenderObject) //used as flag 'isInited'
+    {
+        spriteRenderObject = new RenderDataObject();
+        spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+        spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+
+        FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
+        TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, FastNameSet()));
+
+        FastNameSet set;
+        set.Insert(FastName("ALPHA_TEST_ENABLED"));
+        TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("IMAGE_A8"));
+        TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+    }
 }
 
 RenderSystem2D::~RenderSystem2D()
 {
     SafeRelease(spriteRenderObject);
+
+    SafeRelease(FLAT_COLOR);
+    SafeRelease(TEXTURE_MUL_FLAT_COLOR);
+    SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
+    SafeRelease(TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
 }
 
 void RenderSystem2D::Reset()
@@ -57,7 +92,7 @@ void RenderSystem2D::Reset()
 
     defaultSpriteDrawState.Reset();
     defaultSpriteDrawState.renderState = RenderState::RENDERSTATE_2D_BLEND;
-    defaultSpriteDrawState.shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
+    defaultSpriteDrawState.shader = TEXTURE_MUL_FLAT_COLOR;
 }
     
 void RenderSystem2D::Setup2DMatrices()

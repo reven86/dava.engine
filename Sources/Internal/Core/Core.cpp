@@ -209,6 +209,8 @@ void Core::ReleaseSingletons()
 	Random::Instance()->Release();
 	RenderLayerManager::Instance()->Release();
     FrameOcclusionQueryManager::Instance()->Release();
+    VirtualCoordinatesSystem::Instance()->Release();
+    RenderSystem2D::Instance()->Release();
 	RenderManager::Instance()->Release();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();

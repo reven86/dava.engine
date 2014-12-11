@@ -101,6 +101,7 @@ void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int
 	core->SetupWindow(hInstance, hWindow);
 	RenderManager::Create(Core::RENDERER_OPENGL);		
 	RenderManager::Instance()->Create(hInstance, hWindow);
+    RenderSystem2D::Instance()->Init();
 
 	FrameworkDidLaunched();
 

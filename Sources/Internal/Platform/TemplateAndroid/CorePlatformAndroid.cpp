@@ -41,6 +41,7 @@ extern void FrameworkWillTerminate();
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {
@@ -251,6 +252,7 @@ namespace DAVA
 			}
 
 			FileSystem::Instance()->Init();
+			RenderSystem2D::Instance()->Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");

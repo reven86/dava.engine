@@ -43,6 +43,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "Render/Texturedescriptor.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NEW_PPA
@@ -65,7 +66,7 @@ Sprite::DrawState::DrawState()
     Reset();
     
     renderState = RenderState::RENDERSTATE_2D_BLEND;
-    shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
+    shader = RenderSystem2D::TEXTURE_MUL_FLAT_COLOR;
 }
 
 Sprite::Sprite()

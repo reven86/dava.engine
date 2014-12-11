@@ -196,6 +196,7 @@ namespace DAVA
 		RenderManager::Create(Core::RENDERER_OPENGL);
 #endif
 		RenderManager::Instance()->Create(hInstance, hWindow);
+        RenderSystem2D::Instance()->Init();
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();

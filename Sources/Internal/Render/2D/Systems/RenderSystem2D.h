@@ -46,9 +46,19 @@ class RenderDataStream;
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
+    static FastName FLAT_COLOR_SHADER;
+    static FastName TEXTURE_MUL_FLAT_COLOR_SHADER;
+
+    static Shader * FLAT_COLOR;
+    static Shader * TEXTURE_MUL_FLAT_COLOR;
+    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
+
     RenderSystem2D();
     virtual ~RenderSystem2D();
     
+    void Init();
+
     void Draw(Sprite * sprite, Sprite::DrawState * drawState = 0);
     
     void Reset();

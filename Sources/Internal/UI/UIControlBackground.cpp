@@ -83,7 +83,7 @@ UIControlBackground::UIControlBackground()
 ,   rdoObject(NULL)
 ,   vertexStream(NULL)
 ,   texCoordStream(NULL)
-,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
+,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
@@ -613,7 +613,7 @@ void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, Un
 
     RenderManager::Instance()->SetTextureState(textureHandle);
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(rdoObject);
     RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, sd.GetVertexInTrianglesCount(), EIF_16, (void*)sd.indeces);
 
@@ -695,7 +695,7 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle rend
 
     RenderManager::Instance()->SetTextureState(textureHandle);
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(rdoObject);
     RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 }
