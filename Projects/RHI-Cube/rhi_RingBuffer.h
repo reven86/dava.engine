@@ -62,6 +62,7 @@ private:
 
 //------------------------------------------------------------------------------
 
+inline
 RingBuffer::RingBuffer()
   : size(0),
     dataPtr(0),
@@ -73,7 +74,7 @@ RingBuffer::RingBuffer()
 
 //------------------------------------------------------------------------------
 
-void
+inline void
 RingBuffer::Initialize( unsigned sz )
 {
     size        = sz;
@@ -87,7 +88,7 @@ RingBuffer::Initialize( unsigned sz )
 
 //------------------------------------------------------------------------------
 
-void        
+inline void        
 RingBuffer::Uninitialize()
 {
     if( dataPtr )
@@ -101,7 +102,7 @@ RingBuffer::Uninitialize()
 
 //------------------------------------------------------------------------------
 
-float*      
+inline float*
 RingBuffer::Alloc( unsigned cnt )
 {
     DVASSERT(cur);
@@ -126,7 +127,7 @@ RingBuffer::Alloc( unsigned cnt )
 
 //------------------------------------------------------------------------------
 
-void
+inline void
 RingBuffer::Reset()
 {
     memUsed    = 0;
