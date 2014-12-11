@@ -186,13 +186,13 @@ UIControl *DefaultUIPackageBuilder::BeginUnknownControl(const YamlNode *node)
     return NULL;
 }
 
-void DefaultUIPackageBuilder::EndControl()
+void DefaultUIPackageBuilder::EndControl(bool isRoot)
 {
     ControlDescr lastControl = controlsStack.back();
     controlsStack.pop_back();
     if (lastControl.addToParent)
     {
-        if (controlsStack.empty())
+        if (controlsStack.empty() || isRoot)
         {
             package->AddControl(lastControl.control);
         }
