@@ -77,14 +77,16 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 			skipFirstFrame = false; //skip first frame for correct unlock device in landscape mode, after unlock device in first frame draw in portrait mode
 			return;
 		}
-
-		nativeRender();
-		
-		if(isFirstFrameAfterDraw)
+		if (!JNIAssert.waitUserInputOnAssertDialog)
 		{
-			isFirstFrameAfterDraw = false;
-			JNIActivity.GetActivity().OnFirstFrameAfterDraw();
-			JNITextField.ShowVisibleTextFields();
+    		nativeRender();
+    		
+    		if(isFirstFrameAfterDraw)
+    		{
+    			isFirstFrameAfterDraw = false;
+    			JNIActivity.GetActivity().OnFirstFrameAfterDraw();
+    			JNITextField.ShowVisibleTextFields();
+    		}
 		}
 		
 		

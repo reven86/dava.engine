@@ -129,16 +129,6 @@ FunctionBindSignalTest::FunctionBindSignalTest()
 
 void FunctionBindSignalTest::LoadResources()
 {
-//    volatile int wait = 0;
-//    while(wait == 0)
-//    {
-//        usleep(1);
-//    }
-    DVASSERT_MSG(false, "test first msg");
-    DVASSERT_MSG(false, "test second msg");
-    DVWARNING(false, "first warning");
-    DVWARNING(false, "second warinig");
-
 	UITestTemplate::LoadResources();
 	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
 	DVASSERT(font);

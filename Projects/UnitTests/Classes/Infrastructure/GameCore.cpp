@@ -111,12 +111,6 @@ void GameCore::OnAppStarted()
 
     RenderManager::Instance()->SetFPS(60);
 
-//    volatile int flag_001_wait = 0;
-//    while(flag_001_wait == 0)
-//    {
-//        flag_001_wait = 0;
-//    }
-
     //new DLCDownloadTest();
     new MathTest();
     new FunctionBindSignalTest();
@@ -262,11 +256,6 @@ void GameCore::BeginFrame()
 
 void GameCore::Update(float32 timeElapsed)
 {
-//    volatile int wait = 0;
-//    while(wait == 0)
-//    {
-//        usleep(1);
-//    }
     ProcessTests();
     ApplicationCore::Update(timeElapsed);
 }

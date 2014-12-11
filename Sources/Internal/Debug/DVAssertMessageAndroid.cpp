@@ -73,12 +73,9 @@ bool JniDVAssertMessage::ShowMessage(bool isModal, const char* message)
 bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
 	JniDVAssertMessage msg;
-	bool waitUserInput = ALWAYS_MODAL == modalType;
+	bool waitUserInput = (ALWAYS_MODAL == modalType);
 
 	bool breakExecution = msg.ShowMessage(waitUserInput, message);
-
-    // leave it alone and DebugBreak() will do it better
-    // AndroidCrashReport::ThrowExeption(message);
 	return breakExecution;
 }
 
