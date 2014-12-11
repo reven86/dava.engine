@@ -170,7 +170,6 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
             packageName = controlName.substr(0, pos);
             controlName = controlName.substr(pos + 1, controlName.length() - pos - 1);
         }
-        Logger::Debug("!!!! control: %s", controlName.c_str());
         control = builder->BeginControlWithPrototype(packageName, controlName, customClass, this);
     }
     else if (classNode)
