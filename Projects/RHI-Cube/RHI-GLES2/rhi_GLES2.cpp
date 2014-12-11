@@ -1,5 +1,6 @@
 
     #include "rhi_CommandBufferGLES2.h"
+    #include "rhi_GLES2.h"
 
     #include "../rhi_Base.h"
     #include "../rhi_Pool.h"
@@ -96,6 +97,9 @@ Initialize()
 */    
                 _Context = (void*)ctx;
 //            }
+
+
+            ConstBufferGLES2::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded default const ring-buf size
 
             _Inited   = true;
             success   = true;

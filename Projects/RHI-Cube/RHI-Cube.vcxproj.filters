@@ -50,5 +50,8 @@
     <ClInclude Include="rhi_Type.h">
       <Filter>RHI</Filter>
     </ClInclude>
+    <ClInclude Include="rhi_RingBuffer.h">
+      <Filter>RHI</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

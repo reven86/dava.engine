@@ -3,6 +3,7 @@
     #include "../rhi_VertexLayout.h"
     #include "../rhi_Base.h"
     #include "../rhi_Pool.h"
+    #include "../rhi_RingBuffer.h"
 
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
@@ -18,6 +19,9 @@ namespace rhi
 //==============================================================================
 
 typedef Pool<ProgGLES2::ConstBuf>   ConstBufGLES2Pool;
+
+static RingBuffer   DefaultConstRingBuffer;
+
 
 //==============================================================================
 
@@ -205,11 +209,12 @@ ProgGLES2::SetToRHI() const
 bool
 ProgGLES2::ConstBuf::Construct( unsigned loc, unsigned cnt )
 {
-    location = loc;
-    count    = cnt;
+    location    = loc;
+    count       = cnt;
 //    _data       = (float*)(VidMem()->alloc_aligned( cnt*4*sizeof(float), 16 ));
-    data     = (float*)(malloc( cnt*4*sizeof(float) ));
-    isDirty  = true;
+    data        = (float*)(malloc( cnt*4*sizeof(float) ));
+    isDirty     = true;
+    isInstanced = false;
 
     return true;
 }
@@ -259,12 +264,42 @@ ProgGLES2::ConstBuf::SetConst( unsigned const_i, unsigned const_count, const flo
 
 //------------------------------------------------------------------------------
 
-void
-ProgGLES2::ConstBuf::SetToRHI() const
+void*
+ProgGLES2::ConstBuf::Instance() const
 {
-    if( data  &&  isDirty )
+    if( isDirty )
     {
-        GL_CALL(glUniform4fv( location, count, data ));
+        float*  old_data = data;
+        float*  new_data = DefaultConstRingBuffer.alloc( count*4*sizeof(float) );
+
+        memcpy( new_data, old_data, 4*count*sizeof(float) );
+
+        if( !isInstanced )
+        {
+            free( data );
+        }
+
+        data        = new_data;
+        isDirty     = true;
+        isInstanced = true;
+
+        return old_data;
+    }
+    else
+    {
+        return data;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ProgGLES2::ConstBuf::SetToRHI( void* instData ) const
+{
+    if( instData != data )
+    {
+        GL_CALL(glUniform4fv( location, count, (GLfloat*)instData ));
         isDirty = false;
     }
 }
@@ -322,11 +357,25 @@ namespace ConstBufferGLES2
 {
 
 void
-SetToRHI( const Handle cb )
+InitializeRingBuffer( uint32 size )
+{
+    DefaultConstRingBuffer.initialize( size );
+}
+
+void
+SetToRHI( const Handle cb, void* instData )
 {
     const ProgGLES2::ConstBuf*  self = ConstBufGLES2Pool::Get( cb );
 
-    self->SetToRHI();
+    self->SetToRHI( instData );
+}
+
+void*
+Instance( Handle cb )
+{
+    const ProgGLES2::ConstBuf*  self = ConstBufGLES2Pool::Get( cb );
+
+    return self->Instance();
 }
 
 }

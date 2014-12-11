@@ -110,7 +110,7 @@ SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer );
+        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint32)(ConstBufferGLES2::Instance(buffer)) );
 }
 
 
@@ -140,7 +140,7 @@ SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer );
+        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint32)(ConstBufferGLES2::Instance(buffer)) );
 }
 
 
@@ -365,7 +365,9 @@ CommandBuffer_t::replay()
 {
     Handle  cur_ps = 0;
     Handle  vp_const[MAX_CONST_BUFFER_COUNT];
+    void*   vp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle  fp_const[MAX_CONST_BUFFER_COUNT];
+    void*   fp_const_data[MAX_CONST_BUFFER_COUNT];
 
     for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
@@ -432,14 +434,16 @@ CommandBuffer_t::replay()
             
             case GLES2__SET_VERTEX_PROG_CONST_BUFFER :
             {
-                vp_const[ arg[0] ] = (Handle)(arg[1]);
-                c += 2;
+                vp_const[ arg[0] ]      = (Handle)(arg[1]);
+                vp_const_data[ arg[0] ] = (void*)(arg[2]);
+                c += 3;
             }   break;
 
             case GLES2__SET_FRAGMENT_PROG_CONST_BUFFER :
             {
-                fp_const[ arg[0] ] = (Handle)(arg[1]);
-                c += 2;
+                fp_const[ arg[0] ]      = (Handle)(arg[1]);
+                fp_const_data[ arg[0] ] = (void*)(arg[2]);
+                c += 3;
             }   break;
             
             case GLES2__DRAW_PRIMITIVE :
@@ -452,12 +456,12 @@ CommandBuffer_t::replay()
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( vp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( vp_const[i] );
+                        ConstBufferGLES2::SetToRHI( vp_const[i], vp_const_data[i] );
                 }
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( fp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( fp_const[i] );
+                        ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
                 
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
@@ -475,12 +479,12 @@ CommandBuffer_t::replay()
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( vp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( vp_const[i] );
+                        ConstBufferGLES2::SetToRHI( vp_const[i], vp_const_data[i] );
                 }
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( fp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( fp_const[i] );
+                        ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
                 
                 GL_CALL(glDrawElements( mode, v_cnt, GL_UNSIGNED_SHORT, NULL ));

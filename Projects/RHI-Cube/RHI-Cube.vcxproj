@@ -76,6 +76,7 @@
     <ClInclude Include="Classes\GameCore.h" />
     <ClInclude Include="rhi_Base.h" />
     <ClInclude Include="rhi_Pool.h" />
+    <ClInclude Include="rhi_RingBuffer.h" />
     <ClInclude Include="rhi_ShaderCache.h" />
     <ClInclude Include="rhi_Type.h" />
     <ClInclude Include="rhi_VertexLayout.h" />

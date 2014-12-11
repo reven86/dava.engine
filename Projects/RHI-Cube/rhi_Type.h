@@ -207,7 +207,8 @@ nonaliased_cast( src x )
 
 const unsigned InvalidIndex = (unsigned)(-1);
 
-#define     countof(array)      (sizeof(array)/sizeof(array[0]))
+#define     countof(array)              (sizeof(array)/sizeof(array[0]))
+#define     L_ALIGNED_SIZE(size,align)  (((size) + ((align)-1)) & (~((align)-1)))
 
 #define LCP Logger::Info("%s : %i",__FILE__,__LINE__);
 

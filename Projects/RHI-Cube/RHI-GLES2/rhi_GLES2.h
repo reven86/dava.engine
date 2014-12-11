@@ -54,7 +54,10 @@ void    SetToRHI( Handle ps );
 
 namespace ConstBufferGLES2
 {
-void    SetToRHI( Handle ps );
+void    InitializeRingBuffer( uint32 size );
+
+void    SetToRHI( Handle ps, void* instData );
+void*   Instance( Handle ps );
 }
 
 

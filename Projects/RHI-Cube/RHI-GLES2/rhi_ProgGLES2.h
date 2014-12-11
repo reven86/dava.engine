@@ -41,7 +41,8 @@ public:
                               : location(-1),
                                 count(0),
                                 data(0),
-                                isDirty(false)
+                                isDirty(false),
+                                isInstanced(false)
                             {}
                             ~ConstBuf()
                             {
@@ -53,7 +54,9 @@ public:
 
         unsigned            ConstCount() const;
         bool                SetConst( unsigned const_i, unsigned count, const float* cdata );
-        void                SetToRHI() const;
+        
+        void*               Instance() const;
+        void                SetToRHI( void* instData ) const;
     
     
     private:        
@@ -61,8 +64,9 @@ public:
         unsigned            location;
 
         unsigned            count;
-        float*              data;
-        mutable unsigned    isDirty:1;
+        mutable float*      data;
+        mutable uint32      isDirty:1;
+        mutable uint32      isInstanced:1;
     };
 
 

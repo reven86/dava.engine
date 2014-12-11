@@ -241,7 +241,7 @@ void GameCore::BeginFrame()
     rhi::CommandBuffer::Clear( cb );
 
 /*
-    rhi::ConstBuffer::SetConst( triangle.fp_cb, 0, 1, clr );
+    rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
 
     rhi::CommandBuffer::SetVertexData( cb, triangle.vb );
     rhi::CommandBuffer::SetIndices( cb, triangle.ib );
