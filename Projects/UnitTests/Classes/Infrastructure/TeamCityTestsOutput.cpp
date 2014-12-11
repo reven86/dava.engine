@@ -87,44 +87,8 @@ String TeamcityTestsOutput::FormatTestFailed(const String& testName, const Strin
     return ERROR_TEST + "\n" + testName + "\n" + condition + "\n" + errMsg;
 }
 
-void TeamcityTestsOutput::Connect(const String& host, uint16 port)
-{
-    sf::Socket::Status status = socket.connect(host, port, sf::seconds(0.2f));
-    if (status != sf::Socket::Done)
-    {
-        DAVA::Logger::Error("can't connect to server: %s:%hu", host.c_str(), port);
-    } else
-    {
-        connected = true;
-    }
-}
-
-void TeamcityTestsOutput::SendTestResult(const String& testResult)
-{
-    if (connected)
-    {
-        if (socket.send(testResult.c_str(), testResult.size()) != sf::Socket::Done)
-        {
-            connected = false; // prevent recursion
-            DAVA::Logger::Error("can't send data to server\n");
-            socket.disconnect();
-        }
-    }
-}
-
-void TeamcityTestsOutput::Disconnect()
-{
-    if (connected)
-    {
-        socket.disconnect();
-        connected = false;
-    }
-}
-
 void TeamcityTestsOutput::TestOutput(const String& data)
 {
-    SendTestResult(data);
-
     TeamcityOutput::PlatformOutput(data);
 }
 

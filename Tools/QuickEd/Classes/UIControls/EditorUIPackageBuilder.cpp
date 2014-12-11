@@ -153,7 +153,7 @@ UIControl *EditorUIPackageBuilder::BeginUnknownControl(const YamlNode *node)
     return NULL;
 }
 
-void EditorUIPackageBuilder::EndControl()
+void EditorUIPackageBuilder::EndControl(bool isRoot)
 {
     ControlNode *lastControl = SafeRetain(controlsStack.back().node);
     bool addToParent = controlsStack.back().addToParent;
@@ -161,7 +161,7 @@ void EditorUIPackageBuilder::EndControl()
     
     if (addToParent)
     {
-        if (controlsStack.empty())
+        if (controlsStack.empty() || isRoot)
             packageNode->GetPackageControlsNode()->Add(lastControl);
         else
             controlsStack.back().node->Add(lastControl);
@@ -169,7 +169,7 @@ void EditorUIPackageBuilder::EndControl()
     SafeRelease(lastControl);
 }
 
-void EditorUIPackageBuilder::BeginControlPropretiesSection(const String &name)
+void EditorUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 {
     currentSection = controlsStack.back().node->GetPropertiesRoot()->GetControlPropertiesSection(name);
     currentObject = controlsStack.back().node->GetControl();

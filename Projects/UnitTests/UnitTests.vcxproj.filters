@@ -1,49 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Classes\EntityTest.cpp" />
-    <ClCompile Include="Classes\HashMapTest.cpp" />
-    <ClCompile Include="Classes\KeyedArchiveTest.cpp" />
-    <ClCompile Include="Classes\KeyedArchiveYamlTest.cpp" />
-    <ClCompile Include="Classes\MemoryAllocatorsTest.cpp" />
-    <ClCompile Include="Classes\PVRTest.cpp" />
-    <ClCompile Include="Classes\SampleTest.cpp" />
-    <ClCompile Include="Classes\SoundTest.cpp" />
-    <ClCompile Include="Classes\SplitTest.cpp" />
-    <ClCompile Include="Classes\CloneTest.cpp" />
-    <ClCompile Include="Classes\DXTTest.cpp" />
-    <ClCompile Include="Classes\MaterialCompilerTest.cpp" />
-    <ClCompile Include="Classes\InputTest.cpp" />
-    <ClCompile Include="Classes\DPITest.cpp" />
-    <ClCompile Include="Classes\DeviceInfoTest.cpp" />
-    <ClCompile Include="Classes\LocalizationTest.cpp" />
-    <ClCompile Include="Classes\FileListTest.cpp" />
-    <ClCompile Include="Classes\FilePathTest.cpp" />
-    <ClCompile Include="Classes\FileSystemTest.cpp" />
-    <ClCompile Include="Classes\UIListTest.cpp" />
-    <ClCompile Include="Classes\TransparentWebViewTest.cpp" />
-    <ClCompile Include="Classes\FormatsTest.cpp" />
-    <ClCompile Include="Classes\UIScrollViewTest.cpp" />
-    <ClCompile Include="Classes\AlignTest.cpp" />
-    <ClCompile Include="Classes\ThreadSyncTest.cpp" />
-    <ClCompile Include="Classes\UIMovieTest.cpp" />
-    <ClCompile Include="Classes\ComponentsTest.cpp" />
-    <ClCompile Include="Classes\RectSpriteTest.cpp" />
-    <ClCompile Include="Classes\StringFormatTest.cpp" />
     <ClCompile Include="Classes\JPEGTest.cpp" />
-    <ClCompile Include="Classes\DateTimeTest.cpp" />
-    <ClCompile Include="Classes\SaveImageTest.cpp" />
-    <ClCompile Include="Classes\JPEGTest.cpp" />
-    <ClCompile Include="Classes\ParseTextTest.cpp" />
-    <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
-    <ClCompile Include="Classes\DFFontTest.cpp" />
-    <ClCompile Include="Classes\ImageSizeTest.cpp" />
-    <ClCompile Include="Classes\SceneSystemTest.cpp" />
-    <ClCompile Include="Classes\DLCDownloadTest.cpp" />
-    <ClCompile Include="Classes\FunctionBindSingalTest.cpp" />
-    <ClCompile Include="Classes\BiDiTest.cpp" />
-    <ClCompile Include="Classes\TextSizeTest.cpp" />
-    <ClCompile Include="Classes\MathTest.cpp" />
     <ClCompile Include="Classes\Infrastructure\BaseScreen.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
@@ -62,88 +20,55 @@
     <ClCompile Include="Win32Specific\main.cpp">
       <Filter>Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\IpAddress.cpp">
-      <Filter>SFML\Network</Filter>
+    <ClCompile Include="Classes\Tests\ComponentsTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\Packet.cpp">
-      <Filter>SFML\Network</Filter>
+    <ClCompile Include="Classes\Tests\DateTimeTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\Socket.cpp">
-      <Filter>SFML\Network</Filter>
+    <ClCompile Include="Classes\Tests\FileListTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\SocketSelector.cpp">
-      <Filter>SFML\Network</Filter>
+    <ClCompile Include="Classes\Tests\FileSystemTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\TcpListener.cpp">
-      <Filter>SFML\Network</Filter>
+    <ClCompile Include="Classes\Tests\FunctionBindSingalTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\TcpSocket.cpp">
-      <Filter>SFML\Network</Filter>
+    <ClCompile Include="Classes\Tests\HashMapTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\UdpSocket.cpp">
-      <Filter>SFML\Network</Filter>
+    <ClCompile Include="Classes\Tests\ImageSizeTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\Network\Win32\SocketImpl.cpp">
-      <Filter>SFML\Network\Win32</Filter>
+    <ClCompile Include="Classes\Tests\KeyedArchiveYamlTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\System\Err.cpp">
-      <Filter>SFML\System</Filter>
+    <ClCompile Include="Classes\Tests\LocalizationTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\System\String.cpp">
-      <Filter>SFML\System</Filter>
+    <ClCompile Include="Classes\Tests\MathTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SFML\System\Time.cpp">
-      <Filter>SFML\System</Filter>
+    <ClCompile Include="Classes\Tests\MemoryAllocatorsTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Tests\SaveImageTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Tests\SplitTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Tests\StringFormatTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Tests\TextSizeTest.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Classes\EntityTest.h" />
-    <ClInclude Include="Classes\HashMapTest.h" />
-    <ClInclude Include="Classes\KeyedArchiveTest.h" />
-    <ClInclude Include="Classes\KeyedArchiveYamlTest.h" />
-    <ClInclude Include="Classes\MemoryAllocatorsTest.h" />
-    <ClInclude Include="Classes\PVRTest.h" />
-    <ClInclude Include="Classes\SampleTest.h" />
-    <ClInclude Include="Classes\SoundTest.h" />
-    <ClInclude Include="Classes\SplitTest.h" />
-    <ClInclude Include="Classes\CloneTest.h" />
-    <ClInclude Include="Classes\DXTTest.h" />
-    <ClInclude Include="Classes\MaterialCompilerTest.h" />
-    <ClInclude Include="Classes\InputTest.h" />
-    <ClInclude Include="Classes\DPITest.h" />
-    <ClInclude Include="Classes\DeviceInfoTest.h" />
-    <ClInclude Include="Classes\LocalizationTest.h" />
-    <ClInclude Include="Classes\FileListTest.h" />
-    <ClInclude Include="Classes\FilePathTest.h" />
-    <ClInclude Include="Classes\FileSystemTest.h" />
-    <ClInclude Include="Classes\UIListTest.h" />
-    <ClInclude Include="Classes\TransparentWebViewTest.h" />
-    <ClInclude Include="Classes\FormatsTest.h" />
-    <ClInclude Include="Classes\UIScrollViewTest.h" />
-    <ClInclude Include="Classes\AlignTest.h" />
-    <ClInclude Include="Classes\ThreadSyncTest.h" />
-    <ClInclude Include="Classes\UIMovieTest.h" />
-    <ClInclude Include="Classes\ComponentsTest.h" />
-    <ClInclude Include="Classes\RectSpriteTest.h" />
-    <ClInclude Include="Classes\StringFormatTest.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
-    <ClInclude Include="Classes\DateTimeTest.h" />
-    <ClInclude Include="Classes\SaveImageTest.h" />
-    <ClInclude Include="Classes\JPEGTest.h" />
-    <ClInclude Include="Classes\ParseTextTest.h" />
-    <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
-    <ClInclude Include="Classes\DFFontTest.h" />
-    <ClInclude Include="Classes\ImageSizeTest.h" />
-    <ClInclude Include="Classes\SceneSystemTest.h" />
-    <ClInclude Include="Classes\DLCDownloadTest.h" />
-    <ClInclude Include="Classes\FunctionBindSingalTest.h" />
-    <ClInclude Include="Classes\BiDiTest.h" />
-    <ClInclude Include="Classes\TextSizeTest.h" />
-    <ClInclude Include="Classes\MathTest.h" />
     <ClInclude Include="Classes\Infrastructure\BaseScreen.h">
-      <Filter>Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Infrastructure\Config.h">
       <Filter>Infrastructure</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Infrastructure\FrameworkMain.h">
@@ -164,87 +89,58 @@
     <ClInclude Include="Classes\Infrastructure\UITestTemplate.h">
       <Filter>Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Config.hpp">
-      <Filter>SFML</Filter>
+    <ClInclude Include="Classes\Tests\ComponentsTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network.hpp">
-      <Filter>SFML</Filter>
+    <ClInclude Include="Classes\Tests\DateTimeTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\System.hpp">
-      <Filter>SFML</Filter>
+    <ClInclude Include="Classes\Tests\FileListTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\Export.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\FileSystemTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\IpAddress.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\FunctionBindSingalTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\Packet.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\HashMapTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\Socket.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\ImageSizeTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\SocketHandle.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\KeyedArchiveYamlTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\SocketImpl.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\LocalizationTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\SocketSelector.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\MathTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\TcpListener.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\MemoryAllocatorsTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\TcpSocket.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\SaveImageTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\UdpSocket.hpp">
-      <Filter>SFML\Network</Filter>
+    <ClInclude Include="Classes\Tests\SplitTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\Network\Win32\SocketImpl.hpp">
-      <Filter>SFML\Network\Win32</Filter>
+    <ClInclude Include="Classes\Tests\StringFormatTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SFML\System\Err.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\Export.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\NonCopyable.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\String.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\Time.hpp">
-      <Filter>SFML\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\SFML\System\Utf.hpp">
-      <Filter>SFML\System</Filter>
+    <ClInclude Include="Classes\Tests\TextSizeTest.h">
+      <Filter>Tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="SFML">
-      <UniqueIdentifier>{c71144af-e1f0-4208-9c25-4f800eb19a5c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SFML\Network">
-      <UniqueIdentifier>{8110ff01-16da-4a4f-a60b-8151c0f23b5d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SFML\Network\Win32">
-      <UniqueIdentifier>{5107f7b2-31d2-4d7f-88af-3f5a8ada731a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SFML\System">
-      <UniqueIdentifier>{68933d4e-7e14-4ca0-b5f5-0ed7ccbee298}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Infrastructure">
       <UniqueIdentifier>{c55c0af8-77fb-4293-a9f6-936995a69a69}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Classes\SFML\System\Utf.inl">
-      <Filter>SFML\System</Filter>
-    </None>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{a848fc97-4bf2-4e9f-8575-0758927ed814}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
