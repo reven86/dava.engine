@@ -74,12 +74,12 @@
     {
         DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(tf->GetRect());
         DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-        CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x) / divider
-                                       , (physicalRect.y + physicalOffset.y) / divider
-                                       , physicalRect.dx / divider
-                                       , physicalRect.dy / divider);
+        CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x)
+                                       , (physicalRect.y + physicalOffset.y)
+                                       , physicalRect.dx
+                                       , physicalRect.dy);
         
-        textFieldHolder->textField.frame = nativeRect;
+        textField.frame = nativeRect;
 
     }
     else

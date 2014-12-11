@@ -485,6 +485,7 @@ extern void FrameworkWillTerminate();
 
 	FrameworkDidLaunched();
     DAVA::RenderManager::Create(DAVA::Core::RENDERER_OPENGL);
+    RenderSystem2D::Instance()->Init();
 
 	appCore = DAVA::Core::GetApplicationCore();
 }

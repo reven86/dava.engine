@@ -29,6 +29,7 @@
 
 #import "MainWindowController.h"
 #include "CorePlatformMacOS.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -194,6 +195,7 @@ namespace DAVA
 	
 	core = Core::GetApplicationCore();
     RenderManager::Instance()->DetectRenderingCapabilities();
+    RenderSystem2D::Instance()->Init();
 
 
 	// start animation

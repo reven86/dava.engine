@@ -159,6 +159,7 @@
         DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
         DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
+        DAVA::RenderSystem2D::Instance()->Init();
         
 		self.multipleTouchEnabled = YES;
 		animating = FALSE;
