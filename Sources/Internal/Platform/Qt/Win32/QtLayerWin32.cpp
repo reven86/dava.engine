@@ -125,6 +125,8 @@ void QtLayerWin32::Resize(int32 width, int32 height)
 
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
     VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(width, height);
+
+    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 }
     
 void QtLayerWin32::Move(int32 x, int32 y)
