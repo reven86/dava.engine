@@ -78,7 +78,7 @@ inline void
 RingBuffer::Initialize( unsigned sz )
 {
     size        = sz;
-    dataPtr     = (uint8*)malloc( sz );    
+    dataPtr     = (uint8*)::malloc( sz );    
 
     cur         = dataPtr;
     memUsed     = 0;
@@ -92,7 +92,7 @@ inline void
 RingBuffer::Uninitialize()
 {
     if( dataPtr )
-        free( dataPtr );
+        ::free( dataPtr );
 
     size    = 0;
     dataPtr = 0;
