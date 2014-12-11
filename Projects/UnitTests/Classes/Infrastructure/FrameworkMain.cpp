@@ -49,8 +49,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width", WIDTH);
     appOptions->SetInt32("height", HEIGHT);
 
-	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
-	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
 
 #else
     KeyedArchive * appOptions = new KeyedArchive();
