@@ -42,21 +42,21 @@ RingBuffer
 public:
                 RingBuffer();
 
-    void        initialize( unsigned sz );
-    void        uninitialize();
+    void        Initialize( unsigned sz );
+    void        Uninitialize();
 
-    float*      alloc( unsigned cnt );
-    void        reset();
+    float*      Alloc( unsigned cnt );
+    void        Reset();
     
 
 private:
 
     unsigned    size;
-    uint8*      data_ptr;
+    uint8*      dataPtr;
     uint8*      cur;
 
-    unsigned    mem_used;
-    unsigned    alloc_count;
+    unsigned    memUsed;
+    unsigned    allocCount;
 };
 
 
@@ -64,9 +64,9 @@ private:
 
 RingBuffer::RingBuffer()
   : size(0),
-    data_ptr(0),
+    dataPtr(0),
     cur(0),
-    mem_used(0)
+    memUsed(0)
 {
 }
 
@@ -74,35 +74,35 @@ RingBuffer::RingBuffer()
 //------------------------------------------------------------------------------
 
 void
-RingBuffer::initialize( unsigned sz )
+RingBuffer::Initialize( unsigned sz )
 {
-    size     = sz;
-    data_ptr = (uint8*)malloc( sz );    
+    size        = sz;
+    dataPtr     = (uint8*)malloc( sz );    
 
-    cur         = data_ptr;
-    mem_used    = 0;
-    alloc_count = 0;
+    cur         = dataPtr;
+    memUsed     = 0;
+    allocCount  = 0;
 }
 
 
 //------------------------------------------------------------------------------
 
 void        
-RingBuffer::uninitialize()
+RingBuffer::Uninitialize()
 {
-    if( data_ptr )
-        free( data_ptr );
+    if( dataPtr )
+        free( dataPtr );
 
-    size        = 0;
-    data_ptr    = 0;
-    cur         = 0;
+    size    = 0;
+    dataPtr = 0;
+    cur     = 0;
 }
 
 
 //------------------------------------------------------------------------------
 
 float*      
-RingBuffer::alloc( unsigned cnt )
+RingBuffer::Alloc( unsigned cnt )
 {
     DVASSERT(cur);
 
@@ -110,15 +110,15 @@ RingBuffer::alloc( unsigned cnt )
     uint8*      buf = cur + sz;
     uint8*      p   = cur;
 
-    if( buf > data_ptr + size )
+    if( buf > dataPtr + size )
     {
-        buf = data_ptr + sz;
-        p   = data_ptr;
+        buf = dataPtr + sz;
+        p   = dataPtr;
     }
 
-    cur          = buf;
-    mem_used    += sz;
-    ++alloc_count;
+    cur         = buf;
+    memUsed    += sz;
+    ++allocCount;
 
     return (float*)p;
 }
@@ -127,10 +127,10 @@ RingBuffer::alloc( unsigned cnt )
 //------------------------------------------------------------------------------
 
 void
-RingBuffer::reset()
+RingBuffer::Reset()
 {
-    mem_used    = 0;
-    alloc_count = 0;
+    memUsed    = 0;
+    allocCount = 0;
 }
 
 

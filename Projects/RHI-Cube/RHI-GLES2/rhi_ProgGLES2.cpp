@@ -270,7 +270,7 @@ ProgGLES2::ConstBuf::Instance() const
     if( isDirty )
     {
         float*  old_data = data;
-        float*  new_data = DefaultConstRingBuffer.alloc( count*4*sizeof(float) );
+        float*  new_data = DefaultConstRingBuffer.Alloc( count*4*sizeof(float) );
 
         memcpy( new_data, old_data, 4*count*sizeof(float) );
 
@@ -359,7 +359,7 @@ namespace ConstBufferGLES2
 void
 InitializeRingBuffer( uint32 size )
 {
-    DefaultConstRingBuffer.initialize( size );
+    DefaultConstRingBuffer.Initialize( size );
 }
 
 void
