@@ -1,6 +1,6 @@
 
-QT4_PATH_WIN           = D:/Tools/qt/4.8.4
-QT5_PATH_WIN           = D:/Tools/QT5/5.3/msvc2010_opengl
+QT4_PATH_WIN           = c:\Qt4\4.8.6\bin
+QT5_PATH_WIN           = c:\Qt\5.3\msvc2010_opengl
 ANDROID_NDK_PATH_WIN   = D:/Tools/android-ndk-r9d
 
 

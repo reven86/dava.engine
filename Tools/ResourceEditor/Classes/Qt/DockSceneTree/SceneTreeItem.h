@@ -52,9 +52,6 @@ class SceneTreeFilteringModel;
 class SceneTreeItem
     : public QStandardItem
 {
-    friend class SceneTreeModel;
-    friend class SceneTreeFilteringModel;
-
 public:
 	enum eItemType
 	{
@@ -82,10 +79,16 @@ public:
 	virtual QString ItemName() const = 0;
 	virtual QVariant ItemData() const = 0;
 
+    bool IsAcceptedByFilter() const;
+    void SetAcceptByFilter(bool state);
+    bool IsHighlighed() const;
+    void SetHighlight(bool state);
+
 protected:
 	eItemType type;
 	QIcon iconCache;
-    bool isFilterAccepted;
+    bool isAcceptedByFilter;
+    bool isHighlighted;
 };
 
 class SceneTreeItemEntity : public SceneTreeItem
