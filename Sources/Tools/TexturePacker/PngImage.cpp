@@ -118,7 +118,7 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
 	}
 }
 
-void PngImageExt::DrawImage(const Rect2i & drawRect, const Rect2i & alphaOffsetRect, PngImageExt * image)
+void PngImageExt::DrawImage(const Rect2i & drawRect, const Rect2i & alphaOffsetRect, PngImageExt * image, bool useTwoSideMargin)
 {
 	// printf("0x%08x 0x%08x %d %d\n", data, image->data, sx, sy);
 	
@@ -126,12 +126,11 @@ void PngImageExt::DrawImage(const Rect2i & drawRect, const Rect2i & alphaOffsetR
 	uint32 * srcData32 = (uint32*)image->GetData();
 
 	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
-	bool withTwoSidePixel = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
-
+	
 	int32 sx = drawRect.x;
 	int32 sy = drawRect.y;
 
-	if ( withTwoSidePixel )
+	if ( useTwoSideMargin )
 	{
 		++sx;
 		++sy;
@@ -146,7 +145,8 @@ void PngImageExt::DrawImage(const Rect2i & drawRect, const Rect2i & alphaOffsetR
 	// add image
 	uint32 srcPos = 0;
 	uint32 destPos = sx + sy * GetWidth();
-	for (uint32 y = 0; y < image->GetHeight(); ++y, destPos += GetWidth() - image->GetWidth())
+	uint32 destPosInc = GetWidth() - image->GetWidth();
+	for (uint32 y = 0; y < image->GetHeight(); ++y, destPos += destPosInc)
 		for (uint32 x = 0; x < image->GetWidth(); ++x, ++srcPos, ++destPos)
 		{
 			if (int32(sx + x) < 0)continue;
@@ -159,7 +159,7 @@ void PngImageExt::DrawImage(const Rect2i & drawRect, const Rect2i & alphaOffsetR
 		}
 
 	// add 2side pixel
-	if( withTwoSidePixel )
+	if( useTwoSideMargin )
 	{
 		sx = drawRect.x;
 		sy = drawRect.y;
@@ -190,7 +190,6 @@ void PngImageExt::DrawImage(const Rect2i & drawRect, const Rect2i & alphaOffsetR
 		}
 	}
 }
-
 
 bool PngImageExt::IsHorzLineOpaque(int32 y)
 {
