@@ -8,10 +8,10 @@
  name: "Decal Opaque"
  path: Decal.Opaque.material
 -
- name: "Detail AllQualities Lightmap Opaque"
+ name: "Detail AllQualities Lightmap Opaque (HIGH: Texture Lightmap Detail Opaque, LOW: Texture Lightmap Opaque)"
  path: DetailAllQualities.Lightmap.Opaque.material
 -
- name: "Detail AllQualities Opaque"
+ name: "Detail AllQualities Opaque (HIGH: Texture Detail Opaque, LOW: Texture Opaque)"
  path: DetailAllQualities.Opaque.material
 -
  name: "PixelLit Alphatest"
