@@ -299,6 +299,9 @@ DefaultUIPackageBuilder::ControlDescr::~ControlDescr()
 
 DefaultUIPackageBuilder::ControlDescr &DefaultUIPackageBuilder::ControlDescr::operator=(const ControlDescr &descr)
 {
+    if(&descr == this)
+        return *this;
+    
     SafeRetain(descr.control);
     SafeRelease(control);
     
