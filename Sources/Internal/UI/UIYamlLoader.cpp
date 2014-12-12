@@ -134,7 +134,7 @@ int32 UIYamlLoader::GetColorInheritTypeFromNode(const YamlNode * colorInheritNod
 
     return ret;
 }
-    
+
 String UIYamlLoader::GetColorInheritTypeNodeValue(int32 colorInheritType) const
 {
     String ret;
@@ -159,37 +159,6 @@ String UIYamlLoader::GetColorInheritTypeNodeValue(int32 colorInheritType) const
             break;
         default:
             ret = "COLOR_IGNORE_PARENT";
-            break;
-    }
-    return ret;
-}
-    
-int32 UIYamlLoader::GetColorMixTypeFromNode(const YamlNode * colorMixNode) const
-{
-    int32 ret = UIControlBackground::COLOR_MIX_MULTIPLY;
-    if(!colorMixNode)
-        return ret;
-    
-    const String & type = colorMixNode->AsString();
-    
-    if("COLOR_MIX_MULTIPLY" == type) ret = UIControlBackground::COLOR_MIX_MULTIPLY;
-    if("COLOR_MIX_ADD" == type) ret = UIControlBackground::COLOR_MIX_ADD;
-    
-    return ret;
-}
-
-String UIYamlLoader::GetColorMixTypeNodeValue(int32 colorMixType) const
-{
-    String ret;
-    switch (colorMixType) {
-        case UIControlBackground::COLOR_MIX_MULTIPLY:
-            ret = "COLOR_MIX_MULTIPLY";
-            break;
-        case UIControlBackground::COLOR_MIX_ADD:
-            ret = "COLOR_MIX_ADD";
-            break;
-        default:
-            ret = "COLOR_MIX_MULTIPLY";
             break;
     }
     return ret;

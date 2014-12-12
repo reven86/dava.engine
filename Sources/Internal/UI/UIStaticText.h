@@ -136,9 +136,6 @@ public:
     
     int32 GetTextColorInheritType() const;
     void SetTextColorInheritType(int32 type);
-    
-    int32 GetTextColorMixType() const;
-    void SetTextColorMixType(int32 type);
 
     int32 GetTextPerPixelAccuracyType() const;
     void SetTextPerPixelAccuracyType(int32 type);
@@ -153,7 +150,6 @@ public:
                          
                          PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textcolorMixType", InspDesc("Text Color Mix Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorMixType, SetTextColorMixType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textperPixelAccuracyType", InspDesc("Text Per Pixel Accuracy Type", GlobalEnumMap<UIControlBackground::ePerPixelAccuracyType>::Instance()), GetTextPerPixelAccuracyType, SetTextPerPixelAccuracyType, I_SAVE | I_VIEW | I_EDIT)
 
                          PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)

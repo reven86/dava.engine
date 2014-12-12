@@ -84,7 +84,6 @@ UIControlBackground::UIControlBackground()
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
-,   colorMixType(COLOR_MIX_MULTIPLY)
 {
 }
 
@@ -166,11 +165,7 @@ UIControlBackground::eColorInheritType UIControlBackground::GetColorInheritType(
     return (eColorInheritType)colorInheritType;
 }
 
-UIControlBackground::eColorMixType UIControlBackground::GetColorMixType() const
-{
-    return (eColorMixType)colorMixType;
-}
-    
+
 UIControlBackground::eDrawType	UIControlBackground::GetDrawType() const
 {
     return type;
@@ -241,12 +236,6 @@ void UIControlBackground::SetColorInheritType(UIControlBackground::eColorInherit
 {
     DVASSERT(inheritType >= 0 && inheritType < COLOR_INHERIT_TYPES_COUNT);
     colorInheritType = inheritType;
-}
-    
-void UIControlBackground::SetColorMixType(UIControlBackground::eColorMixType mixType)
-{
-    DVASSERT(mixType >= 0 && mixType < COLOR_MIX_COUNT);
-    colorMixType = mixType;
 }
 
 void UIControlBackground::SetPerPixelAccuracyType(ePerPixelAccuracyType accuracyType)
@@ -623,19 +612,7 @@ void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, Un
 
     RenderManager::Instance()->SetTextureState(textureHandle);
     RenderManager::Instance()->SetRenderState(renderState);
-    
-    switch (GetColorMixType()) {
-        case COLOR_MIX_MULTIPLY:
-            RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            break;
-        case COLOR_MIX_ADD:
-            RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_ADD_FLAT_COLOR);
-            break;
-        default:
-            RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            break;
-    }
-    
+    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(rdoObject);
     RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, sd.GetVertexInTrianglesCount(), EIF_16, (void*)sd.indeces);
 
@@ -717,19 +694,7 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle rend
 
     RenderManager::Instance()->SetTextureState(textureHandle);
     RenderManager::Instance()->SetRenderState(renderState);
-    
-    switch (GetColorMixType()) {
-        case COLOR_MIX_MULTIPLY:
-            RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            break;
-        case COLOR_MIX_ADD:
-            RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_ADD_FLAT_COLOR);
-            break;
-        default:
-            RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            break;
-    }
-
+    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(rdoObject);
     RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 }

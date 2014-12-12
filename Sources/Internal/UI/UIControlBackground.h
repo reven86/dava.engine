@@ -93,16 +93,6 @@ public:
 
         PER_PIXEL_ACCURACY_TYPES
     };
-    
-    /**
-     \enum Type of the color mixing in shader
-     */
-    enum eColorMixType
-    {
-        COLOR_MIX_MULTIPLY = 0,     //!<Multiply pixel color by flat color
-        COLOR_MIX_ADD,              //!<Add flat color to pixel color
-        COLOR_MIX_COUNT
-    };
 
     /**
      \brief Constructor.
@@ -246,25 +236,6 @@ public:
     virtual eColorInheritType GetColorInheritType() const;
 
     /**
-     \brief Sets color mix type.
-     Color mix type it's a rules of the calculating resulting pixel color
-     from the current pixel color and flat draw color.
-     Color mix type by default is COLOT_MIX_MULTIPLY.
-     \param[in] mixType color mix type.
-     */
-    virtual void SetColorMixType(UIControlBackground::eColorMixType mixType);
-    
-    /**
-     \brief Returns current color inheritance type.
-     Color mix type it's a rules of the calculating resulting pixel color
-     from the current pixel color and flat draw color.
-     Color mix type by default is COLOT_MIX_MULTIPLY.
-     \returns eColorMixType color mix type.
-     */
-    virtual eColorMixType GetColorMixType() const;
-
-    
-    /**
      \brief Sets per pixel accuracy type. Enable per pixel accuracy if you want to draw controls using int coordinates instead of float. Disabled by default.
      \param[in] accuracyType. Use PER_PIXEL_ACCURACY_ENABLED to enable it for static controls. Use PER_PIXEL_ACCURACY_FORCED to enable it both for static controls and for control position animations.
      */
@@ -347,7 +318,6 @@ protected:
     float32 leftStretchCap;
     float32 topStretchCap;
     int colorInheritType;
-    int colorMixType;
     int32 frame;
 
     Vector2 lastDrawPos;
@@ -423,8 +393,6 @@ public:
     inline void SetBgSpriteFromPath(const FilePath &path);
     inline int32 GetBgColorInherit() const;
     inline void SetBgColorInherit(int32 type);
-    inline int32 GetBgColorMix() const;
-    inline void SetBgColorMix(int32 type);
     inline int32 GetBgPerPixelAccuracy() const;
     inline void SetBgPerPixelAccuracy(int32 type);
     
@@ -435,7 +403,6 @@ public:
                          PROPERTY("spriteModification", "Spirte Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("colorInherit", InspDesc("Color Inherit", GlobalEnumMap<eColorInheritType>::Instance()), GetBgColorInherit, SetBgColorInherit, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("colorMix", InspDesc("Color Mix", GlobalEnumMap<eColorMixType>::Instance()), GetBgColorMix, SetBgColorMix, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("perPixelAccuracy", InspDesc("Per Pixel Accuracy", GlobalEnumMap<ePerPixelAccuracyType>::Instance()), GetBgPerPixelAccuracy, SetBgPerPixelAccuracy, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("align", InspDesc("Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetAlign, SetAlign, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("leftRightStretchCap", "Left-Right Stretch Cap", GetLeftRightStretchCap, SetLeftRightStretchCap, I_SAVE | I_VIEW | I_EDIT)
@@ -528,16 +495,6 @@ int32 UIControlBackground::GetBgColorInherit() const
 void UIControlBackground::SetBgColorInherit(int32 type)
 {
     SetColorInheritType((UIControlBackground::eColorInheritType) type);
-}
-    
-int32 UIControlBackground::GetBgColorMix() const
-{
-    return GetColorMixType();
-}
-
-void UIControlBackground::SetBgColorMix(int32 type)
-{
-    SetColorMixType((UIControlBackground::eColorMixType) type);
 }
 
 int32 UIControlBackground::GetBgPerPixelAccuracy() const

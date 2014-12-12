@@ -188,12 +188,6 @@ ENUM_DECLARE(UIControlBackground::eColorInheritType)
     ENUM_ADD_DESCR(UIControlBackground::COLOR_REPLACE_ALPHA_ONLY, "COLOR_REPLACE_ALPHA_ONLY");
 }
 
-ENUM_DECLARE(UIControlBackground::eColorMixType)
-{
-    ENUM_ADD_DESCR(UIControlBackground::COLOR_MIX_MULTIPLY, "COLOR_MIX_MULTIPLY");
-    ENUM_ADD_DESCR(UIControlBackground::COLOR_MIX_ADD, "COLOR_MIX_ADD");
-}
-
 ENUM_DECLARE(UIControlBackground::ePerPixelAccuracyType)
 {
     ENUM_ADD_DESCR(UIControlBackground::PER_PIXEL_ACCURACY_DISABLED, "PER_PIXEL_ACCURACY_DISABLED");
