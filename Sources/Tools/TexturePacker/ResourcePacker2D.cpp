@@ -199,11 +199,13 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 	return isChanged;
 }
 
-DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName)
+DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
 	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+
+	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
 	
     FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
     psdNameWithoutExtension.TruncateExtension();
@@ -225,6 +227,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 		
 	DefinitionFile * defFile = new DefinitionFile;
 	defFile->filename = FilePath::CreateWithNewExtension(psdNameWithoutExtension, ".txt");
+
 	defFile->spriteWidth = width;
 	defFile->spriteHeight = height;
 	defFile->frameCount = (int)cropped_data.rects_array_size -1;
@@ -232,46 +235,48 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 		
 	for(int k = 1; k < (int)cropped_data.rects_array_size; ++k)
 	{
-		defFile->frameRects[k - 1] = Rect2i(cropped_data.rects_array[k].x, cropped_data.rects_array[k].y, cropped_data.rects_array[k].dx, cropped_data.rects_array[k].dy) ;
-			
-		//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
-			
-		if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
+		if ( !withAlpha )
 		{
-			Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
+			defFile->frameRects[k - 1] = Rect2i(cropped_data.rects_array[k].x, cropped_data.rects_array[k].y, cropped_data.rects_array[k].dx, cropped_data.rects_array[k].dy) ;
+
+			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
+
+			if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
+			{
+				Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
 					, defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
-                
-			defFile->frameRects[k - 1].dx = width;
-			defFile->frameRects[k - 1].dy = height;
+
+				defFile->frameRects[k - 1].dx = width;
+				defFile->frameRects[k - 1].dy = height;
+			}
+			else
+			{
+				if ((defFile->frameRects[k - 1].dx > width))
+				{
+					Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
+					defFile->frameRects[k - 1].dx = width;
+				}
+
+				if ((defFile->frameRects[k - 1].dy > height))
+				{
+					Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
+					defFile->frameRects[k - 1].dy = height;
+				}
+			}
 		}
-				
-		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-		{
-				
-		}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-		{
-			defFile->frameRects[k - 1].dx++;
-			defFile->frameRects[k - 1].dy++;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-		{
-			defFile->frameRects[k - 1].dx+=2;
-			defFile->frameRects[k - 1].dy+=2;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-		{
-			defFile->frameRects[k - 1].dx+=4;
-			defFile->frameRects[k - 1].dy+=4;
-		}
-		else if(CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
+		else
+			defFile->frameRects[k - 1] = Rect2i(cropped_data.rects_array[k].x, cropped_data.rects_array[k].y, width, height);
+
+		// add borders
+		if ( twoSideMargin )
 		{
 			defFile->frameRects[k - 1].dx+=2;
 			defFile->frameRects[k - 1].dy+=2;
 		}
 		else
 		{
-			defFile->frameRects[k - 1].dx++;
-			defFile->frameRects[k - 1].dy++;	
+			defFile->frameRects[k - 1].dx += texturesMargin;
+			defFile->frameRects[k - 1].dy += texturesMargin;
 		}
 	}
 		
@@ -392,6 +397,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	bool flagsProcessed = false;
 	// Find flags and setup them
 	FileList * fileList = new FileList(inputPath);
+    fileList->Sort();
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
 		if (!fileList->IsDirectory(fi))
@@ -432,6 +438,24 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		//if (Core::Instance()->IsConsoleMode())
 		//	printf("[Directory changed - rebuild: %s]\n", inputGfxDirectory.c_str());
 	}
+	else if (CommandLineParser::CommandIsFound(String("-forceModify")))
+		modified = true;
+
+	// read textures margins settings
+	bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
+	uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
+	if (!useTwoSideMargin)
+	{
+		useTwoSideMargin = false;
+		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+			marginInPixels = 0;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+			marginInPixels = 1;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+			marginInPixels = 2;
+		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+			marginInPixels = 4;
+	}
 
 	bool needPackResourcesInThisDir = true;
 	if (modified)
@@ -446,7 +470,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				if (fullname.IsEqualToExtension(".psd"))
 				{
                     //TODO: check if we need filename or pathname
-					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename());
+					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(),useTwoSideMargin,marginInPixels);
 					if (!defFile)
 					{
 						// An error occured while converting this PSD file - cancel converting in this directory.
@@ -465,7 +489,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				else if (fullname.IsEqualToExtension(".pngdef"))
 				{
 					DefinitionFile * defFile = new DefinitionFile();
-					if (defFile->LoadPNGDef(fullname, processDirectoryPath))
+					if (defFile->LoadPNGDef(fullname, processDirectoryPath,useTwoSideMargin,marginInPixels))
 					{
 						definitionFileList.push_back(defFile);
 					}
@@ -496,13 +520,16 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                 DefinitionFile * def = definitionFileList.front();
                 if(def->frameCount == 1)
                 {
-                    if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel") == false)
+                    if (!useTwoSideMargin)
                     {
-                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
-                        CommandLineParser::Instance()->AddArgument("--add0pixel");
+                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0],marginInPixels,marginInPixels);
+                        marginInPixels = 0;
                     }
                 }
             }
+
+			packer.SetTwoSideMargin(useTwoSideMargin);
+			packer.SetTexturesMargin(marginInPixels);
 
 			if (CommandLineParser::Instance()->IsFlagSet("--split"))
 			{
