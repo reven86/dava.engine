@@ -413,6 +413,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	bool flagsProcessed = false;
 	// Find flags and setup them
 	FileList * fileList = new FileList(inputPath);
+    fileList->Sort();
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
 		if (!fileList->IsDirectory(fi))
