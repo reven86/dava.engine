@@ -14,7 +14,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#import "UIAlertView_Modal.h"
+#import "UIAlertViewModal.h"
 
 NSInteger returnButtonIndex = -1;
 
