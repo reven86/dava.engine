@@ -57,7 +57,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     UIPackage *package = builder->BeginPackage(packagePath);
     
     UIControl *legacyControl = builder->BeginControlWithClass("UIControl");
-    builder->BeginControlPropretiesSection("UIControl");
+    builder->BeginControlPropertiesSection("UIControl");
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
@@ -149,7 +149,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
     if (baseInfo)
         LoadControlPropertiesFromYamlNode(control, baseInfo, node);
     
-    builder->BeginControlPropretiesSection(typeInfo->Name());
+    builder->BeginControlPropertiesSection(typeInfo->Name());
 
     String className = control->GetControlClassName();
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)

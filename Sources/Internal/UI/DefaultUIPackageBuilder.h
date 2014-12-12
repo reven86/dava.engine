@@ -53,7 +53,7 @@ public:
     virtual UIControl *BeginUnknownControl(const YamlNode *node) override;
     virtual void EndControl() override;
     
-    virtual void BeginControlPropretiesSection(const String &name) override;
+    virtual void BeginControlPropertiesSection(const String &name) override;
     virtual void EndControlPropertiesSection() override;
     
     virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) override;

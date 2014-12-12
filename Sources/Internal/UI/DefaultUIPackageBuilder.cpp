@@ -205,7 +205,7 @@ void DefaultUIPackageBuilder::EndControl()
     }
 }
 
-void DefaultUIPackageBuilder::BeginControlPropretiesSection(const String &name)
+void DefaultUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 {
     currentObject = controlsStack.back().control;
 }
