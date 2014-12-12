@@ -59,6 +59,7 @@ public:
             CHC_JOB_MAIN_QUE,
             CHC_JOB_PERFORM,
             CHC_SPRITE_DRAW,
+            CHC_RDO_BUILD_BUFFERS_INTERNAL,
             CHC_RDO_GL_GEN_BUFFER,
             CHC_RDO_GL_BUFFER_DATA,
             CHC_RDO_GL_BIND_BUFFER,

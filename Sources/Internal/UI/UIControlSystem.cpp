@@ -348,7 +348,7 @@ void UIControlSystem::Draw()
 	}
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_UICONTROLSYSTEM_DRAW, 1);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_UICONTROLSYSTEM_DRAW, 2);    
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)

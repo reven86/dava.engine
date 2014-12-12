@@ -316,9 +316,9 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 
 Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height, bool generateMipMaps, const char * addInfo)
 {
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_TEXT_FROM_DATA);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_TEXT_FROM_DATA, 0);    
 	Texture * tx = CreateFromData(format, data, width, height, generateMipMaps);
-    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_TEXT_FROM_DATA, 1, 0, 0, tx);
 	if (!addInfo)
     {
         tx->texDescriptor->pathname = Format("Text texture %d", textureFboCounter);
@@ -335,7 +335,7 @@ Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 w
 	
 void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId)
 {
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_TEX_IMAGE, id);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_TEX_IMAGE, id, level, 0, this);    
 #if defined(__DAVAENGINE_OPENGL__)
 
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
@@ -423,9 +423,11 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
 {
     Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FROM_DATA, 0);    
 	Image *image = Image::CreateFromData(_width, _height, _format, _data);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FROM_DATA, 1, 0, 0, image);    
 	if(!image) return NULL;
 
 	Texture * texture = new Texture();
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FROM_DATA, 2, 0, 0, texture);    
 	texture->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, generateMipMaps);
     
     Vector<Image *> *images = new Vector<Image *>();
@@ -439,8 +441,9 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
     
 Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
 {
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FROM_DATA, 1);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FROM_DATA, 3, 0, 0, image);    
 	Texture * texture = new Texture();
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FROM_DATA, 4, 0, 0, texture);    
 	texture->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, generateMipMaps);
     
     Vector<Image *> *images = new Vector<Image *>();
@@ -457,7 +460,7 @@ Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
 void Texture::SetWrapMode(TextureWrap wrapS, TextureWrap wrapT)
 {
 #if defined(__DAVAENGINE_OPENGL__)
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_SET_WRAP, id);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_SET_WRAP, id, 0, 0, this);    
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);	
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
 	
@@ -476,7 +479,7 @@ void Texture::SetWrapMode(TextureWrap wrapS, TextureWrap wrapT)
 void Texture::SetMinMagFilter(TextureFilter minFilter, TextureFilter magFilter)
 {
 #if defined(__DAVAENGINE_OPENGL__)
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_SET_FILTER, id);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_SET_FILTER, id, 0, 0, this);    
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
@@ -508,7 +511,7 @@ void Texture::GenerateMipmapsInternal(BaseObject * caller, void * param, void *c
 		return;
 	}
     
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_GEN_MM, id);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_GEN_MM, id, 0, 0, this);    
 #if defined(__DAVAENGINE_OPENGL__)
     
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
@@ -551,7 +554,7 @@ void Texture::GeneratePixelesationInternal(BaseObject * caller, void * param, vo
 {
 
 #if defined(__DAVAENGINE_OPENGL__)
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_GEN_PIX, id);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_GEN_PIX, id, 0, 0, this);    
 	int saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 	
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
@@ -694,14 +697,16 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
 }
 
 void Texture::FlushDataToRendererInternal(BaseObject * caller, void * param, void *callerData)
-{    
+{   
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_FLUSH2RENDERER, 1, 0, 0, this);    
     Vector<Image *> * images = static_cast< Vector<Image *> * >(param);
     
 	DVASSERT(images->size() != 0);
 	DVASSERT(Thread::IsMainThread());
-
+    
 #if defined(__DAVAENGINE_OPENGL__)
 	GenerateID();
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_FLUSH2RENDERER, 2, id, 0, this);
 #elif defined(__DAVAENGINE_DIRECTX9__)
 	id = CreateTextureNative(Vector2((float32)_width, (float32)_height), texture->format, false, 0);
 #endif //#if defined(__DAVAENGINE_OPENGL__)
@@ -715,8 +720,7 @@ void Texture::FlushDataToRendererInternal(BaseObject * caller, void * param, voi
 #if defined(__DAVAENGINE_OPENGL__)
 
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
-
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_FLUSH2RENDERER, id);    
+    
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
 
 	RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_WRAP_S, TEXTURE_WRAP_MAP[texDescriptor->drawSettings.wrapModeS]));
@@ -894,7 +898,7 @@ int32 Texture::Release()
 	
 Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat _depthFormat)
 {
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FBO);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FBO, w, h, format);    
 	int32 dx = Max((int32)w, 8);
     EnsurePowerOf2(dx);
     
@@ -947,7 +951,7 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 {
 	GLint saveFBO = RenderManager::Instance()->HWglGetLastFBO();
 	GLint saveTexture = RenderManager::Instance()->HWglGetLastTextureID(textureType);
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FBO_BUFFERS, id);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_CREATE_FBO_BUFFERS, id, 0, 0, this);    
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
 
 	RENDER_VERIFY(glGenFramebuffers(1, &fboID));
@@ -1116,7 +1120,7 @@ Image * Texture::ReadDataToImage()
     
     int32 saveFBO = RenderManager::Instance()->HWglGetLastFBO();
     int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_READ_DATA_TO_IMG, id);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_READ_DATA_TO_IMG, id, 0, 0, this);    
 
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
     
@@ -1243,7 +1247,7 @@ void Texture::GenerateID()
 {
 #if defined(__DAVAENGINE_OPENGL__)
 	RENDER_VERIFY(glGenTextures(1, &id));
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_GEN_ID, id);    
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_TEXTURE_GEN_ID, id, 0, 0, this);    
 	DVASSERT(id);
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 

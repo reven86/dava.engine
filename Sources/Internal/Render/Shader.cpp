@@ -312,7 +312,7 @@ bool Shader::IsReady()
 
 void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerData)
 {
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 0);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 0, 0, 0, this);
     bool silentDelete = (param != NULL);
     
     if(silentDelete &&
@@ -320,7 +320,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     {
         //VI: be a man: just delete shader and recompile instead of complaining with assert
         //VI: such behavior is needed for Landscape since it uses shaders directly but doesn't own them
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 1, vertexShader, fragmentShader);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 1, vertexShader, fragmentShader, this);
         DeleteShaders();
     }
     else
@@ -341,15 +341,15 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     }
     
     program = glCreateProgram();
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 2, program);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 2, program, 0, this);
     RENDER_VERIFY(glAttachShader(program, vertexShader));
     RENDER_VERIFY(glAttachShader(program, fragmentShader));
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 3, vertexShader, fragmentShader);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 3, vertexShader, fragmentShader, this);
     
     if (!LinkProgram(program))
     {
         Logger::Error("Failed to Link program for shader: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 4);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_RECOMPILE, 4, 0, 0, this);
         DeleteShaders();
         return;
     }
@@ -550,7 +550,7 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, int32 value)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(value) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 1, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 1, currentUniform->location, this);
         RENDER_VERIFY(glUniform1i(currentUniform->location, value));
     }
 }
@@ -561,7 +561,7 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, float32 value)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(value) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 2, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 2, currentUniform->location, this);
         RENDER_VERIFY(glUniform1f(currentUniform->location, value));
     }
 }
@@ -572,7 +572,7 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector2 & vector)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(vector) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 3, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 3, currentUniform->location, this);
         RENDER_VERIFY(glUniform2fv(currentUniform->location, 1, &vector.x));
     }
 }
@@ -583,7 +583,7 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector3 & vector)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(vector) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 4, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 4, currentUniform->location, this);
         RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, &vector.x));
     }
 }
@@ -594,7 +594,7 @@ void Shader::SetUniformColor3ByIndex(int32 uniformIndex, const Color & color)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCacheColor3(color) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 5, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 5, currentUniform->location, this);
         RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, &color.r));
     }
 }
@@ -605,7 +605,7 @@ void Shader::SetUniformColor4ByIndex(int32 uniformIndex, const Color & color)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCacheColor4(color) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 6, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 6, currentUniform->location, this);
         RENDER_VERIFY(glUniform4fv(currentUniform->location, 1, &color.r));
     }
 }
@@ -616,7 +616,7 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector4 & vector)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(vector) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 7, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 7, currentUniform->location, this);
         RENDER_VERIFY(glUniform4fv(currentUniform->location, 1, &vector.x));
     }
 }
@@ -627,7 +627,7 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Matrix4 & matrix)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(matrix) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 8, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 8, currentUniform->location, this);
         RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, matrix.data));
     }
 }
@@ -638,7 +638,7 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Matrix3 & matrix)
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(matrix) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 9, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 9, currentUniform->location, this);
         RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, 1, GL_FALSE, matrix.data));
     }
 }
@@ -655,7 +655,7 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, eUniformType uniformType
     if(currentUniform->ValidateCache(data, size) == false)
 #endif
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 10, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_INDEX, program, 10, currentUniform->location, this);
         switch(uniformType)
         {
             case Shader::UT_FLOAT:
@@ -718,7 +718,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, int32 value)
 {
     if(currentUniform->ValidateCache(value) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 1, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 1, currentUniform->location, this);
         RENDER_VERIFY(glUniform1i(currentUniform->location, value));
     }
 }
@@ -727,7 +727,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, float32 value)
 {
     if(currentUniform->ValidateCache(value) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 2, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 2, currentUniform->location, this);
         RENDER_VERIFY(glUniform1f(currentUniform->location, value));
     }
 }
@@ -736,7 +736,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector2 & v
 {
     if(currentUniform->ValidateCache(vector) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 3, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 3, currentUniform->location, this);
         RENDER_VERIFY(glUniform2fv(currentUniform->location, 1, &vector.x));
     }
 }
@@ -745,7 +745,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector3 & v
 {
     if(currentUniform->ValidateCache(vector) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 4, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 4, currentUniform->location, this);
         RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, &vector.x));
     }
 }
@@ -754,7 +754,7 @@ void Shader::SetUniformColor3ByUniform(Uniform* currentUniform, const Color & co
 {
     if(currentUniform->ValidateCacheColor3(color) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 5, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 5, currentUniform->location, this);
         RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, &color.r));
     }
 }
@@ -763,7 +763,7 @@ void Shader::SetUniformColor4ByUniform(Uniform* currentUniform, const Color & co
 {
     if(currentUniform->ValidateCacheColor4(color) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 6, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 6, currentUniform->location, this);
         RENDER_VERIFY(glUniform4fv(currentUniform->location, 1, &color.r));
     }
 }
@@ -772,7 +772,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector4 & v
 {
     if(currentUniform->ValidateCache(vector) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 7, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 7, currentUniform->location, this);
         RENDER_VERIFY(glUniform4fv(currentUniform->location, 1, &vector.x));
     }
 }
@@ -781,7 +781,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Matrix4 & m
 {
     if(currentUniform->ValidateCache(matrix) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 8, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 8, currentUniform->location, this);
         RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, matrix.data));
     }
 }
@@ -790,7 +790,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Matrix3 & m
 {
     if(currentUniform->ValidateCache(matrix) == false)
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 9, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 9, currentUniform->location, this);
         RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, 1, GL_FALSE, matrix.data));
     }
 }
@@ -805,7 +805,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType unif
     if(currentUniform->ValidateCache(data, size) == false)
 #endif
     {
-        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 10, currentUniform->location);
+        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_SET_UNIFORM_BY_UNIFORM, program, 10, currentUniform->location, this);
         switch(uniformType)
         {
             case Shader::UT_FLOAT:
@@ -868,7 +868,7 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType unif
 GLint Shader::LinkProgram(GLuint prog)
 {
     GLint status;
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_LINK, prog);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_LINK, prog, 0, 0, this);
     RENDER_VERIFY(glLinkProgram(prog));
 #ifdef __DAVAENGINE_DEBUG__
     {
@@ -911,7 +911,7 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
     DeleteShaderContainer * container = (DeleteShaderContainer*) param;
     DVASSERT(container);
     
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_DELETE, container->program, container->vertexShader, container->fragmentShader);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_DELETE, container->program, container->vertexShader, container->fragmentShader, this);
     if (container->program)
     {
         if (container->vertexShader)
@@ -936,7 +936,7 @@ GLint Shader::CompileShader(GLuint *shader, GLenum type, GLint count, const GLch
     //const GLchar *sources;
     
     *shader = glCreateShader(type);				// create shader
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_COMPILE, type, *shader);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_COMPILE, type, *shader, 0, this);
     
     if (defines.length() == 0)
     {
@@ -996,7 +996,7 @@ bool Shader::IsAutobindUniform(eShaderSemantic semantic)
 
 void Shader::Bind()
 {
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND, activeProgram, program);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND, activeProgram, program, 0, this);
     if (activeProgram != program)
     {
         //Logger::FrameworkDebug(Format("Bind: %d", program).c_str());
@@ -1009,7 +1009,7 @@ void Shader::Bind()
     
 void Shader::BindDynamicParameters()
 {
-    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP_START, program, autobindUniformCount);
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP_START, program, autobindUniformCount, 0, this);
     for(uint8 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform* currentUniform = autobindUniforms[k];
@@ -1024,7 +1024,7 @@ void Shader::BindDynamicParameters()
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     Matrix4 * worldViewProj = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW_PROJ);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *worldViewProj);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1045,7 +1045,7 @@ void Shader::BindDynamicParameters()
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     Matrix4 * worldView = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *worldView);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1060,7 +1060,7 @@ void Shader::BindDynamicParameters()
 
                     Matrix4 * world = (Matrix4*)RenderManager::GetDynamicParam(PARAM_WORLD);
                     //TODO: GetScaleVector() is slow
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, world->GetScaleVector());
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1073,7 +1073,7 @@ void Shader::BindDynamicParameters()
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     Matrix4 * proj = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *proj);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1087,7 +1087,7 @@ void Shader::BindDynamicParameters()
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     Matrix4 * proj = (Matrix4*)RenderManager::GetDynamicParam(PARAM_INV_WORLD_VIEW);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *proj);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1110,7 +1110,7 @@ void Shader::BindDynamicParameters()
 //                            int32 k = 0;
 //                        }
 //                        
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *normalMatrix);
                     //RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, 1, GL_FALSE, (GLfloat*)normalMatrix));
                     currentUniform->updateSemantic = _updateSemantic;
@@ -1127,7 +1127,7 @@ void Shader::BindDynamicParameters()
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     
                     Matrix3 * worldInvTranspose = (Matrix3*)RenderManager::GetDynamicParam(PARAM_WORLD_INV_TRANSPOSE);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *worldInvTranspose);
                     //RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, 1, GL_FALSE, matrix));
                     currentUniform->updateSemantic = _updateSemantic;
@@ -1143,7 +1143,7 @@ void Shader::BindDynamicParameters()
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     
                     Matrix4 * invViewMatrix = (Matrix4*)RenderManager::GetDynamicParam(PARAM_INV_VIEW);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *invViewMatrix);
                     //RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, invViewMatrix->data));
                     currentUniform->updateSemantic = _updateSemantic;
@@ -1168,7 +1168,7 @@ void Shader::BindDynamicParameters()
 //                                Logger::Debug(Format("%f %f %f %f", worldMatrix[k * 4 + 0], worldMatrix[k * 4 + 1], worldMatrix[k * 4 + 2], worldMatrix[k * 4 + 3]).c_str());
 //                            Logger::Debug("");
 //                        }
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *matrix);
                     //RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, worldMatrix));
                     currentUniform->updateSemantic = _updateSemantic;
@@ -1187,7 +1187,7 @@ void Shader::BindDynamicParameters()
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     Vector3 * param = (Vector3*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1200,7 +1200,7 @@ void Shader::BindDynamicParameters()
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
                     Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1215,7 +1215,7 @@ void Shader::BindDynamicParameters()
                     AABBox3 * objectBox = (AABBox3*)RenderManager::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
                     Matrix4 * worldView = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD_VIEW);
                     Vector3 param = objectBox->GetCenter() * (*worldView);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1228,7 +1228,7 @@ void Shader::BindDynamicParameters()
                 {
                     AABBox3 * objectBox = (AABBox3*)RenderManager::GetDynamicParam(PARAM_LOCAL_BOUNDING_BOX);
                     Vector3 param = objectBox->GetSize();
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1241,7 +1241,7 @@ void Shader::BindDynamicParameters()
                 if (_updateSemantic != currentUniform->updateSemantic)
                 {
                     Vector2 * param = (Vector2*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1253,7 +1253,7 @@ void Shader::BindDynamicParameters()
                 if (_updateSemantic != currentUniform->updateSemantic)
                 {
                     float32 * param = (float32*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, *param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1265,7 +1265,7 @@ void Shader::BindDynamicParameters()
                 if (_updateSemantic != currentUniform->updateSemantic)
                 {
                     Vector3 * param = (Vector3*)RenderManager::GetDynamicParam(PARAM_SPHERICAL_HARMONICS);
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC3, currentUniform->size, param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
@@ -1279,7 +1279,7 @@ void Shader::BindDynamicParameters()
                     if (_updateSemantic != currentUniform->updateSemantic)
                     {
                         Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(PARAM_JOINT_POSITIONS);
-                        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                         SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC4, count, param);
                         currentUniform->updateSemantic = _updateSemantic;
                     }
@@ -1292,7 +1292,7 @@ void Shader::BindDynamicParameters()
                     if (_updateSemantic != currentUniform->updateSemantic)
                     {
                         Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(PARAM_JOINT_QUATERNIONS);
-                        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                        Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                         SetUniformValueByUniform(currentUniform, Shader::UT_FLOAT_VEC4, count, param);
                         currentUniform->updateSemantic = _updateSemantic;
                     }
@@ -1301,7 +1301,7 @@ void Shader::BindDynamicParameters()
             case PARAM_COLOR:
             {
                 const Color & c = RenderManager::Instance()->GetColor();
-                Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                 SetUniformColor4ByUniform(currentUniform, c);
                 break;
             }
@@ -1311,7 +1311,7 @@ void Shader::BindDynamicParameters()
                 if (currentUniform->updateSemantic != Core::Instance()->GetGlobalFrameIndex())
                 {
                     float32 globalTime = SystemTimer::Instance()->GetGlobalTime();
-                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->updateSemantic);
+                    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_SHADER_BIND_DP, currentUniform->shaderSemantic);
                     SetUniformValueByUniform(currentUniform, globalTime);
                     currentUniform->updateSemantic = Core::Instance()->GetGlobalFrameIndex();
                 }

@@ -197,6 +197,8 @@ void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * par
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
+    Core::Instance()->commandHistory.AddCommand(CommandHistory::Command::CHC_RDO_BUILD_BUFFERS_INTERNAL, 0, 0, 0, this);
+
     uint32 size = streamArray.size();
     if (size == 0)return;
 
