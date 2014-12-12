@@ -84,6 +84,8 @@
 namespace DAVA
 {
 
+int32 SCENE_VERSION_MINIMAL_SUPPORTED = 9;
+
 SceneFileV2::SceneFileV2()
     : scene(NULL)
 {
@@ -387,7 +389,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
-        Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FAILED_TO_CREATE_FILE);
         return GetError();
     }   
@@ -399,8 +401,16 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 
     if (!headerValid)
     {
-        
         SafeRelease(file);
+        Logger::Error("SceneFileV2::LoadScene: scene header is not valid");
+        SetError(ERROR_VERSION_IS_TOO_OLD);
+        return GetError();
+    }
+
+    if (header.version < SCENE_VERSION_MINIMAL_SUPPORTED)
+    {
+        SafeRelease(file);
+        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_VERSION_MINIMAL_SUPPORTED);
         SetError(ERROR_VERSION_IS_TOO_OLD);
         return GetError();
     }
