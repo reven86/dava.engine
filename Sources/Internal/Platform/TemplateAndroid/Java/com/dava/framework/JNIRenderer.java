@@ -22,6 +22,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
     private native void nativeOnPauseView(boolean isLock);
 
     private boolean isFirstFrameAfterDraw = false;
+    private boolean skipResumeAfterPortraitSurfaceChange = false;
     private long framesCounter = 0;
 
     @Override
@@ -75,6 +76,9 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
             }
             nativeOnResumeView();
             isFirstFrameAfterDraw = true; // Do we need this?
+        } else
+        {
+            skipResumeAfterPortraitSurfaceChange = true;
         }
 
         long endTime = System.nanoTime();
@@ -128,7 +132,13 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         framesCounter = 0;
 
         long startTime = System.nanoTime();
-        nativeOnResumeView();
+        if (skipResumeAfterPortraitSurfaceChange)
+        {
+            skipResumeAfterPortraitSurfaceChange = false;
+        } else
+        {
+            nativeOnResumeView();
+        }
         long endTime = System.nanoTime();
 
         long duration = (endTime - startTime) / 1000000L; // divide by 1000000
