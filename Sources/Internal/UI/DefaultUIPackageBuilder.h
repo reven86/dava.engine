@@ -51,7 +51,7 @@ public:
     virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader) override;
     virtual UIControl *BeginControlWithPath(const String &pathName) override;
     virtual UIControl *BeginUnknownControl(const YamlNode *node) override;
-    virtual void EndControl() override;
+    virtual void EndControl(bool isRoot) override;
     
     virtual void BeginControlPropertiesSection(const String &name) override;
     virtual void EndControlPropertiesSection() override;
