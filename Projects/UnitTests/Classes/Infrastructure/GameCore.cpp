@@ -48,6 +48,7 @@
 #include "Tests/SplitTest.h"
 #include "Tests/TextSizeTest.h"
 #include "Tests/KeyedArchiveYamlTest.h"
+#include "Tests/JNITest.h"
 
 void GameCore::RunOnlyThisTest()
 {
@@ -61,6 +62,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+	new JNITest();
     new MathTest();
     new FunctionBindSignalTest();
     new ImageSizeTest();
