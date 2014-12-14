@@ -78,7 +78,7 @@ void DefinitionFile::LoadPNG(const FilePath & _filename, const FilePath & pathTo
 	FileSystem::Instance()->CopyFile(_filename, fileWrite);
 }
 
-bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pathToProcess)
+bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pathToProcess, bool twoSideMargin, uint32 texturesMargin)
 {
     DVASSERT(pathToProcess.IsDirectoryPathname());
 
@@ -125,35 +125,17 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 		frameRects[k].y = reducedRect.y;
 		frameRects[k].dx = reducedRect.dx;
 		frameRects[k].dy = reducedRect.dy;
-	
-	
-		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-		{
-			
-		}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-		{
-			frameRects[k].dx++;
-			frameRects[k].dy++;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+
+		// add borders
+		if ( twoSideMargin )
 		{
 			frameRects[k].dx+=2;
 			frameRects[k].dy+=2;
 		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+		else
 		{
-			frameRects[k].dx+=4;
-			frameRects[k].dy+=4;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
-		{
-			frameRects[k].dx+=2;
-			frameRects[k].dy+=2;
-		}
-		else 
-		{
-			frameRects[k].dx++;
-			frameRects[k].dy++;	
+			frameRects[k].dx += texturesMargin;
+			frameRects[k].dy += texturesMargin;
 		}
 	}
 	
@@ -162,7 +144,7 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 	return true;
 }
 
-bool DefinitionFile::Load(const FilePath & _filename)
+bool DefinitionFile::Load(const FilePath & _filename, bool twoSideMargin, uint32 texturesMargin)
 {
 	filename = _filename;
 	FILE * fp = fopen(filename.GetAbsolutePathname().c_str(), "rt");
@@ -181,33 +163,16 @@ bool DefinitionFile::Load(const FilePath & _filename)
 		fscanf(fp, "%d %d %d %d\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy);
 		Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
 		
-		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-		{
-			
-		}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-		{
-			frameRects[i].dx++;
-			frameRects[i].dy++;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+		// add borders
+		if ( twoSideMargin )
 		{
 			frameRects[i].dx+=2;
 			frameRects[i].dy+=2;
 		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+		else
 		{
-			frameRects[i].dx+=4;
-			frameRects[i].dy+=4;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
-		{
-			frameRects[i].dx+=2;
-			frameRects[i].dy+=2;
-		}
-		else 
-		{
-			frameRects[i].dx++;
-			frameRects[i].dy++;	
+			frameRects[i].dx += texturesMargin;
+			frameRects[i].dy += texturesMargin;
 		}
 	}
 	
@@ -230,32 +195,17 @@ bool DefinitionFile::Load(const FilePath & _filename)
 
 DAVA::Size2i DefinitionFile::GetFrameSize(int frame) const
 {
-	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
-	{
-		return Size2i(spriteWidth, spriteHeight);
-	}
-
 	return Size2i(frameRects[frame].dx, frameRects[frame].dy);
 }
 
 
 int DefinitionFile::GetFrameWidth(int frame) const
 {
-	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
-	{
-		return spriteWidth;
-	}
-
 	return frameRects[frame].dx;
 }
 
 int DefinitionFile::GetFrameHeight(int frame) const
 {
-	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
-	{
-		return spriteHeight;
-	}
-
 	return frameRects[frame].dy;
 }
 

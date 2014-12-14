@@ -4,6 +4,7 @@ uniform sampler2D decal = 1;
 uniform sampler2D detail = 1;
 uniform sampler2D lightmap = 1;
 uniform sampler2D decalmask = 1;
+uniform sampler2D alphamask = 1;
 uniform sampler2D vegetationmap = 2
 uniform sampler2D normalmap = 2;
 uniform sampler2D cubemap = 3;
@@ -74,6 +75,10 @@ varying mediump mat3 tbnToWorldMatrix;
 uniform sampler2D decal;
 #endif
 
+#if defined(ALPHA_MASK)
+uniform sampler2D alphamask;
+#endif
+
 #if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS_BLEND)
 uniform sampler2D detail;
 #endif
@@ -84,7 +89,7 @@ uniform sampler2D lightmap;
 #endif
 
 //#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY) || defined(FRAME_BLEND)
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 varying highp vec2 varTexCoord1;
 #endif
 
@@ -191,6 +196,9 @@ void main()
     
 #if defined(PIXEL_LIT) || defined(ALPHATEST) || defined(ALPHABLEND) || defined(VERTEX_LIT)
     lowp vec4 textureColor0 = texture2D(albedo, varTexCoord0);
+    #if defined (ALPHA_MASK)        
+        textureColor0.a *= texture2D(alphamask, varTexCoord1).a;
+    #endif
 #else
     lowp vec3 textureColor0 = texture2D(albedo, varTexCoord0).rgb;
 #endif

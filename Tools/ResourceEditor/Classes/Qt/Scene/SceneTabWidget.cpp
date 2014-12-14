@@ -70,7 +70,7 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	tabBar->setMovable(true);
 	tabBar->setUsesScrollButtons(true);
 	tabBar->setExpanding(false);
-	tabBar->setMinimumHeight(tabBar->sizeHint().height());
+	tabBar->setMinimumSize(1, 1);
 
 	// davawidget to display DAVAEngine content
 	davaWidget = new DavaGLWidget(this);
