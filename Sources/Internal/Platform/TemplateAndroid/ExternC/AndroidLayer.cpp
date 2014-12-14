@@ -60,36 +60,41 @@
 //#include "prof.h"
 //#endif //#if defined(__DAVAENGINE_PROFILE__)
 
+#define APPLICATION_METHOD(MethodName) void JNICALL Java_com_dava_framework_JNIApplication_##MethodName
+#define ACTIVITY_METHOD(MethodName) void JNICALL Java_com_dava_framework_JNIActivity_##MethodName
+#define GL_SURFACE_METHOD(MethodName) void JNICALL Java_com_dava_framework_JNIGLSurfaceView_##MethodName
+#define RENDERER_METHOD(MethodName) void JNICALL Java_com_dava_framework_JNIRenderer_##MethodName
+
 extern "C"
 {
 	jint JNI_OnLoad(JavaVM *vm, void *reserved);
 
 	//JNIApplication
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnLowMemory(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis);
- 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_SetAssetManager(JNIEnv * env, jobject classthis, jobject assetManager);
+	JNIEXPORT APPLICATION_METHOD(OnCreateApplication)(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName);
+	JNIEXPORT APPLICATION_METHOD(OnConfigurationChanged)(JNIEnv * env, jobject classthis);
+	JNIEXPORT APPLICATION_METHOD(OnLowMemory)(JNIEnv * env, jobject classthis);
+	JNIEXPORT APPLICATION_METHOD(OnTerminate)(JNIEnv * env, jobject classthis);
+ 	JNIEXPORT APPLICATION_METHOD(SetAssetManager)(JNIEnv * env, jobject classthis, jobject assetManager);
  	
 	//FrameworkTestProject
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv * env, jobject classthis, jboolean isFirstRun);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeIsFinishing(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z);
+	JNIEXPORT ACTIVITY_METHOD(nativeOnCreate)(JNIEnv * env, jobject classthis, jboolean isFirstRun);
+	JNIEXPORT ACTIVITY_METHOD(nativeOnStart)(JNIEnv * env, jobject classthis);
+	JNIEXPORT ACTIVITY_METHOD(nativeOnStop)(JNIEnv * env, jobject classthis);
+	JNIEXPORT ACTIVITY_METHOD(nativeIsFinishing)(JNIEnv * env, jobject classthis);
+	JNIEXPORT ACTIVITY_METHOD(nativeOnDestroy)(JNIEnv * env, jobject classthis);
+	JNIEXPORT ACTIVITY_METHOD(nativeOnAccelerometer)(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z);
 
 	//JNIGLSurfaceView
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobject classthis, jint action, jint id, jfloat x, jfloat y, jdouble time, jint source, jint tapCount);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyDown(JNIEnv * env, jobject classthis, jint keyCode);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyUp(JNIEnv * env, jobject classthis, jint keyCode);
+	JNIEXPORT GL_SURFACE_METHOD(nativeOnInput)(JNIEnv * env, jobject classthis, jint action, jint id, jfloat x, jfloat y, jdouble time, jint source, jint tapCount);
+	JNIEXPORT GL_SURFACE_METHOD(nativeOnKeyDown)(JNIEnv * env, jobject classthis, jint keyCode);
+	JNIEXPORT GL_SURFACE_METHOD(nativeOnKeyUp)(JNIEnv * env, jobject classthis, jint keyCode);
 
 	//JNIRenderer
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeResize(JNIEnv * env, jobject classthis, jint w, jint h);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeRender(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeRenderRecreated(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeOnResumeView(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeOnPauseView(JNIEnv * env, jobject classthis, jboolean isLock);
+	JNIEXPORT RENDERER_METHOD(nativeResize)(JNIEnv * env, jobject classthis, jint w, jint h);
+	JNIEXPORT RENDERER_METHOD(nativeRender)(JNIEnv * env, jobject classthis);
+	JNIEXPORT RENDERER_METHOD(nativeRenderRecreated)(JNIEnv * env, jobject classthis);
+	JNIEXPORT RENDERER_METHOD(nativeOnResumeView)(JNIEnv * env, jobject classthis);
+	JNIEXPORT RENDERER_METHOD(nativeOnPauseView)(JNIEnv * env, jobject classthis, jboolean isLock);
 };
 
 
