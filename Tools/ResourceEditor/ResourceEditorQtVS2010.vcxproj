@@ -67,7 +67,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_BEAST__;__DAVAENGINE_SPEEDTREE__;DAVA_FMOD;_DISABLE_IMAGE_MAGICK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;DAVA_FMOD;_DISABLE_IMAGE_MAGICK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -516,6 +516,7 @@
     <ClCompile Include="Classes\Qt\Scene\System\TextDrawSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\TilemaskEditorSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\VisibilityToolSystem.cpp" />
+    <ClCompile Include="Classes\Qt\Scene\System\WayEditSystem.cpp" />
     <ClCompile Include="Classes\Qt\Settings\SettingsDialog.cpp" />
     <ClCompile Include="Classes\Qt\Settings\SettingsManager.cpp" />
     <ClCompile Include="Classes\Qt\SoundComponentEditor\FMODSoundBrowser.cpp" />
@@ -1214,6 +1215,7 @@
     <ClInclude Include="Classes\Qt\Scene\System\TextDrawSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\TilemaskEditorSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\VisibilityToolSystem.h" />
+    <ClInclude Include="Classes\Qt\Scene\System\WayEditSystem.h" />
     <ClInclude Include="Classes\Qt\Settings\SettingsDialog.h" />
     <ClInclude Include="Classes\Qt\Settings\SettingsManager.h" />
     <ClInclude Include="Classes\Qt\SoundComponentEditor\FMODSoundBrowser.h" />

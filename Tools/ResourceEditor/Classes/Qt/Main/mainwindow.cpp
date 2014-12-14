@@ -694,6 +694,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionVisibilityCheckTool, SIGNAL(triggered()), this, SLOT(OnVisibilityTool()));
 	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionGrasEditor, SIGNAL(triggered()), this, SLOT(OnGrasEditor()));
+    QObject::connect(ui->actionWayEditor, SIGNAL(toggled(bool)), this, SLOT(OnWayEditor(bool)));
 
 	QObject::connect(ui->actionLight, SIGNAL(triggered()), this, SLOT(OnLightDialog()));
 	QObject::connect(ui->actionCamera, SIGNAL(triggered()), this, SLOT(OnCameraDialog()));
@@ -959,6 +960,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionVisibilityCheckTool->setEnabled(enable);
 	ui->actionCustomColorsEditor->setEnabled(enable);
     ui->actionGrasEditor->setEnabled(enable);
+    ui->actionWayEditor->setEnabled(enable);
 
 	ui->actionEnableCameraLight->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
@@ -1815,7 +1817,10 @@ void QtMainWindow::LoadModificationState(SceneEditor2 *scene)
 
 		// landscape snap
 		ui->actionModifySnapToLandscape->setChecked(scene->modifSystem->GetLandscapeSnap());
-	}
+
+        // way editor
+        ui->actionWayEditor->setChecked(scene->wayEditSystem->IsWayEditEnabled());
+    }
 }
 
 void QtMainWindow::LoadUndoRedoState(SceneEditor2 *scene)
@@ -2479,6 +2484,18 @@ void QtMainWindow::OnGrasEditor()
         SceneSignals::Instance()->EmitGrassEditorToggled(sceneEditor);
         OnLandscapeEditorToggled(sceneEditor);
     }*/
+}
+
+void QtMainWindow::OnWayEditor(bool show)
+{
+    SceneEditor2* sceneEditor = GetCurrentScene();
+    if (!sceneEditor)
+    {
+        return;
+    }
+
+    sceneEditor->wayEditSystem->EnableWayEdit(show);
+    ui->actionWayEditor->setChecked(sceneEditor->wayEditSystem->IsWayEditEnabled());
 }
 
 void QtMainWindow::OnBuildStaticOcclusion()

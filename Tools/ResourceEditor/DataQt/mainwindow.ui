@@ -201,7 +201,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -668,6 +668,7 @@
    <addaction name="actionRulerTool"/>
    <addaction name="actionCustomColorsEditor"/>
    <addaction name="actionVisibilityCheckTool"/>
+   <addaction name="actionWayEditor"/>
   </widget>
   <widget class="QDockWidget" name="dockLandscapeEditorControls">
    <property name="windowTitle">
@@ -1943,6 +1944,18 @@
   <action name="actionCreateTestSkinnedObject">
    <property name="text">
     <string>Create Test Skinned Object</string>
+   </property>
+  </action>
+  <action name="actionWayEditor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/switch.png</normaloff>:/QtIcons/switch.png</iconset>
+   </property>
+   <property name="text">
+    <string>WayEditor</string>
    </property>
   </action>
  </widget>

@@ -2157,6 +2157,9 @@
     <ClCompile Include="Classes\CommandLine\StaticOcclusion\StaticOcclusionTool.cpp">
       <Filter>Classes\CommandLine\StaticOcclusion</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Qt\Scene\System\WayEditSystem.cpp">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Collada\ColladaAnimatedMesh.h">
@@ -3754,6 +3757,9 @@
     </ClInclude>
     <ClInclude Include="Classes\CommandLine\StaticOcclusion\StaticOcclusionTool.h">
       <Filter>Classes\CommandLine\StaticOcclusion</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Scene\System\WayEditSystem.h">
+      <Filter>Classes\Qt\Scene\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
