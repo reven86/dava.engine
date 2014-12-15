@@ -257,6 +257,7 @@ void UIControlSystem::ProcessScreenLogic()
 					currentScreen->UnloadGroup();
 				}
 				currentScreen->SystemDidDisappear();
+                SafeRelease(currentScreen);
 			}
 			// if we have next screen we load new resources, if it equal to zero we just remove screen
 			if (nextScreenProcessed)
