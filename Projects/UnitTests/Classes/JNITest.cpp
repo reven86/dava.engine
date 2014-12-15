@@ -35,8 +35,8 @@ JNITest::JNITest()
     : TestTemplate<JNITest>("ThreadSyncTest")
 	, javaNotificationProvider("com/dava/framework/JNINotificationProvider")
 {
-	showNotificationNext = javaNotificationProvider.GetStaticMethod<void, int, jstring, jstring>("NotifyText");
-	showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, int, jstring, jstring, int, int>("NotifyProgress");
+	showNotificationNext = javaNotificationProvider.GetStaticMethod<void, jint, jstring, jstring>("NotifyText");
+	showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jint, jstring, jstring, int, int>("NotifyProgress");
 
     RegisterFunction(this, &JNITest::TestFunction, "JNITestTestFunctuion", NULL);
 }
@@ -61,9 +61,9 @@ void JNITest::TestFunction(PerfFuncData * data)
 	showNotificationNext(6, jStrTitle, jStrText);
 	showNotificationProgress(7, jStrTitle, jStrText, 100, 0);
 
-	for (uint32 i = 0; i < 1000; ++i)
+	for (uint32 i = 0; i < 100; ++i)
 	{
-		showNotificationProgress(7, jStrTitle, jStrText, 100, i/10);
+		showNotificationProgress(7, jStrTitle, jStrText, 100, i);
 		Thread::Sleep(1);
 	}
 

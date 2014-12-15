@@ -51,7 +51,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 	{
 		jstring jPath = env->NewStringUTF(path.c_str());
 
-		jobjectArray jArray = (jobjectArray) getFileList(jPath);
+		jobjectArray jArray = getFileList(jPath);
 		if (jArray)
 		{
 			jsize size = env->GetArrayLength(jArray);
@@ -60,9 +60,9 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 				jobject item = env->GetObjectArrayElement(jArray, i);
 
 				jclass cls = env->GetObjectClass(item);
-				jfieldID jNameField = env->GetFieldID(cls, "name", "Ljava/lang/String;");
+				jfieldID jNameField = env->GetFieldID(cls, "name", JNI::TypeName<jstring>());
 				jfieldID jSizeField = env->GetFieldID(cls, "size", "J");
-				jfieldID jIsDirectoryField = env->GetFieldID(cls, "isDirectory", "Z");
+				jfieldID jIsDirectoryField = env->GetFieldID(cls, "isDirectory", JNI::TypeName<jboolean>());
 
 				jlong jSize = env->GetLongField(item, jSizeField);
 				jboolean jIsDir = env->GetBooleanField(item, jIsDirectoryField);
