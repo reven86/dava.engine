@@ -188,7 +188,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			sortItem.frameIndex = frame;
 			sortVector.push_back(sortItem);
 		}
-		std::sort(sortVector.begin(), sortVector.end(), sortFn);
+		std::stable_sort(sortVector.begin(), sortVector.end(), sortFn);
 
 		
 		// try to pack for each resolution
@@ -285,7 +285,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 		}
 	}
 
-	std::sort(sortVector.begin(), sortVector.end(), sortFn);
+	std::stable_sort(sortVector.begin(), sortVector.end(), sortFn);
 
 	// try to pack for each resolution
 	uint32 bestResolution = (maxTextureSize) * (maxTextureSize);
