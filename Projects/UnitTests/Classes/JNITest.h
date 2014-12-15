@@ -26,60 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "JniHelpers.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 
-namespace DAVA
+#ifndef __JNI_TEST_H__
+#define __JNI_TEST_H__
+
+#include "DAVAEngine.h"
+using namespace DAVA;
+
+#include "TestTemplate.h"
+
+#include "Platform/JniHelpers.h"
+
+class JNITest : public TestTemplate<JNITest>
 {
+protected:
+    ~JNITest(){}
+public:
+    JNITest();
+
+	virtual void LoadResources();
+	virtual void UnloadResources();
+    
+    void TestFunction(PerfFuncData * data);
+
+private:
+    JNI::JavaClass javaNotificationProvider;
+    Function<void (int, jstring, jstring)> showNotificationNext;
+    Function<void (int, jstring, jstring, int, int)> showNotificationProgress;
+};
 
 
-namespace JNI
-{
-
-JavaVM *GetJVM()
-{
-    CorePlatformAndroid *core = static_cast<DAVA::CorePlatformAndroid *>(Core::Instance());
-    AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
-    return delegate->GetVM();
-}
-
-JNIEnv *GetEnv()
-{
-    JNIEnv *env;
-    JavaVM *vm = GetJVM();
-
-    if (NULL == vm || JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
-    {
-        Logger::Error("runtime_error(Thread is not attached to JNI)");
-    }
-    DVASSERT(NULL != env);
-    return env;
-}
-
-JavaClass::JavaClass(const String &className)
-{
-    jvm = GetJVM();
-    JNIEnv *env = GetEnv();
-    javaClass = env->FindClass(className.c_str());
-    if (NULL != javaClass)
-    {
-    	javaClass = static_cast<jclass>(env->NewGlobalRef(javaClass));
-    }
-
-    name = className;
-
-    DVASSERT(NULL != javaClass);
-}
-
-JavaClass::~JavaClass()
-{
-    GetEnv()->DeleteGlobalRef(javaClass);
-}
-
-}
-
-
-}
-#endif
+#endif // __THREAD_SYNC_TEST_H__

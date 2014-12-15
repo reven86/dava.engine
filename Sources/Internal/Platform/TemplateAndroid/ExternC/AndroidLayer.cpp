@@ -129,7 +129,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::Init<DAVA::JniCrashReporter>(vm, env);
 	DAVA::JniExtension::Init<DAVA::JniMovieViewControl>(vm, env);
 	DAVA::JniExtension::Init<DAVA::JniLocalization>(vm, env);
-	DAVA::JniExtension::Init<DAVA::JniFileList>(vm, env);
 	DAVA::JniExtension::Init<DAVA::JniDateTime>(vm, env);
 	DAVA::JniExtension::Init<DAVA::JniLocalNotification>(vm, env);
 

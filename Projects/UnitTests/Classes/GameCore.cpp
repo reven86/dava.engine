@@ -74,6 +74,7 @@
 #include "DLCDownloadTest.h"
 #include "FunctionBindSingalTest.h"
 #include "MathTest.h"
+#include "JNITest.h"
 
 using namespace DAVA;
 
@@ -99,6 +100,7 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
+    new JNITest();
 	new MathTest();
 	new FunctionBindSignalTest();
     new ThreadSyncTest();

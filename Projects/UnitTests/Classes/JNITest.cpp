@@ -26,60 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "JniHelpers.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 
-namespace DAVA
+#include "JNITest.h"
+#include "Platform/JniHelpers.h"
+
+JNITest::JNITest()
+    : TestTemplate<JNITest>("ThreadSyncTest")
+	, javaNotificationProvider("com/dava/framework/JNINotificationProvider")
 {
+	showNotificationNext = javaNotificationProvider.GetStaticMethod<void, int, jstring, jstring>("NotifyText");
+	showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, int, jstring, jstring, int, int>("NotifyProgress");
 
-
-namespace JNI
-{
-
-JavaVM *GetJVM()
-{
-    CorePlatformAndroid *core = static_cast<DAVA::CorePlatformAndroid *>(Core::Instance());
-    AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
-    return delegate->GetVM();
+    RegisterFunction(this, &JNITest::TestFunction, "JNITestTestFunctuion", NULL);
 }
 
-JNIEnv *GetEnv()
+void JNITest::LoadResources()
 {
-    JNIEnv *env;
-    JavaVM *vm = GetJVM();
-
-    if (NULL == vm || JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
-    {
-        Logger::Error("runtime_error(Thread is not attached to JNI)");
-    }
-    DVASSERT(NULL != env);
-    return env;
-}
-
-JavaClass::JavaClass(const String &className)
-{
-    jvm = GetJVM();
-    JNIEnv *env = GetEnv();
-    javaClass = env->FindClass(className.c_str());
-    if (NULL != javaClass)
-    {
-    	javaClass = static_cast<jclass>(env->NewGlobalRef(javaClass));
-    }
-
-    name = className;
-
-    DVASSERT(NULL != javaClass);
-}
-
-JavaClass::~JavaClass()
-{
-    GetEnv()->DeleteGlobalRef(javaClass);
-}
 
 }
 
+void JNITest::UnloadResources()
+{
 
 }
-#endif
+
+void JNITest::TestFunction(PerfFuncData * data)
+{
+	Logger::Debug("[JNITest] Start");
+
+	jstring jStrTitle = CreateJString(JNI::GetEnv(), L"test");
+	jstring jStrText = CreateJString(JNI::GetEnv(), L"test2");
+
+	showNotificationNext(6, jStrTitle, jStrText);
+	showNotificationProgress(7, jStrTitle, jStrText, 100, 0);
+
+	for (uint32 i = 0; i < 1000; ++i)
+	{
+		showNotificationProgress(7, jStrTitle, jStrText, 100, i/10);
+		Thread::Sleep(1);
+	}
+
+	JNI::GetEnv()->DeleteLocalRef(jStrTitle);
+	JNI::GetEnv()->DeleteLocalRef(jStrText);
+
+    TEST_VERIFY(true == Thread::IsMainThread());
+
+	Logger::Debug("[JNITest] Done.");
+}
+
+
+

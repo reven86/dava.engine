@@ -34,7 +34,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #include <jni.h>
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
-#include "FileSystem/Logger.h"
+#include "Debug/DVAssert.h"
 #include "Base/Function.h"
 #include "Base/Bind.h"
 
@@ -43,23 +43,165 @@ namespace DAVA
 
 namespace JNI
 {
-
-enum JObjectType
+enum JMRetType
 {
 	VOID,
 	STRING,
 	BOOL,
 	INT,
+	INT_ARR,
 	OBJECT,
+	OBJECT_ARR,
 };
 
 JavaVM *GetJVM();
 JNIEnv *GetEnv();
 
-String ParamToString(JObjectType type);
+template<typename T>
+struct TypeNameStruct
+{ };
 
-template <class Ret, class P1, class P2, class P3>
-class JavaMethod;
+template<> struct TypeNameStruct<void>
+{
+	String value = "V";
+	JMRetType type = VOID;
+};
+template<> struct TypeNameStruct<int>
+{
+	String value = "I";
+	JMRetType type = INT;
+};
+template<> struct TypeNameStruct<jintArray>
+{
+	String value = "[I";
+	JMRetType type = INT_ARR;
+};
+template<> struct TypeNameStruct<jstring>
+{
+	String value = "Ljava/lang/String;";
+	JMRetType type = STRING;
+};
+template<> struct TypeNameStruct<jobject>
+{
+	String value = "Ljava/lang/Object;";
+	JMRetType type = OBJECT;
+};
+template<> struct TypeNameStruct<jobjectArray>
+{
+	String value = "[Ljava/lang/Object;";
+	JMRetType type = OBJECT_ARR;
+};
+
+
+
+/*
+	JAVA Class caller implementations!
+*/
+
+template<class T>
+class MethodCaller
+{
+
+};
+
+// all possible function calls in one switch
+#define ResolvedCall(Static, javaClass, javaMethod, ...)\
+switch(TypeNameStruct<Ret>().type)\
+{\
+	case VOID: GetEnv()->Call##Static##VoidMethod(javaClass, javaMethod, __VA_ARGS__); return Ret();\
+	case OBJECT:return (Ret)(GetEnv()->Call##Static##ObjectMethod(javaClass, javaMethod, __VA_ARGS__));\
+	case OBJECT_ARR: return (Ret)(GetEnv()->Call##Static##ObjectMethod(javaClass, javaMethod, __VA_ARGS__));\
+	case INT: return (Ret)(GetEnv()->Call##Static##IntMethod(javaClass, javaMethod, __VA_ARGS__));\
+	case INT_ARR: return (Ret)(GetEnv()->Call##Static##IntMethod(javaClass, javaMethod, __VA_ARGS__));\
+}
+
+template<class Ret, class P1>
+class MethodCaller1
+{
+public:
+	static Ret Call(jclass javaClass, jmethodID javaMethod, bool isStatic, P1 p1)
+	{
+		if (isStatic)
+			ResolvedCall(Static, javaClass, javaMethod, p1)
+		else
+			ResolvedCall(, javaClass, javaMethod, p1)
+	}
+
+};
+
+template<class Ret, class P1, class P2>
+class MethodCaller2
+{
+public:
+	static Ret Call(jclass javaClass, jmethodID javaMethod, bool isStatic, P1 p1, P2 p2)
+	{
+		if (isStatic)
+			ResolvedCall(Static, javaClass, javaMethod, p1, p2)
+		else
+			ResolvedCall(, javaClass, javaMethod, p1, p2)
+	}
+
+};
+
+template<class Ret, class P1, class P2, class P3>
+class MethodCaller3
+{
+public:
+	static Ret Call(jclass javaClass, jmethodID javaMethod, bool isStatic, P1 p1, P2 p2, P3 p3)
+	{
+		if (isStatic)
+			ResolvedCall(Static, javaClass, javaMethod, p1, p2, p3)
+		else
+			ResolvedCall(, javaClass, javaMethod, p1, p2, p3)
+	}
+
+};
+
+template<class Ret, class P1, class P2, class P3, class P4>
+class MethodCaller4
+{
+public:
+	static Ret Call(jclass javaClass, jmethodID javaMethod, bool isStatic, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		if (isStatic)
+			ResolvedCall(Static, javaClass, javaMethod, p1, p2, p3, p4)
+		else
+			ResolvedCall(, javaClass, javaMethod, p1, p2, p3, p4)
+	}
+
+};
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5>
+class MethodCaller5
+{
+public:
+	static Ret Call(jclass javaClass, jmethodID javaMethod, bool isStatic, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		if (isStatic)
+			ResolvedCall(Static, javaClass, javaMethod, p1, p2, p3, p4, p5)
+		else
+			ResolvedCall(, javaClass, javaMethod, p1, p2, p3, p4, p5)
+	}
+
+};
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+class MethodCaller6
+{
+public:
+	static Ret Call(jclass javaClass, jmethodID javaMethod, bool isStatic, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+	{
+		if (isStatic)
+			ResolvedCall(Static, javaClass, javaMethod, p1, p2, p3, p4, p5, p6)
+		else
+			ResolvedCall(, javaClass, javaMethod, p1, p2, p3, p4, p5, p6)
+	}
+
+};
+/*
+	Java Class implementation
+*/
+
 
 class JavaClass
 {
@@ -67,17 +209,62 @@ public:
     JavaClass(const String &className);
     ~JavaClass();
 
-    template<class Ret, class P1, class P2, class P3>
-    JavaMethod<Ret, P1, P2, P3> GetMethod(String name);
-
-    jmethodID GetStaticMethod(JObjectType ret, String name, JObjectType p1 = VOID, JObjectType p2 = VOID, JObjectType p3 = VOID, JObjectType p4 = VOID, JObjectType p5 = VOID, JObjectType p6 = VOID);
-    jmethodID GetMethod(JObjectType ret, String name, JObjectType p1 = VOID, JObjectType p2 = VOID, JObjectType p3 = VOID, JObjectType p4 = VOID, JObjectType p5 = VOID, JObjectType p6 = VOID);
-    jmethodID GetMethod(bool isStatic, JObjectType ret, String name, Vector<JObjectType> &params);
-
-
-    jmethodID GetStaticMethod1(String name, String specs);
-
     inline operator jclass() const;
+
+    template<class Ret, class P1>
+    Function<Ret (P1)> GetMethod(String name);
+
+    template<class Ret, class P1>
+    Function<Ret (P1)> GetStaticMethod(String name);
+
+    template<class Ret, class P1, class P2>
+    Function<Ret (P1, P2)> GetMethod(String name);
+
+    template<class Ret, class P1, class P2>
+    Function<Ret (P1, P2)> GetStaticMethod(String name);
+
+    template<class Ret, class P1, class P2, class P3>
+    Function<Ret (P1, P2, P3)> GetMethod(String name);
+
+    template<class Ret, class P1, class P2, class P3>
+	Function<Ret (P1, P2, P3)> GetStaticMethod(String name);
+
+    template<class Ret, class P1, class P2, class P3, class P4>
+    Function<Ret (P1, P2, P3, P4)> GetMethod(String name);
+
+    template<class Ret, class P1, class P2, class P3, class P4>
+	Function<Ret (P1, P2, P3, P4)> GetStaticMethod(String name);
+
+    template<class Ret, class P1, class P2, class P3, class P4, class P5>
+    Function<Ret (P1, P2, P3, P4, P5)> GetMethod(String name);
+
+    template<class Ret, class P1, class P2, class P3, class P4, class P5>
+	Function<Ret (P1, P2, P3, P4, P5)> GetStaticMethod(String name);
+
+    template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+    Function<Ret (P1, P2, P3, P4, P5, P6)> GetMethod(String name);
+
+    template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+	Function<Ret (P1, P2, P3, P4, P5, P6)> GetStaticMethod(String name);
+
+private:
+    template<class Ret, class P1>
+    String GetParamsString();
+
+    template<class Ret, class P1, class P2>
+	String GetParamsString();
+
+    template<class Ret, class P1, class P2, class P3>
+    String GetParamsString();
+
+    template<class Ret, class P1, class P2, class P3, class P4>
+    String GetParamsString();
+
+    template<class Ret, class P1, class P2, class P3, class P4, class P5>
+    String GetParamsString();
+
+    template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+    String GetParamsString();
 
 private:
     JavaVM *jvm;
@@ -90,58 +277,168 @@ inline JavaClass::operator jclass() const
 	return javaClass;
 }
 
-template<class Ret, class P1, class P2, class P3>
-JavaMethod<Ret, P1, P2, P3> JavaClass::GetMethod(String name)
+template<class Ret, class P1>
+Function<Ret (P1)> JavaClass::GetMethod(String name)
 {
-	Vector<JObjectType> params;
-	params.push_back(INT);
-	params.push_back(STRING);
-	params.push_back(STRING);
+	String parametersString = GetParamsString<Ret, P1>();
+	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller1<Ret, P1>::Call, javaClass, javaMethod, false, _1);
+}
 
-	return JavaMethod<Ret, P1, P2, P3>(GetMethod(true, VOID, name, params), javaClass, true);
+template<class Ret, class P1>
+Function<Ret (P1)> JavaClass::GetStaticMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1>();
+	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller1<Ret, P1>::Call, javaClass, javaMethod, true, _1);
+}
+
+template<class Ret, class P1, class P2>
+Function<Ret (P1, P2)> JavaClass::GetMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1, P2>();
+	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller2<Ret, P1, P2>::Call, javaClass, javaMethod, false, _1, _2);
+}
+
+template<class Ret, class P1, class P2>
+Function<Ret (P1, P2)> JavaClass::GetStaticMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1, P2>();
+	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller2<Ret, P1, P2>::Call, javaClass, javaMethod, true, _1, _2);
 }
 
 template<class Ret, class P1, class P2, class P3>
-class JavaMethod
+Function<Ret (P1, P2, P3)> JavaClass::GetMethod(String name)
 {
-public:
-	JavaMethod(jmethodID mid, jclass c, bool isStatic);
-
-	inline operator jmethodID() const;
-
-	Ret operator ()(P1 p1, P2 p2, P3 p3);
-
-private:
-	bool isStatic;
-	jclass javaClass;
-	jmethodID javaMethod;
-};
-
-template<class Ret, class P1, class P2, class P3>
-JavaMethod<Ret, P1, P2, P3>::JavaMethod(jmethodID mid, jclass c, bool isStatic)
-{
-	this->isStatic = isStatic;
-	javaClass = c;
-	javaMethod = mid;
+	String parametersString = GetParamsString<Ret, P1, P2, P3>();
+	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller3<Ret, P1, P2, P3>::Call, javaClass, javaMethod, false, _1, _2, _3);
 }
 
 template<class Ret, class P1, class P2, class P3>
-inline JavaMethod<Ret, P1, P2, P3>::operator jmethodID() const
+Function<Ret (P1, P2, P3)> JavaClass::GetStaticMethod(String name)
 {
-	return javaMethod;
+	String parametersString = GetParamsString<Ret, P1, P2, P3>();
+	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller3<Ret, P1, P2, P3>::Call, javaClass, javaMethod, true, _1, _2, _3);
+}
+
+template<class Ret, class P1, class P2, class P3, class P4>
+Function<Ret (P1, P2, P3, P4)> JavaClass::GetMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1, P2, P3, P4>();
+	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller4<Ret, P1, P2, P3, P4>::Call, javaClass, javaMethod, false, _1, _2, _3, _4);
+}
+
+template<class Ret, class P1, class P2, class P3, class P4>
+Function<Ret (P1, P2, P3, P4)> JavaClass::GetStaticMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1, P2, P3, P4>();
+	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller4<Ret, P1, P2, P3, P4>::Call, javaClass, javaMethod, true, _1, _2, _3, _4);
+}
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5>
+Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1, P2, P3, P4, P5>();
+	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::Call, javaClass, javaMethod, false, _1, _2, _3, _4, _5);
+}
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5>
+Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetStaticMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1, P2, P3, P4, P5>();
+	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::Call, javaClass, javaMethod, true, _1, _2, _3, _4, _5);
+}
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1, P2, P3, P4, P5, P6>();
+	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::Call, javaClass, javaMethod, false, _1, _2, _3, _4, _5, _6);
+}
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name)
+{
+	String parametersString = GetParamsString<Ret, P1, P2, P3, P4, P5, P6>();
+	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
+	return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::Call, javaClass, javaMethod, true, _1, _2, _3, _4, _5, _6);
+}
+
+template<class Ret, class P1>
+String JavaClass::GetParamsString()
+{
+	return String("(")
+			+ TypeNameStruct<P1>().value
+			+ String(")")
+			+ TypeNameStruct<Ret>().value;
+}
+
+template<class Ret, class P1, class P2>
+String JavaClass::GetParamsString()
+{
+	return String("(")
+			+ TypeNameStruct<P1>().value
+			+ TypeNameStruct<P2>().value
+			+ String(")")
+			+ TypeNameStruct<Ret>().value;
 }
 
 template<class Ret, class P1, class P2, class P3>
-Ret JavaMethod<Ret, P1, P2, P3>::operator ()(P1 p1, P2 p2, P3 p3)
+String JavaClass::GetParamsString()
 {
-	if (isStatic)
-	{
-		return static_cast<Ret>(GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, p1, p2, p3));
-	}
-	else
-	{
-		return static_cast<Ret>(GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2, p3));
-	}
+	return String("(")
+			+ TypeNameStruct<P1>().value
+			+ TypeNameStruct<P2>().value
+			+ TypeNameStruct<P3>().value
+			+ String(")")
+			+ TypeNameStruct<Ret>().value;
+}
+template<class Ret, class P1, class P2, class P3, class P4>
+String JavaClass::GetParamsString()
+{
+	return String("(")
+			+ TypeNameStruct<P1>().value
+			+ TypeNameStruct<P2>().value
+			+ TypeNameStruct<P3>().value
+			+ TypeNameStruct<P4>().value
+			+ String(")")
+			+ TypeNameStruct<Ret>().value;
+}
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5>
+String JavaClass::GetParamsString()
+{
+	return String("(")
+			+ TypeNameStruct<P1>().value
+			+ TypeNameStruct<P2>().value
+			+ TypeNameStruct<P3>().value
+			+ TypeNameStruct<P4>().value
+			+ TypeNameStruct<P5>().value
+			+ String(")")
+			+ TypeNameStruct<Ret>().value;
+}
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+String JavaClass::GetParamsString()
+{
+	return String("(")
+			+ TypeNameStruct<P1>().value
+			+ TypeNameStruct<P2>().value
+			+ TypeNameStruct<P3>().value
+			+ TypeNameStruct<P4>().value
+			+ TypeNameStruct<P5>().value
+			+ TypeNameStruct<P6>().value
+			+ String(")")
+			+ TypeNameStruct<Ret>().value;
 }
 
 }
