@@ -1,5 +1,5 @@
 
-    #include "rhi_CommandBufferGLES2.h"
+    #include "../rhi_Pool.h"
     #include "rhi_GLES2.h"
 
     #include "../rhi_Base.h"
@@ -8,6 +8,7 @@
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
+    #include "Core/Core.h"
 
     #include "_gl.h"
 
@@ -36,6 +37,35 @@ CommandGLES2
 
     GLES2__NOP
 };
+
+class
+CommandBuffer_t
+{
+public:
+                CommandBuffer_t();
+                ~CommandBuffer_t();
+
+    void        begin();
+    void        end();
+    void        replay();
+
+    void        command( uint32 cmd );
+    void        command( uint32 cmd, uint32 arg1 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5 );
+    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5, uint32 arg6 );
+
+
+private:
+
+    static const uint32   EndCmd = 0xFFFFFFFF;
+
+    std::vector<uint32> _cmd;
+};
+
+typedef Pool<CommandBuffer_t>   CommandBufferPool;
 
 
 
@@ -496,6 +526,20 @@ CommandBuffer_t::replay()
     }
 }
 
+
+
+//------------------------------------------------------------------------------
+
+void
+Present()
+{
+    HWND    wnd = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
+    HDC     dc  = ::GetDC( wnd );
+
+    Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->replay();
+
+    SwapBuffers( dc );
+}
 
 
 } // namespace rhi

@@ -19,7 +19,6 @@
     <ClCompile Include="rhi_VertexBufferGLES2.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rhi_CommandBufferGLES2.h" />
     <ClInclude Include="rhi_GLES2.h" />
     <ClInclude Include="rhi_ProgGLES2.h" />
     <ClInclude Include="_gl.h" />

@@ -1,5 +1,4 @@
 
-    #include "rhi_CommandBufferGLES2.h"
     #include "rhi_GLES2.h"
 
     #include "../rhi_Base.h"
@@ -133,20 +132,6 @@ Initialize()
 void
 Uninitialize()
 {
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-Present()
-{
-    HWND    wnd = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
-    HDC     dc  = ::GetDC( wnd );
-
-    Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->replay();
-
-    SwapBuffers( dc );
 }
 
 } // namespace rhi

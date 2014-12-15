@@ -30,9 +30,6 @@
     <ClInclude Include="_gl.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="rhi_CommandBufferGLES2.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="rhi_GLES2.h">
       <Filter>Source Files</Filter>
     </ClInclude>
