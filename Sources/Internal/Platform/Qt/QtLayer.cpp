@@ -33,10 +33,11 @@
 namespace DAVA 
 {
     
-void DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
     if(QtLayer::Instance())
-        QtLayer::Instance()->ShowAsserMessage(content);
+        return QtLayer::Instance()->ShowAsserMessage(content);
+    return true; // if no qt layer just crush
 }
     
 QtLayer::QtLayer()
@@ -64,16 +65,18 @@ void QtLayer::ReleaseAutoreleasePool(void * /*pool*/)
 {
 }
     
-void QtLayer::ShowAsserMessage(const char * message)
+bool QtLayer::ShowAsserMessage(const char * message)
 {
+    bool result = false;
     isDAVAEngineEnabled = false;
     
     if(delegate)
     {
-        delegate->ShowAssertMessage(message);
+        result = delegate->ShowAssertMessage(message);
     }
     
     isDAVAEngineEnabled = true;
+    return result;
 }
 
 

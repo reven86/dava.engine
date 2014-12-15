@@ -293,7 +293,19 @@ void DavaGLWidget::EnableCustomPaintFlags(bool enable)
 	setAttribute(Qt::WA_PaintOnScreen, enable);
 }
 
-void DavaGLWidget::ShowAssertMessage(const char * message)
+bool DavaGLWidget::ShowAssertMessage(const char * message)
 {
-    QMessageBox::critical(this, "", message);
+    QMessageBox::StandardButton buttonId = QMessageBox::critical(this, "", message, 
+        QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok);
+    switch(buttonId)
+    {
+    case QMessageBox::Ok:
+        return false; // continue execution
+    case QMessageBox::Cancel:
+        return true; // break execution
+    default:
+        DAVA::Logger::Instance()->Error("error return button(%d) in %s(%d)", 
+            buttonId, __FILE__, __LINE__);
+    }
+    return true;
 }

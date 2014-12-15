@@ -88,6 +88,8 @@
         // see http://androidxref.com/5.0.0_r2/xref/system/core/liblog/logd_write.c function: __android_log_assert
         // works and __builtin_trap(); and raise(SIGTRAP); but prefer more standard way
         #define DebugBreak() raise(SIGTRAP);
+    #else
+        #error "add debug break on current platform"
     #endif
 
 #else
