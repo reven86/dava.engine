@@ -48,7 +48,7 @@ ProgGLES2::~ProgGLES2()
 //------------------------------------------------------------------------------
 
 bool
-ProgGLES2::Construct( const char* src_code )
+ProgGLES2::Construct( const char* srcCode )
 {
     bool        success = false;
     int         stype   = (type==PROG_VERTEX) ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
@@ -58,7 +58,7 @@ ProgGLES2::Construct( const char* src_code )
     {
         int status = 0;
 
-        GL_CALL(glShaderSource( s, 1, &src_code, 0 ));
+        GL_CALL(glShaderSource( s, 1, &srcCode, 0 ));
         GL_CALL(glCompileShader( s ));
         GL_CALL(glGetShaderiv( s, GL_COMPILE_STATUS, &status ));
 

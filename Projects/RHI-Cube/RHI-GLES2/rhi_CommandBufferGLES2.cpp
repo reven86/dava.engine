@@ -45,17 +45,17 @@ public:
                 CommandBuffer_t();
                 ~CommandBuffer_t();
 
-    void        begin();
-    void        end();
-    void        replay();
+    void        Begin();
+    void        End();
+    void        Replay();
 
-    void        command( uint32 cmd );
-    void        command( uint32 cmd, uint32 arg1 );
-    void        command( uint32 cmd, uint32 arg1, uint32 arg2 );
-    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 );
-    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4 );
-    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5 );
-    void        command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5, uint32 arg6 );
+    void        Command( uint32 cmd );
+    void        Command( uint32 cmd, uint32 arg1 );
+    void        Command( uint32 cmd, uint32 arg1, uint32 arg2 );
+    void        Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 );
+    void        Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4 );
+    void        Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5 );
+    void        Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5, uint32 arg6 );
 
 
 private:
@@ -91,7 +91,7 @@ Default()
 void
 Begin( Handle cmdBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->command( GLES2__BEGIN );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__BEGIN );
 }
 
 
@@ -100,7 +100,7 @@ Begin( Handle cmdBuf )
 void
 End( Handle cmdBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->command( GLES2__END );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__END );
 }
 
 
@@ -109,7 +109,7 @@ End( Handle cmdBuf )
 void
 Clear( Handle cmdBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->command( GLES2__CLEAR, 0xFF808080, nonaliased_cast<float,uint32>(1.0f) );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__CLEAR, 0xFF808080, nonaliased_cast<float,uint32>(1.0f) );
 }
 
 
@@ -118,7 +118,7 @@ Clear( Handle cmdBuf )
 void
 SetPipelineState( Handle cmdBuf, Handle ps )
 {
-    CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_PIPELINE_STATE, ps );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_PIPELINE_STATE, ps );
 }
 
 
@@ -127,7 +127,7 @@ SetPipelineState( Handle cmdBuf, Handle ps )
 void
 SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
-    CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_STREAM_SOURCE, vb, streamIndex );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_STREAM_SOURCE, vb, streamIndex );
 }
 
 
@@ -140,7 +140,7 @@ SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint32)(ConstBufferGLES2::Instance(buffer)) );
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint32)(ConstBufferGLES2::Instance(buffer)) );
 }
 
 
@@ -157,7 +157,7 @@ SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 void
 SetIndices( Handle cmdBuf, Handle ib )
 {
-    CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_INDICES, ib );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_INDICES, ib );
 }
 
 
@@ -170,7 +170,7 @@ SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint32)(ConstBufferGLES2::Instance(buffer)) );
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint32)(ConstBufferGLES2::Instance(buffer)) );
 }
 
 
@@ -182,7 +182,7 @@ SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 //    L_ASSERT(tex);
 
     if( tex )
-        CommandBufferPool::Get(cmdBuf)->command( GLES2__SET_TEXTURE, unitIndex, tex );
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_TEXTURE, unitIndex, tex );
 }
 
 
@@ -218,7 +218,7 @@ DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
             break;
     }
 
-    CommandBufferPool::Get(cmdBuf)->command( GLES2__DRAW_PRIMITIVE, uint32(mode), v_cnt );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__DRAW_PRIMITIVE, uint32(mode), v_cnt );
 }
 
 
@@ -238,7 +238,7 @@ DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
             break;
     }
 
-    CommandBufferPool::Get(cmdBuf)->command( GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__DRAW_INDEXED_PRIMITIVE, uint32(mode), v_cnt );
 }
 
 
@@ -265,7 +265,7 @@ CommandBuffer_t::~CommandBuffer_t()
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::begin()
+CommandBuffer_t::Begin()
 {
     _cmd.clear();
 }
@@ -274,7 +274,7 @@ CommandBuffer_t::begin()
 //------------------------------------------------------------------------------
 
 void        
-CommandBuffer_t::end()
+CommandBuffer_t::End()
 {
     _cmd.push_back( EndCmd );
 }
@@ -283,7 +283,7 @@ CommandBuffer_t::end()
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::command( uint32 cmd )
+CommandBuffer_t::Command( uint32 cmd )
 {
     _cmd.push_back( cmd );
 }
@@ -292,7 +292,7 @@ CommandBuffer_t::command( uint32 cmd )
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::command( uint32 cmd, uint32 arg1 )
+CommandBuffer_t::Command( uint32 cmd, uint32 arg1 )
 {
     _cmd.resize( _cmd.size()+1+1 );
 
@@ -306,7 +306,7 @@ CommandBuffer_t::command( uint32 cmd, uint32 arg1 )
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2 )
+CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2 )
 {
     _cmd.resize( _cmd.size()+1+2 );
 
@@ -321,7 +321,7 @@ CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2 )
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 )
+CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 )
 {
     _cmd.resize( _cmd.size()+1+3 );
 
@@ -337,7 +337,7 @@ CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 )
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4 )
+CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4 )
 {
     _cmd.resize( _cmd.size()+1+4 );
 
@@ -354,7 +354,7 @@ CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uin
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5 )
+CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5 )
 {
     _cmd.resize( _cmd.size()+1+5 );
 
@@ -372,7 +372,7 @@ CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uin
 //------------------------------------------------------------------------------
 
 inline void
-CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5, uint32 arg6 )
+CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5, uint32 arg6 )
 {
     _cmd.resize( _cmd.size()+1+6 );
 
@@ -391,7 +391,7 @@ CommandBuffer_t::command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uin
 //------------------------------------------------------------------------------
 
 void        
-CommandBuffer_t::replay()
+CommandBuffer_t::Replay()
 {
     Handle  cur_ps = 0;
     Handle  vp_const[MAX_CONST_BUFFER_COUNT];
@@ -536,7 +536,7 @@ Present()
     HWND    wnd = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
     HDC     dc  = ::GetDC( wnd );
 
-    Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->replay();
+    Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->Replay();
 
     SwapBuffers( dc );
 }
