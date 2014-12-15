@@ -29,6 +29,7 @@
 
 
 #include "Debug/DVAssertMessage.h"
+#include "FileSystem/Logger.h"
 
 #if defined (__DAVAENGINE_WIN32__)
 
@@ -47,10 +48,23 @@ WideString s2ws(const String& s)
     return r;
 }
 
-void DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
 	// Modal Type is ignored by Win32.
-	MessageBox(HWND_DESKTOP, s2ws(content).c_str(), L"Assert", MB_OK | MB_ICONEXCLAMATION);
+	int buttonId = MessageBox(HWND_DESKTOP, s2ws(content).c_str(), L"Assert", MB_OKCANCEL | MB_ICONEXCLAMATION);
+    switch (buttonId)
+    {
+    case IDCANCEL:
+        return true; // break executions
+    case IDOK:
+        return false; // continue execution
+    default:
+        // should never happen!
+        DAVA::Logger::Instance()->Error(
+            "Return button id(%d) unknown! Error during handle assert message",
+            buttonId);
+        return true;
+    }
 }
 
 };
