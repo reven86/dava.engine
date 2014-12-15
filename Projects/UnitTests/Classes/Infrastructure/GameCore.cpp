@@ -49,9 +49,12 @@
 #include "Tests/TextSizeTest.h"
 #include "Tests/KeyedArchiveYamlTest.h"
 
+#include "OldTests/TransparentWebViewTest.h"
+
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
+    runOnlyThisTest = "TransparentWebViewTest";
 }
 
 void GameCore::OnError()
@@ -61,6 +64,10 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    RunOnlyThisTest();
+    new TransparentWebViewTest();
+
+
     new MathTest();
     new FunctionBindSignalTest();
     new ImageSizeTest();

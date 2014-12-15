@@ -26,21 +26,32 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#include "WebViewControlWin32.h"
-#include "CorePlatformWin32.h"
-using namespace DAVA;
-
 #pragma warning(push)
 #pragma warning(disable: 4717) //'ATL::CCRTAllocator::free' : recursive on all control paths, function will cause runtime stack overflow
 #include <atlbase.h>
 #pragma warning(pop)
 #include <atlcom.h>
+#include <atlstr.h> // see http://msdn.microsoft.com/en-us/library/bwea7by5.aspx
+// see http://www.suodenjoki.dk/us/archive/2010/min-max.htm
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#include <atlimage.h>
+#undef min
+#undef max
 #include <ExDisp.h>
 #include <ExDispid.h>
 #include <ObjIdl.h>
 #include <Shlwapi.h>
+
+#include "WebViewControlWin32.h"
+#include "CorePlatformWin32.h"
+using namespace DAVA;
 
 extern _ATL_FUNC_INFO BeforeNavigate2Info;
 _ATL_FUNC_INFO BeforeNavigate2Info = {CC_STDCALL, VT_EMPTY, 7, {VT_DISPATCH,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_BOOL}};
@@ -261,9 +272,18 @@ public:
             this->container = container;
 		}
 	}
+    // TODO test only
+    void SetContainer( WebBrowserContainer* container)
+    {
+        this->container = container;
+    }
 
 	void  __stdcall DocumentComplete(IDispatch* pDisp, VARIANT* URL)
 	{
+        if (container)
+        {
+            container->SaveSnapshot();
+        }
 		if (delegate && webView)
 		{
             if (!container->DoOpenBuffer())
@@ -328,7 +348,7 @@ WebBrowserContainer::WebBrowserContainer() :
 
 WebBrowserContainer::~WebBrowserContainer()
 {
-	EventSink* s = (EventSink*)sink;
+	EventSink* s = sink;
 	s->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
 	delete s;
 
@@ -343,6 +363,125 @@ void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* w
 {
 	EventSink* s = (EventSink*)sink;
 	s->SetDelegate(delegate, webView, this);
+}
+
+bool WebBrowserContainer::SaveSnapshot()
+{
+    long bodyHeight, bodyWidth, rootHeight, rootWidth, height, width;
+
+    CComPtr<IDispatch> pDispatch;
+
+    // TODO: "If the document object type is not safe for scripting,
+    // this method returns successfully but sets ppDisp to NULL. For
+    // Internet Explorer 7 and later, the return code is S_FALSE..."
+
+    HRESULT hr = webBrowser->get_Document(&pDispatch);
+
+    if (FAILED(hr))
+        return true;
+
+    CComPtr<IHTMLDocument2> spDocument;
+    hr = pDispatch->QueryInterface(IID_IHTMLDocument2, (void**)&spDocument);
+
+    if (FAILED(hr))
+        return true;
+
+    CComPtr<IHTMLElement> spBody;
+    hr = spDocument->get_body(&spBody);
+
+    // Apparently with MSHTML failing to get the body is not a failure,
+    // so if there is no HTML body to get, which may be the case with
+    // SVG images loaded directly, this succeeds but sets spBody to the
+    // NULL pointer, leading to a crash. I am not sure how to obtain
+    // the sizing information for SVG documents so this errors out here.
+    // A work around would be the make HTML host documents or wrapping
+    // the SVG code in a XHTML document, but that may break scripts.
+    if (FAILED(hr) || spBody == NULL)
+        return true;
+
+    CComPtr<IHTMLElement2> spBody2;
+    hr = spBody->QueryInterface(IID_IHTMLElement2, (void**)&spBody2);
+
+    if (FAILED(hr))
+        return true;
+
+    hr = spBody2->get_scrollHeight(&bodyHeight);
+
+    if (FAILED(hr))
+        return true;
+
+    hr = spBody2->get_scrollWidth(&bodyWidth);
+
+    if (FAILED(hr))
+        return true;
+
+    CComPtr<IHTMLDocument3> spDocument3;
+    hr = pDispatch->QueryInterface(IID_IHTMLDocument3, (void**)&spDocument3);
+
+    if (FAILED(hr))
+        return true;
+
+    // We also need to get the dimensions from the <html> due to quirks
+    // and standards mode differences. Perhaps this should instead check
+    // whether we are in quirks mode? How does it work with IE8?
+    CComPtr<IHTMLElement> spHtml;
+    hr = spDocument3->get_documentElement(&spHtml);
+
+    if (FAILED(hr))
+        return true;
+
+    CComPtr<IHTMLElement2> spHtml2;
+    hr = spHtml->QueryInterface(IID_IHTMLElement2, (void**)&spHtml2);
+
+    if (FAILED(hr))
+        return true;
+
+    hr = spHtml2->get_scrollHeight(&rootHeight);
+
+    if (FAILED(hr))
+        return true;
+
+    hr = spHtml2->get_scrollWidth(&rootWidth);
+
+    if (FAILED(hr))
+        return true;
+
+    width = bodyWidth;
+    height = rootHeight > bodyHeight ? rootHeight : bodyHeight;
+
+    // TODO: What if width or height exceeds 32767? It seems Windows limits
+    // the window size, and Internet Explorer does not draw what's not visible.
+    ::MoveWindow(hwnd, 0, 0, width, height, TRUE);
+
+    CComPtr<IViewObject2> spViewObject;
+
+    // This used to get the interface from the m_pWebBrowser but that seems
+    // to be an undocumented feature, so we get it from the Document instead.
+    hr = spDocument3->QueryInterface(IID_IViewObject2, (void**)&spViewObject);
+
+    if (FAILED(hr))
+        return true;
+
+    RECTL rcBounds = { 0, 0, width, height };
+
+    CImage image;
+
+    // TODO: check return value;
+    // TODO: somehow enable alpha
+    image.Create(width, height, 24);
+
+    HDC imgDc = image.GetDC();
+    hr = spViewObject->Draw(DVASPECT_CONTENT, -1, NULL, NULL, imgDc,
+        imgDc, &rcBounds, NULL, NULL, 0);
+    image.ReleaseDC();
+
+    if (SUCCEEDED(hr))
+    {
+        LPCTSTR str = L"test_output.png";
+        hr = image.Save(str);
+    }
+
+    return false;
 }
 
 bool WebBrowserContainer::Initialize(HWND parentWindow)
@@ -386,7 +525,8 @@ bool WebBrowserContainer::Initialize(HWND parentWindow)
 	}
 
 	sink = new EventSink();
-	EventSink* s = (EventSink*)sink;
+	EventSink* s = sink;
+    sink->SetContainer(this); // TODO test only
 	hRes = s->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
 	if (FAILED(hRes))
 	{
@@ -555,9 +695,12 @@ WebViewControl::~WebViewControl()
 	if (browserWindow != 0)
 	{
 		::DestroyWindow(browserWindow);
+        browserWindow = 0;
 	}
 
 	SafeDelete(browserContainer);
+
+    Gdiplus::GdiplusShutdown(gdiplusToken);
 }
 
 void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
@@ -569,6 +712,13 @@ void WebViewControl::Initialize(const Rect& rect)
 {
 	CoreWin32PlatformBase *core = static_cast<CoreWin32PlatformBase *>(Core::Instance());
 	DVASSERT(core);
+
+    // Initialize GDI+.
+    Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    if (status != Gdiplus::Ok)
+    {
+        DAVA::Logger::Instance()->Error("Error create GDI+ %s(%d)", __FILE__, __LINE__);
+    }
 
 	// Create the browser holder window.
 	browserWindow = ::CreateWindowEx(0, L"Static", L"", WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN,
@@ -624,7 +774,7 @@ void WebViewControl::SetRect(const Rect& rect)
 	}
 
 	RECT browserRect = {0};
-	::GetWindowRect(this->browserWindow, &browserRect);
+	//::GetWindowRect(this->browserWindow, &browserRect);
 
 	browserRect.left = (LONG)(rect.x * Core::GetVirtualToPhysicalFactor());
 	browserRect.top  = (LONG)(rect.y * Core::GetVirtualToPhysicalFactor());

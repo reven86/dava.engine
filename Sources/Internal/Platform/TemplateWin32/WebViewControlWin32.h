@@ -36,9 +36,24 @@
 #include "UI/IWebViewControl.h"
 #include "FileSystem/FilePath.h"
 
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#include <gdiplus.h>
+
+#undef min
+#undef max
+
 // Helper class to contain Web Browser.
 interface IWebBrowser2;
 namespace DAVA {
+
+struct EventSink;
 
 class WebBrowserContainer : IOleClientSite, IOleInPlaceSite
 {
@@ -92,14 +107,16 @@ public:
 	HRESULT __stdcall RequestNewObjectLayout() { return E_NOTIMPL; }
 
 	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
-protected:
+
+    bool WebBrowserContainer::SaveSnapshot();
+private:
 	// Parent window.
 	HWND hwnd;
 
 	// The browser itselt.
 	IWebBrowser2* webBrowser;
 
-	void* sink;
+	EventSink* sink;
 
 	bool openFromBufferQueued;
 	String bufferToOpen; // temporary buffer
@@ -136,6 +153,9 @@ protected:
 
 	// Web Browser Container.
 	WebBrowserContainer* browserContainer;
+
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
 };
 
 };

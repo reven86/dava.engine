@@ -18,6 +18,7 @@
     <ClInclude Include="Classes\Infrastructure\TestTemplate.h" />
     <ClInclude Include="Classes\Infrastructure\TextureUtils.h" />
     <ClInclude Include="Classes\Infrastructure\UITestTemplate.h" />
+    <ClInclude Include="Classes\OldTests\TransparentWebViewTest.h" />
     <ClInclude Include="Classes\Tests\ComponentsTest.h" />
     <ClInclude Include="Classes\Tests\DateTimeTest.h" />
     <ClInclude Include="Classes\Tests\FileListTest.h" />
@@ -40,6 +41,7 @@
     <ClCompile Include="Classes\Infrastructure\GameCore.cpp" />
     <ClCompile Include="Classes\Infrastructure\TeamCityTestsOutput.cpp" />
     <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp" />
+    <ClCompile Include="Classes\OldTests\TransparentWebViewTest.cpp" />
     <ClCompile Include="Classes\Tests\ComponentsTest.cpp" />
     <ClCompile Include="Classes\Tests\DateTimeTest.cpp" />
     <ClCompile Include="Classes\Tests\FileListTest.cpp" />
