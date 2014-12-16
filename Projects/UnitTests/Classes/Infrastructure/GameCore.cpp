@@ -33,60 +33,25 @@
 #include "TexturePacker/CommandLineParser.h"
 #include "Utils/Utils.h"
 
-#include "Config.h"
-#include "BaseScreen.h"
-#include "SampleTest.h"
-#include "EntityTest.h"
-#include "MemoryAllocatorsTest.h"
-#include "HashMapTest.h"
-#include "SoundTest.h"
-#include "AlignTest.h"
-#include "SplitTest.h"
-#include "MaterialCompilerTest.h"
-#include "PVRTest.h"
-#include "DXTTest.h"
-#include "KeyedArchiveYamlTest.h"
-#include "CloneTest.h"
-#include "DPITest.h"
-#include "InputTest.h"
-#include "FilePathTest.h"
-#include "FileListTest.h"
-#include "FileSystemTest.h"
-#include "DeviceInfoTest.h"
-#include "LocalizationTest.h"
-#include "UIListTest.h"
-#include "TransparentWebViewTest.h"
-#include "FormatsTest.h"
-#include "UIScrollViewTest.h"
-#include "ThreadSyncTest.h"
-#include "UIMovieTest.h"
-#include "DFFontTest.h"
-#include "ComponentsTest.h"
-#include "RectSpriteTest.h"
-#include "OpenGLES30FormatTest.h"
-#include "StringFormatTest.h"
-#include "SaveImageTest.h"
-#include "JPEGTest.h"
-#include "DateTimeTest.h"
-#include "SceneSystemTest.h"
-#include "ParseTextTest.h"
-#include "ImageSizeTest.h"
-#include "DLCDownloadTest.h"
-#include "FunctionBindSingalTest.h"
-#include "MathTest.h"
-#include "BiDiTest.h"
-#include "TextSizeTest.h"
-
-#include <fstream>
-#include <algorithm>
-
-using namespace DAVA;
-
+#include "Tests/MathTest.h"
+#include "Tests/FunctionBindSingalTest.h"
+#include "Tests/ImageSizeTest.h"
+#include "Tests/SaveImageTest.h"
+#include "Tests/StringFormatTest.h"
+#include "Tests/ComponentsTest.h"
+#include "Tests/FileListTest.h"
+#include "Tests/FileSystemTest.h"
+#include "Tests/DateTimeTest.h"
+#include "Tests/LocalizationTest.h"
+#include "Tests/MemoryAllocatorsTest.h"
+#include "Tests/HashMapTest.h"
+#include "Tests/SplitTest.h"
+#include "Tests/TextSizeTest.h"
+#include "Tests/KeyedArchiveYamlTest.h"
 
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
-    //runOnlyThisTest = "TextSizeTest";
 }
 
 void GameCore::OnError()
@@ -94,81 +59,47 @@ void GameCore::OnError()
     DebugBreak();
 }
 
-GameCore::GameCore():currentScreen(NULL),
-    currentScreenIndex(0),
-    currentTestIndex(0)
+void GameCore::RegisterTests()
 {
+    new MathTest();
+    new FunctionBindSignalTest();
+    new ImageSizeTest();
+    new SaveImageTest();
+    new StringFormatTest();
+    new ComponentsTest();
+    new FileListTest();
+    new FileSystemTest();
+    new DateTimeTest();
+    new LocalizationTest();
+    new MemoryAllocatorsTest();
+    new HashMapTest();
+    new SplitTest();
+    new TextSizeTest();
+    new KeyedArchiveYamlTest();
 }
 
-GameCore::~GameCore()
-{
-}
+#include <fstream>
+#include <algorithm>
+
+using namespace DAVA;
 
 void GameCore::OnAppStarted()
 {
     InitLogging();
     RunOnlyThisTest();
-
-    RenderManager::Instance()->SetFPS(60);
-
-    //new DLCDownloadTest();
-    new MathTest();
-    new FunctionBindSignalTest();
-    new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
-
-
-    new ImageSizeTest();
-    //new DeviceInfoTest();
-
-    new PVRTest();
-    new DXTTest();
-    new JPEGTest();
-
-    new ParseTextTest(Font::TYPE_FT);
-    //    new ParseTextTest(Font::TYPE_GRAPHICAL);
-    //new OpenGLES30FormatTest();
-    new SaveImageTest();
-    //   
-    //   new OpenGLES30FormatTest(); // TODO duplicate? second run?
-    new StringFormatTest();
-    //new RectSpriteTest();
-
-    new ComponentsTest();
-    //new FilePathTest();
-    new FileListTest();
-    new FileSystemTest();
-    
-    new UIMovieTest();
-    //new InputTest();
-    //new FormatsTest();
- 
-    new DateTimeTest();
-    //new TransparentWebViewTest();
-    new LocalizationTest();
- 
-    new SampleTest();
-    //new EntityTest(); 
-    new MemoryAllocatorsTest();
-    new HashMapTest();
-    //new SoundTest();
-    new SplitTest();
-    new AlignTest();
-    //new EMailTest();
-    //new DPITest();
-    new MaterialCompilerTest(); // TODO empty
-    new CloneTest(); // TODO empty
-    new BiDiTest();
-    new TextSizeTest();
-
-    new EntityTest(); // TODO empty
-    new KeyedArchiveYamlTest();
-    //new UIListTest();
-    //new UIScrollViewTest();
- 
-
-    //new SceneSystemTest();
-
+    RegisterTests();
     RunTests();
+}
+
+GameCore::GameCore() 
+: currentScreen(NULL),
+currentScreenIndex(0),
+currentTestIndex(0)
+{
+}
+
+GameCore::~GameCore()
+{
 }
 
 void GameCore::RegisterScreen(BaseScreen *screen)
@@ -199,7 +130,6 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::OnAppFinished()
 {
-    teamCityOutput.Disconnect();
     DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
     int32 screensSize = screens.size();
@@ -300,6 +230,9 @@ void GameCore::RunTests()
 
 void GameCore::FinishTests()
 {
+    // inform teamcity script we just finished all tests
+    // useful on ios devices (run with lldb)
+    teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
     Core::Instance()->Quit();
 }
 
@@ -402,32 +335,10 @@ DAVA::String GameCore::CreateOutputLogFile()
 
 void GameCore::InitLogging()
 {
-    CreateDocumentsFolder();
-    logFilePath = CreateOutputLogFile();
-
-    logFile.open(logFilePath.c_str());
-
-    DVASSERT(logFile.good());
-    // We need redirect cout to our file for TeamcityOutput(CustomOutput) to work
-    std::cout.rdbuf(logFile.rdbuf());
-
-    String host;
-    if (CommandLineParser::Instance()->CommandIsFound("-host"))
-    {
-        host = CommandLineParser::Instance()->GetCommandParam("-host");
-    }
-    uint16 port = static_cast<uint16>(50007u);
-    if (CommandLineParser::Instance()->CommandIsFound("-port"))
-    {
-        String portStr = CommandLineParser::Instance()->GetCommandParam("-port");
-        port = static_cast<uint16>(atoi(portStr.c_str()));
-    }
     if (CommandLineParser::Instance()->CommandIsFound("-only_test"))
     {
         runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
     }
-
-    teamCityOutput.Connect(host, port);
 
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
 }
@@ -443,6 +354,8 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
+
+
 
 
 
