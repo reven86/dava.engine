@@ -104,7 +104,7 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
 	
 		Function<void()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::CompileShaderInternal), shader, defines);
 		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
-		JobManager::Instance()->WaitMainJobs(jobId);
+		JobManager::Instance()->WaitMainJobID(jobId);
 	}
     
 	compileShaderMutex.Unlock();
