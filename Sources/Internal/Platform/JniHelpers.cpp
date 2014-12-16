@@ -68,9 +68,9 @@ JavaClass::JavaClass(const String &className)
     	javaClass = static_cast<jclass>(env->NewGlobalRef(javaClass));
     }
 
-    name = className;
+	CheckOperationResult(javaClass, className);
 
-    DVASSERT(NULL != javaClass);
+    name = className;
 }
 
 JavaClass::~JavaClass()
