@@ -30,7 +30,7 @@
     #include "GameCore.h"
     
     #include "../rhi_Base.h"
-    #include "../rhi_ShaderCache.h"
+    #include "../RHI/rhi_ShaderCache.h"
 
 
 using namespace DAVA;

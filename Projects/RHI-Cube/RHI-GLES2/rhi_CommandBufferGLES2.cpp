@@ -1,5 +1,5 @@
 
-    #include "../rhi_Pool.h"
+    #include "../RHI/rhi_Pool.h"
     #include "rhi_GLES2.h"
 
     #include "../rhi_Base.h"

@@ -2,7 +2,7 @@
     #include "rhi_GLES2.h"
 
     #include "../rhi_Base.h"
-    #include "../rhi_Pool.h"
+    #include "../RHI/rhi_Pool.h"
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"

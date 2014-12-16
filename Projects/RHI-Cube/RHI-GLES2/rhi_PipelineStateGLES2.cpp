@@ -1,7 +1,7 @@
 
     #include "../rhi_Base.h"
-    #include "../rhi_ShaderCache.h"
-    #include "../rhi_Pool.h"
+    #include "../RHI/rhi_ShaderCache.h"
+    #include "../RHI/rhi_Pool.h"
 
     #include "rhi_ProgGLES2.h"
     

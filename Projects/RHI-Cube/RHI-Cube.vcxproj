@@ -67,17 +67,18 @@
   <ItemGroup>
     <ClCompile Include="Classes\FrameworkMain.cpp" />
     <ClCompile Include="Classes\GameCore.cpp" />
-    <ClCompile Include="rhi_ShaderCache.cpp" />
-    <ClCompile Include="rhi_VertexLayout.cpp" />
+    <ClCompile Include="RHI\rhi_ShaderCache.cpp" />
+    <ClCompile Include="RHI\rhi_VertexLayout.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\FrameworkMain.h" />
     <ClInclude Include="Classes\GameCore.h" />
+    <ClInclude Include="RHI\rhi_Pool.h" />
+    <ClInclude Include="RHI\rhi_RingBuffer.h" />
+    <ClInclude Include="RHI\rhi_ShaderCache.h" />
     <ClInclude Include="rhi_Base.h" />
     <ClInclude Include="rhi_Pool.h" />
-    <ClInclude Include="rhi_RingBuffer.h" />
-    <ClInclude Include="rhi_ShaderCache.h" />
     <ClInclude Include="rhi_Type.h" />
     <ClInclude Include="rhi_VertexLayout.h" />
   </ItemGroup>

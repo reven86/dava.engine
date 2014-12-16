@@ -7,7 +7,10 @@
     <Filter Include="Win32Specific">
       <UniqueIdentifier>{46a33a3f-6a12-4226-9957-b7da7c428bbc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RHI">
+    <Filter Include="RHI-interface">
+      <UniqueIdentifier>{d68f9d66-fa9b-40f7-b557-79057f77975d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RHI %28private/impl%29">
       <UniqueIdentifier>{0dca8c18-e229-47c1-b2be-1ced2c6522fe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -21,11 +24,11 @@
     <ClCompile Include="Classes\FrameworkMain.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="rhi_ShaderCache.cpp">
-      <Filter>RHI</Filter>
+    <ClCompile Include="RHI\rhi_ShaderCache.cpp">
+      <Filter>RHI %28private/impl%29</Filter>
     </ClCompile>
-    <ClCompile Include="rhi_VertexLayout.cpp">
-      <Filter>RHI</Filter>
+    <ClCompile Include="RHI\rhi_VertexLayout.cpp">
+      <Filter>RHI %28private/impl%29</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -35,23 +38,26 @@
     <ClInclude Include="Classes\FrameworkMain.h">
       <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="rhi_Base.h">
-      <Filter>RHI</Filter>
-    </ClInclude>
     <ClInclude Include="rhi_Pool.h">
-      <Filter>RHI</Filter>
+      <Filter>RHI %28private/impl%29</Filter>
     </ClInclude>
-    <ClInclude Include="rhi_ShaderCache.h">
-      <Filter>RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="rhi_VertexLayout.h">
-      <Filter>RHI</Filter>
+    <ClInclude Include="rhi_Base.h">
+      <Filter>RHI-interface</Filter>
     </ClInclude>
     <ClInclude Include="rhi_Type.h">
-      <Filter>RHI</Filter>
+      <Filter>RHI-interface</Filter>
     </ClInclude>
-    <ClInclude Include="rhi_RingBuffer.h">
-      <Filter>RHI</Filter>
+    <ClInclude Include="rhi_VertexLayout.h">
+      <Filter>RHI-interface</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\rhi_Pool.h">
+      <Filter>RHI %28private/impl%29</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\rhi_RingBuffer.h">
+      <Filter>RHI %28private/impl%29</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\rhi_ShaderCache.h">
+      <Filter>RHI %28private/impl%29</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

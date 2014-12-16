@@ -1,7 +1,7 @@
 
 
     #include "../rhi_Base.h"
-    #include "../rhi_Pool.h"
+    #include "../RHI/rhi_Pool.h"
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
