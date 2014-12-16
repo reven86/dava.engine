@@ -23,7 +23,7 @@ LOCAL_SRC_FILES :=  \
                   ../../src/linebreakdata.c \
                   ../../src/linebreakdef.c \
                   ../../src/wordbreak.c \
-                  ../../src/wordbreakdata.c \ss
+                  ../../src/wordbreakdata.c \
                   
 LOCAL_CFLAGS := -O2
 

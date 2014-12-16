@@ -95,7 +95,7 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &classNam
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
     if (!control)
-        Logger::Warning("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
+        Logger::Error("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
 
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD)//TODO: fix internal staticText for Win\Mac
     {
@@ -123,7 +123,7 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &cu
     }
     else
     {
-        DVASSERT(control != NULL);
+        DVASSERT(false);
     }
     
     controlsStack.push_back(ControlDescr(control, true));
@@ -186,13 +186,13 @@ UIControl *DefaultUIPackageBuilder::BeginUnknownControl(const YamlNode *node)
     return NULL;
 }
 
-void DefaultUIPackageBuilder::EndControl()
+void DefaultUIPackageBuilder::EndControl(bool isRoot)
 {
     ControlDescr lastControl = controlsStack.back();
     controlsStack.pop_back();
     if (lastControl.addToParent)
     {
-        if (controlsStack.empty())
+        if (controlsStack.empty() || isRoot)
         {
             package->AddControl(lastControl.control);
         }
@@ -205,7 +205,7 @@ void DefaultUIPackageBuilder::EndControl()
     }
 }
 
-void DefaultUIPackageBuilder::BeginControlPropretiesSection(const String &name)
+void DefaultUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 {
     currentObject = controlsStack.back().control;
 }
@@ -215,7 +215,7 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
     currentObject = NULL;
 }
 
-UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
+UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int32 index, bool sectionHasProperties)
 {
     if (sectionHasProperties)
     {
@@ -238,7 +238,7 @@ void DefaultUIPackageBuilder::EndBgPropertiesSection()
     currentObject = NULL;
 }
 
-UIControl *DefaultUIPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
+UIControl *DefaultUIPackageBuilder::BeginInternalControlSection(int32 index, bool sectionHasProperties)
 {
     if (sectionHasProperties)
     {
@@ -299,6 +299,9 @@ DefaultUIPackageBuilder::ControlDescr::~ControlDescr()
 
 DefaultUIPackageBuilder::ControlDescr &DefaultUIPackageBuilder::ControlDescr::operator=(const ControlDescr &descr)
 {
+    if(&descr == this)
+        return *this;
+    
     SafeRetain(descr.control);
     SafeRelease(control);
     

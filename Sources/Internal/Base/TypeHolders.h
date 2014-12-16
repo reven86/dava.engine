@@ -125,10 +125,19 @@ public:
 		, type(Holder_Regular)
 	{}
 
-	ObjectPointerHolder(void *obj) 
-		: object(obj)
-		, type(Holder_Regular)
-	{}
+    ObjectPointerHolder(void *obj)
+        : object(obj)
+        , type(Holder_Regular)
+    { }
+
+    template<typename T>
+    ObjectPointerHolder(const T *obj)
+        : object(NULL)
+        , type(Holder_Regular)
+    { 
+        T* t = const_cast<T*>(obj);
+        object = t;
+    }
 
 	ObjectPointerHolder(RefCounter *obj) 
 		: object(obj)

@@ -234,6 +234,12 @@ public:
 
         return 0;
     }
+    
+    bool IsEqualWithUserdata(const Message &msg)
+    {
+        return (messageBase->IsEqual(msg.messageBase) && userData == msg.userData);
+    }
+
 };
 };
 

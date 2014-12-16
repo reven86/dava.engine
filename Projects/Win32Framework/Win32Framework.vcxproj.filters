@@ -1585,7 +1585,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackage.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -1594,6 +1593,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h">
       <Filter>Internal\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
+      <Filter>Internal\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h">
       <Filter>Internal\Thread</Filter>
@@ -2852,7 +2854,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\AnimationData.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\StringUtils.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
@@ -2880,8 +2881,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -2893,6 +2892,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp">
       <Filter>Internal\Job</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp">
+      <Filter>Internal\Autotesting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
