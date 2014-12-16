@@ -108,12 +108,14 @@ public:
 
 	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 
-    bool WebBrowserContainer::SaveSnapshot();
+    bool SaveSnapshot(int32 imageWidth, int32 imageHeight);
+
+    void GetContainerSize(int32* width, int32* height);
 private:
 	// Parent window.
 	HWND hwnd;
 
-	// The browser itselt.
+	// The browser itself.
 	IWebBrowser2* webBrowser;
 
 	EventSink* sink;
@@ -144,6 +146,9 @@ public:
 
 	virtual void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 
+    void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override;
+
 protected:
 	// Initialize the COM and create the browser container.
 	bool InititalizeBrowserContainer();
@@ -156,6 +161,7 @@ protected:
 
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
+    bool renderToTexture;
 };
 
 };

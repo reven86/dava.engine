@@ -76,6 +76,9 @@ protected:
     virtual void WillBecomeInvisible();
 
 public:
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
+
     void SetNativeControlVisible(bool isVisible);
     bool GetNativeControlVisible() const;
 

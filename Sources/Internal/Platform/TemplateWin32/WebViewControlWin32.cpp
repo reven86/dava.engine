@@ -272,6 +272,10 @@ public:
             this->container = container;
 		}
 	}
+    void SetWebView(UIWebView* webView)
+    {
+        this->webView = webView;
+    }
     // TODO test only
     void SetContainer( WebBrowserContainer* container)
     {
@@ -282,7 +286,10 @@ public:
 	{
         if (container)
         {
-            container->SaveSnapshot();
+            int32 width = 0;
+            int32 height = 0;
+            container->GetContainerSize(&width, &height);
+            container->SaveSnapshot(width, height);
         }
 		if (delegate && webView)
 		{
@@ -348,9 +355,8 @@ WebBrowserContainer::WebBrowserContainer() :
 
 WebBrowserContainer::~WebBrowserContainer()
 {
-	EventSink* s = sink;
-	s->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
-	delete s;
+	sink->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
+	delete sink;
 
 	if (webBrowser)
 	{
@@ -361,11 +367,10 @@ WebBrowserContainer::~WebBrowserContainer()
 
 void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
 {
-	EventSink* s = (EventSink*)sink;
-	s->SetDelegate(delegate, webView, this);
+	sink->SetDelegate(delegate, webView, this);
 }
 
-bool WebBrowserContainer::SaveSnapshot()
+bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight)
 {
     long bodyHeight, bodyWidth, rootHeight, rootWidth, height, width;
 
@@ -462,13 +467,14 @@ bool WebBrowserContainer::SaveSnapshot()
     if (FAILED(hr))
         return true;
 
-    RECTL rcBounds = { 0, 0, width, height };
-
+    //old RECTL rcBounds = { 0, 0, width, height };
+    RECTL rcBounds = { 0, 0, imageWidth, imageHeight };
     CImage image;
 
     // TODO: check return value;
     // TODO: somehow enable alpha
-    image.Create(width, height, 24);
+    // old image.Create(width, height, 24);
+    image.Create(imageWidth, imageHeight, 24);
 
     HDC imgDc = image.GetDC();
     hr = spViewObject->Draw(DVASPECT_CONTENT, -1, NULL, NULL, imgDc,
@@ -684,10 +690,29 @@ void WebBrowserContainer::UpdateRect()
 	oleInPlaceObject->Release();
 }
 
-WebViewControl::WebViewControl()
+void WebBrowserContainer::GetContainerSize(int32* width, int32* height)
 {
-	browserWindow = 0;
-	browserContainer = NULL;
+    // Update the browser window according to the holder window.
+    RECT rect = {0};
+    GetClientRect(this->hwnd, &rect);
+    
+    if (width)
+    {
+        *width = rect.right;
+    }
+
+    if (height)
+    {
+        *height = rect.bottom;
+    }
+}
+
+WebViewControl::WebViewControl():
+    browserWindow(0),
+    browserContainer(0),
+    gdiplusToken(0),
+    renderToTexture(false)
+{
 }
 
 WebViewControl::~WebViewControl()
@@ -708,6 +733,24 @@ void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webVie
 	browserContainer->SetDelegate(delegate, webView);
 }
 
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    renderToTexture = value;
+    if (renderToTexture)
+    {
+        // TODO
+    } 
+    else
+    {
+        // TODO
+    }
+}
+
+bool WebViewControl::IsRenderToTexture() const
+{
+    return renderToTexture;
+}
+
 void WebViewControl::Initialize(const Rect& rect)
 {
 	CoreWin32PlatformBase *core = static_cast<CoreWin32PlatformBase *>(Core::Instance());
@@ -717,11 +760,14 @@ void WebViewControl::Initialize(const Rect& rect)
     Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
     if (status != Gdiplus::Ok)
     {
-        DAVA::Logger::Instance()->Error("Error create GDI+ %s(%d)", __FILE__, __LINE__);
+        DAVA::Logger::Instance()->Error("Error initialize GDI+ %s(%d)", __FILE__, __LINE__);
     }
 
 	// Create the browser holder window.
-	browserWindow = ::CreateWindowEx(0, L"Static", L"", WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN,
+	browserWindow = ::CreateWindowEx(0, L"Static", L"", 
+        WS_CHILD 
+        //| WS_VISIBLE 
+        | WS_CLIPCHILDREN, // Excludes the area occupied by child windows when drawing occurs within the parent window. This style is used when creating the parent window.
 		0, 0, 0, 0, core->GetWindow(), NULL, core->GetInstance(), NULL);
 	SetRect(rect);
 

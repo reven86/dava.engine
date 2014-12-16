@@ -41,7 +41,7 @@
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "../Platform/TemplateAndroid/WebViewControl.h"
 #else
-#pragma error UIWEbView control is not implemented for this platform yet!
+#error UIWEbView control is not implemented for this platform yet!
 #endif
 
 namespace DAVA {
@@ -139,6 +139,16 @@ void UIWebView::UpdateControlRect()
     webViewControl->SetRect(rect);
 }
 
+void UIWebView::SetRenderToTexture(bool value)
+{
+    webViewControl->SetRenderToTexture(value);
+}
+
+bool UIWebView::IsRenderToTexture() const
+{
+    return webViewControl->IsRenderToTexture();
+}
+
 void UIWebView::SetNativeControlVisible(bool isVisible)
 {
     UpdateNativeControlVisible(isVisible);
@@ -174,7 +184,9 @@ void UIWebView::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader 
     const YamlNode * dataDetectorTypesNode = node->Get("dataDetectorTypes");
     if (dataDetectorTypesNode)
     {
-        SetDataDetectorTypes(dataDetectorTypesNode->AsInt32());
+        eDataDetectorType dataDetectorTypes = static_cast<eDataDetectorType>(
+            dataDetectorTypesNode->AsInt32());
+        SetDataDetectorTypes(dataDetectorTypes);
     }
 }
 
