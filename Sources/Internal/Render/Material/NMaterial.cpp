@@ -1262,7 +1262,7 @@ void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInst
                 entry.prop = GetPropertyValue(uniform->name);
                 passInstance->activeUniformsCache.push_back(entry);
                 //material is instance && property defined locally
-                if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniform->name))
+                if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniform->name)&&(!Shader::SupportInstancingByName(uniform->name)))
                     supportsInstancing = false;
             }
             else
@@ -1481,7 +1481,7 @@ void NMaterial::UpdateActivePassProperties()
 			UniformCacheEntry& uniformEntry = activePassInstance->activeUniformsCache[i];
 			uniformEntry.prop = GetPropertyValue(uniformEntry.uniform->name);
             //material is instance && property defined locally
-            if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniformEntry.uniform->name))
+            if ((materialType==MATERIALTYPE_INSTANCE)&&materialProperties.at(uniformEntry.uniform->name)&&(!Shader::SupportInstancingByName(uniformEntry.uniform->name)))
                 supportsInstancing = false;
 		}		
 
