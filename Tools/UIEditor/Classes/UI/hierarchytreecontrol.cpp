@@ -123,7 +123,7 @@ HierarchyTreeControl::HierarchyTreeControl(QWidget *parent) :
 
     header()->setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
     header()->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
-    header()->setResizeMode(0, QHeaderView::ResizeToContents);
+    header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     header()->setStretchLastSection(false);
 
     expandTimer = new QTimer();

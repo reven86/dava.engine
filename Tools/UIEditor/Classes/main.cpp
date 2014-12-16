@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "mainwindow.h"
 
 #include "DAVAEngine.h"

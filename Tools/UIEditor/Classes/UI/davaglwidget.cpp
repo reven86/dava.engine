@@ -41,6 +41,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QFocusEvent>
+#include <QAbstractEventDispatcher>
 
 #include "controllist.h"
 #include "ScreenWrapper.h"
@@ -66,6 +67,13 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 {
 	ui->setupUi(this);
 
+	// Disable Widget blinking
+	setAttribute(Qt::WA_OpaquePaintEvent, true);
+	setAttribute(Qt::WA_NoSystemBackground, true);
+	setAttribute(Qt::WA_PaintOnScreen, true);
+	setAttribute(Qt::WA_TranslucentBackground, true);
+	setAttribute(Qt::WA_NativeWindow, true);
+
 	// Widget will try to expand to maximum available size
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
@@ -79,7 +87,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 #elif defined (__DAVAENGINE_WIN32__)
 		DAVA::QtLayerWin32 *qtLayer = (DAVA::QtLayerWin32 *) DAVA::QtLayer::Instance();
 		HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
-		qtLayer->SetWindow(hInstance, this->winId(), this->size().width(), this->size().height());
+		qtLayer->SetWindow(hInstance, (HWND)this->winId(), this->size().width(), this->size().height());
 		qtLayer->OnResume();
 #else
 		DVASSERT(false && "Wrong platform");
@@ -90,16 +98,13 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 	}
 
-	// Disable Widget blinking
-	setAttribute(Qt::WA_OpaquePaintEvent, true);
-	setAttribute(Qt::WA_NoSystemBackground, true);
-	setAttribute(Qt::WA_PaintOnScreen, true);
-
 	// Setup FPS
 	SetMaxFPS(maxFPS);
 
-	// start render in 1 ms
-	QTimer::singleShot(1, this, SLOT(Render()));
+    QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
+
+	// start render in 0 ms
+	QTimer::singleShot(0, this, SLOT(Render()));
 
 	// acept drops
 	this->setAcceptDrops(true);	
@@ -172,26 +177,69 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 }
 
-#if defined(Q_WS_WIN)
-bool DavaGLWidget::winEvent(MSG *message, long *result)
+bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, long* result)
 {
-	DAVA::CoreWin32PlatformQt *core = dynamic_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
-	if (NULL != core)
+    Q_UNUSED(eventType);
+    
+#if defined(Q_OS_WIN)
+
+	MSG *message = static_cast<MSG *>(msg);
+	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
+	DVASSERT(core);
+
+	bool processMessage = false;
+
+	if ( message->hwnd == reinterpret_cast<HWND>(winId()))
 	{
-		if(NULL != message && 
-			(message->message == WM_LBUTTONDOWN ||
-			message->message == WM_RBUTTONDOWN ||
-			message->message == WM_MBUTTONDOWN))
+		switch ( message->message )
 		{
+		case WM_LBUTTONDOWN:
+		case WM_RBUTTONDOWN:
+		case WM_MBUTTONDOWN:
 			core->SetFocused(true);
+			break;
+
+		default:
+			break;
 		}
 
+		processMessage = true;
+	}
+	else
+	{
+		// Qt5 doesn't pass WM_CHAR, WM_KEY** messages to child QWidget::nativeEvent callback,
+		// so handle this messages globaly
+		switch ( message->message )
+		{
+		case WM_KEYUP:
+		case WM_KEYDOWN:
+		case WM_CHAR:
+			processMessage = hasFocus();
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	if (processMessage)
+	{
 		return core->WinEvent(message, result);
 	}
 
+#elif defined(Q_OS_MAC)
+    Q_UNUSED(result);
+
+    if (hasFocus())
+    {
+        DAVA::QtLayerMacOS *qtLayer = static_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
+        qtLayer->HandleEvent(msg);
+    }
+#endif
+
 	return false;
 }
-#endif //#if defined(Q_WS_WIN)
+
 
 void DavaGLWidget::mouseMoveEvent(QMouseEvent *e)
 {
@@ -307,12 +355,10 @@ void DavaGLWidget::dragLeaveEvent(QDragLeaveEvent* /*event*/)
 
 void DavaGLWidget::keyPressEvent(QKeyEvent *)
 {
-	//qDebug("DavaGLWidget::keyPressEvent");
 }
 
 void DavaGLWidget::keyReleaseEvent(QKeyEvent *)
 {
-	//qDebug("DavaGLWidget::keyReleaseEvent");
 }
 
 void DavaGLWidget::SetMaxFPS(int fps)
@@ -336,11 +382,11 @@ void DavaGLWidget::Render()
 
 	qint64 waitUntilNextFrameMs = (qint64) minFrameTimeMs - frameTimer.elapsed();
 
-	if(waitUntilNextFrameMs <= 0)
+	if(waitUntilNextFrameMs < 0)
 	{
 		// our render is too slow to reach maxFPS,
 		// so we can wait a minimum time
-		waitUntilNextFrameMs = 1;
+		waitUntilNextFrameMs = 0;
 	}
 
 	QTimer::singleShot(waitUntilNextFrameMs, this, SLOT(Render()));
@@ -366,5 +412,4 @@ Vector2 DavaGLWidget::GuideToInternal(const QPoint& pos)
 
 void DavaGLWidget::ShowAssertMessage(const char * message)
 {
-	QMessageBox::critical(this, "", message);
 }

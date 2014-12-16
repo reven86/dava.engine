@@ -6,9 +6,8 @@ project      ( UIEditor )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
-find_package ( Qt4           REQUIRED )
+find_package ( QT5           REQUIRED )
 find_package ( DavaFramework REQUIRED )
-include      ( ${QT_USE_FILE} )
 
 
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
@@ -80,13 +79,13 @@ elseif( APPLE )
 endif()
 
 file              ( GLOB_RECURSE QT_LIST "Classes/*.h" )
-qt4_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
+qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
 file              ( GLOB UI_LIST "Ui/*.ui" )
-qt4_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
+qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
 file              ( GLOB RCC_LIST "Data/*.qrc" )
-qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
+qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )

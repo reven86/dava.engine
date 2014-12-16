@@ -127,7 +127,7 @@ void FontManagerDialog::InitializeTableView()
     ui->fontsTableView->verticalHeader()->hide();
     ui->fontsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->fontsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->fontsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    ui->fontsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     //Disable editing of table
     ui->fontsTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);    
     //Create and set table view model

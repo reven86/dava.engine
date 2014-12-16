@@ -131,7 +131,7 @@ void LocalizationTableController::SetupTable(QObject *parent)
     tableView->verticalHeader()->hide();
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    tableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     //Disable editing of table
     tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     

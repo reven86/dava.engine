@@ -27,6 +27,8 @@
 =====================================================================================*/
 
 #include <QtGui>
+#include <QtWidgets>
+
 #include "regexpinputdialog.h"
 
 RegExpInputDialog::RegExpInputDialog(QWidget *parent, int flags) :

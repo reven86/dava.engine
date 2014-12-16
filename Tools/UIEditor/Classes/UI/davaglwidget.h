@@ -32,15 +32,22 @@
 
 #include <QWidget>
 #include <QTimer>
+#include <QMimeData>
+#include <QAbstractNativeEventFilter>
+
 #include "Math/Vector.h"
 
 #include "QtLayer.h"
+
 
 namespace Ui {
 	class DavaGLWidget;
 }
 
-class DavaGLWidget : public QWidget, public DAVA::QtLayerDelegate
+class DavaGLWidget
+    : public QWidget
+    , public DAVA::QtLayerDelegate
+    , public QAbstractNativeEventFilter
 {
 	Q_OBJECT
 
@@ -49,10 +56,9 @@ public:
 	~DavaGLWidget();
 
 	void SetMaxFPS(int fps);
-	int GetMaxFPS();
-	int GetFPS();
 
 	QSize GetPrevSize() const { return prevSize;};
+    bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
 
 protected:
 	virtual QPaintEngine *paintEngine() const;
@@ -77,12 +83,9 @@ protected:
 
 	virtual void mouseMoveEvent(QMouseEvent *);
 
-#if defined(Q_WS_WIN)
-	virtual bool winEvent(MSG *message, long *result);
-#endif //#if defined(Q_WS_WIN)
 
-	protected slots:
-		void Render();
+protected slots:
+	void Render();
 
 signals:
     void DavaGLWidgetResized();

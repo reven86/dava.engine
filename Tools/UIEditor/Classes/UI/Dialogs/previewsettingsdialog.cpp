@@ -47,7 +47,7 @@ void PreviewSettingsDialog::InitializeTableView()
     ui->settingsTableView->verticalHeader()->hide();
     ui->settingsTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->settingsTableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->settingsTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    ui->settingsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->settingsTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     //Create and set table view model
@@ -61,7 +61,7 @@ void PreviewSettingsDialog::InitializeTableView()
 
     ui->settingsTableView->setModel(tableModel);
 
-    ui->settingsTableView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    ui->settingsTableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 }
 
 void PreviewSettingsDialog::ReloadSettings()
@@ -78,7 +78,7 @@ void PreviewSettingsDialog::ReloadSettings()
         QList<QStandardItem *> itemsList;
 
         // First item in the list should contain both item name and preview settings ID.
-        QStandardItem* nameItem = new QStandardItem(QString::fromAscii(curItem.deviceName.c_str()));
+        QStandardItem* nameItem = new QStandardItem(QString::fromStdString(curItem.deviceName));
         
         QVariant settingsValue;
         nameItem->setData(QVariant(curItem.id));
