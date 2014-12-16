@@ -490,7 +490,7 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
 	
 	// After the scene is fully loaded, apply the align settings
 	// to position child controls correctly.
-	rootControl->ApplyAlignSettingsForChildren();
+    rootControl->UpdateChildrenLayout();
     
     PostLoad(rootControl);
     
