@@ -97,7 +97,7 @@ void InstancedRenderLayer::StartInstancingGroup(RenderBatch *batch, const FastNa
     for (int32 i=0; i<instancedUniformesCount; i++)    
     {
         Shader::Uniform* uniform = shader->GetInstancingUniform(i);
-        if (Shader::IsAutobindUniform(uniform->shaderSemantic))
+        if (Shader::IsAutobindUniform(INSTANCE_PARAM_DESCRIPTORS[uniform->instanceSemantic].originalSemantic))
             incomingAutobindUniforms.push_back(uniform);
         uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type);
         incomingUniformValues[uniform->instanceSemantic].resize(uniformDataSize*MAX_INSTANCES_COUNT);
@@ -173,7 +173,20 @@ void InstancedRenderLayer::CollectInstanceParams(NMaterial *material)
         uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type);        
         const void *data = RenderManager::GetDynamicParam(INSTANCE_PARAM_DESCRIPTORS[uniform->instanceSemantic].originalSemantic);
         DVASSERT(data);
-        Memcpy(&incomingUniformValues[uniform->instanceSemantic][currInstancesCount*uniformDataSize], data, uniformDataSize);
+        Memcpy(&(incomingUniformValues[uniform->instanceSemantic][currInstancesCount*uniformDataSize]), data, uniformDataSize);
+    }
+
+    const Vector<UniformCacheEntry>& incomingMaterialUniforms = material->GetActivePassInstancedUniforms();
+    for (int32 i = 0, sz = incomingMaterialUniforms.size(); i<sz; ++i)
+    {
+        if (incomingMaterialUniforms[i].prop) //if is to support uninitialized properties - at least it's done that way in material somewhy
+        {
+            Shader::Uniform* uniform = incomingMaterialUniforms[i].uniform;
+            uint32 uniformDataSize = Shader::GetUniformTypeSize(uniform->type);        
+            const void *data = incomingMaterialUniforms[i].prop->data;            
+            Memcpy(&incomingUniformValues[uniform->instanceSemantic][currInstancesCount*uniformDataSize], data, uniformDataSize);
+        }
+        
     }
 }
 
@@ -189,8 +202,8 @@ void InstancedRenderLayer::CompleteInstancingGroup(const FastName & ownerRenderP
     for (int32 i=0, sz = shader->GetInstancingUniformCount(); i<sz; ++i)
     {
         Shader::Uniform *uniform = shader->GetInstancingUniform(i);
-        void *data = &incomingUniformValues[uniform->instanceSemantic];
-        DVASSERT(incomingUniformValues[uniform->instanceSemantic].size()>=Shader::GetUniformTypeSize(uniform->type)*currInstancesCount);
+        void *data = &(incomingUniformValues[uniform->instanceSemantic][0]);
+        DVASSERT(incomingUniformValues[uniform->instanceSemantic].size()>=(uint32)Shader::GetUniformTypeSize(uniform->type)*currInstancesCount);
         shader->SetUniformValueByUniform(uniform, uniform->type, currInstancesCount, data);
     }
 

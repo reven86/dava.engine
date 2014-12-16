@@ -108,6 +108,15 @@ public:
 	inline NMaterialProperty* Clone();
 };
 
+struct UniformCacheEntry
+{
+    inline UniformCacheEntry();
+
+    Shader::Uniform* uniform;
+    int32 index;
+    NMaterialProperty* prop;
+};
+
 
 typedef std::pair<FastName, uint8> PassInstanceKeyType;    
 
@@ -378,6 +387,7 @@ public:
     void BindActivePassRenderState();
     void BindActivePassMaterialProperties();
 
+    const Vector<UniformCacheEntry>& GetActivePassInstancedUniforms() const;
 
     /**
 	 \brief returns Active pass shader     
@@ -795,15 +805,7 @@ protected:
 		Texture* texture; //VI: can be NULL
 		FilePath path;
 	};
-		
-	struct UniformCacheEntry
-	{
-		inline UniformCacheEntry();
-        
-		Shader::Uniform* uniform;
-		int32 index;
-		NMaterialProperty* prop;
-	};
+		  
 		
 	class RenderPassInstance
 	{
@@ -1247,7 +1249,7 @@ inline const FilePath& NMaterial::TextureBucket::GetPath() const
     return path;
 }
 
-inline NMaterial::UniformCacheEntry::UniformCacheEntry() :
+inline UniformCacheEntry::UniformCacheEntry() :
 uniform(NULL),
 prop(NULL),
 index(-1)

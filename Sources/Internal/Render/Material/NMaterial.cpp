@@ -1518,6 +1518,12 @@ void NMaterial::BindActivePassMaterialProperties()
     }
 }
 
+const Vector<UniformCacheEntry>& NMaterial::GetActivePassInstancedUniforms() const
+{
+    DVASSERT(activePassInstance);
+    return activePassInstance->instanceUniformsCache;    
+}
+
 void NMaterial::OnMaterialPropertyAdded(const FastName& propName)
 {
     // TODO: 
