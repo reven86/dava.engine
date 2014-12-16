@@ -31,7 +31,6 @@
 #define __RHI_BASE_H__
 
     #include "rhi_Type.h"
-    #include "rhi_VertexLayout.h"
 
 
 namespace rhi

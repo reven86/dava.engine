@@ -1,6 +1,5 @@
 
     #include "rhi_ProgGLES2.h"
-    #include "../rhi_VertexLayout.h"
     #include "../rhi_Base.h"
     #include "../RHI/rhi_Pool.h"
     #include "../RHI/rhi_RingBuffer.h"
