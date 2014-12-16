@@ -482,7 +482,7 @@ void main()
     vec3 color = vec3(1.0);
 #endif
     
-#if defined(MATERIAL_DETAIL) && !defined(MATERIAL_SKYBOX)
+#if defined(MATERIAL_DETAIL)
 	color *= textureColor0.rgb * detailTextureColor.rgb;
 #endif
 	
