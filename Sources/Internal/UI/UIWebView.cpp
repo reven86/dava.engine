@@ -96,9 +96,15 @@ void UIWebView::WillBecomeInvisible()
     UpdateNativeControlVisible(false);
 }
 
-void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
+void UIWebView::DidAppear()
 {
-	UIControl::SetPosition(position, positionInAbsoluteCoordinates);
+    UIControl::DidAppear();
+    UpdateControlRect();
+}
+
+void UIWebView::SetPosition(const Vector2 &position)
+{
+	UIControl::SetPosition(position);
     UpdateControlRect();
 }
 

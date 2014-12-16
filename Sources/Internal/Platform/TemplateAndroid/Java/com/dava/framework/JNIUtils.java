@@ -31,7 +31,7 @@ public class JNIUtils {
 		});
 	}
 	
-	protected static void onResume() {
+	protected static void keepScreenOnOnResume() {
 		if (!isEnabledSleepTimer)
 			JNIActivity.GetActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
