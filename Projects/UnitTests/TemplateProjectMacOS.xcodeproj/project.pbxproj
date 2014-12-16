@@ -11,6 +11,7 @@
 		020AB20A174639C60082F336 /* libfmodex.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; };
 		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
+		030FBED91A406A9700305B97 /* TransparentWebViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 030FBED71A406A9700305B97 /* TransparentWebViewTest.cpp */; };
 		1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A194183D1B4A000DE581 /* AVFoundation.framework */; };
 		1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A19A183D227A000DE581 /* CoreMedia.framework */; };
 		5CDC2501156CC93300742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2500156CC93300742348 /* libz.dylib */; };
@@ -117,6 +118,8 @@
 /* Begin PBXFileReference section */
 		02E9E45C173A43A900C501BC /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		02E9E45D173A43A900C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
+		030FBED71A406A9700305B97 /* TransparentWebViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TransparentWebViewTest.cpp; path = Classes/OldTests/TransparentWebViewTest.cpp; sourceTree = "<group>"; };
+		030FBED81A406A9700305B97 /* TransparentWebViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TransparentWebViewTest.h; path = Classes/OldTests/TransparentWebViewTest.h; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		1767A194183D1B4A000DE581 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -360,6 +363,8 @@
 		FE445A961153C27800F5EFD6 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				030FBED71A406A9700305B97 /* TransparentWebViewTest.cpp */,
+				030FBED81A406A9700305B97 /* TransparentWebViewTest.h */,
 				CC11978D1A38BACC006931D7 /* Tests */,
 				008348681A024B1300F51E2D /* Infrastructure */,
 			);
@@ -546,6 +551,7 @@
 				CC1197AD1A38BAE1006931D7 /* DateTimeTest.cpp in Sources */,
 				CC1197B61A38BAE1006931D7 /* MemoryAllocatorsTest.cpp in Sources */,
 				CC1197B41A38BAE1006931D7 /* LocalizationTest.cpp in Sources */,
+				030FBED91A406A9700305B97 /* TransparentWebViewTest.cpp in Sources */,
 				CC1197B81A38BAE1006931D7 /* SplitTest.cpp in Sources */,
 				CC11978C1A38BAB9006931D7 /* TextureUtils.cpp in Sources */,
 				CC1197BA1A38BAE1006931D7 /* TextSizeTest.cpp in Sources */,

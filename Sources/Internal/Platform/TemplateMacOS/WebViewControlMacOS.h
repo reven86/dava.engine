@@ -56,6 +56,11 @@ public:
 
 	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
 	virtual void SetBackgroundTransparency(bool enabled);
+    
+    void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override;
+    
+    void SetImage(void* ptr);
 
 protected:
 	//A pointer to MacOS WebView.
@@ -66,6 +71,7 @@ protected:
 	void* webViewDelegatePtr;
 
 	void* webViewPolicyDelegatePtr;
+    void* webImageCachePtr;
 };
 
 };

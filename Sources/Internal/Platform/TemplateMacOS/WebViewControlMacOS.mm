@@ -62,6 +62,7 @@ using namespace DAVA;
 {
 	IUIWebViewDelegate* delegate;
 	UIWebView* webView;
+    WebViewControl* webViewControl;
 }
 
 - (id)init;
@@ -71,6 +72,7 @@ using namespace DAVA;
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
 
 - (void)setDelegate:(IUIWebViewDelegate*)d andWebView:(UIWebView*)w;
+- (void)setWebViewControl:(WebViewControl*) webControl;
 
 @end
 
@@ -135,6 +137,20 @@ using namespace DAVA;
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
 {
+    // TODO get image from loaded frame
+    NSRect testRect = NSMakeRect(0.0f, 0.0f, 700.0f, 500.0f);
+    
+    NSBitmapImageRep* imageRep = [sender bitmapImageRepForCachingDisplayInRect:testRect];
+    DVASSERT(imageRep);
+    [sender cacheDisplayInRect:testRect toBitmapImageRep:imageRep];
+    if (webViewControl)
+    {
+        webViewControl->SetImage(imageRep);
+        NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:nil];
+        [pngData writeToFile:@"test_output.png" atomically:YES];
+        // should I delete pngData?
+    }
+    
     if (delegate && self->webView)
 	{
         delegate->PageLoaded(self->webView);
@@ -150,11 +166,20 @@ using namespace DAVA;
 	}
 }
 
+- (void)setWebViewControl:(WebViewControl*) webControl
+{
+    if (webControl)
+    {
+        webViewControl = webControl;
+    }
+}
+
 @end
 
 
 WebViewControl::WebViewControl() :
-    isWebViewVisible(true)
+    isWebViewVisible(true),
+    webImageCachePtr(0)
 {
 	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
 	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil groupName:nil];
@@ -170,8 +195,22 @@ WebViewControl::WebViewControl() :
     
     [localWebView setFrameLoadDelegate:(WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
 
+    [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setWebViewControl:this];
+    
 	NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
 	[openGLView addSubview:localWebView];
+    
+    // TODO try hide windows and render it's content to image(texture)
+    
+    [localWebView setShouldUpdateWhileOffscreen:YES];
+    
+    //[localWebView setHidden:YES];
+    
+    NSRect testRect = NSMakeRect(0.0f, 0.0f, 700.0f, 500.0f);
+    
+    NSBitmapImageRep* imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:testRect];
+    DVASSERT(imageRep);
+    webImageCachePtr = imageRep;
 }
 
 WebViewControl::~WebViewControl()
@@ -239,8 +278,9 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
     if (!isWebViewVisible && isVisible)
     {
-        NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
-        [openGLView addSubview:(WebView*)webViewPtr];
+        // TODO delow is comented render to image works, continue investigate
+//        NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
+//        [openGLView addSubview:(WebView*)webViewPtr];
     }
     else if (isWebViewVisible && !isVisible)
     {
@@ -254,4 +294,21 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
 	WebView* webView = (WebView*)webViewPtr;
 	[webView setDrawsBackground:(enabled ? NO : YES)];
+}
+
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    // TODO
+}
+
+bool WebViewControl::IsRenderToTexture() const
+{
+    // TODO
+    return true;
+}
+
+void WebViewControl::SetImage(void* ptr)
+{
+    DVASSERT(ptr);
+    this->webImageCachePtr = ptr;
 }
