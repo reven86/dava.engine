@@ -244,7 +244,13 @@ Mutex FTInternalFont::drawStringMutex;
         during optimization beside her badly generated machine code.
         ALWAYS USE THIS FUNCTION INSTEAD FT_MulFix!
  */
-static FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b)
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_MACOS__)
+static FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b) __attribute__((noinline));
+#else
+static FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b);
+#endif
+    
+FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b)
 {
     return FT_MulFix(a, b);
 }
