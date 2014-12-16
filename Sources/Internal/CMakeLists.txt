@@ -90,7 +90,7 @@ elseif( MACOS )
                 )
         
         FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
-        list ( APPEND LIST_SHARED_LIBRARIES  ${${NAME}_LIBRARY} )
+        list ( APPEND LIST_ADDED_SHARED_LIBRARIES  ${${NAME}_LIBRARY} )
     endforeach()
 
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )                           
@@ -184,7 +184,7 @@ if( LINK_THIRD_PARTY )
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} RELEASE "${LIST_SHARED_LIBRARIES_RELEASE}" )
 endif()
 
-target_link_libraries  ( ${PROJECT_NAME} ${LIST_SHARED_LIBRARIES} )  
+target_link_libraries  ( ${PROJECT_NAME} ${LIST_SHARED_LIBRARIES} ${LIST_ADDED_SHARED_LIBRARIES} )  
 
 foreach ( FILE ${LIST_SHARED_LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
