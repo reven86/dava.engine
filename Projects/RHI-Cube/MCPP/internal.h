@@ -268,9 +268,9 @@ typedef struct ifinfo {
 #define compiling       ifstack[0].stat
 
 #define FP2DEST(fp) \
-    (fp == fp_out) ? OUT : \
-    ((fp == fp_err) ? ERR : \
-    ((fp == fp_debug) ? DBG : \
+    (fp == fp_out) ? MCPP_OUT : \
+    ((fp == fp_err) ? MCPP_ERR : \
+    ((fp == fp_debug) ? MCPP_DBG : \
     ((OUTDEST) -1)))
 
 /* VAL_SIGN structure stores information about evaluated number.    */
@@ -483,6 +483,7 @@ extern char *   (xmalloc)( size_t size);
                 /* Get memory or die            */
 extern char *   (xrealloc)( void * ptr, size_t size);
                 /* Reallocate memory or die     */
+extern void     (xfree)( void* ptr);
 extern LINE_COL *   get_src_location( LINE_COL * p_line_col);
                 /* Get location on source file  */
 extern void     cfatal( const char * format, const char * arg1, long arg2

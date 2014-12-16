@@ -70,7 +70,6 @@
     <ClCompile Include="MCPP\directive.cpp" />
     <ClCompile Include="MCPP\eval.cpp" />
     <ClCompile Include="MCPP\expand.cpp" />
-    <ClCompile Include="MCPP\main_libmcpp.cpp" />
     <ClCompile Include="MCPP\mbchar.cpp" />
     <ClCompile Include="MCPP\mcpp_main.cpp" />
     <ClCompile Include="MCPP\preproc.cpp" />

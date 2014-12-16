@@ -45,9 +45,6 @@
     <ClCompile Include="MCPP\expand.cpp">
       <Filter>MCPP</Filter>
     </ClCompile>
-    <ClCompile Include="MCPP\main_libmcpp.cpp">
-      <Filter>MCPP</Filter>
-    </ClCompile>
     <ClCompile Include="MCPP\mbchar.cpp">
       <Filter>MCPP</Filter>
     </ClCompile>

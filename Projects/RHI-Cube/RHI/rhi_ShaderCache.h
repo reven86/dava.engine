@@ -52,7 +52,7 @@ void    Clear();
 void    Load( const char* binFileName );
 
 bool    GetProg( const DAVA::FastName& uid, std::vector<uint8>* bin );
-void    UpdateProg( ProgType progType, const DAVA::FastName& uid, const char* srcText );
+void    UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText );
 
 } // namespace ShaderCache
 } // namespace rhi

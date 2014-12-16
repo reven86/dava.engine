@@ -382,12 +382,12 @@ exp_end:
         int     num;
         for (num = 1; num < mac_num; num++) {   /* 'num' start at 1 */
             if (mac_inf[ num].num_args >= 0) {  /* Macro with args  */
-                free( mac_inf[ num].args);      /* Saved arguments  */
-                free( mac_inf[ num].loc_args);  /* Location of args */
+                xfree( mac_inf[ num].args);      /* Saved arguments  */
+                xfree( mac_inf[ num].loc_args);  /* Location of args */
             }
         }
-        free( mac_inf);
-        free( in_src);
+        xfree( mac_inf);
+        xfree( in_src);
     }
     *pragma_op = has_pragma;
 
@@ -570,7 +570,7 @@ static char *   chk_magic_balance(
                                     * UCHARMAX;
                             mac_s_n += (to_be_edge[ 3] & UCHARMAX) - 1;
                             arg_s_n = (to_be_edge[ 4] & UCHARMAX) - 1;
-                            mcpp_fprintf( ERR,
+                            mcpp_fprintf( MCPP_ERR,
                                 "Stray arg inf of macro: %d:%d at line:%d\n"
                                             , mac_s_n, arg_s_n, src_line);
                         }
@@ -596,7 +596,7 @@ static char *   chk_magic_balance(
                         arg_s_n += (arg_p[ 1] & UCHARMAX) - 1;
                         arg_e_n = ((buf_p[ 0] & UCHARMAX) - 1) * UCHARMAX;
                         arg_e_n += (buf_p[ 1] & UCHARMAX) - 1;
-                        mcpp_fprintf( ERR,
+                        mcpp_fprintf( MCPP_ERR,
                 "Asymmetry of arg inf found: start %d, end %d at line:%d\n"
                                 , arg_s_n, arg_e_n, src_line);
                     }
@@ -617,7 +617,7 @@ static char *   chk_magic_balance(
                     mac_s_n += (mac_p[ 1] & UCHARMAX) - 1;
                     mac_e_n = ((buf_p[ 0] & UCHARMAX) - 1) * UCHARMAX;
                     mac_e_n += (buf_p[ 1] & UCHARMAX) - 1;
-                    mcpp_fprintf( ERR,
+                    mcpp_fprintf( MCPP_ERR,
                 "Asymmetry of macro inf found: start %d, end %d at line:%d\n"
                             , mac_s_n, mac_e_n, src_line);
                 }
@@ -637,7 +637,7 @@ static char *   chk_magic_balance(
         if ((mac || arg) && (mcpp_debug & EXPAND))
             mcpp_fputs(
 "Imbalance of magics occurred (perhaps a moved magic), see <expand_std exit> and diagnostics.\n"
-                    , DBG);
+                    , MCPP_DBG);
     }
 
     return  buf;
@@ -675,7 +675,7 @@ static char *   replace(
         dump_unget( "replace entry");
     }
     if ((mcpp_debug & MACRO_CALL) && in_if)
-        mcpp_fprintf( OUT, "/*%s*/", defp->name);
+        mcpp_fprintf( MCPP_OUT, "/*%s*/", defp->name);
 
     enable_trace_macro = trace_macro && defp->nargs != DEF_PRAGMA;
     if (enable_trace_macro) {
@@ -751,8 +751,8 @@ static char *   replace(
                             /* Note: arglist[ n] may be reallocated */
                             /*   and re-written by collect_args()   */
         if ((num_args = collect_args( defp, arglist, m_num)) == ARG_ERROR) {
-            free( arglist[ 0]);             /* Syntax error         */
-            free( arglist);
+            xfree( arglist[ 0]);             /* Syntax error         */
+            xfree( arglist);
             return  NULL;
         }
         if (enable_trace_macro) {
@@ -775,7 +775,7 @@ static char *   replace(
 
     catbuf = xmalloc( (size_t) (NMACWORK + IDMAX));
     if (mcpp_debug & EXPAND) {
-        mcpp_fprintf( DBG, "(%s)", defp->name);
+        mcpp_fprintf( MCPP_DBG, "(%s)", defp->name);
         dump_string( "prescan entry", defp->repl);
     }
     if (prescan( defp, (const char **) arglist, catbuf, catbuf + NMACWORK)
@@ -785,42 +785,42 @@ static char *   replace(
         if (nargs >= 0) {
             if (! enable_trace_macro)
                 /* arglist[0] is needed for macro infs  */
-                free( arglist[ 0]);
-            free( arglist);
+                xfree( arglist[ 0]);
+            xfree( arglist);
         }
-        free( catbuf);
+        xfree( catbuf);
         return  NULL;
     }
     catbuf = xrealloc( catbuf, strlen( catbuf) + 1);
                                             /* Use memory sparingly */
     if (mcpp_debug & EXPAND) {
-        mcpp_fprintf( DBG, "(%s)", defp->name);
+        mcpp_fprintf( MCPP_DBG, "(%s)", defp->name);
         dump_string( "prescan exit", catbuf);
     }
 
     if (nargs > 0) {    /* Function-like macro with any argument    */
         expbuf = xmalloc( (size_t) (NMACWORK + IDMAX));
         if (mcpp_debug & EXPAND) {
-            mcpp_fprintf( DBG, "(%s)", defp->name);
+            mcpp_fprintf( MCPP_DBG, "(%s)", defp->name);
             dump_string( "substitute entry", catbuf);
         }
         out_p = substitute( defp, (const char **) arglist, catbuf, expbuf
                 , expbuf + NMACWORK);   /* Expand each arguments    */
         if (! enable_trace_macro)
-            free( arglist[ 0]);
-        free( arglist);
-        free( catbuf);
+            xfree( arglist[ 0]);
+        xfree( arglist);
+        xfree( catbuf);
         expbuf = xrealloc( expbuf, strlen( expbuf) + 1);
                                             /* Use memory sparingly */
         if (mcpp_debug & EXPAND) {
-            mcpp_fprintf( DBG, "(%s)", defp->name);
+            mcpp_fprintf( MCPP_DBG, "(%s)", defp->name);
             dump_string( "substitute exit", expbuf);
         }
     } else {                                /* Object-like macro or */
         if (nargs == 0 && ! enable_trace_macro)
                             /* Function-like macro with no argument */
-            free( arglist[ 0]);
-        free( arglist);
+            xfree( arglist[ 0]);
+        xfree( arglist);
         out_p = expbuf = catbuf;
     }
 
@@ -829,7 +829,7 @@ static char *   replace(
     if (out_p && defp->nargs == DEF_PRAGMA)
         has_pragma = TRUE;
                     /* Inform mcpp_main() that _Pragma() was found  */
-    free( expbuf);
+    xfree( expbuf);
     if (enable_trace_macro && out_p)
         out_p = close_macro_inf( out_p, m_num, in_src_n);
     if (mcpp_debug & EXPAND)
@@ -1114,7 +1114,7 @@ static char *   catenate(
             } else {
                 unget_string( argp, NULL);
                 if (trace_macro)
-                    free( (char *) argp);
+                    xfree( (char *) argp);
                     /* malloc()ed in remove_magics()    */
                 while ((c = get_ch()) != RT_END) {
                     prev_prev_token = prev_token;
@@ -1158,7 +1158,7 @@ static char *   catenate(
         } else {
             unget_string( argp, NULL);
             if (trace_macro)
-                free( (char *) argp);
+                xfree( (char *) argp);
             if ((c = get_ch()) == DEF_MAGIC) {  /* Remove DEF_MAGIC */
                 c = get_ch();               /*  enabling to replace */
             } else if (c == IN_SRC) {       /* Remove IN_SRC        */
@@ -1543,11 +1543,11 @@ static void     chk_symmetry(
     if (len >= 3) {
         arg_s_n = (start_id[ 3] & UCHARMAX) - 1;
         arg_e_n = (end_id[ 3] & UCHARMAX) - 1;
-        mcpp_fprintf( ERR,
+        mcpp_fprintf( MCPP_ERR,
 "Asymmetry of arg inf found removing magics: start %d:%d, end: %d:%d at line:%d\n"
                 , s_id, arg_s_n, e_id, arg_e_n, src_line);
     } else {
-        mcpp_fprintf( ERR,
+        mcpp_fprintf( MCPP_ERR,
 "Asymmetry of macro inf found removing magics: start %d, end: %d at line:%d\n"
                 , s_id, e_id, src_line);
     }
@@ -1763,7 +1763,7 @@ static char *   substitute(
         if (c == MAC_PARM) {                /* Formal parameter     */
             c = *in++ & UCHARMAX;           /* Parameter number     */
             if (mcpp_debug & EXPAND) {
-                mcpp_fprintf( DBG, " (expanding arg[%d])", c);
+                mcpp_fprintf( MCPP_DBG, " (expanding arg[%d])", c);
                 dump_string( NULL, arglist[ c - 1]);
             }
 #if COMPILER == GNUC || COMPILER == MSC
@@ -1851,7 +1851,7 @@ static char *   rescan(
 #endif
 
     if (mcpp_debug & EXPAND) {
-        mcpp_fprintf( DBG, "rescan_level--%d (%s) "
+        mcpp_fprintf( MCPP_DBG, "rescan_level--%d (%s) "
                 , rescan_level + 1, outer ? outer->name : "<arg>");
         dump_string( "rescan entry", in);
     }
@@ -1980,7 +1980,7 @@ static char *   rescan(
                                     (const char *) infile->bptr, FALSE);
                                         /* Remove pair of magics    */
                             strcpy( infile->bptr, mgc_cleared);
-                            free( mgc_cleared);
+                            xfree( mgc_cleared);
                         }
                     }
                 }
@@ -2038,7 +2038,7 @@ static char *   rescan(
     }
     enable_repl( outer, TRUE);      /* Enable macro for later text  */
     if (mcpp_debug & EXPAND) {
-        mcpp_fprintf( DBG, "rescan_level--%d (%s) "
+        mcpp_fprintf( MCPP_DBG, "rescan_level--%d (%s) "
                 , rescan_level + 1, outer ? outer->name : "<arg>");
         dump_string( "rescan exit", out);
     }
@@ -2319,7 +2319,7 @@ static int  replace_pre(
             arg_len = collect_args( defp, arglist_pre, 0);
                                             /* Collect arguments    */
             if (arg_len == ARG_ERROR) {     /* End of input         */
-                free( arglist_pre[ 0]);
+                xfree( arglist_pre[ 0]);
                 longjmp( jump, 1);
             }
         }
@@ -2334,7 +2334,7 @@ static int  replace_pre(
     if (mcpp_debug & EXPAND)
         dump_unget( "replace_pre exit");
     if (defp->nargs >= 0)
-        free( arglist_pre[ 0]);
+        xfree( arglist_pre[ 0]);
     return  TRUE;
 }
 
@@ -2975,9 +2975,9 @@ static void dump_args(
 {
     int     i;
 
-    mcpp_fprintf( DBG, "dump of %d actual arguments %s\n", nargs, why);
+    mcpp_fprintf( MCPP_DBG, "dump of %d actual arguments %s\n", nargs, why);
     for (i = 0; i < nargs; i++) {
-        mcpp_fprintf( DBG, "arg[%d]", i + 1);
+        mcpp_fprintf( MCPP_DBG, "arg[%d]", i + 1);
         dump_string( NULL, arglist[ i]);
     }
 }

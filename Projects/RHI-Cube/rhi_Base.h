@@ -36,6 +36,8 @@
 namespace rhi
 {
 
+Api     HostApi();
+
 void    Initialize();
 void    Uninitialize();
 

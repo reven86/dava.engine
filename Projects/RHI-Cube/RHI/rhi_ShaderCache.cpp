@@ -1,5 +1,8 @@
 
+    #include "../MCPP/mcpp_lib.h"
+
     #include "rhi_ShaderCache.h"
+
     
 
 namespace rhi
@@ -14,6 +17,89 @@ ProgInfo
 };
 
 static std::vector<ProgInfo> _ProgInfo;
+
+static std::string*         _PreprocessedText = 0;
+
+static int 
+_mcpp__fputc( int ch, OUTDEST dst )
+{
+    switch( dst )
+    {
+        case MCPP_OUT :
+        {
+            if( _PreprocessedText )
+                _PreprocessedText->push_back( (char)ch );
+        }   break;
+
+        case MCPP_ERR :
+        {
+        }   break;
+
+        case MCPP_DBG :
+        {
+        }   break;
+    }
+
+    return ch;
+}
+
+
+static int
+_mcpp__fputs( const char* str, OUTDEST dst )
+{
+    switch( dst )
+    {
+        case MCPP_OUT :
+        {
+            if( _PreprocessedText )
+                *_PreprocessedText += str;
+        }   break;
+
+        case MCPP_ERR :
+        {
+        }   break;
+
+        case MCPP_DBG :
+        {
+        }   break;
+    }
+        
+    return 0;
+}
+
+
+static int 
+_mcpp__fprintf( OUTDEST dst, const char* format, ... )
+{
+    va_list     arglist;
+    char        buf[2048];
+    int         count     = 0;
+
+    va_start( arglist, format );
+    count = vsnprintf( buf, countof(buf), format, arglist );
+    va_end( arglist );
+
+    switch( dst )
+    {
+        case MCPP_OUT :
+        {
+            if( _PreprocessedText )
+                *_PreprocessedText += buf;
+        }   break;
+
+        case MCPP_ERR :
+        {
+        }   break;
+
+        case MCPP_DBG :
+        {
+        }   break;
+    }
+        
+    return count;
+}
+
+
 
 namespace ShaderCache
 {
@@ -75,40 +161,60 @@ GetProg( const DAVA::FastName& uid, std::vector<uint8>* bin )
 
 //------------------------------------------------------------------------------
 
-void
-UpdateProg( ProgType progType, const DAVA::FastName& uid, const char* srcText )
+static void
+PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
 {
-    bool    do_add = true;
+    _PreprocessedText = preprocessedText;
+    mcpp__set_input( srcText, strlen(srcText) );
+
+    char*   argv[] = 
+    { 
+        "<mcpp>",   // we just need first arg
+        "-P",       // do not output #line directives 
+        "-C",       // keep comments
+        "<input>"
+    };
+
+    mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
+    mcpp_lib_main( countof(argv), argv );
+    _PreprocessedText = 0;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText )
+{
+    std::string         txt;
+    std::vector<uint8>* bin = 0;
+
+    PreProcessSource( targetApi, srcText, &txt );
 
     for( unsigned i=0; i!=_ProgInfo.size(); ++i )
     {
         if( _ProgInfo[i].uid == uid )
         {
-            const uint8*    src     = (const uint8*)srcText;
-            unsigned        src_sz  = strlen( srcText );
-
-            _ProgInfo[i].bin.clear();
-            _ProgInfo[i].bin.insert( _ProgInfo[i].bin.begin(), src, src+src_sz );
-            _ProgInfo[i].bin.push_back( 0 );
-
-            do_add = false;
+            bin = &(_ProgInfo[i].bin);
             break;
         }
     }
 
-    if( do_add )
+    if( !bin )
     {
-        const uint8*    src     = (const uint8*)srcText;
-        unsigned        src_sz  = strlen( srcText );
-        
         _ProgInfo.push_back( ProgInfo() );
         
-        _ProgInfo.back().uid = uid;
-        
-        _ProgInfo.back().bin.clear();
-        _ProgInfo.back().bin.insert( _ProgInfo.back().bin.begin(), src, src+src_sz );
-        _ProgInfo.back().bin.push_back( 0 );
+        _ProgInfo.back().uid = uid;        
+        bin = &(_ProgInfo.back().bin);
     }
+
+
+    const uint8*    src     = (const uint8*)srcText;
+    unsigned        src_sz  = strlen( srcText );
+    
+    bin->clear();
+    bin->insert( bin->begin(), src, src+src_sz );
+    bin->push_back( 0 );
 }
 
 

@@ -73,7 +73,7 @@ GameCore::SetupTriangle()
 
     rhi::ShaderCache::UpdateProg
     ( 
-        rhi::PROG_VERTEX, FastName("vp-simple"),
+        rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-simple"),
         "attribute vec4 attr_position;\n"
         "void main()\n"
         "{\n"
@@ -82,7 +82,7 @@ GameCore::SetupTriangle()
     );
     rhi::ShaderCache::UpdateProg
     ( 
-        rhi::PROG_FRAGMENT, FastName("fp-simple"),
+        rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-simple"),
         "uniform vec4 FP_Buffer0[4];\n"
         "void main()\n"
         "{\n"
@@ -136,7 +136,7 @@ GameCore::SetupCube()
 
     rhi::ShaderCache::UpdateProg
     ( 
-        rhi::PROG_VERTEX, FastName("vp-shaded"),
+        rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-shaded"),
         "uniform vec4 VP_Buffer0[16];\n"
         "uniform vec4 VP_Buffer1[16];\n"
         "attribute vec4 attr_position;\n"
@@ -155,7 +155,7 @@ GameCore::SetupCube()
     );
     rhi::ShaderCache::UpdateProg
     ( 
-        rhi::PROG_FRAGMENT, FastName("fp-shaded"),
+        rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded"),
         "uniform vec4 FP_Buffer0[4];\n"
         "varying vec3 var_Color;\n"
         "void main()\n"
