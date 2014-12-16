@@ -372,8 +372,6 @@ void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* w
 
 bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight)
 {
-    long bodyHeight, bodyWidth, rootHeight, rootWidth, height, width;
-
     CComPtr<IDispatch> pDispatch;
 
     // TODO: "If the document object type is not safe for scripting,
@@ -385,78 +383,11 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight)
     if (FAILED(hr))
         return true;
 
-    CComPtr<IHTMLDocument2> spDocument;
-    hr = pDispatch->QueryInterface(IID_IHTMLDocument2, (void**)&spDocument);
-
-    if (FAILED(hr))
-        return true;
-
-    CComPtr<IHTMLElement> spBody;
-    hr = spDocument->get_body(&spBody);
-
-    // Apparently with MSHTML failing to get the body is not a failure,
-    // so if there is no HTML body to get, which may be the case with
-    // SVG images loaded directly, this succeeds but sets spBody to the
-    // NULL pointer, leading to a crash. I am not sure how to obtain
-    // the sizing information for SVG documents so this errors out here.
-    // A work around would be the make HTML host documents or wrapping
-    // the SVG code in a XHTML document, but that may break scripts.
-    if (FAILED(hr) || spBody == NULL)
-        return true;
-
-    CComPtr<IHTMLElement2> spBody2;
-    hr = spBody->QueryInterface(IID_IHTMLElement2, (void**)&spBody2);
-
-    if (FAILED(hr))
-        return true;
-
-    hr = spBody2->get_scrollHeight(&bodyHeight);
-
-    if (FAILED(hr))
-        return true;
-
-    hr = spBody2->get_scrollWidth(&bodyWidth);
-
-    if (FAILED(hr))
-        return true;
-
     CComPtr<IHTMLDocument3> spDocument3;
     hr = pDispatch->QueryInterface(IID_IHTMLDocument3, (void**)&spDocument3);
 
     if (FAILED(hr))
         return true;
-
-    // We also need to get the dimensions from the <html> due to quirks
-    // and standards mode differences. Perhaps this should instead check
-    // whether we are in quirks mode? How does it work with IE8?
-    CComPtr<IHTMLElement> spHtml;
-    hr = spDocument3->get_documentElement(&spHtml);
-
-    if (FAILED(hr))
-        return true;
-
-    CComPtr<IHTMLElement2> spHtml2;
-    hr = spHtml->QueryInterface(IID_IHTMLElement2, (void**)&spHtml2);
-
-    if (FAILED(hr))
-        return true;
-
-    hr = spHtml2->get_scrollHeight(&rootHeight);
-
-    if (FAILED(hr))
-        return true;
-
-    hr = spHtml2->get_scrollWidth(&rootWidth);
-
-    if (FAILED(hr))
-        return true;
-
-    width = bodyWidth;
-    height = rootHeight > bodyHeight ? rootHeight : bodyHeight;
-
-    // TODO: What if width or height exceeds 32767? It seems Windows limits
-    // the window size, and Internet Explorer does not draw what's not visible.
-    ::MoveWindow(hwnd, 0, 0, width, height, TRUE);
 
     CComPtr<IViewObject2> spViewObject;
 
@@ -739,6 +670,7 @@ void WebViewControl::SetRenderToTexture(bool value)
     if (renderToTexture)
     {
         // TODO
+        SetVisible(false, false);
     } 
     else
     {
@@ -768,7 +700,7 @@ void WebViewControl::Initialize(const Rect& rect)
         WS_CHILD 
         //| WS_VISIBLE 
         | WS_CLIPCHILDREN, // Excludes the area occupied by child windows when drawing occurs within the parent window. This style is used when creating the parent window.
-		0, 0, 0, 0, core->GetWindow(), NULL, core->GetInstance(), NULL);
+		0, 0, static_cast<int>(rect.dx), static_cast<int>(rect.dy), core->GetWindow(), NULL, core->GetInstance(), NULL);
 	SetRect(rect);
 
 	// Initialize the browser itself.
@@ -808,7 +740,7 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
 	if (this->browserWindow != 0)
 	{
-		::ShowWindow(this->browserWindow, isVisible);
+		::ShowWindow(this->browserWindow, false/*isVisible*/);
 	}
 }
 
@@ -830,9 +762,12 @@ void WebViewControl::SetRect(const Rect& rect)
 	browserRect.right = (LONG)(browserRect.left + rect.dx * Core::GetVirtualToPhysicalFactor());
 	browserRect.bottom = (LONG)(browserRect.top + rect.dy * Core::GetVirtualToPhysicalFactor());
 
-	::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
-		browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );
-
+    if (!IsRenderToTexture())
+    {
+        // show windows
+	    //::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
+		   // browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );
+    }
 	if (this->browserContainer)
 	{
 		this->browserContainer->UpdateRect();
