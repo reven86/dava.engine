@@ -70,8 +70,8 @@ public:
     Vector2 scale;
     float32 angle;
 
-    float32 cosA;
-    float32 sinA;
+    mutable float32 cosA;
+    mutable float32 sinA;
 
     void AddGeometricData(const UIGeometricData &data)
     {
@@ -119,7 +119,13 @@ public:
 
         Matrix3 translateMatr;
         translateMatr.BuildTranslation( position );
-
+        // well it must be here otherwise there is a bug!
+        if (calculatedAngle != angle)
+        {
+            cosA = cosf(angle);
+            sinA = sinf(angle);
+            calculatedAngle = angle;
+        }
         Matrix3 rotateMatr;
         rotateMatr.BuildRotation( cosA, sinA );
 
@@ -163,7 +169,7 @@ public:
     }
 
 private:
-    float32 calculatedAngle;
+    mutable float32 calculatedAngle;
     Rect unrotatedRect;
 };
 

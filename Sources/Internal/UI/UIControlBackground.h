@@ -252,7 +252,11 @@ public:
         Default color is Color(1,1,1,1).
      \param[in] geometricData Control geometric data.
      */
+#if defined(LOCALIZATION_DEBUG)
+    virtual void Draw(const UIGeometricData &geometricData, UIGeometricData  * borderGeomData = nullptr);
+#else
     virtual void Draw(const UIGeometricData &geometricData);
+#endif
 
     /**
      \brief Creates the absoulutely identic copy of the background.

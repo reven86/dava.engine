@@ -130,6 +130,7 @@ protected:
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
 #if defined(LOCALIZATION_DEBUG)
     void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;
+    void DrawLocalizationErrors(const UIGeometricData & textGeomData, const UIGeometricData & elementGeomData) const;
     void RecalculateDebugColoring();
 #endif
 protected:
@@ -139,7 +140,6 @@ protected:
     UIControlBackground *textBg;
 #if defined(LOCALIZATION_DEBUG)
     DebugHighliteColor warningColor;
-    DebugHighliteColor errorColro;
     DebugHighliteColor lineBreakError;
 #endif
 

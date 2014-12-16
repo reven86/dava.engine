@@ -302,8 +302,11 @@ void UIControlBackground::SetParentColor(const Color &parentColor)
             break;
     }
 }
-
+#if defined(LOCALIZATION_DEBUG)
+void UIControlBackground::Draw(const UIGeometricData &parentGeometricData, UIGeometricData  * borderGeomData)
+#else
 void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
+#endif
 {
     UIGeometricData geometricData;
     geometricData.size = parentGeometricData.size;
@@ -392,7 +395,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             }
 
             lastDrawPos = drawState.position;
-
+           
             spr->Draw(&drawState);
         }
         break;
@@ -431,7 +434,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 //			spr->SetScale(drawRect.dx / spr->GetSize().dx, drawRect.dy / spr->GetSize().dy);
 //			spr->SetPivotPoint(geometricData.pivotPoint.x / (geometricData.size.x / spr->GetSize().dx), geometricData.pivotPoint.y / (geometricData.size.y / spr->GetSize().dy));
 //			spr->SetAngle(geometricData.angle);
-
+           
             spr->Draw(&drawState);
         }
         break;
@@ -530,7 +533,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             }
 
             lastDrawPos = drawState.position;
-
+            
+          
             spr->Draw(&drawState);
         }
         break;
@@ -554,7 +558,16 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         default:
             break;
     }
-
+#if defined(LOCALIZATION_DEBUG)
+    if (borderGeomData != NULL)
+    {
+        borderGeomData->position = drawState.position;
+        borderGeomData->angle = drawState.angle;
+        borderGeomData->scale = drawState.scale;
+        borderGeomData->pivotPoint = drawState.pivotPoint;
+        
+    }
+#endif
     RenderManager::Instance()->ResetColor();
 
 }

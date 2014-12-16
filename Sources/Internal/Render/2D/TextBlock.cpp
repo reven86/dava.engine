@@ -127,6 +127,10 @@ TextBlock::TextBlock()
     
     textBlockRender = NULL;
     textureInvalidater = NULL;
+#if defined(LOCALIZATION_DEBUG)
+    fittingTypeUsed = FITTING_DISABLED;
+    visualTextCroped = false;
+#endif //LOCALIZATION_DEBUG
 }
 
 TextBlock::~TextBlock()
@@ -322,6 +326,13 @@ int32 TextBlock::GetFittingOptionUsed()
 
     return fittingTypeUsed;
 }
+bool  TextBlock::IsVisualTextCroped()
+{
+
+	mutex.Lock();
+	mutex.Unlock();
+	return visualTextCroped;
+}
 #endif
 void TextBlock::SetAlign(int32 _align)
 {
@@ -457,6 +468,7 @@ void TextBlock::CalculateCacheParams()
 {
 #if defined(LOCALIZATION_DEBUG)
     fittingTypeUsed = FITTING_DISABLED;
+    visualTextCroped = false;
 #endif
     if (logicalText.empty())
     {
@@ -687,6 +699,9 @@ void TextBlock::CalculateCacheParams()
         {
             visualText = pointsStr;
             textSize = font->GetStringMetrics(visualText);
+#if defined(LOCALIZATION_DEBUG)
+            visualTextCroped = true;
+#endif
         }
 
         if (treatMultilineAsSingleLine)
@@ -823,6 +838,10 @@ void TextBlock::CalculateCacheParams()
         if (textSize.height > drawSize.y && requestedSize.y >= 0.f)
         {
             int32 needLines = Min((int32)multilineStrings.size(), (int32)ceilf(drawSize.y / fontHeight) + 1);
+#if defined(LOCALIZATION_DEBUG)
+			if(needLines != multilineStrings.size())
+				visualTextCroped = true;
+#endif
             Vector<WideString> oldLines;
             multilineStrings.swap(oldLines);
             if(align & ALIGN_TOP)
@@ -840,6 +859,7 @@ void TextBlock::CalculateCacheParams()
                 multilineStrings.assign(oldLines.begin() + startIndex, oldLines.end());
             }
             textSize.height = textSize.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;	
+
         }
 
         stringSizes.reserve(multilineStrings.size());
@@ -857,6 +877,10 @@ void TextBlock::CalculateCacheParams()
                 textSize.width = Max(textSize.width, stringSize.width);
                 textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx);
             }
+#if defined(LOCALIZATION_DEBUG)
+			if(textSize.width < stringSize.width)
+				visualTextCroped = true;
+#endif
             textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
             if(0 == line)
             {

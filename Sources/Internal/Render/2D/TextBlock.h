@@ -124,6 +124,7 @@ public:
     void ForcePrepare(Texture *texture);
 #if defined(LOCALIZATION_DEBUG)
     int32 GetFittingOptionUsed();
+	bool IsVisualTextCroped();
 #endif
 
     /**
@@ -137,7 +138,7 @@ public:
      * \return true if BiDi trasformations supported.
      */
     static bool IsBiDiSupportEnabled();
-    
+    TextBlockRender* GetRenderer(){ return textBlockRender; }
 protected:
     TextBlock();
     ~TextBlock();
@@ -193,6 +194,7 @@ protected:
     int32 fittingType;
 #if defined(LOCALIZATION_DEBUG)
     int32 fittingTypeUsed;
+    bool visualTextCroped;
 #endif //LOCALIZATION_DEBUG
     Vector2 position;
     Vector2 pivotPoint;
@@ -221,6 +223,7 @@ protected:
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicsRender;
     friend class TextBlockDistanceRender;
+    
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;
 };
