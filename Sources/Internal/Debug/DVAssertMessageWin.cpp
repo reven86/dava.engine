@@ -36,22 +36,10 @@
 namespace DAVA
 {
 
-WideString s2ws(const String& s)
-{
-    int len;
-    int slength = (int)s.length() + 1;
-    len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0); 
-    wchar_t* buf = new wchar_t[len];
-    MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
-    WideString r(buf);
-    delete[] buf;
-    return r;
-}
-
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
 	// Modal Type is ignored by Win32.
-	int buttonId = MessageBox(HWND_DESKTOP, s2ws(content).c_str(), L"Assert", MB_OKCANCEL | MB_ICONEXCLAMATION);
+	int buttonId = MessageBoxA(HWND_DESKTOP, content, "Assert", MB_OKCANCEL | MB_ICONEXCLAMATION);
     switch (buttonId)
     {
     case IDCANCEL:
