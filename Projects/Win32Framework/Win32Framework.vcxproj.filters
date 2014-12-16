@@ -1604,9 +1604,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Noncopyable.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Base\AsyncRequest.h">
-      <Filter>Internal\Network\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h">
       <Filter>Internal\Network\Base</Filter>
     </ClInclude>
@@ -1617,12 +1614,6 @@
       <Filter>Internal\Network\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Endpoint.h">
-      <Filter>Internal\Network\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Base\HandleBase.h">
-      <Filter>Internal\Network\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Base\HandleTraits.h">
       <Filter>Internal\Network\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\Base\IOLoop.h">
@@ -1668,9 +1659,6 @@
       <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\TCPTransport.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\TransportFactory.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2960,16 +2948,10 @@
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Base\AsyncRequest.cpp">
-      <Filter>Internal\Network\Base</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp">
       <Filter>Internal\Network\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp">
-      <Filter>Internal\Network\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Base\HandleBase.cpp">
       <Filter>Internal\Network\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Base\IOLoop.cpp">
@@ -2997,9 +2979,6 @@
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\TCPTransport.cpp">
-      <Filter>Internal\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\TransportFactory.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>
