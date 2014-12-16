@@ -31,12 +31,10 @@
 #define __DAVAENGINE_TEAMCITY_OUTPUT_H__
 
 /**
-	\defgroup utils Utilities
+    \defgroup utils Utilities
  */
 
 #include "FileSystem/Logger.h"
-
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
 namespace DAVA 
 {
@@ -45,10 +43,10 @@ class TeamcityOutput: public LoggerOutput
 {
 public:
 
-    virtual void Output(Logger::eLogLevel ll, const char8* text) const;
-    virtual void Output(Logger::eLogLevel ll, const char16* text) const;
+    virtual void Output(Logger::eLogLevel ll, const char8* text);
+    virtual void Output(Logger::eLogLevel ll, const char16* text);
     
-private:
+protected:
     
     void PlatformOutput(const String & text) const;
     
@@ -57,9 +55,6 @@ private:
 
 
 };
-
-
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
 #endif // __DAVAENGINE_TEAMCITY_OUTPUT_H__
 

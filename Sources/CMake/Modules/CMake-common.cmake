@@ -235,6 +235,7 @@ macro ( generate_source_groups_project )
 
 endmacro ()
 
+
 #
 macro ( install_libraries TARGET_NAME )
 install(

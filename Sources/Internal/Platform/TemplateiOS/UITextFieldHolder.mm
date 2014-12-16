@@ -50,6 +50,7 @@
 		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);
 		self.userInteractionEnabled = TRUE;
 		textInputAllowed = YES;
+        useRtlAlign = NO;
 
         textField = [[UITextField alloc] initWithFrame: CGRectMake(0.f, 0.f, 0.f, 0.f)];
 		textField.delegate = self;
@@ -177,6 +178,24 @@
 - (void)setTextInputAllowed:(bool)value
 {
 	textInputAllowed = (value == true);
+}
+
+- (void)setUseRtlAlign:(bool)value
+{
+    useRtlAlign = (value == true);
+    
+    // Set natural alignment if need
+    switch (textField.contentHorizontalAlignment)
+    {
+        case UIControlContentHorizontalAlignmentLeft:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
+            break;
+        case UIControlContentHorizontalAlignmentRight:
+            textField.textAlignment = useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
+            break;
+            
+        default: break;
+    }
 }
 
 - (void) setupTraits
@@ -455,6 +474,7 @@
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
+
 
 @end
 

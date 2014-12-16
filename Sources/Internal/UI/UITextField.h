@@ -168,8 +168,7 @@ public:
 protected:
 	virtual ~UITextField();
 public:
-	UITextField();
-	UITextField(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
 	virtual void WillAppear();
 	virtual void DidAppear();
@@ -230,6 +229,12 @@ public:
 
 	int32 GetTextAlign() const;
 
+	/**
+	 \brief Returns using RTL align flag
+	 \returns Using RTL align flag
+	 */
+	bool GetTextUseRtlAlign() const;
+
     void SetFocused()
     {
         UIControlSystem::Instance()->SetFocusedControl(this, true);
@@ -253,7 +258,7 @@ public:
 	 \brief Sets the size of the font.
 	 \param[in] size font size to be set.
 	 */
-    void SetFontSize(float size);
+    void SetFontSize(float32 size);
 	/**
 	 \brief Sets shadow offset of text control.
 	 \param[in] offset offset of text shadow relative to base text.
@@ -266,6 +271,12 @@ public:
 	virtual void SetShadowColor(const Color& color);
 
 	void SetTextAlign(int32 align);
+
+	/**
+	 \brief Sets using mirror align for RTL texts
+	 \param[in] useRrlAlign flag of support RTL align
+	 */
+	void SetTextUseRtlAlign(bool useRtlAlign);
 
     virtual void SetSize(const DAVA::Vector2 &newSize);
 
@@ -343,7 +354,7 @@ public:
 
     String GetFontPresetName() const;
 
-    void SetFontPresetName(const String &presetName);
+    void SetFontByPresetName(const String &presetName);
 
 protected:
 	WideString text;
@@ -368,6 +379,12 @@ protected:
 private:
     WideString GetVisibleText() const;
 
+    
+    /**
+         \brief Setups initial state to reset settings for cached native control.
+     */
+    void SetupDefaults();
+
 #ifdef __DAVAENGINE_IPHONE__
 	UITextFieldiPhone * textFieldiPhone;
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -381,7 +398,7 @@ private:
 public:
     INTROSPECTION_EXTEND(UITextField, UIControl,
         PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("font", "Font preset", GetFontPresetName, SetFontPresetName, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("font", "Font preset", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("maxLength", "Max text lenght", GetMaxLength, SetMaxLength, I_SAVE | I_VIEW | I_EDIT)

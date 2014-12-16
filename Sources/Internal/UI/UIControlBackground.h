@@ -385,49 +385,20 @@ protected:
     
 public:
     
-    int GetBgDrawType() const {
-        return GetDrawType();
-    }
+    // for introspection
     
-    void SetBgDrawType(int type) { // TODO: FIXME: type
-        SetDrawType((UIControlBackground::eDrawType) type);
-    }
-    
-    FilePath GetBgSprite() const {
-        if (GetSprite() == NULL)
-            return "";
-        else if (GetSprite()->GetRelativePathname().GetType() == FilePath::PATH_IN_MEMORY)
-            return "";
-        else
-            return Sprite::GetPathString(GetSprite());
-    }
-    
-    void SetBgSprite(const FilePath &path) {
-        if (path == "")
-            SetSprite(NULL, 0);
-        else
-            SetSprite(path, GetFrame());
-    }
-    
-    int32 GetBgColorInherit() const {
-        return GetColorInheritType();
-    }
-    
-    void SetBgColorInherit(int32 type) {
-        SetColorInheritType((UIControlBackground::eColorInheritType) type);
-    }
-    
-    int32 GetBgPerPixelAccuracy() const {
-        return GetPerPixelAccuracyType();
-    }
-    
-    void SetBgPerPixelAccuracy(int32 type) {
-        SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
-    }
+    inline int GetBgDrawType() const;
+    inline void SetBgDrawType(int type);
+    inline FilePath GetBgSpritePath() const;
+    inline void SetBgSpriteFromPath(const FilePath &path);
+    inline int32 GetBgColorInherit() const;
+    inline void SetBgColorInherit(int32 type);
+    inline int32 GetBgPerPixelAccuracy() const;
+    inline void SetBgPerPixelAccuracy(int32 type);
     
     INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("sprite", "Sprite", GetBgSprite, SetBgSprite, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("sprite", "Sprite", GetBgSpritePath, SetBgSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("spriteModification", "Spirte Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
@@ -487,6 +458,55 @@ inline Vector4 UIControlBackground::UIMargins::AsVector4() const
 {
     return Vector4(left, top, right, bottom);
 }
+
+int UIControlBackground::GetBgDrawType() const
+{
+    return GetDrawType();
+}
+
+void UIControlBackground::SetBgDrawType(int type)
+{ // TODO: FIXME: type
+    SetDrawType((UIControlBackground::eDrawType) type);
+}
+
+FilePath UIControlBackground::GetBgSpritePath() const
+{
+    if (GetSprite() == NULL)
+        return "";
+    else if (GetSprite()->GetRelativePathname().GetType() == FilePath::PATH_IN_MEMORY)
+        return "";
+    else
+        return Sprite::GetPathString(GetSprite());
+}
+
+void UIControlBackground::SetBgSpriteFromPath(const FilePath &path)
+{
+    if (path == "")
+        SetSprite(NULL, 0);
+    else
+        SetSprite(path, GetFrame());
+}
+
+int32 UIControlBackground::GetBgColorInherit() const
+{
+    return GetColorInheritType();
+}
+
+void UIControlBackground::SetBgColorInherit(int32 type)
+{
+    SetColorInheritType((UIControlBackground::eColorInheritType) type);
+}
+
+int32 UIControlBackground::GetBgPerPixelAccuracy() const
+{
+    return GetPerPixelAccuracyType();
+}
+
+void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
+{
+    SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
+}
+
 
 };
 

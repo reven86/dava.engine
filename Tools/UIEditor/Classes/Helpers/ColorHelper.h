@@ -44,7 +44,7 @@ public:
 
     static QColor DAVAColorToQTColor(const Color& davaColor)
     {
-        return QColor(davaColor.r * 0xFF, davaColor.g * 0xFF, davaColor.b * 0xFF, davaColor.a * 0xFF);
+        return QColor(Round(davaColor.r * 255.f), Round(davaColor.g * 255.f), Round(davaColor.b * 255.f), Round(davaColor.a * 255.f));
     }
 };
 

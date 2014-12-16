@@ -1321,9 +1321,6 @@ public:
     virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
-    
-    BaseObject *GetCustomData() const;
-    void SetCustomData(BaseObject *data);
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1405,9 +1402,6 @@ protected:
 
     void DrawDebugRect(const UIGeometricData &geometricData, bool useAlpha = false);
     void DrawPivotPoint(const Rect &drawRect);
-    
-private:
-    BaseObject *customData;
 
 private:
     String name;
@@ -1417,8 +1411,6 @@ private:
 
 
     void RecalculateAlignProperties();
-
-    void RecalculatePivotPoint(const Rect &newRect);
 
     float32 GetSizeX(UIControl *parent, int32 leftAlign, int32 rightAlign, bool useHalfParentSize = false);
     float32 GetSizeY(UIControl *parent, int32 topAlign, int32 bottomAlign, bool useHalfParentSize = false);
@@ -1449,37 +1441,18 @@ public:
     virtual String GetInternalControlDescriptions() const;
 
     // for introspection
-    bool GetEnabled() const {
-        return !GetDisabled();
-    }
-    
-    void SetEnabledNotHierarchic(bool enabled) {
-        SetDisabled(!enabled, false);
-    }
-    
-    bool GetNoInput() const {
-        return !GetInputEnabled();
-    }
-    
-    void SetNoInput(bool noInput) {
-        SetInputEnabled(!noInput, false);
-    }
-    
-    bool IsDebugDraw() const
-    {
-        return debugDrawEnabled;
-    }
-    
-    void SetDebugDrawNotHierarchic(bool val)
-    {
-        SetDebugDraw(val, false);
-    }
+    inline bool GetEnabled() const;
+    inline void SetEnabledNotHierarchic(bool enabled);
+    inline bool GetNoInput() const;
+    inline void SetNoInput(bool noInput);
+    inline bool GetDebugDraw() const;
+    inline void SetDebugDrawNotHierarchic(bool val);
     
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
                          PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("pivot", "Pivot", GetPivotPoint, SetPivotPoint, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
@@ -1505,7 +1478,8 @@ public:
 
                          PROPERTY("vcenterAlignEnabled", "Vertical Center Align Enabled", GetVCenterAlignEnabled, SetVCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("vcenterAlign", "Vertical Center Align", GetVCenterAlign, SetVCenterAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("debugDraw", "Debug Draw", IsDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
+                         PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
+                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
                          );
 
 };
@@ -1575,7 +1549,7 @@ int32 UIControl::GetTag() const
 
 Rect UIControl::GetRect() const
 {
-    return Rect(relativePosition - pivotPoint, size);
+    return Rect(GetPosition() - GetPivotPoint(), GetSize());
 }
 
 bool UIControl::GetVisible() const
@@ -1618,6 +1592,37 @@ bool UIControl::GetSystemVisible() const
     return visible & visibleForUIEditor;
 }
 
+bool UIControl::GetEnabled() const
+{
+    return !GetDisabled();
+}
+
+void UIControl::SetEnabledNotHierarchic(bool enabled)
+{
+    SetDisabled(!enabled, false);
+}
+
+bool UIControl::GetNoInput() const
+{
+    return !GetInputEnabled();
+}
+
+void UIControl::SetNoInput(bool noInput)
+{
+    SetInputEnabled(!noInput, false);
+}
+
+bool UIControl::GetDebugDraw() const
+{
+    return debugDrawEnabled;
+}
+
+void UIControl::SetDebugDrawNotHierarchic(bool val)
+{
+    SetDebugDraw(val, false);
+}
+
 };
+
 
 #endif

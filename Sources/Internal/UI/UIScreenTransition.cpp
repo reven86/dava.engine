@@ -74,8 +74,7 @@ void UIScreenTransition::CreateRenderTargets()
     Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
 	
     renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height, true);
-
-    renderTargetNextScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height, true);
+    renderTargetNextScreen = Sprite::CreateFromTexture(tex2, 0, 0, (float32)width, (float32)height, true);
 
     SafeRelease(tex1);
     SafeRelease(tex2);

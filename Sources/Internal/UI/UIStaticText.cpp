@@ -98,6 +98,7 @@ void UIStaticText::SetText(const WideString& _string, const Vector2 &requestedTe
 {
     textBlock->SetRectSize(size);
     textBlock->SetText(_string, requestedTextRectSize);
+    textBg->SetAlign(textBlock->GetVisualAlign());
     PrepareSprite();
 }
 
@@ -164,13 +165,34 @@ int32 UIStaticText::GetAlign() const
 
 void UIStaticText::SetTextAlign(int32 _align)
 {
-    textBg->SetAlign(_align);
     textBlock->SetAlign(_align);
+    textBg->SetAlign(textBlock->GetVisualAlign());
 }
 
 int32 UIStaticText::GetTextAlign() const
 {
-    return textBg->GetAlign();
+    return textBlock->GetAlign();
+}
+	
+int32 UIStaticText::GetTextVisualAlign() const
+{
+	return textBlock->GetVisualAlign();
+}
+
+bool UIStaticText::GetTextIsRtl() const
+{
+	return textBlock->IsRtl();
+}
+
+void UIStaticText::SetTextUseRtlAlign(bool useRtlAlign)
+{
+    textBlock->SetUseRtlAlign(useRtlAlign);
+	textBg->SetAlign(textBlock->GetVisualAlign());
+}
+
+bool UIStaticText::GetTextUseRtlAlign() const
+{
+    return textBlock->GetUseRtlAlign();
 }
 
 const Vector2 & UIStaticText::GetTextSize()
@@ -208,7 +230,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 	UIGeometricData textGeomData;
 	textGeomData.position = textBlock->GetSpriteOffset();
 	textGeomData.size = GetSize();
-	textGeomData.AddToGeometricData(geometricData);
+    textGeomData.AddGeometricData(geometricData);
 
     if(!FLOAT_EQUAL(shadowBg->GetDrawColor().a, 0.0f) && (!FLOAT_EQUAL(shadowOffset.dx, 0.0f) || !FLOAT_EQUAL(shadowOffset.dy, 0.0f)))
     {
@@ -216,7 +238,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         UIGeometricData shadowGeomData;
         shadowGeomData.position = shadowOffset;
         shadowGeomData.size = GetSize();
-        shadowGeomData.AddToGeometricData(textGeomData);
+        shadowGeomData.AddGeometricData(textGeomData);
 
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->Draw(shadowGeomData);
@@ -267,6 +289,7 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     const YamlNode * shadowColorNode = node->Get("shadowcolor");
     const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
     const YamlNode * textAlignNode = node->Get("textalign");
+	const YamlNode * textUseRtlAlignNode = node->Get("textUseRtlAlign");
     const YamlNode * textColorInheritTypeNode = node->Get("textcolorInheritType");
     const YamlNode * shadowColorInheritTypeNode = node->Get("shadowcolorInheritType");
     const YamlNode * textMarginsNode = node->Get("textMargins");
@@ -307,6 +330,11 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     {
         SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
     }
+	
+	if (textUseRtlAlignNode)
+	{
+		SetTextUseRtlAlign(textUseRtlAlignNode->AsBool());
+	}
 
     if (textNode)
     {
@@ -425,6 +453,12 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
     {
         node->SetNodeToMap("textalign", loader->GetAlignNodeValue(this->GetTextAlign()));
     }
+	
+	// Text use rtl align
+    if (baseControl->GetTextAlign() != this->GetTextAlign())
+    {
+        node->Set("textUseRtlAlign", this->GetTextUseRtlAlign());
+    }
 
     // Draw type. Must be overriden for UITextControls.
     if (baseControl->GetBackground()->GetDrawType() != this->GetBackground()->GetDrawType())
@@ -518,7 +552,7 @@ String UIStaticText::GetFontPresetName() const
     return FontManager::Instance()->GetFontName(font);
 }
 
-void UIStaticText::SetFontPresetName(const String &presetName)
+void UIStaticText::SetFontByPresetName(const String &presetName)
 {
     Font *font = NULL;
 
@@ -557,7 +591,7 @@ int32 UIStaticText::GetMultilineType() const
     if (GetMultiline())
         return GetMultilineBySymbol() ? MULTILINE_ENABLED_BY_SYMBOL : MULTILINE_ENABLED;
     else
-        return GetMultiline();
+        return MULTILINE_DISABLED;
 }
     
 void UIStaticText::SetMultilineType(int32 multilineType)
