@@ -606,6 +606,7 @@ bool PatchFileReader::Apply(const FilePath &_origBase, const FilePath &_origPath
                 if(NULL == origFile)
                 {
                     lastError = ERROR_ORIG_READ;
+                    ret = false;
                 }
                 else
                 {

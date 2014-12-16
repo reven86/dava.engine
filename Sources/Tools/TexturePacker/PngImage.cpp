@@ -118,48 +118,78 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
 	}
 }
 
-void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image)
+void PngImageExt::DrawImage(const Rect2i & drawRect, const Rect2i & alphaOffsetRect, PngImageExt * image, bool useTwoSideMargin)
 {
 	// printf("0x%08x 0x%08x %d %d\n", data, image->data, sx, sy);
 	
     uint32 * destData32 = (uint32*)GetData();
 	uint32 * srcData32 = (uint32*)image->GetData();
 
-	if(CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
-	{
-		destData32[sx + sy * GetWidth()] = srcData32[0];
-		destData32[sx + (sy + 1 + image->GetHeight())* GetWidth()] = srcData32[(image->GetHeight() - 1) * image->GetWidth()];
-		destData32[(sx + image->GetWidth() + 1) + sy * GetWidth()] = srcData32[(image->GetWidth() - 1)];
-		destData32[(sx + image->GetWidth() + 1) + (sy + 1 + image->GetHeight())* GetWidth()] = srcData32[(image->GetWidth() - 1) + (image->GetHeight() - 1) * image->GetWidth()];
-		for (uint32 y = 0; y < image->GetHeight(); ++y)
-		{
-			destData32[sx + (sy + y + 1) * GetWidth()] = srcData32[y * image->GetWidth()];
-			destData32[(sx + image->GetWidth() + 1) + (sy + y + 1) * GetWidth()] = srcData32[(image->GetWidth() - 1) + (y * image->GetWidth())];
-		}
-		for (uint32 x = 0; x < image->GetWidth(); ++x)
-		{
-			destData32[(sx + x + 1) + (sy) * GetWidth()] = srcData32[x];
-			destData32[(sx + x + 1) + (sy + image->GetHeight() + 1) * GetWidth()] = srcData32[x + (image->GetHeight() - 1) * image->GetWidth()];
-		}
+	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
+	
+	int32 sx = drawRect.x;
+	int32 sy = drawRect.y;
 
-		sx++;
-		sy++;
+	if ( useTwoSideMargin )
+	{
+		++sx;
+		++sy;
 	}
-    
-    for (uint32 y = 0; y < image->GetHeight(); ++y)
-		for (uint32 x = 0; x < image->GetWidth(); ++x)
+
+	if ( withAlpha )
+	{
+		sx += alphaOffsetRect.x;
+		sy += alphaOffsetRect.y;
+	}
+
+	// add image
+	uint32 srcPos = 0;
+	uint32 destPos = sx + sy * GetWidth();
+	uint32 destPosInc = GetWidth() - image->GetWidth();
+	for (uint32 y = 0; y < image->GetHeight(); ++y, destPos += destPosInc)
+		for (uint32 x = 0; x < image->GetWidth(); ++x, ++srcPos, ++destPos)
 		{
 			if (int32(sx + x) < 0)continue;
 			if ((sx + x) >= (int32)GetWidth())continue;
 			if (int32(sy + y) < 0)continue;
 			if ((sy + y) >= (int32)GetHeight())continue;
-			
-			uint32 srcRead  = srcData32[x + y * image->GetWidth()];
-			destData32[(sx + x) + (sy + y) * GetWidth()] = srcRead;
+
+			destData32[destPos] = srcData32[srcPos];
 			//printf("%04x ", srcData32[x + y * image->width]);
 		}
-}
 
+	// add 2side pixel
+	if( useTwoSideMargin )
+	{
+		sx = drawRect.x;
+		sy = drawRect.y;
+
+		destData32[sx + sy * GetWidth()] = destData32[(sx + 1) + (sy + 1) * GetWidth()];
+		destData32[sx + (sy + drawRect.dy - 1)* GetWidth()] = destData32[(sx + 1) + (sy + drawRect.dy - 2)* GetWidth()];
+		destData32[(sx + drawRect.dx - 1) + sy * GetWidth()] = destData32[(sx + drawRect.dx - 2) + (sy + 1) * GetWidth()];
+		destData32[(sx + drawRect.dx - 1) + (sy + drawRect.dy - 1)* GetWidth()] = destData32[(sx + drawRect.dx - 2) + (sy + drawRect.dy - 2)* GetWidth()];
+
+		uint32 leftBorderPix = sx + (sy + 1) * GetWidth();
+		uint32 rightBorderPix = (sx + drawRect.dx - 1) + (sy + 1) * GetWidth();
+		uint32 leftBorderLastPix = sx + (sy + drawRect.dy - 2) * GetWidth();
+		for (; leftBorderPix <= leftBorderLastPix; leftBorderPix += GetWidth(), rightBorderPix += GetWidth())
+		{
+			destData32[leftBorderPix] = destData32[leftBorderPix+1];
+			destData32[rightBorderPix] = destData32[rightBorderPix-1];
+		}
+
+		uint32 topBorderPix = (sx + 1) + (sy) * GetWidth();
+		uint32 topImagePix = (sx + 1) + (sy + 1) * GetWidth();
+		uint32 bottomBorderPix = (sx + 1) + (sy + drawRect.dy - 1) * GetWidth();
+		uint32 bottomImagePix = (sx + 1) + (sy + drawRect.dy - 2) * GetWidth();
+		uint32 topBorderLastPix = (sx + drawRect.dx - 2) + (sy) * GetWidth();
+		for (; topBorderPix <= topBorderLastPix; ++topBorderPix, ++topImagePix, ++bottomBorderPix, ++bottomImagePix)
+		{
+			destData32[topBorderPix] = destData32[topImagePix];
+			destData32[bottomBorderPix] = destData32[bottomImagePix];
+		}
+	}
+}
 
 bool PngImageExt::IsHorzLineOpaque(int32 y)
 {

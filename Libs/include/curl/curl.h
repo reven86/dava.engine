@@ -28,16 +28,10 @@
 #ifndef __DAVA_CURL_H__
 #define __DAVA_CURL_H__
 
-#if defined(__DAVAENGINE_IPHONE__)
-#   if defined(__LP64__)
-#       include "curl/iOS/arm64/curl.h"
-#   else
-#       include "curl/iOS/curl.h"
-#   endif
-#elif defined (__DAVAENGINE_MACOS__)
-#   include "curl/MacOS/curl.h"
+#if defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#    include "iOS_MACOS/curl.h"
 #else
-#   include "curl/Others/curl.h"
+#    include "Others/curl.h"
 #endif
 
 #endif

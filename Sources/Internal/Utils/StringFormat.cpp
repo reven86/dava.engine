@@ -263,7 +263,7 @@ int32 do_div(int64 &n, int32 base)
         char16 *firstStr = Number(str, whole, 10, -1, -1, type);
         if (isNegativeValue)
         {
-            memcpy(str + 1, str, (firstStr - str) * sizeof(char16));
+            Memmove(str + 1, str, (firstStr - str) * sizeof(char16));
             *str = L'-';
             firstStr++;
         }
@@ -271,7 +271,7 @@ int32 do_div(int64 &n, int32 base)
         {
             while (firstStr - str < base - precision)
             {
-                memcpy(str + 1, str, (firstStr - str) * sizeof(char16));
+            	Memmove(str + 1, str, (firstStr - str) * sizeof(char16));
                 *str = L' ';
                 firstStr++;
             }
