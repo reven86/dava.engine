@@ -218,7 +218,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
     RenderManager::Instance()->SetColor(Color::White);
     RenderHelper::Instance()->FillRect(Rect(0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight), RenderState::RENDERSTATE_2D_BLEND);
 
-    RenderSystem2D::Instance()->Draw(dstSprite);
+    RenderSystem2D::Instance()->Draw(fullTiledSprite);
 	SafeRelease(fullTiledSprite);
 
 	Texture* notPassableTexture = texturesToBlend[TEXTURE_TYPE_NOT_PASSABLE];
