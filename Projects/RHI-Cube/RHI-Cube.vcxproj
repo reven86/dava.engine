@@ -43,7 +43,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PreprocessorDefinitions>DAVA_DEBUG;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DAVA_DEBUG;_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -67,6 +67,16 @@
   <ItemGroup>
     <ClCompile Include="Classes\FrameworkMain.cpp" />
     <ClCompile Include="Classes\GameCore.cpp" />
+    <ClCompile Include="MCPP\directive.cpp" />
+    <ClCompile Include="MCPP\eval.cpp" />
+    <ClCompile Include="MCPP\expand.cpp" />
+    <ClCompile Include="MCPP\main_libmcpp.cpp" />
+    <ClCompile Include="MCPP\mbchar.cpp" />
+    <ClCompile Include="MCPP\mcpp_main.cpp" />
+    <ClCompile Include="MCPP\preproc.cpp" />
+    <ClCompile Include="MCPP\support.cpp" />
+    <ClCompile Include="MCPP\system.cpp" />
+    <ClCompile Include="MCPP\_mcpp.cpp" />
     <ClCompile Include="RHI\rhi_ShaderCache.cpp" />
     <ClCompile Include="RHI\rhi_VertexLayout.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
@@ -74,6 +84,12 @@
   <ItemGroup>
     <ClInclude Include="Classes\FrameworkMain.h" />
     <ClInclude Include="Classes\GameCore.h" />
+    <ClInclude Include="MCPP\internal.h" />
+    <ClInclude Include="MCPP\mcpp_lib.h" />
+    <ClInclude Include="MCPP\mcpp_out.h" />
+    <ClInclude Include="MCPP\noconfig.h" />
+    <ClInclude Include="MCPP\system.h" />
+    <ClInclude Include="MCPP\_mcpp.h" />
     <ClInclude Include="RHI\rhi_Pool.h" />
     <ClInclude Include="RHI\rhi_RingBuffer.h" />
     <ClInclude Include="RHI\rhi_ShaderCache.h" />
@@ -86,6 +102,10 @@
     <ProjectReference Include="RHI-GLES2\RHI-GLES2.vcxproj">
       <Project>{55e50e53-117b-4d4e-b479-3ab6c722eb75}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MCPP\mcpp-manual.html" />
+    <None Include="MCPP\mcpp-porting.html" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

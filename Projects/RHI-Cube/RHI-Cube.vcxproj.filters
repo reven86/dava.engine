@@ -13,6 +13,9 @@
     <Filter Include="RHI %28private/impl%29">
       <UniqueIdentifier>{0dca8c18-e229-47c1-b2be-1ced2c6522fe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MCPP">
+      <UniqueIdentifier>{61acf3d0-e24d-4c12-b3a2-511df5a069c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\GameCore.cpp">
@@ -29,6 +32,36 @@
     </ClCompile>
     <ClCompile Include="RHI\rhi_VertexLayout.cpp">
       <Filter>RHI %28private/impl%29</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\_mcpp.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\directive.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\eval.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\expand.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\main_libmcpp.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\mbchar.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\preproc.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\support.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\system.cpp">
+      <Filter>MCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="MCPP\mcpp_main.cpp">
+      <Filter>MCPP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -59,5 +92,31 @@
     <ClInclude Include="RHI\rhi_ShaderCache.h">
       <Filter>RHI %28private/impl%29</Filter>
     </ClInclude>
+    <ClInclude Include="MCPP\_mcpp.h">
+      <Filter>MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="MCPP\internal.h">
+      <Filter>MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="MCPP\mcpp_lib.h">
+      <Filter>MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="MCPP\mcpp_out.h">
+      <Filter>MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="MCPP\noconfig.h">
+      <Filter>MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="MCPP\system.h">
+      <Filter>MCPP</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MCPP\mcpp-manual.html">
+      <Filter>MCPP</Filter>
+    </None>
+    <None Include="MCPP\mcpp-porting.html">
+      <Filter>MCPP</Filter>
+    </None>
   </ItemGroup>
 </Project>
