@@ -64,6 +64,9 @@ public:
 	virtual void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 	virtual void SetBackgroundTransparency(bool enabled);
 
+	void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override;
+
 private:
 	static int webViewIdCount;
 	int webViewId;

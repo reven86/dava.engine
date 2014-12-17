@@ -16,7 +16,7 @@ APP_CFLAGS += -O2
 APP_CFLAGS += -Wno-invalid-offsetof
 APP_LDLIBS := -fuse-ld=gold -fno-exceptions
 
-APP_ABI := armeabi-v7a x86
+APP_ABI := armeabi-v7a #x86
 APP_PLATFORM := android-14
 
 APP_CFLAGS += -std=c++11

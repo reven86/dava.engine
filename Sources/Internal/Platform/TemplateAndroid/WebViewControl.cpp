@@ -211,4 +211,14 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 	jniWebView.SetBackgroundTransparency(webViewId, enabled);
 }
 
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    // TODO
+}
+bool WebViewControl::IsRenderToTexture() const
+{
+    // TODO
+    return true;
+}
+
 }//namespace DAVA
