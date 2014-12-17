@@ -1036,6 +1036,7 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
+
 void UITextField::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();

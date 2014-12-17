@@ -55,6 +55,7 @@
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -81,24 +82,25 @@ namespace DAVA
 	static bool useAutodetectContentScaleFactor = false;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-	float Core::virtualToPhysical = 0;
-	float Core::physicalToVirtual = 0;
-	Vector2 Core::drawOffset;
+float32 Core::virtualToPhysical = 0;
+float32 Core::physicalToVirtual = 0;
+Vector2 Core::drawOffset;
 
-	static ApplicationCore * core = 0;
+static ApplicationCore * core = 0;
 
 Core::Core()
 {
-	globalFrameIndex = 1;
-	isActive = false;
+    globalFrameIndex = 1;
+    isActive = false;
     isAutotesting = false;
-	firstRun = true;
-	isConsoleMode = false;
-	options = new KeyedArchive();
-	fixedProportions = true;
+    firstRun = true;
+    isConsoleMode = false;
+    options = new KeyedArchive();
+    fixedProportions = true;
     
     desirableIndex = 0;
 
+    needTorecalculateMultipliers = false;
     EnableReloadResourceOnResize(true);
 }
 
@@ -160,7 +162,7 @@ void Core::CreateSingletons()
 #if defined(__DAVAENGINE_ANDROID__)
     new AssetsManager();
 #endif
-
+	
 #if defined __DAVAENGINE_IPHONE__
 	new AccelerometeriPhoneImpl();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -177,8 +179,13 @@ void Core::CreateSingletons()
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
-
+    
     new LocalNotificationController();
+
+    DeviceInfo::InitializeScreenInfo();
+    
+    Sprite::CreateRenderObject();
+    UIControlBackground::CreateRenderObject();
 
     RegisterDAVAClasses();
     CheckDataTypeSizes();
@@ -194,6 +201,9 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
+	UIControlBackground::ReleaseRenderObject();
+	Sprite::ReleaseRenderObject();
+
 	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
@@ -636,7 +646,7 @@ void Core::SystemAppStarted()
     FilePath file = "~res:/Autotesting/id.yaml";
     if (file.Exists())
     {
-        AutotestingSystem::Instance()->OnAppStarted();
+    AutotestingSystem::Instance()->OnAppStarted();
         isAutotesting = true;
     }
     else
@@ -861,3 +871,4 @@ DAVA::float32 Core::GetRequestedVirtualScreenHeight()
 }
 
 };
+
