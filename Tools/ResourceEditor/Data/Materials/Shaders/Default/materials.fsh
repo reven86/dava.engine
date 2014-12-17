@@ -483,7 +483,7 @@ void main()
 #endif
     
 #if defined(MATERIAL_DETAIL)
-	color *= textureColor0.rgb * detailTextureColor.rgb;
+	color *= detailTextureColor.rgb;
 #endif
 	
 #if defined(ALPHABLEND) && defined(MATERIAL_TEXTURE)
