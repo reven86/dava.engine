@@ -91,7 +91,9 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 
 int32 DeviceInfo::GetCpuCount()
 {
-    return -1;
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	return sysinfo.dwNumberOfProcessors;
 }
 
 #endif

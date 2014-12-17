@@ -121,15 +121,6 @@ GamepadManager *InputSystem::GetGamepadManager()
     return gamepadManager;
 }
 
-void InputSystem::EnableMultitouch(bool enabled)
-{
-    isMultitouchEnabled = enabled;
-}
-
-bool InputSystem::IsMultitouchEnabled() const
-{
-    return isMultitouchEnabled;
-}
 
 
 };

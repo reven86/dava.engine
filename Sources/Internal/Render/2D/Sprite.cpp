@@ -1729,6 +1729,9 @@ void Sprite::SetSpriteClipping(bool clipping)
 
 bool Sprite::IsSpriteOnScreen(DrawState * state)
 {
+	if(RenderManager::Instance()->IsRenderTarget()) 
+		return true;
+
 	Rect clipRect = RenderManager::Instance()->currentClip;
 	if(clipRect.dx == -1)
 	{

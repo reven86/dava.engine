@@ -100,7 +100,7 @@ public:
 	virtual void OnCancel();
 	
 	inline void EnableReverse();
-	inline void SetRepeatCount(int32 k);
+	void SetRepeatCount(int32 k);
 	
 	inline void SetTagId(int32 tag);
 	inline int32 GetTagId();
@@ -131,18 +131,6 @@ inline void Animation::EnableReverse()
 	state |= STATE_REVERSE;
 }
 
-inline void Animation::SetRepeatCount(int32 _repeatCount)
-{
-// 	if((0 == _repeatCount) || (INFINITE_LOOP == _repeatCount))
-	if(INFINITE_LOOP == _repeatCount)
-	{
-		repeatCount = _repeatCount;
-	}
-	else
-	{
-		repeatCount = _repeatCount - 1;
-	}
-}
 
 inline void Animation::SetTagId(int32 tag)
 {

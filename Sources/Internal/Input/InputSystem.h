@@ -86,8 +86,8 @@ public:
     bool IsCursorPining();
     void SetCursorPining(bool isPin);
     
-    void EnableMultitouch(bool enabled);
-    bool IsMultitouchEnabled() const;
+    inline void EnableMultitouch(bool enabled);
+    inline bool GetMultitouchEnabled() const;
     
 protected:
     
@@ -99,6 +99,17 @@ protected:
     
     bool isMultitouchEnabled;
 };
+
+inline void InputSystem::EnableMultitouch(bool enabled)
+{
+	isMultitouchEnabled = enabled;
+}
+
+inline bool InputSystem::GetMultitouchEnabled() const
+{
+	return isMultitouchEnabled;
+}
+
 };
 
 #endif

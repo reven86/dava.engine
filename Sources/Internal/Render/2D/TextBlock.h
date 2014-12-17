@@ -141,7 +141,6 @@ protected:
 	
  	void Prepare(Texture *texture = NULL);
 	void PrepareInternal();
-    
 	void CalculateCacheParams();
 
 	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)

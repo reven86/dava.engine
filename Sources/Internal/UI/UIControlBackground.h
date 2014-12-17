@@ -372,8 +372,7 @@ private:
         int32 frame;
         Vector2 size;
         int32 type;
-        float32 leftStretchCap;
-        float32 topStretchCap;
+        Vector2 stretchCap;
         Matrix3 transformMatr;
     };
     

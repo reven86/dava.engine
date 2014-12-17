@@ -146,26 +146,21 @@ namespace DAVA
             if(fps > 0)
             {
                 sleepMs = (1000 / fps) - elapsedTime;
-                if(sleepMs < 1)
+                if(sleepMs > 0)
                 {
-                    sleepMs = 1;
+                	Thread::Sleep(sleepMs);
                 }
             }
-            Thread::Sleep(sleepMs);
 		}
 	}
 
 	void CorePlatformAndroid::ResizeView(int32 w, int32 h)
 	{
-		if(width != w || height != h)
-		{
-			width = w;
-			height = h;
-            
-            DeviceInfo::InitializeScreenInfo();
+		width = w;
+		height = h;
+		DeviceInfo::InitializeScreenInfo();
 
-			UpdateScreenMode();
-		}
+		UpdateScreenMode();
 	}
 
 	void CorePlatformAndroid::UpdateScreenMode()
@@ -214,9 +209,8 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
-			
 			SceneCache::Instance()->InvalidateSceneMaterials();
-		}
+        }
 		else
 		{
 			wasCreated = true;
@@ -333,9 +327,6 @@ namespace DAVA
 		DAVA::Core::Instance()->GoBackground(isLock);
 
 		foreground = false;
-
-		width = 0;
-		height = 0;
 	}
 
 	void CorePlatformAndroid::KeyUp(int32 keyCode)

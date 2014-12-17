@@ -90,17 +90,17 @@ static ApplicationCore * core = 0;
 
 Core::Core()
 {
-	globalFrameIndex = 1;
-	isActive = false;
+    globalFrameIndex = 1;
+    isActive = false;
     isAutotesting = false;
-	firstRun = true;
-	isConsoleMode = false;
-	options = new KeyedArchive();
-	fixedProportions = true;
+    firstRun = true;
+    isConsoleMode = false;
+    options = new KeyedArchive();
+    fixedProportions = true;
     
     desirableIndex = 0;
 
-	needTorecalculateMultipliers = false;
+    needTorecalculateMultipliers = false;
     EnableReloadResourceOnResize(true);
 }
 
@@ -184,8 +184,8 @@ void Core::CreateSingletons()
 
     DeviceInfo::InitializeScreenInfo();
     
-	Sprite::CreateRenderObject();
-	UIControlBackground::CreateRenderObject();
+    Sprite::CreateRenderObject();
+    UIControlBackground::CreateRenderObject();
 
     RegisterDAVAClasses();
     CheckDataTypeSizes();

@@ -206,7 +206,7 @@ private:
 	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
  	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
 
-    void BuildBuffersInternal(BaseObject * caller, void * param, void *callerData);
+    void BuildBuffersInternal();
 
     
     

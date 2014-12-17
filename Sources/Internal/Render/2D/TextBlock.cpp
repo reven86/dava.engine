@@ -37,7 +37,6 @@
 #include "Render/2D/TextBlock.h"
 #include "Core/Core.h"
 #include "Job/JobManager.h"
-#include "Job/JobWaiter.h"
 
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
@@ -389,18 +388,17 @@ void TextBlock::Prepare(Texture *texture /*=NULL*/)
 	
 	CalculateCacheParams();
 
-	mutex.Lock();
-	SafeRelease(textureForInvalidation);
-	textureForInvalidation = SafeRetain(texture);
-    needPrepareInternal = true;
-	mutex.Unlock();
+	{
+		LockGuard<Mutex> guard(mutex);
+		SafeRelease(textureForInvalidation);
+		textureForInvalidation = SafeRetain(texture);
+		needPrepareInternal = true;
+	}
 }
 	
 void TextBlock::PrepareInternal()
 {
 	DVASSERT(Thread::IsMainThread());
-
-    LockGuard<Mutex> guard(mutex);
 
     needPrepareInternal = false;
     if (textBlockRender)

@@ -221,4 +221,16 @@ bool Animation::IsPaused()
 	return (0 != (state & STATE_PAUSED));
 }
 
+void Animation::SetRepeatCount(int32 _repeatCount)
+{
+	if(INFINITE_LOOP == _repeatCount)
+	{
+		repeatCount = _repeatCount;
+	}
+	else
+	{
+		repeatCount = _repeatCount - 1;
+	}
+}
+
 }

@@ -171,7 +171,7 @@
         DAVA::RenderManager::Instance()->Init(DAVA::Core::Instance()->GetPhysicalScreenWidth(), DAVA::Core::Instance()->GetPhysicalScreenHeight());
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
         
-		self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->IsMultitouchEnabled()) ? YES : NO;
+		self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
 		animating = FALSE;
 		displayLinkSupported = FALSE;
 		animationFrameInterval = 1;

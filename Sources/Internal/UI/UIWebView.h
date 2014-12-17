@@ -72,7 +72,7 @@ public:
     void OpenFromBuffer(const String& string, const FilePath& basePath);
     
 	// Overloaded virtual methods.
-	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);
+	virtual void SetPosition(const Vector2 &position);
 	virtual void SetSize(const Vector2 &newSize);
 
 	// Page scale property change
@@ -87,6 +87,7 @@ public:
 protected:
     virtual void WillBecomeVisible();
     virtual void WillBecomeInvisible();
+    virtual void DidAppear();
 
 public:
     void SetNativeControlVisible(bool isVisible);

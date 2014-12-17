@@ -157,6 +157,8 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 
 				Vector<String> cookieEntry;
 				Split(cookiesString, "=", cookieEntry);
+
+				DVASSERT(1 < cookieEntry.size());
 				cookiesMap[cookieEntry[0]] = cookieEntry[1];
 			}
 		}
