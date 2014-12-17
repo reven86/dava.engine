@@ -306,8 +306,10 @@ void TCPTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
         error = acceptor->Accept(&socket);
         if (0 == error)
         {
+            socket.RemoteEndpoint(remoteEndpoint);
+
             isActive = true;
-            listener->OnTransportActivated(this);
+            listener->OnTransportActivated(this, remoteEndpoint);
             DVVERIFY(0 == socket.StartRead(CreateBuffer(inbuf, sizeof(inbuf)), MakeFunction(this, &TCPTransport::SocketHandleRead)));
             DVVERIFY(0 == timer.Wait(readTimeout, MakeFunction(this, &TCPTransport::HandleTimer)));
 
@@ -342,8 +344,10 @@ void TCPTransport::SocketHandleConnect(TCPSocket* socket, int32 error)
 {
     if (0 == error)
     {
+        socket->RemoteEndpoint(remoteEndpoint);
+
         isActive = true;
-        listener->OnTransportActivated(this);
+        listener->OnTransportActivated(this, remoteEndpoint);
 
         DVVERIFY(0 == socket->StartRead(CreateBuffer(inbuf, sizeof(inbuf)), MakeFunction(this, &TCPTransport::SocketHandleRead)));
         DVVERIFY(0 == timer.Wait(readTimeout, MakeFunction(this, &TCPTransport::HandleTimer)));

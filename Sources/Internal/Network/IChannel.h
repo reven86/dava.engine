@@ -42,6 +42,9 @@ namespace Net
 struct IChannel;
 struct IChannelListener
 {
+    // There should be a virtual destructor defined as objects may be deleted through this interface
+    virtual ~IChannelListener() {}
+
     // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
     virtual void OnChannelOpen(IChannel* channel) = 0;
     // Channel is closed (underlying transport has disconnected)
@@ -57,9 +60,11 @@ struct IChannelListener
 /*
  This interface is passed to IChannelListener methods to allow clients to send data to channels.
 */
+class Endpoint;
 struct IChannel
 {
     virtual bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) = 0;
+    virtual const Endpoint& RemoteEndpoint() const = 0;
 };
 
 }   // namespace Net

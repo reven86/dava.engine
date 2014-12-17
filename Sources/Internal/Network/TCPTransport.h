@@ -136,6 +136,7 @@ private:
     TCPSocket socket;
     DeadlineTimer timer;
     Endpoint endpoint;
+    Endpoint remoteEndpoint;
     uint32 readTimeout;                 // Read timeout, ms
     ITransportListener* listener;
 

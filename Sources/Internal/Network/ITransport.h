@@ -58,7 +58,7 @@ struct ITransport
 struct ITransportListener
 {
     // Transport has been successfully started and can transfer data
-    virtual void OnTransportActivated(ITransport* transport) = 0;
+    virtual void OnTransportActivated(ITransport* transport, const Endpoint& endp) = 0;
     // Transport has ended session by some reason
     virtual void OnTransportDeactivated(ITransport* transport, eDeactivationReason reason, int32 error) = 0;
     // Transport has been fully terminated and can be safely deleted
