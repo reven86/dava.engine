@@ -287,8 +287,8 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
     webViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
 
-    webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-    webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
+    webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x - 10000;
+    webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y - 10000;
 
 	
 	// Apply the Retina scale divider, if any.
@@ -303,7 +303,8 @@ void WebViewControl::SetRect(const Rect& rect)
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
-	[(UIWebView*)webViewPtr setHidden:!isVisible];
+    [(UIWebView*)webViewPtr setHidden:!isVisible];
+//  [(UIWebView*)webViewPtr setHidden:YES];
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
