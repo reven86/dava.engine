@@ -84,8 +84,6 @@
 namespace DAVA
 {
 
-int32 SCENE_VERSION_MINIMAL_SUPPORTED = 9;
-
 SceneFileV2::SceneFileV2()
     : scene(NULL)
 {
@@ -407,10 +405,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         return GetError();
     }
 
-    if (header.version < SCENE_VERSION_MINIMAL_SUPPORTED)
+    if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
     {
         SafeRelease(file);
-        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_VERSION_MINIMAL_SUPPORTED);
+        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
         SetError(ERROR_VERSION_IS_TOO_OLD);
         return GetError();
     }
@@ -542,7 +540,13 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
     if (!versionValid)
     {
         Logger::Error("SceneFileV2::LoadScene version tags are wrong");
+        SafeRelease(file);
+        return res;
+    }
 
+    if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
+    {
+        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
         SafeRelease(file);
         return res;
     }
