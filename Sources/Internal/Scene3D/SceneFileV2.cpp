@@ -521,7 +521,7 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
-        Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filename.GetAbsolutePathname().c_str());
         return res;
     }   
 
@@ -529,6 +529,14 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 
     if (!headerValid)
     {
+        Logger::Error("SceneFileV2::LoadScene: scene header is not valid");
+        SafeRelease(file);
+        return res;
+    }
+
+    if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
+    {
+        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
         SafeRelease(file);
         return res;
     }
@@ -540,13 +548,6 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
     if (!versionValid)
     {
         Logger::Error("SceneFileV2::LoadScene version tags are wrong");
-        SafeRelease(file);
-        return res;
-    }
-
-    if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
-    {
-        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
         SafeRelease(file);
         return res;
     }
