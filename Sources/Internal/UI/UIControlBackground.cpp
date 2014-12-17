@@ -564,11 +564,8 @@ void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, Un
         size.x <= 0.0f || size.y <= 0.0f)
         return;
 
-    Vector2 stretchCap(Min(size.x, spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH)),
-                       Min(size.y, spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)));
-
-    stretchCap.x = Min(stretchCap.x * 0.5f, leftStretchCap);
-    stretchCap.y = Min(stretchCap.y * 0.5f, topStretchCap);
+    Vector2 stretchCap(Min(size.x * 0.5f, leftStretchCap),
+                       Min(size.y * 0.5f, topStretchCap));
 
     UniqueHandle textureHandle = spr->GetTextureHandle(frame);
     
