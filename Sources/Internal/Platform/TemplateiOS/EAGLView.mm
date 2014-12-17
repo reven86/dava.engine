@@ -161,7 +161,7 @@
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
         DAVA::RenderSystem2D::Instance()->Init();
         
-		self.multipleTouchEnabled = YES;
+		self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
 		animating = FALSE;
 		displayLinkSupported = FALSE;
 		animationFrameInterval = 1;

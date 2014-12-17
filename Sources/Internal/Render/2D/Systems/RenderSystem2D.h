@@ -47,12 +47,15 @@ class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
     static FastName FLAT_COLOR_SHADER;
-    static FastName TEXTURE_MUL_FLAT_COLOR_SHADER;
+    static FastName TEXTURE_FLAT_COLOR_SHADER;
 
     static Shader * FLAT_COLOR;
     static Shader * TEXTURE_MUL_FLAT_COLOR;
     static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
     static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
+    static Shader * TEXTURE_ADD_FLAT_COLOR;
+    static Shader * TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_ADD_FLAT_COLOR_IMAGE_A8;
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
@@ -74,9 +77,12 @@ public:
     
     void Setup2DMatrices();
 
+    void SetSpriteClipping(bool clipping);
+
 private:
     //sprite draw
     void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
+    bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
 
     Matrix4 viewMatrix;
 	std::stack<Rect> clipStack;
@@ -93,6 +99,8 @@ private:
 
     Vector<Vector2> spriteClippedTexCoords;
 	Vector<Vector2> spriteClippedVertices;
+
+    bool spriteClipping;
 };
     
 } // ns

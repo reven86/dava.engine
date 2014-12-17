@@ -40,7 +40,6 @@
 
 namespace DAVA
 {
-
 AutobindVariableData RenderManager::dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
 uint32  RenderManager::dynamicParamersRequireUpdate;
 Matrix4 RenderManager::worldViewMatrix;

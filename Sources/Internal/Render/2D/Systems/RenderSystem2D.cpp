@@ -36,17 +36,21 @@ namespace DAVA
 {
 
 FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
-FastName RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
+FastName RenderSystem2D::TEXTURE_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
 
 Shader * RenderSystem2D::FLAT_COLOR = 0;
 Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR = 0;
 Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
 Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
 
 RenderSystem2D::RenderSystem2D() :
 spriteRenderObject(0),
 spriteVertexStream(0),
-spriteTexCoordStream(0)
+spriteTexCoordStream(0),
+spriteClipping(true)
 {
 }
 
@@ -59,15 +63,29 @@ void RenderSystem2D::Init()
         spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
 
         FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
-        TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, FastNameSet()));
+        TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, FastNameSet()));
 
         FastNameSet set;
         set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+        TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
 
         set.clear();
         set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
+        TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("ADD_COLOR"));
+        TEXTURE_ADD_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("ADD_COLOR"));
+        set.Insert(FastName("ALPHA_TEST_ENABLED"));
+        TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("ADD_COLOR"));
+        set.Insert(FastName("IMAGE_A8"));
+        TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
     }
 }
 
@@ -79,6 +97,9 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(TEXTURE_MUL_FLAT_COLOR);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR_IMAGE_A8);
 }
 
 void RenderSystem2D::Reset()
@@ -163,6 +184,11 @@ void RenderSystem2D::ClipPop()
     clipStack.pop();
 }
 
+void RenderSystem2D::SetSpriteClipping(bool clipping)
+{
+    spriteClipping = clipping;
+}
+
 void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 */)
 {
     if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
@@ -179,45 +205,73 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
     }
 
     PrepareSpriteRenderData(sprite, state);
-    
-    if(sprite->clipPolygon)
+
+    bool spriteIsOnScreen = (sprite->clipPolygon) ? true : (!spriteClipping || IsPreparedSpriteOnScreen(state));
+    if (spriteIsOnScreen)
     {
-        ClipPush();
-        Rect clipRect;
-        if( sprite->flags & Sprite::EST_SCALE )
+        if (sprite->clipPolygon)
         {
-            float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
-            float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
-            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + x
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) * state->scale.y + y
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH  ) * state->scale.x
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) * state->scale.y );
+            ClipPush();
+            Rect clipRect;
+            if (sprite->flags & Sprite::EST_SCALE)
+            {
+                float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
+                float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
+                clipRect = Rect(sprite->GetRectOffsetValueForFrame(state->frame, Sprite::X_OFFSET_TO_ACTIVE) * state->scale.x + x
+                    , sprite->GetRectOffsetValueForFrame(state->frame, Sprite::Y_OFFSET_TO_ACTIVE) * state->scale.y + y
+                    , sprite->GetRectOffsetValueForFrame(state->frame, Sprite::ACTIVE_WIDTH) * state->scale.x
+                    , sprite->GetRectOffsetValueForFrame(state->frame, Sprite::ACTIVE_HEIGHT) * state->scale.y);
+            }
+            else
+            {
+                float32 x = state->position.x - state->pivotPoint.x;
+                float32 y = state->position.y - state->pivotPoint.y;
+                clipRect = Rect(sprite->GetRectOffsetValueForFrame(state->frame, Sprite::X_OFFSET_TO_ACTIVE) + x
+                    , sprite->GetRectOffsetValueForFrame(state->frame, Sprite::Y_OFFSET_TO_ACTIVE) + y
+                    , sprite->GetRectOffsetValueForFrame(state->frame, Sprite::ACTIVE_WIDTH)
+                    , sprite->GetRectOffsetValueForFrame(state->frame, Sprite::ACTIVE_HEIGHT));
+            }
+
+            ClipRect(clipRect);
         }
-        else
+    
+        RenderManager::Instance()->SetRenderState(state->renderState);
+        RenderManager::Instance()->SetTextureState(sprite->GetTextureHandle(state->frame));
+        RenderManager::Instance()->SetRenderData(spriteRenderObject);
+        RenderManager::Instance()->SetRenderEffect(state->shader);
+        RenderManager::Instance()->DrawArrays(spritePrimitiveToDraw, 0, spriteVertexCount);
+
+        if (sprite->clipPolygon)
         {
-            float32 x = state->position.x - state->pivotPoint.x;
-            float32 y = state->position.y - state->pivotPoint.y;
-            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) + x
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) + y
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH )
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) );
+            ClipPop();
         }
-        
-        ClipRect(clipRect);
-    }
-    
-    RenderManager::Instance()->SetRenderState(state->renderState);
-    RenderManager::Instance()->SetTextureState(sprite->GetTextureHandle(state->frame));
-    RenderManager::Instance()->SetRenderData(spriteRenderObject);
-    RenderManager::Instance()->SetRenderEffect(state->shader);
-    RenderManager::Instance()->DrawArrays(spritePrimitiveToDraw, 0, spriteVertexCount);
-    
-    if(sprite->clipPolygon)
-    {
-        ClipPop();
     }
 }
-    
+
+bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
+{
+    if (RenderManager::Instance()->IsRenderTarget())
+        return true;
+
+    Rect clipRect = currentClip;
+    if (clipRect.dx == -1)
+    {
+        clipRect.dx = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx;
+    }
+    if (clipRect.dy == -1)
+    {
+        clipRect.dy = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+    }
+
+    float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
+    float32 right = Max(Max(spriteTempVertices[0], spriteTempVertices[2]), Max(spriteTempVertices[4], spriteTempVertices[6]));
+    float32 top = Min(Min(spriteTempVertices[1], spriteTempVertices[3]), Min(spriteTempVertices[5], spriteTempVertices[7]));
+    float32 bottom = Max(Max(spriteTempVertices[1], spriteTempVertices[3]), Max(spriteTempVertices[5], spriteTempVertices[7]));
+
+    const Rect spriteRect(left, top, right - left, bottom - top);
+    return clipRect.RectIntersects(spriteRect);
+}
+
 void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * state)
 {
     DVASSERT(state);
