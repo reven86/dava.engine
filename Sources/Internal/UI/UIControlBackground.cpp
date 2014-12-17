@@ -302,11 +302,8 @@ void UIControlBackground::SetParentColor(const Color &parentColor)
             break;
     }
 }
-#if defined(LOCALIZATION_DEBUG)
-void UIControlBackground::Draw(const UIGeometricData &parentGeometricData, UIGeometricData  * borderGeomData)
-#else
+
 void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
-#endif
 {
     UIGeometricData geometricData;
     geometricData.size = parentGeometricData.size;
@@ -559,19 +556,17 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             break;
     }
 #if defined(LOCALIZATION_DEBUG)
-    if (borderGeomData != NULL)
-    {
-        borderGeomData->position = drawState.position;
-        borderGeomData->angle = drawState.angle;
-        borderGeomData->scale = drawState.scale;
-        borderGeomData->pivotPoint = drawState.pivotPoint;
-        
-    }
+    lastDrawState = drawState;
 #endif
     RenderManager::Instance()->ResetColor();
 
 }
-
+#if defined(LOCALIZATION_DEBUG)
+const Sprite::DrawState & UIControlBackground::GetLastDrawState() const
+{
+    return lastDrawState;
+}
+#endif
 void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, UniqueHandle renderState)
 {
     DVASSERT(rdoObject);

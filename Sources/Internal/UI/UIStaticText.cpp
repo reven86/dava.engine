@@ -261,7 +261,13 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     
 #if defined(LOCALIZATION_DEBUG)
     UIGeometricData elementGeomData;
-    textBg->Draw(textGeomData, &elementGeomData);
+    textBg->Draw(textGeomData);
+    const Sprite::DrawState & lastDrawStae = textBg->GetLastDrawState();
+    elementGeomData.position = lastDrawStae.position;
+    elementGeomData.angle = lastDrawStae.angle;
+    elementGeomData.scale = lastDrawStae.scale;
+    elementGeomData.pivotPoint = lastDrawStae.pivotPoint;
+
     if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LINEBREAK_ERRORS)
         || RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DRAW_LOCALIZATION_WARINGS)
         )
