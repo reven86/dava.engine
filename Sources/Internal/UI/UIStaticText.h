@@ -113,7 +113,7 @@ public:
     const Vector<int32> & GetStringSizes() const;
 
 protected:
-    void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
+    void PrepareSpriteInternal();
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
 
 protected:

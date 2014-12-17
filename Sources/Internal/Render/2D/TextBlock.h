@@ -139,7 +139,7 @@ protected:
     ~TextBlock();
     
     void Prepare(Texture *texture = NULL);
-    void PrepareInternal(BaseObject * caller, void * param, void *callerData);
+	void PrepareInternal(Texture * texture);
     void CalculateCacheParams();
 
 	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)

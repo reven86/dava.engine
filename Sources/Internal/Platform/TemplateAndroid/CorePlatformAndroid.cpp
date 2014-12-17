@@ -208,9 +208,8 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
-			
 			SceneCache::Instance()->InvalidateSceneMaterials();
-		}
+        }
 		else
 		{
 			wasCreated = true;

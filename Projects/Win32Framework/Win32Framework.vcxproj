@@ -361,10 +361,9 @@
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\Job.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\JobWaiter.h" />
+    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox3.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\BezierSpline.h" />
@@ -645,6 +644,8 @@
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
@@ -839,10 +840,9 @@
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\Job.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\JobWaiter.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox3.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\BezierSpline.cpp" />

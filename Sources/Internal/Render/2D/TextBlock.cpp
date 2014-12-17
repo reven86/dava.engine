@@ -37,7 +37,6 @@
 #include "Render/2D/TextBlock.h"
 #include "Core/Core.h"
 #include "Job/JobManager.h"
-#include "Job/JobWaiter.h"
 
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
@@ -408,13 +407,13 @@ bool TextBlock::IsSpriteReady()
 void TextBlock::Prepare(Texture *texture /*=NULL*/)
 {
     Retain();
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal,
-                                                                                            SafeRetain(texture)));
+
+	Function<void()> fn = DAVA::Bind(MakeFunction(this, &TextBlock::PrepareInternal), SafeRetain(texture));
+	JobManager::Instance()->CreateMainJob(fn);
 }
 
-void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
+void TextBlock::PrepareInternal(Texture * texture)
 {
-    Texture * texture = (Texture *)param;
     if(!font)
     {
         Release();

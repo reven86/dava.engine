@@ -499,10 +499,10 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
 
 void UIStaticText::PrepareSprite()
 {
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &UIStaticText::PrepareSpriteInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &UIStaticText::PrepareSpriteInternal));
 }
 
-void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, void *callerData)
+void UIStaticText::PrepareSpriteInternal()
 {
     if (textBlock->IsSpriteReady())
     {

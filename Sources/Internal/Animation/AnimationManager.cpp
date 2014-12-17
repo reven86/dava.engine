@@ -39,23 +39,23 @@ namespace DAVA
 
 void AnimationManager::AddAnimation(Animation * animation)
 {
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &AnimationManager::AddAnimationInternal, animation));
+	Function<void()> fn = Bind(MakeFunction(this, &AnimationManager::AddAnimationInternal), animation);
+	JobManager::Instance()->CreateMainJob(fn);
 }
     
-void AnimationManager::AddAnimationInternal(BaseObject * caller, void * param, void *callerData)
+void AnimationManager::AddAnimationInternal(Animation * animation)
 {
-    Animation * animation = (Animation*)param;
 	animations.push_back(animation);
 }
 
 void AnimationManager::RemoveAnimation(Animation * animation)
 {
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &AnimationManager::RemoveAnimationInternal, animation));
+	Function<void()> fn = Bind(MakeFunction(this, &AnimationManager::RemoveAnimationInternal), animation);
+	JobManager::Instance()->CreateMainJob(fn);
 }
     
-void AnimationManager::RemoveAnimationInternal(BaseObject * caller, void * param, void *callerData)
+void AnimationManager::RemoveAnimationInternal(Animation * animation)
 {
-    Animation * animation = (Animation*)param;
 	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		if (*t == animation)
@@ -83,35 +83,28 @@ void AnimationManager::StopAnimations()
 	
 void AnimationManager::DeleteAnimations(AnimatedObject * owner, int32 track)
 {
-    DeleteAnimationsData * data = new DeleteAnimationsData();
-    data->owner = owner;
-    data->track = track;
-    
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &AnimationManager::DeleteAnimationInternal, data));
+	Function<void()> fn = Bind(MakeFunction(this, &AnimationManager::DeleteAnimationInternal), owner, track);
+	JobManager::Instance()->CreateMainJob(fn);
 }
     
-void AnimationManager::DeleteAnimationInternal(BaseObject * caller, void * param, void *callerData)
+void AnimationManager::DeleteAnimationInternal(AnimatedObject * owner, int32 track)
 {
-    DeleteAnimationsData * data = (DeleteAnimationsData*)param;
-
-	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	for(Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		Animation * animation = *t;
-		if ((data->track != -1) && (animation->groupId != data->track))
-        {
-            continue;
-        }
-		
-		if (animation->owner == data->owner)
+		if((track != -1) && (animation->groupId != track))
 		{
-            animation->owner = 0;   // zero owner to avoid any issues (it was a problem with DumpState, when animations was deleted before). 
+			continue;
+		}
+
+		if(animation->owner == owner)
+		{
+			animation->owner = 0;   // zero owner to avoid any issues (it was a problem with DumpState, when animations was deleted before). 
 			animation->state &= ~Animation::STATE_IN_PROGRESS;
 			animation->state &= ~Animation::STATE_FINISHED;
 			animation->state |= Animation::STATE_DELETE_ME;
 		}
 	}
-    
-    SafeDelete(data);
 }
 	
 Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _groupId)
