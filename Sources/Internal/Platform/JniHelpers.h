@@ -48,7 +48,7 @@ namespace JNI
 	Supported return arguments types.
 	If you want to use some unsupported for now type, you need to:
 	1. Add user type to JMRetType
-	2. Add new instance of template<> struct TypeName<your New Used type> for your new type.
+	2. Add new instance of template<> struct TypeMetrics<your New Used type> for your new type.
 	3. Add caller method to ResolverCall definition
  */
 enum JMRetType
@@ -60,6 +60,8 @@ enum JMRetType
 	BOOLEAN_ARR,
 	INT,
 	INT_ARR,
+	LONG,
+	LONG_ARR,
 	OBJECT,
 	OBJECT_ARR,
 };
@@ -67,11 +69,14 @@ enum JMRetType
 JavaVM *GetJVM();
 JNIEnv *GetEnv();
 
-template<typename T>
-struct TypeName
+void AttachCurrentThreadToJVM();
+void DetachCurrentThreadFromJVM();
+
+template<class T>
+struct TypeMetrics
 { };
 
-template<> struct TypeName<void>
+template<> struct TypeMetrics<void>
 {
 	operator const char *() const {return value.c_str();}
 	operator String() const {return value;}
@@ -79,7 +84,8 @@ template<> struct TypeName<void>
 	String value = "V";
 	JMRetType type = VOID;
 };
-template<> struct TypeName<jint>
+
+template<> struct TypeMetrics<jint>
 {
 	operator const char *() const {return value.c_str();}
 	operator String() const {return value;}
@@ -87,7 +93,8 @@ template<> struct TypeName<jint>
 	String value = "I";
 	JMRetType type = INT;
 };
-template<> struct TypeName<jintArray>
+
+template<> struct TypeMetrics<jintArray>
 {
 	operator const char *() const {return value.c_str();}
 	operator String() const {return value;}
@@ -95,7 +102,26 @@ template<> struct TypeName<jintArray>
 	String value = "[I";
 	JMRetType type = INT_ARR;
 };
-template<> struct TypeName<jstring>
+
+template<> struct TypeMetrics<jlong>
+{
+	operator const char *() const {return value.c_str();}
+	operator String() const {return value;}
+
+	String value = "J";
+	JMRetType type = LONG;
+};
+
+template<> struct TypeMetrics<jlongArray>
+{
+	operator const char *() const {return value.c_str();}
+	operator String() const {return value;}
+
+	String value = "[J";
+	JMRetType type = LONG_ARR;
+};
+
+template<> struct TypeMetrics<jstring>
 {
 	operator const char *() const {return value.c_str();}
 	operator String() const {return value;}
@@ -103,7 +129,8 @@ template<> struct TypeName<jstring>
 	String value = "Ljava/lang/String;";
 	JMRetType type = STRING;
 };
-template<> struct TypeName<jobject>
+
+template<> struct TypeMetrics<jobject>
 {
 	operator const char *() const {return value.c_str();}
 	operator String() const {return value;}
@@ -111,7 +138,8 @@ template<> struct TypeName<jobject>
 	String value = "Ljava/lang/Object;";
 	JMRetType type = OBJECT;
 };
-template<> struct TypeName<jobjectArray>
+
+template<> struct TypeMetrics<jobjectArray>
 {
 	operator const char *() const {return value.c_str();}
 	operator String() const {return value;}
@@ -120,7 +148,7 @@ template<> struct TypeName<jobjectArray>
 	JMRetType type = OBJECT_ARR;
 };
 
-template<> struct TypeName<jboolean>
+template<> struct TypeMetrics<jboolean>
 {
 	operator const char *() const {return value.c_str();}
 	operator String() const {return value;}
@@ -128,7 +156,8 @@ template<> struct TypeName<jboolean>
 	String value = "Z";
 	JMRetType type = BOOLEAN;
 };
-template<> struct TypeName<jbooleanArray>
+
+template<> struct TypeMetrics<jbooleanArray>
 {
 	operator const char *() const {return value.c_str();}
 	operator String() const {return value;}
@@ -137,7 +166,7 @@ template<> struct TypeName<jbooleanArray>
 	JMRetType type = BOOLEAN_ARR;
 };
 
-class SpecString
+class SignatureString
 {
 public:
 	template<class T>
@@ -163,78 +192,78 @@ public:
 };
 
 template<class Ret>
-String SpecString::FromTypes()
+String SignatureString::FromTypes()
 {
 	return String("(V)")
-			+ TypeName<Ret>();
+			+ TypeMetrics<Ret>();
 }
 
 template<class Ret, class P1>
-String SpecString::FromTypes()
+String SignatureString::FromTypes()
 {
 	return String("(")
-			+ TypeName<P1>().value
+			+ TypeMetrics<P1>().value
 			+ String(")")
-			+ TypeName<Ret>().value;
+			+ TypeMetrics<Ret>().value;
 }
 
 template<class Ret, class P1, class P2>
-String SpecString::FromTypes()
+String SignatureString::FromTypes()
 {
 	return String("(")
-			+ TypeName<P1>().value
-			+ TypeName<P2>().value
+			+ TypeMetrics<P1>().value
+			+ TypeMetrics<P2>().value
 			+ String(")")
-			+ TypeName<Ret>().value;
+			+ TypeMetrics<Ret>().value;
 }
 
 template<class Ret, class P1, class P2, class P3>
-String SpecString::FromTypes()
+String SignatureString::FromTypes()
 {
 	return String("(")
-			+ TypeName<P1>().value
-			+ TypeName<P2>().value
-			+ TypeName<P3>().value
+			+ TypeMetrics<P1>().value
+			+ TypeMetrics<P2>().value
+			+ TypeMetrics<P3>().value
 			+ String(")")
-			+ TypeName<Ret>().value;
+			+ TypeMetrics<Ret>().value;
 }
 template<class Ret, class P1, class P2, class P3, class P4>
-String SpecString::FromTypes()
+String SignatureString::FromTypes()
 {
 	return String("(")
-			+ TypeName<P1>().value
-			+ TypeName<P2>().value
-			+ TypeName<P3>().value
-			+ TypeName<P4>().value
+			+ TypeMetrics<P1>().value
+			+ TypeMetrics<P2>().value
+			+ TypeMetrics<P3>().value
+			+ TypeMetrics<P4>().value
 			+ String(")")
-			+ TypeName<Ret>().value;
+			+ TypeMetrics<Ret>().value;
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
-String SpecString::FromTypes()
+String SignatureString::FromTypes()
 {
 	return String("(")
-			+ TypeName<P1>().value
-			+ TypeName<P2>().value
-			+ TypeName<P3>().value
-			+ TypeName<P4>().value
-			+ TypeName<P5>().value
+			+ TypeMetrics<P1>().value
+			+ TypeMetrics<P2>().value
+			+ TypeMetrics<P3>().value
+			+ TypeMetrics<P4>().value
+			+ TypeMetrics<P5>().value
 			+ String(")")
-			+ TypeName<Ret>().value;
+			+ TypeMetrics<Ret>().value;
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-String SpecString::FromTypes()
+String SignatureString::FromTypes()
 {
 	return String("(")
-			+ TypeName<P1>().value
-			+ TypeName<P2>().value
-			+ TypeName<P3>().value
-			+ TypeName<P4>().value
-			+ TypeName<P5>().value
-			+ TypeName<P6>().value
+			+ TypeMetrics<P1>().value
+			+ TypeMetrics<P2>().value
+			+ TypeMetrics<P3>().value
+			+ TypeMetrics<P4>().value
+			+ TypeMetrics<P5>().value
+			+ TypeMetrics<P6>().value
 			+ String(")")
-			+ TypeName<Ret>().value;
+			+ TypeMetrics<Ret>().value;
 }
 
 /*
@@ -252,14 +281,16 @@ class MethodCaller
 // but there is returns at each string and when Ret=jboolean - conversion is ok.
 // Later we can split this code to separate callers...
 #define ResolvedCall(Static, javaClass, javaMethod, ...)\
-switch(TypeName<Ret>().type)\
+switch(TypeMetrics<Ret>().type)\
 {\
 	case VOID: GetEnv()->Call##Static##VoidMethod(javaClass, javaMethod, __VA_ARGS__); return Ret();\
-	case OBJECT:return (Ret)(GetEnv()->Call##Static##ObjectMethod(javaClass, javaMethod, __VA_ARGS__));\
+	case OBJECT:\
 	case OBJECT_ARR: return (Ret)(GetEnv()->Call##Static##ObjectMethod(javaClass, javaMethod, __VA_ARGS__));\
-	case INT: return (Ret)(GetEnv()->Call##Static##IntMethod(javaClass, javaMethod, __VA_ARGS__));\
+	case INT:\
 	case INT_ARR: return (Ret)(GetEnv()->Call##Static##IntMethod(javaClass, javaMethod, __VA_ARGS__));\
-	case BOOLEAN: return (Ret)(GetEnv()->Call##Static##BooleanMethod(javaClass, javaMethod, __VA_ARGS__));\
+	case LONG:\
+	case LONG_ARR: return (Ret)(GetEnv()->Call##Static##LongMethod(javaClass, javaMethod, __VA_ARGS__));\
+	case BOOLEAN:\
 	case BOOLEAN_ARR: return (Ret)(GetEnv()->Call##Static##BooleanMethod(javaClass, javaMethod, __VA_ARGS__));\
 }
 
@@ -372,44 +403,44 @@ public:
     inline operator jclass() const;
 
     template<class Ret, class P1>
-    Function<Ret (P1)> GetMethod(String name);
+    Function<Ret (P1)> GetMethod(String name) const;
 
     template<class Ret, class P1>
-    Function<Ret (P1)> GetStaticMethod(String name);
+    Function<Ret (P1)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2>
-    Function<Ret (P1, P2)> GetMethod(String name);
+    Function<Ret (P1, P2)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2>
-    Function<Ret (P1, P2)> GetStaticMethod(String name);
+    Function<Ret (P1, P2)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3>
-    Function<Ret (P1, P2, P3)> GetMethod(String name);
+    Function<Ret (P1, P2, P3)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3>
-	Function<Ret (P1, P2, P3)> GetStaticMethod(String name);
+	Function<Ret (P1, P2, P3)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4>
-    Function<Ret (P1, P2, P3, P4)> GetMethod(String name);
+    Function<Ret (P1, P2, P3, P4)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4>
-	Function<Ret (P1, P2, P3, P4)> GetStaticMethod(String name);
+	Function<Ret (P1, P2, P3, P4)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4, class P5>
-    Function<Ret (P1, P2, P3, P4, P5)> GetMethod(String name);
+    Function<Ret (P1, P2, P3, P4, P5)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4, class P5>
-	Function<Ret (P1, P2, P3, P4, P5)> GetStaticMethod(String name);
+	Function<Ret (P1, P2, P3, P4, P5)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-    Function<Ret (P1, P2, P3, P4, P5, P6)> GetMethod(String name);
+    Function<Ret (P1, P2, P3, P4, P5, P6)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-	Function<Ret (P1, P2, P3, P4, P5, P6)> GetStaticMethod(String name);
+	Function<Ret (P1, P2, P3, P4, P5, P6)> GetStaticMethod(String name) const;
 
 private:
     template <class T>
-    void CheckOperationResult(T value, String name);
+    void CheckOperationResult(T value, String name) const;
 
 private:
     JavaVM *jvm;
@@ -423,115 +454,115 @@ inline JavaClass::operator jclass() const
 }
 
 template<class Ret, class P1>
-Function<Ret (P1)> JavaClass::GetMethod(String name)
+Function<Ret (P1)> JavaClass::GetMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1>();
+	String parametersString = SignatureString::FromTypes<Ret, P1>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller1<Ret, P1>::Call, javaClass, javaMethod, _1);
 }
 
 template<class Ret, class P1>
-Function<Ret (P1)> JavaClass::GetStaticMethod(String name)
+Function<Ret (P1)> JavaClass::GetStaticMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1>();
+	String parametersString = SignatureString::FromTypes<Ret, P1>();
 	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller1<Ret, P1>::CallStatic, javaClass, javaMethod, _1);
 }
 
 template<class Ret, class P1, class P2>
-Function<Ret (P1, P2)> JavaClass::GetMethod(String name)
+Function<Ret (P1, P2)> JavaClass::GetMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller2<Ret, P1, P2>::Call, javaClass, javaMethod, _1, _2);
 }
 
 template<class Ret, class P1, class P2>
-Function<Ret (P1, P2)> JavaClass::GetStaticMethod(String name)
+Function<Ret (P1, P2)> JavaClass::GetStaticMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2>();
 	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller2<Ret, P1, P2>::CallStatic, javaClass, javaMethod, _1, _2);
 }
 
 template<class Ret, class P1, class P2, class P3>
-Function<Ret (P1, P2, P3)> JavaClass::GetMethod(String name)
+Function<Ret (P1, P2, P3)> JavaClass::GetMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2, P3>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller3<Ret, P1, P2, P3>::Call, javaClass, javaMethod, _1, _2, _3);
 }
 
 template<class Ret, class P1, class P2, class P3>
-Function<Ret (P1, P2, P3)> JavaClass::GetStaticMethod(String name)
+Function<Ret (P1, P2, P3)> JavaClass::GetStaticMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2, P3>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3>();
 	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller3<Ret, P1, P2, P3>::CallStatic, javaClass, javaMethod, _1, _2, _3);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4>
-Function<Ret (P1, P2, P3, P4)> JavaClass::GetMethod(String name)
+Function<Ret (P1, P2, P3, P4)> JavaClass::GetMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2, P3, P4>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller4<Ret, P1, P2, P3, P4>::Call, javaClass, javaMethod, _1, _2, _3, _4);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4>
-Function<Ret (P1, P2, P3, P4)> JavaClass::GetStaticMethod(String name)
+Function<Ret (P1, P2, P3, P4)> JavaClass::GetStaticMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2, P3, P4>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4>();
 	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller4<Ret, P1, P2, P3, P4>::CallStatic, javaClass, javaMethod, _1, _2, _3, _4);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
-Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetMethod(String name)
+Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2, P3, P4, P5>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::Call, javaClass, javaMethod, _1, _2, _3, _4, _5);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
-Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetStaticMethod(String name)
+Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetStaticMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2, P3, P4, P5>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5>();
 	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::CallStatic, javaClass, javaMethod, _1, _2, _3, _4, _5);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name)
+Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::Call, javaClass, javaMethod, _1, _2, _3, _4, _5, _6);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name)
+Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) const
 {
-	String parametersString = SpecString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
+	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
 	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::CallStatic, javaClass, javaMethod, _1, _2, _3, _4, _5, _6);
 }
 
 template <class T>
-void JavaClass::CheckOperationResult(T value, String name)
+void JavaClass::CheckOperationResult(T value, String name) const
 {
 	if (NULL != value)
 		return;

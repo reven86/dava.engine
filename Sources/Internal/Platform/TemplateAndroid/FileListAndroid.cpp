@@ -60,9 +60,9 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 				jobject item = env->GetObjectArrayElement(jArray, i);
 
 				jclass cls = env->GetObjectClass(item);
-				jfieldID jNameField = env->GetFieldID(cls, "name", JNI::TypeName<jstring>());
-				jfieldID jSizeField = env->GetFieldID(cls, "size", "J");
-				jfieldID jIsDirectoryField = env->GetFieldID(cls, "isDirectory", JNI::TypeName<jboolean>());
+				jfieldID jNameField = env->GetFieldID(cls, "name", JNI::TypeMetrics<jstring>());
+				jfieldID jSizeField = env->GetFieldID(cls, "size", JNI::TypeMetrics<jlong>());
+				jfieldID jIsDirectoryField = env->GetFieldID(cls, "isDirectory", JNI::TypeMetrics<jboolean>());
 
 				jlong jSize = env->GetLongField(item, jSizeField);
 				jboolean jIsDir = env->GetBooleanField(item, jIsDirectoryField);

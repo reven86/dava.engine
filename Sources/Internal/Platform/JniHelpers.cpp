@@ -58,6 +58,35 @@ JNIEnv *GetEnv()
     return env;
 }
 
+void AttachCurrentThreadToJVM()
+{
+	if (true == Thread::IsMainThread())
+		return;
+
+	JavaVM *vm = GetJVM();
+	JNIEnv *env;
+
+	if (JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+	{
+		if (vm->AttachCurrentThread(&env, NULL)!=0)
+			Logger::Error("runtime_error(Could not attach current thread to JNI)");
+	}
+}
+
+void DetachCurrentThreadFromJVM()
+{
+	if (true == Thread::IsMainThread())
+		return;
+
+	JavaVM *vm = GetJVM();
+	JNIEnv *env;
+	if (JNI_OK == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+	{
+		if (0 != vm->DetachCurrentThread())
+			Logger::Error("runtime_error(Could not detach current thread from JNI)");
+	}
+}
+
 JavaClass::JavaClass(const String &className)
 {
     jvm = GetJVM();
