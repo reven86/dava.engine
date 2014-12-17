@@ -760,7 +760,7 @@ void UIControlBackground::StretchDrawData::GenerateStretchData()
 {
     const Vector2 sizeInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
     const Vector2 offsetInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE), sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE));
-    const Vector2 spriteSize(sprite->GetWidth(), sprite->GetHeight());
+    const Vector2 &spriteSize = sprite->GetSize();
 
     const Vector2 xyLeftTopCap(offsetInTex - stretchCap);
     const Vector2 xyRightBottomCap(spriteSize - sizeInTex - offsetInTex - stretchCap);

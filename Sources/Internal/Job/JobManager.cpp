@@ -208,7 +208,7 @@ bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
 bool JobManager::HasMainJobID(uint32 mainJobID)
 {
-    return (mainJobID >= mainJobLastExecutedID);
+    return (mainJobID > mainJobLastExecutedID);
 }
 
 void JobManager::CreateWorkerJob(const Function<void()>& fn)
