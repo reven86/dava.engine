@@ -36,34 +36,30 @@ namespace DAVA
 namespace Net
 {
 
-struct IChannelListener;
-
-/*
- Interface is implemented by ChannelManager to allow clients to send data to channels.
- Implementor should be able to determine actual channel ID by source (applied when 
- specified default channel ID - DEFAULT_CHANNEL_ID)
-*/
-struct IChannelSender
-{
-    // Send data packet to channel and get packet ID for it if needed (packetId can be NULL)
-    virtual bool Send(IChannelListener* source, uint32 channelId, const uint8* buffer, size_t length, uint32* packetId) = 0;
-};
-
 /*
  Interface should be implemented by objects which want to know what is going on in channel.
 */
+struct IChannel;
 struct IChannelListener
 {
-    // Channel is open (underlying transport has connection) and can receive and send data through IChannelSender
-    virtual void OnChannelOpen(uint32 channelId, IChannelSender* sender) = 0;
+    // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
+    virtual void OnChannelOpen(IChannel* channel) = 0;
     // Channel is closed (underlying transport has disconnected)
-    virtual void OnChannelClosed(uint32 channelId, eDeactivationReason reason, int32 error) = 0;
+    virtual void OnChannelClosed(IChannel* channel) = 0;
     // Some data arrived into channel
-    virtual void OnChannelReceive(uint32 channelId, const uint8* buffer, size_t length) = 0;
+    virtual void OnPacketReceived(IChannel* channel, const void* buffer, size_t length) = 0;
     // Buffer has been sent and can be reused or freed
-    virtual void OnChannelSendComplete(uint32 channelId, const uint8* buffer, size_t length) = 0;
+    virtual void OnPacketSent(IChannel* channel, const void* buffer, size_t length) = 0;
     // Data packet with given ID has been delivered to other side
-    virtual void OnChannelDelivered(uint32 channelId, uint32 packetId) = 0;
+    virtual void OnPacketDelivered(IChannel* channel, uint32 packetId) = 0;
+};
+
+/*
+ This interface is passed to IChannelListener methods to allow clients to send data to channels.
+*/
+struct IChannel
+{
+    virtual bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) = 0;
 };
 
 }   // namespace Net

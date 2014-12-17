@@ -62,10 +62,6 @@ enum eDeactivationReason
     PACKETERROR  // Deactivated on invalid packet
 };
 
-// Default channel ID is suitable for cases when ChannelManager's client simply wants
-// to send data with no concern of real channel ID he has been registered to
-const uint32 DEFAULT_CHANNEL_ID = 0;
-
 }   // namespace Net
 }   // namespace DAVA
 
