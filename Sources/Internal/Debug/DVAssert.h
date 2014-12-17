@@ -82,7 +82,7 @@
 
         #include <signal.h>
         #include <unistd.h>
-        #define DebugBreak() { kill( getpid(), SIGINT ) ; }
+        #define DebugBreak() { raise(SIGTRAP); }
 
     #else //PLATFORMS
         //other platforms

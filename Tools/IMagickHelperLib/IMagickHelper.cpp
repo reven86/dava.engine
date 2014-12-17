@@ -13,36 +13,40 @@ using namespace std;
 namespace IMagickHelper
 {
 
-Rect::Rect()
+Layer::Layer()
 {
     x  = 0;
     y  = 0;
     dx = 0;
     dy = 0;
+
+	name[0] = 0;
 }
 
-Rect::Rect( int _x, int _y, int _dx, int _dy )
+Layer::Layer( int _x, int _y, int _dx, int _dy )
 {
     x  = _x;
     y  = _y;
     dx = _dx;
     dy = _dy;
+
+	name[0] = 0;
 }
 
 void CroppedData::Reset()
 {
-    if( rects_array!= 0 )
+    if( layers_array!= 0 )
     {
-        free( rects_array );
+        free( layers_array );
     }
 
     layer_width      = 0;
     layer_height     = 0;
-    rects_array_size = 0;
+    layers_array_size = 0;
 }
 
 CroppedData::CroppedData() :
-    rects_array     ( 0 )
+    layers_array     ( 0 )
 
 {
     Reset();
@@ -171,10 +175,10 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
             out_cropped_data->Reset();
             out_cropped_data->layer_width       = width;
             out_cropped_data->layer_height      = height;
-            out_cropped_data->rects_array_size  = (unsigned) layers.size();
-            out_cropped_data->rects_array       = (Rect*)malloc(  layers.size() * sizeof( Rect ) );
+            out_cropped_data->layers_array_size  = (unsigned) layers.size();
+            out_cropped_data->layers_array       = (Layer*)malloc(  layers.size() * sizeof( Layer ) );
 
-            Rect *rects_array = out_cropped_data->rects_array;
+            Layer *rects_array = out_cropped_data->layers_array;
 
             for(int k = 0; k < (int)layers.size(); ++k)
             {
@@ -184,7 +188,9 @@ bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_pa
                 int xOff = (int)bbox.xOff() * ( bbox.xNegative() ? -1 : 1 );
                 int yOff = (int)bbox.yOff() * ( bbox.yNegative() ? -1 : 1 );
 
-                rects_array[ k ] = Rect(xOff, yOff, (int)bbox.width(), (int)bbox.height());
+                rects_array[k] = Layer(xOff, yOff, (int)bbox.width(), (int)bbox.height());
+				strncpy(rects_array[k].name, currentLayer.label().c_str(), Layer::NAME_SIZE - 1);
+				rects_array[k].name[Layer::NAME_SIZE - 1] = 0;
             }
         }
     }

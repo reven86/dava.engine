@@ -140,12 +140,13 @@ public:
     static bool IsBiDiSupportEnabled();
     TextBlockRender* GetRenderer(){ return textBlockRender; }
 protected:
-    TextBlock();
-    ~TextBlock();
-    
-    void Prepare(Texture *texture = NULL);
-    void PrepareInternal(BaseObject * caller, void * param, void *callerData);
-    void CalculateCacheParams();
+
+	TextBlock();
+	virtual ~TextBlock();
+	
+ 	void Prepare(Texture *texture = NULL);
+	void PrepareInternal();
+	void CalculateCacheParams();
 
 	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)
 
@@ -175,7 +176,6 @@ protected:
     void CleanLine(WideString& string, bool trimRight = false);
 
     Vector2 rectSize;
-    bool needRedraw;
     Vector2 requestedSize;
 
     Vector2 cacheFinalSize;
@@ -215,6 +215,7 @@ protected:
     bool isPredrawed:1;
     bool cacheUseJustify:1;
     bool treatMultilineAsSingleLine:1;
+	bool needPrepareInternal:1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
     static BiDiHelper bidiHelper;
@@ -226,6 +227,7 @@ protected:
     
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;
+	Texture *textureForInvalidation;
 };
 
 }; //end of namespace
