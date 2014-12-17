@@ -80,7 +80,7 @@
     [backgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     
     
-    BOOL isMultipleTouchEnabled = (DAVA::InputSystem::Instance()->MultitouchEnabled()) ? YES : NO;
+    BOOL isMultipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
     [backgroundView setMultipleTouchEnabled:isMultipleTouchEnabled]; // to pass touches to framework
 
     [glView addSubview:backgroundView];
