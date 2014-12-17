@@ -1,14 +1,22 @@
 package com.dava.framework;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Environment;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -36,6 +44,49 @@ public class JNIWebView {
 					OnPageLoaded(id);
 				}
 			});
+			
+			
+			// TODO-render-view-to-image---------
+			// do your stuff here
+//			view.measure(MeasureSpec.makeMeasureSpec(
+//                    MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED),
+//                    MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+//			view.layout(0, 0, webView.getMeasuredWidth(),
+//                    webView.getMeasuredHeight());
+			view.setDrawingCacheEnabled(true);
+			view.buildDrawingCache();
+            Bitmap bm = Bitmap.createBitmap(view.getMeasuredWidth(),
+                    view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+
+            Canvas bigcanvas = new Canvas(bm);
+            Paint paint = new Paint();
+            int iHeight = bm.getHeight();
+            bigcanvas.drawBitmap(bm, 0, iHeight, paint);
+            view.draw(bigcanvas);
+            System.out.println("1111111111111111111111="
+                    + bigcanvas.getWidth());
+            System.out.println("22222222222222222222222="
+                    + bigcanvas.getHeight());
+
+            if (bm != null) {
+                try {
+                    String path = Environment.getExternalStorageDirectory()
+                            .toString();
+                    OutputStream fOut = null;
+                    File file = new File(path, "/aaaa.png");
+                    fOut = new FileOutputStream(file);
+
+                    bm.compress(Bitmap.CompressFormat.PNG, 50, fOut);
+                    fOut.flush();
+                    fOut.close();
+                    bm.recycle();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+			//-----------------------------------
+			
+			
 		};
 		
 		
