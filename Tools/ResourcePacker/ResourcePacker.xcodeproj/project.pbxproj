@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		74B038C018AD1ECC00A42A19 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74B038BF18AD1ECC00A42A19 /* WebKit.framework */; };
+		74D8E00A19ACCEBD0039D384 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74D8E00919ACCEBD0039D384 /* Security.framework */; };
 		A641264117D0CDEF004D3C5E /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A641263C17D0CDDA004D3C5E /* libFrameworkTools.a */; };
 		B019F1BA1A0FEA39004FB420 /* libIMagickHelper.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B019F1B91A0FEA39004FB420 /* libIMagickHelper.dylib */; };
 		B019F1BB1A0FEA4C004FB420 /* libIMagickHelper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = B019F1B91A0FEA39004FB420 /* libIMagickHelper.dylib */; };
@@ -100,6 +101,7 @@
 
 /* Begin PBXFileReference section */
 		74B038BF18AD1ECC00A42A19 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		74D8E00919ACCEBD0039D384 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		8DD76F6C0486A84900D96B5E /* ResourcePacker */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ResourcePacker; sourceTree = BUILT_PRODUCTS_DIR; };
 		A641263517D0CDD9004D3C5E /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../../Projects/MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
 		B019F1B91A0FEA39004FB420 /* libIMagickHelper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libIMagickHelper.dylib; path = ../../Libs/IMagickHelpLib/libIMagickHelper.dylib; sourceTree = "<group>"; };

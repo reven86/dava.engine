@@ -56,6 +56,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0264E2B91A41649100BD7279 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE9895531163F13500500198 /* Framework.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D;
+			remoteInfo = Framework;
+		};
 		02FD8256192A10A5007762C0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = FE9895531163F13500500198 /* Framework.xcodeproj */;
@@ -369,6 +376,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				0264E2BA1A41649100BD7279 /* PBXTargetDependency */,
 			);
 			name = UnitTests;
 			productName = TemplateProjectiPhone;
@@ -383,7 +391,7 @@
 			attributes = {
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
-						DevelopmentTeam = 9KMD79CS7L;
+						DevelopmentTeam = XC9DK9T39T;
 						SystemCapabilities = {
 							com.apple.GameCenter = {
 								enabled = 0;
@@ -497,6 +505,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		0264E2BA1A41649100BD7279 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Framework;
+			targetProxy = 0264E2B91A41649100BD7279 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		1D6058940D05DD3E006BFB54 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -589,7 +605,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s arm64 i386";
+				VALID_ARCHS = "armv7 armv7s i386";
 			};
 			name = AdHoc;
 		};
@@ -654,7 +670,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s arm64 i386";
+				VALID_ARCHS = "armv7 armv7s i386";
 			};
 			name = Debug;
 		};
@@ -690,7 +706,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s arm64 i386";
+				VALID_ARCHS = "armv7 armv7s i386";
 			};
 			name = Release;
 		};

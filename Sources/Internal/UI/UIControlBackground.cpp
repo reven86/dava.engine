@@ -39,6 +39,10 @@
 
 namespace DAVA
 {
+//Shared render data
+RenderDataObject* UIControlBackground::rdoObject = NULL;
+RenderDataStream* UIControlBackground::vertexStream = NULL;
+RenderDataStream* UIControlBackground::texCoordStream = NULL;
 
 const uint16 UIControlBackground::StretchDrawData::indeces[18 * 3] = {
     0, 1, 4,
@@ -78,9 +82,6 @@ UIControlBackground::UIControlBackground()
 ,	lastDrawPos(0, 0)
 ,	tiledData(NULL)
 ,   stretchData(NULL)
-,   rdoObject(NULL)
-,   vertexStream(NULL)
-,   texCoordStream(NULL)
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
@@ -101,7 +102,6 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
     frame = srcBackground->frame;
     align = srcBackground->align;
 
-    SafeRelease(rdoObject);
     SetDrawType(srcBackground->type);
     SetMargins(srcBackground->GetMargins());
 
@@ -118,7 +118,6 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 
 UIControlBackground::~UIControlBackground()
 {
-    SafeRelease(rdoObject);
     SafeRelease(spr);
     SafeRelease(shader);
     SafeDelete(margins);
@@ -198,6 +197,16 @@ void UIControlBackground::SetFrame(int32 drawFrame)
     frame = drawFrame;
 }
 
+void UIControlBackground::SetFrame(const FastName& frameName)
+{
+    DVASSERT(spr);
+    int32 frameInd = spr->GetFrameByName(frameName);
+    if (frameInd != Sprite::INVALID_FRAME_INDEX)
+    {
+    	SetFrame(frameInd);
+    }
+}
+
 void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
@@ -205,25 +214,6 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
     type = drawType;
-    switch(type)
-    {
-    case DRAW_STRETCH_BOTH:
-    case DRAW_STRETCH_HORIZONTAL:
-    case DRAW_STRETCH_VERTICAL:
-    case DRAW_TILED:
-        {
-            if (!rdoObject)
-            {
-                rdoObject = new RenderDataObject();
-                vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-                texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-                //rdoObject->SetStream()
-            }
-        }
-        break;
-    default:
-        break;
-    }
     ReleaseDrawData();
 }
 
@@ -574,11 +564,8 @@ void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, Un
         size.x <= 0.0f || size.y <= 0.0f)
         return;
 
-    Vector2 stretchCap(Min(size.x, spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH)),
-                       Min(size.y, spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)));
-
-    stretchCap.x = Min(stretchCap.x * 0.5f, leftStretchCap);
-    stretchCap.y = Min(stretchCap.y * 0.5f, topStretchCap);
+    Vector2 stretchCap(Min(size.x * 0.5f, leftStretchCap),
+                       Min(size.y * 0.5f, topStretchCap));
 
     UniqueHandle textureHandle = spr->GetTextureHandle(frame);
     
@@ -772,7 +759,7 @@ void UIControlBackground::StretchDrawData::GenerateStretchData()
 {
     const Vector2 sizeInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
     const Vector2 offsetInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE), sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE));
-    const Vector2 spriteSize(sprite->GetWidth(), sprite->GetHeight());
+    const Vector2 &spriteSize = sprite->GetSize();
 
     const Vector2 xyLeftTopCap(offsetInTex - stretchCap);
     const Vector2 xyRightBottomCap(spriteSize - sizeInTex - offsetInTex - stretchCap);
@@ -1063,6 +1050,22 @@ void UIControlBackground::SetShader(Shader *_shader)
         SafeRelease(shader);
         shader = SafeRetain(_shader);
     }
+}
+
+void UIControlBackground::CreateRenderObject()
+{
+	DVASSERT(rdoObject == NULL && "Need be not initialized");
+
+	rdoObject = new RenderDataObject();
+	vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+	texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+
+}
+
+void UIControlBackground::ReleaseRenderObject()
+{
+	vertexStream = texCoordStream = NULL;
+	SafeRelease(rdoObject);
 }
 
 void UIControlBackground::SetMargins(const UIMargins* uiMargins)
