@@ -46,6 +46,13 @@ else   ()
     
 endif  ()
 
+
+if( NOT EXISTS "${DAVA_ROOT_DIR}/DavaConfig.in")
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaConfig.in 
+                    ${DAVA_ROOT_DIR}/DavaConfig.in COPYONLY )
+
+endif()
+
 set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
 configure_file( ${DAVA_ROOT_DIR}/DavaConfig.in 
