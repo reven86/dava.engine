@@ -5988,6 +5988,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					armv7,
+					armv7s,
+					arm64,
+					i386,
+				);
 				CLANG_CXX_LIBRARY = "compiler-default";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -6031,7 +6037,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Debug;
 		};
@@ -6039,6 +6045,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					armv7,
+					armv7s,
+					arm64,
+					i386,
+				);
 				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6079,7 +6091,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Release;
 		};
@@ -6221,6 +6233,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					armv7,
+					armv7s,
+					arm64,
+					i386,
+				);
 				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6256,7 +6274,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = AdHoc;
 		};
@@ -6308,6 +6326,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					armv7,
+					armv7s,
+					arm64,
+					i386,
+				);
 				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6343,7 +6367,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Distribution;
 		};
