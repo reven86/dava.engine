@@ -169,6 +169,7 @@ namespace DAVA
 
 			dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
 			dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
+			dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId.c_str());
 			dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
 			dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
 			dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
@@ -204,6 +205,7 @@ namespace DAVA
 
 		dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
 		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
+		dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId.c_str());
 		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
 		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
 		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());

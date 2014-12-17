@@ -56,6 +56,9 @@
  name: "Textured Alphablend"
  path: Textured.Alphablend.material
 -
+ name: "Textured Alphablend with Alphamask"
+ path: Textured.Alphablend.Alphamask.material
+-
  name: "Textured Alphatest"
  path: Textured.Alphatest.material
 -

@@ -37,6 +37,7 @@ namespace DAVA
 {
 
 InputSystem::InputSystem()
+    :   isMultitouchEnabled(true)
 {
     keyboard = new KeyboardDevice();
     gamepadManager = new GamepadManager();
@@ -119,6 +120,7 @@ GamepadManager *InputSystem::GetGamepadManager()
 {
     return gamepadManager;
 }
+
 
 
 };

@@ -107,6 +107,7 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
 	md5.Update((uint8*)name.c_str(), (uint32)name.size());
 
 	FileList * fileList = new FileList(pathName);
+    fileList->Sort();
 	for(int i = 0; i < fileList->GetCount(); ++i)
 	{
 		if(fileList->IsDirectory(i))

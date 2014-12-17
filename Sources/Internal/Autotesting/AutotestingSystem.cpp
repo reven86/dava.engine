@@ -36,6 +36,7 @@ namespace DAVA
 		, needExitApp(false)
 		, timeBeforeExit(0.0f)
 		, testsDate("not_found")
+		, runId("not_found")
 		, buildDate("not_found")
 		, testIndex(0)
 		, isDB(false)
@@ -170,6 +171,7 @@ namespace DAVA
 		{
 			ForceQuit("Couldn't get Date parameter from DB.");
 		}
+		runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
 
 		Logger::Debug("AutotestingSystem::FetchParametersFromDB Date=%s Group=%s Filename=%s TestIndex=%d", testsDate.c_str(), groupName.c_str(), testFileName.c_str(), testIndex);
 	}
