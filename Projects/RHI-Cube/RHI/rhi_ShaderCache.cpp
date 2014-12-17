@@ -208,12 +208,8 @@ UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const c
         bin = &(_ProgInfo.back().bin);
     }
 
-
-    const uint8*    src     = (const uint8*)srcText;
-    unsigned        src_sz  = strlen( srcText );
-    
     bin->clear();
-    bin->insert( bin->begin(), src, src+src_sz );
+    bin->insert( bin->begin(), (const uint8*)(&(txt[0])), (const uint8*)(&(txt[txt.length()-1])+1) );
     bin->push_back( 0 );
 }
 
