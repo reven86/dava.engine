@@ -52,10 +52,13 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+	textBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
+
 	textBg->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
     
     shadowBg = new UIControlBackground();
     shadowBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+	shadowBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
     shadowBg->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
     SetTextColor(Color::White);
@@ -217,13 +220,15 @@ const Vector2 &UIStaticText::GetShadowOffset() const
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
+	if(GetText().empty()) return;
+
 	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());
 
 	textBlock->SetPivotPoint(geometricData.pivotPoint);
-	PrepareSprite();
 	textBlock->PreDraw();
+	PrepareSprite();
 
     UIControl::Draw(geometricData);
 

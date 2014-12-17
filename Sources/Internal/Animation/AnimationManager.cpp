@@ -56,7 +56,8 @@ void AnimationManager::RemoveAnimation(Animation * animation)
     
 void AnimationManager::RemoveAnimationInternal(Animation * animation)
 {
-	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	Vector<Animation*>::iterator endIt = animations.end();
+	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		if (*t == animation)
 		{
@@ -70,7 +71,8 @@ void AnimationManager::StopAnimations()
 {
     DVASSERT(Thread::IsMainThread());
     
-    for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	Vector<Animation*>::iterator endIt = animations.end();
+	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
 		
@@ -89,7 +91,8 @@ void AnimationManager::DeleteAnimations(AnimatedObject * owner, int32 track)
     
 void AnimationManager::DeleteAnimationInternal(AnimatedObject * owner, int32 track)
 {
-	for(Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	Vector<Animation*>::iterator endIt = animations.end();
+	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
 		if((track != -1) && (animation->groupId != track))
@@ -111,7 +114,8 @@ Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _
 {
     DVASSERT(Thread::IsMainThread());
     
-	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	Vector<Animation*>::iterator endIt = animations.end();
+	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
 
@@ -127,11 +131,12 @@ Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _
 	return 0;
 }
 
-bool AnimationManager::IsAnimating(AnimatedObject * owner, int32 track)
+bool AnimationManager::IsAnimating(const AnimatedObject * owner, int32 track) const
 {
     DVASSERT(Thread::IsMainThread());
 
-	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	Vector<Animation*>::const_iterator endIt = animations.end();
+	for (Vector<Animation*>::const_iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
 
@@ -153,7 +158,8 @@ Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32
 {
     DVASSERT(Thread::IsMainThread());
 
-	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	Vector<Animation*>::iterator endIt = animations.end();
+	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
 
@@ -169,6 +175,23 @@ Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32
     }
 
 	return 0;
+}
+
+bool AnimationManager::HasActiveAnimations(AnimatedObject * owner) const
+{
+	DVASSERT(Thread::IsMainThread());
+
+	Vector<Animation*>::const_iterator endIt = animations.end();
+	for (Vector<Animation*>::const_iterator t = animations.begin(); t != endIt; ++t)
+	{
+		const Animation * animation = *t;
+
+		if ((animation->owner == owner) && !(animation->state & Animation::STATE_FINISHED))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void AnimationManager::Update(float32 timeElapsed)
@@ -259,9 +282,10 @@ void AnimationManager::PauseAnimations(bool isPaused, int tag)
 {
     DVASSERT(Thread::IsMainThread());
 
-	for(Vector<Animation*>::iterator i = animations.begin(); i != animations.end(); ++i)
+	Vector<Animation*>::iterator endIt = animations.end();
+	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
     {
-        Animation * &a = *i;
+        Animation * &a = *t;
         
         if (a->GetTagId() == tag)
         {
@@ -274,9 +298,10 @@ void AnimationManager::SetAnimationsMultiplier(float32 f, int tag)
 {
     DVASSERT(Thread::IsMainThread());
     
-    for(Vector<Animation*>::iterator i = animations.begin(); i != animations.end(); ++i)
+	Vector<Animation*>::iterator endIt = animations.end();
+	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
     {
-        Animation * &a = *i;
+        Animation * &a = *t;
         
         if (a->GetTagId() == tag)
         {

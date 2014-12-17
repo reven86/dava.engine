@@ -70,14 +70,15 @@ public:
 	void SetAnimationsMultiplier(float32 f, int32 tag = 0);
 private:
 	Animation * FindLastAnimation(AnimatedObject * owner, int32 _groupId);
-	bool IsAnimating(AnimatedObject * owner, int32 trackId);
+	bool IsAnimating(const AnimatedObject * owner, int32 trackId) const;
 	
 	void AddAnimation(Animation * _animation);
 	void AddAnimationInternal(Animation * animation);
 
     void RemoveAnimation(Animation * _animation);
 	void RemoveAnimationInternal(Animation * animation);
-
+	
+	bool HasActiveAnimations(AnimatedObject * owner) const;
 	/*
 	 Function remove all animations for given object from update and delete objects and their references
 	 */
