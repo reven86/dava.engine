@@ -50,6 +50,7 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;
 - (void)leftGesture;
 - (void)rightGesture;
+- (UIImage *)takeSnapshotOfView:(UIView *)view;
 
 @end
 
@@ -130,8 +131,20 @@
 }
 
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
+- (void)webViewDidFinishLoad:(UIWebView *)webViewParam
 {
+    // TODO render to image test
+    UIImage* image = [self takeSnapshotOfView:webViewParam];
+    DVASSERT(image);
+    
+    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString * basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+
+    NSData * binaryImageData = UIImagePNGRepresentation(image);
+
+    [binaryImageData writeToFile:[basePath stringByAppendingPathComponent:@"test_outimage.png"] atomically:YES];
+
+    
     if (delegate && self->webView)
 	{
         delegate->PageLoaded(self->webView);
@@ -144,6 +157,17 @@
 	{
         delegate->PageLoaded(self->webView);
     }
+}
+
+- (UIImage *)takeSnapshotOfView:(UIView *)view
+{
+    CGFloat reductionFactor = 1;
+    UIGraphicsBeginImageContext(CGSizeMake(view.frame.size.width/reductionFactor, view.frame.size.height/reductionFactor));
+    [view drawViewHierarchyInRect:CGRectMake(0, 0, view.frame.size.width/reductionFactor, view.frame.size.height/reductionFactor) afterScreenUpdates:YES];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return image;
 }
 
 @end
@@ -422,4 +446,15 @@ int32 WebViewControl::GetDataDetectorTypes() const
     return davaDetectorTypes;
 }
     
-};
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    // TODO
+}
+
+bool WebViewControl::IsRenderToTexture() const
+{
+    // TODO
+    return true;
+}
+    
+} // end namespace DAVA

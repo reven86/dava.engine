@@ -83,13 +83,13 @@ public:
 	virtual bool GetBounces() const {return false;};
 	virtual void SetBounces(bool value) {};
     virtual void SetGestures(bool value){};
-
-    virtual void SetRenderToTexture(bool value) = 0;
-    virtual bool IsRenderToTexture() const = 0;
     
     // Data detector types.
     virtual void SetDataDetectorTypes(int32 /*value*/) {};
     virtual int32 GetDataDetectorTypes() const {return 0;};
+    
+    virtual void SetRenderToTexture(bool value) = 0;
+    virtual bool IsRenderToTexture() const = 0;
 };
 
 };

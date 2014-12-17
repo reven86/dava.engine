@@ -37,7 +37,7 @@ namespace DAVA {
 
 class FilePath;
     
-// Web View Control - MacOS version.
+// Web View Control - iOS version.
 class WebViewControl : public IWebViewControl
 {
 public:
@@ -67,6 +67,9 @@ public:
     // Data detector types.
     virtual void SetDataDetectorTypes(int32 value);
     virtual int32 GetDataDetectorTypes() const;
+    
+    void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override;
 
 protected:
 
