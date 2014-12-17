@@ -391,7 +391,7 @@
 			attributes = {
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
-						DevelopmentTeam = 9KMD79CS7L;
+						DevelopmentTeam = XC9DK9T39T;
 						SystemCapabilities = {
 							com.apple.GameCenter = {
 								enabled = 0;
