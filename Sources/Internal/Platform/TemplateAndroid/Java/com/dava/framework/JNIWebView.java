@@ -26,6 +26,7 @@ import android.widget.FrameLayout;
 @SuppressLint("UseSparseArrays")
 public class JNIWebView {
 	final static String TAG = "JNIWebView";
+	final static Paint paint = new Paint();
 	static Map<Integer, WebView> views = new HashMap<Integer, WebView>();
 	
 	private static class InternalViewClient extends WebViewClient {
@@ -47,42 +48,29 @@ public class JNIWebView {
 			
 			
 			// TODO-render-view-to-image---------
-			// do your stuff here
-//			view.measure(MeasureSpec.makeMeasureSpec(
-//                    MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED),
-//                    MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-//			view.layout(0, 0, webView.getMeasuredWidth(),
-//                    webView.getMeasuredHeight());
-			view.setDrawingCacheEnabled(true);
-			view.buildDrawingCache();
+			long startTime = System.nanoTime();
             Bitmap bm = Bitmap.createBitmap(view.getMeasuredWidth(),
                     view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-
+            assert bm != null;
             Canvas bigcanvas = new Canvas(bm);
-            Paint paint = new Paint();
-            int iHeight = bm.getHeight();
-            bigcanvas.drawBitmap(bm, 0, iHeight, paint);
+            int height = bm.getHeight();
+            bigcanvas.drawBitmap(bm, 0, height, paint);
             view.draw(bigcanvas);
-            System.out.println("1111111111111111111111="
-                    + bigcanvas.getWidth());
-            System.out.println("22222222222222222222222="
-                    + bigcanvas.getHeight());
+            double timeToRenderToImage = (double)(System.nanoTime() - startTime)/1000000000.0;
+            Log.d(TAG, "time to render webview to image = " + timeToRenderToImage + "s");
+            try {
+                String path = Environment.getExternalStorageDirectory()
+                        .toString();
+                OutputStream fOut = null;
+                File file = new File(path, "/test_output.png");
+                fOut = new FileOutputStream(file);
 
-            if (bm != null) {
-                try {
-                    String path = Environment.getExternalStorageDirectory()
-                            .toString();
-                    OutputStream fOut = null;
-                    File file = new File(path, "/aaaa.png");
-                    fOut = new FileOutputStream(file);
-
-                    bm.compress(Bitmap.CompressFormat.PNG, 50, fOut);
-                    fOut.flush();
-                    fOut.close();
-                    bm.recycle();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                bm.compress(Bitmap.CompressFormat.PNG, 50, fOut);
+                fOut.flush();
+                fOut.close();
+                bm.recycle();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 			//-----------------------------------
 			
