@@ -1,9 +1,0 @@
-
-QT4_PATH_WIN           = 
-QT5_PATH_WIN           = 
-ANDROID_NDK_PATH_WIN   = 
-
-
-QT4_PATH_MAC           =
-QT5_PATH_MAC           = 
-ANDROID_NDK_PATH_MAC   =
