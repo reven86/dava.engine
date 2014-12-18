@@ -495,7 +495,14 @@ const V& HashMap<K, V>::valueByIndex(size_t index) const
 		}
 	}
 	
-	return (curIndex == index) ? stateIter->second : defaultV;
+	if (curIndex == index)
+	{
+		// fix clang warning on return ref to local address
+		HashMap<K, V>::HashMapItem* item = stateIter.operator->();
+		return item->second;
+	}
+
+	return defaultV;
 }
 
 template <typename K, typename V>
