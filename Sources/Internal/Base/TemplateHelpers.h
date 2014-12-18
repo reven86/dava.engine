@@ -143,7 +143,7 @@ struct IsSame<T, T>
 
 namespace TemplateHelper
 {
-    typedef DAVA_TYPELIST_4(unsigned char, unsigned short int, unsigned int, unsigned long int) StdUnsignedInts;
+    typedef DAVA_TYPELIST_5(unsigned char, unsigned short int, unsigned int, unsigned long int, long long) StdUnsignedInts;
     typedef DAVA_TYPELIST_4(signed char, short int, int, long int) StdSignedInts;
     typedef DAVA_TYPELIST_3(bool, char, wchar_t) StdOtherInts;
     typedef DAVA_TYPELIST_3(float, double, long double) StdFloats;
