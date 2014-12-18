@@ -47,8 +47,14 @@ NetConfig::NetConfig(eTransportRole aRole) : role(aRole)
 
 NetConfig::~NetConfig() {}
 
+bool NetConfig::Validate() const
+{
+    return false == transports.empty() && false == services.empty();
+}
+
 NetConfig NetConfig::Mirror(const IPAddress& addr) const
 {
+    DVASSERT(true == Validate());
     NetConfig result(SERVER_ROLE == role ? CLIENT_ROLE : SERVER_ROLE);
     result.transports = transports;
     result.services = services;

@@ -44,7 +44,7 @@ TCPTransport::TCPTransport(IOLoop* ioLoop, ITransportListener* aListener, eTrans
                                                 , socket(ioLoop)
                                                 , timer(ioLoop)
                                                 , endpoint(endp)
-                                                , readTimeout(1000 * 5 * 1000)
+                                                , readTimeout(1000 * 5)
                                                 , listener(aListener)
                                                 , isActive(false)
                                                 , deactivateFlag(false)
