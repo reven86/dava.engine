@@ -677,13 +677,14 @@ void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData
         Vector3 x3 = Vector3(1.0f, 0.0f, 0.0f)*transform, y3 = Vector3(0.0f, 1.0f, 0.0f)*transform;
         Vector2 x(x3.x, x3.y), y(y3.x, y3.y);
 
-        //reduce size by 1 pixel from each size for polygon to fit into control hence +1.0f and -2.0f
-        textGeomData.position += (x*rendereTextBlock->getTextOffsetTL().x) + 1.0f;
-        textGeomData.position += (y*rendereTextBlock->getTextOffsetTL().y) + 1.0f;
+        //reduce size by 1 pixel from each size for polygon to fit into control hence +1.0f and -1.0f
+        //getTextOffsetTL and getTextOffsetBR are in physical coordinates but draw is still in virtual
+        textGeomData.position += (x*(rendereTextBlock->getTextOffsetTL().x + 1.0f))*Core::GetPhysicalToVirtualFactor();
+        textGeomData.position += (y*(rendereTextBlock->getTextOffsetTL().y + 1.0f))*Core::GetPhysicalToVirtualFactor();
 
         textGeomData.size = Vector2(0.0f, 0.0f);
-        textGeomData.size.x += (rendereTextBlock->getTextOffsetBR().x - rendereTextBlock->getTextOffsetTL().x) - 2.0f;
-        textGeomData.size.y += (rendereTextBlock->getTextOffsetBR().y - rendereTextBlock->getTextOffsetTL().y) - 2.0f;
+        textGeomData.size.x += ((rendereTextBlock->getTextOffsetBR().x - rendereTextBlock->getTextOffsetTL().x) -1.0f) * Core::GetPhysicalToVirtualFactor();
+        textGeomData.size.y += ((rendereTextBlock->getTextOffsetBR().y - rendereTextBlock->getTextOffsetTL().y) -1.0f) * Core::GetPhysicalToVirtualFactor();
 
 
         DAVA::Polygon2 textPolygon;
@@ -776,7 +777,7 @@ void UIStaticText::RecalculateDebugColoring()
         if (!text.empty())
         {
             WideString textNoSpaces(text);
-           
+            TextBlock::CleanLine(textNoSpaces);
             auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
             textNoSpaces.erase(res, textNoSpaces.end());
 

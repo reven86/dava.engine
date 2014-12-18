@@ -57,7 +57,9 @@ public:
 	virtual void Prepare(Texture *texture = NULL);
 
 #if defined(LOCALIZATION_DEBUG)
+    //in physical coordinates
     Vector2 getTextOffsetTL();
+    //in physical coordinates
     Vector2 getTextOffsetBR();
 #endif
 protected:

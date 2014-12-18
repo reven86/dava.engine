@@ -139,6 +139,14 @@ public:
      */
     static bool IsBiDiSupportEnabled();
     TextBlockRender* GetRenderer(){ return textBlockRender; }
+
+    /**
+    * \brief Clean line.
+    * \param [in,out] string The string.
+    * \param trimRight (Optional) true to trim right.
+    */
+    static void CleanLine(WideString& string, bool trimRight = false);
+
 protected:
 
 	TextBlock();
@@ -168,12 +176,7 @@ protected:
      */
     void SplitTextBySymbolsToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
-    /**
-     * \brief Clean line.
-     * \param [in,out] string The string.
-     * \param trimRight (Optional) true to trim right.
-     */
-    void CleanLine(WideString& string, bool trimRight = false);
+   
 
     Vector2 rectSize;
     Vector2 requestedSize;
