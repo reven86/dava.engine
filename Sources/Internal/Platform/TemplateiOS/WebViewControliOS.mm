@@ -162,10 +162,18 @@
 - (UIImage *)takeSnapshotOfView:(UIView *)view
 {
     CFTimeInterval startTime = CACurrentMediaTime();
-    
     CGFloat reductionFactor = 1;
+    
+#define TEST_ON 1
+#ifdef TEST_ON
+    [view.layer setNeedsDisplay];
+    UIGraphicsBeginImageContext(CGSizeMake(view.frame.size.width/reductionFactor, view.frame.size.height/reductionFactor));
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    [view.layer renderInContext:ctx];
+#else
     UIGraphicsBeginImageContext(CGSizeMake(view.frame.size.width/reductionFactor, view.frame.size.height/reductionFactor));
     [view drawViewHierarchyInRect:CGRectMake(0, 0, view.frame.size.width/reductionFactor, view.frame.size.height/reductionFactor) afterScreenUpdates:YES];
+#endif
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
