@@ -44,7 +44,7 @@ TCPTransport::TCPTransport(IOLoop* ioLoop, ITransportListener* aListener, eTrans
                                                 , socket(ioLoop)
                                                 , timer(ioLoop)
                                                 , endpoint(endp)
-                                                , readTimeout(1000 * 5)
+                                                , readTimeout(1000 * 5 * 1000)
                                                 , listener(aListener)
                                                 , isActive(false)
                                                 , deactivateFlag(false)
@@ -153,8 +153,8 @@ void TCPTransport::StartAsClient()
 void TCPTransport::CleanUp(eDeactivationReason reason, int32 error)
 {
     isActive = false;
-    listener->OnTransportDeactivated(this, reason, error);
     ClearQueue();
+    listener->OnTransportDeactivated(this, reason, error);
 
     totalRead = 0;
     totalDataSize = 0;
@@ -430,9 +430,12 @@ void TCPTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread
                 break;
             }
 
-            DVASSERT(totalRead >= result.decodedSize);
-            totalRead -= result.decodedSize;
-            Memmove(inbuf, inbuf + result.decodedSize, totalRead);
+            if (result.decodedSize > 0)
+            {
+                DVASSERT(totalRead >= result.decodedSize);
+                totalRead -= result.decodedSize;
+                Memmove(inbuf, inbuf + result.decodedSize, totalRead);
+            }
 
             socket->ReadHere(CreateBuffer(inbuf + totalRead, sizeof(inbuf) - totalRead));
         } while (BasicProtoDecoder::PACKET_OK == status && totalRead > 0);

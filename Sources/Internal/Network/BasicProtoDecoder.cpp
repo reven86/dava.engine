@@ -40,6 +40,7 @@ BasicProtoDecoder::eStatus BasicProtoDecoder::Decode(uint8* buffer, std::size_t 
     DVASSERT(buffer != NULL && result != NULL);
 
     eStatus status = PACKET_INCOMPLETE;
+    Memset(result, 0, sizeof(DecodeResult));
     if (bufferSize >= sizeof(BasicProtoHeader))
     {
         BasicProtoHeader* header = reinterpret_cast<BasicProtoHeader*>(buffer);

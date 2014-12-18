@@ -52,6 +52,7 @@ class IPAddress
 {
 public:
     IPAddress(uint32 address = 0);
+    IPAddress(const char8* address);
 
     uint32 ToUInt() const;
 

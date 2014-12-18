@@ -36,6 +36,12 @@ namespace DAVA
 namespace Net
 {
 
+IPAddress::IPAddress(const char8* address) : addr(0)
+{
+    DVASSERT(address != NULL);
+    *this = FromString(address);
+}
+
 bool IPAddress::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);
