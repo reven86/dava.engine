@@ -57,7 +57,7 @@ void GameCore::RunOnlyThisTest()
 
 void GameCore::OnError()
 {
-    DebugBreak();
+    DavaDebugBreak();
 }
 
 void GameCore::RegisterTests()
