@@ -48,6 +48,7 @@
 #include "Tests/SplitTest.h"
 #include "Tests/TextSizeTest.h"
 #include "Tests/KeyedArchiveYamlTest.h"
+#include "Tests/NetworkTest.h"
 
 void GameCore::RunOnlyThisTest()
 {
@@ -76,6 +77,7 @@ void GameCore::RegisterTests()
     new SplitTest();
     new TextSizeTest();
     new KeyedArchiveYamlTest();
+    new NetworkTest();
 }
 
 #include <fstream>
