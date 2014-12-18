@@ -53,9 +53,11 @@ namespace DAVA
 		typedef P7 ParamType7;
 		typedef P8 ParamType8;
 
-		// incoming class type
-		typedef typename PointerTraits<P1>::PointerType tryC;
-		typedef typename Select<TypeTraits<tryC>::isPointer, NullType, tryC>::Result C;
+        // incoming class type
+        typedef typename PointerTraits<P1>::PointerType Check1;
+        typedef typename Select<TypeTraits<Check1>::isPointer, NullType, Check1>::Result Check2; // if CheckPointerC is still pointer we have pointer on pointer, so use NullType as C
+        typedef typename Select<TypeTraits<Check2>::isStdFundamental, NullType, Check2>::Result Check3; // if PointerPointerC is fundamental, use NullType as C 
+        typedef typename Check3 C;
 
 		// evaluating best functor argument types
 		typedef typename TypeTraits<P1>::ParamType ParamRefType1;
