@@ -1654,9 +1654,6 @@
     <ClInclude Include="..\..\Sources\Internal\Network\BasicProtoDecoder.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\ChannelManager.h">
-      <Filter>Internal\Network</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\IChannel.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
@@ -1667,6 +1664,21 @@
       <Filter>Internal\Network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\TCPTransport.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\INetDriver.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetConfig.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetCore.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetDriver.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2993,10 +3005,19 @@
     <ClCompile Include="..\..\Sources\Internal\Network\BasicProtoDecoder.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\ChannelManager.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Network\TCPTransport.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\TCPTransport.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Network\NetConfig.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetCore.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetDriver.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>
