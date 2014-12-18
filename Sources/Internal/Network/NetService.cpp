@@ -26,41 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_NETWORKCOMMON_H__
-#define __DAVAENGINE_NETWORKCOMMON_H__
+#include <Debug/DVAssert.h>
 
-#include <Base/BaseTypes.h>
+#include "NetService.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-// Transport types, used by TransportFactory to create transport objects
-enum eTransportType
+void NetService::OnChannelOpen(IChannel* aChannel)
 {
-    TRANSPORT_TCP       // Transport based on TCP
-};
+    DVASSERT(NULL == channel);
+    channel = aChannel;
+    ChannelOpen();
+}
 
-// Transport roles
-enum eTransportRole
+void NetService::OnChannelClosed(IChannel* aChannel)
 {
-    SERVER_ROLE,
-    CLIENT_ROLE
-};
+    DVASSERT(channel == aChannel);
+    channel = NULL;
+    ChannelClosed();
+}
 
-// Possible reasons for transport deactivation and channel closing
-enum eDeactivationReason
+bool NetService::Send(const void* data, size_t length, uint32* packetId)
 {
-    REQUEST,     // Deactivated by user request
-    OTHERSIDE,   // Deactivated by closing connection from other side
-    INITERROR,   // Deactivated on initialization error
-    NETERROR,    // Deactivated on network error
-    TIMEOUT,     // Deactivated on timeout
-    PACKETERROR  // Deactivated on invalid packet
-};
+    DVASSERT(data != NULL && length > 0 && true == IsChannelOpen());
+    return IsChannelOpen() ? channel->Send(data, length, 0, packetId)
+                           : false;
+}
 
 }   // namespace Net
 }   // namespace DAVA
-
-#endif  // __DAVAENGINE_NETWORKCOMMON_H__

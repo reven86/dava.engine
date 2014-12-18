@@ -1681,6 +1681,9 @@
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\NetService.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3018,6 +3021,9 @@
       <Filter>Internal\Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\NetService.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>

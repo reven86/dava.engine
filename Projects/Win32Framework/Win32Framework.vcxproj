@@ -120,9 +120,11 @@
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libuvd.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
@@ -161,7 +163,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -409,6 +411,7 @@
     <ClInclude Include="..\..\Sources\Internal\Network\NetConfig.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\NetCore.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\NetDriver.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\NetService.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\NetworkCommon.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\TCPTransport.h" />
@@ -890,6 +893,7 @@
     <ClCompile Include="..\..\Sources\Internal\Network\NetConfig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\NetCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\NetDriver.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\NetService.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\TCPTransport.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />

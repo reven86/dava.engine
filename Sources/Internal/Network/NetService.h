@@ -26,41 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_NETWORKCOMMON_H__
-#define __DAVAENGINE_NETWORKCOMMON_H__
+#ifndef __DAVAENGINE_NETSERVICE_H__
+#define __DAVAENGINE_NETSERVICE_H__
 
 #include <Base/BaseTypes.h>
+
+#include <Network/IChannel.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-// Transport types, used by TransportFactory to create transport objects
-enum eTransportType
+class NetService : public IChannelListener
 {
-    TRANSPORT_TCP       // Transport based on TCP
+public:
+    NetService();
+    virtual ~NetService() {}
+
+    // IChannelListener
+    virtual void OnChannelOpen(IChannel* aChannel);
+    virtual void OnChannelClosed(IChannel* aChannel);
+    virtual void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length) {}
+    virtual void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length) {}
+    virtual void OnPacketDelivered(IChannel* aChannel, uint32 packetId) {}
+
+    virtual void ChannelOpen() {}
+    virtual void ChannelClosed() {}
+
+protected:
+    bool IsChannelOpen() const;
+    bool Send(const void* data, size_t length, uint32* packetId = NULL);
+
+private:
+    IChannel* channel;
 };
 
-// Transport roles
-enum eTransportRole
+//////////////////////////////////////////////////////////////////////////
+inline NetService::NetService() : channel(NULL)
 {
-    SERVER_ROLE,
-    CLIENT_ROLE
-};
 
-// Possible reasons for transport deactivation and channel closing
-enum eDeactivationReason
+}
+
+inline bool NetService::IsChannelOpen() const
 {
-    REQUEST,     // Deactivated by user request
-    OTHERSIDE,   // Deactivated by closing connection from other side
-    INITERROR,   // Deactivated on initialization error
-    NETERROR,    // Deactivated on network error
-    TIMEOUT,     // Deactivated on timeout
-    PACKETERROR  // Deactivated on invalid packet
-};
+    return channel != NULL;
+}
 
 }   // namespace Net
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_NETWORKCOMMON_H__
+#endif  // __DAVAENGINE_NETSERVICE_H__
