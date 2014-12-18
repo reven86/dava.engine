@@ -27,28 +27,49 @@
 =====================================================================================*/
 
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef __ENTITY_TEST_H__
+#define __ENTITY_TEST_H__
 
-//#define DATABASE_IP               String("10.128.128.131")
-#define DATABASE_IP               String("by2-buildmachine.wargaming.net")
-//#define DATABASE_IP                 String("127.0.0.1")
-#define DATAPASE_PORT               27017
+#include "DAVAEngine.h"
+using namespace DAVA;
 
-#define DATABASE_NAME               String("UnitTests")
-#define DATABASE_COLLECTION         String("UnitTestsResult")
+#include "TestTemplate.h"
 
-#if defined (__DAVAENGINE_MACOS__)
-    #define PLATFORM_NAME           String("MacOS")
-#elif defined (__DAVAENGINE_IPHONE__)
-    #define PLATFORM_NAME           String("iPhone")
-#elif defined (__DAVAENGINE_WIN32__)
-    #define PLATFORM_NAME           String("Win32")
-#elif defined (__DAVAENGINE_ANDROID__)
-    #define PLATFORM_NAME           String("Android")
-#else
-    #define PLATFORM_NAME           String("Unknown")
-#endif //PLATFORMS    
+//DECLARE_COMPONENT(TestVisibilityAABBoxComponent);  
+//
+//void TestVisibilityAABBoxComponent::Register()
+//{   
+//	RegisterData<AABBox3>("meshAABox");
+//	RegisterData<uint32>("meshVisibilityFlag");
+//}
+//
+//DECLARE_COMPONENT(TestVisibilityBSphereComponent);  
+//void TestVisibilityBSphereComponent::Register()
+//{   
+//	RegisterData<Sphere>("meshBSphere");
+//	RegisterData<uint32>("meshVisibilityFlag");
+//}
+//
+//DECLARE_COMPONENT(TestDrawMeshComponent);
+//void TestDrawMeshComponent::Register()
+//{
+//	RegisterData<uint32>("meshVisibilityFlag");
+//	RegisterData<Matrix4>("worldTransform");
+//}
+
+class EntityTest : public TestTemplate<EntityTest>
+{
+protected:
+    ~EntityTest(){}
+public:
+	EntityTest();
+
+	virtual void LoadResources();
+	virtual void UnloadResources();
+
+	void DummyComponents(PerfFuncData * data);
+
+};
 
 
-#endif // __CONFIG_H__
+#endif // __SPRITETEST_H__

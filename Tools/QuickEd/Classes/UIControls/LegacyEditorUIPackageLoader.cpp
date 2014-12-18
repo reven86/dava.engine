@@ -84,7 +84,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
         }
     }
     
-    builder->EndControl();
+    builder->EndControl(true);
     
     builder->EndPackage();
     
@@ -140,7 +140,7 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         control->ApplyAlignSettingsForChildren();
         // yamlLoader->PostLoad(control);
     }
-    builder->EndControl();
+    builder->EndControl(false);
 }
 
 void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node)

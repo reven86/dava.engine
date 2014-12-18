@@ -156,6 +156,8 @@ namespace DAVA
             case UIControlContentHorizontalAlignmentRight:
                 retValue |= ALIGN_RIGHT;
                 break;
+                
+            default: break;
         }
         
         switch (verAligment)
@@ -169,6 +171,7 @@ namespace DAVA
             case UIControlContentVerticalAlignmentBottom:
                 retValue |= ALIGN_BOTTOM;
                 break;
+            default: break;
         }
         
     return retValue;

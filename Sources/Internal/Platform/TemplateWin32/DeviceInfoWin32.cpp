@@ -71,6 +71,20 @@ String DeviceInfo::GetTimeZone()
 {
 	return "Not yet implemented";
 }
+String DeviceInfo::GetHTTPProxyHost()
+{
+	return "Not yet implemented";
+}
+
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+	return "Not yet implemented";
+}
+
+int DeviceInfo::GetHTTPProxyPort()
+{
+	return 0;
+}
 
 String DeviceInfo::GetUDID()
 {
@@ -189,6 +203,13 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
 {
     // For now return default network info for Windows.
     return NetworkInfo();
+}
+
+void DeviceInfo::InitializeScreenInfo()
+{
+	screenInfo.width = ::GetSystemMetrics(SM_CXSCREEN);
+	screenInfo.height = ::GetSystemMetrics(SM_CYSCREEN);
+	screenInfo.scale = 1;
 }
 
 }

@@ -27,33 +27,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef __FUNCTION_BIND_SIGNAL_TEST__
-#define __FUNCTION_BIND_SIGNAL_TEST__
+#ifndef __JOBMANAGER_TEST_H__
+#define __JOBMANAGER_TEST_H__
 
 #include "DAVAEngine.h"
+#include "TestTemplate.h"
 
 using namespace DAVA;
 
-#include "UITestTemplate.h"
-#include "Platform/DeviceInfo.h"
-
-class FunctionBindSignalTest : public UITestTemplate<FunctionBindSignalTest>
+class JobManagerTest : public TestTemplate<JobManagerTest>
 {
 protected:
-	~FunctionBindSignalTest(){}
+    ~JobManagerTest() {}
 
 public:
-	FunctionBindSignalTest();
+    JobManagerTest();
 
-	virtual void LoadResources();
-	virtual void UnloadResources();
-	virtual void DidAppear();
+    virtual void LoadResources();
+    virtual void UnloadResources();
+    virtual void DidAppear();
 
-	void TestFunction(PerfFuncData * data);
+    void TestFunction(PerfFuncData * data);
 
-private:
-	UIStaticText* textInfoText;
-	bool done;
+    void TestMainJobs(PerfFuncData *data);
+    void TestWorkerJobs(PerfFuncData *data);
+
+protected:
+    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
 };
 
-#endif // __FUNCTION_BIND_SIGNAL_TEST__
+#endif //__FILESYSTEM_TEST_H__

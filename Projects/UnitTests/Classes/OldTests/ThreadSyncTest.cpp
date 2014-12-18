@@ -59,7 +59,8 @@ void ThreadSyncTest::ThreadSleepTestFunction(PerfFuncData * data)
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
     Thread::Sleep(300);
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - time;
-    TEST_VERIFY(elapsedTime >= 300);
+    //elapsed time can be rounded to lowest, so -1 here
+    TEST_VERIFY(elapsedTime >= 299);
 }
 
 void ThreadSyncTest::ThreadSyncTestFunction(PerfFuncData * data)

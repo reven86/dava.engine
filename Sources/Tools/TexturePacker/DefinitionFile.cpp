@@ -73,12 +73,14 @@ void DefinitionFile::LoadPNG(const FilePath & _filename, const FilePath & pathTo
 	frameRects[0].y = 0;
 	frameRects[0].dx = spriteWidth;
 	frameRects[0].dy = spriteHeight;
+    
+    frameNames.resize(frameCount);
 
 	FilePath fileWrite = FramePathHelper::GetFramePathAbsolute(pathToProcess, nameWithoutExt, 0);
 	FileSystem::Instance()->CopyFile(_filename, fileWrite);
 }
 
-bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pathToProcess)
+bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pathToProcess, bool twoSideMargin, uint32 texturesMargin)
 {
     DVASSERT(pathToProcess.IsDirectoryPathname());
 
@@ -103,6 +105,7 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 
 
 	frameRects = new Rect2i[frameCount];
+    frameNames.resize(frameCount);
 	for (int k = 0; k < frameCount; ++k)
 	{
 		PngImageExt frameX;
@@ -125,35 +128,17 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 		frameRects[k].y = reducedRect.y;
 		frameRects[k].dx = reducedRect.dx;
 		frameRects[k].dy = reducedRect.dy;
-	
-	
-		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-		{
-			
-		}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-		{
-			frameRects[k].dx++;
-			frameRects[k].dy++;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+
+        // add borders
+		if ( twoSideMargin )
 		{
 			frameRects[k].dx+=2;
 			frameRects[k].dy+=2;
 		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+		else
 		{
-			frameRects[k].dx+=4;
-			frameRects[k].dy+=4;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
-		{
-			frameRects[k].dx+=2;
-			frameRects[k].dy+=2;
-		}
-		else 
-		{
-			frameRects[k].dx++;
-			frameRects[k].dy++;	
+			frameRects[k].dx += texturesMargin;
+			frameRects[k].dy += texturesMargin;
 		}
 	}
 	
@@ -162,7 +147,7 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 	return true;
 }
 
-bool DefinitionFile::Load(const FilePath & _filename)
+bool DefinitionFile::Load(const FilePath & _filename, bool twoSideMargin, uint32 texturesMargin)
 {
 	filename = _filename;
 	FILE * fp = fopen(filename.GetAbsolutePathname().c_str(), "rt");
@@ -178,36 +163,21 @@ bool DefinitionFile::Load(const FilePath & _filename)
 	
 	for (int i = 0; i < frameCount; ++i)
 	{
-		fscanf(fp, "%d %d %d %d\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy);
+        char frameName[128];
+		fscanf(fp, "%d %d %d %d %s\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy, frameName);
 		Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
+        frameNames[i] = String(frameName);
 		
-		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-		{
-			
-		}else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-		{
-			frameRects[i].dx++;
-			frameRects[i].dy++;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+		// add borders
+		if ( twoSideMargin )
 		{
 			frameRects[i].dx+=2;
 			frameRects[i].dy+=2;
 		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+		else
 		{
-			frameRects[i].dx+=4;
-			frameRects[i].dy+=4;
-		}
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
-		{
-			frameRects[i].dx+=2;
-			frameRects[i].dy+=2;
-		}
-		else 
-		{
-			frameRects[i].dx++;
-			frameRects[i].dy++;	
+			frameRects[i].dx += texturesMargin;
+			frameRects[i].dy += texturesMargin;
 		}
 	}
 	

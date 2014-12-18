@@ -26,75 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_H__
-#define __DAVAENGINE_JOB_H__
+#ifndef __UIPARTICLES_TEST__
+#define __UIPARTICLES_TEST__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Base/Message.h"
-#include "Platform/Thread.h"
+#include "DAVAEngine.h"
 
-namespace DAVA
+using namespace DAVA;
+
+#include "TestTemplate.h"
+
+class UIParticlesTest: public TestTemplate<UIParticlesTest>
 {
-
-
-class Job : public BaseObject
-{
-public:
-	enum eState
-	{
-		STATUS_UNDONE,
-		STATUS_DONE
-	};
-
-	enum ePerformedWhere
-	{
-		PERFORMED_ON_CREATOR_THREAD,
-		PERFORMED_ON_MAIN_THREAD
-	};
-
-    enum eCreationFlags
-    {
-        NO_FLAGS = 0,
-        RETAIN_WHILE_NOT_COMPLETED = 1 << 0, //<! job will retain underlying BaseObject if one is found in Message, and release when job is done
-    };
-
-    static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
-
-	Job(const Message & message, const Thread::Id & creatorThreadId, uint32 flags);	eState GetState();
-	ePerformedWhere PerformedWhere();
-    const Message & GetMessage();
-
-    uint32 GetFlags() const;
-
 protected:
-	void Perform();
-	void SetState(eState newState);
-	void SetPerformedOn(ePerformedWhere performedWhere);
+    ~UIParticlesTest(){}
+public:
+	UIParticlesTest();
 
-	Message message;
-	Thread::Id creatorThreadId;
-
-	eState state;
-	ePerformedWhere performedWhere;
-
-    uint32 flags;
-
-	friend class MainThreadJobQueue;
-	friend class JobManager;
+	virtual void LoadResources();
+	virtual void UnloadResources();
+	virtual bool RunTest(int32 testNum);
+	
+	virtual void DidAppear();	
+	virtual void Update(float32 timeElapsed);
+	
+	void TestFunction(PerfFuncData * data);
+	
+private:
+	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
+	void LoadParticlesFromYaml();
+	void StopParticles();
+	void PauseParticles();
+	void StartParticles();
+	
+private:
+	UIButton* 		finishTestBtn;
+	bool 			testFinished;
+	UIParticles*	particle1;
+	UIParticles*	particle2;
+	UIParticles*	particle3;
+	UIParticles*	particle4;
+	
+	float32 onScreenTime;
 };
 
-inline 
-const Message & Job::GetMessage()
-{
-    return message;
-}
-
-inline uint32 Job::GetFlags() const
-{
-    return flags;
-}
-
-}
-
-#endif //__DAVAENGINE_JOB_H__
+#endif /* defined(__UIPARTICLES_TEST__) */

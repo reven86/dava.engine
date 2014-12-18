@@ -44,20 +44,19 @@ public:
 
 	void AddRef()
 	{
-		refCount++;
+		AtomicIncrement(refCount);
 	}
 
 	void RemRef()
 	{
-		refCount--;
-		if (0 == refCount)
+		if(0 == AtomicDecrement(refCount))
 		{
 			delete this;
 		}
 	}
 
 private:
-	uint32 refCount;
+	int32 refCount;
 };
 
 // ====================================================================================================================================================
@@ -126,10 +125,16 @@ public:
 		, type(Holder_Regular)
 	{}
 
-	ObjectPointerHolder(void *obj) 
-		: object(obj)
-		, type(Holder_Regular)
-	{}
+    ObjectPointerHolder(void *obj)
+        : object(obj)
+        , type(Holder_Regular)
+    { }
+
+    template<typename T>
+    ObjectPointerHolder(const T *obj)
+        : object(const_cast<T*>(obj))
+        , type(Holder_Regular)
+    { }
 
 	ObjectPointerHolder(RefCounter *obj) 
 		: object(obj)
