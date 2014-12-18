@@ -60,7 +60,7 @@ endif()
 
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 if( MSVC )
-    set( LIBRARIES "gdi32.lib" "glu32.lib" #"winmm.lib" "opengl32.lib"
+    set( LIBRARIES "gdi32.lib" "glu32.lib" "Wininet.lib" #"winmm.lib" "opengl32.lib"
                    "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib"  )
 
     set( LIBRARIES_DEBUG   "msvcrtd.lib"  )    
