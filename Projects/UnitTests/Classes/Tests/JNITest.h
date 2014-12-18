@@ -36,8 +36,6 @@ using namespace DAVA;
 
 #include "TestTemplate.h"
 
-#include "Platform/TemplateAndroid/JniHelpers.h"
-
 class JNITest : public TestTemplate<JNITest>
 {
 protected:

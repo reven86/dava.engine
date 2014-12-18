@@ -33,6 +33,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -127,7 +128,7 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 		jstring jName = GetEnvironment()->NewStringUTF(cookieName.c_str());
 		jobject item = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL, jName);
 
-		CreateStringFromJni(GetEnvironment(), jstring(item), returnStr);
+		JNI::CreateStringFromJni(jstring(item), returnStr);
 
 		GetEnvironment()->DeleteLocalRef(jTargetURL);
 		GetEnvironment()->DeleteLocalRef(jName);
@@ -153,7 +154,7 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 			{
 				jobject item = GetEnvironment()->GetObjectArrayElement(jArray, i);
 				String cookiesString = "";
-				CreateStringFromJni(GetEnvironment(), jstring(item), cookiesString);
+				JNI::CreateStringFromJni(jstring(item), cookiesString);
 
 				Vector<String> cookieEntry;
 				Split(cookiesString, "=", cookieEntry);

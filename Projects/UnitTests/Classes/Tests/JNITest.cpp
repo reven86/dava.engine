@@ -26,9 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "JNITest.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 JNITest::JNITest()
     : TestTemplate<JNITest>("JNITest")
@@ -52,9 +51,8 @@ void JNITest::TestFunction(PerfFuncData * data)
 	auto showNotificationNext = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring>("NotifyText");
 	auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
 
-	jstring jStrTitle = CreateJString(JNI::GetEnv(), L"test");
-	jstring jStrText = CreateJString(JNI::GetEnv(), L"test2");
-
+	jstring jStrTitle = JNI::CreateJString(L"test");
+	jstring jStrText = JNI::CreateJString(L"test2");
 
 	JNI::GetEnv()->DeleteLocalRef(jStrTitle);
 	JNI::GetEnv()->DeleteLocalRef(jStrText);

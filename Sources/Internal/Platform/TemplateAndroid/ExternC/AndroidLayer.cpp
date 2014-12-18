@@ -42,7 +42,6 @@
 
 #include "JniExtensions.h"
 #include "WebViewControl.h"
-#include "Debug/DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Utils/UtilsAndroid.h"
@@ -53,6 +52,7 @@
 #include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 //#if defined(__DAVAENGINE_PROFILE__)
 //#include "prof.h"
@@ -112,7 +112,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 		return -1;
 	}
 
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIAssert", &DAVA::JniDVAssertMessage::gJavaClass, &DAVA::JniDVAssertMessage::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIUtils", &DAVA::JniUtils::gJavaClass, &DAVA::JniUtils::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDeviceInfo", &DAVA::JniDeviceInfo::gJavaClass, &DAVA::JniDeviceInfo::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNITextField", &DAVA::JniTextField::gJavaClass, &DAVA::JniTextField::gJavaClassName);
@@ -133,52 +132,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 
 	return JNI_VERSION_1_6;
-}
-
-bool CreateStringFromJni(JNIEnv* env, jstring jniString, char *generalString)
-{
-	bool ret = false;
-
-	generalString[0] = 0;
-	const char* utfString = env->GetStringUTFChars(jniString, NULL);
-	if (utfString)
-	{
-		strcpy(generalString, utfString);
-		env->ReleaseStringUTFChars(jniString, utfString);
-		ret = true;
-	}
-	else
-	{
-		LOGE("[CreateStringFromJni] Can't create utf-string from jniString");
-	}
-
-	return ret;
-}
-
-void CreateStringFromJni(JNIEnv* env, jstring jniString, DAVA::String& string)
-{
-	const char* utfString = env->GetStringUTFChars(jniString, NULL);
-	if (utfString)
-	{
-		string.assign(utfString);
-		env->ReleaseStringUTFChars(jniString, utfString);
-	}
-}
-
-void CreateWStringFromJni(JNIEnv* env, jstring jniString, DAVA::WideString& string)
-{
-	const jchar *raw = env->GetStringChars(jniString, 0);
-	if (raw)
-	{
-		jsize len = env->GetStringLength(jniString);
-		string.assign(raw, raw + len);
-		env->ReleaseStringChars(jniString, raw);
-	}
-}
-
-jstring CreateJString(JNIEnv* env, const DAVA::WideString& string)
-{
-	return env->NewStringUTF(DAVA::UTF8Utils::EncodeToUTF8(string).c_str());
 }
 
 void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
@@ -221,15 +174,15 @@ void DeinitApplication()
 
 void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName, jstring commandLineParams)
 {
-	bool retCreateLogTag = CreateStringFromJni(env, logTag, androidLogTag);
+	bool retCreateLogTag = DAVA::JNI::CreateStringFromJni(env, logTag, androidLogTag);
 //	LOGI("___ OnCreateApplication __ %d", classthis);
 
-	bool retCreatedExDocuments = CreateStringFromJni(env, externalPath, documentsFolderPathEx);
-	bool retCreatedInDocuments = CreateStringFromJni(env, internalPath, documentsFolderPathIn);
-	bool retCreatedAssets = CreateStringFromJni(env, apppath, assetsFolderPath);
-	bool retCreatePackageName = CreateStringFromJni(env, packageName, androidPackageName);
+	bool retCreatedExDocuments = DAVA::JNI::CreateStringFromJni(env, externalPath, documentsFolderPathEx);
+	bool retCreatedInDocuments = DAVA::JNI::CreateStringFromJni(env, internalPath, documentsFolderPathIn);
+	bool retCreatedAssets = DAVA::JNI::CreateStringFromJni(env, apppath, assetsFolderPath);
+	bool retCreatePackageName = DAVA::JNI::CreateStringFromJni(env, packageName, androidPackageName);
 	DAVA::String commandLine;
-	CreateStringFromJni(env, commandLineParams, commandLine);
+	DAVA::JNI::CreateStringFromJni(env, commandLineParams, commandLine);
 
 	InitApplication(env, commandLine);
 }

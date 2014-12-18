@@ -33,6 +33,7 @@
 #include "Notification/LocalNotificationController.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Thread/LockGuard.h"
 
 namespace DAVA
@@ -91,8 +92,8 @@ void LocalNotificationAndroid::ShowText(const WideString &title, const WideStrin
 
 	JNIEnv *env = GetEnvironment();
 
-	jstring jStrTitle = CreateJString(env, title);
-	jstring jStrText = CreateJString(env, text);
+	jstring jStrTitle = JNI::CreateJString(title);
+	jstring jStrText = JNI::CreateJString(text);
 
 	static const jmethodID methodSetText = GetMethodID("NotifyText", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 	DVASSERT(0 != methodSetText);
@@ -117,8 +118,8 @@ void LocalNotificationAndroid::ShowProgress(const WideString &title, const WideS
 
 	JNIEnv *env = GetEnvironment();
 
-	jstring jStrTitle = CreateJString(env, title);
-	jstring jStrText = CreateJString(env, text);
+	jstring jStrTitle = JNI::CreateJString(env, title);
+	jstring jStrText = JNI::CreateJString(env, text);
 
 	static const jmethodID methodSetProgress = GetMethodID("NotifyProgress", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;II)V");
 	DVASSERT(0 != methodSetProgress);
@@ -142,8 +143,8 @@ void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, 
 	LockGuard<Mutex> mutexGuard(javaCallMutex);
 	JNIEnv *env = GetEnvironment();
     jstring jstrNotificationUid = env->NewStringUTF(notificationId.c_str());
-	jstring jStrTitle = CreateJString(env, title);
-	jstring jStrText = CreateJString(env, text);
+	jstring jStrTitle = JNI::CreateJString(env, title);
+	jstring jStrText = JNI::CreateJString(env, text);
 
 	static const jmethodID methodNotifyDelayed = GetMethodID("NotifyDelayed", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
 	DVASSERT(0 != methodNotifyDelayed);

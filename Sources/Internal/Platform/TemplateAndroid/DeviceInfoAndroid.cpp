@@ -34,6 +34,7 @@
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "unistd.h"
 
 DAVA::String intermediateStr;
@@ -44,7 +45,7 @@ extern "C"
 void Java_com_dava_framework_JNIDeviceInfo_SetJString(JNIEnv* env, jobject classthis, jstring jString)
 {
 	char str[256] = {0};
-	CreateStringFromJni(env, jString, str);
+	DAVA::JNI::CreateStringFromJni(env, jString, str);
 	intermediateStr = DAVA::String(str);
 }
 
@@ -165,7 +166,7 @@ String JniDeviceInfo::GetHTTPProxyHost()
 	if (mid)
 	{
 		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
-		CreateStringFromJni(GetEnvironment(), jstring(obj), returnStr);
+		JNI::CreateStringFromJni(jstring(obj), returnStr);
 	}
 
 	return returnStr;
@@ -179,7 +180,7 @@ String JniDeviceInfo::GetHTTPNonProxyHosts()
 	if (mid)
 	{
 		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
-		CreateStringFromJni(GetEnvironment(), jstring(obj), returnStr);
+		JNI::CreateStringFromJni(jstring(obj), returnStr);
 	}
 
 	return returnStr;
@@ -229,26 +230,27 @@ DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
 
 	if (object)
 	{
+		JNIEnv *env = JNI::GetEnv();
 		jclass classInfo = GetEnvironment()->GetObjectClass(object);
 
 		jfieldID fieldID;
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "freeSpace", "J");
-		info.freeSpace = GetEnvironment()->GetLongField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "freeSpace", "J");
+		info.freeSpace = env->GetLongField(object, fieldID);
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "capacity", "J");
-		info.totalSpace = GetEnvironment()->GetLongField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "capacity", "J");
+		info.totalSpace = env->GetLongField(object, fieldID);
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "readOnly", "Z");
-		info.readOnly = GetEnvironment()->GetBooleanField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "readOnly", "Z");
+		info.readOnly = env->GetBooleanField(object, fieldID);
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "emulated", "Z");
-		info.emulated = GetEnvironment()->GetBooleanField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "emulated", "Z");
+		info.emulated = env->GetBooleanField(object, fieldID);
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "path", "Ljava/lang/String;");
-		jstring jStr = (jstring)GetEnvironment()->GetObjectField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
+		jstring jStr = (jstring)env->GetObjectField(object, fieldID);
 		char str[512] = {0};
-		CreateStringFromJni(GetEnvironment(), jStr, str);
+		JNI::CreateStringFromJni(env, jStr, str);
 		info.path = String(str);
 	}
 

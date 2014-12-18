@@ -36,6 +36,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #include "DateTimeAndroid.h"
 #include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -64,7 +65,7 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
         GetEnvironment()->DeleteLocalRef(jFormat);
         GetEnvironment()->DeleteLocalRef(jCountryCode);
 		char str[256] = {0};
-		CreateStringFromJni(GetEnvironment(), jstring(obj), str);
+		JNI::CreateStringFromJni(jstring(obj), str);
 		WideString retWString;
 		UTF8Utils::EncodeToWideString((uint8*)str, 256, retWString);
 		return retWString;

@@ -31,6 +31,7 @@
 #include "FileListAndroid.h"
 #include "FileSystem/Logger.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -75,7 +76,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 				jstring jName = (jstring) GetEnvironment()->GetObjectField(item, jNameField);
 
 				JniFileListEntry entry;
-				CreateStringFromJni(GetEnvironment(), jName, entry.name);
+				JNI::CreateStringFromJni(jName, entry.name);
 				entry.size = jSize;
 				entry.isDirectory = jIsDir;
 				fileList.push_back(entry);

@@ -72,6 +72,32 @@ JNIEnv *GetEnv();
 void AttachCurrentThreadToJVM();
 void DetachCurrentThreadFromJVM();
 
+bool CreateStringFromJni(JNIEnv *env, jstring jniString, char *generalString);
+inline bool CreateStringFromJni(jstring jniString, char *generalString)
+{
+	return CreateStringFromJni(GetEnv(), jniString, generalString);
+}
+
+void CreateStringFromJni(JNIEnv *env, jstring jniString, String& string);
+inline void CreateStringFromJni(jstring jniString, String& string)
+{
+	CreateStringFromJni(GetEnv(), jniString, string);
+}
+
+void CreateWStringFromJni(JNIEnv *env, jstring jniString, WideString& string);
+inline void CreateWStringFromJni(jstring jniString, WideString& string)
+{
+	CreateWStringFromJni(GetEnv(), jniString, string);
+}
+
+jstring CreateJString(JNIEnv *env, const DAVA::WideString& string);
+inline jstring CreateJString(const DAVA::WideString& string)
+{
+	return CreateJString(GetEnv(), string);
+}
+
+
+
 template<class T>
 struct TypeMetrics
 { };

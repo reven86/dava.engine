@@ -29,6 +29,7 @@
 #include "FileSystem/LocalizationAndroid.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -53,7 +54,7 @@ String JniLocalization::GetLocale()
 	{
 		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
 		char str[256] = {0};
-		CreateStringFromJni(GetEnvironment(), jstring(obj), str);
+		JNI::CreateStringFromJni(jstring(obj), str);
 		String locale = str;
 		return locale;
 	}

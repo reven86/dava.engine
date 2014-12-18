@@ -87,6 +87,53 @@ void DetachCurrentThreadFromJVM()
 	}
 }
 
+
+bool CreateStringFromJni(JNIEnv *env, jstring jniString, char *generalString)
+{
+	bool ret = false;
+	generalString[0] = 0;
+
+	const char* utfString = env->GetStringUTFChars(jniString, NULL);
+	if (utfString)
+	{
+		strcpy(generalString, utfString);
+		env->ReleaseStringUTFChars(jniString, utfString);
+		ret = true;
+	}
+	else
+	{
+		LOGE("[CreateStringFromJni] Can't create utf-string from jniString");
+	}
+
+	return ret;
+}
+
+void CreateStringFromJni(JNIEnv *env, jstring jniString, DAVA::String& string)
+{
+	const char* utfString = env->GetStringUTFChars(jniString, NULL);
+	if (utfString)
+	{
+		string.assign(utfString);
+		env->ReleaseStringUTFChars(jniString, utfString);
+	}
+}
+
+void CreateWStringFromJni(JNIEnv *env, jstring jniString, DAVA::WideString& string)
+{
+	const jchar *raw = env->GetStringChars(jniString, 0);
+	if (raw)
+	{
+		jsize len = env->GetStringLength(jniString);
+		string.assign(raw, raw + len);
+		env->ReleaseStringChars(jniString, raw);
+	}
+}
+
+jstring CreateJString(JNIEnv *env, const DAVA::WideString& string)
+{
+	return env->NewStringUTF(DAVA::UTF8Utils::EncodeToUTF8(string).c_str());
+}
+
 JavaClass::JavaClass(const String &className)
 {
     jvm = GetJVM();
