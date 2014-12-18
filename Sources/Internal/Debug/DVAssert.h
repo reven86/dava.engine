@@ -74,19 +74,25 @@
 
 #if defined(ENABLE_ASSERT_BREAK)
 
-    #if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
+#include <signal.h>
+#include <unistd.h>
+#endif
 
-        #define DebugBreak() { __debugbreak(); }
+inline void DebugBreak()
+{
+#if defined(__DAVAENGINE_WIN32__)
+    
+    __debugbreak();
+    
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
+    
+    raise(SIGTRAP);
 
-    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
-
-        #include <signal.h>
-        #include <unistd.h>
-        #define DebugBreak() { raise(SIGTRAP); }
-
-    #else //PLATFORMS
-        //other platforms
-    #endif //PLATFORMS
+#else //PLATFORMS
+    //other platforms
+#endif //PLATFORMS
+}
 
 #else
 
@@ -128,7 +134,7 @@
 	{\
         LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
 		MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, "", __FILE__, __LINE__);\
-		DebugBreak()\
+		DebugBreak();\
 	}\
 
 #define DVASSERT_MSG(expr, msg)\
@@ -136,7 +142,7 @@
 	{\
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
 		MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
-		DebugBreak()\
+		DebugBreak();\
 	}\
 
 #define DVWARNING(expr, msg)\
