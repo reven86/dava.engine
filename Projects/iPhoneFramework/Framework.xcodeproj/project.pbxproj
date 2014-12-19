@@ -884,6 +884,49 @@
 		4FDDEC5A17A6920D00D9DDEA /* MaterialOptimazer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4FDDEC5817A6920D00D9DDEA /* MaterialOptimazer.h */; };
 		505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */; };
 		505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB41B18250C53009BEA3C /* OcclusionQuery.h */; };
+		50B304381A44C34600E1BA5D /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3040C1A44C34600E1BA5D /* Buffer.h */; };
+		50B304391A44C34600E1BA5D /* DeadlineTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B3040D1A44C34600E1BA5D /* DeadlineTimer.cpp */; };
+		50B3043A1A44C34600E1BA5D /* DeadlineTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3040E1A44C34600E1BA5D /* DeadlineTimer.h */; };
+		50B3043B1A44C34600E1BA5D /* DeadlineTimerTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3040F1A44C34600E1BA5D /* DeadlineTimerTemplate.h */; };
+		50B3043C1A44C34600E1BA5D /* Endpoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304101A44C34600E1BA5D /* Endpoint.cpp */; };
+		50B3043D1A44C34600E1BA5D /* Endpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304111A44C34600E1BA5D /* Endpoint.h */; };
+		50B3043E1A44C34600E1BA5D /* IOLoop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304121A44C34600E1BA5D /* IOLoop.cpp */; };
+		50B3043F1A44C34600E1BA5D /* IOLoop.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304131A44C34600E1BA5D /* IOLoop.h */; };
+		50B304401A44C34600E1BA5D /* IPAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304141A44C34600E1BA5D /* IPAddress.cpp */; };
+		50B304411A44C34600E1BA5D /* IPAddress.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304151A44C34600E1BA5D /* IPAddress.h */; };
+		50B304421A44C34600E1BA5D /* NetworkUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304161A44C34600E1BA5D /* NetworkUtils.cpp */; };
+		50B304431A44C34600E1BA5D /* NetworkUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304171A44C34600E1BA5D /* NetworkUtils.h */; };
+		50B304441A44C34600E1BA5D /* TCPAcceptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304181A44C34600E1BA5D /* TCPAcceptor.cpp */; };
+		50B304451A44C34600E1BA5D /* TCPAcceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304191A44C34600E1BA5D /* TCPAcceptor.h */; };
+		50B304461A44C34600E1BA5D /* TCPAcceptorTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3041A1A44C34600E1BA5D /* TCPAcceptorTemplate.h */; };
+		50B304471A44C34600E1BA5D /* TCPSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B3041B1A44C34600E1BA5D /* TCPSocket.cpp */; };
+		50B304481A44C34600E1BA5D /* TCPSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3041C1A44C34600E1BA5D /* TCPSocket.h */; };
+		50B304491A44C34600E1BA5D /* TCPSocketTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3041D1A44C34600E1BA5D /* TCPSocketTemplate.h */; };
+		50B3044A1A44C34600E1BA5D /* UDPSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B3041E1A44C34600E1BA5D /* UDPSocket.cpp */; };
+		50B3044B1A44C34600E1BA5D /* UDPSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3041F1A44C34600E1BA5D /* UDPSocket.h */; };
+		50B3044C1A44C34600E1BA5D /* UDPSocketTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304201A44C34600E1BA5D /* UDPSocketTemplate.h */; };
+		50B3044D1A44C34600E1BA5D /* BasicProtoDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304211A44C34600E1BA5D /* BasicProtoDecoder.cpp */; };
+		50B3044E1A44C34600E1BA5D /* BasicProtoDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304221A44C34600E1BA5D /* BasicProtoDecoder.h */; };
+		50B3044F1A44C34600E1BA5D /* IChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304231A44C34600E1BA5D /* IChannel.h */; };
+		50B304501A44C34600E1BA5D /* INetDriver.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304241A44C34600E1BA5D /* INetDriver.h */; };
+		50B304511A44C34600E1BA5D /* ITransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304251A44C34600E1BA5D /* ITransport.h */; };
+		50B304521A44C34600E1BA5D /* NetConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304261A44C34600E1BA5D /* NetConfig.cpp */; };
+		50B304531A44C34600E1BA5D /* NetConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304271A44C34600E1BA5D /* NetConfig.h */; };
+		50B304541A44C34600E1BA5D /* NetCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304281A44C34600E1BA5D /* NetCore.cpp */; };
+		50B304551A44C34600E1BA5D /* NetCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304291A44C34600E1BA5D /* NetCore.h */; };
+		50B304561A44C34600E1BA5D /* NetDriver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B3042A1A44C34600E1BA5D /* NetDriver.cpp */; };
+		50B304571A44C34600E1BA5D /* NetDriver.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3042B1A44C34600E1BA5D /* NetDriver.h */; };
+		50B304581A44C34600E1BA5D /* NetService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B3042C1A44C34600E1BA5D /* NetService.cpp */; };
+		50B304591A44C34600E1BA5D /* NetService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3042D1A44C34600E1BA5D /* NetService.h */; };
+		50B3045A1A44C34600E1BA5D /* NetworkCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B3042E1A44C34600E1BA5D /* NetworkCommon.h */; };
+		50B3045B1A44C34600E1BA5D /* ServiceRegistrar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B3042F1A44C34600E1BA5D /* ServiceRegistrar.cpp */; };
+		50B3045C1A44C34600E1BA5D /* ServiceRegistrar.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304301A44C34600E1BA5D /* ServiceRegistrar.h */; };
+		50B3045D1A44C34600E1BA5D /* LogConsumer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304321A44C34600E1BA5D /* LogConsumer.cpp */; };
+		50B3045E1A44C34600E1BA5D /* LogConsumer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304331A44C34600E1BA5D /* LogConsumer.h */; };
+		50B3045F1A44C34600E1BA5D /* NetLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304341A44C34600E1BA5D /* NetLogger.cpp */; };
+		50B304601A44C34600E1BA5D /* NetLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304351A44C34600E1BA5D /* NetLogger.h */; };
+		50B304611A44C34600E1BA5D /* TCPTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304361A44C34600E1BA5D /* TCPTransport.cpp */; };
+		50B304621A44C34600E1BA5D /* TCPTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B304371A44C34600E1BA5D /* TCPTransport.h */; };
 		50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */; };
 		50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50C7D5FB186082B100D8936D /* StaticOcclusionComponent.h */; };
 		50C7D604186082D600D8936D /* StaticOcclusionRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */; };
@@ -1869,6 +1912,49 @@
 		4FDDEC5817A6920D00D9DDEA /* MaterialOptimazer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialOptimazer.h; sourceTree = "<group>"; };
 		505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB41B18250C53009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
+		50B3040C1A44C34600E1BA5D /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
+		50B3040D1A44C34600E1BA5D /* DeadlineTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeadlineTimer.cpp; sourceTree = "<group>"; };
+		50B3040E1A44C34600E1BA5D /* DeadlineTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeadlineTimer.h; sourceTree = "<group>"; };
+		50B3040F1A44C34600E1BA5D /* DeadlineTimerTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeadlineTimerTemplate.h; sourceTree = "<group>"; };
+		50B304101A44C34600E1BA5D /* Endpoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Endpoint.cpp; sourceTree = "<group>"; };
+		50B304111A44C34600E1BA5D /* Endpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Endpoint.h; sourceTree = "<group>"; };
+		50B304121A44C34600E1BA5D /* IOLoop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IOLoop.cpp; sourceTree = "<group>"; };
+		50B304131A44C34600E1BA5D /* IOLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOLoop.h; sourceTree = "<group>"; };
+		50B304141A44C34600E1BA5D /* IPAddress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPAddress.cpp; sourceTree = "<group>"; };
+		50B304151A44C34600E1BA5D /* IPAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPAddress.h; sourceTree = "<group>"; };
+		50B304161A44C34600E1BA5D /* NetworkUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkUtils.cpp; sourceTree = "<group>"; };
+		50B304171A44C34600E1BA5D /* NetworkUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkUtils.h; sourceTree = "<group>"; };
+		50B304181A44C34600E1BA5D /* TCPAcceptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TCPAcceptor.cpp; sourceTree = "<group>"; };
+		50B304191A44C34600E1BA5D /* TCPAcceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPAcceptor.h; sourceTree = "<group>"; };
+		50B3041A1A44C34600E1BA5D /* TCPAcceptorTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPAcceptorTemplate.h; sourceTree = "<group>"; };
+		50B3041B1A44C34600E1BA5D /* TCPSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TCPSocket.cpp; sourceTree = "<group>"; };
+		50B3041C1A44C34600E1BA5D /* TCPSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPSocket.h; sourceTree = "<group>"; };
+		50B3041D1A44C34600E1BA5D /* TCPSocketTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPSocketTemplate.h; sourceTree = "<group>"; };
+		50B3041E1A44C34600E1BA5D /* UDPSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UDPSocket.cpp; sourceTree = "<group>"; };
+		50B3041F1A44C34600E1BA5D /* UDPSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UDPSocket.h; sourceTree = "<group>"; };
+		50B304201A44C34600E1BA5D /* UDPSocketTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UDPSocketTemplate.h; sourceTree = "<group>"; };
+		50B304211A44C34600E1BA5D /* BasicProtoDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasicProtoDecoder.cpp; sourceTree = "<group>"; };
+		50B304221A44C34600E1BA5D /* BasicProtoDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BasicProtoDecoder.h; sourceTree = "<group>"; };
+		50B304231A44C34600E1BA5D /* IChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IChannel.h; sourceTree = "<group>"; };
+		50B304241A44C34600E1BA5D /* INetDriver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INetDriver.h; sourceTree = "<group>"; };
+		50B304251A44C34600E1BA5D /* ITransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITransport.h; sourceTree = "<group>"; };
+		50B304261A44C34600E1BA5D /* NetConfig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetConfig.cpp; sourceTree = "<group>"; };
+		50B304271A44C34600E1BA5D /* NetConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetConfig.h; sourceTree = "<group>"; };
+		50B304281A44C34600E1BA5D /* NetCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetCore.cpp; sourceTree = "<group>"; };
+		50B304291A44C34600E1BA5D /* NetCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetCore.h; sourceTree = "<group>"; };
+		50B3042A1A44C34600E1BA5D /* NetDriver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetDriver.cpp; sourceTree = "<group>"; };
+		50B3042B1A44C34600E1BA5D /* NetDriver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetDriver.h; sourceTree = "<group>"; };
+		50B3042C1A44C34600E1BA5D /* NetService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetService.cpp; sourceTree = "<group>"; };
+		50B3042D1A44C34600E1BA5D /* NetService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetService.h; sourceTree = "<group>"; };
+		50B3042E1A44C34600E1BA5D /* NetworkCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkCommon.h; sourceTree = "<group>"; };
+		50B3042F1A44C34600E1BA5D /* ServiceRegistrar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ServiceRegistrar.cpp; sourceTree = "<group>"; };
+		50B304301A44C34600E1BA5D /* ServiceRegistrar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServiceRegistrar.h; sourceTree = "<group>"; };
+		50B304321A44C34600E1BA5D /* LogConsumer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LogConsumer.cpp; sourceTree = "<group>"; };
+		50B304331A44C34600E1BA5D /* LogConsumer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogConsumer.h; sourceTree = "<group>"; };
+		50B304341A44C34600E1BA5D /* NetLogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetLogger.cpp; sourceTree = "<group>"; };
+		50B304351A44C34600E1BA5D /* NetLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetLogger.h; sourceTree = "<group>"; };
+		50B304361A44C34600E1BA5D /* TCPTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TCPTransport.cpp; sourceTree = "<group>"; };
+		50B304371A44C34600E1BA5D /* TCPTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPTransport.h; sourceTree = "<group>"; };
 		50C7D5F6186082A600D8936D /* StaticOcclusionSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionSystem.cpp; sourceTree = "<group>"; };
 		50C7D5F7186082A600D8936D /* StaticOcclusionSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionSystem.h; sourceTree = "<group>"; };
 		50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionComponent.cpp; sourceTree = "<group>"; };
@@ -2801,6 +2887,72 @@
 				AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */,
 			);
 			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		50B3040A1A44C34600E1BA5D /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				50B3040B1A44C34600E1BA5D /* Base */,
+				50B304211A44C34600E1BA5D /* BasicProtoDecoder.cpp */,
+				50B304221A44C34600E1BA5D /* BasicProtoDecoder.h */,
+				50B304231A44C34600E1BA5D /* IChannel.h */,
+				50B304241A44C34600E1BA5D /* INetDriver.h */,
+				50B304251A44C34600E1BA5D /* ITransport.h */,
+				50B304261A44C34600E1BA5D /* NetConfig.cpp */,
+				50B304271A44C34600E1BA5D /* NetConfig.h */,
+				50B304281A44C34600E1BA5D /* NetCore.cpp */,
+				50B304291A44C34600E1BA5D /* NetCore.h */,
+				50B3042A1A44C34600E1BA5D /* NetDriver.cpp */,
+				50B3042B1A44C34600E1BA5D /* NetDriver.h */,
+				50B3042C1A44C34600E1BA5D /* NetService.cpp */,
+				50B3042D1A44C34600E1BA5D /* NetService.h */,
+				50B3042E1A44C34600E1BA5D /* NetworkCommon.h */,
+				50B3042F1A44C34600E1BA5D /* ServiceRegistrar.cpp */,
+				50B304301A44C34600E1BA5D /* ServiceRegistrar.h */,
+				50B304311A44C34600E1BA5D /* Services */,
+				50B304361A44C34600E1BA5D /* TCPTransport.cpp */,
+				50B304371A44C34600E1BA5D /* TCPTransport.h */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		50B3040B1A44C34600E1BA5D /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				50B3040C1A44C34600E1BA5D /* Buffer.h */,
+				50B3040D1A44C34600E1BA5D /* DeadlineTimer.cpp */,
+				50B3040E1A44C34600E1BA5D /* DeadlineTimer.h */,
+				50B3040F1A44C34600E1BA5D /* DeadlineTimerTemplate.h */,
+				50B304101A44C34600E1BA5D /* Endpoint.cpp */,
+				50B304111A44C34600E1BA5D /* Endpoint.h */,
+				50B304121A44C34600E1BA5D /* IOLoop.cpp */,
+				50B304131A44C34600E1BA5D /* IOLoop.h */,
+				50B304141A44C34600E1BA5D /* IPAddress.cpp */,
+				50B304151A44C34600E1BA5D /* IPAddress.h */,
+				50B304161A44C34600E1BA5D /* NetworkUtils.cpp */,
+				50B304171A44C34600E1BA5D /* NetworkUtils.h */,
+				50B304181A44C34600E1BA5D /* TCPAcceptor.cpp */,
+				50B304191A44C34600E1BA5D /* TCPAcceptor.h */,
+				50B3041A1A44C34600E1BA5D /* TCPAcceptorTemplate.h */,
+				50B3041B1A44C34600E1BA5D /* TCPSocket.cpp */,
+				50B3041C1A44C34600E1BA5D /* TCPSocket.h */,
+				50B3041D1A44C34600E1BA5D /* TCPSocketTemplate.h */,
+				50B3041E1A44C34600E1BA5D /* UDPSocket.cpp */,
+				50B3041F1A44C34600E1BA5D /* UDPSocket.h */,
+				50B304201A44C34600E1BA5D /* UDPSocketTemplate.h */,
+			);
+			path = Base;
+			sourceTree = "<group>";
+		};
+		50B304311A44C34600E1BA5D /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				50B304321A44C34600E1BA5D /* LogConsumer.cpp */,
+				50B304331A44C34600E1BA5D /* LogConsumer.h */,
+				50B304341A44C34600E1BA5D /* NetLogger.cpp */,
+				50B304351A44C34600E1BA5D /* NetLogger.h */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		64493DDB19476F4700AB2715 /* Vegetation */ = {
@@ -3952,6 +4104,7 @@
 		FECFB32D12E5904400C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				50B3040A1A44C34600E1BA5D /* Network */,
 				D7CC264E19C517E500A3B754 /* Notification */,
 				E8B3C7A116B9326D002BD35F /* Animation */,
 				E8B3C7B116B9326D002BD35F /* Autotesting */,
@@ -4452,8 +4605,10 @@
 				84D18BFC19201BEF009E3E90 /* Image.h in Headers */,
 				AA747D9F0F9514B9006C5449 /* Framework_Prefix.pch in Headers */,
 				E8B3CA7F16B9326E002BD35F /* AnimatedObject.h in Headers */,
+				50B3045A1A44C34600E1BA5D /* NetworkCommon.h in Headers */,
 				C172EC2B18C9F9D4004309CF /* TextBlockDistanceRender.h in Headers */,
 				E8B3CA8116B9326E002BD35F /* Animation.h in Headers */,
+				50B3045C1A44C34600E1BA5D /* ServiceRegistrar.h in Headers */,
 				E8B3CA8316B9326E002BD35F /* AnimationManager.h in Headers */,
 				E8B3CA8516B9326E002BD35F /* BezierSplineAnimation.h in Headers */,
 				029BAE581859B81700478671 /* SoundEvent.h in Headers */,
@@ -4483,12 +4638,15 @@
 				02FD7EBC19237D33007762C0 /* SpeedTreeComponent.h in Headers */,
 				E8B3CAAB16B9326E002BD35F /* Hash.h in Headers */,
 				D7D3A2C419C8313300CD6B51 /* NSStringUtils.h in Headers */,
+				50B3044E1A44C34600E1BA5D /* BasicProtoDecoder.h in Headers */,
 				E8C486F6196BD2390082E634 /* LockGuard.h in Headers */,
 				E8B3CAAC16B9326E002BD35F /* HashMap.h in Headers */,
 				E8B3CAAD16B9326E002BD35F /* Introspection.h in Headers */,
 				E8B3CAAE16B9326E002BD35F /* IntrospectionBase.h in Headers */,
 				E8B3CAAF16B9326E002BD35F /* IntrospectionCollection.h in Headers */,
+				50B3044C1A44C34600E1BA5D /* UDPSocketTemplate.h in Headers */,
 				02A2FC5618D3064D0039E66A /* TreeToAnimatedTreeConverter.h in Headers */,
+				50B304381A44C34600E1BA5D /* Buffer.h in Headers */,
 				E8B3CAB016B9326E002BD35F /* IntrospectionFlags.h in Headers */,
 				84D18C0119201BEF009E3E90 /* ImageSystem.h in Headers */,
 				E8B3CAB116B9326E002BD35F /* IntrospectionProperty.h in Headers */,
@@ -4518,6 +4676,7 @@
 				E8B3CADB16B9326E002BD35F /* Backtrace.h in Headers */,
 				A6AFDED9187187D3006E43A1 /* RenderLayerManager.h in Headers */,
 				E8B3CADC16B9326E002BD35F /* DVAssert.h in Headers */,
+				50B304621A44C34600E1BA5D /* TCPTransport.h in Headers */,
 				E8B3CADD16B9326E002BD35F /* List.h in Headers */,
 				E8B3CADE16B9326E002BD35F /* ListAllocator.h in Headers */,
 				647EFC75195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
@@ -4530,6 +4689,7 @@
 				A69C939A186C377C00EAC8BC /* RenderTechnique.h in Headers */,
 				E8B3CAED16B9326E002BD35F /* DoxygenDocumenation.h in Headers */,
 				E8B3CAEF16B9326E002BD35F /* Component.h in Headers */,
+				50B3044F1A44C34600E1BA5D /* IChannel.h in Headers */,
 				E8B3CAF116B9326E002BD35F /* SceneSystem.h in Headers */,
 				E8B3CB1116B9326E002BD35F /* Bitstream.h in Headers */,
 				E8B3CB1316B9326E002BD35F /* DynamicMemoryFile.h in Headers */,
@@ -4547,6 +4707,7 @@
 				E8B3CB2616B9326E002BD35F /* LocalizationSystem.h in Headers */,
 				C172EC3118C9F9D4004309CF /* TextBlockSoftwareRender.h in Headers */,
 				E8B3CB2816B9326E002BD35F /* Logger.h in Headers */,
+				50B304601A44C34600E1BA5D /* NetLogger.h in Headers */,
 				E8B3CB2E16B9326E002BD35F /* ResourceArchive.h in Headers */,
 				E8B3CB3016B9326E002BD35F /* VariantType.h in Headers */,
 				E8B3CB3216B9326E002BD35F /* XMLParser.h in Headers */,
@@ -4557,6 +4718,7 @@
 				E8B3CB3C16B9326E002BD35F /* AccelerometeriPhone.h in Headers */,
 				E8B3CB3F16B9326E002BD35F /* InputSystem.h in Headers */,
 				E8B3CB4116B9326E002BD35F /* KeyboardDevice.h in Headers */,
+				50B3043D1A44C34600E1BA5D /* Endpoint.h in Headers */,
 				E8B3CB4316B9326E002BD35F /* AABBox2.h in Headers */,
 				D7FEF15F19864E5C00B2C7AF /* ZLibStream.h in Headers */,
 				E8B3CB4516B9326E002BD35F /* AABBox3.h in Headers */,
@@ -4581,6 +4743,7 @@
 				E8B3CB5616B9326E002BD35F /* OOBBox.h in Headers */,
 				4F25831419BDC94000C28926 /* TypeList.h in Headers */,
 				E8B3CB5716B9326E002BD35F /* Plane.h in Headers */,
+				50B304531A44C34600E1BA5D /* NetConfig.h in Headers */,
 				647EFC71195F0AC40073B3CB /* NMaterialHelper.h in Headers */,
 				84D18C0519201BEF009E3E90 /* LibJpegHelper.h in Headers */,
 				E8B3CB5916B9326E002BD35F /* Polygon2.h in Headers */,
@@ -4588,12 +4751,14 @@
 				EA10607718892B7C00CB99A3 /* ParticleGroup.h in Headers */,
 				E8B3CB5C16B9326E002BD35F /* Quaternion.h in Headers */,
 				E8B3CB5D16B9326E002BD35F /* Ray.h in Headers */,
+				50B304511A44C34600E1BA5D /* ITransport.h in Headers */,
 				E8B3CB5E16B9326E002BD35F /* Rect.h in Headers */,
 				D7FEF14D19864E5C00B2C7AF /* DownloadManager.h in Headers */,
 				64493E1A19476F4700AB2715 /* VegetationRenderObject.h in Headers */,
 				64493E0E19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
 				E8B3CB6016B9326E002BD35F /* RectPacker.h in Headers */,
 				E8B3CB6116B9326E002BD35F /* Sphere.h in Headers */,
+				50B304571A44C34600E1BA5D /* NetDriver.h in Headers */,
 				E8983CC618C8A540002FB974 /* ES3Renderer.h in Headers */,
 				E8B3CB6316B9326E002BD35F /* Spline.h in Headers */,
 				E8B3CB6416B9326E002BD35F /* Vector.h in Headers */,
@@ -4615,6 +4780,7 @@
 				32B074BF19E53C0C0069981A /* UIControlHelpers.h in Headers */,
 				E8B3CBA616B9326E002BD35F /* ES2Renderer.h in Headers */,
 				E8B3CBA816B9326E002BD35F /* ESRenderer.h in Headers */,
+				50B304481A44C34600E1BA5D /* TCPSocket.h in Headers */,
 				E8B3CBA916B9326E002BD35F /* HelperAppDelegate.h in Headers */,
 				E8B3CBB916B9326E002BD35F /* Thread.h in Headers */,
 				E8B3CBBE16B9326E002BD35F /* Font.h in Headers */,
@@ -4646,6 +4812,7 @@
 				E8B3CBEB16B9326E002BD35F /* LandscapeChunk.h in Headers */,
 				E8B3CBED16B9326E002BD35F /* LandscapeCursor.h in Headers */,
 				E8B3CBF316B9326E002BD35F /* Light.h in Headers */,
+				50B3044B1A44C34600E1BA5D /* UDPSocket.h in Headers */,
 				E8B3CBF516B9326E002BD35F /* Mesh.h in Headers */,
 				E8B3CBF916B9326E002BD35F /* RenderBatch.h in Headers */,
 				E8B3CBFA16B9326E002BD35F /* RenderDataSource.h in Headers */,
@@ -4686,6 +4853,7 @@
 				D7FEF14519864E5C00B2C7AF /* Downloader.h in Headers */,
 				E8B3CC3A16B9326E002BD35F /* RGBColor.h in Headers */,
 				E8B3CC3C16B9326E002BD35F /* Shader.h in Headers */,
+				50B304501A44C34600E1BA5D /* INetDriver.h in Headers */,
 				E8B3CC4116B9326E002BD35F /* SharedFBO.h in Headers */,
 				E8B3CC4316B9326E002BD35F /* StaticIndexBuffer.h in Headers */,
 				E8B3CC4516B9326E002BD35F /* StaticVertexBuffer.h in Headers */,
@@ -4694,6 +4862,7 @@
 				A6AFDEDB187187D3006E43A1 /* RenderPassManager.h in Headers */,
 				E8B3CC4916B9326E002BD35F /* TextureDescriptor.h in Headers */,
 				E8B3CC4C16B9326E002BD35F /* UberShader.h in Headers */,
+				50B304431A44C34600E1BA5D /* NetworkUtils.h in Headers */,
 				E8B3CC4D16B9326E002BD35F /* VertexBuffer.h in Headers */,
 				E8B3CC4F16B9326E002BD35F /* Box2DDebugDraw.h in Headers */,
 				E8B3CC5116B9326E002BD35F /* Box2DGameObject.h in Headers */,
@@ -4701,6 +4870,7 @@
 				E8B3CC5516B9326E002BD35F /* Box2DHelper.h in Headers */,
 				4F25831319BDC94000C28926 /* TypeHolders.h in Headers */,
 				E8B3CC5716B9326E002BD35F /* Box2DTileCollider.h in Headers */,
+				50B304461A44C34600E1BA5D /* TCPAcceptorTemplate.h in Headers */,
 				64493DFC19476F4700AB2715 /* VegetationCustomGeometry.h in Headers */,
 				E8B3CC5916B9326E002BD35F /* GameObject.h in Headers */,
 				84D18BFE19201BEF009E3E90 /* ImageConvert.h in Headers */,
@@ -4736,6 +4906,7 @@
 				E8B3CC9616B9326E002BD35F /* ProxyNode.h in Headers */,
 				E8B3CC9E16B9326E002BD35F /* Scene.h in Headers */,
 				84D18C0719201BEF009E3E90 /* LibPngHelpers.h in Headers */,
+				50B304551A44C34600E1BA5D /* NetCore.h in Headers */,
 				11CB614B19C338DF00B48A92 /* AnimationData.h in Headers */,
 				E8B3CCA016B9326E002BD35F /* SceneAnimationMixer.h in Headers */,
 				E8B3CCA216B9326E002BD35F /* SceneFile.h in Headers */,
@@ -4749,6 +4920,8 @@
 				D7CC267719C517E500A3B754 /* LocalNotificationText.h in Headers */,
 				E8B3CCAE16B9326E002BD35F /* SceneNodeAnimationList.h in Headers */,
 				D7CC265F19C517E500A3B754 /* LocalNotification.h in Headers */,
+				50B304591A44C34600E1BA5D /* NetService.h in Headers */,
+				50B3045E1A44C34600E1BA5D /* LogConsumer.h in Headers */,
 				15D311921982861500919AAA /* YamlEmitter.h in Headers */,
 				E8B3CCB016B9326E002BD35F /* ShadowVolumeNode.h in Headers */,
 				E8B3CCB216B9326E002BD35F /* SkeletonNode.h in Headers */,
@@ -4792,6 +4965,7 @@
 				E8B3CD0616B9326E002BD35F /* UIList.h in Headers */,
 				84D18C0319201BEF009E3E90 /* LibDdsHelper.h in Headers */,
 				17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */,
+				50B3043A1A44C34600E1BA5D /* DeadlineTimer.h in Headers */,
 				E8B3CD0816B9326E002BD35F /* UIListCell.h in Headers */,
 				E8B3CD0A16B9326E002BD35F /* UILoadingTransition.h in Headers */,
 				E8B3CD0C16B9326E002BD35F /* UIMoveInTransition.h in Headers */,
@@ -4803,6 +4977,8 @@
 				029BAE551859B81700478671 /* musicios.h in Headers */,
 				E8B3CD1416B9326E002BD35F /* UIScreenManageriPhone.h in Headers */,
 				E8B3CD1616B9326E002BD35F /* UIScreenManageriPhoneImpl.h in Headers */,
+				50B304451A44C34600E1BA5D /* TCPAcceptor.h in Headers */,
+				50B304491A44C34600E1BA5D /* TCPSocketTemplate.h in Headers */,
 				A6AFDEFD1871C3D1006E43A1 /* SpeedTreeObject.h in Headers */,
 				64493E0019476F4700AB2715 /* VegetationCustomGeometrySerializationData.h in Headers */,
 				E8B3CD1B16B9326E002BD35F /* UIScreenTransition.h in Headers */,
@@ -4813,6 +4989,7 @@
 				02864525197960F200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */,
 				64493E1C19476F4700AB2715 /* VegetationSpatialData.h in Headers */,
 				624C87F318C6160F00E1049D /* DateTime.h in Headers */,
+				50B3043B1A44C34600E1BA5D /* DeadlineTimerTemplate.h in Headers */,
 				E8B3CD2416B9326E002BD35F /* UITextFieldiPhone.h in Headers */,
 				E8B3CD2716B9326E002BD35F /* UIYamlLoader.h in Headers */,
 				CC84B03F18211BCE00934482 /* Job.h in Headers */,
@@ -4829,6 +5006,7 @@
 				E89CE92D16C54A36006BEFF4 /* SpriteRenderBatch.h in Headers */,
 				CCB4C44716CBC65D00F2B085 /* ComponentHelpers.h in Headers */,
 				022AA8E01934CECD009A4B84 /* WaveComponent.h in Headers */,
+				50B304411A44C34600E1BA5D /* IPAddress.h in Headers */,
 				1799E51B16CCEBDA0058061F /* ParticleForce.h in Headers */,
 				C7E76D3216DF69370041ED9A /* AutotestingSystemLua.h in Headers */,
 				17F53E2F16D36FF3004D5099 /* IWebViewControl.h in Headers */,
@@ -4877,6 +5055,7 @@
 				E8586C4119F8FEBA004FD709 /* BackgroundView.h in Headers */,
 				A679102A17B3CF2D000AA2F2 /* SkyboxRenderObject.h in Headers */,
 				17D7E5F617A6C06B00861981 /* UIDismissionHandlerAlertView.h in Headers */,
+				50B3043F1A44C34600E1BA5D /* IOLoop.h in Headers */,
 				EA56555417CE00E100426EB8 /* PerformanceSettings.h in Headers */,
 				E8C0A6FB17D5D8B300F8F93C /* UIScrollView.h in Headers */,
 				E8C0A6FF17D5D8EC00F8F93C /* UIScrollViewContainer.h in Headers */,
@@ -5468,6 +5647,7 @@
 				E8B3CB3E16B9326E002BD35F /* InputSystem.cpp in Sources */,
 				E8B3CB4016B9326E002BD35F /* KeyboardDevice.cpp in Sources */,
 				029BAE591859C80500478671 /* musicios.mm in Sources */,
+				50B304581A44C34600E1BA5D /* NetService.cpp in Sources */,
 				64493E1019476F4700AB2715 /* VegetationPropertyNames.cpp in Sources */,
 				E8B3CB4216B9326E002BD35F /* AABBox2.cpp in Sources */,
 				D7CC265D19C517E500A3B754 /* LocalNotification.cpp in Sources */,
@@ -5488,12 +5668,14 @@
 				E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */,
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,
 				D7FEF15919864E5C00B2C7AF /* PatchFile.cpp in Sources */,
+				50B304561A44C34600E1BA5D /* NetDriver.cpp in Sources */,
 				E8B3CB8316B9326E002BD35F /* ParticlePropertyLine.cpp in Sources */,
 				B79723EE1A125F96009421F3 /* BiDiHelper.cpp in Sources */,
 				D7FEF15119864E5C00B2C7AF /* bs_diff.c in Sources */,
 				E8B3CB8E16B9326E002BD35F /* Mutex.cpp in Sources */,
 				E8B3CB9E16B9326E002BD35F /* SystemTimer.cpp in Sources */,
 				E8B3CBA116B9326E002BD35F /* EAGLView.mm in Sources */,
+				50B304521A44C34600E1BA5D /* NetConfig.cpp in Sources */,
 				E8B3CBA316B9326E002BD35F /* EAGLViewController.mm in Sources */,
 				E8B3CBA516B9326E002BD35F /* ES1Renderer.mm in Sources */,
 				E8B3CBA716B9326E002BD35F /* ES2Renderer.mm in Sources */,
@@ -5522,8 +5704,11 @@
 				E8B3CBDF16B9326E002BD35F /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				E8B3CBE116B9326E002BD35F /* TextureMulColorEffect.cpp in Sources */,
 				E8B3CBE316B9326E002BD35F /* Camera.cpp in Sources */,
+				50B304391A44C34600E1BA5D /* DeadlineTimer.cpp in Sources */,
 				155D77E8197DD265006AEBCD /* YamlNode.cpp in Sources */,
+				50B304441A44C34600E1BA5D /* TCPAcceptor.cpp in Sources */,
 				E8B3CBE516B9326E002BD35F /* CullingSystem.cpp in Sources */,
+				50B3045D1A44C34600E1BA5D /* LogConsumer.cpp in Sources */,
 				E8B3CBE716B9326E002BD35F /* Heightmap.cpp in Sources */,
 				E8B3CBEA16B9326E002BD35F /* LandscapeChunk.cpp in Sources */,
 				D7D3A2C619C8313300CD6B51 /* NSStringUtils.mm in Sources */,
@@ -5532,6 +5717,7 @@
 				E8B3CBF416B9326E002BD35F /* Mesh.cpp in Sources */,
 				D7FEF15D19864E5C00B2C7AF /* ZLibStream.cpp in Sources */,
 				E8B3CBF816B9326E002BD35F /* RenderBatch.cpp in Sources */,
+				50B304541A44C34600E1BA5D /* NetCore.cpp in Sources */,
 				E8B3CBFB16B9326E002BD35F /* RenderLayer.cpp in Sources */,
 				A61171471860C24D00E18F8C /* StaticOcclusion.cpp in Sources */,
 				E8B3CBFD16B9326E002BD35F /* RenderObject.cpp in Sources */,
@@ -5544,6 +5730,7 @@
 				E8B3CC0716B9326E002BD35F /* ShadowVolumeRenderPass.cpp in Sources */,
 				026A1DE619DAF25700813AEF /* SkeletonSystem.cpp in Sources */,
 				C172EC2C18C9F9D4004309CF /* TextBlockGraphicsRender.cpp in Sources */,
+				50B3045F1A44C34600E1BA5D /* NetLogger.cpp in Sources */,
 				E8B3CC1616B9326E002BD35F /* MaterialCompiler.cpp in Sources */,
 				E8B3CC1816B9326E002BD35F /* MaterialGraph.cpp in Sources */,
 				D7FEF13B19864E5C00B2C7AF /* DLC.cpp in Sources */,
@@ -5615,6 +5802,7 @@
 				E8B3CC8916B9326E002BD35F /* MeshInstance.cpp in Sources */,
 				E8B3CC8B16B9326E002BD35F /* MeshInstanceNode.cpp in Sources */,
 				E8B3CC8D16B9326E002BD35F /* ParticleEffectNode.cpp in Sources */,
+				50B3044D1A44C34600E1BA5D /* BasicProtoDecoder.cpp in Sources */,
 				E8B3CC8F16B9326E002BD35F /* ParticleEmitterNode.cpp in Sources */,
 				CC84B04418211BCE00934482 /* JobWaiter.cpp in Sources */,
 				6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */,
@@ -5695,24 +5883,30 @@
 				E8B3CD2616B9326E002BD35F /* UIYamlLoader.cpp in Sources */,
 				E8B3CD2916B9326E002BD35F /* HTTPDownloader.mm in Sources */,
 				E8B3CD2B16B9326E002BD35F /* MD5.cpp in Sources */,
+				50B304611A44C34600E1BA5D /* TCPTransport.cpp in Sources */,
 				CCEB543C1886FF0C0018491F /* LodToLod2Converter.cpp in Sources */,
 				E8B3CD2E16B9326E002BD35F /* StringFormat.cpp in Sources */,
 				E8B3CD3216B9326E002BD35F /* Utils.cpp in Sources */,
+				50B3044A1A44C34600E1BA5D /* UDPSocket.cpp in Sources */,
 				E8B3CD3416B9326E002BD35F /* UtilsMacOS.mm in Sources */,
 				E8CC1BFC16C10A5A009B49BF /* IntrospectionBase.cpp in Sources */,
 				E8F21DD016C1971F007F957A /* GlobalEventSystem.cpp in Sources */,
 				E89CE92A16C54A36006BEFF4 /* SpriteObject.cpp in Sources */,
 				E89CE92C16C54A36006BEFF4 /* SpriteRenderBatch.cpp in Sources */,
+				50B304471A44C34600E1BA5D /* TCPSocket.cpp in Sources */,
 				32B074C119E53C0C0069981A /* UIPackage.cpp in Sources */,
 				CCB4C44616CBC65D00F2B085 /* ComponentHelpers.cpp in Sources */,
 				1799E51A16CCEBDA0058061F /* ParticleForce.cpp in Sources */,
+				50B304421A44C34600E1BA5D /* NetworkUtils.cpp in Sources */,
 				C7E76D3116DF69370041ED9A /* AutotestingSystemLua.cpp in Sources */,
 				C7E76D3316DF69370041ED9A /* AutotestingSystemSwig.cpp in Sources */,
 				C7E76D3816DF69370041ED9A /* RectSwig.cpp in Sources */,
 				C7E76D3B16DF69370041ED9A /* UIControlSwig.cpp in Sources */,
 				E84B1A6A19FA394700E4D4BC /* UITextFieldHolder.mm in Sources */,
+				50B3043E1A44C34600E1BA5D /* IOLoop.cpp in Sources */,
 				C7E76D3E16DF69370041ED9A /* VectorSwig.cpp in Sources */,
 				17F53E3016D36FF3004D5099 /* UIWebView.cpp in Sources */,
+				50B304401A44C34600E1BA5D /* IPAddress.cpp in Sources */,
 				17F53E3516D3705E004D5099 /* WebViewControliOS.mm in Sources */,
 				840ED3C916D506F900D2BA6C /* DPIHelperiOS.mm in Sources */,
 				CC247FF116D69F1700183D40 /* DVAssertMessage.cpp in Sources */,
@@ -5757,6 +5951,7 @@
 				E8679184175F62D600C5A6A2 /* EnumMap.cpp in Sources */,
 				A6E4FDF31761D40200B48E41 /* ActionComponent.cpp in Sources */,
 				A6E4FDF51761D40200B48E41 /* CustomPropertiesComponent.cpp in Sources */,
+				50B3045B1A44C34600E1BA5D /* ServiceRegistrar.cpp in Sources */,
 				A6E4FDFB1761D83100B48E41 /* ActionUpdateSystem.cpp in Sources */,
 				A6A1E8691785688600AA3A86 /* CRC32.cpp in Sources */,
 				84D18C0619201BEF009E3E90 /* LibPngHelpers.cpp in Sources */,
@@ -5770,6 +5965,7 @@
 				E8C0A6FE17D5D8EC00F8F93C /* UIScrollViewContainer.cpp in Sources */,
 				1AD7C35E17D8951C00B9977C /* Vector.cpp in Sources */,
 				17DC600B17DE16D40075813E /* UIMovieView.cpp in Sources */,
+				50B3043C1A44C34600E1BA5D /* Endpoint.cpp in Sources */,
 				17FFF904193F0218003D51DA /* MongodbObject.cpp in Sources */,
 				17DC600F17DE18460075813E /* MovieViewControliOS.mm in Sources */,
 				EA84E17517FAC20100304C3C /* SpatialTree.cpp in Sources */,

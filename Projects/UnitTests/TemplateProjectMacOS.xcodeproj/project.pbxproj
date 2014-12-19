@@ -13,6 +13,7 @@
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A194183D1B4A000DE581 /* AVFoundation.framework */; };
 		1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A19A183D227A000DE581 /* CoreMedia.framework */; };
+		50B304021A44C24100E1BA5D /* NetworkTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B304001A44C24100E1BA5D /* NetworkTest.cpp */; };
 		5CDC2501156CC93300742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2500156CC93300742348 /* libz.dylib */; };
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -125,6 +126,8 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* TemplateProjectMacOS_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TemplateProjectMacOS_Prefix.pch; sourceTree = "<group>"; };
+		50B304001A44C24100E1BA5D /* NetworkTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkTest.cpp; path = Classes/Tests/NetworkTest.cpp; sourceTree = "<group>"; };
+		50B304011A44C24100E1BA5D /* NetworkTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkTest.h; path = Classes/Tests/NetworkTest.h; sourceTree = "<group>"; };
 		5C6EF11B15751E1B001E45AD /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		5C6EF11D15751E1B001E45AD /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		5C6EF11F15751E1B001E45AD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -313,6 +316,8 @@
 		CC11978D1A38BACC006931D7 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				50B304001A44C24100E1BA5D /* NetworkTest.cpp */,
+				50B304011A44C24100E1BA5D /* NetworkTest.h */,
 				CC11978E1A38BAE1006931D7 /* ComponentsTest.cpp */,
 				CC11978F1A38BAE1006931D7 /* ComponentsTest.h */,
 				CC1197901A38BAE1006931D7 /* DateTimeTest.cpp */,
@@ -546,6 +551,7 @@
 				CC1197AD1A38BAE1006931D7 /* DateTimeTest.cpp in Sources */,
 				CC1197B61A38BAE1006931D7 /* MemoryAllocatorsTest.cpp in Sources */,
 				CC1197B41A38BAE1006931D7 /* LocalizationTest.cpp in Sources */,
+				50B304021A44C24100E1BA5D /* NetworkTest.cpp in Sources */,
 				CC1197B81A38BAE1006931D7 /* SplitTest.cpp in Sources */,
 				CC11978C1A38BAB9006931D7 /* TextureUtils.cpp in Sources */,
 				CC1197BA1A38BAE1006931D7 /* TextSizeTest.cpp in Sources */,
