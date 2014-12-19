@@ -1,4 +1,4 @@
-
+﻿
     #include "rhi_ProgGLES2.h"
     #include "../rhi_Base.h"
     #include "../RHI/rhi_Pool.h"
@@ -97,6 +97,29 @@ ProgGLES2::Destroy()
 void
 ProgGLES2::GetProgParams( unsigned progUid )
 {
+#if DV_USE_UNIFORMBUFFER_OBJECT
+    for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
+    {
+        char    name[32];   sprintf( name, "%s_Buffer%u_Block", (type == PROG_VERTEX)?"VP":"FP", i );
+        GLuint  loc         = glGetUniformBlockIndex( progUid, name );
+
+        if( loc != GL_INVALID_INDEX )
+        {
+            GLint   sz;
+
+            glGetActiveUniformBlockiv( progUid, loc, GL_UNIFORM_BLOCK_DATA_SIZE, &sz );
+            GL_CALL(glUniformBlockBinding( progUid, loc, loc ));
+
+            cbuf[i].location = loc;
+            cbuf[i].count    = sz / (4*sizeof(float));
+        }
+        else
+        {
+            cbuf[i].location = InvalidIndex;
+            cbuf[i].count    = 0;
+        }
+    }
+#else
     GLint   cnt = 0;
     
     glGetProgramiv( progUid, GL_ACTIVE_UNIFORMS, &cnt );
@@ -135,6 +158,7 @@ ProgGLES2::GetProgParams( unsigned progUid )
             }
         }
     }
+#endif // DV_USE_UNIFORMBUFFER_OBJECT
 
     for( unsigned i=0; i!=countof(texunitLoc); ++i )
     {
@@ -208,6 +232,8 @@ ProgGLES2::SetToRHI() const
 bool
 ProgGLES2::ConstBuf::Construct( unsigned loc, unsigned cnt )
 {
+    bool success = true;
+
     location    = loc;
     count       = cnt;
 //    _data       = (float*)(VidMem()->alloc_aligned( cnt*4*sizeof(float), 16 ));
@@ -215,7 +241,26 @@ ProgGLES2::ConstBuf::Construct( unsigned loc, unsigned cnt )
     isDirty     = true;
     isInstanced = false;
 
-    return true;
+    #if DV_USE_UNIFORMBUFFER_OBJECT
+    GLuint  b = 0;
+
+    glGenBuffers( 1, &b );
+    glBindBuffer( GL_UNIFORM_BUFFER, b );
+    glBufferData( GL_UNIFORM_BUFFER, cnt*4*sizeof(float), data, GL_DYNAMIC_DRAW );
+    glBindBuffer( GL_UNIFORM_BUFFER, 0 );
+    
+    if( glGetError() == GL_NO_ERROR )
+    {
+        ubo     = b;
+        success = true;
+    }
+    else
+    {
+        success = false;
+    }
+    #endif
+
+    return success;
 }
 
 
@@ -296,11 +341,23 @@ ProgGLES2::ConstBuf::Instance() const
 void
 ProgGLES2::ConstBuf::SetToRHI( void* instData ) const
 {
+    #if DV_USE_UNIFORMBUFFER_OBJECT
+//    if( instData != data )
+    {
+        glBindBuffer( GL_UNIFORM_BUFFER, ubo );
+        void* buf = glMapBuffer( GL_UNIFORM_BUFFER, GL_WRITE_ONLY );
+        memcpy( buf, (GLfloat*)instData, count*4*sizeof(float) );
+        glUnmapBuffer( GL_UNIFORM_BUFFER );
+
+        GL_CALL(glBindBufferBase( GL_UNIFORM_BUFFER, location, ubo ));
+    }
+    #else
     if( instData != data )
     {
         GL_CALL(glUniform4fv( location, count, (GLfloat*)instData ));
         isDirty = false;
     }
+    #endif
 }
 
 

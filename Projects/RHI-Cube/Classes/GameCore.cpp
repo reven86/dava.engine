@@ -83,7 +83,11 @@ GameCore::SetupTriangle()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-simple"),
+#if DV_USE_UNIFORMBUFFER_OBJECT
+        "uniform FP_Buffer0_Block { vec4 FP_Buffer0[4]; };\n"
+#else
         "uniform vec4 FP_Buffer0[4];\n"
+#endif
         "void main()\n"
         "{\n"
         "    gl_FragColor = FP_Buffer0[0];\n"
@@ -137,8 +141,13 @@ GameCore::SetupCube()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-shaded"),
+#if DV_USE_UNIFORMBUFFER_OBJECT
+        "uniform VP_Buffer0_Block { vec4 VP_Buffer0[16]; };\n"
+        "uniform VP_Buffer1_Block { vec4 VP_Buffer1[16]; };\n"
+#else
         "uniform vec4 VP_Buffer0[16];\n"
         "uniform vec4 VP_Buffer1[16];\n"
+#endif        
         "attribute vec4 attr_position;\n"
         "attribute vec3 attr_normal;\n"
         "attribute vec2 attr_texcoord;\n"
@@ -156,7 +165,11 @@ GameCore::SetupCube()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded"),
+#if DV_USE_UNIFORMBUFFER_OBJECT
+        "uniform FP_Buffer0_Block { vec4 FP_Buffer0[4]; };\n"
+#else
         "uniform vec4 FP_Buffer0[4];\n"
+#endif
         "varying vec3 var_Color;\n"
         "void main()\n"
         "{\n"
@@ -240,7 +253,8 @@ void GameCore::BeginFrame()
     rhi::CommandBuffer::Begin( cb );    
     rhi::CommandBuffer::Clear( cb );
 
-/*
+#if 0
+
     rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
 
     rhi::CommandBuffer::SetVertexData( cb, triangle.vb );
@@ -248,7 +262,8 @@ void GameCore::BeginFrame()
     rhi::CommandBuffer::SetPipelineState( cb, triangle.ps );
     rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, triangle.fp_const );
     rhi::CommandBuffer::DrawIndexedPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 1 );
-*/
+
+#else
 
     uint64  cube_t1 = SystemTimer::Instance()->AbsoluteMS();
     uint64  dt      = cube_t1 - cube_t0;
@@ -277,6 +292,8 @@ void GameCore::BeginFrame()
     rhi::CommandBuffer::SetVertexConstBuffer( cb, 1, cube.vp_const[1] );
     rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, cube.fp_const );
     rhi::CommandBuffer::DrawPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 12 );
+
+#endif
     
     rhi::CommandBuffer::End( cb );
 }

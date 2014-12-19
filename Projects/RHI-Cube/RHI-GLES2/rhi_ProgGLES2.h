@@ -62,6 +62,9 @@ public:
     private:        
         
         unsigned            location;
+        #if DV_USE_UNIFORMBUFFER_OBJECT
+        unsigned            ubo;
+        #endif
 
         unsigned            count;
         mutable float*      data;

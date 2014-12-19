@@ -150,5 +150,9 @@ void    DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count );
 } // namespace rhi
 
 
+
+#define DV_USE_UNIFORMBUFFER_OBJECT 1
+
+
 #endif // __RHI_BASE_H__
 
