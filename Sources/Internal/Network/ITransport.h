@@ -41,6 +41,9 @@ namespace Net
 */
 struct ITransport
 {
+    // There should be a virtual destructor defined as objects may be deleted through this interface
+    virtual ~ITransport() {}
+    
     // Check whether transport is alive, i.e. can send/receive data
     virtual bool IsActive() const = 0;
     // Start transport

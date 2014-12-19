@@ -44,7 +44,7 @@ TCPTransport::TCPTransport(IOLoop* ioLoop, ITransportListener* aListener, eTrans
                                                 , socket(ioLoop)
                                                 , timer(ioLoop)
                                                 , endpoint(endp)
-                                                , readTimeout(1000 * 5)
+                                                , readTimeout(1000 * 60)
                                                 , listener(aListener)
                                                 , isActive(false)
                                                 , deactivateFlag(false)
@@ -325,6 +325,7 @@ void TCPTransport::SocketHandleClose(TCPSocket* socket)
 {
     if (deactivateFlag)
     {
+        isActive = false;
         // I ensure that this is the last method called on termination
         listener->OnTransportDeactivated(this, REQUEST, 0);
         listener->OnTransportTerminated(this);
