@@ -1112,35 +1112,12 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
 
 void TextBlock::CleanLine(WideString& string, bool trimRight)
 {
+    WideString out = StringUtils::CleanLine(string, 1);
     if (trimRight)
     {
-    	WideString trimed = StringUtils::TrimRight(string);
-        string.swap(trimed);
+        out = StringUtils::TrimRight(out);
     }
-
-    WideString::iterator it = string.begin();
-    WideString::iterator end = string.end();
-    while(it != end)
-    {
-        switch (*it)
-        {
-        case L'\n':
-        case L'\r':
-        case 0x200B: // Zero-width space
-        case 0x200E: // Zero-width Left-to-right zero-width character
-        case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
-        case 0x061C: // Right-to-left zero-width Arabic character
-            it = string.erase(it);
-            end = string.end();
-            break;
-        case L'\t':
-        case 0xA0: // Non-break space
-            *it = L' ';
-        default:
-            ++it;
-            break;
-        }
-    }
+    string.swap(out);
 }
 
 };
