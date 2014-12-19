@@ -47,6 +47,9 @@ void FrameworkDidLaunched()
 
     appOptions->SetString("title", DAVA::Format("DAVA Framework - UIEditor | %s-%s", DAVAENGINE_VERSION, UI_EDITOR_VERSION));
 
+    // Disable sprite clipping in UIEditor
+    Sprite::SetSpriteClipping(false);
+
     Core::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
 
     Core::Instance()->SetOptions(appOptions);

@@ -88,10 +88,13 @@ qt4_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 file              ( GLOB RCC_LIST "Data/*.qrc" )
 qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
+set ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set ( UiList       ${UI_LIST} )
+
 define_source_folders ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
-generate_source_groups_project ()
+generate_source_groups_project (  SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
                                
 add_executable  ( UIEditor MACOSX_BUNDLE
     ${MOC_APP_SRCS} 

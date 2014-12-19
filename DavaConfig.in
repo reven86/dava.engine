@@ -1,9 +1,0 @@
-
-QT4_PATH_WIN           = c:\Qt4\4.8.6\bin
-QT5_PATH_WIN           = c:\Qt\5.3\msvc2010_opengl
-ANDROID_NDK_PATH_WIN   = D:/Tools/android-ndk-r9d
-
-
-QT4_PATH_MAC           =
-QT5_PATH_MAC           = $ENV{HOME}/Qt/5.3/clang_64 
-ANDROID_NDK_PATH_MAC   =
