@@ -100,7 +100,7 @@ WideString StringUtils::CleanLine(const WideString & string, const int8 tabRule 
                 out.append(tabRule, L' '); // Replace tab with (tabRule x spaces)
             }
             break;
-        case 0xA0: // Non-break space
+        case 0x00A0: // Non-break space
             out.push_back(L' ');
             break;
         default:
