@@ -108,10 +108,10 @@ elseif( IOS )
     
     set ( CMAKE_C_FLAGS    "-mno-thumb"  )
     set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
-    set ( LIST_SHARED_LIBRARIES 
-                    libz.dylib 
-                    libbz2.dylib
-                )
+    #set ( LIST_SHARED_LIBRARIES 
+    #                libz.dylib 
+    #               libbz2.dylib
+    #            )
 
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
     foreach( NAME  CoreGraphics 
@@ -134,13 +134,15 @@ elseif( IOS )
                 )
         
         FIND_LIBRARY( ${NAME}_LIBRARY  ${NAME} )
-        list ( APPEND LIST_SHARED_LIBRARIES  ${${NAME}_LIBRARY} )
+        list ( APPEND LIST_ADDED_SHARED_LIBRARIES  ${${NAME}_LIBRARY} )
     endforeach()
 
     file ( GLOB RESOURCE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )   
 
-    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
+    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp 
+                                 ${CMAKE_CURRENT_LIST_DIR}/Notification/LocalNotificationIOS.cpp
+                                 PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
 
 
 elseif( WIN32 ) 
