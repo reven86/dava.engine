@@ -48,6 +48,7 @@
 #include "Tests/SplitTest.h"
 #include "Tests/TextSizeTest.h"
 #include "Tests/KeyedArchiveYamlTest.h"
+#include "Tests/JobManagerTest.h"
 
 void GameCore::RunOnlyThisTest()
 {
@@ -56,7 +57,7 @@ void GameCore::RunOnlyThisTest()
 
 void GameCore::OnError()
 {
-    DebugBreak();
+    DavaDebugBreak();
 }
 
 void GameCore::RegisterTests()
@@ -76,6 +77,7 @@ void GameCore::RegisterTests()
     new SplitTest();
     new TextSizeTest();
     new KeyedArchiveYamlTest();
+    new JobManagerTest();
 }
 
 #include <fstream>

@@ -29,6 +29,7 @@
 
 #import "MainWindowController.h"
 #include "CorePlatformMacOS.h"
+#include "Platform/DeviceInfo.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -165,7 +166,6 @@ namespace DAVA
 	FrameworkDidLaunched();
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     
-	
 	//Core::Instance()->Creat();
     
 		// do all ground work & setup window itself according to value specified by user

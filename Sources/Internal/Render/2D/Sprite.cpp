@@ -58,6 +58,7 @@ namespace DAVA
 static int32 fboCounter = 0;
 Vector<Vector2> Sprite::clippedTexCoords;
 Vector<Vector2> Sprite::clippedVertices;
+bool Sprite::spriteClipping = true;
 
 Mutex Sprite::spriteMapMutex;
 
@@ -70,6 +71,10 @@ Sprite::DrawState::DrawState()
     //RenderManager::Instance()->RetainRenderState(renderState);
     //shader = SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 }
+
+RenderDataObject* Sprite::spriteRenderObject = NULL;
+RenderDataStream* Sprite::vertexStream = NULL;
+RenderDataStream* Sprite::texCoordStream = NULL;
 
 Sprite::Sprite()
 {
@@ -99,10 +104,6 @@ Sprite::Sprite()
 
 	resourceToVirtualFactor = 1.0f;
 	resourceToPhysicalFactor = 1.0f;
-
-	spriteRenderObject = new RenderDataObject();
-	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
 
 	//pivotPoint = Vector2(0.0f, 0.0f);
 	defaultPivotPoint = Vector2(0.0f, 0.0f);
@@ -261,19 +262,21 @@ void Sprite::InitFromFile(File *file)
 	rectsAndOffsets = new float32*[frameCount];
 	frameTextureIndex = new int32[frameCount];
 
-
+	frameNames.resize(frameCount);
 	for (int32 i = 0; i < frameCount; i++)
 	{
 		frameVertices[i] = new GLfloat[8];
 //		originalVertices[i] = new float32[4];
 		texCoords[i] = new GLfloat[8];
 		rectsAndOffsets[i] = new GLfloat[6];
-
+    	char frameName[128] = {0};
+    	
 		int32 x, y, dx,dy, xOff, yOff;
 
 		file->ReadLine(tempBuf, 1024);
-		sscanf(tempBuf, "%d %d %d %d %d %d %d", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i]);
-
+		sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
+		frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
+        
 		rectsAndOffsets[i][0] = (float32)x;
 		rectsAndOffsets[i][1] = (float32)y;
 //		rectsAndOffsets[i][2] = (float32)dx;
@@ -337,7 +340,6 @@ void Sprite::InitFromFile(File *file)
 		frameVertices[i][6] *= resourceToVirtualFactor;
 		frameVertices[i][7] *= resourceToVirtualFactor;
 	}
-
 //	Logger::FrameworkDebug("Frames created: %d", spr->frameCount);
 	//	center.x = width / 2;
 	//	center.y = height / 2;
@@ -693,7 +695,6 @@ void Sprite::Clear()
 Sprite::~Sprite()
 {
     spriteMapMutex.Lock();
-    SafeRelease(spriteRenderObject);
     spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     spriteMapMutex.Unlock();
 	Clear();
@@ -763,6 +764,22 @@ void Sprite::SetDefaultPivotPoint(const Vector2 &newPivotPoint)
 void Sprite::SetFrame(int32 frm)
 {
 	frame = Clamp(frm, 0, frameCount - 1);
+}
+
+int32 Sprite::GetFrameByName(const FastName& frameName) const
+{
+	if (!frameName.IsValid())
+    {
+		return INVALID_FRAME_INDEX;
+    }
+    
+    for (int32 i = 0; i < frameCount; i++)
+	{
+    	if (frameNames[i] == frameName)
+        	return i;
+    }
+    
+    return INVALID_FRAME_INDEX;
 }
 
 void Sprite::SetModification(int32 modif)
@@ -1147,6 +1164,7 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 void Sprite::Draw(DrawState * state)
 {
+	// DF-2897 - Do not draw sprite if its position is beyond screen
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
@@ -1160,7 +1178,8 @@ void Sprite::Draw(DrawState * state)
 #endif
 
 	PrepareSpriteRenderData(state);
-
+    
+    bool spriteIsOnScreen = (clipPolygon) ? true : (!spriteClipping || IsSpriteOnScreen(state));
 	if( clipPolygon )
 	{
 		RenderManager::Instance()->ClipPush();
@@ -1185,14 +1204,17 @@ void Sprite::Draw(DrawState * state)
 		}
 
 		RenderManager::Instance()->ClipRect( clipRect );
-	}
+    }
 
-    RenderManager::Instance()->SetRenderState(state->renderState);
-	RenderManager::Instance()->SetTextureState(textureHandles[frameTextureIndex[frame]]);
-	RenderManager::Instance()->SetRenderData(spriteRenderObject);
-    RenderManager::Instance()->SetRenderEffect(state->shader);
- 	RenderManager::Instance()->DrawArrays(primitiveToDraw, 0, vertexCount);
-
+    if(spriteIsOnScreen)
+    {
+        RenderManager::Instance()->SetRenderState(state->renderState);
+        RenderManager::Instance()->SetTextureState(textureHandles[frameTextureIndex[frame]]);
+        RenderManager::Instance()->SetRenderData(spriteRenderObject);
+        RenderManager::Instance()->SetRenderEffect(state->shader);
+        RenderManager::Instance()->DrawArrays(primitiveToDraw, 0, vertexCount);
+    }
+    
 	if( clipPolygon )
 	{
 		RenderManager::Instance()->ClipPop();
@@ -1698,6 +1720,49 @@ void Sprite::SetRelativePathname(const FilePath& path)
     spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
     spriteMapMutex.Unlock();
     GetTexture()->SetPathname(path);
+}
+
+void Sprite::SetSpriteClipping(bool clipping)
+{
+	spriteClipping = clipping;
+}
+
+bool Sprite::IsSpriteOnScreen(DrawState * state)
+{
+	if(RenderManager::Instance()->IsRenderTarget()) 
+		return true;
+
+	Rect clipRect = RenderManager::Instance()->currentClip;
+	if(clipRect.dx == -1)
+	{
+		clipRect.dx = Core::Instance()->GetVirtualScreenWidth();
+	}
+	if(clipRect.dy == -1)
+	{
+		clipRect.dy = Core::Instance()->GetVirtualScreenHeight();
+	}
+
+    float32 left = Min(Min(tempVertices[0], tempVertices[2]), Min(tempVertices[4], tempVertices[6]));
+    float32 right = Max(Max(tempVertices[0], tempVertices[2]), Max(tempVertices[4], tempVertices[6]));
+    float32 top = Min(Min(tempVertices[1], tempVertices[3]), Min(tempVertices[5], tempVertices[7]));
+    float32 bottom = Max(Max(tempVertices[1], tempVertices[3]), Max(tempVertices[5], tempVertices[7]));
+    
+	const Rect spriteRect(left, top, right - left, bottom - top);
+	return clipRect.RectIntersects(spriteRect);
+}
+
+void Sprite::CreateRenderObject()
+{
+	DVASSERT(spriteRenderObject == NULL && "Need be not initalized");
+	spriteRenderObject = new RenderDataObject();
+	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+}
+
+void Sprite::ReleaseRenderObject()
+{
+	vertexStream = texCoordStream = NULL;
+	SafeRelease(spriteRenderObject);
 }
 
 };

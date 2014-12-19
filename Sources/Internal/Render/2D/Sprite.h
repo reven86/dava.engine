@@ -132,6 +132,8 @@ public:
 		,	X_OFFSET_TO_ACTIVE
 		,	Y_OFFSET_TO_ACTIVE
 	};
+    
+    const static int32 INVALID_FRAME_INDEX = -1; //Use it when we try to get sprite frame using invalid frameName
 
 	/**
 	 \brief Function to create sprite. This is convinience function and it return sprite in any case.
@@ -203,6 +205,10 @@ public:
 	const Vector2 &GetSize() const;
 
 	const Vector2 &GetDefaultPivotPoint() const;
+
+	//void SetFrame(int32 frm);
+    
+    int32 GetFrameByName(const FastName& frameName) const;
 
 	void SetDefaultPivotPoint(float32 x, float32 y);
 	void SetDefaultPivotPoint(const Vector2 &newPivotPoint);
@@ -279,7 +285,7 @@ public:
 	const FilePath & GetRelativePathname() const;
 
 	inline void PrepareSpriteRenderData(Sprite::DrawState * drawState);
-	RenderDataObject * spriteRenderObject;
+	static RenderDataObject * spriteRenderObject;
 
     /**
 	 \brief Removes all sprite data.
@@ -291,10 +297,15 @@ public:
 	 */
 	void Reload();
 
+	static void SetSpriteClipping(bool clipping);
+
     /**
 	 \brief Reloads all sprites.
 	 */
 	static void ReloadSprites();
+
+	static void CreateRenderObject();
+	static void ReleaseRenderObject();
 
 protected:
 	Sprite();
@@ -350,6 +361,7 @@ protected:
 	int32	frame;
 
 	Vector2	defaultPivotPoint;
+    Vector<FastName> frameNames;
 	//Vector2	pivotPoint;
 
 	//Vector2	drawCoord;
@@ -374,20 +386,22 @@ protected:
 //public:
 	float32 **rectsAndOffsets;
 
-	RenderDataStream * vertexStream;
-	RenderDataStream * texCoordStream;
+	static RenderDataStream * vertexStream;
+	static RenderDataStream * texCoordStream;
 	ePrimitiveType primitiveToDraw;
 	int32 vertexCount;
 
 	// For rendering of clipped objects
 	static Vector<Vector2> clippedTexCoords;
 	static Vector<Vector2> clippedVertices;
-
+	static bool spriteClipping;
 
 	//static bool batchingEnabled;
 	//static Vector<Vector2>
-    
+	
 private:
+	bool IsSpriteOnScreen(DrawState * state);
+    
     FilePath  relativePathname;
 };
 
