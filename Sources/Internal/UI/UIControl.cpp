@@ -31,6 +31,7 @@
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 #include "Animation/LinearAnimation.h"
+#include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/YamlNode.h"
 #include "Input/InputSystem.h"
@@ -311,6 +312,10 @@ namespace DAVA
     {
         background->SetFrame(spriteFrame);
     }
+	void UIControl::SetSpriteFrame(const FastName& frameName)
+	{
+		background->SetFrame(frameName);
+	}
     void UIControl::SetSpriteDrawType(UIControlBackground::eDrawType drawType)
     {
         background->SetDrawType(drawType);
@@ -514,7 +519,7 @@ namespace DAVA
         return background;
     }
 
-    const UIGeometricData &UIControl::GetGeometricData(bool absoluteCoordinates /*true*/)
+    const UIGeometricData &UIControl::GetGeometricData() const
     {
         tempGeometricData.position = relativePosition;
         tempGeometricData.size = size;
@@ -525,10 +530,7 @@ namespace DAVA
         tempGeometricData.unrotatedRect.y = relativePosition.y - pivotPoint.y * scale.y;
         tempGeometricData.unrotatedRect.dx = size.x * scale.x;
         tempGeometricData.unrotatedRect.dy = size.y * scale.y;
-        if(!absoluteCoordinates)
-        {
-            return tempGeometricData;
-        }
+
         if(!parent)
         {
             tempGeometricData.AddGeometricData(UIControlSystem::Instance()->GetBaseGeometricData());
@@ -848,6 +850,7 @@ namespace DAVA
 
         isIteratorCorrupted = true;
     }
+    
     void UIControl::RemoveControl(UIControl *control)
     {
         if (NULL == control)
@@ -1444,7 +1447,7 @@ namespace DAVA
         RenderManager::Instance()->SetColor(oldColor);
     }
 
-    bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/)
+    bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/) const
     {
         Vector2 point = _point;
 
@@ -2349,6 +2352,11 @@ namespace DAVA
         return animation;
     }
 
+    void UIControl::OnAllAnimationsFinished()
+    {
+        PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
+    }
+	
     void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic/* = false*/)
     {
         debugDrawEnabled = _debugDrawEnabled;

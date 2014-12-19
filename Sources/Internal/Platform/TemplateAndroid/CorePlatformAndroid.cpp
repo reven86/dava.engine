@@ -37,6 +37,7 @@ extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/SceneCache.h"
@@ -155,9 +156,9 @@ namespace DAVA
 
 	void CorePlatformAndroid::ResizeView(int32 w, int32 h)
 	{
-		// on android we need always reinit because context could be destroyed
 		width = w;
 		height = h;
+		DeviceInfo::InitializeScreenInfo();
 
 		UpdateScreenMode();
 	}
@@ -208,9 +209,8 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
-			
 			SceneCache::Instance()->InvalidateSceneMaterials();
-		}
+        }
 		else
 		{
 			wasCreated = true;
@@ -253,7 +253,7 @@ namespace DAVA
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");
 
 			ResizeView(w, h);
-
+			// Set proper width and height before call FrameworkDidlaunched
 			FrameworkDidLaunched();
 
 			RenderManager::Instance()->SetFPS(60);
