@@ -267,7 +267,8 @@ public class JNIWebView {
 					return;
 				}
 				WebView view = views.get(id);
-				view.setVisibility(isVisible ? WebView.VISIBLE : WebView.GONE);
+				//int visible = isVisible ? WebView.VISIBLE : WebView.GONE;
+				view.setVisibility(WebView.INVISIBLE); // TODO test
 			}
 		});
 	}
