@@ -1,5 +1,6 @@
 <CONFIG>
 uniform vec2 decalTileCoordScale = vec2(1.0, 1.0);
+uniform vec2 detailTileCoordScale = vec2(1.0, 1.0);
 <VERTEX_SHADER>
 
 #ifdef GL_ES
