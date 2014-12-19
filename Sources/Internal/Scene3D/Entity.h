@@ -39,8 +39,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Base/HashMap.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
-
-//#define COMPONENT_STORAGE_STDMAP 1
+#include "Scene3D/EntityFamily.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 
 namespace DAVA
@@ -361,9 +360,9 @@ public:
     
     Vector<Entity*> children;
     
-protected:
+    void UpdateFamily();
     
-    inline void CleanupComponent(Component* component, uint32 componentCount);
+protected:
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);
     void LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext);
@@ -377,30 +376,16 @@ protected:
 
 	Scene * scene;
 	Entity * parent;
-	
-
-	FastName	name;
-	int32	tag;
-
+	FastName name;
+	int32 tag;
     uint32 flags;
     
 private:
         
 	Vector<Component *> components;
-    uint32 componentFlags;
-    uint32 componentUpdateMarks;
-    
-#if defined(COMPONENT_STORAGE_STDMAP)
-
-    typedef Map<uint32, Vector<Component*>* > ComponentsMap;
-    ComponentsMap componentsMap;
-
-#else
-    
-    typedef HashMap<uint32, Vector<Component*>* > ComponentsMap;
-    ComponentsMap componentsMap;
-    
-#endif
+    EntityFamily * family;
+    void DetachComponent(Vector<Component *>::iterator it);
+    void RemoveComponent(Vector<Component *>::iterator it);
 
    	friend class Scene;
     
@@ -411,9 +396,6 @@ public:
         MEMBER( flags, "Flags", I_SAVE | I_VIEW | I_EDIT )
 
         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-
-		//COLLECTION(components, "Components", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-		//COLLECTION(children, "Children nodes", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
     );
 };
 	
@@ -523,7 +505,7 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Compo
 
 uint32 Entity::GetAvailableComponentFlags()
 {
-    return componentFlags;
+    return family->GetComponentsFlags();
 }
     
 Entity * Entity::GetChild(int32 index) const

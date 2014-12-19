@@ -26,10 +26,20 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Entity.h"
 #include "Scene3D/EntityFamily.h"
 
 namespace DAVA
 {
+
+Vector<EntityFamily*> EntityFamily::families;
+
+EntityFamily::EntityFamily()
+: componentsFlags(0)
+{
+    Memset(componentIndices, 0, sizeof(componentIndices));
+    Memset(componentCount, 0, sizeof(componentCount));
+}
 
 EntityFamily * EntityFamily::GetOrCreate (const Vector<Component*> & components)
 {
@@ -38,11 +48,12 @@ EntityFamily * EntityFamily::GetOrCreate (const Vector<Component*> & components)
     //setup new family
     EntityFamily localFamily;
     size_t size = components.size ();
-    for (uint32 i = size - 1; i >= 0; --i)
+    for (int32 i = size - 1; i >= 0; --i)
     {
         uint32 type = components[i]->GetType ();
         localFamily.componentIndices[type] = i;
         localFamily.componentCount[type]++;
+        localFamily.componentsFlags |= 1 << type;
     }
 
     //check if such family already exists in cache

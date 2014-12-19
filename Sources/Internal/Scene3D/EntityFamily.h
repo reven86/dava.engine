@@ -37,19 +37,34 @@ namespace DAVA
 class EntityFamily
 {
 public:
-    uint32 componentIndices[Component::COMPONENT_COUNT];
-    uint32 componentCount[Component::COMPONENT_COUNT];
-
-    int32 GetComponentIndex (uint32 componentType, uint32 index);
-
-    static Vector<EntityFamily*> families;
+    EntityFamily();
     
     static EntityFamily * GetOrCreate (const Vector<Component*> & components);
+    uint32 GetComponentIndex (uint32 componentType, uint32 index);
+    uint32 GetComponentsCount (uint32 componentType);
+    uint32 GetComponentsFlags ();
+    
+private:
+    uint32 componentIndices[Component::COMPONENT_COUNT];
+    uint32 componentCount[Component::COMPONENT_COUNT];
+    uint32 componentsFlags;
+    static Vector<EntityFamily*> families;
+    friend bool operator==(const EntityFamily & lhs, const EntityFamily & rhs);
 };
 
-inline int32 EntityFamily::GetComponentIndex (uint32 componentType, uint32 index)
+inline uint32 EntityFamily::GetComponentIndex (uint32 componentType, uint32 index)
 {
     return componentIndices[componentType] + index;
+}
+
+inline uint32 EntityFamily::GetComponentsCount (uint32 componentType)
+{
+    return componentCount[componentType];
+}
+
+inline uint32 EntityFamily::GetComponentsFlags ()
+{
+    return componentsFlags;
 }
 
 inline bool operator==(const EntityFamily & lhs, const EntityFamily & rhs)
