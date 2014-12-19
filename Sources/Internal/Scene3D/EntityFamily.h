@@ -71,7 +71,7 @@ inline bool operator==(const EntityFamily & lhs, const EntityFamily & rhs)
 {
     for (uint32 i = 0; i < Component::COMPONENT_COUNT; ++i)
     {
-        if (lhs.componentIndices != rhs.componentIndices || lhs.componentCount != rhs.componentCount)
+        if (lhs.componentsFlags != rhs.componentsFlags || Memcmp(lhs.componentCount, rhs.componentCount, sizeof(lhs.componentCount)))
         {
             return false;
         }
