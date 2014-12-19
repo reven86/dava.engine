@@ -270,8 +270,8 @@ const char * Shader::GetUniformTypeSLName(eUniformType type)
 
 void Shader::ClearLastBindedCaches()
 {
-    //Logger::FrameworkDebug("Frame reset");
-
+    if (!touched)
+        return;
     for (uint32 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform * currentUniform = autobindUniforms[k];
@@ -1029,6 +1029,7 @@ bool Shader::IsAutobindUniform(eShaderSemantic semantic)
 
 void Shader::Bind()
 {
+    touched = true;
     if (activeProgram != program)
     {
         //Logger::FrameworkDebug(Format("Bind: %d", program).c_str());
