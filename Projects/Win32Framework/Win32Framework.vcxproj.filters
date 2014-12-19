@@ -157,6 +157,9 @@
     <Filter Include="Internal\Network\Base">
       <UniqueIdentifier>{c78a86b8-08be-4c63-9fe8-c175ec409a6b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Network\Services">
+      <UniqueIdentifier>{fa0bbaec-69f5-4567-b45e-0adf0e795b4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1684,6 +1687,12 @@
     <ClInclude Include="..\..\Sources\Internal\Network\NetService.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3025,6 +3034,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\NetService.cpp">
       <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp">
+      <Filter>Internal\Network\Services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp">
+      <Filter>Internal\Network\Services</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
