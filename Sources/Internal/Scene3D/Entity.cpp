@@ -120,8 +120,9 @@ void Entity::RemoveComponent(Vector<Component *>::iterator it)
 {
     if(it != components.end())
     {
+        Component * c = *it;
         DetachComponent(it);
-        SafeDelete(*it);
+        SafeDelete(c);
     }
 }
 
