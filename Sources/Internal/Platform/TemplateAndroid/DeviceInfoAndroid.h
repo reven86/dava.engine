@@ -38,12 +38,16 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Platform/TemplateAndroid/JniHelpers.h"
+
 namespace DAVA
 {
 
-class JniDeviceInfo: public JniExtension
+class JniDeviceInfo
 {
 public:
+	JniDeviceInfo();
+
 	String GetVersion();
 	String GetManufacturer();
 	String GetModel();
@@ -66,14 +70,26 @@ public:
 	List<DeviceInfo::StorageInfo> GetSecondaryExternalStoragesList();
 
 protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
 	DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
 
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+private:
+	JNI::JavaClass jniDeviceInfo;
+	Function<void ()> getVersion;
+	Function<void ()> getManufacturer;
+	Function<void ()> getModel;
+	Function<void ()> getLocale;
+	Function<void ()> getRegion;
+	Function<void ()> getTimeZone;
+	Function<void ()> getUDID;
+	Function<void ()> getName;
+	Function<jint ()> getZBufferSize;
+	Function<jstring ()> getHTTPProxyHost;
+	Function<jstring ()> getHTTPNonProxyHosts;
+	Function<jint ()> getHTTPProxyPort;
+	Function<jint ()> getGPUFamily;
+	Function<jint ()> getNetworkType;
+	Function<jint (jint)> getSignalStrength;
+	Function<jboolean ()> isPrimaryExternalStoragePresent;
 };
 
 };
