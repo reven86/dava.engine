@@ -95,8 +95,6 @@ void WASDControllerSystem::Process(float32 timeElapsed)
             {
                 MoveRight(camera, actualMoveSpeed, DIRECTION_INVERSE);
             }
-            
-            break;
         }
     }
 }

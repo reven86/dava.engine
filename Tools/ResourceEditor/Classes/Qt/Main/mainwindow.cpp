@@ -126,6 +126,11 @@
 
 #include "SceneProcessing/SceneProcessor.h"
 
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+
+
+
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -1647,6 +1652,9 @@ void QtMainWindow::OnCameraDialog()
     camera->RebuildCameraFromValues();
 
 	sceneNode->AddComponent(new CameraComponent(camera));
+    sceneNode->AddComponent(new WASDControllerComponent());
+    sceneNode->AddComponent(new RotationControllerComponent());
+    
 	sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(sceneEditor)

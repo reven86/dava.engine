@@ -127,8 +127,6 @@ void RotationControllerSystem::Input(UIEvent *event)
                             RotatePosition(camera);
                         }
                     }
-
-                    break;
                 }
             }
         }

@@ -32,7 +32,6 @@
 #include "Deprecated/SceneValidator.h"
 #include "Scene3D/Components/CameraComponent.h"
 
-#include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
