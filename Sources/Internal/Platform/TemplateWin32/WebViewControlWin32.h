@@ -54,6 +54,7 @@ interface IWebBrowser2;
 namespace DAVA {
 
 struct EventSink;
+class UIControl;
 
 class WebBrowserContainer : IOleClientSite, IOleInPlaceSite
 {
@@ -63,7 +64,7 @@ public:
 	virtual ~WebBrowserContainer();
 
 	// Initialize the browser on the parent window.
-	bool Initialize(HWND parentWindow);
+	bool Initialize(HWND parentWindow, UIControl* control);
 
 	// Update the rect according to the parent window.
 	void UpdateRect();
@@ -108,7 +109,7 @@ public:
 
 	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 
-    bool SaveSnapshot(int32 imageWidth, int32 imageHeight);
+    bool SaveSnapshot(int32 imageWidth, int32 imageHeight, UIControl* control);
 
     void GetContainerSize(int32* width, int32* height);
 private:
@@ -125,11 +126,13 @@ private:
 	FilePath bufferToOpenPath;
 };
 
+class UIControl;
+
 // Web View Control for Win32.
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl();
+	WebViewControl(UIControl* uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
@@ -158,6 +161,8 @@ protected:
 
 	// Web Browser Container.
 	WebBrowserContainer* browserContainer;
+
+    UIControl* uiWebView;
 
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;

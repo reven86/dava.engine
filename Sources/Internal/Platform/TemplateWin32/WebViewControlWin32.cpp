@@ -289,7 +289,8 @@ public:
             int32 width = 0;
             int32 height = 0;
             container->GetContainerSize(&width, &height);
-            container->SaveSnapshot(width, height);
+            DVASSERT(webView);
+            container->SaveSnapshot(width, height, webView);
         }
 		if (delegate && webView)
 		{
@@ -370,7 +371,7 @@ void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* w
 	sink->SetDelegate(delegate, webView, this);
 }
 
-bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight)
+bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight, UIControl* control)
 {
     CComPtr<IDispatch> pDispatch;
 
@@ -398,13 +399,9 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight)
     if (FAILED(hr))
         return true;
 
-    //old RECTL rcBounds = { 0, 0, width, height };
     RECTL rcBounds = { 0, 0, imageWidth, imageHeight };
     CImage image;
 
-    // TODO: check return value;
-    // TODO: somehow enable alpha
-    // old image.Create(width, height, 24);
     image.Create(imageWidth, imageHeight, 24);
 
     HDC imgDc = image.GetDC();
@@ -418,10 +415,39 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight)
         hr = image.Save(str);
     }
 
+    Vector<uint8> imageData;
+    imageData.resize(imageWidth * imageHeight * 3);
+
+    int lineSizeByte = imageWidth * 3;
+
+    for (int i = 0; i < imageHeight; ++i)
+    {
+        // copy line of pixels
+        int startRowIndex = i * lineSizeByte;
+        Memcpy(&imageData[startRowIndex], image.GetPixelAddress(0, i), lineSizeByte);
+        // need change RbG to GbR
+        for (int j = 0; j < lineSizeByte; j += 3)
+        {
+            uint8 red = imageData[startRowIndex + j];
+            imageData[startRowIndex + j] = imageData[startRowIndex + j + 2];
+            imageData[startRowIndex + j + 2] = red;
+        }
+    }
+
+    uint8* rawData = imageData.data();
+
+    Texture* tex = Texture::CreateFromData(FORMAT_RGB888, rawData, static_cast<uint32>(imageWidth), static_cast<uint32>(imageHeight), false);
+
+    Sprite* spr = Sprite::CreateFromTexture(Vector2(100.f, 100.f), tex, Vector2(0.f, 0.f), Vector2(float(imageWidth), float(imageHeight)));
+
+    control->SetSprite(spr, 0);
+
+
+
     return false;
 }
 
-bool WebBrowserContainer::Initialize(HWND parentWindow)
+bool WebBrowserContainer::Initialize(HWND parentWindow,  UIControl* control)
 {
 	this->hwnd = parentWindow;
 
@@ -464,6 +490,7 @@ bool WebBrowserContainer::Initialize(HWND parentWindow)
 	sink = new EventSink();
 	EventSink* s = sink;
     sink->SetContainer(this); // TODO test only
+    sink->SetWebView(dynamic_cast<UIWebView*>(control));
 	hRes = s->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
 	if (FAILED(hRes))
 	{
@@ -638,12 +665,14 @@ void WebBrowserContainer::GetContainerSize(int32* width, int32* height)
     }
 }
 
-WebViewControl::WebViewControl():
+WebViewControl::WebViewControl(UIControl* webView):
     browserWindow(0),
     browserContainer(0),
+    uiWebView(webView),
     gdiplusToken(0),
     renderToTexture(false)
 {
+    DVASSERT(webView);
 }
 
 WebViewControl::~WebViewControl()
@@ -717,7 +746,7 @@ bool WebViewControl::InititalizeBrowserContainer()
 	}
 
 	this->browserContainer= new WebBrowserContainer();
-	return browserContainer->Initialize(this->browserWindow);
+	return browserContainer->Initialize(this->browserWindow, uiWebView);
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)

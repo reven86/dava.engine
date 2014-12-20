@@ -48,9 +48,10 @@ namespace DAVA {
 
 UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates)
     : UIControl(rect, rectInAbsoluteCoordinates)
-    , webViewControl(new WebViewControl())
+    , webViewControl(0)
     , isNativeControlVisible(false)
 {
+    webViewControl = new WebViewControl(this);
     Rect newRect = GetRect(true);
     this->webViewControl->Initialize(newRect);
     UpdateControlRect();
