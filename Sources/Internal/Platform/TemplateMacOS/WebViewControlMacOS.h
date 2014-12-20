@@ -35,11 +35,13 @@
 
 namespace DAVA {
 
+class UIWebView;
+    
 // Web View Control - MacOS version.
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl();
+	WebViewControl(UIWebView* uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
@@ -72,6 +74,8 @@ protected:
 
 	void* webViewPolicyDelegatePtr;
     void* webImageCachePtr;
+    
+    UIWebView* uiWebView;
 };
 
 };

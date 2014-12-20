@@ -73,6 +73,7 @@ using namespace DAVA;
 
 - (void)setDelegate:(IUIWebViewDelegate*)d andWebView:(UIWebView*)w;
 - (void)setWebViewControl:(WebViewControl*) webControl;
+- (void)setUiWebViewControl:(UIWebView*) uiWebControl;
 
 @end
 
@@ -143,6 +144,33 @@ using namespace DAVA;
     NSBitmapImageRep* imageRep = [sender bitmapImageRepForCachingDisplayInRect:testRect];
     DVASSERT(imageRep);
     [sender cacheDisplayInRect:testRect toBitmapImageRep:imageRep];
+    if (webView)
+    {
+        const unsigned char* rawData = [imageRep bitmapData];
+        int w = [imageRep size].width;
+        int h = [imageRep size].height;
+        const int BPP = [imageRep bitsPerPixel];
+        const int pitch = [imageRep bytesPerRow];
+        {
+            PixelFormat format = FORMAT_INVALID;
+            if (24 == BPP)
+            {
+                format = FORMAT_RGB888;
+                DVASSERT(pitch == w * 3);
+            } else if (32 == BPP){
+                format = FORMAT_RGBA8888;
+                DVASSERT(pitch == w * 4);
+            } else
+            {
+                DVASSERT(false);
+            }
+            Image* imageRGB = Image::CreateFromData(w, h, format, rawData);
+            DVASSERT(imageRGB);
+            Sprite* spr = Sprite::CreateFromImage(imageRGB);
+            webView->SetSprite(spr, 0);
+            imageRGB->Release();
+        }
+    }
     if (webViewControl)
     {
         webViewControl->SetImage(imageRep);
@@ -173,13 +201,22 @@ using namespace DAVA;
         webViewControl = webControl;
     }
 }
+                           
+- (void)setUiWebViewControl:(UIWebView*) uiWebControl
+{
+   if (uiWebControl)
+   {
+       webView = uiWebControl;
+   }
+}
 
 @end
 
 
-WebViewControl::WebViewControl() :
+WebViewControl::WebViewControl(UIWebView* ptr) :
     isWebViewVisible(true),
-    webImageCachePtr(0)
+    webImageCachePtr(0),
+    uiWebView(ptr)
 {
 	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
 	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil groupName:nil];
@@ -196,6 +233,7 @@ WebViewControl::WebViewControl() :
     [localWebView setFrameLoadDelegate:(WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
 
     [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setWebViewControl:this];
+    [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setUiWebViewControl:uiWebView];
     
 	NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
 	[openGLView addSubview:localWebView];
