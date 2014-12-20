@@ -244,15 +244,8 @@ void NetworkTest::LoadResources()
         NetCore::Instance()->CreateDriver(loggerConfig);
     }
     {
-#if defined(__DAVAENGINE_ANDROID__)
-    	// Cannot log wide string directly, maybe due to incorrect format flag
-    	// I tried %s and %ls for wide string
+    	// Cannot log wide string uniformly on all platforms, maybe due to incorrect format flag
         Logger::Debug( "Name        : %s", UTF8Utils::EncodeToUTF8(DeviceInfo::GetName()).c_str());
-#elif defined(__DAVAENGINE_WIN32__)
-    	Logger::Debug(L"Name        : %s", DeviceInfo::GetName().c_str());
-#else
-        Logger::Debug(L"Name        : %ls", DeviceInfo::GetName().c_str());
-#endif
         Logger::Debug( "Platfrom    : %s", DeviceInfo::GetPlatformString().c_str());
         Logger::Debug( "Model       : %s", DeviceInfo::GetModel().c_str());
         Logger::Debug( "Version     : %s", DeviceInfo::GetVersion().c_str());
