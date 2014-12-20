@@ -51,6 +51,8 @@
 
 #include "WebViewControlWin32.h"
 #include "CorePlatformWin32.h"
+#include "Render/Image/ImageConvert.h"
+
 using namespace DAVA;
 
 extern _ATL_FUNC_INFO BeforeNavigate2Info;
@@ -415,34 +417,29 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight, UICo
         hr = image.Save(str);
     }
 
-    Vector<uint8> imageData;
-    imageData.resize(imageWidth * imageHeight * 3);
+    DVASSERT(image.GetPitch() < 0);
+    DVASSERT(image.GetPitch() * -1 == imageWidth * 3); // RGB
 
-    int lineSizeByte = imageWidth * 3;
-
-    for (int i = 0; i < imageHeight; ++i)
+    uint8* rawData = rawData = reinterpret_cast<uint8*>(image.GetPixelAddress(0, imageHeight - 1));
     {
-        // copy line of pixels
-        int startRowIndex = i * lineSizeByte;
-        Memcpy(&imageData[startRowIndex], image.GetPixelAddress(0, i), lineSizeByte);
-        // need change RbG to GbR
-        for (int j = 0; j < lineSizeByte; j += 3)
+        Image* imageBGR = Image::CreateFromData(imageWidth, imageHeight, FORMAT_BGR888, rawData);
+        DVASSERT(imageBGR);
         {
-            uint8 red = imageData[startRowIndex + j];
-            imageData[startRowIndex + j] = imageData[startRowIndex + j + 2];
-            imageData[startRowIndex + j + 2] = red;
+            Image* imageRGB = Image::Create(imageWidth, imageHeight, FORMAT_RGB888);
+            DVASSERT(imageRGB);
+
+            ImageConvert::ConvertImageDirect(imageBGR, imageRGB);
+
+            Sprite* spr = Sprite::CreateFromImage(imageRGB);
+
+            control->SetSprite(spr, 0);
+            // CImage in BMP format so we need to flip image
+            control->GetBackground()->SetModification(ESM_VFLIP);
+
+            imageRGB->Release();
         }
+        imageBGR->Release();
     }
-
-    uint8* rawData = imageData.data();
-
-    Texture* tex = Texture::CreateFromData(FORMAT_RGB888, rawData, static_cast<uint32>(imageWidth), static_cast<uint32>(imageHeight), false);
-
-    Sprite* spr = Sprite::CreateFromTexture(Vector2(100.f, 100.f), tex, Vector2(0.f, 0.f), Vector2(float(imageWidth), float(imageHeight)));
-
-    control->SetSprite(spr, 0);
-
-
 
     return false;
 }
