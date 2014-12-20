@@ -58,11 +58,11 @@ public:
 	String GetName();
 	String GetHTTPProxyHost();
 	String GetHTTPNonProxyHosts();
-	int GetHTTPProxyPort();
+	int32 GetHTTPProxyPort();
 	int32 GetZBufferSize();
 	int32 GetGPUFamily();
 	int32 GetNetworkType();
-	int32 GetSignalStrength(int networkType);
+	int32 GetSignalStrength(int32 networkType);
 
 	bool IsPrimaryExternalStoragePresent();
 	DeviceInfo::StorageInfo GetInternalStorageInfo();
