@@ -69,6 +69,9 @@ public:
     inline const Size2i & GetPhysicalScreenSize() const;
     inline const Rect & GetFullScreenVirtualRect() const;
 
+    inline float32 AlignVirtualToPhysicalX(const float32 & value) const;
+    inline float32 AlignVirtualToPhysicalY(const float32 & value) const;
+
     inline float32 ConvertPhysicalToVirtualX(const float32 & value) const;
     inline float32 ConvertPhysicalToVirtualY(const float32 & value) const;
     inline float32 ConvertVirtualToPhysicalX(const float32 & value) const;
@@ -148,6 +151,16 @@ inline const Size2i & VirtualCoordinatesSystem::GetPhysicalScreenSize() const
 inline const Rect & VirtualCoordinatesSystem::GetFullScreenVirtualRect() const
 {
     return fullVirtualScreenRect;
+}
+
+inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalX(const float32 & value) const
+{
+    return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
+}
+
+inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalY(const float32 & value) const
+{
+    return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
 
 inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualX(const float32 & value) const
