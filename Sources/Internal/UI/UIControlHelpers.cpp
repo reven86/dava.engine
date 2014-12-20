@@ -60,8 +60,10 @@ UIControl *UIControlHelpers::GetControlByPath(const String &controlPath, const U
     Vector<String> controlNames;
     Split(controlPath, "/", controlNames, false, true);
     Vector<String>::const_iterator iter = controlNames.begin();
+    Vector<String>::const_iterator iterEnd = controlNames.end();
     UIControl* findControl = NULL;
-    for (; iter!=controlNames.end(); ++iter)
+    
+    for (; iter != iterEnd; ++iter)
     {
         findControl = control->FindByName(*iter,false);
         if (!findControl)

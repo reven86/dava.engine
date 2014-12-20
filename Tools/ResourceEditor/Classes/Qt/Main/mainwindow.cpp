@@ -38,6 +38,7 @@
 #include <QKeySequence>
 #include <QMetaObject>
 #include <QMetaType>
+#include <QActionGroup>
 
 #include "mainwindow.h"
 #include "QtUtils.h"
@@ -634,6 +635,14 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
 	ui->actionReloadPNG->setData(GPU_PNG);
+
+    QActionGroup *reloadGroup = new QActionGroup(this);
+    QList<QAction *> reloadActions = ui->menuTexturesForGPU->actions();
+    for ( int i = 0; i < reloadActions.size(); i++ )
+    {
+        reloadGroup->addAction(reloadActions[i]);
+    }
+
 	QObject::connect(ui->menuTexturesForGPU, SIGNAL(triggered(QAction *)), this, SLOT(OnReloadTexturesTriggered(QAction *)));
 	QObject::connect(ui->actionReloadTextures, SIGNAL(triggered()), this, SLOT(OnReloadTextures()));
 	QObject::connect(ui->actionReloadSprites, SIGNAL(triggered()), this, SLOT(OnReloadSprites()));
@@ -1847,15 +1856,12 @@ void QtMainWindow::LoadGPUFormat()
 	{
 		QAction *actionN = allActions[i];
 
-		if(!actionN->data().isNull() &&
-			actionN->data().toInt() == curGPU)
+		if (actionN->data().isValid() &&
+		    actionN->data().toInt() == curGPU)
 		{
 			actionN->setChecked(true);
 			ui->actionReloadTextures->setText(actionN->text());
-		}
-		else
-		{
-			actionN->setChecked(false);
+            break;
 		}
 	}
 }

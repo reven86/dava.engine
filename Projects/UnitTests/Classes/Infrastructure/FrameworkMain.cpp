@@ -49,8 +49,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width", WIDTH);
     appOptions->SetInt32("height", HEIGHT);
 
-	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
-	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
 
 #else
     KeyedArchive * appOptions = new KeyedArchive();
@@ -62,8 +62,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("bpp", 32);
     appOptions->SetString(String("title"), String("Unit Tests"));
 
-    DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
-    DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
 #endif 
 
     GameCore * core = new GameCore();

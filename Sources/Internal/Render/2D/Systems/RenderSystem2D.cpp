@@ -30,6 +30,7 @@
 #include "RenderSystem2D.h"
 #include "VirtualCoordinatesSystem.h"
 #include "Render/RenderManager.h"
+#include "Render/ShaderCache.h"
 #include <Render/RenderHelper.h>
 
 #include "UI/UIControl.h"
@@ -37,6 +38,9 @@
 
 namespace DAVA
 {
+
+#define USE_MAPPING 0
+#define USE_BATCHING true
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 #define xGL_MAP_BUFF(x,y) glMapBufferOES(x,y)
@@ -48,8 +52,23 @@ namespace DAVA
 #define xGL_WRITE_FLAG GL_WRITE_ONLY
 #endif
 
-#define USE_MAPPING 0
-#define USE_BATCHING true
+FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
+FastName RenderSystem2D::TEXTURE_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
+
+Shader * RenderSystem2D::FLAT_COLOR = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_COLOR = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_COLOR_ALPHA_TEST = 0;
+Shader * RenderSystem2D::TEXTURE_MUL_COLOR_IMAGE_A8 = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_COLOR = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_COLOR_ALPHA_TEST = 0;
+Shader * RenderSystem2D::TEXTURE_ADD_COLOR_IMAGE_A8 = 0;
+
 
 VboPool::VboPool(uint32 size, uint8 count)
 {
@@ -185,45 +204,127 @@ uint32 VboPool::GetIndexBufferSize() const
     return currentIndexBufferSize;
 }
 
-RenderSystem2D::RenderSystem2D()
+RenderSystem2D::RenderSystem2D() 
     : pool(NULL)
+    , spriteRenderObject(0)
+    , spriteVertexStream(0)
+    , spriteTexCoordStream(0)
+    , spriteClipping(true)
 {
-    useBatching = USE_BATCHING;
-    spriteRenderObject = new RenderDataObject();
-    spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-    spriteTexCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-    spriteColorStream = spriteRenderObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, 0, 0);
+}
+
+void RenderSystem2D::Init()
+{
+    if (!spriteRenderObject) //used as flag 'isInited'
+    {
+        useBatching = USE_BATCHING;
+        spriteRenderObject = new RenderDataObject();
+        spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+        spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+        spriteColorStream = spriteRenderObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, 0, 0);
 
 #if !USE_MAPPING
-    vertexBuffer2.resize(4096 * 32); //2048 points (XY UV RGBA)
-    indexBuffer2.resize(8192);
+        vertexBuffer2.resize(4096 * 32); //2048 points (XY UV RGBA)
+        indexBuffer2.resize(8192);
 #endif
+
+        FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
+
+        TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, FastNameSet()));
+
+        FastNameSet set;
+        set.Insert(FastName("ALPHA_TEST_ENABLED"));
+        TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("IMAGE_A8"));
+        TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("ADD_COLOR"));
+        TEXTURE_ADD_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("ADD_COLOR"));
+        set.Insert(FastName("ALPHA_TEST_ENABLED"));
+        TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("ADD_COLOR"));
+        set.Insert(FastName("IMAGE_A8"));
+        TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("VERTEX_COLOR"));
+        TEXTURE_MUL_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("VERTEX_COLOR"));
+        set.Insert(FastName("ALPHA_TEST_ENABLED"));
+        TEXTURE_MUL_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("VERTEX_COLOR"));
+        set.Insert(FastName("IMAGE_A8"));
+        TEXTURE_MUL_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("VERTEX_COLOR"));
+        set.Insert(FastName("ADD_COLOR"));
+        TEXTURE_ADD_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("VERTEX_COLOR"));
+        set.Insert(FastName("ADD_COLOR"));
+        set.Insert(FastName("ALPHA_TEST_ENABLED"));
+        TEXTURE_ADD_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+
+        set.clear();
+        set.Insert(FastName("VERTEX_COLOR"));
+        set.Insert(FastName("ADD_COLOR"));
+        set.Insert(FastName("IMAGE_A8"));
+        TEXTURE_ADD_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+    }
 }
 
 RenderSystem2D::~RenderSystem2D()
 {
-	SafeDelete(pool);
-	SafeRelease(spriteRenderObject);
+    SafeDelete(pool);
+    SafeRelease(spriteRenderObject);
+
+    SafeRelease(FLAT_COLOR);
+    SafeRelease(TEXTURE_MUL_FLAT_COLOR);
+    SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
+    SafeRelease(TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST);
+    SafeRelease(TEXTURE_ADD_FLAT_COLOR_IMAGE_A8);
+    SafeRelease(TEXTURE_MUL_COLOR);
+    SafeRelease(TEXTURE_MUL_COLOR_ALPHA_TEST);
+    SafeRelease(TEXTURE_MUL_COLOR_IMAGE_A8);
+    SafeRelease(TEXTURE_ADD_COLOR);
+    SafeRelease(TEXTURE_ADD_COLOR_ALPHA_TEST);
+    SafeRelease(TEXTURE_ADD_COLOR_IMAGE_A8);
 }
 
 void RenderSystem2D::Reset()
 {
-	// Create pool on first BeginFrame call
-	if(NULL == pool)
-	{
-		pool = new VboPool(4096, 10);
-	}
+    // Create pool on first BeginFrame call
+    if(NULL == pool)
+    {
+        pool = new VboPool(4096, 10);
+    }
 
-	currentClip.x = 0;
-	currentClip.y = 0;
-	currentClip.dx = -1;
-	currentClip.dy = -1;
+    currentClip.x = 0;
+    currentClip.y = 0;
+    currentClip.dx = -1;
+    currentClip.dy = -1;
 
     Setup2DMatrices();
 
     defaultSpriteDrawState.Reset();
     defaultSpriteDrawState.renderState = RenderState::RENDERSTATE_2D_BLEND;
-    defaultSpriteDrawState.shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
+    defaultSpriteDrawState.shader = TEXTURE_MUL_FLAT_COLOR;
 
     batches.clear();
     batches.reserve(1024);
@@ -299,6 +400,35 @@ void RenderSystem2D::ClipPop()
         SetClip(r);
     }
     clipStack.pop();
+}
+
+void RenderSystem2D::SetSpriteClipping(bool clipping)
+{
+    spriteClipping = clipping;
+}
+
+bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
+{
+    if (RenderManager::Instance()->IsRenderTarget())
+        return true;
+
+    Rect clipRect = currentClip;
+    if (clipRect.dx == -1)
+    {
+        clipRect.dx = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx;
+    }
+    if (clipRect.dy == -1)
+    {
+        clipRect.dy = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+    }
+
+    float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
+    float32 right = Max(Max(spriteTempVertices[0], spriteTempVertices[2]), Max(spriteTempVertices[4], spriteTempVertices[6]));
+    float32 top = Min(Min(spriteTempVertices[1], spriteTempVertices[3]), Min(spriteTempVertices[5], spriteTempVertices[7]));
+    float32 bottom = Max(Max(spriteTempVertices[1], spriteTempVertices[3]), Max(spriteTempVertices[5], spriteTempVertices[7]));
+
+    const Rect spriteRect(left, top, right - left, bottom - top);
+    return clipRect.RectIntersects(spriteRect);
 }
 
 void RenderSystem2D::Flush()
@@ -378,17 +508,29 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
 {
     Shader * convShader = shader;
 
-    if (RenderManager::TEXTURE_MUL_FLAT_COLOR == shader)
+    if (TEXTURE_MUL_FLAT_COLOR == shader)
     {
-        convShader = RenderManager::TEXTURE_MUL_COLOR;
+        convShader = TEXTURE_MUL_COLOR;
     }
-    else if (RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST == shader)
+    else if (TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST == shader)
     {
-        convShader = RenderManager::TEXTURE_MUL_COLOR_ALPHA_TEST;
+        convShader = TEXTURE_MUL_COLOR_ALPHA_TEST;
     }
-    else if (RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 == shader)
+    else if (TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 == shader)
     {
-        convShader = RenderManager::TEXTURE_MUL_COLOR_IMAGE_A8;
+        convShader = TEXTURE_MUL_COLOR_IMAGE_A8;
+    }
+    else if (TEXTURE_ADD_FLAT_COLOR == shader)
+    {
+        convShader = TEXTURE_ADD_COLOR;
+    }
+    else if (TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST == shader)
+    {
+        convShader = TEXTURE_ADD_COLOR_ALPHA_TEST;
+    }
+    else if (TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 == shader)
+    {
+        convShader = TEXTURE_ADD_COLOR_IMAGE_A8;
     }
 
     if (currentBatch.renderState != state
@@ -628,6 +770,15 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
     {
         if(sprite->flags & Sprite::EST_ROTATE)
         {
+            //SLOW CODE
+            //			glPushMatrix();
+            //			glTranslatef(drawCoord.x, drawCoord.y, 0);
+            //			glRotatef(RadToDeg(rotateAngle), 0.0f, 0.0f, 1.0f);
+            //			glTranslatef(-drawCoord.x, -drawCoord.y, 0);
+            //			RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
+            //			glPopMatrix();
+            
+            // Optimized code
             float32 sinA = sinf(state->angle);
             float32 cosA = cosf(state->angle);
             for(int32 k = 0; k < 4; ++k)
@@ -641,6 +792,14 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
                 spriteTempVertices[(k << 1)] = nx;
                 spriteTempVertices[(k << 1) + 1] = ny;
             }
+        }
+
+        //TODO: check place for next code
+        bool spriteIsOnScreen = (sprite->clipPolygon) ? true : (!spriteClipping || IsPreparedSpriteOnScreen(state));
+        if (!spriteIsOnScreen)
+        {
+            // Skip draw for sprites out of screen
+            return;
         }
 
         spriteVertexCount = 4;
@@ -682,7 +841,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
             static uint32 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
             for (int32 i = 0; i < spriteIndexCount; ++i)
             {
-                //indexBuffer2.push_back(vertexIndex + spriteIndeces[i]);
                 ib[ii++] = vertexIndex + spriteIndeces[i];
             }
 
@@ -806,29 +964,29 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
 			DVASSERT(spriteTexCoordStream->pointer != 0);
         }
     }
-
+    
     Rect clipRect(0,0,-1,-1);
-	if(sprite->clipPolygon)
-	{
-		if( sprite->flags & Sprite::EST_SCALE )
-		{
-			float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
-			float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
-			clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + x
+    if(sprite->clipPolygon)
+    {
+        if( sprite->flags & Sprite::EST_SCALE )
+        {
+            float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
+            float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
+            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + x
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) * state->scale.y + y
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH  ) * state->scale.x
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) * state->scale.y );
-		}
-		else
-		{
-			float32 x = state->position.x - state->pivotPoint.x;
-			float32 y = state->position.y - state->pivotPoint.y;
-			clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) + x
+        }
+        else
+        {
+            float32 x = state->position.x - state->pivotPoint.x;
+            float32 y = state->position.y - state->pivotPoint.y;
+            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) + x
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) + y
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH )
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) );
-		}
-	}
+        }
+    }
     else
     {
         clipRect = currentClip;
@@ -862,7 +1020,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
 
 }
 
-void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, Vector2 streatchCap, Rect drawRect, UIControlBackground::eDrawType type)
+void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, Vector2 stretchCapVector, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData)
 {
     if (!sprite)return;
 	if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
@@ -870,153 +1028,58 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
         return;
     }
 
-	int32 frame = Clamp(state->frame, 0, sprite->frameCount - 1);
+    int32 frame = Clamp(state->frame, 0, sprite->frameCount - 1);
+    const Vector2 &size = gd.size;
+
+    if (stretchCapVector.x < 0.0f || stretchCapVector.y < 0.0f ||
+        size.x <= 0.0f || size.y <= 0.0f)
+        return;
+
+    Vector2 stretchCap(Min(size.x * 0.5f, stretchCapVector.x),
+        Min(size.y * 0.5f, stretchCapVector.y));
 
     UniqueHandle textureHandle = sprite->GetTextureHandle(frame);
-    Texture* texture = sprite->GetTexture(frame);
 
-    float32 texX = sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
-    float32 texY = sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
-    float32 texDx = sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
-    float32 texDy = sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
-    float32 texOffX = sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE);
-    float32 texOffY = sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE);
-
-    const float32 spriteWidth = sprite->GetWidth();
-    const float32 spriteHeight = sprite->GetHeight();
-
-    const float32 leftOffset  = streatchCap.x - texOffX;
-    const float32 rightOffset = streatchCap.x - ( spriteWidth - texDx - texOffX );
-    const float32 topOffset   = streatchCap.y  - texOffY;
-    const float32 bottomOffset= streatchCap.y  - ( spriteHeight - texDy - texOffY );
-
-    const float32 realLeftStretchCap  = Max( 0.0f, leftOffset );
-    const float32 realRightStretchCap = Max( 0.0f, rightOffset );
-    const float32 realTopStretchCap   = Max( 0.0f, topOffset );
-    const float32 realBottomStretchCap= Max( 0.0f, bottomOffset );
-
-    const float32 scaleFactorX = drawRect.dx / spriteWidth;
-    const float32 scaleFactorY = drawRect.dy / spriteHeight;
-    float32 x = drawRect.x + Max( 0.0f, -leftOffset ) * scaleFactorX;
-    float32 y = drawRect.y + Max( 0.0f, -topOffset  ) * scaleFactorY;
-    float32 dx = drawRect.dx - ( Max( 0.0f, -leftOffset ) + Max( 0.0f, -rightOffset  ) ) * scaleFactorX;
-    float32 dy = drawRect.dy - ( Max( 0.0f, -topOffset  ) + Max( 0.0f, -bottomOffset ) ) * scaleFactorY;
-
-    texDx = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceX(texDx, sprite->GetResourceSizeIndex());
-    texDy = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceY(texDy, sprite->GetResourceSizeIndex());
-
-    const float32 leftCap = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceX(realLeftStretchCap, sprite->GetResourceSizeIndex());
-    const float32 rightCap = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceX(realRightStretchCap, sprite->GetResourceSizeIndex());
-    const float32 topCap = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceY(realTopStretchCap, sprite->GetResourceSizeIndex());
-    const float32 bottomCap = VirtualCoordinatesSystem::Instance()->ConvertVirtualToResourceY(realBottomStretchCap, sprite->GetResourceSizeIndex());
-
-    float32 vertices[16 * 2];
-    float32 texCoords[16 * 2];
-
-    float32 textureWidth = (float32)texture->GetWidth();
-    float32 textureHeight = (float32)texture->GetHeight();
-
-    int32 vertInTriCount = 18;
-
-    switch (type)
+    bool needGenerateData = false;
+    StretchDrawData * stretchData = 0;
+    if(pStreachData)
     {
-	case UIControlBackground::DRAW_STRETCH_HORIZONTAL:
-        {
-            float32 ddy = (spriteHeight - dy);
-            y -= ddy * 0.5f;
-            dy += ddy;
-
-            vertices[0] = vertices[8]  = x;
-            vertices[1] = vertices[3]  = vertices[5]  = vertices[7]  = y;
-            vertices[4] = vertices[12] = x + dx - realRightStretchCap;
-
-            vertices[2] = vertices[10] = x + realLeftStretchCap;
-            vertices[9] = vertices[11] = vertices[13] = vertices[15] = y + dy;
-            vertices[6] = vertices[14] = x + dx;
-
-            texCoords[0] = texCoords[8]  = texX / textureWidth;
-            texCoords[1] = texCoords[3]  = texCoords[5]  = texCoords[7]  = texY / textureHeight;
-            texCoords[4] = texCoords[12] = (texX + texDx - rightCap) / textureWidth;
-
-            texCoords[2] = texCoords[10] = (texX + leftCap) / textureWidth;
-            texCoords[9] = texCoords[11] = texCoords[13] = texCoords[15] = (texY + texDy) / textureHeight;
-            texCoords[6] = texCoords[14] = (texX + texDx) / textureWidth;
-        }
-        break;
-        case UIControlBackground::DRAW_STRETCH_VERTICAL:
-        {
-            float32 ddx = (spriteWidth - dx);
-            x -= ddx * 0.5f;
-            dx += ddx;
-
-            vertices[0] = vertices[2]  = vertices[4]  = vertices[6]  = x;
-            vertices[8] = vertices[10] = vertices[12] = vertices[14] = x + dx;
-
-            vertices[1] = vertices[9]  = y;
-            vertices[3] = vertices[11] = y + realTopStretchCap;
-            vertices[5] = vertices[13] = y + dy - realBottomStretchCap;
-            vertices[7] = vertices[15] = y + dy;
-
-            texCoords[0] = texCoords[2]  = texCoords[4]  = texCoords[6]  = texX / textureWidth;
-            texCoords[8] = texCoords[10] = texCoords[12] = texCoords[14] = (texX + texDx) / textureWidth;
-
-            texCoords[1] = texCoords[9]  = texY / textureHeight;
-            texCoords[3] = texCoords[11] = (texY + topCap) / textureHeight;
-            texCoords[5] = texCoords[13] = (texY + texDy - bottomCap) / textureHeight;
-            texCoords[7] = texCoords[15] = (texY + texDy) / textureHeight;
-        }
-        break;
-        case UIControlBackground::DRAW_STRETCH_BOTH:
-        {
-            vertInTriCount = 18 * 3;
-
-            vertices[0] = vertices[8]  = vertices[16] = vertices[24] = x;
-            vertices[2] = vertices[10] = vertices[18] = vertices[26] = x + realLeftStretchCap;
-            vertices[4] = vertices[12] = vertices[20] = vertices[28] = x + dx - realRightStretchCap;
-            vertices[6] = vertices[14] = vertices[22] = vertices[30] = x + dx;
-
-            vertices[1] = vertices[3]  = vertices[5]  = vertices[7]  = y;
-            vertices[9] = vertices[11] = vertices[13] = vertices[15] = y + realTopStretchCap;
-            vertices[17]= vertices[19] = vertices[21] = vertices[23] = y + dy - realBottomStretchCap;
-            vertices[25]= vertices[27] = vertices[29] = vertices[31] = y + dy;
-
-            texCoords[0] = texCoords[8]  = texCoords[16] = texCoords[24] = texX / textureWidth;
-            texCoords[2] = texCoords[10] = texCoords[18] = texCoords[26] = (texX + leftCap) / textureWidth;
-            texCoords[4] = texCoords[12] = texCoords[20] = texCoords[28] = (texX + texDx - rightCap) / textureWidth;
-            texCoords[6] = texCoords[14] = texCoords[22] = texCoords[30] = (texX + texDx) / textureWidth;
-
-            texCoords[1]  = texCoords[3]  = texCoords[5]  = texCoords[7]  = texY / textureHeight;
-            texCoords[9]  = texCoords[11] = texCoords[13] = texCoords[15] = (texY + topCap) / textureHeight;
-            texCoords[17] = texCoords[19] = texCoords[21] = texCoords[23] = (texY + texDy - bottomCap)  / textureHeight;
-            texCoords[25] = texCoords[27] = texCoords[29] = texCoords[31] = (texY + texDy) / textureHeight;
-        }
-        break;
-        default: break;
+        stretchData = *pStreachData;
+    }
+    if (!stretchData)
+    {
+        stretchData = new StretchDrawData();
+        needGenerateData = true;
+    }
+    else
+    {
+        needGenerateData |= sprite != stretchData->sprite;
+        needGenerateData |= frame != stretchData->frame;
+        needGenerateData |= gd.size != stretchData->size;
+        needGenerateData |= type != stretchData->type;
+        needGenerateData |= stretchCap != stretchData->stretchCap;
     }
 
-    static uint16 indeces[18 * 3] =
+    StretchDrawData &sd = *stretchData;
+
+    if (needGenerateData)
     {
-        0, 1, 4,
-        1, 5, 4,
-        1, 2, 5,
-        2, 6, 5,
-        2, 3, 6,
-        3, 7, 6,
+        sd.sprite = sprite;
+        sd.frame = frame;
+        sd.size = gd.size;
+        sd.type = type;
+        sd.stretchCap = stretchCap;
+        sd.GenerateStretchData();
+    }
 
-        4, 5, 8,
-        5, 9, 8,
-        5, 6, 9,
-        6, 10, 9,
-        6, 7, 10,
-        7, 11, 10,
+    Matrix3 transformMatr;
+    gd.BuildTransformMatrix(transformMatr);
 
-        8, 9, 12,
-        9, 12, 13,
-        9, 10, 13,
-        10, 14, 13,
-        10, 11, 14,
-        11, 15, 14
-    };
+    if (needGenerateData || sd.transformMatr != transformMatr)
+    {
+        sd.transformMatr = transformMatr;
+        sd.GenerateTransformData();
+    }
 
 	if (useBatching)
 	{
@@ -1029,21 +1092,21 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
         float32 * vb = &vertexBuffer2.front();
 #endif
 
-        spriteVertexCount = 16;
-        spriteIndexCount = vertInTriCount;
+        spriteVertexCount = sd.transformedVertices.size();
+        spriteIndexCount = sd.GetVertexInTrianglesCount();
 
         const Color c = RenderManager::Instance()->GetColor();
         for (int32 i = 0; i < spriteVertexCount; ++i)
-		{
-            vb[vi++] = vertices[i * 2];
-            vb[vi++] = vertices[i * 2 + 1];
-            vb[vi++] = texCoords[i * 2];
-            vb[vi++] = texCoords[i * 2 + 1];
-            vb[vi++] = c.r;
-            vb[vi++] = c.g;
-            vb[vi++] = c.b;
-            vb[vi++] = c.a;
-		}
+        {
+            vb[vi++] = (sd.transformedVertices[i].x);
+            vb[vi++] = (sd.transformedVertices[i].y);
+            vb[vi++] = (sd.texCoords[i].x);
+            vb[vi++] = (sd.texCoords[i].y);
+            vb[vi++] = (c.r);
+            vb[vi++] = (c.g);
+            vb[vi++] = (c.b);
+            vb[vi++] = (c.a);
+        }
 
 #if USE_MAPPING
         pool->UnmapVertexBuffer();
@@ -1054,27 +1117,27 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 #endif
 
         for (int32 i = 0; i < spriteIndexCount; ++i)
-		{
-            ib[ii++] = vertexIndex + indeces[i];
-		}
+        {
+            ib[ii++] = vertexIndex + sd.indeces[i];
+        }
 
 #if USE_MAPPING
         pool->UnmapIndexBuffer();
 #endif
 
-        PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), RenderManager::TEXTURE_MUL_FLAT_COLOR, currentClip);
+        PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), TEXTURE_MUL_FLAT_COLOR, currentClip);
 	}
 	else
 	{
         RENDERER_UPDATE_STATS(spriteDrawCount++);
 
-		spriteVertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
-		spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, texCoords);
+		spriteVertexStream->Set(TYPE_FLOAT, 2, 0, &sd.transformedVertices[0]);
+		spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, &sd.texCoords[0]);
 		RenderManager::Instance()->SetTextureState(textureHandle);
 		RenderManager::Instance()->SetRenderState(state->renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+		RenderManager::Instance()->SetRenderEffect(TEXTURE_MUL_FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(spriteRenderObject);
-		RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, vertInTriCount, EIF_16, indeces);
+		RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, sd.GetVertexInTrianglesCount(), EIF_16, (void*)sd.indeces);
 	}
 }
 
@@ -1187,7 +1250,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
         pool->UnmapIndexBuffer();
 #endif
 
-        PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), RenderManager::TEXTURE_MUL_FLAT_COLOR, currentClip);
+        PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), TEXTURE_MUL_FLAT_COLOR, currentClip);
 
 	}
 	else
@@ -1199,7 +1262,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
 
 		RenderManager::Instance()->SetTextureState(textureHandle);
 		RenderManager::Instance()->SetRenderState(state->renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+		RenderManager::Instance()->SetRenderEffect(TEXTURE_MUL_FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(spriteRenderObject);
 		RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 	}
@@ -1340,5 +1403,211 @@ void TiledDrawData::GenerateTransformData()
     }
 }
 
+const uint16 StretchDrawData::indeces[18 * 3] = {
+    0, 1, 4,
+    1, 5, 4,
+    1, 2, 5,
+    2, 6, 5,
+    2, 3, 6,
+    3, 7, 6,
+
+    4, 5, 8,
+    5, 9, 8,
+    5, 6, 9,
+    6, 10, 9,
+    6, 7, 10,
+    7, 11, 10,
+
+    8, 9, 12,
+    9, 12, 13,
+    9, 10, 13,
+    10, 14, 13,
+    10, 11, 14,
+    11, 15, 14
+};
+
+uint32 StretchDrawData::GetVertexInTrianglesCount() const
+{
+    switch (type)
+    {
+    case UIControlBackground::DRAW_STRETCH_HORIZONTAL:
+    case UIControlBackground::DRAW_STRETCH_VERTICAL:
+        return 18;
+    case UIControlBackground::DRAW_STRETCH_BOTH:
+        return 18 * 3;
+    default:
+        DVASSERT(0);
+        return 0;
+    }
+}
+
+void StretchDrawData::GenerateTransformData()
+{
+    for (uint32 index = 0; index < vertices.size(); ++index)
+    {
+        transformedVertices[index] = vertices[index] * transformMatr;
+    }
+}
+
+void StretchDrawData::GenerateStretchData()
+{
+    const Vector2 sizeInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
+    const Vector2 offsetInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE), sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE));
+    const Vector2 &spriteSize = sprite->GetSize();
+
+    const Vector2 xyLeftTopCap(offsetInTex - stretchCap);
+    const Vector2 xyRightBottomCap(spriteSize - sizeInTex - offsetInTex - stretchCap);
+
+    const Vector2 xyRealLeftTopCap(Max(0.0f, -xyLeftTopCap.x), Max(0.0f, -xyLeftTopCap.y));
+    const Vector2 xyRealRightBottomCap(Max(0.0f, -xyRightBottomCap.x), Max(0.0f, -xyRightBottomCap.y));
+
+    const Vector2 xyNegativeLeftTopCap(Max(0.0f, xyLeftTopCap.x), Max(0.0f, xyLeftTopCap.y));
+
+    const Vector2 scaleFactor = (size - stretchCap*2.0f) / (spriteSize - stretchCap*2.0f);
+
+    Vector2 xyPos;
+    Vector2 xySize;
+
+    if (UIControlBackground::DRAW_STRETCH_BOTH == type || UIControlBackground::DRAW_STRETCH_HORIZONTAL == type)
+    {
+        xySize.x = xyRealLeftTopCap.x + xyRealRightBottomCap.x + (sizeInTex.x - xyRealLeftTopCap.x - xyRealRightBottomCap.x) * scaleFactor.x;
+        xyPos.x = stretchCap.x + xyNegativeLeftTopCap.x * scaleFactor.x - xyRealLeftTopCap.x;
+    }
+    else
+    {
+        xySize.x = sizeInTex.x;
+        xyPos.x = offsetInTex.x + (size.x - spriteSize.x) * 0.5f;
+    }
+
+    if (UIControlBackground::DRAW_STRETCH_BOTH == type || UIControlBackground::DRAW_STRETCH_VERTICAL == type)
+    {
+        xySize.y = xyRealLeftTopCap.y + xyRealRightBottomCap.y + (sizeInTex.y - xyRealLeftTopCap.y - xyRealRightBottomCap.y) * scaleFactor.y;
+        xyPos.y = stretchCap.y + xyNegativeLeftTopCap.y * scaleFactor.y - xyRealLeftTopCap.y;
+    }
+    else
+    {
+        xySize.y = sizeInTex.y;
+        xyPos.y = offsetInTex.y + (size.y - spriteSize.y) * 0.5f;
+    }
+
+    const Texture* texture = sprite->GetTexture(frame);
+    const Vector2 textureSize((float32)texture->GetWidth(), (float32)texture->GetHeight());
+
+    const Vector2 uvPos(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE) / textureSize.x,
+        sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);
+
+    VirtualCoordinatesSystem * vcs = VirtualCoordinatesSystem::Instance();
+
+    const Vector2 uvSize = vcs->ConvertVirtualToResource(Vector2(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)),
+        sprite->GetResourceSizeIndex()
+        ) / textureSize;
+    const Vector2 uvLeftTopCap = vcs->ConvertVirtualToResource(xyRealLeftTopCap, sprite->GetResourceSizeIndex()) / textureSize;
+    const Vector2 uvRightBottomCap = vcs->ConvertVirtualToResource(xyRealRightBottomCap, sprite->GetResourceSizeIndex()) / textureSize;
+
+    switch (type)
+    {
+    case UIControlBackground::DRAW_STRETCH_HORIZONTAL:
+    {
+        vertices.resize(8);
+        transformedVertices.resize(8);
+        texCoords.resize(8);
+
+        vertices[0] = Vector2(xyPos.x, xyPos.y);
+        vertices[1] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y);
+        vertices[2] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y);
+        vertices[3] = Vector2(xyPos.x + xySize.x, xyPos.y);
+
+        vertices[4] = Vector2(xyPos.x, xyPos.y + xySize.y);
+        vertices[5] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y + xySize.y);
+        vertices[6] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y + xySize.y);
+        vertices[7] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y);
+
+        texCoords[0] = Vector2(uvPos.x, uvPos.y);
+        texCoords[1] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y);
+        texCoords[2] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y);
+        texCoords[3] = Vector2(uvPos.x + uvSize.x, uvPos.y);
+
+        texCoords[4] = Vector2(uvPos.x, uvPos.y + uvSize.y);
+        texCoords[5] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y + uvSize.y);
+        texCoords[6] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y + uvSize.y);
+        texCoords[7] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y);
+    }
+    break;
+    case UIControlBackground::DRAW_STRETCH_VERTICAL:
+    {
+        vertices.resize(8);
+        transformedVertices.resize(8);
+        texCoords.resize(8);
+
+        vertices[0] = Vector2(xyPos.x, xyPos.y);
+        vertices[1] = Vector2(xyPos.x, xyPos.y + xyRealLeftTopCap.y);
+        vertices[2] = Vector2(xyPos.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+        vertices[3] = Vector2(xyPos.x, xyPos.y + xySize.y);
+
+        vertices[4] = Vector2(xyPos.x + xySize.x, xyPos.y);
+        vertices[5] = Vector2(xyPos.x + xySize.x, xyPos.y + xyRealLeftTopCap.y);
+        vertices[6] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+        vertices[7] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y);
+
+        texCoords[0] = Vector2(uvPos.x, uvPos.y);
+        texCoords[1] = Vector2(uvPos.x, uvPos.y + uvLeftTopCap.y);
+        texCoords[2] = Vector2(uvPos.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+        texCoords[3] = Vector2(uvPos.x, uvPos.y + uvSize.y);
+
+        texCoords[4] = Vector2(uvPos.x + uvSize.x, uvPos.y);
+        texCoords[5] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvLeftTopCap.y);
+        texCoords[6] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+        texCoords[7] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y);
+    }
+    break;
+    case UIControlBackground::DRAW_STRETCH_BOTH:
+    {
+        vertices.resize(16);
+        transformedVertices.resize(16);
+        texCoords.resize(16);
+
+        vertices[0] = Vector2(xyPos.x, xyPos.y);
+        vertices[1] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y);
+        vertices[2] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y);
+        vertices[3] = Vector2(xyPos.x + xySize.x, xyPos.y);
+
+        vertices[4] = Vector2(xyPos.x, xyPos.y + xyRealLeftTopCap.y);
+        vertices[5] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y + xyRealLeftTopCap.y);
+        vertices[6] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y + xyRealLeftTopCap.y);
+        vertices[7] = Vector2(xyPos.x + xySize.x, xyPos.y + xyRealLeftTopCap.y);
+
+        vertices[8] = Vector2(xyPos.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+        vertices[9] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+        vertices[10] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+        vertices[11] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+
+        vertices[12] = Vector2(xyPos.x, xyPos.y + xySize.y);
+        vertices[13] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y + xySize.y);
+        vertices[14] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y + xySize.y);
+        vertices[15] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y);
+
+        texCoords[0] = Vector2(uvPos.x, uvPos.y);
+        texCoords[1] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y);
+        texCoords[2] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y);
+        texCoords[3] = Vector2(uvPos.x + uvSize.x, uvPos.y);
+
+        texCoords[4] = Vector2(uvPos.x, uvPos.y + uvLeftTopCap.y);
+        texCoords[5] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y + uvLeftTopCap.y);
+        texCoords[6] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y + uvLeftTopCap.y);
+        texCoords[7] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvLeftTopCap.y);
+
+        texCoords[8] = Vector2(uvPos.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+        texCoords[9] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+        texCoords[10] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+        texCoords[11] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+
+        texCoords[12] = Vector2(uvPos.x, uvPos.y + uvSize.y);
+        texCoords[13] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y + uvSize.y);
+        texCoords[14] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y + uvSize.y);
+        texCoords[15] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y);
+    }
+    break;
+    }
+}
 
 };

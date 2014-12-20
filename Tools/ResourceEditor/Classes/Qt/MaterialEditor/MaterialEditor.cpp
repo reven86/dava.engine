@@ -56,7 +56,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #define MATERIAL_NAME_LABEL "Name"
 #define MATERIAL_GROUP_LABEL "Group"
@@ -323,25 +322,49 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
     {
         int cmdId = command->GetId();
 
-        if(cmdId == CMDID_INSP_DYNAMIC_MODIFY)
+        switch (cmdId)
         {
-            InspDynamicModifyCommand *inspCommand = (InspDynamicModifyCommand *) command;
-
-            // if material flag was changed we should rebuild list of all properties
-            // because their set can be changed
-            const QString memberName = inspCommand->dynamicInfo->GetMember()->Name();   // magic
-            if (memberName == "materialSetFlags")
+        case CMDID_INSP_MEMBER_MODIFY:
             {
-                FillDynamic(propertiesRoot, "materialProperties");
-                FillDynamic(texturesRoot, "textures");
-            }
+                InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *) command;
 
-            UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
-        }
-        else if(cmdId == CMDID_MATERIAL_GLOBAL_SET)
-        {
-            sceneActivated(scene);
-            SetCurMaterial(curMaterials);
+                const QString memberName = inspCommand->member->Name();
+                if (memberName == "materialGroup" || memberName == "materialTemplate")
+                {
+                    for (int i = 0; i < curMaterials.size(); i++)
+                    {
+                        curMaterials[i]->ReloadQuality();
+                    }
+
+                    FillDynamic(texturesRoot, "textures");
+                    UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+                }
+            }
+            break;
+        case CMDID_INSP_DYNAMIC_MODIFY:
+            {
+                InspDynamicModifyCommand *inspCommand = (InspDynamicModifyCommand *) command;
+
+                // if material flag was changed we should rebuild list of all properties
+                // because their set can be changed
+                const QString memberName = inspCommand->dynamicInfo->GetMember()->Name(); // Do not compare raw pointers
+                if (memberName == "materialSetFlags")
+                {
+                    FillDynamic(propertiesRoot, "materialProperties");
+                    FillDynamic(texturesRoot, "textures");
+                }
+
+                UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+            }
+            break;
+        case CMDID_MATERIAL_GLOBAL_SET:
+            {
+                sceneActivated(scene);
+                SetCurMaterial(curMaterials);
+            }
+            break;
+        default:
+            break;
         }
     }
 }
@@ -395,6 +418,9 @@ void MaterialEditor::FillBase()
             {
                 QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
                 baseRoot->MergeChild(group, MATERIAL_GROUP_LABEL);
+
+                // Add unknown value:
+                group->AddAllowedValue(VariantType(String()), "Unknown");
 
                 // fill allowed values for material group
                 for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)

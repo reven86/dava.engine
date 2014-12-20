@@ -1036,6 +1036,7 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
+
 void UITextField::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();
@@ -1071,7 +1072,7 @@ String UITextField::GetFontPresetName() const
     return FontManager::Instance()->GetFontName(font);
 }
 
-void UITextField::SetFontPresetName( const String &presetName )
+void UITextField::SetFontByPresetName( const String &presetName )
 {
     Font *font = NULL;
 

@@ -101,6 +101,7 @@ void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int
 	core->SetupWindow(hInstance, hWindow);
 	RenderManager::Create(Core::RENDERER_OPENGL);		
 	RenderManager::Instance()->Create(hInstance, hWindow);
+    RenderSystem2D::Instance()->Init();
 
 	FrameworkDidLaunched();
 
@@ -124,6 +125,8 @@ void QtLayerWin32::Resize(int32 width, int32 height)
 
     VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
     VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(width, height);
+
+    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 }
     
 void QtLayerWin32::Move(int32 x, int32 y)

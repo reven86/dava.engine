@@ -72,8 +72,15 @@
     cppTextField = tf;
     if(tf)
     {
-        const DAVA::Rect rect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(tf->GetRect());
-        textField.frame = CGRectMake(rect.x, rect.y, rect.dx, rect.dy);
+        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(tf->GetRect());
+        DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+        CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x)
+                                       , (physicalRect.y + physicalOffset.y)
+                                       , physicalRect.dx
+                                       , physicalRect.dy);
+        
+        textField.frame = nativeRect;
+
     }
     else
     {
