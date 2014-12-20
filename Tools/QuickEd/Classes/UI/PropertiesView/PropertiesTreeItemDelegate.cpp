@@ -26,6 +26,7 @@
 #include "ColorPropertyDelegate.h"
 #include "IntegerPropertyDelegate.h"
 #include "FloatPropertyDelegate.h"
+#include "BoolPropertyDelegate.h"
 
 PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
@@ -41,6 +42,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT32] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_FLOAT] = new FloatPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
