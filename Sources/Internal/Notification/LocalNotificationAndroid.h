@@ -39,11 +39,12 @@
 #include "Platform/TemplateAndroid/JniExtensions.h"
 #include "Base/Message.h"
 #include "Platform/Mutex.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 
-class LocalNotificationAndroid: public LocalNotificationImpl, public JniExtension
+class LocalNotificationAndroid: public LocalNotificationImpl
 {
 public:
 	LocalNotificationAndroid(const String &_id);
@@ -54,18 +55,16 @@ public:
     virtual void PostDelayedNotification(WideString const &title, WideString const &text, int delaySeconds);
     virtual void RemoveAllDelayedNotifications();
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
-
 private:
 	Mutex javaCallMutex;
-	jmethodID methodSetText;
-	jmethodID methodSetProgress;
+	JNI::JavaClass notificationProvider;
+
+	Function<void (jstring, jstring, jstring)> setText;
+	Function<void (jstring, jstring, jstring, jint, jint)> setProgress;
+	Function<void (jstring)> hideNotification;
+	Function<void (jstring)> enableTapAction;
+	Function<void (jstring, jstring, jstring, jint)> notifyDelayed;
+	Function<void ()> removeAllDelayedNotifications;
 };
 
 }
