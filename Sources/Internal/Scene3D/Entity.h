@@ -503,19 +503,80 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Compo
     }	
 }
 
-uint32 Entity::GetAvailableComponentFlags()
+inline uint32 Entity::GetAvailableComponentFlags()
 {
     return family->GetComponentsFlags();
 }
     
-Entity * Entity::GetChild(int32 index) const
+inline Entity * Entity::GetChild (int32 index) const
 {
     return children[index];
 }
 
-int32 Entity::GetChildrenCount() const
+inline int32 Entity::GetChildrenCount () const
 {
     return (int32)children.size();
+}
+
+inline uint32 Entity::GetComponentCount ()
+{
+    return components.size ();
+}
+
+inline void Entity::UpdateFamily ()
+{
+    family = EntityFamily::GetOrCreate (components);
+}
+
+inline void Entity::RemoveAllComponents ()
+{
+    while (!components.empty ())
+    {
+        RemoveComponent (--components.end ());
+    }
+}
+
+inline void Entity::RemoveComponent (Vector<Component *>::iterator it)
+{
+    if (it != components.end ())
+    {
+        Component * c = *it;
+        DetachComponent (it);
+        SafeDelete (c);
+    }
+}
+
+inline void Entity::RemoveComponent (uint32 componentType, uint32 index)
+{
+    Component * c = GetComponent (componentType, index);
+    if (c)
+    {
+        RemoveComponent (c);
+    }
+}
+
+inline void Entity::RemoveComponent (Component * component)
+{
+    DetachComponent (component);
+    SafeDelete (component);
+}
+
+inline void Entity::DetachComponent (Component * component)
+{
+    DVASSERT (component);
+
+    auto it = std::find (components.begin (), components.end (), component);
+    DetachComponent (it);
+}
+
+inline Scene * Entity::GetScene ()
+{
+    return scene;
+}
+
+inline uint32 Entity::GetComponentCount (uint32 componentType)
+{
+    return family->GetComponentsCount (componentType);
 }
 
 

@@ -78,17 +78,9 @@ Entity::Entity()
 Entity::~Entity()
 {
     GlobalEventSystem::Instance()->RemoveAllEvents(this);
-		
-	RemoveAllChildren();
-		
-	RemoveAllComponents();
-		
+	RemoveAllChildren();	
+	RemoveAllComponents();	
 	SetScene(0);
-}
-
-void Entity::UpdateFamily()
-{
-    family = EntityFamily::GetOrCreate(components);
 }
 
 bool ComponentLessPredicate(Component * left, Component * right)
@@ -107,24 +99,6 @@ void Entity::AddComponent(Component * component)
 	if (scene)
 		scene->RegisterComponent(this, component);
 }
-    
-void Entity::RemoveAllComponents()
-{
-	while (!components.empty())
-    {
-        RemoveComponent(--components.end());
-    }
-}
-
-void Entity::RemoveComponent(Vector<Component *>::iterator it)
-{
-    if(it != components.end())
-    {
-        Component * c = *it;
-        DetachComponent(it);
-        SafeDelete(c);
-    }
-}
 
 void Entity::DetachComponent(Vector<Component *>::iterator it)
 {
@@ -139,30 +113,7 @@ void Entity::DetachComponent(Vector<Component *>::iterator it)
     UpdateFamily();
     c->SetEntity(0);
 }
-
-void Entity::RemoveComponent(uint32 componentType, uint32 index)
-{
-    Component * c = GetComponent(componentType, index);
-    if(c)
-    {
-        RemoveComponent(c);
-    }
-}
-	
-void Entity::RemoveComponent(Component * component)
-{
-    DetachComponent(component);
-    SafeDelete(component);
-}
-
-void Entity::DetachComponent (Component * component)
-{
-    DVASSERT(component);
-    
-    auto it = std::find(components.begin(), components.end(), component);
-    DetachComponent(it);
-}
-    
+  
 Component * Entity::GetComponent(uint32 componentType, uint32 index) const
 {
     Component * ret = 0;
@@ -186,16 +137,6 @@ Component * Entity::GetOrCreateComponent(uint32 componentType, uint32 index)
 		
 	return ret;
 }
-    
-uint32 Entity::GetComponentCount()
-{
-	return components.size();
-}
-	
-uint32 Entity::GetComponentCount(uint32 componentType)
-{
-	return family->GetComponentsCount(componentType);
-}
 	
 void Entity::SetScene(Scene * _scene)
 {
@@ -214,19 +155,12 @@ void Entity::SetScene(Scene * _scene)
 		scene->RegisterEntity(this);
 		GlobalEventSystem::Instance()->PerformAllEventsFromCache(this);
 	}
-		
-		
-		
+
 	const std::vector<Entity*>::iterator & childrenEnd = children.end();
 	for (std::vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
 	{
 		(*t)->SetScene(_scene);
 	}
-}
-    
-Scene * Entity::GetScene()
-{
-	return scene;
 }
 	
 void Entity::SetParent(Entity * _parent)
