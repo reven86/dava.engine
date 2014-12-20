@@ -29,6 +29,11 @@
 #include <algorithm>
 
 #include <Base/FunctionTraits.h>
+#include <Platform/DeviceInfo.h>
+
+#if defined(__DAVAENGINE_ANDROID__)
+#include <Utils/UTF8Utils.h>
+#endif
 
 #include <Network/Base/IPAddress.h>
 #include <Network/Base/Endpoint.h>
@@ -215,7 +220,8 @@ NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
 {
     new NetCore();
 
-    NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateService), MakeFunction(this, &NetworkTest::DeleteService));
+    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &NetworkTest::CreateLogger), MakeFunction(this, &NetworkTest::DeleteService));
+    NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateEcho), MakeFunction(this, &NetworkTest::DeleteService));
 
     RegisterFunction(this, &NetworkTest::TestEcho, "TestEcho", NULL);
     RegisterFunction(this, &NetworkTest::TestIPAddress, "TestIPAddress", NULL);
@@ -230,8 +236,33 @@ NetworkTest::~NetworkTest()
 
 void NetworkTest::LoadResources()
 {
+    {
+        NetConfig loggerConfig(SERVER_ROLE);
+        loggerConfig.AddTransport(TRANSPORT_TCP, Endpoint(LOGGER_PORT));
+        loggerConfig.AddService(SERVICE_LOG);
+
+        NetCore::Instance()->CreateDriver(loggerConfig);
+    }
+    {
+#if defined(__DAVAENGINE_ANDROID__)
+    	// Cannot log wide string directly, maybe due to incorrect format flag
+    	// I tried %s and %ls for wide string
+        Logger::Debug( "Name        : %s", UTF8Utils::EncodeToUTF8(DeviceInfo::GetName()).c_str());
+#elif defined(__DAVAENGINE_WIN32__)
+    	Logger::Debug(L"Name        : %s", DeviceInfo::GetName().c_str());
+#else
+        Logger::Debug(L"Name        : %ls", DeviceInfo::GetName().c_str());
+#endif
+        Logger::Debug( "Platfrom    : %s", DeviceInfo::GetPlatformString().c_str());
+        Logger::Debug( "Model       : %s", DeviceInfo::GetModel().c_str());
+        Logger::Debug( "Version     : %s", DeviceInfo::GetVersion().c_str());
+        Logger::Debug( "Manufacturer: %s", DeviceInfo::GetManufacturer().c_str());
+        Logger::Debug( "CPU count   : %d", DeviceInfo::GetCpuCount());
+        Logger::Debug( "UDID        : %s", DeviceInfo::GetUDID().c_str());
+    }
+
     NetConfig serverConfig(SERVER_ROLE);
-    serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(9999));
+    serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(ECHO_PORT));
     serverConfig.AddService(SERVICE_ECHO);
 
     NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
@@ -248,13 +279,19 @@ void NetworkTest::UnloadResources()
 
 bool NetworkTest::RunTest(int32 testNum)
 {
-    testingEcho = testingEcho && !(echoServer.IsTestDone() && echoClient.IsTestDone());
     return testingEcho ? false
                        : TestTemplate<NetworkTest>::RunTest(testNum);
 }
 
 void NetworkTest::Update(float32 timeElapsed)
 {
+    if (echoServer.IsTestDone() && echoClient.IsTestDone())
+    {
+        static float32 delay = 0.0f;
+        delay += timeElapsed;
+        if (delay > 10.0f)  // wait 10 sec after finishing test to allow logger to send enqueued records
+            testingEcho = false;
+    }
     TestTemplate<NetworkTest>::Update(timeElapsed);
 
     NetCore::Instance()->Poll();
@@ -331,18 +368,27 @@ void NetworkTest::TestNetConfig(PerfFuncData* data)
     TEST_VERIFY(3 == config2.Services().size());
 }
 
-IChannelListener* NetworkTest::CreateService(uint32)
+IChannelListener* NetworkTest::CreateLogger(uint32 serviceId)
+{
+    return SERVICE_LOG == serviceId ? &logger
+                                    : NULL;
+}
+
+IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
 {
     IChannelListener* obj = NULL;
-    if (0 == serviceCreatorStage)
-        obj = &echoServer;
-    else if (1 == serviceCreatorStage)
-        obj = &echoClient;
-    serviceCreatorStage += 1;
+    if (SERVICE_ECHO == serviceId)
+    {
+        if (0 == serviceCreatorStage)
+            obj = &echoServer;
+        else if (1 == serviceCreatorStage)
+            obj = &echoClient;
+        serviceCreatorStage += 1;
+    }
     return obj;
 }
 
 void NetworkTest::DeleteService(IChannelListener* obj)
 {
-
+    // Do nothing as services are created on stack
 }

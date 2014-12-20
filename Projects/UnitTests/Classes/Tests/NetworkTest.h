@@ -32,6 +32,7 @@
 #include <DAVAEngine.h>
 
 #include <Network/NetService.h>
+#include <Network/Services/NetLogger.h>
 
 #include "TestTemplate.h"
 
@@ -116,8 +117,12 @@ protected:
 
     enum eServiceTypes
     {
+        SERVICE_LOG,
         SERVICE_ECHO
     };
+
+    static const uint16 LOGGER_PORT = 9999;
+    static const uint16 ECHO_PORT = 10101;
 
 public:
     NetworkTest();
@@ -133,7 +138,8 @@ public:
     void TestEndpoint(PerfFuncData* data);
     void TestNetConfig(PerfFuncData* data);
 
-    IChannelListener* CreateService(uint32);
+    IChannelListener* CreateLogger(uint32 serviceId);
+    IChannelListener* CreateEcho(uint32 serviceId);
     void DeleteService(IChannelListener* obj);
 
 private:
@@ -141,6 +147,7 @@ private:
     int32 serviceCreatorStage;
     TestEchoServer echoServer;
     TestEchoClient echoClient;
+    DAVA::Net::NetLogger logger;
 };
 
 #endif  // __NETWORK_TEST_H
