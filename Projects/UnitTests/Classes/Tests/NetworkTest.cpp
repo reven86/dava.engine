@@ -30,10 +30,8 @@
 
 #include <Base/FunctionTraits.h>
 #include <Platform/DeviceInfo.h>
-
-#if defined(__DAVAENGINE_ANDROID__)
 #include <Utils/UTF8Utils.h>
-#endif
+#include <Utils/StringFormat.h>
 
 #include <Network/Base/IPAddress.h>
 #include <Network/Base/Endpoint.h>
@@ -217,6 +215,13 @@ void TestEchoClient::SendParcel(Parcel* parcel)
 NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , testingEcho(true)
                            , serviceCreatorStage(0)
+                           , serverBytesRecv(NULL)
+                           , serverBytesSent(NULL)
+                           , serverBytesDelivered(NULL)
+                           , clientBytesRecv(NULL)
+                           , clientBytesSent(NULL)
+                           , clientBytesDelivered(NULL)
+                           , timeLeft(NULL)
 {
     new NetCore();
 
@@ -236,6 +241,7 @@ NetworkTest::~NetworkTest()
 
 void NetworkTest::LoadResources()
 {
+    CreateUI();
     {
         NetConfig loggerConfig(SERVER_ROLE);
         loggerConfig.AddTransport(TRANSPORT_TCP, Endpoint(LOGGER_PORT));
@@ -268,6 +274,7 @@ void NetworkTest::LoadResources()
 void NetworkTest::UnloadResources()
 {
     NetCore::Instance()->Finish(true);
+    DestroyUI();
 }
 
 bool NetworkTest::RunTest(int32 testNum)
@@ -284,10 +291,13 @@ void NetworkTest::Update(float32 timeElapsed)
         delay += timeElapsed;
         if (delay > 10.0f)  // wait 10 sec after finishing test to allow logger to send enqueued records
             testingEcho = false;
+        UpdateUI(true, 10.0f - delay);
     }
-    TestTemplate<NetworkTest>::Update(timeElapsed);
-
+    else
+        UpdateUI(false, 0.0f);
     NetCore::Instance()->Poll();
+
+    TestTemplate<NetworkTest>::Update(timeElapsed);
 }
 
 void NetworkTest::TestEcho(PerfFuncData* data)
@@ -303,44 +313,50 @@ void NetworkTest::TestEcho(PerfFuncData* data)
 
 void NetworkTest::TestIPAddress(PerfFuncData* data)
 {
-    IPAddress addrEmpty;
-    TEST_VERIFY(true == addrEmpty.IsUnspecified());
-    TEST_VERIFY(0 == addrEmpty.ToUInt());
-    TEST_VERIFY("0.0.0.0" == addrEmpty.ToString());
+    // Test empty address
+    TEST_VERIFY(true == IPAddress().IsUnspecified());
+    TEST_VERIFY(0 == IPAddress().ToUInt());
+    TEST_VERIFY("0.0.0.0" == IPAddress().ToString());
 
-    IPAddress addrMulticast = IPAddress::FromString("239.192.100.1");
-    TEST_VERIFY(false == addrMulticast.IsUnspecified());
-    TEST_VERIFY(true == addrMulticast.IsMulticast());
-    TEST_VERIFY("239.192.100.1" == addrMulticast.ToString());
+    // Test invalid address
+    TEST_VERIFY(true == IPAddress("").IsUnspecified());
+    TEST_VERIFY(true == IPAddress("invalid").IsUnspecified());
+    TEST_VERIFY(true == IPAddress("300.0.1.2").IsUnspecified());
+    TEST_VERIFY(true == IPAddress("08.08.0.1").IsUnspecified());
 
-    IPAddress addrSame1("192.168.0.4");
-    IPAddress addrSame2 = IPAddress::FromString("192.168.0.4");
-    TEST_VERIFY(false == addrSame1.IsUnspecified());
-    TEST_VERIFY(false == addrSame1.IsMulticast());
-    TEST_VERIFY("192.168.0.4" == addrSame1.ToString());
-    TEST_VERIFY(addrSame1 == addrSame2);
+    // Test multicast address
+    TEST_VERIFY(false == IPAddress("239.192.100.1").IsUnspecified());
+    TEST_VERIFY(true == IPAddress("239.192.100.1").IsMulticast());
+    TEST_VERIFY(false == IPAddress("192.168.0.4").IsMulticast());
+    TEST_VERIFY(false == IPAddress("255.255.255.255").IsMulticast());
+    TEST_VERIFY("239.192.100.1" == IPAddress("239.192.100.1").ToString());
+
+    // Test address
+    TEST_VERIFY(IPAddress("192.168.0.4") == IPAddress("192.168.0.4"));
+    TEST_VERIFY(String("192.168.0.4") == IPAddress("192.168.0.4").ToString());
+    TEST_VERIFY(IPAddress("192.168.0.4").ToString() == IPAddress::FromString("192.168.0.4").ToString());
+    TEST_VERIFY(false == IPAddress("192.168.0.4").IsUnspecified()); 
+    TEST_VERIFY(false == IPAddress("255.255.255.255").IsUnspecified());
 }
 
 void NetworkTest::TestEndpoint(PerfFuncData* data)
 {
-    Endpoint endpoint1;
-    TEST_VERIFY(0 == endpoint1.Port());
-    TEST_VERIFY("0.0.0.0:0" == endpoint1.ToString());
+    TEST_VERIFY(0 == Endpoint().Port());
+    TEST_VERIFY(String("0.0.0.0:0") == Endpoint().ToString());
 
-    Endpoint endpoint2("192.168.1.45", 1234);
-    TEST_VERIFY(1234 == endpoint2.Port());
-    TEST_VERIFY(endpoint2.Address() == IPAddress::FromString("192.168.1.45"));
+    TEST_VERIFY(1234 == Endpoint("192.168.1.45", 1234).Port());
+    TEST_VERIFY(Endpoint("192.168.1.45", 1234).Address() == IPAddress("192.168.1.45"));
+    TEST_VERIFY(Endpoint("192.168.1.45", 1234).Address() == IPAddress::FromString("192.168.1.45"));
 
-    Endpoint endpoint3(IPAddress("192.168.1.45"), 1234);
-    TEST_VERIFY(endpoint3.Address() == IPAddress("192.168.1.45"));
-    TEST_VERIFY(endpoint2 == endpoint3);
+    TEST_VERIFY(Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1234));
+    TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1235)));  // Different ports
+    TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.46", 1234)));  // Different addressess
 }
 
 void NetworkTest::TestNetConfig(PerfFuncData* data)
 {
-    NetConfig config_empty(SERVER_ROLE);
-    TEST_VERIFY(SERVER_ROLE == config_empty.Role());
-    TEST_VERIFY(false == config_empty.Validate());
+    TEST_VERIFY(SERVER_ROLE == NetConfig(SERVER_ROLE).Role());
+    TEST_VERIFY(false == NetConfig(SERVER_ROLE).Validate());
 
     NetConfig config1(SERVER_ROLE);
     config1.AddTransport(TRANSPORT_TCP, Endpoint(9999));
@@ -384,4 +400,164 @@ IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
 void NetworkTest::DeleteService(IChannelListener* obj)
 {
     // Do nothing as services are created on stack
+}
+
+void NetworkTest::UpdateUI(bool waitStage, float32 left)
+{
+    serverBytesRecv->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesRecieved())));
+    serverBytesSent->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesSent())));
+    serverBytesDelivered->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesDelivered())));
+
+    clientBytesRecv->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesRecieved())));
+    clientBytesSent->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesSent())));
+    clientBytesDelivered->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesDelivered())));
+
+    if (waitStage)
+    {
+        timeLeft->SetText(Format(L"%.1f", left));
+    }
+}
+
+void NetworkTest::CreateUI()
+{
+    enum {
+        CONTROL_HEIGHT = 20,
+        CAPTION_WIDTH = 300,
+        LABEL_WIDTH = 100,
+        VALUE_WIDTH = 140,
+        SERVER_X = 0,
+        CLIENT_X = LABEL_WIDTH + VALUE_WIDTH
+    };
+
+    Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    DVASSERT(font);
+    font->SetSize(20);
+
+    {
+        UIStaticText* caption = new UIStaticText;
+        caption->SetFont(font);
+        caption->SetRect(Rect(0, 0, CAPTION_WIDTH, CONTROL_HEIGHT));
+        caption->SetText(L"NetworkTest");
+        AddControl(caption);
+        SafeRelease(caption);
+
+        UIStaticText* serverCaption = new UIStaticText;
+        serverCaption->SetFont(font);
+        serverCaption->SetRect(Rect(SERVER_X, CONTROL_HEIGHT, LABEL_WIDTH + VALUE_WIDTH, CONTROL_HEIGHT));
+        serverCaption->SetText(L"Echo server");
+        AddControl(serverCaption);
+        SafeRelease(serverCaption);
+
+        UIStaticText* clientCaption = new UIStaticText;
+        clientCaption->SetFont(font);
+        clientCaption->SetRect(Rect(CLIENT_X, CONTROL_HEIGHT, LABEL_WIDTH + VALUE_WIDTH, CONTROL_HEIGHT));
+        clientCaption->SetText(L"Echo client");
+        AddControl(clientCaption);
+        SafeRelease(clientCaption);
+    }
+    //////////////////////////////////////////////////////////////////////////
+    {
+        UIStaticText* label = new UIStaticText;
+        label->SetFont(font);
+        label->SetRect(Rect(SERVER_X, CONTROL_HEIGHT * 2, LABEL_WIDTH, CONTROL_HEIGHT));
+        label->SetText(L"recv");
+        AddControl(label);
+        SafeRelease(label);
+
+        serverBytesRecv = new UIStaticText;
+        serverBytesRecv->SetFont(font);
+        serverBytesRecv->SetRect(Rect(SERVER_X + LABEL_WIDTH, CONTROL_HEIGHT * 2, VALUE_WIDTH, CONTROL_HEIGHT));
+        serverBytesRecv->SetText(L"0");
+        AddControl(serverBytesRecv);
+    }
+    {
+        UIStaticText* label = new UIStaticText;
+        label->SetFont(font);
+        label->SetRect(Rect(SERVER_X, CONTROL_HEIGHT * 3, LABEL_WIDTH, CONTROL_HEIGHT));
+        label->SetText(L"sent");
+        AddControl(label);
+        SafeRelease(label);
+
+        serverBytesSent = new UIStaticText;
+        serverBytesSent->SetFont(font);
+        serverBytesSent->SetRect(Rect(SERVER_X + LABEL_WIDTH, CONTROL_HEIGHT * 3, VALUE_WIDTH, CONTROL_HEIGHT));
+        serverBytesSent->SetText(L"0");
+        AddControl(serverBytesSent);
+    }
+    {
+        UIStaticText* label = new UIStaticText;
+        label->SetFont(font);
+        label->SetRect(Rect(SERVER_X, CONTROL_HEIGHT * 4, LABEL_WIDTH, CONTROL_HEIGHT));
+        label->SetText(L"delivered");
+        AddControl(label);
+        SafeRelease(label);
+
+        serverBytesDelivered = new UIStaticText;
+        serverBytesDelivered->SetFont(font);
+        serverBytesDelivered->SetRect(Rect(SERVER_X + LABEL_WIDTH, CONTROL_HEIGHT * 4, VALUE_WIDTH, CONTROL_HEIGHT));
+        serverBytesDelivered->SetText(L"0");
+        AddControl(serverBytesDelivered);
+    }
+    //////////////////////////////////////////////////////////////////////////
+    {
+        UIStaticText* label = new UIStaticText;
+        label->SetFont(font);
+        label->SetRect(Rect(CLIENT_X, CONTROL_HEIGHT * 2, LABEL_WIDTH, CONTROL_HEIGHT));
+        label->SetText(L"recv");
+        AddControl(label);
+        SafeRelease(label);
+
+        clientBytesRecv = new UIStaticText;
+        clientBytesRecv->SetFont(font);
+        clientBytesRecv->SetRect(Rect(CLIENT_X + LABEL_WIDTH, CONTROL_HEIGHT * 2, VALUE_WIDTH, CONTROL_HEIGHT));
+        clientBytesRecv->SetText(L"0");
+        AddControl(clientBytesRecv);
+    }
+    {
+        UIStaticText* label = new UIStaticText;
+        label->SetFont(font);
+        label->SetRect(Rect(CLIENT_X, CONTROL_HEIGHT * 3, LABEL_WIDTH, CONTROL_HEIGHT));
+        label->SetText(L"sent");
+        AddControl(label);
+        SafeRelease(label);
+
+        clientBytesSent = new UIStaticText;
+        clientBytesSent->SetFont(font);
+        clientBytesSent->SetRect(Rect(CLIENT_X + LABEL_WIDTH, CONTROL_HEIGHT * 3, VALUE_WIDTH, CONTROL_HEIGHT));
+        clientBytesSent->SetText(L"0");
+        AddControl(clientBytesSent);
+    }
+    {
+        UIStaticText* label = new UIStaticText;
+        label->SetFont(font);
+        label->SetRect(Rect(CLIENT_X, CONTROL_HEIGHT * 4, LABEL_WIDTH, CONTROL_HEIGHT));
+        label->SetText(L"delivered");
+        AddControl(label);
+        SafeRelease(label);
+
+        clientBytesDelivered = new UIStaticText;
+        clientBytesDelivered->SetFont(font);
+        clientBytesDelivered->SetRect(Rect(CLIENT_X + LABEL_WIDTH, CONTROL_HEIGHT * 4, VALUE_WIDTH, CONTROL_HEIGHT));
+        clientBytesDelivered->SetText(L"0");
+        AddControl(clientBytesDelivered);
+    }
+    //////////////////////////////////////////////////////////////////////////
+    {
+        timeLeft = new UIStaticText;
+        timeLeft->SetFont(font);
+        timeLeft->SetRect(Rect(SERVER_X, CONTROL_HEIGHT * 5, VALUE_WIDTH, CONTROL_HEIGHT));
+        AddControl(timeLeft);
+    }
+    SafeRelease(font);
+}
+
+void NetworkTest::DestroyUI()
+{
+    SafeRelease(serverBytesRecv);
+    SafeRelease(serverBytesSent);
+    SafeRelease(serverBytesDelivered);
+    SafeRelease(clientBytesRecv);
+    SafeRelease(clientBytesSent);
+    SafeRelease(clientBytesDelivered);
+    SafeRelease(timeLeft);
 }

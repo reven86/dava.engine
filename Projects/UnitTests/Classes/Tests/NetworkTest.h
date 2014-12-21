@@ -143,11 +143,24 @@ public:
     void DeleteService(IChannelListener* obj);
 
 private:
+    void CreateUI();
+    void UpdateUI(bool waitStage, float32 left);
+    void DestroyUI();
+
+private:
     bool testingEcho;
     int32 serviceCreatorStage;
     TestEchoServer echoServer;
     TestEchoClient echoClient;
     DAVA::Net::NetLogger logger;
+
+    DAVA::UIStaticText* serverBytesRecv;
+    DAVA::UIStaticText* serverBytesSent;
+    DAVA::UIStaticText* serverBytesDelivered;
+    DAVA::UIStaticText* clientBytesRecv;
+    DAVA::UIStaticText* clientBytesSent;
+    DAVA::UIStaticText* clientBytesDelivered;
+    DAVA::UIStaticText* timeLeft;
 };
 
 #endif  // __NETWORK_TEST_H
