@@ -150,6 +150,7 @@
     </Filter>
     <Filter Include="Internal\Platform\Qt4\Win32">
       <UniqueIdentifier>{802c9b10-286b-4081-add3-d26ed34ac6d0}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Render\2D\Systems">
       <UniqueIdentifier>{012e0df1-1251-4d03-8523-68ada6fd9f72}</UniqueIdentifier>
     </Filter>
