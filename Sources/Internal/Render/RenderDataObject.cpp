@@ -173,11 +173,11 @@ uint32 RenderDataObject::GetResultFormat() const
     return resultVertexFormat;
 }
     
-void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
+void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eDrawType type, bool synchronously)
 {
 	DVASSERT(!vertexAttachmentActive);
 
-	Function<void()> fn = Bind(MakeFunction(this, &RenderDataObject::BuildVertexBufferInternal), vertexCount);
+	Function<void()> fn = Bind(MakeFunction(this, &RenderDataObject::BuildVertexBufferInternal), vertexCount, type);
 	uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
 
 	if(synchronously)
@@ -186,12 +186,25 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
 	}
 }
 
-void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount)
+void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eDrawType type)
 {
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
-    uint32 size = streamArray.size();
+    uint32 GLtype = GL_STATIC_DRAW;
+    switch (type) {
+        case STATIC_DRAW:
+            GLtype = GL_STATIC_DRAW;
+            break;
+        case DYNAMIC_DRAW:
+            GLtype = GL_DYNAMIC_COPY;
+            break;
+        default:
+            DVASSERT(false);
+            break;
+    }
+    
+    uint32 size = (uint32)streamArray.size();
     if (size == 0)return;
 
     for (uint32 k = 1; k < size; ++k)
@@ -219,7 +232,7 @@ void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount)
 #if defined (__DAVAENGINE_ANDROID__)
     savedVertexCount = vertexCount;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GL_STATIC_DRAW));
+    RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GLtype));
 
     streamArray[0]->pointer = 0;
     for (uint32 k = 1; k < size; ++k)
@@ -336,11 +349,25 @@ void RenderDataObject::DetachVertices()
     vertexAttachmentActive = false;
 }
 
-void RenderDataObject::UpdateVertexBuffer(int32 vertexCount)
+void RenderDataObject::UpdateVertexBuffer(int32 vertexCount, eDrawType type)
 {
     DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
-    uint32 size = streamArray.size();
+    
+    uint32 GLtype = GL_STATIC_DRAW;
+    switch (type) {
+        case STATIC_DRAW:
+            GLtype = GL_STATIC_DRAW;
+            break;
+        case DYNAMIC_DRAW:
+            GLtype = GL_DYNAMIC_COPY;
+            break;
+        default:
+            DVASSERT(false);
+            break;
+    }
+    
+    uint32 size = (uint32)streamArray.size();
     if (size == 0)return;
 
     for (uint32 k = 1; k < size; ++k)
@@ -366,7 +393,7 @@ void RenderDataObject::UpdateVertexBuffer(int32 vertexCount)
 #endif //#if defined (__DAVAENGINE_ANDROID__)
 
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vboBuffer));
-    RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GL_DYNAMIC_DRAW));
+    RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GLtype));
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, 0));
 
 #endif // #if defined (__DAVAENGINE_OPENGL__)

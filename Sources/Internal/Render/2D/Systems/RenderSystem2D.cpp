@@ -42,16 +42,6 @@ namespace DAVA
 #define USE_MAPPING 0
 #define USE_BATCHING true
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-#define xGL_MAP_BUFF(x,y) glMapBufferOES(x,y)
-#define xGL_UNMAP_BUFF(x) glUnmapBufferOES(x)
-#define xGL_WRITE_FLAG GL_WRITE_ONLY_OES
-#else
-#define xGL_MAP_BUFF(x,y) glMapBuffer(x,y)
-#define xGL_UNMAP_BUFF(x) glUnmapBuffer(x)
-#define xGL_WRITE_FLAG GL_WRITE_ONLY
-#endif
-
 FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
 FastName RenderSystem2D::TEXTURE_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
 
@@ -75,14 +65,14 @@ VboPool::VboPool(uint32 size, uint8 count)
     vertexStride = sizeof(float32) * 8; //XYUVRGBA
     currentVertexBufferSize = size * vertexStride;
     currentIndexBufferSize = size * 2 * sizeof(uint16);
-    for (int i = 0; i < count; ++i)
+    for (uint8 i = 0; i < count; ++i)
     {
         RenderDataObject* obj = new RenderDataObject();
 #if USE_MAPPING
         obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, 0);
-        obj->BuildVertexBuffer(size, false);
+        obj->BuildVertexBuffer(size, RenderDataObject::DYNAMIC_DRAW, false);
         obj->SetIndices(EIF_16, 0, size * 2);
         obj->BuildIndexBuffer(false);
 #endif
@@ -103,7 +93,7 @@ void VboPool::SetVertexData(uint32 count, float32* data)
     currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, data);
     currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, data + 2);
     currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, data + 4);
-    currentDataObject->UpdateVertexBuffer(count);
+    currentDataObject->UpdateVertexBuffer(count, RenderDataObject::DYNAMIC_DRAW);
     currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
     currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
     currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
@@ -123,18 +113,27 @@ void VboPool::MapBuffers()
 
     RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid);
     RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid);
-
-    RENDER_VERIFY(currentVertexBufferPointer = (float32*)xGL_MAP_BUFF(GL_ARRAY_BUFFER, xGL_WRITE_FLAG));
-    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)xGL_MAP_BUFF(GL_ELEMENT_ARRAY_BUFFER, xGL_WRITE_FLAG));
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBufferOES(GL_ARRAY_BUFFER, GL_WRITE_ONLY_OES));
+    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY_OES));
+#else
+    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
+#endif
 #endif
 }
 
 void VboPool::UnmapBuffers()
 {
 #if USE_MAPPING
-    RENDER_VERIFY(xGL_UNMAP_BUFF(GL_ARRAY_BUFFER));
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    RENDER_VERIFY(glUnmapBufferOES(GL_ARRAY_BUFFER));
+    RENDER_VERIFY(glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER));
+#else
+    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
+    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
+#endif
     currentVertexBufferPointer = 0;
-    RENDER_VERIFY(xGL_UNMAP_BUFF(GL_ELEMENT_ARRAY_BUFFER));
     currentIndexBufferPointer = 0;
 #endif
 }
@@ -143,17 +142,26 @@ void VboPool::MapVertexBuffer()
 {
 #if USE_MAPPING
     uint32 vbid = currentDataObject->GetVertexBufferID();
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid));
-    RENDER_VERIFY(currentVertexBufferPointer = (float32*)xGL_MAP_BUFF(GL_ARRAY_BUFFER, xGL_WRITE_FLAG));
+    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBufferOES(GL_ARRAY_BUFFER, GL_WRITE_ONLY_OES));
+#else
+    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid));
+    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+#endif
 #endif
 }
 
 void VboPool::UnmapVertexBuffer()
 {
 #if USE_MAPPING
-    RENDER_VERIFY(xGL_UNMAP_BUFF(GL_ARRAY_BUFFER));
-    currentVertexBufferPointer = 0;
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    RENDER_VERIFY(glUnmapBufferOES(GL_ARRAY_BUFFER));
+#else
+    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
+#endif
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, NULL));
+    currentVertexBufferPointer = 0;
 #endif
 }
 
@@ -162,21 +170,44 @@ void VboPool::MapIndexBuffer()
 #if USE_MAPPING
     uint32 ibid = currentDataObject->GetIndexBufferID();
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid));
-    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)xGL_MAP_BUFF(GL_ELEMENT_ARRAY_BUFFER, xGL_WRITE_FLAG));
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY_OES));
+#else
+    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
+#endif
 #endif
 }
 
 void VboPool::UnmapIndexBuffer()
 {
 #if USE_MAPPING
-    RENDER_VERIFY(xGL_UNMAP_BUFF(GL_ELEMENT_ARRAY_BUFFER));
-    currentIndexBufferPointer = 0;
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    RENDER_VERIFY(glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER));
+#else
+    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
+#endif
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL));
+    currentIndexBufferPointer = 0;
 #endif
 }
 
 void VboPool::RenewBuffers(uint32 size)
 {
+#if USE_MAPPING
+    currentVertexBufferSize = size * vertexStride;
+    currentIndexBufferSize = size * 2 * sizeof(uint16);
+    uint32 count = (uint32)dataObjects.size();
+    for (uint32 i = 0; i < count; ++i)
+    {
+        RenderDataObject* obj = dataObjects[i];
+        obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
+        obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
+        obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, 0);
+        obj->BuildVertexBuffer(size, false);
+        obj->SetIndices(EIF_16, 0, size * 2);
+        obj->BuildIndexBuffer(false);
+    }
+#endif
 }
 
 RenderDataObject* VboPool::GetDataObject() const
@@ -210,24 +241,32 @@ RenderSystem2D::RenderSystem2D()
     , spriteVertexStream(0)
     , spriteTexCoordStream(0)
     , spriteClipping(true)
+    , useBatching(USE_BATCHING)
 {
 }
 
 void RenderSystem2D::Init()
 {
-    if (!spriteRenderObject) //used as flag 'isInited'
+    if(useBatching && !pool)
     {
-        useBatching = USE_BATCHING;
-        spriteRenderObject = new RenderDataObject();
-        spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-        spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-        spriteColorStream = spriteRenderObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, 0, 0);
-
+        // Create pool on first BeginFrame call
+        pool = new VboPool(4096, 10);
+        
 #if !USE_MAPPING
         vertexBuffer2.resize(4096 * 32); //2048 points (XY UV RGBA)
         indexBuffer2.resize(8192);
 #endif
-
+    }
+    else if (!useBatching && !spriteRenderObject) //used as flag 'isInited'
+    {
+        spriteRenderObject = new RenderDataObject();
+        spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+        spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+        spriteColorStream = spriteRenderObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, 0, 0);
+    }
+    
+    if(FLAT_COLOR == NULL)
+    {
         FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
 
         TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, FastNameSet()));
@@ -309,12 +348,6 @@ RenderSystem2D::~RenderSystem2D()
 
 void RenderSystem2D::Reset()
 {
-    // Create pool on first BeginFrame call
-    if(NULL == pool)
-    {
-        pool = new VboPool(4096, 10);
-    }
-
     currentClip.x = 0;
     currentClip.y = 0;
     currentClip.dx = -1;
@@ -468,6 +501,7 @@ void RenderSystem2D::Flush()
     pool->GetDataObject()->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 32, (void*)8);
     pool->GetDataObject()->SetStream(EVF_COLOR, TYPE_FLOAT, 4, 32, (void*)16);
 #endif
+    
     RenderManager::Instance()->SetRenderData(pool->GetDataObject());
 
     Vector<RenderBatch2D>::iterator it = batches.begin();
@@ -488,7 +522,7 @@ void RenderSystem2D::Flush()
         RenderManager::Instance()->SetRenderState(batch.renderState);
         RenderManager::Instance()->SetTextureState(batch.textureHandle);
         RenderManager::Instance()->SetRenderEffect(batch.shader);
-        RenderManager::Instance()->DrawElements(spritePrimitiveToDraw, batch.count, EIF_16, (void*)(batch.indexOffset * 2));
+        RenderManager::Instance()->DrawElements(spritePrimitiveToDraw, batch.count, EIF_16, reinterpret_cast<void*>(batch.indexOffset * 2));
 
         if (clip)
         {
