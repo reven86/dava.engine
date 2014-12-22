@@ -537,101 +537,93 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 	resourceToVirtualFactor = Core::GetPhysicalToVirtualFactor();
 	resourceSizeIndex = Core::Instance()->GetDesirableResourceIndex();
 
-	this->type = SPRITE_FROM_TEXTURE;
-	this->textureCount = 1;
-	this->textures = new Texture*[this->textureCount];
-	this->textureNames = new FilePath[this->textureCount];
+    type = SPRITE_FROM_TEXTURE;
+    textureCount = 1;
+    textures = new Texture*[textureCount];
+    textureNames = new FilePath[textureCount];
 
 
-	this->textures[0] = SafeRetain(fromTexture);
-	if(this->textures[0])
-	{
-		this->textureNames[0] = this->textures[0]->GetPathname();
-	}
+    textures[0] = SafeRetain(fromTexture);
+    if(textures[0])
+    {
+        textureNames[0] = textures[0]->GetPathname();
+    }
 
-//	int32 width = sprWidth;
-	this->size.dx = (float32)sprWidth;
+    size.dx = sprWidth;
+    size.dy = sprHeight;
 
-//	int32 height = sprHeight;
-	this->size.dy = (float32)sprHeight;
+    defaultPivotPoint.x = 0;
+    defaultPivotPoint.y = 0;
+    frameCount = 1;
 
-//	Logger::FrameworkDebug("Init from texture: %.4fx%.4f", sprWidth, sprWidth);
+    texCoords = new GLfloat*[frameCount];
+    frameVertices = new GLfloat*[frameCount];
+    rectsAndOffsets = new GLfloat*[frameCount];
+    frameTextureIndex = new int32[this->frameCount];
 
-//	this->originalSize = this->size;
-	this->defaultPivotPoint.x = 0;
-	this->defaultPivotPoint.y = 0;
-	this->frameCount = 1;
+    for (int i = 0;	i < this->frameCount; i++)
+    {
+        frameVertices[i] = new GLfloat[8];
+        texCoords[i] = new GLfloat[8];
+        rectsAndOffsets[i] = new GLfloat[6];
+        frameTextureIndex[i] = 0;
 
-	this->texCoords = new GLfloat*[this->frameCount];
-	this->frameVertices = new GLfloat*[this->frameCount];
-//	this->originalVertices = new GLfloat*[this->frameCount];
-	this->rectsAndOffsets = new GLfloat*[this->frameCount];
-	this->frameTextureIndex = new int32[this->frameCount];
+        float32 x, y, dx,dy, xOff, yOff;
+        x = (float32)xOffset;
+        y = (float32)yOffset;
+        dx = sprWidth * Core::GetVirtualToPhysicalFactor();
+        dy = sprHeight * Core::GetVirtualToPhysicalFactor();
+        xOff = 0.f;
+        yOff = 0.f;
 
-	for (int i = 0;	i < this->frameCount; i++)
-	{
-		this->frameVertices[i] = new GLfloat[8];
-//		this->originalVertices[i] = new GLfloat[4];
-		this->texCoords[i] = new GLfloat[8];
-		this->rectsAndOffsets[i] = new GLfloat[6];
-		this->frameTextureIndex[i] = 0;
+        float32* rectAndOffset = rectsAndOffsets[i];
+        rectAndOffset[0] = x;
+        rectAndOffset[1] = y;
+        rectAndOffset[2] = sprWidth;
+        rectAndOffset[3] = sprHeight;
+        rectAndOffset[4] = xOff;
+        rectAndOffset[5] = yOff;
 
-		float32 x, y, dx,dy, xOff, yOff;
-		x = (float32)xOffset;
-		y = (float32)yOffset;
-		dx = sprWidth * Core::GetVirtualToPhysicalFactor();
-		dy = sprHeight * Core::GetVirtualToPhysicalFactor();
-		xOff = 0;
-		yOff = 0;
+        float32* frameVerts = frameVertices[i];
+        frameVerts[0] = xOff;
+        frameVerts[1] = yOff;
+        frameVerts[2] = xOff + sprWidth;
+        frameVerts[3] = yOff;
+        frameVerts[4] = xOff;
+        frameVerts[5] = (yOff + sprHeight);
+        frameVerts[6] = (xOff + sprWidth);
+        frameVerts[7] = (yOff + sprHeight);
 
-		this->rectsAndOffsets[i][0] = (float32)x;
-		this->rectsAndOffsets[i][1] = (float32)y;
-		this->rectsAndOffsets[i][2] = sprWidth;
-		this->rectsAndOffsets[i][3] = sprHeight;
-		this->rectsAndOffsets[i][4] = (float32)xOff;
-		this->rectsAndOffsets[i][5] = (float32)yOff;
+        dx += x;
+        dy += y;
 
-//		this->originalVertices[i][0] = (float32)dx;
-//		this->originalVertices[i][1] = (float32)dy;
-//		this->originalVertices[i][2] = (float32)xOff;
-//		this->originalVertices[i][3] = (float32)yOff;
-
-		this->frameVertices[i][0] = (float32)xOff;
-		this->frameVertices[i][1] = (float32)yOff;
-		this->frameVertices[i][2] = (float32)xOff + sprWidth;
-		this->frameVertices[i][3] = (float32)yOff;
-		this->frameVertices[i][4] = (float32)xOff;
-		this->frameVertices[i][5] = (float32)(yOff + sprHeight);
-		this->frameVertices[i][6] = (float32)(xOff + sprWidth);
-		this->frameVertices[i][7] = (float32)(yOff + sprHeight);
-
-
-		dx += x;
-		dy += y;
-
-		this->texCoords[i][0] = (GLfloat)x / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][1] = (GLfloat)y / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][2] = (GLfloat)dx / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][3] = (GLfloat)y / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][4] = (GLfloat)x / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][5] = (GLfloat)dy / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][6] = (GLfloat)dx / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][7] = (GLfloat)dy / this->textures[this->frameTextureIndex[i]]->height;
-
+        int32 frameIndex = frameTextureIndex[i];
+        Texture* texutre = textures[frameIndex];
+        float32* texCoord = texCoords[i];
+        texCoord[0] = x / texutre->width;
+        texCoord[1] = y / texutre->height;
+        texCoord[2] = dx / texutre->width;
+        texCoord[3] = y / texutre->height;
+        texCoord[4] = x / texutre->width;
+        texCoord[5] = dy / texutre->height;
+        texCoord[6] = dx / texutre->width;
+        texCoord[7] = dy / texutre->height;
 	}
 
 	// DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
-    if (this->relativePathname.IsEmpty())
-        this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    if (relativePathname.IsEmpty())
+    {
+        relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    }
 
     spriteMapMutex.Lock();
-	spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
+    spriteMap[FILEPATH_MAP_KEY(relativePathname)] = this;
     spriteMapMutex.Unlock();
 
-	fboCounter++;
-	this->Reset();
-	
-	RegisterTextureStates();
+    fboCounter++;
+    Reset();
+
+    RegisterTextureStates();
 }
 
 void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
