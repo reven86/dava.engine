@@ -1987,7 +1987,7 @@
    </property>
    <property name="icon">
     <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/camera.png</normaloff>:/QtIcons/camera.png</iconset>
+     <normaloff>:/QtIcons/snapcamera.png</normaloff>:/QtIcons/snapcamera.png</iconset>
    </property>
    <property name="text">
     <string>Snap Camera To Landscape</string>
