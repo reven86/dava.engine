@@ -260,11 +260,8 @@ void PropertyEditor::ResetProperties()
 			QtPropertyData *row = root->ChildGet(0);
 			root->ChildExtract(row);
 
-			if(row->ChildCount() > 0)
-			{
-				AppendProperty(row->GetName(), row);
-				ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
-			}
+            AppendProperty(row->GetName(), row);
+            ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
 		}
 
 		delete root;
