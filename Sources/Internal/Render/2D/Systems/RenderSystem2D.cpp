@@ -442,6 +442,8 @@ void RenderSystem2D::Flush()
         return;
     }
 
+    Setup2DMatrices();
+
     if (currentBatch.count > 0)
     {
         batches.push_back(currentBatch);
@@ -564,7 +566,10 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
 		return;
 	}
 
-    Setup2DMatrices();
+    if(!useBatching)
+    {
+        Setup2DMatrices();
+    }
 
     Sprite::DrawState * state = drawState;
     if (!state)
@@ -794,9 +799,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
             }
         }
 
-        //TODO: check place for next code
-        bool spriteIsOnScreen = (sprite->clipPolygon) ? true : (!spriteClipping || IsPreparedSpriteOnScreen(state));
-        if (!spriteIsOnScreen)
+        if (spriteClipping && !IsPreparedSpriteOnScreen(state))
         {
             // Skip draw for sprites out of screen
             return;
