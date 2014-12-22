@@ -116,7 +116,7 @@ QString ScrollZoomWidget::float2QString(float32 value) const
 		strValue = "%.1f";
 	else
 		strValue = "%.0f";
-	strValue.sprintf(strValue.toAscii(), value);
+	strValue.sprintf(strValue.toLatin1(), value);
 	return strValue;
 }
 

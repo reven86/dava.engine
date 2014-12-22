@@ -38,31 +38,39 @@
 #include <QMimeData>
 #include <QUrl>
 
-#include "Qt/Main/davaglwidget.h"
-#include "Qt/Scene/EntityGroup.h"
-#include "Qt/Scene/SceneSignals.h"
-#include "Qt/Scene/SceneTypes.h"
-
-#include "UI/UIScreen.h"
+//#include "Qt/Scene/EntityGroup.h"
+//#include "Qt/Scene/SceneSignals.h"
+//#include "Qt/Scene/SceneTypes.h"
+//
+//#include "UI/UIScreen.h"
 #include "UI/UI3DView.h"
 
-// old ui. should be removed later -->
-class SceneEditorScreenMain;
-// <--
+#include "FileSystem/FilePath.h"
+
+
+namespace DAVA
+{
+	class UIEvent;
+	class UIScreen;
+	class UI3DView;
+}
+
 class SceneEditor2;
 class DAVAUI3DView;
 class MainTabBar;
-
+class DavaGLWidget;
 class ScenePreviewDialog;
+class Request;
+class EntityGroup;
 
-Q_DECLARE_METATYPE(SceneEditor2 *);
 
-class SceneTabWidget : public QWidget
+class SceneTabWidget
+	: public QWidget
 {
 	Q_OBJECT
 
 public:
-	SceneTabWidget(QWidget *parent);
+	explicit SceneTabWidget(QWidget *parent);
 	~SceneTabWidget();
 
 	int OpenTab();
