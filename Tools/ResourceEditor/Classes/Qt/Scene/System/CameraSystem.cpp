@@ -294,7 +294,7 @@ void SceneCameraSystem::Input(DAVA::UIEvent *event)
     {
         if(('+' == event->keyChar)|| ('-' == event->keyChar))
         {
-            Entity *entity = GetEntityWidthEditorCamera();
+            Entity *entity = GetEntityWithEditorCamera();
             SnapToLandscapeControllerComponent *snapComponent = GetSnapToLandscapeControllerComponent(entity);
             if(snapComponent)
             {
@@ -354,19 +354,6 @@ void SceneCameraSystem::Draw()
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    if(CMDID_ENTITY_REMOVE == command->GetId() && redo)
-    {
-        Camera *camera = GetCamera(command->GetEntity());
-        if(camera)
-        {
-            Entity *entityWithEditorCamera = GetEntityWidthEditorCamera();
-            Camera *debugCamera = GetCamera(entityWithEditorCamera);
-            if(debugCamera)
-            {
-                GetScene()->SetCurrentCamera(debugCamera);
-            }
-        }
-    }
 }
 
 void SceneCameraSystem::AddEntity(DAVA::Entity * entity)
@@ -408,7 +395,6 @@ void SceneCameraSystem::CreateDebugCameras()
 
 		DAVA::Entity *topCameraEntity = new DAVA::Entity();
 		topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
-        topCameraEntity->SetLocked(true);
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
@@ -552,7 +538,7 @@ void SceneCameraSystem::GetRayTo2dPoint(const DAVA::Vector2 &point, DAVA::float3
 }
 
 
-DAVA::Entity* SceneCameraSystem::GetEntityWidthEditorCamera() const
+DAVA::Entity* SceneCameraSystem::GetEntityWithEditorCamera() const
 {
     int32 cameraCount = GetScene()->GetCameraCount();
     for(int32 i = 0; i < cameraCount; ++i)
@@ -571,7 +557,7 @@ DAVA::Entity* SceneCameraSystem::GetEntityWidthEditorCamera() const
 
 bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
 {
-    Entity *entity = GetEntityWidthEditorCamera();
+    Entity *entity = GetEntityWithEditorCamera();
     if(!entity) return false;
     
     SnapToLandscapeControllerComponent *snapComponent = GetSnapToLandscapeControllerComponent(entity);
@@ -598,7 +584,7 @@ bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
 
 bool SceneCameraSystem::IsEditorCameraSnappedToLandscape() const
 {
-    Entity *entity = GetEntityWidthEditorCamera();
+    Entity *entity = GetEntityWithEditorCamera();
     return (GetSnapToLandscapeControllerComponent(entity) != NULL);
 }
 

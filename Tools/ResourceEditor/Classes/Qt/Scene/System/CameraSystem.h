@@ -93,7 +93,7 @@ protected:
     
 	void MoveAnimate(DAVA::float32 timeElapsed);
 	DAVA::Entity* GetEntityFromCamera(DAVA::Camera *camera) const;
-    DAVA::Entity* GetEntityWidthEditorCamera() const;
+    DAVA::Entity* GetEntityWithEditorCamera() const;
 
 protected:
 	DAVA::Rect viewportRect;
