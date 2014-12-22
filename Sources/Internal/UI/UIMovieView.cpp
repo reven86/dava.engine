@@ -110,7 +110,6 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 
 #ifdef DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
 	Color curDebugDrawColor = GetDebugDrawColor();
-	//RenderManager::Instance()->ClipPush();
 
 	Rect absRect = GetRect(true);
 	RenderManager::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
@@ -121,7 +120,6 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderState::RENDERSTATE_2D_BLEND);
 	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderState::RENDERSTATE_2D_BLEND);
 
-	//RenderManager::Instance()->ClipPop();
 	SetDebugDrawColor(curDebugDrawColor);
 #endif
 }

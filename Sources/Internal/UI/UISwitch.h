@@ -85,13 +85,13 @@ public:
     bool GetSwitchOnTapBesideToggle() {return switchOnTapBesideToggle;}
 
 protected:
-    void InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, bool isFromUI);
+    void InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisualState, UIEvent *inputEvent = NULL);
     void InitControls();
     void ReleaseControls();
     void FindRequiredControls();
 
     float32 GetToggleUttermostPosition();
-    void CheckToggleSideChange(bool isFromUI);
+    void CheckToggleSideChange(UIEvent *inputEvent = NULL);
     void ChangeVisualState();
 
     UIButton * buttonLeft;

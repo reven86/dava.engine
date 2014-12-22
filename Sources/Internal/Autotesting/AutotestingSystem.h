@@ -157,6 +157,7 @@ public:
 	String deviceId;
 	String deviceName;
     String testsDate;
+	String runId;
     int32 testIndex;
     int32 stepIndex;
     int32 logIndex;

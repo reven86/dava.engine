@@ -79,6 +79,7 @@
     <ClCompile Include="Classes\UI\PackageView\UIPackageMimeData.cpp" />
     <ClCompile Include="Classes\UI\PackageView\UIPackageModel.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\AbstractPropertyDelegate.cpp" />
+    <ClCompile Include="Classes\UI\PropertiesView\BoolPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\ChangePropertyValueCommand.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\ColorPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\FloatPropertyDelegate.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="Classes\UI\PackageView\UIPackageMimeData.h" />
     <ClInclude Include="Classes\UI\PackageView\UIPackageModel.h" />
     <ClInclude Include="Classes\UI\PropertiesView\AbstractPropertyDelegate.h" />
+    <ClInclude Include="Classes\UI\PropertiesView\BoolPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\ChangePropertyValueCommand.h" />
     <ClInclude Include="Classes\UI\PropertiesView\ColorPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\FilePathPropertyDelegate.h" />

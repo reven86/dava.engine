@@ -1678,7 +1678,7 @@ Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode, 
     }
     else
     {
-        rect = control->GetGeometricData(false).GetAABBox();
+        rect = control->GetGeometricData().GetAABBox();
     }
 	rect += controlNode->GetParentDelta(true);
 

@@ -4,4 +4,4 @@
 # call as: ./splitimage.sh image_pathname
 # as result 4 files would be created in source image folder (r.png ... a.png)
 
-ResourceEditorQt.app/Contents/MacOS/ResourceEditorQt -imagesplitter -split -file $1
+ResourceEditor.app/Contents/MacOS/ResourceEditor -imagesplitter -split -file $1

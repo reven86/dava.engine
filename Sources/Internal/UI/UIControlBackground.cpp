@@ -42,29 +42,6 @@
 namespace DAVA
 {
 
-const uint16 UIControlBackground::StretchDrawData::indeces[18 * 3] = {
-    0, 1, 4,
-    1, 5, 4,
-    1, 2, 5,
-    2, 6, 5,
-    2, 3, 6,
-    3, 7, 6,
-            
-    4, 5, 8,
-    5, 9, 8,
-    5, 6, 9,
-    6, 10, 9,
-    6, 7, 10,
-    7, 11, 10,
-            
-    8, 9, 12,
-    9, 12, 13,
-    9, 10, 13,
-    10, 14, 13,
-    10, 11, 14,
-    11, 15, 14
-};
-
 UIControlBackground::UIControlBackground()
 :	spr(NULL)
 ,	frame(0)
@@ -80,7 +57,7 @@ UIControlBackground::UIControlBackground()
 ,	lastDrawPos(0, 0)
 ,	tiledData(NULL)
 ,   stretchData(NULL)
-,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
+,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
@@ -193,6 +170,16 @@ void UIControlBackground::SetFrame(int32 drawFrame)
 {
     DVASSERT(spr);
     frame = drawFrame;
+}
+
+void UIControlBackground::SetFrame(const FastName& frameName)
+{
+    DVASSERT(spr);
+    int32 frameInd = spr->GetFrameByName(frameName);
+    if (frameInd != Sprite::INVALID_FRAME_INDEX)
+    {
+    	SetFrame(frameInd);
+    }
 }
 
 void UIControlBackground::SetAlign(int32 drawAlign)
@@ -519,7 +506,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         case DRAW_STRETCH_BOTH:
         case DRAW_STRETCH_HORIZONTAL:
         case DRAW_STRETCH_VERTICAL:
-            RenderSystem2D::Instance()->DrawStretched(spr, &drawState, Vector2(leftStretchCap, topStretchCap), drawRect, type);
+            RenderSystem2D::Instance()->DrawStretched(spr, &drawState, Vector2(leftStretchCap, topStretchCap), type, geometricData, &stretchData);
         break;
 
         case DRAW_TILED:

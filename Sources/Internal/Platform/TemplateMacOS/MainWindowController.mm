@@ -29,6 +29,8 @@
 
 #import "MainWindowController.h"
 #include "CorePlatformMacOS.h"
+#include "Platform/DeviceInfo.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -165,7 +167,6 @@ namespace DAVA
 	FrameworkDidLaunched();
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     
-	
 	//Core::Instance()->Creat();
     
 		// do all ground work & setup window itself according to value specified by user
@@ -194,6 +195,7 @@ namespace DAVA
 	
 	core = Core::GetApplicationCore();
     RenderManager::Instance()->DetectRenderingCapabilities();
+    RenderSystem2D::Instance()->Init();
 
 
 	// start animation
