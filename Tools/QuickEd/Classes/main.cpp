@@ -33,9 +33,9 @@
 #include "DAVAEngine.h"
 
 #if defined (__DAVAENGINE_MACOS__)
-#include "Platform/Qt/MacOS/QtLayerMacOS.h"
+#include "Platform/Qt4/MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
-#include "Platform/Qt/Win32/QtLayerWin32.h"
+#include "Platform/Qt4/Win32/QtLayerWin32.h"
 #endif
 
 #include "GeneratedFiles/MocSourcesHeader.h"
