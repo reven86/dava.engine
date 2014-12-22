@@ -33,7 +33,7 @@
 #include <QWidget>
 #include <QTimer>
 
-#include "Platform/Qt/QtLayer.h"
+#include "Platform/Qt4/QtLayer.h"
 
 namespace Ui {
 	class DavaGLWidget;

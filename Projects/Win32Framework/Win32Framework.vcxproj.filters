@@ -97,12 +97,6 @@
     <Filter Include="Internal\Database">
       <UniqueIdentifier>{aacba949-a20d-4b44-821d-8170cd6d7aa2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Platform\Qt">
-      <UniqueIdentifier>{9ccf6d8e-2ffb-4645-862d-59b75598b00e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Internal\Platform\Qt\Win32">
-      <UniqueIdentifier>{802c9b10-286b-4081-add3-d26ed34ac6d0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\Render\Material">
       <UniqueIdentifier>{08283861-a6e9-4e98-88c8-2cfd8d75e035}</UniqueIdentifier>
     </Filter>
@@ -150,6 +144,12 @@
     </Filter>
     <Filter Include="Internal\Notification">
       <UniqueIdentifier>{4b5695b8-6b14-4d0c-8f8d-86535f5de24e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Platform\Qt4">
+      <UniqueIdentifier>{9ccf6d8e-2ffb-4645-862d-59b75598b00e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Platform\Qt4\Win32">
+      <UniqueIdentifier>{802c9b10-286b-4081-add3-d26ed34ac6d0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -879,12 +879,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Mallocator.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
-      <Filter>Internal\Platform\Qt</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\Win32\QtLayerWin32.h">
-      <Filter>Internal\Platform\Qt\Win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\RenderOptions.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
@@ -1359,9 +1353,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.h">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\Win32\CorePlatformWin32Qt.h">
-      <Filter>Internal\Platform\Qt\Win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
@@ -1605,6 +1596,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
       <Filter>Internal\Job</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h">
+      <Filter>Internal\Platform\Qt4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.h">
+      <Filter>Internal\Platform\Qt4\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.h">
+      <Filter>Internal\Platform\Qt4\Win32</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2229,14 +2229,8 @@
     <ClCompile Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.cpp">
       <Filter>Internal\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\Win32\QtLayerWin32.cpp">
-      <Filter>Internal\Platform\Qt\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\RenderOptions.cpp">
       <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\QtLayer.cpp">
-      <Filter>Internal\Platform\Qt</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SwitchNode.cpp">
       <Filter>Internal\Scene3D</Filter>
@@ -2670,9 +2664,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.cpp">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\Win32\CorePlatformWin32Qt.cpp">
-      <Filter>Internal\Platform\Qt\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
@@ -2898,6 +2889,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp">
       <Filter>Internal\Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp">
+      <Filter>Internal\Platform\Qt4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp">
+      <Filter>Internal\Platform\Qt4\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.cpp">
+      <Filter>Internal\Platform\Qt4\Win32</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
