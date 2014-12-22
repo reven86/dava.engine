@@ -9,6 +9,7 @@
 
 #include "ui_FileSystemDockWidget.h"
 #include <DAVAEngine.h>
+#include <QMenu>
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -16,9 +17,6 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     , model(NULL)
 {
     model = new QFileSystemModel(this);
-    //proxyModel = new FilteredFileSystemModel(this);
-    //proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    //proxyModel->setDynamicSortFilter(true);
     ui->setupUi(this);
     
     model->setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
@@ -27,15 +25,14 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget *parent)
     model->setNameFilters(filters);
     model->setNameFilterDisables(false);
 
-    //proxyModel->setSourceModel(model);
-    //proxyModel->setFilterKeyColumn(0);
-
     connect(ui->treeView, SIGNAL(doubleClicked (const QModelIndex &)), this, SLOT(onDoubleClicked(const QModelIndex &)));
     connect(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(onDataChanged(const QModelIndex &, const QModelIndex &)));
     
-    //connect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(filterTextChanged(const QString &)));
     connect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(setFilterFixedString(const QString &)));
-    
+    connect(ui->treeView, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(customContextMenuRequested(const QPoint &)));
+
+    ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu/*ActionsContextMenu*/);
+
 }
 
 FileSystemDockWidget::~FileSystemDockWidget()
@@ -72,4 +69,13 @@ void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )
 void FileSystemDockWidget::onDataChanged( const QModelIndex & topLeft, const QModelIndex & bottomRight )
 {
     DAVA::Logger::Debug("model::dataChanged file name %s", model->fileName(topLeft).toStdString().c_str());
+}
+
+void FileSystemDockWidget::customContextMenuRequested(const QPoint &pos)
+{
+    QModelIndex index = ui->treeView->indexAt(pos);
+
+    QMenu *menu = new QMenu(this);
+    menu->addAction(index.data(Qt::DisplayRole).toString());
+    menu->exec(QCursor::pos());
 }
