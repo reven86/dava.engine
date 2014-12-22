@@ -353,7 +353,21 @@ void SceneCameraSystem::Draw()
 }
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)
-{ }
+{
+    if(CMDID_ENTITY_REMOVE == command->GetId() && redo)
+    {
+        Camera *camera = GetCamera(command->GetEntity());
+        if(camera)
+        {
+            Entity *entityWithEditorCamera = GetEntityWidthEditorCamera();
+            Camera *debugCamera = GetCamera(entityWithEditorCamera);
+            if(debugCamera)
+            {
+                GetScene()->SetCurrentCamera(debugCamera);
+            }
+        }
+    }
+}
 
 void SceneCameraSystem::AddEntity(DAVA::Entity * entity)
 {
@@ -394,6 +408,7 @@ void SceneCameraSystem::CreateDebugCameras()
 
 		DAVA::Entity *topCameraEntity = new DAVA::Entity();
 		topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
+        topCameraEntity->SetLocked(true);
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
