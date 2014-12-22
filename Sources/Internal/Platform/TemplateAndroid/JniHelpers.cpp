@@ -34,7 +34,6 @@
 namespace DAVA
 {
 
-
 namespace JNI
 {
 
@@ -87,6 +86,19 @@ void DetachCurrentThreadFromJVM()
 	}
 }
 
+Rect V2P(const Rect& srcRect)
+{
+	Vector2 offset = Core::Instance()->GetPhysicalDrawOffset();
+	float32 v2p = Core::Instance()->GetVirtualToPhysicalFactor();
+	Rect rect = srcRect;
+	rect.x *= v2p;
+	rect.y *= v2p;
+	rect.dx *= v2p;
+	rect.dy *= v2p;
+
+	rect += offset;
+	return rect;
+}
 
 bool CreateStringFromJni(JNIEnv *env, jstring jniString, char *generalString)
 {

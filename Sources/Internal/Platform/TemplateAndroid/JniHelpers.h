@@ -37,6 +37,7 @@
 #include "Debug/DVAssert.h"
 #include "Base/Function.h"
 #include "Base/Bind.h"
+#include "Math/Rect.h"
 
 namespace DAVA
 {
@@ -60,6 +61,8 @@ JNIEnv *GetEnv();
 
 void AttachCurrentThreadToJVM();
 void DetachCurrentThreadFromJVM();
+
+Rect V2P(const Rect& rect);
 
 bool CreateStringFromJni(JNIEnv *env, jstring jniString, char *generalString);
 inline bool CreateStringFromJni(jstring jniString, char *generalString)
@@ -108,6 +111,16 @@ template<> struct TypeMetrics<jint>
 template<> struct TypeMetrics<jintArray>
 {
 	DeclareTypeString("[I");
+};
+
+template<> struct TypeMetrics<jfloat>
+{
+	DeclareTypeString("F");
+};
+
+template<> struct TypeMetrics<jfloatArray>
+{
+	DeclareTypeString("[F");
 };
 
 template<> struct TypeMetrics<jlong>
@@ -343,71 +356,71 @@ template<> struct JniCall<jint>
 {
 	inline static jint Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallIntMethod(javaClass, javaMethod));
+		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
 	}
 
 	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod));
+		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1));
+		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1));
+		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2));
+		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2));
+		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jint>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
@@ -415,71 +428,216 @@ template<> struct JniCall<jintArray>
 {
 	inline static jintArray Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallIntMethod(javaClass, javaMethod));
+		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod));
 	}
 
 	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod));
+		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1));
+		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1));
+		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2));
+		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2));
+		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jintArray>(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+	}
+};
+
+
+template<> struct JniCall<jfloat>
+{
+	inline static jfloat Call(jclass javaClass, jmethodID javaMethod)
+	{
+		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod));
+	}
+
+	inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod)
+	{
+		return (jfloat)(GetEnv()->CallStaticFloatMethod(javaClass, javaMethod));
+	}
+	template<class P1>
+	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	{
+		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1));
+	}
+
+	template<class P1>
+	inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
+	{
+		return (jfloat)(GetEnv()->CallStaticFloatMethod(javaClass, javaMethod, p1));
+	}
+
+	template<class P1, class P2>
+	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	{
+		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1, p2));
+	}
+
+	template<class P1, class P2>
+	inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	{
+		return (jfloat)(GetEnv()->CallStaticFloatMethod(javaClass, javaMethod, p1, p2));
+	}
+
+	template<class P1, class P2, class P3>
+	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	{
+		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1, p2, p3));
+	}
+
+	template<class P1, class P2, class P3>
+	inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	{
+		return (jfloat)(GetEnv()->CallStaticFloatMethod(javaClass, javaMethod, p1, p2, p3));
+	}
+
+	template<class P1, class P2, class P3, class P4>
+	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1, p2, p3, p4));
+	}
+
+	template<class P1, class P2, class P3, class P4>
+	inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		return (jfloat)(GetEnv()->CallStaticFloatMethod(javaClass, javaMethod, p1, p2, p3, p4));
+	}
+
+	template<class P1, class P2, class P3, class P4, class P5>
+	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+	}
+
+	template<class P1, class P2, class P3, class P4, class P5>
+	inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		return (jfloat)(GetEnv()->CallStaticFloatMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+	}
+};
+
+template<> struct JniCall<jfloatArray>
+{
+	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod)
+	{
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+	}
+
+	inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod)
+	{
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+	}
+	template<class P1>
+	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	{
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+	}
+
+	template<class P1>
+	inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
+	{
+		return (jfloatArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
+	}
+
+	template<class P1, class P2>
+	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	{
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+	}
+
+	template<class P1, class P2>
+	inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	{
+		return (jfloatArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
+	}
+
+	template<class P1, class P2, class P3>
+	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	{
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+	}
+
+	template<class P1, class P2, class P3>
+	inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	{
+		return (jfloatArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
+	}
+
+	template<class P1, class P2, class P3, class P4>
+	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+	}
+
+	template<class P1, class P2, class P3, class P4>
+	inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		return (jfloatArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+	}
+
+	template<class P1, class P2, class P3, class P4, class P5>
+	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+	}
+
+	template<class P1, class P2, class P3, class P4, class P5>
+	inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		return (jfloatArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
@@ -487,71 +645,71 @@ template<> struct JniCall<jlong>
 {
 	inline static jlong Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallLongMethod(javaClass, javaMethod));
+		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod));
 	}
 
 	inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod));
+		return (jlong)(GetEnv()->CallStaticLongMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1));
+		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1));
+		return (jlong)(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2));
+		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2));
+		return (jlong)(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jlong)(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jlong)(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jlong>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jlong)(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
@@ -559,71 +717,71 @@ template<> struct JniCall<jlongArray>
 {
 	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallLongMethod(javaClass, javaMethod));
+		return (jlongArray)GetEnv()->CallObjectMethod(javaClass, javaMethod);
 	}
 
 	inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod));
+		return (jlongArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1));
+		return (jlongArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2));
+		return (jlongArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jlongArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jlongArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jlongArray>(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jlongArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
@@ -631,71 +789,71 @@ template<> struct JniCall<jboolean>
 {
 	inline static jboolean Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallBooleanMethod(javaClass, javaMethod));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod));
 	}
 
 	inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod));
+		return (jboolean)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1));
+		return (jboolean)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2));
+		return (jboolean)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jboolean)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jboolean)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jboolean>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jboolean)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
@@ -703,71 +861,71 @@ template<> struct JniCall<jbooleanArray>
 {
 	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallBooleanMethod(javaClass, javaMethod));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
 	}
 
 	inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod));
+		return (jbooleanArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1));
+		return (jbooleanArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2));
+		return (jbooleanArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jbooleanArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jbooleanArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jbooleanArray>(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jbooleanArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
@@ -775,71 +933,71 @@ template<> struct JniCall<jobject>
 {
 	inline static jobject Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
 	}
 
 	inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
+		return (jobject)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
+		return (jobject)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jobject)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jobject)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jobject)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jobject>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jobject)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
@@ -847,71 +1005,71 @@ template<> struct JniCall<jobjectArray>
 {
 	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
 	}
 
 	inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
+		return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
+		return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jobjectArray>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
@@ -919,71 +1077,71 @@ template<> struct JniCall<jstring>
 {
 	inline static jstring Call(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
 	}
 
 	inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
+		return (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
 	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1>
 	inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
+		return (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
 	}
 
 	template<class P1, class P2>
 	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
 	inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
 	inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return reinterpret_cast<jstring>(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
 };
 
