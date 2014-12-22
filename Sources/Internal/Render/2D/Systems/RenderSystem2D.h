@@ -90,6 +90,25 @@ struct TiledDrawData
     Matrix3 transformMatr;
 };
 
+struct StretchDrawData
+{
+    Vector<Vector2> vertices;
+    Vector<Vector2> transformedVertices;
+    Vector<Vector2> texCoords;
+    static const uint16 indeces[18 * 3];
+
+    void GenerateStretchData();
+    void GenerateTransformData();
+    uint32 GetVertexInTrianglesCount() const;
+
+    Sprite *sprite;
+    int32 frame;
+    Vector2 size;
+    int32 type;
+    Vector2 stretchCap;
+    Matrix3 transformMatr;
+};
+
 class VboPool
 {
 public:
@@ -129,13 +148,33 @@ private:
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
+    static FastName FLAT_COLOR_SHADER;
+    static FastName TEXTURE_FLAT_COLOR_SHADER;
+
+    static Shader * FLAT_COLOR;
+    static Shader * TEXTURE_MUL_FLAT_COLOR;
+    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
+    static Shader * TEXTURE_ADD_FLAT_COLOR;
+    static Shader * TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_ADD_FLAT_COLOR_IMAGE_A8;
+    static Shader * TEXTURE_MUL_COLOR;
+    static Shader * TEXTURE_MUL_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_MUL_COLOR_IMAGE_A8;
+    static Shader * TEXTURE_ADD_COLOR;
+    static Shader * TEXTURE_ADD_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_ADD_COLOR_IMAGE_A8;
+
+
     RenderSystem2D();
     virtual ~RenderSystem2D();
     
-    void Draw(Sprite * sprite, Sprite::DrawState * state);
-	void DrawStretched(Sprite * sprite, Sprite::DrawState * state, Vector2 streatchCap, Rect drawRect, UIControlBackground::eDrawType type);
-    void DrawTiled(Sprite * sprite, Sprite::DrawState * state, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
-    void DrawFilled(Sprite * sprite, Sprite::DrawState * state, const UIGeometricData& gd);
+    void Init();
+
+    void Draw(Sprite * sprite, Sprite::DrawState * drawState = 0);
+    void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData);
+    void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
+    void DrawFilled(Sprite * sprite, Sprite::DrawState * drawState, const UIGeometricData& gd);
 
     void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip);
     
@@ -153,19 +192,22 @@ public:
     
     void Setup2DMatrices();
     
+    void SetSpriteClipping(bool clipping);
+
 private:
+    bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
     Matrix4 viewMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
     
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;
-	RenderDataStream * spriteTexCoordStream;
+    RenderDataStream * spriteTexCoordStream;
     RenderDataStream * spriteColorStream;
 
     float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;
-	Vector<Vector2> spriteClippedVertices;
+    Vector<Vector2> spriteClippedVertices;
     ePrimitiveType spritePrimitiveToDraw;
     int32 spriteVertexCount;
     int32 spriteIndexCount;
@@ -175,6 +217,8 @@ private:
     Vector<float32> vertexBuffer2;
     Vector<uint16> indexBuffer2;
 
+    bool spriteClipping;
+    
     Vector<RenderBatch2D> batches;
     RenderBatch2D currentBatch;
     uint32 vertexIndex;

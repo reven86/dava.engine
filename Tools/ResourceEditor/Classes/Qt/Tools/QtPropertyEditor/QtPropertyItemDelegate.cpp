@@ -282,7 +282,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 				}
 				else
 				{
-					QPixmap pix = QPixmap::grabWidget(btn);
+					QPixmap pix = btn->grab();
 					painter->drawPixmap(owXPos, owYPos, pix);
 				}
 

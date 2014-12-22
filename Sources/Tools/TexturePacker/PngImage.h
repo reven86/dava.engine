@@ -47,7 +47,7 @@ public:
 	bool Read(const FilePath & filename);
 	void Write(const FilePath & filename);
 	
-	void DrawImage(int32 sx, int32 sy, PngImageExt * image);
+	void DrawImage(const Rect2i & drawRect, const Rect2i & imageOffsetRect, PngImageExt * image, bool useTwoSideMargin);
 	void DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2i & srcRect);
 
 	void DrawRect(const Rect2i & rect, uint32 color);

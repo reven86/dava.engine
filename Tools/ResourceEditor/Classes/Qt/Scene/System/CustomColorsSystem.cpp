@@ -246,7 +246,8 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
     updatedRect.SetSize(spriteSize);
     AddRectToAccumulator(updatedRect);
 	
-    spriteSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spritePos);
+    spriteSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spriteSize);
+    spritePos = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(spritePos);
 
     Sprite::DrawState drawState;
 	drawState.SetScaleSize(spriteSize.x, spriteSize.y, toolImageSprite->GetWidth(), toolImageSprite->GetHeight());

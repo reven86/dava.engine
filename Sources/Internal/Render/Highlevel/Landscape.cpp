@@ -1672,9 +1672,9 @@ Texture * Landscape::CreateLandscapeTexture()
 	RenderManager::Instance()->ClearWithColor(1.f, 0.f, 1.f, 1.f);
  
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    RenderManager::SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Matrix4 projection;
-    projection.glOrtho(0.f, (float32)TEXTURE_TILE_FULL_SIZE,
-                       0.f, (float32)TEXTURE_TILE_FULL_SIZE, -1.f, 1.f);
+    projection.glOrtho(0.f, 1.f, 0.f, 1.f, -1.f, 1.f);
     
     Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
     RenderManager::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);

@@ -31,7 +31,6 @@
 #ifndef __REQUEST_H__
 #define __REQUEST_H__
 
-#include "DAVAEngine.h"
 
 class Request
 {

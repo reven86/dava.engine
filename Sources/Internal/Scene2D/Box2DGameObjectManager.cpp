@@ -158,8 +158,6 @@ void Box2DGameObjectManager::Draw()
         
 		box2DWorld->SetDebugDraw(debugDraw);
 		box2DWorld->DrawDebugData();
-
-        RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
 	}
 }
 	

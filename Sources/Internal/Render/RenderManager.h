@@ -79,17 +79,6 @@ protected:
 class RenderManager : public Singleton<RenderManager>
 {
 public:
-    static FastName FLAT_COLOR_SHADER;
-    static FastName TEXTURE_MUL_FLAT_COLOR_SHADER;
-    
-    static Shader * FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
-    static Shader * TEXTURE_MUL_COLOR;
-    static Shader * TEXTURE_MUL_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_COLOR_IMAGE_A8;
-    
     struct Caps
 	{
 		Caps() 
