@@ -12,20 +12,23 @@
 
 using namespace DAVA;
 
-EditorUIPackageBuilder::EditorUIPackageBuilder() : packageNode(NULL), currentObject(NULL)
+EditorUIPackageBuilder::EditorUIPackageBuilder()
+    : packageNode(NULL)
+    , currentObject(NULL)
 {
     
 }
 
 EditorUIPackageBuilder::~EditorUIPackageBuilder()
 {
-    
+    SafeRelease(packageNode);
 }
 
-UIPackage *EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
+RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
     DVASSERT(packageNode == NULL);
-    UIPackage *package = new UIPackage(packagePath);
+    SafeRelease(packageNode);
+    RefPtr<UIPackage> package(new UIPackage(packagePath));
     packageNode = new PackageNode(package);
     return package;
 }
@@ -35,7 +38,7 @@ void EditorUIPackageBuilder::EndPackage()
     DVASSERT(packageNode != NULL);
 }
 
-UIPackage * EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
+RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
 {
     // store state
     PackageNode *prevPackageNode = packageNode;
@@ -65,7 +68,7 @@ UIPackage * EditorUIPackageBuilder::ProcessImportedPackage(const String &package
     currentObject = prevObj;
     currentSection = prevSect;
 
-    return result;
+    return RefPtr<UIPackage>(result);
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -241,6 +244,11 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
         if (property && value.GetType() != VariantType::TYPE_NONE)
             property->SetValue(value);
     }
+}
+
+RefPtr<PackageNode> EditorUIPackageBuilder::GetPackageNode() const
+{
+    return DAVA::RefPtr<PackageNode>(SafeRetain(packageNode));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

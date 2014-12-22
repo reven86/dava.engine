@@ -51,7 +51,7 @@ UIPackageLoader::~UIPackageLoader()
 {
     builder = NULL;
 }
-    
+
 UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
 {
     if (!loadingQueue.empty())
@@ -65,9 +65,18 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     
     ScopedPtr<YamlParser> parser(YamlParser::Create(packagePath));
     
-    YamlNode *rootNode = parser->GetRootNode();
-    if (!rootNode)
+    if (!parser)
+    {
         return NULL;
+    }
+
+    YamlNode *rootNode = parser->GetRootNode();
+    if (!rootNode)//empty yaml equal to empty UIPackage
+    {
+        RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+        builder->EndPackage();
+        return SafeRetain<UIPackage>(package);
+    }
     
     const YamlNode *headerNode = rootNode->Get("Header");
     if (!headerNode)
@@ -77,7 +86,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (versionNode == NULL || versionNode->GetType() != YamlNode::TYPE_STRING)
         return NULL;
     
-    UIPackage *package = SafeRetain(builder->BeginPackage(packagePath));
+    RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
 
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
@@ -115,7 +124,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     }
     builder->EndPackage();
     
-    return package;
+    return SafeRetain<UIPackage>(package);
 }
     
 bool UIPackageLoader::LoadControlByName(const String &name)

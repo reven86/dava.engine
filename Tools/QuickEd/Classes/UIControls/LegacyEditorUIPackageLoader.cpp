@@ -48,13 +48,20 @@ LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
 
 UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
 {
-    RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
-    
-    YamlNode *rootNode = parser.Valid() ? parser->GetRootNode() : NULL;
-    if (!rootNode)
+    ScopedPtr<YamlParser> parser(YamlParser::Create(packagePath));
+
+    if (!parser)
         return NULL;
     
-    UIPackage *package = builder->BeginPackage(packagePath);
+    YamlNode *rootNode = parser->GetRootNode();
+    if (!rootNode)//empty yaml equal to empty UIPackage
+    {
+        RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+        builder->EndPackage();
+        return SafeRetain<UIPackage>(package);
+    }
+    
+    RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
     
     UIControl *legacyControl = builder->BeginControlWithClass("UIControl");
     builder->BeginControlPropertiesSection("UIControl");
@@ -88,7 +95,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     
     builder->EndPackage();
     
-    return package;
+    return SafeRetain<UIPackage>(package);
 }
 
 bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/)

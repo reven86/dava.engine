@@ -116,6 +116,7 @@ public:
 	
 	T& operator *() const { return *_ptr; }
 	T* operator->() const { return _ptr; }
+    //operator T*  () const { return _ptr; }
 	
 	bool operator == (const RefPtr & rp) const { return _ptr == rp._ptr; }
 	bool operator == (const T* ptr) const { return _ptr == ptr; }
@@ -124,6 +125,10 @@ public:
 	bool operator != (const RefPtr& rp) const { return _ptr != rp._ptr; }
 	bool operator != (const T* ptr) const { return _ptr != ptr; }
 	friend bool operator != (const T* ptr, const RefPtr& rp) {return ptr != rp._ptr;}
+//     operator bool() const // Enables "if (!sp) ..." 
+//     {
+//         return (_ptr != 0);
+//     }
 	bool operator!() const // Enables "if (!sp) ..." 
 	{ 
 		return _ptr == 0;

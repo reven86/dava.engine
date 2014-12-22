@@ -57,6 +57,7 @@
 #include "UI/PackageDocument.h"
 #include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
+#include "UIControls/PackageHierarchy/PackageNode.h"
 
 const QString APP_NAME = "QuickEd";
 const QString APP_COMPANY = "DAVA";
@@ -532,8 +533,8 @@ void MainWindow::OnOpenPackageFile(const QString &path)
             int index = GetTabIndexByPath(path);
             if (index == -1)
             {
-                PackageNode *package = project->OpenPackage(path);
-                if (package)
+                RefPtr<PackageNode> package = project->OpenPackage(path);
+                if (package != NULL)
                 {
                     index = CreateTabContent(package);
                 }

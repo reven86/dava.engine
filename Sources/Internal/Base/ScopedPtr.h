@@ -53,6 +53,17 @@ public:
 	ScopedPtr(const ScopedPtr&);
 	const ScopedPtr& operator=(const ScopedPtr&);
 
+    bool operator == (const ScopedPtr &rp) const { return object == rp.object; }
+    bool operator == (const BASE_OBJECT* ptr) const { return object == ptr; }
+
+    bool operator != (const ScopedPtr &rp) const { return object != rp.object; }
+    bool operator != (const BASE_OBJECT* ptr) const { return object != ptr; }
+
+    bool operator!() const // Enables "if (!sp) ..." 
+    {
+        return object == 0;
+    }
+
 private:
 	BASE_OBJECT * object;
 };
