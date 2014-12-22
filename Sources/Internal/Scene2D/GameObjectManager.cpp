@@ -286,8 +286,6 @@ void GameObjectManager::Draw()
         else
 		    object->Draw();
 	}
-	
-    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
 
     RenderManager::Instance()->ResetColor();
 }

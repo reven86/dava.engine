@@ -51,6 +51,14 @@ void UTF8Utils::EncodeToWideString(const uint8 * string, int32 size, WideString 
 	NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
 	NSData* data = [nsstring dataUsingEncoding:encoding];
 
+    if (nil == data)
+    {
+        Logger::Error("Encode to WideString error. NSData is nil for string: %s", string);
+        resultString = WideString(L"");
+        [nsstring release];
+        return;
+    }
+    
 	resultString = WideString((wchar_t*)[data bytes], [data length] / sizeof(wchar_t));
 
 	[nsstring release];
@@ -64,6 +72,12 @@ String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 						  length:wstring.length() * sizeof(wchar_t)
 						  encoding:encoding];
 
+    if (nil == nsstring)
+    {
+        Logger::Error("Encode to UTF8 error. NSString is nil for string: %ls", wstring.c_str());
+        return String("");
+    }
+    
 	String res = [nsstring UTF8String];
 
 	[nsstring release];

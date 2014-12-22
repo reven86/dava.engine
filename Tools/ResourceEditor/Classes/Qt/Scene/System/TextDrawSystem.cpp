@@ -33,7 +33,7 @@
 // framework
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
-#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Utils/Utils.h"
 
 TextDrawSystem::TextDrawSystem(DAVA::Scene * scene, SceneCameraSystem *_cameraSystem)

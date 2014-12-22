@@ -57,6 +57,7 @@
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -83,12 +84,12 @@ namespace DAVA
 	static bool useAutodetectContentScaleFactor = false;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     
-	static ApplicationCore * core = 0;
+static ApplicationCore * core = 0;
 
 Core::Core()
 {
-	globalFrameIndex = 1;
-	isActive = false;
+    globalFrameIndex = 1;
+    isActive = false;
     isAutotesting = false;
 	firstRun = true;
 	isConsoleMode = false;
@@ -155,7 +156,7 @@ void Core::CreateSingletons()
 #if defined(__DAVAENGINE_ANDROID__)
     new AssetsManager();
 #endif
-
+	
 #if defined __DAVAENGINE_IPHONE__
 	new AccelerometeriPhoneImpl();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -172,9 +173,11 @@ void Core::CreateSingletons()
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
-
+    
     new LocalNotificationController();
 
+    DeviceInfo::InitializeScreenInfo();
+    
     RegisterDAVAClasses();
     CheckDataTypeSizes();
 }
@@ -209,6 +212,8 @@ void Core::ReleaseSingletons()
 	Random::Instance()->Release();
 	RenderLayerManager::Instance()->Release();
     FrameOcclusionQueryManager::Instance()->Release();
+    VirtualCoordinatesSystem::Instance()->Release();
+    RenderSystem2D::Instance()->Release();
 	RenderManager::Instance()->Release();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();
@@ -436,7 +441,7 @@ void Core::SystemAppStarted()
     FilePath file = "~res:/Autotesting/id.yaml";
     if (file.Exists())
     {
-        AutotestingSystem::Instance()->OnAppStarted();
+    AutotestingSystem::Instance()->OnAppStarted();
         isAutotesting = true;
     }
     else
@@ -585,9 +590,7 @@ uint32 Core::GetGlobalFrameIndex()
 	
 void Core::SetCommandLine(int argc, char *argv[])
 {
-    commandLine.reserve(argc);
-	for (int k = 0; k < argc; ++k)
-		commandLine.push_back(argv[k]);
+    commandLine.assign(argv, argv + argc);
 }
 
 void Core::SetCommandLine(const DAVA::String& cmdLine)
@@ -633,3 +636,4 @@ void Core::SetIcon(int32 /*iconId*/)
 };
 
 };
+

@@ -40,15 +40,6 @@
 
 namespace DAVA
 {
-    
-Shader * RenderManager::FLAT_COLOR = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
-Shader * RenderManager::TEXTURE_MUL_COLOR = 0;
-Shader * RenderManager::TEXTURE_MUL_COLOR_ALPHA_TEST = 0;
-Shader * RenderManager::TEXTURE_MUL_COLOR_IMAGE_A8 = 0;
-
 AutobindVariableData RenderManager::dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
 uint32  RenderManager::dynamicParamersRequireUpdate;
 Matrix4 RenderManager::worldViewMatrix;
@@ -119,14 +110,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     
     statsFrameCountToShowDebug = 0;
     frameToShowDebugStats = -1;
-    
-    FLAT_COLOR = 0;
-    TEXTURE_MUL_FLAT_COLOR = 0;
-    TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-    TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
-    TEXTURE_MUL_COLOR = 0;
-    TEXTURE_MUL_COLOR_ALPHA_TEST = 0;
-    TEXTURE_MUL_COLOR_IMAGE_A8 = 0;
 	
 	renderContextId = 0;
     
@@ -149,9 +132,6 @@ RenderManager::~RenderManager()
     ShaderCache::Instance()->Release();
     
     currentRenderData = 0;
-    SafeRelease(FLAT_COLOR);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
 	SafeRelease(cursor);
 	Logger::FrameworkDebug("[RenderManager] released");
 }
@@ -192,61 +172,9 @@ void RenderManager::InitFBSize(int32 _frameBufferWidth, int32 _frameBufferHeight
 }
 #endif //    #ifdef __DAVAENGINE_ANDROID__    
 
-FastName RenderManager::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
-FastName RenderManager::TEXTURE_MUL_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
-
 void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 {
     DetectRenderingCapabilities();
-    
-    
-    if (!FLAT_COLOR)
-    {
-        FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
-    }
-    
-    if (!TEXTURE_MUL_FLAT_COLOR)
-    {
-        TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, FastNameSet()));
-
-    }
-    if (!TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST)
-    {
-        FastNameSet set;
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-    
-    if(!TEXTURE_MUL_FLAT_COLOR_IMAGE_A8)
-    {
-        FastNameSet set;
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-
-    if (!TEXTURE_MUL_COLOR)
-    {
-        FastNameSet set;
-        set.Insert(FastName("VERTEX_COLOR"));
-        TEXTURE_MUL_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-
-}
-    if (!TEXTURE_MUL_COLOR_ALPHA_TEST)
-    {
-        FastNameSet set;
-        set.Insert(FastName("VERTEX_COLOR"));
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_MUL_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-
-    if (!TEXTURE_MUL_COLOR_IMAGE_A8)
-    {
-        FastNameSet set;
-        set.Insert(FastName("VERTEX_COLOR"));
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_MUL_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 	currentState.direct3DDevice = GetD3DDevice();

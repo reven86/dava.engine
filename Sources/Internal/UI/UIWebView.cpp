@@ -54,7 +54,7 @@ UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates)
     , isNativeControlVisible(false)
 {
     Rect newRect = GetRect(true);
-    this->webViewControl->Initialize(newRect);
+    webViewControl->Initialize(newRect);
     UpdateControlRect();
 
     UpdateNativeControlVisible(false); // will be displayed in WillAppear.
@@ -81,6 +81,31 @@ void UIWebView::OpenURL(const String& urlToOpen)
 	webViewControl->OpenURL(urlToOpen);
 }
 
+void UIWebView::LoadHtmlString(const WideString& htmlString)
+{
+	webViewControl->LoadHtmlString(htmlString);
+}
+
+String UIWebView::GetCookie(const String& targetUrl, const String& name) const
+{
+	return webViewControl->GetCookie(targetUrl, name);
+}
+
+Map<String, String> UIWebView::GetCookies(const String& targetUrl) const
+{
+	return webViewControl->GetCookies(targetUrl);
+}
+
+void UIWebView::DeleteCookies(const String& targetUrl)
+{
+	webViewControl->DeleteCookies(targetUrl);
+}
+
+int32 UIWebView::ExecuteJScript(const String& scriptString)
+{
+	return webViewControl->ExecuteJScript(scriptString);
+}
+
 void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
     webViewControl->OpenFromBuffer(string, basePath);
@@ -98,9 +123,15 @@ void UIWebView::WillBecomeInvisible()
     UpdateNativeControlVisible(false);
 }
 
-void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
+void UIWebView::DidAppear()
 {
-	UIControl::SetPosition(position, positionInAbsoluteCoordinates);
+    UIControl::DidAppear();
+    UpdateControlRect();
+}
+
+void UIWebView::SetPosition(const Vector2 &position)
+{
+	UIControl::SetPosition(position);
     UpdateControlRect();
 }
 
@@ -110,25 +141,31 @@ void UIWebView::SetSize(const Vector2 &newSize)
     UpdateControlRect();
 }
 
+
+void UIWebView::SetScalesPageToFit(bool isScalesToFit)
+{
+	webViewControl->SetScalesPageToFit(isScalesToFit);
+}
+
 void UIWebView::SetBackgroundTransparency(bool enabled)
 {
-	this->webViewControl->SetBackgroundTransparency(enabled);
+	webViewControl->SetBackgroundTransparency(enabled);
 }
 
 // Enable/disable bounces.
 void UIWebView::SetBounces(bool value)
 {
-	this->webViewControl->SetBounces(value);
+	webViewControl->SetBounces(value);
 }
 
 bool UIWebView::GetBounces() const
 {
-	return this->webViewControl->GetBounces();
+	return webViewControl->GetBounces();
 }
 
 void UIWebView::SetGestures(bool value)
 {
-	this->webViewControl->SetGestures(value);    
+	webViewControl->SetGestures(value);    
 }
 
 void UIWebView::UpdateControlRect()

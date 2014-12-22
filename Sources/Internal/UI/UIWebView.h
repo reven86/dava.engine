@@ -58,12 +58,25 @@ public:
 	// Open the URL.
     void OpenFile(const FilePath &path);
 	void OpenURL(const String& urlToOpen);
+	// Load html page
+	void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies for target URL
+	void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	String GetCookie(const String& targetUrl, const String& name) const;
+	// Get the list of cookies for specific domain
+	Map<String, String> GetCookies(const String& targetUrl) const;
+	// Perform Java script, return script id
+	int32 ExecuteJScript(const String& scriptString);
     
     void OpenFromBuffer(const String& string, const FilePath& basePath);
     
 	// Overloaded virtual methods.
-	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);
+	virtual void SetPosition(const Vector2 &position);
 	virtual void SetSize(const Vector2 &newSize);
+
+	// Page scale property change
+	void SetScalesPageToFit(bool isScalesToFit);
 
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
@@ -74,6 +87,7 @@ public:
 protected:
     virtual void WillBecomeVisible();
     virtual void WillBecomeInvisible();
+    virtual void DidAppear();
 
 public:
     void SetNativeControlVisible(bool isVisible);

@@ -30,6 +30,7 @@
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/TemplateWin32/WindowsSpecifics.h"
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -196,11 +197,11 @@ namespace DAVA
 		RenderManager::Create(Core::RENDERER_OPENGL);
 #endif
 		RenderManager::Instance()->Create(hInstance, hWindow);
+        RenderSystem2D::Instance()->Init();
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
 
-		//fullscreenMode = GetCurrentDisplayMode();
 		fullscreenMode = GetCurrentDisplayMode();//FindBestMode(fullscreenMode);
 		if (options)
 		{

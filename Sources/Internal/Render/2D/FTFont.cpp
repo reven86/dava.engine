@@ -237,7 +237,24 @@ YamlNode * FTFont::SaveToYamlNode() const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	
+Mutex FTInternalFont::drawStringMutex;
+
+/**
+ /brief Wrap around FT_MulFix, because this function is written in assembler and 
+        during optimization beside her badly generated machine code.
+        ALWAYS USE THIS FUNCTION INSTEAD FT_MulFix!
+ */
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_MACOS__)
+static FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b) __attribute__((noinline));
+#else
+static FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b);
+#endif
+    
+FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b)
+{
+    return FT_MulFix(a, b);
+}
+    
 FTInternalFont::FTInternalFont(const FilePath & path)
 :	face(NULL),
 	fontPath(path),
@@ -298,8 +315,6 @@ int32 FTInternalFont::Release()
 	return BaseObject::Release();
 }
 
-Mutex FTInternalFont::drawStringMutex;
-
 Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bufWidth, int32 bufHeight, 
 					uint8 r, uint8 g, uint8 b, uint8 a,  
 					float32 size, bool realDraw, 
@@ -325,8 +340,8 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 		FT_Set_Transform(face, &matrix, 0);
 	}
 
-	int32 faceBboxYMin = FT_MulFix(face->bbox.yMin, face->size->metrics.y_scale);
-	int32 faceBboxYMax = FT_MulFix(face->bbox.yMax, face->size->metrics.y_scale);
+	int32 faceBboxYMin = (int32)FT_MulFix_Wrapper(face->bbox.yMin, face->size->metrics.y_scale);
+	int32 faceBboxYMax = (int32)FT_MulFix_Wrapper(face->bbox.yMax, face->size->metrics.y_scale);
 	
 	if(!contentScaleIncluded) 
 	{
@@ -345,7 +360,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
 	uint8 * resultBuf = (uint8*)buffer;
 
 	int32 countSpace = LoadString(str);
-	int32 strLen = str.length();
+	uint32 strLen = (uint32)str.length();
 	FT_Vector * advances = new FT_Vector[strLen];
 	Prepare(advances);
 
@@ -370,7 +385,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void * buf
     
 	int32 layoutWidth = 0; // width in FT points
 		
-	for(int32 i = 0; i < strLen; ++i)
+	for(uint32 i = 0; i < strLen; ++i)
 	{
 		if ( i > 0 && (justifyOffset > 0 || fixJustifyOffset > 0))
 		{
@@ -505,7 +520,7 @@ uint32 FTInternalFont::GetFontHeight(float32 size) const
     drawStringMutex.Lock();
 
 	SetFTCharSize(size);
-	uint32 height = (uint32)ceilf((float32)((FT_MulFix(face->bbox.yMax-face->bbox.yMin, face->size->metrics.y_scale))) / ftToPixelScale);
+	uint32 height = (uint32)ceilf((float32)((FT_MulFix_Wrapper(face->bbox.yMax-face->bbox.yMin, face->size->metrics.y_scale))) / ftToPixelScale);
 	
     drawStringMutex.Unlock();
 
@@ -527,9 +542,9 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 	FT_Vector	* prevAdvance = 0;
 	FT_UInt		prevIndex   = 0;
 	const bool		useKerning = (FT_HAS_KERNING(face) > 0);
-	const int32		size = glyphs.size();
+	const uint32	size = (uint32)glyphs.size();
 
-	for(int32 i = 0; i < size; ++i)
+	for(uint32 i = 0; i < size; ++i)
 	{
 		Glyph & glyph = glyphs[i];
 
@@ -585,8 +600,8 @@ int32 FTInternalFont::LoadString(const WideString& str)
 
 	int32 spacesCount = 0;
 	const FT_Pos prevRsbDelta = 0;
-	int32 size = str.size();
-	for(int32 i = 0; i < size; ++i)
+	uint32 size = (uint32)str.size();
+	for(uint32 i = 0; i < size; ++i)
 	{
 		if( L' ' == str[i])
 		{

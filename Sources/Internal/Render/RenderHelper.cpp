@@ -31,6 +31,7 @@
 #include "Render/RenderManager.h"
 #include "Render/Texture.h"
 #include "Render/RenderDataObject.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {
@@ -153,7 +154,7 @@ void RenderHelper::FillRect(const Rect & rect, UniqueHandle renderState)
     vertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
     
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
 }
@@ -174,7 +175,7 @@ void RenderHelper::DrawRect(const Rect & rect, UniqueHandle renderState)
     vertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
     
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINESTRIP, 0, 5);
 }
@@ -216,7 +217,7 @@ void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Co
     Color oldColor = RenderManager::Instance()->GetColor();
     RenderManager::Instance()->SetColor(color);
     
-    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, curVertexIndex / 2);
     
@@ -233,7 +234,7 @@ void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHand
     vertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
     
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINESTRIP, 0, 2);
 }
@@ -248,7 +249,7 @@ void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHand
 		vertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
 		
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 #ifdef __DAVAENGINE_OPENGL__
 		glLineWidth(lineWidth);
@@ -275,7 +276,7 @@ void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 
     vertexStream->Set(TYPE_FLOAT, 3, 0, vertices);
     
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
 
 #ifdef __DAVAENGINE_OPENGL__
@@ -292,7 +293,7 @@ void RenderHelper::DrawLines(const Vector<float32>& linePoints, UniqueHandle ren
     vertexStream->Set(TYPE_FLOAT, 2, 0, linePoints.data());
 
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
 
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, linePoints.size() / 2);
@@ -307,7 +308,7 @@ void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle re
     vertexStream->Set(TYPE_FLOAT, 2, 0, (void*)&pt);
     
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
 #if defined (__DAVAENGINE_OPENGL__)
@@ -323,7 +324,7 @@ void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle re
     vertexStream->Set(TYPE_FLOAT, 3, 0, (void*)&pt);
     
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
 #if defined (__DAVAENGINE_OPENGL__)
@@ -478,7 +479,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
         
 		vertexStream->Set(TYPE_FLOAT, 2, 0, polygon.GetPoints());
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
 #if defined (__DAVAENGINE_OPENGL__)
@@ -497,7 +498,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
 #endif 
 		vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
 #if defined (__DAVAENGINE_OPENGL__)
@@ -514,7 +515,7 @@ void RenderHelper::DrawPolygon(const Polygon3 & polygon, bool closed, UniqueHand
 	{		
 		vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINESTRIP, 0, ptCount);
 		
@@ -537,7 +538,7 @@ void RenderHelper::DrawPolygon( const Polygon2 & polygon, bool closed, UniqueHan
 	{		
 		vertexStream->Set(TYPE_FLOAT, 2, 0, polygon.GetPoints());
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINESTRIP, 0, ptCount);
 		
@@ -557,7 +558,7 @@ void RenderHelper::FillPolygon(const Polygon2 & polygon, UniqueHandle renderStat
 	{		
 		vertexStream->Set(TYPE_FLOAT, 2, 0, polygon.GetPoints());
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLEFAN, 0, ptCount);
     }
@@ -570,7 +571,7 @@ void RenderHelper::FillPolygon(const Polygon3 & polygon, UniqueHandle renderStat
 	{		
 		vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLEFAN, 0, ptCount);
     }
@@ -1131,7 +1132,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 		RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &drawMatrix, UPDATE_SEMANTIC_ALWAYS);
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(gDodecObject);
 		RenderManager::Instance()->AttachRenderData();
         RenderManager::Instance()->FlushState();
@@ -1160,7 +1161,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 		RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &drawMatrix, UPDATE_SEMANTIC_ALWAYS);
         RenderManager::Instance()->SetRenderState(renderState);
-		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+        RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(gDodecObject);
 		RenderManager::Instance()->AttachRenderData();
         RenderManager::Instance()->FlushState();

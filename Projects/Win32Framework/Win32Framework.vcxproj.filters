@@ -1284,12 +1284,6 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h">
       <Filter>Internal\Particles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Job\JobWaiter.h">
-      <Filter>Internal\Job</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Job\Job.h">
-      <Filter>Internal\Job</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h">
       <Filter>Internal\Job</Filter>
     </ClInclude>
@@ -1599,6 +1593,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
       <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h">
+      <Filter>Internal\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h">
+      <Filter>Internal\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
+      <Filter>Internal\Job</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
@@ -2589,16 +2592,10 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Job\Job.cpp">
-      <Filter>Internal\Job</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp">
       <Filter>Internal\Job</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp">
-      <Filter>Internal\Job</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Job\JobWaiter.cpp">
       <Filter>Internal\Job</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp">
@@ -2887,7 +2884,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -2896,6 +2892,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
       <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp">
+      <Filter>Internal\Job</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp">
       <Filter>Internal\UI</Filter>
