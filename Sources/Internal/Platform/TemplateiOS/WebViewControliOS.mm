@@ -137,6 +137,33 @@
     UIImage* image = [self takeSnapshotOfView:webViewParam];
     DVASSERT(image);
     
+    // First get the image into your data buffer
+    CGImageRef imageRef = [image CGImage];
+    DAVA::int32 width = static_cast<DAVA::int32>(CGImageGetWidth(imageRef));
+    DAVA::int32 height = static_cast<DAVA::int32>(CGImageGetHeight(imageRef));
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    DAVA::Image* imageRGB = DAVA::Image::Create(width, height, DAVA::FORMAT_RGBA8888);
+    DVASSERT(imageRGB);
+    DAVA::uint8 *rawData = const_cast<DAVA::uint8*>(imageRGB->GetData()); // (unsigned char*) calloc(height * width * 4, sizeof(unsigned char));
+    NSUInteger bytesPerPixel = 4;
+    NSUInteger bytesPerRow = bytesPerPixel * width;
+    NSUInteger bitsPerComponent = 8;
+    CGContextRef context = CGBitmapContextCreate(rawData, width, height,
+                    bitsPerComponent, bytesPerRow, colorSpace,
+                    kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGColorSpaceRelease(colorSpace);
+
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+    CGContextRelease(context);
+
+    DAVA::Sprite* spr = DAVA::Sprite::CreateFromImage(imageRGB);
+    DVASSERT(spr);
+    
+    // TODO set webView
+    
+    webView->GetBackground()->SetSprite(spr, 0);
+    
     NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString * basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
 
@@ -186,6 +213,27 @@
 
 @end
 
+DAVA::WebViewControl::WebViewControl(DAVA::UIWebView* uiWeb)
+{
+    uiWebView = uiWeb;
+    gesturesEnabled = false;
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    
+    ::UIWebView* localWebView = [backgroundView CreateWebView];
+    webViewPtr = localWebView;
+    
+    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
+    [localWebView setFrame:emptyRect];
+    
+    SetBounces(false);
+    
+    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
+    [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
+    
+    [localWebView becomeFirstResponder];
+}
+
 namespace DAVA
 {
 	typedef DAVA::UIWebView DAVAWebView;
@@ -209,25 +257,7 @@ namespace DAVA
         {DAVAWebView::DATA_DETECTOR_CALENDAR_EVENTS, UIDataDetectorTypeCalendarEvent}
     };
 
-WebViewControl::WebViewControl()
-{
-    gesturesEnabled = false;
-    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
-    
-    UIWebView* localWebView = [backgroundView CreateWebView];
-    webViewPtr = localWebView;
-    
-    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
-    [localWebView setFrame:emptyRect];
 
-    SetBounces(false);
-
-    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
-    [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
-
-    [localWebView becomeFirstResponder];
- }
 
 WebViewControl::~WebViewControl()
 {

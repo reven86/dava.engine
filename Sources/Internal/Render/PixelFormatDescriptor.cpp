@@ -202,7 +202,9 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 	SetPixelDescription(FORMAT_ETC2_RGBA, FastName("ETC2_RGBA"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA8_ETC2_EAC, GL_COMPRESSED_RGBA8_ETC2_EAC, caps.isOpenGLES3Supported, true);
 	SetPixelDescription(FORMAT_ETC2_RGB_A1, FastName("ETC2_RGB_A1"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2, caps.isOpenGLES3Supported, true);
 
+#if !defined (__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_IPHONE__)
     SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, GL_UNSIGNED_BYTE, GL_BGR, GL_RGB, false, false);
+#endif
 }
 
 void PixelFormatDescriptor::SetPixelDescription(const PixelFormat formatID, const FastName &name, uint8 size, GLenum type, GLenum format, GLenum internalFormat, bool hardwareSupported, bool compressed)

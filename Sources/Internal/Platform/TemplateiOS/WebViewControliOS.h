@@ -36,12 +36,13 @@
 namespace DAVA {
 
 class FilePath;
+class UIWebView;
     
 // Web View Control - iOS version.
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl();
+	WebViewControl(UIWebView* uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
@@ -90,6 +91,8 @@ protected:
 	void HideSubviewImages(void* view);
 	void RestoreSubviewImages();
     bool gesturesEnabled;
+    
+    UIWebView* uiWebView;
 };
 
 };
