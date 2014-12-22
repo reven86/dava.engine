@@ -9,7 +9,7 @@ CheckeredCanvas::CheckeredCanvas()
 {
     GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
     GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    GetBackground()->SetShader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR));
+    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
 }
 
 CheckeredCanvas::~CheckeredCanvas()
