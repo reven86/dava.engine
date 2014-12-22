@@ -53,6 +53,28 @@ public:
 	ScopedPtr(const ScopedPtr&);
 	const ScopedPtr& operator=(const ScopedPtr&);
 
+    bool operator == (const ScopedPtr &rp) const { return object == rp.object; }
+    bool operator == (const BASE_OBJECT* ptr) const { return object == ptr; }
+    bool operator == (int nullPtr) const { DVASSERT(nullPtr == 0); return object == 0; } // Enable "if( sp == 0 || sp == NULL) {...}"
+    friend bool operator == (const BASE_OBJECT* ptr, const ScopedPtr<BASE_OBJECT> &rp);
+    friend bool operator == (int nullPtr, const ScopedPtr<BASE_OBJECT> &rp); // Enable "if( 0 == sp || NULL == sp) {...}"
+
+    bool operator != (const ScopedPtr &rp) const { return object != rp.object; }
+    bool operator != (const BASE_OBJECT* ptr) const { return object != ptr; }
+    bool operator != (int nullPtr) const { DVASSERT(nullPtr == 0); return object != 0; } // Enable "if( sp != 0 || sp != NULL) {...}"
+    friend bool operator != (const BASE_OBJECT* ptr, const ScopedPtr<BASE_OBJECT> &rp);
+    friend bool operator != (int nullPtr, const ScopedPtr<BASE_OBJECT> &rp); // Enable "if( 0 != sp || NULL != sp) {...}"
+
+    operator bool() const // Enables "if (sp) {...}" 
+    {
+        return (object != 0);
+    }
+
+    bool operator!() const // Enables "if (!sp) {...}" 
+    {
+        return (object == 0);
+    }
+
 private:
 	BASE_OBJECT * object;
 };
@@ -115,6 +137,18 @@ ScopedPtr<BASE_OBJECT>::operator void*() const
 {
 	return object;
 }
+
+template <class T>
+inline bool operator == (const T *ptr, const ScopedPtr<T> &rp) { return ptr == rp.object; }
+
+template <class T>
+inline bool operator == (int nullPtr, const ScopedPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 == rp.object; }
+
+template <class T>
+inline bool operator != (const T *ptr, const ScopedPtr<T> &rp) { return ptr != rp.object; }
+
+template <class T>
+inline bool operator != (int nullPtr, const ScopedPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 != rp.object; }
 
 };
 
