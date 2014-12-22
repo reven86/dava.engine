@@ -147,8 +147,8 @@ using namespace DAVA;
     if (webView)
     {
         const unsigned char* rawData = [imageRep bitmapData];
-        int w = [imageRep size].width;
-        int h = [imageRep size].height;
+        int w = [imageRep pixelsWide];
+        int h = [imageRep pixelsHigh];
         const int BPP = [imageRep bitsPerPixel];
         const int pitch = [imageRep bytesPerRow];
         {
@@ -156,17 +156,37 @@ using namespace DAVA;
             if (24 == BPP)
             {
                 format = FORMAT_RGB888;
-                DVASSERT(pitch == w * 3);
             } else if (32 == BPP){
+                // TODO check is alfa last
+                DVASSERT(![imageRep bitmapFormat] & NSAlphaFirstBitmapFormat);
                 format = FORMAT_RGBA8888;
-                DVASSERT(pitch == w * 4);
             } else
             {
                 DVASSERT(false);
             }
-            Image* imageRGB = Image::CreateFromData(w, h, format, rawData);
+            Image* imageRGB = nullptr;
+            if (pitch == w * (BPP / 8))
+            {
+                imageRGB = Image::CreateFromData(w, h, format, rawData);
+            } else
+            {
+                imageRGB = Image::Create(w, h, format);
+                uint8* pixels = const_cast<uint8*>(imageRGB->GetData());
+                int bytesPerLine = w * (BPP / 8);
+                // copy line by line image
+                for(int y = 0; y < h; ++y)
+                {
+                    uint8* dstLineStart = &pixels[y * bytesPerLine];
+                    const uint8* srcLineStart = &rawData[y * pitch];
+                    Memcpy(dstLineStart, srcLineStart, bytesPerLine);
+                }
+            }
             DVASSERT(imageRGB);
-            Sprite* spr = Sprite::CreateFromImage(imageRGB);
+            
+            Texture* tex = Texture::CreateFromData(imageRGB, false);
+            const DAVA::Rect& rect = webView->GetRect();
+            Vector2 spriteSize(rect.dx, rect.dy);
+            Sprite* spr = Sprite::CreateFromTexture(Vector2(w, h), tex, Vector2(0.f, 0.f), spriteSize);
             webView->SetSprite(spr, 0);
             imageRGB->Release();
         }
