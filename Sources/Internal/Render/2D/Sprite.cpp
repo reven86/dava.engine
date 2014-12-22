@@ -598,16 +598,33 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
         dy += y;
 
         int32 frameIndex = frameTextureIndex[i];
-        Texture* texutre = textures[frameIndex];
+        Texture* texture = textures[frameIndex];
         float32* texCoord = texCoords[i];
-        texCoord[0] = x / texutre->width;
-        texCoord[1] = y / texutre->height;
-        texCoord[2] = dx / texutre->width;
-        texCoord[3] = y / texutre->height;
-        texCoord[4] = x / texutre->width;
-        texCoord[5] = dy / texutre->height;
-        texCoord[6] = dx / texutre->width;
-        texCoord[7] = dy / texutre->height;
+        
+        if (targetWidth != -1 &&
+            targetHeight != -1 &&
+            targetWidth != texture->width &&
+            targetHeight != texture->height)
+        {
+            texCoord[0] = x / targetWidth;
+            texCoord[1] = y / targetHeight;
+            texCoord[2] = dx / targetWidth;
+            texCoord[3] = y / targetHeight;
+            texCoord[4] = x / targetWidth;
+            texCoord[5] = dy / targetHeight;
+            texCoord[6] = dx / targetWidth;
+            texCoord[7] = dy / targetHeight;
+        } else
+        {
+            texCoord[0] = x / texture->width;
+            texCoord[1] = y / texture->height;
+            texCoord[2] = dx / texture->width;
+            texCoord[3] = y / texture->height;
+            texCoord[4] = x / texture->width;
+            texCoord[5] = dy / texture->height;
+            texCoord[6] = dx / texture->width;
+            texCoord[7] = dy / texture->height;
+        }
 	}
 
 	// DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
