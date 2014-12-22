@@ -89,7 +89,7 @@ WideString TrimRight(const WideString& string);
 * \param [in] tabRule The kind of process \t symbol: -1 - keep tab symbol, 0..n - replace tab with 0..n spaces.
 * \return output string.
 */
-WideString CleanLine(const WideString& string, const int8 tabRule = -1);
+WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1);
 
 /**
  * \brief Query if 't' is all kind of spaces or linebreak. Using this function for trim whitespaces.

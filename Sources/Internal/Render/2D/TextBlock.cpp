@@ -1112,7 +1112,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
 
 void TextBlock::CleanLine(WideString& string, bool trimRight)
 {
-    WideString out = StringUtils::CleanLine(string, 1);
+    WideString out = StringUtils::RemoveNonPrintable(string, 1);
     if (trimRight)
     {
         out = StringUtils::TrimRight(out);

@@ -73,7 +73,7 @@ WideString StringUtils::TrimRight(const WideString& string)
     return WideString(rend.base(), rit.base());
 }
 
-WideString StringUtils::CleanLine(const WideString & string, const int8 tabRule /*= -1*/)
+WideString StringUtils::RemoveNonPrintable(const WideString & string, const int8 tabRule /*= -1*/)
 {
     WideString out;
     WideString::const_iterator it = string.begin();
