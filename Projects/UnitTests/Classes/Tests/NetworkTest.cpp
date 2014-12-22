@@ -214,6 +214,7 @@ void TestEchoClient::SendParcel(Parcel* parcel)
 //////////////////////////////////////////////////////////////////////////
 NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , testingEcho(true)
+                           , logger(false)
                            , serviceCreatorStage(0)
                            , serverBytesRecv(NULL)
                            , serverBytesSent(NULL)
@@ -225,8 +226,8 @@ NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
 {
     new NetCore();
 
-    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &NetworkTest::CreateLogger), MakeFunction(this, &NetworkTest::DeleteService));
-    NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateEcho), MakeFunction(this, &NetworkTest::DeleteService));
+    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &NetworkTest::CreateLogger), MakeFunction(this, &NetworkTest::DeleteLogger));
+    NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateEcho), MakeFunction(this, &NetworkTest::DeleteEcho));
 
     RegisterFunction(this, &NetworkTest::TestEcho, "TestEcho", NULL);
     RegisterFunction(this, &NetworkTest::TestIPAddress, "TestIPAddress", NULL);
@@ -379,8 +380,14 @@ void NetworkTest::TestNetConfig(PerfFuncData* data)
 
 IChannelListener* NetworkTest::CreateLogger(uint32 serviceId)
 {
-    return SERVICE_LOG == serviceId ? &logger
-                                    : NULL;
+    if (SERVICE_LOG == serviceId)
+    {
+        // We should do manual CustomOutput installation as Logger deletes custom outputs itself
+        // and NetworkTest destructor is called after Logger has been destructed 
+        Logger::AddCustomOutput(&logger);
+        return &logger;
+    }
+    return NULL;
 }
 
 IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
@@ -397,9 +404,17 @@ IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
     return obj;
 }
 
-void NetworkTest::DeleteService(IChannelListener* obj)
+void NetworkTest::DeleteEcho(IChannelListener* obj)
 {
     // Do nothing as services are created on stack
+}
+
+void NetworkTest::DeleteLogger(IChannelListener* obj)
+{
+    if (obj == &logger)
+    {
+        Logger::RemoveCustomOutput(&logger);
+    }
 }
 
 void NetworkTest::UpdateUI(bool waitStage, float32 left)
@@ -408,9 +423,9 @@ void NetworkTest::UpdateUI(bool waitStage, float32 left)
     serverBytesSent->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesSent())));
     serverBytesDelivered->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesDelivered())));
 
-    clientBytesRecv->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesRecieved())));
-    clientBytesSent->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesSent())));
-    clientBytesDelivered->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesDelivered())));
+    clientBytesRecv->SetText(Format(L"%u", static_cast<uint32>(echoClient.BytesRecieved())));
+    clientBytesSent->SetText(Format(L"%u", static_cast<uint32>(echoClient.BytesSent())));
+    clientBytesDelivered->SetText(Format(L"%u", static_cast<uint32>(echoClient.BytesDelivered())));
 
     if (waitStage)
     {

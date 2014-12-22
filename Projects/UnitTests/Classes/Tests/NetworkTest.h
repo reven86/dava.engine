@@ -140,7 +140,8 @@ public:
 
     IChannelListener* CreateLogger(uint32 serviceId);
     IChannelListener* CreateEcho(uint32 serviceId);
-    void DeleteService(IChannelListener* obj);
+    void DeleteEcho(IChannelListener* obj);
+    void DeleteLogger(IChannelListener* obj);
 
 private:
     void CreateUI();
