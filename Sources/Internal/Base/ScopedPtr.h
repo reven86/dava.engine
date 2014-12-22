@@ -53,34 +53,6 @@ public:
 	ScopedPtr(const ScopedPtr&);
 	const ScopedPtr& operator=(const ScopedPtr&);
 
-    bool operator == (const ScopedPtr &rp) const { return object == rp.object; }
-
-    friend bool operator == (const ScopedPtr<BASE_OBJECT> &rp, const BASE_OBJECT* ptr);
-    friend bool operator == (const BASE_OBJECT* ptr, const ScopedPtr<BASE_OBJECT> &rp);
-    friend bool operator == (const ScopedPtr<BASE_OBJECT> &rp, long nullPtr);
-    friend bool operator == (long nullPtr, const ScopedPtr<BASE_OBJECT> &rp);
-    friend bool operator == (const ScopedPtr<BASE_OBJECT> &rp, int nullPtr);
-    friend bool operator == (int nullPtr, const ScopedPtr<BASE_OBJECT> &rp);
-
-    bool operator != (const ScopedPtr &rp) const { return object != rp.object; }
-
-    friend bool operator != (const ScopedPtr<BASE_OBJECT> &rp, const BASE_OBJECT* ptr);
-    friend bool operator != (const BASE_OBJECT* ptr, const ScopedPtr<BASE_OBJECT> &rp);
-    friend bool operator != (const ScopedPtr<BASE_OBJECT> &rp, long nullPtr);
-    friend bool operator != (long nullPtr, const ScopedPtr<BASE_OBJECT> &rp);
-    friend bool operator != (const ScopedPtr<BASE_OBJECT> &rp, int nullPtr);
-    friend bool operator != (int nullPtr, const ScopedPtr<BASE_OBJECT> &rp);
-
-    operator bool() const // Enables "if (sp) {...}" 
-    {
-        return (object != 0);
-    }
-
-    bool operator!() const // Enables "if (!sp) {...}" 
-    {
-        return (object == 0);
-    }
-
 private:
 	BASE_OBJECT * object;
 };
@@ -143,42 +115,6 @@ ScopedPtr<BASE_OBJECT>::operator void*() const
 {
 	return object;
 }
-
-template <class T>
-inline bool operator == (const ScopedPtr<T> &rp, const T *ptr) { return ptr == rp.object; }
-
-template <class T>
-inline bool operator == (const T *ptr, const ScopedPtr<T> &rp) { return ptr == rp.object; }
-
-template <class T>
-inline bool operator == (const ScopedPtr<T> &rp, long nullPtr) { DVASSERT(nullPtr == 0); return 0 == rp.object; }
-
-template <class T>
-inline bool operator == (long nullPtr, const ScopedPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 == rp.object; }
-
-template <class T>
-inline bool operator == (const ScopedPtr<T> &rp, int nullPtr) { DVASSERT(nullPtr == 0); return 0 == rp.object; }
-
-template <class T>
-inline bool operator == (int nullPtr, const ScopedPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 == rp.object; }
-
-template <class T>
-inline bool operator != (const ScopedPtr<T> &rp, const T *ptr) { return ptr != rp.object; }
-
-template <class T>
-inline bool operator != (const T *ptr, const ScopedPtr<T> &rp) { return ptr != rp.object; }
-
-template <class T>
-inline bool operator != (const ScopedPtr<T> &rp, long nullPtr) { DVASSERT(nullPtr == 0); return 0 != rp.object; }
-
-template <class T>
-inline bool operator != (long nullPtr, const ScopedPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 != rp.object; }
-
-template <class T>
-inline bool operator != (const ScopedPtr<T> &rp, int nullPtr) { DVASSERT(nullPtr == 0); return 0 != rp.object; }
-
-template <class T>
-inline bool operator != (int nullPtr, const ScopedPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 != rp.object; }
 
 };
 

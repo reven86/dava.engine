@@ -111,30 +111,20 @@ public:
 		return *this;
 	}
 	
+	/// implicit output conversion
+	//operator T*() const { return _ptr; }
+	
 	T& operator *() const { return *_ptr; }
 	T* operator->() const { return _ptr; }
 	
-    bool operator == (const RefPtr & rp) const { return _ptr == rp._ptr; }
-    friend bool operator == (const RefPtr<T> &rp, const T* ptr);
-    friend bool operator == (const T* ptr, const RefPtr<T> &rp);
-    friend bool operator == (const RefPtr<T> &rp, long nullPtr);
-    friend bool operator == (long nullPtr, const RefPtr<T> &rp);
-    friend bool operator == (const RefPtr<T> &rp, int nullPtr);
-    friend bool operator == (int nullPtr, const RefPtr<T> &rp);
-
-    bool operator != (const RefPtr& rp) const { return _ptr != rp._ptr; }
-    friend bool operator != (const RefPtr<T> &rp, const T* ptr);
-    friend bool operator != (const T* ptr, const RefPtr<T> &rp);
-    friend bool operator != (const RefPtr<T> &rp, long nullPtr);
-    friend bool operator != (long nullPtr, const RefPtr<T> &rp);
-    friend bool operator != (const RefPtr<T> &rp, int nullPtr);
-    friend bool operator != (int nullPtr, const RefPtr<T> &rp);
-
-    operator bool() const // Enables "if (sp) {...}" 
-    {
-        return (_ptr != 0);
-    }
-	bool operator!() const // Enables "if (!sp) {...}" 
+	bool operator == (const RefPtr & rp) const { return _ptr == rp._ptr; }
+	bool operator == (const T* ptr) const { return _ptr == ptr; }
+	friend bool operator == (const T* ptr, const RefPtr& rp) {return ptr == rp._ptr;}
+	
+	bool operator != (const RefPtr& rp) const { return _ptr != rp._ptr; }
+	bool operator != (const T* ptr) const { return _ptr != ptr; }
+	friend bool operator != (const T* ptr, const RefPtr& rp) {return ptr != rp._ptr;}
+	bool operator!() const // Enables "if (!sp) ..." 
 	{ 
 		return _ptr == 0;
 	}
@@ -168,41 +158,6 @@ private:
 	}
 };
 
-template <class T>
-inline bool operator == (const RefPtr<T> &rp, const T *ptr) { return ptr == rp._ptr; }
-
-template <class T>
-inline bool operator == (const T *ptr, const RefPtr<T> &rp) { return ptr == rp._ptr; }
-
-template <class T>
-inline bool operator == (const RefPtr<T> &rp, long nullPtr) { DVASSERT(nullPtr == 0); return 0 == rp._ptr; }
-
-template <class T>
-inline bool operator == (long nullPtr, const RefPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 == rp._ptr; }
-
-template <class T>
-inline bool operator == (const RefPtr<T> &rp, int nullPtr) { DVASSERT(nullPtr == 0); return 0 == rp._ptr; }
-
-template <class T>
-inline bool operator == (int nullPtr, const RefPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 == rp._ptr; }
-
-template <class T>
-inline bool operator != (const RefPtr<T> &rp, const T *ptr) { return ptr != rp._ptr; }
-
-template <class T>
-inline bool operator != (const T *ptr, const RefPtr<T> &rp) { return ptr != rp._ptr; }
-
-template <class T>
-inline bool operator != (const RefPtr<T> &rp, long nullPtr) { DVASSERT(nullPtr == 0); return 0 != rp._ptr; }
-
-template <class T>
-inline bool operator != (long nullPtr, const RefPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 != rp._ptr; }
-
-template <class T>
-inline bool operator != (const RefPtr<T> &rp, int nullPtr) { DVASSERT(nullPtr == 0); return 0 != rp._ptr; }
-
-template <class T>
-inline bool operator != (int nullPtr, const RefPtr<T> &rp) { DVASSERT(nullPtr == 0); return 0 != rp._ptr; }
 
 } // ns
 
