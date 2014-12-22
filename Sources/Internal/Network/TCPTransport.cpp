@@ -232,6 +232,7 @@ bool TCPTransport::Dequeue(Package* target)
 
 void TCPTransport::SendPackage(Package* package)
 {
+    if (true == deactivateFlag) return;
     DVASSERT(package->sentLength < package->totalLength);
 
     sendingDataPacket = true;
@@ -245,6 +246,7 @@ void TCPTransport::SendPackage(Package* package)
 
 void TCPTransport::SendSpecial(BasicProtoHeader* header)
 {
+    if (true == deactivateFlag) return;
     if (true == senderLock.TryLock())
     {
         // We can send buffer directly without queueing
@@ -440,7 +442,8 @@ void TCPTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread
 
             socket->ReadHere(CreateBuffer(inbuf + totalRead, sizeof(inbuf) - totalRead));
         } while (BasicProtoDecoder::PACKET_OK == status && totalRead > 0);
-        timer.Wait(readTimeout, MakeFunction(this, &TCPTransport::HandleTimer));
+        if (false == deactivateFlag)
+            timer.Wait(readTimeout, MakeFunction(this, &TCPTransport::HandleTimer));
     }
     else
     {
