@@ -35,6 +35,7 @@ private slots:
     void onDoubleClicked(const QModelIndex &index);
     void setFilterFixedString(const QString &filterStr);
     void onDataChanged( const QModelIndex & topLeft, const QModelIndex & bottomRight );
+    void customContextMenuRequested(const QPoint &pos);
     
 private:
     Ui::FileSystemDockWidget *ui;
