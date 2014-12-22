@@ -65,6 +65,17 @@ NetCore::TrackId NetCore::CreateDriver(const NetConfig& config)
     return INVALID_TRACK_ID;
 }
 
+bool NetCore::DestroyDriver(TrackId id)
+{
+    INetDriver* driver = GetTrackedObject(id);
+    if (driver != NULL)
+    {
+        driver->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
+        return true;
+    }
+    return false;
+}
+
 int32 NetCore::Run()
 {
     return loop.Run(IOLoop::RUN_DEFAULT);

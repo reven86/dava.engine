@@ -44,18 +44,19 @@ typedef Function<void (IChannelListener* obj)> ServiceDeleter;
 
 class ServiceRegistrar
 {
-public:
+private:
     struct Entry
     {
         Entry(uint32 id, ServiceCreator creatorFunc, ServiceDeleter deleterFunc);
-
-        friend bool operator == (const Entry& entry, uint32 serviceId);
 
         uint32 serviceId;
         ServiceCreator creator;
         ServiceDeleter deleter;
     };
 
+    friend bool operator == (const Entry& entry, uint32 serviceId);
+
+public:
     bool Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
 
     IChannelListener* Create(uint32 serviceId) const;
