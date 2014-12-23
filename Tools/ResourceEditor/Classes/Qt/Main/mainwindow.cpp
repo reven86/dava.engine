@@ -1036,6 +1036,12 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* com
 	{
 		LoadUndoRedoState(scene);
         UpdateModificationActionsState();
+        
+        Entity *entity = command->GetEntity();
+        if(entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
+        {
+            ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+        }
 	}
 }
 
