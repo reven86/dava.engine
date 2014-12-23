@@ -227,14 +227,6 @@ using namespace DAVA;
 
 - (void)setWebViewControl:(WebViewControl*) webControl
 {
-    if (delegate)
-    {
-        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
-        NSString* requestResult = (NSString*)[result objectAtIndex:1];
-        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
-    }
-    [result release];
-
     if (webControl)
     {
         webViewControl = webControl;
