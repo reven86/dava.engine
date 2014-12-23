@@ -107,6 +107,11 @@ protected:
 	Shader* tileMaskEditorShader;
 	Shader* tileMaskCopyPasteShader;
 
+    float32 spriteTempVertices[8];
+    RenderDataObject * spriteRenderObject;
+    RenderDataStream * spriteVertexStream;
+    RenderDataStream * spriteTexCoordStream;
+
 	bool needCreateUndo;
 
 	Landscape::eTextureLevel textureLevel;

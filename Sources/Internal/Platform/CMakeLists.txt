@@ -1,4 +1,12 @@
 
+if( QT_FOUND )
+    set( QT_PREFIX "Qt4")	
+
+elseif( QT5_FOUND )
+    set( QT_PREFIX "Qt5")	
+
+endif()
+
 if( ANDROID )
 
     set( ADDED_CPP_PATTERNS TemplateAndroid/*.cpp  TemplateAndroid/ExternC/*.cpp ) 	
@@ -21,10 +29,11 @@ elseif( APPLE )
         set( ADDED_CPP_PATTERNS *.mm *.m TemplateMacOS/*.cpp TemplateMacOS/*.mm TemplateMacOS/*.m  )
     	set( ADDED_H_PATTERNS TemplateMacOS/*.h  )
 
-        if( QT_FOUND )
-            list ( APPEND ADDED_CPP_PATTERNS Qt/*.cpp Qt/MacOS/*.cpp Qt/MacOS/*.mm )
-            list ( APPEND ADDED_H_PATTERNS   Qt/*.h   Qt/MacOS/*.h   )        
+        if( QT_PREFIX )
+            list ( APPEND ADDED_CPP_PATTERNS ${QT_PREFIX}/*.cpp ${QT_PREFIX}/MacOS/*.cpp ${QT_PREFIX}/MacOS/*.mm )
+            list ( APPEND ADDED_H_PATTERNS   ${QT_PREFIX}/*.h   ${QT_PREFIX}/MacOS/*.h   )        
             list ( APPEND ERASE_FILES    NPAPICorePlatformMacOS.cpp NPAPICorePlatformMacOS.h ) #NPAPIPluginMacOS.h NPAPIPluginMacOS.mm
+            set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR} ${CMAKE_CURRENT_LIST_DIR}/${QT_PREFIX}  ${CMAKE_CURRENT_LIST_DIR}/${QT_PREFIX}/MacOS PARENT_SCOPE)
         else()
             list ( APPEND ERASE_FILES    NPAPICorePlatformMacOS.cpp NPAPICorePlatformMacOS.h ) #NPAPIPluginMacOS.h NPAPIPluginMacOS.mm
         endif()
@@ -40,10 +49,11 @@ elseif( WIN32 )
     set( ADDED_CPP_PATTERNS TemplateWin32/*.cpp  )
     set( ADDED_H_PATTERNS   TemplateWin32/*.h    )
 
-    if( QT_FOUND )
-        list ( APPEND ADDED_CPP_PATTERNS Qt/*.cpp Qt/Win32/*.cpp )
-        list ( APPEND ADDED_H_PATTERNS   Qt/*.h   Qt/Win32/*.h   )        
+    if( QT_PREFIX )
+        list ( APPEND ADDED_CPP_PATTERNS ${QT_PREFIX}/*.cpp ${QT_PREFIX}/Win32/*.cpp )
+        list ( APPEND ADDED_H_PATTERNS   ${QT_PREFIX}/*.h   ${QT_PREFIX}/Win32/*.h   )        
         list ( APPEND ERASE_FILES  CorePlatformWin32.cpp CorePlatformWin32.h  )
+        set( ADD_ENGINE_INCLUDES_DIR  ${ADD_ENGINE_INCLUDES_DIR} ${CMAKE_CURRENT_LIST_DIR}/${QT_PREFIX}  ${CMAKE_CURRENT_LIST_DIR}/${QT_PREFIX}/Win32 PARENT_SCOPE)
     else()
         set( ERASE_FILES  CorePlatformWin32Qt.cpp CorePlatformWin32Qt.h  )
     endif()

@@ -150,7 +150,7 @@ ModifyTilemaskCommand::~ModifyTilemaskCommand()
 
 void ModifyTilemaskCommand::Undo()
 {
-    RenderManager::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->Setup2DMatrices();
     
     RenderManager::Instance()->SetColor(Color::White);
     
@@ -175,7 +175,7 @@ void ModifyTilemaskCommand::Undo()
 
 void ModifyTilemaskCommand::Redo()
 {
-    RenderManager::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->Setup2DMatrices();
     
 	ApplyImageToSprite(redoImageMask, landscapeProxy->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
 
@@ -214,14 +214,14 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
     Sprite::DrawState drawState;
     drawState.SetRenderState(noBlendDrawState);
 	drawState.SetPosition(0.f, 0.f);
-	s->Draw(&drawState);
+    RenderSystem2D::Instance()->Draw(s, &drawState);
 	SafeRelease(s);
     
-    Rect rect = ConvertPhysicalToVirtual(updatedRect);
+    Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
     
     RenderManager::Instance()->Reset();
-	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(rect);
+    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->SetClip(rect);
     
     RenderManager::Instance()->SetColor(Color::White);
     RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
@@ -234,12 +234,12 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
     drawState.Reset();
 	drawState.SetPosition(rect.x, rect.y);
     drawState.SetRenderState(noBlendDrawState);
-	s->Draw(&drawState);
+    RenderSystem2D::Instance()->Draw(s, &drawState);
     
 	SafeRelease(s);
 	SafeRelease(t);
     
-	RenderManager::Instance()->ClipPop();
+    RenderSystem2D::Instance()->ClipPop();
 	
     RenderManager::Instance()->RestoreRenderTarget();
     
@@ -248,11 +248,11 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
 
 void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
 {
-    Rect rect = ConvertPhysicalToVirtual(updatedRect);
+    Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
     
 	RenderManager::Instance()->SetRenderTarget(dstSprite);
-	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(rect);
+    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->SetClip(rect);
 
     RenderManager::Instance()->SetColor(Color::White);
 	
@@ -263,9 +263,9 @@ void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
     Sprite::DrawState drawState;
     drawState.SetRenderState(noBlendDrawState);
 	drawState.SetPosition(rect.x, rect.y);
-	srcSprite->Draw(&drawState);
+    RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
     
-	RenderManager::Instance()->ClipPop();
+    RenderSystem2D::Instance()->ClipPop();
 	RenderManager::Instance()->RestoreRenderTarget();
 	
 	SafeRelease(texture);

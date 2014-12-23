@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "Base/BaseTypes.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Platform/DeviceInfo.h"
@@ -67,8 +68,8 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
         scale = screenInfo.scale;
     }
 		
-	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-	DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
 		
 	int retVal = UIApplicationMain(argc, argv, nil, nil);
 	

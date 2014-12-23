@@ -26,8 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Main/mainwindow.h"
 #include "Scene/SceneTabWidget.h"
+
+#include "Main/Request.h"
+#include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
 #include "Tools/QtLabelWithActions/QtLabelWithActions.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
@@ -35,6 +37,8 @@
 #include "MaterialEditor/MaterialAssignSystem.h"
 
 #include "Platform/SystemTimer.h"
+
+#include "Qt/Main/davaglwidget.h"
 
 #include <QVBoxLayout>
 #include <QResizeEvent>
@@ -66,11 +70,11 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	tabBar->setMovable(true);
 	tabBar->setUsesScrollButtons(true);
 	tabBar->setExpanding(false);
-	tabBar->setMinimumHeight(tabBar->sizeHint().height());
+	tabBar->setMinimumSize(1, 1);
 
 	// davawidget to display DAVAEngine content
 	davaWidget = new DavaGLWidget(this);
-	davaWidget->setFocusPolicy(Qt::StrongFocus);
+	//davaWidget->setFocusPolicy(Qt::StrongFocus);
 	davaWidget->installEventFilter(this);
     
 	// put tab bar and davawidget into vertical layout

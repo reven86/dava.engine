@@ -107,38 +107,13 @@ SceneTree::~SceneTree()
 
 void SceneTree::SetFilter(const QString &filter)
 {
-// 	if(!filter.isEmpty())
-// 	{
-// 		treeModel->ResetFilterAcceptFlag();
-// 	}
-
-	filteringProxyModel->setFilterRegExp(QRegExp(filter, Qt::CaseInsensitive, QRegExp::FixedString));
+    treeModel->SetFilter(filter);
+    filteringProxyModel->invalidate();
     SyncSelectionToTree();
 
-	if(!filter.isEmpty())
+	if (!filter.isEmpty())
 	{
-		for(int i = 0; i < filteringProxyModel->rowCount(); ++i)
-		{
-			ExpandUntilFilterAccepted(filteringProxyModel->index(i, 0));
-		}
-	}
-// 	else
-// 	{
-// 		treeModel->ResetFilterAcceptFlag();
-// 	}
-}
-
-void SceneTree::ExpandUntilFilterAccepted(const QModelIndex &index)
-{
-	SceneTreeItem *item = treeModel->GetItem(filteringProxyModel->mapToSource(index));
-	if(NULL != item && !item->IsAcceptedByFilter())
-	{
-		expand(index);
-
-		for(int i = 0; i < filteringProxyModel->rowCount(index); ++i)
-		{
-			ExpandUntilFilterAccepted(filteringProxyModel->index(i, 0, index));
-		}
+        ExpandFilteredItems();
 	}
 }
 
@@ -1355,6 +1330,32 @@ void SceneTree::AddCameraActions(QMenu &menu)
 {
     menu.addAction(QIcon(":/QtIcons/eye.png"), "Look from", this, SLOT(SetCurrentCamera()));
     menu.addAction(QIcon(":/QtIcons/camera.png"), "Set custom draw camera", this, SLOT(SetCustomDrawCamera()));
+}
+
+void SceneTree::ExpandFilteredItems()
+{
+    QSet<QModelIndex> indexSet;
+    BuildExpandItemsSet(indexSet);
+
+    for (auto i = indexSet.begin(); i != indexSet.end(); ++i)
+    {
+        expand(*i);
+    }
+}
+
+void SceneTree::BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent)
+{
+    const int n = filteringProxyModel->rowCount(parent);
+    for (int i = 0; i < n; i++)
+    {
+        const QModelIndex _index = filteringProxyModel->index(i, 0, parent);
+        SceneTreeItem *item = treeModel->GetItem(filteringProxyModel->mapToSource(_index));
+        if (item->IsHighlighed())
+        {
+            indexSet << _index.parent();
+        }
+        BuildExpandItemsSet(indexSet, _index);
+    }
 }
 
 void SceneTree::SetCurrentCamera()

@@ -71,7 +71,6 @@
 
 class FogSettingsChangedReceiver;
 
-
 class SceneEditor2 : public DAVA::Scene
 {
 public:
@@ -220,5 +219,9 @@ private:
 		virtual void CleanChanged(bool clean);
 	};
 };
+
+
+Q_DECLARE_METATYPE(SceneEditor2 *)
+
 
 #endif // __SCENE_EDITOR_PROXY_H__

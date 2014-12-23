@@ -246,8 +246,8 @@ namespace DAVA
 
 	bool AutotestingSystemLua::IsPhoneScreen()
 	{
-		float32 xInch = Core::Instance()->GetPhysicalScreenWidth() / static_cast<float32>(Core::Instance()->GetScreenDPI());
-		float32 yInch = Core::Instance()->GetPhysicalScreenHeight() / static_cast<float32>(Core::Instance()->GetScreenDPI());
+		float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
+		float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
 		return sqrtf(xInch*xInch + yInch*yInch) <= 6.5f; 
 	}
 
@@ -625,8 +625,8 @@ namespace DAVA
 		touchDown.phase = UIEvent::PHASE_BEGAN;
 		touchDown.tid = touchId;
 		touchDown.tapCount = 1;
-		UIControlSystem::Instance()->RecalculatePointToPhysical(point, touchDown.physPoint);
-		UIControlSystem::Instance()->RecalculatePointToVirtual(touchDown.physPoint, touchDown.point);
+        touchDown.physPoint = point;
+        touchDown.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point);
 		ProcessInput(touchDown);
 	}
 
@@ -635,8 +635,8 @@ namespace DAVA
 		UIEvent touchMove;
 		touchMove.tid = touchId;
 		touchMove.tapCount = 1;
-		UIControlSystem::Instance()->RecalculatePointToPhysical(point, touchMove.physPoint);
-		UIControlSystem::Instance()->RecalculatePointToVirtual(touchMove.physPoint, touchMove.point);
+        touchMove.physPoint = point;
+        touchMove.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point);
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{

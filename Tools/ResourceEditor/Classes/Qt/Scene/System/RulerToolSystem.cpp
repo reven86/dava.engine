@@ -308,7 +308,7 @@ void RulerToolSystem::DrawPoints()
 		const Vector3 landSize = boundingBox.max - boundingBox.min;
 		Vector3 offsetPoint = boundingBox.min;
 
-		float32 koef = (float32)targetTexture->GetWidth() / landSize.x / Core::GetVirtualToPhysicalFactor();
+        float32 koef = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((float32)targetTexture->GetWidth() / landSize.x);
 
 		Vector3 startPoint = points[0];
 		for (uint32 i = 1; i < pointsCount; ++i)
