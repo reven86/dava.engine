@@ -93,14 +93,14 @@ void Entity::AddComponent(Component * component)
 	component->SetEntity(this);
     components.push_back(component);
 		
-    std::sort(components.begin(), components.end(), ComponentLessPredicate);
+    std::stable_sort(components.begin(), components.end(), ComponentLessPredicate);
     UpdateFamily();
 
 	if (scene)
 		scene->RegisterComponent(this, component);
 }
 
-void Entity::DetachComponent(Vector<Component *>::iterator it)
+void Entity::DetachComponent(const Vector<Component *>::iterator & it)
 {
     Component * c = *it;
 
@@ -719,24 +719,26 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
         
 	KeyedArchive *compsArch = new KeyedArchive();
 	uint32 savedIndex = 0;
-	for(uint32 i = 0; i < components.size(); ++i)
-	{
-        DVASSERT(i < Component::DEBUG_COMPONENTS); //Bad idea to allocate debug components in vector
-        //don't save empty custom properties
-        if(Component::CUSTOM_PROPERTIES_COMPONENT == i)
+    for (uint32 i = 0; i < components.size (); ++i)
+    {
+        if (components[i]->GetType () < Component::DEBUG_COMPONENTS)
         {
-            CustomPropertiesComponent* customProps = cast_if_equal<CustomPropertiesComponent*>(components[i]);
-            if(customProps && customProps->GetArchive()->Count() <= 0)
+            //don't save empty custom properties
+            if (Component::CUSTOM_PROPERTIES_COMPONENT == i)
             {
-                continue;
+                CustomPropertiesComponent* customProps = cast_if_equal<CustomPropertiesComponent*> (components[i]);
+                if (customProps && customProps->GetArchive ()->Count () <= 0)
+                {
+                    continue;
+                }
             }
+
+            KeyedArchive *compArch = new KeyedArchive ();
+            components[i]->Serialize (compArch, serializationContext);
+            compsArch->SetArchive (KeyedArchive::GenKeyFromIndex (savedIndex), compArch);
+            compArch->Release ();
+            savedIndex++;
         }
-            
-        KeyedArchive *compArch = new KeyedArchive();
-        components[i]->Serialize(compArch, serializationContext);
-        compsArch->SetArchive(KeyedArchive::GenKeyFromIndex(savedIndex), compArch);
-        compArch->Release();
-        savedIndex++;
 	}
 		
 	compsArch->SetUInt32("count", savedIndex);

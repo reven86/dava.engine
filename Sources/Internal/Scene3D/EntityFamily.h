@@ -40,9 +40,9 @@ public:
     EntityFamily ();
 
     static EntityFamily * GetOrCreate (const Vector<Component*> & components);
-    uint32 GetComponentIndex (uint32 componentType, uint32 index);
-    uint32 GetComponentsCount (uint32 componentType);
-    uint32 GetComponentsFlags ();
+    uint32 GetComponentIndex (uint32 componentType, uint32 index) const;
+    uint32 GetComponentsCount (uint32 componentType) const;
+    uint32 GetComponentsFlags () const;
 
 private:
     uint32 componentIndices[Component::COMPONENT_COUNT];
@@ -52,17 +52,17 @@ private:
     friend bool operator==(const EntityFamily & lhs, const EntityFamily & rhs);
 };
 
-inline uint32 EntityFamily::GetComponentIndex (uint32 componentType, uint32 index)
+inline uint32 EntityFamily::GetComponentIndex(uint32 componentType, uint32 index) const
 {
     return componentIndices[componentType] + index;
 }
 
-inline uint32 EntityFamily::GetComponentsCount (uint32 componentType)
+inline uint32 EntityFamily::GetComponentsCount (uint32 componentType) const
 {
     return componentCount[componentType];
 }
 
-inline uint32 EntityFamily::GetComponentsFlags ()
+inline uint32 EntityFamily::GetComponentsFlags () const
 {
     return componentsFlags;
 }
@@ -74,4 +74,4 @@ inline bool operator==(const EntityFamily & lhs, const EntityFamily & rhs)
 
 }
 
-#endif //__DAVAENGINE_ENTITY_FAMILY_H__
+#endif //__DAVAENGINE_ENTITY_FAMILY_H_
