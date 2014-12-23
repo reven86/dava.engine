@@ -51,6 +51,7 @@
 - (void)leftGesture;
 - (void)rightGesture;
 - (UIImage *)takeSnapshotOfView:(UIView *)view;
+- (void)setUIWebViewControl:(DAVA::UIWebView*) uiWebControl;
 
 @end
 
@@ -157,7 +158,7 @@
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
     CGContextRelease(context);
 
-    DAVA::Sprite* spr = DAVA::Sprite::CreateFromImage(imageRGB);
+    DAVA::Sprite* spr = DAVA::Sprite::CreateFromImage(imageRGB, false, true);
     DVASSERT(spr);
     
     // TODO set webView
@@ -211,11 +212,17 @@
     return image;
 }
 
+- (void)setUIWebViewControl:(DAVA::UIWebView*) uiWebControl
+{
+    webView = uiWebControl;
+}
+
 @end
 
 DAVA::WebViewControl::WebViewControl(DAVA::UIWebView* uiWeb)
 {
     uiWebView = uiWeb;
+    uiWeb->SetDebugDraw(true);
     gesturesEnabled = false;
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate glController].backgroundView;
@@ -230,6 +237,7 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView* uiWeb)
     
     webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
     [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
+    [(WebViewURLDelegate*)webViewURLDelegatePtr setUIWebViewControl:uiWeb];
     
     [localWebView becomeFirstResponder];
 }
