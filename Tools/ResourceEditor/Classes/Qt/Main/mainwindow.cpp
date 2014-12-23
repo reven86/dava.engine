@@ -125,6 +125,9 @@
 #include "Tools/ColorPicker/ColorPicker.h"
 
 #include "SceneProcessing/SceneProcessor.h"
+#include "QtLayer.h"
+#include "davaglwidget.h"
+
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -1683,8 +1686,8 @@ void QtMainWindow::On2DCameraDialog()
     Entity* sceneNode = new Entity();
     Camera * camera = new Camera();
     
-    float32 w = Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin();
-    float32 h = Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin();
+    float32 w = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
+    float32 h = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
     float32 aspect = w / h;
     camera->SetupOrtho(w, aspect, 1, 1000);        
     camera->SetPosition(Vector3(0,0, -10000));

@@ -36,6 +36,7 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Animation/LinearAnimation.h"
 
 namespace DAVA
@@ -52,10 +53,13 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+	textBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
+
 	textBg->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
     
     shadowBg = new UIControlBackground();
     shadowBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+	shadowBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
     shadowBg->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
     SetTextColor(Color::White);
@@ -217,13 +221,15 @@ const Vector2 &UIStaticText::GetShadowOffset() const
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
+	if(GetText().empty()) return;
+
 	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());
 
 	textBlock->SetPivotPoint(geometricData.pivotPoint);
-	PrepareSprite();
 	textBlock->PreDraw();
+	PrepareSprite();
 
     UIControl::Draw(geometricData);
 
@@ -499,10 +505,10 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
 
 void UIStaticText::PrepareSprite()
 {
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &UIStaticText::PrepareSpriteInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &UIStaticText::PrepareSpriteInternal));
 }
 
-void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, void *callerData)
+void UIStaticText::PrepareSpriteInternal()
 {
     if (textBlock->IsSpriteReady())
     {
@@ -513,13 +519,13 @@ void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, 
         Texture *tex = sprite->GetTexture();
         if(tex && tex->GetFormat() == FORMAT_A8)
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
         }
         else
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
         }
     }
     else

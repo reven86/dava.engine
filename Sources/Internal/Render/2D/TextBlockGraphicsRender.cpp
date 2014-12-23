@@ -31,6 +31,7 @@
 #include "Core/Core.h"
 #include "Utils/Utils.h"
 #include "Render/RenderManager.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -75,7 +76,7 @@ Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawTe
 {
 	if (textBlock->cacheUseJustify)
 	{
-		return grFont->DrawString(0, 0, drawText, (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w));
+		return grFont->DrawString(0, 0, drawText, (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)));
 	}
 
 	return grFont->DrawString(0, 0, drawText);
@@ -91,7 +92,7 @@ Font::StringMetrics TextBlockGraphicsRender::DrawTextML(const WideString& drawTe
 		return grFont->DrawString((float32)xOffset,
 										   (float32)yOffset,
 										   drawText,
-										   (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w), lineSize);
+                                           (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)), lineSize);
 	}
 	
 	return grFont->DrawString((float32)xOffset, (float32)yOffset, drawText, 0, 0);

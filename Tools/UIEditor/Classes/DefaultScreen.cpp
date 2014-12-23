@@ -107,8 +107,8 @@ void DefaultScreen::Update(float32 /*timeElapsed*/)
 	CheckScreenMoveState();
 
 	//update view port
-	RenderManager::Instance()->SetDrawScale(scale);
-	RenderManager::Instance()->SetDrawTranslate(pos);
+    Matrix4 wt = Matrix4::MakeTranslation(Vector3(pos)) * Matrix4::MakeScale(Vector3(scale.x, scale.y, 1.f));
+    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &wt, UPDATE_SEMANTIC_ALWAYS);
     
     // Handle the "screen scale changed"/"screen position changed" after the scale/translate is set.
     HandleScreenScalePositionChanged();
@@ -131,18 +131,18 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
    // For Preview mode display only what is inside the preview rectangle.
     if (previewEnabled)
     {
-        RenderManager::Instance()->ClipPush();
+        RenderSystem2D::Instance()->ClipPush();
         
         Rect previewClipRect;
         previewClipRect.SetSize(PreviewController::Instance()->GetTransformData().screenSize);
-        RenderManager::Instance()->SetClip(previewClipRect);
+        RenderSystem2D::Instance()->SetClip(previewClipRect);
     }
 
 	UIScreen::SystemDraw(geometricData);
 
     if (previewEnabled)
     {
-        RenderManager::Instance()->ClipPop();
+        RenderSystem2D::Instance()->ClipPop();
     }
     else if (inputState == InputStateSelectorControl)
     {
@@ -1678,7 +1678,7 @@ Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode, 
     }
     else
     {
-        rect = control->GetGeometricData(false).GetAABBox();
+        rect = control->GetGeometricData().GetAABBox();
     }
 	rect += controlNode->GetParentDelta(true);
 
@@ -1854,8 +1854,8 @@ void DefaultScreen::DrawGuides()
         }
     }
 
-    RenderManager::Instance()->ClipPush();
-    RenderManager::Instance()->SetClip(rect);
+    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->SetClip(rect);
     Color oldColor = RenderManager::Instance()->GetColor();
 
     RenderManager::Instance()->SetColor(selectedColor);
@@ -1864,7 +1864,7 @@ void DefaultScreen::DrawGuides()
     RenderHelper::Instance()->DrawLines(unselectedGuides, RenderState::RENDERSTATE_2D_BLEND);
 
     RenderManager::Instance()->SetColor(oldColor);
-    RenderManager::Instance()->ClipPop();
+    RenderSystem2D::Instance()->ClipPop();
 }
 
 // Screen scale/position is changed.

@@ -225,7 +225,7 @@ bool YamlParser::Parse(YamlDataHolder * dataHolder)
 
     DVASSERT(objectStack.size() == 0);
 
-    return true;
+    return objectStack.empty();
 }
 
 YamlParser::YamlParser()

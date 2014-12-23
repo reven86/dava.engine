@@ -214,4 +214,8 @@ private:
 	};
 };
 
+
+Q_DECLARE_METATYPE(SceneEditor2 *)
+
+
 #endif // __SCENE_EDITOR_PROXY_H__

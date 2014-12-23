@@ -40,8 +40,8 @@ void FrameworkDidLaunched()
 	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
     appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
 	
-	DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
+	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
 
 #else
 	KeyedArchive * appOptions = new KeyedArchive();
@@ -55,8 +55,8 @@ void FrameworkDidLaunched()
 	appOptions->SetInt32("fullscreen", 0);
 	appOptions->SetInt32("bpp", 32); 
 
-	DAVA::Core::Instance()->SetVirtualScreenSize(1024, 768);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
+	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
+	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
 #endif 
 
 	GameCore * core = new GameCore();

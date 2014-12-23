@@ -717,7 +717,7 @@ void SceneEditor2::MarkAsChanged()
 
 void SceneEditor2::Setup2DDrawing()
 {
-    RenderManager::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->Setup2DMatrices();
 }
 
 void SceneEditor2::Setup3DDrawing()
