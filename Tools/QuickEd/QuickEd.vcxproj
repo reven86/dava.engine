@@ -11,21 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Classes\Commands2\AddComponentCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\Command2.cpp" />
-    <ClCompile Include="Classes\Commands2\CommandAction.cpp" />
-    <ClCompile Include="Classes\Commands2\CommandBatch.cpp" />
-    <ClCompile Include="Classes\Commands2\CommandNotify.cpp" />
-    <ClCompile Include="Classes\Commands2\CommandStack.cpp" />
-    <ClCompile Include="Classes\Commands2\EntityAddCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\EntityLockCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\EntityParentChangeCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\EntityRemoveCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\InspDynamicModifyCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\InspMemebrModifyCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\KeyedArchiveCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\MetaObjModifyCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\RemoveComponentCommand.cpp" />
     <ClCompile Include="Classes\EditorFontManager.cpp" />
     <ClCompile Include="Classes\EditorSettings.cpp" />
     <ClCompile Include="Classes\FrameworkMain.cpp" />
@@ -100,22 +85,6 @@
     <ClCompile Include="Classes\Validators\DistanceFontValidator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Classes\Commands2\AddComponentCommand.h" />
-    <ClInclude Include="Classes\Commands2\Command2.h" />
-    <ClInclude Include="Classes\Commands2\CommandAction.h" />
-    <ClInclude Include="Classes\Commands2\CommandBatch.h" />
-    <ClInclude Include="Classes\Commands2\CommandID.h" />
-    <ClInclude Include="Classes\Commands2\CommandNotify.h" />
-    <ClInclude Include="Classes\Commands2\CommandStack.h" />
-    <ClInclude Include="Classes\Commands2\EntityAddCommand.h" />
-    <ClInclude Include="Classes\Commands2\EntityLockCommand.h" />
-    <ClInclude Include="Classes\Commands2\EntityParentChangeCommand.h" />
-    <ClInclude Include="Classes\Commands2\EntityRemoveCommand.h" />
-    <ClInclude Include="Classes\Commands2\InspDynamicModifyCommand.h" />
-    <ClInclude Include="Classes\Commands2\InspMemberModifyCommand.h" />
-    <ClInclude Include="Classes\Commands2\KeyedArchiveCommand.h" />
-    <ClInclude Include="Classes\Commands2\MetaObjModifyCommand.h" />
-    <ClInclude Include="Classes\Commands2\RemoveComponentCommand.h" />
     <ClInclude Include="Classes\EditorFontManager.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
       </AdditionalInputs>
