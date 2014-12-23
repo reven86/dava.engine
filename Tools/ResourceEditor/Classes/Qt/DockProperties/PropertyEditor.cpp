@@ -1366,9 +1366,12 @@ void PropertyEditor::OnAddComponent(DAVA::Component *component)
         for(int i = 0; i < size; ++i)
         {
             Entity* node = curNodes.at(i);
-            Component *c = component->Clone(node);
             
-            curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
+            if (node->GetComponentCount(component->GetType()) == 0)
+            {
+                Component *c = component->Clone(node);
+                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
+            }
         }
         
         curScene->EndBatch();
