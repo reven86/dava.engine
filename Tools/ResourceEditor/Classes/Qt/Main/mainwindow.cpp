@@ -3065,7 +3065,11 @@ void QtMainWindow::OnSnapCameraToLandscape(bool snap)
         toggleProcessed = scene->cameraSystem->SnapEditorCameraToLandscape(snap);
     }
     
-    if(!toggleProcessed)
+    if(toggleProcessed)
+    {
+        ui->propertyEditor->ResetProperties();
+    }
+    else
     {
         ui->actionSnapCameraToLandscape->setChecked(!snap);
     }
