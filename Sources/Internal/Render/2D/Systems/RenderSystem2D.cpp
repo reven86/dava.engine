@@ -118,8 +118,8 @@ void RenderSystem2D::Reset()
     
 void RenderSystem2D::Setup2DMatrices()
 {
-    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
+    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, (pointer_size)&viewMatrix);
 }
 
 void RenderSystem2D::ScreenSizeChanged()
@@ -195,8 +195,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
     {
         return;
     }
-
-    Setup2DMatrices();
     
     Sprite::DrawState * state = drawState;
     if (!state)

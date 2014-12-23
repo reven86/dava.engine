@@ -105,10 +105,6 @@ DefaultScreen::~DefaultScreen()
 void DefaultScreen::Update(float32 /*timeElapsed*/)
 {
 	CheckScreenMoveState();
-
-	//update view port
-    Matrix4 wt = Matrix4::MakeTranslation(Vector3(pos)) * Matrix4::MakeScale(Vector3(scale.x, scale.y, 1.f));
-    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &wt, UPDATE_SEMANTIC_ALWAYS);
     
     // Handle the "screen scale changed"/"screen position changed" after the scale/translate is set.
     HandleScreenScalePositionChanged();
@@ -123,6 +119,9 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
 {
     bool previewEnabled = PreviewController::Instance()->IsPreviewEnabled();
     Color oldColor = RenderManager::Instance()->GetColor();
+
+    Matrix4 wt = Matrix4::MakeTranslation(Vector3(pos)) * Matrix4::MakeScale(Vector3(scale.x, scale.y, 1.f));
+    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &wt, UPDATE_SEMANTIC_ALWAYS);
 
     RenderManager::Instance()->SetColor(ScreenWrapper::Instance()->GetBackgroundFrameColor());
     RenderHelper::Instance()->FillRect(ScreenWrapper::Instance()->GetBackgroundFrameRect(), RenderState::RENDERSTATE_2D_BLEND);
