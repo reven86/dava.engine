@@ -962,13 +962,15 @@ void WebViewControl::SetRect(const Rect& rect)
 	RECT browserRect = {0};
 	::GetWindowRect(browserWindow, &browserRect);
 
-	browserRect.left = (LONG)(rect.x * Core::GetVirtualToPhysicalFactor());
-	browserRect.top  = (LONG)(rect.y * Core::GetVirtualToPhysicalFactor());
-	browserRect.left  += (LONG)Core::Instance()->GetPhysicalDrawOffset().x;
-	browserRect.top += (LONG)Core::Instance()->GetPhysicalDrawOffset().y;
+    Rect convertedRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
 
-	browserRect.right = (LONG)(browserRect.left + rect.dx * Core::GetVirtualToPhysicalFactor());
-	browserRect.bottom = (LONG)(browserRect.top + rect.dy * Core::GetVirtualToPhysicalFactor());
+    browserRect.left = (LONG)(convertedRect.x);
+    browserRect.top = (LONG)(convertedRect.y);
+    browserRect.right = (LONG)(browserRect.left + convertedRect.dx);
+    browserRect.bottom = (LONG)(browserRect.top + convertedRect.dy);
+
+	browserRect.left  += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+    browserRect.top += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
 
 	::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
 		browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );

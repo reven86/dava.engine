@@ -47,7 +47,7 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget *parent/* = 0*/) :
 	effectNode(NULL),
 	selectedLayer(NULL),
 	activeScene(NULL),
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	nameFont("Courier", 8, QFont::Normal)
 #else
 	nameFont("Courier", 12, QFont::Normal)

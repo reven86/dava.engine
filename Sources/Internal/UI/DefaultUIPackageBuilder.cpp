@@ -56,11 +56,11 @@ DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
     DVASSERT(package == NULL);
 }
 
-UIPackage *DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
+RefPtr<UIPackage> DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
     DVASSERT(package == NULL)
     package = new UIPackage(packagePath);
-    return package;
+    return RefPtr<UIPackage>(SafeRetain(package));
 }
 
 void DefaultUIPackageBuilder::EndPackage()
@@ -68,27 +68,25 @@ void DefaultUIPackageBuilder::EndPackage()
     SafeRelease(package);
 }
 
-UIPackage *DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
+RefPtr<UIPackage> DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
 {
-    UIPackage *result;
+    UIPackage *result = NULL;
     UIPackage *prevPackage = package;
     package = NULL;
     auto it = importedPackages.find(packagePath);
     if (it != importedPackages.end())
     {
         result = it->second;
-        prevPackage->AddPackage(it->second);
     }
     else
     {
-        UIPackage *loadedPackage = loader->LoadPackage(packagePath);
-        result = loadedPackage;
-        importedPackages[packagePath] = loadedPackage;
-        prevPackage->AddPackage(loadedPackage);
+        result = loader->LoadPackage(packagePath);
+        importedPackages[packagePath] = result;
     }
+    prevPackage->AddPackage(result);
     DVASSERT(package == NULL);
     package = prevPackage;
-    return result;
+    return RefPtr<UIPackage>(SafeRetain(result));
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)

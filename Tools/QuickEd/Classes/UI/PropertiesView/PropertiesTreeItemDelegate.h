@@ -34,6 +34,7 @@ private:
     QMap<QVariant::Type, AbstractPropertyDelegate *> qvariantItemDelegates;
     QMap<BaseProperty::ePropertyType, AbstractPropertyDelegate *> propertyItemDelegates;
     QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate *> variantTypeItemDelegates;
+    QMap<QString, AbstractPropertyDelegate *> propertyNameTypeItemDelegates;
 };
 class PropertyWidget: public QWidget
 {

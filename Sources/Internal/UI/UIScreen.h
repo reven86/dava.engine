@@ -36,6 +36,7 @@
 #include "Render/RenderManager.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -54,7 +55,11 @@ public:
 protected:
 	virtual ~UIScreen();
 public:
-	UIScreen(const Rect &rect = Rect(0.0f,0.0f,(float32)GetScreenWidth(),(float32)GetScreenHeight()));
+	UIScreen(const Rect &rect = Rect(0.0f,
+                                     0.0f,
+                                     (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
+                                     (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy
+                                     ));
 
 	/**
 	 \brief Sets the fill border ordrer. Borders fills Only when they are present on the screen. You can change filling type by overloading FillScreenBorders method.

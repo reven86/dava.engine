@@ -79,11 +79,13 @@
     <ClCompile Include="Classes\UI\PackageView\UIPackageMimeData.cpp" />
     <ClCompile Include="Classes\UI\PackageView\UIPackageModel.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\AbstractPropertyDelegate.cpp" />
+    <ClCompile Include="Classes\UI\PropertiesView\BoolPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\ChangePropertyValueCommand.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\ColorPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\FloatPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\IntegerPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\EnumPropertyDelegate.cpp" />
+    <ClCompile Include="Classes\UI\PropertiesView\SpritePropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\StringPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeItemDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeModel.cpp" />
@@ -187,12 +189,14 @@
     <ClInclude Include="Classes\UI\PackageView\UIPackageMimeData.h" />
     <ClInclude Include="Classes\UI\PackageView\UIPackageModel.h" />
     <ClInclude Include="Classes\UI\PropertiesView\AbstractPropertyDelegate.h" />
+    <ClInclude Include="Classes\UI\PropertiesView\BoolPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\ChangePropertyValueCommand.h" />
     <ClInclude Include="Classes\UI\PropertiesView\ColorPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\FilePathPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\FloatPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\IntegerPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\EnumPropertyDelegate.h" />
+    <ClInclude Include="Classes\UI\PropertiesView\SpritePropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\StringPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeItemDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeModel.h" />
@@ -301,7 +305,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_LARGEFILE_SUPPORT;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;DAVA_QT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;DAVA_QT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -355,7 +359,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NO_DEBUG;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;NDEBUG;_CRT_SECURE_NO_DEPRECATE;DAVA_QT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_DLL;QT_NO_DEBUG;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;NDEBUG;_CRT_SECURE_NO_DEPRECATE;DAVA_QT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

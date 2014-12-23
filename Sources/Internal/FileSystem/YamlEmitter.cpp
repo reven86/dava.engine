@@ -132,7 +132,7 @@ bool YamlEmitter::Emit(const YamlNode * node, File *outFile)
 
     DVVERIFY(yaml_emitter_initialize(&emitter));
     yaml_emitter_set_encoding(&emitter, YAML_UTF8_ENCODING);
-    yaml_emitter_set_break   (&emitter, YAML_CRLN_BREAK);
+    yaml_emitter_set_break   (&emitter, YAML_ANY_BREAK);
     yaml_emitter_set_unicode (&emitter, UNESCAPED_UNICODE_CHARACTERS_ALLOWED);
     yaml_emitter_set_width   (&emitter, PREFERRED_LINE_WIDTH);
     yaml_emitter_set_indent  (&emitter, INDENTATION_INCREMENT);
