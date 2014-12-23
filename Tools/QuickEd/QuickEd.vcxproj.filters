@@ -345,6 +345,9 @@
     <ClCompile Include="Classes\UI\PropertiesView\BoolPropertyDelegate.cpp">
       <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\SpritePropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\FrameworkMain.h">
@@ -606,6 +609,9 @@
       <Filter>Sources\UI\LibraryView</Filter>
     </ClInclude>
     <ClInclude Include="Classes\UI\PropertiesView\BoolPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\SpritePropertyDelegate.h">
       <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
     </ClInclude>
   </ItemGroup>
