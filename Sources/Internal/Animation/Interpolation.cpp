@@ -30,15 +30,117 @@
 #include "Base/BaseMath.h"
 #include "Animation/Interpolation.h"
 
+#define HALF_PI 1.5707963267948966f
+
 namespace DAVA
 {
-	
+	//
+	// Sine
+	//
+	static float SineIn(float t)
+	{
+		float val = sin((t - 1.0f) * HALF_PI) + 1.0f;
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
+	static float SineOut(float t)
+	{
+		float val = sin(t * HALF_PI);
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
+	static float SineInSineOut(float t)
+	{
+		float val = -0.5f * (cos(PI * t) - 1.0f);
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
+	//
+	// Elastic
+	//
+
+	static float ElasticIn(float t)
+	{
+		float val = sin(13.0f * t * HALF_PI) * pow(2.0f, 10.0f * (t - 1.0f));
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
+	static float ElasticOut(float t)
+	{
+		float val = sin(-13.0f * (t + 1.0f) * HALF_PI) * pow(2.0f, -10.0f * t) + 1.0f;
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
+	static float ElasticInElasticOut(float t)
+	{
+		float val = t < 0.5f
+				? 0.5f * sin(+13.0f * HALF_PI * 2.0f * t) * pow(2.0f, 10.0f * (2.0f * t - 1.0f))
+				: 0.5f * sin(-13.0f * HALF_PI * ((2.0f * t - 1.0f) + 1.0f)) * pow(2.0f, -10.0f * (2.0f * t - 1.0f)) + 1.0f;
+
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
+	//
+	// Bounce
+	//
+	static float BounceOut(float t)
+	{
+		const float a = 4.0f / 11.0f;
+		const float b = 8.0f / 11.0f;
+		const float c = 9.0f / 10.0f;
+
+		const float ca = 4356.0f / 361.0f;
+		const float cb = 35442.0f / 1805.0f;
+		const float cc = 16061.0f / 1805.0f;
+
+		float t2 = t * t;
+
+		float val = t < a
+			? 7.5625f * t2
+			: t < b
+			  ? 9.075f * t2 - 9.9f * t + 3.4f
+			  : t < c
+				? ca * t2 - cb * t + cc
+				: 10.8f * t * t - 20.52f * t + 10.72f;
+
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
+	static float BounceIn(float t)
+	{
+		float val = 1.0f - BounceOut(1.0f - t);
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
+	static float BounceInBounceOut(float t)
+	{
+		float val = t < 0.5f
+		? 0.5f * (1.0f - BounceOut(1.0f - t * 2.0f))
+		: 0.5f * BounceOut(t * 2.0f - 1.0f) + 0.5f;
+
+		return FloatClamp(0.0f, 1.0f, val);
+	}
+
 Interpolation::Func Interpolation::GetFunction(FuncType type)
 {
 	if (type == LINEAR)return Linear;
 	else if (type == EASY_IN)return EasyIn;
 	else if (type == EASY_OUT)return EasyOut;
 	else if (type == EASY_IN_EASY_OUT)return EasyInEasyOut;
+	//
+	else if (type == SINE_IN)return SineIn;
+	else if (type == SINE_OUT)return SineOut;
+	else if (type == SINE_IN_SINE_OUT)return SineInSineOut;
+	//
+	else if (type == ELASTIC_IN)return ElasticIn;
+	else if (type == ELASTIC_OUT)return ElasticOut;
+	else if (type == ELASTIC_IN_ELASTIC_OUT)return ElasticInElasticOut;
+	//
+	else if (type == BOUNCE_IN)return BounceIn;
+	else if (type == BOUNCE_OUT)return BounceOut;
+	else if (type == BOUNCE_IN_BOUNCE_OUT)return BounceInBounceOut;
+
+
 	return 0;
 }	
 	
