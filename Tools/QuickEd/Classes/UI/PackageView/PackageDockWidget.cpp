@@ -30,14 +30,30 @@ PackageDockWidget::PackageDockWidget(QWidget *parent)
 
     connect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(filterTextChanged(const QString &)));
 
-    //setTitleBarWidget(ui->filterLine);
-    //ui->filterLine->setEnabled(false);
-    //ui->treeView->setEnabled(false);
-    
-    QAction *removeAction = new QAction("Remove", this);
-    removeAction->setShortcut(QKeySequence(Qt::Key_Delete));
-    connect(removeAction, SIGNAL(triggered()), this, SLOT(OnRemove()));
-    ui->treeView->addAction(removeAction);
+    importPackageAction = new QAction(tr("Import package"), this);
+    connect(importPackageAction, SIGNAL(triggered()), this, SLOT(OnImport()));
+
+    cutAction = new QAction(tr("Cut"), this);
+    cutAction->setShortcut(QKeySequence(Qt::Key_Cut));
+    connect(cutAction, SIGNAL(triggered()), this, SLOT(OnCut()));
+
+    copyAction = new QAction(tr("Copy"), this);
+    copyAction->setShortcut(QKeySequence(Qt::Key_Copy));
+    connect(copyAction, SIGNAL(triggered()), this, SLOT(OnCopy()));
+
+    pasteAction = new QAction(tr("Paste"), this);
+    pasteAction->setShortcut(QKeySequence(Qt::Key_Paste));
+    connect(pasteAction, SIGNAL(triggered()), this, SLOT(OnPaste()));
+
+    delAction = new QAction(tr("Delete"), this);
+    delAction->setShortcut(QKeySequence(Qt::Key_Delete));
+    connect(delAction, SIGNAL(triggered()), this, SLOT(OnDelete()));
+
+    addAction(importPackageAction);
+    addAction(copyAction);
+    addAction(pasteAction);
+    addAction(cutAction);
+    addAction(delAction);
 }
 
 PackageDockWidget::~PackageDockWidget()
@@ -126,7 +142,27 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
     emit SelectionControlChanged(selectedControl, deselectedControl);
 }
 
-void PackageDockWidget::OnRemove()
+void PackageDockWidget::OnImport()
+{
+
+}
+
+void PackageDockWidget::OnCopy()
+{
+
+}
+
+void PackageDockWidget::OnPaste()
+{
+
+}
+
+void PackageDockWidget::OnCut()
+{
+
+}
+
+void PackageDockWidget::OnDelete()
 {
     QModelIndexList list = ui->treeView->selectionModel()->selectedIndexes();
     if (!list.empty())
@@ -151,3 +187,4 @@ void PackageDockWidget::filterTextChanged(const QString &filterText)
         ui->treeView->expandAll();
     }
 }
+

@@ -72,8 +72,6 @@ void ScreenControl::SetPos(const Vector2& value)
 void ScreenControl::Draw(const UIGeometricData &geometricData)
 {
     // Draw "transparent" (cheqered) backgound under the control.
-    RenderManager::Instance()->PushDrawMatrix();
-    RenderManager::Instance()->IdentityDrawMatrix();
 
     UIGeometricData backGd;
     backGd.scale = Vector2(1.0f, 1.0f);
@@ -97,8 +95,6 @@ void ScreenControl::Draw(const UIGeometricData &geometricData)
     }
 
     chequeredBackground->Draw(backGd);
-
-    RenderManager::Instance()->PopDrawMatrix();
 }
 
 void ScreenControl::DrawAfterChilds(const UIGeometricData & /*geometricData*/)
@@ -108,9 +104,6 @@ void ScreenControl::DrawAfterChilds(const UIGeometricData & /*geometricData*/)
 
     static const Color RED_COLOR = Color(1.0f, 0.0f, 0.0f, 1.0f);
     static const Color GREY_COLOR = Color(0.55f, 0.55f, 0.55f, 1.0f);
-
-    RenderManager::Instance()->PushDrawMatrix();
-    RenderManager::Instance()->IdentityDrawMatrix();
 
     UIGeometricData screenGd;
     screenGd.scale = scale;
@@ -149,7 +142,6 @@ void ScreenControl::DrawAfterChilds(const UIGeometricData & /*geometricData*/)
             DrawPivotPoint(pivotGd, RED_COLOR);
         }
     }
-    RenderManager::Instance()->PopDrawMatrix();
 }
 
 void ScreenControl::DrawSelectionFrame(const UIGeometricData &gd, const Color &color)

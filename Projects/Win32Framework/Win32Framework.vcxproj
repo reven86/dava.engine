@@ -129,7 +129,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-<PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;CURL_STATICLIB;DAVA_DEBUG;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;CURL_STATICLIB;DAVA_DEBUG;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -189,7 +189,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-<PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;_WINDOWS;WIN32;NDEBUG;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;_WINDOWS;WIN32;NDEBUG;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -407,21 +407,9 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\Win32\CorePlatformWin32Qt.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\Win32\QtLayerWin32.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
@@ -433,6 +421,8 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockRender.h" />
@@ -701,7 +691,6 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\StringUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\UTF8Utils.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\Utils.h" />
-    <ClInclude Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp" />
@@ -871,21 +860,9 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\QtLayer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\Win32\CorePlatformWin32Qt.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\Win32\QtLayerWin32.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
@@ -900,6 +877,8 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockRender.cpp" />
@@ -1148,7 +1127,6 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\Utils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

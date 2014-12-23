@@ -126,7 +126,7 @@ protected:
     JobQueueWorker workerQueue;
     Vector<JobThread*> workerThreads;
 
-    void CommonWaitMainJob(const Function<bool()> &checkFn);
+    void CommonWaitMainJob(const Function<bool()> &hasJobsFn);
 };
 
 }

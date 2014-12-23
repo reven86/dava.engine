@@ -48,12 +48,12 @@ void FrameworkDidLaunched()
     appOptions->SetString("title", DAVA::Format("DAVA Framework - UIEditor | %s-%s", DAVAENGINE_VERSION, UI_EDITOR_VERSION));
 
     // Disable sprite clipping in UIEditor
-    Sprite::SetSpriteClipping(false);
+    RenderSystem2D::Instance()->SetSpriteClipping(false);
 
-    Core::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
+    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
+    VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
     Core::Instance()->SetOptions(appOptions);
-    Core::Instance()->EnableReloadResourceOnResize(false);
 
     GameCore * core = new GameCore();
     Core::SetApplicationCore(core);
