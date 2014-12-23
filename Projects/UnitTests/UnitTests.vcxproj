@@ -18,7 +18,6 @@
     <ClInclude Include="Classes\Infrastructure\TestTemplate.h" />
     <ClInclude Include="Classes\Infrastructure\TextureUtils.h" />
     <ClInclude Include="Classes\Infrastructure\UITestTemplate.h" />
-    <ClInclude Include="Classes\OldTests\TransparentWebViewTest.h" />
     <ClInclude Include="Classes\Tests\ComponentsTest.h" />
     <ClInclude Include="Classes\Tests\DateTimeTest.h" />
     <ClInclude Include="Classes\Tests\FileListTest.h" />
@@ -26,6 +25,7 @@
     <ClInclude Include="Classes\Tests\FunctionBindSingalTest.h" />
     <ClInclude Include="Classes\Tests\HashMapTest.h" />
     <ClInclude Include="Classes\Tests\ImageSizeTest.h" />
+    <ClInclude Include="Classes\Tests\JobManagerTest.h" />
     <ClInclude Include="Classes\Tests\KeyedArchiveYamlTest.h" />
     <ClInclude Include="Classes\Tests\LocalizationTest.h" />
     <ClInclude Include="Classes\Tests\MathTest.h" />
@@ -41,7 +41,6 @@
     <ClCompile Include="Classes\Infrastructure\GameCore.cpp" />
     <ClCompile Include="Classes\Infrastructure\TeamCityTestsOutput.cpp" />
     <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp" />
-    <ClCompile Include="Classes\OldTests\TransparentWebViewTest.cpp" />
     <ClCompile Include="Classes\Tests\ComponentsTest.cpp" />
     <ClCompile Include="Classes\Tests\DateTimeTest.cpp" />
     <ClCompile Include="Classes\Tests\FileListTest.cpp" />
@@ -49,6 +48,7 @@
     <ClCompile Include="Classes\Tests\FunctionBindSingalTest.cpp" />
     <ClCompile Include="Classes\Tests\HashMapTest.cpp" />
     <ClCompile Include="Classes\Tests\ImageSizeTest.cpp" />
+    <ClCompile Include="Classes\Tests\JobManagerTest.cpp" />
     <ClCompile Include="Classes\Tests\KeyedArchiveYamlTest.cpp" />
     <ClCompile Include="Classes\Tests\LocalizationTest.cpp" />
     <ClCompile Include="Classes\Tests\MathTest.cpp" />
@@ -118,7 +118,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

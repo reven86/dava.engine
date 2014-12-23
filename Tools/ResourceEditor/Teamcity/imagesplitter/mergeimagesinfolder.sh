@@ -4,4 +4,4 @@
 # call as: ./mergeimagesinfolder.sh sourceimages_folder
 # as result generated image would be created in sourceimages_folder (merged.png)
 
-ResourceEditorQt.app/Contents/MacOS/ResourceEditorQt -imagesplitter -merge -folder $1
+ResourceEditor.app/Contents/MacOS/ResourceEditor -imagesplitter -merge -folder $1

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		001CF9281A02539600751045 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001CF9261A02539600751045 /* TeamcityOutput.cpp */; };
+		0264E31F1A43002200BD7279 /* JobManagerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0264E31D1A43002200BD7279 /* JobManagerTest.cpp */; };
 		032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 032D348A1A0912B5007509C3 /* CommandLineParser.cpp */; };
 		035616251A4169E300C2939D /* TransparentWebViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 035616231A4169E300C2939D /* TransparentWebViewTest.cpp */; };
 		1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1770DF4617DF497600000391 /* MediaPlayer.framework */; };
@@ -57,6 +58,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0264E2B91A41649100BD7279 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE9895531163F13500500198 /* Framework.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D;
+			remoteInfo = Framework;
+		};
 		02FD8256192A10A5007762C0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = FE9895531163F13500500198 /* Framework.xcodeproj */;
@@ -76,6 +84,8 @@
 /* Begin PBXFileReference section */
 		001CF9261A02539600751045 /* TeamcityOutput.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = TeamcityOutput.cpp; sourceTree = "<group>"; };
 		001CF9271A02539600751045 /* TeamcityOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamcityOutput.h; sourceTree = "<group>"; };
+		0264E31D1A43002200BD7279 /* JobManagerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobManagerTest.cpp; path = Tests/JobManagerTest.cpp; sourceTree = "<group>"; };
+		0264E31E1A43002200BD7279 /* JobManagerTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobManagerTest.h; path = Tests/JobManagerTest.h; sourceTree = "<group>"; };
 		032D348A1A0912B5007509C3 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.cpp; sourceTree = "<group>"; };
 		032D348B1A0912B5007509C3 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.h; sourceTree = "<group>"; };
 		035616231A4169E300C2939D /* TransparentWebViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TransparentWebViewTest.cpp; path = OldTests/TransparentWebViewTest.cpp; sourceTree = "<group>"; };
@@ -308,6 +318,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				0264E31D1A43002200BD7279 /* JobManagerTest.cpp */,
+				0264E31E1A43002200BD7279 /* JobManagerTest.h */,
 				CC11984F1A38BF27006931D7 /* ComponentsTest.cpp */,
 				CC1198501A38BF27006931D7 /* ComponentsTest.h */,
 				CC1198511A38BF27006931D7 /* DateTimeTest.cpp */,
@@ -374,6 +386,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				0264E2BA1A41649100BD7279 /* PBXTargetDependency */,
 			);
 			name = UnitTests;
 			productName = TemplateProjectiPhone;
@@ -473,6 +486,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0264E31F1A43002200BD7279 /* JobManagerTest.cpp in Sources */,
 				CC1198741A38BF27006931D7 /* KeyedArchiveYamlTest.cpp in Sources */,
 				CC1198731A38BF27006931D7 /* ImageSizeTest.cpp in Sources */,
 				CC11987A1A38BF27006931D7 /* StringFormatTest.cpp in Sources */,
@@ -502,6 +516,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0264E2BA1A41649100BD7279 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Framework;
+			targetProxy = 0264E2B91A41649100BD7279 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1D6058940D05DD3E006BFB54 /* Debug */ = {
@@ -565,7 +587,10 @@
 		5CDC2528156CDD5F00742348 /* AdHoc */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Entitlements.plist;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
@@ -579,7 +604,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
@@ -592,7 +617,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = armv7;
+				VALID_ARCHS = "armv7 armv7s i386";
 			};
 			name = AdHoc;
 		};
@@ -627,7 +652,10 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
@@ -641,7 +669,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
@@ -654,14 +682,17 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = armv7;
+				VALID_ARCHS = "armv7 armv7s i386";
 			};
 			name = Debug;
 		};
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -674,7 +705,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/freetype/lib\"",
@@ -687,7 +718,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = armv7;
+				VALID_ARCHS = "armv7 armv7s i386";
 			};
 			name = Release;
 		};

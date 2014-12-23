@@ -50,12 +50,24 @@ public:
 	
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
+	// Load html page from string
+	virtual void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies associated with target URL
+	virtual void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& targetUrl, const String& name) const;
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& targetUrl) const;
+	// Perfrom Java script
+	virtual int32 ExecuteJScript(const String& scriptString);
 
     virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
     
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
 	virtual void SetVisible(bool isVisible, bool hierarchic);
+
+	virtual void SetScalesPageToFit(bool isScalesToFit);
 
 	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
 	virtual void SetBackgroundTransparency(bool enabled);
@@ -93,6 +105,7 @@ protected:
     bool gesturesEnabled;
     
     UIWebView* uiWebView;
+    static int runScriptID;
 };
 
 };

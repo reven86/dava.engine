@@ -32,6 +32,7 @@
 #include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -80,8 +81,8 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
     
 	if(type <= FROM_BOTTOM)
 	{
-		float32 endXPos[4] = {(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), -(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), 0.0f, 0.0f};
-		float32 endYPos[4] = {0.0f, 0.0f, (Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin()), -(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin())};
+		float32 endXPos[4] = {VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, 0.0f, 0.0f};
+		float32 endYPos[4] = {0.0f, 0.0f, VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy};
 		float32 xPrevPosition = endXPos[type] * normalizedTime;
 		float32 yPrevPosition = endYPos[type] * normalizedTime;
 		float32 xNextPosition = xPrevPosition - endXPos[type];
@@ -95,17 +96,15 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 		{
 			drawState.SetPosition(0, 0);
 		}
-        
-		renderTargetPrevScreen->Draw(&drawState);
-		
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
 		
 		drawState.SetPosition(xNextPosition, yNextPosition);
-		renderTargetNextScreen->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
 	}
 	else 
 	{
-		float32 endXPos[4] = {(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), -(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), 0.0f, 0.0f};
-		float32 endYPos[4] = {0.0f, 0.0f, (Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin()), -(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin())};
+		float32 endXPos[4] = {VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx, 0.0f, 0.0f};
+		float32 endYPos[4] = {0.0f, 0.0f, VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy, -VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy};
 		float32 xPrevPosition = endXPos[type - 4] * normalizedTime;
 		float32 yPrevPosition = endYPos[type - 4] * normalizedTime;
 		float32 xNextPosition = xPrevPosition - endXPos[type - 4];
@@ -120,15 +119,11 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 			drawState.SetPosition(0, 0);
 		}
         
-		renderTargetNextScreen->Draw(&drawState);
-
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
 		
 		drawState.SetPosition(xPrevPosition, yPrevPosition);
-		renderTargetPrevScreen->Draw(&drawState);
-		
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
 	}
-
-
 }
 	
 };

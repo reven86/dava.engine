@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		020AB209174639C60082F336 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; };
 		020AB20A174639C60082F336 /* libfmodex.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; };
+		0264E3261A43006E00BD7279 /* JobManagerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0264E3241A43006E00BD7279 /* JobManagerTest.cpp */; };
 		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		030FBED91A406A9700305B97 /* TransparentWebViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 030FBED71A406A9700305B97 /* TransparentWebViewTest.cpp */; };
@@ -116,6 +117,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0264E3241A43006E00BD7279 /* JobManagerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobManagerTest.cpp; path = Classes/Tests/JobManagerTest.cpp; sourceTree = "<group>"; };
+		0264E3251A43006E00BD7279 /* JobManagerTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobManagerTest.h; path = Classes/Tests/JobManagerTest.h; sourceTree = "<group>"; };
 		02E9E45C173A43A900C501BC /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		02E9E45D173A43A900C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		030FBED71A406A9700305B97 /* TransparentWebViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TransparentWebViewTest.cpp; path = Classes/OldTests/TransparentWebViewTest.cpp; sourceTree = "<group>"; };
@@ -316,6 +319,8 @@
 		CC11978D1A38BACC006931D7 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				0264E3241A43006E00BD7279 /* JobManagerTest.cpp */,
+				0264E3251A43006E00BD7279 /* JobManagerTest.h */,
 				CC11978E1A38BAE1006931D7 /* ComponentsTest.cpp */,
 				CC11978F1A38BAE1006931D7 /* ComponentsTest.h */,
 				CC1197901A38BAE1006931D7 /* DateTimeTest.cpp */,
@@ -540,6 +545,7 @@
 				CC1197B11A38BAE1006931D7 /* HashMapTest.cpp in Sources */,
 				CC1197B91A38BAE1006931D7 /* StringFormatTest.cpp in Sources */,
 				CC1197B31A38BAE1006931D7 /* KeyedArchiveYamlTest.cpp in Sources */,
+				0264E3261A43006E00BD7279 /* JobManagerTest.cpp in Sources */,
 				CC11978A1A38BAB9006931D7 /* GameCore.cpp in Sources */,
 				CC1197AF1A38BAE1006931D7 /* FileSystemTest.cpp in Sources */,
 				CC1197B51A38BAE1006931D7 /* MathTest.cpp in Sources */,

@@ -213,7 +213,7 @@ private:
     void UpdateVegetationSetup();
     void InitLodRanges();
     
-    void SetupHeightmapParameters(BaseObject * caller, void * param, void *callerData);
+	void SetupHeightmapParameters(Texture* tx);
     
     void CreateRenderData();
     

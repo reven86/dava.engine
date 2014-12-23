@@ -49,6 +49,12 @@ public:
 	
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
+	// Load html page from string
+	virtual void LoadHtmlString(const WideString& htlmString);
+	// Delete all cookies associated with target URL
+	virtual void DeleteCookies(const String& targetUrl);
+    // Execute javascript command, return request ID
+	virtual int32 ExecuteJScript(const String& scriptString);
     
     virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
 
@@ -76,6 +82,8 @@ protected:
     void* webImageCachePtr;
     
     UIWebView* uiWebView;
+
+    static int32 runScriptID;
 };
 
 };

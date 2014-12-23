@@ -70,8 +70,8 @@ using namespace DAVA;
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
-
 - (void)setDelegate:(IUIWebViewDelegate*)d andWebView:(UIWebView*)w;
+- (void)onExecuteJScript:(NSArray *)result;
 - (void)setWebViewControl:(WebViewControl*) webControl;
 - (void)setUiWebViewControl:(UIWebView*) uiWebControl;
 
@@ -214,8 +214,27 @@ using namespace DAVA;
 	}
 }
 
+- (void)onExecuteJScript:(NSArray *)result
+{
+    if (delegate)
+    {
+        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
+        NSString* requestResult = (NSString*)[result objectAtIndex:1];
+        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
+    }
+    [result release];
+}
+
 - (void)setWebViewControl:(WebViewControl*) webControl
 {
+    if (delegate)
+    {
+        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
+        NSString* requestResult = (NSString*)[result objectAtIndex:1];
+        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
+    }
+    [result release];
+
     if (webControl)
     {
         webViewControl = webControl;
@@ -232,6 +251,7 @@ using namespace DAVA;
 
 @end
 
+int32 WebViewControl::runScriptID = 0;
 
 WebViewControl::WebViewControl(UIWebView* ptr) :
     isWebViewVisible(true),
@@ -309,6 +329,30 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	[(WebView*)webViewPtr setMainFrameURL:nsURLPathToOpen];
 }
 
+void WebViewControl::LoadHtmlString(const WideString& htlmString)
+{
+	NSString* htmlPageToLoad = [[[NSString alloc] initWithBytes: htlmString.data()
+													   length: htlmString.size() * sizeof(wchar_t)
+													 encoding:NSUTF32LittleEndianStringEncoding] autorelease];
+    [[(WebView*)webViewPtr mainFrame] loadHTMLString:htmlPageToLoad baseURL:nil];
+}
+
+void WebViewControl::DeleteCookies(const String& targetUrl)
+{
+	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+	NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+	// Delete all cookies for specified URL
+	for(NSHTTPCookie *cookie in [cookies cookies])
+	{
+		if([[cookie domain] rangeOfString:targetUrlString].location != NSNotFound)
+	  	{
+       		[cookies deleteCookie:cookie];
+   	 	}
+	}
+	// Syncronized all changes with file system
+	[[NSUserDefaults standardUserDefaults] synchronize];
+}
+
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
     NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
@@ -320,14 +364,16 @@ void WebViewControl::SetRect(const Rect& rect)
 {
 	NSRect webViewRect = [(WebView*)webViewPtr frame];
 
-	webViewRect.size.width = rect.dx * Core::GetVirtualToPhysicalFactor();
-	webViewRect.size.height = rect.dy * Core::GetVirtualToPhysicalFactor();
+    Rect convertedRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+    
+	webViewRect.size.width = convertedRect.dx;
+	webViewRect.size.height = convertedRect.dy;
 	
-	webViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-	webViewRect.origin.y = Core::Instance()->GetPhysicalScreenHeight() - (rect.y + rect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
+	webViewRect.origin.x = convertedRect.x;
+	webViewRect.origin.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
 	
-	webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-	webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
+	webViewRect.origin.x += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+	webViewRect.origin.y += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
 	
 	[(WebView*)webViewPtr setFrame: webViewRect];
 }
@@ -363,6 +409,22 @@ bool WebViewControl::IsRenderToTexture() const
 {
     // TODO
     return true;
+}
+
+int32 WebViewControl::ExecuteJScript(const String& scriptString)
+{
+    int requestID = runScriptID++;
+    NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
+    NSString *resultString = [(WebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
+
+    WebViewPolicyDelegate* w = (WebViewPolicyDelegate*) webViewPolicyDelegatePtr;
+    if (w)
+    {
+        NSArray* array = [NSArray arrayWithObjects:[NSNumber numberWithInt:requestID], resultString, nil];
+        [array retain];
+        [w performSelector:@selector(onExecuteJScript:) withObject:array afterDelay:0.0];
+    }
+    return requestID;
 }
 
 void WebViewControl::SetImage(void* ptr)

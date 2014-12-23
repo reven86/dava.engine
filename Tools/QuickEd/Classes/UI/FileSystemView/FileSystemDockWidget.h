@@ -35,10 +35,18 @@ private slots:
     void onDoubleClicked(const QModelIndex &index);
     void setFilterFixedString(const QString &filterStr);
     void onDataChanged( const QModelIndex & topLeft, const QModelIndex & bottomRight );
+    void customContextMenuRequested(const QPoint &pos);
+    void onNewFolder(bool checked);
+    void onNewFile(bool checked);
+    void onDeleteFile(bool checked);
+    void onReloadFile(bool checked);
     
 private:
     Ui::FileSystemDockWidget *ui;
     QFileSystemModel *model;
+    QAction *newFolderAction;
+    QAction *newFileAction;
+    QAction *delFileAction;
 };
 
 #endif // __UI_EDITOR_FILE_SYSTEM_TREE_WIDGET_H__

@@ -22,7 +22,6 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -37,7 +36,6 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.dava.framework.JNIConst;
 import com.dava.framework.SoftKeyboardStateHelper.SoftKeyboardStateListener;
 
 public class JNITextField {

@@ -148,8 +148,8 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
 	NSRect rect = self.frame;
 	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
-	UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
 	
 	sizeChanged = YES;
 	[super reshape];
@@ -269,7 +269,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
     else
     {
         event.physPoint.x = p.x;
-        event.physPoint.y = Core::Instance()->GetPhysicalScreenHeight() - p.y;
+        event.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
         
         event.tapCount = curEvent.clickCount;
     }

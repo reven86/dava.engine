@@ -54,6 +54,16 @@ public:
 	
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
+	// Load html page from string
+	virtual void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies associated with target URL
+	virtual void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& url, const String& name) const;
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& url) const;
+	// Perform Java script
+	virtual int32 ExecuteJScript(const String& scriptString);
 	
 	void OpenFromBuffer(const String& string, const FilePath& basePath);
 
@@ -68,10 +78,11 @@ public:
     bool IsRenderToTexture() const override;
 
 private:
-	static int webViewIdCount;
-	int webViewId;
+	static int32 webViewIdCount;
+	int32 webViewId;
 	IUIWebViewDelegate *delegate;
 	UIWebView* webView;
+	static int32 requestId;
 };
 
 class JniWebView: public JniExtension
@@ -81,6 +92,11 @@ public:
 	void Deinitialize(int id);
 
 	void OpenURL(int id, const String& urlToOpen);
+	void LoadHtmlString(int id, const String& htmlString);
+	void DeleteCookies(const String& targetUrl);
+	String GetCookie(const String& targetUrl, const String& name);
+	Map<String, String> GetCookies(const String& targetUrl);
+	void ExecuteJScript(int id, int requestId, const String& scriptString);
 	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
 	void SetRect(int id, const Rect& rect);
@@ -90,6 +106,7 @@ public:
 
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
 	static void PageLoaded(int id);
+	static void OnExecuteJScript(int id, int requestId, const String& result);
 
 protected:
 	virtual jclass GetJavaClass() const;

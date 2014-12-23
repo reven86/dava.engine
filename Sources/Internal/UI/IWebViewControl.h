@@ -51,6 +51,7 @@ public:
 	};
 
 	virtual eAction URLChanged(DAVA::UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick) = 0;
+	virtual void OnExecuteJScript(DAVA::UIWebView* webview, int32 requestId, const String& result) {};
 	
 	virtual void PageLoaded(DAVA::UIWebView* webview) = 0;
 	virtual void SwipeGesture(bool left){};
@@ -69,12 +70,24 @@ public:
 	
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen) = 0;
+	// Load html page from string
+	virtual void LoadHtmlString(const WideString& htmlString) = 0;
+	// Delete all cookies associated with target URL
+	virtual void DeleteCookies(const String& targetUrl) { };
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& url, const String& name) const { return String(); };
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& url) const { return Map<String, String>(); };
+	// Execute javascript command, return request ID
+	virtual int32 ExecuteJScript(const String& scriptString) { return 0; };
 	
     virtual void OpenFromBuffer(const String& string, const DAVA::FilePath& basePath) = 0;
     
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect) = 0;
 	virtual void SetVisible(bool isVisible, bool hierarchic) = 0;
+	// Page scale property change
+	virtual void SetScalesPageToFit(bool isScalesToFit) { };
 	
 	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView) = 0;
 	virtual void SetBackgroundTransparency(bool enabled) { };
