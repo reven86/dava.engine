@@ -41,6 +41,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
+#include "UI/mainwindow.h"
+#include "Project.h"
 
 /* 
 	Project folders structure:
@@ -240,11 +242,12 @@ QString ResourcesManageHelper::GetDocumentationPath()
 
 QString ResourcesManageHelper::GetProjectPath()
 {
-//	const HierarchyTreeRootNode *rootNode = HierarchyTreeController::Instance()->GetTree().GetRootNode();
-//	if (!rootNode)
-		return QString();
-//	
-//	return rootNode->GetProjectDir();
+    MainWindow * win = qobject_cast<MainWindow *>(qApp->activeWindow());//TODO remove ugly code
+    if (win && win->GetProject())
+    {
+        return win->GetProject()->GetProjectDir();
+    }
+    return QString();
 }
 
 QString ResourcesManageHelper::GetProjectTitle()
@@ -257,7 +260,7 @@ QString ResourcesManageHelper::GetProjectTitle()
 	{
 		projectTitleString = GetProjectTitle(GetProjectFilePath(projectPath));
 	}
-
+    Logger::Debug("ProjectTitle: %s", projectTitleString.toStdString().c_str());
 	return projectTitleString;
 }
 

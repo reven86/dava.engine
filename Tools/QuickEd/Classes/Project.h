@@ -29,6 +29,7 @@ public:
     DAVA::RefPtr<PackageNode> OpenPackage(const QString &path);
     bool SavePackage(PackageNode *package);
     bool SaveAsPackage(PackageNode *package){return false;}
+    QString GetProjectDir() const { return projectDir; };
 
 signals:
     void ProjectOpened();

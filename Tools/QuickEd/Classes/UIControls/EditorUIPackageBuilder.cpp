@@ -29,7 +29,7 @@ RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePa
     DVASSERT(packageNode == NULL);
     SafeRelease(packageNode);
     RefPtr<UIPackage> package(new UIPackage(packagePath));
-    packageNode = new PackageNode(package);
+    packageNode = new PackageNode(package.Get());
     return package;
 }
 

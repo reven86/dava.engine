@@ -63,9 +63,9 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (!packagePath.Exists())
         return NULL;
     
-    ScopedPtr<YamlParser> parser(YamlParser::Create(packagePath));
+    RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
     
-    if (!parser)
+    if (parser.Get() == NULL)
     {
         return NULL;
     }
@@ -75,7 +75,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     {
         RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
         builder->EndPackage();
-        return SafeRetain<UIPackage>(package);
+        return SafeRetain(package.Get());
     }
     
     const YamlNode *headerNode = rootNode->Get("Header");
@@ -124,7 +124,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     }
     builder->EndPackage();
     
-    return SafeRetain<UIPackage>(package);
+    return SafeRetain(package.Get());
 }
     
 bool UIPackageLoader::LoadControlByName(const String &name)

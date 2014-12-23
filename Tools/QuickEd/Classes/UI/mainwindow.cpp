@@ -534,9 +534,9 @@ void MainWindow::OnOpenPackageFile(const QString &path)
             if (index == -1)
             {
                 RefPtr<PackageNode> package = project->OpenPackage(path);
-                if (package != NULL)
+                if (package.Get() != NULL)
                 {
-                    index = CreateTabContent(package);
+                    index = CreateTabContent(package.Get());
                 }
             }
             

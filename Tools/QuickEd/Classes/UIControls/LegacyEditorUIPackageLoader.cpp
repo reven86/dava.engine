@@ -48,9 +48,9 @@ LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
 
 UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
 {
-    ScopedPtr<YamlParser> parser(YamlParser::Create(packagePath));
+    RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
 
-    if (!parser)
+    if (parser.Get() == NULL)
         return NULL;
     
     YamlNode *rootNode = parser->GetRootNode();
@@ -58,7 +58,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     {
         RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
         builder->EndPackage();
-        return SafeRetain<UIPackage>(package);
+        return SafeRetain(package.Get());
     }
     
     RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
@@ -95,7 +95,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     
     builder->EndPackage();
     
-    return SafeRetain<UIPackage>(package);
+    return SafeRetain(package.Get());
 }
 
 bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/)
@@ -112,8 +112,8 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     if (type->AsString() == "UIAggregatorControl")
     {
         const YamlNode *pathNode = node->Get("aggregatorPath");
-        UIPackage *importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
-        DVASSERT(importedPackage);
+        RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
+        DVASSERT(importedPackage.Get());
         builder->BeginControlWithPrototype(importedPackage->GetName(), importedPackage->GetControl(0)->GetName(), "", this);
     }
     else if (baseType)
