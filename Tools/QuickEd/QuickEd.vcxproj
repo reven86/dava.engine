@@ -85,6 +85,7 @@
     <ClCompile Include="Classes\UI\PropertiesView\FloatPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\IntegerPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\EnumPropertyDelegate.cpp" />
+    <ClCompile Include="Classes\UI\PropertiesView\SpritePropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\StringPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeItemDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeModel.cpp" />
@@ -195,6 +196,7 @@
     <ClInclude Include="Classes\UI\PropertiesView\FloatPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\IntegerPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\EnumPropertyDelegate.h" />
+    <ClInclude Include="Classes\UI\PropertiesView\SpritePropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\StringPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeItemDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeModel.h" />
