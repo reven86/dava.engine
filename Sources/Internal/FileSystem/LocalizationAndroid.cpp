@@ -34,34 +34,6 @@
 namespace DAVA
 {
 
-jclass JniLocalization::gJavaClass = NULL;
-const char* JniLocalization::gJavaClassName = NULL;
-
-jclass JniLocalization::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniLocalization::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
-
-String JniLocalization::GetLocale()
-{
-	jmethodID mid = GetMethodID("GetLocale", "()Ljava/lang/String;");
-	if (mid)
-	{
-		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
-		char str[256] = {0};
-		JNI::CreateStringFromJni(jstring(obj), str);
-		String locale = str;
-		return locale;
-	}
-
-	return "en";
-}
-
 void LocalizationAndroid::SelectPreferedLocalization()
 {
     LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
@@ -69,7 +41,13 @@ void LocalizationAndroid::SelectPreferedLocalization()
 
 String LocalizationAndroid::GetDeviceLang(void)
 {
-    JniLocalization jniLocalization;
-    return jniLocalization.GetLocale();
+    JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
+    Function<jstring ()> getLocale  = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
+
+    char str[256] = {0};
+    JNI::CreateStringFromJni(getLocale(), str);
+    String locale = str;
+    return locale;
 }
+
 };

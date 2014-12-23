@@ -39,11 +39,6 @@
 #include "Input/AccelerometerAndroid.h"
 #include "AndroidDelegate.h"
 #include "AndroidCrashReport.h"
-#include "JniExtensions.h"
-#include "Platform/TemplateAndroid/DateTimeAndroid.h"
-#include "Platform/TemplateAndroid/AndroidCrashReport.h"
-#include "FileSystem/LocalizationAndroid.h"
-#include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
@@ -104,11 +99,8 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 		LOGE("Failed get java environment");
 		return -1;
 	}
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNILocalization", &DAVA::JniLocalization::gJavaClass, &DAVA::JniLocalization::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIFileList", &DAVA::JniFileList::gJavaClass, &DAVA::JniFileList::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDateTime", &DAVA::JniDateTime::gJavaClass, &DAVA::JniDateTime::gJavaClassName);
-	DAVA::Thread::InitMainThread();
 
+	DAVA::Thread::InitMainThread();
 
 	androidDelegate = new AndroidDelegate(vm);
 
