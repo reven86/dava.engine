@@ -54,8 +54,6 @@ namespace JNI
 	2. Add new template<> class JniCall<you class> and implement all methods as in existed classes
  */
 
-
-
 JavaVM *GetJVM();
 JNIEnv *GetEnv();
 
@@ -186,7 +184,7 @@ public:
 template<class Ret>
 String SignatureString::FromTypes()
 {
-	static String ret = String("(V)")
+	static String ret = String("()")
 							+ TypeMetrics<Ret>().value;
 	return ret;
 }
