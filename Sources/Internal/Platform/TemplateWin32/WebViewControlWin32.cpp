@@ -26,14 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#include "WebViewControlWin32.h"
-#include "CorePlatformWin32.h"
-using namespace DAVA;
+// WARN first include win32 headers'ATL::CCRTAllocator::free' : 
+// recursive on all control paths, function will cause runtime stack overflow
+// and only then include DAVA includes because of free, malloc redefine error
 
 #pragma warning(push)
-#pragma warning(disable: 4717) //'ATL::CCRTAllocator::free' : recursive on all control paths, function will cause runtime stack overflow
+#pragma warning(disable: 4717)
 #include <atlbase.h>
 #pragma warning(pop)
 #include <atlcom.h>
