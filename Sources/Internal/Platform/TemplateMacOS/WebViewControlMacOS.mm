@@ -188,6 +188,7 @@ using namespace DAVA;
             Vector2 spriteSize(rect.dx, rect.dy);
             Sprite* spr = Sprite::CreateFromTexture(spriteSize, tex, Vector2(0.f, 0.f), spriteSize);
             webView->SetSprite(spr, 0);
+            webView->SetDebugDraw(true);
             imageRGB->Release();
         }
     }
