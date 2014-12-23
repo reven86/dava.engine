@@ -439,6 +439,7 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight, UICo
             Sprite* spr = Sprite::CreateFromImage(imageRGB);
 
             control->SetSprite(spr, 0);
+            control->SetDebugDraw(true);
             // CImage in BMP format so we need to flip image
             control->GetBackground()->SetModification(ESM_VFLIP);
 
