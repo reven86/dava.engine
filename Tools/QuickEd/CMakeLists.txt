@@ -63,8 +63,8 @@ if( APPLE )
 
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
-    set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
-    set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
+    set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
+    set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 
     file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
     foreach ( FILE ${RESOURCES_LIST} )

@@ -19,7 +19,7 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/FCollada )
 include_directories   ( ${DAVA_ROOT_DIR}/Tools/ColladaConverter/Collada15/External/Cg/include )
-
+             
 
 include_directories   (.)
 include_directories   ( "../TextureTools" )
