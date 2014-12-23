@@ -41,10 +41,10 @@ public:
     DefaultUIPackageBuilder();
     virtual ~DefaultUIPackageBuilder();
     
-    virtual UIPackage *BeginPackage(const FilePath &packagePath) override;
+    virtual RefPtr<UIPackage> BeginPackage(const FilePath &packagePath) override;
     virtual void EndPackage() override;
     
-    virtual UIPackage *ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) override;
+    virtual RefPtr<UIPackage> ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) override;
     
     virtual UIControl *BeginControlWithClass(const String &className) override;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) override;

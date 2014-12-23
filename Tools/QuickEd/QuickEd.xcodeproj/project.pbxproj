@@ -36,6 +36,7 @@
 		159ED7CA19E2F61C00C8B37A /* BasePropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7C019E2F61C00C8B37A /* BasePropertyDelegate.cpp */; };
 		159ED7CB19E2F61C00C8B37A /* AbstractPropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7C219E2F61C00C8B37A /* AbstractPropertyDelegate.cpp */; };
 		159ED7D619E51AD200C8B37A /* FileSystemDockWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 159ED7D519E51AD200C8B37A /* FileSystemDockWidget.cpp */; };
+		15B2CC081A495CEA00B38D8F /* SpritePropertyDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15B2CC071A495CEA00B38D8F /* SpritePropertyDelegate.cpp */; };
 		15B892ED19CCC323007EABC6 /* GeneratedFiles in Build Sources */ = {isa = PBXBuildFile; fileRef = 1548A1C419CCAB2600620C60 /* GeneratedFiles */; };
 		15BE534C19D72CA500788209 /* LibraryDockWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 15BE534A19D72CA500788209 /* LibraryDockWidget.cpp */; };
 		17112B5916392EA80017E713 /* WidgetSignalsBlocker.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17112B5716392EA80017E713 /* WidgetSignalsBlocker.cpp */; };
@@ -239,6 +240,8 @@
 		159ED7C219E2F61C00C8B37A /* AbstractPropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbstractPropertyDelegate.cpp; sourceTree = "<group>"; };
 		159ED7D419E51AD200C8B37A /* FileSystemDockWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemDockWidget.h; sourceTree = "<group>"; };
 		159ED7D519E51AD200C8B37A /* FileSystemDockWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemDockWidget.cpp; sourceTree = "<group>"; };
+		15B2CC061A495CEA00B38D8F /* SpritePropertyDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpritePropertyDelegate.h; sourceTree = "<group>"; };
+		15B2CC071A495CEA00B38D8F /* SpritePropertyDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpritePropertyDelegate.cpp; sourceTree = "<group>"; };
 		15BE534A19D72CA500788209 /* LibraryDockWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibraryDockWidget.cpp; sourceTree = "<group>"; };
 		15BE534B19D72CA500788209 /* LibraryDockWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibraryDockWidget.h; sourceTree = "<group>"; };
 		17112B5716392EA80017E713 /* WidgetSignalsBlocker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WidgetSignalsBlocker.cpp; path = Helpers/WidgetSignalsBlocker.cpp; sourceTree = "<group>"; };
@@ -686,6 +689,8 @@
 		32F623BB19D3F4DD0000A101 /* PropertiesView */ = {
 			isa = PBXGroup;
 			children = (
+				15B2CC061A495CEA00B38D8F /* SpritePropertyDelegate.h */,
+				15B2CC071A495CEA00B38D8F /* SpritePropertyDelegate.cpp */,
 				1520F07F1A45545000118E98 /* BoolPropertyDelegate.h */,
 				1520F0801A45545000118E98 /* BoolPropertyDelegate.cpp */,
 				159ED7B119E2F61C00C8B37A /* Vector2PropertyDelegate.h */,
@@ -1036,6 +1041,7 @@
 				15959DE219D5750600B52AEF /* PackageDockWidget.cpp in Build Sources */,
 				15BE534C19D72CA500788209 /* LibraryDockWidget.cpp in Build Sources */,
 				329E0D3319D3F340008A9CE6 /* CommandNotify.cpp in Build Sources */,
+				15B2CC081A495CEA00B38D8F /* SpritePropertyDelegate.cpp in Build Sources */,
 				329E0D3719D3F340008A9CE6 /* EntityParentChangeCommand.cpp in Build Sources */,
 				159ED7CA19E2F61C00C8B37A /* BasePropertyDelegate.cpp in Build Sources */,
 				329E0D3819D3F340008A9CE6 /* EntityRemoveCommand.cpp in Build Sources */,
