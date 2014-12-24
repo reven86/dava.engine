@@ -90,7 +90,7 @@ PathComponent::PathComponent()
     
 PathComponent::~PathComponent()
 {
-    for_each(waypoints.begin(), waypoints.end(), SafeDelete<PathComponent::Waypoint>);
+    Reset();
 }
 
 Component * PathComponent::Clone(Entity * toEntity)
@@ -153,7 +153,7 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
     Component::Deserialize(archive, serializationContext);
 
     DVASSERT(waypoints.size() == 0);
-    for_each(waypoints.begin(), waypoints.end(), SafeDelete<PathComponent::Waypoint>);
+    Reset();
     
     const uint32 waypointCount = archive->GetUInt32("waypointCount");
     if(!waypointCount) return;
@@ -252,6 +252,9 @@ PathComponent::Waypoint * PathComponent::GetWaypoint(const FastName & name)
     return NULL;
 }
 
-    
+void PathComponent::Reset()
+{
+    for_each(waypoints.begin(), waypoints.end(), SafeDelete<PathComponent::Waypoint>);
+}
     
 }

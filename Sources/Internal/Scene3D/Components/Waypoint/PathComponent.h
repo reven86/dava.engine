@@ -94,9 +94,9 @@ public:
     void RemovePoint(Waypoint *point);
     
     Waypoint * GetWaypoint(const FastName & name);
-    
-    
     const Vector<Waypoint *> & GetPoints() const;
+    
+    void Reset();
     
 private:
     
