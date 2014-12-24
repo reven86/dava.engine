@@ -159,7 +159,11 @@
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
     CGContextRelease(context);
 
-    DAVA::Sprite* spr = DAVA::Sprite::CreateFromImage(imageRGB, false, true);
+    DAVA::Texture* tex = DAVA::Texture::CreateFromData(imageRGB, false);
+    DAVA::Rect rect = webView->GetRect();
+    DAVA::Vector2 spriteSize(rect.dx, rect.dy);
+    DAVA::Vector2 textureSize(width, height);
+    DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(textureSize, tex, DAVA::Vector2(0, 0), spriteSize);
     DVASSERT(spr);
     
     // TODO set webView
@@ -191,17 +195,20 @@
 - (UIImage *)takeSnapshotOfView:(UIView *)view
 {
     CFTimeInterval startTime = CACurrentMediaTime();
-    CGFloat reductionFactor = 1;
+    CGFloat contentScaleFactor = 2.f;//[view contentScaleFactor];
     
-#define TEST_ON 1
+    size_t w = view.frame.size.width * contentScaleFactor;
+    size_t h = view.frame.size.height * contentScaleFactor;
+    
+//#define TEST_ON 1
 #ifdef TEST_ON
     [view.layer setNeedsDisplay];
-    UIGraphicsBeginImageContext(CGSizeMake(view.frame.size.width/reductionFactor, view.frame.size.height/reductionFactor));
+    UIGraphicsBeginImageContext(CGSizeMake(w, h));
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     [view.layer renderInContext:ctx];
 #else
-    UIGraphicsBeginImageContext(CGSizeMake(view.frame.size.width/reductionFactor, view.frame.size.height/reductionFactor));
-    [view drawViewHierarchyInRect:CGRectMake(0, 0, view.frame.size.width/reductionFactor, view.frame.size.height/reductionFactor) afterScreenUpdates:YES];
+    UIGraphicsBeginImageContext(CGSizeMake(w, h));
+    [view drawViewHierarchyInRect:CGRectMake(0, 0, w, h) afterScreenUpdates:YES];
 #endif
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
@@ -222,6 +229,7 @@
         delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
     }
     [result release];
+}
 
 - (void)setUIWebViewControl:(DAVA::UIWebView*) uiWebControl
 {
@@ -415,8 +423,8 @@ void WebViewControl::SetRect(const Rect& rect)
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];
 
     Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
-    webViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
-    webViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    webViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x - 10000;
+    webViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y - 10000;
     webViewRect.size.width = physicalRect.dx;
     webViewRect.size.height = physicalRect.dy;
 	
@@ -433,6 +441,7 @@ void WebViewControl::SetRect(const Rect& rect)
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
 	[(UIWebView*)webViewPtr setHidden:!isVisible];
+    //[(UIWebView*)webViewPtr setHidden:YES];
 }
 
 void WebViewControl::SetScalesPageToFit(bool isScalesToFit)
