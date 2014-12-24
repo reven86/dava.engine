@@ -60,7 +60,9 @@ public:
 		//BOUNCE
 		BOUNCE_IN,
 		BOUNCE_OUT,
-		BOUNCE_IN_BOUNCE_OUT
+		BOUNCE_IN_BOUNCE_OUT,
+        
+        FUNC_TYPE_COUNT
 	};
 	/**
 		\brief This type describes our interpolation functions. 
