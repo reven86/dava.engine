@@ -52,6 +52,9 @@
 #include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/SkeletonComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Waypoint/WaypointComponent.h"
+#include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Base/ObjectFactory.h"
 
 namespace DAVA
@@ -103,6 +106,13 @@ Component * Component::CreateByType(uint32 componentType)
         return new QualitySettingsComponent();
     case SKELETON_COMPONENT:
         return new SkeletonComponent();
+    case PATH_COMPONENT:
+        return new PathComponent();
+    case WAYPOINT_COMPONENT:
+        return new WaypointComponent();
+    case EDGE_COMPONENT:
+        return new EdgeComponent();
+            
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:
