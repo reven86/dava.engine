@@ -26,55 +26,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_ITRANSPORT_H__
-#define __DAVAENGINE_ITRANSPORT_H__
+#ifndef __DAVAENGINE_ICONTROLLER_H__
+#define __DAVAENGINE_ICONTROLLER_H__
 
-#include "NetworkCommon.h"
+#include <Base/BaseTypes.h>
+#include <Base/Function.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-/*
- Interface should be implemented by transports :)
-*/
-struct ITransport
+struct IController
 {
     // There should be a virtual destructor defined as objects may be deleted through this interface
-    virtual ~ITransport() {}
-    
-    // Check whether transport is alive, i.e. can send/receive data
-    virtual bool IsActive() const = 0;
-    // Start transport
-    virtual void Activate() = 0;
-    // Shutdown transport
-    virtual void Deactivate() = 0;
-    // Send some data with given channel ID
-    virtual void Send(uint32 channelId, const uint8* buffer, size_t length, uint32* packetId) = 0;
-};
+    virtual ~IController() {}
 
-/*
- Interface should be implemented by objects which want to receive notification from transports.
- Main candidate is ChannelManager class.
-*/
-struct ITransportListener
-{
-    // Transport has been successfully started and can transfer data
-    virtual void OnTransportActivated(ITransport* transport, const Endpoint& endp) = 0;
-    // Transport has ended session by some reason
-    virtual void OnTransportDeactivated(ITransport* transport, eDeactivationReason reason, int32 error) = 0;
-    // Transport has been fully terminated and can be safely deleted
-    virtual void OnTransportTerminated(ITransport* transport) = 0;
-    // Transport has some data arrived from other side
-    virtual void OnTransportReceive(ITransport* transport, uint32 channelId, const uint8* buffer, size_t length) = 0;
-    // Buffer has been sent and client has a chance to free it or do something useful else
-    virtual void OnTransportSendComplete(ITransport* transport, uint32 channelId, const uint8* buffer, size_t length) = 0;
-    // Packet with given ID has been delivered and confirmed to other side
-    virtual void OnTransportPacketDelivered(ITransport* transport, uint32 channelId, uint32 packetId) = 0;
+    virtual void Start() = 0;
+    virtual void Stop(Function<void (IController*)> handler) = 0;
 };
 
 }   // namespace Net
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_ITRANSPORT_H__
+#endif  // __DAVAENGINE_ICONTROLLER_H__

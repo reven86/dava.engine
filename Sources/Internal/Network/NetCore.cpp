@@ -29,15 +29,17 @@
 #include <Base/FunctionTraits.h>
 #include <Debug/DVAssert.h>
 
-#include <Network/NetDriver.h>
 #include <Network/NetCore.h>
+#include <Network/Private/NetController.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-NetCore::NetCore() : loop(true)
+NetCore::NetCore()
+    : loop(true)
+    , isFinishing(false)
 {
 
 }
@@ -52,27 +54,28 @@ bool NetCore::RegisterService(uint32 serviceId, ServiceCreator creator, ServiceD
     return registrar.Register(serviceId, creator, deleter);
 }
 
-NetCore::TrackId NetCore::CreateDriver(const NetConfig& config)
+NetCore::TrackId NetCore::CreateController(const NetConfig& config)
 {
-    NetDriver* driver = new NetDriver(&loop, registrar);
-    if (true == driver->ApplyConfig(config))
+    NetController* ctrl = new NetController(&loop, registrar);
+    if (true == ctrl->ApplyConfig(config))
     {
-        trackedObjects.insert(driver);
-        driver->Start();
-        return ObjectToTrackId(driver);
+        trackedObjects.insert(ctrl);
+        ctrl->Start();
+        return ObjectToTrackId(ctrl);
     }
-    delete driver;
+    delete ctrl;
     return INVALID_TRACK_ID;
 }
 
-bool NetCore::DestroyDriver(TrackId id)
+bool NetCore::DestroyController(TrackId id)
 {
-    INetDriver* driver = GetTrackedObject(id);
-    if (driver != NULL)
+    IController* ctrl = GetTrackedObject(id);
+    if (ctrl != NULL)
     {
-        driver->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
+        ctrl->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
         return true;
     }
+    DVASSERT(0);
     return false;
 }
 
@@ -88,21 +91,26 @@ int32 NetCore::Poll()
 
 void NetCore::Finish(bool withWait)
 {
-    for (Set<INetDriver*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
-        (*i)->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
-    loop.PostQuit();
+    isFinishing = true;
+    if (false == trackedObjects.empty())
+    {
+        for (Set<IController*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
+            (*i)->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
+    }
+    else
+        loop.PostQuit();
     if (withWait)
         loop.Run(IOLoop::RUN_DEFAULT);
 }
 
-INetDriver* NetCore::GetTrackedObject(TrackId id) const
+IController* NetCore::GetTrackedObject(TrackId id) const
 {
-    Set<INetDriver*>::const_iterator i = trackedObjects.find(TrackIdToObject(id));
+    Set<IController*>::const_iterator i = trackedObjects.find(TrackIdToObject(id));
     return i != trackedObjects.end() ? *i
                                      : NULL;
 }
 
-void NetCore::TrackedObjectStopped(INetDriver* obj)
+void NetCore::TrackedObjectStopped(IController* obj)
 {
     DVASSERT(obj != NULL && GetTrackedObject(ObjectToTrackId(obj)) != NULL);
 
@@ -110,6 +118,11 @@ void NetCore::TrackedObjectStopped(INetDriver* obj)
     {
         trackedObjects.erase(obj);
         delete obj;
+    }
+
+    if (true == isFinishing && true == trackedObjects.empty())
+    {
+        loop.PostQuit();
     }
 }
 

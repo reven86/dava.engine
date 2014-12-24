@@ -26,74 +26,68 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_NETLOGGER_H__
-#define __DAVAENGINE_NETLOGGER_H__
+#ifndef __DAVAENGINE_TCPCLIENTTRANSPORT_H__
+#define __DAVAENGINE_TCPCLIENTTRANSPORT_H__
 
-#include <Base/Noncopyable.h>
-#include <FileSystem/Logger.h>
-#include <Platform/DateTime.h>
+#include <Network/Base/Endpoint.h>
+#include <Network/Base/TCPSocket.h>
 
-#include <Network/NetService.h>
+#include <Network/Private/ITransport.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-/*
- This is network logger
-*/
-class NetLogger : public NetService
-                , public LoggerOutput
-                , private Noncopyable
+class IOLoop;
+class TCPClientTransport : public IClientTransport
 {
-private:
-    struct LogRecord
-    {
-        LogRecord() : timestamp(DateTime::Now()), level(), message() {}
-        LogRecord(const DateTime& tstamp, Logger::eLogLevel ll, const char8* text) : timestamp(tstamp)
-                                                                                   , level(ll)
-                                                                                   , message(text) {}
-
-        DateTime          timestamp;
-        Logger::eLogLevel level;
-        String            message;
-    };
-
 public:
-    NetLogger(bool selfInstallFlag = true, size_t queueSize = 100);
-    virtual ~NetLogger();
+    TCPClientTransport(IOLoop* aLoop);
+    TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint);
+    virtual ~TCPClientTransport();
 
-    void Install();
-    void Uninstall();
+    TCPSocket& Socket();
 
-    // IChannelListener
-    virtual void OnPacketSent(IChannel* channel, const void* buffer, size_t length);
-    virtual void OnPacketDelivered(IChannel* channel, uint32 packetId);
-
-    // LoggerOutput
-    virtual void Output(Logger::eLogLevel ll, const char8* text);
-    virtual void Output(Logger::eLogLevel ll, const char16* text);
-
-    virtual void ChannelOpen();
+    // IClientTransport
+    virtual int32 Start(IClientListener* aListener);
+    virtual void Stop();
+    virtual int32 Send(const Buffer* buffers, size_t bufferCount);
 
 private:
-    void DoOutput(Logger::eLogLevel ll, const char8* text);
-    void SendNextRecord();
+    int32 DoStart();
+    int32 DoConnected();
+    void CleanUp(int32 error);
 
-    bool EnqueueMessage(Logger::eLogLevel ll, const char8* message);
-    bool GetFirstMessage(LogRecord& record);
-    void RemoveFirstMessage();
+    void SocketHandleClose(TCPSocket* socket);
+    void SocketHandleConnect(TCPSocket* socket, int32 error);
+    void SocketHandleRead(TCPSocket* socket, int32 error, size_t nread);
+    void SocketHandleWrite(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount);
 
 private:
-    bool selfInstall;
-    bool isInstalled;
-    size_t maxQueueSize;
-    Mutex mutex;
-    Deque<LogRecord> recordQueue;
+    Endpoint endpoint;
+    Endpoint remoteEndpoint;
+    TCPSocket socket;
+    IClientListener* listener;  // Who receive notifications; also indicator that Start has been called
+    bool isInitiator;       // true: establishes connection; false: created from accepted connection
+    bool isTerminating;     // Stop has been invoked
+    bool isConnected;       // Connections has been established
+
+    static const size_t INBUF_SIZE = 10 * 1024;
+    uint8 inbuf[INBUF_SIZE];
+
+    static const size_t SENDBUF_COUNT = 2;
+    Buffer sendBuffers[SENDBUF_COUNT];
+    size_t sendBufferCount;
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline TCPSocket& TCPClientTransport::Socket()
+{
+    return socket;
+}
 
 }   // namespace Net
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_NETLOGGER_H__
+#endif  // __DAVAENGINE_TCPCLIENTTRANSPORT_H__

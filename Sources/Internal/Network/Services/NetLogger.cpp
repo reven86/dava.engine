@@ -40,16 +40,35 @@ namespace Net
 
 NetLogger::NetLogger(bool selfInstallFlag, size_t queueSize)
     : selfInstall(selfInstallFlag)
+    , isInstalled(false)
     , maxQueueSize(queueSize > 1 ? queueSize : 100)
 {
     if (selfInstall)
-        Logger::AddCustomOutput(this);
+        Install();
 }
 
 NetLogger::~NetLogger()
 {
     if (selfInstall)
+        Uninstall();
+}
+
+void NetLogger::Install()
+{
+    if (false == isInstalled)
+    {
+        isInstalled = true;
+        Logger::AddCustomOutput(this);
+    }
+}
+
+void NetLogger::Uninstall()
+{
+    if (true == isInstalled)
+    {
+        isInstalled = false;
         Logger::RemoveCustomOutput(this);
+    }
 }
 
 void NetLogger::ChannelOpen()

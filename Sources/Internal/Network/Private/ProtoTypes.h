@@ -26,70 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_NETCORE_H__
-#define __DAVAENGINE_NETCORE_H__
+#ifndef __DAVAENGINE_PROTOTYPES_H__
+#define __DAVAENGINE_PROTOTYPES_H__
 
 #include <Base/BaseTypes.h>
-#include <Base/Singleton.h>
-
-#include <Network/Base/IOLoop.h>
-#include <Network/ServiceRegistrar.h>
-#include <Network/IController.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-class NetConfig;
-class NetCore : public Singleton<NetCore>
+struct ProtoHeader
 {
-public:
-    typedef intptr_t TrackId;
-    static const TrackId INVALID_TRACK_ID = 0;
-
-public:
-    NetCore();
-    ~NetCore();
-
-    IOLoop* Loop() { return &loop; }
-
-    bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
-
-    TrackId CreateController(const NetConfig& config);
-    bool DestroyController(TrackId id);
-
-    int32 Run();
-    int32 Poll();
-    void Finish(bool withWait = false);
-
-private:
-    IController* GetTrackedObject(TrackId id) const;
-    void TrackedObjectStopped(IController* obj);
-
-    TrackId ObjectToTrackId(const IController* obj) const;
-    IController* TrackIdToObject(TrackId id) const;
-
-private:
-    IOLoop loop;
-    Set<IController*> trackedObjects;
-    ServiceRegistrar registrar;
-    bool isFinishing;
+    uint16 frameSize;           // Frame length: header + data
+    uint16 frameType;           // Frame type
+    uint32 channelId;           // Channel identifier
+    uint32 packetId;            // Packet Id for acknoledgements
+    uint32 totalSize;           // Total size of user data
 };
 
-//////////////////////////////////////////////////////////////////////////
-inline NetCore::TrackId NetCore::ObjectToTrackId(const IController* obj) const
-{
-    return reinterpret_cast<TrackId>(obj);
-}
+const size_t PROTO_MAX_FRAME_SIZE = 1024 * 64 - 1;
+const size_t PROTO_MAX_FRAME_DATA_SIZE = PROTO_MAX_FRAME_SIZE - sizeof(ProtoHeader);
 
-inline IController* NetCore::TrackIdToObject(TrackId id) const
+enum eProtoFrameType
 {
-    return reinterpret_cast<IController*>(id);
-}
+    TYPE_DATA,
+    TYPE_CHANNEL_QUERY,
+    TYPE_CHANNEL_ALLOW,
+    TYPE_CHANNEL_DENY,
+    TYPE_PING,
+    TYPE_PONG,
+    TYPE_DELIVERY_ACK,
+
+    TYPE_FIRST = TYPE_DATA,
+    TYPE_CONTROL_FIRST = TYPE_CHANNEL_QUERY,
+    TYPE_LAST  = TYPE_DELIVERY_ACK
+};
+
+enum eProtoFrameFlags
+{
+    BUFFER_LOCAL_COPY = 0x01,
+    NO_DELIVERY_ACK = 0x02
+};
 
 }   // namespace Net
 }   // namespace DAVA
 
-
-#endif  // __DAVAENGINE_NETCORE_H__
+#endif  // __DAVAENGINE_PROTOTYPES_H__

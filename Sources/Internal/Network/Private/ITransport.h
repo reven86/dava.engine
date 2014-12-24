@@ -26,70 +26,58 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_NETCORE_H__
-#define __DAVAENGINE_NETCORE_H__
+#ifndef __DAVAENGINE_ITRANSPORT_H__
+#define __DAVAENGINE_ITRANSPORT_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Singleton.h>
-
-#include <Network/Base/IOLoop.h>
-#include <Network/ServiceRegistrar.h>
-#include <Network/IController.h>
+#include <Network/Base/Buffer.h>
+#include <Network/Base/Endpoint.h>
+#include <Network/NetworkCommon.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-class NetConfig;
-class NetCore : public Singleton<NetCore>
+struct IClientTransport;
+struct IServerListener;
+
+struct IServerTransport
 {
-public:
-    typedef intptr_t TrackId;
-    static const TrackId INVALID_TRACK_ID = 0;
+    virtual ~IServerTransport() {}
 
-public:
-    NetCore();
-    ~NetCore();
+    virtual int32 Start(IServerListener* listener) = 0;
+    virtual void Stop() = 0;
+    virtual void ReclaimClient(IClientTransport* client) = 0;
+};
 
-    IOLoop* Loop() { return &loop; }
-
-    bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
-
-    TrackId CreateController(const NetConfig& config);
-    bool DestroyController(TrackId id);
-
-    int32 Run();
-    int32 Poll();
-    void Finish(bool withWait = false);
-
-private:
-    IController* GetTrackedObject(TrackId id) const;
-    void TrackedObjectStopped(IController* obj);
-
-    TrackId ObjectToTrackId(const IController* obj) const;
-    IController* TrackIdToObject(TrackId id) const;
-
-private:
-    IOLoop loop;
-    Set<IController*> trackedObjects;
-    ServiceRegistrar registrar;
-    bool isFinishing;
+struct IServerListener
+{
+    virtual void OnTransportSpawned(IServerTransport* parent, IClientTransport* child) = 0;
+    virtual void OnTransportTerminated(IServerTransport* tr) = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline NetCore::TrackId NetCore::ObjectToTrackId(const IController* obj) const
-{
-    return reinterpret_cast<TrackId>(obj);
-}
+struct IClientListener;
 
-inline IController* NetCore::TrackIdToObject(TrackId id) const
+struct IClientTransport
 {
-    return reinterpret_cast<IController*>(id);
-}
+    virtual ~IClientTransport() {}
+
+    virtual int32 Start(IClientListener* listener) = 0;
+    virtual void Stop() = 0;
+    virtual int32 Send(const Buffer* buffers, size_t bufferCount) = 0;
+};
+
+struct IClientListener
+{
+    virtual void OnTransportTerminated(IClientTransport* tr) = 0;
+    virtual void OnTransportConnected(IClientTransport* tr, const Endpoint& endp) = 0;
+    virtual void OnTransportDisconnected(IClientTransport* tr, int32 error) = 0;
+    virtual void OnTransportDataReceived(IClientTransport* tr, const void* buffer, size_t length) = 0;
+    virtual void OnTransportSendComplete(IClientTransport* tr) = 0;
+};
 
 }   // namespace Net
 }   // namespace DAVA
 
-
-#endif  // __DAVAENGINE_NETCORE_H__
+#endif  // __DAVAENGINE_ITRANSPORT_H__

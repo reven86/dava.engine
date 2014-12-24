@@ -214,7 +214,7 @@ void TestEchoClient::SendParcel(Parcel* parcel)
 //////////////////////////////////////////////////////////////////////////
 NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , testingEcho(true)
-                           , logger(false)
+                           , logger()
                            , serviceCreatorStage(0)
                            , serverBytesRecv(NULL)
                            , serverBytesSent(NULL)
@@ -248,7 +248,7 @@ void NetworkTest::LoadResources()
         loggerConfig.AddTransport(TRANSPORT_TCP, Endpoint(LOGGER_PORT));
         loggerConfig.AddService(SERVICE_LOG);
 
-        NetCore::Instance()->CreateDriver(loggerConfig);
+        NetCore::Instance()->CreateController(loggerConfig);
     }
     {
     	// Cannot log wide string uniformly on all platforms, maybe due to incorrect format flag
@@ -268,8 +268,8 @@ void NetworkTest::LoadResources()
     NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
 
     // Server config must be recreated first due to restrictions of service management
-    NetCore::Instance()->CreateDriver(serverConfig);
-    NetCore::Instance()->CreateDriver(clientConfig);
+    NetCore::Instance()->CreateController(serverConfig);
+    NetCore::Instance()->CreateController(clientConfig);
 }
 
 void NetworkTest::UnloadResources()
@@ -382,9 +382,6 @@ IChannelListener* NetworkTest::CreateLogger(uint32 serviceId)
 {
     if (SERVICE_LOG == serviceId)
     {
-        // We should do manual CustomOutput installation as Logger deletes custom outputs itself
-        // and NetworkTest destructor is called after Logger has been destructed 
-        Logger::AddCustomOutput(&logger);
         return &logger;
     }
     return NULL;
@@ -413,7 +410,7 @@ void NetworkTest::DeleteLogger(IChannelListener* obj)
 {
     if (obj == &logger)
     {
-        Logger::RemoveCustomOutput(&logger);
+        logger.Uninstall();
     }
 }
 

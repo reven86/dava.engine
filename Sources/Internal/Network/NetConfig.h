@@ -53,7 +53,7 @@ public:
     };
 
 public:
-    NetConfig(eTransportRole aRole);
+    NetConfig(eNetworkRole aRole);
     ~NetConfig();
 
     bool Validate() const;
@@ -62,13 +62,13 @@ public:
     bool AddTransport(eTransportType type, const Endpoint& endpoint);
     bool AddService(uint32 serviceId);
 
-    eTransportRole Role() const { return role; }
+    eNetworkRole Role() const { return role; }
 
     const Vector<TransportConfig>& Transports() const { return transports; }
     const Vector<uint32>& Services() const { return services; }
 
 private:
-    eTransportRole role;
+    eNetworkRole role;
     Vector<TransportConfig> transports;
     Vector<uint32> services;
 };

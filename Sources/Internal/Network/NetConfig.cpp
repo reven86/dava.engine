@@ -42,7 +42,7 @@ bool operator == (const NetConfig::TransportConfig& left, const NetConfig::Trans
     return left.type == right.type && left.endpoint == right.endpoint;
 }
 
-NetConfig::NetConfig(eTransportRole aRole) : role(aRole)
+NetConfig::NetConfig(eNetworkRole aRole) : role(aRole)
 {}
 
 NetConfig::~NetConfig() {}

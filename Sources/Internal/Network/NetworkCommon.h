@@ -29,35 +29,22 @@
 #ifndef __DAVAENGINE_NETWORKCOMMON_H__
 #define __DAVAENGINE_NETWORKCOMMON_H__
 
-#include <Base/BaseTypes.h>
-
 namespace DAVA
 {
 namespace Net
 {
 
-// Transport types, used by TransportFactory to create transport objects
+// Transport types
 enum eTransportType
 {
     TRANSPORT_TCP       // Transport based on TCP
 };
 
-// Transport roles
-enum eTransportRole
+// Role of network objects
+enum eNetworkRole
 {
     SERVER_ROLE,
     CLIENT_ROLE
-};
-
-// Possible reasons for transport deactivation and channel closing
-enum eDeactivationReason
-{
-    REQUEST,     // Deactivated by user request
-    OTHERSIDE,   // Deactivated by closing connection from other side
-    INITERROR,   // Deactivated on initialization error
-    NETERROR,    // Deactivated on network error
-    TIMEOUT,     // Deactivated on timeout
-    PACKETERROR  // Deactivated on invalid packet
 };
 
 }   // namespace Net
