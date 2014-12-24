@@ -48,7 +48,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5CEE1CBE1573D23200BC45C6 /* libmongodb_ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libmongodb_ios.a; path = libmongodb_ioslib.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5CEE1CBE1573D23200BC45C6 /* libmongodb_ioslib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libmongodb_ioslib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5CEE1CC11573D23200BC45C6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5CEE1CD71573D26E00BC45C6 /* mongodb */ = {isa = PBXFileReference; lastKnownFileType = folder; name = mongodb; path = ../../include/mongodb; sourceTree = "<group>"; };
 		5CEE1CD81573D27E00BC45C6 /* bson.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bson.c; path = ../../src/bson.c; sourceTree = "<group>"; };
@@ -98,7 +98,7 @@
 		5CEE1CBF1573D23200BC45C6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5CEE1CBE1573D23200BC45C6 /* libmongodb_ios.a */,
+				5CEE1CBE1573D23200BC45C6 /* libmongodb_ioslib.a */,
 				5CEE1D171573DB1000BC45C6 /* libmongodb_sim.a */,
 			);
 			name = Products;
@@ -178,7 +178,7 @@
 			);
 			name = mongodb_ios;
 			productName = mongodb_ios;
-			productReference = 5CEE1CBE1573D23200BC45C6 /* libmongodb_ios.a */;
+			productReference = 5CEE1CBE1573D23200BC45C6 /* libmongodb_ioslib.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		5CEE1D161573DB1000BC45C6 /* mongodb_sim */ = {
@@ -298,7 +298,7 @@
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				PRODUCT_NAME = "";
 				SDKROOT = iphoneos;
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = "armv7 armv7s arm64 i386";
 			};
 			name = Debug;
 		};
@@ -319,15 +319,21 @@
 				PRODUCT_NAME = "";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = "armv7 armv7s arm64 i386";
 			};
 			name = Release;
 		};
 		5CEE1CCC1573D23200BC45C6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64,
+				);
 				DSTROOT = /tmp/mongodb_ios.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = mongodb_ioslib;
 				SKIP_INSTALL = YES;
@@ -337,8 +343,14 @@
 		5CEE1CCD1573D23200BC45C6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64,
+				);
 				DSTROOT = /tmp/mongodb_ios.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = mongodb_ioslib;
 				SKIP_INSTALL = YES;
@@ -348,7 +360,7 @@
 		5CEE1D201573DB1000BC45C6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = i386;
 				DSTROOT = /tmp/mongodb_sim.dst;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -360,7 +372,7 @@
 		5CEE1D211573DB1000BC45C6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = i386;
 				DSTROOT = /tmp/mongodb_sim.dst;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -125,7 +125,7 @@ void TextureProperties::MipMapSizesInit(int baseWidth, int baseHeight)
 			shownKey.sprintf("%dx%d", baseWidth, baseHeight);
 		}
 
-		enumSizes.Register(level, shownKey.toAscii());
+		enumSizes.Register(level, shownKey.toLatin1());
 		availableSizes[level] = size;
 
 		level++;

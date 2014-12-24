@@ -50,6 +50,7 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;
 - (void)leftGesture;
 - (void)rightGesture;
+- (void)onExecuteJScript:(NSArray *)result;
 
 @end
 
@@ -146,6 +147,17 @@
     }
 }
 
+- (void)onExecuteJScript:(NSArray *)result
+{
+    if (delegate)
+    {
+        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
+        NSString* requestResult = (NSString*)[result objectAtIndex:1];
+        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
+    }
+    [result release];
+}
+
 @end
 
 namespace DAVA
@@ -155,6 +167,8 @@ namespace DAVA
 	//Use unqualified UIWebView and UIScreen from global namespace, i.e. from UIKit
 	using ::UIWebView;
 	using ::UIScreen;
+
+int WebViewControl::runScriptID = 0;
 
     static const struct
     {
@@ -251,21 +265,85 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
     [innerWebView loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
 }
 
+void WebViewControl::LoadHtmlString(const WideString& htlmString)
+{
+	NSString* htmlPageToLoad = [[[NSString alloc] initWithBytes: htlmString.data()
+												   length: htlmString.size() * sizeof(wchar_t)
+												 encoding:NSUTF32LittleEndianStringEncoding] autorelease];
+
+    [(UIWebView*)webViewPtr loadHTMLString:htmlPageToLoad baseURL:nil];
+}
+
+void WebViewControl::DeleteCookies(const String& targetUrl)
+{
+	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+	NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+	// Delete all cookies for specified URL
+	for(NSHTTPCookie *cookie in [cookies cookies])
+	{
+		if([[cookie domain] rangeOfString:targetUrlString].location != NSNotFound)
+	  	{
+       		[cookies deleteCookie:cookie];
+   	 	}
+	}
+	// Syncronized all changes with file system
+	[[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+String WebViewControl::GetCookie(const String& targetUrl, const String& name) const
+{
+	Map<String, String> cookiesMap = GetCookies(targetUrl);
+	Map<String, String>::iterator cIter = cookiesMap.find(name);
+	
+	if (cIter != cookiesMap.end())
+	{
+		return cIter->second;
+	}
+
+	return String();
+}
+
+Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
+{
+	Map<String, String> resultMap;
+	
+	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+    NSArray  *cookiesArray = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL: [NSURL URLWithString:targetUrlString]];
+
+	for(NSHTTPCookie * cookie in cookiesArray)
+	{
+		String cookieName = [[cookie name] UTF8String];
+		resultMap[cookieName] = [[cookie value] UTF8String];
+    }
+	
+	return resultMap;
+}
+
+int32 WebViewControl::ExecuteJScript(const String& scriptString)
+{
+    int requestID = runScriptID++;
+	NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
+	NSString *resultString = [(UIWebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
+
+    WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
+    if (w)
+    {
+        NSArray* array = [NSArray arrayWithObjects:[NSNumber numberWithInt:requestID], resultString, nil];
+        [array retain];
+        [w performSelector:@selector(onExecuteJScript:) withObject:array afterDelay:0.0];
+    }
+    return requestID;
+}
+
 void WebViewControl::SetRect(const Rect& rect)
 {
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];
 
-	
-    // Minimum recalculations are needed, no swapping, no rotation.
-    webViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-    webViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-    webViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-    webViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
-
-    webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-    webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
-
+    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+    webViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+    webViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    webViewRect.size.width = physicalRect.dx;
+    webViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
     DAVA::float32 scaleDivider = [HelperAppDelegate GetScale];
@@ -280,6 +358,11 @@ void WebViewControl::SetRect(const Rect& rect)
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
 	[(UIWebView*)webViewPtr setHidden:!isVisible];
+}
+
+void WebViewControl::SetScalesPageToFit(bool isScalesToFit)
+{
+	[(UIWebView*)webViewPtr setScalesPageToFit:isScalesToFit];
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
@@ -305,9 +388,15 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 void WebViewControl::HideSubviewImages(void* view)
 {
+    UIWebView* webView = (UIWebView*)webViewPtr;
+    ::UIScrollView *scrollView = webView.scrollView;
+    
 	UIView* uiview = (UIView*)view;
 	for (UIView* subview in [uiview subviews])
 	{
+        if(uiview == scrollView)
+            continue;
+        
 		if ([subview isKindOfClass:[UIImageView class]])
 		{
 			subviewVisibilityMap[subview] = [subview isHidden];

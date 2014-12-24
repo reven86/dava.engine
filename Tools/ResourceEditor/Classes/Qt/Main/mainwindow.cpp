@@ -38,6 +38,7 @@
 #include <QKeySequence>
 #include <QMetaObject>
 #include <QMetaType>
+#include <QActionGroup>
 
 #include "mainwindow.h"
 #include "QtUtils.h"
@@ -124,6 +125,9 @@
 #include "Tools/ColorPicker/ColorPicker.h"
 
 #include "SceneProcessing/SceneProcessor.h"
+#include "QtLayer.h"
+#include "davaglwidget.h"
+
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -634,6 +638,14 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
 	ui->actionReloadPNG->setData(GPU_PNG);
+
+    QActionGroup *reloadGroup = new QActionGroup(this);
+    QList<QAction *> reloadActions = ui->menuTexturesForGPU->actions();
+    for ( int i = 0; i < reloadActions.size(); i++ )
+    {
+        reloadGroup->addAction(reloadActions[i]);
+    }
+
 	QObject::connect(ui->menuTexturesForGPU, SIGNAL(triggered(QAction *)), this, SLOT(OnReloadTexturesTriggered(QAction *)));
 	QObject::connect(ui->actionReloadTextures, SIGNAL(triggered()), this, SLOT(OnReloadTextures()));
 	QObject::connect(ui->actionReloadSprites, SIGNAL(triggered()), this, SLOT(OnReloadSprites()));
@@ -1672,8 +1684,8 @@ void QtMainWindow::On2DCameraDialog()
     Entity* sceneNode = new Entity();
     Camera * camera = new Camera();
     
-    float32 w = Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin();
-    float32 h = Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin();
+    float32 w = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
+    float32 h = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
     float32 aspect = w / h;
     camera->SetupOrtho(w, aspect, 1, 1000);        
     camera->SetPosition(Vector3(0,0, -10000));
@@ -1847,15 +1859,12 @@ void QtMainWindow::LoadGPUFormat()
 	{
 		QAction *actionN = allActions[i];
 
-		if(!actionN->data().isNull() &&
-			actionN->data().toInt() == curGPU)
+		if (actionN->data().isValid() &&
+		    actionN->data().toInt() == curGPU)
 		{
 			actionN->setChecked(true);
 			ui->actionReloadTextures->setText(actionN->text());
-		}
-		else
-		{
-			actionN->setChecked(false);
+            break;
 		}
 	}
 }

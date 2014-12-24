@@ -34,7 +34,7 @@
 #include "JniExtensions.h"
 #include "Base/BaseTypes.h"
 
-#include "../../Platform/DeviceInfo.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
@@ -52,6 +52,9 @@ public:
 	String GetTimeZone();
 	String GetUDID();
 	String GetName();
+	String GetHTTPProxyHost();
+	String GetHTTPNonProxyHosts();
+	int GetHTTPProxyPort();
 	int32 GetZBufferSize();
 	int32 GetGPUFamily();
 	int32 GetNetworkType();

@@ -36,6 +36,7 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Animation/LinearAnimation.h"
 
 namespace DAVA
@@ -52,10 +53,13 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+	textBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
+
 	textBg->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
     
     shadowBg = new UIControlBackground();
     shadowBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+	shadowBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
     shadowBg->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
     SetTextColor(Color::White);
@@ -217,20 +221,22 @@ const Vector2 &UIStaticText::GetShadowOffset() const
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
+	if(GetText().empty()) return;
+
 	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());
 
 	textBlock->SetPivotPoint(geometricData.pivotPoint);
-	PrepareSprite();
 	textBlock->PreDraw();
+	PrepareSprite();
 
     UIControl::Draw(geometricData);
 
 	UIGeometricData textGeomData;
 	textGeomData.position = textBlock->GetSpriteOffset();
 	textGeomData.size = GetSize();
-	textGeomData.AddToGeometricData(geometricData);
+    textGeomData.AddGeometricData(geometricData);
 
     if(!FLOAT_EQUAL(shadowBg->GetDrawColor().a, 0.0f) && (!FLOAT_EQUAL(shadowOffset.dx, 0.0f) || !FLOAT_EQUAL(shadowOffset.dy, 0.0f)))
     {
@@ -238,7 +244,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         UIGeometricData shadowGeomData;
         shadowGeomData.position = shadowOffset;
         shadowGeomData.size = GetSize();
-        shadowGeomData.AddToGeometricData(textGeomData);
+        shadowGeomData.AddGeometricData(textGeomData);
 
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->Draw(shadowGeomData);
@@ -499,10 +505,10 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
 
 void UIStaticText::PrepareSprite()
 {
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &UIStaticText::PrepareSpriteInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &UIStaticText::PrepareSpriteInternal));
 }
 
-void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, void *callerData)
+void UIStaticText::PrepareSpriteInternal()
 {
     if (textBlock->IsSpriteReady())
     {
@@ -513,13 +519,13 @@ void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, 
         Texture *tex = sprite->GetTexture();
         if(tex && tex->GetFormat() == FORMAT_A8)
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
         }
         else
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
         }
     }
     else
@@ -552,7 +558,7 @@ String UIStaticText::GetFontPresetName() const
     return FontManager::Instance()->GetFontName(font);
 }
 
-void UIStaticText::SetFontPresetName(const String &presetName)
+void UIStaticText::SetFontByPresetName(const String &presetName)
 {
     Font *font = NULL;
 
@@ -591,7 +597,7 @@ int32 UIStaticText::GetMultilineType() const
     if (GetMultiline())
         return GetMultilineBySymbol() ? MULTILINE_ENABLED_BY_SYMBOL : MULTILINE_ENABLED;
     else
-        return GetMultiline();
+        return MULTILINE_DISABLED;
 }
     
 void UIStaticText::SetMultilineType(int32 multilineType)

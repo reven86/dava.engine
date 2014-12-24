@@ -60,11 +60,11 @@ public:
         return (GameCore*) DAVA::Core::GetApplicationCore();
     };
     
-    virtual void OnAppStarted();
-    virtual void OnAppFinished();
+    virtual void OnAppStarted() override;
+    virtual void OnAppFinished() override;
     
-    virtual void OnSuspend();
-    virtual void OnResume();
+    virtual void OnSuspend() override;
+    virtual void OnResume() override;
 
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     virtual void OnBackground();
@@ -72,9 +72,9 @@ public:
     virtual void OnDeviceLocked();
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
-    virtual void BeginFrame();
-    virtual void Update(DAVA::float32 update);
-    virtual void Draw();
+    virtual void BeginFrame() override;
+    virtual void Update(DAVA::float32 update) override;
+    virtual void Draw() override;
 
     void RegisterScreen(BaseScreen *screen);
     
@@ -82,9 +82,9 @@ public:
 
     void LogMessage(const String &message);
     
-    
 protected:
     
+    void RegisterTests();
     void RunTests();
     void ProcessTests();
     void FinishTests();
@@ -101,6 +101,8 @@ protected:
 private:
     void InitLogging();
 
+    void RunOnlyThisTest();
+    void OnError();
     bool IsNeedSkipTest(const BaseScreen& screen) const;
 
     String runOnlyThisTest;

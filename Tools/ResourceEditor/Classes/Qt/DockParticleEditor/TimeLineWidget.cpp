@@ -84,7 +84,7 @@ void TimeLineWidget::paintEvent(QPaintEvent * e)
 {
 	QPainter painter(this);
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	QFont font("Courier", 8, QFont::Normal);
 #else
 	QFont font("Courier", 11, QFont::Normal);

@@ -55,13 +55,13 @@ FontManager::~FontManager()
 {
 	FTFont::ClearCache();
 
+	UnregisterFonts();
+
 	FT_Error error = FT_Done_FreeType(library);
 	if(error)
 	{
 		Logger::Error("FontManager FT_Done_FreeType failed");
 	}
-
-	UnregisterFonts();
 }
 	
 void FontManager::RegisterFont(Font* font)
@@ -267,6 +267,11 @@ const Map<Font*, String>& FontManager::GetRegisteredFonts() const
 String FontManager::GetFontHashName(Font* font)
 {
 	return Format("Font_%X", font->GetHashCode());
+}
+    
+const Map<String, Font*>& FontManager::GetFontMap() const
+{
+    return fontMap;
 }
 
 };

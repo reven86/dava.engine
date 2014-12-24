@@ -113,7 +113,7 @@ void UIJoypad::CreateStickControl()
         stick = new UIControl(Rect(0, 0, 10, 10));
         stick->GetBackground()->SetAlign(ALIGN_HCENTER|ALIGN_VCENTER);
         stick->SetInputEnabled(false);
-        stick->pivotPoint = Vector2(5, 5);
+        stick->SetPivotPoint(Vector2(5, 5));
         stick->relativePosition = Vector2(size.x/2, size.y/2);
         AddControl(stick);
     }
