@@ -259,14 +259,16 @@ void WebViewControl::SetRect(const Rect& rect)
 {
 	NSRect webViewRect = [(WebView*)webViewPtr frame];
 
-	webViewRect.size.width = rect.dx * Core::GetVirtualToPhysicalFactor();
-	webViewRect.size.height = rect.dy * Core::GetVirtualToPhysicalFactor();
+    Rect convertedRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+    
+	webViewRect.size.width = convertedRect.dx;
+	webViewRect.size.height = convertedRect.dy;
 	
-	webViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-	webViewRect.origin.y = Core::Instance()->GetPhysicalScreenHeight() - (rect.y + rect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
+	webViewRect.origin.x = convertedRect.x;
+	webViewRect.origin.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
 	
-	webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-	webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
+	webViewRect.origin.x += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+	webViewRect.origin.y += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
 	
 	[(WebView*)webViewPtr setFrame: webViewRect];
 }

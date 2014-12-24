@@ -41,8 +41,8 @@ void FrameworkDidLaunched()
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
     appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
     
-	DAVA::Core::Instance()->SetVirtualScreenSize(480, 320);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(480, 320, "Gfx");
+	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(480, 320);
+	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(480, 320, "Gfx");
 #else
 	KeyedArchive * appOptions = new KeyedArchive();
 //	appOptions->SetInt("width",	920);
@@ -62,10 +62,10 @@ void FrameworkDidLaunched()
 	appOptions->SetInt32("fullscreen", 0);
 	appOptions->SetInt32("bpp", 32); 
 
-	DAVA::Core::Instance()->SetVirtualScreenSize(920, 690);
-//	DAVA::Core::Instance()->SetVirtualScreenSize(1280, 800);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(920, 690, "Gfx");
-//	DAVA::Core::Instance()->RegisterAvailableResourceSize(1280, 800, "Gfx2");
+	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(920, 690);
+//	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1280, 800);
+	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(920, 690, "Gfx");
+//	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1280, 800, "Gfx2");
 #endif 
 
 	GameCore * core = new GameCore();

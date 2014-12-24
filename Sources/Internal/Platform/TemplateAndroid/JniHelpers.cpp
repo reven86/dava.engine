@@ -30,6 +30,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA
 {
@@ -88,16 +89,11 @@ void DetachCurrentThreadFromJVM()
 
 Rect V2P(const Rect& srcRect)
 {
-	Vector2 offset = Core::Instance()->GetPhysicalDrawOffset();
-	float32 v2p = Core::Instance()->GetVirtualToPhysicalFactor();
-	Rect rect = srcRect;
-	rect.x *= v2p;
-	rect.y *= v2p;
-	rect.dx *= v2p;
-	rect.dy *= v2p;
+    Vector2 offset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+    Rect rect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(srcRect);
 
-	rect += offset;
-	return rect;
+    rect += offset;
+    return rect;
 }
 
 bool CreateStringFromJni(JNIEnv *env, jstring jniString, char *generalString)
