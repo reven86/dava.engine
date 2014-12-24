@@ -41,6 +41,7 @@
 #include "Utils/StringUtils.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 namespace DAVA
 {
 #if defined(LOCALIZATION_DEBUG)
@@ -678,12 +679,12 @@ void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData
 
         //reduce size by 1 pixel from each size for polygon to fit into control hence +1.0f and -1.0f
         //getTextOffsetTL and getTextOffsetBR are in physical coordinates but draw is still in virtual
-        textGeomData.position += (x*(rendereTextBlock->getTextOffsetTL().x + 1.0f))*Core::GetPhysicalToVirtualFactor();
-        textGeomData.position += (y*(rendereTextBlock->getTextOffsetTL().y + 1.0f))*Core::GetPhysicalToVirtualFactor();
+        textGeomData.position += (x*VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(rendereTextBlock->getTextOffsetTL().x + 1.0f));
+        textGeomData.position += (y*VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(rendereTextBlock->getTextOffsetTL().y + 1.0f));
 
         textGeomData.size = Vector2(0.0f, 0.0f);
-        textGeomData.size.x += ((rendereTextBlock->getTextOffsetBR().x - rendereTextBlock->getTextOffsetTL().x) -1.0f) * Core::GetPhysicalToVirtualFactor();
-        textGeomData.size.y += ((rendereTextBlock->getTextOffsetBR().y - rendereTextBlock->getTextOffsetTL().y) -1.0f) * Core::GetPhysicalToVirtualFactor();
+        textGeomData.size.x += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX((rendereTextBlock->getTextOffsetBR().x - rendereTextBlock->getTextOffsetTL().x) -1.0f);
+        textGeomData.size.y += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY((rendereTextBlock->getTextOffsetBR().y - rendereTextBlock->getTextOffsetTL().y) -1.0f);
 
 
         DAVA::Polygon2 textPolygon;
