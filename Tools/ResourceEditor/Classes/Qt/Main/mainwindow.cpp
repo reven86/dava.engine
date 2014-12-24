@@ -102,6 +102,7 @@
 #include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
 
 #include "Scene3D/Components/ActionComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 
@@ -697,6 +698,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionVisibilityCheckTool, SIGNAL(triggered()), this, SLOT(OnVisibilityTool()));
 	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionGrasEditor, SIGNAL(triggered()), this, SLOT(OnGrasEditor()));
+    QObject::connect(ui->actionWayEditor, SIGNAL(toggled(bool)), this, SLOT(OnWayEditor(bool)));
 
 	QObject::connect(ui->actionLight, SIGNAL(triggered()), this, SLOT(OnLightDialog()));
 	QObject::connect(ui->actionCamera, SIGNAL(triggered()), this, SLOT(OnCameraDialog()));
@@ -714,6 +716,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionAddSkybox, SIGNAL(triggered()), this, SLOT(OnAddSkybox()));
 	QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
+    QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
 			
 	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 	
@@ -962,6 +965,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionVisibilityCheckTool->setEnabled(enable);
 	ui->actionCustomColorsEditor->setEnabled(enable);
     ui->actionGrasEditor->setEnabled(enable);
+    ui->actionWayEditor->setEnabled(enable);
 
 	ui->actionEnableCameraLight->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
@@ -1818,7 +1822,10 @@ void QtMainWindow::LoadModificationState(SceneEditor2 *scene)
 
 		// landscape snap
 		ui->actionModifySnapToLandscape->setChecked(scene->modifSystem->GetLandscapeSnap());
-	}
+
+        // way editor
+        ui->actionWayEditor->setChecked(scene->wayEditSystem->IsWayEditEnabled());
+    }
 }
 
 void QtMainWindow::LoadUndoRedoState(SceneEditor2 *scene)
@@ -2484,6 +2491,18 @@ void QtMainWindow::OnGrasEditor()
     }*/
 }
 
+void QtMainWindow::OnWayEditor(bool show)
+{
+    SceneEditor2* sceneEditor = GetCurrentScene();
+    if (!sceneEditor)
+    {
+        return;
+    }
+
+    sceneEditor->wayEditSystem->EnableWayEdit(show);
+    ui->actionWayEditor->setChecked(sceneEditor->wayEditSystem->IsWayEditEnabled());
+}
+
 void QtMainWindow::OnBuildStaticOcclusion()
 {
     SceneEditor2* scene = GetCurrentScene();
@@ -2789,6 +2808,23 @@ void QtMainWindow::OnAddWindEntity()
 
 	windEntity->Release();
 }
+
+
+void QtMainWindow::OnAddPathEntity()
+{
+    SceneEditor2* scene = GetCurrentScene();
+    if(!scene) return;
+    
+    Entity * pathEntity = new Entity();
+    pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
+    pathEntity->AddComponent(new PathComponent());
+    
+    scene->Exec(new EntityAddCommand(pathEntity, scene));
+    scene->selectionSystem->SetSelection(pathEntity);
+    
+    pathEntity->Release();
+}
+
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
 {

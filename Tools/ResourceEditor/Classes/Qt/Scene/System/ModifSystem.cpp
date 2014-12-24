@@ -758,9 +758,9 @@ DAVA::Matrix4 EntityModificationSystem::SnapToLandscape(const DAVA::Vector3 &poi
 		DAVA::Vector3 resPoint;
 		DAVA::Vector3 realPoint = point * originalParentTransform;
 
-		if(landscape->PlacePoint(point, resPoint))
+        if (landscape->PlacePoint(realPoint, resPoint))
 		{
-			resPoint = resPoint - point;
+            resPoint = resPoint - realPoint;
 			ret.SetTranslationVector(resPoint);
 		}
 	}

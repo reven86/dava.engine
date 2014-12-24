@@ -129,6 +129,9 @@ SceneEditor2::SceneEditor2()
 	materialSystem = new EditorMaterialSystem(this);
 	AddSystem(materialSystem, 1 << Component::RENDER_COMPONENT, true, renderUpdateSystem);
 
+    wayEditSystem = new WayEditSystem(this, selectionSystem, collisionSystem);
+    AddSystem(wayEditSystem, 0, true);
+
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);
@@ -378,6 +381,7 @@ void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
 
 	particlesSystem->ProcessUIEvent(event);
 	materialSystem->ProcessUIEvent(event);
+    wayEditSystem->ProcessUIEvent(event);
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
@@ -428,6 +432,7 @@ void SceneEditor2::Draw()
 	{
 		particlesSystem->Draw();
 		debugDrawSystem->Draw();
+        wayEditSystem->Draw();
 
 		// should be last
 		selectionSystem->Draw();

@@ -63,6 +63,7 @@
 #include "Scene/System/BeastSystem.h"
 #include "Scene/System/OwnersSignatureSystem.h"
 #include "Scene/System/EditorMaterialSystem.h"
+#include "Scene/System/WayEditSystem.h"
 
 class FogSettingsChangedReceiver;
 
@@ -108,6 +109,7 @@ public:
 	OwnersSignatureSystem *ownersSignatureSystem;
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
+    WayEditSystem *wayEditSystem;
 
 	// save/load
 	bool Load(const DAVA::FilePath &path);
