@@ -198,8 +198,6 @@ namespace DAVA
 
 		Thread::InitGLThread();
 
-		totalTouches.clear();
-
 		if(wasCreated)
 		{
 			RenderManager::Instance()->Lost();
@@ -351,95 +349,16 @@ namespace DAVA
 		SafeDelete(keyEvent);
 	}
 
-	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
+	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs)
 	{
-		int32 phase = DAVA::UIEvent::PHASE_DRAG;
-		switch(action)
+		if((source & 0x10) > 0) // joystick
 		{
-			case 5: //ACTION_POINTER_DOWN
-			case 0://ACTION_DOWN
-			phase = DAVA::UIEvent::PHASE_BEGAN;
-			break;
-
-			case 6://ACTION_POINTER_UP
-			case 1://ACTION_UP
-			phase = DAVA::UIEvent::PHASE_ENDED;
-			break;
-
-			case 2://ACTION_MOVE
-			{
-				if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
-				{
-					phase = DAVA::UIEvent::PHASE_JOYSTICK;
-				}
-				else //Touches
-					phase = DAVA::UIEvent::PHASE_DRAG;
-			}
-			break;
-
-			case 3://ACTION_CANCEL
-			phase = DAVA::UIEvent::PHASE_CANCELLED;
-			break;
-
-			case 4://ACTION_OUTSIDE
-			break;
-		}
-
-		UIEvent newEvent;
-		newEvent.tid = id;
-		newEvent.physPoint.x = x;
-		newEvent.physPoint.y = y;
-		newEvent.point.x = x;
-		newEvent.point.y = y;
-		newEvent.phase = phase;
-		newEvent.tapCount = tapCount;
-		newEvent.timestamp = time;
-
-		return newEvent;
-	}
-
-	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
-	{
-		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source, tapCount);
-
-		if(touchEvent.phase == DAVA::UIEvent::PHASE_JOYSTICK)
-		{
-			InputSystem::Instance()->ProcessInputEvent(&touchEvent);
+			for (Vector< UIEvent >::iterator iter = activeInputs.begin(); iter != activeInputs.end(); ++iter)
+				InputSystem::Instance()->ProcessInputEvent(&(*iter));
 			return;
 		}
 		
-		bool isFound = false;
-		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); ++it)
-		{
-			if((*it).tid == touchEvent.tid)
-			{
-				(*it).physPoint.x = touchEvent.physPoint.x;
-				(*it).physPoint.y = touchEvent.physPoint.y;
-				(*it).phase = touchEvent.phase;
-				(*it).tapCount = touchEvent.tapCount;
-
-				isFound = true;
-				break;
-			}
-		}
-		if(!isFound)
-		{
-			totalTouches.push_back(touchEvent);
-		}
-
-		UIControlSystem::Instance()->OnInput(touchEvent.phase, totalTouches, totalTouches);
-
-		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); )
-		{
-			if((DAVA::UIEvent::PHASE_ENDED == (*it).phase) || (DAVA::UIEvent::PHASE_CANCELLED == (*it).phase) || (DAVA::UIEvent::PHASE_JOYSTICK == (*it).phase))
-			{
-				it = totalTouches.erase(it);
-			}
-			else
-			{
-				++it;
-			}
-		}
+		UIControlSystem::Instance()->OnInput(action, activeInputs, allInputs, allInputs[0].timestamp);
 	}
 
 	bool CorePlatformAndroid::DownloadHttpFile(const String & url, const String & documentsPathname)
