@@ -32,6 +32,7 @@
 #include <QHelpEvent>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QDebug>
 
 #include "QtPropertyItemDelegate.h"
 #include "QtPropertyModel.h"
@@ -42,6 +43,7 @@ QtPropertyItemDelegate::QtPropertyItemDelegate(QAbstractItemView *_view, QtPrope
 	, model(_model)
 	, lastHoverData(NULL)
     , view(_view)
+    , editorDataWasSet(false)
 {
     DVASSERT(view);
     view->viewport()->installEventFilter(this);
@@ -99,12 +101,19 @@ QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptio
 	}
 
     activeEditor = editWidget;
+    editorDataWasSet = false;
 
     return editWidget;
 }
 
 void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
+    if ( editorDataWasSet )
+    {
+        qDebug() << "(V)o_O(v)";
+        return;
+    }
+
 	bool doneByInternalEditor = false;
 
 	if(model == index.model())
@@ -120,6 +129,8 @@ void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 	{
 		QStyledItemDelegate::setEditorData(editor, index);
 	}
+
+    editorDataWasSet = true;
 }
 
 bool QtPropertyItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * _model, const QStyleOptionViewItem & option, const QModelIndex & index)
