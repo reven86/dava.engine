@@ -25,12 +25,14 @@ HostApi()
 {
     return RHI_GLES2;
 }
-//------------------------------------------------------------------------------
 
-static void GLAPIENTRY
-_OGLErrorCallback( GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/, const GLchar* message, const void* /*userdata*/ )
-{   
+    
+//------------------------------------------------------------------------------
 /*
+static void GLAPIENTRY
+_OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata )
+{   
+
     const char* ssource     = "unknown";
     const char* stype       = "unknown";
     const char* sseverity   = "unknown";
@@ -65,14 +67,15 @@ _OGLErrorCallback( GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum /*sever
         case GL_DEBUG_SEVERITY_NOTIFICATION     : sseverity = "notification"; break;
         default                                 : sseverity = "unknown"; break;
     }
-*/
+
     if( type == GL_DEBUG_TYPE_ERROR  ||  type == GL_DEBUG_TYPE_PERFORMANCE )
         Logger::Error( "[gl] %s\n", message );
 }
-
+*/
 
 //------------------------------------------------------------------------------
 
+#if defined(__DAVAENGINE_WIN32__)
 void
 Initialize()
 {
@@ -149,7 +152,6 @@ Initialize()
                 _Context = (void*)ctx;
 //            }
 
-
             ConstBufferGLES2::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded default const ring-buf size
 
             _Inited   = true;
@@ -161,7 +163,7 @@ Initialize()
             Logger::Info( "  GPU          : %s", glGetString( GL_RENDERER ) );
             Logger::Info( "  GLSL version : %s", glGetString( GL_SHADING_LANGUAGE_VERSION ) );
 
-            #if 1
+            #if 0
             glEnable( GL_DEBUG_OUTPUT );
             glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
             glDebugMessageCallback( &_OGLErrorCallback, 0 );
@@ -178,7 +180,32 @@ Initialize()
     }                
 }
 
+#elif defined(__DAVAENGINE_MACOS__)
 
+void
+Initialize()
+{
+    ConstBufferGLES2::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded default const ring-buf size
+    
+    _Inited = true;
+    
+    Logger::Info( "GL inited" );
+    Logger::Info( "  GL version   : %s", glGetString( GL_VERSION ) );
+    Logger::Info( "  GPU vendor   : %s", glGetString( GL_VENDOR ) );
+    Logger::Info( "  GPU          : %s", glGetString( GL_RENDERER ) );
+    Logger::Info( "  GLSL version : %s", glGetString( GL_SHADING_LANGUAGE_VERSION ) );
+    
+#if 0
+    glEnable( GL_DEBUG_OUTPUT );
+    glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
+    glDebugMessageCallback( &_OGLErrorCallback, 0 );
+#endif
+}
+    
+#endif
+
+    
+    
 //------------------------------------------------------------------------------
 
 void

@@ -47,7 +47,7 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Material/NMaterialNames.h"
 
-#include "Base/Profiler.hpp"
+#include "Base/Profiler.h"
 #define PROF__RHI_SETUNIFORM    10
 #define PROF__RHI_SETDYNPARAM   11
 #define PROF__RHI_SETMATPARAM   12
@@ -1488,7 +1488,7 @@ START_TIMING(PROF__RHI_SETMATPARAM);
 		passInstance->propsDirty = false;
 	}
 	
-	Shader* shader = passInstance->GetShader();
+//-	Shader* shader = passInstance->GetShader();
 	for(size_t i = 0; i < passInstance->activeUniformsCacheSize; ++i)
 	{
 		UniformCacheEntry& uniformEntry = passInstance->activeUniformsCachePtr[i];
@@ -1611,18 +1611,18 @@ void NMaterial::InvalidateProperties()
 void NMaterial::Draw(PolygonGroup * polygonGroup)
 {
 //SCOPED_TIMING(PROF__TEST1);
-SCOPED_FUNCTION_TIMING();
-SCOPED_NAMED_TIMING("blam!");
-START_NAMED_TIMING("smack1");
+///SCOPED_FUNCTION_TIMING();
+///SCOPED_NAMED_TIMING("blam!");
+///START_NAMED_TIMING("smack1");
 	// TODO: Remove support of OpenGL ES 1.0 from attach render data
 	RenderManager::Instance()->SetRenderData(polygonGroup->renderDataObject);
 	RenderManager::Instance()->AttachRenderData();
-STOP_NAMED_TIMING("smack1");
+///STOP_NAMED_TIMING("smack1");
 	
 	//Logger::FrameworkDebug("[Material::Draw] %s", baseTechnique->GetName().c_str());
 	
 	// TODO: rethink this code
-START_NAMED_TIMING("smack2");
+///START_NAMED_TIMING("smack2");
 	if(polygonGroup->renderDataObject->GetIndexBufferID() != 0)
 	{
 		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), 0);
@@ -1631,7 +1631,7 @@ START_NAMED_TIMING("smack2");
 	{
 		RenderManager::Instance()->HWDrawElements(polygonGroup->primitiveType, polygonGroup->indexCount, polygonGroup->renderDataObject->GetIndexFormat(), polygonGroup->indexArray);
 	}
-STOP_NAMED_TIMING("smack2");
+///STOP_NAMED_TIMING("smack2");
 }
 
 void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 indexCount)

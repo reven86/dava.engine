@@ -76,7 +76,7 @@ static Counter**        activeCounter       = 0;
 static uint32           activeCounterCount  = 0;
 static uint64           totalTime0          = 0;
 static uint64           totalTime           = 0;
-static uint32           maxNameLen          = 32;
+//- static uint32           maxNameLen          = 32;
 static Spinlock         counterSync;
 
 
@@ -412,7 +412,7 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
         uint32  pi          = result[i].parentIndex;
         uint32  indent      = 0;
         char    text[256];  memset( text, ' ', sizeof(text) );
-        uint32  len         = 0;
+//-        uint32  len         = 0;
 
         while( pi != InvalidIndex )
         {
@@ -428,7 +428,7 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
             text_len = Snprinf( text+indent*2, sizeof(text)-indent*2, "%u", i );
         
         text[indent*2+text_len] = ' ';
-        text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %u us", result[i].count, result[i].timeUs );
+        text_len = max_name_len+2+Snprinf( text+max_name_len+2, sizeof(text)-max_name_len-2, " %-5u  %u us", result[i].count, unsigned(result[i].timeUs) );
 
         if( showPercents )
         {

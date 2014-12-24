@@ -452,7 +452,7 @@ void    do_options(
     set_cplus_dir = TRUE;
 
     /* Get current directory for -I option and #pragma once */
-    getcwd( cur_work_dir, PATHMAX);
+///    getcwd( cur_work_dir, PATHMAX);
 #if SYS_FAMILY == SYS_WIN
     bsl2sl( cur_work_dir);
 #endif

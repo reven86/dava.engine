@@ -157,9 +157,11 @@ GameCore::SetupCube()
         "    mat4 ViewProjection = mat4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
         "    mat4 World = mat4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
         "    vec4 wpos = World * vec4(attr_position.x,attr_position.y,attr_position.z,1.0);\n"
-        "    float i   = dot( vec3(0,0,-1), normalize(mat3(World)*attr_normal) );\n"
+//        "    float i   = dot( vec3(0,0,-1), normalize(mat3(World)*attr_normal) );\n"
+        "    float i   = dot( vec3(0,0,-1), normalize( mat3(vec3(World[0].x,World[0].y,World[0].z),vec3(World[1].x,World[1].y,World[1].z),vec3(World[2].x,World[2].y,World[2].z)) * attr_normal) );\n"
         "    gl_Position   = ViewProjection * wpos;\n"
-        "    var_Color.rgb = i;\n"
+//        "    var_Color.rgb = i;\n"
+        "    var_Color.rgb = vec3(i,i,i);\n"
         "}\n"
     );
     rhi::ShaderCache::UpdateProg
@@ -173,7 +175,7 @@ GameCore::SetupCube()
         "varying vec3 var_Color;\n"
         "void main()\n"
         "{\n"
-        "    gl_FragColor.rgb = FP_Buffer0[0] * var_Color;\n"
+        "    gl_FragColor.rgb = FP_Buffer0[0].xyz * var_Color;\n"
         "    gl_FragColor.a   = FP_Buffer0[0].a;\n"
         "}\n"
     );
@@ -254,7 +256,7 @@ void GameCore::BeginFrame()
     rhi::CommandBuffer::Clear( cb );
 
 #if 0
-
+    
     rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
 
     rhi::CommandBuffer::SetVertexData( cb, triangle.vb );

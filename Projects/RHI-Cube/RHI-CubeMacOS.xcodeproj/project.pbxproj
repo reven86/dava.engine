@@ -1,0 +1,709 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A194183D1B4A000DE581 /* AVFoundation.framework */; };
+		1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A19A183D227A000DE581 /* CoreMedia.framework */; };
+		5CDC2501156CC93300742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2500156CC93300742348 /* libz.dylib */; };
+		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
+		76762412196D5F6C00E4CC65 /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 76359F15196C20D300DF2A57 /* libFrameworkTools.a */; };
+		877172B41A49A03D00776647 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 877172B21A49A03D00776647 /* libfmodevent.dylib */; };
+		877172B51A49A03D00776647 /* libfmodex.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 877172B31A49A03D00776647 /* libfmodex.dylib */; };
+		879FCA1B1A495E560057D86C /* libRHI-GLES2-MacOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 879FC9FC1A4945470057D86C /* libRHI-GLES2-MacOS.a */; };
+		879FCA221A49619B0057D86C /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 879FCA201A49619B0057D86C /* libfmodevent.dylib */; };
+		879FCA231A49619B0057D86C /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 879FCA211A49619B0057D86C /* libfmodex.dylib */; };
+		87CE389B1A4AED210014567D /* rhi_ShaderCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38981A4AED210014567D /* rhi_ShaderCache.cpp */; };
+		87CE389C1A4AED210014567D /* rhi_VertexLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE389A1A4AED210014567D /* rhi_VertexLayout.cpp */; };
+		87CE38AD1A4AED600014567D /* _mcpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE389E1A4AED600014567D /* _mcpp.cpp */; };
+		87CE38AE1A4AED600014567D /* directive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38A01A4AED600014567D /* directive.cpp */; };
+		87CE38AF1A4AED600014567D /* eval.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38A11A4AED600014567D /* eval.cpp */; };
+		87CE38B01A4AED600014567D /* expand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38A21A4AED600014567D /* expand.cpp */; };
+		87CE38B11A4AED600014567D /* mbchar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38A41A4AED600014567D /* mbchar.cpp */; };
+		87CE38B21A4AED600014567D /* mcpp_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38A61A4AED600014567D /* mcpp_main.cpp */; };
+		87CE38B31A4AED600014567D /* preproc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38A91A4AED600014567D /* preproc.cpp */; };
+		87CE38B41A4AED600014567D /* support.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38AA1A4AED600014567D /* support.cpp */; };
+		87CE38B51A4AED600014567D /* system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87CE38AB1A4AED600014567D /* system.cpp */; };
+		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
+		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
+		FE9892E511638EF700500198 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E111638EF700500198 /* InfoPlist.strings */; };
+		FE9892E611638EF700500198 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E311638EF700500198 /* MainMenu.xib */; };
+		FEA024E312DCEEC600935314 /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE98931811638F3C00500198 /* libFramework.a */; };
+		FEA30C331231362D00E691CC /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = FEA30C291231362D00E691CC /* main.mm */; };
+		FEA30C361231362D00E691CC /* version.plist in Resources */ = {isa = PBXBuildFile; fileRef = FEA30C2E1231362D00E691CC /* version.plist */; };
+		FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CA6F1283557F00541220 /* FrameworkMain.cpp */; };
+		FEC3CA821283557F00541220 /* GameCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CA711283557F00541220 /* GameCore.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1770DF5517DF6CAE00000391 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE98930B11638F3C00500198 /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 176DEB77174B5561007A983B;
+			remoteInfo = FrameworkNPAPI;
+		};
+		76359F14196C20D300DF2A57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698542917CE38C0001E9FDE;
+			remoteInfo = FrameworkTools;
+		};
+		76359F16196C20D300DF2A57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698543717CE38D8001E9FDE;
+			remoteInfo = FrameworkToolsQt;
+		};
+		76359F18196C20D300DF2A57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698543F17CE38E5001E9FDE;
+			remoteInfo = FrameworkToolsNPAPI;
+		};
+		76359F1A196C20ED00DF2A57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = A698542817CE38C0001E9FDE;
+			remoteInfo = FrameworkTools;
+		};
+		879FC9FB1A4945470057D86C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 879FC9F31A4945460057D86C /* RHI-GLES2-MacOS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 879FC9EC1A4945460057D86C;
+			remoteInfo = "RHI-GLES2-MacOS";
+		};
+		E81F2AEC16BFA49100C4545E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE98930B11638F3C00500198 /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E898A2C416BD265400732C04;
+			remoteInfo = FrameworkQt;
+		};
+		FE93072A12C28C1100A33E69 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE98930B11638F3C00500198 /* Framework.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D;
+			remoteInfo = Framework;
+		};
+		FE98931711638F3C00500198 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE98930B11638F3C00500198 /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D2AAC07E0554694100DB518D;
+			remoteInfo = Framework;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		877172AC1A499F8300776647 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				877172B41A49A03D00776647 /* libfmodevent.dylib in CopyFiles */,
+				877172B51A49A03D00776647 /* libfmodex.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		1767A194183D1B4A000DE581 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		1767A198183D1E7F000DE581 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
+		1767A19A183D227A000DE581 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		32CA4F630368D1EE00C91783 /* RHI-CubeMacOS_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RHI-CubeMacOS_Prefix.pch"; sourceTree = "<group>"; };
+		5C6EF11B15751E1B001E45AD /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		5C6EF11D15751E1B001E45AD /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		5C6EF11F15751E1B001E45AD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		5CDC2500156CC93300742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		74AF6340188530CD00070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
+		877172B21A49A03D00776647 /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libfmodevent.dylib; sourceTree = "<group>"; };
+		877172B31A49A03D00776647 /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libfmodex.dylib; sourceTree = "<group>"; };
+		879FC9F31A4945460057D86C /* RHI-GLES2-MacOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "RHI-GLES2-MacOS.xcodeproj"; path = "RHI-GLES2-MacOS/RHI-GLES2-MacOS.xcodeproj"; sourceTree = "<group>"; };
+		879FCA101A494B840057D86C /* rhi_Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rhi_Base.h; sourceTree = "<group>"; };
+		879FCA111A494B840057D86C /* rhi_Type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rhi_Type.h; sourceTree = "<group>"; };
+		879FCA201A49619B0057D86C /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
+		879FCA211A49619B0057D86C /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
+		87CE38961A4AED210014567D /* rhi_Pool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_Pool.h; path = RHI/rhi_Pool.h; sourceTree = "<group>"; };
+		87CE38971A4AED210014567D /* rhi_RingBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_RingBuffer.h; path = RHI/rhi_RingBuffer.h; sourceTree = "<group>"; };
+		87CE38981A4AED210014567D /* rhi_ShaderCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_ShaderCache.cpp; path = RHI/rhi_ShaderCache.cpp; sourceTree = "<group>"; };
+		87CE38991A4AED210014567D /* rhi_ShaderCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_ShaderCache.h; path = RHI/rhi_ShaderCache.h; sourceTree = "<group>"; };
+		87CE389A1A4AED210014567D /* rhi_VertexLayout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_VertexLayout.cpp; path = RHI/rhi_VertexLayout.cpp; sourceTree = "<group>"; };
+		87CE389E1A4AED600014567D /* _mcpp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = _mcpp.cpp; path = MCPP/_mcpp.cpp; sourceTree = "<group>"; };
+		87CE389F1A4AED600014567D /* _mcpp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = _mcpp.h; path = MCPP/_mcpp.h; sourceTree = "<group>"; };
+		87CE38A01A4AED600014567D /* directive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = directive.cpp; path = MCPP/directive.cpp; sourceTree = "<group>"; };
+		87CE38A11A4AED600014567D /* eval.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eval.cpp; path = MCPP/eval.cpp; sourceTree = "<group>"; };
+		87CE38A21A4AED600014567D /* expand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = expand.cpp; path = MCPP/expand.cpp; sourceTree = "<group>"; };
+		87CE38A31A4AED600014567D /* internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = internal.h; path = MCPP/internal.h; sourceTree = "<group>"; };
+		87CE38A41A4AED600014567D /* mbchar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mbchar.cpp; path = MCPP/mbchar.cpp; sourceTree = "<group>"; };
+		87CE38A51A4AED600014567D /* mcpp_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mcpp_lib.h; path = MCPP/mcpp_lib.h; sourceTree = "<group>"; };
+		87CE38A61A4AED600014567D /* mcpp_main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mcpp_main.cpp; path = MCPP/mcpp_main.cpp; sourceTree = "<group>"; };
+		87CE38A71A4AED600014567D /* mcpp_out.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mcpp_out.h; path = MCPP/mcpp_out.h; sourceTree = "<group>"; };
+		87CE38A81A4AED600014567D /* noconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = noconfig.h; path = MCPP/noconfig.h; sourceTree = "<group>"; };
+		87CE38A91A4AED600014567D /* preproc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = preproc.cpp; path = MCPP/preproc.cpp; sourceTree = "<group>"; };
+		87CE38AA1A4AED600014567D /* support.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = support.cpp; path = MCPP/support.cpp; sourceTree = "<group>"; };
+		87CE38AB1A4AED600014567D /* system.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = system.cpp; path = MCPP/system.cpp; sourceTree = "<group>"; };
+		87CE38AC1A4AED600014567D /* system.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = system.h; path = MCPP/system.h; sourceTree = "<group>"; };
+		8D1107320486CEB800E47090 /* RHI-Cube.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RHI-Cube.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C151B18E16D37E2700E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
+		FE9892E211638EF700500198 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = MacOSSpecific/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		FE9892E411638EF700500198 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = MacOSSpecific/English.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		FE98930B11638F3C00500198 /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../MacOSFramework/Framework.xcodeproj; sourceTree = SOURCE_ROOT; };
+		FEA30C291231362D00E691CC /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		FEA30C2E1231362D00E691CC /* version.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = version.plist; sourceTree = "<group>"; };
+		FEC3CA6F1283557F00541220 /* FrameworkMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameworkMain.cpp; path = Classes/FrameworkMain.cpp; sourceTree = "<group>"; };
+		FEC3CA701283557F00541220 /* FrameworkMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FrameworkMain.h; path = Classes/FrameworkMain.h; sourceTree = "<group>"; };
+		FEC3CA711283557F00541220 /* GameCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameCore.cpp; path = Classes/GameCore.cpp; sourceTree = "<group>"; wrapsLines = 0; };
+		FEC3CA721283557F00541220 /* GameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GameCore.h; path = Classes/GameCore.h; sourceTree = "<group>"; };
+		FEC9202713BA2EAA006F347F /* RHI-CubeMacOS-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "RHI-CubeMacOS-Info.plist"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D11072E0486CEB800E47090 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				879FCA221A49619B0057D86C /* libfmodevent.dylib in Frameworks */,
+				879FCA231A49619B0057D86C /* libfmodex.dylib in Frameworks */,
+				76762412196D5F6C00E4CC65 /* libFrameworkTools.a in Frameworks */,
+				74AF6341188530CD00070C35 /* Security.framework in Frameworks */,
+				1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */,
+				1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */,
+				C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */,
+				5CDC2501156CC93300742348 /* libz.dylib in Frameworks */,
+				FEA024E312DCEEC600935314 /* libFramework.a in Frameworks */,
+				879FCA1B1A495E560057D86C /* libRHI-GLES2-MacOS.a in Frameworks */,
+				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
+				FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */,
+				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
+				13E42FB307B3F0F600E4EEF1 /* CoreData.framework */,
+				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
+				FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107320486CEB800E47090 /* RHI-Cube.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* TemplateProjectMacOS */ = {
+			isa = PBXGroup;
+			children = (
+				FE445A961153C27800F5EFD6 /* Classes */,
+				877172B21A49A03D00776647 /* libfmodevent.dylib */,
+				877172B31A49A03D00776647 /* libfmodex.dylib */,
+				879FCA0F1A494B4D0057D86C /* RHI-interface */,
+				879FCA131A494B8A0057D86C /* RHI-private-impl */,
+				87CE389D1A4AED2B0014567D /* MCPP */,
+				879FC9F31A4945460057D86C /* RHI-GLES2-MacOS.xcodeproj */,
+				76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */,
+				C151B18E16D37E2700E09BAF /* WebKit.framework */,
+				5CDC2500156CC93300742348 /* libz.dylib */,
+				FE98930B11638F3C00500198 /* Framework.xcodeproj */,
+				FEA30C211231362D00E691CC /* MacOSSpecific */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = TemplateProjectMacOS;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				32CA4F630368D1EE00C91783 /* RHI-CubeMacOS_Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FEC9202713BA2EAA006F347F /* RHI-CubeMacOS-Info.plist */,
+				FE9892E111638EF700500198 /* InfoPlist.strings */,
+				FE9892E311638EF700500198 /* MainMenu.xib */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				879FCA201A49619B0057D86C /* libfmodevent.dylib */,
+				879FCA211A49619B0057D86C /* libfmodex.dylib */,
+				74AF6340188530CD00070C35 /* Security.framework */,
+				1767A19A183D227A000DE581 /* CoreMedia.framework */,
+				1767A198183D1E7F000DE581 /* AVKit.framework */,
+				1767A194183D1B4A000DE581 /* AVFoundation.framework */,
+				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
+				5C6EF11B15751E1B001E45AD /* SenTestingKit.framework */,
+				5C6EF11D15751E1B001E45AD /* UIKit.framework */,
+				5C6EF11F15751E1B001E45AD /* Foundation.framework */,
+				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		76359F0D196C20D300DF2A57 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				76359F15196C20D300DF2A57 /* libFrameworkTools.a */,
+				76359F17196C20D300DF2A57 /* libFrameworkToolsQt.a */,
+				76359F19196C20D300DF2A57 /* libFrameworkToolsNPAPI.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		879FC9F41A4945460057D86C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				879FC9FC1A4945470057D86C /* libRHI-GLES2-MacOS.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		879FCA0F1A494B4D0057D86C /* RHI-interface */ = {
+			isa = PBXGroup;
+			children = (
+				879FCA101A494B840057D86C /* rhi_Base.h */,
+				879FCA111A494B840057D86C /* rhi_Type.h */,
+			);
+			name = "RHI-interface";
+			sourceTree = "<group>";
+		};
+		879FCA131A494B8A0057D86C /* RHI-private-impl */ = {
+			isa = PBXGroup;
+			children = (
+				87CE38961A4AED210014567D /* rhi_Pool.h */,
+				87CE38971A4AED210014567D /* rhi_RingBuffer.h */,
+				87CE38981A4AED210014567D /* rhi_ShaderCache.cpp */,
+				87CE38991A4AED210014567D /* rhi_ShaderCache.h */,
+				87CE389A1A4AED210014567D /* rhi_VertexLayout.cpp */,
+			);
+			name = "RHI-private-impl";
+			sourceTree = "<group>";
+		};
+		87CE389D1A4AED2B0014567D /* MCPP */ = {
+			isa = PBXGroup;
+			children = (
+				87CE389E1A4AED600014567D /* _mcpp.cpp */,
+				87CE389F1A4AED600014567D /* _mcpp.h */,
+				87CE38A01A4AED600014567D /* directive.cpp */,
+				87CE38A11A4AED600014567D /* eval.cpp */,
+				87CE38A21A4AED600014567D /* expand.cpp */,
+				87CE38A31A4AED600014567D /* internal.h */,
+				87CE38A41A4AED600014567D /* mbchar.cpp */,
+				87CE38A51A4AED600014567D /* mcpp_lib.h */,
+				87CE38A61A4AED600014567D /* mcpp_main.cpp */,
+				87CE38A71A4AED600014567D /* mcpp_out.h */,
+				87CE38A81A4AED600014567D /* noconfig.h */,
+				87CE38A91A4AED600014567D /* preproc.cpp */,
+				87CE38AA1A4AED600014567D /* support.cpp */,
+				87CE38AB1A4AED600014567D /* system.cpp */,
+				87CE38AC1A4AED600014567D /* system.h */,
+			);
+			name = MCPP;
+			sourceTree = "<group>";
+		};
+		FE445A961153C27800F5EFD6 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				FEC3CA6F1283557F00541220 /* FrameworkMain.cpp */,
+				FEC3CA701283557F00541220 /* FrameworkMain.h */,
+				FEC3CA711283557F00541220 /* GameCore.cpp */,
+				FEC3CA721283557F00541220 /* GameCore.h */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		FE98930C11638F3C00500198 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FE98931811638F3C00500198 /* libFramework.a */,
+				E81F2AED16BFA49100C4545E /* libFrameworkQt.a */,
+				1770DF5617DF6CAE00000391 /* libFrameworkNPAPI.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FEA30C211231362D00E691CC /* MacOSSpecific */ = {
+			isa = PBXGroup;
+			children = (
+				FEA30C291231362D00E691CC /* main.mm */,
+				FEA30C2E1231362D00E691CC /* version.plist */,
+			);
+			path = MacOSSpecific;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D1107260486CEB800E47090 /* RHI-CubeMacOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "RHI-CubeMacOS" */;
+			buildPhases = (
+				8D1107290486CEB800E47090 /* Resources */,
+				8D11072C0486CEB800E47090 /* Sources */,
+				8D11072E0486CEB800E47090 /* Frameworks */,
+				877172AC1A499F8300776647 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				76359F1B196C20ED00DF2A57 /* PBXTargetDependency */,
+				FE93072B12C28C1100A33E69 /* PBXTargetDependency */,
+			);
+			name = "RHI-CubeMacOS";
+			productInstallPath = "$(HOME)/Applications";
+			productName = TemplateProjectMacOS;
+			productReference = 8D1107320486CEB800E47090 /* RHI-Cube.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+			};
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "RHI-CubeMacOS" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				en,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* TemplateProjectMacOS */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = FE98930C11638F3C00500198 /* Products */;
+					ProjectRef = FE98930B11638F3C00500198 /* Framework.xcodeproj */;
+				},
+				{
+					ProductGroup = 76359F0D196C20D300DF2A57 /* Products */;
+					ProjectRef = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+				},
+				{
+					ProductGroup = 879FC9F41A4945460057D86C /* Products */;
+					ProjectRef = 879FC9F31A4945460057D86C /* RHI-GLES2-MacOS.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				8D1107260486CEB800E47090 /* RHI-CubeMacOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		1770DF5617DF6CAE00000391 /* libFrameworkNPAPI.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkNPAPI.a;
+			remoteRef = 1770DF5517DF6CAE00000391 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		76359F15196C20D300DF2A57 /* libFrameworkTools.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkTools.a;
+			remoteRef = 76359F14196C20D300DF2A57 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		76359F17196C20D300DF2A57 /* libFrameworkToolsQt.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkToolsQt.a;
+			remoteRef = 76359F16196C20D300DF2A57 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		76359F19196C20D300DF2A57 /* libFrameworkToolsNPAPI.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkToolsNPAPI.a;
+			remoteRef = 76359F18196C20D300DF2A57 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		879FC9FC1A4945470057D86C /* libRHI-GLES2-MacOS.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libRHI-GLES2-MacOS.a";
+			remoteRef = 879FC9FB1A4945470057D86C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E81F2AED16BFA49100C4545E /* libFrameworkQt.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkQt.a;
+			remoteRef = E81F2AEC16BFA49100C4545E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		FE98931811638F3C00500198 /* libFramework.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFramework.a;
+			remoteRef = FE98931711638F3C00500198 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D1107290486CEB800E47090 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE9892E511638EF700500198 /* InfoPlist.strings in Resources */,
+				FE9892E611638EF700500198 /* MainMenu.xib in Resources */,
+				FEA30C361231362D00E691CC /* version.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D11072C0486CEB800E47090 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				87CE38B11A4AED600014567D /* mbchar.cpp in Sources */,
+				FEA30C331231362D00E691CC /* main.mm in Sources */,
+				87CE38AF1A4AED600014567D /* eval.cpp in Sources */,
+				87CE38B31A4AED600014567D /* preproc.cpp in Sources */,
+				87CE389B1A4AED210014567D /* rhi_ShaderCache.cpp in Sources */,
+				FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */,
+				87CE38AD1A4AED600014567D /* _mcpp.cpp in Sources */,
+				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
+				87CE38AE1A4AED600014567D /* directive.cpp in Sources */,
+				87CE389C1A4AED210014567D /* rhi_VertexLayout.cpp in Sources */,
+				87CE38B51A4AED600014567D /* system.cpp in Sources */,
+				87CE38B01A4AED600014567D /* expand.cpp in Sources */,
+				87CE38B41A4AED600014567D /* support.cpp in Sources */,
+				87CE38B21A4AED600014567D /* mcpp_main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		76359F1B196C20ED00DF2A57 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FrameworkTools;
+			targetProxy = 76359F1A196C20ED00DF2A57 /* PBXContainerItemProxy */;
+		};
+		FE93072B12C28C1100A33E69 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Framework;
+			targetProxy = FE93072A12C28C1100A33E69 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		FE9892E111638EF700500198 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE9892E211638EF700500198 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		FE9892E311638EF700500198 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE9892E411638EF700500198 /* English */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C01FCF4B08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "RHI-CubeMacOS_Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DAVA_DEBUG=1",
+					"__DAVAENGINE_MACOS__=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					/opt/local/include/,
+					../../Libs/include,
+					./../../Sources/Tools,
+				);
+				INFOPLIST_FILE = "RHI-CubeMacOS-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/a_podverbnyy/code/dava.framework/Libs/fmod/lib/macos,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				PRODUCT_NAME = "RHI-Cube";
+			};
+			name = Debug;
+		};
+		C01FCF4C08A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "RHI-CubeMacOS_Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					/opt/local/include/,
+					../../Libs/include,
+					./../../Sources/Tools,
+				);
+				INFOPLIST_FILE = "RHI-CubeMacOS-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/a_podverbnyy/code/dava.framework/Libs/fmod/lib/macos,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				PRODUCT_NAME = "RHI-Cube";
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					/opt/local/include/,
+					../../Libs/include,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility=hidden",
+				);
+				OTHER_LDFLAGS = "";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					./../../Sources/Internal,
+					./../../Sources/External,
+					/opt/local/include/,
+					../../Libs/include,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility=hidden",
+				);
+				OTHER_LDFLAGS = "";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "RHI-CubeMacOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4B08A954540054247B /* Debug */,
+				C01FCF4C08A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "RHI-CubeMacOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}

@@ -1,0 +1,295 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		879FCA061A4945F20057D86C /* _gl.h in Headers */ = {isa = PBXBuildFile; fileRef = 879FC9FD1A4945F20057D86C /* _gl.h */; };
+		879FCA071A4945F20057D86C /* rhi_CommandBufferGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 879FC9FE1A4945F20057D86C /* rhi_CommandBufferGLES2.cpp */; };
+		879FCA081A4945F20057D86C /* rhi_GLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 879FC9FF1A4945F20057D86C /* rhi_GLES2.cpp */; };
+		879FCA091A4945F20057D86C /* rhi_GLES2.h in Headers */ = {isa = PBXBuildFile; fileRef = 879FCA001A4945F20057D86C /* rhi_GLES2.h */; };
+		879FCA0A1A4945F20057D86C /* rhi_IndexBufferGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 879FCA011A4945F20057D86C /* rhi_IndexBufferGLES2.cpp */; };
+		879FCA0B1A4945F20057D86C /* rhi_PipelineStateGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 879FCA021A4945F20057D86C /* rhi_PipelineStateGLES2.cpp */; };
+		879FCA0C1A4945F20057D86C /* rhi_ProgGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 879FCA031A4945F20057D86C /* rhi_ProgGLES2.cpp */; };
+		879FCA0D1A4945F20057D86C /* rhi_ProgGLES2.h in Headers */ = {isa = PBXBuildFile; fileRef = 879FCA041A4945F20057D86C /* rhi_ProgGLES2.h */; };
+		879FCA0E1A4945F20057D86C /* rhi_VertexBufferGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 879FCA051A4945F20057D86C /* rhi_VertexBufferGLES2.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		879FC9EC1A4945460057D86C /* libRHI-GLES2-MacOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libRHI-GLES2-MacOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		879FC9FD1A4945F20057D86C /* _gl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = _gl.h; path = "../RHI-GLES2/_gl.h"; sourceTree = "<group>"; };
+		879FC9FE1A4945F20057D86C /* rhi_CommandBufferGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_CommandBufferGLES2.cpp; path = "../RHI-GLES2/rhi_CommandBufferGLES2.cpp"; sourceTree = "<group>"; };
+		879FC9FF1A4945F20057D86C /* rhi_GLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_GLES2.cpp; path = "../RHI-GLES2/rhi_GLES2.cpp"; sourceTree = "<group>"; };
+		879FCA001A4945F20057D86C /* rhi_GLES2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_GLES2.h; path = "../RHI-GLES2/rhi_GLES2.h"; sourceTree = "<group>"; };
+		879FCA011A4945F20057D86C /* rhi_IndexBufferGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_IndexBufferGLES2.cpp; path = "../RHI-GLES2/rhi_IndexBufferGLES2.cpp"; sourceTree = "<group>"; };
+		879FCA021A4945F20057D86C /* rhi_PipelineStateGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_PipelineStateGLES2.cpp; path = "../RHI-GLES2/rhi_PipelineStateGLES2.cpp"; sourceTree = "<group>"; };
+		879FCA031A4945F20057D86C /* rhi_ProgGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_ProgGLES2.cpp; path = "../RHI-GLES2/rhi_ProgGLES2.cpp"; sourceTree = "<group>"; };
+		879FCA041A4945F20057D86C /* rhi_ProgGLES2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_ProgGLES2.h; path = "../RHI-GLES2/rhi_ProgGLES2.h"; sourceTree = "<group>"; };
+		879FCA051A4945F20057D86C /* rhi_VertexBufferGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_VertexBufferGLES2.cpp; path = "../RHI-GLES2/rhi_VertexBufferGLES2.cpp"; sourceTree = "<group>"; };
+		879FCA281A4990EC0057D86C /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		879FC9E91A4945460057D86C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		879FC9E31A4945460057D86C = {
+			isa = PBXGroup;
+			children = (
+				879FCA281A4990EC0057D86C /* libc++.dylib */,
+				879FC9FD1A4945F20057D86C /* _gl.h */,
+				879FC9FE1A4945F20057D86C /* rhi_CommandBufferGLES2.cpp */,
+				879FC9FF1A4945F20057D86C /* rhi_GLES2.cpp */,
+				879FCA001A4945F20057D86C /* rhi_GLES2.h */,
+				879FCA011A4945F20057D86C /* rhi_IndexBufferGLES2.cpp */,
+				879FCA021A4945F20057D86C /* rhi_PipelineStateGLES2.cpp */,
+				879FCA031A4945F20057D86C /* rhi_ProgGLES2.cpp */,
+				879FCA041A4945F20057D86C /* rhi_ProgGLES2.h */,
+				879FCA051A4945F20057D86C /* rhi_VertexBufferGLES2.cpp */,
+				879FC9ED1A4945460057D86C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		879FC9ED1A4945460057D86C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				879FC9EC1A4945460057D86C /* libRHI-GLES2-MacOS.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		879FC9EA1A4945460057D86C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				879FCA091A4945F20057D86C /* rhi_GLES2.h in Headers */,
+				879FCA061A4945F20057D86C /* _gl.h in Headers */,
+				879FCA0D1A4945F20057D86C /* rhi_ProgGLES2.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		879FC9EB1A4945460057D86C /* RHI-GLES2-MacOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 879FC9F01A4945460057D86C /* Build configuration list for PBXNativeTarget "RHI-GLES2-MacOS" */;
+			buildPhases = (
+				879FC9E81A4945460057D86C /* Sources */,
+				879FC9E91A4945460057D86C /* Frameworks */,
+				879FC9EA1A4945460057D86C /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RHI-GLES2-MacOS";
+			productName = "RHI-GLES2-MacOS";
+			productReference = 879FC9EC1A4945460057D86C /* libRHI-GLES2-MacOS.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		879FC9E41A4945460057D86C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+				ORGANIZATIONNAME = "Aleksey Podverbnyy";
+				TargetAttributes = {
+					879FC9EB1A4945460057D86C = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+				};
+			};
+			buildConfigurationList = 879FC9E71A4945460057D86C /* Build configuration list for PBXProject "RHI-GLES2-MacOS" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 879FC9E31A4945460057D86C;
+			productRefGroup = 879FC9ED1A4945460057D86C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				879FC9EB1A4945460057D86C /* RHI-GLES2-MacOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		879FC9E81A4945460057D86C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				879FCA0C1A4945F20057D86C /* rhi_ProgGLES2.cpp in Sources */,
+				879FCA0E1A4945F20057D86C /* rhi_VertexBufferGLES2.cpp in Sources */,
+				879FCA071A4945F20057D86C /* rhi_CommandBufferGLES2.cpp in Sources */,
+				879FCA0B1A4945F20057D86C /* rhi_PipelineStateGLES2.cpp in Sources */,
+				879FCA0A1A4945F20057D86C /* rhi_IndexBufferGLES2.cpp in Sources */,
+				879FCA081A4945F20057D86C /* rhi_GLES2.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		879FC9EE1A4945460057D86C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		879FC9EF1A4945460057D86C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		879FC9F11A4945460057D86C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DAVA_DEBUG=1",
+					"$(inherited)",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility=hidden",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "../../../Sources/Internal RHI-GLES2";
+			};
+			name = Debug;
+		};
+		879FC9F21A4945460057D86C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility=hidden",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		879FC9E71A4945460057D86C /* Build configuration list for PBXProject "RHI-GLES2-MacOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				879FC9EE1A4945460057D86C /* Debug */,
+				879FC9EF1A4945460057D86C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		879FC9F01A4945460057D86C /* Build configuration list for PBXNativeTarget "RHI-GLES2-MacOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				879FC9F11A4945460057D86C /* Debug */,
+				879FC9F21A4945460057D86C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 879FC9E41A4945460057D86C /* Project object */;
+}

@@ -28,7 +28,11 @@
 #define HOST_SYSTEM         SYSTEM
 
 /* Define host compiler.            */
-#define HOST_COMPILER       MSC
+#if defined(__DAVAENGINE_MACOS__)
+#define HOST_COMPILER       GNUC
+#else
+#define HOST_COMPILER       INDEPENDENT
+#endif
 
 /* Version message.                 */
 /* "MCPP V.2.* (200y/mm) compiled by " precedes VERSION_MSG */

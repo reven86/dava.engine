@@ -1,4 +1,4 @@
-﻿
+
     #include "rhi_ProgGLES2.h"
     #include "../rhi_Base.h"
     #include "../RHI/rhi_Pool.h"
@@ -6,6 +6,7 @@
 
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
+    #include "Base/BaseTypes.h"
 
     #include "_gl.h"
 
@@ -162,7 +163,7 @@ ProgGLES2::GetProgParams( unsigned progUid )
 
     for( unsigned i=0; i!=countof(texunitLoc); ++i )
     {
-        char    name[16];   _snprintf( name, countof(name), "Texture%u", i );
+        char    name[16];   Snprinf( name, countof(name), "Texture%u", i );
         int     loc = glGetUniformLocation( progUid, name );
 
         texunitLoc[i] = (loc != -1)  ? loc  : InvalidIndex;
