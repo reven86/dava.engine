@@ -150,6 +150,7 @@ public slots:
 	void OnCameraDialog();
 	void OnEmptyEntity();
 	void OnAddWindEntity();
+    void OnAddPathEntity();
 
 	void OnUserNodeDialog();
 	void OnSwitchEntityDialog();

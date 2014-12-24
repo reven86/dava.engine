@@ -102,6 +102,7 @@
 #include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
 
 #include "Scene3D/Components/ActionComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 
@@ -715,6 +716,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionAddSkybox, SIGNAL(triggered()), this, SLOT(OnAddSkybox()));
 	QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
+    QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
 			
 	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 	
@@ -2806,6 +2808,23 @@ void QtMainWindow::OnAddWindEntity()
 
 	windEntity->Release();
 }
+
+
+void QtMainWindow::OnAddPathEntity()
+{
+    SceneEditor2* scene = GetCurrentScene();
+    if(!scene) return;
+    
+    Entity * pathEntity = new Entity();
+    pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
+    pathEntity->AddComponent(new PathComponent());
+    
+    scene->Exec(new EntityAddCommand(pathEntity, scene));
+    scene->selectionSystem->SetSelection(pathEntity);
+    
+    pathEntity->Release();
+}
+
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
 {
