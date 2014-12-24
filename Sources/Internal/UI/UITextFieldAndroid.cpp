@@ -95,8 +95,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 
 void JniTextField::SetFontSize(float size)
 {
-    float32 v2p = Core::Instance()->GetVirtualToPhysicalFactor();
-    setFontSize(id, VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size)));
+    setFontSize(id, VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size));
 }
 
 void JniTextField::SetIsPassword(bool isPassword)

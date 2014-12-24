@@ -68,7 +68,7 @@ stack_t AndroidCrashReport::s_sigstk;
 
 JniCrashReporter::JniCrashReporter()
 	: jniCrashReporter("com/dava/framework/JNICrashReporter")
-    , jniString(JNI::TypeMetrics<jstring>())
+    , jniString("java/lang/String")
 {
     throwJavaExpetion = jniCrashReporter.GetStaticMethod<void, jobjectArray, jobjectArray, jintArray>("ThrowJavaExpetion");
 }

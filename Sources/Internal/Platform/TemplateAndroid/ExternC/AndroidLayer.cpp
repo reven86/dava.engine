@@ -41,7 +41,7 @@
 #include "AndroidCrashReport.h"
 #include "Utils/UTF8Utils.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
-
+#include <dirent.h>
 //#if defined(__DAVAENGINE_PROFILE__)
 //#include "prof.h"
 //#endif //#if defined(__DAVAENGINE_PROFILE__)

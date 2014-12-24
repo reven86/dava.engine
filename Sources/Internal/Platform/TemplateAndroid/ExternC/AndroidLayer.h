@@ -38,7 +38,6 @@
 #include <android/log.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <dirent.h>
 #include <sys/stat.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>

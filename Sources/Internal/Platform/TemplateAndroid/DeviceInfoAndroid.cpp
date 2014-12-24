@@ -55,7 +55,7 @@ namespace DAVA
 {
 
 JniDeviceInfo::JniDeviceInfo()
-    : jniDeviceInfo("com/Java/framework/JNIDeviceInfo")
+    : jniDeviceInfo("com/dava/framework/JNIDeviceInfo")
 {
 	getVersion = jniDeviceInfo.GetStaticMethod<void>("GetVersion");
 	getManufacturer = jniDeviceInfo.GetStaticMethod<void>("GetManufacturer");
