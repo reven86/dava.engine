@@ -32,6 +32,7 @@
 
 #include <typeinfo>
 #include "NullType.h"
+#include "TypeList.h"
 
 namespace DAVA
 {
@@ -56,13 +57,6 @@ struct IntegralConstant
 // Specializations for boolean constants
 typedef IntegralConstant<bool, false>   FalseType;
 typedef IntegralConstant<bool, true>    TrueType;
-
-// Templates to check whether two types T1 and T2 are the same types
-template<typename T1, typename T2>
-struct IsSame : public FalseType {};
-
-template<typename T>
-struct IsSame<T,T> : public TrueType {};
 
 template<bool C, typename T = void>
 struct EnableIf
@@ -109,54 +103,81 @@ struct SelectIndex<false, index_A, index_B>
 	enum { result = index_B };
 };
     
-	template<typename U>
-	struct PointerTraits
-	{
-		enum{ result = false };
-		typedef NullType PointerType;
-	};
-	template <typename U>
-	struct PointerTraits<U*>
-	{
-		enum{ result = true };
-		typedef U PointerType;
-	};
+template<typename U>
+struct PointerTraits
+{
+	enum{ result = false };
+	typedef NullType PointerType;
+};
+template <typename U>
+struct PointerTraits<U*>
+{
+	enum{ result = true };
+	typedef U PointerType;
+};
     
-	template<typename U>
-	struct ReferenceTraits
-	{
-		enum{ result = false };
-		typedef NullType ReferenceType;
-	};
-	template <typename U>
-	struct ReferenceTraits<U&>
-	{
-		enum{ result = true };
-		typedef U ReferenceType;
-	};
+template<typename U>
+struct ReferenceTraits
+{
+	enum{ result = false };
+	typedef NullType ReferenceType;
+};
+template <typename U>
+struct ReferenceTraits<U&>
+{
+	enum{ result = true };
+	typedef U ReferenceType;
+};
     
-	template<class U>
-	struct P2MTraits
-	{
-		enum{ result = false };
-	};
-	template <class R, class V>
-	struct P2MTraits<R V::*>
-	{
-		enum{ result = true };
-	};
+template<class U>
+struct P2MTraits
+{
+	enum{ result = false };
+};
+template <class R, class V>
+struct P2MTraits<R V::*>
+{
+	enum{ result = true };
+};
+
+template<typename T1, typename T2>
+struct IsSame
+{
+    enum{ result = false };
+};
+
+template<typename T>
+struct IsSame<T, T>
+{
+    enum{ result = true };
+};
+
+namespace TemplateHelper
+{
+    typedef DAVA_TYPELIST_5(unsigned char, unsigned short int, unsigned int, unsigned long int, unsigned long long) StdUnsignedInts;
+    typedef DAVA_TYPELIST_5(signed char, short int, int, long int, long long) StdSignedInts;
+    typedef DAVA_TYPELIST_3(bool, char, wchar_t) StdOtherInts;
+    typedef DAVA_TYPELIST_3(float, double, long double) StdFloats;
+};
     
-	template <typename T>
-	class TypeTraits
-	{
-	public:
-		enum { isPointer = PointerTraits<T>::result };
-		enum { isReference = ReferenceTraits<T>::result };
-		enum { isPointerToMemberFunction = P2MTraits<T>::result };
+template <typename T>
+class TypeTraits
+{
+public:
+    enum { isStdUnsignedInt = (TL::IndexOf<TemplateHelper::StdUnsignedInts, T>::value >= 0) };
+    enum { isStdSignedInt   = (TL::IndexOf<TemplateHelper::StdSignedInts, T>::value >= 0) };
+    enum { isStdIntegral    = (isStdUnsignedInt || isStdSignedInt || TL::IndexOf<TemplateHelper::StdOtherInts, T>::value >= 0) };
+    enum { isStdFloat       = (TL::IndexOf<TemplateHelper::StdFloats, T>::value >= 0) };
+    enum { isStdArith       = isStdIntegral || isStdFloat };
+    enum { isStdFundamental = isStdArith || isStdFloat || IsSame<T, void>::result };
+
+	enum { isPointer = PointerTraits<T>::result };
+	enum { isReference = ReferenceTraits<T>::result };
+	enum { isPointerToMemberFunction = P2MTraits<T>::result };
         
-		typedef typename Select<isPointer || isReference, T, const T&>::Result ParamType;
-		typedef typename Select<isReference, typename ReferenceTraits<T>::ReferenceType, T>::Result NonRefType;
-    };
+	typedef typename Select<isPointer || isReference, T, const T&>::Result ParamType;
+	typedef typename Select<isReference, typename ReferenceTraits<T>::ReferenceType, T>::Result NonRefType;
+};
     
     
 template <class TO, class FROM>

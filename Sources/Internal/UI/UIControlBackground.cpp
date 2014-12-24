@@ -39,6 +39,10 @@
 
 namespace DAVA
 {
+//Shared render data
+RenderDataObject* UIControlBackground::rdoObject = NULL;
+RenderDataStream* UIControlBackground::vertexStream = NULL;
+RenderDataStream* UIControlBackground::texCoordStream = NULL;
 
 const uint16 UIControlBackground::StretchDrawData::indeces[18 * 3] = {
     0, 1, 4,
@@ -78,9 +82,6 @@ UIControlBackground::UIControlBackground()
 ,	lastDrawPos(0, 0)
 ,	tiledData(NULL)
 ,   stretchData(NULL)
-,   rdoObject(NULL)
-,   vertexStream(NULL)
-,   texCoordStream(NULL)
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
@@ -101,7 +102,6 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
     frame = srcBackground->frame;
     align = srcBackground->align;
 
-    SafeRelease(rdoObject);
     SetDrawType(srcBackground->type);
     SetMargins(srcBackground->GetMargins());
 
@@ -118,7 +118,6 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 
 UIControlBackground::~UIControlBackground()
 {
-    SafeRelease(rdoObject);
     SafeRelease(spr);
     SafeRelease(shader);
     SafeDelete(margins);
@@ -198,6 +197,16 @@ void UIControlBackground::SetFrame(int32 drawFrame)
     frame = drawFrame;
 }
 
+void UIControlBackground::SetFrame(const FastName& frameName)
+{
+    DVASSERT(spr);
+    int32 frameInd = spr->GetFrameByName(frameName);
+    if (frameInd != Sprite::INVALID_FRAME_INDEX)
+    {
+    	SetFrame(frameInd);
+    }
+}
+
 void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
@@ -205,25 +214,6 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
     type = drawType;
-    switch(type)
-    {
-    case DRAW_STRETCH_BOTH:
-    case DRAW_STRETCH_HORIZONTAL:
-    case DRAW_STRETCH_VERTICAL:
-    case DRAW_TILED:
-        {
-            if (!rdoObject)
-            {
-                rdoObject = new RenderDataObject();
-                vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-                texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-                //rdoObject->SetStream()
-            }
-        }
-        break;
-    default:
-        break;
-    }
     ReleaseDrawData();
 }
 
@@ -567,6 +557,16 @@ void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, Un
     {
         return;
     }
+
+    const Vector2 &size = geometricData.size;
+
+    if (leftStretchCap < 0.0f || topStretchCap < 0.0f ||
+        size.x <= 0.0f || size.y <= 0.0f)
+        return;
+
+    Vector2 stretchCap(Min(size.x * 0.5f, leftStretchCap),
+                       Min(size.y * 0.5f, topStretchCap));
+
     UniqueHandle textureHandle = spr->GetTextureHandle(frame);
     
     bool needGenerateData = false;
@@ -581,8 +581,7 @@ void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, Un
         needGenerateData |= frame != stretchData->frame;
         needGenerateData |= geometricData.size != stretchData->size;
         needGenerateData |= type != stretchData->type;
-        needGenerateData |= leftStretchCap != stretchData->leftStretchCap;
-        needGenerateData |= topStretchCap != stretchData->topStretchCap;
+        needGenerateData |= stretchCap != stretchData->stretchCap;
     }
     
     StretchDrawData &sd = *stretchData;
@@ -593,8 +592,7 @@ void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, Un
         sd.frame = frame;
         sd.size = geometricData.size;
         sd.type = type;
-        sd.leftStretchCap = leftStretchCap;
-        sd.topStretchCap = topStretchCap;
+        sd.stretchCap = stretchCap;
         sd.GenerateStretchData();
     }
     
@@ -759,163 +757,160 @@ void UIControlBackground::StretchDrawData::GenerateTransformData()
     
 void UIControlBackground::StretchDrawData::GenerateStretchData()
 {
-    Texture* texture = sprite->GetTexture(frame);
-    
-    float32 texX = sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
-    float32 texY = sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
-    float32 texDx = sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
-    float32 texDy = sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
-    float32 texOffX = sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE);
-    float32 texOffY = sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE);
-    
-    const float32 spriteWidth = sprite->GetWidth();
-    const float32 spriteHeight = sprite->GetHeight();
-    
-    const float32 leftOffset  = leftStretchCap - texOffX;
-    const float32 rightOffset = leftStretchCap - ( spriteWidth - texDx - texOffX );
-    const float32 topOffset   = topStretchCap  - texOffY;
-    const float32 bottomOffset= topStretchCap  - ( spriteHeight - texDy - texOffY );
-    
-    const float32 realLeftStretchCap  = Max( 0.0f, leftOffset );
-    const float32 realRightStretchCap = Max( 0.0f, rightOffset );
-    const float32 realTopStretchCap   = Max( 0.0f, topOffset );
-    const float32 realBottomStretchCap= Max( 0.0f, bottomOffset );
-    
-    const float32 scaleFactorX = size.x / spriteWidth;
-    const float32 scaleFactorY = size.y / spriteHeight;
-    float32 dx = size.x - ( Max( 0.0f, -leftOffset ) + Max( 0.0f, -rightOffset  ) ) * scaleFactorX;
-    float32 dy = size.y - ( Max( 0.0f, -topOffset  ) + Max( 0.0f, -bottomOffset ) ) * scaleFactorY;
-    
-    const float32 resMulFactor = 1.0f / Core::Instance()->GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
-    
-    texDx *= resMulFactor;
-    texDy *= resMulFactor;
-    
-    const float32 leftCap  = realLeftStretchCap   * resMulFactor;
-    const float32 rightCap = realRightStretchCap  * resMulFactor;
-    const float32 topCap   = realTopStretchCap    * resMulFactor;
-    const float32 bottomCap= realBottomStretchCap * resMulFactor;
-    
-    float32 textureWidth = (float32)texture->GetWidth();
-    float32 textureHeight = (float32)texture->GetHeight();
+    const Vector2 sizeInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT));
+    const Vector2 offsetInTex(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE), sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE));
+    const Vector2 &spriteSize = sprite->GetSize();
 
-    float32 xOffset = texOffX;
-    float32 yOffset = texOffY;
+    const Vector2 xyLeftTopCap(offsetInTex - stretchCap);
+    const Vector2 xyRightBottomCap(spriteSize - sizeInTex - offsetInTex - stretchCap);
+
+    const Vector2 xyRealLeftTopCap(Max(0.0f, -xyLeftTopCap.x), Max(0.0f, -xyLeftTopCap.y));
+    const Vector2 xyRealRightBottomCap(Max(0.0f, -xyRightBottomCap.x), Max(0.0f, -xyRightBottomCap.y));
+
+    const Vector2 xyNegativeLeftTopCap(Max(0.0f, xyLeftTopCap.x), Max(0.0f, xyLeftTopCap.y));
+
+    const Vector2 scaleFactor = (size - stretchCap*2.0f) / (spriteSize - stretchCap*2.0f);
+
+    Vector2 xyPos;
+    Vector2 xySize;
+
+    if (DRAW_STRETCH_BOTH == type || DRAW_STRETCH_HORIZONTAL == type)
+    {
+        xySize.x = xyRealLeftTopCap.x + xyRealRightBottomCap.x + (sizeInTex.x - xyRealLeftTopCap.x - xyRealRightBottomCap.x) * scaleFactor.x;
+        xyPos.x = stretchCap.x + xyNegativeLeftTopCap.x * scaleFactor.x - xyRealLeftTopCap.x;
+    }
+    else
+    {
+        xySize.x = sizeInTex.x;
+        xyPos.x = offsetInTex.x + (size.x - spriteSize.x) * 0.5f;
+    }
+
+    if (DRAW_STRETCH_BOTH == type || DRAW_STRETCH_VERTICAL == type)
+    {
+        xySize.y = xyRealLeftTopCap.y + xyRealRightBottomCap.y + (sizeInTex.y - xyRealLeftTopCap.y - xyRealRightBottomCap.y) * scaleFactor.y;
+        xyPos.y = stretchCap.y + xyNegativeLeftTopCap.y * scaleFactor.y - xyRealLeftTopCap.y;
+    }
+    else
+    {
+        xySize.y = sizeInTex.y;
+        xyPos.y = offsetInTex.y + (size.y - spriteSize.y) * 0.5f;
+    }
+
+    const Texture* texture = sprite->GetTexture(frame);
+    const float32 resMulFactor = 1.0f / Core::Instance()->GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
+    const Vector2 textureSize((float32)texture->GetWidth(), (float32)texture->GetHeight());
+
+    const Vector2 uvPos(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE) / textureSize.x,
+                        sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);
+
+    const Vector2 uvSize(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) * resMulFactor / textureSize.x,
+                         sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) * resMulFactor / textureSize.y);
+
+    const Vector2 uvLeftTopCap(xyRealLeftTopCap * resMulFactor / textureSize);
+
+    const Vector2 uvRightBottomCap(xyRealRightBottomCap * resMulFactor / textureSize);
 
     switch (type)
     {
         case DRAW_STRETCH_HORIZONTAL:
         {
-            float32 ddy = (spriteHeight - dy);
-            yOffset -= ddy * 0.5f;
-            dy += ddy - 2 * texOffX;
-            dx -= 2 * texOffX;
-            
             vertices.resize(8);
             transformedVertices.resize(8);
             texCoords.resize(8);
             
-            vertices[0] = Vector2(xOffset, yOffset);
-            vertices[1] = Vector2(xOffset + realLeftStretchCap, yOffset);
-            vertices[2] = Vector2(xOffset + dx - realRightStretchCap, yOffset);
-            vertices[3] = Vector2(xOffset + dx, yOffset);
+            vertices[0] = Vector2(xyPos.x, xyPos.y);
+            vertices[1] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y);
+            vertices[2] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y);
+            vertices[3] = Vector2(xyPos.x + xySize.x, xyPos.y);
             
-            vertices[4] = Vector2(xOffset, yOffset + dy);
-            vertices[5] = Vector2(xOffset + realLeftStretchCap, yOffset + dy);
-            vertices[6] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy);
-            vertices[7] = Vector2(xOffset + dx, yOffset + dy);
+            vertices[4] = Vector2(xyPos.x, xyPos.y + xySize.y);
+            vertices[5] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y + xySize.y);
+            vertices[6] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y + xySize.y);
+            vertices[7] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y);
             
-            texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
-            texCoords[1] = Vector2((texX + leftCap) / textureWidth, texY / textureHeight);
-            texCoords[2] = Vector2((texX + texDx - rightCap) / textureWidth, texY / textureHeight);
-            texCoords[3] = Vector2((texX + texDx) / textureWidth, texY / textureHeight);
+            texCoords[0] = Vector2(uvPos.x, uvPos.y);
+            texCoords[1] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y);
+            texCoords[2] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y);
+            texCoords[3] = Vector2(uvPos.x + uvSize.x, uvPos.y);
             
-            texCoords[4] = Vector2(texX / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[5] = Vector2((texX + leftCap) / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[6] = Vector2((texX + texDx - rightCap) / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[7] = Vector2((texX + texDx) / textureWidth, (texY + texDy) / textureHeight);
+            texCoords[4] = Vector2(uvPos.x, uvPos.y + uvSize.y);
+            texCoords[5] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y + uvSize.y);
+            texCoords[6] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y + uvSize.y);
+            texCoords[7] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y);
         }
         break;
         case DRAW_STRETCH_VERTICAL:
         {
-            float32 ddx = (spriteWidth - dx);
-            xOffset -= ddx * 0.5f;
-            dx += ddx - 2 * texOffX;
-            dy -= 2 * texOffY;
-            
             vertices.resize(8);
             transformedVertices.resize(8);
             texCoords.resize(8);
             
-            vertices[0] = Vector2(xOffset, yOffset);
-            vertices[1] = Vector2(xOffset, yOffset + realTopStretchCap);
-            vertices[2] = Vector2(xOffset, yOffset + dy - realBottomStretchCap);
-            vertices[3] = Vector2(xOffset, yOffset + dy);
+            vertices[0] = Vector2(xyPos.x, xyPos.y);
+            vertices[1] = Vector2(xyPos.x, xyPos.y + xyRealLeftTopCap.y);
+            vertices[2] = Vector2(xyPos.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+            vertices[3] = Vector2(xyPos.x, xyPos.y + xySize.y);
             
-            vertices[4] = Vector2(xOffset + dx, yOffset);
-            vertices[5] = Vector2(xOffset + dx, yOffset + realTopStretchCap);
-            vertices[6] = Vector2(xOffset + dx, yOffset + dy - realBottomStretchCap);
-            vertices[7] = Vector2(xOffset + dx, yOffset + dy);
+            vertices[4] = Vector2(xyPos.x + xySize.x, xyPos.y);
+            vertices[5] = Vector2(xyPos.x + xySize.x, xyPos.y + xyRealLeftTopCap.y);
+            vertices[6] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+            vertices[7] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y);
             
-            texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
-            texCoords[1] = Vector2(texX / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[2] = Vector2(texX / textureWidth, (texY + texDy - bottomCap) / textureHeight);
-            texCoords[3] = Vector2(texX / textureWidth, (texY + texDy) / textureHeight);
+            texCoords[0] = Vector2(uvPos.x, uvPos.y);
+            texCoords[1] = Vector2(uvPos.x, uvPos.y + uvLeftTopCap.y);
+            texCoords[2] = Vector2(uvPos.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+            texCoords[3] = Vector2(uvPos.x, uvPos.y + uvSize.y);
             
-            texCoords[4] = Vector2((texX + texDx) / textureWidth, texY / textureHeight);
-            texCoords[5] = Vector2((texX + texDx) / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[6] = Vector2((texX + texDx) / textureWidth, (texY + texDy - bottomCap) / textureHeight);
-            texCoords[7] = Vector2((texX + texDx) / textureWidth, (texY + texDy) / textureHeight);
+            texCoords[4] = Vector2(uvPos.x + uvSize.x, uvPos.y);
+            texCoords[5] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvLeftTopCap.y);
+            texCoords[6] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+            texCoords[7] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y);
         }
         break;
         case DRAW_STRETCH_BOTH:
         {
-            dx -= 2 * texOffX;
-            dy -= 2 * texOffY;
-
             vertices.resize(16);
             transformedVertices.resize(16);
             texCoords.resize(16);
             
-            vertices[0] = Vector2(xOffset, yOffset);
-            vertices[1] = Vector2(xOffset + realLeftStretchCap, yOffset);
-            vertices[2] = Vector2(xOffset + dx - realRightStretchCap, yOffset);
-            vertices[3] = Vector2(xOffset + dx, yOffset);
+            vertices[0] = Vector2(xyPos.x, xyPos.y);
+            vertices[1] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y);
+            vertices[2] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y);
+            vertices[3] = Vector2(xyPos.x + xySize.x, xyPos.y);
             
-            vertices[4] = Vector2(xOffset, yOffset + realTopStretchCap);
-            vertices[5] = Vector2(xOffset + realLeftStretchCap, yOffset + realTopStretchCap);
-            vertices[6] = Vector2(xOffset + dx - realRightStretchCap, yOffset + realTopStretchCap);
-            vertices[7] = Vector2(xOffset + dx, yOffset + realTopStretchCap);
+            vertices[4] = Vector2(xyPos.x, xyPos.y + xyRealLeftTopCap.y);
+            vertices[5] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y + xyRealLeftTopCap.y);
+            vertices[6] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y + xyRealLeftTopCap.y);
+            vertices[7] = Vector2(xyPos.x + xySize.x, xyPos.y + xyRealLeftTopCap.y);
             
-            vertices[8] = Vector2(xOffset, yOffset + dy - realBottomStretchCap);
-            vertices[9] = Vector2(xOffset + realLeftStretchCap, yOffset + dy - realBottomStretchCap);
-            vertices[10] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy - realBottomStretchCap);
-            vertices[11] = Vector2(xOffset + dx, yOffset + dy - realBottomStretchCap);
+            vertices[8] = Vector2(xyPos.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+            vertices[9] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+            vertices[10] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
+            vertices[11] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y - xyRealRightBottomCap.y);
             
-            vertices[12] = Vector2(xOffset, yOffset + dy);
-            vertices[13] = Vector2(xOffset + realLeftStretchCap, yOffset + dy);
-            vertices[14] = Vector2(xOffset + dx - realRightStretchCap, yOffset + dy);
-            vertices[15] = Vector2(xOffset + dx, yOffset + dy);
+            vertices[12] = Vector2(xyPos.x, xyPos.y + xySize.y);
+            vertices[13] = Vector2(xyPos.x + xyRealLeftTopCap.x, xyPos.y + xySize.y);
+            vertices[14] = Vector2(xyPos.x + xySize.x - xyRealRightBottomCap.x, xyPos.y + xySize.y);
+            vertices[15] = Vector2(xyPos.x + xySize.x, xyPos.y + xySize.y);
             
-            texCoords[0] = Vector2(texX / textureWidth, texY / textureHeight);
-            texCoords[1] = Vector2((texX + leftCap) / textureWidth, texY / textureHeight);
-            texCoords[2] = Vector2((texX + texDx - rightCap) / textureWidth, texY / textureHeight);
-            texCoords[3] = Vector2((texX + texDx) / textureWidth, texY / textureHeight);
+            texCoords[0] = Vector2(uvPos.x, uvPos.y);
+            texCoords[1] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y);
+            texCoords[2] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y);
+            texCoords[3] = Vector2(uvPos.x + uvSize.x, uvPos.y);
             
-            texCoords[4] = Vector2(texX / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[5] = Vector2((texX + leftCap) / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[6] = Vector2((texX + texDx - rightCap) / textureWidth, (texY + topCap) / textureHeight);
-            texCoords[7] = Vector2((texX + texDx) / textureWidth, (texY + topCap) / textureHeight);
+            texCoords[4] = Vector2(uvPos.x, uvPos.y + uvLeftTopCap.y);
+            texCoords[5] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y + uvLeftTopCap.y);
+            texCoords[6] = Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y + uvLeftTopCap.y);
+            texCoords[7] = Vector2(uvPos.x + uvSize.x, uvPos.y + uvLeftTopCap.y);
             
-            texCoords[8] = Vector2(texX / textureWidth, (texY + texDy - bottomCap)  / textureHeight);
-            texCoords[9] = Vector2((texX + leftCap) / textureWidth, (texY + texDy - bottomCap)  / textureHeight);
-            texCoords[10] = Vector2((texX + texDx - rightCap) / textureWidth, (texY + texDy - bottomCap)  / textureHeight);
-            texCoords[11] = Vector2((texX + texDx) / textureWidth, (texY + texDy - bottomCap)  / textureHeight);
+            texCoords[8] = Vector2(uvPos.x, uvPos.y + uvSize.y - uvRightBottomCap.y );
+            texCoords[9] = Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y + uvSize.y - uvRightBottomCap.y );
+            texCoords[10]= Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
+            texCoords[11]= Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y - uvRightBottomCap.y);
             
-            texCoords[12] = Vector2(texX / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[13] = Vector2((texX + leftCap) / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[14] = Vector2((texX + texDx - rightCap) / textureWidth, (texY + texDy) / textureHeight);
-            texCoords[15] = Vector2((texX + texDx) / textureWidth, (texY + texDy) / textureHeight);
+            texCoords[12]= Vector2(uvPos.x, uvPos.y + uvSize.y);
+            texCoords[13]= Vector2(uvPos.x + uvLeftTopCap.x, uvPos.y + uvSize.y);
+            texCoords[14]= Vector2(uvPos.x + uvSize.x - uvRightBottomCap.x, uvPos.y + uvSize.y);
+            texCoords[15]= Vector2(uvPos.x + uvSize.x, uvPos.y + uvSize.y);
         }
         break;
     }
@@ -1055,6 +1050,22 @@ void UIControlBackground::SetShader(Shader *_shader)
         SafeRelease(shader);
         shader = SafeRetain(_shader);
     }
+}
+
+void UIControlBackground::CreateRenderObject()
+{
+	DVASSERT(rdoObject == NULL && "Need be not initialized");
+
+	rdoObject = new RenderDataObject();
+	vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+	texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+
+}
+
+void UIControlBackground::ReleaseRenderObject()
+{
+	vertexStream = texCoordStream = NULL;
+	SafeRelease(rdoObject);
 }
 
 void UIControlBackground::SetMargins(const UIMargins* uiMargins)

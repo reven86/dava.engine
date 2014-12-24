@@ -67,6 +67,9 @@
     <ClCompile Include="Classes\Tests\NetworkTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Tests\JobManagerTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Infrastructure\BaseScreen.h">
@@ -136,6 +139,9 @@
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Tests\NetworkTest.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Tests\JobManagerTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
   </ItemGroup>

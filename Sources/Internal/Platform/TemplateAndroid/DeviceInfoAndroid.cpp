@@ -27,12 +27,13 @@
 =====================================================================================*/
 
 
-#include "../../Utils/Utils.h"
+#include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "unistd.h"
 
 DAVA::String intermediateStr;
@@ -152,6 +153,45 @@ int32 JniDeviceInfo::GetZBufferSize()
 	jmethodID mid = GetMethodID("GetZBufferSize", "()I");
 	if (mid)
 		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+
+	return 0;
+}
+
+String JniDeviceInfo::GetHTTPProxyHost()
+{
+	jmethodID mid = GetMethodID("GetHTTPProxyHost", "()Ljava/lang/String;");
+	String returnStr = "";
+
+	if (mid)
+	{
+		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
+		CreateStringFromJni(GetEnvironment(), jstring(obj), returnStr);
+	}
+
+	return returnStr;
+}
+
+String JniDeviceInfo::GetHTTPNonProxyHosts()
+{
+	jmethodID mid = GetMethodID("GetHTTPNonProxyHosts", "()Ljava/lang/String;");
+	String returnStr = "";
+
+	if (mid)
+	{
+		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
+		CreateStringFromJni(GetEnvironment(), jstring(obj), returnStr);
+	}
+
+	return returnStr;
+}
+
+int JniDeviceInfo::GetHTTPProxyPort()
+{
+	jmethodID mid = GetMethodID("GetHTTPProxyPort", "()I");
+	if (mid)
+	{
+		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+	}
 
 	return 0;
 }
@@ -372,6 +412,24 @@ int DeviceInfo::GetZBufferSize()
 	return jniDeviceInfo.GetZBufferSize();
 }
 
+String DeviceInfo::GetHTTPProxyHost()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPProxyHost();
+}
+
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPNonProxyHosts();
+}
+
+int DeviceInfo::GetHTTPProxyPort()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPProxyPort();
+}
+
 eGPUFamily DeviceInfo::GetGPUFamily()
 {
 	JniDeviceInfo jniDeviceInfo;
@@ -410,6 +468,15 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 
     return l;
 }
+
+void DeviceInfo::InitializeScreenInfo()
+{
+    CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
+    screenInfo.width = core->GetViewWidth();
+    screenInfo.height = core->GetViewHeight();
+    screenInfo.scale = 1;
+}
+
 
 int32 DeviceInfo::GetCpuCount()
 {
