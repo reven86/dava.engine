@@ -34,6 +34,11 @@
 #include "Utils/Utils.h"
 #include "ExternC/AndroidLayer.h"
 
+#include "Render/Texture.h"
+#include "Render/2D/Sprite.h"
+#include "UI/UIWebView.h"
+
+
 namespace DAVA
 {
 
@@ -227,7 +232,7 @@ IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 	return delegate->URLChanged(control->webView, newURL, true);
 }
 
-void JniWebView::PageLoaded(int id)
+void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
 {
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
@@ -241,6 +246,17 @@ void JniWebView::PageLoaded(int id)
 	if (delegate)
 	{
 		delegate->PageLoaded(control->webView);
+	}
+
+	// TODO
+	UIWebView* webView = control->GetUIWebView();
+	if (webView && rawPixels)
+	{
+		Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888, reinterpret_cast<uint8*>(rawPixels), width, height, false);
+		Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, static_cast<float>(width), static_cast<float>(height));
+		webView->GetBackground()->SetSprite(spr, 0);
+		SafeRelease(spr);
+		SafeRelease(tex);
 	}
 }
 
@@ -261,10 +277,11 @@ void JniWebView::OnExecuteJScript(int id, int requestId, const String& result)
 	}
 }
 
-WebViewControl::WebViewControl()
+WebViewControl::WebViewControl(UIWebView* uiWebViewPtr):
+		webView(uiWebViewPtr)
 {
-	delegate = NULL;
-	webView = NULL;
+	delegate = nullptr;
+	webView = uiWebViewPtr;
 
 	webViewId = webViewIdCount++;
 }

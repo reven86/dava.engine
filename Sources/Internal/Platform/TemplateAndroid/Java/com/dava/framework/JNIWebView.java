@@ -38,49 +38,69 @@ public class JNIWebView {
 	private static class InternalViewClient extends WebViewClient {
 		int id;
 		
+		boolean isStatic = true;
+		
 		public InternalViewClient(int _id) {
 			id = _id;
+		}
+		
+		class OnPageLoadedNativeRunnable implements Runnable {
+			int[] pixels;
+			
+			OnPageLoadedNativeRunnable(int[] pixels) {
+				this.pixels = pixels;
+			}
+			
+			@Override
+			public void run() {
+				OnPageLoaded(id, pixels);
+			}
 		}
 		
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
-			JNIActivity.GetActivity().PostEventToGL(new Runnable() {
-				@Override
-				public void run() {
-					OnPageLoaded(id);
-				}
-			});
 			
+			int pixels[] = null;
 			
-			// TODO-render-view-to-image---------
-			long startTime = System.nanoTime();
-            Bitmap bm = Bitmap.createBitmap(view.getMeasuredWidth(),
+			if (isStatic)
+			{
+				// render webview into bitmap and pass it to native code
+				Bitmap bitmap = renderWebViewIntoBitmap(view);
+				int w = bitmap.getWidth();
+				int h = bitmap.getHeight();
+				pixels = new int[w * h]; 
+				// copy ARGB pixels values into our buffer
+				bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+			}
+			
+			JNIActivity.GetActivity().PostEventToGL(
+					new OnPageLoadedNativeRunnable(pixels));
+		}
+
+		private Bitmap renderWebViewIntoBitmap(WebView view) {
+			Bitmap bm = Bitmap.createBitmap(view.getMeasuredWidth(),
                     view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
             assert bm != null;
             Canvas bigcanvas = new Canvas(bm);
             int height = bm.getHeight();
             bigcanvas.drawBitmap(bm, 0, height, paint);
             view.draw(bigcanvas);
-            double timeToRenderToImage = (double)(System.nanoTime() - startTime)/1000000000.0;
-            Log.d(TAG, "time to render webview to image = " + timeToRenderToImage + "s");
-            try {
-                String path = Environment.getExternalStorageDirectory()
-                        .toString();
-                OutputStream fOut = null;
-                File file = new File(path, "/test_output.png");
-                fOut = new FileOutputStream(file);
-
-                bm.compress(Bitmap.CompressFormat.PNG, 50, fOut);
-                fOut.flush();
-                fOut.close();
-                bm.recycle();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-			//-----------------------------------
-			
-			
+//            try {
+//                String path = Environment.getExternalStorageDirectory()
+//                        .toString();
+//                OutputStream fOut = null;
+//                File file = new File(path, "/test_output.png");
+//                fOut = new FileOutputStream(file);
+//
+//                bm.compress(Bitmap.CompressFormat.PNG, 50, fOut);
+//                fOut.flush();
+//                fOut.close();
+//                bm.recycle();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+            return bm;
 		};
 		
 		
@@ -478,6 +498,6 @@ public class JNIWebView {
 	}
 	
 	private static native int OnUrlChange(int id, String url);
-	private static native int OnPageLoaded(int id);
+	private static native int OnPageLoaded(int id, int[] pixels, int width, int height);
 	private static native void OnExecuteJScript(int id, int requestId, String result);
 }

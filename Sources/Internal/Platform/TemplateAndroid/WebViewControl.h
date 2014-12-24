@@ -40,13 +40,14 @@
 namespace DAVA {
 
 class JniWebView;
+class UIWebView;
 
 // Web View Control - Android version.
 class WebViewControl : public IWebViewControl
 {
 	friend class JniWebView;
 public:
-	WebViewControl();
+	WebViewControl(UIWebView* uiWebViewPtr);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
@@ -77,6 +78,11 @@ public:
 	void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
 
+    UIWebView* GetUIWebView() const
+    {
+    	return webView;
+    }
+
 private:
 	static int32 webViewIdCount;
 	int32 webViewId;
@@ -105,7 +111,7 @@ public:
 	void SetBackgroundTransparency(int id, bool isVisible);
 
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
-	static void PageLoaded(int id);
+	static void PageLoaded(int id, int* rawPixels, int width, int height);
 	static void OnExecuteJScript(int id, int requestId, const String& result);
 
 protected:

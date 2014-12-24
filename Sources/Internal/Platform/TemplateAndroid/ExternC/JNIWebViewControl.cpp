@@ -42,9 +42,22 @@ extern "C"
 		return res;
 	}
 
-	void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classthis, int id)
+	void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classthis, int id, jintArray pixels, int width, int height)
 	{
-		DAVA::JniWebView::PageLoaded(id);
+		if (nullptr == pixels)
+		{
+			DAVA::JniWebView::PageLoaded(id, 0, 0, 0);
+		} else
+		{
+			jboolean isCopy = JNI_FALSE;
+			jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
+
+			DVASSERT(env->GetArrayLength(pixels) == width * height * 4); // ARGB
+			DAVA::JniWebView::PageLoaded(id, rawData, width, height);
+
+			env->ReleaseIntArrayElements(pixels, rawData, 0);
+		}
+
 	}
 
 	void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, int requestId, jstring jResult)
