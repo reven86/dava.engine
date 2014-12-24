@@ -17,9 +17,9 @@ import subprocess
 mapsDir = './DataSource/3d/';
 formatParam = 'tegra'
 
-executables = { "Darwin": 'Tools/ResEditor/dava.framework/Tools/ResourceEditor/ResourceEditorQt.app/Contents/MacOS/ResourceEditorQt',
-"Windows": 'Tools/ResEditor/dava.framework/Tools/ResourceEditor/ResourceEditorQtVS2010.exe',
-"Microsoft": 'Tools/ResEditor/dava.framework/Tools/ResourceEditor/ResourceEditorQtVS2010.exe' }
+executables = { "Darwin": 'Tools/ResEditor/dava.framework/Tools/ResourceEditor/ResourceEditor.app/Contents/MacOS/ResourceEditor',
+"Windows": 'Tools/ResEditor/dava.framework/Tools/ResourceEditor/ResourceEditor.exe',
+"Microsoft": 'Tools/ResEditor/dava.framework/Tools/ResourceEditor/ResourceEditor.exe' }
 
 def zipdir(basedir, archivename):
     assert os.path.isdir(basedir)

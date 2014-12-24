@@ -156,13 +156,14 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	const float32 dx = (float32)notPassableMapSprite->GetWidth() / (float32)(heightmap->Size() - 1);
 	
 	RenderManager* renderManager = RenderManager::Instance();
+    RenderSystem2D * renderSystem2d = RenderSystem2D::Instance();
 	RenderHelper* renderHelper = RenderHelper::Instance();
 	
 	renderManager->SetRenderTarget(notPassableMapSprite);
 	
 	const Rect drawRect(forRect.x * dx, (heightmap->Size() - (forRect.y + forRect.dy)) * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
-	renderManager->ClipPush();
-	renderManager->SetClip(drawRect);
+    renderSystem2d->ClipPush();
+    renderSystem2d->SetClip(drawRect);
 	
 	renderManager->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
@@ -205,7 +206,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	
 	renderManager->ResetColor();
 	
-	renderManager->ClipPop();
+    renderSystem2d->ClipPop();
 	
 	renderManager->RestoreRenderTarget();
 }

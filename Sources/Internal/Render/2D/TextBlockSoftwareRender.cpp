@@ -28,6 +28,7 @@
 
 
 #include "Render/2D/TextBlockSoftwareRender.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Core/Core.h"
 #include "Utils/Utils.h"
 
@@ -37,7 +38,6 @@ namespace DAVA
 TextBlockSoftwareTexInvalidater::TextBlockSoftwareTexInvalidater(TextBlock *textBlock) :
   textBlock(textBlock)
 {
-    
 }
     
 TextBlockSoftwareTexInvalidater::~TextBlockSoftwareTexInvalidater()
@@ -95,7 +95,7 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock) :
     textOffsetBR.y = 0;
 #endif
 }
-
+	
 void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
 {
     // Prevent releasing sprite when texture is invalidated
@@ -150,13 +150,13 @@ void TextBlockSoftwareRender::Prepare(Texture *texture /*=NULL*/)
     {
         texture->ReloadFromData(FORMAT_A8, (uint8*)buf, width, height);
     }
-
+    
 	SafeDeleteArray(buf);
 }
 	
 Font::StringMetrics TextBlockSoftwareRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
-    Font::StringMetrics metrics= ftFont->DrawStringToBuffer(buf, x, y,
+	 Font::StringMetrics metrics= ftFont->DrawStringToBuffer(buf, x, y, 
 										-textBlock->cacheOx, 
 										-textBlock->cacheOy, 
 										0, 
@@ -174,24 +174,24 @@ Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawTe
     Font::StringMetrics metrics;
 	if (textBlock->cacheUseJustify)
 	{
-        metrics= ftFont->DrawStringToBuffer(buf, x, y,
-										  -textBlock->cacheOx + (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
-										  -textBlock->cacheOy + (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
-										  (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w),
-										  (int32)ceilf(Core::GetVirtualToPhysicalFactor() * lineSize),
+		metrics= ftFont->DrawStringToBuffer(buf, x, y,
+            -textBlock->cacheOx + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)xOffset)),
+            -textBlock->cacheOy + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)yOffset)),
+            (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)),
+            (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)lineSize)),
 										  drawText,
 										  true);
 	}
-    else
-    {
-        metrics = ftFont->DrawStringToBuffer(buf, x, y,
-                                            -textBlock->cacheOx + (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
-                                            -textBlock->cacheOy + (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
-                                            0,
-                                            0,
-                                            drawText,
-                                            true);
-    }
+	else
+	{
+		metrics =  ftFont->DrawStringToBuffer(buf, x, y,
+        	-textBlock->cacheOx + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)xOffset)),
+        	-textBlock->cacheOy + (int32)(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)yOffset)),
+									 0,
+									 0,
+									 drawText,
+									 true);
+	}
 #if defined(LOCALIZATION_DEBUG)
     CalculateTextBBox();
 #endif

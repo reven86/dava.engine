@@ -28,13 +28,13 @@
 
 
 
-#include <QtConcurrentRun>
 #include <QPainter>
 #include <QProcess>
 #include <QTextOption>
 #include <QPushButton>
 #include <QLabel>
 #include <QFileInfo>
+#include <QtConcurrent>
 
 #include "Main/mainwindow.h"
 #include "TextureBrowser/TextureConvertor.h"
@@ -44,7 +44,7 @@
 
 #include "FileSystem/FileSystem.h"
 
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 #include "Main/QtUtils.h"
 #include "Scene/SceneHelper.h"
 #include "ImageTools/ImageTools.h"

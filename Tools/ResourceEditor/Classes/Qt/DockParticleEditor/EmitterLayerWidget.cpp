@@ -911,9 +911,8 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     if (sprite)
     {
         Sprite::DrawState drawState;
-        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE,
-            sprite->GetWidth(), sprite->GetHeight());
-        sprite->Draw(&drawState);
+        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
+        RenderSystem2D::Instance()->Draw(sprite, &drawState);        
     }
 
     RenderManager::Instance()->RestoreRenderTarget();

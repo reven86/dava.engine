@@ -36,10 +36,11 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
-#include "Render/RenderHelper.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Animation/LinearAnimation.h"
 #include "Utils/StringUtils.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
+#include "Render/RenderHelper.h"
 namespace DAVA
 {
 #if defined(LOCALIZATION_DEBUG)
@@ -243,9 +244,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     UIControl::Draw(geometricData);
 
 	UIGeometricData textGeomData;
-    
-    textGeomData.position = textBlock->GetSpriteOffset();
-   
+	textGeomData.position = textBlock->GetSpriteOffset();
 	textGeomData.size = GetSize();
     textGeomData.AddGeometricData(geometricData);
 
@@ -293,6 +292,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     
 	
 }
+
 void UIStaticText::SetParentColor(const Color &parentColor)
 {
     UIControl::SetParentColor(parentColor);
@@ -558,13 +558,13 @@ void UIStaticText::PrepareSpriteInternal()
         Texture *tex = sprite->GetTexture();
         if(tex && tex->GetFormat() == FORMAT_A8)
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
         }
         else
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
         }
     }
     else
@@ -572,7 +572,6 @@ void UIStaticText::PrepareSpriteInternal()
         shadowBg->SetSprite(NULL, 0);
         textBg->SetSprite(NULL, 0);
     }
-    
 }
 
 Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) const
