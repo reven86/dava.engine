@@ -258,9 +258,12 @@ void UIScrollViewContainer::WillDisappear()
 {
     mainTouch = -1;
     lockTouch = false;
-	UIScrollView *scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
-    scrollView->GetHorizontalScroll()->GetPosition(0, 1.0f, true);
-    scrollView->GetVerticalScroll()->GetPosition(0, 1.0f, true);
+    UIScrollView *scrollView = dynamic_cast<UIScrollView*>(GetParent());
+    if (scrollView)
+    {
+        scrollView->GetHorizontalScroll()->GetPosition(0, 1.0f, true);
+        scrollView->GetVerticalScroll()->GetPosition(0, 1.0f, true);
+    }
     state = STATE_NONE;
 }
 

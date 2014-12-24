@@ -451,10 +451,10 @@ void PolygonGroup::ReleaseData()
 void PolygonGroup::BuildBuffers()
 {
     UpdateDataPointersAndStreams();
-    JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &PolygonGroup::BuildBuffersInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &PolygonGroup::BuildBuffersInternal));
 };
     
-void PolygonGroup::BuildBuffersInternal(BaseObject * caller, void * param, void *callerData)
+void PolygonGroup::BuildBuffersInternal()
 {
     DVASSERT(Thread::IsMainThread());    
     
