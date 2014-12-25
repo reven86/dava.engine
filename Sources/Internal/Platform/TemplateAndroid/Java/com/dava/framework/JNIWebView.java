@@ -1,8 +1,5 @@
 package com.dava.framework;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -16,17 +13,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
-import android.os.Environment;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.CookieManager;
 import android.widget.FrameLayout;
 
 @SuppressLint("UseSparseArrays")
@@ -46,14 +42,18 @@ public class JNIWebView {
 		
 		class OnPageLoadedNativeRunnable implements Runnable {
 			int[] pixels;
+			int width;
+			int height;
 			
-			OnPageLoadedNativeRunnable(int[] pixels) {
+			OnPageLoadedNativeRunnable(int[] pixels, int width, int height) {
 				this.pixels = pixels;
+				this.width = width;
+				this.height = height;
 			}
 			
 			@Override
 			public void run() {
-				OnPageLoaded(id, pixels);
+				OnPageLoaded(id, pixels, width, height);
 			}
 		}
 		
@@ -62,6 +62,8 @@ public class JNIWebView {
 			super.onPageFinished(view, url);
 			
 			int pixels[] = null;
+			int width = 0;
+			int height = 0;
 			
 			if (isStatic)
 			{
@@ -75,7 +77,7 @@ public class JNIWebView {
 			}
 			
 			JNIActivity.GetActivity().PostEventToGL(
-					new OnPageLoadedNativeRunnable(pixels));
+					new OnPageLoadedNativeRunnable(pixels, width, height));
 		}
 
 		private Bitmap renderWebViewIntoBitmap(WebView view) {
