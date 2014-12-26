@@ -42,6 +42,23 @@
 namespace DAVA
 {
 
+// placed in DAVA and not in JNI to use it like a jstring
+class jstringArray
+{
+public:
+    jstringArray(const jobjectArray &arr);
+
+    inline operator jobjectArray() const;
+
+private:
+    jobjectArray obj;
+};
+
+inline jstringArray::operator jobjectArray() const
+{
+    return obj;
+}
+
 namespace JNI
 {
 
@@ -134,6 +151,11 @@ template<> struct TypeMetrics<jlongArray>
 template<> struct TypeMetrics<jstring>
 {
 	DeclareTypeString("Ljava/lang/String;");
+};
+
+template<> struct TypeMetrics<jstringArray>
+{
+    DeclareTypeString("[Ljava/lang/String;");
 };
 
 template<> struct TypeMetrics<jobject>
@@ -352,146 +374,147 @@ template<> struct JniCall<void>
 
 template<> struct JniCall<jint>
 {
-	inline static jint Call(jclass javaClass, jmethodID javaMethod)
-	{
-		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
-	}
 
-	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod)
-	{
-		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
-	}
-	template<class P1>
-	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1)
-	{
-		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
-	}
+    inline static jint Call(jclass javaClass, jmethodID javaMethod)
+    {
+        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod));
+    }
 
-	template<class P1>
-	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
-	{
-		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
-	}
+    inline static jint CallStatic(jclass javaClass, jmethodID javaMethod)
+    {
+        return (jint)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod));
+    }
+    template<class P1>
+    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+    {
+        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1));
+    }
 
-	template<class P1, class P2>
-	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
-	{
-		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
-	}
+    template<class P1>
+    inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
+    {
+        return (jint)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1));
+    }
 
-	template<class P1, class P2>
-	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
-	{
-		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
-	}
+    template<class P1, class P2>
+    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    {
+        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2));
+    }
 
-	template<class P1, class P2, class P3>
-	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
-	{
-		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
-	}
+    template<class P1, class P2>
+    inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    {
+        return (jint)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2));
+    }
 
-	template<class P1, class P2, class P3>
-	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
-	{
-		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
-	}
+    template<class P1, class P2, class P3>
+    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    {
+        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3));
+    }
 
-	template<class P1, class P2, class P3, class P4>
-	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
-	{
-		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
-	}
+    template<class P1, class P2, class P3>
+    inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    {
+        return (jint)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3));
+    }
 
-	template<class P1, class P2, class P3, class P4>
-	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
-	{
-		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
-	}
+    template<class P1, class P2, class P3, class P4>
+    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    {
+        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
+    }
 
-	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
-	{
-		return (jint)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
-	}
+    template<class P1, class P2, class P3, class P4>
+    inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    {
+        return (jint)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
+    }
 
-	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
-	{
-		return (jint)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
-	}
+    template<class P1, class P2, class P3, class P4, class P5>
+    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    {
+        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5>
+    inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    {
+        return (jint)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+    }
 };
 
 template<> struct JniCall<jintArray>
 {
-	inline static jintArray Call(jclass javaClass, jmethodID javaMethod)
-	{
-		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod));
-	}
+    inline static jintArray Call(jclass javaClass, jmethodID javaMethod)
+    {
+        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+    }
 
-	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod)
-	{
-		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod));
-	}
-	template<class P1>
-	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
-	{
-		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1));
-	}
+    inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod)
+    {
+        return (jintArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
+    }
+    template<class P1>
+    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+    {
+        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+    }
 
-	template<class P1>
-	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
-	{
-		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1));
-	}
+    template<class P1>
+    inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
+    {
+        return (jintArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
+    }
 
-	template<class P1, class P2>
-	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
-	{
-		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2));
-	}
+    template<class P1, class P2>
+    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    {
+        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+    }
 
-	template<class P1, class P2>
-	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
-	{
-		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2));
-	}
+    template<class P1, class P2>
+    inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    {
+        return (jintArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
+    }
 
-	template<class P1, class P2, class P3>
-	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
-	{
-		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3));
-	}
+    template<class P1, class P2, class P3>
+    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    {
+        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+    }
 
-	template<class P1, class P2, class P3>
-	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
-	{
-		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3));
-	}
+    template<class P1, class P2, class P3>
+    inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    {
+        return (jintArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
+    }
 
-	template<class P1, class P2, class P3, class P4>
-	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
-	{
-		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
-	}
+    template<class P1, class P2, class P3, class P4>
+    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    {
+        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+    }
 
-	template<class P1, class P2, class P3, class P4>
-	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
-	{
-		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
-	}
+    template<class P1, class P2, class P3, class P4>
+    inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    {
+        return (jintArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+    }
 
-	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
-	{
-		return (jintArray)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
-	}
+    template<class P1, class P2, class P3, class P4, class P5>
+    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    {
+        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+    }
 
-	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
-	{
-		return (jintArray)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
-	}
+    template<class P1, class P2, class P3, class P4, class P5>
+    inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    {
+        return (jintArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+    }
 };
 
 

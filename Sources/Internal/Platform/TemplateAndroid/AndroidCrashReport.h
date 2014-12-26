@@ -69,7 +69,7 @@ public:
 
 private:
 	JNI::JavaClass jniCrashReporter;
-	Function<void (jobjectArray, jobjectArray, jintArray)> throwJavaExpetion;
+	Function<void (jstringArray, jstringArray, jintArray)> throwJavaExpetion;
 
 	JNI::JavaClass jniString;
 };

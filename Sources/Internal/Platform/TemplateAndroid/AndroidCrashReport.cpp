@@ -70,7 +70,7 @@ JniCrashReporter::JniCrashReporter()
 	: jniCrashReporter("com/dava/framework/JNICrashReporter")
     , jniString("java.lang.String")
 {
-    throwJavaExpetion = jniCrashReporter.GetStaticMethod<void, jobjectArray, jobjectArray, jintArray>("ThrowJavaExpetion");
+    throwJavaExpetion = jniCrashReporter.GetStaticMethod<void, jstringArray, jstringArray, jintArray>("ThrowJavaExpetion");
 }
 
 void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)

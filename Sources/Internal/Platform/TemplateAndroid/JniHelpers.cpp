@@ -35,6 +35,11 @@
 namespace DAVA
 {
 
+jstringArray::jstringArray(const jobjectArray &arr)
+{
+    obj = arr;
+}
+
 namespace JNI
 {
 

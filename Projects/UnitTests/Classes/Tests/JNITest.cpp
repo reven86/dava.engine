@@ -76,6 +76,34 @@ void JNITest::TestFunction(PerfFuncData * data)
     someThread->Start();
     someThread->Join();
     someThread->Release();
+
+
+    JNIEnv *env = JNI::GetEnv();
+    JNI::JavaClass jtest("com/dava/unittests/JINTest");
+    auto passString = jtest.GetStaticMethod<jboolean, jstring>("PassString");
+
+    jstring str = JNI::CreateJString(L"TestString");
+    jboolean isPassed = passString(str);
+    env->DeleteLocalRef(str);
+    TEST_VERIFY(JNI_TRUE == isPassed);
+
+    auto passStringArray = jtest.GetStaticMethod<jint, jstringArray>("PassStringArray");
+
+    jint stringsToPass = 5;
+
+    JNI::JavaClass stringClass("java.lang.String");
+    jobjectArray stringArray = env->NewObjectArray(stringsToPass, stringClass, NULL);
+
+    for (uint32 i = 0; i < stringsToPass; ++i)
+    {
+        jstring str = JNI::CreateJString(L"TestString");
+        env->SetObjectArrayElement(stringArray, i, str);
+        env->DeleteLocalRef(str);
+    }
+    jint stringsPassed = passStringArray(stringArray);
+
+    TEST_VERIFY(stringsToPass == stringsPassed);
+
 }
 
 
