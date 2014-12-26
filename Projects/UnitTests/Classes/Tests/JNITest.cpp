@@ -31,8 +31,11 @@
 
 JNITest::JNITest()
     : TestTemplate<JNITest>("JNITest")
+    , javaNotificationProvider("com/dava/framework/JNINotificationProvider")
 {
     RegisterFunction(this, &JNITest::TestFunction, "JNITestTestFunctuion", NULL);
+
+    showNotificationText = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring>("NotifyText");
 }
 
 void JNITest::LoadResources()
@@ -45,19 +48,34 @@ void JNITest::UnloadResources()
 
 }
 
+void JNITest::ThreadFunc(BaseObject * caller, void * callerData, void * userData)
+{
+
+    auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
+
+    jstring jStrTitle = JNI::CreateJString(L"test");
+    jstring jStrText = JNI::CreateJString(L"test2");
+
+    //showNotificationText(jStrTitle, jStrTitle, jStrTitle);
+
+    JNI::GetEnv()->DeleteLocalRef(jStrTitle);
+    JNI::GetEnv()->DeleteLocalRef(jStrText);
+
+
+}
 void JNITest::TestFunction(PerfFuncData * data)
 {
-	JNI::JavaClass javaNotificationProvider("com/dava/framework/JNINotificationProvider");
-	auto showNotificationNext = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring>("NotifyText");
-	auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
 
-	jstring jStrTitle = JNI::CreateJString(L"test");
-	jstring jStrText = JNI::CreateJString(L"test2");
+    // test that we have no local ref table overflow (512 refs allowed).
+    for (int i = 0; i < 1024; ++i)
+    {
+        JNI::JavaClass t("com/dava/framework/JNINotificationProvider");
+    }
 
-	JNI::GetEnv()->DeleteLocalRef(jStrTitle);
-	JNI::GetEnv()->DeleteLocalRef(jStrText);
-
-    TEST_VERIFY(true == Thread::IsMainThread());
+    Thread *someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
+    someThread->Start();
+    someThread->Join();
+    someThread->Release();
 }
 
 

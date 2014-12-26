@@ -38,3 +38,4 @@ ddd
 fmod.log
 *.user
 /DavaConfig.in
+Projects/UnitTests/android/assets

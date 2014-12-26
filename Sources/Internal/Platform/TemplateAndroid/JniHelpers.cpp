@@ -146,15 +146,36 @@ JavaClass::JavaClass(const String &className)
 {
     jvm = GetJVM();
     JNIEnv *env = GetEnv();
-    javaClass = env->FindClass(className.c_str());
-    if (NULL != javaClass)
-    {
-    	javaClass = static_cast<jclass>(env->NewGlobalRef(javaClass));
-    }
-
-	CheckOperationResult(javaClass, className);
 
     name = className;
+
+    jclass classToFind = env->FindClass(name.c_str());
+    CheckOperationResult(classToFind, name);
+
+    jclass objectClass = env->GetObjectClass(classToFind);
+
+    jclass classLoaderClass = env->FindClass("java/lang/ClassLoader");
+    jmethodID getClassLoaderMethod = env->GetMethodID(objectClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
+    jobject gClassLoader = env->CallObjectMethod(classToFind, getClassLoaderMethod);
+    jmethodID gFindClassMethod = env->GetMethodID(classLoaderClass, "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+
+    jstring jname = env->NewStringUTF(name.c_str());
+    jclass foundClass = static_cast<jclass>(env->CallObjectMethod(gClassLoader, gFindClassMethod, jname));
+    env->DeleteLocalRef(jname);
+
+    if (NULL != foundClass)
+    {
+        javaClass = static_cast<jclass>(env->NewGlobalRef(foundClass));
+    }
+
+    env->DeleteLocalRef(classToFind);
+    env->DeleteLocalRef(objectClass);
+    env->DeleteLocalRef(classLoaderClass);
+    env->DeleteLocalRef(gClassLoader);
+    env->DeleteLocalRef(foundClass);
+
+    CheckOperationResult(javaClass, name);
+
 }
 
 JavaClass::~JavaClass()

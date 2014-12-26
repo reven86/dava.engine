@@ -88,7 +88,6 @@ char folderDocuments[MAX_PATH_SZ];
 char assetsFolderPath[MAX_PATH_SZ];
 char androidLogTag[MAX_PATH_SZ];
 char androidPackageName[MAX_PATH_SZ];
-
 AndroidDelegate *androidDelegate;
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
@@ -105,7 +104,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	androidDelegate = new AndroidDelegate(vm);
 
 	DAVA::AndroidCrashReport::Init();
-
 
 	return JNI_VERSION_1_6;
 }

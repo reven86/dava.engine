@@ -45,8 +45,13 @@ public:
 
 	virtual void LoadResources();
 	virtual void UnloadResources();
-    
+
+	void ThreadFunc(BaseObject * caller, void * callerData, void * userData);
     void TestFunction(PerfFuncData * data);
+
+private:
+    JNI::JavaClass javaNotificationProvider;
+    Function<void (jstring, jstring, jstring)> showNotificationText;
 };
 
 
