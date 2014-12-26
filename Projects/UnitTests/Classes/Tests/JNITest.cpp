@@ -104,6 +104,8 @@ void JNITest::TestFunction(PerfFuncData * data)
 
     TEST_VERIFY(stringsToPass == stringsPassed);
 
+    env->DeleteLocalRef(stringArray);
+
 }
 
 

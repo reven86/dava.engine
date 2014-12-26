@@ -107,7 +107,14 @@ inline jstring CreateJString(const DAVA::WideString& string)
 #define DeclareTypeString(str)\
 	operator const char *() const {return value.c_str();}\
 	operator String() const {return value;}\
-	String value = str;
+	String value = str;\
+    String rvalue = str;
+
+#define DeclareTypeStringWithRet(str, rstr)\
+    operator const char *() const {return value.c_str();}\
+    operator String() const {return value;}\
+    String value = str;\
+    String rvalue = rstr;
 
 template<class T>
 struct TypeMetrics
@@ -155,7 +162,7 @@ template<> struct TypeMetrics<jstring>
 
 template<> struct TypeMetrics<jstringArray>
 {
-    DeclareTypeString("[Ljava/lang/String;");
+    DeclareTypeStringWithRet("[Ljava/lang/String;", "[Ljava/lang/Object;");
 };
 
 template<> struct TypeMetrics<jobject>
@@ -207,7 +214,7 @@ template<class Ret>
 String SignatureString::FromTypes()
 {
 	static String ret = String("()")
-							+ TypeMetrics<Ret>().value;
+							+ TypeMetrics<Ret>().rvalue;
 	return ret;
 }
 
@@ -217,7 +224,7 @@ String SignatureString::FromTypes()
 	return String("(")
 			+ TypeMetrics<P1>().value
 			+ String(")")
-			+ TypeMetrics<Ret>().value;
+			+ TypeMetrics<Ret>().rvalue;
 }
 
 template<class Ret, class P1, class P2>
@@ -227,7 +234,7 @@ String SignatureString::FromTypes()
 			+ TypeMetrics<P1>().value
 			+ TypeMetrics<P2>().value
 			+ String(")")
-			+ TypeMetrics<Ret>().value;
+			+ TypeMetrics<Ret>().rvalue;
 }
 
 template<class Ret, class P1, class P2, class P3>
@@ -238,7 +245,7 @@ String SignatureString::FromTypes()
 			+ TypeMetrics<P2>().value
 			+ TypeMetrics<P3>().value
 			+ String(")")
-			+ TypeMetrics<Ret>().value;
+			+ TypeMetrics<Ret>().rvalue;
 }
 template<class Ret, class P1, class P2, class P3, class P4>
 String SignatureString::FromTypes()
@@ -249,7 +256,7 @@ String SignatureString::FromTypes()
 			+ TypeMetrics<P3>().value
 			+ TypeMetrics<P4>().value
 			+ String(")")
-			+ TypeMetrics<Ret>().value;
+			+ TypeMetrics<Ret>().rvalue;
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
@@ -262,7 +269,7 @@ String SignatureString::FromTypes()
 			+ TypeMetrics<P4>().value
 			+ TypeMetrics<P5>().value
 			+ String(")")
-			+ TypeMetrics<Ret>().value;
+			+ TypeMetrics<Ret>().rvalue;
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
@@ -276,7 +283,7 @@ String SignatureString::FromTypes()
 			+ TypeMetrics<P5>().value
 			+ TypeMetrics<P6>().value
 			+ String(")")
-			+ TypeMetrics<Ret>().value;
+			+ TypeMetrics<Ret>().rvalue;
 }
 
 /*
@@ -1164,6 +1171,78 @@ template<> struct JniCall<jstring>
 	{
 		return (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
 	}
+};
+
+template<> struct JniCall<jstringArray>
+{
+    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod)
+    {
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+    }
+
+    inline static jstringArray CallStatic(jclass javaClass, jmethodID javaMethod)
+    {
+        return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
+    }
+    template<class P1>
+    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+    {
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+    }
+
+    template<class P1>
+    inline static jstringArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
+    {
+        return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
+    }
+
+    template<class P1, class P2>
+    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    {
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+    }
+
+    template<class P1, class P2>
+    inline static jstringArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    {
+        return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
+    }
+
+    template<class P1, class P2, class P3>
+    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    {
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+    }
+
+    template<class P1, class P2, class P3>
+    inline static jstringArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    {
+        return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
+    }
+
+    template<class P1, class P2, class P3, class P4>
+    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    {
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+    }
+
+    template<class P1, class P2, class P3, class P4>
+    inline static jstringArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    {
+        return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5>
+    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    {
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5>
+    inline static jstringArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    {
+        return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+    }
 };
 
 template<class Ret>

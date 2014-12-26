@@ -39,7 +39,7 @@ namespace DAVA
 JniFileList::JniFileList()
     : jniFileList("com/dava/framework/JNIFileList")
 {
-    getFileList = jniFileList.GetStaticMethod<jobjectArray, jstring>("GetFileList");
+    getFileList = jniFileList.GetStaticMethod<jstringArray, jstring>("GetFileList");
 }
 
 Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& path)
@@ -48,7 +48,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
 	JNIEnv *env = JNI::GetEnv();
     jstring jPath = env->NewStringUTF(path.c_str());
 
-    jobjectArray jArray = getFileList(jPath);
+    jstringArray jArray = getFileList(jPath);
     if (jArray)
     {
         jsize size = env->GetArrayLength(jArray);

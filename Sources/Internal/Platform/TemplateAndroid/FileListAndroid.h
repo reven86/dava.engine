@@ -52,7 +52,7 @@ public:
 
 private:
 	JNI::JavaClass jniFileList;
-	Function<jobjectArray (jstring)> getFileList;
+	Function<jstringArray (jstring)> getFileList;
 };
 
 };
