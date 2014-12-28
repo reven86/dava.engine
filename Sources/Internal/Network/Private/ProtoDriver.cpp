@@ -140,8 +140,8 @@ void ProtoDriver::OnDisconnected()
     {
         if (channels[i].service != NULL)
         {
-            registrar.Delete(channels[i].channelId, channels[i].service);
             channels[i].service->OnChannelClosed(&channels[i]);
+            registrar.Delete(channels[i].channelId, channels[i].service);
             channels[i].service = NULL;
         }
     }
@@ -183,6 +183,7 @@ bool ProtoDriver::OnDataReceived(const void* buffer, size_t length)
                 break;
             }
         }
+        DVASSERT(length >= result.decodedSize);
         length -= result.decodedSize;
         buffer = static_cast<const uint8*>(buffer) + result.decodedSize;
     } while (status != ProtoDecoder::DECODE_INVALID && true == canContinue && length > 0);
@@ -198,9 +199,9 @@ void ProtoDriver::OnSendComplete()
         if (curPacket.sentLength == curPacket.dataLength)
         {
             Channel* ch = GetChannel(curPacket.channelId);
-            ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
-
             pendingAckQueue.push_back(curPacket.packetId);
+
+            ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
             curPacket.data = NULL;
         }
     }
@@ -240,16 +241,19 @@ bool ProtoDriver::ProcessChannelQuery(ProtoDecoder::DecodeResult* result)
     Channel* ch = GetChannel(result->channelId);
     if (ch != NULL)
     {
+        DVASSERT(NULL == ch->service);
         if (NULL == ch->service)
         {
             ch->service = registrar.Create(ch->channelId);
             uint32 code = ch->service != NULL ? TYPE_CHANNEL_ALLOW
                                               : TYPE_CHANNEL_DENY;
             SendControl(code, result->channelId, 0);
-            ch->service->OnChannelOpen(ch);
+            if (ch->service != NULL)
+            {
+                ch->service->OnChannelOpen(ch);
+            }
             return true;
         }
-        DVASSERT(0);
         return false;
     }
     return true;    // Nothing strange that queried channel is not found
@@ -288,6 +292,8 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
 bool ProtoDriver::ProcessDeliveryAck(ProtoDecoder::DecodeResult* result)
 {
     Channel* ch = GetChannel(result->channelId);
+    DVASSERT(ch != NULL && ch->service != NULL);
+    DVASSERT(false == pendingAckQueue.empty());
     if (ch != NULL && ch->service != NULL && false == pendingAckQueue.empty())
     {
         uint32 pendingId = pendingAckQueue.front();
@@ -299,7 +305,6 @@ bool ProtoDriver::ProcessDeliveryAck(ProtoDecoder::DecodeResult* result)
             return true;
         }
     }
-    DVASSERT(0);
     return false;
 }
 

@@ -49,6 +49,24 @@ void NetService::OnChannelClosed(IChannel* aChannel)
     ChannelClosed();
 }
 
+void NetService::OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length)
+{
+    DVASSERT(channel == aChannel);
+    PacketReceived(buffer, length);
+}
+
+void NetService::OnPacketSent(IChannel* aChannel, const void* buffer, size_t length)
+{
+    DVASSERT(channel == aChannel);
+    PacketSent();
+}
+
+void NetService::OnPacketDelivered(IChannel* aChannel, uint32 packetId)
+{
+    DVASSERT(channel == aChannel);
+    PacketDelivered();
+}
+
 bool NetService::Send(const void* data, size_t length, uint32* packetId)
 {
     DVASSERT(data != NULL && length > 0 && true == IsChannelOpen());

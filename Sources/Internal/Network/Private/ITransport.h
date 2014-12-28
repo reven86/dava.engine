@@ -65,6 +65,7 @@ struct IClientTransport
 
     virtual int32 Start(IClientListener* listener) = 0;
     virtual void Stop() = 0;
+    virtual void Reset() = 0;
     virtual int32 Send(const Buffer* buffers, size_t bufferCount) = 0;
 };
 

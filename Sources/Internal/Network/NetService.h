@@ -47,30 +47,39 @@ public:
     // IChannelListener
     virtual void OnChannelOpen(IChannel* aChannel);
     virtual void OnChannelClosed(IChannel* aChannel);
-    virtual void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length) {}
-    virtual void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length) {}
-    virtual void OnPacketDelivered(IChannel* aChannel, uint32 packetId) {}
+    virtual void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length);
+    virtual void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length);
+    virtual void OnPacketDelivered(IChannel* aChannel, uint32 packetId);
 
     virtual void ChannelOpen() {}
     virtual void ChannelClosed() {}
+    virtual void PacketReceived(const void* packet, size_t length) {}
+    virtual void PacketSent() {}
+    virtual void PacketDelivered() {}
 
 protected:
     bool IsChannelOpen() const;
     bool Send(const void* data, size_t length, uint32* packetId = NULL);
+    template<typename T>
+    bool Send(const T* value, uint32* packetId = NULL);
 
-private:
+protected:
     IChannel* channel;
 };
 
 //////////////////////////////////////////////////////////////////////////
 inline NetService::NetService() : channel(NULL)
-{
-
-}
+{}
 
 inline bool NetService::IsChannelOpen() const
 {
     return channel != NULL;
+}
+
+template<typename T>
+inline bool NetService::Send(const T* value, uint32* packetId)
+{
+    return Send(value, sizeof(T), packetId);
 }
 
 }   // namespace Net

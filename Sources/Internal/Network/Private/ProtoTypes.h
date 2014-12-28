@@ -65,8 +65,7 @@ enum eProtoFrameType
 
 enum eProtoFrameFlags
 {
-    BUFFER_LOCAL_COPY = 0x01,
-    NO_DELIVERY_ACK = 0x02
+    FRAME_NO_DELIVERY_ACK = 0x01
 };
 
 }   // namespace Net

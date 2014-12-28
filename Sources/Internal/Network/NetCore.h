@@ -73,6 +73,7 @@ private:
 private:
     IOLoop loop;
     Set<IController*> trackedObjects;
+    Set<IController*> dyingObjects;
     ServiceRegistrar registrar;
     bool isFinishing;
 };

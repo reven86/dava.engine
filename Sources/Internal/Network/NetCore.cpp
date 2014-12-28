@@ -63,19 +63,24 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config)
         ctrl->Start();
         return ObjectToTrackId(ctrl);
     }
-    delete ctrl;
-    return INVALID_TRACK_ID;
+    else
+    {
+        delete ctrl;
+        return INVALID_TRACK_ID;
+    }
 }
 
 bool NetCore::DestroyController(TrackId id)
 {
     IController* ctrl = GetTrackedObject(id);
+    DVASSERT(ctrl != NULL);
     if (ctrl != NULL)
     {
+        trackedObjects.erase(ctrl);
+        dyingObjects.insert(ctrl);
         ctrl->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
         return true;
     }
-    DVASSERT(0);
     return false;
 }
 
@@ -92,12 +97,14 @@ int32 NetCore::Poll()
 void NetCore::Finish(bool withWait)
 {
     isFinishing = true;
-    if (false == trackedObjects.empty())
+    for (Set<IController*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
     {
-        for (Set<IController*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
-            (*i)->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
+        IController* ctrl = *i;
+        dyingObjects.insert(ctrl);
+        ctrl->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
     }
-    else
+    trackedObjects.clear();
+    if (true == dyingObjects.empty())
         loop.PostQuit();
     if (withWait)
         loop.Run(IOLoop::RUN_DEFAULT);
@@ -112,11 +119,11 @@ IController* NetCore::GetTrackedObject(TrackId id) const
 
 void NetCore::TrackedObjectStopped(IController* obj)
 {
-    DVASSERT(obj != NULL && GetTrackedObject(ObjectToTrackId(obj)) != NULL);
+    DVASSERT(dyingObjects.find(obj) != dyingObjects.end());
 
-    if (trackedObjects.find(obj) != trackedObjects.end())
+    if (dyingObjects.find(obj) != dyingObjects.end())
     {
-        trackedObjects.erase(obj);
+        dyingObjects.erase(obj);
         delete obj;
     }
 

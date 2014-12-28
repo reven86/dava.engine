@@ -50,7 +50,7 @@ NetController::NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar)
     : loop(aLoop)
     , role(SERVER_ROLE)
     , registrar(aRegistrar)
-    , runningServers(0)
+    , runningObjects(0)
     , isTerminating(false)
 {
     DVASSERT(loop != NULL);
@@ -58,7 +58,21 @@ NetController::NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar)
 
 NetController::~NetController()
 {
-    DVASSERT(0 == runningServers && true == clients.empty());
+    DVASSERT(0 == runningObjects);
+    if (SERVER_ROLE == role)
+    {
+        for (Vector<IServerTransport*>::iterator i = servers.begin(), e = servers.end();i != e;++i)
+            delete *i;
+    }
+    else
+    {
+        for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end();i != e;++i)
+        {
+            ClientEntry& entry = *i;
+            delete entry.driver;
+            delete entry.client;
+        }
+    }
 }
 
 bool NetController::ApplyConfig(const NetConfig& config, size_t trIndex)
@@ -76,23 +90,28 @@ bool NetController::ApplyConfig(const NetConfig& config, size_t trIndex)
         for (size_t i = 0, n = trConfig.size();i < n;++i)
         {
             IServerTransport* tr = CreateServerTransport(trConfig[i].type, trConfig[i].endpoint);
-            servers.push_back(tr);
+            DVASSERT(tr != NULL);
+            if (tr != NULL)
+                servers.push_back(tr);
         }
     }
     else // if (CLIENT_ROLE == role)
     {
-        // Create only one transport when operating as client
+        // For now create only one transport when operating as client
         IClientTransport* tr = CreateClientTransport(trConfig[trIndex].type, trConfig[trIndex].endpoint);
-        ProtoDriver* driver = new ProtoDriver(loop, role, registrar);
-        driver->SetTransport(tr, &*serviceIds.begin(), serviceIds.size());
-        clients.push_back(ClientEntry(tr, driver, NULL));
+        DVASSERT(tr != NULL);
+        if (tr != NULL)
+        {
+            ProtoDriver* driver = new ProtoDriver(loop, role, registrar);
+            driver->SetTransport(tr, &*serviceIds.begin(), serviceIds.size());
+            clients.push_back(ClientEntry(tr, driver));
+        }
     }
     return true;
 }
 
 void NetController::Start()
 {
-    DVASSERT(false == isTerminating);
     SERVER_ROLE == role ? loop->Post(MakeFunction(this, &NetController::DoStartServers))
                         : loop->Post(MakeFunction(this, &NetController::DoStartClients));
 }
@@ -108,7 +127,7 @@ void NetController::Stop(Function<void (IController*)> handler)
 
 void NetController::DoStartServers()
 {
-    runningServers = servers.size();
+    runningObjects = servers.size();
     for (size_t i = 0, n = servers.size();i < n;++i)
     {
         servers[i]->Start(this);
@@ -118,6 +137,7 @@ void NetController::DoStartServers()
 void NetController::DoStartClients()
 {
     // For now there is always one transport in client role
+    runningObjects = 1;
     clients.front().client->Start(this);
 }
 
@@ -139,11 +159,7 @@ void NetController::DoStopClients()
     for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end();i != e;++i)
     {
         ClientEntry& entry = *i;
-        if (false == entry.isTerminating)
-        {
-            entry.isTerminating = true;
-            entry.client->Stop();
-        }
+        entry.client->Stop();
     }
 }
 
@@ -162,23 +178,35 @@ void NetController::OnTransportTerminated(IServerTransport* tr)
 {
     DVASSERT(std::find(servers.begin(), servers.end(), tr) != servers.end());
 
-    ClearServer(tr);
-    delete tr;
-
-    DVASSERT(runningServers > 0);
-    runningServers -= 1;
-    if (0 == runningServers)
+    DVASSERT(runningObjects > 0);
+    runningObjects -= 1;
+    if (0 == runningObjects)
         stopHandler(this);
 }
 
 void NetController::OnTransportTerminated(IClientTransport* tr)
 {
-    EraseClientEntry(tr);
-
-    if (true == isTerminating && true == clients.empty())
+    if (SERVER_ROLE == role)
     {
-        SERVER_ROLE == role ? DoStopServers()
-                            : stopHandler(this);
+        List<ClientEntry>::iterator i = std::find(clients.begin(), clients.end(), tr);
+        DVASSERT(i != clients.end());
+
+        ClientEntry& entry = *i;
+        entry.parent->ReclaimClient(entry.client);
+        delete entry.driver;
+        clients.erase(i);
+
+        if (true == isTerminating && true == clients.empty())
+        {
+            DoStopServers();
+        }
+    }
+    else
+    {
+        DVASSERT(runningObjects > 0);
+        runningObjects -= 1;
+        if (0 == runningObjects)
+            stopHandler(this);
     }
 }
 
@@ -201,8 +229,7 @@ void NetController::OnTransportDataReceived(IClientTransport* tr, const void* bu
 
     if (false == entry->driver->OnDataReceived(buffer, length))
     {
-        entry->isTerminating = true;
-        entry->client->Stop();
+        entry->client->Reset();
     }
 }
 
@@ -212,32 +239,11 @@ void NetController::OnTransportSendComplete(IClientTransport* tr)
     GetClientEntry(tr)->driver->OnSendComplete();
 }
 
-void NetController::ClearServer(IServerTransport* tr)
-{
-    Vector<IServerTransport*>::iterator i = std::find(servers.begin(), servers.end(), tr);
-    if (i != servers.end())
-        *i = NULL;
-}
-
 NetController::ClientEntry* NetController::GetClientEntry(IClientTransport* client)
 {
     List<ClientEntry>::iterator i = std::find(clients.begin(), clients.end(), client);
     return i != clients.end() ? &*i
                               : NULL;
-}
-
-void NetController::EraseClientEntry(IClientTransport* client)
-{
-    List<ClientEntry>::iterator i = std::find(clients.begin(), clients.end(), client);
-    DVASSERT(i != clients.end());
-
-    ClientEntry entry = *i;
-    if (entry.parent != NULL)
-        entry.parent->ReclaimClient(entry.client);
-    else
-        delete entry.client;
-    delete entry.driver;
-    clients.erase(i);
 }
 
 IServerTransport* NetController::CreateServerTransport(eTransportType type, const Endpoint& endpoint)

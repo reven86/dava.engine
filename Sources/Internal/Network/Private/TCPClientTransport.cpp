@@ -79,6 +79,12 @@ void TCPClientTransport::Stop()
     CleanUp(0);
 }
 
+void TCPClientTransport::Reset()
+{
+    DVASSERT(listener != NULL && false == isTerminating);
+    CleanUp(0);
+}
+
 int32 TCPClientTransport::Send(const Buffer* buffers, size_t bufferCount)
 {
     if (false == isConnected) return 0;

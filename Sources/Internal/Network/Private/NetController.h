@@ -51,12 +51,11 @@ class NetController : public IController
 private:
     struct ClientEntry
     {
-        ClientEntry(IClientTransport* aClient, ProtoDriver* aDriver, IServerTransport* aParent);
+        ClientEntry(IClientTransport* aClient, ProtoDriver* aDriver, IServerTransport* aParent = NULL);
 
         IClientTransport* client;
         IServerTransport* parent;
         ProtoDriver* driver;
-        bool isTerminating;
     };
 
     friend bool operator == (const ClientEntry& entry, const IClientTransport* obj);
@@ -88,9 +87,7 @@ private:
     void DoStopServers();
     void DoStopClients();
 
-    void ClearServer(IServerTransport* tr);
     ClientEntry* GetClientEntry(IClientTransport* client);
-    void EraseClientEntry(IClientTransport* client);
 
     IServerTransport* CreateServerTransport(eTransportType type, const Endpoint& endpoint);
     IClientTransport* CreateClientTransport(eTransportType type, const Endpoint& endpoint);
@@ -99,7 +96,7 @@ private:
     IOLoop* loop;
     eNetworkRole role;
     const ServiceRegistrar& registrar;
-    size_t runningServers;
+    size_t runningObjects;
     Function<void (IController*)> stopHandler;
     bool isTerminating;
 
@@ -113,7 +110,6 @@ inline NetController::ClientEntry::ClientEntry(IClientTransport* aClient, ProtoD
     : client(aClient)
     , parent(aParent)
     , driver(aDriver)
-    , isTerminating(false)
 {}
 
 inline bool operator == (const NetController::ClientEntry& entry, const IClientTransport* obj)

@@ -52,6 +52,7 @@ public:
     // IClientTransport
     virtual int32 Start(IClientListener* aListener);
     virtual void Stop();
+    virtual void Reset();
     virtual int32 Send(const Buffer* buffers, size_t bufferCount);
 
 private:
