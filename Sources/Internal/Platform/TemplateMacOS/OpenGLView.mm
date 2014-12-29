@@ -248,7 +248,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 	return YES;
 }
 
-static Vector<DAVA::UIEvent> activeTouches;
+static Vector<DAVA::UIEvent> allTouches;
 
 void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
 {
@@ -313,14 +313,14 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
     
 	if(phase == UIEvent::PHASE_DRAG)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
 		}
 	}
     
 	bool isFind = false;
-	for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		if(it->tid == button)
 		{
@@ -339,21 +339,21 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
         
         ConvertNSEventToUIEvent(curEvent, newTouch, phase);
         
-		activeTouches.push_back(newTouch);
+		allTouches.push_back(newTouch);
 	}
 
-	for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		outTouches->push_back(*it);
 	}
 
 	if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
 			{
-				activeTouches.erase(it);
+				allTouches.erase(it);
 				break;
 			}
 		}
@@ -365,10 +365,9 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 -(void)process:(int)touchPhase touch:(NSEvent*)touch
 {
 	Vector<DAVA::UIEvent> touches;
-	Vector<DAVA::UIEvent> emptyTouches;
 
 	MoveTouchsToVector(touch, touchPhase, &touches);
-	UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+	UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
 	touches.clear();
 }
 
@@ -455,13 +454,7 @@ static int32 oldModifersFlags = 0;
 		unichar c = [[event characters] characterAtIndex:0];
 		
 		Vector<DAVA::UIEvent> touches;
-		Vector<DAVA::UIEvent> emptyTouches;
 
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-		{
-			touches.push_back(*it);
-		}
-		
 		DAVA::UIEvent ev;
 		ev.keyChar = c;
 		ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
@@ -471,9 +464,9 @@ static int32 oldModifersFlags = 0;
         
         touches.push_back(ev);
 		
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->OnInput(0, touches, allTouches);
         touches.pop_back();
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 	}
 	
     InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed([event keyCode]);

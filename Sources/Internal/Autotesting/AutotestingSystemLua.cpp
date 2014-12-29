@@ -672,10 +672,9 @@ namespace DAVA
 		Logger::Debug("AutotestingSystemLua::ProcessInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", input.tid, 
 			input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
 
-		Vector<UIEvent> emptyTouches;
 		Vector<UIEvent> touches;
 		touches.push_back(input);
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->OnInput(0, touches, touches);
 
 		AutotestingSystem::Instance()->OnInput(input);
 	}
