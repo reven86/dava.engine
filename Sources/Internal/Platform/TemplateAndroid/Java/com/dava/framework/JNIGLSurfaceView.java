@@ -144,15 +144,13 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		public class InputEvent
 		{
 			int tid;
-			int id;
 			float x;
 			float y;
 			int tapCount;
 			double time;
 
-			InputEvent(int id, int tid, float x, float y, double time)
+			InputEvent(int tid, float x, float y, double time)
 			{
-				this.id = id;
 				this.tid = tid;
 				this.x = x;
 				this.y = y;
@@ -160,9 +158,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				this.time = time;
 			}
 			
-			InputEvent(int id, int tid, float x, float y, int tapCount, double time)
+			InputEvent(int tid, float x, float y, int tapCount, double time)
 			{
-				this.id = id;
 				this.tid = tid;
 				this.x = x;
 				this.y = y;
@@ -205,13 +202,13 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				for (int i = 0; i < pointerCount; i++) {
 					if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
 						int pointerId = event.getPointerId(i);
-						InputEvent ev = new InputEvent(pointerId, pointerId, event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
+						InputEvent ev = new InputEvent(pointerId, event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
 
 						allEvents.add(ev);
 					}
 					if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
 						for (int a = 0; a < axis.length; ++a) {
-							InputEvent ev = new InputEvent(a, a + 1, event.getHistoricalAxisValue(axis[a], i, historyStep), 0, tapCount, event.getHistoricalEventTime(historyStep));
+							InputEvent ev = new InputEvent(a + 1, event.getHistoricalAxisValue(axis[a], i, historyStep), 0, tapCount, event.getHistoricalEventTime(historyStep));
 
 							allEvents.add(ev);
 						}
@@ -222,13 +219,13 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			for (int i = 0; i < pointerCount; i++) {
 				if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
 					int pointerId = event.getPointerId(i);
-					InputEvent ev = new InputEvent(pointerId, pointerId, event.getX(i), event.getY(i), tapCount, event.getEventTime());
+					InputEvent ev = new InputEvent(pointerId, event.getX(i), event.getY(i), tapCount, event.getEventTime());
 
 					allEvents.add(ev);
 				}
 				if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
 					for (int a = 0; a < axis.length; ++a) {
-						InputEvent ev = new InputEvent(a, a + 1, event.getAxisValue(axis[a], i), 0, tapCount, event.getEventTime());
+						InputEvent ev = new InputEvent(a + 1, event.getAxisValue(axis[a], i), 0, tapCount, event.getEventTime());
 						allEvents.add(ev);
 					}
 				}
@@ -245,7 +242,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				
 				final int pointerId = event.getPointerId(actionIdx);
 
-				InputEvent ev = new InputEvent(pointerId, pointerId, event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
+				InputEvent ev = new InputEvent(pointerId, event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
 				allEvents.add(ev);
 				activeEvents.add(ev);
 				groupSize = event.getPointerCount() + 1; // only ACTION_MOVE events can have history, so in this case there will be only one group
@@ -260,12 +257,12 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	    	for (int i = 0; i < pointerCount; ++i)
 	    	{
 	    		//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-	        	allEvents.add(new InputEvent(0, 1, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_X, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(1, 2, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Y, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(2, 3, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Z, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(5, 6, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RZ, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(6, 7, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_LTRIGGER, i), 0, event.getEventTime()));
-	        	allEvents.add(new InputEvent(7, 8, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RTRIGGER, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(1, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_X, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(2, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Y, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(3, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Z, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(6, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RZ, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(7, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_LTRIGGER, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(8, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RTRIGGER, i), 0, event.getEventTime()));
     		}
     		activeEvents = allEvents;
     		groupSize = event.getPointerCount();
