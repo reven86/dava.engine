@@ -33,6 +33,7 @@
 
 #include "Entity/Component.h"
 #include "Base/Introspection.h"
+#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -56,13 +57,18 @@ public:
     void SetProperties(KeyedArchive *archieve);
     KeyedArchive * GetProperties() const;
     
+    void SetPathName(const FastName & name);
+    const FastName & GetPathName() const;
+
 private:
     
+    FastName pathName;
     KeyedArchive *properties;
     
 public:
 	INTROSPECTION_EXTEND(WaypointComponent, Component,
-        MEMBER(properties, "Waypoint properties", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(pathName, "Path Name", I_VIEW)
+        MEMBER(properties, "Waypoint properties", I_VIEW | I_EDIT)
     );
 };
 
@@ -75,6 +81,17 @@ inline KeyedArchive * WaypointComponent::GetProperties() const
 {
     return properties;
 }
+    
+void WaypointComponent::SetPathName(const FastName & name)
+{
+    pathName = name;
+}
+
+const FastName & WaypointComponent::GetPathName() const
+{
+    return pathName;
+}
+
 
     
 }

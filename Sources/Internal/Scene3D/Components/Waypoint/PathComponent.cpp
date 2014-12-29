@@ -40,6 +40,7 @@ PathComponent::Waypoint::Waypoint()
     properties = NULL;
 }
 
+    
 PathComponent::Waypoint::~Waypoint()
 {
     for_each(edges.begin(), edges.end(), SafeDelete<PathComponent::Edge>);
@@ -73,7 +74,7 @@ PathComponent::Edge::Edge()
     destination = NULL;
     properties = NULL;
 }
-    
+
 PathComponent::Edge::~Edge()
 {
     SafeDelete(destination);
@@ -97,8 +98,16 @@ Component * PathComponent::Clone(Entity * toEntity)
 {
 	PathComponent * newComponent = new PathComponent();
 	newComponent->SetEntity(toEntity);
+    
+    ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
+    SerializationContext context;
+    context.SetDebugLogEnabled(false);
+    context.SetVersion(SCENE_FILE_CURRENT_VERSION);
+    
+    Serialize(archieve, &context);
+    newComponent->Deserialize(archieve, &context);
 
-	return newComponent;
+    return newComponent;
 }
 
 void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
@@ -107,6 +116,9 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
 
     if(NULL != archive)
     {
+        archive->SetFastName("name", name);
+        
+        
         const uint32 waypointCount = waypoints.size();
         const Waypoint *firstWaypoint = waypoints.front();
         
@@ -152,8 +164,13 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
 {
     Component::Deserialize(archive, serializationContext);
 
+    if(archive == NULL) return;
+    
+    
     DVASSERT(waypoints.size() == 0);
     Reset();
+
+    name = archive->GetFastName("name");
     
     const uint32 waypointCount = archive->GetUInt32("waypointCount");
     if(!waypointCount) return;

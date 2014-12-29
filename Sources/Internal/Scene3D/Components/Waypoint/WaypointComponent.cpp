@@ -47,6 +47,8 @@ Component * WaypointComponent::Clone(Entity * toEntity)
 	newComponent->SetEntity(toEntity);
     
     //we don't need to copy properties
+    
+    newComponent->pathName = pathName;
 
 	return newComponent;
 }

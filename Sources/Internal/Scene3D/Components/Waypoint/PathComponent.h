@@ -33,6 +33,7 @@
 
 #include "Entity/Component.h"
 #include "Base/Introspection.h"
+#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -96,14 +97,19 @@ public:
     Waypoint * GetWaypoint(const FastName & name);
     const Vector<Waypoint *> & GetPoints() const;
     
+    void SetName(const FastName & name);
+    const FastName & GetName() const;
+    
     void Reset();
     
 private:
     
+    FastName name;
     Vector<Waypoint *> waypoints;
 
 public:
 	INTROSPECTION_EXTEND(PathComponent, Component,
+        MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
         COLLECTION(waypoints, "Waypoints", I_SAVE | I_VIEW | I_EDIT)
     );
 };
@@ -113,5 +119,17 @@ inline const Vector<PathComponent::Waypoint *> & PathComponent::GetPoints() cons
     return waypoints;
 }
 
+void PathComponent::SetName(const FastName & _name)
+{
+    name = _name;
+}
+    
+const FastName & PathComponent::GetName() const
+{
+    return name;
+}
+
+    
+    
 }
 #endif //__DAVAENGINE_PATH_COMPONENT_H__
