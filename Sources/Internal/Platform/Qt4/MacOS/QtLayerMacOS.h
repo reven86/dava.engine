@@ -31,7 +31,7 @@
 #define __DAVAENGINE_QT_LAYER_MAC_OS_H__
 
 #include "DAVAEngine.h"
-#include "Qtlayer.h"
+#include "Platform/Qt4/QtLayer.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
