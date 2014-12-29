@@ -114,7 +114,7 @@ namespace DAVA
 	Vector2 CoreMacOSPlatform::GetMousePosition()
 	{
 		NSPoint p = [mainWindowController->mainWindow mouseLocationOutsideOfEventStream]; //[NSEvent locationInWindow]; 
-		p = [mainWindowController->openGLView convertPointFromBase: p];
+		p = [mainWindowController->openGLView convertPointFromBacking: p];
 
         Vector2 mouseLocation;
 		mouseLocation.x = p.x;
@@ -279,7 +279,8 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	{
 		
         // Specify that we want a full-screen OpenGL context.
-        NSOpenGLPFAFullScreen,
+        //deprecated since macos 10.6, require additional research
+        //NSOpenGLPFAFullScreen,
         // We may be on a multi-display system (and each screen may be driven by a different renderer), so we need to specify which screen we want to take over.  For this demo, we'll specify the main screen.
         NSOpenGLPFAScreenMask, CGDisplayIDToOpenGLDisplayMask(kCGDirectMainDisplay),
         // Attributes Common to FullScreen and non-FullScreen
