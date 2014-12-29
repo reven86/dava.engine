@@ -37,8 +37,6 @@
 
 #include "UI/UIControlBackground.h"
 
-#define MAX_VERTEXES 4096
-
 namespace DAVA
 {
 
@@ -113,6 +111,7 @@ class VboPool
 {
 public:
     VboPool(uint32 size, uint8 count);
+    ~VboPool();
     void Next();
 
     void SetVertexData(uint32 count, float32 * data);
@@ -126,23 +125,24 @@ public:
     void MapIndexBuffer();
     void UnmapIndexBuffer();
     
-    RenderDataObject* GetDataObject() const;
-    float32 * GetVertexBufferPointer() const;
-    uint16 * GetIndexBufferPointer() const;
-    uint32 GetVertexBufferSize() const;
-    uint32 GetIndexBufferSize() const;
+    inline RenderDataObject* GetDataObject() const;
+    inline float32 * GetVertexBufferPointer() const;
+    inline uint16 * GetIndexBufferPointer() const;
+    inline uint32 GetVertexBufferSize() const;
+    inline uint32 GetIndexBufferSize() const;
 
+    static const int32 vertexStride;
+    
 private:
     Vector<RenderDataObject*> dataObjects;
     uint8 currentDataObjectIndex;
-    int32	vertexStride;
-    int32	vertexFormat;
 
     RenderDataObject * currentDataObject;
     uint32 currentVertexBufferSize;
     uint32 currentIndexBufferSize;
     float32 * currentVertexBufferPointer;
     uint16 * currentIndexBufferPointer;
+    
 };
 
 class RenderSystem2D : public Singleton<RenderSystem2D>
@@ -196,6 +196,8 @@ public:
 
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
+    static Shader* GetShaderForBatching(Shader* inputShader);
+    
     Matrix4 viewMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
@@ -214,8 +216,8 @@ private:
 
     Sprite::DrawState defaultSpriteDrawState;
 
-    Vector<float32> vertexBuffer2;
-    Vector<uint16> indexBuffer2;
+    Vector<float32> vertexBufferTmp;
+    Vector<uint16> indexBufferTmp;
 
     bool spriteClipping;
     
@@ -224,14 +226,34 @@ private:
     uint32 vertexIndex;
     uint32 indexIndex;
 
-    uint32 vboIDs[3];
-
-    bool useBatching;
-    bool useVBO;
-
     VboPool* pool;
 
 };
+    
+RenderDataObject* VboPool::GetDataObject() const
+{
+    return currentDataObject;
+}
+
+float32* VboPool::GetVertexBufferPointer() const
+{
+    return currentVertexBufferPointer;
+}
+
+uint16* VboPool::GetIndexBufferPointer() const
+{
+    return currentIndexBufferPointer;
+}
+
+uint32 VboPool::GetVertexBufferSize() const
+{
+    return currentVertexBufferSize;
+}
+
+uint32 VboPool::GetIndexBufferSize() const
+{
+    return currentIndexBufferSize;
+}
     
 } // ns
 
