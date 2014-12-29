@@ -35,6 +35,7 @@
 #include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 
 namespace DAVA 
@@ -99,36 +100,23 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = viewportRect;
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
     
-    RenderManager::Instance()->PushDrawMatrix();
-	RenderManager::Instance()->PushMappingMatrix();
     int32 renderOrientation = RenderManager::Instance()->GetRenderOrientation();
     
     Rect viewportSave = RenderManager::Instance()->GetViewport();
-    RenderManager::Instance()->SetViewport(viewportRect, false);
+    RenderManager::Instance()->SetViewport(viewportRc);
     
     
     if (scene)
         scene->Draw();
 
         
-    RenderManager::Instance()->SetViewport(viewportSave, true);
+    RenderManager::Instance()->SetViewport(viewportSave);
     RenderManager::Instance()->SetRenderOrientation(renderOrientation);
-    
-
-	RenderManager::Instance()->PopDrawMatrix();
-	RenderManager::Instance()->PopMappingMatrix();
 	
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-    RenderManager::Instance()->Setup2DMatrices();
-	
-        //    modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-        //    Logger::Info("Model matrix");
-        //    modelViewSave.Dump();
-        //    projectionSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
-        //    Logger::Info("Proj matrix");
-        //    projectionSave.Dump();
+    RenderSystem2D::Instance()->Setup2DMatrices();
 #endif
 
 	if (uiDrawQueryWasOpen)

@@ -52,9 +52,6 @@
     <Filter Include="Sources\UI\GraphicView">
       <UniqueIdentifier>{ea7e1025-76ec-456d-a45d-2f61e88b2056}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sources\Commands2">
-      <UniqueIdentifier>{f3e67f39-555c-44b4-96fe-299d55ea72cf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Sources\UI\PropertiesView">
       <UniqueIdentifier>{8b79b56e-1203-4ad8-a38d-cfed2f57a5c1}</UniqueIdentifier>
     </Filter>
@@ -164,51 +161,6 @@
     </ClCompile>
     <ClCompile Include="Classes\UI\GraphicView\PackageGraphicsWidget.cpp">
       <Filter>Sources\UI\GraphicView</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\AddComponentCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\Command2.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\CommandAction.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\CommandBatch.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\CommandNotify.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\CommandStack.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\EntityAddCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\EntityLockCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\EntityParentChangeCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\EntityRemoveCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\InspDynamicModifyCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\InspMemebrModifyCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\KeyedArchiveCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\MetaObjModifyCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands2\RemoveComponentCommand.cpp">
-      <Filter>Sources\Commands2</Filter>
     </ClCompile>
     <ClCompile Include="Classes\QtControls\LineEditExt.cpp">
       <Filter>Sources\QtControls</Filter>
@@ -345,6 +297,9 @@
     <ClCompile Include="Classes\UI\PropertiesView\BoolPropertyDelegate.cpp">
       <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\UI\PropertiesView\SpritePropertyDelegate.cpp">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\FrameworkMain.h">
@@ -424,54 +379,6 @@
     </ClInclude>
     <ClInclude Include="Classes\UI\GraphicView\PackageGraphicsWidget.h">
       <Filter>Sources\UI\GraphicView</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\AddComponentCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\Command2.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\CommandAction.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\CommandBatch.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\CommandID.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\CommandNotify.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\CommandStack.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\EntityAddCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\EntityLockCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\EntityParentChangeCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\EntityRemoveCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\InspDynamicModifyCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\InspMemberModifyCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\KeyedArchiveCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\MetaObjModifyCommand.h">
-      <Filter>Sources\Commands2</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Commands2\RemoveComponentCommand.h">
-      <Filter>Sources\Commands2</Filter>
     </ClInclude>
     <ClInclude Include="Classes\QtControls\LineEditExt.h">
       <Filter>Sources\QtControls</Filter>
@@ -606,6 +513,9 @@
       <Filter>Sources\UI\LibraryView</Filter>
     </ClInclude>
     <ClInclude Include="Classes\UI\PropertiesView\BoolPropertyDelegate.h">
+      <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertiesView\SpritePropertyDelegate.h">
       <Filter>Sources\UI\PropertiesView\VariantDelegates</Filter>
     </ClInclude>
   </ItemGroup>

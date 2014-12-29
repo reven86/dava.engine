@@ -11,21 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Classes\Commands2\AddComponentCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\Command2.cpp" />
-    <ClCompile Include="Classes\Commands2\CommandAction.cpp" />
-    <ClCompile Include="Classes\Commands2\CommandBatch.cpp" />
-    <ClCompile Include="Classes\Commands2\CommandNotify.cpp" />
-    <ClCompile Include="Classes\Commands2\CommandStack.cpp" />
-    <ClCompile Include="Classes\Commands2\EntityAddCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\EntityLockCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\EntityParentChangeCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\EntityRemoveCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\InspDynamicModifyCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\InspMemebrModifyCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\KeyedArchiveCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\MetaObjModifyCommand.cpp" />
-    <ClCompile Include="Classes\Commands2\RemoveComponentCommand.cpp" />
     <ClCompile Include="Classes\EditorFontManager.cpp" />
     <ClCompile Include="Classes\EditorSettings.cpp" />
     <ClCompile Include="Classes\FrameworkMain.cpp" />
@@ -85,6 +70,7 @@
     <ClCompile Include="Classes\UI\PropertiesView\FloatPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\IntegerPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\EnumPropertyDelegate.cpp" />
+    <ClCompile Include="Classes\UI\PropertiesView\SpritePropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\StringPropertyDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeItemDelegate.cpp" />
     <ClCompile Include="Classes\UI\PropertiesView\PropertiesTreeModel.cpp" />
@@ -99,22 +85,6 @@
     <ClCompile Include="Classes\Validators\DistanceFontValidator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Classes\Commands2\AddComponentCommand.h" />
-    <ClInclude Include="Classes\Commands2\Command2.h" />
-    <ClInclude Include="Classes\Commands2\CommandAction.h" />
-    <ClInclude Include="Classes\Commands2\CommandBatch.h" />
-    <ClInclude Include="Classes\Commands2\CommandID.h" />
-    <ClInclude Include="Classes\Commands2\CommandNotify.h" />
-    <ClInclude Include="Classes\Commands2\CommandStack.h" />
-    <ClInclude Include="Classes\Commands2\EntityAddCommand.h" />
-    <ClInclude Include="Classes\Commands2\EntityLockCommand.h" />
-    <ClInclude Include="Classes\Commands2\EntityParentChangeCommand.h" />
-    <ClInclude Include="Classes\Commands2\EntityRemoveCommand.h" />
-    <ClInclude Include="Classes\Commands2\InspDynamicModifyCommand.h" />
-    <ClInclude Include="Classes\Commands2\InspMemberModifyCommand.h" />
-    <ClInclude Include="Classes\Commands2\KeyedArchiveCommand.h" />
-    <ClInclude Include="Classes\Commands2\MetaObjModifyCommand.h" />
-    <ClInclude Include="Classes\Commands2\RemoveComponentCommand.h" />
     <ClInclude Include="Classes\EditorFontManager.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
       </AdditionalInputs>
@@ -195,6 +165,7 @@
     <ClInclude Include="Classes\UI\PropertiesView\FloatPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\IntegerPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\EnumPropertyDelegate.h" />
+    <ClInclude Include="Classes\UI\PropertiesView\SpritePropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\StringPropertyDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeItemDelegate.h" />
     <ClInclude Include="Classes\UI\PropertiesView\PropertiesTreeModel.h" />
@@ -303,7 +274,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_LARGEFILE_SUPPORT;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;DAVA_QT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;DAVA_QT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -357,7 +328,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NO_DEBUG;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;NDEBUG;_CRT_SECURE_NO_DEPRECATE;DAVA_QT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_DLL;QT_NO_DEBUG;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;NDEBUG;_CRT_SECURE_NO_DEPRECATE;DAVA_QT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

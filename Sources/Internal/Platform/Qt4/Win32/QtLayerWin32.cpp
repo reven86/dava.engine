@@ -31,7 +31,7 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Win32/CorePlatformWin32Qt.h"
+#include "Platform/Qt4/Win32/CorePlatformWin32Qt.h"
 #include "Platform/DPIHelper.h"
 
 
@@ -101,6 +101,7 @@ void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int
 	core->SetupWindow(hInstance, hWindow);
 	RenderManager::Create(Core::RENDERER_OPENGL);		
 	RenderManager::Instance()->Create(hInstance, hWindow);
+    RenderSystem2D::Instance()->Init();
 
 	FrameworkDidLaunched();
 
@@ -112,19 +113,20 @@ void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int
 void QtLayerWin32::Resize(int32 width, int32 height)
 {
 	RenderManager::Instance()->Init(width, height);
-	UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
 
-	Core::Instance()->UnregisterAllAvailableResourceSizes();
-	Core::Instance()->RegisterAvailableResourceSize(width, height, "Gfx");
+    VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(width, height, "Gfx");
     float64 screenScale = DPIHelper::GetDpiScaleFactor(0);
     if (screenScale != 1.0f)
     {
-        Core::Instance()->RegisterAvailableResourceSize((int32)(width*screenScale), (int32)(height*screenScale), "Gfx2");
+        VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize((int32)(width*screenScale), (int32)(height*screenScale), "Gfx2");
     }
 
-	Core::Instance()->SetPhysicalScreenSize(width, height);
-	Core::Instance()->SetVirtualScreenSize(width, height);
-	Core::Instance()->CalculateScaleMultipliers();
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
+    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(width, height);
+
+    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 }
     
 void QtLayerWin32::Move(int32 x, int32 y)

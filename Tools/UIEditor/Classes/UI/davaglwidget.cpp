@@ -136,9 +136,9 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 
 	//YZ fix load resource
 	
-	Core::Instance()->UnregisterAllAvailableResourceSizes();
-	Core::Instance()->RegisterAvailableResourceSize(size().width(), size().height(), "Gfx");
-	Core::Instance()->CalculateScaleMultipliers();
+	VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(size().width(), size().height(), "Gfx");
+    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
     
     emit DavaGLWidgetResized();
 }

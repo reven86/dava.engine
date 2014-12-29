@@ -184,8 +184,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         refractionPass = new WaterRefractionRenderPass(PASS_FORWARD, RENDER_PASS_WATER_REFRACTION);
         refractionTexture = Texture::CreateFBO(REFRACTION_TEX_SIZE, REFRACTION_TEX_SIZE, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);                  
     }   
-        
-    RenderManager::Instance()->ClipPush();
+
     Rect viewportSave = RenderManager::Instance()->GetViewport();
     uint32 currFboId = RenderManager::Instance()->HWglGetLastFBO();
     int32 currRenderOrientation = RenderManager::Instance()->GetRenderOrientation();
@@ -193,7 +192,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         
     RenderManager::Instance()->SetHWRenderTargetTexture(reflectionTexture);
     //discard everything here
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE), true);            
+    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
     reflectionPass->SetWaterLevel(waterBox.max.z);
     reflectionPass->Draw(renderSystem, RenderManager::ALL_BUFFERS);
@@ -205,7 +204,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         
     RenderManager::Instance()->SetHWRenderTargetTexture(refractionTexture);
         
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE), true);            
+    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
     refractionPass->SetWaterLevel(waterBox.min.z);
     refractionPass->Draw(renderSystem, RenderManager::ALL_BUFFERS);
@@ -215,9 +214,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         
     RenderManager::Instance()->HWglBindFBO(currFboId?currFboId:RenderManager::Instance()->GetFBOViewFramebuffer());
     RenderManager::Instance()->SetRenderOrientation(currRenderOrientation);
-    RenderManager::Instance()->SetViewport(viewportSave, true);
-    RenderManager::Instance()->ClipPop();
-
+    RenderManager::Instance()->SetViewport(viewportSave);
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		
         

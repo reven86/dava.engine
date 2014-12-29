@@ -121,25 +121,25 @@ void RectSpriteTest::Draw(const DAVA::UIGeometricData &geometricData)
     {
         state.SetPosition(70.f, 40.f);
         state.SetAngle(0.1f);
-        sprites[1]->Draw(&state);
+        RenderSystem2D::Instance()->Draw(sprites[1], &state);
     }
     if (sprites[2])
     {
         state.SetPosition(200.f, 50.f);
         state.SetAngle(0.785398f);
-        sprites[2]->Draw(&state);
+        RenderSystem2D::Instance()->Draw(sprites[2], &state);
     }
     if (sprites[3])
     {
         state.SetPosition(110.f, 60.f);
         state.SetAngle(0.f);
-        sprites[3]->Draw(&state);
+        RenderSystem2D::Instance()->Draw(sprites[3], &state);
     }
     if (sprites[0])
     {
         state.SetPosition(300.f, 200.f);
         state.SetAngle(-0.2f);
-        sprites[0]->Draw(&state);
+        RenderSystem2D::Instance()->Draw(sprites[0], &state);
     }
 
     TestTemplate<RectSpriteTest>::Draw(geometricData);
