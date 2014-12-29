@@ -53,7 +53,10 @@ public class JNIWebView {
 			
 			@Override
 			public void run() {
+				Log.d(TAG, "id = " + id + " pixels = " + pixels + " width = "
+						+ width + " height = " + height);
 				OnPageLoaded(id, pixels, width, height);
+				Log.d(TAG, "finish onPageLoded");
 			}
 		}
 		
@@ -69,11 +72,12 @@ public class JNIWebView {
 			{
 				// render webview into bitmap and pass it to native code
 				Bitmap bitmap = renderWebViewIntoBitmap(view);
-				int w = bitmap.getWidth();
-				int h = bitmap.getHeight();
-				pixels = new int[w * h]; 
+				width = bitmap.getWidth();
+				height = bitmap.getHeight();
+				pixels = new int[width * height]; 
 				// copy ARGB pixels values into our buffer
-				bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+				bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+				Log.d(TAG, "prepare bitmap for webview texture");
 			}
 			
 			JNIActivity.GetActivity().PostEventToGL(
@@ -81,8 +85,16 @@ public class JNIWebView {
 		}
 
 		private Bitmap renderWebViewIntoBitmap(WebView view) {
-			Bitmap bm = Bitmap.createBitmap(view.getMeasuredWidth(),
-                    view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+			assert view != null;
+			assert view.getMeasuredWidth() != 0;
+			assert view.getMeasuredHeight() != 0;
+			
+			int view_width = view.getMeasuredWidth();
+			int view_height = view.getMeasuredHeight();
+			
+			Bitmap bm = Bitmap.createBitmap(view_width,
+                    view_height, Bitmap.Config.ARGB_8888);
+			
             assert bm != null;
             Canvas bigcanvas = new Canvas(bm);
             int height = bm.getHeight();

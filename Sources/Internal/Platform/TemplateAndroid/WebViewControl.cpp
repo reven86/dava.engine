@@ -253,8 +253,10 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
 	if (webView && rawPixels)
 	{
 		Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888, reinterpret_cast<uint8*>(rawPixels), width, height, false);
-		Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, static_cast<float>(width), static_cast<float>(height));
+		Rect rect = webView->GetRect();
+		Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx, rect.dy);
 		webView->GetBackground()->SetSprite(spr, 0);
+		webView->SetDebugDraw(true);
 		SafeRelease(spr);
 		SafeRelease(tex);
 	}

@@ -29,7 +29,7 @@
 
 
 #include "AndroidLayer.h"
-#include "WebViewControl.h"
+#include "Platform/TemplateAndroid/WebViewControl.h"
 
 extern "C"
 {
@@ -52,7 +52,27 @@ extern "C"
 			jboolean isCopy = JNI_FALSE;
 			jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
 
-			DVASSERT(env->GetArrayLength(pixels) == width * height * 4); // ARGB
+			DVASSERT(rawData);
+			DVASSERT(width);
+			DVASSERT(height);
+			DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
+
+			// on android we got ARGB and have to change to RGBA
+			for(int y = 0; y < height; ++y)
+			{
+				int lineIndex = y * width;
+				for(int x = 0; x < width; ++x)
+				{
+					int& pixel = rawData[lineIndex + x];
+					// ARGB
+					// RGBA
+					pixel =   (pixel & 0xFF000000) >> 8 // B
+							| (pixel & 0x00FF0000) >> 8  // G
+							| (pixel & 0x0000FF00) >> 8  // R
+							| (pixel & 0x000000FF) << 24; // A
+				}
+			}
+
 			DAVA::JniWebView::PageLoaded(id, rawData, width, height);
 
 			env->ReleaseIntArrayElements(pixels, rawData, 0);
