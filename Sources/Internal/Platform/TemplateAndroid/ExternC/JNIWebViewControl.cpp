@@ -64,12 +64,12 @@ extern "C"
 				for(int x = 0; x < width; ++x)
 				{
 					int& pixel = rawData[lineIndex + x];
-					// ARGB
-					// RGBA
-					pixel =   (pixel & 0xFF000000) >> 8 // B
-							| (pixel & 0x00FF0000) >> 8  // G
-							| (pixel & 0x0000FF00) >> 8  // R
-							| (pixel & 0x000000FF) << 24; // A
+					// input color  //0xAARRGGBB
+					// result color //0xAABBGGRR
+					pixel = (pixel & 0xFF000000)       | // A
+							(pixel & 0x00FF0000) >> 16 | // R
+							(pixel & 0x0000FF00)       | // G
+							(pixel & 0x000000FF) << 16;  // B
 				}
 			}
 

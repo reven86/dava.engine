@@ -443,9 +443,9 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight, UICo
             // CImage in BMP format so we need to flip image
             control->GetBackground()->SetModification(ESM_VFLIP);
 
-            imageRGB->Release();
+            SafeRelease(imageRGB);
         }
-        imageBGR->Release();
+        SafeRelease(imageBGR);
     }
 
     return false;
