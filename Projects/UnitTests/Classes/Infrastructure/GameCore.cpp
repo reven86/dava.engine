@@ -50,7 +50,7 @@
 #include "Tests/KeyedArchiveYamlTest.h"
 #include "Tests/JobManagerTest.h"
 
-#include "OldTests/TransparentWebViewTest.h"
+#include "OldTests/StaticWebViewTest.h"
 
 void GameCore::RunOnlyThisTest()
 {
@@ -66,7 +66,7 @@ void GameCore::OnError()
 void GameCore::RegisterTests()
 {
     RunOnlyThisTest();
-    new TransparentWebViewTest();
+    new StaticWebViewTest();
 
 
     new MathTest();
