@@ -248,7 +248,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				InputEvent ev = new InputEvent(pointerId, pointerId, event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
 				allEvents.add(ev);
 				activeEvents.add(ev);
-				groupSize = event.getPointerCount() + 1;
+				groupSize = event.getPointerCount() + 1; // only ACTION_MOVE events can have history, so in this case there will be only one group
 			}
     	}
     	public InputRunnable(final com.bda.controller.MotionEvent event)

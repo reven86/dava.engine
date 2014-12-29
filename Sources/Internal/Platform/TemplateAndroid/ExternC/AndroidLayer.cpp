@@ -109,11 +109,11 @@ namespace
 	jmethodID gArrayListGetMethod;
 	jmethodID gArrayListSizeMethod;
 
-	jfieldID gTidField;
-	jfieldID gXField;
-	jfieldID gYField;
-	jfieldID gTimeField;
-	jfieldID gTapCountField;
+	jfieldID gInputEventTidField;
+	jfieldID gInputEventXField;
+	jfieldID gInputEventYField;
+	jfieldID gInputEventTimeField;
+	jfieldID gInputEventTapCountField;
 }
 
 AndroidDelegate *androidDelegate;
@@ -145,11 +145,11 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	gArrayListGetMethod = env->GetMethodID(gArrayListClass, "get", "(I)Ljava/lang/Object;");
 	gArrayListSizeMethod = env->GetMethodID(gArrayListClass, "size", "()I");
 
-	gTidField = env->GetFieldID(gInputEventClass, "tid", "I");
-	gXField = env->GetFieldID(gInputEventClass, "x", "F");
-	gYField = env->GetFieldID(gInputEventClass, "y", "F");
-	gTimeField = env->GetFieldID(gInputEventClass, "time", "D");
-	gTapCountField = env->GetFieldID(gInputEventClass, "tapCount", "I");
+	gInputEventTidField = env->GetFieldID(gInputEventClass, "tid", "I");
+	gInputEventXField = env->GetFieldID(gInputEventClass, "x", "F");
+	gInputEventYField = env->GetFieldID(gInputEventClass, "y", "F");
+	gInputEventTimeField = env->GetFieldID(gInputEventClass, "time", "D");
+	gInputEventTapCountField = env->GetFieldID(gInputEventClass, "tapCount", "I");
 
 	DAVA::Thread::InitMainThread();
 
@@ -397,15 +397,15 @@ namespace
 		return phase;
 	}
 
-	DAVA::UIEvent CreateUIEvent(JNIEnv * env, jobject input, jint action, jint source)
+	DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv * env, jobject input, jint action, jint source)
 	{
 		DAVA::UIEvent event;
-		event.tid = env->GetIntField(input, gTidField);
-		event.point.x = event.physPoint.x = env->GetFloatField(input, gXField);
-		event.point.y = event.physPoint.y = env->GetFloatField(input, gYField);
+		event.tid = env->GetIntField(input, gInputEventTidField);
+		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
+		event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
 		event.phase = GetPhase(action, source);
-		event.tapCount = env->GetIntField(input, gTapCountField);
-		event.timestamp = env->GetDoubleField(input, gTimeField);
+		event.tapCount = env->GetIntField(input, gInputEventTapCountField);
+		event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
 
 		return event;
 	}
@@ -436,13 +436,13 @@ void Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobjec
 				{
 					jobject jInput = env->CallObjectMethod(javaAllInputs, gArrayListGetMethod, j);
 
-					allInputs.push_back(CreateUIEvent(env, jInput, action, source));
+					allInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
 				}
 				if (j < activeInputsCount)
 				{
 					jobject jInput = env->CallObjectMethod(javaActiveInputs, gArrayListGetMethod, j);
 
-					activeInputs.push_back(CreateUIEvent(env, jInput, action, source));
+					activeInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
 				}
 			}
 			core->OnInput(action, source, activeInputs, allInputs);

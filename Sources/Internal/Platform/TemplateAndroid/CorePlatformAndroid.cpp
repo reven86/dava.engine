@@ -351,14 +351,18 @@ namespace DAVA
 
 	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs)
 	{
-		if((source & 0x10) > 0) // joystick
+		DVASSERT(!allInputs.empty());
+		if (!allInputs.empty())
 		{
-			for (Vector< UIEvent >::iterator iter = activeInputs.begin(); iter != activeInputs.end(); ++iter)
-				InputSystem::Instance()->ProcessInputEvent(&(*iter));
-			return;
+			if((source & 0x10) > 0) // joystick
+			{
+				for (Vector< UIEvent >::iterator iter = activeInputs.begin(); iter != activeInputs.end(); ++iter)
+					InputSystem::Instance()->ProcessInputEvent(&(*iter));
+				return;
+			}
+			
+			UIControlSystem::Instance()->OnInput(action, activeInputs, allInputs, allInputs[0].timestamp);
 		}
-		
-		UIControlSystem::Instance()->OnInput(action, activeInputs, allInputs, allInputs[0].timestamp);
 	}
 
 	bool CorePlatformAndroid::DownloadHttpFile(const String & url, const String & documentsPathname)
