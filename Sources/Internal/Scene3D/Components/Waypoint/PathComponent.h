@@ -33,7 +33,6 @@
 
 #include "Entity/Component.h"
 #include "Base/Introspection.h"
-#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -119,12 +118,12 @@ inline const Vector<PathComponent::Waypoint *> & PathComponent::GetPoints() cons
     return waypoints;
 }
 
-void PathComponent::SetName(const FastName & _name)
+inline void PathComponent::SetName(const FastName & _name)
 {
     name = _name;
 }
     
-const FastName & PathComponent::GetName() const
+inline const FastName & PathComponent::GetName() const
 {
     return name;
 }

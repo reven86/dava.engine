@@ -33,7 +33,6 @@
 
 #include "Entity/Component.h"
 #include "Base/Introspection.h"
-#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -82,12 +81,12 @@ inline KeyedArchive * WaypointComponent::GetProperties() const
     return properties;
 }
     
-void WaypointComponent::SetPathName(const FastName & name)
+inline void WaypointComponent::SetPathName(const FastName & name)
 {
     pathName = name;
 }
 
-const FastName & WaypointComponent::GetPathName() const
+inline const FastName & WaypointComponent::GetPathName() const
 {
     return pathName;
 }
