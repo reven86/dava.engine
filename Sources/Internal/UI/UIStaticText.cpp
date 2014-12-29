@@ -36,6 +36,7 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Animation/LinearAnimation.h"
 
 namespace DAVA
@@ -220,8 +221,11 @@ const Vector2 &UIStaticText::GetShadowOffset() const
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
-	if(GetText().empty()) return;
-
+    if (GetText().empty())
+    {
+        UIControl::Draw(geometricData);
+        return;
+    }
 	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());
@@ -518,13 +522,13 @@ void UIStaticText::PrepareSpriteInternal()
         Texture *tex = sprite->GetTexture();
         if(tex && tex->GetFormat() == FORMAT_A8)
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
         }
         else
         {
-            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
         }
     }
     else

@@ -37,7 +37,7 @@
 #include "Render/2D/TextBlock.h"
 #include "Core/Core.h"
 #include "Job/JobManager.h"
-
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Render/2D/TextBlockDistanceRender.h"
@@ -740,8 +740,7 @@ void TextBlock::CalculateCacheParams()
                 fontHeight = font->GetFontHeight() + yOffset;
                 textSize.height = fontHeight * (int32)multilineStrings.size() - yOffset;
 
-            }
-
+            };
         }
 
         if (isMultilineBySymbolEnabled)
@@ -752,6 +751,7 @@ void TextBlock::CalculateCacheParams()
         {
             SplitTextToStrings(preparedText, drawSize, multilineStrings, isRtl);
         }
+
 
         int32 yOffset = font->GetVerticalSpacing();
         int32 fontHeight = font->GetFontHeight() + yOffset;
@@ -810,11 +810,10 @@ void TextBlock::CalculateCacheParams()
     }
 
     //calc texture size
-    float32 virt2phys = Core::GetVirtualToPhysicalFactor();
-    int32 dx = (int32)ceilf(virt2phys * textSize.drawRect.dx);
-    int32 dy = (int32)ceilf(virt2phys * textSize.drawRect.dy);
-    int32 ox = (int32)ceilf(virt2phys * textSize.drawRect.x);
-    int32 oy = (int32)ceilf(virt2phys * textSize.drawRect.y);
+    int32 dx = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)textSize.drawRect.dx));
+    int32 dy = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)textSize.drawRect.dy));
+    int32 ox = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)textSize.drawRect.x));
+    int32 oy = (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY((float32)textSize.drawRect.y));
 
     cacheUseJustify = useJustify;
     cacheDx = dx;
@@ -961,7 +960,6 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
         return;
     }
 
-    const float32 p2v = Core::GetPhysicalToVirtualFactor();
     int32 targetWidth = (int32)targetRectSize.dx;
     float32 currentWidth = 0;
     uint32 lastPossibleBreak = 0;
@@ -973,7 +971,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
         char16 ch = string[pos];
         uint8 canBreak = breaks[pos];
 
-        currentWidth += sizes[pos] * p2v;
+        currentWidth += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sizes[pos]);
 
         // Check that targetWidth defined and currentWidth less than targetWidth.
         // If symbol is whitespace skip it and go to next (add all whitespaces to current line)
@@ -1076,12 +1074,11 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
             currentLineStart = pos + 2;
             currentLineDx = 0;
         }
-
-        // Use additional condition to prevent endless loop, when target size is less than
-        // size of one symbol (sizes[pos] > targetWidth)
-        // To keep initial index logic we should always perform action currentLineDx += sizes[pos]
-        // before entering this condition, so currentLineDx > 0.
-        if ((currentLineDx > 0) && ((currentLineDx + sizes[pos] * Core::GetPhysicalToVirtualFactor()) > targetWidth))
+		// Use additional condition to prevent endless loop, when target size is less than
+		// size of one symbol (sizes[pos] > targetWidth)
+		// To keep initial index logic we should always perform action currentLineDx += sizes[pos]
+		// before entering this condition, so currentLineDx > 0.
+        if ((currentLineDx > 0) && ((currentLineDx + VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sizes[pos])) > targetWidth))
         {
             WideString currentLine = string.substr(currentLineStart, currentLineEnd - currentLineStart);
             if (isBiDiSupportEnabled)
@@ -1097,7 +1094,7 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
         }
         else
         {
-            currentLineDx += sizes[pos] * Core::GetPhysicalToVirtualFactor();
+            currentLineDx += VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(sizes[pos]);
         }
     }
 

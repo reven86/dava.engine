@@ -33,9 +33,9 @@
 #include "DAVAEngine.h"
 
 #if defined (__DAVAENGINE_MACOS__)
-#include "Platform/Qt/MacOS/QtLayerMacOS.h"
+#include "QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
-#include "Platform/Qt/Win32/QtLayerWin32.h"
+#include "QtLayerWin32.h"
 #endif
 
 int main(int argc, char *argv[])

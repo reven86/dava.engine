@@ -147,14 +147,14 @@ void JPEGTest::Draw(const DAVA::UIGeometricData &geometricData)
     {
         state.SetPosition(0.f, 0.f);
         state.SetScaleSize(256.f, 256.f, pngSprite->GetWidth(), pngSprite->GetHeight());
-        pngSprite->Draw(&state);
+        RenderSystem2D::Instance()->Draw(pngSprite, &state);
     }
 
     if(jpegSprite)
     {
         state.SetPosition(260.f, 0.f);
         state.SetScaleSize(256.f, 256.f, jpegSprite->GetWidth(), jpegSprite->GetHeight());
-        jpegSprite->Draw(&state);
+        RenderSystem2D::Instance()->Draw(jpegSprite, &state);
     }
 
     TestTemplate<JPEGTest>::Draw(geometricData);
