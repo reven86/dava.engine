@@ -37,6 +37,7 @@ namespace DAVA
 EdgeComponent::EdgeComponent()
     : Component()
     , nextEntity(NULL)
+    , properties(NULL)
 {
 
 }
@@ -47,6 +48,8 @@ Component * EdgeComponent::Clone(Entity * toEntity)
 	newComponent->SetEntity(toEntity);
     newComponent->SetNextEntity(GetNextEntity());
 
+    //we don't need to copy properties
+    
 	return newComponent;
 }
 

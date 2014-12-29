@@ -41,7 +41,7 @@ class SerializationContext;
 class KeyedArchive;
 class Entity;
     
-class WaypointComponent : public Component
+class WaypointComponent: public Component
 {
 protected:
     ~WaypointComponent(){};
@@ -53,9 +53,29 @@ public:
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
+    void SetProperties(KeyedArchive *archieve);
+    KeyedArchive * GetProperties() const;
+    
+private:
+    
+    KeyedArchive *properties;
+    
 public:
-	INTROSPECTION_EXTEND(WaypointComponent, Component, NULL);
+	INTROSPECTION_EXTEND(WaypointComponent, Component,
+        MEMBER(properties, "Waypoint properties", I_SAVE | I_VIEW | I_EDIT)
+    );
 };
 
+inline void WaypointComponent::SetProperties(KeyedArchive *archieve)
+{
+    properties = archieve;
+}
+
+inline KeyedArchive * WaypointComponent::GetProperties() const
+{
+    return properties;
+}
+
+    
 }
 #endif //__DAVAENGINE_WAYPOINT_COMPONENT_H__

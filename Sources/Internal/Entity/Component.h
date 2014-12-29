@@ -72,11 +72,11 @@ public:
         PATH_COMPONENT,
 
         //debug components - note that everything below won't be serialized
-        WAYPOINT_COMPONENT,
-        EDGE_COMPONENT,
-        
         DEBUG_COMPONENTS,
         STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT,
+        WAYPOINT_COMPONENT,
+        EDGE_COMPONENT,
+
         COMPONENT_COUNT
     };
 

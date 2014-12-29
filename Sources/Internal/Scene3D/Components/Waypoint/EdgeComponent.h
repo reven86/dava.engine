@@ -56,13 +56,18 @@ public:
     void SetNextEntity(Entity * entity);
     Entity * GetNextEntity() const;
     
+    void SetProperties(KeyedArchive *archieve);
+    KeyedArchive * GetProperties() const;
+    
 private:
-
+    
     Entity * nextEntity;
+    KeyedArchive *properties;
     
 public:
 	INTROSPECTION_EXTEND(EdgeComponent, Component,
         MEMBER(nextEntity, "Next Waypoint Entity", I_VIEW)
+        MEMBER(properties, "Edge properties", I_SAVE | I_VIEW | I_EDIT)
     );
 };
 
@@ -77,6 +82,15 @@ inline Entity * EdgeComponent::GetNextEntity() const
     return nextEntity;
 }
 
+inline void EdgeComponent::SetProperties(KeyedArchive *archieve)
+{
+    properties = archieve;
+}
+
+inline KeyedArchive * EdgeComponent::GetProperties() const
+{
+    return properties;
+}
     
 }
 #endif //__DAVAENGINE_EDGE_COMPONENT_H__
