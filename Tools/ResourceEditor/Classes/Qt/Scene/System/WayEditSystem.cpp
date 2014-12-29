@@ -36,11 +36,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selectionSystem, SceneCollisionSystem *_collisionSystem)
 : DAVA::SceneSystem(scene)
 , isEnabled(false)
-, selectionSystem(_selectionSystem)
-, collisionSystem(_collisionSystem)
+, inAddNewWayPointState(false)
 , currentWayParent(NULL)
 , currentWayPoint(NULL)
-, inAddNewWayPointState(false)
+, selectionSystem(_selectionSystem)
+, collisionSystem(_collisionSystem)
 {
     wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
         DAVA::RenderStateData::STATE_COLORMASK_ALL |
