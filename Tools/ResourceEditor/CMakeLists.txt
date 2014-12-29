@@ -91,9 +91,6 @@ list ( APPEND PROJECT_SOURCE_FILES  ${DYLIB_FILES} "${DAVA_SPEEDTREE_ROOT_DIR}/S
                                                    "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.cpp" ) 
 
 if( MACOS )
-
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
-  
     set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
     set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 

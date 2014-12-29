@@ -74,6 +74,8 @@ if( ANDROID )
 elseif( MACOS )
     set ( LIBRARY_TYPE STATIC )
 
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
     add_definitions( -D__DAVAENGINE_PTHREAD__ ) 
 
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
