@@ -50,18 +50,9 @@ set               ( UiList       ${UI_LIST} )
 define_source_folders          ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 generate_source_groups_project (  SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
-                               
-add_executable( ${PROJECT_NAME} MACOSX_BUNDLE
-    ${MOC_APP_SRCS} 
-    ${UI_APP_HDRS} 
-    ${RCC_APP_SRCS} 
-    ${PROJECT_SOURCE_FILES} 
-    ${RESOURCES_LIST}
-)
+ 
 
 if( APPLE )
-
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
     set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
     set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
@@ -85,6 +76,20 @@ if( APPLE )
     list ( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
     list ( APPEND RESOURCES_LIST  ${MACOS_ICO} )
     list ( APPEND LIBRARIES       ${DYLIB_FILES} )
+
+endif()
+
+add_executable( ${PROJECT_NAME} MACOSX_BUNDLE
+    ${MOC_APP_SRCS} 
+    ${UI_APP_HDRS} 
+    ${RCC_APP_SRCS} 
+    ${PROJECT_SOURCE_FILES} 
+    ${RESOURCES_LIST}
+)
+
+if( APPLE )
+
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
     set( BUILD_MODE $<CONFIG> ) #$<$<CONFIG:debug>:Debug>$<$<CONFIG:release>:Release> )
 

@@ -75,28 +75,8 @@ generate_source_groups_project ( SRC_ROOT "Classes" "Data" "DataQt" GROUP_FOLDER
 list ( APPEND PROJECT_SOURCE_FILES  ${DYLIB_FILES} "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.h" 
                                                    "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.cpp" ) 
 
-if( MSVC )
-    add_definitions( -D__DAVAENGINE_BEAST__ )
-
-    file ( GLOB_RECURSE BEAST_LIST "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.cpp"  
-                                   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.h" 
-                                  )
-endif()
-
-add_executable ( ${PROJECT_NAME} MACOSX_BUNDLE
-    ${MOC_APP_SRCS} 
-    ${UI_APP_HDRS} 
-    ${RCC_APP_SRCS} 
-    ${PROJECT_SOURCE_FILES} 
-    ${BEAST_LIST}
-    ${RESOURCES_LIST} 
-)
-
-                              
 if( APPLE )
-    
-    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
-  
+
     set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
     set( MACOS_ICO    ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 
@@ -118,6 +98,29 @@ if( APPLE )
     list( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
     list( APPEND RESOURCES_LIST  ${MACOS_ICO} )
     list( APPEND LIBRARIES       ${DYLIB_FILES} )
+
+elseif( MSVC )
+
+    add_definitions( -D__DAVAENGINE_BEAST__ )
+
+    file ( GLOB_RECURSE BEAST_LIST "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.cpp"  
+                                   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.h" 
+                                  )
+endif()
+
+add_executable ( ${PROJECT_NAME} MACOSX_BUNDLE
+    ${MOC_APP_SRCS} 
+    ${UI_APP_HDRS} 
+    ${RCC_APP_SRCS} 
+    ${PROJECT_SOURCE_FILES} 
+    ${BEAST_LIST}
+    ${RESOURCES_LIST} 
+)
+
+                              
+if( APPLE )
+    
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
     set( BUILD_MODE $<CONFIG> ) #$<$<CONFIG:debug>:Debug>$<$<CONFIG:release>:Release> )
 
