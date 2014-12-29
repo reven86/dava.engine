@@ -32,13 +32,13 @@
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-namespace DAVA
-{
-
 jstringArray::jstringArray(const jobjectArray &arr)
 {
     obj = arr;
 }
+
+namespace DAVA
+{
 
 namespace JNI
 {

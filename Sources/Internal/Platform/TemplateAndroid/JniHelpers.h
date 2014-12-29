@@ -39,10 +39,8 @@
 #include "Base/Bind.h"
 #include "Math/Rect.h"
 
-namespace DAVA
-{
 
-// placed in DAVA and not in JNI to use it like a jstring
+// placed into the Global namespace and not in JNI to use it like a jstring
 class jstringArray
 {
 public:
@@ -58,6 +56,9 @@ inline jstringArray::operator jobjectArray() const
 {
     return obj;
 }
+
+namespace DAVA
+{
 
 namespace JNI
 {
