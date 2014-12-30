@@ -257,6 +257,7 @@ public:
         Default color is Color(1,1,1,1).
      \param[in] geometricData Control geometric data.
      */
+
     virtual void Draw(const UIGeometricData &geometricData);
 
     /**
@@ -382,7 +383,9 @@ private:
 
 public:
     void ReleaseDrawData(); // Delete all spec draw data
-
+#if defined(LOCALIZATION_DEBUG)
+    const Sprite::DrawState & GetLastDrawState()const;
+#endif
 protected:
     ~UIControlBackground();
     Color drawColor;
@@ -390,6 +393,9 @@ protected:
     Shader *shader;
     
     UniqueHandle renderState;
+#if defined(LOCALIZATION_DEBUG)
+    Sprite::DrawState lastDrawState;
+#endif
     
 public:
     
