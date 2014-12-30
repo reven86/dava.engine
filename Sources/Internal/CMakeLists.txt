@@ -20,27 +20,19 @@ if( NOT DISABLE_SOUNDS )
 endif()
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
+set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
 
-find_package( ZLIB )
-if( ZLIB_FOUND )
-    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH ${ZLIB_INCLUDE_DIR} )
-    list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
-endif()
-
 if( ANDROID )
+    find_package( ZLIB )
     set ( LIBRARY_TYPE STATIC )
 
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=c++11")  
-    set( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS}  -mfloat-abi=softfp -mfpu=neon" )    
-    set( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS}  -Wno-invalid-offsetof -frtti" )    
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")  
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon" )    
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wno-invalid-offsetof -frtti" )    
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof" )
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-invalid-offsetof" )
-
-#    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
-#    list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )
-#    link_directories( "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/" )
     set ( LIST_LIBRARIES
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_android.a"
@@ -72,6 +64,7 @@ if( ANDROID )
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
 
 elseif( MACOS )
+    find_package( ZLIB )
     set ( LIBRARY_TYPE STATIC )
 
     add_definitions( -D__DAVAENGINE_PTHREAD__ ) 
@@ -102,16 +95,14 @@ elseif( MACOS )
 
 elseif( IOS )  
   
+    find_package( ZLIB )
     set ( LIBRARY_TYPE STATIC )
 
     add_definitions( -DDDARWIN_NO_CARBON ) 
     
     set ( CMAKE_C_FLAGS    "-mno-thumb"  )
     set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
-    #set ( LIST_SHARED_LIBRARIES 
-    #                libz.dylib 
-    #               libbz2.dylib
-    #            )
+    #set ( LIST_SHARED_LIBRARIES  libz.dylib libbz2.dylib    )
 
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
     foreach( NAME  CoreGraphics 
@@ -164,6 +155,11 @@ elseif( WIN32 )
   
     endif()
 
+endif()
+
+if( ZLIB_FOUND )
+    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH ${ZLIB_INCLUDE_DIR} )
+    list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
 endif()
 
 

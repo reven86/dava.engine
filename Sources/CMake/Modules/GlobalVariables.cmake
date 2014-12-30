@@ -10,6 +10,7 @@ endif ()
 
 set ( DAVA_LIBRARY                     "DavaFramework" )
 set ( DAVA_ROOT_DIR                    "${CMAKE_CURRENT_LIST_DIR}/../../.." )
+set ( DAVA_PREDEFINED_TARGETS_FOLDER   "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 

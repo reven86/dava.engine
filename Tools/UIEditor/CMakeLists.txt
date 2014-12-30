@@ -149,6 +149,8 @@ elseif ( MSVC )
 
 endif()
 
+check_git()
+
 target_link_libraries( ${PROJECT_NAME}
     ${DAVA_LIBRARY}
     ${QT_LIBRARIES} 
@@ -163,17 +165,4 @@ endforeach ()
 foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
-
-
-if( WIN32 AND GIT_FOUND )
-
-add_custom_target (            
-    CHECK_GIT ALL
-    COMMAND for /f %%x in (${CMAKE_BINARY_DIR}/GitVersions) do (set GIT_CURRENT_VERSIONS=%%x)
-    COMMAND FOR /F "usebackq" %%w IN (`git rev-parse --verify -q --short HEAD`) DO SET GIT_VERSIONS=%%w
-    COMMAND echo "tyertyertyer--- %GIT_VERSIONS% --  %GIT_CURRENT_VERSIONS%"
-    COMMAND if NOT %GIT_VERSIONS% == %GIT_CURRENT_VERSIONS%  touch ${CMAKE_CURRENT_LIST_FILE}
- )
-
-endif()
 
