@@ -221,8 +221,11 @@ const Vector2 &UIStaticText::GetShadowOffset() const
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
-	if(GetText().empty()) return;
-
+    if (GetText().empty())
+    {
+        UIControl::Draw(geometricData);
+        return;
+    }
 	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());

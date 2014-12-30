@@ -110,7 +110,6 @@ void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 {
     if ( editorDataWasSet )
     {
-        qDebug() << "(V)o_O(v)";
         return;
     }
 
