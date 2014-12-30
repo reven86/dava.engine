@@ -190,7 +190,9 @@ protected:
 
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
+    ::RECT browserRect;
     bool renderToTexture;
+    bool isVisible;
 };
 
 };

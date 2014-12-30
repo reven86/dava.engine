@@ -41,34 +41,33 @@ class StaticWebViewTest: public TestTemplate<StaticWebViewTest>
 protected:
     ~StaticWebViewTest(){};
 public:
-	StaticWebViewTest();
+    StaticWebViewTest();
 
-	virtual void LoadResources();
-	virtual void UnloadResources();
-	virtual bool RunTest(int32 testNum);
+    virtual void LoadResources();
+    virtual void UnloadResources();
+    virtual bool RunTest(int32 testNum);
 
-	virtual void DidAppear();
-	virtual void Update(float32 timeElapsed);
+    virtual void DidAppear();
+    virtual void Update(float32 timeElapsed);
 
-	void TestFunction(PerfFuncData * data);
+    void TestFunction(PerfFuncData * data);
 
 private:
-	UIButton* finishTestButton;
-    UIButton* setStaticButton;
-    UIButton* setNormalButton;
-    // TODO
-    //UIButton* move100pxRight;
-    //UIButton* scale1_5times;
-
-	UIWebView* webView1;
-	UIWebView* webView2;
-
-	bool testFinished;
-	float onScreenTime;
-
-	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
+    void ButtonPressed(BaseObject *obj, void *data, void *callerData);
     void ButtonSetStatic(BaseObject *obj, void *data, void *callerData);
     void ButtonSetNormal(BaseObject *obj, void *data, void *callerData);
+
+    UIButton* finishTestButton;
+    UIButton* setStaticButton;
+    UIButton* setNormalButton;
+
+    UIControl* overlapedImage;
+
+    UIWebView* webView1;
+    UIWebView* webView2;
+
+    bool testFinished;
+    float onScreenTime;
 };
 
 #endif /* defined(__TEMPLATEPROJECTIPHONE__STATICWEBVIEWTEST__) */

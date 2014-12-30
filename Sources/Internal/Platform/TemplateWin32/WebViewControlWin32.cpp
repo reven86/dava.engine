@@ -963,13 +963,27 @@ WebViewControl::WebViewControl(UIControl* webView):
     browserContainer(0),
     uiWebView(webView),
     gdiplusToken(0),
-    renderToTexture(false)
+    browserRect(),
+    renderToTexture(false),
+    isVisible(false)
 {
     DVASSERT(webView);
+
+    // Initialize GDI+.
+    Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, 
+        &gdiplusStartupInput, nullptr);
+
+    if (status != Gdiplus::Ok)
+    {
+        DAVA::Logger::Instance()->Error("Error initialize GDI+ %s(%d)", __FILE__, __LINE__);
+    }
 }
 
 WebViewControl::~WebViewControl()
 {
+    Gdiplus::GdiplusShutdown(gdiplusToken);
+    gdiplusToken = 0;
+
 	if (browserWindow != 0)
 	{
 		::DestroyWindow(browserWindow);
@@ -977,8 +991,6 @@ WebViewControl::~WebViewControl()
 	}
 
 	SafeDelete(browserContainer);
-
-    Gdiplus::GdiplusShutdown(gdiplusToken);
 }
 
 void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
@@ -991,12 +1003,19 @@ void WebViewControl::SetRenderToTexture(bool value)
     renderToTexture = value;
     if (renderToTexture)
     {
-        // TODO
-        SetVisible(false, false);
-    } 
-    else
+        if (browserWindow != 0)
+        {
+            // hide window but not change visibility state
+            ::ShowWindow(browserWindow, false);
+        }
+    } else
     {
-        // TODO
+        // restore visibility on native control
+        ::SetWindowPos(browserWindow, nullptr, browserRect.left,
+            browserRect.top, browserRect.right - browserRect.left,
+            browserRect.bottom - browserRect.top, SWP_NOZORDER);
+
+        ::ShowWindow(browserWindow, isVisible);
     }
 }
 
@@ -1010,19 +1029,16 @@ void WebViewControl::Initialize(const Rect& rect)
 	CoreWin32PlatformBase *core = static_cast<CoreWin32PlatformBase *>(Core::Instance());
 	DVASSERT(core);
 
-    // Initialize GDI+.
-    Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-    if (status != Gdiplus::Ok)
-    {
-        DAVA::Logger::Instance()->Error("Error initialize GDI+ %s(%d)", __FILE__, __LINE__);
-    }
+    int32 isVisibleStyle = (renderToTexture) ? WS_VISIBLE : 0;
 
 	// Create the browser holder window.
 	browserWindow = ::CreateWindowEx(0, L"Static", L"", 
         WS_CHILD 
-        //| WS_VISIBLE 
+        | isVisibleStyle
         | WS_CLIPCHILDREN, // Excludes the area occupied by child windows when drawing occurs within the parent window. This style is used when creating the parent window.
-		0, 0, static_cast<int>(rect.dx), static_cast<int>(rect.dy), core->GetWindow(), NULL, core->GetInstance(), NULL);
+		0, 0, static_cast<int>(rect.dx), static_cast<int>(rect.dy), 
+        core->GetWindow(), nullptr, core->GetInstance(), nullptr);
+
 	SetRect(rect);
 
 	// Initialize the browser itself.
@@ -1031,7 +1047,7 @@ void WebViewControl::Initialize(const Rect& rect)
 
 bool WebViewControl::InititalizeBrowserContainer()
 {
-	HRESULT hRes = ::CoInitialize(NULL);
+	HRESULT hRes = ::CoInitialize(nullptr);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebViewControl::InititalizeBrowserContainer(), CoInitialize() failed!");
@@ -1105,10 +1121,15 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
 void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
-	if (browserWindow != 0)
-	{
-		::ShowWindow(browserWindow, false/*isVisible*/);
-	}
+    this->isVisible = isVisible;
+
+    if (!renderToTexture)
+    {
+        if (browserWindow != 0)
+        {
+            ::ShowWindow(browserWindow, isVisible);
+        }
+    }
 }
 
 void WebViewControl::SetRect(const Rect& rect)
@@ -1118,27 +1139,29 @@ void WebViewControl::SetRect(const Rect& rect)
 		return;
 	}
 
-	RECT browserRect = {0};
-	::GetWindowRect(browserWindow, &browserRect);
+	RECT browserRectTmp = {0};
+	::GetWindowRect(browserWindow, &browserRectTmp);
 
-    Rect convertedRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+    VirtualCoordinatesSystem& coordSys = *VirtualCoordinatesSystem::Instance();
 
-    browserRect.left = (LONG)(convertedRect.x);
-    browserRect.top = (LONG)(convertedRect.y);
-    browserRect.right = (LONG)(browserRect.left + convertedRect.dx);
-    browserRect.bottom = (LONG)(browserRect.top + convertedRect.dy);
+    Rect convertedRect = coordSys.ConvertVirtualToPhysical(rect);
 
-	browserRect.left  += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
-    browserRect.top += (LONG)VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    browserRectTmp.left = static_cast<LONG>(convertedRect.x);
+    browserRectTmp.top = static_cast<LONG>(convertedRect.y);
+    browserRectTmp.right = static_cast<LONG>(browserRectTmp.left + convertedRect.dx);
+    browserRectTmp.bottom = static_cast<LONG>(browserRectTmp.top + convertedRect.dy);
+
+    browserRectTmp.left += static_cast<LONG>(coordSys.GetPhysicalDrawOffset().x);
+    browserRectTmp.top += static_cast<LONG>(coordSys.GetPhysicalDrawOffset().y);
+
+    browserRect = browserRectTmp;
 
     if (!IsRenderToTexture())
     {
-        // show windows
-	    //::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
-		   // browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );
+        ::SetWindowPos(browserWindow, nullptr, browserRect.left,
+            browserRect.top, browserRect.right - browserRect.left,
+            browserRect.bottom - browserRect.top, SWP_NOZORDER);
     }
-	::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
-		browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );
 
 	if (browserContainer)
 	{
@@ -1146,4 +1169,4 @@ void WebViewControl::SetRect(const Rect& rect)
 	}
 }
 
-}
+} // end namespace DAVA

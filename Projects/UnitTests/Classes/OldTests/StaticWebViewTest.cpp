@@ -32,12 +32,17 @@
 static const float TRANSPARENT_WEB_VIEW_TEST_AUTO_CLOSE_TIME = 30.0f;
 
 StaticWebViewTest::StaticWebViewTest()
-:	TestTemplate<StaticWebViewTest>("TransparentWebViewTest")
-,	webView1(NULL)
-,	webView2(NULL)
-,	testFinished(false)
+:	TestTemplate<StaticWebViewTest>("StaticWebViewTest"),
+    finishTestButton(nullptr),
+    setStaticButton(nullptr),
+    setNormalButton(nullptr),
+    overlapedImage(nullptr),
+    webView1(nullptr),
+    webView2(nullptr),
+    testFinished(false),
+    onScreenTime(0.f)
 {
-	RegisterFunction(this, &StaticWebViewTest::TestFunction, Format("TransparentWebViewTest"), NULL);
+	RegisterFunction(this, &StaticWebViewTest::TestFunction, Format("StaticWebViewTest"), NULL);
 }
 
 void StaticWebViewTest::LoadResources()
@@ -48,6 +53,12 @@ void StaticWebViewTest::LoadResources()
 	webView1->OpenURL("https://ru.wikipedia.org/");
 	AddControl(webView1);
 
+    overlapedImage = new UIControl(Rect(500, 0, 300, 300));
+    FilePath imgPath("~res:/Gfx/UI/Rotation");
+    overlapedImage->SetSprite(imgPath, 0);
+    overlapedImage->SetDebugDraw(true);
+    AddControl(overlapedImage);
+
 	FilePath srcDir("~res:/TestData/TransparentWebViewTest/");
 	FilePath cpyDir = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "TransparentWebViewTest/";
 	FileSystem::Instance()->DeleteDirectory(cpyDir);
@@ -55,7 +66,7 @@ void StaticWebViewTest::LoadResources()
 	FilePath srcFile = srcDir + "test.html";
 	FilePath cpyFile = cpyDir + "test.html";
 	FileSystem::Instance()->CopyFile(srcFile, cpyFile);
-	String url = "file:///" + cpyFile.GetAbsolutePathname();
+	//String url = "file:///" + cpyFile.GetAbsolutePathname();
 
 	//webView2 = new UIWebView(Rect(710, 5, 300, 250));
 	//webView2->SetVisible(true);
@@ -75,20 +86,20 @@ void StaticWebViewTest::LoadResources()
 	finishTestButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StaticWebViewTest::ButtonPressed));
 	AddControl(finishTestButton);
 
-    setStaticButton = new UIButton(Rect(0, 510 + 300, 300, 30));
+	setStaticButton = new UIButton(Rect(0 + 300, 510, 300, 30));
     setStaticButton->SetStateFont(0xFF, font);
     setStaticButton->SetStateText(0xFF, L"Render To Texture");
     setStaticButton->SetStateFontColor(0xFF, Color::White);
     setStaticButton->SetDebugDraw(true);
-    setStaticButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StaticWebViewTest::ButtonPressed));
+    setStaticButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StaticWebViewTest::ButtonSetStatic));
     AddControl(setStaticButton);
 
-    setNormalButton = new UIButton(Rect(0, 510 + 300 * 2, 300, 30));
+    setNormalButton = new UIButton(Rect(0 + 300 * 2, 510, 300, 30));
     setNormalButton->SetStateFont(0xFF, font);
     setNormalButton->SetStateText(0xFF, L"Normal View");
     setNormalButton->SetStateFontColor(0xFF, Color::White);
     setNormalButton->SetDebugDraw(true);
-    setNormalButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StaticWebViewTest::ButtonPressed));
+    setNormalButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StaticWebViewTest::ButtonSetNormal));
     AddControl(setNormalButton);
 
 	SafeRelease(font);
@@ -125,22 +136,22 @@ void StaticWebViewTest::Update(float32 timeElapsed)
 	TestTemplate<StaticWebViewTest>::Update(timeElapsed);
 }
 
-void StaticWebViewTest::TestFunction(PerfFuncData * data)
+void StaticWebViewTest::TestFunction(PerfFuncData *)
 {
 	return;
 }
 
-void StaticWebViewTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::ButtonPressed(BaseObject *, void *, void *)
 {
 	testFinished = true;
 }
 
-void StaticWebViewTest::ButtonSetStatic(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::ButtonSetStatic(BaseObject *, void *, void *)
 {
-    // TODO
+    webView1->SetRenderToTexture(true);
 }
 
-void StaticWebViewTest::ButtonSetNormal(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::ButtonSetNormal(BaseObject *, void *, void *)
 {
-    // TODO
+    webView1->SetRenderToTexture(false);
 }

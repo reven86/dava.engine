@@ -55,7 +55,7 @@
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
-    runOnlyThisTest = "TransparentWebViewTest";
+    runOnlyThisTest = "StaticWebViewTest";
 }
 
 void GameCore::OnError()
