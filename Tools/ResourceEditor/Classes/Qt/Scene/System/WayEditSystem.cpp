@@ -29,6 +29,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QApplication>
 #include "WayEditSystem.h"
 #include "Scene3D/Components/UserComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Waypoint/WaypointComponent.h"
+#include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Settings/SettingsManager.h"
 #include "Scene/SceneEditor2.h"
 #include "Commands2/EntityAddCommand.h"
@@ -75,7 +78,7 @@ void WayEditSystem::ProcessUIEvent(DAVA::UIEvent *event)
         if (NULL != collObjects && collObjects->Size() > 0)
         {
             DAVA::Entity *underEntity = collObjects->GetEntity(0);
-            if (underEntity->GetComponent(Component::USER_COMPONENT) &&
+            if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT) &&
                 underEntity->GetParent() == currentWayParent)
             {
                 currentWayPoint = underEntity;
@@ -161,7 +164,7 @@ void WayEditSystem::EnableWayEdit(bool enable)
     if (!isEnabled && enable)
     {
         DAVA::Entity *curEntity = selectionSystem->GetSelectionEntity(0);
-        if (NULL != curEntity && NULL != curEntity->GetComponent(DAVA::Component::USER_COMPONENT))
+        if (NULL != curEntity && NULL != curEntity->GetComponent(DAVA::Component::PATH_COMPONENT))
         {
             isEnabled = true;
             selectionSystem->SetSelectionAllowed(false);
@@ -187,7 +190,7 @@ DAVA::Entity* WayEditSystem::AddWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos
     if (NULL != parent && NULL != GetScene())
     {
         waypoint = new DAVA::Entity();
-        waypoint->AddComponent(new DAVA::UserComponent());
+        waypoint->AddComponent(new DAVA::WaypointComponent());
         waypoint->SetName("waypoint");
 
         DAVA::Matrix4 pm = currentWayParent->GetWorldTransform();
@@ -216,4 +219,74 @@ void WayEditSystem::RemWayPoint(DAVA::Entity *waypoint)
 
         sceneEditor->structureSystem->Remove(group);
     }
+}
+
+void WayEditSystem::ExpandPathToEntities(DAVA::Entity * entity)
+{
+    DVASSERT(entity);
+
+    uint32 count = entity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
+    for (uint32 i=0; i < count; ++i)
+    {
+        DAVA::PathComponent * path = static_cast<DAVA::PathComponent*>(entity->GetComponent(DAVA::Component::PATH_COMPONENT,i));
+        DVASSERT(path);
+
+        const Vector<DAVA::PathComponent::Waypoint *> & waypoints = path->GetPoints();
+        uint32 waypointsCount = waypoints.size();
+        for (uint32 wpIdx; wpIdx < waypointsCount; ++wpIdx)
+        {
+            DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
+            DVASSERT(waypoint);
+
+            DAVA::Entity * waypointEntity = AddWayPoint(entity,waypoint->position);
+            DVASSERT(waypointEntity);
+
+            mapWaypoint2Entity[waypoint] = waypointEntity;
+        }
+
+        Map<DAVA::PathComponent::Waypoint *, DAVA::Entity *>::const_iterator it = mapWaypoint2Entity.begin();
+        Map<DAVA::PathComponent::Waypoint *, DAVA::Entity *>::const_iterator mapEnd = mapWaypoint2Entity.end();
+        for (; it != mapEnd; ++it)
+        {
+            DAVA::PathComponent::Waypoint * const waypoint = it->first;
+            DAVA::Entity * const waypointEntity = it->second;
+            DVASSERT(waypoint);
+            DVASSERT(waypointEntity);
+
+            uint32 edgesCount = waypoint->edges.size();
+            for (uint32 edgeIdx; edgeIdx < edgesCount; ++edgeIdx)
+            {
+                DAVA::PathComponent::Edge * edge = waypoint->edges[edgeIdx];
+                DVASSERT(edge);
+
+                DAVA::PathComponent::Waypoint * destination = edge->destination;
+                DVASSERT(destination);
+
+                DAVA::Entity * destinationEntity = mapWaypoint2Entity[destination];
+                DVASSERT(destinationEntity);
+
+                DAVA::EdgeComponent * edgeComponent = new DAVA::EdgeComponent();
+                DVASSERT(edgeComponent);
+
+                edgeComponent->SetNextEntity(destinationEntity);
+                waypointEntity->AddComponent(edgeComponent);
+            }
+        }
+    }
+    
+}
+
+void WayEditSystem::CollapsePathToComponent(DAVA::Entity * entity)
+{
+    DVASSERT(entity);
+    /*
+    typedef List<DAVA::Entity*> EntityList;
+    EntityList waypoints;
+    entity->GetChildEntitiesWithComponent(waypoints,DAVA::Component::WAYPOINT_COMPONENT);
+
+    EntityList::const_iterator waypointsEnd = waypoints.end();
+    for(EntityList::const_iterator it=waypoints.begin(); it != waypointsEnd; ++it)
+    {
+
+    }*/
 }
