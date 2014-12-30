@@ -310,6 +310,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
+    RenderSystem2D::Instance()->UpdateClip();
+
     Sprite::DrawState drawState;
     drawState.SetRenderState(renderState);
     if (spr)
