@@ -2,7 +2,7 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( GlobalVariables      )
 include ( MergeStaticLibrarees )
-
+include ( GetGit               )
 
 # Macro for precompiled headers
 macro (enable_pch)
