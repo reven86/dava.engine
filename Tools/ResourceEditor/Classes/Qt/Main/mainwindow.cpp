@@ -135,11 +135,11 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 	, ui(new Ui::MainWindow)
 	, waitDialog(NULL)
 	, beastWaitDialog(NULL)
-	, objectTypesLabel(NULL)
-	, addSwitchEntityDialog(NULL)
-	, hangingObjectsWidget(NULL)
 	, globalInvalidate(false)
     , modificationWidget(NULL)
+    , objectTypesLabel(NULL)
+    , addSwitchEntityDialog(NULL)
+    , hangingObjectsWidget(NULL)
     , developerTools(new DeveloperTools(this))
 {
 	new ProjectManager();
@@ -2818,7 +2818,6 @@ void QtMainWindow::OnAddPathEntity()
     Entity * pathEntity = new Entity();
     pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
     pathEntity->AddComponent(new PathComponent());
-    
     scene->Exec(new EntityAddCommand(pathEntity, scene));
     scene->selectionSystem->SetSelection(pathEntity);
     

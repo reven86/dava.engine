@@ -1984,6 +1984,18 @@
     <string>Add Path</string>
    </property>
   </action>
+  <action name="actionAddPathComponent">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/path.png</normaloff>:/QtIcons/path.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Path Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Path Component</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

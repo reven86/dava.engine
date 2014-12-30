@@ -41,7 +41,7 @@ class SerializationContext;
 class KeyedArchive;
 class Entity;
     
-class WaypointComponent : public Component
+class WaypointComponent: public Component
 {
 protected:
     ~WaypointComponent(){};
@@ -53,9 +53,45 @@ public:
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
+    void SetProperties(KeyedArchive *archieve);
+    KeyedArchive * GetProperties() const;
+    
+    void SetPathName(const FastName & name);
+    const FastName & GetPathName() const;
+
+private:
+    
+    FastName pathName;
+    KeyedArchive *properties;
+    
 public:
-	INTROSPECTION_EXTEND(WaypointComponent, Component, NULL);
+	INTROSPECTION_EXTEND(WaypointComponent, Component,
+        MEMBER(pathName, "Path Name", I_VIEW)
+        MEMBER(properties, "Waypoint properties", I_VIEW | I_EDIT)
+    );
 };
 
+inline void WaypointComponent::SetProperties(KeyedArchive *archieve)
+{
+    properties = archieve;
+}
+
+inline KeyedArchive * WaypointComponent::GetProperties() const
+{
+    return properties;
+}
+    
+inline void WaypointComponent::SetPathName(const FastName & name)
+{
+    pathName = name;
+}
+
+inline const FastName & WaypointComponent::GetPathName() const
+{
+    return pathName;
+}
+
+
+    
 }
 #endif //__DAVAENGINE_WAYPOINT_COMPONENT_H__

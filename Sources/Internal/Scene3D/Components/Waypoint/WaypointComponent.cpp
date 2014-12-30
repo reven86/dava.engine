@@ -35,7 +35,8 @@ namespace DAVA
 {
 
 WaypointComponent::WaypointComponent()
-    :	Component()
+    : Component()
+    , properties(NULL)
 {
 
 }
@@ -44,6 +45,10 @@ Component * WaypointComponent::Clone(Entity * toEntity)
 {
 	WaypointComponent * newComponent = new WaypointComponent();
 	newComponent->SetEntity(toEntity);
+    
+    //we don't need to copy properties
+    
+    newComponent->pathName = pathName;
 
 	return newComponent;
 }
