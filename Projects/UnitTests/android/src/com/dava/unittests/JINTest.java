@@ -17,4 +17,10 @@ public class JINTest {
 		return counter;
 	}
 	
+	public static Object GetN()
+	{
+		JNITestObject p = new JNITestObject();
+		return p;
+	}
+	
 }

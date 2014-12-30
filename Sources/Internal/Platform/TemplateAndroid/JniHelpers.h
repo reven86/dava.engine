@@ -108,14 +108,14 @@ inline jstring CreateJString(const DAVA::WideString& string)
 #define DeclareTypeString(str)\
 	operator const char *() const {return value.c_str();}\
 	operator String() const {return value;}\
-	String value = str;\
-    String rvalue = str;
+	const String value = str;\
+    const String rvalue = str;
 
 #define DeclareTypeStringWithRet(str, rstr)\
     operator const char *() const {return value.c_str();}\
     operator String() const {return value;}\
-    String value = str;\
-    String rvalue = rstr;
+    const String value = str;\
+    const String rvalue = rstr;
 
 template<class T>
 struct TypeMetrics
@@ -190,80 +190,84 @@ class SignatureString
 {
 public:
 	template<class T>
-	inline static String FromTypes();
+	inline static const String &FromTypes();
 
 	template<class Ret, class P1>
-	inline static String FromTypes();
+	inline static const String &FromTypes();
 
 	template<class Ret, class P1, class P2>
-	inline static String FromTypes();
+	inline static const String &FromTypes();
 
 	template<class Ret, class P1, class P2, class P3>
-	inline static String FromTypes();
+	inline static const String &FromTypes();
 
 	template<class Ret, class P1, class P2, class P3, class P4>
-	inline static String FromTypes();
+	inline static const String &FromTypes();
 
 	template<class Ret, class P1, class P2, class P3, class P4, class P5>
-	inline static String FromTypes();
+	inline static const String &FromTypes();
 
 	template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-	inline static String FromTypes();
+	inline static const String &FromTypes();
 };
 
 template<class Ret>
-String SignatureString::FromTypes()
+const String &SignatureString::FromTypes()
 {
 	static String ret = String("()")
-							+ TypeMetrics<Ret>().rvalue;
+            + TypeMetrics<Ret>().rvalue;
 	return ret;
 }
 
 template<class Ret, class P1>
-String SignatureString::FromTypes()
+const String &SignatureString::FromTypes()
 {
-	return String("(")
-			+ TypeMetrics<P1>().value
-			+ String(")")
-			+ TypeMetrics<Ret>().rvalue;
+    static String ret = String("(")
+            + TypeMetrics<P1>().value
+            + String(")")
+            + TypeMetrics<Ret>().rvalue;
+    return ret;
 }
 
 template<class Ret, class P1, class P2>
-String SignatureString::FromTypes()
+const String &SignatureString::FromTypes()
 {
-	return String("(")
+    static String ret = String("(")
 			+ TypeMetrics<P1>().value
 			+ TypeMetrics<P2>().value
 			+ String(")")
 			+ TypeMetrics<Ret>().rvalue;
+    return ret;
 }
 
 template<class Ret, class P1, class P2, class P3>
-String SignatureString::FromTypes()
+const String &SignatureString::FromTypes()
 {
-	return String("(")
+    static String ret = String("(")
 			+ TypeMetrics<P1>().value
 			+ TypeMetrics<P2>().value
 			+ TypeMetrics<P3>().value
 			+ String(")")
 			+ TypeMetrics<Ret>().rvalue;
+    return ret;
 }
 template<class Ret, class P1, class P2, class P3, class P4>
-String SignatureString::FromTypes()
+const String &SignatureString::FromTypes()
 {
-	return String("(")
+    static String ret = String("(")
 			+ TypeMetrics<P1>().value
 			+ TypeMetrics<P2>().value
 			+ TypeMetrics<P3>().value
 			+ TypeMetrics<P4>().value
 			+ String(")")
 			+ TypeMetrics<Ret>().rvalue;
+    return ret;
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
-String SignatureString::FromTypes()
+const String &SignatureString::FromTypes()
 {
-	return String("(")
+    static String ret = String("(")
 			+ TypeMetrics<P1>().value
 			+ TypeMetrics<P2>().value
 			+ TypeMetrics<P3>().value
@@ -271,12 +275,13 @@ String SignatureString::FromTypes()
 			+ TypeMetrics<P5>().value
 			+ String(")")
 			+ TypeMetrics<Ret>().rvalue;
+    return ret;
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-String SignatureString::FromTypes()
+const String &SignatureString::FromTypes()
 {
-	return String("(")
+    static String ret = String("(")
 			+ TypeMetrics<P1>().value
 			+ TypeMetrics<P2>().value
 			+ TypeMetrics<P3>().value
@@ -285,6 +290,7 @@ String SignatureString::FromTypes()
 			+ TypeMetrics<P6>().value
 			+ String(")")
 			+ TypeMetrics<Ret>().rvalue;
+    return ret;
 }
 
 /*
@@ -309,83 +315,83 @@ struct JniCall
 
 template<> struct JniCall<void>
 {
-	inline static void Call(jclass javaClass, jmethodID javaMethod)
+	inline static void Call(jobject javaObject, jmethodID javaMethod)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod);
+		GetEnv()->CallVoidMethod(javaObject, javaMethod);
 	}
 
 	inline static void CallStatic(jclass javaClass, jmethodID javaMethod)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod);
+		GetEnv()->CallStaticVoidMethod(javaClass, javaMethod);
 	}
 
 	template<class P1>
-	inline static void Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static void Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1);
+		GetEnv()->CallVoidMethod(javaObject, javaMethod, p1);
 	}
 
 	template<class P1>
 	inline static void CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1);
+		GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, p1);
 	}
 
 	template<class P1, class P2>
-	inline static void Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static void Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2);
+		GetEnv()->CallVoidMethod(javaObject, javaMethod, p1, p2);
 	}
 
 	template<class P1, class P2>
 	inline static void CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2);
+		GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, p1, p2);
 	}
 
 	template<class P1, class P2, class P3>
-	inline static void Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static void Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2, p3);
+		GetEnv()->CallVoidMethod(javaObject, javaMethod, p1, p2, p3);
 	}
 
 	template<class P1, class P2, class P3>
 	inline static void CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2, p3);
+		GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, p1, p2, p3);
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static void Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static void Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2, p3, p4);
+		GetEnv()->CallVoidMethod(javaObject, javaMethod, p1, p2, p3, p4);
 	}
 
 	template<class P1, class P2, class P3, class P4>
 	inline static void CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2, p3, p4);
+		GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, p1, p2, p3, p4);
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static void Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static void Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2, p3, p4, p5);
+		GetEnv()->CallVoidMethod(javaObject, javaMethod, p1, p2, p3, p4, p5);
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
 	inline static void CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		GetEnv()->CallVoidMethod(javaClass, javaMethod, p1, p2, p3, p4, p5);
+		GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, p1, p2, p3, p4, p5);
 	}
 };
 
 template<> struct JniCall<jint>
 {
 
-    inline static jint Call(jclass javaClass, jmethodID javaMethod)
+    inline static jint Call(jobject javaObject, jmethodID javaMethod)
     {
-        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod));
+        return (jint)(GetEnv()->CallIntMethod(javaObject, javaMethod));
     }
 
     inline static jint CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -393,9 +399,9 @@ template<> struct JniCall<jint>
         return (jint)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod));
     }
     template<class P1>
-    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+    inline static jint Call(jobject javaObject, jmethodID javaMethod, P1 p1)
     {
-        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1));
+        return (jint)(GetEnv()->CallIntMethod(javaObject, javaMethod, p1));
     }
 
     template<class P1>
@@ -405,9 +411,9 @@ template<> struct JniCall<jint>
     }
 
     template<class P1, class P2>
-    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    inline static jint Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
     {
-        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2));
+        return (jint)(GetEnv()->CallIntMethod(javaObject, javaMethod, p1, p2));
     }
 
     template<class P1, class P2>
@@ -417,9 +423,9 @@ template<> struct JniCall<jint>
     }
 
     template<class P1, class P2, class P3>
-    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    inline static jint Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
     {
-        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3));
+        return (jint)(GetEnv()->CallIntMethod(javaObject, javaMethod, p1, p2, p3));
     }
 
     template<class P1, class P2, class P3>
@@ -429,9 +435,9 @@ template<> struct JniCall<jint>
     }
 
     template<class P1, class P2, class P3, class P4>
-    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    inline static jint Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
     {
-        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4));
+        return (jint)(GetEnv()->CallIntMethod(javaObject, javaMethod, p1, p2, p3, p4));
     }
 
     template<class P1, class P2, class P3, class P4>
@@ -441,9 +447,9 @@ template<> struct JniCall<jint>
     }
 
     template<class P1, class P2, class P3, class P4, class P5>
-    inline static jint Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    inline static jint Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
     {
-        return (jint)(GetEnv()->CallIntMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+        return (jint)(GetEnv()->CallIntMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
     }
 
     template<class P1, class P2, class P3, class P4, class P5>
@@ -455,9 +461,9 @@ template<> struct JniCall<jint>
 
 template<> struct JniCall<jintArray>
 {
-    inline static jintArray Call(jclass javaClass, jmethodID javaMethod)
+    inline static jintArray Call(jobject javaObject, jmethodID javaMethod)
     {
-        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+        return (jintArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod));
     }
 
     inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -465,9 +471,9 @@ template<> struct JniCall<jintArray>
         return (jintArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
     }
     template<class P1>
-    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+    inline static jintArray Call(jobject javaObject, jmethodID javaMethod, P1 p1)
     {
-        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+        return (jintArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
     }
 
     template<class P1>
@@ -477,9 +483,9 @@ template<> struct JniCall<jintArray>
     }
 
     template<class P1, class P2>
-    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    inline static jintArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
     {
-        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+        return (jintArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
     }
 
     template<class P1, class P2>
@@ -489,9 +495,9 @@ template<> struct JniCall<jintArray>
     }
 
     template<class P1, class P2, class P3>
-    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    inline static jintArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
     {
-        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+        return (jintArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
     }
 
     template<class P1, class P2, class P3>
@@ -501,9 +507,9 @@ template<> struct JniCall<jintArray>
     }
 
     template<class P1, class P2, class P3, class P4>
-    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    inline static jintArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
     {
-        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+        return (jintArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
     }
 
     template<class P1, class P2, class P3, class P4>
@@ -513,9 +519,9 @@ template<> struct JniCall<jintArray>
     }
 
     template<class P1, class P2, class P3, class P4, class P5>
-    inline static jintArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    inline static jintArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
     {
-        return (jintArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+        return (jintArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
     }
 
     template<class P1, class P2, class P3, class P4, class P5>
@@ -528,9 +534,9 @@ template<> struct JniCall<jintArray>
 
 template<> struct JniCall<jfloat>
 {
-	inline static jfloat Call(jclass javaClass, jmethodID javaMethod)
+	inline static jfloat Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod));
+		return (jfloat)(GetEnv()->CallFloatMethod(javaObject, javaMethod));
 	}
 
 	inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -538,9 +544,9 @@ template<> struct JniCall<jfloat>
 		return (jfloat)(GetEnv()->CallStaticFloatMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jfloat Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1));
+		return (jfloat)(GetEnv()->CallFloatMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -550,9 +556,9 @@ template<> struct JniCall<jfloat>
 	}
 
 	template<class P1, class P2>
-	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jfloat Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1, p2));
+		return (jfloat)(GetEnv()->CallFloatMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -562,9 +568,9 @@ template<> struct JniCall<jfloat>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jfloat Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jfloat)(GetEnv()->CallFloatMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -574,9 +580,9 @@ template<> struct JniCall<jfloat>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jfloat Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jfloat)(GetEnv()->CallFloatMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -586,9 +592,9 @@ template<> struct JniCall<jfloat>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jfloat Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jfloat Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jfloat)(GetEnv()->CallFloatMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jfloat)(GetEnv()->CallFloatMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -600,9 +606,9 @@ template<> struct JniCall<jfloat>
 
 template<> struct JniCall<jfloatArray>
 {
-	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod)
+	inline static jfloatArray Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod));
 	}
 
 	inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -610,9 +616,9 @@ template<> struct JniCall<jfloatArray>
 		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jfloatArray Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -622,9 +628,9 @@ template<> struct JniCall<jfloatArray>
 	}
 
 	template<class P1, class P2>
-	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jfloatArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -634,9 +640,9 @@ template<> struct JniCall<jfloatArray>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jfloatArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -646,9 +652,9 @@ template<> struct JniCall<jfloatArray>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jfloatArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -658,9 +664,9 @@ template<> struct JniCall<jfloatArray>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jfloatArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jfloatArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jfloatArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -672,9 +678,9 @@ template<> struct JniCall<jfloatArray>
 
 template<> struct JniCall<jlong>
 {
-	inline static jlong Call(jclass javaClass, jmethodID javaMethod)
+	inline static jlong Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod));
+		return (jlong)(GetEnv()->CallLongMethod(javaObject, javaMethod));
 	}
 
 	inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -682,9 +688,9 @@ template<> struct JniCall<jlong>
 		return (jlong)(GetEnv()->CallStaticLongMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jlong Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1));
+		return (jlong)(GetEnv()->CallLongMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -694,9 +700,9 @@ template<> struct JniCall<jlong>
 	}
 
 	template<class P1, class P2>
-	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jlong Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2));
+		return (jlong)(GetEnv()->CallLongMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -706,9 +712,9 @@ template<> struct JniCall<jlong>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jlong Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jlong)(GetEnv()->CallLongMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -718,9 +724,9 @@ template<> struct JniCall<jlong>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jlong Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jlong)(GetEnv()->CallLongMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -730,9 +736,9 @@ template<> struct JniCall<jlong>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jlong Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jlong Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jlong)(GetEnv()->CallLongMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jlong)(GetEnv()->CallLongMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -744,9 +750,9 @@ template<> struct JniCall<jlong>
 
 template<> struct JniCall<jlongArray>
 {
-	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod)
+	inline static jlongArray Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jlongArray)GetEnv()->CallObjectMethod(javaClass, javaMethod);
+		return (jlongArray)GetEnv()->CallObjectMethod(javaObject, javaMethod);
 	}
 
 	inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -754,9 +760,9 @@ template<> struct JniCall<jlongArray>
 		return (jlongArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jlongArray Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -766,9 +772,9 @@ template<> struct JniCall<jlongArray>
 	}
 
 	template<class P1, class P2>
-	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jlongArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -778,9 +784,9 @@ template<> struct JniCall<jlongArray>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jlongArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -790,9 +796,9 @@ template<> struct JniCall<jlongArray>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jlongArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -802,9 +808,9 @@ template<> struct JniCall<jlongArray>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jlongArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jlongArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jlongArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jlongArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -816,9 +822,9 @@ template<> struct JniCall<jlongArray>
 
 template<> struct JniCall<jboolean>
 {
-	inline static jboolean Call(jclass javaClass, jmethodID javaMethod)
+	inline static jboolean Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaObject, javaMethod));
 	}
 
 	inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -826,9 +832,9 @@ template<> struct JniCall<jboolean>
 		return (jboolean)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jboolean Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -838,9 +844,9 @@ template<> struct JniCall<jboolean>
 	}
 
 	template<class P1, class P2>
-	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jboolean Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -850,9 +856,9 @@ template<> struct JniCall<jboolean>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jboolean Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -862,9 +868,9 @@ template<> struct JniCall<jboolean>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jboolean Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -874,9 +880,9 @@ template<> struct JniCall<jboolean>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jboolean Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jboolean Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jboolean)(GetEnv()->CallBooleanMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jboolean)(GetEnv()->CallBooleanMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -888,9 +894,9 @@ template<> struct JniCall<jboolean>
 
 template<> struct JniCall<jbooleanArray>
 {
-	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod)
+	inline static jbooleanArray Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod));
 	}
 
 	inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -898,9 +904,9 @@ template<> struct JniCall<jbooleanArray>
 		return (jbooleanArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jbooleanArray Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -910,9 +916,9 @@ template<> struct JniCall<jbooleanArray>
 	}
 
 	template<class P1, class P2>
-	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jbooleanArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -922,9 +928,9 @@ template<> struct JniCall<jbooleanArray>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jbooleanArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -934,9 +940,9 @@ template<> struct JniCall<jbooleanArray>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jbooleanArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -946,9 +952,9 @@ template<> struct JniCall<jbooleanArray>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jbooleanArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jbooleanArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jbooleanArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -960,9 +966,9 @@ template<> struct JniCall<jbooleanArray>
 
 template<> struct JniCall<jobject>
 {
-	inline static jobject Call(jclass javaClass, jmethodID javaMethod)
+	inline static jobject Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+		return (jobject)(GetEnv()->CallObjectMethod(javaObject, javaMethod));
 	}
 
 	inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -970,9 +976,9 @@ template<> struct JniCall<jobject>
 		return (jobject)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jobject Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jobject)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -982,9 +988,9 @@ template<> struct JniCall<jobject>
 	}
 
 	template<class P1, class P2>
-	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jobject Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jobject)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -994,9 +1000,9 @@ template<> struct JniCall<jobject>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jobject Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jobject)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -1006,9 +1012,9 @@ template<> struct JniCall<jobject>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jobject Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jobject)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -1018,9 +1024,9 @@ template<> struct JniCall<jobject>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jobject Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jobject Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jobject)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jobject)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -1032,9 +1038,9 @@ template<> struct JniCall<jobject>
 
 template<> struct JniCall<jobjectArray>
 {
-	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod)
+	inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod));
 	}
 
 	inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -1042,9 +1048,9 @@ template<> struct JniCall<jobjectArray>
 		return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -1054,9 +1060,9 @@ template<> struct JniCall<jobjectArray>
 	}
 
 	template<class P1, class P2>
-	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -1066,9 +1072,9 @@ template<> struct JniCall<jobjectArray>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -1078,9 +1084,9 @@ template<> struct JniCall<jobjectArray>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -1090,9 +1096,9 @@ template<> struct JniCall<jobjectArray>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jobjectArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -1104,9 +1110,9 @@ template<> struct JniCall<jobjectArray>
 
 template<> struct JniCall<jstring>
 {
-	inline static jstring Call(jclass javaClass, jmethodID javaMethod)
+	inline static jstring Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+		return (jstring)(GetEnv()->CallObjectMethod(javaObject, javaMethod));
 	}
 
 	inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -1114,9 +1120,9 @@ template<> struct JniCall<jstring>
 		return (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
 	}
 	template<class P1>
-	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static jstring Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+		return (jstring)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
 	}
 
 	template<class P1>
@@ -1126,9 +1132,9 @@ template<> struct JniCall<jstring>
 	}
 
 	template<class P1, class P2>
-	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static jstring Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+		return (jstring)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
 	}
 
 	template<class P1, class P2>
@@ -1138,9 +1144,9 @@ template<> struct JniCall<jstring>
 	}
 
 	template<class P1, class P2, class P3>
-	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static jstring Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+		return (jstring)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
 	}
 
 	template<class P1, class P2, class P3>
@@ -1150,9 +1156,9 @@ template<> struct JniCall<jstring>
 	}
 
 	template<class P1, class P2, class P3, class P4>
-	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static jstring Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+		return (jstring)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
 	}
 
 	template<class P1, class P2, class P3, class P4>
@@ -1162,9 +1168,9 @@ template<> struct JniCall<jstring>
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
-	inline static jstring Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static jstring Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return (jstring)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+		return (jstring)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
 	}
 
 	template<class P1, class P2, class P3, class P4, class P5>
@@ -1176,9 +1182,9 @@ template<> struct JniCall<jstring>
 
 template<> struct JniCall<jstringArray>
 {
-    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod)
+    inline static jstringArray Call(jobject javaObject, jmethodID javaMethod)
     {
-        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod));
     }
 
     inline static jstringArray CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -1186,9 +1192,9 @@ template<> struct JniCall<jstringArray>
         return (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod));
     }
     template<class P1>
-    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+    inline static jstringArray Call(jobject javaObject, jmethodID javaMethod, P1 p1)
     {
-        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1));
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
     }
 
     template<class P1>
@@ -1198,9 +1204,9 @@ template<> struct JniCall<jstringArray>
     }
 
     template<class P1, class P2>
-    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+    inline static jstringArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
     {
-        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2));
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
     }
 
     template<class P1, class P2>
@@ -1210,9 +1216,9 @@ template<> struct JniCall<jstringArray>
     }
 
     template<class P1, class P2, class P3>
-    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+    inline static jstringArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
     {
-        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3));
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
     }
 
     template<class P1, class P2, class P3>
@@ -1222,9 +1228,9 @@ template<> struct JniCall<jstringArray>
     }
 
     template<class P1, class P2, class P3, class P4>
-    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+    inline static jstringArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
     {
-        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
     }
 
     template<class P1, class P2, class P3, class P4>
@@ -1234,9 +1240,9 @@ template<> struct JniCall<jstringArray>
     }
 
     template<class P1, class P2, class P3, class P4, class P5>
-    inline static jstringArray Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+    inline static jstringArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
     {
-        return (jobjectArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+        return (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
     }
 
     template<class P1, class P2, class P3, class P4, class P5>
@@ -1250,9 +1256,9 @@ template<class Ret>
 class MethodCaller0
 {
 public:
-	inline static Ret Call(jclass javaClass, jmethodID javaMethod)
+	inline static Ret Call(jobject javaObject, jmethodID javaMethod)
 	{
-		return JniCall<Ret>::Call(javaClass, javaMethod);
+		return JniCall<Ret>::Call(javaObject, javaMethod);
 	}
 
 	inline static Ret CallStatic(jclass javaClass, jmethodID javaMethod)
@@ -1265,9 +1271,9 @@ template<class Ret, class P1>
 class MethodCaller1
 {
 public:
-	inline static Ret Call(jclass javaClass, jmethodID javaMethod, P1 p1)
+	inline static Ret Call(jobject javaObject, jmethodID javaMethod, P1 p1)
 	{
-		return JniCall<Ret>::Call(javaClass, javaMethod, p1);
+		return JniCall<Ret>::Call(javaObject, javaMethod, p1);
 	}
 
 	inline static Ret CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
@@ -1281,9 +1287,9 @@ template<class Ret, class P1, class P2>
 class MethodCaller2
 {
 public:
-	inline static Ret Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	inline static Ret Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
 	{
-		return JniCall<Ret>::Call(javaClass, javaMethod, p1, p2);
+		return JniCall<Ret>::Call(javaObject, javaMethod, p1, p2);
 	}
 
 	inline static Ret CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
@@ -1297,9 +1303,9 @@ template<class Ret, class P1, class P2, class P3>
 class MethodCaller3
 {
 public:
-	inline static Ret Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	inline static Ret Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
 	{
-		return JniCall<Ret>::Call(javaClass, javaMethod, p1, p2, p3);
+		return JniCall<Ret>::Call(javaObject, javaMethod, p1, p2, p3);
 	}
 
 	inline static Ret CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
@@ -1313,9 +1319,9 @@ template<class Ret, class P1, class P2, class P3, class P4>
 class MethodCaller4
 {
 public:
-	inline static Ret Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	inline static Ret Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		return JniCall<Ret>::Call(javaClass, javaMethod, p1, p2, p3, p4);
+		return JniCall<Ret>::Call(javaObject, javaMethod, p1, p2, p3, p4);
 	}
 
 	inline static Ret CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
@@ -1329,9 +1335,9 @@ template<class Ret, class P1, class P2, class P3, class P4, class P5>
 class MethodCaller5
 {
 public:
-	inline static Ret Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	inline static Ret Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
 	{
-		return JniCall<Ret>::Call(javaClass, javaMethod, p1, p2, p3, p4, p5);
+		return JniCall<Ret>::Call(javaObject, javaMethod, p1, p2, p3, p4, p5);
 	}
 
 	inline static Ret CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
@@ -1345,9 +1351,9 @@ template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
 class MethodCaller6
 {
 public:
-	inline static Ret Call(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+	inline static Ret Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
 	{
-		return JniCall<Ret>::Call(javaClass, javaMethod, p1, p2, p3, p4, p5, p6);
+		return JniCall<Ret>::Call(javaObject, javaMethod, p1, p2, p3, p4, p5, p6);
 	}
 
 	inline static Ret CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
@@ -1371,47 +1377,47 @@ public:
     inline operator jclass() const;
 
     template<class Ret>
-    Function<Ret (void)> GetMethod(String name) const;
+    Function<Ret (jobject)> GetMethod(String name) const;
 
     template<class Ret>
     Function<Ret (void)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1>
-    Function<Ret (P1)> GetMethod(String name) const;
+    Function<Ret (jobject, P1)> GetMethod(String name) const;
 
     template<class Ret, class P1>
     Function<Ret (P1)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2>
-    Function<Ret (P1, P2)> GetMethod(String name) const;
+    Function<Ret (jobject, P1, P2)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2>
     Function<Ret (P1, P2)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3>
-    Function<Ret (P1, P2, P3)> GetMethod(String name) const;
+    Function<Ret (jobject, P1, P2, P3)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3>
 	Function<Ret (P1, P2, P3)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4>
-    Function<Ret (P1, P2, P3, P4)> GetMethod(String name) const;
+    Function<Ret (jobject, P1, P2, P3, P4)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4>
 	Function<Ret (P1, P2, P3, P4)> GetStaticMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4, class P5>
-    Function<Ret (P1, P2, P3, P4, P5)> GetMethod(String name) const;
+    Function<Ret (jobject, P1, P2, P3, P4, P5)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4, class P5>
 	Function<Ret (P1, P2, P3, P4, P5)> GetStaticMethod(String name) const;
-
+/*
     template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-    Function<Ret (P1, P2, P3, P4, P5, P6)> GetMethod(String name) const;
+    Function<Ret (jobject, P1, P2, P3, P4, P5, P6)> GetMethod(String name) const;
 
     template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
 	Function<Ret (P1, P2, P3, P4, P5, P6)> GetStaticMethod(String name) const;
-
+*/
 private:
     template <class T>
     void CheckOperationResult(T value, String name) const;
@@ -1428,12 +1434,12 @@ inline JavaClass::operator jclass() const
 }
 
 template<class Ret>
-Function<Ret (void)> JavaClass::GetMethod(String name) const
+Function<Ret (jobject)> JavaClass::GetMethod(String name) const
 {
 	String parametersString = SignatureString::FromTypes<Ret>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
-	return Bind(&MethodCaller0<Ret>::Call, javaClass, javaMethod);
+	return Bind(&MethodCaller0<Ret>::Call, _1, javaMethod);
 }
 
 template<class Ret>
@@ -1446,12 +1452,12 @@ Function<Ret (void)> JavaClass::GetStaticMethod(String name) const
 }
 
 template<class Ret, class P1>
-Function<Ret (P1)> JavaClass::GetMethod(String name) const
+Function<Ret (jobject, P1)> JavaClass::GetMethod(String name) const
 {
 	String parametersString = SignatureString::FromTypes<Ret, P1>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
-	return Bind(&MethodCaller1<Ret, P1>::Call, javaClass, javaMethod, _1);
+	return Bind(&MethodCaller1<Ret, P1>::Call, _1, javaMethod, _2);
 }
 
 template<class Ret, class P1>
@@ -1464,12 +1470,12 @@ Function<Ret (P1)> JavaClass::GetStaticMethod(String name) const
 }
 
 template<class Ret, class P1, class P2>
-Function<Ret (P1, P2)> JavaClass::GetMethod(String name) const
+Function<Ret (jobject, P1, P2)> JavaClass::GetMethod(String name) const
 {
 	String parametersString = SignatureString::FromTypes<Ret, P1, P2>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
-	return Bind(&MethodCaller2<Ret, P1, P2>::Call, javaClass, javaMethod, _1, _2);
+	return Bind(&MethodCaller2<Ret, P1, P2>::Call,  _1, javaMethod, _2, _3);
 }
 
 template<class Ret, class P1, class P2>
@@ -1482,12 +1488,12 @@ Function<Ret (P1, P2)> JavaClass::GetStaticMethod(String name) const
 }
 
 template<class Ret, class P1, class P2, class P3>
-Function<Ret (P1, P2, P3)> JavaClass::GetMethod(String name) const
+Function<Ret (jobject, P1, P2, P3)> JavaClass::GetMethod(String name) const
 {
 	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
-	return Bind(&MethodCaller3<Ret, P1, P2, P3>::Call, javaClass, javaMethod, _1, _2, _3);
+	return Bind(&MethodCaller3<Ret, P1, P2, P3>::Call,  _1, javaMethod, _2, _3, _4);
 }
 
 template<class Ret, class P1, class P2, class P3>
@@ -1500,12 +1506,12 @@ Function<Ret (P1, P2, P3)> JavaClass::GetStaticMethod(String name) const
 }
 
 template<class Ret, class P1, class P2, class P3, class P4>
-Function<Ret (P1, P2, P3, P4)> JavaClass::GetMethod(String name) const
+Function<Ret (jobject, P1, P2, P3, P4)> JavaClass::GetMethod(String name) const
 {
 	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
-	return Bind(&MethodCaller4<Ret, P1, P2, P3, P4>::Call, javaClass, javaMethod, _1, _2, _3, _4);
+	return Bind(&MethodCaller4<Ret, P1, P2, P3, P4>::Call, _1, javaMethod, _2, _3, _4, _5);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4>
@@ -1518,12 +1524,12 @@ Function<Ret (P1, P2, P3, P4)> JavaClass::GetStaticMethod(String name) const
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
-Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetMethod(String name) const
+Function<Ret (jobject, P1, P2, P3, P4, P5)> JavaClass::GetMethod(String name) const
 {
 	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
 	CheckOperationResult(javaMethod, name);
-	return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::Call, javaClass, javaMethod, _1, _2, _3, _4, _5);
+	return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::Call,  _1, javaMethod, _2, _3, _4, _5, _6);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
@@ -1535,8 +1541,9 @@ Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetStaticMethod(String name) const
 	return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::CallStatic, javaClass, javaMethod, _1, _2, _3, _4, _5);
 }
 
+/*
 template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name) const
+Function<Ret (jobject, P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name) const
 {
 	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
 	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
@@ -1552,6 +1559,7 @@ Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) c
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::CallStatic, javaClass, javaMethod, _1, _2, _3, _4, _5, _6);
 }
+*/
 
 template <class T>
 void JavaClass::CheckOperationResult(T value, String name) const

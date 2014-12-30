@@ -50,19 +50,17 @@ void JNITest::UnloadResources()
 
 void JNITest::ThreadFunc(BaseObject * caller, void * callerData, void * userData)
 {
-
     auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
 
     jstring jStrTitle = JNI::CreateJString(L"test");
     jstring jStrText = JNI::CreateJString(L"test2");
 
-    //showNotificationText(jStrTitle, jStrTitle, jStrTitle);
+    showNotificationText(jStrTitle, jStrTitle, jStrTitle);
 
     JNI::GetEnv()->DeleteLocalRef(jStrTitle);
     JNI::GetEnv()->DeleteLocalRef(jStrText);
-
-
 }
+
 void JNITest::TestFunction(PerfFuncData * data)
 {
 
@@ -72,39 +70,75 @@ void JNITest::TestFunction(PerfFuncData * data)
         JNI::JavaClass t("com/dava/framework/JNINotificationProvider");
     }
 
-    Thread *someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
-    someThread->Start();
-    someThread->Join();
-    someThread->Release();
 
-
+    // test calls to Java using JNITest java class
     JNIEnv *env = JNI::GetEnv();
+
+    // get class reference
     JNI::JavaClass jtest("com/dava/unittests/JINTest");
+    // get Function as Static Method for PassString
     auto passString = jtest.GetStaticMethod<jboolean, jstring>("PassString");
 
+    // prepare data
     jstring str = JNI::CreateJString(L"TestString");
+
+    // call Java Method
     jboolean isPassed = passString(str);
+
+    // release data
     env->DeleteLocalRef(str);
     TEST_VERIFY(JNI_TRUE == isPassed);
 
+    // Try to pass String Array.
+    // Get Static Method
     auto passStringArray = jtest.GetStaticMethod<jint, jstringArray>("PassStringArray");
 
     jint stringsToPass = 5;
 
+    // Create ObjectsArray for strings
     JNI::JavaClass stringClass("java.lang.String");
     jobjectArray stringArray = env->NewObjectArray(stringsToPass, stringClass, NULL);
 
+    // fill array
     for (uint32 i = 0; i < stringsToPass; ++i)
     {
         jstring str = JNI::CreateJString(L"TestString");
         env->SetObjectArrayElement(stringArray, i, str);
         env->DeleteLocalRef(str);
     }
+    // Call Static Method
     jint stringsPassed = passStringArray(stringArray);
 
     TEST_VERIFY(stringsToPass == stringsPassed);
 
     env->DeleteLocalRef(stringArray);
+
+
+    // Try to call dinamic method for object
+    str = JNI::CreateJString(L"TestString");
+    // Take method to retrive some jobject
+    auto notGet = jtest.GetStaticMethod<jobject> ("GetN");
+
+    // call method and retrieve object from Java
+    jobject jtestobj = notGet();
+
+    // we suppose that retrieved object is
+    JNI::JavaClass jniTestObject("com/dava/unittests/JNITestObject");
+    // take dynamic method for this class
+    auto out = jniTestObject.GetMethod<jboolean>("Out");
+
+    //and call dynamic method for object.
+    jboolean outres = out(jtestobj);
+
+    TEST_VERIFY(JNI_TRUE == outres);
+
+    env->DeleteLocalRef(str);
+
+    // try to use Java Class from !Main thread.
+    Thread *someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
+    someThread->Start();
+    someThread->Join();
+    someThread->Release();
 
 }
 
