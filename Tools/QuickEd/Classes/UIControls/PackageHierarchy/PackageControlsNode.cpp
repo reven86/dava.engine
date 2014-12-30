@@ -4,10 +4,10 @@
 
 using namespace DAVA;
 
-PackageControlsNode::PackageControlsNode(PackageBaseNode *parent, UIPackage *package)
+PackageControlsNode::PackageControlsNode(PackageBaseNode *parent, UIPackage *aPackage)
     : PackageBaseNode(parent)
     , name("Controls")
-    , package(SafeRetain(package))
+    , package(SafeRetain(aPackage))
     , readOnly(false)
 {
 }

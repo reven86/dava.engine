@@ -53,7 +53,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    
+
+    Project *GetProject() const { return project; }
+
 protected:
 	virtual void closeEvent(QCloseEvent * event);
 

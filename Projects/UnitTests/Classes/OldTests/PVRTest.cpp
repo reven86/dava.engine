@@ -180,14 +180,14 @@ void PVRTest::Draw(const DAVA::UIGeometricData &geometricData)
     {
         state.SetPosition(0.f, 0.f);
         state.SetScaleSize(256.f, 256.f, pngSprite->GetWidth(), pngSprite->GetHeight());
-        pngSprite->Draw(&state);
+        RenderSystem2D::Instance()->Draw(pngSprite, &state);
     }
     
     if(pvrSprite)
     {
         state.SetPosition(260.f, 0.f);
         state.SetScaleSize(256.f, 256.f, pvrSprite->GetWidth(), pvrSprite->GetHeight());
-        pvrSprite->Draw(&state);
+        RenderSystem2D::Instance()->Draw(pvrSprite, &state);
     }
     
     TestTemplate<PVRTest>::Draw(geometricData);

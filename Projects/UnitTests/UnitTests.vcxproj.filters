@@ -64,9 +64,6 @@
     <ClCompile Include="Classes\Tests\TextSizeTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Tests\NetworkTest.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Tests\JobManagerTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
@@ -136,9 +133,6 @@
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Tests\TextSizeTest.h">
-      <Filter>Tests</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Tests\NetworkTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Tests\JobManagerTest.h">

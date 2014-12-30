@@ -30,7 +30,6 @@
     <ClInclude Include="Classes\Tests\LocalizationTest.h" />
     <ClInclude Include="Classes\Tests\MathTest.h" />
     <ClInclude Include="Classes\Tests\MemoryAllocatorsTest.h" />
-    <ClInclude Include="Classes\Tests\NetworkTest.h" />
     <ClInclude Include="Classes\Tests\SaveImageTest.h" />
     <ClInclude Include="Classes\Tests\SplitTest.h" />
     <ClInclude Include="Classes\Tests\StringFormatTest.h" />
@@ -54,7 +53,6 @@
     <ClCompile Include="Classes\Tests\LocalizationTest.cpp" />
     <ClCompile Include="Classes\Tests\MathTest.cpp" />
     <ClCompile Include="Classes\Tests\MemoryAllocatorsTest.cpp" />
-    <ClCompile Include="Classes\Tests\NetworkTest.cpp" />
     <ClCompile Include="Classes\Tests\SaveImageTest.cpp" />
     <ClCompile Include="Classes\Tests\SplitTest.cpp" />
     <ClCompile Include="Classes\Tests\StringFormatTest.cpp" />
@@ -129,7 +127,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
