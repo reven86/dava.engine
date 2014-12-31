@@ -560,6 +560,11 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
             DAVA::float32 scale = SettingsManager::GetValue("Scene/DebugBoxUserScale").AsFloat();
             cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), SIMPLE_COLLISION_BOX_SIZE * scale);
         }
+        else if(NULL != entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
+        {
+            DAVA::float32 scale = SettingsManager::GetValue("Scene/DebugBoxUserScale").AsFloat();
+            cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), SIMPLE_COLLISION_BOX_SIZE * scale);
+        }
 	}
 
 	if(NULL != cObj)

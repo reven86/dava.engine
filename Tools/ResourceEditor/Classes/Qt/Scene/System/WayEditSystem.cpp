@@ -35,6 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/System/PathSystem.h"
 #include "Scene/SceneEditor2.h"
 #include "Commands2/EntityAddCommand.h"
+#include "Utils/Utils.h"
+
 
 WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selectionSystem, SceneCollisionSystem *_collisionSystem)
 : DAVA::SceneSystem(scene)
@@ -51,8 +53,24 @@ WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selecti
 
 WayEditSystem::~WayEditSystem()
 {
-
+    waypointEntities.clear();
 }
+
+void WayEditSystem::AddEntity(DAVA::Entity * entity)
+{
+    if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
+    {
+        waypointEntities.push_back(entity);
+    }
+}
+void WayEditSystem::RemoveEntity(DAVA::Entity * entity)
+{
+    if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
+    {
+        DAVA::FindAndRemoveExchangingWithLast(waypointEntities, entity);
+    }
+}
+
 
 void WayEditSystem::Process(DAVA::float32 timeElapsed)
 {
@@ -67,32 +85,22 @@ void WayEditSystem::ProcessUIEvent(DAVA::UIEvent *event)
 {
     if (isEnabled)
     {
-        Entity *oldWaypoint = NULL;
-        
-        // check if mouse cursor is under waypoint
-        const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
-        if (NULL != collObjects && collObjects->Size() > 0)
-        {
-            DAVA::Entity *underEntity = collObjects->GetEntity(0);
-            if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT) &&
-                underEntity->GetParent() == currentWayParent)
-            {
-                oldWaypoint = currentWayPoint;
-                currentWayPoint = underEntity;
-            }
-        }
-
         // process incoming event
-        if (event->phase == DAVA::UIEvent::PHASE_BEGAN && event->tid == DAVA::UIEvent::BUTTON_1)
+        if (event->phase == DAVA::UIEvent::PHASE_ENDED && event->tid == DAVA::UIEvent::BUTTON_1)
         {
-            SceneEditor2* sceneEditor = (SceneEditor2 *)GetScene();
-            if (!sceneEditor->modifSystem->InModifState())
+            Entity *oldWaypoint = NULL;
+            const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
+            if (NULL != collObjects && collObjects->Size() > 0)
             {
-
+                DAVA::Entity *underEntity = collObjects->GetEntity(0);
+                if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT) &&
+                    underEntity->GetParent() == currentWayParent)
+                {
+                    oldWaypoint = currentWayPoint;
+                    currentWayPoint = underEntity;
+                }
             }
-        }
-        else if (event->phase == DAVA::UIEvent::PHASE_ENDED && event->tid == DAVA::UIEvent::BUTTON_1)
-        {
+
             // mouse key was released under waypoint entity?
             if (oldWaypoint)
             {
@@ -138,20 +146,31 @@ void WayEditSystem::ProcessUIEvent(DAVA::UIEvent *event)
 
 void WayEditSystem::Draw()
 {
-    if (NULL != currentWayPoint)
+    const uint32 count = waypointEntities.size();
+    for(uint32 i = 0; i < count; ++i)
     {
-        RenderManager::SetDynamicParam(PARAM_WORLD, &currentWayPoint->GetWorldTransform(), (pointer_size)&currentWayPoint->GetWorldTransform());
+        Entity *e = waypointEntities[i];
 
-        AABBox3 worldBox = selectionSystem->GetSelectionAABox(currentWayPoint);
-
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0.0f, 0.0f, 0.5f));
+        RenderManager::SetDynamicParam(PARAM_WORLD, &e->GetWorldTransform(), (pointer_size)&e->GetWorldTransform());
+        
+        AABBox3 worldBox = selectionSystem->GetSelectionAABox(e);
+        
+        float32 redValue = 0.0f;
+        float32 greenValue = 0.0f;
+        
+        if(e == currentWayPoint)
+        {
+            redValue = 1.0f;
+        }
+        else
+        {
+            greenValue = 1.0f;
+        }
+        
+        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, 0.0f, 0.5f));
         DAVA::RenderHelper::Instance()->FillBox(worldBox, wayDrawState);
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0.0f, 0.0f, 1.0f));
+        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, 0.0f, 1.0f));
         DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, wayDrawState);
-    }
-
-    if (NULL != currentWayParent)
-    {
     }
 }
 

@@ -56,6 +56,10 @@ public:
     bool IsWayEditEnabled() const;
 
     virtual void Process(DAVA::float32 timeElapsed);
+    
+    virtual void AddEntity(DAVA::Entity * entity);
+    virtual void RemoveEntity(DAVA::Entity * entity);
+
 
 protected:
     void Draw();
@@ -75,6 +79,8 @@ protected:
     SceneCollisionSystem *collisionSystem;
 
     DAVA::UniqueHandle wayDrawState;
+    
+    DAVA::Vector<DAVA::Entity *> waypointEntities;
 };
 
 #endif // __SCENE_WAYEDIT_SYSTEM_H__
