@@ -26,27 +26,67 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_ICONTROLLER_H__
-#define __DAVAENGINE_ICONTROLLER_H__
+#ifndef __DAVAENGINE_ANNOUNCER_H__
+#define __DAVAENGINE_ANNOUNCER_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Function.h>
+#include <Network/Base/DeadlineTimer.h>
+#include <Network/Base/UDPSocket.h>
+
+#include <Network/IController.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-struct IController
-{
-    // There should be a virtual destructor defined as objects may be deleted through this interface
-    virtual ~IController() {}
+class IOLoop;
 
-    virtual void Start() = 0;
-    virtual void Stop(Function<void (IController*)> callback) = 0;
+class Announcer : public IController
+{
+public:
+    Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
+    virtual ~Announcer();
+
+    // IController
+    virtual void Start();
+    virtual void Stop(Function<void (IController*)> callback);
+
+private:
+    void DoStart();
+    void DoStop();
+    void DoObjectClose();
+
+    void TimerHandleClose(DeadlineTimer* timer);
+    void TimerHandleTimer(DeadlineTimer* timer);
+
+    void SocketHandleClose(UDPSocket* socket);
+    void SocketHandleSend(UDPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount);
+
+private:
+    IOLoop* loop;
+    UDPSocket socket;
+    DeadlineTimer timer;
+    Endpoint endpoint;
+    uint32 announcePeriod;
+    bool isTerminating;
+    uint32 runningObjects;
+    Function<void (IController*)> stopCallback;
+    Function<size_t (size_t, void*)> dataCallback;
+    uint8 buffer[64 * 1024];
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline void Announcer::TimerHandleClose(DeadlineTimer* timer)
+{
+    DoObjectClose();
+}
+
+inline void Announcer::SocketHandleClose(UDPSocket* socket)
+{
+    DoObjectClose();
+}
 
 }   // namespace Net
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_ICONTROLLER_H__
+#endif  // __DAVAENGINE_ANNOUNCER_H__

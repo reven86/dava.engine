@@ -26,27 +26,48 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_ICONTROLLER_H__
-#define __DAVAENGINE_ICONTROLLER_H__
+#ifndef __DAVAENGINE_DISCOVERER_H__
+#define __DAVAENGINE_DISCOVERER_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Function.h>
+#include <Network/Base/UDPSocket.h>
+
+#include <Network/IController.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-struct IController
-{
-    // There should be a virtual destructor defined as objects may be deleted through this interface
-    virtual ~IController() {}
+class IOLoop;
 
-    virtual void Start() = 0;
-    virtual void Stop(Function<void (IController*)> callback) = 0;
+class Discoverer : public IController
+{
+public:
+    Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*)> dataReadyCallback);
+    virtual ~Discoverer();
+
+    // IController
+    virtual void Start();
+    virtual void Stop(Function<void (IController*)> callback);
+
+private:
+    void DoStart();
+    void DoStop();
+
+    void SocketHandleClose(UDPSocket* socket);
+    void SocketHandleReceive(UDPSocket* socket, int32 error, size_t nread, const Endpoint& endpoint, bool partial);
+
+private:
+    IOLoop* loop;
+    UDPSocket socket;
+    Endpoint endpoint;
+    bool isTerminating;
+    Function<void (IController*)> stopCallback;
+    Function<void (size_t, const void*)> dataCallback;
+    uint8 inbuf[64 * 1024];
 };
 
 }   // namespace Net
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_ICONTROLLER_H__
+#endif  // __DAVAENGINE_DISCOVERER_H__

@@ -31,6 +31,8 @@
 
 #include <Network/NetCore.h>
 #include <Network/Private/NetController.h>
+#include <Network/Private/Announcer.h>
+#include <Network/Private/Discoverer.h>
 
 namespace DAVA
 {
@@ -41,7 +43,7 @@ NetCore::NetCore()
     : loop(true)
     , isFinishing(false)
 {
-
+    installedInterfaces = IfAddress::GetInstalledInterfaces(false);
 }
 
 NetCore::~NetCore()
@@ -68,6 +70,22 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config)
         delete ctrl;
         return INVALID_TRACK_ID;
     }
+}
+
+NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback)
+{
+    Announcer* anno = new Announcer(&loop, endpoint, sendPeriod, needDataCallback);
+    trackedObjects.insert(anno);
+    anno->Start();
+    return ObjectToTrackId(anno);
+}
+
+NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*)> dataReadyCallback)
+{
+    Discoverer* disco = new Discoverer(&loop, endpoint, dataReadyCallback);
+    trackedObjects.insert(disco);
+    disco->Start();
+    return ObjectToTrackId(disco);
 }
 
 bool NetCore::DestroyController(TrackId id)

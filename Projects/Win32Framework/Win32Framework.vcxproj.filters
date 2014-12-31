@@ -1714,6 +1714,12 @@
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Announcer.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Discoverer.h">
+      <Filter>Internal\Network\Private</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3069,6 +3075,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp">
       <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Announcer.cpp">
+      <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Discoverer.cpp">
+      <Filter>Internal\Network\Private</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

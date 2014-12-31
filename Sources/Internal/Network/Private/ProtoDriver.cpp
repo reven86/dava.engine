@@ -141,10 +141,18 @@ void ProtoDriver::OnDisconnected()
         if (channels[i].service != NULL)
         {
             channels[i].service->OnChannelClosed(&channels[i]);
+        }
+    }
+    ClearQueues();
+    for (size_t i = 0, n = channels.size();i < n;++i)
+    {
+        if (channels[i].service != NULL)
+        {
             registrar.Delete(channels[i].channelId, channels[i].service);
             channels[i].service = NULL;
         }
     }
+    DVASSERT(NULL == curPacket.data);
 }
 
 bool ProtoDriver::OnDataReceived(const void* buffer, size_t length)
@@ -306,6 +314,19 @@ bool ProtoDriver::ProcessDeliveryAck(ProtoDecoder::DecodeResult* result)
         }
     }
     return false;
+}
+
+void ProtoDriver::ClearQueues()
+{
+    for (Deque<Packet>::iterator i = dataQueue.begin(), e = dataQueue.end();i != e;++i)
+    {
+        Packet& packet = *i;
+        Channel* ch = GetChannel(packet.channelId);
+        ch->service->OnPacketSent(ch, packet.data, packet.dataLength);
+    }
+    dataQueue.clear();
+    pendingAckQueue.clear();
+    controlQueue.clear();
 }
 
 void ProtoDriver::SendCurPacket()

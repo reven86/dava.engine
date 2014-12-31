@@ -104,6 +104,8 @@ private:
     bool ProcessChannelDeny(ProtoDecoder::DecodeResult* result);
     bool ProcessDeliveryAck(ProtoDecoder::DecodeResult* result);
 
+    void ClearQueues();
+
     void SendCurPacket();
     void SendCurControl();
 

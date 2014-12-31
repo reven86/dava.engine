@@ -30,9 +30,12 @@
 #define __DAVAENGINE_NETCORE_H__
 
 #include <Base/BaseTypes.h>
+#include <Base/Function.h>
 #include <Base/Singleton.h>
 
 #include <Network/Base/IOLoop.h>
+#include <Network/Base/IfAddress.h>
+#include <Network/Base/Endpoint.h>
 #include <Network/ServiceRegistrar.h>
 #include <Network/IController.h>
 
@@ -57,11 +60,15 @@ public:
     bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
 
     TrackId CreateController(const NetConfig& config);
+    TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
+    TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*)> dataReadyCallback);
     bool DestroyController(TrackId id);
 
     int32 Run();
     int32 Poll();
     void Finish(bool withWait = false);
+
+    const Vector<IfAddress>& InstalledInterfaces() const;
 
 private:
     IController* GetTrackedObject(TrackId id) const;
@@ -75,6 +82,7 @@ private:
     Set<IController*> trackedObjects;
     Set<IController*> dyingObjects;
     ServiceRegistrar registrar;
+    Vector<IfAddress> installedInterfaces;
     bool isFinishing;
 };
 
@@ -87,6 +95,11 @@ inline NetCore::TrackId NetCore::ObjectToTrackId(const IController* obj) const
 inline IController* NetCore::TrackIdToObject(TrackId id) const
 {
     return reinterpret_cast<IController*>(id);
+}
+
+inline const Vector<IfAddress>& NetCore::InstalledInterfaces() const
+{
+    return installedInterfaces;
 }
 
 }   // namespace Net

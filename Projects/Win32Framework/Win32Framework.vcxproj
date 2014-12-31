@@ -407,6 +407,8 @@
     <ClInclude Include="..\..\Sources\Internal\Network\NetCore.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\NetService.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\NetworkCommon.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Announcer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Discoverer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\ITransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\NetController.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoDecoder.h" />
@@ -885,6 +887,8 @@
     <ClCompile Include="..\..\Sources\Internal\Network\NetConfig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\NetCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\NetService.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Announcer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Discoverer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Private\NetController.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Private\ProtoDecoder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Private\ProtoDriver.cpp" />
