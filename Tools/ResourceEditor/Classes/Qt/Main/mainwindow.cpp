@@ -2817,7 +2817,10 @@ void QtMainWindow::OnAddPathEntity()
     
     Entity * pathEntity = new Entity();
     pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
-    pathEntity->AddComponent(new PathComponent());
+    
+    DAVA::PathComponent *pc = new PathComponent();
+    pc->SetName(scene->pathSystem->GeneratePathName());
+    pathEntity->AddComponent(pc);
     scene->Exec(new EntityAddCommand(pathEntity, scene));
     scene->selectionSystem->SetSelection(pathEntity);
     

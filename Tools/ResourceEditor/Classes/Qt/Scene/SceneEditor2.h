@@ -64,6 +64,7 @@
 #include "Scene/System/OwnersSignatureSystem.h"
 #include "Scene/System/EditorMaterialSystem.h"
 #include "Scene/System/WayEditSystem.h"
+#include "Scene/System/PathSystem.h"
 
 class FogSettingsChangedReceiver;
 
@@ -110,6 +111,7 @@ public:
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
     WayEditSystem *wayEditSystem;
+    PathSystem *pathSystem;
 
 	// save/load
 	bool Load(const DAVA::FilePath &path);

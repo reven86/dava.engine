@@ -52,6 +52,7 @@
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
 
 namespace DAVA
 {
@@ -432,6 +433,16 @@ KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity)
     if(comp)
     {
         return comp->GetArchive();
+    }
+    
+    return NULL;
+}
+
+PathComponent * GetPathComponent(const Entity *fromEntity)
+{
+    if(fromEntity)
+    {
+        return (PathComponent*) fromEntity->GetComponent(Component::PATH_COMPONENT);
     }
     
     return NULL;

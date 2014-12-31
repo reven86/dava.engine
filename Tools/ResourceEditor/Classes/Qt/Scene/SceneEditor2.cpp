@@ -132,6 +132,9 @@ SceneEditor2::SceneEditor2()
     wayEditSystem = new WayEditSystem(this, selectionSystem, collisionSystem);
     AddSystem(wayEditSystem, 0, true);
 
+    pathSystem = new PathSystem(this);
+    AddSystem(pathSystem, 1 << Component::PATH_COMPONENT);
+    
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);

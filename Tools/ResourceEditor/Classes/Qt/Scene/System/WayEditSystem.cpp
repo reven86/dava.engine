@@ -28,15 +28,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QApplication>
 #include "WayEditSystem.h"
-#include "Scene3D/Components/UserComponent.h"
+#include "Scene3D/Components/Waypoint/EdgeComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Settings/SettingsManager.h"
+#include "Scene/System/PathSystem.h"
 #include "Scene/SceneEditor2.h"
 #include "Commands2/EntityAddCommand.h"
 
 WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selectionSystem, SceneCollisionSystem *_collisionSystem)
 : DAVA::SceneSystem(scene)
 , isEnabled(false)
-, inAddNewWayPointState(false)
 , currentWayParent(NULL)
 , currentWayPoint(NULL)
 , selectionSystem(_selectionSystem)
@@ -54,7 +56,7 @@ WayEditSystem::~WayEditSystem()
 
 void WayEditSystem::Process(DAVA::float32 timeElapsed)
 {
-    if (isEnabled && NULL == currentWayPoint)
+    if (isEnabled)
     {
         // draw this collision point
         collisionSystem->SetDrawMode(collisionSystem->GetDrawMode() | CS_DRAW_LAND_COLLISION);
@@ -65,25 +67,20 @@ void WayEditSystem::ProcessUIEvent(DAVA::UIEvent *event)
 {
     if (isEnabled)
     {
-        DAVA::Vector3 lanscapeIntersectionPos;
-        bool lanscapeIntersected = false;
-
-        currentWayPoint = NULL;
-
+        Entity *oldWaypoint = NULL;
+        
         // check if mouse cursor is under waypoint
         const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
         if (NULL != collObjects && collObjects->Size() > 0)
         {
             DAVA::Entity *underEntity = collObjects->GetEntity(0);
-            if (underEntity->GetComponent(Component::USER_COMPONENT) &&
+            if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT) &&
                 underEntity->GetParent() == currentWayParent)
             {
+                oldWaypoint = currentWayPoint;
                 currentWayPoint = underEntity;
             }
         }
-
-        // check if mouse cursor is under landscape point
-        lanscapeIntersected = collisionSystem->LandRayTestFromCamera(lanscapeIntersectionPos);
 
         // process incoming event
         if (event->phase == DAVA::UIEvent::PHASE_BEGAN && event->tid == DAVA::UIEvent::BUTTON_1)
@@ -91,48 +88,50 @@ void WayEditSystem::ProcessUIEvent(DAVA::UIEvent *event)
             SceneEditor2* sceneEditor = (SceneEditor2 *)GetScene();
             if (!sceneEditor->modifSystem->InModifState())
             {
-                inAddNewWayPointState = true;
+
             }
         }
         else if (event->phase == DAVA::UIEvent::PHASE_ENDED && event->tid == DAVA::UIEvent::BUTTON_1)
         {
-            if (inAddNewWayPointState)
+            // mouse key was released under waypoint entity?
+            if (oldWaypoint)
             {
-                // mouse key was released under waypoint entity?
-                if (NULL != currentWayPoint)
+                int curKeyModifiers = QApplication::keyboardModifiers();
+                
+                // copy waypoint
+                if (curKeyModifiers & Qt::ShiftModifier)
                 {
-                    int curKeyModifiers = QApplication::keyboardModifiers();
-
-                    // copy waypoint
-                    if (curKeyModifiers & Qt::ShiftModifier)
-                    {
-                        // TODO:
-                        // ...
-                    }
-                    // remove waypoint
-                    else if (curKeyModifiers & Qt::ShiftModifier)
-                    {
-                        RemWayPoint(currentWayPoint);
-                        currentWayPoint = NULL;
-                    }
-                    // select waypoint
-                    else
-                    {
-                        selectionSystem->SetSelection(currentWayPoint);
-                    }
+                    // TODO:
+                    // ...
                 }
-                // if key was released under landscape
+                // select waypoint
                 else
                 {
-                    // add new waypoint on the landscape
-                    if (lanscapeIntersected)
+                    selectionSystem->SetSelection(currentWayPoint);
+                }
+            }
+            // if key was released under landscape
+            else
+            {
+                // check if mouse cursor is under landscape point
+                DAVA::Vector3 lanscapeIntersectionPos;
+                bool lanscapeIntersected = collisionSystem->LandRayTestFromCamera(lanscapeIntersectionPos);
+                
+                // add new waypoint on the landscape
+                if (lanscapeIntersected)
+                {
+                    oldWaypoint = currentWayPoint;
+                    currentWayPoint = AddWayPoint(currentWayParent, lanscapeIntersectionPos);
+                    
+                    if(currentWayPoint && oldWaypoint)
                     {
-                        currentWayPoint = AddWayPoint(currentWayParent, lanscapeIntersectionPos);
+                        DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
+                        edge->SetNextEntity(currentWayPoint);
+                        
+                        oldWaypoint->AddComponent(edge);
                     }
                 }
             }
-
-            inAddNewWayPointState = false;
         }
     }
 }
@@ -160,19 +159,16 @@ void WayEditSystem::EnableWayEdit(bool enable)
 {
     if (!isEnabled && enable)
     {
-        DAVA::Entity *curEntity = selectionSystem->GetSelectionEntity(0);
-        if (NULL != curEntity && NULL != curEntity->GetComponent(DAVA::Component::USER_COMPONENT))
-        {
-            isEnabled = true;
-            selectionSystem->SetSelectionAllowed(false);
-            currentWayParent = curEntity;
-        }
+        SceneEditor2* sceneEditor = (SceneEditor2 *)GetScene();
+        currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
     }
     else
     {
-        isEnabled = false;
-        selectionSystem->SetSelectionAllowed(true);
+        currentWayParent = NULL;
     }
+    
+    isEnabled = (currentWayParent != NULL);
+    selectionSystem->SetSelectionAllowed(!isEnabled);
 }
 
 bool WayEditSystem::IsWayEditEnabled() const
@@ -183,23 +179,28 @@ bool WayEditSystem::IsWayEditEnabled() const
 DAVA::Entity* WayEditSystem::AddWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos)
 {
     DAVA::Entity* waypoint = NULL;
-
-    if (NULL != parent && NULL != GetScene())
+    SceneEditor2 *sceneEditor = ((SceneEditor2 *)GetScene());
+    if (parent && sceneEditor)
     {
+        DAVA::PathComponent *pc = DAVA::GetPathComponent(parent);
+        DVASSERT(pc);
+        
         waypoint = new DAVA::Entity();
-        waypoint->AddComponent(new DAVA::UserComponent());
-        waypoint->SetName("waypoint");
-
-        DAVA::Matrix4 pm = currentWayParent->GetWorldTransform();
+        waypoint->SetName("Waypoint");
+        
+        DAVA::WaypointComponent *wc = new DAVA::WaypointComponent();
+        wc->SetPathName(pc->GetName());
+        waypoint->AddComponent(wc);
+        
+        DAVA::Matrix4 pm = parent->GetWorldTransform();
         pm.Inverse();
-
+        
         DAVA::Matrix4 m;
         m.SetTranslationVector(pos);
         waypoint->SetLocalTransform(m * pm);
-
-        SceneEditor2 *sceneEditor = ((SceneEditor2 *)GetScene());
-        sceneEditor->Exec(new EntityAddCommand(waypoint, currentWayParent));
-
+        
+        sceneEditor->Exec(new EntityAddCommand(waypoint, parent));
+        
         waypoint->Release();
     }
 

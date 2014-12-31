@@ -26,55 +26,36 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __SCENE_WAYEDIT_SYSTEM_H__
-#define __SCENE_WAYEDIT_SYSTEM_H__
+#ifndef __PATH_SYSTEM_H__
+#define __PATH_SYSTEM_H__
 
-#include <QMap>
-#include "Scene/EntityGroup.h"
-#include "Scene/SceneTypes.h"
-#include "Commands2/Command2.h"
-
-// framework
-#include "UI/UIEvent.h"
 #include "Entity/SceneSystem.h"
-#include "Render/RenderManager.h"
-#include "Render/RenderHelper.h"
+#include "Base/FastName.h"
 
-// editor systems
-#include "Scene/System/SelectionSystem.h"
-#include "Scene/System/CollisionSystem.h"
-
-class WayEditSystem : public DAVA::SceneSystem
+class PathSystem: public DAVA::SceneSystem
 {
-    friend class SceneEditor2;
-
 public:
-    WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *selectionSystem, SceneCollisionSystem *collisionSystem);
-    virtual ~WayEditSystem();
-
-    void EnableWayEdit(bool enable);
-    bool IsWayEditEnabled() const;
-
-    virtual void Process(DAVA::float32 timeElapsed);
-
+    PathSystem(DAVA::Scene * scene);
+    virtual ~PathSystem();
+    
+    virtual void AddEntity(DAVA::Entity * entity);
+    virtual void RemoveEntity(DAVA::Entity * entity);
+    
+    DAVA::Entity * GetCurrrentPath() const;
+    
+    const DAVA::Vector<DAVA::Entity *> & GetPathes() const;
+    
+    DAVA::FastName GeneratePathName() const;
+    
 protected:
-    void Draw();
-    void ProcessUIEvent(DAVA::UIEvent *event);
-
-    DAVA::Entity* AddWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
-    DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
-    void RemWayPoint(DAVA::Entity *waypoint);
-
-protected:
-    bool isEnabled;
-
-    DAVA::Entity *currentWayParent;
-    DAVA::Entity *currentWayPoint;
-
-    SceneSelectionSystem *selectionSystem;
-    SceneCollisionSystem *collisionSystem;
-
-    DAVA::UniqueHandle wayDrawState;
+    
+    DAVA::Vector<DAVA::Entity *> pathes;
 };
 
-#endif // __SCENE_WAYEDIT_SYSTEM_H__
+inline const DAVA::Vector<DAVA::Entity *> & PathSystem::GetPathes() const
+{
+    return pathes;
+}
+
+
+#endif // __PATH_SYSTEM_H__

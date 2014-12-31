@@ -61,7 +61,8 @@ class WindComponent;
 class WaveComponent;
 class SpeedTreeObject;
 class AnimationComponent;
-
+class PathComponent;
+    
 ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
 AnimationComponent * GetAnimationComponent(Entity *fromEntity);
 TransformComponent * GetTransformComponent(Entity * fromEntity);
@@ -104,6 +105,8 @@ QualitySettingsComponent * GetQualitySettingsComponent(const Entity *fromEntity)
 CustomPropertiesComponent * GetCustomProperties(const Entity *fromEntity);
 CustomPropertiesComponent * GetOrCreateCustomProperties(Entity *fromEntity);
 KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity);
+
+PathComponent * GetPathComponent(const Entity *fromEntity);
 
 }
 
