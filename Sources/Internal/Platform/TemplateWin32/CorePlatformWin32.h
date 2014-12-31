@@ -81,9 +81,18 @@ private:
 	static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
+	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 	RECT GetWindowedRectForDisplayMode(DisplayMode & dm);
+	int32 MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches);
+
 	bool willQuit;
 
+	bool isRightButtonPressed;
+	bool isLeftButtonPressed;
+	bool isMiddleButtonPressed;
+	Vector<DAVA::UIEvent> allTouches;
 };	
 };
 #endif // #if defined(__DAVAENGINE_WIN32__)

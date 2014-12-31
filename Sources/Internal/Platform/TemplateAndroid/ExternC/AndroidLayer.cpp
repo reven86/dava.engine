@@ -425,22 +425,26 @@ void Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobjec
 		int allInputsCount = env->CallIntMethod(javaAllInputs, gArrayListSizeMethod);
 		int activeInputsCount = env->CallIntMethod(javaActiveInputs, gArrayListSizeMethod);
 
-		for(int i = 0; i < DAVA::Max(allInputsCount, activeInputsCount); i += groupSize)
+		int inputsCount = DAVA::Max(allInputsCount, activeInputsCount);
+
+		for(int groupStartIndex = 0; groupStartIndex < inputsCount; groupStartIndex += groupSize)
 		{
+			int groupEndIndex = groupStartIndex + groupSize;
+
 			allInputs.clear();
 			activeInputs.clear();
 
-			for (int j = i; j < i + groupSize; ++j)
+			for (int touchIndex = groupStartIndex; touchIndex < groupEndIndex; ++touchIndex)
 			{
-				if (j < allInputsCount)
+				if (touchIndex < allInputsCount)
 				{
-					jobject jInput = env->CallObjectMethod(javaAllInputs, gArrayListGetMethod, j);
+					jobject jInput = env->CallObjectMethod(javaAllInputs, gArrayListGetMethod, touchIndex);
 
 					allInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
 				}
-				if (j < activeInputsCount)
+				if (touchIndex < activeInputsCount)
 				{
-					jobject jInput = env->CallObjectMethod(javaActiveInputs, gArrayListGetMethod, j);
+					jobject jInput = env->CallObjectMethod(javaActiveInputs, gArrayListGetMethod, touchIndex);
 
 					activeInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
 				}

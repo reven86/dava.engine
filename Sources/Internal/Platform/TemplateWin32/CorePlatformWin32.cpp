@@ -100,8 +100,6 @@ namespace DAVA
 
 	}
 
-	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
 	bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
 	{	
 		this->hInstance = hInstance;
@@ -257,6 +255,10 @@ namespace DAVA
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+
+        isRightButtonPressed = false;
+        isLeftButtonPressed = false;
+        isMiddleButtonPressed = false;
 
 		return true;
 	}
@@ -480,11 +482,7 @@ namespace DAVA
 		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
-    bool isRightButtonPressed = false;
-    bool isLeftButtonPressed = false;
-    bool isMiddleButtonPressed = false;
-	static Vector<DAVA::UIEvent> allTouches;
-	int32 MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
+	int32 CoreWin32Platform::MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
 	{
 		int button = 0;
         int phase = -1;
@@ -647,7 +645,7 @@ namespace DAVA
 		}
 	}
 
-	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
+	void CoreWin32Platform::OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
     {
         Vector<DAVA::UIEvent> touches;
         int32 touchPhase = -1;
@@ -691,8 +689,9 @@ namespace DAVA
 		HandleMouseButtonsReleased(buttsFlags);
 	}
 
-	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		CoreWin32Platform* core = static_cast< CoreWin32Platform* >(Core::Instance());
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
 #endif
@@ -732,9 +731,9 @@ namespace DAVA
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 
 				InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)wParam);
 			};
@@ -754,9 +753,9 @@ namespace DAVA
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
 			}
 		}
 		break;
@@ -806,7 +805,7 @@ namespace DAVA
 
                 bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
 
-                OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
+                core->OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
             }
 
             SafeDeleteArray(lpb);

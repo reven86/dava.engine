@@ -81,8 +81,7 @@ bool CoreWin32PlatformQt::SetupWindow(HINSTANCE _hInstance, HWND _hWindow)
     return true;
 }
 
-static Vector<DAVA::UIEvent> allTouches;
-int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
+int32 CoreWin32PlatformQt::MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
 {
 		
 	int button = 0;
