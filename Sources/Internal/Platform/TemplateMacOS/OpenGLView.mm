@@ -248,8 +248,6 @@ extern void FrameworkMain(int argc, char *argv[]);
 	return YES;
 }
 
-static Vector<DAVA::UIEvent> allTouches;
-
 void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
 {
     NSPoint p = [curEvent locationInWindow];
@@ -277,7 +275,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
     event.phase = phase;
 }
 
-void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outTouches)
+- (void)moveTouchsToVector:(int)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
 {
 	int button = 0;
 	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
@@ -366,7 +364,7 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 {
 	Vector<DAVA::UIEvent> touches;
 
-	MoveTouchsToVector(touch, touchPhase, &touches);
+    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
 	UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
 	touches.clear();
 }

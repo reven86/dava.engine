@@ -240,13 +240,13 @@
 
 
 
-static Vector<DAVA::UIEvent> allTouches;
-
-void NSEventToUIEvent(NSEvent *nsEvent, DAVA::UIEvent &uiEvent, const NSRect &viewRect, const NSPoint &offset)
+-(void)NSEventToUIEvent:(NSEvent*)nsEvent uiEvent:(DAVA::UIEvent&)uiEvent
 {
     int px = ([nsEvent locationInWindow].x + 0.6);
     int py = ([nsEvent locationInWindow].y + 0.6);
 
+    NSRect viewRect = [self frame];
+    
     // mosemove event comes from qt, so don't apply any offset to it
     if(nsEvent.type == NSMouseMoved)
     {
@@ -268,7 +268,7 @@ void NSEventToUIEvent(NSEvent *nsEvent, DAVA::UIEvent &uiEvent, const NSRect &vi
     uiEvent.tapCount = nsEvent.clickCount;
 }
 
-void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outTouches, const NSRect &viewRect, const NSPoint &offset)
+-(void)moveTouchsToVector:(int)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
 {
 	int button = 0;
 	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
@@ -306,8 +306,8 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 	{
 		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
-            NSEventToUIEvent(curEvent, *it, viewRect, offset);
-            it->phase = phase;
+			[self NSEventToUIEvent:curEvent uiEvent:*it];
+			it->phase = phase;
 		}
 	}
 	
@@ -318,7 +318,7 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 		{
 			isFind = true;
 			
-            NSEventToUIEvent(curEvent, *it, viewRect, offset);
+			[self NSEventToUIEvent:curEvent uiEvent:*it];
 			it->phase = phase;
 
 			break;
@@ -330,7 +330,7 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 		UIEvent newTouch;
 		newTouch.tid = button;
 
-        NSEventToUIEvent(curEvent, newTouch, viewRect, offset);
+		[self NSEventToUIEvent:curEvent uiEvent:newTouch];
 		newTouch.phase = phase;
 		allTouches.push_back(newTouch);
 	}
@@ -357,7 +357,7 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 -(void)process:(int)touchPhase touch:(NSEvent*)touch
 {
 	Vector<DAVA::UIEvent> touches;
-	MoveTouchsToVector(touch, touchPhase, &touches, [self frame], offset);
+    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
 //	NSLog(@"----- Touches --------");
 //	for(int i = 0; i < touches.size(); i++)
 //	{
