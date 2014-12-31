@@ -29,7 +29,7 @@
 
 #include "StaticWebViewTest.h"
 
-static const float TRANSPARENT_WEB_VIEW_TEST_AUTO_CLOSE_TIME = 30.0f;
+static const float TRANSPARENT_WEB_VIEW_TEST_AUTO_CLOSE_TIME = 300.0f;
 
 StaticWebViewTest::StaticWebViewTest()
 :	TestTemplate<StaticWebViewTest>("StaticWebViewTest"),

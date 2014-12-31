@@ -1006,17 +1006,23 @@ void WebViewControl::SetRenderToTexture(bool value)
         if (browserWindow != 0)
         {
             // hide window but not change visibility state
-            ::ShowWindow(browserWindow, false);
+            ::ShowWindow(browserWindow, SW_HIDE);
         }
     } else
     {
         // restore visibility on native control
-        ::SetWindowPos(browserWindow, nullptr, browserRect.left,
-            browserRect.top, browserRect.right - browserRect.left,
-            browserRect.bottom - browserRect.top, SWP_NOZORDER);
+        if (isVisible)
+        {
+            //::SetWindowPos(browserWindow, nullptr, browserRect.left,
+            //    browserRect.top, browserRect.right - browserRect.left,
+            //    browserRect.bottom - browserRect.top, SWP_NOZORDER);
 
-        ::ShowWindow(browserWindow, isVisible);
+            ::ShowWindow(browserWindow, SW_SHOW);
+        }
     }
+    char buf[4096] = { 0 };
+    sprintf(buf, "SetRenderToTexture(bool value = %d, renderToTexture = %d, isVisible = %d)\n", value, renderToTexture, isVisible);
+    OutputDebugStringA(buf);
 }
 
 bool WebViewControl::IsRenderToTexture() const

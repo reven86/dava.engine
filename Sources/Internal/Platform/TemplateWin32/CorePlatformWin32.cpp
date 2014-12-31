@@ -776,17 +776,23 @@ namespace DAVA
 
         case WM_INPUT:
         {
+            OutputDebugString(L"on WM_INPUT\n");
+
             UINT dwSize;
 
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, 
                 sizeof(RAWINPUTHEADER));
             LPBYTE lpb = new BYTE[dwSize];
-            if (lpb == NULL)
+            if (lpb == nullptr)
+            {
                 return 0;
+            }
 
-            if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, 
-                sizeof(RAWINPUTHEADER)) != dwSize )
-                OutputDebugString (TEXT("GetRawInputData does not return correct size !\n")); 
+            if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize,
+                sizeof(RAWINPUTHEADER)) != dwSize)
+            {
+                OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+            }
 
             RAWINPUT* raw = (RAWINPUT*)lpb;
 
@@ -818,7 +824,7 @@ namespace DAVA
                 GetClientRect(hWnd, &clientRect);
 
                 bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
-
+                OutputDebugString(L"on mouse move event\n");
                 OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
             }
 
