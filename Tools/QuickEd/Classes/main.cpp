@@ -38,8 +38,8 @@
 #include "Platform/Qt4/Win32/QtLayerWin32.h"
 #endif
 
-#include "GeneratedFiles/MocSourcesHeader.h"
-#include "GeneratedFiles/QrcSourcesHeader.h"
+//#include "GeneratedFiles/MocSourcesHeader.h"
+//#include "GeneratedFiles/QrcSourcesHeader.h"
 
 int main(int argc, char *argv[])
 {
