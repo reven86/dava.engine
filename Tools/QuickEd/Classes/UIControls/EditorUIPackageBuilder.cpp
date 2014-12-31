@@ -12,6 +12,9 @@
 
 using namespace DAVA;
 
+const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
+const String EXCEPTION_CLASS_UI_LIST = "UIList";
+
 EditorUIPackageBuilder::EditorUIPackageBuilder()
     : packageNode(NULL)
     , currentObject(NULL)
@@ -74,7 +77,7 @@ RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &p
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
-    if (control && className != "UITextField")//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
@@ -87,7 +90,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
     control->SetCustomControlClassName(customClassName);
-    if (className != "UITextField")//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
