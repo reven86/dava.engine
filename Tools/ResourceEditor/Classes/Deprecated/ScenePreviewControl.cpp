@@ -175,7 +175,6 @@ void ScenePreviewControl::CreateCamera()
     editorScene->AddNode(node);
     editorScene->AddCamera(cam);
     editorScene->SetCurrentCamera(cam);
-    cameraController->SetScene(editorScene);
 
     SafeRelease(cam);
 }
