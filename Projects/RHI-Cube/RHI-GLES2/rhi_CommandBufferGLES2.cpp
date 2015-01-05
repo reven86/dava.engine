@@ -49,23 +49,25 @@ public:
     void        End();
     void        Replay();
 
-    void        Command( uint32 cmd );
-    void        Command( uint32 cmd, uint32 arg1 );
-    void        Command( uint32 cmd, uint32 arg1, uint32 arg2 );
-    void        Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 );
-    void        Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4 );
-    void        Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5 );
-    void        Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5, uint32 arg6 );
+    void        Command( uint64 cmd );
+    void        Command( uint64 cmd, uint64 arg1 );
+    void        Command( uint64 cmd, uint64 arg1, uint64 arg2 );
+    void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3 );
+    void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4 );
+    void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5 );
+    void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6 );
 
 
 private:
 
-    static const uint32   EndCmd = 0xFFFFFFFF;
+    static const uint64   EndCmd/* = 0xFFFFFFFF*/;
 
-    std::vector<uint32> _cmd;
+    std::vector<uint64> _cmd;
 };
 
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
+    
+const uint64   CommandBuffer_t::EndCmd = 0xFFFFFFFF;
 
 
 
@@ -140,7 +142,7 @@ SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint32)(ConstBufferGLES2::Instance(buffer)) );
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)) );
 }
 
 
@@ -170,7 +172,7 @@ SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidHandle )
-        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint32)(ConstBufferGLES2::Instance(buffer)) );
+        CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, buffer, (uint64)(ConstBufferGLES2::Instance(buffer)) );
 }
 
 
@@ -283,7 +285,7 @@ CommandBuffer_t::End()
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Command( uint32 cmd )
+CommandBuffer_t::Command( uint64 cmd )
 {
     _cmd.push_back( cmd );
 }
@@ -292,11 +294,11 @@ CommandBuffer_t::Command( uint32 cmd )
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Command( uint32 cmd, uint32 arg1 )
+CommandBuffer_t::Command( uint64 cmd, uint64 arg1 )
 {
     _cmd.resize( _cmd.size()+1+1 );
 
-    std::vector<uint32>::iterator   b = _cmd.end() - (1+1);
+    std::vector<uint64>::iterator   b = _cmd.end() - (1+1);
 
     b[0] = cmd; 
     b[1] = arg1; 
@@ -306,11 +308,11 @@ CommandBuffer_t::Command( uint32 cmd, uint32 arg1 )
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2 )
+CommandBuffer_t::Command( uint64 cmd, uint64 arg1, uint64 arg2 )
 {
     _cmd.resize( _cmd.size()+1+2 );
 
-    std::vector<uint32>::iterator   b = _cmd.end() - (1+2);
+    std::vector<uint64>::iterator   b = _cmd.end() - (1+2);
 
     b[0] = cmd; 
     b[1] = arg1; 
@@ -321,11 +323,11 @@ CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2 )
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 )
+CommandBuffer_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3 )
 {
     _cmd.resize( _cmd.size()+1+3 );
 
-    std::vector<uint32>::iterator   b = _cmd.end() - (1+3);
+    std::vector<uint64>::iterator   b = _cmd.end() - (1+3);
 
     b[0] = cmd; 
     b[1] = arg1; 
@@ -337,11 +339,11 @@ CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3 )
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4 )
+CommandBuffer_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4 )
 {
     _cmd.resize( _cmd.size()+1+4 );
 
-    std::vector<uint32>::iterator   b = _cmd.end() - (1+4);
+    std::vector<uint64>::iterator   b = _cmd.end() - (1+4);
 
     b[0] = cmd; 
     b[1] = arg1; 
@@ -354,11 +356,11 @@ CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uin
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5 )
+CommandBuffer_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5 )
 {
     _cmd.resize( _cmd.size()+1+5 );
 
-    std::vector<uint32>::iterator   b = _cmd.end() - (1+5);
+    std::vector<uint64>::iterator   b = _cmd.end() - (1+5);
 
     b[0] = cmd; 
     b[1] = arg1; 
@@ -372,11 +374,11 @@ CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uin
 //------------------------------------------------------------------------------
 
 inline void
-CommandBuffer_t::Command( uint32 cmd, uint32 arg1, uint32 arg2, uint32 arg3, uint32 arg4, uint32 arg5, uint32 arg6 )
+CommandBuffer_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6 )
 {
     _cmd.resize( _cmd.size()+1+6 );
 
-    std::vector<uint32>::iterator   b = _cmd.end() - (1+6);
+    std::vector<uint64>::iterator   b = _cmd.end() - (1+6);
 
     b[0] = cmd; 
     b[1] = arg1; 
@@ -405,10 +407,10 @@ CommandBuffer_t::Replay()
         fp_const[i] = InvalidHandle;
     }
 
-    for( std::vector<uint32>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
+    for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
         const uint32                        cmd = *c;
-        std::vector<uint32>::const_iterator arg = c+1;
+        std::vector<uint64>::const_iterator arg = c+1;
 
         if( cmd == EndCmd )
             break;
@@ -434,7 +436,7 @@ CommandBuffer_t::Replay()
             case GLES2__CLEAR :
             {
                 uint32  clr (arg[0]);
-                float   z   = nonaliased_cast<uint32,float>(arg[1]);
+                float   z   = nonaliased_cast<uint32,float>(uint32(arg[1]));
                 
                 glClearColor( float((clr>>0)&0xFF)/255.0f, float((clr>>8)&0xFF)/255.0f, float((clr>>16)&0xFF)/255.0f, float((clr>>24)&0xFF)/255.0f );
                 glClearDepth( z );
@@ -533,12 +535,17 @@ CommandBuffer_t::Replay()
 void
 Present()
 {
+    Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->Replay();
+
+#if defined(__DAVAENGINE_WIN32__)
+    
     HWND    wnd = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
     HDC     dc  = ::GetDC( wnd );
 
-    Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->Replay();
-
     SwapBuffers( dc );
+
+#elif defined(__DAVAENGINE_MACOS__)
+#endif
 }
 
 

@@ -688,7 +688,7 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
-profiler::Start();
+///profiler::Start();
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	static bool isInit = false;
 	static EGLuint64NV frequency;
@@ -761,18 +761,18 @@ profiler::Start();
 			}
 		}
 		
-START_TIMING(PROF__FRAME_UPDATE);
+///START_TIMING(PROF__FRAME_UPDATE);
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
-STOP_TIMING(PROF__FRAME_UPDATE);
-START_TIMING(PROF__FRAME_DRAW);
+///STOP_TIMING(PROF__FRAME_UPDATE);
+///START_TIMING(PROF__FRAME_DRAW);
 		core->Draw();
 
 		core->EndFrame();
-STOP_TIMING(PROF__FRAME_DRAW);
+///STOP_TIMING(PROF__FRAME_DRAW);
 // #ifdef __DAVAENGINE_DIRECTX9__
 // 		core->BeginFrame();
 // #endif
@@ -784,8 +784,8 @@ STOP_TIMING(PROF__FRAME_DRAW);
 	EGLuint64NV end = eglGetSystemTimeNV() / frequency;
 	EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
-STOP_TIMING(PROF__FRAME);
-profiler::Stop();
+///STOP_TIMING(PROF__FRAME);
+///profiler::Stop();
 {
 std::vector<profiler::CounterInfo>  result;
 /*

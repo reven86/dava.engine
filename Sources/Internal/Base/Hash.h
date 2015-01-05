@@ -197,10 +197,10 @@ HashValue_N( const char* key, unsigned length )
 
     // set up the internal state
 
-    register uint32 len = length;
-    register uint32 a   = 0x9E3779B9;   // the golden ratio, an arbitrary value
-    register uint32 b   = 0x9E3779B9;   // the golden ratio, an arbitrary value
-    register uint32 c   = 0;            // the previous hash value
+    uint32  len = length;
+    uint32  a   = 0x9E3779B9;   // the golden ratio, an arbitrary value
+    uint32  b   = 0x9E3779B9;   // the golden ratio, an arbitrary value
+    uint32  c   = 0;            // the previous hash value
 
 
     // handle most of the key
