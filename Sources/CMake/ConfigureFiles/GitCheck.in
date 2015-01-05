@@ -3,6 +3,7 @@ GIT_CURRENT_VERSIONS=$(<@CMAKE_BINARY_DIR@/GitVersions)
 
 if [ $GIT_VERSIONS !=  $GIT_CURRENT_VERSIONS ];
 then  
-    cmake @CMAKE_BINARY_DIR@    
+    touch @CMAKE_BINARY_DIR@/GitCheck.cmake    
+    cmake @CMAKE_BINARY_DIR@
 fi
 

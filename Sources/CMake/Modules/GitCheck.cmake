@@ -13,7 +13,7 @@ MACRO( GIT_WC_INFO  dir )
     )
 endmacro( GIT_WC_INFO )
 
-MACRO( CHECK_GIT ) 
+MACRO( GIT_CHECK ) 
     if( GIT_FOUND )
 
         if    ( MACOS )
@@ -24,17 +24,19 @@ MACRO( CHECK_GIT )
 
         add_custom_target (            
             CHECK_GIT ALL
-            COMMAND ${PREFIX} ${CMAKE_BINARY_DIR}/CheckGit.sh
+            COMMAND ${PREFIX} ${CMAKE_BINARY_DIR}/GitCheck.sh
           )
+
         set_target_properties( CHECK_GIT PROPERTIES FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
+        include ( ${CMAKE_BINARY_DIR}/GitCheck.cmake )
 
     endif()    
-endmacro( CHECK_GIT )
+endmacro( GIT_CHECK )
 
 if( GIT_FOUND )
     GIT_WC_INFO(.)
     CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitVersions.in    ${CMAKE_BINARY_DIR}/GitVersions )
-    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/CheckGit.in  ${CMAKE_BINARY_DIR}/CheckGit.sh @ONLY )
-
+    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitCheck.in  ${CMAKE_BINARY_DIR}/GitCheck.sh @ONLY )
+    file(WRITE ${CMAKE_BINARY_DIR}/GitCheck.cmake  )
 endif()
 
