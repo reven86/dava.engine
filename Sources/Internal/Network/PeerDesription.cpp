@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include <Debug/DVAssert.h>
+#include <Utils/UTF8Utils.h>
 
 #include <Network/NetCore.h>
 #include <Network/PeerDesription.h>
@@ -44,7 +45,17 @@ PeerDescription::PeerDescription()
 }
 
 PeerDescription::PeerDescription(const NetConfig& config)
-    : netConfig(config)
+    : platformType(DeviceInfo::GetPlatform())
+    , platform(DeviceInfo::GetPlatformString())
+    , version(DeviceInfo::GetVersion())
+    , manufacturer(DeviceInfo::GetManufacturer())
+    , model(DeviceInfo::GetModel())
+    , udid(DeviceInfo::GetUDID())
+    , name(UTF8Utils::EncodeToUTF8(DeviceInfo::GetName()))
+    , screenInfo(DeviceInfo::GetScreenInfo())
+    , gpuFamily(DeviceInfo::GetGPUFamily())
+    , netConfig(config)
+    , ifaddr(NetCore::Instance()->InstalledInterfaces())
 {
     DVASSERT(true == netConfig.Validate());
 }

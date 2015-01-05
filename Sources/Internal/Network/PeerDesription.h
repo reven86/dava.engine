@@ -59,6 +59,10 @@ public:
     const NetConfig& NetworkConfig() const;
     const Vector<IfAddress>& NetworkInterfaces() const;
 
+    size_t SerializedSize() const;
+    size_t Serialize(void* dstBuffer, size_t buflen) const;
+    size_t Deserialize(const void* srcBuffer, size_t buflen);
+
 private:
     DeviceInfo::ePlatform platformType;
     String platform;
@@ -71,7 +75,7 @@ private:
     eGPUFamily gpuFamily;
 
     NetConfig netConfig;
-    Vector<IfAddress> ifadr;
+    Vector<IfAddress> ifaddr;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -127,7 +131,7 @@ inline const NetConfig& PeerDescription::NetworkConfig() const
 
 inline const Vector<IfAddress>& PeerDescription::NetworkInterfaces() const
 {
-    return ifadr;
+    return ifaddr;
 }
 
 }   // namespace Net
