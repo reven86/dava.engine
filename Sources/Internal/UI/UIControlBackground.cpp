@@ -310,6 +310,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
+    RenderSystem2D::Instance()->UpdateClip();
+
     Sprite::DrawState drawState;
     drawState.SetRenderState(renderState);
     if (spr)
@@ -545,11 +547,18 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         default:
             break;
     }
-
+#if defined(LOCALIZATION_DEBUG)
+    lastDrawState = drawState;
+#endif
     RenderManager::Instance()->ResetColor();
 
 }
-
+#if defined(LOCALIZATION_DEBUG)
+const Sprite::DrawState & UIControlBackground::GetLastDrawState() const
+{
+    return lastDrawState;
+}
+#endif
 void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, UniqueHandle renderState)
 {
     DVASSERT(rdoObject);
