@@ -61,6 +61,7 @@ public:
     bool Validate() const;
     NetConfig Mirror(const IPAddress& addr) const;
 
+    void SetRole(eNetworkRole aRole);
     bool AddTransport(eTransportType type, const Endpoint& endpoint);
     bool AddService(uint32 serviceId);
 

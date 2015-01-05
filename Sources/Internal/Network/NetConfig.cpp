@@ -69,6 +69,12 @@ NetConfig NetConfig::Mirror(const IPAddress& addr) const
     return result;
 }
 
+void NetConfig::SetRole(eNetworkRole aRole)
+{
+    DVASSERT(true == transports.empty() && true == services.empty());
+    role = aRole;
+}
+
 bool NetConfig::AddTransport(eTransportType type, const Endpoint& endpoint)
 {
     TransportConfig config(type, endpoint);
