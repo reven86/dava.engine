@@ -22,6 +22,8 @@ public:
     explicit DeviceInfoWidget( QWidget *parent = NULL );
     ~DeviceInfoWidget();
 
+    void AppendText( const QString& text );
+
 private:
     QScopedPointer<Ui::DeviceInfoWidget> ui;
 };

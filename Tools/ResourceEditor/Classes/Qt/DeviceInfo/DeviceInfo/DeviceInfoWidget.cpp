@@ -16,3 +16,8 @@ DeviceInfoWidget::DeviceInfoWidget( QWidget *parent )
 DeviceInfoWidget::~DeviceInfoWidget()
 {
 }
+
+void DeviceInfoWidget::AppendText( const QString& text )
+{
+    ui->textEdit->append( text );
+}

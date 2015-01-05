@@ -9,6 +9,8 @@
 
 #include "DeviceListWidget.h"
 
+#include "Classes/Qt/DeviceInfo/DeviceInfo/DeviceInfoController.h"
+
 
 DeviceListController::DeviceListController( QObject* parent )
     : QObject(parent)
@@ -34,6 +36,7 @@ void DeviceListController::SetView( DeviceListWidget* _view )
 
     connect( view, &DeviceListWidget::connectClicked, this, &DeviceListController::OnConnectDevice );
     connect( view, &DeviceListWidget::disconnectClicked, this, &DeviceListController::OnDisconnectDevice );
+    connect( view, &DeviceListWidget::showInfoClicked, this, &DeviceListController::OnShowInfo );
 }
 
 void DeviceListController::initModel()
@@ -127,6 +130,7 @@ void DeviceListController::OnShowInfo()
 
     for ( int i = 0; i < list.size(); i++ )
     {
+        DeviceInfoController *c = new DeviceInfoController( view, this );
     }
 }
 

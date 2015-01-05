@@ -1,8 +1,12 @@
-#ifndef __DEVICELISTCONTROLLER_H__
-#define __DEVICELISTCONTROLLER_H__
+#ifndef __DEVICEINFOCONTROLLER_H__
+#define __DEVICEINFOCONTROLLER_H__
 
 
 #include <QObject>
+#include <QPointer>
+
+
+class DeviceInfoWidget;
 
 
 class DeviceInfoController
@@ -11,12 +15,18 @@ class DeviceInfoController
     Q_OBJECT
 
 public:
-    explicit DeviceInfoController( QObject *parent = NULL );
+    explicit DeviceInfoController( QWidget *parentWidget, QObject *parent = NULL );
     ~DeviceInfoController();
 
 private:
+    void InitView();
+
+    void DebugOutput();
+
+    QPointer<DeviceInfoWidget> view;
+    QPointer<QWidget> parentWidget;
 };
 
 
 
-#endif // __DEVICELISTCONTROLLER_H__
+#endif // __DEVICEINFOCONTROLLER_H__
