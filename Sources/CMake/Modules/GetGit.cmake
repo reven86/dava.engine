@@ -25,11 +25,24 @@ MACRO( CHECK_GIT )
         set_target_properties( CHECK_GIT PROPERTIES FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
     endif()
+
+    if( MACOS AND GIT_FOUND )
+        add_custom_target (            
+            CHECK_GIT ALL
+            COMMAND sh ${CMAKE_BINARY_DIR}/XCodeCheckGit.sh
+          )
+        set_target_properties( CHECK_GIT PROPERTIES FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
+
+    endif()    
 endmacro( CHECK_GIT )
 
 if( GIT_FOUND )
     GIT_WC_INFO(.)
-    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitVersions.in  ${CMAKE_BINARY_DIR}/GitVersions )
+    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitVersions.in    ${CMAKE_BINARY_DIR}/GitVersions )
+
+    if( MACOS )
+        CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/XCodeCheckGit.in  ${CMAKE_BINARY_DIR}/XCodeCheckGit.sh @ONLY )
+    endif()
 
 endif()
 
