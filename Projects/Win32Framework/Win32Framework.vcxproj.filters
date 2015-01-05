@@ -1543,9 +1543,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h">
-      <Filter>Internal\Scene3D\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>

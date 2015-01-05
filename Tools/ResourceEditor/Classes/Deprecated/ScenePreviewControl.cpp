@@ -41,7 +41,6 @@ ScenePreviewControl::ScenePreviewControl(const Rect & rect)
     :   UI3DView(rect)
 {
     needSetCamera = false;
-    sceCamera = false;
     rootNode = NULL;
     
     editorScene = NULL;
@@ -135,39 +134,11 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
             currentScenePath = pathToFile;
             editorScene->AddNode(rootNode);
 			rootNode->Release();
-            
-            needSetCamera = true;
-            Camera *cam = editorScene->GetCamera(0);
-            if(!cam)
-            {
-                Camera * cam = new Camera();
-                //cam->SetDebugFlags(Entity::DEBUG_DRAW_ALL);
-                cam->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-                cam->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
-                cam->SetTarget(Vector3(0.0f, 1.0f, 0.0f));
-                
-                cam->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f); 
-                
-
-                ScopedPtr<Entity> node(new Entity());
-                node->SetName("preview-camera");
-                node->AddComponent(new CameraComponent(cam));
-                node->AddComponent(new DAVA::RotationControllerComponent());
-                editorScene->AddNode(node);
-                editorScene->AddCamera(cam);
-                editorScene->SetCurrentCamera(cam);
-                
-                SafeRelease(cam);
-                
-                sceCamera = false;
-            }
-            else
-            {
-                sceCamera = true;
-            }
         }
     }
-    
+
+    CreateCamera();
+
 	Set<String> errorsLogToHideDialog;
 	SceneValidator::Instance()->ValidateScene(editorScene, pathToFile, errorsLogToHideDialog);
     
@@ -185,15 +156,39 @@ void ScenePreviewControl::Update(float32 timeElapsed)
     }
 }
 
+void ScenePreviewControl::CreateCamera()
+{
+    needSetCamera = true;
+
+    Camera * cam = new Camera();
+    //cam->SetDebugFlags(Entity::DEBUG_DRAW_ALL);
+    cam->SetUp(Vector3(0.0f, 0.0f, 1.0f));
+    cam->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+    cam->SetTarget(Vector3(0.0f, 1.0f, 0.0f));
+
+    cam->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
+
+    ScopedPtr<Entity> node(new Entity());
+    node->SetName("preview-camera");
+    node->AddComponent(new CameraComponent(cam));
+    node->AddComponent(new DAVA::RotationControllerComponent());
+    editorScene->AddNode(node);
+    editorScene->AddCamera(cam);
+    editorScene->SetCurrentCamera(cam);
+    cameraController->SetScene(editorScene);
+
+    SafeRelease(cam);
+}
+
 void ScenePreviewControl::SetupCamera()
 {
-    Camera *camera = editorScene->GetCamera(0);
-    if (camera)
+    Camera *camera = editorScene->GetCurrentCamera();
+    if (camera && rootNode)
     {
         AABBox3 sceneBox = rootNode->GetWTMaximumBoundingBoxSlow();
         Vector3 target = sceneBox.GetCenter();
         camera->SetTarget(target);
-        Vector3 dir = (sceneBox.max - sceneBox.min); 
+        Vector3 dir = (sceneBox.max - sceneBox.min);
         camera->SetPosition(target + dir);
         
         editorScene->SetCurrentCamera(camera);

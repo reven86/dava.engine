@@ -60,6 +60,7 @@ public:
 	
 	inline Color();
 	inline Color(float32 r, float32 g, float32 b, float32 a);
+    inline Color(uint32 rgba);
     inline explicit Color(const Vector4 & vector);
 	
 	inline const Color & operator += (const Color & _v);
@@ -105,6 +106,14 @@ inline Color::Color(const Vector4 & vector)
     g = vector.y;
     b = vector.z;
     a = vector.w;
+}
+inline  Color::Color(uint32 rgba)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        uint32 intVal = ((rgba >> (8 * i)) & 0xff);
+        color[3 - i] = (float32)intVal / 255.0f;
+    }
 }
 
 //! On operations

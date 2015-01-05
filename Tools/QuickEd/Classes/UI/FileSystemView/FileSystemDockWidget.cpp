@@ -71,7 +71,10 @@ void FileSystemDockWidget::SetProjectDir(const QString &path)
 
 void FileSystemDockWidget::onDoubleClicked(const QModelIndex &index)
 {
-    emit OpenPackageFile(model->filePath(index));
+    if(!model->isDir(index))
+    {
+        emit OpenPackageFile(model->filePath(index));
+    }
 }
 
 void FileSystemDockWidget::setFilterFixedString( const QString &filterStr )

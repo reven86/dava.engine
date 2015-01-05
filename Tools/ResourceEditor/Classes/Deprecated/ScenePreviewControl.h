@@ -58,7 +58,7 @@ public:
     
 protected:
 
-    
+    void CreateCamera();
     void SetupCamera();
     
     //scene controls
@@ -72,7 +72,6 @@ protected:
     Entity *rootNode;
     
     bool needSetCamera;
-    bool sceCamera;
 };
 
 

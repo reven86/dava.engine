@@ -484,10 +484,12 @@ function SelectItemInList(listName, item)
     else
         __scroll, startPoint = VerticalScroll, startPoint.x
     end
-
+    
     local function __getPosition() return autotestingSystem:GetListScrollPosition(listControl) end
 
     -- move to start of list and check cell
+    local isEnd = false
+    if __getPosition() == finalPoint then isEnd = true end
     for _ = 0, MAX_LIST_COUNT do
         local position = __getPosition()
         if position <= startPoint then
@@ -498,15 +500,18 @@ function SelectItemInList(listName, item)
             return true
         end
     end
+
     -- move to end of list and check cell
-    for _ = 0, MAX_LIST_COUNT do
-        local position = __getPosition()
-        if position >= finalPoint then
-            break
-        end
-        __scroll(listName)
-        if __click() then
-            return true
+    if not isEnd then
+        for _ = 0, MAX_LIST_COUNT do
+            local position = __getPosition()
+            if position >= finalPoint then
+                break
+            end
+            __scroll(listName)
+            if __click() then
+                return true
+            end
         end
     end
     Log(string.format("Cell '%s' in '%s' list is not found", item, listName))
