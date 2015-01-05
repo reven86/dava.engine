@@ -28,15 +28,22 @@ public:
     ~DeviceListController();
 
     void SetView( DeviceListWidget *view );
-
     void AddDeviceInfo( QStandardItem* item );
 
+    void NewDeviceCallback();   // TODO: implement
+
 private slots:
-    void OnAddDevice();
-    void OnRemoveDevice();
+    void OnConnectDevice();
+    void OnDisconnectDevice();
+    void OnShowInfo();
 
 private:
     void initModel();
+
+    QStandardItem* GetItemFromIndex( const QModelIndex& index );
+
+    void ConnectDeviceInternal( quintptr id );
+    void DisonnectDeviceInternal( quintptr id );
 
     QPointer<QStandardItemModel> model;
     QPointer<DeviceListWidget> view;

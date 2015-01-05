@@ -17,16 +17,30 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QPushButton" name="addFake">
+      <widget class="QPushButton" name="connectDevice">
        <property name="text">
-        <string>Add</string>
+        <string>Connect</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="removeFake">
+      <widget class="QPushButton" name="disconnectDevice">
        <property name="text">
-        <string>Remove</string>
+        <string>Disconnect</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="showInfo">
+       <property name="text">
+        <string>ShowInfo</string>
        </property>
       </widget>
      </item>

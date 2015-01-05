@@ -12,8 +12,9 @@ DeviceListWidget::DeviceListWidget( QWidget *parent )
 {
     ui->setupUi( this );
 
-    connect( ui->addFake, &QPushButton::clicked, this, &DeviceListWidget::addClicked );
-    connect( ui->removeFake, &QPushButton::clicked, this, &DeviceListWidget::removeClicked );
+    connect( ui->connectDevice, &QPushButton::clicked, this, &DeviceListWidget::connectClicked );
+    connect( ui->disconnectDevice, &QPushButton::clicked, this, &DeviceListWidget::disconnectClicked );
+    connect( ui->showInfo, &QPushButton::clicked, this, &DeviceListWidget::showInfoClicked );
 }
 
 DeviceListWidget::~DeviceListWidget()

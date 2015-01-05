@@ -18,8 +18,9 @@ class DeviceListWidget
     Q_OBJECT
 
 signals:
-    void addClicked();
-    void removeClicked();
+    void connectClicked();
+    void disconnectClicked();
+    void showInfoClicked();
 
 public:
     explicit DeviceListWidget( QWidget *parent = NULL );
