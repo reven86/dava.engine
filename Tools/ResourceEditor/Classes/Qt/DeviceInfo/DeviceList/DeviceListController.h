@@ -4,13 +4,22 @@
 
 #include <QObject>
 #include <QPointer>
-#include <QMap>
+#include <vector>
 
 
 class QStandardItemModel;
 class QStandardItem;
 
 class DeviceListWidget;
+
+
+struct SomeInfo
+{
+    quint64 field1;
+    std::vector< int > field2;
+};
+
+Q_DECLARE_METATYPE( SomeInfo );
 
 
 class DeviceListController
@@ -21,6 +30,7 @@ class DeviceListController
     enum DeviceDataRole
     {
         DeviceId = Qt::UserRole + 1,
+        CustomData,
     };
 
 public:

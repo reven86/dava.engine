@@ -73,9 +73,6 @@
      <property name="sortingEnabled">
       <bool>false</bool>
      </property>
-     <attribute name="headerStretchLastSection">
-      <bool>false</bool>
-     </attribute>
     </widget>
    </item>
   </layout>

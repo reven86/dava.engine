@@ -127,7 +127,6 @@ void DeviceListController::OnShowInfo()
 
     for ( int i = 0; i < list.size(); i++ )
     {
-        
     }
 }
 
@@ -152,6 +151,15 @@ QStandardItem* DeviceListController::createDeviceItem( quintptr id, const QStrin
         osInfo->setText( text );
         item->appendRow( osInfo );
     }
+
+    SomeInfo info;
+    QVariant v;
+    v.setValue( info );
+
+    item->setData( v, CustomData );
+
+    v = item->data( CustomData );
+    info = v.value<SomeInfo>();
 
     return item;
 }
