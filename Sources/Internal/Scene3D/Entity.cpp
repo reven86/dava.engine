@@ -51,7 +51,7 @@
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#define USE_VECTOR(x) ((((uint64)1 << x) & vectorComponentsMask) != (uint64)0)
+#define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
 namespace DAVA
 {
@@ -118,7 +118,7 @@ void Entity::AddComponent(Component * component)
 {
 	component->SetEntity(this);
 		
-	uint64 componentType = component->GetType();
+	uint32 componentType = component->GetType();
 	if(USE_VECTOR(componentType))
 	{
 		DVASSERT(NULL == components[componentType]);
@@ -198,7 +198,7 @@ void Entity::RemoveAllComponents()
 void Entity::RemoveComponent(Component * component)
 {
 	int componentCount = 0;
-	uint64 componentType = component->GetType();
+	uint32 componentType = component->GetType();
     
     DetachComponent(component);
 
@@ -228,7 +228,7 @@ void Entity::DetachComponent( Component * component )
     if ( scene )
         scene->UnregisterComponent( this, component );
 
-    uint64 componentType = component->GetType();
+    uint32 componentType = component->GetType();
     uint32 componentCount = 0;
 
     if (USE_VECTOR(componentType))
@@ -287,7 +287,7 @@ void Entity::RemoveComponent(uint32 componentType, uint32 index)
 
 	Component* component = NULL;
 	int componentCount = 0;
-	if(USE_VECTOR((uint64)componentType))
+	if(USE_VECTOR(componentType))
 	{
 		component = components[componentType];
 		components[componentType] = NULL;
@@ -341,7 +341,7 @@ inline void Entity::CleanupComponent(Component* component, uint32 componentCount
 Component * Entity::GetComponent(uint32 componentType, uint32 index) const
 {
 	Component* component = NULL;
-	if(USE_VECTOR((uint64)componentType))
+	if(USE_VECTOR(componentType))
 	{
 		component = components[componentType];
 	}
@@ -428,7 +428,7 @@ uint32 Entity::GetComponentCount(uint32 componentType)
 {
 	int componentCount = 0;
 		
-	if(USE_VECTOR((uint64)componentType))
+	if(USE_VECTOR(componentType))
 	{
 		if(components[componentType] != NULL)
 		{
