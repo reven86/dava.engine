@@ -35,8 +35,8 @@ endmacro( GIT_CHECK )
 
 if( GIT_FOUND )
     GIT_WC_INFO(.)
-    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitVersions.in    ${CMAKE_BINARY_DIR}/GitVersions )
-    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitCheck.in  ${CMAKE_BINARY_DIR}/GitCheck.sh @ONLY )
     file(WRITE ${CMAKE_BINARY_DIR}/GitCheck.rule  )
+    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitVersions.in ${CMAKE_BINARY_DIR}/GitVersions )
+    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitCheck.in  ${CMAKE_BINARY_DIR}/GitCheck.sh @ONLY )
 endif()
 
