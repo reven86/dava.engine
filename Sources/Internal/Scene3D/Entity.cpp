@@ -51,7 +51,7 @@
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#define USE_VECTOR(x) (((1 << x) & vectorComponentsMask) != 0)
+#define USE_VECTOR(x) ((((uint64)1 << x) & vectorComponentsMask) != (uint64)0)
 
 namespace DAVA
 {
