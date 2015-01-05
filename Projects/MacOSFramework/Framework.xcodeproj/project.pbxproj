@@ -903,6 +903,10 @@
 		50B06923186D4C4C00B44A39 /* RenderLayerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B0691F186D4C4C00B44A39 /* RenderLayerManager.h */; };
 		50B06924186D4C4C00B44A39 /* RenderLayerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B0691F186D4C4C00B44A39 /* RenderLayerManager.h */; };
 		50B06925186D4C4C00B44A39 /* RenderLayerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B0691F186D4C4C00B44A39 /* RenderLayerManager.h */; };
+		50B429D11A5A704400CEB3D3 /* Announcer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B429CD1A5A704400CEB3D3 /* Announcer.cpp */; };
+		50B429D21A5A704400CEB3D3 /* Announcer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B429CE1A5A704400CEB3D3 /* Announcer.h */; };
+		50B429D31A5A704400CEB3D3 /* Discoverer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50B429CF1A5A704400CEB3D3 /* Discoverer.cpp */; };
+		50B429D41A5A704400CEB3D3 /* Discoverer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B429D01A5A704400CEB3D3 /* Discoverer.h */; };
 		50C16DA31A52D7B9003C307A /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50C16D6F1A52D7B9003C307A /* Buffer.h */; };
 		50C16DA41A52D7B9003C307A /* DeadlineTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C16D701A52D7B9003C307A /* DeadlineTimer.cpp */; };
 		50C16DA51A52D7B9003C307A /* DeadlineTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50C16D711A52D7B9003C307A /* DeadlineTimer.h */; };
@@ -2754,6 +2758,10 @@
 		50A5186F17B256250022E8FA /* ShaderCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShaderCache.h; sourceTree = "<group>"; };
 		50B0691E186D4C4C00B44A39 /* RenderLayerManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderLayerManager.cpp; sourceTree = "<group>"; };
 		50B0691F186D4C4C00B44A39 /* RenderLayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderLayerManager.h; sourceTree = "<group>"; };
+		50B429CD1A5A704400CEB3D3 /* Announcer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Announcer.cpp; sourceTree = "<group>"; };
+		50B429CE1A5A704400CEB3D3 /* Announcer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Announcer.h; sourceTree = "<group>"; };
+		50B429CF1A5A704400CEB3D3 /* Discoverer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Discoverer.cpp; sourceTree = "<group>"; };
+		50B429D01A5A704400CEB3D3 /* Discoverer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Discoverer.h; sourceTree = "<group>"; };
 		50C16D6F1A52D7B9003C307A /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		50C16D701A52D7B9003C307A /* DeadlineTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeadlineTimer.cpp; sourceTree = "<group>"; };
 		50C16D711A52D7B9003C307A /* DeadlineTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeadlineTimer.h; sourceTree = "<group>"; };
@@ -3811,6 +3819,10 @@
 		50C16D8F1A52D7B9003C307A /* Private */ = {
 			isa = PBXGroup;
 			children = (
+				50B429CD1A5A704400CEB3D3 /* Announcer.cpp */,
+				50B429CE1A5A704400CEB3D3 /* Announcer.h */,
+				50B429CF1A5A704400CEB3D3 /* Discoverer.cpp */,
+				50B429D01A5A704400CEB3D3 /* Discoverer.h */,
 				50C16D901A52D7B9003C307A /* ITransport.h */,
 				50C16D911A52D7B9003C307A /* NetController.cpp */,
 				50C16D921A52D7B9003C307A /* NetController.h */,
@@ -5648,6 +5660,7 @@
 				E8989EBB16BD24E500732C04 /* SystemTimer.h in Headers */,
 				E8989EC716BD24E500732C04 /* AppDelegate.h in Headers */,
 				E8989ECB16BD24E500732C04 /* MainWindowController.h in Headers */,
+				50B429D41A5A704400CEB3D3 /* Discoverer.h in Headers */,
 				84CB6723191FC8850086483D /* LibJpegHelper.h in Headers */,
 				E8989ECD16BD24E500732C04 /* NSFullScreenWindow.h in Headers */,
 				E8989ECF16BD24E500732C04 /* OpenGLView.h in Headers */,
@@ -5862,6 +5875,7 @@
 				50C16DCA1A52D7B9003C307A /* ProtoTypes.h in Headers */,
 				50C16DC51A52D7B9003C307A /* NetController.h in Headers */,
 				EA106064188921FC00CB99A3 /* ParticleRenderObject.h in Headers */,
+				50B429D21A5A704400CEB3D3 /* Announcer.h in Headers */,
 				4F34E1C31A234DF8000681BB /* Semaphore.h in Headers */,
 				E9EA496E16DF93FA00C44B6F /* UISpinner.h in Headers */,
 				644C86EE19476A7100964F91 /* VegetationPropertyNames.h in Headers */,
@@ -6997,6 +7011,7 @@
 				E8989E7416BD24E500732C04 /* Polygon2.cpp in Sources */,
 				E8989E7616BD24E500732C04 /* Polygon3.cpp in Sources */,
 				E89EDE661A2E16FA0036E993 /* KeyedArchiveSwig.cpp in Sources */,
+				50B429D11A5A704400CEB3D3 /* Announcer.cpp in Sources */,
 				E8BAD5B0185213F100C98C8D /* IntrospectionDynamic.cpp in Sources */,
 				E8989E7B16BD24E500732C04 /* RectPacker.cpp in Sources */,
 				50C16DBC1A52D7B9003C307A /* NetConfig.cpp in Sources */,
@@ -7171,6 +7186,7 @@
 				E898A01316BD24E500732C04 /* UIFadeTransition.cpp in Sources */,
 				E898A01516BD24E500732C04 /* UIFileSystemDialog.cpp in Sources */,
 				E89EDE781A2E16FA0036E993 /* RectSwig.cpp in Sources */,
+				50B429D31A5A704400CEB3D3 /* Discoverer.cpp in Sources */,
 				50B06920186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
 				E898A01716BD24E500732C04 /* UIHierarchy.cpp in Sources */,
 				641A61DA18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
