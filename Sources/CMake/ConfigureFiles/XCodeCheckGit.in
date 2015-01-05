@@ -1,8 +1,0 @@
-
-GIT_VERSIONS=`git rev-parse --verify -q --short HEAD`
-GIT_CURRENT_VERSIONS=`cat @CMAKE_BINARY_DIR@/GitVersions`
-
-if [ ${GIT_VERSIONS} !=  ${GIT_CURRENT_VERSIONS} ];
-then  
-    cmake @CMAKE_BINARY_DIR@    
-fi
