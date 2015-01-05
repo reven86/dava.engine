@@ -146,8 +146,6 @@ elseif ( MSVC )
 
 endif()
 
-check_git()
-
 target_link_libraries( ${PROJECT_NAME}
     ${DAVA_LIBRARY}
     ${QT_LIBRARIES} 
