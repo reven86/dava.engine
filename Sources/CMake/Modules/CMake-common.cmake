@@ -243,6 +243,9 @@ endmacro ()
 
 #
 macro ( install_libraries TARGET_NAME )
+
+IF( DAVA_INSTALL )
+
 install(
         TARGETS
         ${TARGET_NAME}
@@ -267,6 +270,7 @@ install(
         PATTERN
         "*.hpp" )
 
+ENDIF()
 
 endmacro ()
 

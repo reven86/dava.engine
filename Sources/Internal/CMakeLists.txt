@@ -24,14 +24,17 @@ set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGET
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
 
+
 if( ANDROID )
     find_package( ZLIB )
     set ( LIBRARY_TYPE STATIC )
+
 
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")  
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon" )    
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wno-invalid-offsetof -frtti" )    
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof" )
+
 
     set ( LIST_LIBRARIES
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
@@ -102,6 +105,7 @@ elseif( IOS )
     
     set ( CMAKE_C_FLAGS    "-mno-thumb"  )
     set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
+
     #set ( LIST_SHARED_LIBRARIES  libz.dylib libbz2.dylib    )
 
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
