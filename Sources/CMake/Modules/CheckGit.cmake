@@ -15,9 +15,16 @@ endmacro( GIT_WC_INFO )
 
 MACRO( CHECK_GIT ) 
     if( GIT_FOUND )
+
+        if    ( MACOS )
+            set( PREFIX "sh" )
+        elseif( WIN32 )
+            set( PREFIX ) 
+        endif()
+
         add_custom_target (            
             CHECK_GIT ALL
-            COMMAND ${CMAKE_BINARY_DIR}/CheckGit.sh
+            COMMAND ${PREFIX} ${CMAKE_BINARY_DIR}/CheckGit.sh
           )
         set_target_properties( CHECK_GIT PROPERTIES FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
