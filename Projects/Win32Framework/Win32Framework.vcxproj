@@ -264,7 +264,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Functor.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Hash.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Hash.hpp" />
     <ClInclude Include="..\..\Sources\Internal\Base\HashMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Introspection.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionBase.h" />
@@ -276,7 +275,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Profiler.hpp" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Profiler.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />

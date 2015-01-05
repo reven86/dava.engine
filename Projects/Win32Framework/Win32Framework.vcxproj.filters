@@ -1601,14 +1601,11 @@
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Hash.hpp">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Profiler.hpp">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\FWSpinlock.h">
       <Filter>Internal\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Profiler.h">
+      <Filter>Internal\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
