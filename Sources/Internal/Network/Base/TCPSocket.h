@@ -31,7 +31,7 @@
 
 #include <Base/Function.h>
 
-#include "TCPSocketTemplate.h"
+#include <Network/Base/TCPSocketTemplate.h>
 
 namespace DAVA
 {

@@ -31,7 +31,7 @@
 
 #include <Base/BaseTypes.h>
 
-#include "IPAddress.h"
+#include <Network/Base/IPAddress.h>
 
 namespace DAVA
 {

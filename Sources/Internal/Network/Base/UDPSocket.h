@@ -31,7 +31,7 @@
 
 #include <Base/Function.h>
 
-#include "UDPSocketTemplate.h"
+#include <Network/Base/UDPSocketTemplate.h>
 
 namespace DAVA
 {

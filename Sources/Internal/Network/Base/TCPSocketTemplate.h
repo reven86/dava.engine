@@ -29,12 +29,12 @@
 #ifndef __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 #define __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 
+#include <Base/BaseTypes.h>
 #include <Base/Noncopyable.h>
-#include <Debug/DVAssert.h>
 
-#include "IOLoop.h"
-#include "Endpoint.h"
-#include "Buffer.h"
+#include <Network/Base/IOLoop.h>
+#include <Network/Base/Endpoint.h>
+#include <Network/Base/Buffer.h>
 
 namespace DAVA
 {
@@ -50,7 +50,7 @@ template <typename T>
 class TCPSocketTemplate : private Noncopyable
 {
     // Maximum write buffers that can be sent in one operation
-    static const size_t MAX_WRITE_BUFFERS = 10;
+    static const size_t MAX_WRITE_BUFFERS = 4;
 
 public:
     TCPSocketTemplate(IOLoop* ioLoop);
@@ -59,13 +59,13 @@ public:
     int32 LocalEndpoint(Endpoint& endpoint);
     int32 RemoteEndpoint(Endpoint& endpoint);
 
-    size_t WriteQueueSize() const;
     bool IsEOF(int32 error) const;
 
-protected:
     bool IsOpen() const;
-    void DoOpen();
+    bool IsClosing() const;
 
+protected:
+    int32 DoOpen();
     int32 DoConnect(const Endpoint& endpoint);
     int32 DoStartRead();
     int32 DoWrite(const Buffer* buffers, size_t bufferCount);
@@ -116,18 +116,6 @@ TCPSocketTemplate<T>::~TCPSocketTemplate()
 }
 
 template <typename T>
-size_t TCPSocketTemplate<T>::WriteQueueSize() const
-{
-    return uvhandle.write_queue_size;
-}
-
-template <typename T>
-bool TCPSocketTemplate<T>::IsEOF(int32 error) const
-{
-    return UV_EOF == error;
-}
-
-template <typename T>
 int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
     DVASSERT(true == isOpen && false == isClosing);
@@ -144,30 +132,49 @@ int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 }
 
 template <typename T>
+bool TCPSocketTemplate<T>::IsEOF(int32 error) const
+{
+    return UV_EOF == error;
+}
+
+template <typename T>
 bool TCPSocketTemplate<T>::IsOpen() const
 {
     return isOpen;
 }
 
 template <typename T>
-void TCPSocketTemplate<T>::DoOpen()
+bool TCPSocketTemplate<T>::IsClosing() const
+{
+    return IsClosing;
+}
+
+template <typename T>
+int32 TCPSocketTemplate<T>::DoOpen()
 {
     DVASSERT(false == isOpen && false == isClosing);
-    uv_tcp_init(loop->Handle(), &uvhandle);
-    isOpen = true;
-    uvhandle.data = this;
-    uvconnect.data = this;
-    uvwrite.data = this;
-    uvshutdown.data = this;
+    int32 error = uv_tcp_init(loop->Handle(), &uvhandle);
+    if (0 == error)
+    {
+        isOpen = true;
+        uvhandle.data = this;
+        uvconnect.data = this;
+        uvwrite.data = this;
+        uvshutdown.data = this;
+    }
+    return error;
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
 {
     DVASSERT(false == isClosing);
-    if (!isOpen)
-        DoOpen();   // Automatically open on first call
-    return uv_tcp_connect(&uvconnect, &uvhandle, endpoint.CastToSockaddr(), &HandleConnectThunk);
+    int32 error = 0;
+    if (false == isOpen)
+        error = DoOpen();   // Automatically open on first call
+    if (0 == error)
+        error = uv_tcp_connect(&uvconnect, &uvhandle, endpoint.CastToSockaddr(), &HandleConnectThunk);
+    return error;
 }
 
 template <typename T>
@@ -182,6 +189,7 @@ int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
 {
     DVASSERT(true == isOpen && false == isClosing);
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
+    DVASSERT(0 == writeBufferCount);    // Next write is allowed only after previous write completion
 
     writeBufferCount = bufferCount;
     for (size_t i = 0;i < bufferCount;++i)
@@ -196,7 +204,7 @@ int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
 template <typename T>
 int32 TCPSocketTemplate<T>::DoShutdown()
 {
-    DVASSERT(false == isClosing);
+    DVASSERT(true == isOpen && false == isClosing);
     return uv_shutdown(&uvshutdown, reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleShutdownThunk);
 }
 
@@ -204,12 +212,9 @@ template <typename T>
 void TCPSocketTemplate<T>::DoClose()
 {
     DVASSERT(true == isOpen && false == isClosing);
-    if (true == isOpen)
-    {
-        isOpen = false;
-        isClosing = true;
-        uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
-    }
+    isOpen = false;
+    isClosing = true;
+    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////
@@ -217,7 +222,8 @@ template <typename T>
 void TCPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     TCPSocketTemplate* self = static_cast<TCPSocketTemplate*>(handle->data);
-    self->isClosing = false;    // Mark socket has been closed and clear handle
+    self->isClosing = false;    // Mark socket has been closed
+    // And clear handle and requests
     Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
     Memset(&self->uvconnect, 0, sizeof(self->uvconnect));
     Memset(&self->uvwrite, 0, sizeof(self->uvwrite));
@@ -264,8 +270,9 @@ template <typename T>
 void TCPSocketTemplate<T>::HandleWriteThunk(uv_write_t* request, int error)
 {
     TCPSocketTemplate* self = static_cast<TCPSocketTemplate*>(request->data);
-    static_cast<T*>(self)->HandleWrite(error, self->writeBuffers, self->writeBufferCount);
-    self->writeBufferCount = 0;
+    size_t bufferCount = self->writeBufferCount;
+    self->writeBufferCount = 0;     // Mark write operation has completed
+    static_cast<T*>(self)->HandleWrite(error, self->writeBuffers, bufferCount);
 }
 
 }   // namespace Net

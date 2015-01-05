@@ -26,8 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TCPAcceptor.h"
-#include "TCPSocket.h"
+#include <Debug/DVAssert.h>
+
+#include <Network/Base/TCPSocket.h>
+#include <Network/Base/TCPAcceptor.h>
 
 namespace DAVA
 {
@@ -57,11 +59,12 @@ void TCPAcceptor::Close(CloseHandlerType handler)
 
 int32 TCPAcceptor::Accept(TCPSocket* socket)
 {
-    DVASSERT(socket != NULL);
+    DVASSERT(socket != NULL && false == socket->IsOpen());
     // To do the following TCPAcceptor must be friend of TCPSocket
-    DVASSERT(false == socket->IsOpen());
-    socket->DoOpen();
-    return DoAccept(&socket->uvhandle);
+    int32 error = socket->DoOpen();
+    if (0 == error)
+        error = DoAccept(&socket->uvhandle);
+    return error;
 }
 
 void TCPAcceptor::HandleClose()

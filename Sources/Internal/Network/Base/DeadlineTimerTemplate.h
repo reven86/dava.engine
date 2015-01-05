@@ -29,10 +29,10 @@
 #ifndef __DAVAENGINE_DEADLINETIMERTEMPLATE_H__
 #define __DAVAENGINE_DEADLINETIMERTEMPLATE_H__
 
+#include <Base/BaseTypes.h>
 #include <Base/Noncopyable.h>
-#include <Debug/DVAssert.h>
 
-#include "IOLoop.h"
+#include <Network/Base/IOLoop.h>
 
 namespace DAVA
 {
@@ -51,12 +51,14 @@ public:
     DeadlineTimerTemplate(IOLoop* loop);
     ~DeadlineTimerTemplate();
 
-protected:
-    bool IsOpen() const;
-    void DoOpen();
+    void CancelWait();
 
+    bool IsOpen() const;
+    bool IsClosing() const;
+
+protected:
+    int32 DoOpen();
     int32 DoWait(uint32 timeout);
-    void DoCancelWait();
     void DoClose();
 
     // Thunks between C callbacks and C++ class methods
@@ -88,46 +90,56 @@ DeadlineTimerTemplate<T>::~DeadlineTimerTemplate()
 }
 
 template<typename T>
-bool DeadlineTimerTemplate<T>::IsOpen() const
-{
-    return isOpen;
-}
-
-template<typename T>
-void DeadlineTimerTemplate<T>::DoOpen()
-{
-    DVASSERT(false == isOpen && false == isClosing);
-    uv_timer_init(loop->Handle(), &uvhandle);
-    isOpen = true;
-    uvhandle.data = this;
-}
-
-template<typename T>
-int32 DeadlineTimerTemplate<T>::DoWait(uint32 timeout)
-{
-    DVASSERT(false == isClosing);
-    if (!isOpen)
-        DoOpen();   // Automatically open on first call
-    return uv_timer_start(&uvhandle, &HandleTimerThunk, timeout, 0);
-}
-
-template<typename T>
-void DeadlineTimerTemplate<T>::DoCancelWait()
+void DeadlineTimerTemplate<T>::CancelWait()
 {
     DVASSERT(true == isOpen && false == isClosing);
     uv_timer_stop(&uvhandle);
 }
 
 template<typename T>
+bool DeadlineTimerTemplate<T>::IsOpen() const
+{
+    return isOpen;
+}
+
+template<typename T>
+bool DeadlineTimerTemplate<T>::IsClosing() const
+{
+    return isClosing;
+}
+
+template<typename T>
+int32 DeadlineTimerTemplate<T>::DoOpen()
+{
+    DVASSERT(false == isOpen && false == isClosing);
+    int32 error = uv_timer_init(loop->Handle(), &uvhandle);
+    if (0 == error)
+    {
+        isOpen = true;
+        uvhandle.data = this;
+    }
+    return error;
+}
+
+template<typename T>
+int32 DeadlineTimerTemplate<T>::DoWait(uint32 timeout)
+{
+    DVASSERT(false == isClosing);
+    int32 error = 0;
+    if (false == isOpen)
+        error = DoOpen();   // Automatically open on first call
+    if (0 == error)
+        error = uv_timer_start(&uvhandle, &HandleTimerThunk, timeout, 0);
+    return error;
+}
+
+template<typename T>
 void DeadlineTimerTemplate<T>::DoClose()
 {
     DVASSERT(true == isOpen && false == isClosing);
-    if (true == isOpen)
-    {
-        isOpen = false;
-        isClosing = true;
-        uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
-    }
+    isOpen = false;
+    isClosing = true;
+    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////
@@ -135,7 +147,8 @@ template<typename T>
 void DeadlineTimerTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     DeadlineTimerTemplate* self = static_cast<DeadlineTimerTemplate*>(handle->data);
-    self->isClosing = false;    // Mark timer has been closed and clear handle
+    self->isClosing = false;    // Mark timer has been closed
+    // And clear handle
     Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
 
     static_cast<T*>(self)->HandleClose();

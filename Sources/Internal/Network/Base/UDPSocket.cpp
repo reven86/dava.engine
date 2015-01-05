@@ -26,7 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UDPSocket.h"
+#include <Debug/DVAssert.h>
+
+#include <Network/Base/UDPSocket.h>
 
 namespace DAVA
 {

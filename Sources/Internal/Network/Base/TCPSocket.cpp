@@ -26,7 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "TCPSocket.h"
+#include <Debug/DVAssert.h>
+
+#include <Network/Base/TCPSocket.h>
 
 namespace DAVA
 {

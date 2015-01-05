@@ -31,6 +31,7 @@
 
 #include <Network/Base/Endpoint.h>
 #include <Network/Base/TCPSocket.h>
+#include <Network/Base/DeadlineTimer.h>
 
 #include <Network/Private/ITransport.h>
 
@@ -43,7 +44,9 @@ class IOLoop;
 class TCPClientTransport : public IClientTransport
 {
 public:
+    // Constructor for accepted connection
     TCPClientTransport(IOLoop* aLoop);
+    // Constructor for connection initiator
     TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint);
     virtual ~TCPClientTransport();
 
@@ -59,6 +62,10 @@ private:
     int32 DoStart();
     int32 DoConnected();
     void CleanUp(int32 error);
+    void RunningObjectStopped();
+
+    void TimerHandleClose(DeadlineTimer* timer);
+    void TimerHandleTimeout(DeadlineTimer* timer);
 
     void SocketHandleClose(TCPSocket* socket);
     void SocketHandleConnect(TCPSocket* socket, int32 error);
@@ -68,8 +75,11 @@ private:
 private:
     Endpoint endpoint;
     Endpoint remoteEndpoint;
+    size_t runningObjects;
     TCPSocket socket;
+    DeadlineTimer timer;
     IClientListener* listener;  // Who receive notifications; also indicator that Start has been called
+    uint32 readTimeout;
     bool isInitiator;       // true: establishes connection; false: created from accepted connection
     bool isTerminating;     // Stop has been invoked
     bool isConnected;       // Connections has been established

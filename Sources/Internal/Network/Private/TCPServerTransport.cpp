@@ -94,12 +94,13 @@ void TCPServerTransport::AcceptorHandleClose(TCPAcceptor* acceptor)
     IServerListener* p = listener;
     listener = NULL;
     isTerminating = false;
-    p->OnTransportTerminated(this);  // This can be the last executed line of object instance
+    p->OnTransportTerminated(this);     // This can be the last executed line of object instance
 }
 
 void TCPServerTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
 {
     DVASSERT(false == isTerminating);
+    if (true == isTerminating) return;
     if (0 == error)
     {
         TCPClientTransport* client = new TCPClientTransport(loop);

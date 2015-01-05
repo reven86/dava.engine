@@ -57,7 +57,8 @@ void NetService::OnPacketReceived(IChannel* aChannel, const void* buffer, size_t
 
 void NetService::OnPacketSent(IChannel* aChannel, const void* buffer, size_t length)
 {
-    DVASSERT(channel == aChannel);
+    // If channel is NULL then OnChannelClosed has been called already
+    DVASSERT(NULL == channel || channel == aChannel);
     PacketSent();
 }
 

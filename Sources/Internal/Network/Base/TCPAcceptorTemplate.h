@@ -29,11 +29,11 @@
 #ifndef __DAVAENGINE_TCPACCEPTORTEMPLATE_H__
 #define __DAVAENGINE_TCPACCEPTORTEMPLATE_H__
 
+#include <Base/BaseTypes.h>
 #include <Base/Noncopyable.h>
-#include <Debug/DVAssert.h>
 
-#include "IOLoop.h"
-#include "Endpoint.h"
+#include <Network/Base/IOLoop.h>
+#include <Network/Base/Endpoint.h>
 
 namespace DAVA
 {
@@ -54,11 +54,12 @@ public:
 
     int32 Bind(const Endpoint& endpoint);
 
-protected:
     bool IsOpen() const;
-    void DoOpen();
-    int32 DoAccept(uv_tcp_t* client);
+    bool IsClosing() const;
 
+protected:
+    int32 DoOpen();
+    int32 DoAccept(uv_tcp_t* client);
     int32 DoStartListen(int32 backlog);
     void DoClose();
 
@@ -95,9 +96,12 @@ template <typename T>
 int32 TCPAcceptorTemplate<T>::Bind(const Endpoint& endpoint)
 {
     DVASSERT(false == isClosing);
-    if (!isOpen)
-        DoOpen();
-    return uv_tcp_bind(&uvhandle, endpoint.CastToSockaddr(), 0);
+    int32 error = 0;
+    if (false == isOpen)
+        error = DoOpen();   // Automatically open on first call
+    if (0 == error)
+        error = uv_tcp_bind(&uvhandle, endpoint.CastToSockaddr(), 0);
+    return error;
 }
 
 template <typename T>
@@ -107,12 +111,22 @@ bool TCPAcceptorTemplate<T>::IsOpen() const
 }
 
 template <typename T>
-void TCPAcceptorTemplate<T>::DoOpen()
+bool TCPAcceptorTemplate<T>::IsClosing() const
+{
+    return isClosing;
+}
+
+template <typename T>
+int32 TCPAcceptorTemplate<T>::DoOpen()
 {
     DVASSERT(false == isOpen && false == isClosing);
-    uv_tcp_init(loop->Handle(), &uvhandle);
-    isOpen = true;
-    uvhandle.data = this;
+    int32 error = uv_tcp_init(loop->Handle(), &uvhandle);
+    if (0 == error)
+    {
+        isOpen = true;
+        uvhandle.data = this;
+    }
+    return error;
 }
 
 template <typename T>
@@ -134,12 +148,9 @@ template <typename T>
 void TCPAcceptorTemplate<T>::DoClose()
 {
     DVASSERT(true == isOpen && false == isClosing);
-    if (true == isOpen)
-    {
-        isOpen = false;
-        isClosing = true;
-        uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
-    }
+    isOpen = false;
+    isClosing = true;
+    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////
@@ -147,7 +158,8 @@ template <typename T>
 void TCPAcceptorTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     TCPAcceptorTemplate* self = static_cast<TCPAcceptorTemplate*>(handle->data);
-    self->isClosing = false;    // Mark acceptor has been closed and clear handle
+    self->isClosing = false;    // Mark acceptor has been closed
+    // And clear handle
     Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
 
     static_cast<T*>(self)->HandleClose();

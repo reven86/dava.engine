@@ -44,6 +44,7 @@ class NetConfig
 public:
     struct TransportConfig
     {
+        TransportConfig();
         TransportConfig(eTransportType aType, const Endpoint& aEndpoint);
 
         friend bool operator == (const TransportConfig& left, const TransportConfig& right);
@@ -74,6 +75,11 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+inline NetConfig::TransportConfig::TransportConfig()
+    : type()
+    , endpoint()
+{}
+
 inline NetConfig::TransportConfig::TransportConfig(eTransportType aType, const Endpoint& aEndpoint)
     : type(aType)
     , endpoint(aEndpoint)

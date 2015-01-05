@@ -97,14 +97,14 @@ void ProtoDriver::SendControl(uint32 code, uint32 channelId, uint32 packetId)
 {
     ProtoHeader header;
     proto.EncodeControlFrame(&header, code, channelId, packetId);
-    if (true == senderLock.TryLock())   // Buffer can be sent directly without queueing
+    if (true == senderLock.TryLock())   // Control frame can be sent directly without queueing
     {
         curControl = header;
         SendCurControl();
     }
     else
     {
-        // No need for mutex locking as control packets are always sent from handlers
+        // No need for mutex locking as control frames are always sent from handlers
         controlQueue.push_back(header);
     }
 }
@@ -138,8 +138,9 @@ void ProtoDriver::OnDisconnected()
 {
     for (size_t i = 0, n = channels.size();i < n;++i)
     {
-        if (channels[i].service != NULL)
+        if (channels[i].service != NULL && true == channels[i].confirmed)
         {
+            channels[i].confirmed = false;
             channels[i].service->OnChannelClosed(&channels[i]);
         }
     }
@@ -152,7 +153,6 @@ void ProtoDriver::OnDisconnected()
             channels[i].service = NULL;
         }
     }
-    DVASSERT(NULL == curPacket.data);
 }
 
 bool ProtoDriver::OnDataReceived(const void* buffer, size_t length)
@@ -201,7 +201,7 @@ bool ProtoDriver::OnDataReceived(const void* buffer, size_t length)
 
 void ProtoDriver::OnSendComplete()
 {
-    if (SENDING_DATA == whatIsSending)
+    if (SENDING_DATA_FRAME == whatIsSending)
     {
         curPacket.sentLength += curPacket.chunkLength;
         if (curPacket.sentLength == curPacket.dataLength)
@@ -258,6 +258,7 @@ bool ProtoDriver::ProcessChannelQuery(ProtoDecoder::DecodeResult* result)
             SendControl(code, result->channelId, 0);
             if (ch->service != NULL)
             {
+                ch->confirmed = true;
                 ch->service->OnChannelOpen(ch);
             }
             return true;
@@ -274,6 +275,7 @@ bool ProtoDriver::ProcessChannelAllow(ProtoDecoder::DecodeResult* result)
     Channel* ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
+        ch->confirmed = true;
         ch->service->OnChannelOpen(ch);
         return true;
     }
@@ -318,6 +320,12 @@ bool ProtoDriver::ProcessDeliveryAck(ProtoDecoder::DecodeResult* result)
 
 void ProtoDriver::ClearQueues()
 {
+    if (curPacket.data != NULL)
+    {
+        Channel* ch = GetChannel(curPacket.channelId);
+        ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
+        curPacket.data = NULL;
+    }
     for (Deque<Packet>::iterator i = dataQueue.begin(), e = dataQueue.end();i != e;++i)
     {
         Packet& packet = *i;
@@ -327,13 +335,14 @@ void ProtoDriver::ClearQueues()
     dataQueue.clear();
     pendingAckQueue.clear();
     controlQueue.clear();
+    senderLock.Unlock();
 }
 
 void ProtoDriver::SendCurPacket()
 {
     DVASSERT(curPacket.sentLength < curPacket.dataLength);
 
-    whatIsSending = SENDING_DATA;
+    whatIsSending = SENDING_DATA_FRAME;
     curPacket.chunkLength = proto.EncodeDataFrame(&header, curPacket.channelId, curPacket.packetId, curPacket.dataLength, curPacket.sentLength);
 
     Buffer buffers[2];
@@ -344,7 +353,7 @@ void ProtoDriver::SendCurPacket()
 
 void ProtoDriver::SendCurControl()
 {
-    whatIsSending = SENDING_CONTROL;
+    whatIsSending = SENDING_CONTROL_FRAME;
 
     Buffer buffer = CreateBuffer(&curControl);
     transport->Send(&buffer, 1);

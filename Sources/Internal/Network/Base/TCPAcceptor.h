@@ -31,7 +31,7 @@
 
 #include <Base/Function.h>
 
-#include "TCPAcceptorTemplate.h"
+#include <Network/Base/TCPAcceptorTemplate.h>
 
 namespace DAVA
 {

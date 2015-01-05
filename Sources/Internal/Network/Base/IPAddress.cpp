@@ -28,8 +28,8 @@
 
 #include <Debug/DVAssert.h>
 
-#include "Endpoint.h"
-#include "IPAddress.h"
+#include <Network/Base/Endpoint.h>
+#include <Network/Base/IPAddress.h>
 
 namespace DAVA
 {

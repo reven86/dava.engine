@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_GhostProtoDriver_H__
-#define __DAVAENGINE_GhostProtoDriver_H__
+#ifndef __DAVAENGINE_PROTODRIVER_H__
+#define __DAVAENGINE_PROTODRIVER_H__
 
 #include <Base/BaseTypes.h>
 #include <Platform/Mutex.h>
@@ -68,6 +68,7 @@ private:
         virtual bool Send(const void* data, size_t length, uint32 flags, uint32* packetId);
         virtual const Endpoint& RemoteEndpoint() const;
 
+        bool confirmed;     // Channel is confirmed by other side
         uint32 channelId;
         Endpoint remoteEndpoint;
         ProtoDriver* driver;
@@ -76,10 +77,10 @@ private:
 
     friend bool operator == (const Channel& ch, uint32 channelId);
 
-    enum eSendType
+    enum eSendingFrameType
     {
-        SENDING_DATA = false,
-        SENDING_CONTROL = true
+        SENDING_DATA_FRAME = false,
+        SENDING_CONTROL_FRAME = true
     };
 
 public:
@@ -123,7 +124,7 @@ private:
 
     Spinlock senderLock;
     Mutex queueMutex;
-    bool whatIsSending;
+    eSendingFrameType whatIsSending;
 
     Packet curPacket;
     Deque<Packet> dataQueue;
@@ -140,7 +141,8 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 inline ProtoDriver::Channel::Channel(uint32 id, ProtoDriver* aDriver)
-    : channelId(id)
+    : confirmed(false)
+    , channelId(id)
     , driver(aDriver)
     , service(NULL)
 {
@@ -173,4 +175,4 @@ inline ProtoDriver::Channel* ProtoDriver::GetChannel(uint32 channelId)
 }   // namespace Net
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_GhostProtoDriver_H__
+#endif  // __DAVAENGINE_PROTODRIVER_H__

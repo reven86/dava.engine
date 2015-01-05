@@ -29,12 +29,12 @@
 #ifndef __DAVAENGINE_UDPSOCKETTEMPLATE_H__
 #define __DAVAENGINE_UDPSOCKETTEMPLATE_H__
 
+#include <Base/BaseTypes.h>
 #include <Base/Noncopyable.h>
-#include <Debug/DVAssert.h>
 
-#include "IOLoop.h"
-#include "Endpoint.h"
-#include "Buffer.h"
+#include <Network/Base/IOLoop.h>
+#include <Network/Base/Endpoint.h>
+#include <Network/Base/Buffer.h>
 
 namespace DAVA
 {
@@ -50,7 +50,7 @@ template <typename T>
 class UDPSocketTemplate : private Noncopyable
 {
     // Maximum write buffers that can be sent in one operation
-    static const size_t MAX_WRITE_BUFFERS = 10;
+    static const size_t MAX_WRITE_BUFFERS = 4;
 
 public:
     UDPSocketTemplate(IOLoop* ioLoop);
@@ -58,18 +58,16 @@ public:
 
     int32 LocalEndpoint(Endpoint& endpoint);
 
-    size_t SendQueueSize() const;
-    size_t SendRequestCount() const;
-
     int32 JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr = NULL);
     int32 LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr = NULL);
 
     int32 Bind(const Endpoint& endpoint, bool reuseAddrOption = false);
 
-protected:
     bool IsOpen() const;
-    void DoOpen();
+    bool IsClosing() const;
 
+protected:
+    int32 DoOpen();
     int32 DoStartReceive();
     int32 DoSend(const Buffer* buffers, size_t bufferCount, const Endpoint& endpoint);
     void DoClose();
@@ -120,18 +118,6 @@ int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 }
 
 template <typename T>
-size_t UDPSocketTemplate<T>::SendQueueSize() const
-{
-    return uvhandle.send_queue_size;
-}
-
-template <typename T>
-size_t UDPSocketTemplate<T>::SendRequestCount() const
-{
-    return uvhandle.send_queue_count;
-}
-
-template <typename T>
 int32 UDPSocketTemplate<T>::JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
@@ -149,9 +135,12 @@ template <typename T>
 int32 UDPSocketTemplate<T>::Bind(const Endpoint& endpoint, bool reuseAddrOption)
 {
     DVASSERT(false == isClosing);
-    if (!isOpen)
-        DoOpen();
-    return uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
+    int32 error = 0;
+    if (false == isOpen)
+        error = DoOpen();   // Automatically open on first call
+    if (0 == error)
+        error = uv_udp_bind(&uvhandle, endpoint.CastToSockaddr(), reuseAddrOption ? UV_UDP_REUSEADDR : 0);
+    return error;
 }
 
 template <typename T>
@@ -161,22 +150,35 @@ bool UDPSocketTemplate<T>::IsOpen() const
 }
 
 template <typename T>
-void UDPSocketTemplate<T>::DoOpen()
+bool UDPSocketTemplate<T>::IsClosing() const
+{
+    return isClosing;
+}
+
+template <typename T>
+int32 UDPSocketTemplate<T>::DoOpen()
 {
     DVASSERT(false == isOpen && false == isClosing);
-    uv_udp_init(loop->Handle(), &uvhandle);
-    isOpen = true;
-    uvhandle.data = this;
-    uvsend.data = this;
+    int32 error = uv_udp_init(loop->Handle(), &uvhandle);
+    if (0 == error)
+    {
+        isOpen = true;
+        uvhandle.data = this;
+        uvsend.data = this;
+    }
+    return error;
 }
 
 template <typename T>
 int32 UDPSocketTemplate<T>::DoStartReceive()
 {
     DVASSERT(false == isClosing);
-    if (!isOpen)
-        DoOpen();
-    return uv_udp_recv_start(&uvhandle, &HandleAllocThunk, &HandleReceiveThunk);
+    int32 error = 0;
+    if (false == isOpen)
+        error = DoOpen();   // Automatically open on first call
+    if (0 == error)
+        error = uv_udp_recv_start(&uvhandle, &HandleAllocThunk, &HandleReceiveThunk);
+    return error;
 }
 
 template <typename T>
@@ -184,6 +186,7 @@ int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, co
 {
     DVASSERT(true == isOpen && false == isClosing);
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
+    DVASSERT(0 == sendBufferCount);    // Next send is allowed only after previous send completion
 
     sendBufferCount = bufferCount;
     for (size_t i = 0;i < bufferCount;++i)
@@ -199,12 +202,9 @@ template <typename T>
 void UDPSocketTemplate<T>::DoClose()
 {
     DVASSERT(true == isOpen && false == isClosing);
-    if (isOpen)
-    {
-        isOpen = false;
-        isClosing = true;
-        uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
-    }
+    isOpen = false;
+    isClosing = true;
+    uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////
@@ -219,7 +219,8 @@ template <typename T>
 void UDPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(handle->data);
-    self->isClosing = false;    // Mark socket has been closed and clear handle
+    self->isClosing = false;    // Mark socket has been closed
+    // And clear handle and requests
     Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
     Memset(&self->uvsend, 0, sizeof(self->uvsend));
 
@@ -246,8 +247,9 @@ template <typename T>
 void UDPSocketTemplate<T>::HandleSendThunk(uv_udp_send_t* request, int error)
 {
     UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(request->data);
-    static_cast<T*>(self)->HandleSend(error, self->sendBuffers, self->sendBufferCount);
-    self->sendBufferCount = 0;
+    size_t bufferCount = self->sendBufferCount;
+    self->sendBufferCount = 0;     // Mark send operation has completed
+    static_cast<T*>(self)->HandleSend(error, self->sendBuffers, bufferCount);
 }
 
 }   // namespace Net

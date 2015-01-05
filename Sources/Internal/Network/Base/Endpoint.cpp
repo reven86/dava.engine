@@ -32,7 +32,7 @@
 
 #include <Debug/DVAssert.h>
 
-#include "Endpoint.h"
+#include <Network/Base/Endpoint.h>
 
 namespace DAVA
 {
