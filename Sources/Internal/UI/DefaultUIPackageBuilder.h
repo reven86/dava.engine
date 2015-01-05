@@ -81,9 +81,6 @@ private:
     Map<String, UIPackage*> importedPackages;
     List<ControlDescr> controlsStack;
     BaseObject *currentObject;
-    
-private:
-    static const String EXCEPTION_CLASS_UI_TEXT_FIELD;
 };
 }
 

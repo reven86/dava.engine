@@ -243,6 +243,8 @@ protected:
     virtual bool SystemInput(UIEvent *currentInput);// Internal method used by ControlSystem
 
     virtual void SetRect(const Rect &rect);
+    
+    virtual void SetSize(const Vector2 &newSize);
 
     Vector<UIListCell*> *GetStoreVector(const String &cellIdentifier);
     void AddCellAtPos(UIListCell *cell, float32 pos, float32 size, int32 index);

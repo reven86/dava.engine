@@ -119,6 +119,10 @@ TextBlock::TextBlock()
 	textBlockRender = NULL;
 	needPrepareInternal = false;
     textureInvalidater = NULL;
+#if defined(LOCALIZATION_DEBUG)
+    fittingTypeUsed = FITTING_DISABLED;
+    visualTextCroped = false;
+#endif //LOCALIZATION_DEBUG
 }
 
 TextBlock::~TextBlock()
@@ -261,6 +265,12 @@ const WideString & TextBlock::GetText()
     return logicalText;
 }
 
+const WideString & TextBlock::GetVisualText()
+{
+    LockGuard<Mutex> guard(mutex);
+    return visualText;
+}
+
 bool TextBlock::GetMultiline()
 {
     LockGuard<Mutex> guard(mutex);
@@ -298,6 +308,24 @@ void TextBlock::SetRenderSize(float32 _renderSize)
     }
     mutex.Unlock();
 }
+
+#if defined(LOCALIZATION_DEBUG)
+int32 TextBlock::GetFittingOptionUsed()
+{
+    mutex.Lock();
+    mutex.Unlock();
+
+    return fittingTypeUsed;
+}
+
+bool  TextBlock::IsVisualTextCroped()
+{
+
+	mutex.Lock();
+	mutex.Unlock();
+	return visualTextCroped;
+}
+#endif
 
 void TextBlock::SetAlign(int32 _align)
 {
@@ -414,6 +442,10 @@ void TextBlock::PrepareInternal()
 void TextBlock::CalculateCacheParams()
 {
     LockGuard<Mutex> guard(mutex);
+#if defined(LOCALIZATION_DEBUG)
+    fittingTypeUsed = FITTING_DISABLED;
+    visualTextCroped = false;
+#endif
 
     if (logicalText.empty())
     {
@@ -494,7 +526,9 @@ void TextBlock::CalculateCacheParams()
                     pointsStr.clear();
                     pointsStr.append(visualText, 0, i);
                     pointsStr += L"...";
-
+#if defined(LOCALIZATION_DEBUG)
+                    fittingTypeUsed = FITTING_POINTS;
+#endif
                     textSize = font->GetStringMetrics(pointsStr);
                     if(textSize.width <= drawSize.x)
                     {
@@ -623,6 +657,15 @@ void TextBlock::CalculateCacheParams()
                 {
                     finalSize *= yMul;
                 }
+#if defined(LOCALIZATION_DEBUG)
+                {
+                    float mult = DAVA::Min(xMul, yMul);
+                    if (mult > 1.0f)
+                        fittingTypeUsed |= FITTING_ENLARGE;
+                    else if (mult < 1.0f)
+                        fittingTypeUsed |= FITTING_REDUCE;
+                }
+#endif
                 renderSize = finalSize;
                 font->SetSize(renderSize);
                 textSize = font->GetStringMetrics(visualText);
@@ -633,6 +676,9 @@ void TextBlock::CalculateCacheParams()
         {
             visualText = pointsStr;
             textSize = font->GetStringMetrics(visualText);
+#if defined(LOCALIZATION_DEBUG)
+            visualTextCroped = true;
+#endif
         }
 
         if (treatMultilineAsSingleLine)
@@ -724,8 +770,19 @@ void TextBlock::CalculateCacheParams()
                 isChanged = true;
                 finalSize *= yMul;
 
+#if defined(LOCALIZATION_DEBUG)
+                if (yMul > 1.0f)
+                {
+                    fittingTypeUsed |= FITTING_ENLARGE;
+                }
+                if (yMul < 1.0f)
+                {
+                    fittingTypeUsed |= FITTING_REDUCE;
+                }
+#endif
                 renderSize = finalSize;
                 font->SetSize(renderSize);
+
 
                 if (isMultilineBySymbolEnabled)
                 {
@@ -796,6 +853,12 @@ void TextBlock::CalculateCacheParams()
                 textSize.width = Max(textSize.width, stringSize.width);
                 textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx);
             }
+#if defined(LOCALIZATION_DEBUG)
+            if(textSize.width < stringSize.width)
+            {
+                visualTextCroped = true;
+            }
+#endif
             textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
             if(0 == line)
             {
