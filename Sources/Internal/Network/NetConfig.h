@@ -54,6 +54,7 @@ public:
     };
 
 public:
+    NetConfig();
     NetConfig(eNetworkRole aRole);
     ~NetConfig();
 

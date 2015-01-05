@@ -61,7 +61,7 @@ public:
 
     TrackId CreateController(const NetConfig& config);
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
-    TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*)> dataReadyCallback);
+    TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     bool DestroyController(TrackId id);
 
     int32 Run();

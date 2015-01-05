@@ -36,7 +36,7 @@ namespace DAVA
 namespace Net
 {
 
-Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*)> dataReadyCallback)
+Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback)
     : loop(ioLoop)
     , socket(ioLoop)
     , endpoint(endp)
@@ -104,7 +104,7 @@ void Discoverer::SocketHandleReceive(UDPSocket* socket, int32 error, size_t nrea
     {
         if (nread > 0 && false == partial)
         {
-            dataCallback(nread, inbuf);
+            dataCallback(nread, inbuf, endpoint);
         }
     }
     else

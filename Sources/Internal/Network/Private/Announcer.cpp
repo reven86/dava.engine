@@ -57,7 +57,6 @@ Announcer::~Announcer()
 void Announcer::Start()
 {
     DVASSERT(false == isTerminating && 0 == runningObjects);
-    runningObjects = 2;     // timer and socket
     loop->Post(MakeFunction(this, &Announcer::DoStart));
 }
 
@@ -71,6 +70,9 @@ void Announcer::Stop(Function<void (IController*)> callback)
 
 void Announcer::DoStart()
 {
+    DVASSERT(0 == runningObjects);
+    runningObjects = 2;     // timer and socket
+
     char8 addr[30];
     DVVERIFY(true == endpoint.Address().ToString(addr, COUNT_OF(addr)));
 
@@ -81,7 +83,8 @@ void Announcer::DoStart()
         if (0 == error)
             error = timer.Wait(0, MakeFunction(this, &Announcer::TimerHandleTimer));
     }
-    DVASSERT(0 == error);
+    if (error != 0)
+        DoStop();
 }
 
 void Announcer::DoStop()

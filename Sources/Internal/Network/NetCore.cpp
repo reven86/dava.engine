@@ -80,7 +80,7 @@ NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendP
     return ObjectToTrackId(anno);
 }
 
-NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*)> dataReadyCallback)
+NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback)
 {
     Discoverer* disco = new Discoverer(&loop, endpoint, dataReadyCallback);
     trackedObjects.insert(disco);
