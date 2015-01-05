@@ -94,6 +94,7 @@ public:
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
 	virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent *event);
 
     bool IsEntitySelected(DAVA::Entity *entity);
     bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
@@ -103,7 +104,6 @@ protected:
 
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	void UpdateHoodPos() const;

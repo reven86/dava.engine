@@ -206,6 +206,9 @@ public:
 
     void ScrollToPosition(float32 position, float32 timeSec = 0.3f);
 
+    virtual void SetRect(const Rect &rect);
+    
+    virtual void SetSize(const Vector2 &newSize);
 
     void SetOrientation(int32 orientation);
     inline int32 GetOrientation() const { return orientation; };
@@ -241,8 +244,6 @@ protected:
 
     virtual void Input(UIEvent *currentInput);
     virtual bool SystemInput(UIEvent *currentInput);// Internal method used by ControlSystem
-
-    virtual void SetRect(const Rect &rect);
 
     Vector<UIListCell*> *GetStoreVector(const String &cellIdentifier);
     void AddCellAtPos(UIListCell *cell, float32 pos, float32 size, int32 index);

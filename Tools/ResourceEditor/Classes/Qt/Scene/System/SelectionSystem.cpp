@@ -139,7 +139,7 @@ void SceneSelectionSystem::ForceEmitSignals()
 	}
 }
 
-void SceneSelectionSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 {
 	if (IsLocked() || !selectionAllowed)
 	{

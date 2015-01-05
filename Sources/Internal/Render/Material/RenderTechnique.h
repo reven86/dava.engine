@@ -137,7 +137,6 @@ public:
 protected:
     bool LoadRenderTechnique(const FastName & fastName, RenderTechnique * targetTechnique);
     bool LoadRenderTechniqueFromYamlNode(const YamlNode * rootNode, RenderTechnique * targetTechnique);
-    
     HashMap<FastName, RenderTechnique *> renderTechniqueMap;
 };
     
