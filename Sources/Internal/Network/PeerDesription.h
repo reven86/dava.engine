@@ -26,84 +26,111 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_NETCORE_H__
-#define __DAVAENGINE_NETCORE_H__
+#ifndef __DAVAENGINE_PEERDESRIPTION_H__
+#define __DAVAENGINE_PEERDESRIPTION_H__
 
 #include <Base/BaseTypes.h>
-#include <Base/Function.h>
-#include <Base/Singleton.h>
+#include <Platform/DeviceInfo.h>
 
-#include <Network/Base/IOLoop.h>
 #include <Network/Base/IfAddress.h>
-#include <Network/Base/Endpoint.h>
-#include <Network/ServiceRegistrar.h>
-#include <Network/IController.h>
+#include <Network/NetConfig.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-class NetConfig;
-class NetCore : public Singleton<NetCore>
+class PeerDescription
 {
 public:
-    typedef intptr_t TrackId;
-    static const TrackId INVALID_TRACK_ID = 0;
+    PeerDescription();
+    PeerDescription(const NetConfig& config);
 
-public:
-    NetCore();
-    ~NetCore();
+    DeviceInfo::ePlatform GetPlatform() const;
+    const String& GetPlatformString() const;
+    const String& GetVersion() const;
+    const String& GetManufacturer() const;
+    const String& GetModel() const;
+    const String& GetUDID() const;
+    const String& GetName() const;
+    const DeviceInfo::ScreenInfo& GetScreenInfo() const;
+    eGPUFamily GetGPUFamily() const;
 
-    IOLoop* Loop() { return &loop; }
-
-    bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
-
-    TrackId CreateController(const NetConfig& config);
-    TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
-    TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
-    bool DestroyController(TrackId id);
-
-    int32 Run();
-    int32 Poll();
-    void Finish(bool withWait = false);
-
-    const Vector<IfAddress>& InstalledInterfaces() const;
+    const NetConfig& NetworkConfig() const;
+    const Vector<IfAddress>& NetworkInterfaces() const;
 
 private:
-    IController* GetTrackedObject(TrackId id) const;
-    void TrackedObjectStopped(IController* obj);
+    DeviceInfo::ePlatform platformType;
+    String platform;
+    String version;
+    String manufacturer;
+    String model;
+    String udid;
+    String name;
+    DeviceInfo::ScreenInfo screenInfo;
+    eGPUFamily gpuFamily;
 
-    TrackId ObjectToTrackId(const IController* obj) const;
-    IController* TrackIdToObject(TrackId id) const;
-
-private:
-    IOLoop loop;
-    Set<IController*> trackedObjects;
-    Set<IController*> dyingObjects;
-    ServiceRegistrar registrar;
-    Vector<IfAddress> installedInterfaces;
-    bool isFinishing;
+    NetConfig netConfig;
+    Vector<IfAddress> ifadr;
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline NetCore::TrackId NetCore::ObjectToTrackId(const IController* obj) const
+inline DeviceInfo::ePlatform PeerDescription::GetPlatform() const
 {
-    return reinterpret_cast<TrackId>(obj);
+    return platformType;
 }
 
-inline IController* NetCore::TrackIdToObject(TrackId id) const
+inline const String& PeerDescription::GetPlatformString() const
 {
-    return reinterpret_cast<IController*>(id);
+    return platform;
 }
 
-inline const Vector<IfAddress>& NetCore::InstalledInterfaces() const
+inline const String& PeerDescription::GetVersion() const
 {
-    return installedInterfaces;
+    return version;
+}
+
+inline const String& PeerDescription::GetManufacturer() const
+{
+    return manufacturer;
+}
+
+inline const String& PeerDescription::GetModel() const
+{
+    return model;
+}
+
+inline const String& PeerDescription::GetUDID() const
+{
+    return udid;
+}
+
+inline const String& PeerDescription::GetName() const
+{
+    return name;
+}
+
+inline const DeviceInfo::ScreenInfo& PeerDescription::GetScreenInfo() const
+{
+    return screenInfo;
+}
+
+inline eGPUFamily PeerDescription::GetGPUFamily() const
+{
+    return gpuFamily;
+}
+
+inline const NetConfig& PeerDescription::NetworkConfig() const
+{
+    return netConfig;
+}
+
+inline const Vector<IfAddress>& PeerDescription::NetworkInterfaces() const
+{
+    return ifadr;
 }
 
 }   // namespace Net
 }   // namespace DAVA
 
-
-#endif  // __DAVAENGINE_NETCORE_H__
+#endif  // __DAVAENGINE_PEERDESRIPTION_H__

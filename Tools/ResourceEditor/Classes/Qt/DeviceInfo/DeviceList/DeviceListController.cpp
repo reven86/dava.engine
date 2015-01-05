@@ -10,13 +10,18 @@
 #include "DeviceListWidget.h"
 
 #include "Classes/Qt/DeviceInfo/DeviceInfo/DeviceInfoController.h"
+#include <Base/FunctionTraits.h>
 
 
 DeviceListController::DeviceListController( QObject* parent )
     : QObject(parent)
     , model( NULL )
+    , idDiscoverer(DAVA::Net::NetCore::INVALID_TRACK_ID)
 {
     initModel();
+
+    DAVA::Net::Endpoint endpoint("239.192.100.1", 9999);
+    idDiscoverer = DAVA::Net::NetCore::Instance()->CreateDiscoverer(endpoint, DAVA::MakeFunction(this, &DeviceListController::DiscoverCallback));
 
     NewDeviceCallback();
     NewDeviceCallback();
@@ -27,6 +32,8 @@ DeviceListController::DeviceListController( QObject* parent )
 
 DeviceListController::~DeviceListController()
 {
+    if (idDiscoverer != DAVA::Net::NetCore::INVALID_TRACK_ID)
+        DAVA::Net::NetCore::Instance()->DestroyController(idDiscoverer);
 }
 
 void DeviceListController::SetView( DeviceListWidget* _view )
@@ -166,4 +173,9 @@ QStandardItem* DeviceListController::createDeviceItem( quintptr id, const QStrin
     info = v.value<SomeInfo>();
 
     return item;
+}
+
+void DeviceListController::DiscoverCallback(size_t buflen, const void* buffer, const DAVA::Net::Endpoint& endpoint)
+{
+    
 }

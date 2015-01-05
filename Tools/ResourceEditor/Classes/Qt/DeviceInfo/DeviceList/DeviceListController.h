@@ -6,6 +6,8 @@
 #include <QPointer>
 #include <vector>
 
+#include <Network/NetCore.h>
+#include <Network/Base/Endpoint.h>
 
 class QStandardItemModel;
 class QStandardItem;
@@ -41,6 +43,7 @@ public:
     void AddDeviceInfo( QStandardItem* item );
 
     void NewDeviceCallback();   // TODO: implement
+    void DiscoverCallback(size_t buflen, const void* buffer, const DAVA::Net::Endpoint& endpoint);
 
 private slots:
     void OnConnectDevice();
@@ -57,6 +60,8 @@ private:
 
     QPointer<QStandardItemModel> model;
     QPointer<DeviceListWidget> view;
+
+    DAVA::Net::NetCore::TrackId idDiscoverer;
 
 private:
     static QStandardItem *createDeviceItem( quintptr id, const QString& title );

@@ -43,7 +43,7 @@ class IOLoop;
 class Discoverer : public IController
 {
 public:
-    Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*)> dataReadyCallback);
+    Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     virtual ~Discoverer();
 
     // IController
@@ -63,7 +63,7 @@ private:
     Endpoint endpoint;
     bool isTerminating;
     Function<void (IController*)> stopCallback;
-    Function<void (size_t, const void*)> dataCallback;
+    Function<void (size_t, const void*, const Endpoint&)> dataCallback;
     uint8 inbuf[64 * 1024];
 };
 
