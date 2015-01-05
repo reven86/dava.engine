@@ -139,10 +139,9 @@ void SnapToLandscapeControllerSystem::SnapToLandscape(Landscape *landscape, Enti
 
             bool placed = landscape->PlacePoint(placedPos, pointOnLandscape);
             if(placed)
+            {
                 pointOnLandscape.z += snapController->GetHeightOnLandscape();
-//            else
-//                DVASSERT(false);
-
+            }
             
             camera->SetPosition(pointOnLandscape);
             camera->SetDirection(direction);
