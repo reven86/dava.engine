@@ -73,7 +73,7 @@ private:
 	uint32_t id;
 	JNI::JavaClass jniTextField;
 	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> create;
-	Function <void (jint)> destroy;
+	Function<void (jint)> destroy;
 	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> updateRect;
 	Function<void (jint, jstring)> setText;
 	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> setTextColor;
@@ -93,7 +93,7 @@ private:
 	Function<void (jint)> openKeyboard;
 	Function<void (jint)> closeKeyboard;
 	Function<jint (jint)> getCursorPos;
-	Function<jint (jint, jint)> setCursorPos;
+	Function<void (jint, jint)> setCursorPos;
 	Function<void (jint, jint)> setMaxLength;
 };
 

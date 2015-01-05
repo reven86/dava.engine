@@ -59,7 +59,7 @@ JniTextField::JniTextField(uint32_t id)
     openKeyboard = jniTextField.GetStaticMethod<void, jint>("OpenKeyboard");
     closeKeyboard = jniTextField.GetStaticMethod<void, jint>("CloseKeyboard");
     getCursorPos = jniTextField.GetStaticMethod<jint, jint>("GetCursorPos");
-    setCursorPos = jniTextField.GetStaticMethod<jint, jint, jint>("SetCursorPos");
+    setCursorPos = jniTextField.GetStaticMethod<void, jint, jint>("SetCursorPos");
     setMaxLength = jniTextField.GetStaticMethod<void, jint, jint>("SetMaxLength");
 }
 
