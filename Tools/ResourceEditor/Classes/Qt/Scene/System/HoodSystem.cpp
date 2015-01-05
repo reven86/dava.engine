@@ -295,7 +295,7 @@ void HoodSystem::Process(float timeElapsed)
 	}
 }
 
-void HoodSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void HoodSystem::Input(DAVA::UIEvent *event)
 {
 	if(!event->point.IsZero())
 	{
