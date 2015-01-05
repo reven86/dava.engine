@@ -260,6 +260,26 @@ void UITextFieldMetadata::SetTextUseRtlAlign(bool value)
 	GetActiveUITextField()->SetTextUseRtlAlign(value);
 }
 
+bool UITextFieldMetadata::GetTextMultiline() const
+{
+    return false; // Multiline for textfield not implemented
+}
+
+void UITextFieldMetadata::SetTextMultiline(bool value)
+{
+    // Multiline for textfield not implemented
+}
+
+bool UITextFieldMetadata::GetTextMultilineBySymbol() const
+{
+    return false; // Multiline for textfield not implemented
+}
+
+void UITextFieldMetadata::SetTextMultilineBySymbol(bool value)
+{
+    // Multiline for textfield not implemented
+}
+
 bool UITextFieldMetadata::GetIsPassword() const
 {
     if (!VerifyActiveParamID())
