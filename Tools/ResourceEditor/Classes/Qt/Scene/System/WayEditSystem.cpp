@@ -81,7 +81,7 @@ void WayEditSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void WayEditSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void WayEditSystem::Input(DAVA::UIEvent *event)
 {
     if (isEnabled)
     {

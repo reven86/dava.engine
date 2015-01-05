@@ -56,6 +56,7 @@ public:
     bool IsWayEditEnabled() const;
 
     virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent *event);
     
     virtual void AddEntity(DAVA::Entity * entity);
     virtual void RemoveEntity(DAVA::Entity * entity);
@@ -63,7 +64,6 @@ public:
 
 protected:
     void Draw();
-    void ProcessUIEvent(DAVA::UIEvent *event);
 
     DAVA::Entity* AddWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
     DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
