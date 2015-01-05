@@ -26,56 +26,51 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "SnapToLandscapeControllerComponent.h"
+#include "FileSystem/KeyedArchive.h"
+
+#include "Scene3D/Systems/EventSystem.h"
+#include "Scene3D/Systems/GlobalEventSystem.h"
 
 
-#ifndef __DAVAENGINE_UI_3D_VIEW__
-#define __DAVAENGINE_UI_3D_VIEW__
-
-#include "Base/BaseTypes.h"
-#include "UI/UIControl.h"
-
-namespace DAVA 
+namespace DAVA
 {
-/**
-    \ingroup controlsystem
-    \brief This control allow to put 3D View into any place of 2D hierarchy
- */
-
-class Scene;
-class UI3DView : public UIControl 
-{
-protected:
-    virtual ~UI3DView();
-public:
-	UI3DView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = FALSE);
     
-    void SetScene(Scene * scene);
-    Scene * GetScene() const;
+SnapToLandscapeControllerComponent::SnapToLandscapeControllerComponent()
+    : Component()
+    , heightOnLandscape(0.f)
+{
+    
+}
 
-    virtual void AddControl(UIControl *control);
-    virtual void Update(float32 timeElapsed);
-    virtual void Draw(const UIGeometricData &geometricData);
 
-    virtual void WillBecomeVisible(); 	
-	virtual void WillBecomeInvisible();
+Component * SnapToLandscapeControllerComponent::Clone(Entity * toEntity)
+{
+    SnapToLandscapeControllerComponent * component = new SnapToLandscapeControllerComponent();
+    component->SetEntity(toEntity);
+    component->heightOnLandscape = heightOnLandscape;
+    
+    return component;
+}
 
-	inline const Rect & GetLastViewportRect()
-	{
-		return viewportRc;
-	}
-
-    virtual void SetSize(const Vector2 &newSize);
-    virtual UIControl* Clone();
-
-    virtual void Input(UIEvent *currentInput);
+void SnapToLandscapeControllerComponent::SetHeightOnLandscape(float32 height)
+{
+    heightOnLandscape = height;
+    GlobalEventSystem::Instance()->Event(entity, EventSystem::SNAP_TO_LANDSCAPE_HEIGHT_CHANGED);
+}
 
     
-protected:
-    Scene * scene;
-	Rect viewportRc;
-    bool registeredInUIControlSystem;
-};
-	
+void SnapToLandscapeControllerComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+{
+    Component::Serialize(archive, serializationContext);
+    archive->SetFloat("heightOnLandscape", heightOnLandscape);
+}
+
+void SnapToLandscapeControllerComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+{
+    Component::Deserialize(archive, serializationContext);
+    heightOnLandscape = archive->GetFloat("heightOnLandscape", 0.f);
+}
+    
 };
 
-#endif

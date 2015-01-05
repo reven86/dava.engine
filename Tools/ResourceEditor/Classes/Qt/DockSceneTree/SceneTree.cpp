@@ -364,17 +364,21 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 		SceneSelectionSystem *selSystem = scene->selectionSystem;
 		size_t selectionSize = selSystem->GetSelectionCount();
 
-		QMenu contextMenu;
+        Camera *camera = GetCamera(entity);
+
+        QMenu contextMenu;
 		if(entityCustomFlags & SceneTreeModel::CF_Disabled)
 		{
-            if(selectionSize == 1 && GetCamera(entity))
+            if(selectionSize == 1 && camera)
             {
                 AddCameraActions(contextMenu);
                 contextMenu.addSeparator();
             }
-
-            // disabled entities can only be removed
-            contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+            
+            if(camera != scene->GetCurrentCamera())
+            {
+                contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+            }
         }
 		else
 		{
@@ -382,14 +386,14 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 			contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Look at", this, SLOT(LookAtSelection()));
 
 			// look from
-			if(NULL != GetCamera(entity))
+			if(NULL != camera)
 			{
                 AddCameraActions(contextMenu);
 			}
 
 			// add/remove
 			contextMenu.addSeparator();
-            if(entity->GetLocked() == false)
+            if(entity->GetLocked() == false && (camera != scene->GetCurrentCamera()))
             {
 			    contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
             }

@@ -28,33 +28,46 @@
 
 
 
-#ifndef __SCENE_GRID_SYSTEM_H__
-#define __SCENE_GRID_SYSTEM_H__
+#ifndef __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_COMPONENT_H__
+#define __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_COMPONENT_H__
 
-#include "Commands2/Command2.h"
+#include "Entity/Component.h"
+#include "Scene3D/Entity.h"
 
-#include "Entity/SceneSystem.h"
-#include "UI/UIEvent.h"
-#include "Base/Introspection.h"
-
-#include "Render/RenderManager.h"
-
-class SceneGridSystem : public DAVA::SceneSystem
+namespace DAVA
 {
-	friend class SceneEditor2;
-
+    
+class SnapToLandscapeControllerComponent: public Component
+{
 public:
-	SceneGridSystem(DAVA::Scene * scene);
-	~SceneGridSystem();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
+    
+    IMPLEMENT_COMPONENT_TYPE(SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT);
+    
+    SnapToLandscapeControllerComponent();
+    
+    virtual Component* Clone(Entity * toEntity);
+    virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
+    virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
+    inline float32 GetHeightOnLandscape() const;
+    void SetHeightOnLandscape(float32 height);
+    
 protected:
-	void Draw();
+    
+    float32 heightOnLandscape;
+    
+public:
+    INTROSPECTION_EXTEND(SnapToLandscapeControllerComponent, Component,
+        PROPERTY("heightOnLandscape", "Height On Landscape", GetHeightOnLandscape, SetHeightOnLandscape, I_VIEW | I_EDIT | I_SAVE)
+    );
+};
+    
+inline float32 SnapToLandscapeControllerComponent::GetHeightOnLandscape() const
+{
+    return heightOnLandscape;
+}
 
-	void ProcessCommand(const Command2 *command, bool redo);
-	
-	DAVA::UniqueHandle renderState;
+    
 };
 
-#endif
+#endif //__DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_COMPONENT_H__

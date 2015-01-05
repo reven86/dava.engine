@@ -70,7 +70,10 @@ public:
         WAVE_COMPONENT,
         SKELETON_COMPONENT,
         PATH_COMPONENT,
-
+        ROTATION_CONTROLLER_COMPONENT,
+        SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT,
+        WASD_CONTROLLER_COMPONENT,
+        
         //debug components - note that everything below won't be serialized
         DEBUG_COMPONENTS,
         STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT,

@@ -27,55 +27,18 @@
 =====================================================================================*/
 
 
+#include "RotationControllerComponent.h"
 
-#ifndef __DAVAENGINE_UI_3D_VIEW__
-#define __DAVAENGINE_UI_3D_VIEW__
-
-#include "Base/BaseTypes.h"
-#include "UI/UIControl.h"
-
-namespace DAVA 
+namespace DAVA
 {
-/**
-    \ingroup controlsystem
-    \brief This control allow to put 3D View into any place of 2D hierarchy
- */
-
-class Scene;
-class UI3DView : public UIControl 
+    
+Component * RotationControllerComponent::Clone(Entity * toEntity)
 {
-protected:
-    virtual ~UI3DView();
-public:
-	UI3DView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = FALSE);
+    RotationControllerComponent * component = new RotationControllerComponent();
+    component->SetEntity(toEntity);
     
-    void SetScene(Scene * scene);
-    Scene * GetScene() const;
+    return component;
+}
 
-    virtual void AddControl(UIControl *control);
-    virtual void Update(float32 timeElapsed);
-    virtual void Draw(const UIGeometricData &geometricData);
 
-    virtual void WillBecomeVisible(); 	
-	virtual void WillBecomeInvisible();
-
-	inline const Rect & GetLastViewportRect()
-	{
-		return viewportRc;
-	}
-
-    virtual void SetSize(const Vector2 &newSize);
-    virtual UIControl* Clone();
-
-    virtual void Input(UIEvent *currentInput);
-
-    
-protected:
-    Scene * scene;
-	Rect viewportRc;
-    bool registeredInUIControlSystem;
 };
-	
-};
-
-#endif

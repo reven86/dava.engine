@@ -135,8 +135,8 @@ SceneTabWidget::~SceneTabWidget()
 
 void SceneTabWidget::InitDAVAUI()
 {
-	dava3DView = new DAVAUI3DView(this, DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
-	//dava3DView->SetDebugDraw(true);
+    dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
+    dava3DView->SetInputEnabled(true, true);
 
 	davaUIScreen = new DAVA::UIScreen();
 	davaUIScreen->AddControl(dava3DView);
@@ -333,14 +333,6 @@ int SceneTabWidget::GetTabCount() const
 	return tabBar->count();
 }
 
-void SceneTabWidget::ProcessDAVAUIEvent(DAVA::UIEvent *event)
-{
-	SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
-	if(NULL != scene)
-	{
-		scene->PostUIEvent(event);
-	}
-}
 
 void SceneTabWidget::TabBarCurrentChanged(int index)
 {

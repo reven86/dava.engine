@@ -27,55 +27,89 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SCENE3D_WAVESYSTEM_H__
-#define	__DAVAENGINE_SCENE3D_WAVESYSTEM_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/Observer.h"
+#ifndef __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
+#define __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
+
 #include "Entity/SceneSystem.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
-
-class Entity;
-class WaveComponent;
-class WaveSystem : public SceneSystem, public Observer
+    
+class Camera;
+class UIEvent;
+class InputCallback;
+class RotationControllerSystem: public SceneSystem
 {
-    struct WaveInfo
-    {
-        WaveInfo(WaveComponent * component);
+    static const float32 maxViewAngle;
 
-        WaveComponent * component;
-        float32 maxRadius;
-        float32 maxRadiusSq;
-        Vector3 center;
-        float32 currentWaveRadius;
-    };
-
+    
 public:
-    WaveSystem(Scene * scene);
-    virtual ~WaveSystem();
+    RotationControllerSystem(Scene * scene);
+    virtual ~RotationControllerSystem();
+    
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
 
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
     virtual void Process(float32 timeElapsed);
 
-    Vector3 GetWaveDisturbance(const Vector3 & inPosition) const;
-
-    virtual void HandleEvent(Observable * observable);
-
-protected:
-    void ClearWaves();
-
-    bool isWavesEnabled;
-    bool isVegetationAnimationEnabled;
-
-    Vector<WaveInfo *> waves;
-
-    friend class WaveComponent;
-};
+    virtual void Input(UIEvent *event);
     
-} // ns
+    inline float32 GetRotationSpeeed() const;
+    inline void SetRotationSpeeed(float32 rotateSpeed);
 
-#endif	/* __DAVAENGINE_SCENE3D_WINDSYSTEM_H__ */
+    inline const Vector3 & GetRotationPoint() const;
+    inline void SetRotationPoint(const Vector3 & point);
 
+    void RecalcCameraViewAngles(Camera *camera);
+
+private:
+    void RotateDirection(Camera * camera);
+    void RotatePosition(Camera * camera);
+    void RotatePositionAroundPoint(Camera * camera, const Vector3 & pos);
+
+
+    
+    Vector3 rotationPoint;
+    
+    Vector2 rotateStartPoint;
+    Vector2 rotateStopPoint;
+    
+    float32 curViewAngleZ;
+    float32 curViewAngleY;
+
+    float32 rotationSpeed;
+    
+    InputCallback * inputCallback;
+
+    Vector<Entity *> entities;
+    
+    Camera *oldCamera;
+
+};
+
+inline float32 RotationControllerSystem::GetRotationSpeeed() const
+{
+    return rotationSpeed;
+    
+}
+
+inline void RotationControllerSystem::SetRotationSpeeed(float32 rotateSpeed)
+{
+    rotationSpeed = rotateSpeed;
+}
+
+inline const Vector3 & RotationControllerSystem::GetRotationPoint() const
+{
+    return rotationPoint;
+}
+inline void RotationControllerSystem::SetRotationPoint(const Vector3 & point)
+{
+    rotationPoint = point;
+}
+
+    
+};
+
+#endif //__DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__

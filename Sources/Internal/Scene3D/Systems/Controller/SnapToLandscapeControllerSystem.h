@@ -28,33 +28,40 @@
 
 
 
-#ifndef __SCENE_GRID_SYSTEM_H__
-#define __SCENE_GRID_SYSTEM_H__
-
-#include "Commands2/Command2.h"
+#ifndef __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_SYSTEM_H__
+#define __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_SYSTEM_H__
 
 #include "Entity/SceneSystem.h"
-#include "UI/UIEvent.h"
-#include "Base/Introspection.h"
+#include "Math/Vector.h"
 
-#include "Render/RenderManager.h"
 
-class SceneGridSystem : public DAVA::SceneSystem
+namespace DAVA
 {
-	friend class SceneEditor2;
-
+    
+class Camera;
+class Landscape;
+class SnapToLandscapeControllerSystem: public SceneSystem
+{
+    
 public:
-	SceneGridSystem(DAVA::Scene * scene);
-	~SceneGridSystem();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
+    SnapToLandscapeControllerSystem(Scene * scene);
+    virtual ~SnapToLandscapeControllerSystem();
+    
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    
+    virtual void Process(float32 timeElapsed);
+    virtual void ImmediateEvent(Entity * entity, uint32 event);
 
-protected:
-	void Draw();
-
-	void ProcessCommand(const Command2 *command, bool redo);
-	
-	DAVA::UniqueHandle renderState;
+private:
+    
+    void SnapToLandscape(Landscape *landscape, Entity *entity, bool forceSnap = false);
+    
+    Vector<Entity *> entities;
+    Map<Entity *, Vector3> positions;
+    
+};
+    
 };
 
-#endif
+#endif //__DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_SYSTEM_H__

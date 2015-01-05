@@ -27,34 +27,31 @@
 =====================================================================================*/
 
 
+#ifndef __DAVAENGINE_ROTATION_CONTROLLER_COMPONENT_H__
+#define __DAVAENGINE_ROTATION_CONTROLLER_COMPONENT_H__
 
-#ifndef __SCENE_GRID_SYSTEM_H__
-#define __SCENE_GRID_SYSTEM_H__
+#include "Entity/Component.h"
+#include "Scene3D/Entity.h"
 
-#include "Commands2/Command2.h"
-
-#include "Entity/SceneSystem.h"
-#include "UI/UIEvent.h"
-#include "Base/Introspection.h"
-
-#include "Render/RenderManager.h"
-
-class SceneGridSystem : public DAVA::SceneSystem
+namespace DAVA
 {
-	friend class SceneEditor2;
-
+    
+class RotationControllerComponent: public Component
+{
 public:
-	SceneGridSystem(DAVA::Scene * scene);
-	~SceneGridSystem();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
-
-protected:
-	void Draw();
-
-	void ProcessCommand(const Command2 *command, bool redo);
-	
-	DAVA::UniqueHandle renderState;
+    
+    IMPLEMENT_COMPONENT_TYPE(ROTATION_CONTROLLER_COMPONENT);
+    
+    virtual Component* Clone(Entity * toEntity);
+    
+public:
+    INTROSPECTION_EXTEND(RotationControllerComponent, Component,
+        NULL
+    );
+};
+    
+    
 };
 
-#endif
+#endif //__DAVAENGINE_ROTATION_CONTROLLER_COMPONENT_H__
+

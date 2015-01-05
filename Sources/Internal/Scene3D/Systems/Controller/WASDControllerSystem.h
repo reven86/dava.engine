@@ -28,33 +28,61 @@
 
 
 
-#ifndef __SCENE_GRID_SYSTEM_H__
-#define __SCENE_GRID_SYSTEM_H__
-
-#include "Commands2/Command2.h"
+#ifndef __DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__
+#define __DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__
 
 #include "Entity/SceneSystem.h"
-#include "UI/UIEvent.h"
-#include "Base/Introspection.h"
 
-#include "Render/RenderManager.h"
-
-class SceneGridSystem : public DAVA::SceneSystem
+namespace DAVA 
 {
-	friend class SceneEditor2;
 
+class Camera;
+class UIEvent;
+class InputCallback;
+
+class WASDControllerSystem: public SceneSystem
+{
+    enum eDirection
+    {
+        DIRECTION_STRAIGHT = 1,
+        DIRECTION_INVERSE = -1
+    };
+    
+    
 public:
-	SceneGridSystem(DAVA::Scene * scene);
-	~SceneGridSystem();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
+    WASDControllerSystem(Scene * scene);
+    virtual ~WASDControllerSystem();
+    
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    
+    virtual void Process(float32 timeElapsed);
 
-protected:
-	void Draw();
-
-	void ProcessCommand(const Command2 *command, bool redo);
-	
-	DAVA::UniqueHandle renderState;
+    inline float32 GetMoveSpeeed() const;
+    inline void SetMoveSpeed(float32 moveSpeed);
+    
+private:
+    
+    void MoveForward(Camera *camera, float32 speed, eDirection direction);
+    void MoveRight(Camera *camera, float32 speed, eDirection direction);
+    
+    float32 moveSpeed;
+    
+    Vector<Entity *> entities;
 };
 
-#endif
+inline float32 WASDControllerSystem::GetMoveSpeeed() const
+{
+    return moveSpeed;
+    
+}
+    
+inline void WASDControllerSystem::SetMoveSpeed(float32 _moveSpeed)
+{
+    moveSpeed = _moveSpeed;
+}
+
+    
+};
+
+#endif //__DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__

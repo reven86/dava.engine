@@ -53,6 +53,7 @@
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 namespace DAVA
 {
@@ -443,10 +444,19 @@ PathComponent * GetPathComponent(const Entity *fromEntity)
     if(fromEntity)
     {
         return (PathComponent*) fromEntity->GetComponent(Component::PATH_COMPONENT);
+	    }
+
+	    return NULL;
+	}
+
+SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity * fromEntity)
+{
+    if(fromEntity)
+    {
+        return (static_cast<SnapToLandscapeControllerComponent *>(fromEntity->GetComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)));
     }
     
     return NULL;
 }
-
     
 }

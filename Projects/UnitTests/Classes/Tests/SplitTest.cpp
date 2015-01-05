@@ -239,10 +239,10 @@ void SplitTest::SplitAndTrimTest(PerfFuncData * data)
 
 void SplitTest::CleanLineTest(PerfFuncData* data)
 {
-    WideString test1 = StringUtils::CleanLine(L"THIS SOFTWARE\u00A0IS PROV\u200BIDED BY\n THE DAVA CONS\u200BULTING\n LLC");
-    WideString test2 = StringUtils::CleanLine(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC");
-    WideString test3 = StringUtils::CleanLine(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC", 1);
-    WideString test4 = StringUtils::CleanLine(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC", 4);
+    WideString test1 = StringUtils::RemoveNonPrintable(L"THIS SOFTWARE\u00A0IS PROV\u200BIDED BY\n THE DAVA CONS\u200BULTING\n LLC");
+    WideString test2 = StringUtils::RemoveNonPrintable(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC");
+    WideString test3 = StringUtils::RemoveNonPrintable(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC", 1);
+    WideString test4 = StringUtils::RemoveNonPrintable(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC", 4);
 
     WideString out1 = L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING LLC";
     WideString out2 = L"THIS\tSOFTWARE IS\tPROVIDED BYTHE DAVA CONSULTINGLLC";

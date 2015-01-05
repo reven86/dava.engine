@@ -28,33 +28,30 @@
 
 
 
-#ifndef __SCENE_GRID_SYSTEM_H__
-#define __SCENE_GRID_SYSTEM_H__
+#ifndef __DAVAENGINE_WASD_CONTROLLER_COMPONENT_H__
+#define __DAVAENGINE_WASD_CONTROLLER_COMPONENT_H__
 
-#include "Commands2/Command2.h"
+#include "Entity/Component.h"
+#include "Scene3D/Entity.h"
 
-#include "Entity/SceneSystem.h"
-#include "UI/UIEvent.h"
-#include "Base/Introspection.h"
-
-#include "Render/RenderManager.h"
-
-class SceneGridSystem : public DAVA::SceneSystem
+namespace DAVA 
 {
-	friend class SceneEditor2;
 
+class WASDControllerComponent: public Component
+{
 public:
-	SceneGridSystem(DAVA::Scene * scene);
-	~SceneGridSystem();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
 
-protected:
-	void Draw();
+    IMPLEMENT_COMPONENT_TYPE(WASD_CONTROLLER_COMPONENT);
 
-	void ProcessCommand(const Command2 *command, bool redo);
-	
-	DAVA::UniqueHandle renderState;
+    virtual Component* Clone(Entity * toEntity);
+    
+public:
+    INTROSPECTION_EXTEND(WASDControllerComponent, Component,
+       NULL
+    );
 };
 
-#endif
+    
+};
+
+#endif //__DAVAENGINE_WASD_CONTROLLER_COMPONENT_H__

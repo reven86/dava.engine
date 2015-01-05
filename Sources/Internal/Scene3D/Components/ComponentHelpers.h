@@ -62,7 +62,8 @@ class WaveComponent;
 class SpeedTreeObject;
 class AnimationComponent;
 class PathComponent;
-    
+class SnapToLandscapeControllerComponent;
+
 ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
 AnimationComponent * GetAnimationComponent(Entity *fromEntity);
 TransformComponent * GetTransformComponent(Entity * fromEntity);
@@ -72,6 +73,7 @@ RenderObject * GetRenderObject(const Entity * fromEntity);
 SkyboxRenderObject * GetSkybox(const Entity * fromEntity);
 VegetationRenderObject * GetVegetation(const Entity * fromEntity);
 SpeedTreeObject * GetSpeedTreeObject(const Entity * fromEntity);
+SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity * fromEntity);
 
 Light *GetLight(Entity * fromEntity);
 LightComponent *GetLightComponent(Entity * fromEntity);
