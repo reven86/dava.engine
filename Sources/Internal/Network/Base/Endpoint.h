@@ -70,6 +70,7 @@ public:
     const sockaddr_in* CastToSockaddrIn() const;
 
     friend bool operator == (const Endpoint& left, const Endpoint& right);
+    friend bool operator < (const Endpoint& left, const Endpoint& right);
 
 private:
     void InitSockaddrIn(uint32 addr, uint16 port);
@@ -114,6 +115,12 @@ inline const sockaddr_in* Endpoint::CastToSockaddrIn() const { return reinterpre
 inline bool operator == (const Endpoint& left, const Endpoint& right)
 {
     return left.Address() == right.Address() && left.Port() == right.Port();
+}
+
+inline bool operator < (const Endpoint& left, const Endpoint& right)
+{
+    return left.Address() == right.Address() ? left.Port() < right.Port()
+                                             : left.Address() == right.Address();
 }
 
 }   // namespace Net

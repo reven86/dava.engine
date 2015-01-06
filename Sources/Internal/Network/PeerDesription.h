@@ -63,6 +63,10 @@ public:
     size_t Serialize(void* dstBuffer, size_t buflen) const;
     size_t Deserialize(const void* srcBuffer, size_t buflen);
 
+#ifdef __DAVAENGINE_DEBUG__
+    void DumpToStdout() const;
+#endif
+
 private:
     DeviceInfo::ePlatform platformType;
     String platform;

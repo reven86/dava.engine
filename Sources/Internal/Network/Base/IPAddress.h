@@ -96,6 +96,11 @@ inline bool operator == (const IPAddress& left, const IPAddress& right)
     return left.addr == right.addr;
 }
 
+inline bool operator < (const IPAddress& left, const IPAddress& right)
+{
+    return left.ToUInt() < right.ToUInt();
+}
+
 }   // namespace Net
 }	// namespace DAVA
 

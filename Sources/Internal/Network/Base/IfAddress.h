@@ -61,6 +61,8 @@ public:
 
     static Vector<IfAddress> GetInstalledInterfaces(bool withInternal = false);
 
+    friend bool operator < (const IfAddress& left, const IfAddress& right);
+
 private:
     bool isInternal;
     PhysAddress physAddr;
@@ -102,6 +104,13 @@ inline const IPAddress& IfAddress::Address() const
 inline const IPAddress& IfAddress::Mask() const
 {
     return mask;
+}
+
+inline bool operator < (const IfAddress& left, const IfAddress& right)
+{
+    // Order by address, internal interfaces moves to back
+    return left.isInternal == right.isInternal ? left.addr < right.addr
+                                               : left.isInternal == right.isInternal;
 }
 
 }   // namespace Net

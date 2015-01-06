@@ -238,7 +238,8 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     {
         temp.netConfig.AddService(serv[i]);
     }
-
+    // TODO: implement as swap or move semantic
+    *this = temp;
     return header->totalSize;
 }
 
