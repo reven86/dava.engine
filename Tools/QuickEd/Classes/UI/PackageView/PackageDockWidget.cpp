@@ -28,7 +28,7 @@ PackageDockWidget::PackageDockWidget(QWidget *parent)
     , document(NULL)
 {
     ui->setupUi(this);
-    ui->treeView->header()->setResizeMode(QHeaderView::ResizeToContents);
+    ui->treeView->header()->setSectionResizeMode/*setResizeMode*/(QHeaderView::ResizeToContents);
 
     connect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(filterTextChanged(const QString &)));
 

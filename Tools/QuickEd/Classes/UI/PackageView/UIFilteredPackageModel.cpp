@@ -1,5 +1,5 @@
 #include "UIFilteredPackageModel.h"
-
+#include <QColor>
 #include "DAVAEngine.h"
 
 UIFilteredPackageModel::UIFilteredPackageModel(QObject *parent)
@@ -31,7 +31,7 @@ QVariant UIFilteredPackageModel::data(const QModelIndex &index, int role) const
         {
             QModelIndex srcIndex = mapToSource(index);
             if (!srcIndex.data(filterRole()).toString().contains(regExp))
-                return Qt::lightGray;
+                return QColor(Qt::lightGray);
         }
     }
     
