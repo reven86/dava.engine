@@ -1720,6 +1720,12 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Private\Discoverer.h">
       <Filter>Internal\Network\Private</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\PeerDesription.h">
+      <Filter>Internal\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3081,6 +3087,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Private\Discoverer.cpp">
       <Filter>Internal\Network\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesription.cpp">
+      <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesriptionSerialize.cpp">
+      <Filter>Internal\Network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

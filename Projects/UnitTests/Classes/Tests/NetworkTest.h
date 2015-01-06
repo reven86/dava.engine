@@ -31,8 +31,10 @@
 
 #include <DAVAEngine.h>
 
+#include <Network/PeerDesription.h>
 #include <Network/NetService.h>
 #include <Network/Services/NetLogger.h>
+#include <Network/NetCore.h>
 
 #include "TestTemplate.h"
 
@@ -118,7 +120,7 @@ protected:
     enum eServiceTypes
     {
         SERVICE_LOG,
-        SERVICE_ECHO
+        SERVICE_ECHO = 3
     };
 
     static const uint16 LOGGER_PORT = 9999;
@@ -132,6 +134,7 @@ public:
     virtual bool RunTest(int32 testNum);
 
     virtual void Update(float32 timeElapsed);
+    void ButtonPressed(BaseObject *obj, void *data, void *callerData);
 
     void TestEcho(PerfFuncData* data);
     void TestIPAddress(PerfFuncData* data);
@@ -148,12 +151,18 @@ private:
     void UpdateUI(bool waitStage, float32 left);
     void DestroyUI();
 
+    size_t AnnounceDataSupplier(size_t length, void* buffer);
+
 private:
     bool testingEcho;
     int32 serviceCreatorStage;
     TestEchoServer echoServer;
     TestEchoClient echoClient;
     DAVA::Net::NetLogger logger;
+    DAVA::Net::NetCore::TrackId idLogCtrl;
+
+    DAVA::Net::PeerDescription peerDescr;
+    Vector<uint8> peerDescrSerialized;
 
     DAVA::UIStaticText* serverBytesRecv;
     DAVA::UIStaticText* serverBytesSent;
@@ -162,6 +171,9 @@ private:
     DAVA::UIStaticText* clientBytesSent;
     DAVA::UIStaticText* clientBytesDelivered;
     DAVA::UIStaticText* timeLeft;
+
+    DAVA::UIButton* btnClick;
+    DAVA::UIButton* btnQuit;
 };
 
 #endif  // __NETWORK_TEST_H

@@ -120,7 +120,7 @@ inline bool operator == (const Endpoint& left, const Endpoint& right)
 inline bool operator < (const Endpoint& left, const Endpoint& right)
 {
     return left.Address() == right.Address() ? left.Port() < right.Port()
-                                             : left.Address() == right.Address();
+                                             : left.Address() < right.Address();
 }
 
 }   // namespace Net

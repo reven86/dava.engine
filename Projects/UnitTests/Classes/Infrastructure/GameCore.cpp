@@ -63,7 +63,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-    new MathTest();
+    /*new MathTest();
     new FunctionBindSignalTest();
     new ImageSizeTest();
     new SaveImageTest();
@@ -78,7 +78,7 @@ void GameCore::RegisterTests()
     new SplitTest();
     new TextSizeTest();
     new KeyedArchiveYamlTest();
-    new JobManagerTest();
+    new JobManagerTest();*/
     new NetworkTest();
 }
 

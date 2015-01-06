@@ -39,6 +39,8 @@
 #include <Network/NetConfig.h>
 #include <Network/NetCore.h>
 
+#include <Network/Services/SimpleEchoServer.h>
+
 #include "NetworkTest.h"
 
 using namespace DAVA;
@@ -214,7 +216,8 @@ void TestEchoClient::SendParcel(Parcel* parcel)
 //////////////////////////////////////////////////////////////////////////
 NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , testingEcho(true)
-                           , logger()
+                           , logger(true)
+                           , idLogCtrl(NetCore::INVALID_TRACK_ID)
                            , serviceCreatorStage(0)
                            , serverBytesRecv(NULL)
                            , serverBytesSent(NULL)
@@ -233,23 +236,37 @@ NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
     RegisterFunction(this, &NetworkTest::TestIPAddress, "TestIPAddress", NULL);
     RegisterFunction(this, &NetworkTest::TestEndpoint, "TestEndpoint", NULL);
     RegisterFunction(this, &NetworkTest::TestNetConfig, "TestNetConfig", NULL);
+
+    Logger::Debug("********@@@@@@@@@@@@@@@!!!!!!!!!!!!!!!!!!!&&&&&&&&&&&&&&&&&");
 }
 
 NetworkTest::~NetworkTest()
 {
-    NetCore::Instance()->Release();
+    // Do not anything as object is not deleted by test infrastructure
 }
 
 void NetworkTest::LoadResources()
 {
     CreateUI();
     {
+        NetConfig config(SERVER_ROLE);
+        config.AddTransport(TRANSPORT_TCP, Endpoint(9999));
+        config.AddService(SERVICE_LOG);
+        config.AddService(SERVICE_ECHO);
+
+        peerDescr = PeerDescription(config);
+
+        Endpoint annoEndpoint("239.192.100.1", 9999);
+        NetCore::Instance()->CreateAnnouncer(annoEndpoint, 5, MakeFunction(this, &NetworkTest::AnnounceDataSupplier));
+        idLogCtrl = NetCore::Instance()->CreateController(config);
+    }
+    /*{
         NetConfig loggerConfig(SERVER_ROLE);
         loggerConfig.AddTransport(TRANSPORT_TCP, Endpoint(LOGGER_PORT));
         loggerConfig.AddService(SERVICE_LOG);
 
         NetCore::Instance()->CreateController(loggerConfig);
-    }
+    }*/
     {
     	// Cannot log wide string uniformly on all platforms, maybe due to incorrect format flag
         Logger::Debug( "Name        : %s", UTF8Utils::EncodeToUTF8(DeviceInfo::GetName()).c_str());
@@ -261,20 +278,22 @@ void NetworkTest::LoadResources()
         Logger::Debug( "UDID        : %s", DeviceInfo::GetUDID().c_str());
     }
 
-    NetConfig serverConfig(SERVER_ROLE);
-    serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(ECHO_PORT));
-    serverConfig.AddService(SERVICE_ECHO);
+    //NetConfig serverConfig(SERVER_ROLE);
+    //serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(ECHO_PORT));
+    //serverConfig.AddService(SERVICE_ECHO);
 
-    NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
+    //NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
 
     // Server config must be recreated first due to restrictions of service management
-    NetCore::Instance()->CreateController(serverConfig);
-    NetCore::Instance()->CreateController(clientConfig);
+    //NetCore::Instance()->CreateController(serverConfig);
+    //NetCore::Instance()->CreateController(clientConfig);
 }
 
 void NetworkTest::UnloadResources()
 {
+    logger.Uninstall();     // Uninstall logger here
     NetCore::Instance()->Finish(true);
+    NetCore::Instance()->Release();
     DestroyUI();
 }
 
@@ -389,7 +408,7 @@ IChannelListener* NetworkTest::CreateLogger(uint32 serviceId)
 
 IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
 {
-    IChannelListener* obj = NULL;
+    /*IChannelListener* obj = NULL;
     if (SERVICE_ECHO == serviceId)
     {
         if (0 == serviceCreatorStage)
@@ -398,20 +417,38 @@ IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
             obj = &echoClient;
         serviceCreatorStage += 1;
     }
-    return obj;
+    return obj;*/
+    return new SimpleEchoServer;
 }
 
 void NetworkTest::DeleteEcho(IChannelListener* obj)
 {
-    // Do nothing as services are created on stack
+    // Do nothing as services were created on stack
+    delete obj;
 }
 
 void NetworkTest::DeleteLogger(IChannelListener* obj)
 {
-    if (obj == &logger)
+    // Do nothing as logger was created on stack
+}
+
+size_t NetworkTest::AnnounceDataSupplier(size_t length, void* buffer)
+{
+    size_t sz = peerDescrSerialized.size();
+    if (peerDescrSerialized.empty())
     {
-        logger.Uninstall();
+        sz = peerDescr.SerializedSize();
+        peerDescrSerialized.resize(sz);
+        void* p = &*peerDescrSerialized.begin();
+        if (0 == peerDescr.Serialize(p, sz))
+            peerDescrSerialized.clear();
     }
+    if (!peerDescrSerialized.empty() && peerDescrSerialized.size() <= length)
+    {
+        Memcpy(buffer, &*peerDescrSerialized.begin(), peerDescrSerialized.size());
+        return peerDescrSerialized.size();
+    }
+    return 0;
 }
 
 void NetworkTest::UpdateUI(bool waitStage, float32 left)
@@ -560,6 +597,24 @@ void NetworkTest::CreateUI()
         timeLeft->SetRect(Rect(SERVER_X, CONTROL_HEIGHT * 5, VALUE_WIDTH, CONTROL_HEIGHT));
         AddControl(timeLeft);
     }
+
+    {
+        btnClick = new UIButton;
+        btnClick->SetStateFont(0xFF, font);
+        btnClick->SetDebugDraw(true);
+        btnClick->SetRect(Rect(SERVER_X, CONTROL_HEIGHT * 5 + 50, VALUE_WIDTH, CONTROL_HEIGHT * 3));
+        btnClick->SetStateText(0xFF, L"Click");
+        btnClick->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NetworkTest::ButtonPressed));
+        AddControl(btnClick);
+
+        btnQuit = new UIButton;
+        btnQuit->SetStateFont(0xFF, font);
+        btnQuit->SetDebugDraw(true);
+        btnQuit->SetRect(Rect(CLIENT_X, CONTROL_HEIGHT * 5 + 50, VALUE_WIDTH, CONTROL_HEIGHT * 3));
+        btnQuit->SetStateText(0xFF, L"Quit");
+        btnQuit->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NetworkTest::ButtonPressed));
+        AddControl(btnQuit);
+    }
     SafeRelease(font);
 }
 
@@ -572,4 +627,16 @@ void NetworkTest::DestroyUI()
     SafeRelease(clientBytesSent);
     SafeRelease(clientBytesDelivered);
     SafeRelease(timeLeft);
+}
+
+void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
+{
+    if (obj == btnClick)
+    {
+        Logger::Debug("Hello, my name is Jimmy");
+    }
+    else if (obj == btnQuit)
+    {
+        testingEcho = false;
+    }
 }

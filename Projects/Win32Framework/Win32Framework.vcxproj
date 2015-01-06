@@ -407,6 +407,7 @@
     <ClInclude Include="..\..\Sources\Internal\Network\NetCore.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\NetService.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\NetworkCommon.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\PeerDesription.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\Announcer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\Discoverer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\ITransport.h" />
@@ -417,6 +418,7 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h" />
     <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h" />
@@ -887,6 +889,8 @@
     <ClCompile Include="..\..\Sources\Internal\Network\NetConfig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\NetCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\NetService.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesription.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesriptionSerialize.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Private\Announcer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Private\Discoverer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Private\NetController.cpp" />
