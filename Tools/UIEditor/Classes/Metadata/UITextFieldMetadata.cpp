@@ -267,6 +267,7 @@ bool UITextFieldMetadata::GetTextMultiline() const
 
 void UITextFieldMetadata::SetTextMultiline(bool value)
 {
+	Q_UNUSED(value);
     // Multiline for textfield not implemented
 }
 
@@ -277,6 +278,7 @@ bool UITextFieldMetadata::GetTextMultilineBySymbol() const
 
 void UITextFieldMetadata::SetTextMultilineBySymbol(bool value)
 {
+	Q_UNUSED(value);
     // Multiline for textfield not implemented
 }
 
