@@ -38,7 +38,8 @@ namespace DAVA
 class Entity;
 class Scene;    
 class Component;
-
+class UIEvent;
+    
 class SceneSystem
 {
 public:
@@ -119,6 +120,10 @@ public:
      */
     virtual void Process(float32 timeElapsed);
 
+    
+    virtual void Input(UIEvent *event) {};
+
+    
 	virtual void SetLocked(bool locked);
 	virtual bool IsLocked();
 	

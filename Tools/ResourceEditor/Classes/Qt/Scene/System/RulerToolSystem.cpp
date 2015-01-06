@@ -127,7 +127,7 @@ void RulerToolSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void RulerToolSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

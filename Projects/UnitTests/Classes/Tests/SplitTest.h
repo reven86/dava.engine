@@ -50,6 +50,8 @@ public:
     void SplitBySymbols(PerfFuncData * data);
     void SplitByWordsWithNewLine(PerfFuncData * data);
     void SplitBySymbolsWithNewLine(PerfFuncData * data);
+    void SplitAndTrimTest(PerfFuncData * data);
+    void CleanLineTest(PerfFuncData * data);
     
 private:
     UIStaticText * staticText;
