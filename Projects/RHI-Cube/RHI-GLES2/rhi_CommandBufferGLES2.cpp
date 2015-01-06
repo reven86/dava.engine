@@ -421,7 +421,9 @@ SCOPED_NAMED_TIMING("CommandBuffer_t::Replay");
         {
             case GLES2__BEGIN :
             {
+                #if defined(__DAVAENGINE_IPHONE__)
                 ios_GL_begin_frame();
+                #endif
 
                 GL_CALL(glFrontFace( GL_CW ));
                 GL_CALL(glEnable( GL_CULL_FACE ));
