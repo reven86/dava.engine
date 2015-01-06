@@ -36,39 +36,73 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Utils/Utils.h"
 
+#include "Scene/SceneEditor2.h"
+
+
 PathSystem::PathSystem(DAVA::Scene * scene)
     : DAVA::SceneSystem(scene)
+    , currentPath(NULL)
 {
 }
 
 PathSystem::~PathSystem()
 {
+    currentPath = NULL;
+    
     pathes.clear();
+    currentSelection.Clear();
 }
 
 
 void PathSystem::AddEntity(DAVA::Entity * entity)
 {
     pathes.push_back(entity);
+    
+    if(!currentPath)
+    {
+        currentPath = entity;
+    }
 }
     
 void PathSystem::RemoveEntity(DAVA::Entity * entity)
 {
     DAVA::FindAndRemoveExchangingWithLast(pathes, entity);
-}
-    
-
-DAVA::Entity * PathSystem::GetCurrrentPath() const
-{
-    //Temporary returns 0 element. Need return current selected entity with PathComponent
     
     if(pathes.size())
     {
-        return pathes[0];
+        if(entity == currentPath)
+        {
+            currentPath = pathes[0];
+        }
     }
-    
-    return NULL;
+    else
+    {
+        currentPath = NULL;
+    }
 }
+
+
+void PathSystem::Process(DAVA::float32 timeElapsed)
+{
+    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+    const EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
+    if(currentSelection != selection)
+    {
+        currentSelection = selection;
+        
+        const size_t count = currentSelection.Size();
+        for(size_t i = 0; i < count; ++i)
+        {
+            Entity * entity = currentSelection.GetEntity(i);
+            if(entity->GetComponent(Component::PATH_COMPONENT))
+            {
+                currentPath = entity;
+                break;
+            }
+        }
+    }
+}
+
 
 DAVA::FastName PathSystem::GeneratePathName() const
 {

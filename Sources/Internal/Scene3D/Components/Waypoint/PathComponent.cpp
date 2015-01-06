@@ -120,44 +120,46 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
     {
         archive->SetFastName("name", name);
         
-        
         const uint32 waypointCount = waypoints.size();
-        const Waypoint *firstWaypoint = waypoints.front();
-        
         archive->SetUInt32("waypointCount", waypointCount);
-        for(uint32 w = 0; w < waypointCount; ++w)
+
+        if(waypointCount)
         {
-            const Waypoint *wp = waypoints[w];
-            
-            KeyedArchive * wpArchieve = new KeyedArchive();
-
-            wpArchieve->SetVector3("position", wp->position);
-            if(wp->properties)
+            const Waypoint *firstWaypoint = waypoints.front();
+            for(uint32 w = 0; w < waypointCount; ++w)
             {
-                wpArchieve->SetArchive("properties", wp->properties);
-            }
-            
-            const uint32 edgesCount = wp->edges.size();
-            wpArchieve->SetUInt32("edgesCount", edgesCount);
-            for(uint32 e = 0; e < edgesCount; ++e)
-            {
-                Edge *edge = wp->edges[e];
+                const Waypoint *wp = waypoints[w];
                 
-                KeyedArchive * edgeArchieve = new KeyedArchive();
-                if(edge->properties)
+                KeyedArchive * wpArchieve = new KeyedArchive();
+                
+                wpArchieve->SetVector3("position", wp->position);
+                if(wp->properties)
                 {
-                    edgeArchieve->SetArchive("properties", edge->properties);
+                    wpArchieve->SetArchive("properties", wp->properties);
                 }
-
-                DVASSERT(edge->destination);
-                edgeArchieve->SetUInt32("destination", (edge->destination - firstWaypoint)); //index in waypoints array
-
-                archive->SetArchive(Format("edge_%d", e), edgeArchieve);
-                SafeRelease(edgeArchieve);
+                
+                const uint32 edgesCount = wp->edges.size();
+                wpArchieve->SetUInt32("edgesCount", edgesCount);
+                for(uint32 e = 0; e < edgesCount; ++e)
+                {
+                    Edge *edge = wp->edges[e];
+                    
+                    KeyedArchive * edgeArchieve = new KeyedArchive();
+                    if(edge->properties)
+                    {
+                        edgeArchieve->SetArchive("properties", edge->properties);
+                    }
+                    
+                    DVASSERT(edge->destination);
+                    edgeArchieve->SetUInt32("destination", (edge->destination - firstWaypoint)); //index in waypoints array
+                    
+                    archive->SetArchive(Format("edge_%d", e), edgeArchieve);
+                    SafeRelease(edgeArchieve);
+                }
+                
+                archive->SetArchive(Format("waypoint_%d", w), wpArchieve);
+                SafeRelease(wpArchieve);
             }
-            
-            archive->SetArchive(Format("waypoint_%d", w), wpArchieve);
-            SafeRelease(wpArchieve);
         }
     }
 }

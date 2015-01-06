@@ -32,6 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Entity/SceneSystem.h"
 #include "Base/FastName.h"
 
+#include "Scene/System/SelectionSystem.h"
+
 class PathSystem: public DAVA::SceneSystem
 {
 public:
@@ -40,6 +42,9 @@ public:
     
     virtual void AddEntity(DAVA::Entity * entity);
     virtual void RemoveEntity(DAVA::Entity * entity);
+    
+    virtual void Process(DAVA::float32 timeElapsed);
+
     
     DAVA::Entity * GetCurrrentPath() const;
     
@@ -50,11 +55,19 @@ public:
 protected:
     
     DAVA::Vector<DAVA::Entity *> pathes;
+   
+    EntityGroup currentSelection;
+    DAVA::Entity * currentPath;
 };
 
 inline const DAVA::Vector<DAVA::Entity *> & PathSystem::GetPathes() const
 {
     return pathes;
+}
+
+inline DAVA::Entity * PathSystem::GetCurrrentPath() const
+{
+    return currentPath;
 }
 
 

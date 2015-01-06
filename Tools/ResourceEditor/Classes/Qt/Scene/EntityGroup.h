@@ -77,6 +77,7 @@ public:
 
 	EntityGroup& operator=(const EntityGroup &ss);
 	bool operator==(const EntityGroup &ss) const;
+    bool operator!=(const EntityGroup &ss) const;
 
 protected:
 	DAVA::Vector<EntityGroupItem> entities;

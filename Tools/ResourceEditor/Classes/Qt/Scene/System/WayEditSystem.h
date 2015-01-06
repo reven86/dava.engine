@@ -65,16 +65,27 @@ public:
 protected:
     void Draw();
 
-    DAVA::Entity* AddWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
-    DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
-    void RemWayPoint(DAVA::Entity *waypoint);
+    void ProcessCommand(const Command2 *command, bool redo);
 
+    DAVA::Entity* CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
+    DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
+
+    
+    EntityGroup GetEntitiesForAddEdges(DAVA::Entity *nextEntity);
+    void AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
+    
+    void ResetSelection();
+    void ProcessSelection();
+    
+    
 protected:
     bool isEnabled;
 
-    DAVA::Entity *currentWayParent;
-    DAVA::Entity *currentWayPoint;
-
+    EntityGroup currentSelection;
+    EntityGroup selectedWaypoints;
+    EntityGroup prevSelectedWaypoints;
+    
+    
     SceneSelectionSystem *selectionSystem;
     SceneCollisionSystem *collisionSystem;
 
