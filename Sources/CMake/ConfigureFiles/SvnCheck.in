@@ -1,0 +1,8 @@
+SVN_VERSIONS=`svn info | grep Revision | cut -f 2 -d " "`
+SVN_CURRENT_VERSIONS=$(<@CMAKE_BINARY_DIR@/SvnVersions)
+
+if [ $SVN_VERSIONS !=  $SVN_CURRENT_VERSIONS ];
+then  
+    cmake @CMAKE_BINARY_DIR@
+fi
+

@@ -34,7 +34,8 @@ endmacro( GIT_CHECK )
 
 if( GIT_FOUND )
     GIT_WC_INFO(.)
-    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitVersions.in ${CMAKE_BINARY_DIR}/GitVersions )
+    set( SUBVERSION_WC_REVISION ${GIT_WC_REVISION} )
+    CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/SubVersions.in ${CMAKE_BINARY_DIR}/GitVersions )
     CONFIGURE_FILE( ${CMAKE_CURRENT_LIST_DIR}/../ConfigureFiles/GitCheck.in  ${CMAKE_BINARY_DIR}/GitCheck.sh @ONLY )
 endif()
 
