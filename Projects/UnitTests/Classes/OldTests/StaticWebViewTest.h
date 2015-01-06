@@ -53,13 +53,23 @@ public:
     void TestFunction(PerfFuncData * data);
 
 private:
-    void ButtonPressed(BaseObject *obj, void *data, void *callerData);
-    void ButtonSetStatic(BaseObject *obj, void *data, void *callerData);
-    void ButtonSetNormal(BaseObject *obj, void *data, void *callerData);
+    void OnButtonPressed(BaseObject *obj, void *data, void *callerData);
+    void OnButtonSetStatic(BaseObject *obj, void *data, void *callerData);
+    void OnButtonSetNormal(BaseObject *obj, void *data, void *callerData);
+    void OnButtonAdd10ToAlfa(BaseObject *obj, void *data, void *callerData);
+    void OnButtonMinus10FromAlfa(BaseObject *obj, void *data, void *callerData);
+    void OnButtonCheckTransparancy(BaseObject *obj, void *data, 
+        void *callerData);
+    void OnButtonUncheckTransparancy(BaseObject *obj, void *data, 
+        void *callerData);
 
     UIButton* finishTestButton;
     UIButton* setStaticButton;
     UIButton* setNormalButton;
+    UIButton* add10ToAlfaButton;
+    UIButton* minus10FromAlfaButton;
+    UIButton* checkTransparancyButton;
+    UIButton* uncheckTransparancyButton;
 
     UIControl* overlapedImage;
 

@@ -36,6 +36,10 @@ StaticWebViewTest::StaticWebViewTest()
     finishTestButton(nullptr),
     setStaticButton(nullptr),
     setNormalButton(nullptr),
+    add10ToAlfaButton(nullptr),
+    minus10FromAlfaButton(nullptr),
+    checkTransparancyButton(nullptr),
+    uncheckTransparancyButton(nullptr),
     overlapedImage(nullptr),
     webView1(nullptr),
     webView2(nullptr),
@@ -50,7 +54,8 @@ void StaticWebViewTest::LoadResources()
 	webView1 = new UIWebView(Rect(5, 5, 700, 500));
 	webView1->SetVisible(true);
     webView1->SetRenderToTexture(true);
-	webView1->OpenURL("https://ru.wikipedia.org/");
+    // only http://www.microsoft.com works with IE ole component nice
+    webView1->OpenURL("http://www.microsoft.com");
 	AddControl(webView1);
 
     overlapedImage = new UIControl(Rect(500, 0, 300, 300));
@@ -60,19 +65,20 @@ void StaticWebViewTest::LoadResources()
     AddControl(overlapedImage);
 
 	FilePath srcDir("~res:/TestData/TransparentWebViewTest/");
-	FilePath cpyDir = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "TransparentWebViewTest/";
+	FilePath cpyDir = FileSystem::Instance()->GetCurrentDocumentsDirectory() + 
+        "TransparentWebViewTest/";
 	FileSystem::Instance()->DeleteDirectory(cpyDir);
 	FileSystem::Instance()->CreateDirectory(cpyDir);
 	FilePath srcFile = srcDir + "test.html";
 	FilePath cpyFile = cpyDir + "test.html";
 	FileSystem::Instance()->CopyFile(srcFile, cpyFile);
-	//String url = "file:///" + cpyFile.GetAbsolutePathname();
+	String url = "file:///" + cpyFile.GetAbsolutePathname();
 
-	//webView2 = new UIWebView(Rect(710, 5, 300, 250));
-	//webView2->SetVisible(true);
-	//webView2->SetBackgroundTransparency(true);
-	//webView2->OpenURL(url);
-	//AddControl(webView2);
+	webView2 = new UIWebView(Rect(710, 5, 300, 250));
+	webView2->SetVisible(true);
+	webView2->SetBackgroundTransparency(true);
+    webView2->OpenURL(url);
+	AddControl(webView2);
 
 	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
@@ -83,7 +89,8 @@ void StaticWebViewTest::LoadResources()
 	finishTestButton->SetStateText(0xFF, L"Finish Test");
 	finishTestButton->SetStateFontColor(0xFF, Color::White);
 	finishTestButton->SetDebugDraw(true);
-	finishTestButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StaticWebViewTest::ButtonPressed));
+	finishTestButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, 
+        &StaticWebViewTest::OnButtonPressed));
 	AddControl(finishTestButton);
 
 	setStaticButton = new UIButton(Rect(0 + 300, 510, 300, 30));
@@ -91,7 +98,8 @@ void StaticWebViewTest::LoadResources()
     setStaticButton->SetStateText(0xFF, L"Render To Texture");
     setStaticButton->SetStateFontColor(0xFF, Color::White);
     setStaticButton->SetDebugDraw(true);
-    setStaticButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StaticWebViewTest::ButtonSetStatic));
+    setStaticButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, 
+        &StaticWebViewTest::OnButtonSetStatic));
     AddControl(setStaticButton);
 
     setNormalButton = new UIButton(Rect(0 + 300 * 2, 510, 300, 30));
@@ -99,8 +107,49 @@ void StaticWebViewTest::LoadResources()
     setNormalButton->SetStateText(0xFF, L"Normal View");
     setNormalButton->SetStateFontColor(0xFF, Color::White);
     setNormalButton->SetDebugDraw(true);
-    setNormalButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StaticWebViewTest::ButtonSetNormal));
+    setNormalButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, 
+        &StaticWebViewTest::OnButtonSetNormal));
     AddControl(setNormalButton);
+
+    
+
+    add10ToAlfaButton = new UIButton(Rect(0 + 300 * 1, 510 + 30, 300, 30));
+    add10ToAlfaButton->SetStateFont(0xFF, font);
+    add10ToAlfaButton->SetStateText(0xFF, L"+10 to Alfa");
+    add10ToAlfaButton->SetStateFontColor(0xFF, Color::White);
+    add10ToAlfaButton->SetDebugDraw(true);
+    add10ToAlfaButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, 
+        &StaticWebViewTest::OnButtonAdd10ToAlfa));
+    AddControl(add10ToAlfaButton);
+
+    minus10FromAlfaButton = new UIButton(Rect(0 + 300 * 2, 510 + 30, 300, 30));
+    minus10FromAlfaButton->SetStateFont(0xFF, font);
+    minus10FromAlfaButton->SetStateText(0xFF, L"-10 to Alfa");
+    minus10FromAlfaButton->SetStateFontColor(0xFF, Color::White);
+    minus10FromAlfaButton->SetDebugDraw(true);
+    minus10FromAlfaButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, 
+        Message(this, &StaticWebViewTest::OnButtonMinus10FromAlfa));
+    AddControl(minus10FromAlfaButton);
+
+    checkTransparancyButton = new UIButton(
+        Rect(0 + 300 * 1, 510 + 30 * 2, 300, 30));
+    checkTransparancyButton->SetStateFont(0xFF, font);
+    checkTransparancyButton->SetStateText(0xFF, L"set Transparent Background");
+    checkTransparancyButton->SetStateFontColor(0xFF, Color::White);
+    checkTransparancyButton->SetDebugDraw(true);
+    checkTransparancyButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, 
+        Message(this, &StaticWebViewTest::OnButtonCheckTransparancy));
+    AddControl(checkTransparancyButton);
+
+    uncheckTransparancyButton = new UIButton(
+        Rect(0 + 300 * 2, 510 + 30 * 2, 300, 30));
+    uncheckTransparancyButton->SetStateFont(0xFF, font);
+    uncheckTransparancyButton->SetStateText(0xFF, L"unset Transparent Background");
+    uncheckTransparancyButton->SetStateFontColor(0xFF, Color::White);
+    uncheckTransparancyButton->SetDebugDraw(true);
+    uncheckTransparancyButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE,
+        Message(this, &StaticWebViewTest::OnButtonUncheckTransparancy));
+    AddControl(uncheckTransparancyButton);
 
 	SafeRelease(font);
 }
@@ -141,17 +190,55 @@ void StaticWebViewTest::TestFunction(PerfFuncData *)
 	return;
 }
 
-void StaticWebViewTest::ButtonPressed(BaseObject *, void *, void *)
+void StaticWebViewTest::OnButtonPressed(BaseObject *, void *, void *)
 {
 	testFinished = true;
 }
 
-void StaticWebViewTest::ButtonSetStatic(BaseObject *, void *, void *)
+void StaticWebViewTest::OnButtonSetStatic(BaseObject *, void *, void *)
 {
     webView1->SetRenderToTexture(true);
 }
 
-void StaticWebViewTest::ButtonSetNormal(BaseObject *, void *, void *)
+void StaticWebViewTest::OnButtonSetNormal(BaseObject *, void *, void *)
 {
     webView1->SetRenderToTexture(false);
+}
+
+void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject *obj, void *data, 
+    void *callerData)
+{
+    Sprite* spr = webView1->GetSprite();
+    UIControlBackground* back = webView1->GetBackground();
+    if (spr)
+    {
+        Color color = back->GetColor();
+        color.a += 0.1f;
+        color.a = color.a <= 1.0f ? color.a : 1.0f;
+        back->SetColor(color);
+    }
+}
+
+void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject *obj, void *data,
+    void *callerData)
+{
+    Sprite* spr = webView1->GetSprite();
+    UIControlBackground* back = webView1->GetBackground();
+    if (spr)
+    {
+        Color color = back->GetColor();
+        color.a -= 0.1f;
+        color.a = color.a <= 1.0f ? color.a : 1.0f;
+        back->SetColor(color);
+    }
+}
+
+void StaticWebViewTest::OnButtonCheckTransparancy(BaseObject *obj, void *data, void *callerData)
+{
+    webView1->SetBackgroundTransparency(true);
+}
+
+void StaticWebViewTest::OnButtonUncheckTransparancy(BaseObject *obj, void *data, void *callerData)
+{
+    webView1->SetBackgroundTransparency(false);
 }
