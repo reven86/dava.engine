@@ -65,7 +65,7 @@ public:
 	virtual ~WebBrowserContainer();
 
 	// Initialize the browser on the parent window.
-	bool Initialize(HWND parentWindow, UIControl* control);
+	bool Initialize(HWND parentWindow, UIWebView& control);
 
 	// Update the rect according to the parent window.
 	void UpdateRect();
@@ -119,7 +119,7 @@ public:
 
 	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 
-    bool SaveSnapshot(UIControl* control);
+    void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control);
 private:
 	// Parent window.
 	HWND hwnd;
@@ -138,13 +138,11 @@ private:
 	FilePath bufferToOpenPath;
 };
 
-class UIControl;
-
 // Web View Control for Win32.
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl(UIControl* uiWebView);
+    WebViewControl(UIWebView& uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
@@ -184,7 +182,7 @@ protected:
 	// Web Browser Container.
 	WebBrowserContainer* browserContainer;
 
-    UIControl* uiWebView;
+    UIWebView& uiWebView;
 
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;

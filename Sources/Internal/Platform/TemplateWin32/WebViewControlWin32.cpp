@@ -262,46 +262,41 @@ struct EventSink : public IDispEventImpl<1, EventSink, &DIID_DWebBrowserEvents2>
 private:
 	IUIWebViewDelegate* delegate;
 	UIWebView* webView;
-    WebBrowserContainer* container;
+    WebBrowserContainer& container;
 public:
-	EventSink()
+    EventSink(WebBrowserContainer& webContainer) :
+        delegate(nullptr),
+        webView(nullptr),
+        container(webContainer)
 	{
-		delegate = NULL;
-		webView = NULL;
-		container = NULL;
 	};
+    virtual ~EventSink(){};
 
-	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView, WebBrowserContainer* container)
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
 	{
-		if (delegate && webView && container)
+		if (delegate && webView)
 		{
 			this->delegate = delegate;
 			this->webView = webView;
-            this->container = container;
 		}
 	}
-    void SetWebView(UIWebView* webView)
+    void SetWebView(UIWebView& webView)
     {
-        this->webView = webView;
-    }
-    // TODO test only
-    void SetContainer( WebBrowserContainer* container)
-    {
-        this->container = container;
+        this->webView = &webView;
     }
 
 	void  __stdcall DocumentComplete(IDispatch* pDisp, VARIANT* URL)
 	{
-        if (container)
-        {
-            DVASSERT(webView);
-            container->SaveSnapshot(webView);
-        }
 		if (delegate && webView)
 		{
-            if (!container->DoOpenBuffer())
+            if (!container.DoOpenBuffer())
                 delegate->PageLoaded(webView);
 		}
+
+        if (webView && webView->IsRenderToTexture())
+        {
+            container.RenderToTextureAndSetAsBackgroundSpriteToControl(*webView);
+        }
 	}
 
 	void __stdcall BeforeNavigate2(IDispatch* pDisp, VARIANT* URL, VARIANT* Flags,
@@ -354,7 +349,7 @@ public:
 
 WebBrowserContainer::WebBrowserContainer() :
 	hwnd(0),
-	webBrowser(NULL),
+	webBrowser(nullptr),
     openFromBufferQueued(false)
 {
 }
@@ -371,12 +366,14 @@ WebBrowserContainer::~WebBrowserContainer()
 	}
 }
 
-void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
+void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, 
+    UIWebView* webView)
 {
-	sink->SetDelegate(delegate, webView, this);
+	sink->SetDelegate(delegate, webView);
 }
 
-bool WebBrowserContainer::SaveSnapshot(UIControl* control)
+VOID WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
+    UIWebView& control)
 {
     // Update the browser window according to the holder window.
     RECT rect = { 0 };
@@ -387,74 +384,88 @@ bool WebBrowserContainer::SaveSnapshot(UIControl* control)
 
     CComPtr<IDispatch> pDispatch;
 
-    // TODO: "If the document object type is not safe for scripting,
+    // If the document object type is not safe for scripting,
     // this method returns successfully but sets ppDisp to NULL. For
     // Internet Explorer 7 and later, the return code is S_FALSE..."
-
     HRESULT hr = webBrowser->get_Document(&pDispatch);
     if (FAILED(hr))
     {
-        return true;
+        Logger::Error("can't get web browser ole document");
+        return;
+    }
+
+    if (S_FALSE == hr)
+    {
+        return; // document not ready still
     }
 
     CComPtr<IHTMLDocument3> spDocument3;
-    hr = pDispatch->QueryInterface(IID_IHTMLDocument3, (void**)&spDocument3);
+    hr = pDispatch->QueryInterface(IID_IHTMLDocument3, 
+        reinterpret_cast<void**>(&spDocument3));
     if (FAILED(hr))
     {
-        return true;
+        Logger::Error("failed get ole IHTMLDocument3 interface");
+        return;
     }
 
     CComPtr<IViewObject2> spViewObject;
 
     // This used to get the interface from the m_pWebBrowser but that seems
     // to be an undocumented feature, so we get it from the Document instead.
-    hr = spDocument3->QueryInterface(IID_IViewObject2, (void**)&spViewObject);
+    hr = spDocument3->QueryInterface(IID_IViewObject2, 
+        reinterpret_cast<void**>(&spViewObject));
     if (FAILED(hr))
     {
-        return true;
+        Logger::Error("failed get ole IViewObject2 interface");
+        return;
     }
 
     RECTL rcBounds = { 0, 0, imageWidth, imageHeight };
     CImage image;
 
-    image.Create(imageWidth, imageHeight, 24);
-
-    HDC imgDc = image.GetDC();
-    hr = spViewObject->Draw(DVASPECT_CONTENT, -1, nullptr, nullptr, imgDc,
-        imgDc, &rcBounds, nullptr, nullptr, 0);
-    image.ReleaseDC();
-
-    DVASSERT(image.GetPitch() < 0);
-    DVASSERT(image.GetPitch() * -1 == imageWidth * 3); // RGB
-
-    uint8* rawData = rawData = reinterpret_cast<uint8*>(image.GetPixelAddress(0, imageHeight - 1));
     {
-        Image* imageBGR = Image::CreateFromData(imageWidth, imageHeight, FORMAT_BGR888, rawData);
-        DVASSERT(imageBGR);
+        image.Create(imageWidth, imageHeight, 24);
+
+        HDC imgDc = image.GetDC();
+        hr = spViewObject->Draw(DVASPECT_CONTENT, -1, nullptr, nullptr, imgDc,
+            imgDc, &rcBounds, nullptr, nullptr, 0);
+        image.ReleaseDC();
+
+        DVASSERT(image.GetPitch() < 0);
+        DVASSERT(image.GetPitch() * -1 == imageWidth * 3); // RGB
+
+        uint8* rawData = rawData = reinterpret_cast<uint8*>(
+            image.GetPixelAddress(0, imageHeight - 1));
         {
-            Image* imageRGB = Image::Create(imageWidth, imageHeight, FORMAT_RGB888);
-            DVASSERT(imageRGB);
-
-            ImageConvert::ConvertImageDirect(imageBGR, imageRGB);
+            Image* imageBGR = Image::CreateFromData(imageWidth, imageHeight,
+                FORMAT_BGR888, rawData);
+            DVASSERT(imageBGR);
             {
-                Sprite* spr = Sprite::CreateFromImage(imageRGB);
+                Image* imageRGB = Image::Create(imageWidth, imageHeight,
+                    FORMAT_RGB888);
+                DVASSERT(imageRGB);
 
-                control->SetSprite(spr, 0);
-                SafeRelease(spr);
+                ImageConvert::ConvertImageDirect(imageBGR, imageRGB);
+                {
+                    Sprite* spr = Sprite::CreateFromImage(imageRGB);
+
+                    control.SetSprite(spr, 0);
+                    SafeRelease(spr);
+                }
+                control.SetDebugDraw(true);
+                // CImage in BMP format so we need to flip image
+                control.GetBackground()->SetModification(ESM_VFLIP);
+
+                SafeRelease(imageRGB);
             }
-            control->SetDebugDraw(true);
-            // CImage in BMP format so we need to flip image
-            control->GetBackground()->SetModification(ESM_VFLIP);
-
-            SafeRelease(imageRGB);
+            SafeRelease(imageBGR);
         }
-        SafeRelease(imageBGR);
-    }
 
-    return false;
+        image.Destroy();
+    }
 }
 
-bool WebBrowserContainer::Initialize(HWND parentWindow,  UIControl* control)
+bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
 {
 	this->hwnd = parentWindow;
 
@@ -494,10 +505,9 @@ bool WebBrowserContainer::Initialize(HWND parentWindow,  UIControl* control)
 		return false;
 	}
 
-	sink = new EventSink();
+	sink = new EventSink(*this);
 	EventSink* s = sink;
-    sink->SetContainer(this); // TODO test only
-    sink->SetWebView(dynamic_cast<UIWebView*>(control));
+    sink->SetWebView(control);
 	hRes = s->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
 	if (FAILED(hRes))
 	{
@@ -944,7 +954,7 @@ void WebBrowserContainer::UpdateRect()
 	oleInPlaceObject->Release();
 }
 
-WebViewControl::WebViewControl(UIControl* webView):
+WebViewControl::WebViewControl(UIWebView& webView) :
     browserWindow(0),
     browserContainer(0),
     uiWebView(webView),
@@ -953,15 +963,13 @@ WebViewControl::WebViewControl(UIControl* webView):
     renderToTexture(false),
     isVisible(false)
 {
-    DVASSERT(webView);
-
     // Initialize GDI+.
     Gdiplus::Status status = Gdiplus::GdiplusStartup(&gdiplusToken, 
         &gdiplusStartupInput, nullptr);
 
     if (status != Gdiplus::Ok)
     {
-        DAVA::Logger::Instance()->Error("Error initialize GDI+ %s(%d)", __FILE__, __LINE__);
+        Logger::Error("Error initialize GDI+ %s(%d)", __FILE__, __LINE__);
     }
 }
 
@@ -991,6 +999,9 @@ void WebViewControl::SetRenderToTexture(bool value)
     {
         if (browserWindow != 0)
         {
+            // render current window to texture and set to sprite
+            browserContainer->RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
+
             // hide window but not change visibility state
             ::ShowWindow(browserWindow, SW_HIDE);
         }
@@ -1002,6 +1013,9 @@ void WebViewControl::SetRenderToTexture(bool value)
             //::SetWindowPos(browserWindow, nullptr, browserRect.left,
             //    browserRect.top, browserRect.right - browserRect.left,
             //    browserRect.bottom - browserRect.top, SWP_NOZORDER);
+
+            // TODO remove sprite from UIControl and show native window
+            uiWebView.SetSprite(nullptr, 0);
 
             ::ShowWindow(browserWindow, SW_SHOW);
         }

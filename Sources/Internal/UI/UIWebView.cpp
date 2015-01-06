@@ -53,7 +53,7 @@ UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates)
     , webViewControl(0)
     , isNativeControlVisible(false)
 {
-    webViewControl = new WebViewControl(this);
+    webViewControl = new WebViewControl(*this);
     Rect newRect = GetRect(true);
     webViewControl->Initialize(newRect);
     UpdateControlRect();
