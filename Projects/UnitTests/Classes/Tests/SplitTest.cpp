@@ -29,6 +29,7 @@
 
 
 #include "SplitTest.h"
+#include "Utils/StringUtils.h"
 
 SplitTest::SplitTest():
 TestTemplate<SplitTest>("SplitTest")
@@ -37,6 +38,8 @@ TestTemplate<SplitTest>("SplitTest")
 	RegisterFunction(this, &SplitTest::SplitBySymbols, "SplitBySymbols", NULL);
 	RegisterFunction(this, &SplitTest::SplitByWordsWithNewLine, "SplitByWords", NULL);
 	RegisterFunction(this, &SplitTest::SplitBySymbolsWithNewLine, "SplitBySymbols", NULL);
+    RegisterFunction(this, &SplitTest::SplitAndTrimTest, "SplitAndTrimTest", NULL);
+    RegisterFunction(this, &SplitTest::CleanLineTest, "CleanLineTest", NULL);
 }
 
 void SplitTest::LoadResources()
@@ -82,8 +85,8 @@ void SplitTest::SplitByWords(PerfFuncData * data)
         {
             if(*it != *itResult)
                 testSuccess = false;
-            it++;
-            itResult++;
+            ++it;
+            ++itResult;
         }
     }
     
@@ -116,8 +119,8 @@ void SplitTest::SplitBySymbols(PerfFuncData * data)
         {
             if(*it != *itResult)
                 testSuccess = false;
-            it++;
-            itResult++;
+            ++it;
+            ++itResult;
         }
     }
     
@@ -151,8 +154,8 @@ void SplitTest::SplitByWordsWithNewLine(PerfFuncData * data)
         {
             if(*it != *itResult)
                 testSuccess = false;
-            it++;
-            itResult++;
+            ++it;
+            ++itResult;
         }
     }
     
@@ -187,10 +190,67 @@ void SplitTest::SplitBySymbolsWithNewLine(PerfFuncData * data)
         {
             if(*it != *itResult)
                 testSuccess = false;
-            it++;
-            itResult++;
+            ++it;
+            ++itResult;
         }
     }
     
     TEST_VERIFY(testSuccess);
+}
+
+void SplitTest::SplitAndTrimTest(PerfFuncData * data)
+{
+    staticText->SetText(L"  THIS SOFTWARE IS   \u00A0   PROVIDED BY   \u00A0   \n  THE DAVA CONSULTING\n LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
+    Vector<WideString> resultStrings;
+    resultStrings.push_back(L"  THIS SOFTWARE IS       PROVIDED BY");
+    resultStrings.push_back(L"  THE DAVA CONSULTING");
+    resultStrings.push_back(L" LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR");
+    resultStrings.push_back(L"IMPLIED WARRANTIES");
+
+    staticText->SetMultiline(true);
+
+    Vector<WideString> strings = staticText->GetMultilineStrings();
+
+    bool testSuccess = true;
+
+    if (strings.size() != resultStrings.size())
+    {
+        testSuccess = false;
+    }
+    else
+    {
+        Vector<WideString>::iterator it = strings.begin();
+        Vector<WideString>::iterator itResult = resultStrings.begin();
+        while (it != strings.end() && itResult != resultStrings.end())
+        {
+            if (*it != *itResult)
+            {
+                testSuccess = false;
+                break;
+            }
+            ++it;
+            ++itResult;
+        }
+    }
+
+    TEST_VERIFY(testSuccess);
+
+}
+
+void SplitTest::CleanLineTest(PerfFuncData* data)
+{
+    WideString test1 = StringUtils::RemoveNonPrintable(L"THIS SOFTWARE\u00A0IS PROV\u200BIDED BY\n THE DAVA CONS\u200BULTING\n LLC");
+    WideString test2 = StringUtils::RemoveNonPrintable(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC");
+    WideString test3 = StringUtils::RemoveNonPrintable(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC", 1);
+    WideString test4 = StringUtils::RemoveNonPrintable(L"THIS\tSOFTWARE IS\tPROVIDED BY\nTHE DAVA CONSULTING\nLLC", 4);
+
+    WideString out1 = L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING LLC";
+    WideString out2 = L"THIS\tSOFTWARE IS\tPROVIDED BYTHE DAVA CONSULTINGLLC";
+    WideString out3 = L"THIS SOFTWARE IS PROVIDED BYTHE DAVA CONSULTINGLLC";
+    WideString out4 = L"THIS    SOFTWARE IS    PROVIDED BYTHE DAVA CONSULTINGLLC";
+
+    TEST_VERIFY(test1 == out1);
+    TEST_VERIFY(test2 == out2);
+    TEST_VERIFY(test3 == out3);
+    TEST_VERIFY(test4 == out4);
 }
