@@ -136,7 +136,7 @@ QVariant PropertiesTreeModel::data(const QModelIndex &index, int role) const
             break;
 
         case Qt::BackgroundRole:
-            return property->GetType() == BaseProperty::TYPE_HEADER ? Qt::lightGray : Qt::white;
+            return property->GetType() == BaseProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
             {
