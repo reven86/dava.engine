@@ -119,9 +119,7 @@ public:
 
 	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 
-    bool SaveSnapshot(int32 imageWidth, int32 imageHeight, UIControl* control);
-
-    void GetContainerSize(int32* width, int32* height);
+    bool SaveSnapshot(UIControl* control);
 private:
 	// Parent window.
 	HWND hwnd;

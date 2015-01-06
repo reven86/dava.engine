@@ -294,11 +294,8 @@ public:
 	{
         if (container)
         {
-            int32 width = 0;
-            int32 height = 0;
-            container->GetContainerSize(&width, &height);
             DVASSERT(webView);
-            container->SaveSnapshot(width, height, webView);
+            container->SaveSnapshot(webView);
         }
 		if (delegate && webView)
 		{
@@ -379,8 +376,15 @@ void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* w
 	sink->SetDelegate(delegate, webView, this);
 }
 
-bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight, UIControl* control)
+bool WebBrowserContainer::SaveSnapshot(UIControl* control)
 {
+    // Update the browser window according to the holder window.
+    RECT rect = { 0 };
+    GetClientRect(this->hwnd, &rect);
+
+    int32 imageWidth = static_cast<int32>(rect.right);
+    int32 imageHeight = static_cast<int32>(rect.bottom);
+
     CComPtr<IDispatch> pDispatch;
 
     // TODO: "If the document object type is not safe for scripting,
@@ -388,24 +392,27 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight, UICo
     // Internet Explorer 7 and later, the return code is S_FALSE..."
 
     HRESULT hr = webBrowser->get_Document(&pDispatch);
-
     if (FAILED(hr))
+    {
         return true;
+    }
 
     CComPtr<IHTMLDocument3> spDocument3;
     hr = pDispatch->QueryInterface(IID_IHTMLDocument3, (void**)&spDocument3);
-
     if (FAILED(hr))
+    {
         return true;
+    }
 
     CComPtr<IViewObject2> spViewObject;
 
     // This used to get the interface from the m_pWebBrowser but that seems
     // to be an undocumented feature, so we get it from the Document instead.
     hr = spDocument3->QueryInterface(IID_IViewObject2, (void**)&spViewObject);
-
     if (FAILED(hr))
+    {
         return true;
+    }
 
     RECTL rcBounds = { 0, 0, imageWidth, imageHeight };
     CImage image;
@@ -413,15 +420,9 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight, UICo
     image.Create(imageWidth, imageHeight, 24);
 
     HDC imgDc = image.GetDC();
-    hr = spViewObject->Draw(DVASPECT_CONTENT, -1, NULL, NULL, imgDc,
-        imgDc, &rcBounds, NULL, NULL, 0);
+    hr = spViewObject->Draw(DVASPECT_CONTENT, -1, nullptr, nullptr, imgDc,
+        imgDc, &rcBounds, nullptr, nullptr, 0);
     image.ReleaseDC();
-
-    if (SUCCEEDED(hr))
-    {
-        LPCTSTR str = L"test_output.png";
-        hr = image.Save(str);
-    }
 
     DVASSERT(image.GetPitch() < 0);
     DVASSERT(image.GetPitch() * -1 == imageWidth * 3); // RGB
@@ -435,10 +436,12 @@ bool WebBrowserContainer::SaveSnapshot(int32 imageWidth, int32 imageHeight, UICo
             DVASSERT(imageRGB);
 
             ImageConvert::ConvertImageDirect(imageBGR, imageRGB);
+            {
+                Sprite* spr = Sprite::CreateFromImage(imageRGB);
 
-            Sprite* spr = Sprite::CreateFromImage(imageRGB);
-
-            control->SetSprite(spr, 0);
+                control->SetSprite(spr, 0);
+                SafeRelease(spr);
+            }
             control->SetDebugDraw(true);
             // CImage in BMP format so we need to flip image
             control->GetBackground()->SetModification(ESM_VFLIP);
@@ -939,23 +942,6 @@ void WebBrowserContainer::UpdateRect()
 	}
 
 	oleInPlaceObject->Release();
-}
-
-void WebBrowserContainer::GetContainerSize(int32* width, int32* height)
-{
-    // Update the browser window according to the holder window.
-    RECT rect = {0};
-    GetClientRect(this->hwnd, &rect);
-    
-    if (width)
-    {
-        *width = rect.right;
-    }
-
-    if (height)
-    {
-        *height = rect.bottom;
-    }
 }
 
 WebViewControl::WebViewControl(UIControl* webView):
