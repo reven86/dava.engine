@@ -59,7 +59,7 @@ public:
     virtual int32 Send(const Buffer* buffers, size_t bufferCount);
 
 private:
-    int32 DoStart();
+    void DoStart();
     int32 DoConnected();
     void CleanUp(int32 error);
     void RunningObjectStopped();

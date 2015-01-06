@@ -75,7 +75,8 @@ int32 TCPClientTransport::Start(IClientListener* aListener)
 {
     DVASSERT(false == isTerminating && aListener != NULL && NULL == listener);
     listener = aListener;
-    return DoStart();
+    DoStart();
+    return 0;
 }
 
 void TCPClientTransport::Stop()
@@ -107,16 +108,18 @@ int32 TCPClientTransport::Send(const Buffer* buffers, size_t bufferCount)
     return error;
 }
 
-int32 TCPClientTransport::DoStart()
+void TCPClientTransport::DoStart()
 {
+    DVASSERT(0 == runningObjects);
+    runningObjects = 2; // Socket and timer
+
     // Try to establish connection if connection is initiated by this
     // Otherwise connection should be already accepted
     int32 error = true == isInitiator ? socket.Connect(endpoint, MakeFunction(this, &TCPClientTransport::SocketHandleConnect))
                                       : DoConnected();
-    if (0 == error)
-        runningObjects = 2; // Socket and timer
     DVASSERT(0 == error);
-    return error;
+    if (error != 0)
+        CleanUp(error);
 }
 
 int32 TCPClientTransport::DoConnected()
@@ -183,8 +186,10 @@ void TCPClientTransport::SocketHandleConnect(TCPSocket* socket, int32 error)
 {
     if (true == isTerminating) return;
 
-    0 == error ? DoConnected()
-               : DoStart();     // Try one more time
+    if (0 == error)
+        error = DoConnected();
+    if (error != 0)
+        CleanUp(error);
 }
 
 void TCPClientTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread)
