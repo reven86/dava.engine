@@ -39,15 +39,6 @@
 
 @synthesize backgroundView;
 
-/*
- // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        // Custom initialization
-    }
-    return self;
-}
-*/
 - (id) init
 {
     if (self = [super init])
@@ -67,18 +58,14 @@
     }    
 }
 
-// Implement loadView to create a view hierarchy programmatically, without using a nib.
 - (void)loadView 
 {
-	// To Hottych: Here should be proper initialization code ??? I mean, size of this view for iPhone / iPhone 4 / iPad
-	// Check please what should be here
 	[self createGLView];
 
     // Add the background view needed to place native iOS components on it.
-    backgroundView = [[BackgroundView alloc] initWithFrame:[glView frame]];
-    [backgroundView setBackgroundColor:[UIColor clearColor]];
-    [backgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-    
+    backgroundView = [[BackgroundView alloc] initWithFrame:CGRectZero];
+    backgroundView.backgroundColor = [UIColor clearColor];
+    backgroundView.clipsToBounds = false;
     
     BOOL isMultipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
     [backgroundView setMultipleTouchEnabled:isMultipleTouchEnabled]; // to pass touches to framework
@@ -93,13 +80,6 @@
 {
     return backgroundView;
 }
-
-/*
-// Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
-- (void)viewDidLoad {
-    [super viewDidLoad];
-}
-*/
 
 // Override to allow orientations other than the default portrait orientation.
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
@@ -133,7 +113,6 @@
 
 -(BOOL)shouldAutorotate
 {
-    /*return (DAVA::Core::Instance()->GetScreenOrientation()==DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE)||(DAVA::Core::Instance()->GetScreenOrientation()==DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE);*/
     return TRUE;
 }
 -(NSUInteger)supportedInterfaceOrientations
