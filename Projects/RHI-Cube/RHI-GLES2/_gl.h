@@ -13,6 +13,12 @@
     #include <AGL/agl.h>
     #include <OpenGL/glext.h>
 
+#elif defined(__DAVAENGINE_IPHONE__)
+
+    #include <OpenGLES/ES2/gl.h>
+    #include <OpenGLES/ES2/glext.h>
+    #include "../iOSSpecific/ios_gl.h"
+
 #else
 
     #include <GL/GL.h>

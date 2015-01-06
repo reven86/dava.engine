@@ -45,6 +45,12 @@
 
 #include "Utils/Utils.h"
 
+
+static CAEAGLLayer* _ViewLayer = nil;
+
+CAEAGLLayer* GetAppViewLayer() { return _ViewLayer; }
+
+
 @implementation EAGLView
 
 @synthesize animating;
@@ -125,7 +131,7 @@
             default:
                 break;
         }
-        
+/*        
         DAVA::Core::eRenderer rendererCreated = DAVA::Core::RENDERER_OPENGL_ES_1_0;
         
         if (rendererRequested == DAVA::Core::RENDERER_OPENGL_ES_3_0)
@@ -170,7 +176,7 @@
 		DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
         DAVA::RenderManager::Instance()->Init(DAVA::Core::Instance()->GetPhysicalScreenWidth(), DAVA::Core::Instance()->GetPhysicalScreenHeight());
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
-        
+*/        
 		self.multipleTouchEnabled = YES;
 		animating = FALSE;
 		displayLinkSupported = FALSE;
@@ -190,6 +196,8 @@
         DAVA::Logger::Debug("OpenGL ES View Created successfully. displayLink: %d", (int)displayLinkSupported);
     }
 	
+    _ViewLayer = (CAEAGLLayer*)self.layer;;
+
     return self;
 }
 
@@ -203,6 +211,8 @@
 		return;
 	}
 
+DAVA::Core::Instance()->SystemProcessFrame();
+/*
 	DAVA::RenderManager::Instance()->Lock();
     
     DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
@@ -219,7 +229,7 @@
 	}
         
 	DAVA::Core::Instance()->SystemProcessFrame();
-	
+
     if(DAVA::Core::Instance()->IsActive())
     {
         [renderer endRendering];
@@ -237,6 +247,7 @@
 		}
 		[self setAnimationFrameInterval:(int)interval];
 	}
+*/
 }
 
 

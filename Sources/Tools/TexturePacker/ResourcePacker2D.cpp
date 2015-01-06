@@ -38,9 +38,9 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 
-#include <Magick++.h>
-#include <magick/MagickCore.h>
-#include <magick/property.h>
+//#include <Magick++.h>
+//#include <magick/MagickCore.h>
+//#include <magick/property.h>
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "FramePathHelper.h"
@@ -203,6 +203,7 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 
 DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName)
 {
+/*
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
 	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
@@ -322,6 +323,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 
 		return 0;
     }
+ */
 	return 0;
 }
 

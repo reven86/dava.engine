@@ -989,6 +989,10 @@
 		84E5E102174D02F60001C74F /* OpenUDIDios.h in Headers */ = {isa = PBXBuildFile; fileRef = 84E5E100174D02F60001C74F /* OpenUDIDios.h */; };
 		84E5E103174D02F60001C74F /* OpenUDIDios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84E5E101174D02F60001C74F /* OpenUDIDios.mm */; };
 		87A0C45B18EACBEE00A7402D /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */; };
+		87F3802B1A5AA4CB00085E07 /* Profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F380291A5AA4CB00085E07 /* Profiler.cpp */; };
+		87F3802C1A5AA4CB00085E07 /* Profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = 87F3802A1A5AA4CB00085E07 /* Profiler.h */; };
+		87F3802F1A5AA4E100085E07 /* FWSpinlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F3802D1A5AA4E100085E07 /* FWSpinlock.cpp */; };
+		87F380301A5AA4E100085E07 /* FWSpinlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 87F3802E1A5AA4E100085E07 /* FWSpinlock.h */; };
 		9A0110663B88BCD0451F54EF /* LocalNotificationDelayed.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A011E482AD5A0EA4F082005 /* LocalNotificationDelayed.h */; };
 		9A0110F1302925F60E1FB064 /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011A8135D9BBBADF8E3299 /* LocalNotificationDelayed.cpp */; };
 		9A0116C9D40C6F4C8F6D62D2 /* LocalNotificationDelayed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011A8135D9BBBADF8E3299 /* LocalNotificationDelayed.cpp */; };
@@ -1942,6 +1946,10 @@
 		84E5E100174D02F60001C74F /* OpenUDIDios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDIDios.h; sourceTree = "<group>"; };
 		84E5E101174D02F60001C74F /* OpenUDIDios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenUDIDios.mm; sourceTree = "<group>"; };
 		87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		87F380291A5AA4CB00085E07 /* Profiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Profiler.cpp; sourceTree = "<group>"; };
+		87F3802A1A5AA4CB00085E07 /* Profiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Profiler.h; sourceTree = "<group>"; };
+		87F3802D1A5AA4E100085E07 /* FWSpinlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FWSpinlock.cpp; sourceTree = "<group>"; };
+		87F3802E1A5AA4E100085E07 /* FWSpinlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FWSpinlock.h; sourceTree = "<group>"; };
 		9A011711EF06ABD979FD9B39 /* GamepadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GamepadManager.h; sourceTree = "<group>"; };
 		9A0118E18AC6866222998E4C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		9A011A8135D9BBBADF8E3299 /* LocalNotificationDelayed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationDelayed.cpp; sourceTree = "<group>"; };
@@ -3003,6 +3011,8 @@
 		E8B3C7BD16B9326D002BD35F /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				87F380291A5AA4CB00085E07 /* Profiler.cpp */,
+				87F3802A1A5AA4CB00085E07 /* Profiler.h */,
 				4F25830A19BDC94000C28926 /* Bind.h */,
 				4F25830B19BDC94000C28926 /* FunctionTraits.h */,
 				4F25830C19BDC94000C28926 /* NullType.h */,
@@ -3300,6 +3310,8 @@
 		E8B3C8BB16B9326D002BD35F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				87F3802D1A5AA4E100085E07 /* FWSpinlock.cpp */,
+				87F3802E1A5AA4E100085E07 /* FWSpinlock.h */,
 				D751821719BF03E400BB88E0 /* ThreadPosix.cpp */,
 				6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */,
 				624C87F018C6160F00E1049D /* DateTime.cpp */,
@@ -4201,7 +4213,6 @@
 				02FD7FB71924997C007762C0 /* LandscapeCursor.h in Headers */,
 				02FD7FB81924997C007762C0 /* Light.h in Headers */,
 				3267C4AF19E5501A003CF16F /* ComponentIndices.h in Headers */,
-				D7B50F3019ACB28900F8C0C9 /* Notification.h in Headers */,
 				02FD7FB91924997C007762C0 /* Mesh.h in Headers */,
 				02FD7FBA1924997C007762C0 /* RenderBatch.h in Headers */,
 				02FD7FBB1924997C007762C0 /* RenderDataSource.h in Headers */,
@@ -4724,6 +4735,7 @@
 				E8B3CC7D16B9326E002BD35F /* UpdatableComponent.h in Headers */,
 				E8B3CC7F16B9326E002BD35F /* DataNode.h in Headers */,
 				E8B3CC8016B9326E002BD35F /* Drawable.h in Headers */,
+				87F3802C1A5AA4CB00085E07 /* Profiler.h in Headers */,
 				E8B3CC8416B9326E002BD35F /* ImposterManager.h in Headers */,
 				E8B3CC8616B9326E002BD35F /* ImposterNode.h in Headers */,
 				E8B3CC8816B9326E002BD35F /* LodNode.h in Headers */,
@@ -4873,6 +4885,7 @@
 				4FDDEC5A17A6920D00D9DDEA /* MaterialOptimazer.h in Headers */,
 				A66BC2F217AB98E800B6252E /* SkyboxSystem.h in Headers */,
 				647EFC79195F0AC40073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
+				87F380301A5AA4E100085E07 /* FWSpinlock.h in Headers */,
 				17816B8117B2748900B067E1 /* AllocatorFactory.h in Headers */,
 				E8586C4119F8FEBA004FD709 /* BackgroundView.h in Headers */,
 				A679102A17B3CF2D000AA2F2 /* SkyboxRenderObject.h in Headers */,
@@ -5438,6 +5451,7 @@
 				E8B3CAE316B9326E002BD35F /* Stats.cpp in Sources */,
 				E8B3CAEE16B9326E002BD35F /* Component.cpp in Sources */,
 				E8B3CAF016B9326E002BD35F /* SceneSystem.cpp in Sources */,
+				87F3802F1A5AA4E100085E07 /* FWSpinlock.cpp in Sources */,
 				E8B3CB1016B9326E002BD35F /* Bitstream.cpp in Sources */,
 				E8B3CB1216B9326E002BD35F /* DynamicMemoryFile.cpp in Sources */,
 				E8B3CB1416B9326E002BD35F /* File.cpp in Sources */,
@@ -5470,6 +5484,7 @@
 				029BAE591859C80500478671 /* musicios.mm in Sources */,
 				64493E1019476F4700AB2715 /* VegetationPropertyNames.cpp in Sources */,
 				E8B3CB4216B9326E002BD35F /* AABBox2.cpp in Sources */,
+				87F3802B1A5AA4CB00085E07 /* Profiler.cpp in Sources */,
 				D7CC265D19C517E500A3B754 /* LocalNotification.cpp in Sources */,
 				E8B3CB4416B9326E002BD35F /* AABBox3.cpp in Sources */,
 				E8B3CB4616B9326E002BD35F /* BezierSpline.cpp in Sources */,
@@ -6010,8 +6025,7 @@
 					FT2_BUILD_LIBRARY,
 					DAVA_DEBUG,
 					DAVA_FMOD,
-					__DAVAENGINE_AUTOTESTING__,
-					AUTOTESTING_LUA,
+					__DAVAENGINE_DEBUG__,
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
@@ -6040,7 +6054,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -6060,7 +6074,6 @@
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
 					DAVA_FMOD,
-					__DAVAENGINE_AUTOTESTING__,
 					AUTOTESTING_LUA,
 				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
@@ -6090,7 +6103,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Release;
 		};
@@ -6125,7 +6138,7 @@
 					./../../Libs/lua/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6137,7 +6150,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s";
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -6172,6 +6185,7 @@
 					./../../Libs/lua/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6183,7 +6197,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s";
 				WARNING_CFLAGS = "";
 			};
 			name = Release;
@@ -6218,6 +6232,7 @@
 					./../../Libs/lua/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6229,7 +6244,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s";
 				WARNING_CFLAGS = "";
 			};
 			name = AdHoc;
@@ -6273,7 +6288,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = AdHoc;
 		};
@@ -6307,6 +6322,7 @@
 					./../../Libs/lua/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6318,7 +6334,7 @@
 				);
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s";
 				WARNING_CFLAGS = "";
 			};
 			name = Distribution;
@@ -6362,7 +6378,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Distribution;
 		};

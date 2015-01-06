@@ -32,6 +32,8 @@
     #include "../rhi_Base.h"
     #include "../RHI/rhi_ShaderCache.h"
 
+    #include "Base/Profiler.h"
+
 
 using namespace DAVA;
 
@@ -74,6 +76,7 @@ GameCore::SetupTriangle()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-simple"),
+"precision highp float;\n"
         "attribute vec4 attr_position;\n"
         "void main()\n"
         "{\n"
@@ -83,6 +86,7 @@ GameCore::SetupTriangle()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-simple"),
+"precision highp float;\n"
 #if DV_USE_UNIFORMBUFFER_OBJECT
         "uniform FP_Buffer0_Block { vec4 FP_Buffer0[4]; };\n"
 #else
@@ -141,6 +145,7 @@ GameCore::SetupCube()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-shaded"),
+"precision highp float;\n"
 #if DV_USE_UNIFORMBUFFER_OBJECT
         "uniform VP_Buffer0_Block { vec4 VP_Buffer0[16]; };\n"
         "uniform VP_Buffer1_Block { vec4 VP_Buffer1[16]; };\n"
@@ -167,6 +172,7 @@ GameCore::SetupCube()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded"),
+"precision highp float;\n"
 #if DV_USE_UNIFORMBUFFER_OBJECT
         "uniform FP_Buffer0_Block { vec4 FP_Buffer0[4]; };\n"
 #else
@@ -247,54 +253,60 @@ void GameCore::OnForeground()
 
 void GameCore::BeginFrame()
 {
-    ApplicationCore::BeginFrame();
+}
 
+void
+GameCore::Draw()
+{
+    SCOPED_NAMED_TIMING("GameCore::Draw");
+    //-    ApplicationCore::BeginFrame();
+    
     rhi::Handle cb    = rhi::CommandBuffer::Default();
     float       clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
-
-    rhi::CommandBuffer::Begin( cb );    
+    
+    rhi::CommandBuffer::Begin( cb );
     rhi::CommandBuffer::Clear( cb );
-
+    
 #if 0
     
     rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
-
+    
     rhi::CommandBuffer::SetVertexData( cb, triangle.vb );
     rhi::CommandBuffer::SetIndices( cb, triangle.ib );
     rhi::CommandBuffer::SetPipelineState( cb, triangle.ps );
     rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, triangle.fp_const );
     rhi::CommandBuffer::DrawIndexedPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 1 );
-
+    
 #else
-
+    
     uint64  cube_t1 = SystemTimer::Instance()->AbsoluteMS();
     uint64  dt      = cube_t1 - cube_t0;
-
+    
     cube_angle += 0.001f*float(dt) * (30.0f*3.1415f/180.0f);
     cube_t0     = cube_t1;
-
+    
     Matrix4 world;
     Matrix4 view_proj;
-
+    
     world.Identity();
     world.CreateRotation( Vector3(0,1,0), cube_angle );
-//    world.CreateRotation( Vector3(1,0,0), cube_angle );
+    //    world.CreateRotation( Vector3(1,0,0), cube_angle );
     world.SetTranslationVector( Vector3(0,0,5) );
     view_proj.Identity();
     view_proj.BuildProjectionFovLH( 75.0f, Core::Instance()->GetPhysicalScreenWidth()/Core::Instance()->GetPhysicalScreenHeight(), 1.0f,1000.0f );
-
-
+    
+    
     rhi::ConstBuffer::SetConst( cube.fp_const, 0, 1, clr );
     rhi::ConstBuffer::SetConst( cube.vp_const[0], 0, 4, view_proj.data );
     rhi::ConstBuffer::SetConst( cube.vp_const[1], 0, 4, world.data );
-
+    
     rhi::CommandBuffer::SetVertexData( cb, cube.vb );
     rhi::CommandBuffer::SetPipelineState( cb, cube.ps );
     rhi::CommandBuffer::SetVertexConstBuffer( cb, 0, cube.vp_const[0] );
     rhi::CommandBuffer::SetVertexConstBuffer( cb, 1, cube.vp_const[1] );
     rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, cube.fp_const );
     rhi::CommandBuffer::DrawPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 12 );
-
+    
 #endif
     
     rhi::CommandBuffer::End( cb );
@@ -302,6 +314,7 @@ void GameCore::BeginFrame()
 
 void GameCore::EndFrame()
 {
+SCOPED_NAMED_TIMING("GameCore::EndFrame");    
     rhi::Present();
 }
 

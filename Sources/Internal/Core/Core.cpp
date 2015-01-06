@@ -688,7 +688,8 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
-///profiler::Start();
+profiler::Start();
+START_TIMING(PROF__FRAME);
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	static bool isInit = false;
 	static EGLuint64NV frequency;
@@ -761,72 +762,31 @@ void Core::SystemProcessFrame()
 			}
 		}
 		
-///START_TIMING(PROF__FRAME_UPDATE);
-		LocalNotificationController::Instance()->Update();
-        DownloadManager::Instance()->Update();
-		JobManager::Instance()->Update();
+START_TIMING(PROF__FRAME_UPDATE);
+///		LocalNotificationController::Instance()->Update();
+///        DownloadManager::Instance()->Update();
+///		JobManager::Instance()->Update();
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
-///STOP_TIMING(PROF__FRAME_UPDATE);
-///START_TIMING(PROF__FRAME_DRAW);
+STOP_TIMING(PROF__FRAME_UPDATE);
+START_TIMING(PROF__FRAME_DRAW);
 		core->Draw();
 
 		core->EndFrame();
-///STOP_TIMING(PROF__FRAME_DRAW);
+STOP_TIMING(PROF__FRAME_DRAW);
 // #ifdef __DAVAENGINE_DIRECTX9__
 // 		core->BeginFrame();
 // #endif
 	}
     Stats::Instance()->EndFrame();
 	globalFrameIndex++;
-	
+
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	EGLuint64NV end = eglGetSystemTimeNV() / frequency;
 	EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
-///STOP_TIMING(PROF__FRAME);
-///profiler::Stop();
-{
-std::vector<profiler::CounterInfo>  result;
-/*
-GetCounters( &result );
-Logger::Debug( "\nprof\n---" );
-for( unsigned i=0; i!=result.size(); ++i )
-{
-    unsigned    pi          = result[i].parent_i;
-    char        indent[128] = "";
-
-    while( pi != unsigned(-1) )
-    {
-        pi  = result[pi].parent_i;
-        strcat( indent, "  " );
-    }
-
-    Logger::Debug( "%s%-30s %-5u %u us", indent, result[i].name, result[i].count, result[i].time_us );
-}
-Logger::Debug( "\n" );
-*/
-/*
-if( profiler::GetAverageCounters( &result ) )
-{
-    Logger::Debug( "\nprof\n---" );
-    for( unsigned i=0; i!=result.size(); ++i )
-    {
-        unsigned    pi          = result[i].parent_i;
-        char        indent[128] = "";
-
-        while( pi != unsigned(-1) )
-        {
-            pi  = result[pi].parent_i;
-            strcat( indent, "  " );
-        }
-
-        Logger::Debug( "%s%-30s %-5u %u us", indent, result[i].name, result[i].count, result[i].time_us );
-    }
-    Logger::Debug( "\n" );
-}
-*/
-}
+STOP_TIMING(PROF__FRAME);
+profiler::Stop();
 //profiler::Dump();
 profiler::DumpAverage();
 }

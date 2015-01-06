@@ -9,6 +9,7 @@
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
     #include "Core/Core.h"
+    #include "Base/Profiler.h"
 
     #include "_gl.h"
 
@@ -395,6 +396,7 @@ CommandBuffer_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uin
 void        
 CommandBuffer_t::Replay()
 {
+SCOPED_NAMED_TIMING("CommandBuffer_t::Replay");
     Handle  cur_ps = 0;
     Handle  vp_const[MAX_CONST_BUFFER_COUNT];
     void*   vp_const_data[MAX_CONST_BUFFER_COUNT];
@@ -409,7 +411,7 @@ CommandBuffer_t::Replay()
 
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
-        const uint32                        cmd = *c;
+        const uint64                        cmd = *c;
         std::vector<uint64>::const_iterator arg = c+1;
 
         if( cmd == EndCmd )
@@ -419,6 +421,8 @@ CommandBuffer_t::Replay()
         {
             case GLES2__BEGIN :
             {
+                ios_GL_begin_frame();
+
                 GL_CALL(glFrontFace( GL_CW ));
                 GL_CALL(glEnable( GL_CULL_FACE ));
                 GL_CALL(glCullFace( GL_BACK ));
@@ -435,11 +439,15 @@ CommandBuffer_t::Replay()
             
             case GLES2__CLEAR :
             {
-                uint32  clr (arg[0]);
+                uint32  clr ((uint32)(arg[0]));
                 float   z   = nonaliased_cast<uint32,float>(uint32(arg[1]));
                 
                 glClearColor( float((clr>>0)&0xFF)/255.0f, float((clr>>8)&0xFF)/255.0f, float((clr>>16)&0xFF)/255.0f, float((clr>>24)&0xFF)/255.0f );
+                #if defined(__DAVAENGINE_IPHONE__)
+                glClearDepthf( z );
+                #else
                 glClearDepth( z );
+                #endif
                 glClear( GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT );
                 
                 c += 2;    
@@ -480,8 +488,8 @@ CommandBuffer_t::Replay()
             
             case GLES2__DRAW_PRIMITIVE :
             {
-                unsigned    v_cnt   = arg[1];
-                int         mode    = arg[0];
+                unsigned    v_cnt   = unsigned(arg[1]);
+                int         mode    = int(arg[0]);
 
                 PipelineStateGLES2::SetToRHI( cur_ps );
 
@@ -503,8 +511,8 @@ CommandBuffer_t::Replay()
             
             case GLES2__DRAW_INDEXED_PRIMITIVE :
             {
-                unsigned    v_cnt   = arg[1];
-                int         mode    = arg[0];
+                unsigned    v_cnt   = unsigned(arg[1]);
+                int         mode    = int(arg[0]);
 
                 PipelineStateGLES2::SetToRHI( cur_ps );
 
@@ -526,8 +534,9 @@ CommandBuffer_t::Replay()
 
         }
     }
-}
 
+    _cmd.clear();
+}
 
 
 //------------------------------------------------------------------------------
@@ -536,7 +545,7 @@ void
 Present()
 {
     Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->Replay();
-
+ 
 #if defined(__DAVAENGINE_WIN32__)
     
     HWND    wnd = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
@@ -545,6 +554,10 @@ Present()
     SwapBuffers( dc );
 
 #elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_IPHONE__)
+    
+    ios_GL_end_frame();
+
 #endif
 }
 

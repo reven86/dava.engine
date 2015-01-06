@@ -175,7 +175,7 @@ namespace DAVA
 
 
 // NOTE: 'str' expected to be immutable const static string
-#define DV_HASH(str)    StringHash(str).hash
+#define DV_HASH(str)    DAVA::StringHash(str).hash
 #define DV_HASH_INLINE  inline
 
 DV_HASH_INLINE DAVA::uint32

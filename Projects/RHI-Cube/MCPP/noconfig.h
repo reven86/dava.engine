@@ -28,7 +28,7 @@
 #define HOST_SYSTEM         SYSTEM
 
 /* Define host compiler.            */
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__)  ||  defined(__DAVAENGINE_IPHONE__)
 #define HOST_COMPILER       GNUC
 #else
 #define HOST_COMPILER       INDEPENDENT

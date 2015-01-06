@@ -93,5 +93,9 @@
 
 @end
 
+
+CAEAGLLayer* GetAppViewLayer();
+
+
 #endif //__DAVAENGINE_IPHONE__
 #endif //__DAVAENGINE_EAGLVIEW_H__

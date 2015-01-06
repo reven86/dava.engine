@@ -202,6 +202,30 @@ Initialize()
 #endif
 }
     
+#elif defined(__DAVAENGINE_IPHONE__)
+    
+void
+Initialize()
+{
+    ios_GL_init();
+
+    ConstBufferGLES2::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded default const ring-buf size
+        
+    _Inited = true;
+        
+    Logger::Info( "GL inited" );
+    Logger::Info( "  GL version   : %s", glGetString( GL_VERSION ) );
+    Logger::Info( "  GPU vendor   : %s", glGetString( GL_VENDOR ) );
+    Logger::Info( "  GPU          : %s", glGetString( GL_RENDERER ) );
+    Logger::Info( "  GLSL version : %s", glGetString( GL_SHADING_LANGUAGE_VERSION ) );
+        
+#if 0
+    glEnable( GL_DEBUG_OUTPUT );
+    glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
+    glDebugMessageCallback( &_OGLErrorCallback, 0 );
+#endif
+}
+    
 #endif
 
     

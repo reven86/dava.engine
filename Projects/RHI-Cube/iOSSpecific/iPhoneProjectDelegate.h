@@ -27,82 +27,21 @@
 =====================================================================================*/
 
 
-#ifndef __GAMECORE_H__
-#define __GAMECORE_H__
+#import "Platform/TemplateiOS/HelperAppDelegate.h"
+#import "DAVAEngine.h"
+#import "GameCore.h"
 
-#include "DAVAEngine.h"
-#include "Database/MongodbClient.h"
+#if defined(__DAVAENGINE_IPHONE__)
 
-#include "../rhi_Base.h"
+#import <UIKit/UIKit.h>
 
-using namespace DAVA;
-
-class GameCore : public ApplicationCore
+@interface iPhoneProjectDelegate : HelperAppDelegate
 {
-protected:
-    virtual ~GameCore();
-public: 
-    GameCore();
+    UIWindow *window;
+}
 
-    static GameCore * Instance() 
-    { 
-        return (GameCore*) DAVA::Core::GetApplicationCore();
-    };
-    
-    virtual void OnAppStarted();
-    virtual void OnAppFinished();
-    
-    virtual void OnSuspend();
-    virtual void OnResume();
+@property (nonatomic, retain) IBOutlet UIWindow *window;
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    virtual void OnBackground();
-    virtual void OnForeground();
-    virtual void OnDeviceLocked();
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+@end
 
-    virtual void BeginFrame();
-    virtual void Draw();
-    virtual void EndFrame();
-    
-    
-protected:
-
-    void    SetupTriangle();
-    void    SetupCube();
-
-
-    struct
-    VertexP
-    {
-        float   x,y,z;
-    };
-
-    struct
-    VertexPNT
-    {
-        float   x,y,z;
-        float   nx,ny,nz;
-        float   u,v;
-    };
-
-    struct
-    Object
-    {
-        rhi::Handle vb;
-        rhi::Handle ib;
-        rhi::Handle ps;
-        rhi::Handle vp_const[2];
-        rhi::Handle fp_const;
-    };
-
-    Object      triangle;
-    
-    Object      cube;
-    uint64      cube_t0;
-    float       cube_angle;
-};
-
-
-
-#endif // __GAMECORE_H__
+#endif // #if defined(__DAVAENGINE_IPHONE__)

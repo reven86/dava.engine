@@ -272,7 +272,7 @@ uint64 SystemTimer::GetAbsoluteUs()
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 
-    return (mach_absolute_time() * timebase.numer) / timebase.denom;
+    return ((mach_absolute_time() * timebase.numer) / timebase.denom)/1000;
 
 #else //PLATFORMS
 	//other plaforms
