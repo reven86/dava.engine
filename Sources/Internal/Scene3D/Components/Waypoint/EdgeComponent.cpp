@@ -39,16 +39,20 @@ EdgeComponent::EdgeComponent()
     , nextEntity(NULL)
     , properties(NULL)
 {
-
+    properties = new KeyedArchive();
 }
 
+EdgeComponent::~EdgeComponent()
+{
+    SafeRelease(properties);
+}
+    
 Component * EdgeComponent::Clone(Entity * toEntity)
 {
 	EdgeComponent * newComponent = new EdgeComponent();
 	newComponent->SetEntity(toEntity);
     newComponent->SetNextEntity(GetNextEntity());
-
-    //we don't need to copy properties
+    newComponent->SetProperties(properties);
     
 	return newComponent;
 }
@@ -61,6 +65,12 @@ void EdgeComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
 void EdgeComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
     DVASSERT(false);
+}
+
+void EdgeComponent::SetProperties(KeyedArchive *archieve)
+{
+    SafeRelease(properties);
+    properties = new KeyedArchive(*archieve);
 }
 
 

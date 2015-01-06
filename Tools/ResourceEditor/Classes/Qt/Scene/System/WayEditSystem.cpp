@@ -127,7 +127,8 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
 
             if(selectedWaypoints.Size() != 0)
             {
-                if(selectedWaypoints.Size() == 1)
+                int curKeyModifiers = QApplication::keyboardModifiers();
+                if(selectedWaypoints.Size() == 1 && (curKeyModifiers & Qt::ShiftModifier))
                 {
                     Entity *nextEntity = selectedWaypoints.GetEntity(0);
                     

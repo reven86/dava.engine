@@ -148,7 +148,7 @@ SceneEditor2::SceneEditor2()
     AddSystem(wayEditSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
 
     pathSystem = new PathSystem(this);
-    AddSystem(pathSystem, 1 << Component::PATH_COMPONENT);
+    AddSystem(pathSystem, 1 << Component::PATH_COMPONENT, SCENE_SYSTEM_REQUIRE_PROCESS);
     
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 

@@ -44,7 +44,7 @@ class Entity;
 class EdgeComponent : public Component
 {
 protected:
-    ~EdgeComponent(){};
+    ~EdgeComponent();
 public:
 	IMPLEMENT_COMPONENT_TYPE(EDGE_COMPONENT);
 
@@ -80,11 +80,6 @@ inline void EdgeComponent::SetNextEntity(Entity * _entity)
 inline Entity * EdgeComponent::GetNextEntity() const
 {
     return nextEntity;
-}
-
-inline void EdgeComponent::SetProperties(KeyedArchive *archieve)
-{
-    properties = archieve;
 }
 
 inline KeyedArchive * EdgeComponent::GetProperties() const
