@@ -253,7 +253,26 @@ void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint *point)
         }
     }
 }
-    
+
+void PathComponent::RemoveAllPoints()
+{
+    uint32 waypointCount = waypoints.size();
+    for(uint32 w = 0; w < waypointCount; ++w)
+    {
+        Waypoint *wp = waypoints[w];
+        DVASSERT(wp);
+
+        uint32 edgesCount = wp->edges.size();
+        for(uint32 e = 0; e < edgesCount; ++e)
+        {
+            SafeDelete(wp->edges[e]);
+        }
+
+        SafeDelete(wp);
+    }
+    waypoints.clear();
+}
+
 PathComponent::Waypoint * PathComponent::GetWaypoint(const FastName & name)
 {
     const uint32 waypointCount = waypoints.size();

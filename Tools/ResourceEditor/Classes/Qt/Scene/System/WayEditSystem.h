@@ -39,7 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Entity/SceneSystem.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
-#include "Scene3D/Components/Waypoint/PathComponent.h"
 
 // editor systems
 #include "Scene/System/SelectionSystem.h"
@@ -71,17 +70,12 @@ protected:
     DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
     void RemWayPoint(DAVA::Entity *waypoint);
 
-    void ExpandPathToEntities(DAVA::Entity * entity);
-    void CollapsePathToComponent(DAVA::Entity * entity);
-
 protected:
     bool isEnabled;
     bool inAddNewWayPointState;
 
     DAVA::Entity *currentWayParent;
     DAVA::Entity *currentWayPoint;
-
-    DAVA::Map<DAVA::PathComponent::Waypoint *, DAVA::Entity *> mapWaypoint2Entity;
 
     SceneSelectionSystem *selectionSystem;
     SceneCollisionSystem *collisionSystem;
