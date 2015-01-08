@@ -221,7 +221,7 @@ WebViewControl::WebViewControl(DAVA::UIWebView& ptr) :
 	NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
 	[openGLView addSubview:localWebView];
     
-    // if switch to renderToTexture mode // TODO test it
+    // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
 }
 
@@ -397,8 +397,10 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
     DVASSERT(webFrameRect.size.width == imageRepSize.width);
     DVASSERT(webFrameRect.size.height == imageRepSize.height);
     
+    NSRect rect = NSMakeRect(0, 0, imageRepSize.width, imageRepSize.height);
+    
     // render web view into bitmap image
-    [nativeWebView cacheDisplayInRect:webFrameRect toBitmapImageRep:imageRep];
+    [nativeWebView cacheDisplayInRect:rect toBitmapImageRep:imageRep];
     
     const unsigned char* rawData = [imageRep bitmapData];
     const int w = [imageRep pixelsWide];
@@ -414,7 +416,8 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
     {
         DVASSERT(!([imageRep bitmapFormat] & NSAlphaFirstBitmapFormat));
         format = FORMAT_RGBA8888;
-    } else
+    }
+    else
     {
         DVASSERT(false);
     }
@@ -424,7 +427,8 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
         if (pitch == w * (BPP / 8))
         {
             imageRGB = Image::CreateFromData(w, h, format, rawData);
-        } else
+        }
+        else
         {
             imageRGB = Image::Create(w, h, format);
             uint8* pixels = const_cast<uint8*>(imageRGB->GetData());
@@ -449,7 +453,6 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
                                                         Vector2(0.f, 0.f),
                                                         spriteSize);
                 uiWebViewControl.SetSprite(spr, 0);
-                uiWebViewControl.SetDebugDraw(true);
                 SafeRelease(spr);
             }
             SafeRelease(tex);

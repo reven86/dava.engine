@@ -55,6 +55,7 @@ void StaticWebViewTest::LoadResources()
 	webView1 = new UIWebView(Rect(5, 5, 700, 500));
 	webView1->SetVisible(true);
     webView1->SetRenderToTexture(true);
+    webView1->SetDebugDraw(true);
     // only http://www.microsoft.com works with IE ole component nice
     webView1->OpenURL("http://www.microsoft.com");
 	AddControl(webView1);
@@ -77,6 +78,7 @@ void StaticWebViewTest::LoadResources()
 
 	webView2 = new UIWebView(Rect(710, 5, 300, 250));
 	webView2->SetVisible(true);
+    webView2->SetDebugDraw(true);
 	webView2->SetBackgroundTransparency(true);
     webView2->OpenURL(url);
 	AddControl(webView2);
