@@ -37,7 +37,6 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
 
-#include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/EntityParentChangeCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 

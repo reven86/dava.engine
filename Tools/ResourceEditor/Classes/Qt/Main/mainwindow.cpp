@@ -93,7 +93,6 @@
 #include "Classes/Commands2/VisibilityToolActions.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/EntityRemoveCommand.h"
 #include "Classes/Commands2/DynamicShadowCommands.h"
 
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
