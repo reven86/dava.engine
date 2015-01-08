@@ -215,7 +215,6 @@ void TestEchoClient::SendParcel(Parcel* parcel)
 NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , testingEcho(true)
                            , logger()
-                           , serviceCreatorStage(0)
                            , serverBytesRecv(NULL)
                            , serverBytesSent(NULL)
                            , serverBytesDelivered(NULL)
@@ -237,7 +236,7 @@ NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
 
 NetworkTest::~NetworkTest()
 {
-    NetCore::Instance()->Release();
+    // Do not anything as object is not deleted by test infrastructure
 }
 
 void NetworkTest::LoadResources()
@@ -268,13 +267,15 @@ void NetworkTest::LoadResources()
     NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
 
     // Server config must be recreated first due to restrictions of service management
-    NetCore::Instance()->CreateController(serverConfig);
-    NetCore::Instance()->CreateController(clientConfig);
+    NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
+    NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
 }
 
 void NetworkTest::UnloadResources()
 {
+    logger.Uninstall();     // Uninstall logger here
     NetCore::Instance()->Finish(true);
+    NetCore::Instance()->Release();
     DestroyUI();
 }
 
@@ -378,40 +379,28 @@ void NetworkTest::TestNetConfig(PerfFuncData* data)
     TEST_VERIFY(3 == config2.Services().size());
 }
 
-IChannelListener* NetworkTest::CreateLogger(uint32 serviceId)
+IChannelListener* NetworkTest::CreateLogger(uint32 serviceId, void* context)
 {
-    if (SERVICE_LOG == serviceId)
-    {
-        return &logger;
-    }
+    return &logger;
+}
+
+IChannelListener* NetworkTest::CreateEcho(uint32 serviceId, void* context)
+{
+    if (ECHO_SERVER_CONTEXT == reinterpret_cast<intptr_t>(context))
+        return &echoServer;
+    else if (ECHO_CLIENT_CONTEXT == reinterpret_cast<intptr_t>(context))
+        return &echoClient;
     return NULL;
 }
 
-IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
+void NetworkTest::DeleteEcho(IChannelListener* obj, void* context)
 {
-    IChannelListener* obj = NULL;
-    if (SERVICE_ECHO == serviceId)
-    {
-        if (0 == serviceCreatorStage)
-            obj = &echoServer;
-        else if (1 == serviceCreatorStage)
-            obj = &echoClient;
-        serviceCreatorStage += 1;
-    }
-    return obj;
+    // Do nothing as services are members of NetworkTest
 }
 
-void NetworkTest::DeleteEcho(IChannelListener* obj)
+void NetworkTest::DeleteLogger(IChannelListener* obj, void* context)
 {
-    // Do nothing as services are created on stack
-}
-
-void NetworkTest::DeleteLogger(IChannelListener* obj)
-{
-    if (obj == &logger)
-    {
-        logger.Uninstall();
-    }
+    // Do nothing as logger is member of NetworkTest
 }
 
 void NetworkTest::UpdateUI(bool waitStage, float32 left)
