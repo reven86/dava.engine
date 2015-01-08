@@ -42,6 +42,10 @@
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
+#include "UI/UIControlSystem.h"
+#include "UI/Systems/UIRenderSystem.h"
+
 namespace DAVA
 {
 #if defined(LOCALIZATION_DEBUG)
@@ -57,6 +61,8 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 :	UIControl(rect, rectInAbsoluteCoordinates)
     , shadowOffset(0, 0)
 {
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIStaticText::Draw);
+
     SetInputEnabled(false, false);
     textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
     background->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
@@ -234,7 +240,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
     if (GetText().empty())
     {
-        UIControl::Draw(geometricData);
+        UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->Draw(this, geometricData);
         return;
     }
 	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
@@ -245,7 +251,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 	textBlock->PreDraw();
 	PrepareSprite();
 
-    UIControl::Draw(geometricData);
+    UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->Draw(this, geometricData);
 
 	UIGeometricData textGeomData;
 	textGeomData.position = textBlock->GetSpriteOffset();
@@ -291,9 +297,6 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 #else
     textBg->Draw(textGeomData);
 #endif
-   
-    
-    
 	
 }
 

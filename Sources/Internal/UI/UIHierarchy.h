@@ -202,7 +202,6 @@ public:
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
 
     virtual void Update(float32 timeElapsed);
-    virtual void Draw(const UIGeometricData &geometricData);
     virtual void Input(UIEvent *currentInput);
     virtual bool SystemInput(UIEvent *currentInput);
     

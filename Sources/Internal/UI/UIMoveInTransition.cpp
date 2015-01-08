@@ -40,6 +40,8 @@ namespace DAVA
 	
 UIMoveInTransition::UIMoveInTransition()
 {
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIMoveInTransition::Draw);
+
 	type = FROM_TOP;
 	isOver = false;
 }

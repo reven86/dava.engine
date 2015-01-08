@@ -47,7 +47,7 @@ UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
     ,   scene(0)
     ,   registeredInUIControlSystem(false)
 {
-
+    customDraw = Function<void(const UIGeometricData&)>(this, &UI3DView::Draw);
 }
 
 UI3DView::~UI3DView()

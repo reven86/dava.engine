@@ -39,19 +39,20 @@
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "UI/Systems/UIRenderSystem.h"
+#include "UI/Systems/UIUpdateSystem.h"
+
 namespace DAVA 
 {
 
 const FastName FRAME_QUERY_UI_DRAW("OcclusionStatsUIDraw");
 
-UIControlSystem::~UIControlSystem()
-{
-	SafeRelease(currentScreen); 
-	SafeRelease(popupContainer);
-}
-	
 UIControlSystem::UIControlSystem()
+    : systems(UISystem::UI_CONTROL_SYSTEMS_COUNT, NULL)
 {
+    systems[UISystem::UI_RENDER_SYSTEM] = new UIRenderSystem();
+	systems[UISystem::UI_UPDATE_SYSTEM] = new UIUpdateSystem();
+
 	screenLockCount = 0;
 	frameSkip = 0;
 	transitionType = 0;
@@ -79,6 +80,19 @@ UIControlSystem::UIControlSystem()
 	baseGeometricData.angle = 0;
 
     ui3DViewCount = 0;
+}
+
+UIControlSystem::~UIControlSystem()
+{
+    uint32 size = (uint32)systems.size();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        SafeDelete(systems[i]);
+    }
+    systems.clear();
+
+    SafeRelease(currentScreen);
+    SafeRelease(popupContainer);
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -308,17 +322,7 @@ void UIControlSystem::Update()
     updateCounter = 0;
 	ProcessScreenLogic();
 	
-	float32 timeElapsed = SystemTimer::FrameDelta();
-
-	if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
-	{
-		if(currentScreen)
-		{
-			currentScreen->SystemUpdate(timeElapsed);
-		}
-
-		popupContainer->SystemUpdate(timeElapsed);
-	}
+    GetSystem<UIUpdateSystem>()->Process();
 	
 	SafeRelease(prevScreen);
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
@@ -326,34 +330,7 @@ void UIControlSystem::Update()
 	
 void UIControlSystem::Draw()
 {
-    TIME_PROFILE("UIControlSystem::Draw");
-
-    FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
-
-    drawCounter = 0;
-    if (!ui3DViewCount)
-    {
-        UniqueHandle prevState = RenderManager::Instance()->currentState.stateHandle;
-        RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-        RenderManager::Instance()->FlushState();            
-        RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);        
-        RenderManager::Instance()->SetRenderState(prevState);
-    }
-
-	if (currentScreen)
-	{
-		currentScreen->SystemDraw(baseGeometricData);
-	}
-
-	popupContainer->SystemDraw(baseGeometricData);
-	
-	if(frameSkip > 0)
-	{
-		frameSkip--;
-	}
-    //Logger::Info("UIControlSystem::draws: %d", drawCounter);
-
-    FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+	GetSystem<UIRenderSystem>()->Process();
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)

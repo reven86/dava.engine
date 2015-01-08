@@ -79,7 +79,9 @@ public:
 	virtual void RemoveFromGroup();
 
 	virtual	int32 GetGroupId();
-	virtual void SystemDraw(const UIGeometricData &geometricData);// Internal method used by ControlSystem
+
+    virtual void BeforeSystemDraw(const UIGeometricData &geometricData);
+    virtual void AfterSystemDraw(const UIGeometricData &geometricData);
     
     virtual void SystemWillAppear();
     virtual void SystemScreenSizeDidChanged(const Rect &newFullScreenSize);

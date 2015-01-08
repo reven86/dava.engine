@@ -37,6 +37,9 @@
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#include "UI/Systems/UIRenderSystem.h"
+#include "UI/Systems/UIUpdateSystem.h"
+
 namespace DAVA
 {
 Sprite * UIScreenTransition::renderTargetPrevScreen = 0;
@@ -100,8 +103,8 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 
     if (prevScreen)
     {
-        prevScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-
+        UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->SystemDraw(prevScreen, UIControlSystem::Instance()->GetBaseGeometricData());
+        
         if (prevScreen->IsOnScreen())
             prevScreen->SystemWillBecomeInvisible();
 
@@ -137,9 +140,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 
     float32 timeElapsed = SystemTimer::FrameDelta();
-    nextScreen->SystemUpdate(timeElapsed);
-    nextScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-
+    UIControlSystem::Instance()->GetSystem<UIUpdateSystem>()->SystemUpdate(nextScreen, timeElapsed);
+    UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->SystemDraw(nextScreen, UIControlSystem::Instance()->GetBaseGeometricData());
+    
     //    RenderManager::Instance()->SetColor(0.0, 1.0, 0.0, 1.0);
     //    RenderHelper::Instance()->FillRect(Rect(screenRect.x, screenRect.y, screenRect.dx / 2, screenRect.dy));
 
@@ -184,7 +187,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
             Here we call update control to make calls to update / draw sequential and avoid problem with missing Update
             We pass current timeElapsed because we miss current frame time
             */
-        nextScreen->SystemUpdate(timeElapsed); // 
+        UIControlSystem::Instance()->GetSystem<UIUpdateSystem>()->SystemUpdate(nextScreen, timeElapsed);
     }
 }
 

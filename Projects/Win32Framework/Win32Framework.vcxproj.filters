@@ -154,6 +154,9 @@
     <Filter Include="Internal\Render\2D\Systems">
       <UniqueIdentifier>{012e0df1-1251-4d03-8523-68ada6fd9f72}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\UI\Systems">
+      <UniqueIdentifier>{f9f7cf8e-d5b9-4881-8baf-ca2830ef9d16}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1612,6 +1615,15 @@
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h">
       <Filter>Internal\Render\2D\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Systems\UIRenderSystem.h">
+      <Filter>Internal\UI\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Systems\UISystem.h">
+      <Filter>Internal\UI\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Systems\UIUpdateSystem.h">
+      <Filter>Internal\UI\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2907,6 +2919,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp">
       <Filter>Internal\Render\2D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Systems\UIRenderSystem.cpp">
+      <Filter>Internal\UI\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Systems\UIUpdateSystem.cpp">
+      <Filter>Internal\UI\Systems</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

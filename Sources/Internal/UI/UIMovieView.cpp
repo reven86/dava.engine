@@ -50,6 +50,8 @@ UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates) :
 	movieViewControl(new MovieViewControl),
 	UIControl(rect, rectInAbsoluteCoordinates)
 {
+    customDrawAfterChilds = Function<void(const UIGeometricData&)>(this, &UIMovieView::DrawAfterChilds);
+
 	movieViewControl->Initialize(rect);
 }
 
@@ -104,23 +106,21 @@ bool UIMovieView::IsPlaying()
 	return movieViewControl->IsPlaying();
 }
 
-void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
+void UIMovieView::DrawAfterChilds(const UIGeometricData &geometricData)
 {
-	UIControl::SystemDraw(geometricData);
-
 #ifdef DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
-	Color curDebugDrawColor = GetDebugDrawColor();
+    Color curDebugDrawColor = GetDebugDrawColor();
 
-	Rect absRect = GetRect(true);
-	RenderManager::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
-	RenderHelper::Instance()->DrawRect(absRect, RenderState::RENDERSTATE_2D_BLEND);
+    Rect absRect = GetRect(true);
+    RenderManager::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
+    RenderHelper::Instance()->DrawRect(absRect, RenderState::RENDERSTATE_2D_BLEND);
 
-	float32 minRadius = Min(GetSize().x, GetSize().y);
-	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderState::RENDERSTATE_2D_BLEND);
+    float32 minRadius = Min(GetSize().x, GetSize().y);
+    RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, RenderState::RENDERSTATE_2D_BLEND);
+    RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderState::RENDERSTATE_2D_BLEND);
+    RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderState::RENDERSTATE_2D_BLEND);
 
-	SetDebugDrawColor(curDebugDrawColor);
+    SetDebugDrawColor(curDebugDrawColor);
 #endif
 }
 

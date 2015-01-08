@@ -34,6 +34,7 @@
 #include "UI/UIControlBackground.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
+#include "Base/Function.h"
 
 namespace DAVA
 {
@@ -269,6 +270,19 @@ public:
 
 
 public:
+
+    Function<void(const UIGeometricData&)> customDraw;
+    Function<void(const UIGeometricData&)> customDrawAfterChilds;
+
+    Function<void(const UIGeometricData&)> customBeforeSystemDraw;
+    Function<void(const UIGeometricData&)> customAfterSystemDraw;
+    Function<void(const UIGeometricData&)> customSystemDraw;
+
+    Function<bool()> customNeedUpdateCheck;
+    Function<bool()> customNeedSystemUpdateCheck;
+
+	friend class UIRenderSystem;
+	friend class UIUpdateSystem;
 
     /**
      \brief Creates control with requested size and position.
@@ -1088,6 +1102,10 @@ public:
      \param[in] hierarchic Is value need to be changed in all coltrol children.
      */
     void SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic = false);
+    inline const eDebugDrawPivotMode GetDrawPivotPointMode() const
+    {
+        return drawPivotPointMode;
+    }
 
 public:
 
@@ -1157,7 +1175,7 @@ public:
         Internal method used by ControlSystem. Can be overriden to prevent hierarchical call or adjust functionality.
      \param[in] timeElapsed Current frame time delta.
      */
-    virtual void SystemUpdate(float32 timeElapsed);
+    //virtual void SystemUpdate(float32 timeElapsed);
     /**
      \brief Calls on every frame to process controls drawing.
         Firstly this method calls Draw() for the curent control. When SystemDraw() called for the every control child.
@@ -1166,7 +1184,7 @@ public:
         Can be overriden to adjust draw hierarchy.
      \param[in] geometricData Parent geometric data.
      */
-    virtual void SystemDraw(const UIGeometricData &geometricData);// Internal method used by ControlSystem
+    //virtual void SystemDraw(const UIGeometricData &geometricData);// Internal method used by ControlSystem
 
     /**
      \brief set parent draw color into control
@@ -1247,14 +1265,14 @@ public:
         Default realization is drawing UIControlBackground with requested parameters.
      \param[in] geometricData Control geometric data.
      */
-    virtual void Draw(const UIGeometricData &geometricData);
+    //virtual void Draw(const UIGeometricData &geometricData);
     /**
      \brief Calls on every frame with UIGeometricData after all children is drawed.
         Can be overriden to implement after children drawing.
         Default realization is empty.
      \param[in] geometricData Control geometric data.
      */
-    virtual void DrawAfterChilds(const UIGeometricData &geometricData);
+    //virtual void DrawAfterChilds(const UIGeometricData &geometricData);
 
 protected:
     virtual void SystemWillBecomeVisible();

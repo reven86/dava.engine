@@ -40,6 +40,8 @@
 #include "UI/UIPopup.h"
 #include "Base/FastName.h"
 
+#include "UI/Systems/UISystem.h"
+
 #define FRAME_SKIP	5
 
 /**
@@ -297,6 +299,10 @@ public:
     void UI3DViewAdded();
     void UI3DViewRemoved();
 
+    inline UISystem* GetSystem(const UISystem::eSystemType system) const;
+    template<class T>
+    inline T* GetSystem() const;
+
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -340,7 +346,23 @@ private:
 	
 	friend class UIScreenTransition;
 	friend class UIScreenManager;
+
+    Vector<UISystem*> systems;
+
+    friend class UIRenderSystem;
 };
+
+inline UISystem* UIControlSystem::GetSystem(const UISystem::eSystemType system) const
+{
+    return systems[(uint32)system];
+}
+
+template<class T>
+inline T* UIControlSystem::GetSystem() const
+{
+    return reinterpret_cast<T*>(GetSystem((const UISystem::eSystemType)T::TYPE));
+}
+
 };
 
 #endif

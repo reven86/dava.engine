@@ -43,6 +43,9 @@ UIScreen::UIScreen(const Rect &rect)
 	:UIControl(rect)
 ,	groupId(groupIdCounter)
 {
+    customBeforeSystemDraw = Function<void(const UIGeometricData&)>(this, &UIScreen::BeforeSystemDraw);
+    customAfterSystemDraw = Function<void(const UIGeometricData&)>(this, &UIScreen::AfterSystemDraw);
+
 	// add screen to list
 	appScreens.push_back(this);
 	groupIdCounter --;
@@ -88,22 +91,20 @@ void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
 }
 
 	
-void UIScreen::SystemDraw(const UIGeometricData &geometricData)
+void UIScreen::BeforeSystemDraw(const UIGeometricData &geometricData)
 {
 	if (fillBorderOrder == FILL_BORDER_BEFORE_DRAW)
 	{
 		FillScreenBorders(geometricData);
-		UIControl::SystemDraw(geometricData);
 	}
-	else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
-	{
-		UIControl::SystemDraw(geometricData);
-		FillScreenBorders(geometricData);
-	}
-	else 
-	{
-		UIControl::SystemDraw(geometricData);
-	}
+}
+
+void UIScreen::AfterSystemDraw(const UIGeometricData &geometricData)
+{
+    if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
+    {
+        FillScreenBorders(geometricData);
+    }
 }
 
 void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)

@@ -41,6 +41,9 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "UI/UIControlSystem.h"
+#include "UI/Systems/UIRenderSystem.h"
+
 namespace DAVA 
 {
 	
@@ -57,6 +60,8 @@ UISlider::UISlider(const Rect & rect)
 ,	thumbButton(NULL)
 ,   spritesEmbedded(false)
 {
+    customDraw = Function<void(const UIGeometricData&)>(this, &UISlider::Draw);
+
     SetInputEnabled(true, false);
 	isEventsContinuos = true;
 	
@@ -289,7 +294,7 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 
 	if (!minBackground && !maxBackground)
 	{
-		UIControl::Draw(geometricData);
+        UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->Draw(this, geometricData);
 	}
 }
 

@@ -275,7 +275,6 @@ public:
 
     virtual void Input(UIEvent *currentInput);
 
-    virtual void SystemDraw(const UIGeometricData &geometricData);// Internal method used by ControlSystem
     virtual void Draw(const UIGeometricData &geometricData);
 
     virtual void SetParentColor(const Color &parentColor);

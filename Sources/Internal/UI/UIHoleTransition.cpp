@@ -41,6 +41,8 @@ namespace DAVA
 	
 UIHoleTransition::UIHoleTransition()
 {
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIHoleTransition::Draw);
+
 	duration = 0.8f;
 }
 

@@ -40,6 +40,8 @@ namespace DAVA
 	
 UIFadeTransition::UIFadeTransition()
 {
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIFadeTransition::Draw);
+
 	type = FADE_MIX;
 }
 

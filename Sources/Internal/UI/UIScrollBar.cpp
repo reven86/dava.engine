@@ -34,6 +34,9 @@
 #include "UI/UIYamlLoader.h"
 #include "FileSystem/YamlNode.h"
 
+#include "UI/UIControlSystem.h"
+#include "UI/Systems/UIRenderSystem.h"
+
 namespace DAVA 
 {
 
@@ -48,6 +51,8 @@ UIScrollBar::UIScrollBar(const Rect &rect, eScrollOrientation requiredOrientatio
 ,   orientation(requiredOrientation)
 ,   resizeSliderProportionally(true)
 {
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIScrollBar::Draw);
+
 	InitControls(rect);
 }
 
@@ -368,7 +373,7 @@ void UIScrollBar::Draw(const UIGeometricData &geometricData)
                 break;
         }
     }
-    UIControl::Draw(geometricData);
+    UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->Draw(this, geometricData);
 }
 
 int32 UIScrollBar::GetOrientation() const
