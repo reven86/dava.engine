@@ -71,7 +71,6 @@ public:
     const String GetDelegatePath(const UIControl *rootControl) const;
     UIControl *GetSlider();
     
-    virtual void Draw(const UIGeometricData &geometricData);
 	virtual void AddControl(UIControl *control);
     virtual void RemoveControl(UIControl *control);
 	virtual UIControl *Clone();
@@ -84,6 +83,8 @@ public:
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 	
     void Input(UIEvent *currentInput);
+
+    void CustomDraw(const UIGeometricData &geometricData);
 
 	int32 GetOrientation() const;
 	void SetOrientation(int32 value);

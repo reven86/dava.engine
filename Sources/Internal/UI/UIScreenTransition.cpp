@@ -191,7 +191,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
     }
 }
 
-void UIScreenTransition::Draw(const UIGeometricData &geometricData)
+void UIScreenTransition::CustomDraw(const UIGeometricData &geometricData)
 {
     Sprite::DrawState drawState;
     drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);

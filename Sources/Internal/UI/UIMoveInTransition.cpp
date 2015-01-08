@@ -40,7 +40,7 @@ namespace DAVA
 	
 UIMoveInTransition::UIMoveInTransition()
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIMoveInTransition::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIMoveInTransition::CustomDraw);
 
 	type = FROM_TOP;
 	isOver = false;
@@ -61,7 +61,7 @@ void UIMoveInTransition::Update(float32 timeElapsed)
 	UIScreenTransition::Update(timeElapsed);
 }
 
-void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
+void UIMoveInTransition::CustomDraw(const UIGeometricData &geometricData)
 {
 	/*
 	 renderTargetPrevScreen->SetScale(0.5f, 1.0f);

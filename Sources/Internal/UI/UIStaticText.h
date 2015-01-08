@@ -66,7 +66,6 @@ public:
 
     UIStaticText(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 
-    virtual void Draw(const UIGeometricData &geometricData);
     virtual void SetParentColor(const Color &parentColor);
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
@@ -101,8 +100,8 @@ public:
 
     const Vector2 & GetTextSize();
 
+    void CustomDraw(const UIGeometricData &geometricData);
     void PrepareSprite();
-
 
     const WideString & GetText() const;
     const Vector<WideString> & GetMultilineStrings() const;

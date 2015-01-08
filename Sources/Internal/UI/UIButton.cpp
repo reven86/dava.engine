@@ -50,7 +50,7 @@ UIButton::UIButton(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     , selectedTextBlock(NULL)
     , oldControlState(0)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIButton::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIButton::CustomDraw);
 
     for(int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {
@@ -457,7 +457,7 @@ UIControlBackground * UIButton::GetBackground() const
     return selectedBackground;
 }
 
-void UIButton::Draw(const UIGeometricData &geometricData)
+void UIButton::CustomDraw(const UIGeometricData &geometricData)
 {
     if (oldControlState != controlState)
     {
@@ -471,7 +471,7 @@ void UIButton::Draw(const UIGeometricData &geometricData)
     
     if (selectedTextBlock)
     {
-        selectedTextBlock->Draw(geometricData);
+        selectedTextBlock->CustomDraw(geometricData);
     }
 }
 

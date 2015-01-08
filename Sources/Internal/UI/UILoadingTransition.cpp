@@ -41,7 +41,7 @@ namespace DAVA
 	
 UILoadingTransition::UILoadingTransition()
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UILoadingTransition::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &UILoadingTransition::CustomDraw);
 
 	thread = 0;
 	backgroundSprite = 0;
@@ -150,7 +150,7 @@ void UILoadingTransition::Update(float32 timeElapsed)
 	}
 }
 
-void UILoadingTransition::Draw(const UIGeometricData &geometricData)
+void UILoadingTransition::CustomDraw(const UIGeometricData &geometricData)
 {
     
 	if (backgroundSprite)

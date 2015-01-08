@@ -52,12 +52,12 @@ public:
 	virtual void SetPosition(const Vector2 &position);
 	virtual void SetSize(const Vector2 &newSize);
 
-	virtual void DrawAfterChilds(const UIGeometricData &geometricData);
-
     virtual void WillBecomeVisible();
     virtual void WillBecomeInvisible();
 
     virtual UIControl* Clone();
+
+    void CustomDrawAfterChilds(const UIGeometricData &geometricData);
 
 	// Start/stop the video playback.
 	void Play();

@@ -257,7 +257,6 @@ public:
         Default color is Color(1,1,1,1).
      \param[in] geometricData Control geometric data.
      */
-
     virtual void Draw(const UIGeometricData &geometricData);
 
     /**

@@ -57,7 +57,6 @@ public:
 
     virtual void AddControl(UIControl *control);
     virtual void Update(float32 timeElapsed);
-    virtual void Draw(const UIGeometricData &geometricData);
 
     virtual void WillAppear();
 
@@ -68,6 +67,8 @@ public:
     // Load/save functionality.
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual YamlNode* SaveToYamlNode(UIYamlLoader * loader);
+
+    void CustomDraw(const UIGeometricData &geometricData);
 
     void Load(const FilePath& path);
     void Reload();

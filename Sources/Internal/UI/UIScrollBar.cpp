@@ -51,7 +51,7 @@ UIScrollBar::UIScrollBar(const Rect &rect, eScrollOrientation requiredOrientatio
 ,   orientation(requiredOrientation)
 ,   resizeSliderProportionally(true)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIScrollBar::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIScrollBar::CustomDraw);
 
 	InitControls(rect);
 }
@@ -292,7 +292,7 @@ void UIScrollBar::CalculateStartOffset(const Vector2& inputPoint)
 	}
 }
 	
-void UIScrollBar::Draw(const UIGeometricData &geometricData)
+void UIScrollBar::CustomDraw(const UIGeometricData &geometricData)
 {
     if (delegate) 
     {

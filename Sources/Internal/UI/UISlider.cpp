@@ -60,7 +60,7 @@ UISlider::UISlider(const Rect & rect)
 ,	thumbButton(NULL)
 ,   spritesEmbedded(false)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UISlider::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &UISlider::CustomDraw);
 
     SetInputEnabled(true, false);
 	isEventsContinuos = true;
@@ -264,7 +264,7 @@ void UISlider::Input(UIEvent *currentInput)
 	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
-void UISlider::Draw(const UIGeometricData &geometricData)
+void UISlider::CustomDraw(const UIGeometricData &geometricData)
 {
 	const Rect & aRect =  thumbButton->GetGeometricData().GetUnrotatedRect();
 	float32 clipPointAbsolute = aRect.x + aRect.dx * 0.5f;

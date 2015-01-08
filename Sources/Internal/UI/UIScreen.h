@@ -80,11 +80,11 @@ public:
 
 	virtual	int32 GetGroupId();
 
-    virtual void BeforeSystemDraw(const UIGeometricData &geometricData);
-    virtual void AfterSystemDraw(const UIGeometricData &geometricData);
-    
     virtual void SystemWillAppear();
     virtual void SystemScreenSizeDidChanged(const Rect &newFullScreenSize);
+
+    void CustomBeforeSystemDraw(const UIGeometricData &geometricData);
+    void CustomAfterSystemDraw(const UIGeometricData &geometricData);
 
 protected:
 	virtual void LoadResources() {};

@@ -50,7 +50,7 @@ UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates) :
 	movieViewControl(new MovieViewControl),
 	UIControl(rect, rectInAbsoluteCoordinates)
 {
-    customDrawAfterChilds = Function<void(const UIGeometricData&)>(this, &UIMovieView::DrawAfterChilds);
+    customDrawAfterChilds = Function<void(const UIGeometricData&)>(this, &UIMovieView::CustomDrawAfterChilds);
 
 	movieViewControl->Initialize(rect);
 }
@@ -106,7 +106,7 @@ bool UIMovieView::IsPlaying()
 	return movieViewControl->IsPlaying();
 }
 
-void UIMovieView::DrawAfterChilds(const UIGeometricData &geometricData)
+void UIMovieView::CustomDrawAfterChilds(const UIGeometricData &geometricData)
 {
 #ifdef DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
     Color curDebugDrawColor = GetDebugDrawColor();

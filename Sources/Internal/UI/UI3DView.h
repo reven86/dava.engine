@@ -54,8 +54,6 @@ public:
 
     virtual void AddControl(UIControl *control);
     virtual void Update(float32 timeElapsed);
-    virtual void Draw(const UIGeometricData &geometricData);
-
     virtual void WillBecomeVisible(); 	
 	virtual void WillBecomeInvisible();
 
@@ -66,6 +64,8 @@ public:
 
     virtual void SetSize(const Vector2 &newSize);
     virtual UIControl* Clone();
+
+    void CustomDraw(const UIGeometricData &geometricData);
 
 protected:
     Scene * scene;

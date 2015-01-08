@@ -56,11 +56,10 @@ public:
     
 	/**
 	 \brief Calls on every frame to draw control.
-     Can be overriden to implement custom draw functionality.
      Default realization is drawing UIControlBackground with requested parameters.
 	 \param[in] geometricData Control geometric data.
 	 */
-	virtual void Draw(const UIGeometricData &geometricData);
+	void CustomDraw(const UIGeometricData &geometricData);
     
     /**
      \brief open video file

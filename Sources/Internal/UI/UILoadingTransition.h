@@ -55,13 +55,13 @@ public:
 	virtual void DidAppear();
 	virtual void StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen);
 	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
 	virtual int32 GetGroupId();
 	virtual void WillAppear();
 	virtual void WillDisappear();
 	
 	inline UIScreenTransition * GetInTransition();	
-	
+
+    void CustomDraw(const UIGeometricData &geometricData);
 	bool IsLoadingTransition();
 	
 protected:

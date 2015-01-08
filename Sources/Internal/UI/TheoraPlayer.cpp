@@ -64,7 +64,7 @@ frameTime(0),
 file(0),
 frameBuffer(0)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &TheoraPlayer::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &TheoraPlayer::CustomDraw);
 
     theoraData = new TheoraData();
     theoraData->thSetup = 0;
@@ -402,7 +402,7 @@ void TheoraPlayer::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     }
 }
 
-void TheoraPlayer::Draw(const UIGeometricData &geometricData)
+void TheoraPlayer::CustomDraw(const UIGeometricData &geometricData)
 {
     Sprite* sprite = GetSprite();
     if(sprite)

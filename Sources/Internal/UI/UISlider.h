@@ -54,7 +54,7 @@ public:
     virtual void AddControl(UIControl *control);
     virtual void RemoveControl(UIControl *control);
 
-	virtual void Draw(const UIGeometricData &geometricData);
+	void CustomDraw(const UIGeometricData &geometricData);
 	
 	inline bool IsEventsContinuos() const;
 	inline void SetEventsContinuos(bool isEventsContinuos);

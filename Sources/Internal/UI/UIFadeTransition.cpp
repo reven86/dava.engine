@@ -40,7 +40,7 @@ namespace DAVA
 	
 UIFadeTransition::UIFadeTransition()
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIFadeTransition::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIFadeTransition::CustomDraw);
 
 	type = FADE_MIX;
 }
@@ -59,7 +59,7 @@ void UIFadeTransition::Update(float32 timeElapsed)
 	UIScreenTransition::Update(timeElapsed);
 }
 
-void UIFadeTransition::Draw(const UIGeometricData &geometricData)
+void UIFadeTransition::CustomDraw(const UIGeometricData &geometricData)
 {
 	/*
 	 renderTargetPrevScreen->SetScale(0.5f, 1.0f);

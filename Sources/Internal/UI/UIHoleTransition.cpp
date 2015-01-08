@@ -41,7 +41,7 @@ namespace DAVA
 	
 UIHoleTransition::UIHoleTransition()
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIHoleTransition::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &UIHoleTransition::CustomDraw);
 
 	duration = 0.8f;
 }
@@ -81,7 +81,7 @@ void UIHoleTransition::Update(float32 timeElapsed)
 	}
 }
 
-void UIHoleTransition::Draw(const UIGeometricData &geometricData)
+void UIHoleTransition::CustomDraw(const UIGeometricData &geometricData)
 {
 	/*
 	 renderTargetPrevScreen->SetScale(0.5f, 1.0f);

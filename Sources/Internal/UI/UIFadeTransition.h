@@ -52,7 +52,9 @@ public:
 
 	virtual void SetType(eType _type);
 	virtual void Update(float32 timeElapsed);
-	virtual void Draw(const UIGeometricData &geometricData);
+	
+    void CustomDraw(const UIGeometricData &geometricData);
+
 private:
 	eType type;
 };

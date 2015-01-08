@@ -275,8 +275,6 @@ public:
 
     virtual void Input(UIEvent *currentInput);
 
-    virtual void Draw(const UIGeometricData &geometricData);
-
     virtual void SetParentColor(const Color &parentColor);
     virtual UIButton *Clone();
     virtual void CopyDataFrom(UIControl *srcControl);
@@ -289,6 +287,8 @@ public:
      Will create the background once only and then cache it.
      */
     virtual void CreateBackgroundForState(int32 state);
+
+    void CustomDraw(const UIGeometricData &geometricData);
 
 protected:
     virtual ~UIButton();

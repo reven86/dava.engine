@@ -47,7 +47,7 @@ UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
     ,   scene(0)
     ,   registeredInUIControlSystem(false)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UI3DView::Draw);
+    customDraw = Function<void(const UIGeometricData&)>(this, &UI3DView::CustomDraw);
 }
 
 UI3DView::~UI3DView()
@@ -89,7 +89,7 @@ void UI3DView::Update(float32 timeElapsed)
         scene->Update(timeElapsed);
 }
 
-void UI3DView::Draw(const UIGeometricData & geometricData)
+void UI3DView::CustomDraw(const UIGeometricData & geometricData)
 {
 	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
 
