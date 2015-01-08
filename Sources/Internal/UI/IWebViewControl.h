@@ -36,6 +36,8 @@
 #include "Math/Vector.h"
 #include "Math/Rect.h"
 
+#include "FileSystem/Logger.h"
+
 namespace DAVA {
 
 class UIWebView;

@@ -46,7 +46,8 @@ StaticWebViewTest::StaticWebViewTest()
     testFinished(false),
     onScreenTime(0.f)
 {
-	RegisterFunction(this, &StaticWebViewTest::TestFunction, Format("StaticWebViewTest"), NULL);
+	RegisterFunction(this, &StaticWebViewTest::TestFunction,
+                     Format("StaticWebViewTest"), NULL);
 }
 
 void StaticWebViewTest::LoadResources()
@@ -144,7 +145,8 @@ void StaticWebViewTest::LoadResources()
     uncheckTransparancyButton = new UIButton(
         Rect(0 + 300 * 2, 510 + 30 * 2, 300, 30));
     uncheckTransparancyButton->SetStateFont(0xFF, font);
-    uncheckTransparancyButton->SetStateText(0xFF, L"unset Transparent Background");
+    uncheckTransparancyButton->SetStateText(0xFF,
+                                            L"unset Transparent Background");
     uncheckTransparancyButton->SetStateFontColor(0xFF, Color::White);
     uncheckTransparancyButton->SetDebugDraw(true);
     uncheckTransparancyButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE,
@@ -233,12 +235,14 @@ void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject *obj, void *data,
     }
 }
 
-void StaticWebViewTest::OnButtonCheckTransparancy(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::OnButtonCheckTransparancy(BaseObject *obj, void *data,
+                                                  void *callerData)
 {
     webView1->SetBackgroundTransparency(true);
 }
 
-void StaticWebViewTest::OnButtonUncheckTransparancy(BaseObject *obj, void *data, void *callerData)
+void StaticWebViewTest::OnButtonUncheckTransparancy(BaseObject *obj, void *data,
+                                                    void *callerData)
 {
     webView1->SetBackgroundTransparency(false);
 }

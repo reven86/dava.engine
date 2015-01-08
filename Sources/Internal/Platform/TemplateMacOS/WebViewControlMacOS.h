@@ -41,7 +41,7 @@ class UIWebView;
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl(UIWebView* uiWebView);
+	explicit WebViewControl(UIWebView& uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
@@ -68,12 +68,15 @@ public:
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
     
-    void SetImage(void* ptr);
+    void SetImageCache(void* ptr);
+    void* GetImageCache() const;
 
-protected:
+    void RenderToTextureAndSetAsBackgroundSpriteToControl(DAVA::UIWebView&
+                                                          uiWebViewControl);
+private:
+    
 	//A pointer to MacOS WebView.
 	void* webViewPtr;
-    bool isWebViewVisible;
 	
 	// A pointer to the WebView delegate.
 	void* webViewDelegatePtr;
@@ -81,7 +84,10 @@ protected:
 	void* webViewPolicyDelegatePtr;
     void* webImageCachePtr;
     
-    UIWebView* uiWebView;
+    UIWebView& uiWebViewControl;
+    
+    bool isRenderToTexture;
+    bool isVisible;
 
     static int32 runScriptID;
 };

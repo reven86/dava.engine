@@ -61,7 +61,7 @@ using namespace DAVA;
 @interface WebViewPolicyDelegate : NSObject
 {
 	IUIWebViewDelegate* delegate;
-	UIWebView* webView;
+    DAVA::UIWebView* webView;
     WebViewControl* webViewControl;
 }
 
@@ -138,66 +138,9 @@ using namespace DAVA;
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
 {
-    // TODO get image from loaded frame
-    NSRect testRect = NSMakeRect(0.0f, 0.0f, 700.0f, 500.0f);
-    
-    NSBitmapImageRep* imageRep = [sender bitmapImageRepForCachingDisplayInRect:testRect];
-    DVASSERT(imageRep);
-    [sender cacheDisplayInRect:testRect toBitmapImageRep:imageRep];
-    if (webView)
+    if (webView && webView->IsRenderToTexture())
     {
-        const unsigned char* rawData = [imageRep bitmapData];
-        int w = [imageRep pixelsWide];
-        int h = [imageRep pixelsHigh];
-        const int BPP = [imageRep bitsPerPixel];
-        const int pitch = [imageRep bytesPerRow];
-        {
-            PixelFormat format = FORMAT_INVALID;
-            if (24 == BPP)
-            {
-                format = FORMAT_RGB888;
-            } else if (32 == BPP){
-                // TODO check is alfa last
-                DVASSERT(![imageRep bitmapFormat] & NSAlphaFirstBitmapFormat);
-                format = FORMAT_RGBA8888;
-            } else
-            {
-                DVASSERT(false);
-            }
-            Image* imageRGB = nullptr;
-            if (pitch == w * (BPP / 8))
-            {
-                imageRGB = Image::CreateFromData(w, h, format, rawData);
-            } else
-            {
-                imageRGB = Image::Create(w, h, format);
-                uint8* pixels = const_cast<uint8*>(imageRGB->GetData());
-                int bytesPerLine = w * (BPP / 8);
-                // copy line by line image
-                for(int y = 0; y < h; ++y)
-                {
-                    uint8* dstLineStart = &pixels[y * bytesPerLine];
-                    const uint8* srcLineStart = &rawData[y * pitch];
-                    Memcpy(dstLineStart, srcLineStart, bytesPerLine);
-                }
-            }
-            DVASSERT(imageRGB);
-            
-            Texture* tex = Texture::CreateFromData(imageRGB, false);
-            const DAVA::Rect& rect = webView->GetRect();
-            Vector2 spriteSize(rect.dx, rect.dy);
-            Sprite* spr = Sprite::CreateFromTexture(spriteSize, tex, Vector2(0.f, 0.f), spriteSize);
-            webView->SetSprite(spr, 0);
-            webView->SetDebugDraw(true);
-            imageRGB->Release();
-        }
-    }
-    if (webViewControl)
-    {
-        webViewControl->SetImage(imageRep);
-        NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:nil];
-        [pngData writeToFile:@"test_output.png" atomically:YES];
-        // should I delete pngData?
+        webViewControl->RenderToTextureAndSetAsBackgroundSpriteToControl(*webView);
     }
     
     if (delegate && self->webView)
@@ -206,7 +149,8 @@ using namespace DAVA;
     }
 }
 
-- (void)setDelegate:(DAVA::IUIWebViewDelegate *)d andWebView:(DAVA::UIWebView *)w
+- (void)setDelegate:(DAVA::IUIWebViewDelegate *)d
+         andWebView:(DAVA::UIWebView *)w
 {
 	if (d && w)
 	{
@@ -221,7 +165,8 @@ using namespace DAVA;
     {
         NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
         NSString* requestResult = (NSString*)[result objectAtIndex:1];
-        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
+        delegate->OnExecuteJScript(webView, [requestId intValue],
+                                   DAVA::String([requestResult UTF8String]));
     }
     [result release];
 }
@@ -246,13 +191,15 @@ using namespace DAVA;
 
 int32 WebViewControl::runScriptID = 0;
 
-WebViewControl::WebViewControl(UIWebView* ptr) :
-    isWebViewVisible(true),
-    webImageCachePtr(0),
-    uiWebView(ptr)
+WebViewControl::WebViewControl(DAVA::UIWebView& ptr) :
+    webImageCachePtr(nullptr),
+    uiWebViewControl(ptr),
+    isRenderToTexture(false),
+    isVisible(true)
 {
 	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
-	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil groupName:nil];
+	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil
+                                      groupName:nil];
 
 	WebView* localWebView = (WebView*)webViewPtr;
 	[localWebView setWantsLayer:YES];
@@ -261,31 +208,28 @@ WebViewControl::WebViewControl(UIWebView* ptr) :
 	[localWebView setUIDelegate:(WebViewControlUIDelegate*)webViewDelegatePtr];
 
 	webViewPolicyDelegatePtr = [[WebViewPolicyDelegate alloc] init];
-	[localWebView setPolicyDelegate:(WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
+	[localWebView setPolicyDelegate:
+                    (WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
     
-    [localWebView setFrameLoadDelegate:(WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
+    [localWebView setFrameLoadDelegate:
+                    (WebViewPolicyDelegate*)webViewPolicyDelegatePtr];
 
     [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setWebViewControl:this];
-    [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setUiWebViewControl:uiWebView];
+    [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setUiWebViewControl:
+                                                            &uiWebViewControl];
     
 	NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
 	[openGLView addSubview:localWebView];
     
-    // TODO try hide windows and render it's content to image(texture)
-    
+    // if switch to renderToTexture mode // TODO test it
     [localWebView setShouldUpdateWhileOffscreen:YES];
-    
-    //[localWebView setHidden:YES];
-    
-    NSRect testRect = NSMakeRect(0.0f, 0.0f, 700.0f, 500.0f);
-    
-    NSBitmapImageRep* imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:testRect];
-    DVASSERT(imageRep);
-    webImageCachePtr = imageRep;
 }
 
 WebViewControl::~WebViewControl()
 {
+    NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
+   [imageRep release];
+    
 	WebView* innerWebView = (WebView*)webViewPtr;
 
 	[innerWebView setUIDelegate:nil];
@@ -293,15 +237,15 @@ WebViewControl::~WebViewControl()
 	[innerWebView removeFromSuperview];
 	[innerWebView close];
 	[innerWebView release];
-	webViewPtr = nil;
+	webViewPtr = nullptr;
 
 	WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
 	[w release];
-	webViewPolicyDelegatePtr = nil;
+	webViewPolicyDelegatePtr = nullptr;
     
     WebViewControlUIDelegate* c = (WebViewControlUIDelegate*)webViewDelegatePtr;
     [c release];
-    webViewDelegatePtr = nil;
+    webViewDelegatePtr = nullptr;
 }
 
 void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)
@@ -369,22 +313,37 @@ void WebViewControl::SetRect(const Rect& rect)
 	webViewRect.origin.y += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
 	
 	[(WebView*)webViewPtr setFrame: webViewRect];
+    
+    // release previous image if any
+    NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
+   [imageRep release];
+    
+    NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
+    imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:webViewRect];
+    DVASSERT(imageRep);
+    webImageCachePtr = imageRep;
+    [imageRep retain];
+
+    DVASSERT([imageRep size].width == webViewRect.size.width);
+    DVASSERT([imageRep size].height == webViewRect.size.height);
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
-    if (!isWebViewVisible && isVisible)
-    {
-        // TODO delow is comented render to image works, continue investigate
-//        NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
-//        [openGLView addSubview:(WebView*)webViewPtr];
-    }
-    else if (isWebViewVisible && !isVisible)
-    {
-        [(WebView*)webViewPtr removeFromSuperview];
-    }
+    this->isVisible = isVisible;
     
-    isWebViewVisible = isVisible;
+    if (!isRenderToTexture)
+    {
+        if (isVisible)
+        {
+            NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
+            [openGLView addSubview:(WebView*)webViewPtr];
+        }
+        else
+        {
+            [(WebView*)webViewPtr removeFromSuperview];
+        }
+    }
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
@@ -395,13 +354,108 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 void WebViewControl::SetRenderToTexture(bool value)
 {
-    // TODO
+    isRenderToTexture = value;
+    
+    if (isRenderToTexture)
+    {
+        if (webViewPtr)
+        {
+            RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebViewControl);
+            
+            [(WebView*)webViewPtr removeFromSuperview];
+        }
+    } else
+    {
+        if (isVisible)
+        {
+            // remove sprite from UIControl and show native window
+            uiWebViewControl.SetSprite(nullptr, 0);
+            
+            NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
+            [openGLView addSubview:(WebView*)webViewPtr];
+        }
+    }
 }
 
 bool WebViewControl::IsRenderToTexture() const
 {
-    // TODO
-    return true;
+    return isRenderToTexture;
+}
+
+void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
+                                        DAVA::UIWebView& uiWebViewControl)
+{
+    NSBitmapImageRep* imageRep = (NSBitmapImageRep*)GetImageCache();
+    DVASSERT(imageRep);
+    
+    WebView* nativeWebView = (WebView*)webViewPtr;
+    DVASSERT(nativeWebView);
+    NSRect webFrameRect = [nativeWebView frame];
+    
+    NSSize imageRepSize = [imageRep size];
+    
+    DVASSERT(webFrameRect.size.width == imageRepSize.width);
+    DVASSERT(webFrameRect.size.height == imageRepSize.height);
+    
+    // render web view into bitmap image
+    [nativeWebView cacheDisplayInRect:webFrameRect toBitmapImageRep:imageRep];
+    
+    const unsigned char* rawData = [imageRep bitmapData];
+    const int w = [imageRep pixelsWide];
+    const int h = [imageRep pixelsHigh];
+    const int BPP = [imageRep bitsPerPixel];
+    const int pitch = [imageRep bytesPerRow];
+    
+    PixelFormat format = FORMAT_INVALID;
+    if (24 == BPP)
+    {
+        format = FORMAT_RGB888;
+    } else if (32 == BPP)
+    {
+        DVASSERT(!([imageRep bitmapFormat] & NSAlphaFirstBitmapFormat));
+        format = FORMAT_RGBA8888;
+    } else
+    {
+        DVASSERT(false);
+    }
+    
+    {
+        Image* imageRGB = nullptr;
+        if (pitch == w * (BPP / 8))
+        {
+            imageRGB = Image::CreateFromData(w, h, format, rawData);
+        } else
+        {
+            imageRGB = Image::Create(w, h, format);
+            uint8* pixels = const_cast<uint8*>(imageRGB->GetData());
+            int bytesPerLine = w * (BPP / 8);
+            // copy line by line image
+            for(int y = 0; y < h; ++y)
+            {
+                uint8* dstLineStart = &pixels[y * bytesPerLine];
+                const uint8* srcLineStart = &rawData[y * pitch];
+                Memcpy(dstLineStart, srcLineStart, bytesPerLine);
+            }
+        }
+        
+        DVASSERT(imageRGB);
+        
+        {
+            Texture* tex = Texture::CreateFromData(imageRGB, false);
+            const DAVA::Rect& rect = uiWebViewControl.GetRect();
+            Vector2 spriteSize(rect.dx, rect.dy);
+            {
+                Sprite* spr = Sprite::CreateFromTexture(spriteSize, tex,
+                                                        Vector2(0.f, 0.f),
+                                                        spriteSize);
+                uiWebViewControl.SetSprite(spr, 0);
+                uiWebViewControl.SetDebugDraw(true);
+                SafeRelease(spr);
+            }
+            SafeRelease(tex);
+        }
+        imageRGB->Release();
+    }
 }
 
 int32 WebViewControl::ExecuteJScript(const String& scriptString)
@@ -420,8 +474,13 @@ int32 WebViewControl::ExecuteJScript(const String& scriptString)
     return requestID;
 }
 
-void WebViewControl::SetImage(void* ptr)
+void WebViewControl::SetImageCache(void* ptr)
 {
     DVASSERT(ptr);
     this->webImageCachePtr = ptr;
+}
+
+void* WebViewControl::GetImageCache() const
+{
+    return webImageCachePtr;
 }
