@@ -117,10 +117,10 @@ QVariant UIPackageModel::data(const QModelIndex &index, int role) const
             break;
             
         case Qt::TextColorRole:
-            return (flags & prototypeFlag) != 0 ? Qt::blue : Qt::black;
+            return (flags & prototypeFlag) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
             
         case Qt::BackgroundRole:
-            return (flags & controlFlag) == 0 ? Qt::lightGray : Qt::white;
+            return (flags & controlFlag) == 0 ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
         {

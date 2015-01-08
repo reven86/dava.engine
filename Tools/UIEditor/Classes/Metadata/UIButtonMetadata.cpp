@@ -374,6 +374,52 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForTextUseRtlAlign()
 
 }
 
+bool UIButtonMetadata::GetTextMultilineForState(UIControl::eControlState state) const
+{
+    UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
+    if (referenceButtonText)
+    {
+        return referenceButtonText->GetMultiline();
+    }
+
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextMultiline()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+
+        bool curStateDirty = (GetTextMultilineForState(curState) != GetTextMultilineForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PROPERTY_MULTILINE, curStateDirty);
+    }
+}
+
+bool UIButtonMetadata::GetTextMultilineBySymbolForState(UIControl::eControlState state) const
+{
+    UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
+    if (referenceButtonText)
+    {
+        return referenceButtonText->GetMultilineBySymbol();
+    }
+
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextMultilineBySymbol()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+
+        bool curStateDirty = (GetTextMultilineBySymbolForState(curState) != GetTextMultilineBySymbolForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL, curStateDirty);
+    }
+}
+
 void UIButtonMetadata::SetSprite(const QString& value)
 {
     if (!VerifyActiveParamID())
@@ -780,6 +826,58 @@ void UIButtonMetadata::SetTextUseRtlAlign(bool value)
     UpdateExtraDataLocalizationKey();
 	UpdatePropertyDirtyFlagForTextUseRtlAlign();
 	
+}
+
+bool UIButtonMetadata::GetTextMultiline() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+
+    return GetTextMultilineForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetTextMultiline(bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        GetActiveUIButton()->SetStateTextMultiline(this->uiControlStates[i], value);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForTextMultiline();
+}
+
+bool UIButtonMetadata::GetTextMultilineBySymbol() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+
+    return GetTextMultilineBySymbolForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetTextMultilineBySymbol(bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        GetActiveUIButton()->SetStateTextMultilineBySymbol(this->uiControlStates[i], value);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForTextMultilineBySymbol();
 }
 
 void UIButtonMetadata::SetSpriteModification(int value)
