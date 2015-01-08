@@ -15,16 +15,19 @@ class QStandardItemModel;
 class QStandardItem;
 
 class DeviceListWidget;
-class DeviceInfoController;
+class DeviceLogController;
 
-/*struct DiscoveredPeer
+struct DeviceServices
 {
-    DAVA::Net::Endpoint sourceEndpoint;
-    DAVA::Net::PeerDescription descr;
-};*/
+    DeviceServices() : log(NULL) {}
 
-Q_DECLARE_METATYPE(DAVA::Net::IPAddress);
+    DeviceLogController* log;
+};
+
+Q_DECLARE_METATYPE(DAVA::Net::NetCore::TrackId);
+Q_DECLARE_METATYPE(DAVA::Net::Endpoint);
 Q_DECLARE_METATYPE(DAVA::Net::PeerDescription);
+Q_DECLARE_METATYPE(DeviceServices);
 
 class DeviceListController
     : public QObject
@@ -33,16 +36,17 @@ class DeviceListController
 
     enum DeviceDataRole
     {
-        ROLE_SOURCE_ADDRESS = Qt::UserRole + 1,
+        ROLE_CONNECTION_ID = Qt::UserRole + 1,
+        ROLE_SOURCE_ADDRESS,
         ROLE_PEER_DESCRIPTION,
+        ROLE_PEER_SERVICES
     };
 
 public:
-    explicit DeviceListController( QObject *parent = NULL );
+    explicit DeviceListController(QObject *parent = NULL);
     ~DeviceListController();
 
-    void SetView( DeviceListWidget *view );
-    void AddDeviceInfo( QStandardItem* item );
+    void SetView(DeviceListWidget *view);
 
     void DiscoverCallback(size_t buflen, const void* buffer, const DAVA::Net::Endpoint& endpoint);
 
@@ -50,17 +54,21 @@ private slots:
     void OnConnectDevice();
     void OnDisconnectDevice();
     void OnShowInfo();
+    void OnCloseEvent();
 
 private:
     void initModel();
 
     QStandardItem* GetItemFromIndex( const QModelIndex& index );
 
-    DAVA::Net::NetCore::TrackId ConnectDeviceInternal(const DAVA::Net::PeerDescription& peer);
-    void DisonnectDeviceInternal(DAVA::Net::NetCore::TrackId id);
+    void ConnectDeviceInternal(QModelIndex& index, size_t ifIndex);
+    void DisonnectDeviceInternal(QModelIndex& index);
 
-    DAVA::Net::IChannelListener* CreateLogger(DAVA::uint32 serviceId);
-    void DeleteLogger(DAVA::Net::IChannelListener*);
+    DAVA::Net::IChannelListener* CreateLogger(DAVA::uint32 serviceId, void* arg);
+    void DeleteLogger(DAVA::Net::IChannelListener*, void* arg);
+
+    DAVA::Net::IChannelListener* CreateEcho(DAVA::uint32 serviceId, void* arg);
+    void DeleteEcho(DAVA::Net::IChannelListener*, void* arg);
 
     bool AlreadyInModel(const DAVA::Net::Endpoint& endp) const;
 
@@ -69,9 +77,6 @@ private:
     QPointer<DeviceListWidget> view;
 
     DAVA::Net::NetCore::TrackId idDiscoverer;
-    DAVA::Net::NetCore::TrackId idDevice;
-    DeviceInfoController* infoCtrl;
-    DAVA::Net::PeerDescription curDescr;
 
 private:
     static QStandardItem *createDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);

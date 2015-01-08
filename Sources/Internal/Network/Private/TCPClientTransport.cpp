@@ -142,6 +142,7 @@ void TCPClientTransport::CleanUp(int32 error)
     if (true == isConnected)
     {
         isConnected = false;
+        sendBufferCount = 0;
         listener->OnTransportDisconnected(this, error);
     }
     socket.Close(MakeFunction(this, &TCPClientTransport::SocketHandleClose));
@@ -208,7 +209,7 @@ void TCPClientTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t
 
 void TCPClientTransport::SocketHandleWrite(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)
 {
-    DVASSERT(false == isTerminating && true == isConnected);
+    if (false == isConnected) return;
 
     if (0 == error)
     {

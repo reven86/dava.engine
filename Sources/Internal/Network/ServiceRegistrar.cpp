@@ -51,19 +51,19 @@ bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, Servic
     return false;
 }
 
-IChannelListener* ServiceRegistrar::Create(uint32 serviceId) const
+IChannelListener* ServiceRegistrar::Create(uint32 serviceId, void* arg) const
 {
     const Entry* entry = FindEntry(serviceId);
-    return entry != NULL ? entry->creator(serviceId)
+    return entry != NULL ? entry->creator(serviceId, arg)
                          : NULL;
 }
 
-bool ServiceRegistrar::Delete(uint32 serviceId, IChannelListener* obj) const
+bool ServiceRegistrar::Delete(uint32 serviceId, IChannelListener* obj, void* arg) const
 {
     const Entry* entry = FindEntry(serviceId);
     if (entry != NULL)
     {
-        entry->deleter(obj);
+        entry->deleter(obj, arg);
         return true;
     }
     return false;

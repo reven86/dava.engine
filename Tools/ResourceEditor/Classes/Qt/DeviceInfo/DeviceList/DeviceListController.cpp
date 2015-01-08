@@ -9,7 +9,7 @@
 
 #include "DeviceListWidget.h"
 
-#include "Classes/Qt/DeviceInfo/DeviceInfo/DeviceInfoController.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/DeviceLogController.h"
 #include <Base/FunctionTraits.h>
 
 #include <Network/PeerDesription.h>
@@ -21,16 +21,15 @@ DeviceListController::DeviceListController( QObject* parent )
     : QObject(parent)
     , model( NULL )
     , idDiscoverer(DAVA::Net::NetCore::INVALID_TRACK_ID)
-    , idDevice(DAVA::Net::NetCore::INVALID_TRACK_ID)
-    , infoCtrl(NULL)
 {
     initModel();
 
-    static bool serviceRegisteres = false;
-    if (!serviceRegisteres)
+    static bool serviceRegistered = false;
+    if (!serviceRegistered)
     {
         NetCore::Instance()->RegisterService(0, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger));
-        serviceRegisteres = true;
+        NetCore::Instance()->RegisterService(3, MakeFunction(this, &DeviceListController::CreateEcho), MakeFunction(this, &DeviceListController::DeleteEcho));
+        serviceRegistered = true;
     }
 
     DAVA::Net::Endpoint endpoint("239.192.100.1", 9999);
@@ -43,6 +42,18 @@ DeviceListController::~DeviceListController()
         DAVA::Net::NetCore::Instance()->DestroyController(idDiscoverer);
 }
 
+void DeviceListController::OnCloseEvent()
+{
+    uint32 nactive = 0;
+    for (int i = 0, n = model->rowCount();i < n;++i)
+    {
+        NetCore::TrackId id = model->item(i)->data(ROLE_CONNECTION_ID).value<NetCore::TrackId>();
+        nactive += id != NetCore::INVALID_TRACK_ID;
+    }
+    if (nactive == 0)
+        view->deleteLater();
+}
+
 void DeviceListController::SetView( DeviceListWidget* _view )
 {
     view = _view;
@@ -51,6 +62,7 @@ void DeviceListController::SetView( DeviceListWidget* _view )
     connect( view, &DeviceListWidget::connectClicked, this, &DeviceListController::OnConnectDevice );
     connect( view, &DeviceListWidget::disconnectClicked, this, &DeviceListController::OnDisconnectDevice );
     connect( view, &DeviceListWidget::showInfoClicked, this, &DeviceListController::OnShowInfo );
+    connect( view, &DeviceListWidget::closeRequest, this, &DeviceListController::OnCloseEvent );
 }
 
 void DeviceListController::initModel()
@@ -64,124 +76,174 @@ QStandardItem* DeviceListController::GetItemFromIndex( const QModelIndex& index 
     return model->itemFromIndex( index );
 }
 
-DAVA::Net::NetCore::TrackId DeviceListController::ConnectDeviceInternal(const DAVA::Net::PeerDescription& peer)
+IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* arg)
 {
-    IPAddress addr = peer.NetworkInterfaces()[0].Address();
-    NetConfig config = peer.NetworkConfig().Mirror(addr);
-    NetCore::TrackId id = NetCore::Instance()->CreateController(config);
-    if (id != NetCore::INVALID_TRACK_ID)
+    if (serviceId != 0) return NULL;
+
+    int row = reinterpret_cast<int>(arg);
+    QModelIndex index = model->index(row, 0);
+    DVASSERT(index.isValid());
+
+    DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+    return services.log;
+}
+
+void DeviceListController::DeleteLogger(IChannelListener*, void* arg)
+{
+    int row = reinterpret_cast<int>(arg);
+
+    QModelIndex index = model->index(row, 0);
+    DVASSERT(index.isValid());
+
+    NetCore::TrackId trackId = index.data(ROLE_CONNECTION_ID).value<NetCore::TrackId>();
+    if (trackId == NetCore::INVALID_TRACK_ID)
     {
-        infoCtrl = new DeviceInfoController(view, this);
+        QStandardItem* item = model->itemFromIndex(index);
+
+        DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+        delete services.log;
+        services.log = NULL;
+        {
+            QVariant v;
+            v.setValue(services);
+            item->setData(v, ROLE_PEER_SERVICES);
+        }
     }
-    return id;
 }
 
-void DeviceListController::DisonnectDeviceInternal(DAVA::Net::NetCore::TrackId id)
+DAVA::Net::IChannelListener* DeviceListController::CreateEcho(DAVA::uint32 serviceId, void* arg)
 {
-    NetCore::Instance()->DestroyController(id);
+    if (serviceId != 3) return NULL;
+
+    int row = reinterpret_cast<int>(arg);
+    QModelIndex index = model->index(row, 0);
+    DVASSERT(index.isValid());
+
+    DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+    return services.log;
 }
 
-IChannelListener* DeviceListController::CreateLogger(uint32 serviceId)
+void DeviceListController::DeleteEcho(DAVA::Net::IChannelListener*, void* arg)
 {
-    if (infoCtrl)
-        return infoCtrl;
-    return NULL;
+
 }
 
-void DeviceListController::DeleteLogger(IChannelListener*)
+void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIndex)
 {
-    if (idDevice == NetCore::INVALID_TRACK_ID)
+    NetCore::TrackId trackId = index.data(ROLE_CONNECTION_ID).value<NetCore::TrackId>();
+    if (trackId != NetCore::INVALID_TRACK_ID) return;
+
+    PeerDescription peer = index.data(ROLE_PEER_DESCRIPTION).value<PeerDescription>();
+    if (0 <= ifIndex && ifIndex < peer.NetworkInterfaces().size())
     {
-        delete infoCtrl;
-        infoCtrl = NULL;
+        IPAddress addr = peer.NetworkInterfaces()[ifIndex].Address();
+        NetConfig config = peer.NetworkConfig().Mirror(addr);
+        //NetConfig::TransportConfig& g = const_cast<NetConfig::TransportConfig&>(config.Transports()[0]);
+        //g.endpoint = Endpoint("127.0.0.1", 55001);
+        trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()));
+        if (trackId != NetCore::INVALID_TRACK_ID)
+        {
+            DeviceServices services;
+            services.log = new DeviceLogController(peer, view, this);
+
+            QStandardItem* item = model->itemFromIndex(index);
+            {
+                QVariant v;
+                v.setValue(trackId);
+                item->setData(v, ROLE_CONNECTION_ID);
+            }
+            {
+                QVariant v;
+                v.setValue(services);
+                item->setData(v, ROLE_PEER_SERVICES);
+            }
+        }
     }
 }
 
-void DeviceListController::AddDeviceInfo( QStandardItem* item )
+void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
 {
-    model->appendRow( item );
+    NetCore::TrackId trackId = index.data(ROLE_CONNECTION_ID).value<NetCore::TrackId>();
+    if (trackId == NetCore::INVALID_TRACK_ID) return;
+
+    QStandardItem* item = model->itemFromIndex(index);
+    {
+        QVariant v;
+        v.setValue(NetCore::INVALID_TRACK_ID);
+        item->setData(v, ROLE_CONNECTION_ID);
+    }
+    DAVA::Net::NetCore::Instance()->DestroyController(trackId);
 }
 
 void DeviceListController::OnConnectDevice()
 {
-    const QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
-
-    for ( int i = 0; i < selection.size(); i++ )
+    QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
+    for (int i = 0; i < selection.size(); i++)
     {
-        const QModelIndex& index = selection[i];
-        if ( index.parent().isValid() )
+        QModelIndex& index = selection[i];
+        if (index.parent().isValid())
             continue;
-
-        if (NetCore::INVALID_TRACK_ID == idDevice)
-        {
-            QVariant v = index.data(ROLE_PEER_DESCRIPTION);
-            PeerDescription peer = v.value<PeerDescription>();
-            curDescr = peer;
-            idDevice = ConnectDeviceInternal(peer);
-        }
+        ConnectDeviceInternal(index, 0);
     }
 }
 
 void DeviceListController::OnDisconnectDevice()
 {
-    const QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
-
-    for ( int i = 0; i < selection.size(); i++ )
+    QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
+    for (int i = 0; i < selection.size(); i++)
     {
-        const QModelIndex& index = selection[i];
-        if ( index.parent().isValid() )
+        QModelIndex& index = selection[i];
+        if (index.parent().isValid())
             continue;
-
-        if (NetCore::INVALID_TRACK_ID != idDevice)
-        {
-            NetCore::TrackId temp = idDevice;
-            idDevice = NetCore::INVALID_TRACK_ID;
-            DisonnectDeviceInternal(temp);
-        }
+        DisonnectDeviceInternal(index);
     }
 }
 
 void DeviceListController::OnShowInfo()
 {
-    if (infoCtrl)
+    QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
+    for (int i = 0; i < selection.size(); i++)
     {
-        infoCtrl->InitView();
-    }
-    /*const QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
-    QModelIndexList list;
+        QModelIndex& index = selection[i];
+        if (index.parent().isValid())
+            continue;
 
-    for ( int i = 0; i < selection.size(); i++ )
-    {
-        const QModelIndex& index = selection[i];
-        if ( !index.parent().isValid() )
+        NetCore::TrackId trackId = index.data(ROLE_CONNECTION_ID).value<NetCore::TrackId>();
+        if (trackId != NetCore::INVALID_TRACK_ID)
         {
-            list << index;
+            DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+            services.log->ShowView();
         }
     }
-
-    for ( int i = 0; i < list.size(); i++ )
-    {
-        DeviceInfoController *c = new DeviceInfoController( view, this );
-    }*/
 }
 
 QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, const PeerDescription& peerDescr)
 {
+    const QString caption = QString("%1 - %2")
+        .arg(peerDescr.GetName().c_str())
+        .arg(peerDescr.GetPlatformString().c_str());
     QStandardItem *item = new QStandardItem();
-
-    //const QString text = QString("%1: %2 (%3)").arg(peerDescr.GetPlatformString().c_str()).arg(peerDescr.GetName().c_str()).arg(endp.Address().ToString().c_str());
-    const QString text = QString("%1 - %2").arg(peerDescr.GetPlatformString().c_str()).arg(peerDescr.GetName().c_str());
-    item->setText(text);
+    item->setText(caption);
 
     {
         QVariant v;
-        v.setValue(endp.Address());
+        v.setValue(NetCore::INVALID_TRACK_ID);
+        item->setData(v, ROLE_CONNECTION_ID);
+    }
+    {
+        QVariant v;
+        v.setValue(endp);
         item->setData(v, ROLE_SOURCE_ADDRESS);
     }
     {
         QVariant v;
         v.setValue(peerDescr);
         item->setData(v, ROLE_PEER_DESCRIPTION);
+    }
+    {
+        QVariant v;
+        v.setValue(DeviceServices());
+        item->setData(v, ROLE_PEER_SERVICES);
     }
 
     {
@@ -195,32 +257,52 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
         item->appendRow(subitem);
     }
     {
-        IPAddress aa;
-        if (!peerDescr.NetworkInterfaces().empty())
-            aa = peerDescr.NetworkInterfaces()[0].Address();
-        QString a(aa.ToString().c_str());
-        const Vector<NetConfig::TransportConfig>& tr = peerDescr.NetworkConfig().Transports();
-        for (size_t i = 0, n = tr.size();i < n;++i)
+        DVASSERT(false == peerDescr.NetworkInterfaces().empty());
+        const Vector<IfAddress>& v = peerDescr.NetworkInterfaces();
+        for (size_t i = 0, n = v.size();i < n;++i)
         {
-            const char* s = "";
-            if (tr[i].type == TRANSPORT_TCP)
-                s = "TCP";
-            const QString text = QString("%1; %2:%3").arg(s).arg(a).arg(tr[i].endpoint.Port());
+            char8 sphys[30];
+            const IfAddress::PhysAddress& phys = v[i].PhysicalAddress();
+            Snprintf(sphys, COUNT_OF(sphys), "%02X:%02X:%02X:%02X:%02X:%02X"
+                , phys.data[0]
+                , phys.data[1]
+                , phys.data[2]
+                , phys.data[3]
+                , phys.data[4]
+                , phys.data[5]);
+            const QString text = QString("%1 %2")
+                .arg(v[i].Address().ToString().c_str())
+                .arg(sphys);
             QStandardItem *subitem = new QStandardItem();
             subitem->setText(text);
             item->appendRow(subitem);
         }
-        const Vector<uint32>& serv = peerDescr.NetworkConfig().Services();
-        QString s;
-        for (size_t i = 0, n = serv.size();i < n;++i)
+    }
+    {
+        const Vector<NetConfig::TransportConfig>& tr = peerDescr.NetworkConfig().Transports();
+        for (size_t i = 0, n = tr.size();i < n;++i)
         {
-            s += QString("; %1").arg(serv[i]);
-        }
-        {
+            const char* str = "!!!";
+            if (tr[i].type == TRANSPORT_TCP)
+                str = "TCP";
+            const QString text = QString("%1 - %2")
+                .arg(str)
+                .arg(tr[i].endpoint.ToString().c_str());
             QStandardItem *subitem = new QStandardItem();
-            subitem->setText(s);
+            subitem->setText(text);
             item->appendRow(subitem);
         }
+    }
+    {
+        QString text;
+        const Vector<uint32>& serv = peerDescr.NetworkConfig().Services();
+        for (size_t i = 0, n = serv.size();i < n;++i)
+        {
+            text += QString("; %1").arg(serv[i]);
+        }
+        QStandardItem *subitem = new QStandardItem();
+        subitem->setText(text);
+        item->appendRow(subitem);
     }
     return item;
 }
@@ -234,12 +316,11 @@ void DeviceListController::DiscoverCallback(size_t buflen, const void* buffer, c
         {
             QStandardItem *item = createDeviceItem(endpoint, peer);
             model->appendRow(item);
-
-            if (view)
+            /*if (view)
             {
                 QTreeView *treeView = view->ItemView();
                 treeView->expand(item->index());
-            }
+            }*/
         }
     }
 }
@@ -247,14 +328,10 @@ void DeviceListController::DiscoverCallback(size_t buflen, const void* buffer, c
 bool DeviceListController::AlreadyInModel(const Endpoint& endp) const
 {
     IPAddress srcAddr = endp.Address();
-    int n = model->rowCount();
-    for (int i = 0;i < n;++i)
+    for (int i = 0, n = model->rowCount();i < n;++i)
     {
-        QStandardItem* item = model->item(i);
-
-        QVariant v = item->data(ROLE_SOURCE_ADDRESS);
-        IPAddress addr = v.value<IPAddress>();
-        if (addr == srcAddr)
+        QVariant v = model->item(i)->data(ROLE_SOURCE_ADDRESS);
+        if (endp == v.value<Endpoint>())
         {
             return true;
         }

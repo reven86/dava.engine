@@ -39,8 +39,8 @@ namespace Net
 
 struct IChannelListener;
 
-typedef Function<IChannelListener* (uint32 serviceId)> ServiceCreator;
-typedef Function<void (IChannelListener* obj)> ServiceDeleter;
+typedef Function<IChannelListener* (uint32 serviceId, void* arg)> ServiceCreator;
+typedef Function<void (IChannelListener* obj, void* arg)> ServiceDeleter;
 
 class ServiceRegistrar
 {
@@ -59,8 +59,8 @@ private:
 public:
     bool Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
 
-    IChannelListener* Create(uint32 serviceId) const;
-    bool Delete(uint32 serviceId, IChannelListener* obj) const;
+    IChannelListener* Create(uint32 serviceId, void* arg) const;
+    bool Delete(uint32 serviceId, IChannelListener* obj, void* arg) const;
 
 private:
     const Entry* FindEntry(uint32 serviceId) const;

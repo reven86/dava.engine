@@ -258,7 +258,7 @@ void NetworkTest::LoadResources()
 
         Endpoint annoEndpoint("239.192.100.1", 9999);
         NetCore::Instance()->CreateAnnouncer(annoEndpoint, 5, MakeFunction(this, &NetworkTest::AnnounceDataSupplier));
-        idLogCtrl = NetCore::Instance()->CreateController(config);
+        idLogCtrl = NetCore::Instance()->CreateController(config, NULL);
     }
     /*{
         NetConfig loggerConfig(SERVER_ROLE);
@@ -397,7 +397,7 @@ void NetworkTest::TestNetConfig(PerfFuncData* data)
     TEST_VERIFY(3 == config2.Services().size());
 }
 
-IChannelListener* NetworkTest::CreateLogger(uint32 serviceId)
+IChannelListener* NetworkTest::CreateLogger(uint32 serviceId, void* arg)
 {
     if (SERVICE_LOG == serviceId)
     {
@@ -406,7 +406,7 @@ IChannelListener* NetworkTest::CreateLogger(uint32 serviceId)
     return NULL;
 }
 
-IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
+IChannelListener* NetworkTest::CreateEcho(uint32 serviceId, void* arg)
 {
     /*IChannelListener* obj = NULL;
     if (SERVICE_ECHO == serviceId)
@@ -421,13 +421,13 @@ IChannelListener* NetworkTest::CreateEcho(uint32 serviceId)
     return new SimpleEchoServer;
 }
 
-void NetworkTest::DeleteEcho(IChannelListener* obj)
+void NetworkTest::DeleteEcho(IChannelListener* obj, void* arg)
 {
     // Do nothing as services were created on stack
     delete obj;
 }
 
-void NetworkTest::DeleteLogger(IChannelListener* obj)
+void NetworkTest::DeleteLogger(IChannelListener* obj, void* arg)
 {
     // Do nothing as logger was created on stack
 }

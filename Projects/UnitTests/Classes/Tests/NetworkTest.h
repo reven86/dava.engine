@@ -141,10 +141,10 @@ public:
     void TestEndpoint(PerfFuncData* data);
     void TestNetConfig(PerfFuncData* data);
 
-    IChannelListener* CreateLogger(uint32 serviceId);
-    IChannelListener* CreateEcho(uint32 serviceId);
-    void DeleteEcho(IChannelListener* obj);
-    void DeleteLogger(IChannelListener* obj);
+    IChannelListener* CreateLogger(uint32 serviceId, void* arg);
+    IChannelListener* CreateEcho(uint32 serviceId, void* arg);
+    void DeleteEcho(IChannelListener* obj, void* arg);
+    void DeleteLogger(IChannelListener* obj, void* arg);
 
 private:
     void CreateUI();

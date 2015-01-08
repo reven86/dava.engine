@@ -21,6 +21,7 @@ signals:
     void connectClicked();
     void disconnectClicked();
     void showInfoClicked();
+    void closeRequest();
 
 public:
     explicit DeviceListWidget( QWidget *parent = NULL );
@@ -29,6 +30,8 @@ public:
     QTreeView *ItemView();
 
 private:
+    void closeEvent(QCloseEvent *e);
+
     QScopedPointer<Ui::DeviceListWidget> ui;
 };
 

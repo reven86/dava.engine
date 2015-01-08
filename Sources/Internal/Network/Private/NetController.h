@@ -61,7 +61,7 @@ private:
     friend bool operator == (const ClientEntry& entry, const IClientTransport* obj);
 
 public:
-    NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar);
+    NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* parg);
     virtual ~NetController();
 
     bool ApplyConfig(const NetConfig& config, size_t trIndex = 0);
@@ -103,6 +103,8 @@ private:
     Vector<uint32> serviceIds;
     Vector<IServerTransport*> servers;
     List<ClientEntry> clients;
+
+    void* arg;
 };
 
 //////////////////////////////////////////////////////////////////////////
