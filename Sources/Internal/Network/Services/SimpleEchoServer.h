@@ -26,54 +26,43 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <algorithm>
+#ifndef __DAVAENGINE_SIMPLEECHOSERVER_H__
+#define __DAVAENGINE_SIMPLEECHOSERVER_H__
 
-#include <Debug/DVAssert.h>
-
-#include <Network/ServiceRegistrar.h>
+#include <Network/NetService.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter)
+/*
+ This is a simple echo service: each recieved packet is sent back
+*/
+class SimpleEchoServer : public NetService
 {
-    DVASSERT(creator != 0 && deleter != 0);
-    DVASSERT(std::find(registrar.begin(), registrar.end(), serviceId) == registrar.end());
-
-    // Duplicate services are not allowed in registrar
-    if (std::find(registrar.begin(), registrar.end(), serviceId) == registrar.end())
+public:
+    virtual void OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
     {
-        registrar.push_back(Entry(serviceId, creator, deleter));
-        return true;
+        uint8* p = new uint8[length];
+        Memcpy(p, buffer, length);
+
+        buffers.push_back(std::make_pair(p, length));
+        Send(p, length);
     }
-    return false;
-}
 
-IChannelListener* ServiceRegistrar::Create(uint32 serviceId, void* context) const
-{
-    const Entry* entry = FindEntry(serviceId);
-    return entry != NULL ? entry->creator(serviceId, context)
-                         : NULL;
-}
-
-bool ServiceRegistrar::Delete(uint32 serviceId, IChannelListener* obj, void* context) const
-{
-    const Entry* entry = FindEntry(serviceId);
-    if (entry != NULL)
+    virtual void PacketSent()
     {
-        entry->deleter(obj, context);
-        return true;
+        std::pair<const uint8*, size_t> item = buffers.front();
+        buffers.pop_front();
+        delete [] item.first;
     }
-    return false;
-}
 
-const ServiceRegistrar::Entry* ServiceRegistrar::FindEntry(uint32 serviceId) const
-{
-    Vector<Entry>::const_iterator i = std::find(registrar.begin(), registrar.end(), serviceId);
-    return i != registrar.end() ? &*i : NULL;
-}
+private:
+    Deque<std::pair<const uint8*, size_t>> buffers;
+};
 
 }   // namespace Net
 }   // namespace DAVA
+
+#endif  // __DAVAENGINE_SIMPLEECHOSERVER_H__

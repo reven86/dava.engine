@@ -46,10 +46,11 @@ namespace DAVA
 namespace Net
 {
 
-NetController::NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar)
+NetController::NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext)
     : loop(aLoop)
     , role(SERVER_ROLE)
     , registrar(aRegistrar)
+    , serviceContext(aServiceContext)
     , runningObjects(0)
     , isTerminating(false)
 {
@@ -102,7 +103,7 @@ bool NetController::ApplyConfig(const NetConfig& config, size_t trIndex)
         DVASSERT(tr != NULL);
         if (tr != NULL)
         {
-            ProtoDriver* driver = new ProtoDriver(loop, role, registrar);
+            ProtoDriver* driver = new ProtoDriver(loop, role, registrar, serviceContext);
             driver->SetTransport(tr, &*serviceIds.begin(), serviceIds.size());
             clients.push_back(ClientEntry(tr, driver));
         }
@@ -167,7 +168,7 @@ void NetController::OnTransportSpawned(IServerTransport* parent, IClientTranspor
 {
     DVASSERT(std::find(servers.begin(), servers.end(), parent) != servers.end());
 
-    ProtoDriver* driver = new ProtoDriver(loop, role, registrar);
+    ProtoDriver* driver = new ProtoDriver(loop, role, registrar, serviceContext);
     driver->SetTransport(child, &*serviceIds.begin(), serviceIds.size());
     clients.push_back(ClientEntry(child, driver, parent));
 

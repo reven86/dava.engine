@@ -56,9 +56,9 @@ bool NetCore::RegisterService(uint32 serviceId, ServiceCreator creator, ServiceD
     return registrar.Register(serviceId, creator, deleter);
 }
 
-NetCore::TrackId NetCore::CreateController(const NetConfig& config)
+NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* context)
 {
-    NetController* ctrl = new NetController(&loop, registrar);
+    NetController* ctrl = new NetController(&loop, registrar, context);
     if (true == ctrl->ApplyConfig(config))
     {
         trackedObjects.insert(ctrl);
