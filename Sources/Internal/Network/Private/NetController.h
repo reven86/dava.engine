@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_NetDriverEx_H__
-#define __DAVAENGINE_NetDriverEx_H__
+#ifndef __DAVAENGINE_NETCONTROLLER_H__
+#define __DAVAENGINE_NETCONTROLLER_H__
 
 #include <Base/BaseTypes.h>
 
@@ -61,7 +61,7 @@ private:
     friend bool operator == (const ClientEntry& entry, const IClientTransport* obj);
 
 public:
-    NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* parg);
+    NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext);
     virtual ~NetController();
 
     bool ApplyConfig(const NetConfig& config, size_t trIndex = 0);
@@ -96,6 +96,7 @@ private:
     IOLoop* loop;
     eNetworkRole role;
     const ServiceRegistrar& registrar;
+    void* serviceContext;
     size_t runningObjects;
     Function<void (IController*)> stopHandler;
     bool isTerminating;
@@ -103,8 +104,6 @@ private:
     Vector<uint32> serviceIds;
     Vector<IServerTransport*> servers;
     List<ClientEntry> clients;
-
-    void* arg;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -122,4 +121,4 @@ inline bool operator == (const NetController::ClientEntry& entry, const IClientT
 }   // namespace Net
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_NetDriverEx_H__
+#endif  // __DAVAENGINE_NETCONTROLLER_H__

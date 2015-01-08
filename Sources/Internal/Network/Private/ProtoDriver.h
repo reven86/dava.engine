@@ -84,7 +84,7 @@ private:
     };
 
 public:
-    ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* parg);
+    ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* aServiceContext);
     ~ProtoDriver();
 
     void SetTransport(IClientTransport* aTransport, const uint32* sourceChannels, size_t channelCount);
@@ -119,6 +119,7 @@ private:
     IOLoop* loop;
     eNetworkRole role;
     const ServiceRegistrar& registrar;
+    void* serviceContext;
     IClientTransport* transport;
     Vector<Channel> channels;
 
@@ -135,8 +136,6 @@ private:
 
     ProtoDecoder proto;
     ProtoHeader header;
-
-    void* arg;
 
     static uint32 nextPacketId;     // Global for all instances
 };

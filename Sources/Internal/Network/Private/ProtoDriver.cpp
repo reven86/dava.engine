@@ -43,13 +43,13 @@ namespace Net
 
 uint32 ProtoDriver::nextPacketId = 0;
 
-ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* parg)
+ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* aServiceContext)
     : loop(aLoop)
     , role(aRole)
     , registrar(aRegistrar)
+    , serviceContext(aServiceContext)
     , transport(NULL)
     , whatIsSending()
-    , arg(parg)
 {
     DVASSERT(loop != NULL);
     Memset(&curPacket, 0, sizeof(curPacket));
@@ -126,7 +126,7 @@ void ProtoDriver::OnConnected(const Endpoint& endp)
         for (size_t i = 0, n = channels.size();i < n;++i)
         {
             channels[i].remoteEndpoint = endp;
-            channels[i].service = registrar.Create(channels[i].channelId, arg);
+            channels[i].service = registrar.Create(channels[i].channelId, serviceContext);
             if (channels[i].service != NULL)
             {
                 SendControl(TYPE_CHANNEL_QUERY, channels[i].channelId, 0);
@@ -150,7 +150,7 @@ void ProtoDriver::OnDisconnected()
     {
         if (channels[i].service != NULL)
         {
-            registrar.Delete(channels[i].channelId, channels[i].service, arg);
+            registrar.Delete(channels[i].channelId, channels[i].service, serviceContext);
             channels[i].service = NULL;
         }
     }
@@ -253,7 +253,7 @@ bool ProtoDriver::ProcessChannelQuery(ProtoDecoder::DecodeResult* result)
         DVASSERT(NULL == ch->service);
         if (NULL == ch->service)
         {
-            ch->service = registrar.Create(ch->channelId, arg);
+            ch->service = registrar.Create(ch->channelId, serviceContext);
             uint32 code = ch->service != NULL ? TYPE_CHANNEL_ALLOW
                                               : TYPE_CHANNEL_DENY;
             SendControl(code, result->channelId, 0);
@@ -291,7 +291,7 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
     Channel* ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
-        registrar.Delete(ch->channelId, ch->service, arg);
+        registrar.Delete(ch->channelId, ch->service, serviceContext);
         // Do not call OnChannelClosed as channel hasn't been opened
         ch->service = NULL;
         return true;

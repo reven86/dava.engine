@@ -59,7 +59,7 @@ public:
 
     bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
 
-    TrackId CreateController(const NetConfig& config, void* arg);
+    TrackId CreateController(const NetConfig& config, void* context = NULL);
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     bool DestroyController(TrackId id);
