@@ -118,17 +118,27 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
         // process incoming event
         if (event->phase == DAVA::UIEvent::PHASE_ENDED && event->tid == DAVA::UIEvent::BUTTON_1)
         {
+            
+            int curKeyModifiers = QApplication::keyboardModifiers();
+            if(0 == (curKeyModifiers & Qt::ShiftModifier))
+            {   //we need use shift key to add waypoint or edge
+                return;
+            }
+
+            
             SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
             Entity * currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
             if(!currentWayParent)
+            {   // we need have entity with path component
                 return;
+            }
 
+            
             ProcessSelection();
 
             if(selectedWaypoints.Size() != 0)
             {
-                int curKeyModifiers = QApplication::keyboardModifiers();
-                if(selectedWaypoints.Size() == 1 && (curKeyModifiers & Qt::ShiftModifier))
+                if(selectedWaypoints.Size() == 1)
                 {
                     Entity *nextEntity = selectedWaypoints.GetEntity(0);
                     

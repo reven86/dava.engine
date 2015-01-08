@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PathSystem.h"
 
 #include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Waypoint/WaypointComponent.h"
+#include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "FileSystem/KeyedArchive.h"
@@ -39,10 +41,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/SceneEditor2.h"
 
 
+static DAVA::Color PathColorPallete[] =
+{
+    DAVA::Color(0x00ffffff),
+    DAVA::Color(0x000000ff),
+    DAVA::Color(0x0000ffff),
+    DAVA::Color(0xff00ffff),
+
+    DAVA::Color(0x808080ff),
+    DAVA::Color(0x008000ff),
+    DAVA::Color(0x00ff00ff),
+    DAVA::Color(0x80000ff),
+
+    DAVA::Color(0x000080ff),
+    DAVA::Color(0x808000ff),
+    DAVA::Color(0x800080ff),
+    DAVA::Color(0xff0000ff),
+    
+    DAVA::Color(0xc0c0c0ff),
+    DAVA::Color(0x008080ff),
+    DAVA::Color(0xffffffff),
+    DAVA::Color(0xffff00ff)
+};
+
+static const uint32 PALLETE_SIZE = COUNT_OF(PathColorPallete);
+
+static const String PATH_COLOR_PROP_NAME = "pathColor";
+
+
 PathSystem::PathSystem(DAVA::Scene * scene)
     : DAVA::SceneSystem(scene)
     , currentPath(NULL)
 {
+    pathDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
+                                                                          DAVA::RenderStateData::STATE_COLORMASK_ALL |
+                                                                          DAVA::RenderStateData::STATE_DEPTH_TEST);
 }
 
 PathSystem::~PathSystem()
@@ -62,8 +95,19 @@ void PathSystem::AddEntity(DAVA::Entity * entity)
     {
         currentPath = entity;
     }
-}
     
+    //validate color
+    KeyedArchive *props = GetCustomPropertiesArchieve(entity);
+    if(props)
+    {
+        if(!props->IsKeyExists(PATH_COLOR_PROP_NAME))
+        {
+            const DAVA::Color & color = GetNextPathColor();
+            props->SetVector4(PATH_COLOR_PROP_NAME, DAVA::Vector4(color.r, color.g, color.b, color.a));
+        }
+    }
+}
+
 void PathSystem::RemoveEntity(DAVA::Entity * entity)
 {
     DAVA::FindAndRemoveExchangingWithLast(pathes, entity);
@@ -81,6 +125,52 @@ void PathSystem::RemoveEntity(DAVA::Entity * entity)
     }
 }
 
+
+
+void PathSystem::Draw()
+{
+    const DAVA::uint32 count = pathes.size();
+    if(!count) return;
+    
+    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    
+    for(DAVA::uint32 p = 0; p < count; ++p)
+    {
+        DAVA::Entity * path = pathes[p];
+        DAVA::Color color;
+        
+        KeyedArchive *props = GetCustomPropertiesArchieve(path);
+        if(props)
+        {
+            color = DAVA::Color(props->GetVector4(PATH_COLOR_PROP_NAME));
+        }
+
+        RenderManager::Instance()->SetColor(color);
+
+        const DAVA::uint32 childrenCount = path->GetChildrenCount();
+        for(DAVA::uint32 c = 0; c < childrenCount; ++c)
+        {
+            DAVA::Entity * waypoint = path->GetChild(c);
+            
+            const DAVA::uint32 edgesCount = waypoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+            if(edgesCount)
+            {
+                const Vector3 startPosition = GetTransformComponent(waypoint)->GetWorldTransform().GetTranslationVector();
+                for(DAVA::uint32 e = 0; e < edgesCount; ++e)
+                {
+                    DAVA::EdgeComponent * edge = static_cast<DAVA::EdgeComponent *>(waypoint->GetComponent(DAVA::Component::EDGE_COMPONENT, e));
+                    DAVA::Entity *nextEntity = edge->GetNextEntity();
+                    if(nextEntity)
+                    {
+                        const Vector3 finishPosition = GetTransformComponent(nextEntity)->GetWorldTransform().GetTranslationVector();
+                        
+                        RenderHelper::Instance()->DrawArrow(startPosition, finishPosition, (finishPosition - startPosition).Length() / 4.f, 7.f, pathDrawState);
+                    }
+                }
+            }
+        }
+    }
+}
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
@@ -106,7 +196,7 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
 
 DAVA::FastName PathSystem::GeneratePathName() const
 {
-    DAVA::uint32 count = pathes.size();
+    const DAVA::uint32 count = pathes.size();
     
     for(DAVA::uint32 i = 0; i <= count; ++i)
     {
@@ -129,5 +219,13 @@ DAVA::FastName PathSystem::GeneratePathName() const
     }
     
     return DAVA::FastName();
+}
+
+const DAVA::Color & PathSystem::GetNextPathColor() const
+{
+    const DAVA::uint32 count = pathes.size();
+    const DAVA::uint32 index = count % PALLETE_SIZE;
+    
+    return PathColorPallete[index];
 }
 

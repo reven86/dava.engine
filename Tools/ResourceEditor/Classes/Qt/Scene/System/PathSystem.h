@@ -36,6 +36,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class PathSystem: public DAVA::SceneSystem
 {
+    friend class SceneEditor2;
+
 public:
     PathSystem(DAVA::Scene * scene);
     virtual ~PathSystem();
@@ -51,8 +53,16 @@ public:
     const DAVA::Vector<DAVA::Entity *> & GetPathes() const;
     
     DAVA::FastName GeneratePathName() const;
+    const DAVA::Color & GetNextPathColor() const;
     
 protected:
+    
+    void Draw();
+    
+    
+    DAVA::UniqueHandle pathDrawState;
+
+    
     
     DAVA::Vector<DAVA::Entity *> pathes;
    

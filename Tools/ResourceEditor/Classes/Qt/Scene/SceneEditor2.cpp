@@ -427,6 +427,7 @@ void SceneEditor2::Draw()
 		particlesSystem->Draw();
 		debugDrawSystem->Draw();
         wayEditSystem->Draw();
+        pathSystem->Draw();
 
 		// should be last
 		selectionSystem->Draw();
