@@ -105,8 +105,8 @@ private:
     // "Stop if the emitter is empty" value.
     bool stopWhenEmpty;
     
-    // Whether we need to emit "Playback Complete" event?
-    bool needEmitPlaybackComplete;
+//    // Whether we need to emit "Playback Complete" event?
+//    bool needEmitPlaybackComplete;
     
     // Playback complete message.
     Message playbackComplete;

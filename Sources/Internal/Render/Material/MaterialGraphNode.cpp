@@ -254,20 +254,20 @@ void MaterialGraphNode::SetName(const String & _name)
 
 MaterialGraphNode::TypeUsageStruct MaterialGraphNode::types[] =
 {
-    "TYPE_NONE", MaterialGraphNode::USE_BOTH,
-    "TYPE_FORWARD_MATERIAL", MaterialGraphNode::USE_PIXEL,
-    "TYPE_DEFERRED_MATERIAL", MaterialGraphNode::USE_PIXEL,
-    "TYPE_SAMPLE_2D", MaterialGraphNode::USE_PIXEL,
-    "TYPE_MUL", MaterialGraphNode::USE_BOTH,
-    "TYPE_ADD", MaterialGraphNode::USE_BOTH,
-    "TYPE_LERP", MaterialGraphNode::USE_BOTH,
-    "TYPE_TIME", MaterialGraphNode::USE_BOTH,
-    "TYPE_SIN", MaterialGraphNode::USE_BOTH,
-    "TYPE_COS", MaterialGraphNode::USE_BOTH,
-    "TYPE_CONST", MaterialGraphNode::USE_BOTH,
-    "TYPE_ROTATOR", MaterialGraphNode::USE_BOTH,
-    "TYPE_SHIFTER", MaterialGraphNode::USE_BOTH,
-    "TYPE_TEX_COORD_INPUT", MaterialGraphNode::USE_VERTEX,
+    {"TYPE_NONE", MaterialGraphNode::USE_BOTH},
+    {"TYPE_FORWARD_MATERIAL", MaterialGraphNode::USE_PIXEL},
+    {"TYPE_DEFERRED_MATERIAL", MaterialGraphNode::USE_PIXEL},
+    {"TYPE_SAMPLE_2D", MaterialGraphNode::USE_PIXEL},
+    {"TYPE_MUL", MaterialGraphNode::USE_BOTH},
+    {"TYPE_ADD", MaterialGraphNode::USE_BOTH},
+    {"TYPE_LERP", MaterialGraphNode::USE_BOTH},
+    {"TYPE_TIME", MaterialGraphNode::USE_BOTH},
+    {"TYPE_SIN", MaterialGraphNode::USE_BOTH},
+    {"TYPE_COS", MaterialGraphNode::USE_BOTH},
+    {"TYPE_CONST", MaterialGraphNode::USE_BOTH},
+    {"TYPE_ROTATOR", MaterialGraphNode::USE_BOTH},
+    {"TYPE_SHIFTER", MaterialGraphNode::USE_BOTH},
+    {"TYPE_TEX_COORD_INPUT", MaterialGraphNode::USE_VERTEX},
 };
     
 void MaterialGraphNode::SetType(const String & _type)

@@ -96,8 +96,8 @@ private:
 	uint32	bufferB;		// Read Buffer [1]
 	uint32	writeBuffer;	// Write Buffer
 
-	// Reset params
-	uint32	initialPosition;
+//	// Reset params
+//	uint32	initialPosition;
 };
 
 };

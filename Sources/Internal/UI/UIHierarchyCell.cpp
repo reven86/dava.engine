@@ -36,11 +36,11 @@ namespace DAVA
 
 UIHierarchyCell::UIHierarchyCell()
 :   UIButton()
+,   text(NULL)
+,   openButton(NULL)
 ,	node(NULL)
 ,	identifier("")
 ,	cellStore(NULL)
-,   text(NULL)
-,   openButton(NULL)
 {
 }
 

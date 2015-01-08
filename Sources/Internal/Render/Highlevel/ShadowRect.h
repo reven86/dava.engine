@@ -60,7 +60,7 @@ namespace DAVA
 		ShadowRect();
 		
 		RenderDataObject * rdo;
-		RenderDataStream * vertexStream;
+//		RenderDataStream * vertexStream;
 		
 		Shader * shader;
 		

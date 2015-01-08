@@ -69,23 +69,26 @@ const uint16 UIControlBackground::StretchDrawData::indeces[18 * 3] = {
     11, 15, 14
 };
 
+    
+    
+    
 UIControlBackground::UIControlBackground()
-:	spr(NULL)
-,	frame(0)
+:   color(Color::White)
+,   spr(NULL)
 ,	align(ALIGN_HCENTER|ALIGN_VCENTER)
 ,	type(DRAW_ALIGNED)
-,	color(Color::White)
-,	drawColor(Color::White)
+,	spriteModification(0)
 ,	leftStretchCap(0)
 ,	topStretchCap(0)
-,	spriteModification(0)
 ,	colorInheritType(COLOR_IGNORE_PARENT)
-,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
+,	frame(0)
 ,	lastDrawPos(0, 0)
+,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
 ,	tiledData(NULL)
 ,   stretchData(NULL)
-,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
+,	drawColor(Color::White)
+,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
 }

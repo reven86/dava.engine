@@ -41,13 +41,13 @@ namespace DAVA
 
 Light::Light()
 :	BaseObject(),
+    flags(IS_DYNAMIC | CAST_SHADOW),
     camera(NULL),
     lastUpdatedFrame(0),
 	type(TYPE_DIRECTIONAL),
     ambientColor(0.0f, 0.0f, 0.0f, 1.0f),
 	diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
-    intensity(300.0f),
-	flags(IS_DYNAMIC | CAST_SHADOW)
+    intensity(300.0f)
 {
 }
     
