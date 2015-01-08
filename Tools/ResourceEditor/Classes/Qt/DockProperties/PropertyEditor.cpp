@@ -67,6 +67,7 @@
 
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
+#include "Scene/System/PathSystem.h"
 
 #include "Deprecated/SceneValidator.h"
 
@@ -1410,7 +1411,13 @@ void PropertyEditor::OnAddSkeletonComponent()
 
 void PropertyEditor::OnAddPathComponent()
 {
-    OnAddComponent(Component::PATH_COMPONENT);
+    PathComponent *pathComponent = static_cast<PathComponent *> (Component::CreateByType(Component::PATH_COMPONENT));
+
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    pathComponent->SetName(curScene->pathSystem->GeneratePathName());
+
+    OnAddComponent(pathComponent);
+    SafeDelete(pathComponent);
 }
 
 void PropertyEditor::OnAddRotationControllerComponent()

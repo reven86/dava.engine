@@ -192,6 +192,10 @@ EntityGroup WayEditSystem::GetEntitiesForAddEdges(DAVA::Entity *nextEntity)
     for(size_t i = 0; i < count; ++i)
     {
         Entity * entity = prevSelectedWaypoints.GetEntity(i);
+        if(nextEntity->GetParent() != entity->GetParent())
+        {   //we don't allow connect different pathes
+            continue;
+        }
 
         bool needAddEdge = true;
 

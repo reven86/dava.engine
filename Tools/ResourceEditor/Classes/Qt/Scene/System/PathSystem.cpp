@@ -137,6 +137,11 @@ void PathSystem::Draw()
     for(DAVA::uint32 p = 0; p < count; ++p)
     {
         DAVA::Entity * path = pathes[p];
+        if(path->GetVisible() == false)
+        {   // we don't need draw hidden pathes
+            continue;
+        }
+        
         DAVA::Color color;
         
         KeyedArchive *props = GetCustomPropertiesArchieve(path);
