@@ -10,6 +10,8 @@ DeviceLogWidget::DeviceLogWidget(QWidget *parent)
     , ui(new Ui::DeviceLogWidget())
 {
     ui->setupUi(this);
+
+    ui->logger->SetUseSettings(false);
 }
 
 DeviceLogWidget::~DeviceLogWidget() {}

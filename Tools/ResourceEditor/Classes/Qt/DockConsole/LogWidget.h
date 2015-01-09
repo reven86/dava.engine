@@ -27,6 +27,7 @@ public:
     explicit LogWidget(QWidget* parent = NULL);
     ~LogWidget();
 
+    void SetUseSettings(bool use);
     LogModel *Model();
 
 private slots:
@@ -36,12 +37,12 @@ private slots:
     void OnClear();
     void DetectAutoScroll();
     void DoAutoScroll();
+    void LoadSettings();
 
 private:
     void FillFiltersCombo();
-    void LoadSettings();
     void SaveSettings();
-    bool eventFilter(QObject* watched, QEvent* event);
+    bool eventFilter( QObject* watched, QEvent* event );
 
     QScopedPointer<Ui::LogWidget> ui;
     QPointer<LogModel> logModel;
@@ -49,6 +50,7 @@ private:
     QPointer<QTimer> eventSkipper;
     bool doAutoScroll;
     bool scrollStateDetected;
+    bool useSettings;
 };
 
 
