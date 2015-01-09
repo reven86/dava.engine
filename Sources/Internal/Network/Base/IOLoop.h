@@ -82,7 +82,6 @@ private:
 private:
     uv_loop_t uvloop;                   // libuv loop handle itself
     uv_loop_t* actualLoop;
-    bool  useDefaultLoop;               // Flag indicating which loop is used: libuv default or user created
 
     bool quitFlag;
     uv_async_t uvasync;                     // libuv handle for calling callback from different threads
