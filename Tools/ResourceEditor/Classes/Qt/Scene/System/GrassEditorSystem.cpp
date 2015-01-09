@@ -69,7 +69,7 @@ GrassEditorSystem::~GrassEditorSystem()
 void GrassEditorSystem::Update(DAVA::float32 timeElapsed)
 { }
 
-void GrassEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void GrassEditorSystem::Input(DAVA::UIEvent *event)
 {
     if(enabled && NULL != vegetationMap)
     {

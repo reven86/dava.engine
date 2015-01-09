@@ -246,7 +246,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 	}
 }
 
-void TilemaskEditorSystem::ProcessUIEvent(UIEvent* event)
+void TilemaskEditorSystem::Input(UIEvent* event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
