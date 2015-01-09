@@ -350,7 +350,7 @@ uint32 UITextFieldAndroid::GetCursorPos()
 void UITextFieldAndroid::SetCursorPos(uint32 pos)
 {
     JniTextField jniTextField(id);
-    return jniTextField.SetCursorPos(pos);
+    jniTextField.SetCursorPos(pos);
 }
 
 void UITextFieldAndroid::SetMaxLength(DAVA::int32 value)
