@@ -285,8 +285,7 @@ bool UIInputSystem::SystemInput(UIControl* control, UIEvent *currentInput)
             if (!current->isUpdated)
             {
                 current->Retain();
-                if (current->inputProcessorsCount > 0 && ((current->customSystemInput != (int)0 && current->customSystemInput(currentInput))
-                    || SystemInput(current, currentInput)))
+                if (current->inputProcessorsCount > 0 && (current->customSystemInput != (int)0 ? current->customSystemInput(currentInput) : SystemInput(current, currentInput)) )
                 {
                     current->Release();
                     return true;

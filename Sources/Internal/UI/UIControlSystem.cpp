@@ -82,15 +82,15 @@ UIControlSystem::UIControlSystem()
 
 UIControlSystem::~UIControlSystem()
 {
+    SafeRelease(currentScreen);
+    SafeRelease(popupContainer);
+
     uint32 size = (uint32)systems.size();
     for (uint32 i = 0; i < size; ++i)
     {
         SafeDelete(systems[i]);
     }
     systems.clear();
-
-    SafeRelease(currentScreen);
-    SafeRelease(popupContainer);
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)

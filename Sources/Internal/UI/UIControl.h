@@ -273,7 +273,6 @@ public:
 
     Function<void(const UIGeometricData&)> customDraw;
     Function<void(const UIGeometricData&)> customDrawAfterChilds;
-
     Function<void(const UIGeometricData&)> customBeforeSystemDraw;
     Function<void(const UIGeometricData&)> customAfterSystemDraw;
     Function<void(const UIGeometricData&)> customSystemDraw;
