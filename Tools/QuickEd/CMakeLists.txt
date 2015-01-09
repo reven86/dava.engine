@@ -49,7 +49,7 @@ set               ( UiList       ${UI_LIST} )
 define_source_folders          ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 generate_source_groups_project (  SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
- 
+
 
 if( APPLE )
 
@@ -132,14 +132,17 @@ elseif ( MSVC )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor_QT5.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
-    if( OUTPUT_TO_BUILD_DIR )
-        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
-        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-     endif()
+    set( OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/$(Configuration)" )
+    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
+    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+endif()
 
+get_filename_component(version_file "../../gitTime.txt" ABSOLUTE)
+if( EXISTS ${version_file})
+    file (STRINGS ${version_file} BUILD_VERION)
+    add_definitions( -DUI_EDITOR_VERSION=\"${BUILD_VERION}\" )   
 endif()
 
 target_link_libraries( ${PROJECT_NAME}

@@ -116,7 +116,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         mController = Controller.getInstance(this);
         if(mController != null)
         {
-        	mController.init();
+            if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
+            {		
+        	    MogaFixForLollipop.init(mController, this);
+			}
+            else
+            {
+                mController.init();
+            }
         	mController.setListener(glView.mogaListener, new Handler());
         }
         
@@ -208,7 +215,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // reverse order of onResume
         // Another activity is taking focus (this activity is about to be "paused").
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] start");
-
         isPausing = true;
 
         if(mController != null)
@@ -274,9 +280,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         JNIUtils.keepScreenOnOnResume();
         JNITextField.HideAllTextFields();
-        
-        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
+
         isPausing = false;
+        Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
     }
 
     @Override
