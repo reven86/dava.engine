@@ -45,25 +45,26 @@ public:
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
+    void Initialize(const Rect& rect) override;
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
+    void OpenURL(const String& urlToOpen) override;
 	// Load html page from string
-	virtual void LoadHtmlString(const WideString& htlmString);
+    void LoadHtmlString(const WideString& htlmString) override;
 	// Delete all cookies associated with target URL
-	virtual void DeleteCookies(const String& targetUrl);
+    void DeleteCookies(const String& targetUrl) override;
     // Execute javascript command, return request ID
-	virtual int32 ExecuteJScript(const String& scriptString);
+    int32 ExecuteJScript(const String& scriptString) override;
     
-    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
+    void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 
 	// Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible, bool hierarchic) override;
 
-	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
-	virtual void SetBackgroundTransparency(bool enabled);
+	void SetDelegate(DAVA::IUIWebViewDelegate *delegate,
+                     DAVA::UIWebView* webView) override;
+	void SetBackgroundTransparency(bool enabled) override;
     
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
@@ -82,6 +83,7 @@ private:
 	void* webViewDelegatePtr;
 
 	void* webViewPolicyDelegatePtr;
+    // A pointer to NSBitmapImageRep cached image of web view to texture
     void* webImageCachePtr;
     
     UIWebView& uiWebViewControl;

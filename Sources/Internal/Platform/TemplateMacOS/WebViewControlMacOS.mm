@@ -403,7 +403,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
     // render web view into bitmap image
     [nativeWebView cacheDisplayInRect:rect toBitmapImageRep:imageRep];
     
-    const unsigned char* rawData = [imageRep bitmapData];
+    const uint8* rawData = [imageRep bitmapData];
     const int w = [imageRep pixelsWide];
     const int h = [imageRep pixelsHigh];
     const int BPP = [imageRep bitsPerPixel];
@@ -421,19 +421,22 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
     else
     {
         DVASSERT(false);
+        abort();
     }
     
     {
         Image* imageRGB = 0;
-        if (pitch == w * (BPP / 8))
+        int bytesPerLine = w * (BPP / 8);
+        
+        if (pitch == bytesPerLine)
         {
             imageRGB = Image::CreateFromData(w, h, format, rawData);
         }
         else
         {
             imageRGB = Image::Create(w, h, format);
-            uint8* pixels = const_cast<uint8*>(imageRGB->GetData());
-            int bytesPerLine = w * (BPP / 8);
+            uint8* pixels = imageRGB->GetData();
+            
             // copy line by line image
             for(int y = 0; y < h; ++y)
             {
