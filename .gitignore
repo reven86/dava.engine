@@ -39,3 +39,4 @@ ddd
 fmod.log
 *.user
 /DavaConfig.in
+.settings/
