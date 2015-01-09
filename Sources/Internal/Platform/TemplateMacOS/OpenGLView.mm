@@ -368,7 +368,7 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 	Vector<DAVA::UIEvent> emptyTouches;
 
 	MoveTouchsToVector(touch, touchPhase, &touches);
-	UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+	UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(touchPhase, emptyTouches, touches);
 	touches.clear();
 }
 
@@ -471,9 +471,9 @@ static int32 oldModifersFlags = 0;
         
         touches.push_back(ev);
 		
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
         touches.pop_back();
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 	}
 	
     InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed([event keyCode]);

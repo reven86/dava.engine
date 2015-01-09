@@ -358,7 +358,7 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 {
 	MoveTouchsToVector(active, &activeTouches);
 	MoveTouchsToVector(total, &totalTouches);
-	DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, totalTouches);
+    DAVA::UIControlSystem::Instance()->GetSystem<DAVA::UIInputSystem>()->OnInput(touchType, activeTouches, totalTouches);
 	activeTouches.clear();
 	totalTouches.clear();
 }

@@ -187,6 +187,11 @@
 #include "UI/UIScrollViewContainer.h"
 #include "UI/UIControlHelpers.h"
 
+#include "UI/Systems/UISystem.h"
+#include "UI/Systems/UIInputSystem.h"
+#include "UI/Systems/UIRenderSystem.h"
+#include "UI/Systems/UIUpdateSystem.h"
+
 // Game object manager / 2D Scene
 #include "Scene2D/GameObject.h"
 #include "Scene2D/GameObjectManager.h"
