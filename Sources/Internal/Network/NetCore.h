@@ -57,7 +57,7 @@ public:
 
     IOLoop* Loop() { return &loop; }
 
-    bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
+    bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* serviceName = NULL);
     void UnregisterAllServices();
     const char8* ServiceName(uint32 serviceId) const;
 
@@ -95,9 +95,9 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline bool NetCore::RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter)
+inline bool NetCore::RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* serviceName)
 {
-    return registrar.Register(serviceId, creator, deleter);
+    return registrar.Register(serviceId, creator, deleter, serviceName);
 }
 
 inline void NetCore::UnregisterAllServices()
