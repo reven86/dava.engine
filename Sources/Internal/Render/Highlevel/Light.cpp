@@ -44,9 +44,9 @@ Light::Light()
     flags(IS_DYNAMIC | CAST_SHADOW),
     camera(NULL),
     lastUpdatedFrame(0),
-	type(TYPE_DIRECTIONAL),
+    type(TYPE_DIRECTIONAL),
     ambientColor(0.0f, 0.0f, 0.0f, 1.0f),
-	diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
+    diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
     intensity(300.0f)
 {
 }

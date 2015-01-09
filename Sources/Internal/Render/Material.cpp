@@ -282,7 +282,7 @@ Material::Material()
     ,   isFlatColorEnabled(false)
     ,   isTexture0ShiftEnabled(false)
     ,   isWireframe(false)
-	,	renderStateBlock()
+    ,   renderStateBlock()
     ,   isExportOwnerLayerEnabled(true)
     ,   ownerLayerName(LAYER_OPAQUE)
 {

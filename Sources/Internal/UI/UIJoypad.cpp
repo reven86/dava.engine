@@ -39,7 +39,7 @@ namespace DAVA
     
 UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 :	UIControl(rect, rectInAbsoluteCoordinates)
-,   stick(NULL)
+,	stick(NULL)
 ,	mainTouch(TOUCH_INVALID_ID)
 ,	deadAreaSize(10.0f)
 ,	digitalSense(0.5f)

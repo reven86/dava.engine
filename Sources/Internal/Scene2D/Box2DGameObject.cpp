@@ -37,7 +37,7 @@ Box2DGameObject::Box2DGameObject()
 	, listenEndContact(false)
 	, listenPreSolveContact(false)
 	, listenPostSolveContact(false)
-    , box2DBody(NULL)
+	, box2DBody(NULL)
 {
 }
 	

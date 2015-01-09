@@ -49,11 +49,22 @@ SkeletonComponent::~SkeletonComponent()
 
 }
         
-SkeletonComponent::JointConfig::JointConfig() : parentIndex(INVALID_JOINT_INDEX), targetId(INVALID_JOINT_INDEX), orientation(0.0f,0.0f,0.0f,1.0f), position(0.0f,0.0f,0.0f), scale(1.0f)
+SkeletonComponent::JointConfig::JointConfig()
+    : parentIndex(INVALID_JOINT_INDEX)
+    , targetId(INVALID_JOINT_INDEX)
+    , orientation(0.0f,0.0f,0.0f,1.0f)
+    , position(0.0f,0.0f,0.0f)
+    , scale(1.0f)
 {    
 }
 SkeletonComponent::JointConfig::JointConfig(int32 _parentIndex, int32 _targetId, const FastName& _name, const Vector3& _position, const Quaternion& _orientation, float32 _scale, const AABBox3& _bbox)
-    : parentIndex(_parentIndex), targetId(_targetId), name(_name), orientation(_orientation), position(_position), scale(_scale), bbox(_bbox)
+    : parentIndex(_parentIndex)
+    , targetId(_targetId)
+    , name(_name)
+    , orientation(_orientation)
+    , position(_position)
+    , scale(_scale)
+    , bbox(_bbox)
 {
 }
 

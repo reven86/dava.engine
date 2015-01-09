@@ -46,11 +46,11 @@ RenderObject::RenderObject()
     ,   flags(DEFAULT_FLAGS)
     ,   debugFlags(0)
     ,   removeIndex(-1)
-	,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
+    ,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
     ,   staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
     ,   worldTransform(0)
-	,	lodIndex(-1)
-	,	switchIndex(-1)
+    ,	lodIndex(-1)
+    ,	switchIndex(-1)
 {
     lights[0] = NULL;
     lights[1] = NULL;

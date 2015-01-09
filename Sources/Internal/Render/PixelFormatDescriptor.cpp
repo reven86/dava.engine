@@ -130,12 +130,12 @@ PixelFormatDescriptor PixelFormatDescriptor::pixelDescriptors[FORMAT_COUNT];
 
 PixelFormatDescriptor::PixelFormatDescriptor()
 	:   format(0)
-	,	internalformat(0) 
-	,	type(0) 
-	,	formatID(FORMAT_INVALID)
-    ,	pixelSize(0)
-	,	isHardwareSupported(false)
-	,	isCompressedFormat(false)
+	,   internalformat(0)
+	,   type(0)
+	,   formatID(FORMAT_INVALID)
+	,   pixelSize(0)
+	,   isHardwareSupported(false)
+	,   isCompressedFormat(false)
 {
 }
 

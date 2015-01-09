@@ -563,7 +563,7 @@ HashMap<K, V>::HashMapIterator::HashMapIterator()
 template <typename K, typename V>
 HashMap<K, V>::HashMapIterator::HashMapIterator(const typename HashMap<K, V>::HashMapIterator &i)
 	: szTable(i.szTable)
-    , current_index(i.current_index)
+	, current_index(i.current_index)
 	, table(i.table)
 	, current_item(i.current_item)
 { }
@@ -571,7 +571,7 @@ HashMap<K, V>::HashMapIterator::HashMapIterator(const typename HashMap<K, V>::Ha
 template <typename K, typename V>
 HashMap<K, V>::HashMapIterator::HashMapIterator(const HashMap<K, V> *map)
 	: szTable(map->szTable)
-    , current_index(0)
+	, current_index(0)
 	, table(map->table)
 	, current_item(NULL)
 {

@@ -39,22 +39,22 @@ namespace DAVA
 PolygonGroup::PolygonGroup()
 :	DataNode(),
     vertexCount(0),
-	indexCount(0),
-	textureCoordCount(0),
+    indexCount(0),
+    textureCoordCount(0),
     vertexStride(0),
     vertexFormat(0),
     indexFormat(EIF_16),
     triangleCount(0),
     primitiveType(PRIMITIVETYPE_TRIANGLELIST),
-	cubeTextureCoordCount(0),
+    cubeTextureCoordCount(0),
 
     vertexArray(0),
-	textureCoordArray(0),
+    textureCoordArray(0),
     normalArray(0),
-	tangentArray(0),
-	binormalArray(0),
-	jointIdxArray(0),
-	jointWeightArray(0),
+    tangentArray(0),
+    binormalArray(0),
+    jointIdxArray(0),
+    jointWeightArray(0),
     cubeTextureCoordArray(0),
     jointCountArray(0),
 	
@@ -62,9 +62,9 @@ PolygonGroup::PolygonGroup()
     flexArray(0),
     angleArray(0),
 
-	colorArray(0), 
-	indexArray(0), 
-	meshData(0),
+    colorArray(0),
+    indexArray(0),
+    meshData(0),
 
     baseVertexArray(0),
     renderDataObject(0)

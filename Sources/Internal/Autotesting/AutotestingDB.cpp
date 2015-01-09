@@ -183,7 +183,7 @@ namespace DAVA
 		}
 
 		dbUpdateObject->LoadData();
-        KeyedArchive* dbUpdateData = dbUpdateObject->GetData();
+		KeyedArchive* dbUpdateData = dbUpdateObject->GetData();
 
 		return dbUpdateData;
 	}

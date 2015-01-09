@@ -31,11 +31,11 @@ namespace DAVA
 {
 
     AutotestingSystem::AutotestingSystem()
-		: startTimeMS(0)
+        : startTimeMS(0)
         , isInit(false)
-		, isRunning(false)
-		, needExitApp(false)
-		, timeBeforeExit(0.0f)
+        , isRunning(false)
+        , needExitApp(false)
+        , timeBeforeExit(0.0f)
         , projectName("")
         , groupName("default")
         , deviceId("not-initialized")
@@ -65,8 +65,8 @@ namespace DAVA
         , isWaiting(false)
         , isInitMultiplayer(false)
         , multiplayerName("")
-		, waitTimeLeft(0.0f)
-		, waitCheckTimeLeft(0.0f)
+        , waitTimeLeft(0.0f)
+        , waitCheckTimeLeft(0.0f)
 	{
 		new AutotestingSystemLua();
 		new AutotestingDB();
