@@ -33,6 +33,8 @@
 #include "UI/UIControlSystem.h"
 #include "UI/ScrollHelper.h"
 
+#include "UI/Systems/UIInputSystem.h"
+
 namespace DAVA 
 {
 	
@@ -51,6 +53,10 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsolu
 	state(STATE_NONE),
     currentScroll(NULL)
 {
+    customInput = Function<void(UIEvent*)>(this, &UIScrollViewContainer::CustomInput);
+    customInputCancelled = Function<void(UIEvent*)>(this, &UIScrollViewContainer::CustomInputCancelled);
+    customSystemInput = Function<bool(UIEvent*)>(this, &UIScrollViewContainer::CustomSystemInput);
+
 	this->SetInputEnabled(true);
 	this->SetMultiInput(true);
     SetFocusEnabled(false);
@@ -95,7 +101,7 @@ int32 UIScrollViewContainer::GetTouchTreshold()
 	return touchTreshold;
 }
 
-void UIScrollViewContainer::Input(UIEvent *currentTouch)
+void UIScrollViewContainer::CustomInput(UIEvent *currentTouch)
 {
 	if(currentTouch->tid == mainTouch)
 	{
@@ -130,7 +136,7 @@ void UIScrollViewContainer::Input(UIEvent *currentTouch)
 	}
 }
 
-bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
+bool UIScrollViewContainer::CustomSystemInput(UIEvent *currentTouch)
 {
 	if(!GetInputEnabled() || !visible || !visibleForUIEditor || (controlState & STATE_DISABLED))
 	{
@@ -141,7 +147,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 	{
 		controlState |= STATE_DISABLED; //this funny code is written to fix bugs with calling Input() twice.
 	}
-	bool systemInput = UIControl::SystemInput(currentTouch);
+    bool systemInput = UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SystemInput(this, currentTouch);
     controlState &= ~STATE_DISABLED; //All this control must be reengeneried
 
 	if (currentTouch->GetInputHandledType() == UIEvent::INPUT_HANDLED_HARD)
@@ -158,7 +164,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
             currentScroll = NULL;
 			mainTouch = currentTouch->tid;
 			PerformEvent(EVENT_TOUCH_DOWN);
-			Input(currentTouch);
+			CustomInput(currentTouch);
 		}
 	}
 	else if(currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::PHASE_DRAG)
@@ -183,14 +189,14 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
             }
             if (currentTouch->touchLocker != this && currentScroll)
             {
-                UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SwitchInputToControl(mainTouch, this);
             }
-			Input(currentTouch);
+			CustomInput(currentTouch);
 		}
 	}
 	else if(currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::PHASE_ENDED)
 	{
-		Input(currentTouch);
+		CustomInput(currentTouch);
 		mainTouch = -1;
 	}
 
@@ -245,7 +251,7 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
 	}
 }
 
-void UIScrollViewContainer::InputCancelled( UIEvent *currentInput )
+void UIScrollViewContainer::CustomInputCancelled( UIEvent *currentInput )
 {
     if (currentInput->tid == mainTouch)
     {

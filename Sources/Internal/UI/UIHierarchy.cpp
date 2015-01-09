@@ -34,6 +34,8 @@
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
+#include "ui/Systems/UIInputSystem.h"
+
 namespace DAVA
 {
 void UIHierarchyDelegate::OnCellSelected(UIHierarchy* /*forHierarchy*/, UIHierarchyCell * /*selectedCell*/)
@@ -47,6 +49,9 @@ void UIHierarchyDelegate::DragAndDrop(void * /*who*/, void * /*target*/, int32 /
 UIHierarchy::UIHierarchy(const Rect &rect, bool rectInAbsoluteCoordinates)
 : UIControl(rect, rectInAbsoluteCoordinates)
 {
+    customInput = Function<void(UIEvent*)>(this, &UIHierarchy::CustomInput);
+    customSystemInput = Function<bool(UIEvent*)>(this, &UIHierarchy::CustomSystemInput);
+
     baseNode = new UIHierarchyNode(NULL);
     baseNode->isOpen = true;
     needRecalc = false;
@@ -495,7 +500,7 @@ void UIHierarchy::DragInput(UIEvent *input)
     }
 }
 
-void UIHierarchy::Input(UIEvent *currentInput)
+void UIHierarchy::CustomInput(UIEvent *currentInput)
 {
     bool isCommandPressed =     InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL) 
                             ||  InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT);
@@ -531,7 +536,7 @@ void UIHierarchy::Input(UIEvent *currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
-bool UIHierarchy::SystemInput(UIEvent *currentInput)
+bool UIHierarchy::CustomSystemInput(UIEvent *currentInput)
 {
     if(!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
     {
@@ -545,7 +550,7 @@ bool UIHierarchy::SystemInput(UIEvent *currentInput)
             if(IsPointInside(currentInput->point))
             {
                 PerformEvent(EVENT_TOUCH_DOWN);
-                Input(currentInput);
+                CustomInput(currentInput);
             }
         }
         else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_DRAG)
@@ -556,14 +561,14 @@ bool UIHierarchy::SystemInput(UIEvent *currentInput)
             {
                 if(abs(currentInput->point.y - newPos) > touchHoldSize)
                 {
-                    UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                    UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.y;
                     return true;
                 }
             }
             else
             {
-                UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SwitchInputToControl(mainTouch, this);
             }
         }
         else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_ENDED)
@@ -573,7 +578,7 @@ bool UIHierarchy::SystemInput(UIEvent *currentInput)
         }
     }
     
-    return UIControl::SystemInput(currentInput);
+    return UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SystemInput(this, currentInput);
 }
 
 void UIHierarchy::OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerData)

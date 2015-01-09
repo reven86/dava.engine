@@ -99,6 +99,8 @@ UISpinner::UISpinner(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*
     , previousTouchX(X_UNDEFINED)
     , dragAnchorX(X_UNDEFINED)
 {
+    customInput = Function<void(UIEvent*)>(this, &UISpinner::CustomInput);
+    
     buttonNext->SetName(UISPINNER_BUTTON_NEXT_NAME);
     buttonPrevious->SetName(UISPINNER_BUTTON_PREVIOUS_NAME);
     AddControl(buttonNext);
@@ -154,7 +156,7 @@ void UISpinner::ContentChanged()
     nextContent->SetPivotPoint(newPivotPoint);
 }
     
-void UISpinner::Input(UIEvent *currentInput)
+void UISpinner::CustomInput(UIEvent *currentInput)
 {
     if (NULL == adapter)
     {

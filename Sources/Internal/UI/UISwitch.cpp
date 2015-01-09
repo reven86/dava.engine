@@ -90,6 +90,8 @@ UISwitch::UISwitch(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     , toggle(new UIButton())
     , switchOnTapBesideToggle(true)
 {
+    customInput = Function<void(UIEvent*)>(this, &UISwitch::CustomInput);
+    
     buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
     buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);
     toggle->SetName(UISWITCH_BUTTON_TOGGLE_NAME);
@@ -235,7 +237,7 @@ void UISwitch::FindRequiredControls()
     DVASSERT(toggle);
 }
 
-void UISwitch::Input(UIEvent *currentInput)
+void UISwitch::CustomInput(UIEvent *currentInput)
 {
     static const int32 MOVE_ANIMATION_TRACK = 10;
     static const float32 ANCHOR_UNDEFINED = 10000;

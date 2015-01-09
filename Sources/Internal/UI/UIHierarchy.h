@@ -202,8 +202,9 @@ public:
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
 
     virtual void Update(float32 timeElapsed);
-    virtual void Input(UIEvent *currentInput);
-    virtual bool SystemInput(UIEvent *currentInput);
+    
+    void CustomInput(UIEvent *currentInput);
+    bool CustomSystemInput(UIEvent *currentInput);
     
     void ScrollToData(void *userData);
     

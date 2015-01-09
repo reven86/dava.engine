@@ -105,7 +105,7 @@ public:
 		INPUT_HANDLED_HARD		= 2,//!<Input is handled completely, input control can't be changed.
 	};
 
-	friend class UIControlSystem;
+	friend class UIInputSystem;
 
 	enum eButtonID 
 	{

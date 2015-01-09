@@ -1624,6 +1624,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Systems\UIUpdateSystem.h">
       <Filter>Internal\UI\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Systems\UIInputSystem.h">
+      <Filter>Internal\UI\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2924,6 +2927,9 @@
       <Filter>Internal\UI\Systems</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Systems\UIUpdateSystem.cpp">
+      <Filter>Internal\UI\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Systems\UIInputSystem.cpp">
       <Filter>Internal\UI\Systems</Filter>
     </ClCompile>
   </ItemGroup>

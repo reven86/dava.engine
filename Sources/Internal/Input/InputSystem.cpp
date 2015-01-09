@@ -33,6 +33,8 @@
 #include "UI/UIControlSystem.h"
 #include "Render/RenderManager.h"
 
+#include "UI/Systems/UIInputSystem.h"
+
 namespace DAVA 
 {
 
@@ -41,7 +43,7 @@ InputSystem::InputSystem()
 {
     keyboard = new KeyboardDevice();
     gamepadManager = new GamepadManager();
-    AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
+    AddInputCallback(InputCallback(UIControlSystem::Instance()->GetSystem<UIInputSystem>(), &UIInputSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }
     

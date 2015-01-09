@@ -342,7 +342,7 @@ namespace DAVA
 		Vector<String> controlPath;
 		ParsePath(path, controlPath);
 
-		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl || controlPath.empty())
+		if (UIControlSystem::Instance()->GetSystem<UIInputSystem>()->GetLockInputCounter() > 0 || !srcControl || controlPath.empty())
 		{
 			return NULL;
 		}
@@ -361,7 +361,7 @@ namespace DAVA
 
 	UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, const String &controlName)
 	{
-		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl)
+		if (UIControlSystem::Instance()->GetSystem<UIInputSystem>()->GetLockInputCounter() > 0 || !srcControl)
 		{
 			return NULL;
 		}
@@ -382,7 +382,7 @@ namespace DAVA
 
 	UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, int32 index)
 	{
-		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcControl)
+		if (UIControlSystem::Instance()->GetSystem<UIInputSystem>()->GetLockInputCounter() > 0 || !srcControl)
 		{
 			return NULL;
 		}
@@ -400,7 +400,7 @@ namespace DAVA
 
 	UIControl* AutotestingSystemLua::FindControl(UIList* srcList, int32 index)
 	{
-		if (UIControlSystem::Instance()->GetLockInputCounter() > 0 || !srcList)
+		if (UIControlSystem::Instance()->GetSystem<UIInputSystem>()->GetLockInputCounter() > 0 || !srcList)
 		{
 			return NULL;
 		}
@@ -675,7 +675,7 @@ namespace DAVA
 		Vector<UIEvent> emptyTouches;
 		Vector<UIEvent> touches;
 		touches.push_back(input);
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 
 		AutotestingSystem::Instance()->OnInput(input);
 	}

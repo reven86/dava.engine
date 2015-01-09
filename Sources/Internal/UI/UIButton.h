@@ -273,8 +273,6 @@ public:
      */
     virtual void SetStateTextControl(int32 state, UIStaticText *textControl);
 
-    virtual void Input(UIEvent *currentInput);
-
     virtual void SetParentColor(const Color &parentColor);
     virtual UIButton *Clone();
     virtual void CopyDataFrom(UIControl *srcControl);
@@ -289,6 +287,7 @@ public:
     virtual void CreateBackgroundForState(int32 state);
 
     void CustomDraw(const UIGeometricData &geometricData);
+    void CustomInput(UIEvent *currentInput);
 
 protected:
     virtual ~UIButton();

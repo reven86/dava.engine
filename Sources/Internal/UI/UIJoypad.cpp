@@ -46,6 +46,9 @@ UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 ,	mainTouch(TOUCH_INVALID_ID)
 ,   stick(NULL)
 {
+    customInput = Function<void(UIEvent*)>(this, &UIJoypad::CustomInput);
+    customInputCancelled = Function<void(UIEvent*)>(this, &UIJoypad::CustomInputCancelled);
+
     SetInputEnabled(true, false);
 }
     
@@ -227,7 +230,7 @@ void UIJoypad::SetStickSpriteFrame(int32 frame)
     }
 }
 
-void UIJoypad::Input(UIEvent *currentInput)
+void UIJoypad::CustomInput(UIEvent *currentInput)
 {
 	if((TOUCH_INVALID_ID == mainTouch) && currentInput->phase == UIEvent::PHASE_BEGAN)
 	{
@@ -272,7 +275,7 @@ void UIJoypad::Input(UIEvent *currentInput)
 	needRecalcDigital = true;
 	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
-void UIJoypad::InputCancelled(UIEvent *currentInput)
+void UIJoypad::CustomInputCancelled(UIEvent *currentInput)
 {
 	if(currentInput->tid == mainTouch)
 	{

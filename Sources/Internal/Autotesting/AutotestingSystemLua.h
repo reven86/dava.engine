@@ -41,6 +41,7 @@
 
 #include "UI/UIControl.h"
 #include "UI/UIList.h"
+#include "UI/Systems/UIInputSystem.h"
 
 #include "FileSystem/LocalizationSystem.h"
 #include "AutotestingSystem.h"

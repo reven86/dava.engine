@@ -51,6 +51,7 @@ UIButton::UIButton(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     , oldControlState(0)
 {
     customDraw = Function<void(const UIGeometricData&)>(this, &UIButton::CustomDraw);
+    customInput = Function<void(UIEvent*)>(this, &UIButton::CustomInput);
 
     for(int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {
@@ -441,9 +442,8 @@ UIStaticText *UIButton::GetStateTextControl(int32 state)
     return GetActualTextBlockForState(state);
 }
 
-void UIButton::Input(UIEvent *currentInput)
+void UIButton::CustomInput(UIEvent *currentInput)
 {
-    UIControl::Input(currentInput);
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 }
 

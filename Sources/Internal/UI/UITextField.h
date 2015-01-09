@@ -192,7 +192,7 @@ public:
     
     virtual WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
 
-    virtual void Input(UIEvent *currentInput);
+    void CustomInput(UIEvent *currentInput);
 
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);

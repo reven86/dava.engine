@@ -30,6 +30,8 @@
 #include "Platform/Thread.h"
 #include "Utils/Utils.h"
 
+#include "UI/Systems/UIInputSystem.h"
+
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
@@ -235,9 +237,9 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 
 			touches.push_back(ev);
 
-			UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+			UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 			touches.pop_back();
-			UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+			UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 
 			InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)message->wParam);
 
@@ -266,9 +268,9 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 			}
 
 			*result = 0;
@@ -291,7 +293,7 @@ bool CoreWin32PlatformQt::WinEvent(MSG *message, long *result)
 
 			int32 touchPhase = MoveTouchsToVector(message->message, message->wParam, message->lParam, &touches);
 
-			UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+			UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(touchPhase, emptyTouches, touches);
 
 			touches.clear();
 		}

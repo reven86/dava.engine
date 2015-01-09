@@ -33,6 +33,8 @@
 #include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
 
+#include "UI/Systems/UIInputSystem.h"
+
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
@@ -676,7 +678,7 @@ namespace DAVA
 		}
 
         if(touchPhase != -1)
-            UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+            UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(touchPhase, emptyTouches, touches);
 
 		if (RenderManager::Instance()->GetCursor() != 0 && mouseCursorShown)
 		{
@@ -739,9 +741,9 @@ namespace DAVA
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 
 				InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)wParam);
 			};
@@ -767,9 +769,9 @@ namespace DAVA
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+				UIControlSystem::Instance()->GetSystem<UIInputSystem>()->OnInput(0, emptyTouches, touches);
 			}
 		}
 		break;

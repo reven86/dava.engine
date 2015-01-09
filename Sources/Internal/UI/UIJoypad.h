@@ -63,8 +63,8 @@ public:
     virtual void SetStickSprite(const FilePath &stickSpriteName, int32 frame);
     virtual void SetStickSpriteFrame(int32 frame);
 
-	virtual void Input(UIEvent *currentInput); // Can be overrided for control additioanl functionality implementation
-	virtual void InputCancelled(UIEvent *currentInput); // Can be overrided for control additioanl functionality implementation
+	void CustomInput(UIEvent *currentInput);
+	void CustomInputCancelled(UIEvent *currentInput);
 
 	float32 GetDeadAreaSize() const { return deadAreaSize; }
 	void SetDeadAreaSize(float newDeadAreaSize) { deadAreaSize = newDeadAreaSize; }//!< Size of the middle joypad area where the tuches do not come.

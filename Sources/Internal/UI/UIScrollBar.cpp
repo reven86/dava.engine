@@ -52,7 +52,8 @@ UIScrollBar::UIScrollBar(const Rect &rect, eScrollOrientation requiredOrientatio
 ,   resizeSliderProportionally(true)
 {
     customDraw = Function<void(const UIGeometricData&)>(this, &UIScrollBar::CustomDraw);
-
+    customInput = Function<void(UIEvent*)>(this, &UIScrollBar::CustomInput);
+    
 	InitControls(rect);
 }
 
@@ -208,7 +209,7 @@ YamlNode * UIScrollBar::SaveToYamlNode(UIYamlLoader * loader)
 	return node;
 }
     
-void UIScrollBar::Input(UIEvent *currentInput)
+void UIScrollBar::CustomInput(UIEvent *currentInput)
 {
     if (!delegate) 
     {

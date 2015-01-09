@@ -14,6 +14,7 @@ public:
     {
         UI_RENDER_SYSTEM = 1,
 		UI_UPDATE_SYSTEM,
+        UI_INPUT_SYSTEM,
 
         UI_CONTROL_SYSTEMS_COUNT
     };

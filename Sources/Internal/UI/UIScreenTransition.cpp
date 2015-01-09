@@ -39,6 +39,7 @@
 
 #include "UI/Systems/UIRenderSystem.h"
 #include "UI/Systems/UIUpdateSystem.h"
+#include "UI/Systems/UIInputSystem.h"
 
 namespace DAVA
 {
@@ -179,7 +180,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
             nextScreen->SystemWillBecomeVisible();
         ReleaseRenderTargets();
         // go to next screen
-        UIControlSystem::Instance()->UnlockInput();
+        UIControlSystem::Instance()->GetSystem<UIInputSystem>()->UnlockInput();
         UIControlSystem::Instance()->UnlockSwitch();
 
         /*

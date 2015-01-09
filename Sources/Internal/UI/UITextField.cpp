@@ -93,6 +93,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,   staticText(NULL)
 #endif
 {
+    customInput = Function<void(UIEvent*)>(this, &UITextField::CustomInput);
+    
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
@@ -462,7 +464,7 @@ bool UITextField::GetTextUseRtlAlign() const
 #endif
 }
 
-void UITextField::Input(UIEvent *currentInput)
+void UITextField::CustomInput(UIEvent *currentInput)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     // nothing to do

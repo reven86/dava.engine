@@ -35,6 +35,8 @@
 #include "Debug/Replay.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#include "UI/Systems/UIInputSystem.h"
+
 namespace DAVA 
 {
 
@@ -136,8 +138,8 @@ void UILoadingTransition::Update(float32 timeElapsed)
 		UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
         if (!inTransition) 
         {
-            UIControlSystem:: Instance()->UnlockInput();//need to call this because once its calls on loading start
-            UIControlSystem:: Instance()->UnlockSwitch();
+            UIControlSystem::Instance()->GetSystem<UIInputSystem>()->UnlockInput();//need to call this because once its calls on loading start
+            UIControlSystem::Instance()->UnlockSwitch();
         }
 		SafeRelease(thread);
 	}

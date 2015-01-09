@@ -281,8 +281,15 @@ public:
     Function<bool()> customNeedUpdateCheck;
     Function<bool()> customNeedSystemUpdateCheck;
 
+    Function<void(UIEvent*)> customInput;
+    Function<void(UIEvent*)> customInputCancelled;
+    Function<bool(UIEvent*)> customSystemInput;
+    Function<void(UIEvent*)> customSystemInputCancelled;
+    Function<bool(UIEvent*)> customSystemProcessInput;
+
 	friend class UIRenderSystem;
 	friend class UIUpdateSystem;
+    friend class UIInputSystem;
 
     /**
      \brief Creates control with requested size and position.
@@ -1192,27 +1199,27 @@ public:
      */
     virtual void SetParentColor(const Color &parentColor);
 
-    /**
-     \brief Calls on every input event. Calls SystemInput() for all control children.
-        If no one of the children is processed input. Calls ProcessInput() for the current control.
-        Internal method used by ControlSystem.
-     \param[in] currentInput Input information.
-     \returns true if control processed this input.
-     */
-    virtual bool SystemInput(UIEvent *currentInput);
-    /**
-     \brief Process incoming input and if it's necessary calls Input() method for the control.
-        Internal method used by ControlSystem.
-     \param[in] currentInput Input information.
-     \returns true if control processed this input.
-     */
-    virtual bool SystemProcessInput(UIEvent *currentInput);// Internal method used by ControlSystem
-    /**
-     \brief Calls when input processd by control is cancelled.
-        Internal method used by ControlSystem.
-     \param[in] currentInput Input information.
-     */
-    virtual void SystemInputCancelled(UIEvent *currentInput);
+//     /**
+//      \brief Calls on every input event. Calls SystemInput() for all control children.
+//         If no one of the children is processed input. Calls ProcessInput() for the current control.
+//         Internal method used by ControlSystem.
+//      \param[in] currentInput Input information.
+//      \returns true if control processed this input.
+//      */
+//     virtual bool SystemInput(UIEvent *currentInput);
+//     /**
+//      \brief Process incoming input and if it's necessary calls Input() method for the control.
+//         Internal method used by ControlSystem.
+//      \param[in] currentInput Input information.
+//      \returns true if control processed this input.
+//      */
+//     virtual bool SystemProcessInput(UIEvent *currentInput);// Internal method used by ControlSystem
+//     /**
+//      \brief Calls when input processd by control is cancelled.
+//         Internal method used by ControlSystem.
+//      \param[in] currentInput Input information.
+//      */
+//     virtual void SystemInputCancelled(UIEvent *currentInput);
 
     /**
      \brief Called when control is set as the hovered (by the mouse) control.
@@ -1237,21 +1244,24 @@ public:
     virtual void DidRemoveHovered();
 
 
-    /**
-     \brief Calls on every input event coming to control.
-        Should be overriden to implement custom input reaction.
-        During one input processing step into control may come more then one input event.
-        For example: Pressing began event and pressing ended or five conituous mose move events etc.
-        Called only if control inputEnable is true.
-     \param[in] currentInput Input information.
-     */
-    virtual void Input(UIEvent *currentInput);
-    /**
-     \brief Calls when input processd by control is cancelled.
-        Should be overriden to implement custom input cancelling reaction.
-     \param[in] currentInput Input information.
-     */
-    virtual void InputCancelled(UIEvent *currentInput);
+//     /**
+//      \brief Calls on every input event coming to control.
+//         Should be overriden to implement custom input reaction.
+//         During one input processing step into control may come more then one input event.
+//         For example: Pressing began event and pressing ended or five conituous mose move events etc.
+//         Called only if control inputEnable is true.
+//      \param[in] currentInput Input information.
+//      */
+//     virtual void Input(UIEvent *currentInput);
+//     /**
+//      \brief Calls when input processd by control is cancelled.
+//         Should be overriden to implement custom input cancelling reaction.
+//      \param[in] currentInput Input information.
+//      */
+//     virtual void InputCancelled(UIEvent *currentInput);
+
+
+
     /**
      \brief Calls on every frame with frame delata time parameter.
         Should be overriden to implement perframe functionality.
@@ -1259,6 +1269,7 @@ public:
      \param[in] timeElapsed Current frame time delta.
      */
     virtual void Update(float32 timeElapsed);
+
     /**
      \brief Calls on every frame to draw control.
         Can be overriden to implement custom draw functionality.

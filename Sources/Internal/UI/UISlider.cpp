@@ -61,7 +61,8 @@ UISlider::UISlider(const Rect & rect)
 ,   spritesEmbedded(false)
 {
     customDraw = Function<void(const UIGeometricData&)>(this, &UISlider::CustomDraw);
-
+    customInput = Function<void(UIEvent*)>(this, &UISlider::CustomInput);
+    
     SetInputEnabled(true, false);
 	isEventsContinuos = true;
 	
@@ -222,7 +223,7 @@ void UISlider::RemoveControl(UIControl *control)
     UIControl::RemoveControl(control);
 }
 
-void UISlider::Input(UIEvent *currentInput)
+void UISlider::CustomInput(UIEvent *currentInput)
 {
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)                                        
 	if (currentInput->phase == UIEvent::PHASE_MOVE || currentInput->phase == UIEvent::PHASE_KEYCHAR)
@@ -248,7 +249,7 @@ void UISlider::Input(UIEvent *currentInput)
 		currentValue = maxValue;
 	}
 
-	if (isEventsContinuos) // if continuos events
+	if (isEventsContinuos) // if continuous events
 	{
 		if(oldVal != currentValue)
 		{
@@ -256,7 +257,7 @@ void UISlider::Input(UIEvent *currentInput)
 		}
 	}else if (currentInput->phase == UIEvent::PHASE_ENDED) 
 	{
-		/* if not continuos always perform event because last move position almost always the same as end pos */
+		/* if not continuous always perform event because last move position almost always the same as end pos */
 		PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 	}
 

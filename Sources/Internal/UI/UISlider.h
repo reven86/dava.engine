@@ -95,7 +95,7 @@ protected:
 	
 	float32 currentValue;
 
-	void Input(UIEvent *currentInput);
+	void CustomInput(UIEvent *currentInput);
 	
 	void RecalcButtonPos();
 

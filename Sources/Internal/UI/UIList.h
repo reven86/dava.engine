@@ -239,8 +239,8 @@ protected:
 
     virtual void Update(float32 timeElapsed);
 
-    virtual void Input(UIEvent *currentInput);
-    virtual bool SystemInput(UIEvent *currentInput);// Internal method used by ControlSystem
+    void CustomInput(UIEvent *currentInput);
+    bool CustomSystemInput(UIEvent *currentInput);
 
     virtual void SetRect(const Rect &rect);
 

@@ -639,6 +639,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Systems\UIInputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Systems\UIRenderSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Systems\UISystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Systems\UIUpdateSystem.h" />
@@ -1084,6 +1085,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Systems\UIInputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Systems\UIRenderSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Systems\UIUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />

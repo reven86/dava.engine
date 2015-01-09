@@ -69,7 +69,7 @@ public:
 	virtual void AddControl(UIControl *control);
     virtual UIControl *Clone();
 
-    virtual void Input(UIEvent *currentInput);
+    void CustomInput(UIEvent *currentInput);
 
     bool GetIsLeftSelected() {return isLeftSelected;}
     void SetIsLeftSelected(bool aIsLeftSelected);

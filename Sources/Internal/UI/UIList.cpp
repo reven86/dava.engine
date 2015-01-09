@@ -37,6 +37,8 @@
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 
+#include "UI/Systems/UIInputSystem.h"
+
 namespace DAVA
 {
 
@@ -66,6 +68,9 @@ UIList::UIList(const Rect &rect/* = Rect()*/, eListOrientation requiredOrientati
     , scroll(NULL)
     , aggregatorPath(FilePath())
 {
+    customInput = Function<void(UIEvent*)>(this, &UIList::CustomInput);
+    customSystemInput = Function<bool(UIEvent*)>(this, &UIList::CustomSystemInput);
+
     InitAfterYaml();
 }
 
@@ -455,7 +460,7 @@ void UIList::Update(float32 timeElapsed)
 
 }
 
-void UIList::Input(UIEvent *currentInput)
+void UIList::CustomInput(UIEvent *currentInput)
 {
     if (lockTouch && currentInput->tid != mainTouch)
     {
@@ -497,7 +502,7 @@ void UIList::Input(UIEvent *currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
-bool UIList::SystemInput(UIEvent *currentInput)
+bool UIList::CustomSystemInput(UIEvent *currentInput)
 {
     if(!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
     {
@@ -511,7 +516,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
             if(IsPointInside(currentInput->point))
             {
                 PerformEvent(EVENT_TOUCH_DOWN);
-                Input(currentInput);
+                CustomInput(currentInput);
             }
         }
         else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_DRAG)
@@ -520,7 +525,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
             {
                 if(abs(currentInput->point.x - newPos) > touchHoldSize)
                 {
-                    UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                    UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.x;
                     return TRUE;
                 }
@@ -529,7 +534,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
             {
                 if(abs(currentInput->point.y - newPos) > touchHoldSize)
                 {
-                    UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                    UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.y;
                     return TRUE;
                 }
@@ -541,7 +546,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
             lockTouch = false;
             SetFocusEnabled(true);
             scrollContainer->SetFocusEnabled(true);
-            bool retVal = UIControl::SystemInput(currentInput);
+            bool retVal = UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SystemInput(this, currentInput);
             SetFocusEnabled(false);
             scrollContainer->SetFocusEnabled(false);
             return retVal;
@@ -551,7 +556,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
 
     }
 
-    return UIControl::SystemInput(currentInput);
+    return UIControlSystem::Instance()->GetSystem<UIInputSystem>()->SystemInput(this, currentInput);
 }
 
 void UIList::OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerData)

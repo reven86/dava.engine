@@ -41,6 +41,7 @@
 
 #include "UI/Systems/UIRenderSystem.h"
 #include "UI/Systems/UIUpdateSystem.h"
+#include "UI/Systems/UIInputSystem.h"
 
 namespace DAVA 
 {
@@ -52,6 +53,7 @@ UIControlSystem::UIControlSystem()
 {
     systems[UISystem::UI_RENDER_SYSTEM] = new UIRenderSystem();
 	systems[UISystem::UI_UPDATE_SYSTEM] = new UIUpdateSystem();
+    systems[UISystem::UI_INPUT_SYSTEM] = new UIInputSystem();
 
 	screenLockCount = 0;
 	frameSkip = 0;
@@ -68,10 +70,6 @@ UIControlSystem::UIControlSystem()
 
 	popupContainer = new UIControl(Rect(0, 0, 1, 1));
 	popupContainer->SetInputEnabled(false);
-	
-	exclusiveInputLocker = NULL;
-	
-	lockInputCounter = 0;
 	
 	baseGeometricData.position = Vector2(0, 0);
 	baseGeometricData.size = Vector2(0, 0);
@@ -196,7 +194,7 @@ void UIControlSystem::Reset()
 void UIControlSystem::ProcessScreenLogic()
 {
 	/*
-	 if next screen or we need to removecurrent screen
+	 if next screen or we need to remove current screen
 	 */
 	if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
 	{
@@ -208,9 +206,8 @@ void UIControlSystem::ProcessScreenLogic()
         nextScreen = 0; // functions called by this method can request another screen switch (for example, LoadResources)
         nextScreenTransition = 0;
         
-		LockInput();
-		
-		CancelAllInputs();
+        GetSystem<UIInputSystem>()->LockInput();
+		GetSystem<UIInputSystem>()->CancelAllInputs();
 		
         NotifyListenersWillSwitch(nextScreenProcessed);
 
@@ -292,7 +289,7 @@ void UIControlSystem::ProcessScreenLogic()
                     nextScreenProcessed->SystemWillBecomeVisible();
             }
 			
-			UnlockInput();
+			GetSystem<UIInputSystem>()->UnlockInput();
 		}
 		frameSkip = FRAME_SKIP;
 		removeCurrentScreen = false;
@@ -333,334 +330,6 @@ void UIControlSystem::Draw()
 	GetSystem<UIRenderSystem>()->Process();
 }
 	
-void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)
-{
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-	{
-		if((*it).tid == eventID)
-		{
-			CancelInput(&(*it));
-			
-			if(targetControl->IsPointInside((*it).point))
-			{
-				(*it).controlState = UIEvent::CONTROL_STATE_INSIDE;
-				targetControl->touchesInside++;
-			}
-			else 
-			{
-				(*it).controlState = UIEvent::CONTROL_STATE_OUTSIDE;
-			}
-			(*it).touchLocker = targetControl;
-			targetControl->currentInputID = eventID;
-			if(targetControl->GetExclusiveInput())
-			{
-				SetExclusiveInputLocker(targetControl, eventID);
-			}
-			else 
-			{
-				SetExclusiveInputLocker(NULL, -1);
-			}
-
-			targetControl->totalTouches++;
-		}
-	}
-}
-
-	
-void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInputs, const Vector<UIEvent> &allInputs, bool fromReplay/* = false*/)
-{
-    inputCounter = 0;
-	if(Replay::IsPlayback() && !fromReplay) return;
-	if (lockInputCounter > 0)return;
-
-	if(frameSkip <= 0)
-	{
-		if(Replay::IsRecord())
-		{
-			int32 count = (int32)activeInputs.size();
-			Replay::Instance()->RecordEventsCount(count);
-			for(Vector<UIEvent>::const_iterator it = activeInputs.begin(); it != activeInputs.end(); ++it) 
-			{
-				UIEvent ev = *it;
-                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-				Replay::Instance()->RecordEvent(&ev);
-			}
-
-			count = (int32)allInputs.size();
-			Replay::Instance()->RecordEventsCount(count);
-			for(Vector<UIEvent>::const_iterator it = allInputs.begin(); it != allInputs.end(); ++it) 
-			{
-				UIEvent ev = *it;
-                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-				Replay::Instance()->RecordEvent(&ev);
-			}
-		}
-
-		//check all touches for active state
-//		Logger::FrameworkDebug("IN   Active touches %d", activeInputs.size());
-//		Logger::FrameworkDebug("IN   Total touches %d", allInputs.size());
-		for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-		{
-			(*it).activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
-			
-			for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
-			{
-				if((*it).tid == (*wit).tid)
-				{
-					if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
-					{
-						(*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
-					}
-					else 
-					{
-						(*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-					}
-					
-					(*it).phase = (*wit).phase;
-					(*it).timestamp = (*wit).timestamp;
-					(*it).physPoint = (*wit).physPoint;
-                    (*it).point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual((*it).physPoint);
-					(*it).tapCount = (*wit).tapCount;
-					(*it).inputHandledType = (*wit).inputHandledType;
-					break;
-				}
-			}
-			if((*it).activeState == UIEvent::ACTIVITY_STATE_INACTIVE)
-			{
-				for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
-				{
-					if((*it).tid == (*wit).tid)
-					{
-						if((*it).phase == (*wit).phase && (*it).point == (*wit).point)
-						{
-							(*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
-						}
-						else 
-						{
-							(*it).activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-						}
-						
-						(*it).phase = (*wit).phase;
-						(*it).timestamp = (*wit).timestamp;
-						(*it).physPoint = (*wit).physPoint;
-						(*it).point = (*wit).point;
-                        (*it).point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual((*it).physPoint);
-						(*it).tapCount = (*wit).tapCount;
-						(*it).inputHandledType = (*wit).inputHandledType;
-						break;
-					}
-				}
-			}
-		}
-		
-		//add new touches
-		for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
-		{
-			bool isFind = FALSE;
-			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-			{
-				if((*it).tid == (*wit).tid)
-				{
-					isFind = TRUE;
-                    break;
-				}
-			}
-			if(!isFind)
-			{
-				totalInputs.push_back((*wit));
-                
-                Vector<UIEvent>::reference curr(totalInputs.back());
-				curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-                //curr.phase = UIEvent::PHASE_BEGAN;
-                curr.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(curr.physPoint);
-			}
-		}
-		for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
-		{
-			bool isFind = FALSE;
-			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-			{
-				if((*it).tid == (*wit).tid)
-				{
-					isFind = TRUE;
-                    break;
-				}
-			}
-			if(!isFind)
-			{
-				totalInputs.push_back((*wit));
-                
-                Vector<UIEvent>::reference curr(totalInputs.back());
-				curr.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-                curr.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(curr.physPoint);
-			}
-		}
-		
-		//removes inactive touches and cancelled touches
-		for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end();)
-		{
-			if((*it).activeState == UIEvent::ACTIVITY_STATE_INACTIVE || (*it).phase == UIEvent::PHASE_CANCELLED)
-			{
-                if ((*it).phase != UIEvent::PHASE_ENDED)
-                {
-                    CancelInput(&(*it));
-                }
-				totalInputs.erase(it);
-				it = totalInputs.begin();
-				if(it == totalInputs.end())
-				{
-					break;
-				}
-                continue;
-			}
-            it++;
-		}
-		
-//		Logger::FrameworkDebug("Total touches %d", totalInputs.size());
-//		for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
-//		{
-//			Logger::FrameworkDebug("		ID %d", (*it).tid);
-//			Logger::FrameworkDebug("		phase %d", (*it).phase);
-//		}
-
-
-		if(currentScreen)
-		{
-			for(Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-			{
-				if((*it).activeState == UIEvent::ACTIVITY_STATE_CHANGED)
-				{
-					if(!popupContainer->SystemInput(&(*it)))
-					{
-						currentScreen->SystemInput(&(*it));
-					}
-				}
-				if(totalInputs.empty())
-				{
-					break;
-				}
-			}
-		}
-	}
-    //Logger::Info("UIControlSystem::inputs: %d", inputCounter);
-}
-
-void UIControlSystem::OnInput(UIEvent * event)
-{
-	if(currentScreen)
-	{
-		if(!popupContainer->SystemInput(event))
-		{
-			currentScreen->SystemInput(event);
-		}
-	}
-}
-void UIControlSystem::CancelInput(UIEvent *touch)
-{
-	if(touch->touchLocker)
-	{
-		touch->touchLocker->SystemInputCancelled(touch);
-	}
-	if (touch->touchLocker != currentScreen)
-	{
-		currentScreen->SystemInputCancelled(touch);
-	}
-}
-void UIControlSystem::CancelAllInputs()
-{
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-	{
-		CancelInput(&(*it));
-	}
-	totalInputs.clear();
-}
-
-void UIControlSystem::CancelInputs(UIControl *control, bool hierarchical)
-{
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-	{
-        if (!hierarchical)
-        {
-            if (it->touchLocker == control)
-            {
-                CancelInput(&(*it));
-                break;
-            }
-            continue;
-        }
-        UIControl * parentLockerControl = it->touchLocker;
-        while(parentLockerControl)
-        {
-            if(control == parentLockerControl)
-            {
-                CancelInput(&(*it));
-                break;
-            }
-            parentLockerControl = parentLockerControl->GetParent();
-        }
-	}
-}
-
-//void UIControlSystem::SetTransitionType(int newTransitionType)
-//{
-//	transitionType = newTransitionType;
-//}
-	
-int32 UIControlSystem::LockInput()
-{
-	lockInputCounter++;
-	if (lockInputCounter > 0)
-	{
-		CancelAllInputs();
-	}
-	return lockInputCounter;
-}
-
-int32 UIControlSystem::UnlockInput()
-{
-	DVASSERT(lockInputCounter != 0);
-
-	lockInputCounter--;
-	if (lockInputCounter == 0)
-	{
-		// VB: Done that because hottych asked to do that.
-		CancelAllInputs();
-	}
-	return lockInputCounter;
-}
-	
-int32 UIControlSystem::GetLockInputCounter() const
-{
-	return lockInputCounter;
-}
-
-const Vector<UIEvent> & UIControlSystem::GetAllInputs()
-{
-	return totalInputs;
-}
-	
-void UIControlSystem::SetExclusiveInputLocker(UIControl *locker, int32 lockEventId)
-{
-	SafeRelease(exclusiveInputLocker);
-    if (locker != NULL)
-    {
-        for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
-        {
-            if (it->tid != lockEventId && it->touchLocker != locker)
-            {//cancel all inputs excepts current input and inputs what allready handles by this locker.
-                CancelInput(&(*it));
-            }
-        }
-    }
-
-	exclusiveInputLocker = SafeRetain(locker);
-}
-	
-UIControl *UIControlSystem::GetExclusiveInputLocker()
-{
-	return exclusiveInputLocker;
-}
-    
 void UIControlSystem::ScreenSizeChanged()
 {
     popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
@@ -746,7 +415,7 @@ void UIControlSystem::ReplayEvents()
 
 		if(activeCount || allCount)
 		{
-			OnInput(0, activeInputs, allInputs, true);
+			GetSystem<UIInputSystem>()->OnInput(0, activeInputs, allInputs, true);
 		}
 	}
 }

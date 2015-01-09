@@ -82,8 +82,7 @@ public:
     virtual void LoadFromYamlNodeCompleted();
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 	
-    void Input(UIEvent *currentInput);
-
+    void CustomInput(UIEvent *currentInput);
     void CustomDraw(const UIGeometricData &geometricData);
 
 	int32 GetOrientation() const;

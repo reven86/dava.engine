@@ -61,7 +61,7 @@ public:
 
 	/**
 	 \brief	UIControlSystem it's a core of the all controls work.
-		ControlSystem managed all update, draw, appearence and disappearence of the controls.
+		ControlSystem managed all update, draw, appearance and disappearance of the controls.
 		ControlSystem works with th UIScreenManager to process screen setting and switching.
 		Also ControlSystem processed all user input events to the controls.
 	 */
@@ -75,10 +75,6 @@ class UIControlSystem : public Singleton<UIControlSystem>
 	int frameSkip;
 	int transitionType;
 
-	
-	Vector<UIEvent> totalInputs;
-
-	
 protected:
 	~UIControlSystem();
 	/**
@@ -99,7 +95,6 @@ public:
     */
     int32 updateCounter;
     int32 drawCounter;
-    int32 inputCounter;
 
 	/**
 	 \brief Sets the requested screen as current.
@@ -141,54 +136,9 @@ public:
 	UIControl *GetPopupContainer();
 	
 	/**
-	 \brief Disabled all controls inputs.
-		Locking all inputs if input is unlocked or incrementing lock counter.
-	 \returns current lock input counter
-	 */
-	int32 LockInput();
-	
-	/**
-	 \brief Enabling all controls inputs.
-	 Decrementing lock counter if counter is zero unlocking all inputs.
-	 \returns current lock input counter
-	 */
-	int32 UnlockInput();
-	
-	/**
-	 \brief Returns lock input counter.
-	 \returns current lock input counter
-	 */
-	int32 GetLockInputCounter() const;
-
-	/**
-	 \brief Cancel all inputs for the requested control.
-	 \param[in] control to cancel inputs for.
-	 */
-	void CancelInputs(UIControl *control, bool hierarchical = true);
-
-	/**
-	 \brief Cancel requested input.
-	 \param[in] event to cancel.
-	 */
-	void CancelInput(UIEvent *touch);
-
-	/**
-	 \brief Cancelling all current inputs.
-	 */
-	void CancelAllInputs();
-	
-	/**
 	 \brief Sets the current screen to 0 LOL.
 	 */
 	void Reset();
-
-    /// TODO: touchType to be removed?
-	/**
-	 \brief Calls by the system for input processing.
-	 */
-	void OnInput(int32 touchType, const Vector<UIEvent> &activeInputs, const Vector<UIEvent> &allInputs, bool fromReplay = false);
-	
-	void OnInput(UIEvent * event);
 
 	/**
 	 \brief Callse very frame by the system for update.
@@ -203,27 +153,6 @@ public:
 	
 //	void SetTransitionType(int newTransitionType);
 	
-			
-	/**
-	 \brief Returns all currently active inputs.
-	 \returns all inputs active in the system
-	 */
-	const Vector<UIEvent>  &GetAllInputs(); 
-	
-	/**
-	 \brief Sets requested control as a exclusive input locker.
-	 All inputs goes only to the exclusive input locker if input locker is present.
-	 \param[in] control to set the input locker.
-	 \param[in] event id to cause a lock. All other events will be cancelled(excepts the locker == NULL situation).
-	 */
-	void SetExclusiveInputLocker(UIControl *locker, int32 lockEventId);
-
-	/**
-	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
-	 \returns exclusive input locker
-	 */
-	UIControl *GetExclusiveInputLocker();
-
 	/**
 	 \brief Returns base geometric data seted in the system.
 		Base GeometricData is usually has parameters looks a like:
@@ -235,19 +164,10 @@ public:
 		But system can change this parameters for the 
 		specific device capabilities.
 	 
-	 \returns GeometricData uset for the base draw
+	 \returns GeometricData used for the base draw
 	 */
 	const UIGeometricData &GetBaseGeometricData() const;
 	
-	/**
-	 \brief Sets input with the requested ID to the required control.
-		Input removes from the current owner. OnInputCancel() calls for the old control.  
-		New control starts to handle all input activities.
-	 \param[in] Input ID. Can be found in the UIEvent:tid.
-	 \param[in] Control that should handle the input.
-	 */
-	void SwitchInputToControl(int32 eventID, UIControl *targetControl);
-
 	/**
 	 \brief Used internally by Replay class
 	 */
@@ -265,7 +185,7 @@ public:
     void SetHoveredControl(UIControl *newHovered);
 
 	/**
-	 \brief Returns control hovered by the mnouse for now
+	 \brief Returns control hovered by the mouse for now
 	 */
     UIControl *GetHoveredControl(UIControl *newHovered);
 
@@ -305,7 +225,7 @@ public:
 
 private:
 	/**
-	 \brief Instantly replace one screen to enother.
+	 \brief Instantly replace one screen to another.
 		Call this only on your own risk if you are really know what you need. 
 		May cause to abnormal behavior!
 		Internally used by UITransition.
@@ -328,15 +248,12 @@ private:
 
 	bool removeCurrentScreen;
 	
-	UIControl *exclusiveInputLocker;
-    UIControl *hovered;
+	UIControl *hovered;
     
     UIControl *focusedControl;
 
 	UIControl * popupContainer;
 	Set<UIPopup*> popupsToRemove;
-	
-	int32 lockInputCounter;
 	
 	UIScreenTransition * nextScreenTransition;
 	
@@ -350,6 +267,7 @@ private:
     Vector<UISystem*> systems;
 
     friend class UIRenderSystem;
+    friend class UIInputSystem;
 };
 
 inline UISystem* UIControlSystem::GetSystem(const UISystem::eSystemType system) const
