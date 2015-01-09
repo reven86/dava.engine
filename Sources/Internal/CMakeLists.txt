@@ -155,7 +155,7 @@ elseif( WIN32 )
         file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
         list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-        set  ( LIST_SHARED_LIBRARIES "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib"  )
+        set  ( LIST_SHARED_LIBRARIES "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" )
   
     endif()
 
@@ -186,7 +186,6 @@ if( LINK_THIRD_PARTY )
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} RELEASE "${LIST_SHARED_LIBRARIES_RELEASE}" )
 endif()
 
-git_check()
 
 target_link_libraries  ( ${PROJECT_NAME} ${LIST_SHARED_LIBRARIES} ${LIST_ADDED_SHARED_LIBRARIES} )  
 

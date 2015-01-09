@@ -63,18 +63,6 @@ qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
-add_subdirectory  ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
-
-set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
-set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
-set ( Generated          ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-
-define_source_folders          ( SRC_ROOT "Classes" )
-generate_source_groups_project ( SRC_ROOT "Classes" "Data" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
-
-list ( APPEND PROJECT_SOURCE_FILES  ${DYLIB_FILES} "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.h" 
-                                                   "${DAVA_SPEEDTREE_ROOT_DIR}/Sources/SpeedTreeImporter.cpp" ) 
-
 if( APPLE )
 
     set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
@@ -100,23 +88,26 @@ if( APPLE )
     list( APPEND LIBRARIES       ${DYLIB_FILES} )
 
 elseif( MSVC )
-
     add_definitions( -D__DAVAENGINE_BEAST__ )
+    set( BEAST_WRAPPER "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
 
-    file ( GLOB_RECURSE BEAST_LIST "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.cpp"  
-                                   "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper/*.h" 
-                                  )
 endif()
+
+set ( SpeedTreeImporter  ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+set ( BEAST              ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper )
+set ( Generated          ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+
+define_source_folders          ( SRC_ROOT "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources )
+generate_source_groups_project ( SRC_ROOT "Classes" "Data" "DataQt" GROUP_FOLDERS SpeedTreeImporter BEAST Generated  )
+add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 add_executable ( ${PROJECT_NAME} MACOSX_BUNDLE
     ${MOC_APP_SRCS} 
     ${UI_APP_HDRS} 
     ${RCC_APP_SRCS} 
     ${PROJECT_SOURCE_FILES} 
-    ${BEAST_LIST}
     ${RESOURCES_LIST} 
 )
-
                               
 if( APPLE )
     
@@ -175,6 +166,7 @@ elseif( MSVC )
 
 endif()
 
+file_tree_check( "${DAVA_FOLDERS}" )
 
 target_link_libraries( ${PROJECT_NAME}
     ${DAVA_LIBRARY}
@@ -182,7 +174,7 @@ target_link_libraries( ${PROJECT_NAME}
     ${LIBRARIES} 
     TextureTool
 )
- 
+
 foreach( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
 endforeach()

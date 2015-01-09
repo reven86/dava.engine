@@ -39,7 +39,6 @@ add_definitions       (
 
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 
-
 file              ( GLOB_RECURSE QT_LIST "Classes/*.h" )
 qt4_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
@@ -49,13 +48,6 @@ qt4_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 file              ( GLOB RCC_LIST "Data/*.qrc" )
 qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
-set               ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set               ( UiList       ${UI_LIST} )
-
-define_source_folders          ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
-add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
-generate_source_groups_project (  SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
-   
 if( APPLE )
 
     set( MACOS_PLIST  ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
@@ -82,6 +74,13 @@ if( APPLE )
     list ( APPEND LIBRARIES       ${DYLIB_FILES} )
 
 endif()
+
+set ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set ( UiList       ${UI_LIST} )
+
+define_source_folders          ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
+generate_source_groups_project ( SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
+add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 add_executable( ${PROJECT_NAME} MACOSX_BUNDLE
     ${MOC_APP_SRCS} 

@@ -19,6 +19,7 @@ set ( DAVA_TOOLS_DIR                   "${DAVA_ROOT_DIR}/Sources/Tools" )
 set ( DAVA_ENGINE_DIR                  "${DAVA_ROOT_DIR}/Sources/Internal" )
 set ( DAVA_THIRD_PARTY_ROOT_PATH       "${DAVA_ROOT_DIR}/Libs" )
 set ( DAVA_CONFIGURE_FILES_PATH        "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
+set ( DAVA_SCRIPTS_FILES_PATH          "${DAVA_ROOT_DIR}/Sources/CMake/Scripts" )
 set ( DAVA_THIRD_PARTY_INCLUDES_PATH   "${DAVA_THIRD_PARTY_ROOT_PATH}/include" 
                                        "${DAVA_ENGINE_DIR}/../External" 
                                        "${DAVA_ENGINE_DIR}/../Tools" 
