@@ -39,7 +39,6 @@ namespace Net
 
 IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
                                       , actualLoop(NULL)
-                                      , useDefaultLoop(useDefaultIOLoop)
                                       , quitFlag(false)
                                       , uvasync()
 {
