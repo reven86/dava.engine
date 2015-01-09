@@ -47,9 +47,12 @@ class ServiceRegistrar
 private:
     struct Entry
     {
-        Entry(uint32 id, ServiceCreator creatorFunc, ServiceDeleter deleterFunc);
+        static const size_t MAX_NAME_LENGTH = 32;
+
+        Entry(uint32 id, const char8* serviceName, ServiceCreator creatorFunc, ServiceDeleter deleterFunc);
 
         uint32 serviceId;
+        char8 name[MAX_NAME_LENGTH];
         ServiceCreator creator;
         ServiceDeleter deleter;
     };
@@ -57,10 +60,13 @@ private:
     friend bool operator == (const Entry& entry, uint32 serviceId);
 
 public:
-    bool Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
+    bool Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name = NULL);
+    void UnregisterAll();
 
     IChannelListener* Create(uint32 serviceId, void* context) const;
     bool Delete(uint32 serviceId, IChannelListener* obj, void* context) const;
+
+    const char8* Name(uint32 serviceId) const;
 
 private:
     const Entry* FindEntry(uint32 serviceId) const;
@@ -70,11 +76,14 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline ServiceRegistrar::Entry::Entry(uint32 id, ServiceCreator creatorFunc, ServiceDeleter deleterFunc)
+inline ServiceRegistrar::Entry::Entry(uint32 id, const char8* serviceName, ServiceCreator creatorFunc, ServiceDeleter deleterFunc)
     : serviceId(id)
     , creator(creatorFunc)
     , deleter(deleterFunc)
-{}
+{
+    strncpy(name, serviceName, MAX_NAME_LENGTH);
+    name[MAX_NAME_LENGTH - 1] = '\0';
+}
 
 inline bool operator == (const ServiceRegistrar::Entry& entry, uint32 serviceId)
 {

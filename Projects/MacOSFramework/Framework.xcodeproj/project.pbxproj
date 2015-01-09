@@ -854,6 +854,9 @@
 		5013F6941859EB0400FB3C51 /* StaticOcclusionSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 5013F6901859EB0400FB3C51 /* StaticOcclusionSystem.h */; };
 		5013F6951859EB0400FB3C51 /* StaticOcclusionSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 5013F6901859EB0400FB3C51 /* StaticOcclusionSystem.h */; };
 		5013F6961859EB0400FB3C51 /* StaticOcclusionSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 5013F6901859EB0400FB3C51 /* StaticOcclusionSystem.h */; };
+		5016206B1A5ED5B100E5A914 /* PeerDesription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501620681A5ED5B100E5A914 /* PeerDesription.cpp */; };
+		5016206C1A5ED5B100E5A914 /* PeerDesription.h in Headers */ = {isa = PBXBuildFile; fileRef = 501620691A5ED5B100E5A914 /* PeerDesription.h */; };
+		5016206D1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5016206A1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp */; };
 		5022951C186DD1BC00F55478 /* RenderPassManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5022951A186DD1BC00F55478 /* RenderPassManager.cpp */; };
 		5022951D186DD1BC00F55478 /* RenderPassManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5022951A186DD1BC00F55478 /* RenderPassManager.cpp */; };
 		5022951E186DD1BC00F55478 /* RenderPassManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5022951A186DD1BC00F55478 /* RenderPassManager.cpp */; };
@@ -2741,6 +2744,9 @@
 		4FFE5CAD1779DBC700728624 /* MipmapReplacer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MipmapReplacer.h; sourceTree = "<group>"; };
 		5013F68F1859EB0400FB3C51 /* StaticOcclusionSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionSystem.cpp; sourceTree = "<group>"; };
 		5013F6901859EB0400FB3C51 /* StaticOcclusionSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionSystem.h; sourceTree = "<group>"; };
+		501620681A5ED5B100E5A914 /* PeerDesription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PeerDesription.cpp; sourceTree = "<group>"; };
+		501620691A5ED5B100E5A914 /* PeerDesription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PeerDesription.h; sourceTree = "<group>"; };
+		5016206A1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PeerDesriptionSerialize.cpp; sourceTree = "<group>"; };
 		5022951A186DD1BC00F55478 /* RenderPassManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderPassManager.cpp; sourceTree = "<group>"; };
 		5022951B186DD1BC00F55478 /* RenderPassManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderPassManager.h; sourceTree = "<group>"; };
 		5043DDAA18706828005E3584 /* VisibilityArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityArray.h; sourceTree = "<group>"; };
@@ -3768,6 +3774,9 @@
 		50C16D6D1A52D7B9003C307A /* Network */ = {
 			isa = PBXGroup;
 			children = (
+				501620681A5ED5B100E5A914 /* PeerDesription.cpp */,
+				501620691A5ED5B100E5A914 /* PeerDesription.h */,
+				5016206A1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp */,
 				50C16D6E1A52D7B9003C307A /* Base */,
 				50C16D861A52D7B9003C307A /* IChannel.h */,
 				50C16D871A52D7B9003C307A /* IController.h */,
@@ -5645,6 +5654,7 @@
 				E8989E7A16BD24E500732C04 /* Rect.h in Headers */,
 				E8989E7C16BD24E500732C04 /* RectPacker.h in Headers */,
 				E8989E7D16BD24E500732C04 /* Sphere.h in Headers */,
+				5016206C1A5ED5B100E5A914 /* PeerDesription.h in Headers */,
 				E8989E7F16BD24E500732C04 /* Spline.h in Headers */,
 				E8989E8016BD24E500732C04 /* Vector.h in Headers */,
 				647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
@@ -7097,6 +7107,7 @@
 				E8989F6C16BD24E500732C04 /* Box2DGameObject.cpp in Sources */,
 				1146E11D19D00887009E5FAB /* AnimationSystem.cpp in Sources */,
 				D7E6C5A6198255BF00B96D1A /* DLC.cpp in Sources */,
+				5016206D1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp in Sources */,
 				E8989F6E16BD24E500732C04 /* Box2DGameObjectManager.cpp in Sources */,
 				644C86EB19476A7100964F91 /* VegetationPropertyNames.cpp in Sources */,
 				E8989F7016BD24E500732C04 /* Box2DHelper.cpp in Sources */,
@@ -7140,6 +7151,7 @@
 				E8989FB916BD24E500732C04 /* Scene.cpp in Sources */,
 				E8989FBB16BD24E500732C04 /* SceneAnimationMixer.cpp in Sources */,
 				E8989FBD16BD24E500732C04 /* SceneFile.cpp in Sources */,
+				5016206B1A5ED5B100E5A914 /* PeerDesription.cpp in Sources */,
 				E8989FBF16BD24E500732C04 /* SceneFileV2.cpp in Sources */,
 				50A3044418575C370082CA8D /* StaticOcclusionRenderPass.cpp in Sources */,
 				E8989FC116BD24E500732C04 /* SceneManager.cpp in Sources */,

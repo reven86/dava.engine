@@ -895,6 +895,9 @@
 		4FDDEC5917A6920D00D9DDEA /* MaterialOptimazer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FDDEC5717A6920D00D9DDEA /* MaterialOptimazer.cpp */; };
 		4FDDEC5A17A6920D00D9DDEA /* MaterialOptimazer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4FDDEC5817A6920D00D9DDEA /* MaterialOptimazer.h */; };
 		5003524E1A52DC8F003418BD /* libuv_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 50194DD01A52D94B00557DAB /* libuv_ios.a */; };
+		501620731A5ED5FC00E5A914 /* PeerDesription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501620701A5ED5FC00E5A914 /* PeerDesription.cpp */; };
+		501620741A5ED5FC00E5A914 /* PeerDesription.h in Headers */ = {isa = PBXBuildFile; fileRef = 501620711A5ED5FC00E5A914 /* PeerDesription.h */; };
+		501620751A5ED5FC00E5A914 /* PeerDesriptionSerialize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501620721A5ED5FC00E5A914 /* PeerDesriptionSerialize.cpp */; };
 		50194D9E1A52D92600557DAB /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D6A1A52D92600557DAB /* Buffer.h */; };
 		50194D9F1A52D92600557DAB /* DeadlineTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50194D6B1A52D92600557DAB /* DeadlineTimer.cpp */; };
 		50194DA01A52D92600557DAB /* DeadlineTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D6C1A52D92600557DAB /* DeadlineTimer.h */; };
@@ -1932,6 +1935,9 @@
 		4F34E1AA1A234D86000681BB /* Spinlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Spinlock.h; sourceTree = "<group>"; };
 		4FDDEC5717A6920D00D9DDEA /* MaterialOptimazer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialOptimazer.cpp; sourceTree = "<group>"; };
 		4FDDEC5817A6920D00D9DDEA /* MaterialOptimazer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialOptimazer.h; sourceTree = "<group>"; };
+		501620701A5ED5FC00E5A914 /* PeerDesription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PeerDesription.cpp; sourceTree = "<group>"; };
+		501620711A5ED5FC00E5A914 /* PeerDesription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PeerDesription.h; sourceTree = "<group>"; };
+		501620721A5ED5FC00E5A914 /* PeerDesriptionSerialize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PeerDesriptionSerialize.cpp; sourceTree = "<group>"; };
 		50194D6A1A52D92600557DAB /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		50194D6B1A52D92600557DAB /* DeadlineTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeadlineTimer.cpp; sourceTree = "<group>"; };
 		50194D6C1A52D92600557DAB /* DeadlineTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeadlineTimer.h; sourceTree = "<group>"; };
@@ -2927,6 +2933,9 @@
 		50194D681A52D92600557DAB /* Network */ = {
 			isa = PBXGroup;
 			children = (
+				501620701A5ED5FC00E5A914 /* PeerDesription.cpp */,
+				501620711A5ED5FC00E5A914 /* PeerDesription.h */,
+				501620721A5ED5FC00E5A914 /* PeerDesriptionSerialize.cpp */,
 				50194D691A52D92600557DAB /* Base */,
 				50194D811A52D92600557DAB /* IChannel.h */,
 				50194D821A52D92600557DAB /* IController.h */,
@@ -4732,6 +4741,7 @@
 				E8B3CADC16B9326E002BD35F /* DVAssert.h in Headers */,
 				E8B3CADD16B9326E002BD35F /* List.h in Headers */,
 				E8B3CADE16B9326E002BD35F /* ListAllocator.h in Headers */,
+				501620741A5ED5FC00E5A914 /* PeerDesription.h in Headers */,
 				647EFC75195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */,
 				E8B3CAE016B9326E002BD35F /* MemoryManager.h in Headers */,
@@ -5637,6 +5647,7 @@
 				E8ADAEC818CA1325000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				E8B3CA8216B9326E002BD35F /* AnimationManager.cpp in Sources */,
 				D7FEF14319864E5C00B2C7AF /* Downloader.cpp in Sources */,
+				501620731A5ED5FC00E5A914 /* PeerDesription.cpp in Sources */,
 				E8B3CA8416B9326E002BD35F /* BezierSplineAnimation.cpp in Sources */,
 				E8B3CA8616B9326E002BD35F /* Interpolation.cpp in Sources */,
 				E8B3CA8816B9326E002BD35F /* KeyframeAnimation.cpp in Sources */,
@@ -5649,6 +5660,7 @@
 				50194DAF1A52D92600557DAB /* TCPSocket.cpp in Sources */,
 				E8B3CA9816B9326E002BD35F /* BaseMath.cpp in Sources */,
 				E8B3CA9A16B9326E002BD35F /* BaseObject.cpp in Sources */,
+				501620751A5ED5FC00E5A914 /* PeerDesriptionSerialize.cpp in Sources */,
 				E8B3CA9C16B9326E002BD35F /* BaseObjectChecker.cpp in Sources */,
 				E8B3CA9F16B9326E002BD35F /* Data.cpp in Sources */,
 				50194DAA1A52D92600557DAB /* NetworkUtils.cpp in Sources */,

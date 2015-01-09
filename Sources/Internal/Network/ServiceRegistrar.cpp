@@ -37,7 +37,7 @@ namespace DAVA
 namespace Net
 {
 
-bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter)
+bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name)
 {
     DVASSERT(creator != 0 && deleter != 0);
     DVASSERT(std::find(registrar.begin(), registrar.end(), serviceId) == registrar.end());
@@ -45,10 +45,22 @@ bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, Servic
     // Duplicate services are not allowed in registrar
     if (std::find(registrar.begin(), registrar.end(), serviceId) == registrar.end())
     {
-        registrar.push_back(Entry(serviceId, creator, deleter));
+        // If name hasn'y been set then generate name string based on service ID
+        char8 generatedName[Entry::MAX_NAME_LENGTH];
+        if (NULL == name)
+        {
+            Snprintf(generatedName, COUNT_OF(generatedName), "service-%u", serviceId);
+            name = generatedName;
+        }
+        registrar.push_back(Entry(serviceId, name, creator, deleter));
         return true;
     }
     return false;
+}
+
+void ServiceRegistrar::UnregisterAll()
+{
+    registrar.clear();
 }
 
 IChannelListener* ServiceRegistrar::Create(uint32 serviceId, void* context) const
@@ -67,6 +79,13 @@ bool ServiceRegistrar::Delete(uint32 serviceId, IChannelListener* obj, void* con
         return true;
     }
     return false;
+}
+
+const char8* ServiceRegistrar::Name(uint32 serviceId) const
+{
+    const Entry* entry = FindEntry(serviceId);
+    return entry != NULL ? entry->name
+                         : NULL;
 }
 
 const ServiceRegistrar::Entry* ServiceRegistrar::FindEntry(uint32 serviceId) const

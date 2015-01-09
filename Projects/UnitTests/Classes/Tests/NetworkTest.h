@@ -120,7 +120,13 @@ protected:
     enum eServiceTypes
     {
         SERVICE_LOG,
-        SERVICE_ECHO = 3
+        SERVICE_ECHO
+    };
+
+    enum
+    {
+        ECHO_SERVER_CONTEXT,
+        ECHO_CLIENT_CONTEXT
     };
 
     static const uint16 LOGGER_PORT = 9999;
@@ -141,10 +147,10 @@ public:
     void TestEndpoint(PerfFuncData* data);
     void TestNetConfig(PerfFuncData* data);
 
-    IChannelListener* CreateLogger(uint32 serviceId, void* arg);
-    IChannelListener* CreateEcho(uint32 serviceId, void* arg);
-    void DeleteEcho(IChannelListener* obj, void* arg);
-    void DeleteLogger(IChannelListener* obj, void* arg);
+    IChannelListener* CreateLogger(uint32 serviceId, void* context);
+    IChannelListener* CreateEcho(uint32 serviceId, void* context);
+    void DeleteEcho(IChannelListener* obj, void* context);
+    void DeleteLogger(IChannelListener* obj, void* context);
 
 private:
     void CreateUI();
@@ -155,7 +161,6 @@ private:
 
 private:
     bool testingEcho;
-    int32 serviceCreatorStage;
     TestEchoServer echoServer;
     TestEchoClient echoClient;
     DAVA::Net::NetLogger logger;

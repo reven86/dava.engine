@@ -58,19 +58,26 @@ public:
     IOLoop* Loop() { return &loop; }
 
     bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter);
+    void UnregisterAllServices();
+    const char8* ServiceName(uint32 serviceId) const;
 
     TrackId CreateController(const NetConfig& config, void* context = NULL);
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
-    bool DestroyController(TrackId id);
+    void DestroyController(TrackId id);
+    void DestroyAllControllers(Function<void ()> callback);
 
     int32 Run();
     int32 Poll();
-    void Finish(bool withWait = false);
+    void Finish(bool runOutLoop = false);
 
     const Vector<IfAddress>& InstalledInterfaces() const;
 
 private:
+    void DoStart(IController* ctrl);
+    void DoDestroy(TrackId id);
+    void DoDestroyAll();
+    void AllDestroyed();
     IController* GetTrackedObject(TrackId id) const;
     void TrackedObjectStopped(IController* obj);
 
@@ -78,15 +85,46 @@ private:
     IController* TrackIdToObject(TrackId id) const;
 
 private:
-    IOLoop loop;
-    Set<IController*> trackedObjects;
+    IOLoop loop;                                    // Heart of NetCore and networ library - event loop
+    Set<IController*> trackedObjects;               // Running objects
     Set<IController*> dyingObjects;
     ServiceRegistrar registrar;
     Vector<IfAddress> installedInterfaces;
+    Function<void ()> controllersStoppedCallback;
     bool isFinishing;
 };
 
 //////////////////////////////////////////////////////////////////////////
+inline bool NetCore::RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter)
+{
+    return registrar.Register(serviceId, creator, deleter);
+}
+
+inline void NetCore::UnregisterAllServices()
+{
+    registrar.UnregisterAll();
+}
+
+inline const char8* NetCore::ServiceName(uint32 serviceId) const
+{
+    return registrar.Name(serviceId);
+}
+
+inline const Vector<IfAddress>& NetCore::InstalledInterfaces() const
+{
+    return installedInterfaces;
+}
+
+inline int32 NetCore::Run()
+{
+    return loop.Run(IOLoop::RUN_DEFAULT);
+}
+
+inline int32 NetCore::Poll()
+{
+    return loop.Run(IOLoop::RUN_NOWAIT);
+}
+
 inline NetCore::TrackId NetCore::ObjectToTrackId(const IController* obj) const
 {
     return reinterpret_cast<TrackId>(obj);
@@ -95,11 +133,6 @@ inline NetCore::TrackId NetCore::ObjectToTrackId(const IController* obj) const
 inline IController* NetCore::TrackIdToObject(TrackId id) const
 {
     return reinterpret_cast<IController*>(id);
-}
-
-inline const Vector<IfAddress>& NetCore::InstalledInterfaces() const
-{
-    return installedInterfaces;
 }
 
 }   // namespace Net

@@ -26,10 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include <Base/Bind.h>
 #include <Base/FunctionTraits.h>
 #include <Debug/DVAssert.h>
 
 #include <Network/NetCore.h>
+#include <Network/NetConfig.h>
 #include <Network/Private/NetController.h>
 #include <Network/Private/Announcer.h>
 #include <Network/Private/Discoverer.h>
@@ -48,21 +50,16 @@ NetCore::NetCore()
 
 NetCore::~NetCore()
 {
-    DVASSERT(true == trackedObjects.empty());
-}
-
-bool NetCore::RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter)
-{
-    return registrar.Register(serviceId, creator, deleter);
+    DVASSERT(true == trackedObjects.empty() && true == dyingObjects.empty());
 }
 
 NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* context)
 {
+    DVASSERT(false == isFinishing && true == config.Validate());
     NetController* ctrl = new NetController(&loop, registrar, context);
     if (true == ctrl->ApplyConfig(config))
     {
-        trackedObjects.insert(ctrl);
-        ctrl->Start();
+        loop.Post(Bind(MakeFunction(this, &NetCore::DoStart), ctrl));
         return ObjectToTrackId(ctrl);
     }
     else
@@ -74,47 +71,61 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* contex
 
 NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback)
 {
-    Announcer* anno = new Announcer(&loop, endpoint, sendPeriod, needDataCallback);
-    trackedObjects.insert(anno);
-    anno->Start();
-    return ObjectToTrackId(anno);
+    DVASSERT(false == isFinishing);
+    Announcer* ctrl = new Announcer(&loop, endpoint, sendPeriod, needDataCallback);
+    loop.Post(Bind(MakeFunction(this, &NetCore::DoStart), ctrl));
+    return ObjectToTrackId(ctrl);
 }
 
 NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback)
 {
-    Discoverer* disco = new Discoverer(&loop, endpoint, dataReadyCallback);
-    trackedObjects.insert(disco);
-    disco->Start();
-    return ObjectToTrackId(disco);
+    DVASSERT(false == isFinishing);
+    Discoverer* ctrl = new Discoverer(&loop, endpoint, dataReadyCallback);
+    loop.Post(Bind(MakeFunction(this, &NetCore::DoStart), ctrl));
+    return ObjectToTrackId(ctrl);
 }
 
-bool NetCore::DestroyController(TrackId id)
+void NetCore::DestroyController(TrackId id)
 {
-    IController* ctrl = GetTrackedObject(id);
-    DVASSERT(ctrl != NULL);
-    if (ctrl != NULL)
-    {
-        trackedObjects.erase(ctrl);
-        dyingObjects.insert(ctrl);
-        ctrl->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
-        return true;
-    }
-    return false;
+    DVASSERT(false == isFinishing && GetTrackedObject(id) != NULL);
+    loop.Post(Bind(MakeFunction(this, &NetCore::DoDestroy), id));
 }
 
-int32 NetCore::Run()
+void NetCore::DestroyAllControllers(Function<void ()> callback)
 {
-    return loop.Run(IOLoop::RUN_DEFAULT);
+    DVASSERT(false == isFinishing && controllersStoppedCallback == 0);
+
+    controllersStoppedCallback = callback;
+    loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
 }
 
-int32 NetCore::Poll()
-{
-    return loop.Run(IOLoop::RUN_NOWAIT);
-}
-
-void NetCore::Finish(bool withWait)
+void NetCore::Finish(bool runOutLoop)
 {
     isFinishing = true;
+    loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
+    if (runOutLoop)
+        loop.Run(IOLoop::RUN_DEFAULT);
+}
+
+void NetCore::DoStart(IController* ctrl)
+{
+    trackedObjects.insert(ctrl);
+    ctrl->Start();
+}
+
+void NetCore::DoDestroy(TrackId id)
+{
+    DVASSERT(GetTrackedObject(id) != NULL);
+    IController* ctrl = GetTrackedObject(id);
+    if (trackedObjects.erase(ctrl) > 0)
+    {
+        dyingObjects.insert(ctrl);
+        ctrl->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
+    }
+}
+
+void NetCore::DoDestroyAll()
+{
     for (Set<IController*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
     {
         IController* ctrl = *i;
@@ -122,10 +133,24 @@ void NetCore::Finish(bool withWait)
         ctrl->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
     }
     trackedObjects.clear();
+
     if (true == dyingObjects.empty())
+    {
+        AllDestroyed();
+    }
+}
+
+void NetCore::AllDestroyed()
+{
+    if (controllersStoppedCallback != 0)
+    {
+        controllersStoppedCallback();
+        controllersStoppedCallback = 0;
+    }
+    if (true == isFinishing)
+    {
         loop.PostQuit();
-    if (withWait)
-        loop.Run(IOLoop::RUN_DEFAULT);
+    }
 }
 
 IController* NetCore::GetTrackedObject(TrackId id) const
@@ -138,16 +163,14 @@ IController* NetCore::GetTrackedObject(TrackId id) const
 void NetCore::TrackedObjectStopped(IController* obj)
 {
     DVASSERT(dyingObjects.find(obj) != dyingObjects.end());
-
-    if (dyingObjects.find(obj) != dyingObjects.end())
+    if (dyingObjects.erase(obj) > 0)    // erase returns number of erased elements
     {
-        dyingObjects.erase(obj);
         delete obj;
     }
 
-    if (true == isFinishing && true == trackedObjects.empty())
+    if (true == dyingObjects.empty())
     {
-        loop.PostQuit();
+        AllDestroyed();
     }
 }
 
