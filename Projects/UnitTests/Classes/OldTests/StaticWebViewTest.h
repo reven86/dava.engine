@@ -43,12 +43,12 @@ protected:
 public:
     StaticWebViewTest();
 
-    virtual void LoadResources();
-    virtual void UnloadResources();
-    virtual bool RunTest(int32 testNum);
+    void LoadResources() override;
+    void UnloadResources() override;
+    bool RunTest(int32 testNum) override;
 
-    virtual void DidAppear();
-    virtual void Update(float32 timeElapsed);
+    void DidAppear() override;
+    void Update(float32 timeElapsed) override;
 
     void TestFunction(PerfFuncData * data);
 
