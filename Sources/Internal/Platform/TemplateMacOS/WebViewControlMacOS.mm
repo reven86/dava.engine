@@ -301,17 +301,19 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 void WebViewControl::SetRect(const Rect& rect)
 {
 	NSRect webViewRect = [(WebView*)webViewPtr frame];
+    
+    VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
 
-    Rect convertedRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+    Rect convertedRect = VCS.ConvertVirtualToPhysical(rect);
     
 	webViewRect.size.width = convertedRect.dx;
 	webViewRect.size.height = convertedRect.dy;
 	
 	webViewRect.origin.x = convertedRect.x;
-	webViewRect.origin.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
+	webViewRect.origin.y = VCS.GetPhysicalScreenSize().dy - (convertedRect.y + convertedRect.dy);
 	
-	webViewRect.origin.x += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
-	webViewRect.origin.y += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+	webViewRect.origin.x += VCS.GetPhysicalDrawOffset().x;
+	webViewRect.origin.y += VCS.GetPhysicalDrawOffset().y;
 	
 	[(WebView*)webViewPtr setFrame: webViewRect];
     
@@ -320,8 +322,11 @@ void WebViewControl::SetRect(const Rect& rect)
    [imageRep release];
     
     NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
+    DVASSERT(openGLView);
+    
     imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:webViewRect];
     DVASSERT(imageRep);
+    
     webImageCachePtr = imageRep;
     [imageRep retain];
 
@@ -484,7 +489,7 @@ int32 WebViewControl::ExecuteJScript(const String& scriptString)
 void WebViewControl::SetImageCache(void* ptr)
 {
     DVASSERT(ptr);
-    this->webImageCachePtr = ptr;
+    webImageCachePtr = ptr;
 }
 
 void* WebViewControl::GetImageCache() const
