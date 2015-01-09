@@ -32,7 +32,6 @@ DeviceListController::DeviceListController(QObject* parent)
 
 DeviceListController::~DeviceListController()
 {
-    NetCore::Instance()->UnregisterAllServices();
 }
 
 void DeviceListController::OnCloseEvent()
@@ -42,6 +41,10 @@ void DeviceListController::OnCloseEvent()
 
 void DeviceListController::AllStopped()
 {
+    // Call UnregisterAllServices here, not in destructor:
+    //  when closing ResourceEditor's main window while DeviceListWidget is open
+    //  NetCore destructor is called before DeviceListController's destructor
+    NetCore::Instance()->UnregisterAllServices();
     view->deleteLater();
 }
 
