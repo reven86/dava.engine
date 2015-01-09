@@ -20,7 +20,7 @@ class DeviceListWidget
 signals:
     void connectClicked();
     void disconnectClicked();
-    void showInfoClicked();
+    void showLogClicked();
     void closeRequest();
 
 public:

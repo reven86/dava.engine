@@ -24,7 +24,6 @@ struct DeviceServices
     DeviceLogController* log;
 };
 
-Q_DECLARE_METATYPE(DAVA::Net::NetCore::TrackId);
 Q_DECLARE_METATYPE(DAVA::Net::Endpoint);
 Q_DECLARE_METATYPE(DAVA::Net::PeerDescription);
 Q_DECLARE_METATYPE(DeviceServices);
@@ -54,7 +53,7 @@ public:
 private slots:
     void OnConnectDevice();
     void OnDisconnectDevice();
-    void OnShowInfo();
+    void OnShowLog();
     void OnCloseEvent();
 
 private:
@@ -67,9 +66,6 @@ private:
 
     DAVA::Net::IChannelListener* CreateLogger(DAVA::uint32 serviceId, void* arg);
     void DeleteLogger(DAVA::Net::IChannelListener*, void* arg);
-
-    DAVA::Net::IChannelListener* CreateEcho(DAVA::uint32 serviceId, void* arg);
-    void DeleteEcho(DAVA::Net::IChannelListener*, void* arg);
 
     bool AlreadyInModel(const DAVA::Net::Endpoint& endp) const;
 
