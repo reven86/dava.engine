@@ -49,6 +49,7 @@ public:
     void SetView(DeviceListWidget *view);
 
     void DiscoverCallback(size_t buflen, const void* buffer, const DAVA::Net::Endpoint& endpoint);
+    void AllStopped();
 
 private slots:
     void OnConnectDevice();
@@ -75,8 +76,6 @@ private:
 private:
     QPointer<QStandardItemModel> model;
     QPointer<DeviceListWidget> view;
-
-    DAVA::Net::NetCore::TrackId idDiscoverer;
 
 private:
     static QStandardItem *createDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);

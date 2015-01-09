@@ -17,63 +17,54 @@
 using namespace DAVA;
 using namespace DAVA::Net;
 
-DeviceListController::DeviceListController( QObject* parent )
+DeviceListController::DeviceListController(QObject* parent)
     : QObject(parent)
-    , model( NULL )
-    , idDiscoverer(DAVA::Net::NetCore::INVALID_TRACK_ID)
+    , model(NULL)
 {
     initModel();
 
-    static bool serviceRegistered = false;
-    if (!serviceRegistered)
-    {
-        NetCore::Instance()->RegisterService(0, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger));
-        NetCore::Instance()->RegisterService(3, MakeFunction(this, &DeviceListController::CreateEcho), MakeFunction(this, &DeviceListController::DeleteEcho));
-        serviceRegistered = true;
-    }
+    NetCore::Instance()->RegisterService(0, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
+    NetCore::Instance()->RegisterService(3, MakeFunction(this, &DeviceListController::CreateEcho), MakeFunction(this, &DeviceListController::DeleteEcho), "Echo");
 
     DAVA::Net::Endpoint endpoint("239.192.100.1", 9999);
-    idDiscoverer = DAVA::Net::NetCore::Instance()->CreateDiscoverer(endpoint, DAVA::MakeFunction(this, &DeviceListController::DiscoverCallback));
+    DAVA::Net::NetCore::Instance()->CreateDiscoverer(endpoint, DAVA::MakeFunction(this, &DeviceListController::DiscoverCallback));
 }
 
 DeviceListController::~DeviceListController()
 {
-    if (idDiscoverer != DAVA::Net::NetCore::INVALID_TRACK_ID)
-        DAVA::Net::NetCore::Instance()->DestroyController(idDiscoverer);
+    NetCore::Instance()->UnregisterAllServices();
 }
 
 void DeviceListController::OnCloseEvent()
 {
-    uint32 nactive = 0;
-    for (int i = 0, n = model->rowCount();i < n;++i)
-    {
-        NetCore::TrackId id = model->item(i)->data(ROLE_CONNECTION_ID).value<NetCore::TrackId>();
-        nactive += id != NetCore::INVALID_TRACK_ID;
-    }
-    if (nactive == 0)
-        view->deleteLater();
+    NetCore::Instance()->DestroyAllControllers(MakeFunction(this, &DeviceListController::AllStopped));
 }
 
-void DeviceListController::SetView( DeviceListWidget* _view )
+void DeviceListController::AllStopped()
+{
+    view->deleteLater();
+}
+
+void DeviceListController::SetView(DeviceListWidget* _view)
 {
     view = _view;
-    view->ItemView()->setModel( model );
+    view->ItemView()->setModel(model);
 
-    connect( view, &DeviceListWidget::connectClicked, this, &DeviceListController::OnConnectDevice );
-    connect( view, &DeviceListWidget::disconnectClicked, this, &DeviceListController::OnDisconnectDevice );
-    connect( view, &DeviceListWidget::showInfoClicked, this, &DeviceListController::OnShowInfo );
-    connect( view, &DeviceListWidget::closeRequest, this, &DeviceListController::OnCloseEvent );
+    connect(view, &DeviceListWidget::connectClicked, this, &DeviceListController::OnConnectDevice);
+    connect(view, &DeviceListWidget::disconnectClicked, this, &DeviceListController::OnDisconnectDevice);
+    connect(view, &DeviceListWidget::showInfoClicked, this, &DeviceListController::OnShowInfo);
+    connect(view, &DeviceListWidget::closeRequest, this, &DeviceListController::OnCloseEvent);
 }
 
 void DeviceListController::initModel()
 {
     delete model;
-    model = new QStandardItemModel( this );
+    model = new QStandardItemModel(this);
 }
 
-QStandardItem* DeviceListController::GetItemFromIndex( const QModelIndex& index )
+QStandardItem* DeviceListController::GetItemFromIndex(const QModelIndex& index)
 {
-    return model->itemFromIndex( index );
+    return model->itemFromIndex(index);
 }
 
 IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* arg)
@@ -113,14 +104,15 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* arg)
 
 DAVA::Net::IChannelListener* DeviceListController::CreateEcho(DAVA::uint32 serviceId, void* arg)
 {
-    if (serviceId != 3) return NULL;
+    /*if (serviceId != 3) return NULL;
 
     int row = reinterpret_cast<int>(arg);
     QModelIndex index = model->index(row, 0);
     DVASSERT(index.isValid());
 
     DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-    return services.log;
+    return services.log;*/
+    return NULL;
 }
 
 void DeviceListController::DeleteEcho(DAVA::Net::IChannelListener*, void* arg)
@@ -257,6 +249,10 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
         item->appendRow(subitem);
     }
     {
+        QStandardItem* top = new QStandardItem();
+        top->setText("Available interfaces");
+        item->appendRow(top);
+
         DVASSERT(false == peerDescr.NetworkInterfaces().empty());
         const Vector<IfAddress>& v = peerDescr.NetworkInterfaces();
         for (size_t i = 0, n = v.size();i < n;++i)
@@ -270,15 +266,19 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
                 , phys.data[3]
                 , phys.data[4]
                 , phys.data[5]);
-            const QString text = QString("%1 %2")
+            const QString text = QString("IP=%1, MAC=%2")
                 .arg(v[i].Address().ToString().c_str())
                 .arg(sphys);
             QStandardItem *subitem = new QStandardItem();
             subitem->setText(text);
-            item->appendRow(subitem);
+            top->appendRow(subitem);
         }
     }
     {
+        QStandardItem* top = new QStandardItem();
+        top->setText("Available transports");
+        item->appendRow(top);
+
         const Vector<NetConfig::TransportConfig>& tr = peerDescr.NetworkConfig().Transports();
         for (size_t i = 0, n = tr.size();i < n;++i)
         {
@@ -290,19 +290,24 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
                 .arg(tr[i].endpoint.ToString().c_str());
             QStandardItem *subitem = new QStandardItem();
             subitem->setText(text);
-            item->appendRow(subitem);
+            top->appendRow(subitem);
         }
     }
     {
-        QString text;
+        QStandardItem* top = new QStandardItem();
+        top->setText("Available services");
+        item->appendRow(top);
+
         const Vector<uint32>& serv = peerDescr.NetworkConfig().Services();
         for (size_t i = 0, n = serv.size();i < n;++i)
         {
-            text += QString("; %1").arg(serv[i]);
+            const char8* name = NetCore::Instance()->ServiceName(serv[i]);
+            const QString text = name != NULL ? QString(name)
+                                              : QString("Unknown service %1").arg(serv[i]);
+            QStandardItem *subitem = new QStandardItem();
+            subitem->setText(text);
+            top->appendRow(subitem);
         }
-        QStandardItem *subitem = new QStandardItem();
-        subitem->setText(text);
-        item->appendRow(subitem);
     }
     return item;
 }
