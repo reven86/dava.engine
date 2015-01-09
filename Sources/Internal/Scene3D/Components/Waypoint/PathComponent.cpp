@@ -77,7 +77,7 @@ PathComponent::Edge::Edge()
 
 PathComponent::Edge::~Edge()
 {
-    SafeDelete(destination);
+    //SafeDelete(destination);
     SafeRelease(properties);
 }
     

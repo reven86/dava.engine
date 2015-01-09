@@ -35,6 +35,7 @@
 #include "Commands2/Command2.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
+#include "Scene3D/Components/Waypoint/EdgeComponent.h"
 
 typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::Entity*> MapWaypoint2Entity;
 typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::uint32> MapWaypoint2uint;
