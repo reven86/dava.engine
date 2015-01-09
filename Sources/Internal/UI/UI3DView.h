@@ -67,7 +67,7 @@ public:
 
     void CustomDraw(const UIGeometricData &geometricData);
 
-    virtual void Input(UIEvent *currentInput);
+    virtual void CustomInput(UIEvent *currentInput);
 
     
 protected:

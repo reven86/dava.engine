@@ -51,6 +51,7 @@ UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
     ,   registeredInUIControlSystem(false)
 {
     customDraw = Function<void(const UIGeometricData&)>(this, &UI3DView::CustomDraw);
+    customInput = Function<void(UIEvent*)>(this, &UI3DView::CustomInput);
 }
 
 UI3DView::~UI3DView()
@@ -164,14 +165,12 @@ void UI3DView::WillBecomeInvisible()
     }
 }
     
-void UI3DView::Input(UIEvent *currentInput)
+void UI3DView::CustomInput(UIEvent *currentInput)
 {
     if(scene)
     {
         scene->Input(currentInput);
     }
-    
-    UIControl::Input(currentInput);
 }
     
 
