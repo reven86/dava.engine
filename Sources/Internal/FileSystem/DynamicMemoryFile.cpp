@@ -149,22 +149,21 @@ bool DynamicMemoryFile::Seek(int32 position, uint32 seekType)
 		default:
 			return false;
 	};
-	
-	
-	if (pos < 0)
+
+    if (pos < 0)
     {
 	    isEof = true;
 	    return false;
     }
-	if (pos >= (int32)GetSize())
+    if (pos >= (int32)GetSize())
     {
-	    isEof = true;
-	    return false;
+        isEof = true;
+        return false;
     }
-	
-	currentPtr = pos;
-	isEof = false;
-	return true;
+
+    currentPtr = pos;
+    isEof = false;
+    return true;
 	
 }
 

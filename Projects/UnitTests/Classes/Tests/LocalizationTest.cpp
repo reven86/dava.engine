@@ -99,32 +99,32 @@ bool LocalizationTest::CompareFiles(const FilePath& file1, const FilePath& file2
 	File* f1 = File::Create(file1, File::OPEN | File::READ);
 	File* f2 = File::Create(file2, File::OPEN | File::READ);
 
-	bool res = (f1 && f2);
+    bool res = (f1 && f2);
 
-	if (res)
-	{
-		int32 size = Max(f1->GetSize(), f2->GetSize());
+    if (res)
+    {
+        int32 size = Max(f1->GetSize(), f2->GetSize());
 
-		char* buf1 = new char[size];
-		char* buf2 = new char[size];
+        char* buf1 = new char[size];
+        char* buf2 = new char[size];
 
-		while (res && !f1->IsEof() && !f2->IsEof())
-		{
-			int32 read1;
-			int32 read2;
+        while (res && !f1->IsEof() && !f2->IsEof())
+        {
+            int32 read1;
+            int32 read2;
 
-			read1 = f1->ReadLine(buf1, size);
-			read2 = f2->ReadLine(buf2, size);
+            read1 = f1->ReadLine(buf1, size);
+            read2 = f2->ReadLine(buf2, size);
 
-			res &= (read1 == read2);
-			res &= !memcmp(buf1, buf2, read1);
-		}
+            res &= (read1 == read2);
+            res &= !memcmp(buf1, buf2, read1);
+        }
 
-		res &= (f1->IsEof() && f2->IsEof());
+        res &= (f1->IsEof() && f2->IsEof());
 
-		delete[] buf1;
-		delete[] buf2;
-	}
+        delete[] buf1;
+        delete[] buf2;
+    }
 
 	SafeRelease(f1);
 	SafeRelease(f2);
