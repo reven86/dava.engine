@@ -5,116 +5,46 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.CookieManager;
 import android.widget.FrameLayout;
 
 @SuppressLint("UseSparseArrays")
 public class JNIWebView {
 	final static String TAG = "JNIWebView";
-	final static Paint paint = new Paint();
 	static Map<Integer, WebView> views = new HashMap<Integer, WebView>();
 	
 	private static class InternalViewClient extends WebViewClient {
 		int id;
 		
-		boolean isStatic = true;
-		
 		public InternalViewClient(int _id) {
 			id = _id;
-		}
-		
-		class OnPageLoadedNativeRunnable implements Runnable {
-			int[] pixels;
-			int width;
-			int height;
-			
-			OnPageLoadedNativeRunnable(int[] pixels, int width, int height) {
-				this.pixels = pixels;
-				this.width = width;
-				this.height = height;
-			}
-			
-			@Override
-			public void run() {
-				Log.d(TAG, "id = " + id + " pixels = " + pixels + " width = "
-						+ width + " height = " + height);
-				OnPageLoaded(id, pixels, width, height);
-				Log.d(TAG, "finish onPageLoded");
-			}
 		}
 		
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
-			
-			int pixels[] = null;
-			int width = 0;
-			int height = 0;
-			
-			if (isStatic)
-			{
-				// render webview into bitmap and pass it to native code
-				Bitmap bitmap = renderWebViewIntoBitmap(view);
-				width = bitmap.getWidth();
-				height = bitmap.getHeight();
-				pixels = new int[width * height]; 
-				// copy ARGB pixels values into our buffer
-				bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-				Log.d(TAG, "prepare bitmap for webview texture");
-			}
-			
-			JNIActivity.GetActivity().PostEventToGL(
-					new OnPageLoadedNativeRunnable(pixels, width, height));
-		}
-
-		private Bitmap renderWebViewIntoBitmap(WebView view) {
-			assert view != null;
-			assert view.getMeasuredWidth() != 0;
-			assert view.getMeasuredHeight() != 0;
-			
-			int view_width = view.getMeasuredWidth();
-			int view_height = view.getMeasuredHeight();
-			
-			Bitmap bm = Bitmap.createBitmap(view_width,
-                    view_height, Bitmap.Config.ARGB_8888);
-			
-            assert bm != null;
-            Canvas bigcanvas = new Canvas(bm);
-            int height = bm.getHeight();
-            bigcanvas.drawBitmap(bm, 0, height, paint);
-            view.draw(bigcanvas);
-//            try {
-//                String path = Environment.getExternalStorageDirectory()
-//                        .toString();
-//                OutputStream fOut = null;
-//                File file = new File(path, "/test_output.png");
-//                fOut = new FileOutputStream(file);
-//
-//                bm.compress(Bitmap.CompressFormat.PNG, 50, fOut);
-//                fOut.flush();
-//                fOut.close();
-//                bm.recycle();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-            return bm;
+			JNIActivity activity = JNIActivity.GetActivity();
+			if (null == activity || activity.GetIsPausing())
+				return;
+			JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+				@Override
+				public void run() {
+					OnPageLoaded(id);
+				}
+			});
 		};
 		
 		
@@ -133,6 +63,9 @@ public class JNIWebView {
 		
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, final String url) {
+			if (null == JNIActivity.GetActivity() || JNIActivity.GetActivity().GetIsPausing())
+				return false;
+			
 			FutureTask<Integer> task = PostOnUrlChangeTask(url);
 			
 			while (!task.isDone()) {
@@ -190,6 +123,9 @@ public class JNIWebView {
 	public static void Initialize(final int id, final float x, final float y, final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -244,6 +180,9 @@ public class JNIWebView {
 	public static void Deinitialize(final int id)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -263,6 +202,9 @@ public class JNIWebView {
 	public static void OpenURL(final int id, final String url)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -280,6 +222,9 @@ public class JNIWebView {
 	public static void LoadHtmlString(final int id, final String htmlString)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -297,8 +242,10 @@ public class JNIWebView {
 	public static void OpenFromBuffer(final int id, final String data, final String baseUrl)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
-		activity.runOnUiThread(new Runnable() {
-			
+		if (null == activity || activity.GetIsPausing())
+			return;
+
+		activity.runOnUiThread(new Runnable() {			
 			@Override
 			public void run() {
 				if (!views.containsKey(id))
@@ -316,6 +263,8 @@ public class JNIWebView {
 	public static void ExecuteJScript(final int id, final int requestId, final String scriptString)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -400,6 +349,9 @@ public class JNIWebView {
 	public static void SetRect(final int id, final float x, final float y, final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -423,6 +375,9 @@ public class JNIWebView {
 	public static void SetVisible(final int id, final boolean isVisible)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -432,8 +387,7 @@ public class JNIWebView {
 					return;
 				}
 				WebView view = views.get(id);
-				//int visible = isVisible ? WebView.VISIBLE : WebView.GONE;
-				view.setVisibility(WebView.INVISIBLE); // TODO test
+				view.setVisibility(isVisible ? WebView.VISIBLE : WebView.GONE);
 			}
 		});
 	}
@@ -441,6 +395,9 @@ public class JNIWebView {
 	public static void SetBackgroundTransparency(final int id, final boolean enabled)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable()
 		{
 			@Override
@@ -512,6 +469,6 @@ public class JNIWebView {
 	}
 	
 	private static native int OnUrlChange(int id, String url);
-	private static native int OnPageLoaded(int id, int[] pixels, int width, int height);
+	private static native int OnPageLoaded(int id);
 	private static native void OnExecuteJScript(int id, int requestId, String result);
 }

@@ -26,7 +26,6 @@ QWidget * SpritePropertyDelegate::createEditor(QWidget * parent, const QStyleOpt
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     lineEdit->setReadOnly(true);
-    //connect(lineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(OnValueChanged()));
 
     return lineEdit;
 }
@@ -90,7 +89,6 @@ void SpritePropertyDelegate::openFileDialogClicked()
     {
         dir = ResourcesManageHelper::GetSpritesDirectory();
     }
-    Logger::Debug("dir: %s", dir.toStdString().c_str());
 
     QString filePathText = QFileDialog::getOpenFileName(editor->parentWidget(), tr("Select sprite descriptor"), dir, QString("*.txt"));
     if (!filePathText.isEmpty())

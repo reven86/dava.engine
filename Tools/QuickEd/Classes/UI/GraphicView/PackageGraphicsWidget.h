@@ -41,7 +41,7 @@ private slots:
 	void OnZoomOutRequested();
     
     void OnCanvasScaleChanged(int newScale);
-    void OnGLWidgetResized();
+    void OnGLWidgetResized(int width, int height);
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);

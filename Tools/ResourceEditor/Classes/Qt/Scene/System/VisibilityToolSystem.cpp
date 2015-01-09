@@ -138,7 +138,7 @@ void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

@@ -129,7 +129,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;CURL_STATICLIB;DAVA_DEBUG;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+<PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;CURL_STATICLIB;DAVA_DEBUG;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -189,7 +189,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;_WINDOWS;WIN32;NDEBUG;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+<PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;_WINDOWS;WIN32;NDEBUG;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -559,6 +559,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\BulletComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\CameraComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\ComponentHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\CustomPropertiesComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\DebugRenderComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\LightComponent.h" />
@@ -607,6 +610,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\DebugRenderSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\EventSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h" />
@@ -1006,6 +1012,9 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\BulletComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\CameraComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ComponentHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\CustomPropertiesComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\DebugRenderComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\LightComponent.cpp" />
@@ -1054,6 +1063,9 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\DebugRenderSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\EventSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp" />
