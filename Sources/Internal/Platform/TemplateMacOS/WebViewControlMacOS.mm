@@ -192,7 +192,7 @@ using namespace DAVA;
 int32 WebViewControl::runScriptID = 0;
 
 WebViewControl::WebViewControl(DAVA::UIWebView& ptr) :
-    webImageCachePtr(nullptr),
+    webImageCachePtr(0),
     uiWebViewControl(ptr),
     isRenderToTexture(false),
     isVisible(true)
@@ -229,6 +229,7 @@ WebViewControl::~WebViewControl()
 {
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
    [imageRep release];
+    webImageCachePtr = 0;
     
 	WebView* innerWebView = (WebView*)webViewPtr;
 
@@ -237,15 +238,15 @@ WebViewControl::~WebViewControl()
 	[innerWebView removeFromSuperview];
 	[innerWebView close];
 	[innerWebView release];
-	webViewPtr = nullptr;
+	webViewPtr = 0;
 
 	WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
 	[w release];
-	webViewPolicyDelegatePtr = nullptr;
+	webViewPolicyDelegatePtr = 0;
     
     WebViewControlUIDelegate* c = (WebViewControlUIDelegate*)webViewDelegatePtr;
     [c release];
-    webViewDelegatePtr = nullptr;
+    webViewDelegatePtr = 0;
 }
 
 void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)
@@ -369,7 +370,7 @@ void WebViewControl::SetRenderToTexture(bool value)
         if (isVisible)
         {
             // remove sprite from UIControl and show native window
-            uiWebViewControl.SetSprite(nullptr, 0);
+            uiWebViewControl.SetSprite(0, 0);
             
             NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
             [openGLView addSubview:(WebView*)webViewPtr];
@@ -423,7 +424,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
     }
     
     {
-        Image* imageRGB = nullptr;
+        Image* imageRGB = 0;
         if (pitch == w * (BPP / 8))
         {
             imageRGB = Image::CreateFromData(w, h, format, rawData);
