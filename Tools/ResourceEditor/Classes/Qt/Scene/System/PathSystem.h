@@ -47,7 +47,6 @@ public:
     
     virtual void Process(DAVA::float32 timeElapsed);
 
-    
     DAVA::Entity * GetCurrrentPath() const;
     
     const DAVA::Vector<DAVA::Entity *> & GetPathes() const;
@@ -58,11 +57,18 @@ public:
 protected:
     
     void Draw();
+    void DrawInEditableMode();
+    void DrawInViewOnlyMode();
+    void DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish);
+    
+    
+    void ProcessCommand(const Command2 *command, bool redo);
+
+    
+    DAVA::Color GetPathColor(DAVA::Entity *path);
     
     
     DAVA::UniqueHandle pathDrawState;
-
-    
     
     DAVA::Vector<DAVA::Entity *> pathes;
    

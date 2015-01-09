@@ -266,32 +266,25 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-//    int id = command->GetId();
-//
-//    switch (id)
-//    {
-//        case CMDID_COMPONENT_ADD:
-//        case CMDID_COMPONENT_REMOVE:
-//        case CMDID_ENTITY_ADD:
-//        case CMDID_ENTITY_REMOVE:
-//        case CMDID_ENTITY_CHANGE_PARENT:
-//            ResetSelection();
-//            ProcessSelection();
-//            break;
-//            
-//        default:
-//            break;
-//    }
-    
 }
 
 
 void WayEditSystem::Draw()
 {
+    const EntityGroup & group = (currentSelection.Size()) ? currentSelection : prevSelectedWaypoints;
+
     const uint32 count = waypointEntities.size();
     for(uint32 i = 0; i < count; ++i)
     {
         Entity *e = waypointEntities[i];
+        Entity *path = e->GetParent();
+        DVASSERT(path);
+        
+        if(!e->GetVisible() || !path->GetVisible())
+        {
+            continue;
+        }
+        
 
         RenderManager::SetDynamicParam(PARAM_WORLD, &e->GetWorldTransform(), (pointer_size)&e->GetWorldTransform());
         
@@ -300,7 +293,7 @@ void WayEditSystem::Draw()
         float32 redValue = 0.0f;
         float32 greenValue = 0.0f;
         
-        if(currentSelection.HasEntity(e))
+        if(group.HasEntity(e))
         {
             redValue = 1.0f;
         }
@@ -309,7 +302,7 @@ void WayEditSystem::Draw()
             greenValue = 1.0f;
         }
         
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, 0.0f, 0.5f));
+        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, 0.0f, 0.3f));
         DAVA::RenderHelper::Instance()->FillBox(worldBox, wayDrawState);
         DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, 0.0f, 1.0f));
         DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, wayDrawState);

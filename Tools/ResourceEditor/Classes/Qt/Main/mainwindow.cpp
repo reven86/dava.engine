@@ -2844,6 +2844,7 @@ void QtMainWindow::OnAddPathEntity()
     
     DAVA::PathComponent *pc = new PathComponent();
     pc->SetName(scene->pathSystem->GeneratePathName());
+    
     pathEntity->AddComponent(pc);
     scene->Exec(new EntityAddCommand(pathEntity, scene));
     scene->selectionSystem->SetSelection(pathEntity);

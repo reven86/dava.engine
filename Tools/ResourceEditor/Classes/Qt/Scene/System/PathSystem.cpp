@@ -39,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Utils/Utils.h"
 
 #include "Scene/SceneEditor2.h"
+#include "Commands2/InspMemberModifyCommand.h"
 
 
 static DAVA::Color PathColorPallete[] =
@@ -131,9 +132,23 @@ void PathSystem::Draw()
 {
     const DAVA::uint32 count = pathes.size();
     if(!count) return;
-    
+
+    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+    if(sceneEditor->wayEditSystem->IsWayEditEnabled())
+    {
+        DrawInEditableMode();
+    }
+    else
+    {
+        DrawInViewOnlyMode();
+    }
+}
+
+void PathSystem::DrawInEditableMode()
+{
     RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    
+
+    const DAVA::uint32 count = pathes.size();
     for(DAVA::uint32 p = 0; p < count; ++p)
     {
         DAVA::Entity * path = pathes[p];
@@ -142,16 +157,9 @@ void PathSystem::Draw()
             continue;
         }
         
-        DAVA::Color color;
-        
-        KeyedArchive *props = GetCustomPropertiesArchieve(path);
-        if(props)
-        {
-            color = DAVA::Color(props->GetVector4(PATH_COLOR_PROP_NAME));
-        }
-
+        DAVA::Color color = GetPathColor(path);
         RenderManager::Instance()->SetColor(color);
-
+        
         const DAVA::uint32 childrenCount = path->GetChildrenCount();
         for(DAVA::uint32 c = 0; c < childrenCount; ++c)
         {
@@ -165,17 +173,77 @@ void PathSystem::Draw()
                 {
                     DAVA::EdgeComponent * edge = static_cast<DAVA::EdgeComponent *>(waypoint->GetComponent(DAVA::Component::EDGE_COMPONENT, e));
                     DAVA::Entity *nextEntity = edge->GetNextEntity();
-                    if(nextEntity)
+                    if(nextEntity && nextEntity->GetParent())
                     {
                         const Vector3 finishPosition = GetTransformComponent(nextEntity)->GetWorldTransform().GetTranslationVector();
-                        
-                        RenderHelper::Instance()->DrawArrow(startPosition, finishPosition, (finishPosition - startPosition).Length() / 4.f, 7.f, pathDrawState);
+                        DrawArrow(startPosition, finishPosition);
                     }
                 }
             }
         }
     }
 }
+
+void PathSystem::DrawInViewOnlyMode()
+{
+    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+
+    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
+    EntityGroup gruop = sceneEditor->selectionSystem->GetSelection();
+    
+    const size_t count = gruop.Size();
+    for(size_t p = 0; p < count; ++p)
+    {
+        DAVA::Entity * path = gruop.GetEntity(p);
+        DAVA::PathComponent *pathComponent = DAVA::GetPathComponent(path);
+        if(path->GetVisible() == false || !pathComponent)
+        {
+            continue;
+        }
+     
+        DAVA::Color color = GetPathColor(path);
+        RenderManager::Instance()->SetColor(color);
+
+        const Vector<PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
+        const DAVA::uint32 waypointsCount = (const DAVA::uint32)waypoints.size();
+        for(DAVA::uint32 w = 0; w < waypointsCount; ++w)
+        {
+            const DAVA::uint32 edgesCount = (const DAVA::uint32)waypoints[w]->edges.size();
+            if(edgesCount)
+            {
+                const Vector3 & startPosition = waypoints[w]->position;
+                for(DAVA::uint32 e = 0; e < edgesCount; ++e)
+                {
+                    const DAVA::PathComponent::Edge *edge = waypoints[w]->edges[e];
+                    const Vector3 & finishPosition = edge->destination->position;
+                    DrawArrow(startPosition, finishPosition);
+                }
+            }
+        }
+    }
+}
+
+void PathSystem::DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish)
+{
+    RenderHelper::Instance()->DrawArrow(start, finish, (finish - start).Length() / 4.f, 7.f, pathDrawState);
+}
+
+
+
+DAVA::Color PathSystem::GetPathColor(DAVA::Entity *path)
+{
+    DVASSERT(path);
+    
+    KeyedArchive *props = GetCustomPropertiesArchieve(path);
+    if(props)
+    {
+        return DAVA::Color(props->GetVector4(PATH_COLOR_PROP_NAME));
+    }
+    
+    return DAVA::Color::White;
+}
+
+
 
 void PathSystem::Process(DAVA::float32 timeElapsed)
 {
@@ -196,6 +264,27 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
             }
         }
     }
+}
+
+void PathSystem::ProcessCommand(const Command2 *command, bool redo)
+{
+//    if(command->GetId() == CMDID_INSP_MEMBER_MODIFY)
+//    {
+//        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+//        if (String("Name") == cmd->member->Name())
+//        {
+//            VariantType newValue = (redo) ? cmd->newValue: cmd->oldValue;
+//            VariantType oldValue = (redo) ? cmd->oldValue: cmd->newValue;
+//            
+//            
+//            const DAVA::uint32 count = pathes.size();
+//            for(DAVA::uint32 p = 0; p < count; ++p)
+//            {
+//                const DAVA::PathComponent *pc = DAVA::GetPathComponent(pathes[p]);
+//                
+//            }
+//        }
+//    }
 }
 
 
