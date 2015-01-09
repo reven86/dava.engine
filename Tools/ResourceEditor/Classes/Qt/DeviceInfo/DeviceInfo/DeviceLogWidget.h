@@ -4,6 +4,9 @@
 #include <QWidget>
 #include <QScopedPointer>
 
+#include "FileSystem/Logger.h"
+
+
 namespace Ui {
     class DeviceLogWidget;
 } // namespace Ui
@@ -18,7 +21,7 @@ public:
     explicit DeviceLogWidget(QWidget *parent = NULL);
     ~DeviceLogWidget();
 
-    void AppendText(const QString& text);
+    void AppendText(const QString& text, DAVA::Logger::eLogLevel ll = DAVA::Logger::LEVEL_INFO);
 
 private:
     QScopedPointer<Ui::DeviceLogWidget> ui;

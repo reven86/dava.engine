@@ -17,6 +17,7 @@ class QTimer;
 class LogModel;
 class LogFilterModel;
 
+
 class LogWidget
     : public QWidget
 {
@@ -25,6 +26,8 @@ class LogWidget
 public:
     explicit LogWidget(QWidget* parent = NULL);
     ~LogWidget();
+
+    LogModel *Model();
 
 private slots:
     void OnFilterChanged();

@@ -72,6 +72,11 @@ LogWidget::~LogWidget()
     DAVA::Logger::RemoveCustomOutput(logModel);
 }
 
+LogModel* LogWidget::Model()
+{
+    return logModel;
+}
+
 void LogWidget::OnFilterChanged()
 {
     QList<QVariant> selection = ui->filter->GetSelectedUserData();
