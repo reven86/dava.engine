@@ -254,6 +254,18 @@ public:
      */
     virtual void SetStateTextUseRtlAlign(int32 state, bool value);
     /**
+    \brief Sets text multiline what will be shown for the requested states.
+    \param[in] state state text bit mask to set value for.
+    \param[in] value multiline by symbols flag.
+    */
+    virtual void SetStateTextMultiline(int32 state, bool value);
+    /**
+    \brief Sets text multiline by symbols what will be shown for the requested states.
+    \param[in] state state text bit mask to set value for.
+    \param[in] value multiline by symbols flag.
+    */
+    virtual void SetStateTextMultilineBySymbol(int32 state, bool value);
+    /**
      \brief Sets background margins for the requested states.
      \param[in] state state text bit mask to set value for.
      \param[in] margins the margins.

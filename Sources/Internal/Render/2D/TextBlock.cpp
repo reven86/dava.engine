@@ -264,11 +264,13 @@ const WideString & TextBlock::GetText()
     LockGuard<Mutex> guard(mutex);
     return logicalText;
 }
+
 const WideString & TextBlock::GetVisualText()
 {
     LockGuard<Mutex> guard(mutex);
     return visualText;
 }
+
 bool TextBlock::GetMultiline()
 {
     LockGuard<Mutex> guard(mutex);
@@ -306,6 +308,7 @@ void TextBlock::SetRenderSize(float32 _renderSize)
     }
     mutex.Unlock();
 }
+
 #if defined(LOCALIZATION_DEBUG)
 int32 TextBlock::GetFittingOptionUsed()
 {
@@ -314,6 +317,7 @@ int32 TextBlock::GetFittingOptionUsed()
 
     return fittingTypeUsed;
 }
+
 bool  TextBlock::IsVisualTextCroped()
 {
 
@@ -322,6 +326,7 @@ bool  TextBlock::IsVisualTextCroped()
 	return visualTextCroped;
 }
 #endif
+
 void TextBlock::SetAlign(int32 _align)
 {
     mutex.Lock();
@@ -438,8 +443,8 @@ void TextBlock::CalculateCacheParams()
 {
     LockGuard<Mutex> guard(mutex);
 #if defined(LOCALIZATION_DEBUG)
-fittingTypeUsed = FITTING_DISABLED;
-visualTextCroped = false;
+    fittingTypeUsed = FITTING_DISABLED;
+    visualTextCroped = false;
 #endif
 
     if (logicalText.empty())
@@ -767,9 +772,13 @@ visualTextCroped = false;
 
 #if defined(LOCALIZATION_DEBUG)
                 if (yMul > 1.0f)
+                {
                     fittingTypeUsed |= FITTING_ENLARGE;
+                }
                 if (yMul < 1.0f)
+                {
                     fittingTypeUsed |= FITTING_REDUCE;
+                }
 #endif
                 renderSize = finalSize;
                 font->SetSize(renderSize);
@@ -845,8 +854,10 @@ visualTextCroped = false;
                 textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx);
             }
 #if defined(LOCALIZATION_DEBUG)
-			if(textSize.width < stringSize.width)
-				visualTextCroped = true;
+            if(textSize.width < stringSize.width)
+            {
+                visualTextCroped = true;
+            }
 #endif
             textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
             if(0 == line)
@@ -1161,35 +1172,12 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
 
 void TextBlock::CleanLine(WideString& string, bool trimRight)
 {
+    WideString out = StringUtils::RemoveNonPrintable(string, 1);
     if (trimRight)
     {
-    	WideString trimed = StringUtils::TrimRight(string);
-        string.swap(trimed);
+        out = StringUtils::TrimRight(out);
     }
-
-    WideString::iterator it = string.begin();
-    WideString::iterator end = string.end();
-    while(it != end)
-    {
-        switch (*it)
-        {
-        case L'\n':
-        case L'\r':
-        case 0x200B: // Zero-width space
-        case 0x200E: // Zero-width Left-to-right zero-width character
-        case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
-        case 0x061C: // Right-to-left zero-width Arabic character
-            it = string.erase(it);
-            end = string.end();
-            break;
-        case L'\t':
-        case 0xA0: // Non-break space
-            *it = L' ';
-        default:
-            ++it;
-            break;
-        }
-    }
+    string.swap(out);
 }
 
 };

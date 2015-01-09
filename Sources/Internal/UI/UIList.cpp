@@ -89,7 +89,7 @@ void UIList::InitAfterYaml()
         RemoveControl(scrollContainer);
         SafeRelease(scrollContainer);
     }
-
+    
     scrollContainer = new UIControl(r);
     AddControl(scrollContainer);
     scrollContainer->SetFocusEnabled(false);
@@ -144,6 +144,13 @@ void UIList::SetRect(const Rect &rect)
     }
 
     UIControl::SetRect(rect);
+    scrollContainer->SetRect(rect);
+}
+    
+void UIList::SetSize(const Vector2 &newSize)
+{
+    UIControl::SetSize(newSize);
+    scrollContainer->SetSize(newSize);
 }
 
 void UIList::SetDelegate(UIListDelegate *newDelegate)

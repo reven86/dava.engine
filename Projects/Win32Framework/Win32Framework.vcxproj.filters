@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -156,6 +156,12 @@
     </Filter>
     <Filter Include="Internal\UI\Systems">
       <UniqueIdentifier>{f9f7cf8e-d5b9-4881-8baf-ca2830ef9d16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Scene3D\Components\Controller">
+      <UniqueIdentifier>{6afa475c-0f57-439a-846d-ec49837bac87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Scene3D\Systems\Controller">
+      <UniqueIdentifier>{dc214c6e-aa38-43ad-93ff-6dc237488743}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1627,6 +1633,24 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Systems\UIInputSystem.h">
       <Filter>Internal\UI\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.h">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2931,6 +2955,24 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Systems\UIInputSystem.cpp">
       <Filter>Internal\UI\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
+      <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -67,6 +67,9 @@ public:
 
     void CustomDraw(const UIGeometricData &geometricData);
 
+    virtual void Input(UIEvent *currentInput);
+
+    
 protected:
     Scene * scene;
 	Rect viewportRc;
