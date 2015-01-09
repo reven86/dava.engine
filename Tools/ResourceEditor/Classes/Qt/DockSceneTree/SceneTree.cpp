@@ -430,8 +430,8 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
                     contextMenu.addAction("Reload Model...", this, SLOT(ReloadModel()));
 				}
 			}
-			//DF-2004: Reload for every entity at scene
-			QAction *reloadModelAsAction = contextMenu.addAction("Reload Model As...", this, SLOT(ReloadModelAs()));			
+			// Reload for every entity at scene
+            contextMenu.addAction("Reload Model As...", this, SLOT(ReloadModelAs()));
 
 			// particle effect
 			DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
