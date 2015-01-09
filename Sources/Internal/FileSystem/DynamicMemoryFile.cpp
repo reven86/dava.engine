@@ -55,7 +55,8 @@ DynamicMemoryFile * DynamicMemoryFile::Create(uint32 attributes)
 }
 
 DynamicMemoryFile::DynamicMemoryFile()
-:File()
+    : File()
+    , isEof(false)
 {
 	currentPtr = 0;
 	fileAttributes = File::WRITE;
@@ -107,9 +108,10 @@ uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
 	int32 size = (int32)data.size();
 	if (currentPtr + realReadSize > size)
 	{
+	    isEof = true;
 		realReadSize = size - currentPtr;
 	}
-	if(realReadSize)
+	if(0 < realReadSize)
 	{
 		Memcpy(pointerToData, &(data[currentPtr]), realReadSize);
 		currentPtr += realReadSize;
@@ -149,17 +151,26 @@ bool DynamicMemoryFile::Seek(int32 position, uint32 seekType)
 	};
 	
 	
-	if (pos < 0)return false;
-	if (pos >= (int32)GetSize())return false;
+	if (pos < 0)
+    {
+	    isEof = true;
+	    return false;
+    }
+	if (pos >= (int32)GetSize())
+    {
+	    isEof = true;
+	    return false;
+    }
 	
 	currentPtr = pos;
+	isEof = false;
 	return true;
 	
 }
 
 bool DynamicMemoryFile::IsEof()
 {
-	return currentPtr >= (int32)data.size();
+	return isEof;
 }
 	
 };

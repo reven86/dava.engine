@@ -41,6 +41,7 @@ FileSystemTest::FileSystemTest()
 	RegisterFunction(this, &FileSystemTest::ResTestFunction, String("ResTestFunction"), NULL);
 	RegisterFunction(this, &FileSystemTest::DocTestFunctionCheckCopy, String("DocTestFunctionCheckCopy"), NULL);
 	RegisterFunction(this, &FileSystemTest::DocTestFunction, String("DocTestFunction"), NULL);
+	RegisterFunction(this, &FileSystemTest::FileTestFunction, String("FileTestFunction"), NULL);
 }
 
 void FileSystemTest::LoadResources()
@@ -59,7 +60,7 @@ void FileSystemTest::ResTestFunction(PerfFuncData * data)
 
     ScopedPtr<FileList> fileList( new FileList("~res:/TestData/FileSystemTest/") );
 
-    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 4);
     TEST_VERIFY(fileList->GetFileCount() == 0);
 
     for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -122,7 +123,7 @@ void FileSystemTest::DocTestFunctionCheckCopy(PerfFuncData * data)
     Logger::Debug("[FileSystemTest::DocTestFunctionCheckCopy]");
     ScopedPtr<FileList> fileList( new FileList("~doc:/TestData/FileSystemTest/") );
     
-    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 4);
     TEST_VERIFY(fileList->GetFileCount() == 0);
     
     for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -261,4 +262,46 @@ bool FileSystemTest::RecursiveCopy(const DAVA::FilePath &src, const DAVA::FilePa
     }
     
     return retCode;
+}
+
+void FileSystemTest::FileTestFunction(PerfFuncData * data)
+{
+    FilePath fileInAssets = "~res:/TestData/FileSystemTest/FileTest/test.yaml";
+    FilePath cpyDir = "~doc:/FileSystemTest/FileTest/";
+    FilePath copyTo = cpyDir + "test.yaml";
+
+    FileSystem::Instance()->CreateDirectory(cpyDir, true);
+
+    TEST_VERIFY(FileSystem::Instance()->CopyFile(fileInAssets, copyTo));
+
+    File* f1 = File::Create(fileInAssets, File::OPEN | File::READ);
+    File* f2 = File::Create(copyTo, File::OPEN | File::READ);
+
+    TEST_VERIFY(NULL != f1);
+    TEST_VERIFY(NULL != f2);
+
+    if (!f2 || !f2)
+        return;
+
+    uint32 size = f1->GetSize();
+    TEST_VERIFY(size == f2->GetSize());
+
+    char8 *buf1 = new char8[size];
+    char8 *buf2 = new char8[size];
+
+    do
+    {
+        uint32 res1 = f1->ReadLine(buf1, size);
+        uint32 res2 = f2->ReadLine(buf2, size);
+        TEST_VERIFY(!memcmp(buf1, buf2, res1));
+
+    } while(!f1->IsEof());
+
+    TEST_VERIFY(f2->IsEof());
+
+    SafeRelease(f1);
+    SafeRelease(f2);
+
+    SafeDeleteArray(buf1);
+    SafeDeleteArray(buf2);
 }

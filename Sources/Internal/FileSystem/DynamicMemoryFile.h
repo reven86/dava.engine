@@ -112,6 +112,7 @@ namespace DAVA
 		int32 currentPtr;
 		Vector<uint8> data;
 		uint32 fileAttributes;
+		bool isEof;
 	};
 };
 

@@ -48,9 +48,9 @@ public:
 	void ResTestFunction(PerfFuncData * data);
 	void DocTestFunctionCheckCopy(PerfFuncData * data);
 	void DocTestFunction(PerfFuncData * data);
+	void FileTestFunction(PerfFuncData * data);
     
 protected:
-    
     bool RecursiveCopy(const FilePath & src, const FilePath &dst);
 };
 
