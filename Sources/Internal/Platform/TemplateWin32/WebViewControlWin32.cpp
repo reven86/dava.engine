@@ -999,8 +999,8 @@ void WebViewControl::SetRenderToTexture(bool value)
     {
         if (browserWindow != 0)
         {
-            // render current window to texture and set to sprite
-            browserContainer->RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
+            browserContainer->RenderToTextureAndSetAsBackgroundSpriteToControl(
+                uiWebView);
 
             // hide window but not change visibility state
             ::ShowWindow(browserWindow, SW_HIDE);
@@ -1010,19 +1010,12 @@ void WebViewControl::SetRenderToTexture(bool value)
         // restore visibility on native control
         if (isVisible)
         {
-            //::SetWindowPos(browserWindow, nullptr, browserRect.left,
-            //    browserRect.top, browserRect.right - browserRect.left,
-            //    browserRect.bottom - browserRect.top, SWP_NOZORDER);
-
-            // TODO remove sprite from UIControl and show native window
+            // remove sprite from UIControl and show native window
             uiWebView.SetSprite(nullptr, 0);
 
             ::ShowWindow(browserWindow, SW_SHOW);
         }
     }
-    char buf[4096] = { 0 };
-    sprintf(buf, "SetRenderToTexture(bool value = %d, renderToTexture = %d, isVisible = %d)\n", value, renderToTexture, isVisible);
-    OutputDebugStringA(buf);
 }
 
 bool WebViewControl::IsRenderToTexture() const
