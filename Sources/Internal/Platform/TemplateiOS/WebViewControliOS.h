@@ -42,49 +42,50 @@ class UIWebView;
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl(UIWebView* uiWebView);
+	explicit WebViewControl(UIWebView& uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
+	void Initialize(const Rect& rect) override;
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
+	void OpenURL(const String& urlToOpen) override;
 	// Load html page from string
-	virtual void LoadHtmlString(const WideString& htmlString);
+	void LoadHtmlString(const WideString& htmlString) override;
 	// Delete all cookies associated with target URL
-	virtual void DeleteCookies(const String& targetUrl);
+	void DeleteCookies(const String& targetUrl) override;
 	// Get cookie for specific domain and name
-	virtual String GetCookie(const String& targetUrl, const String& name) const;
+	String GetCookie(const String& targetUrl, const String& name) const override;
 	// Get the list of cookies for specific domain
-	virtual Map<String, String> GetCookies(const String& targetUrl) const;
+    Map<String, String> GetCookies(const String& targetUrl) const override;
 	// Perfrom Java script
-	virtual int32 ExecuteJScript(const String& scriptString);
+    int32 ExecuteJScript(const String& scriptString) override;
 
-    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
+    void OpenFromBuffer(const String& string, const FilePath& basePath) override;
     
 	// Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
+	void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible, bool hierarchic) override;
 
-	virtual void SetScalesPageToFit(bool isScalesToFit);
+    void SetScalesPageToFit(bool isScalesToFit) override;
 
-	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
-	virtual void SetBackgroundTransparency(bool enabled);
+	void SetDelegate(DAVA::IUIWebViewDelegate *delegate,
+                             DAVA::UIWebView* webView) override;
+	void SetBackgroundTransparency(bool enabled) override;
 
 	// Bounces control.
-	virtual bool GetBounces() const;
-	virtual void SetBounces(bool value);
-    virtual void SetGestures(bool value);
+	bool GetBounces() const override;
+	void SetBounces(bool value) override;
+    void SetGestures(bool value) override;
 
     // Data detector types.
-    virtual void SetDataDetectorTypes(int32 value);
-    virtual int32 GetDataDetectorTypes() const;
+    void SetDataDetectorTypes(int32 value) override;
+    int32 GetDataDetectorTypes() const override;
     
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
 
-protected:
+private:
 
 	//A pointer to iOS WebView.
 	void* webViewPtr;
@@ -102,9 +103,13 @@ protected:
 
 	void HideSubviewImages(void* view);
 	void RestoreSubviewImages();
-    bool gesturesEnabled;
     
-    UIWebView* uiWebView;
+    bool gesturesEnabled;
+    bool isRenderToTexture;
+    bool isVisible;
+    
+    DAVA::UIWebView& uiWebView;
+    
     static int runScriptID;
 };
 

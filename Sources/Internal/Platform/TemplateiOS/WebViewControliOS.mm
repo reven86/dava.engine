@@ -238,11 +238,17 @@
 
 @end
 
-DAVA::WebViewControl::WebViewControl(DAVA::UIWebView* uiWeb)
+DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
+    webViewPtr(0),
+    webViewDelegatePtr(0),
+    webViewURLDelegatePtr(0),
+    rightSwipeGesturePtr(0),
+    leftSwipeGesturePtr(0),
+    gesturesEnabled(false),
+    isRenderToTexture(false),
+    isVisible(true),
+    uiWebView(uiWeb)
 {
-    uiWebView = uiWeb;
-    uiWeb->SetDebugDraw(true);
-    gesturesEnabled = false;
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate glController].backgroundView;
     
@@ -256,7 +262,7 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView* uiWeb)
     
     webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
     [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
-    [(WebViewURLDelegate*)webViewURLDelegatePtr setUIWebViewControl:uiWeb];
+    [(WebViewURLDelegate*)webViewURLDelegatePtr setUIWebViewControl:&uiWebView];
     
     [localWebView becomeFirstResponder];
 }
@@ -422,9 +428,22 @@ void WebViewControl::SetRect(const Rect& rect)
 {
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];
 
-    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
-    webViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x - 10000;
-    webViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y - 10000;
+    VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
+    
+    Rect physicalRect = VCS.ConvertVirtualToPhysical(rect);
+    
+    if (isRenderToTexture)
+    {
+        webViewRect.origin.x = physicalRect.x + VCS.GetPhysicalDrawOffset().x
+                                                                - 10000;
+        webViewRect.origin.y = physicalRect.y + VCS.GetPhysicalDrawOffset().y
+                                                                - 10000;
+    }
+    else
+    {
+        webViewRect.origin.x = physicalRect.x + VCS.GetPhysicalDrawOffset().x;
+        webViewRect.origin.y = physicalRect.y + VCS.GetPhysicalDrawOffset().y;
+    }
     webViewRect.size.width = physicalRect.dx;
     webViewRect.size.height = physicalRect.dy;
 	
@@ -440,8 +459,16 @@ void WebViewControl::SetRect(const Rect& rect)
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
-	[(UIWebView*)webViewPtr setHidden:!isVisible];
-    //[(UIWebView*)webViewPtr setHidden:YES];
+    this->isVisible = isVisible;
+    
+    if (!isRenderToTexture)
+    {
+        [(UIWebView*)webViewPtr setHidden:!isVisible];
+    } else
+    {
+        DAVA::Rect r = uiWebView.GetRect();
+        SetRect(r);
+    }
 }
 
 void WebViewControl::SetScalesPageToFit(bool isScalesToFit)
@@ -460,12 +487,14 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 	if (enabled)
 	{
-		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b alpha:0.f]];
+		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b
+                                                    alpha:0.f]];
 		HideSubviewImages(webView);
 	}
 	else
 	{
-		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b alpha:1.0f]];
+		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b
+                                                    alpha:1.0f]];
 		RestoreSubviewImages();
 	}
 }
@@ -520,7 +549,7 @@ void WebViewControl::SetBounces(bool value)
 	localWebView.scrollView.bounces = (value == true);
 }
 
-//for android we need use techique like http://stackoverflow.com/questions/12578895/how-to-detect-a-swipe-gesture-on-webview
+//for iOS we need use techique like http://stackoverflow.com/questions/12578895/how-to-detect-a-swipe-gesture-on-webview
 void WebViewControl::SetGestures(bool value)
 {
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
@@ -597,13 +626,17 @@ int32 WebViewControl::GetDataDetectorTypes() const
     
 void WebViewControl::SetRenderToTexture(bool value)
 {
-    // TODO
+    isRenderToTexture = value;
+    
+    // hide windows - move to x=-10000, y=-10000 position
+    // so it still can render WebView into
+    DAVA::Rect r = uiWebView.GetRect();
+    SetRect(r);
 }
 
 bool WebViewControl::IsRenderToTexture() const
 {
-    // TODO
-    return true;
+    return isRenderToTexture;
 }
     
 } // end namespace DAVA
