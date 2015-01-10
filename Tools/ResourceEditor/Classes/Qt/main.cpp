@@ -29,8 +29,11 @@
 
 
 #include "DAVAEngine.h"
+
 #include <QApplication>
 #include <QCryptographicHash>
+#include <QFont>
+#include <QSysInfo>
 
 #include "version.h"
 #include "Main/mainwindow.h"
@@ -71,6 +74,14 @@ void UnpackHelpDoc();
 int main(int argc, char *argv[])
 {
 	int ret = 0;
+
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
+    {
+        // fix Mac OS X 10.9 (mavericks) font issue
+        QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
+    }
+#endif
 
     QApplication a(argc, argv);
     

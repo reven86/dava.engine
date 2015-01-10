@@ -152,7 +152,6 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	const float32 angleHeightDelta = landSize.z / (float32)(Heightmap::MAX_VALUE - 1);
 	const float32 tanCoef = angleHeightDelta / angleCellDistance;
 	
-	Texture *notPassableMap = notPassableMapSprite->GetTexture();
 	const float32 dx = (float32)notPassableMapSprite->GetWidth() / (float32)(heightmap->Size() - 1);
 	
 	RenderManager* renderManager = RenderManager::Instance();

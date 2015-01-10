@@ -59,6 +59,7 @@ struct StaticLightingParams
 	Color transparencyColor;
 
 	StaticLightingParams() : transparencyColor(0, 0, 0, 0) {}
+	virtual ~StaticLightingParams() {}
 
 	INTROSPECTION(StaticLightingParams,
 	MEMBER(transparencyColor, "Transparency Color", I_SAVE | I_VIEW | I_EDIT))

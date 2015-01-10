@@ -49,14 +49,14 @@ ENUM_DECLARE(SelectionSystemDrawMode)
 
 SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys)
 	: DAVA::SceneSystem(scene)
-    , selectionAllowed(true)
-    , componentMaskForSelection(ALL_COMPONENTS_MASK)
-    , applyOnPhaseEnd(false)
-    , invalidSelectionBoxes(false)
+	, selectionAllowed(true)
+	, componentMaskForSelection(ALL_COMPONENTS_MASK)
+	, applyOnPhaseEnd(false)
+	, invalidSelectionBoxes(false)
 	, collisionSystem(collSys)
 	, hoodSystem(hoodSys)
 	, selectionHasChanges(false)
-    , curPivotPoint(ST_PIVOT_COMMON_CENTER)
+	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
 {
     DAVA::RenderStateData selectionStateData;
     DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, selectionStateData);

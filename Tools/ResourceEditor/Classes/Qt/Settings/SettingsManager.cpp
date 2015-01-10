@@ -124,7 +124,6 @@ void SettingsManager::Init()
     CreateValue(Settings::General_ColorMultiplyMax, DAVA::VariantType((DAVA::float32)2.0));
 
     const DAVA::uint32 levels[] = { DAVA::Logger::LEVEL_FRAMEWORK, DAVA::Logger::LEVEL_DEBUG, DAVA::Logger::LEVEL_INFO, DAVA::Logger::LEVEL_WARNING, DAVA::Logger::LEVEL_ERROR };
-    const int nLevels = sizeof(levels) / sizeof(*levels);
     CreateValue(Settings::Internal_LogLevelFilter, DAVA::VariantType((DAVA::uint8 *)levels, sizeof(levels)));
     CreateValue(Settings::Internal_LogTextFilter, DAVA::VariantType(DAVA::String()));
 }
