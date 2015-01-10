@@ -15,16 +15,15 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, con
         if ((member->Flags() & I_EDIT) != 0)
         {
             String memberName = member->Name();
-            ValueProperty *sourceProperty = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            if (sourceProperty)
-                member->SetValue(control, sourceProperty->GetValue());
             
+            ValueProperty *sourceProperty = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+
             ValueProperty *prop;
             if (String(member->Name()) == "text")
-                prop = new LocalizedTextValueProperty(control, member);
+                prop = new LocalizedTextValueProperty(control, member, sourceProperty);
             else
-                prop = new ValueProperty(control, member);
-            
+                prop = new ValueProperty(control, member, sourceProperty);
+
             AddProperty(prop);
             SafeRelease(prop);
         }
