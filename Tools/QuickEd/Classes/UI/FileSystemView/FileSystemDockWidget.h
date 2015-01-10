@@ -28,19 +28,24 @@ public:
     virtual ~FileSystemDockWidget();
 
     void SetProjectDir(const QString &path);
+private:
+    void RefreshActions(const QModelIndexList &indexList);
+    void RefreshAction(QAction *action, bool enabled, bool visible);
+
 signals:
     void OpenPackageFile(const QString &path);
 
 private slots:
+    void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void onDoubleClicked(const QModelIndex &index);
     void setFilterFixedString(const QString &filterStr);
     void onDataChanged( const QModelIndex & topLeft, const QModelIndex & bottomRight );
     void customContextMenuRequested(const QPoint &pos);
-    void onNewFolder(bool checked);
+    void onNewFolder();
     void onNewFile(bool checked);
     void onDeleteFile(bool checked);
     void onReloadFile(bool checked);
-    
+
 private:
     Ui::FileSystemDockWidget *ui;
     QFileSystemModel *model;

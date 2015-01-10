@@ -138,8 +138,8 @@ void UIMovieView::WillBecomeInvisible()
 
 UIControl* UIMovieView::Clone()
 {
-    UIMovieView* ui3DView = new UIMovieView(GetRect());
-    ui3DView->CopyDataFrom(this);
-    return ui3DView;
+    UIMovieView* uiMoviewView = new UIMovieView(GetRect());
+    uiMoviewView->CopyDataFrom(this);
+    return uiMoviewView;
 }
 };

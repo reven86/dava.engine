@@ -62,6 +62,8 @@ class SceneSelectionSystem : public DAVA::SceneSystem
 {
 	friend class SceneEditor2;
 	friend class EntityModificationSystem;
+    
+    static const DAVA::uint64 ALL_COMPONENTS_MASK = 0xFFFFFFFFFFFFFFFF;
 
 public:
     SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys);
@@ -80,9 +82,14 @@ public:
 	void SetPivotPoint(ST_PivotPoint pp);
 	ST_PivotPoint GetPivotPoint() const;
 
-	void SetSelectionAllowed(bool allowed);
-	bool IsSelectionAllowed() const;
+    void ResetSelectionComponentMask();
+    void SetSelectionComponentMask(DAVA::uint64 mask);
+    DAVA::uint64 GetSelectionComponentMask() const;
 
+    void SetSelectionAllowed(bool allowed);
+    bool IsSelectionAllowed() const;
+    
+    
 	virtual void SetLocked(bool lock);
 
 	DAVA::AABBox3 GetSelectionAABox(int index) const;
@@ -94,6 +101,7 @@ public:
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
 	virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent *event);
 
     bool IsEntitySelected(DAVA::Entity *entity);
     bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
@@ -103,7 +111,6 @@ protected:
 
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	void UpdateHoodPos() const;
@@ -112,7 +119,10 @@ protected:
 	EntityGroup GetSelecetableFromCollision(const EntityGroup *collisionEntities);
 
 private:
-	bool selectionAllowed;
+    
+    bool selectionAllowed;
+    DAVA::uint64 componentMaskForSelection;
+    
 	bool applyOnPhaseEnd;
     bool invalidSelectionBoxes;
 
@@ -130,5 +140,33 @@ private:
 	DAVA::UniqueHandle selectionNormalDrawState;
 	DAVA::UniqueHandle selectionDepthDrawState;
 };
+
+
+inline void SceneSelectionSystem::ResetSelectionComponentMask()
+{
+    componentMaskForSelection = ALL_COMPONENTS_MASK;
+}
+
+
+inline void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
+{
+    componentMaskForSelection = mask;
+}
+
+inline DAVA::uint64 SceneSelectionSystem::GetSelectionComponentMask() const
+{
+    return componentMaskForSelection;
+}
+
+inline void SceneSelectionSystem::SetSelectionAllowed(bool allowed)
+{
+    selectionAllowed = allowed;
+}
+
+inline bool SceneSelectionSystem::IsSelectionAllowed() const
+{
+    return selectionAllowed;
+}
+
 
 #endif //__SCENE_SELECTION_SYSTEM_H__

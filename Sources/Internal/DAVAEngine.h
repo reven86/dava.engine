@@ -281,6 +281,7 @@
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
 
 // Application core 
 #include "Core/Core.h"

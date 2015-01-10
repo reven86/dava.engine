@@ -81,11 +81,12 @@ public:
 
 
 protected:
-    ~PathComponent();
 public:
 	IMPLEMENT_COMPONENT_TYPE(PATH_COMPONENT);
 
 	PathComponent();
+    virtual ~PathComponent();
+
 	virtual Component * Clone(Entity * toEntity);
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);

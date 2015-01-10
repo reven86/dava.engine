@@ -36,21 +36,23 @@ namespace DAVA
 
 WaypointComponent::WaypointComponent()
     : Component()
-    , properties(NULL)
 {
-
+    properties = new KeyedArchive();
+}
+    
+WaypointComponent::~WaypointComponent()
+{
+    SafeRelease(properties);
 }
 
 Component * WaypointComponent::Clone(Entity * toEntity)
 {
 	WaypointComponent * newComponent = new WaypointComponent();
 	newComponent->SetEntity(toEntity);
-    
-    //we don't need to copy properties
-    
-    newComponent->pathName = pathName;
+    newComponent->SetProperties(properties);
+    newComponent->SetPathName(pathName);
 
-	return newComponent;
+    return newComponent;
 }
 
 void WaypointComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
@@ -63,4 +65,11 @@ void WaypointComponent::Deserialize(KeyedArchive *archive, SerializationContext 
     DVASSERT(false);
 }
 
+void WaypointComponent::SetProperties(KeyedArchive *archieve)
+{
+    SafeRelease(properties);
+    properties = new KeyedArchive(*archieve);
+}
+
+    
 }

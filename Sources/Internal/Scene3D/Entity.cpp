@@ -51,7 +51,7 @@
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#define USE_VECTOR(x) (((1 << x) & vectorComponentsMask) != 0)
+#define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
 namespace DAVA
 {
@@ -59,7 +59,7 @@ namespace DAVA
 const int COMPONENT_COUNT_V6 = 18;
 const int COMPONENTS_IN_VECTOR_COUNT = 3;
     
-uint32 vectorComponentsMask = (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT) | (1 << Component::LOD_COMPONENT);
+uint64 vectorComponentsMask = (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT) | (1 << Component::LOD_COMPONENT);
 
 // Property Names.
 const char* Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME = "editor.isSolid";
@@ -153,7 +153,7 @@ void Entity::AddComponent(Component * component)
 #endif
 	}
 		
-	componentFlags |= 1 << component->GetType();
+	componentFlags |= ((uint64)1 << (uint64)component->GetType());
 
 	if (scene)
 		scene->RegisterComponent(this, component);

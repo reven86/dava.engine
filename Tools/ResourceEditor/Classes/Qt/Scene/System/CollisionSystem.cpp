@@ -37,7 +37,6 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
 
-#include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/EntityParentChangeCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 
@@ -334,7 +333,7 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void SceneCollisionSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void SceneCollisionSystem::Input(DAVA::UIEvent *event)
 {
 	// don't have to update last mouse pos when event is not from the mouse
 	if (event->phase != UIEvent::PHASE_KEYCHAR && event->phase != UIEvent::PHASE_JOYSTICK)
@@ -559,6 +558,11 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
         {
             DAVA::float32 scale = SettingsManager::GetValue("Scene/DebugBoxUserScale").AsFloat();
             cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), SIMPLE_COLLISION_BOX_SIZE * scale);
+        }
+        else if(NULL != entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
+        {
+            DAVA::float32 scale = SettingsManager::GetValue("Scene/DebugBoxUserScale").AsFloat();
+            cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), SIMPLE_COLLISION_BOX_SIZE * scale * 2.f);
         }
 	}
 

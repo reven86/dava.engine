@@ -44,7 +44,7 @@ class Entity;
 class WaypointComponent: public Component
 {
 protected:
-    ~WaypointComponent(){};
+    ~WaypointComponent();
 public:
 	IMPLEMENT_COMPONENT_TYPE(WAYPOINT_COMPONENT);
 
@@ -71,10 +71,6 @@ public:
     );
 };
 
-inline void WaypointComponent::SetProperties(KeyedArchive *archieve)
-{
-    properties = archieve;
-}
 
 inline KeyedArchive * WaypointComponent::GetProperties() const
 {

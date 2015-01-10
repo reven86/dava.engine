@@ -49,13 +49,14 @@ ENUM_DECLARE(SelectionSystemDrawMode)
 
 SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys)
 	: DAVA::SceneSystem(scene)
+    , selectionAllowed(true)
+    , componentMaskForSelection(ALL_COMPONENTS_MASK)
+    , applyOnPhaseEnd(false)
+    , invalidSelectionBoxes(false)
 	, collisionSystem(collSys)
 	, hoodSystem(hoodSys)
-	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
-	, applyOnPhaseEnd(false)
-	, selectionAllowed(true)
 	, selectionHasChanges(false)
-    , invalidSelectionBoxes(false)
+    , curPivotPoint(ST_PIVOT_COMMON_CENTER)
 {
     DAVA::RenderStateData selectionStateData;
     DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, selectionStateData);
@@ -139,9 +140,9 @@ void SceneSelectionSystem::ForceEmitSignals()
 	}
 }
 
-void SceneSelectionSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 {
-	if (IsLocked() || !selectionAllowed)
+	if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection))
 	{
 		return;
 	}
@@ -308,7 +309,7 @@ void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 			selectableItem.entity = entity;
 			selectableItem.bbox = GetSelectionAABox(entity);
 
-			if(!curSelections.HasEntity(entity))
+			if(!curSelections.HasEntity(entity) && (componentMaskForSelection & entity->GetAvailableComponentFlags()))
 			{
 				curSelections.Add(selectableItem);
 
@@ -400,15 +401,6 @@ ST_PivotPoint SceneSelectionSystem::GetPivotPoint() const
 	return curPivotPoint;
 }
 
-void SceneSelectionSystem::SetSelectionAllowed(bool allowed)
-{
-	selectionAllowed = allowed;
-}
-
-bool SceneSelectionSystem::IsSelectionAllowed() const
-{
-	return selectionAllowed;
-}
 
 void SceneSelectionSystem::SetLocked(bool lock)
 {
@@ -474,12 +466,16 @@ EntityGroup SceneSelectionSystem::GetSelecetableFromCollision(const EntityGroup 
 		for(size_t i = 0; i < collisionEntities->Size(); ++i)
 		{
 			DAVA::Entity *entity = collisionEntities->GetEntity(i);
-			EntityGroupItem item;
-			
-			item.entity = GetSelectableEntity(entity);
-			item.bbox = GetSelectionAABox(item.entity);
-
-			ret.Add(item);
+            
+            if(componentMaskForSelection & entity->GetAvailableComponentFlags())
+            {
+                EntityGroupItem item;
+                
+                item.entity = GetSelectableEntity(entity);
+                item.bbox = GetSelectionAABox(item.entity);
+                
+                ret.Add(item);
+            }
 		}
 	}
 

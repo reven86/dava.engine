@@ -166,6 +166,7 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 	static QIcon switchIcon(":/QtIcons/switch.png");
 	static QIcon windIcon(":/QtIcons/wind.png");
     static QIcon soIcon(":/QtIcons/so.png");
+    static QIcon pathIcon(":/QtIcons/path.png");
 
 	QIcon ret;
 
@@ -211,6 +212,10 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 		{
 			ret = windIcon;
 		}
+        else if(NULL != DAVA::GetPathComponent(entity))
+        {
+            ret = pathIcon;
+        }
 	}
 
 	if(ret.isNull())

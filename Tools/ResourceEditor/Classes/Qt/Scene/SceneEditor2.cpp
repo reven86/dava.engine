@@ -48,12 +48,18 @@
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 
+
+
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
 	: Scene()
 	, isLoaded(false)
 	, isHUDVisible(true)
+    , rotationSystem(0)
+    , snapToLandscapeSystem(0)
+    , wasdSystem(0)
+
 {
     SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
@@ -64,55 +70,64 @@ SceneEditor2::SceneEditor2()
 	SafeRelease(notify);
 
 	gridSystem = new SceneGridSystem(this);
-	AddSystem(gridSystem, 0, true, renderUpdateSystem);
+	AddSystem(gridSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     cameraSystem = new SceneCameraSystem(this);
-    AddSystem(cameraSystem, (1 << DAVA::Component::CAMERA_COMPONENT), true, transformSystem);
+    AddSystem(cameraSystem, (1 << DAVA::Component::CAMERA_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, transformSystem);
 
+    rotationSystem = new RotationControllerSystem(this);
+    AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
+    
+    snapToLandscapeSystem = new SnapToLandscapeControllerSystem(this);
+    AddSystem(snapToLandscapeSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)), SCENE_SYSTEM_REQUIRE_PROCESS);
+    
+    wasdSystem = new WASDControllerSystem(this);
+    AddSystem(wasdSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::WASD_CONTROLLER_COMPONENT)), SCENE_SYSTEM_REQUIRE_PROCESS);
+    
 	collisionSystem = new SceneCollisionSystem(this);
-	AddSystem(collisionSystem, 0, true, renderUpdateSystem);
+	AddSystem(collisionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
 	hoodSystem = new HoodSystem(this, cameraSystem);
-	AddSystem(hoodSystem, 0, true, renderUpdateSystem);
+	AddSystem(hoodSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
 	selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
-	AddSystem(selectionSystem, 0, true, renderUpdateSystem);
+	AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
 	modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
-	AddSystem(modifSystem, 0, true, renderUpdateSystem);
+	AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
 	landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
-	AddSystem(landscapeEditorDrawSystem, 0, true, renderUpdateSystem);
+	AddSystem(landscapeEditorDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
 	heightmapEditorSystem = new HeightmapEditorSystem(this);
-	AddSystem(heightmapEditorSystem, 0, true, renderUpdateSystem);
+	AddSystem(heightmapEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
 	tilemaskEditorSystem = new TilemaskEditorSystem(this);
-	AddSystem(tilemaskEditorSystem, 0, true, renderUpdateSystem);
+	AddSystem(tilemaskEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
 	customColorsSystem = new CustomColorsSystem(this);
-	AddSystem(customColorsSystem, 0, true, renderUpdateSystem);
+	AddSystem(customColorsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
 	visibilityToolSystem = new VisibilityToolSystem(this);
-	AddSystem(visibilityToolSystem, 0, true, renderUpdateSystem);
+	AddSystem(visibilityToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     grassEditorSystem = new GrassEditorSystem(this);
-    AddSystem(grassEditorSystem, 0);
+    AddSystem(grassEditorSystem, 0, SCENE_SYSTEM_REQUIRE_INPUT);
 
 	rulerToolSystem = new RulerToolSystem(this);
-	AddSystem(rulerToolSystem, 0, true, renderUpdateSystem);
+	AddSystem(rulerToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
 	structureSystem = new StructureSystem(this);
-	AddSystem(structureSystem, 0, true, renderUpdateSystem);
+	AddSystem(structureSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     particlesSystem = new EditorParticlesSystem(this);
-    AddSystem(particlesSystem, (1 << DAVA::Component::PARTICLE_EFFECT_COMPONENT), true, renderUpdateSystem);
+    AddSystem(particlesSystem, (1 << DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
 
 	textDrawSystem = new TextDrawSystem(this, cameraSystem);
-    AddSystem(textDrawSystem, 0, true, renderUpdateSystem);
+    AddSystem(textDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     editorLightSystem = new EditorLightSystem(this);
-    AddSystem(editorLightSystem, 1 << Component::LIGHT_COMPONENT, true, renderUpdateSystem);
+    AddSystem(editorLightSystem, 1 << Component::LIGHT_COMPONENT, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
 	debugDrawSystem = new DebugDrawSystem(this);
 	AddSystem(debugDrawSystem, 0);
@@ -124,14 +139,17 @@ SceneEditor2::SceneEditor2()
 	AddSystem(ownersSignatureSystem, 0);
     
     staticOcclusionBuildSystem = new StaticOcclusionBuildSystem(this);
-    AddSystem(staticOcclusionBuildSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT) | (1 << Component::TRANSFORM_COMPONENT), true, renderUpdateSystem);
+    AddSystem(staticOcclusionBuildSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT) | (1 << Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
 	materialSystem = new EditorMaterialSystem(this);
-	AddSystem(materialSystem, 1 << Component::RENDER_COMPONENT, true, renderUpdateSystem);
+	AddSystem(materialSystem, 1 << Component::RENDER_COMPONENT, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     wayEditSystem = new WayEditSystem(this, selectionSystem, collisionSystem);
-    AddSystem(wayEditSystem, 0, true);
+    AddSystem(wayEditSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
 
+    pathSystem = new PathSystem(this);
+    AddSystem(pathSystem, 1 << Component::PATH_COMPONENT, SCENE_SYSTEM_REQUIRE_PROCESS);
+    
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);
@@ -360,30 +378,6 @@ void SceneEditor2::Update(float timeElapsed)
     Scene::Update(timeElapsed);
 }
 
-void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
-{
-	gridSystem->ProcessUIEvent(event);
-	cameraSystem->ProcessUIEvent(event);
-	if(collisionSystem)
-		collisionSystem->ProcessUIEvent(event);
-	hoodSystem->ProcessUIEvent(event);
-	selectionSystem->ProcessUIEvent(event);
-	modifSystem->ProcessUIEvent(event);
-	heightmapEditorSystem->ProcessUIEvent(event);
-	tilemaskEditorSystem->ProcessUIEvent(event);
-	customColorsSystem->ProcessUIEvent(event);
-	visibilityToolSystem->ProcessUIEvent(event);
-	rulerToolSystem->ProcessUIEvent(event);
-    grassEditorSystem->ProcessUIEvent(event);
-
-	if(structureSystem)
-		structureSystem->ProcessUIEvent(event);
-
-	particlesSystem->ProcessUIEvent(event);
-	materialSystem->ProcessUIEvent(event);
-    wayEditSystem->ProcessUIEvent(event);
-}
-
 void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
 {
 	cameraSystem->SetViewportRect(newViewportRect);
@@ -433,6 +427,7 @@ void SceneEditor2::Draw()
 		particlesSystem->Draw();
 		debugDrawSystem->Draw();
         wayEditSystem->Draw();
+        pathSystem->Draw();
 
 		// should be last
 		selectionSystem->Draw();

@@ -56,31 +56,42 @@ public:
     bool IsWayEditEnabled() const;
 
     virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent *event);
+    
+    virtual void AddEntity(DAVA::Entity * entity);
+    virtual void RemoveEntity(DAVA::Entity * entity);
+
 
 protected:
     void Draw();
-    void ProcessUIEvent(DAVA::UIEvent *event);
-    //void ProcessCommand(const Command2 *command, bool redo);
 
-    //virtual void AddEntity(DAVA::Entity * entity);
-    //virtual void RemoveEntity(DAVA::Entity * entity);
-    //virtual void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
+    void ProcessCommand(const Command2 *command, bool redo);
 
-    DAVA::Entity* AddWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
+    DAVA::Entity* CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
     DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
-    void RemWayPoint(DAVA::Entity *waypoint);
 
+    
+    EntityGroup GetEntitiesForAddEdges(DAVA::Entity *nextEntity);
+    void AddEdges(const EntityGroup & group, DAVA::Entity *nextEntity);
+    
+    void ResetSelection();
+    void ProcessSelection();
+    
+    
 protected:
     bool isEnabled;
-    bool inAddNewWayPointState;
 
-    DAVA::Entity *currentWayParent;
-    DAVA::Entity *currentWayPoint;
-
+    EntityGroup currentSelection;
+    EntityGroup selectedWaypoints;
+    EntityGroup prevSelectedWaypoints;
+    
+    
     SceneSelectionSystem *selectionSystem;
     SceneCollisionSystem *collisionSystem;
 
     DAVA::UniqueHandle wayDrawState;
+    
+    DAVA::Vector<DAVA::Entity *> waypointEntities;
 };
 
 #endif // __SCENE_WAYEDIT_SYSTEM_H__

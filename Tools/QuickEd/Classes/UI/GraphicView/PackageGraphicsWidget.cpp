@@ -41,7 +41,7 @@ PackageGraphicsWidget::PackageGraphicsWidget(QWidget *parent)
     ui->davaGLWidget->setMaximumSize(1, 1);
     ui->davaGLWidget->setFocusPolicy(Qt::StrongFocus);
     ui->davaGLWidget->installEventFilter(this);
-    connect(ui->davaGLWidget, SIGNAL(resized()), this, SLOT(OnGLWidgetResized()));
+    connect(ui->davaGLWidget, SIGNAL(Resized(int, int)), this, SLOT(OnGLWidgetResized(int, int)));
 
     ui->horizontalRuler->hide();
     ui->verticalRuler->hide();
@@ -168,15 +168,16 @@ void PackageGraphicsWidget::OnCanvasScaleChanged(int newScale)
     }
 }
 
-void PackageGraphicsWidget::OnGLWidgetResized()
+void PackageGraphicsWidget::OnGLWidgetResized(int width, int height)
 {
-    const QSize &viewSize = GetGLViewSize();
-    Vector2 screenSize((float32)viewSize.width(), (float32)viewSize.height());
+    Vector2 screenSize((float32)width, (float32)height);
 
     UIScreenManager::Instance()->GetScreen()->SetSize(screenSize);
 
     if (context)
-        context->SetViewControlSize(viewSize);
+    {
+        context->SetViewControlSize(QSize(width, height));
+    }
 }
 
 void PackageGraphicsWidget::OnVScrollbarMoved(int vPosition)
