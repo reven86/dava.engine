@@ -300,7 +300,7 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 {
-    if(IsEntitySelectable(entity))
+    if(IsEntitySelectable(entity) && !curSelections.HasEntity(entity))
     {
         EntityGroupItem selectableItem;
         
@@ -317,10 +317,7 @@ bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity)
 {
     if(!IsLocked() && entity)
     {
-        if(!curSelections.HasEntity(entity) && (componentMaskForSelection & entity->GetAvailableComponentFlags()))
-        {
-            return true;
-        }
+        return (componentMaskForSelection & entity->GetAvailableComponentFlags());
     }
     
     return false;
