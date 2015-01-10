@@ -123,7 +123,7 @@ void LogWidget::FillFiltersCombo()
         const int ll = index.data(LogModel::LEVEL_ROLE).toInt();
         const QPixmap& pix = logModel->GetIcon(ll);
         m->setData(index, pix, Qt::DecorationRole);
-        m->setData(index, true, Qt::CheckStateRole);
+        m->setData(index, Qt::Checked, Qt::CheckStateRole);
     }
 }
 
