@@ -46,6 +46,13 @@ EdgeComponent::~EdgeComponent()
 {
     SafeRelease(properties);
 }
+
+EdgeComponent::EdgeComponent(const EdgeComponent& cp)
+    : Component(cp)
+{
+    SetNextEntity(cp.nextEntity);
+    SetProperties(cp.GetProperties());
+}
     
 Component * EdgeComponent::Clone(Entity * toEntity)
 {

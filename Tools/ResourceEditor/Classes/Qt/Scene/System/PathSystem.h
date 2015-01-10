@@ -41,13 +41,15 @@ class PathSystem: public DAVA::SceneSystem
 public:
     PathSystem(DAVA::Scene * scene);
     virtual ~PathSystem();
+
+    void EnablePathEdit(bool enable);
+    bool IsPathEditEnabled() const;
     
     virtual void AddEntity(DAVA::Entity * entity);
     virtual void RemoveEntity(DAVA::Entity * entity);
     
     virtual void Process(DAVA::float32 timeElapsed);
 
-    
     DAVA::Entity * GetCurrrentPath() const;
     
     const DAVA::Vector<DAVA::Entity *> & GetPathes() const;
@@ -58,6 +60,7 @@ public:
 protected:
     
     void Draw();
+    SceneEditor2* GetSceneEditor() const;
     
     
     DAVA::UniqueHandle pathDrawState;
@@ -68,6 +71,8 @@ protected:
    
     EntityGroup currentSelection;
     DAVA::Entity * currentPath;
+
+    bool isEnabled;
 };
 
 inline const DAVA::Vector<DAVA::Entity *> & PathSystem::GetPathes() const

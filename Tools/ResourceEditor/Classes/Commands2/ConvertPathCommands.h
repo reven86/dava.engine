@@ -45,7 +45,7 @@ typedef DAVA::List<DAVA::Entity*> EntityList;
 class ExpandPathCommand : public Command2
 {
 public:
-    ExpandPathCommand(DAVA::Entity* parentEntity, DAVA::PathComponent* _pathComponent);
+    ExpandPathCommand(DAVA::PathComponent* _pathComponent);
     ~ExpandPathCommand();
 
     virtual void Undo();
@@ -56,14 +56,13 @@ protected:
     DAVA::Entity* CreateWaypointEntity(const DAVA::PathComponent::Waypoint* waypoint, const DAVA::FastName & name);
 
     DAVA::Entity* parentEntity;
-    DAVA::PathComponent* pathComponent;
     MapWaypoint2Entity mapWaypoint2Entity;
 };
 
 class CollapsePathCommand : public Command2
 {
 public:
-    CollapsePathCommand(DAVA::Entity* parentEntity, DAVA::FastName & pathName);
+    CollapsePathCommand(DAVA::PathComponent* _pathComponent);
     ~CollapsePathCommand();
 
     virtual void Undo();
@@ -71,16 +70,18 @@ public:
     virtual DAVA::Entity* GetEntity() const;
 
 protected:
+    typedef DAVA::RefPtr<DAVA::KeyedArchive> KeyedArchivePtr;
     struct MyEdge
     {
-        MyEdge(DAVA::uint32 id, DAVA::KeyedArchive* ar) : wpId(id), properties(ar) {}
+        MyEdge(DAVA::uint32 id, DAVA::KeyedArchive* ar);
         DAVA::uint32 wpId;
-        DAVA::KeyedArchive* properties;
+        KeyedArchivePtr properties;
     };
     struct MyWaypoint
     {
+        DAVA::FastName name;
         DAVA::Vector3 position;
-        DAVA::KeyedArchive* properties;
+        KeyedArchivePtr properties;
         DAVA::List<MyEdge> edges;
     };
 
@@ -91,7 +92,6 @@ protected:
     void ReconstructWaypointHierarchy(const DAVA::Vector<MyWaypoint>& waypointsVec);
 
     DAVA::Entity* parentEntity;
-    DAVA::FastName pathName;
     DAVA::PathComponent* destPathComponent;
     EntityList entitiesToCollapse;
     DAVA::Vector<MyWaypoint> waypointsOriginState;

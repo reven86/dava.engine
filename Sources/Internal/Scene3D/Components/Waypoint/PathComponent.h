@@ -50,15 +50,23 @@ public:
     {
         Waypoint();
         ~Waypoint();
+        Waypoint(const Waypoint&);
         
+        FastName name;
         Vector3 position;
-        KeyedArchive *properties;
         Vector<Edge *> edges;
-        
+    private:
+        KeyedArchive* properties;
+
+    public:
         void AddEdge(Edge *edge);
         void RemoveEdge(Edge *edge);
-        
+
+        void SetProperties(KeyedArchive* p);
+        KeyedArchive* GetProperties() const;
+
         INTROSPECTION(Waypoint,
+            MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
             MEMBER(position, "Waypoint position", I_SAVE | I_EDIT | I_VIEW)
             MEMBER(properties, "Waypoint Properties", I_SAVE | I_EDIT | I_VIEW)
             COLLECTION(edges, "Edges", I_SAVE | I_VIEW | I_EDIT)
@@ -69,9 +77,16 @@ public:
     {
         Edge();
         ~Edge();
+        Edge(const Edge&);
         
         Waypoint * destination;
-        KeyedArchive *properties;
+
+    private:
+        KeyedArchive* properties;
+
+    public:
+        void SetProperties(KeyedArchive* p);
+        KeyedArchive* GetProperties() const;
         
         INTROSPECTION(Edge,
             MEMBER(destination, "Destination", I_SAVE | I_EDIT | I_VIEW)

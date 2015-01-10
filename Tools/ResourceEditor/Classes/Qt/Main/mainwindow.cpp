@@ -2526,7 +2526,7 @@ void QtMainWindow::OnWayEditor(bool show)
     }
 
     sceneEditor->wayEditSystem->EnableWayEdit(show);
-    ui->actionWayEditor->setChecked(sceneEditor->wayEditSystem->IsWayEditEnabled());
+    sceneEditor->pathSystem->EnablePathEdit(show);
 
     //////////////////////////////////////////////////////////////////////////
     /*

@@ -32,56 +32,56 @@
 #include "Commands2/EntityAddCommand.h"
 #include "Commands2/EntityRemoveCommand.h"
 
-ExpandPathCommand::ExpandPathCommand(DAVA::Entity* _entity, DAVA::PathComponent* _pathComponent)
+ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
     : Command2(CMDID_EXPAND_PATH, "Expand entity path")
-    , parentEntity(_entity)
-    , pathComponent(_pathComponent)
+    , parentEntity(NULL)
 {
+    parentEntity = pathComponent ? pathComponent->GetEntity() : NULL;
+    if ( !parentEntity )
+        return;
+
     SafeRetain(parentEntity);
 
-    if(parentEntity && pathComponent)
+    // create waypoint entities (waypoint entity + waypoint component)
+    const DAVA::Vector<DAVA::PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
+    DAVA::uint32 waypointsCount = waypoints.size();
+    for (DAVA::uint32 wpIdx=0; wpIdx < waypointsCount; ++wpIdx)
     {
-        // create waypoint entities (waypoint entity + waypoint component)
-        const DAVA::Vector<DAVA::PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
-        DAVA::uint32 waypointsCount = waypoints.size();
-        for (DAVA::uint32 wpIdx=0; wpIdx < waypointsCount; ++wpIdx)
+        DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
+        DVASSERT(waypoint);
+
+        DAVA::Entity * waypointEntity = CreateWaypointEntity(waypoint,pathComponent->GetName());
+        mapWaypoint2Entity[waypoint] = waypointEntity;
+    }
+
+    // add edge components
+    MapWaypoint2Entity::const_iterator it = mapWaypoint2Entity.begin();
+    MapWaypoint2Entity::const_iterator mapEnd = mapWaypoint2Entity.end();
+    for (; it != mapEnd; ++it)
+    {
+        DAVA::PathComponent::Waypoint * const waypoint = it->first;
+        DAVA::Entity * const waypointEntity = it->second;
+        DVASSERT(waypoint);
+        DVASSERT(waypointEntity);
+
+        DAVA::uint32 edgesCount = waypoint->edges.size();
+        for (DAVA::uint32 edgeIdx=0; edgeIdx < edgesCount; ++edgeIdx)
         {
-            DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
-            DVASSERT(waypoint);
+            DAVA::PathComponent::Edge * edge = waypoint->edges[edgeIdx];
+            DVASSERT(edge);
 
-            DAVA::Entity * waypointEntity = CreateWaypointEntity(waypoint,pathComponent->GetName());
-            mapWaypoint2Entity[waypoint] = waypointEntity;
-        }
+            DAVA::PathComponent::Waypoint * destination = edge->destination;
+            DVASSERT(destination);
 
-        // add edge components
-        MapWaypoint2Entity::const_iterator it = mapWaypoint2Entity.begin();
-        MapWaypoint2Entity::const_iterator mapEnd = mapWaypoint2Entity.end();
-        for (; it != mapEnd; ++it)
-        {
-            DAVA::PathComponent::Waypoint * const waypoint = it->first;
-            DAVA::Entity * const waypointEntity = it->second;
-            DVASSERT(waypoint);
-            DVASSERT(waypointEntity);
+            DAVA::Entity * destinationEntity = mapWaypoint2Entity[destination];
+            DVASSERT(destinationEntity);
 
-            DAVA::uint32 edgesCount = waypoint->edges.size();
-            for (DAVA::uint32 edgeIdx=0; edgeIdx < edgesCount; ++edgeIdx)
-            {
-                DAVA::PathComponent::Edge * edge = waypoint->edges[edgeIdx];
-                DVASSERT(edge);
+            DAVA::EdgeComponent * edgeComponent = new DAVA::EdgeComponent();
+            DVASSERT(edgeComponent);
 
-                DAVA::PathComponent::Waypoint * destination = edge->destination;
-                DVASSERT(destination);
-
-                DAVA::Entity * destinationEntity = mapWaypoint2Entity[destination];
-                DVASSERT(destinationEntity);
-
-                DAVA::EdgeComponent * edgeComponent = new DAVA::EdgeComponent();
-                DVASSERT(edgeComponent);
-
-                edgeComponent->SetProperties(edge->properties);
-                edgeComponent->SetNextEntity(destinationEntity);
-                waypointEntity->AddComponent(edgeComponent);
-            }
+            edgeComponent->SetProperties(edge->GetProperties());
+            edgeComponent->SetNextEntity(destinationEntity);
+            waypointEntity->AddComponent(edgeComponent);
         }
     }
 }
@@ -108,9 +108,9 @@ DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent:
     DVASSERT(wpComponent);
 
     wpComponent->SetPathName(name);
-    wpComponent->SetProperties(waypoint->properties);
+    wpComponent->SetProperties(waypoint->GetProperties());
     waypointEntity->AddComponent(wpComponent);
-    waypointEntity->SetName("waypoint");
+    waypointEntity->SetName(waypoint->name);
 
     DAVA::Matrix4 pm = parentEntity->GetWorldTransform();
     pm.Inverse();
@@ -131,8 +131,7 @@ void ExpandPathCommand::Undo()
         DAVA::Entity * const waypointEntity = it->second;
         DVASSERT(waypointEntity);
 
-        parentEntity->RemoveNode(waypointEntity);
-        UndoInternalCommand(new EntityRemoveCommand(waypointEntity));
+        RedoInternalCommand(new EntityRemoveCommand(waypointEntity));
     }
 }
 
@@ -145,7 +144,6 @@ void ExpandPathCommand::Redo()
         DAVA::Entity * const waypointEntity = it->second;
         DVASSERT(waypointEntity);
 
-        parentEntity->AddNode(waypointEntity);
         RedoInternalCommand(new EntityAddCommand(waypointEntity, parentEntity));
     }
 }
@@ -155,111 +153,95 @@ DAVA::Entity* ExpandPathCommand::GetEntity() const
     return parentEntity;
 }
 
-CollapsePathCommand::CollapsePathCommand(DAVA::Entity* _parentEntity, DAVA::FastName & _pathName)
+CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
     : Command2(CMDID_COLLAPSE_PATH, "Collapse path entities")
-    , parentEntity(_parentEntity)
-    , pathName(_pathName)
-    
+    , destPathComponent(pathComponent)
+    , parentEntity(NULL)
 {
-    if (parentEntity)
+    parentEntity = destPathComponent ? destPathComponent->GetEntity() : NULL;
+    if (!parentEntity)
+        return;
+
+    SafeRetain(parentEntity);
+
+    // create origin waypoints hierarchy
+    MapWaypoint2uint mapWaypoint2uint;
+    const DAVA::Vector<DAVA::PathComponent::Waypoint *> & waypoints = destPathComponent->GetPoints();
+    DAVA::uint32 waypointsCount = waypoints.size();
+    waypointsOriginState.resize(waypointsCount);
+    for (DAVA::uint32 wpIdx=0; wpIdx < waypointsCount; ++wpIdx)
     {
-        SafeRetain(parentEntity);
+        DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
+        DVASSERT(waypoint);
 
-        // get destination PathComponent
-        destPathComponent = NULL;
-        DAVA::uint32 count = parentEntity->GetComponentCount(DAVA::Component::PATH_COMPONENT);
-        for (DAVA::uint32 i=0; i<count; ++i)
+        mapWaypoint2uint[waypoint] = wpIdx;
+        InitMyWaypoint(waypointsOriginState[wpIdx],waypoint);
+    }
+
+    // assign origin edges
+    for (DAVA::uint32 wpIdx=0; wpIdx<waypointsCount; ++wpIdx)
+    {
+        DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
+        MyWaypoint& myWaypoint = waypointsOriginState[wpIdx];
+
+        DAVA::uint32 edgesCount = waypoint->edges.size();
+        for (DAVA::uint32 i=0; i<edgesCount; ++i)
         {
-            DAVA::PathComponent* pathComponent = static_cast<DAVA::PathComponent*>(parentEntity->GetComponent(DAVA::Component::PATH_COMPONENT,i));
-            DVASSERT(pathComponent);
-            if (pathComponent->GetName()==pathName)
-            {
-                destPathComponent = pathComponent;
-                break;
-            }
+            DAVA::PathComponent::Edge* edge = waypoint->edges[i];
+            DVASSERT(edge);
+            myWaypoint.edges.push_back(MyEdge(mapWaypoint2uint[edge->destination],edge->GetProperties()));
         }
+    }
 
-        if (!destPathComponent)
+    // define list of entities to collapse
+    const DAVA::FastName& pathName = destPathComponent->GetName();
+    DAVA::uint32 entityCount=0;
+    MapEntity2uint mapEntity2uint;
+    parentEntity->GetChildEntitiesWithComponent(entitiesToCollapse, DAVA::Component::WAYPOINT_COMPONENT);
+    EntityList::const_iterator end = entitiesToCollapse.end();
+    for(EntityList::iterator it=entitiesToCollapse.begin(); it != end;)
+    {
+        DAVA::Entity* wpEntity = *it;
+        DVASSERT(wpEntity);
+
+        DAVA::WaypointComponent* wpComponent = static_cast<DAVA::WaypointComponent*>(wpEntity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT,0));
+        DVASSERT(wpComponent);
+
+        if (wpComponent->GetPathName() == pathName)
         {
-            destPathComponent = new DAVA::PathComponent;
-            DVASSERT(destPathComponent);
-            destPathComponent->SetName(pathName);
-            parentEntity->AddComponent(destPathComponent);
+            SafeRetain(wpEntity);
+            ++it;
+            mapEntity2uint[wpEntity] = entityCount++;
         }
-
-        // create origin waypoints hierarchy
-        MapWaypoint2uint mapWaypoint2uint;
-        const DAVA::Vector<DAVA::PathComponent::Waypoint *> & waypoints = destPathComponent->GetPoints();
-        DAVA::uint32 waypointsCount = waypoints.size();
-        waypointsOriginState.resize(waypointsCount);
-        for (DAVA::uint32 wpIdx=0; wpIdx < waypointsCount; ++wpIdx)
+        else
         {
-            DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
-            DVASSERT(waypoint);
-
-            mapWaypoint2uint[waypoint] = wpIdx;
-            InitMyWaypoint(waypointsOriginState[wpIdx],waypoint);
+            EntityList::iterator itDel = it++;
+            entitiesToCollapse.erase(itDel);
         }
+    }
 
-        // assign origin edges
-        for (DAVA::uint32 wpIdx=0; wpIdx<waypointsCount; ++wpIdx)
+    // assign final waypoints and edges
+    waypointsFinalState.resize(entityCount);
+    EntityList::iterator itEntity = entitiesToCollapse.begin();
+    EntityList::const_iterator itEnd = entitiesToCollapse.end();
+    for (DAVA::uint32 iEntity=0; iEntity < entityCount && itEntity != itEnd; ++iEntity, ++itEntity)
+    {
+        DAVA::Entity* wpEntity = *itEntity;
+        DAVA::WaypointComponent* wpComponent = static_cast<DAVA::WaypointComponent*>(wpEntity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT,0));
+
+        // init waypoint
+        InitMyWaypoint(waypointsFinalState[iEntity],wpEntity,wpComponent);
+
+        // init waypoint edges
+        DAVA::uint32 count = wpEntity->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+        for (DAVA::uint32 iEdge=0; iEdge < count; ++iEdge)
         {
-            DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
-            MyWaypoint& myWaypoint = waypointsOriginState[wpIdx];
+            DAVA::EdgeComponent* edgeComponent = static_cast<DAVA::EdgeComponent*>((*itEntity)->GetComponent(DAVA::Component::EDGE_COMPONENT,iEdge));
+            DVASSERT(edgeComponent);
 
-            DAVA::uint32 edgesCount = waypoint->edges.size();
-            for (DAVA::uint32 i=0; i<edgesCount; ++i)
-            {
-                DAVA::PathComponent::Edge* edge = waypoint->edges[i];
-                DVASSERT(edge);
-                myWaypoint.edges.push_back(MyEdge(mapWaypoint2uint[edge->destination],edge->properties));
-            }
-        }
-
-        // create final waypoints hierarchy
-        DAVA::uint32 entityCount=0;
-        MapEntity2uint mapEntity2uint;
-        parentEntity->GetChildEntitiesWithComponent(entitiesToCollapse, DAVA::Component::WAYPOINT_COMPONENT);
-        EntityList::const_iterator end = entitiesToCollapse.end();
-        for(EntityList::iterator it=entitiesToCollapse.begin(); it != end;)
-        {
-            DAVA::Entity* wpEntity = *it;
-            DVASSERT(wpEntity);
-
-            DAVA::WaypointComponent* wpComponent = static_cast<DAVA::WaypointComponent*>(wpEntity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT,0));
-            DVASSERT(wpComponent);
-
-            if (wpComponent->GetPathName() == pathName)
-            {
-                SafeRetain(wpEntity);
-                ++it;
-
-                mapEntity2uint[wpEntity] = entityCount++;
-                waypointsFinalState.push_back(MyWaypoint());
-                InitMyWaypoint(waypointsFinalState.back(),wpEntity,wpComponent);
-            }
-            else
-            {
-                EntityList::iterator itDel = it++;
-                entitiesToCollapse.erase(itDel);
-            }
-        }
-
-        // assign final edges
-        EntityList::iterator itEntity = entitiesToCollapse.begin();
-        EntityList::const_iterator itEnd = entitiesToCollapse.end();
-        for (DAVA::uint32 iEntity=0; iEntity < entityCount && itEntity != itEnd; ++iEntity, ++itEntity)
-        {
-            DAVA::uint32 count = (*itEntity)->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-            for (DAVA::uint32 iEdge=0; iEdge < count; ++iEdge)
-            {
-                DAVA::EdgeComponent* edgeComponent = static_cast<DAVA::EdgeComponent*>((*itEntity)->GetComponent(DAVA::Component::EDGE_COMPONENT,iEdge));
-                DVASSERT(edgeComponent);
-
-                DAVA::Entity* destEntity = edgeComponent->GetNextEntity();
-                DVASSERT(destEntity);
-                waypointsFinalState[iEntity].edges.push_back(MyEdge(mapEntity2uint[destEntity], edgeComponent->GetProperties()));
-            }
+            DAVA::Entity* destEntity = edgeComponent->GetNextEntity();
+            DVASSERT(destEntity);
+            waypointsFinalState[iEntity].edges.push_back(MyEdge(mapEntity2uint[destEntity], edgeComponent->GetProperties()));
         }
     }
 }
@@ -274,17 +256,30 @@ CollapsePathCommand::~CollapsePathCommand()
     }
 }
 
+CollapsePathCommand::MyEdge::MyEdge(DAVA::uint32 id, DAVA::KeyedArchive* ar)
+    : wpId(id)
+{ 
+    properties = ar;
+}
+
 void CollapsePathCommand::InitMyWaypoint(MyWaypoint& myWaypoint, DAVA::PathComponent::Waypoint* waypoint)
 {
-    myWaypoint.properties = waypoint->properties;
+    myWaypoint.name = waypoint->name;
+    myWaypoint.properties = waypoint->GetProperties();
     myWaypoint.position = waypoint->position;
 }
 
 void CollapsePathCommand::InitMyWaypoint(MyWaypoint& myWaypoint, DAVA::Entity* wpEntity, DAVA::WaypointComponent* wpComponent)
 {
+    myWaypoint.name = wpEntity->GetName();
     myWaypoint.properties = wpComponent->GetProperties();
     DAVA::Matrix4 m = wpEntity->GetLocalTransform() * parentEntity->GetWorldTransform();
     myWaypoint.position = m.GetTranslationVector();
+}
+
+DAVA::PathComponent::Waypoint* NewWaypoint()
+{
+    return new DAVA::PathComponent::Waypoint;
 }
 
 void CollapsePathCommand::ReconstructWaypointHierarchy(const DAVA::Vector<MyWaypoint>& myWaypointsVec)
@@ -296,15 +291,10 @@ void CollapsePathCommand::ReconstructWaypointHierarchy(const DAVA::Vector<MyWayp
         DAVA::uint32 wpCount = myWaypointsVec.size();
 
         DAVA::Vector<DAVA::PathComponent::Waypoint*> waypointsVec;
-        waypointsVec.reserve(wpCount);
+        waypointsVec.resize(wpCount);
+        std::generate(waypointsVec.begin(),waypointsVec.end(),NewWaypoint);
 
-        // create waypoints
-        for (DAVA::uint32 wpIdx=0; wpIdx < wpCount; ++wpIdx)
-        {
-            waypointsVec.push_back(new DAVA::PathComponent::Waypoint);
-        }
-
-        // init waypoints & adges
+        // init waypoints & edges
         for (DAVA::uint32 wpIdx=0; wpIdx < wpCount; ++wpIdx)
         {
             const MyWaypoint& myWaypoint = myWaypointsVec[wpIdx];
@@ -313,8 +303,9 @@ void CollapsePathCommand::ReconstructWaypointHierarchy(const DAVA::Vector<MyWayp
 
             destPathComponent->AddPoint(waypoint);
 
-            waypoint->properties = myWaypoint.properties;
+            waypoint->name = myWaypoint.name;
             waypoint->position = myWaypoint.position;
+            waypoint->SetProperties(myWaypoint.properties.Get());
 
             DAVA::List<MyEdge>::const_iterator it = myWaypoint.edges.begin();
             DAVA::List<MyEdge>::const_iterator end = myWaypoint.edges.end();
@@ -322,7 +313,7 @@ void CollapsePathCommand::ReconstructWaypointHierarchy(const DAVA::Vector<MyWayp
             {
                 DAVA::PathComponent::Edge* edge = new DAVA::PathComponent::Edge();
                 DVASSERT(edge);
-                edge->properties = it->properties;
+                edge->SetProperties(it->properties.Get());
                 edge->destination = waypointsVec[it->wpId];
                 waypoint->AddEdge(edge);
             }
@@ -339,8 +330,6 @@ void CollapsePathCommand::Redo()
         {
             DAVA::Entity* const nextEntity = *it;
             DVASSERT(nextEntity);
-
-            parentEntity->RemoveNode(nextEntity);
             RedoInternalCommand(new EntityRemoveCommand(nextEntity));
         }
 
@@ -357,9 +346,7 @@ void CollapsePathCommand::Undo()
         {
             DAVA::Entity* const nextEntity = *it;
             DVASSERT(nextEntity);
-
-            parentEntity->AddNode(nextEntity);
-            UndoInternalCommand(new EntityAddCommand(nextEntity,parentEntity));
+            RedoInternalCommand(new EntityAddCommand(nextEntity,parentEntity));
         }
 
         ReconstructWaypointHierarchy(waypointsOriginState);

@@ -46,8 +46,29 @@ PathComponent::Waypoint::Waypoint()
 PathComponent::Waypoint::~Waypoint()
 {
     for_each(edges.begin(), edges.end(), SafeDelete<PathComponent::Edge>);
-
     SafeRelease(properties);
+}
+
+PathComponent::Waypoint::Waypoint(const Waypoint& cp)
+{
+    name = cp.name;
+    position = cp.position;
+    edges = cp.edges;
+    SetProperties(cp.GetProperties());
+}
+
+void PathComponent::Waypoint::SetProperties(KeyedArchive* p)
+{
+    if (p != properties)
+    {
+        SafeRelease(properties);
+        properties = SafeRetain(p);
+    }
+}
+
+KeyedArchive* PathComponent::Waypoint::GetProperties() const
+{
+    return properties;
 }
 
 void PathComponent::Waypoint::AddEdge(PathComponent::Edge *edge)
@@ -73,14 +94,33 @@ void PathComponent::Waypoint::RemoveEdge(PathComponent::Edge *edge)
 //== Edge ==
 PathComponent::Edge::Edge()
 {
-    destination = NULL;
     properties = NULL;
+    destination = NULL;
 }
 
 PathComponent::Edge::~Edge()
 {
-    //SafeDelete(destination);
     SafeRelease(properties);
+}
+
+PathComponent::Edge::Edge(const Edge& cp)
+{
+    destination = cp.destination;
+    SetProperties(cp.GetProperties());
+}
+
+void PathComponent::Edge::SetProperties(KeyedArchive* p)
+{
+    if (p != properties)
+    {
+        SafeRelease(properties);
+        properties = SafeRetain(p);
+    }
+}
+
+KeyedArchive* PathComponent::Edge::GetProperties() const
+{
+    return properties;
 }
     
     
@@ -88,7 +128,6 @@ PathComponent::Edge::~Edge()
 PathComponent::PathComponent()
     :	Component()
 {
-
 }
     
 PathComponent::~PathComponent()
@@ -133,9 +172,9 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
                 KeyedArchive * wpArchieve = new KeyedArchive();
                 
                 wpArchieve->SetVector3("position", wp->position);
-                if(wp->properties)
+                if(wp->GetProperties())
                 {
-                    wpArchieve->SetArchive("properties", wp->properties);
+                    wpArchieve->SetArchive("properties", wp->GetProperties());
                 }
                 
                 const uint32 edgesCount = wp->edges.size();
@@ -145,9 +184,9 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
                     Edge *edge = wp->edges[e];
                     
                     KeyedArchive * edgeArchieve = new KeyedArchive();
-                    if(edge->properties)
+                    if(edge->GetProperties())
                     {
-                        edgeArchieve->SetArchive("properties", edge->properties);
+                        edgeArchieve->SetArchive("properties", edge->GetProperties());
                     }
                     
                     DVASSERT(edge->destination);
@@ -197,7 +236,9 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
         KeyedArchive *wpProperties = wpArchieve->GetArchive("properties");
         if(wpProperties)
         {
-            wp->properties = new KeyedArchive(*wpProperties);
+            KeyedArchive* p = new KeyedArchive(*wpProperties);
+            wp->SetProperties(p);
+            SafeRelease(p);
         }
         
         const uint32 edgesCount = wpArchieve->GetUInt32("edgesCount");
@@ -211,7 +252,9 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
             KeyedArchive *edgeProperties = edgeArchieve->GetArchive("properties");
             if(edgeProperties)
             {
-                edge->properties = new KeyedArchive(*edgeProperties);
+                KeyedArchive* p = new KeyedArchive(*edgeProperties);
+                edge->SetProperties(p);
+                SafeRelease(p);
             }
             
             uint32 index = edgeArchieve->GetUInt32("destination");
@@ -283,7 +326,7 @@ PathComponent::Waypoint * PathComponent::GetWaypoint(const FastName & name)
     for(uint32 w = 0; w < waypointCount; ++w)
     {
         Waypoint *wp = waypoints[w];
-        if(wp->properties && (wp->properties->GetFastName("name") == name))
+        if(wp->GetProperties() && (wp->GetProperties()->GetFastName("name") == name))
         {
             return wp;
         }
