@@ -15,6 +15,7 @@ xcopy /e ..\Data\*.* app\ResourceEditor\dava.framework\Tools\ResourceEditor\Data
 xcopy *.exe app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy *.pdb app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\glew32.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy ..\TextureConverter.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\Teamcity\imagesplitter\*.bat app\ResourceEditor\dava.framework\Tools\ResourceEditor
 
 xcopy %QT5_HOME%\bin\Qt5Core.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
@@ -30,6 +31,5 @@ xcopy /e ..\..\..\..\dava.resourceeditor.beast\*.* app\ResourceEditor\dava.resou
 xcopy ..\..\..\..\dava.framework\Libs\fmod\bin\fmodex.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\..\..\..\dava.framework\Libs\fmod\bin\fmod_event.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\..\..\..\dava.framework\Tools\Bin\IMagickHelper.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
-xcopy ..\..\..\..\dava.framework\Tools\Bin\TextureConverter.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 
 wzzip -p -r %1 app\*.*	
