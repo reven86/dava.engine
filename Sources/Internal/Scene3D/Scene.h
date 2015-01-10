@@ -155,7 +155,7 @@ public:
      */
     void    UnregisterComponent(Entity * entity, Component * component);
     
-    virtual void    AddSystem(SceneSystem * sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem * insertBeforeSceneForProcess = NULL);
+    virtual void    AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, uint32 processFlags = 0, SceneSystem * insertBeforeSceneForProcess = NULL);
     virtual void    RemoveSystem(SceneSystem * sceneSystem);    
     
 	//virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
