@@ -41,77 +41,6 @@
 using DAVA::Net::IChannel;
 using DAVA::Net::IChannelListener;
 
-struct Parcel
-{
-    void* outbuf;
-    size_t length;
-    uint32 packetId;
-
-    friend bool operator == (const Parcel& o, const void* p) { return o.outbuf == p; }
-};
-
-class TestEchoServer : public DAVA::Net::NetService
-{
-public:
-    TestEchoServer();
-
-    virtual void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length);
-    virtual void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length);
-    virtual void OnPacketDelivered(IChannel* aChannel, uint32 packetId);
-
-    bool IsTestDone() const { return testDone; }
-
-    size_t BytesRecieved() const { return bytesRecieved; }
-    size_t BytesSent() const { return bytesSent; }
-    size_t BytesDelivered() const { return bytesDelivered; }
-
-private:
-    void SendEcho(const void* buffer, size_t length);
-
-private:
-    bool testDone;
-    size_t bytesRecieved;
-    size_t bytesSent;
-    size_t bytesDelivered;
-    uint32 lastPacketId;
-
-    Deque<Parcel> parcels;
-};
-
-//////////////////////////////////////////////////////////////////////////
-class TestEchoClient : public DAVA::Net::NetService
-{
-public:
-    TestEchoClient();
-    virtual ~TestEchoClient();
-
-    virtual void ChannelOpen();
-    virtual void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length);
-    virtual void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length);
-    virtual void OnPacketDelivered(IChannel* aChannel, uint32 packetId);
-
-    bool IsTestDone() const { return testDone; }
-
-    size_t BytesRecieved() const { return bytesRecieved; }
-    size_t BytesSent() const { return bytesSent; }
-    size_t BytesDelivered() const { return bytesDelivered; }
-
-private:
-    void SendParcel(Parcel* parcel);
-
-private:
-    bool testDone;
-    size_t bytesRecieved;
-    size_t bytesSent;
-    size_t bytesDelivered;
-
-    Deque<Parcel> parcels;
-    size_t pendingRead;         // Parcel index expected to be read from server
-    size_t pendingSent;         // Parcel index expected to be sent
-    size_t pendingDelivered;    // Parcel index expected to be confirmed as delivered
-};
-
-//////////////////////////////////////////////////////////////////////////
 class NetworkTest : public TestTemplate<NetworkTest>
 {
 protected:
@@ -120,13 +49,6 @@ protected:
     enum eServiceTypes
     {
         SERVICE_LOG,
-        SERVICE_ECHO
-    };
-
-    enum
-    {
-        ECHO_SERVER_CONTEXT,
-        ECHO_CLIENT_CONTEXT
     };
 
     static const uint16 LOGGER_PORT = 9999;
@@ -142,42 +64,33 @@ public:
     virtual void Update(float32 timeElapsed);
     void ButtonPressed(BaseObject *obj, void *data, void *callerData);
 
-    void TestEcho(PerfFuncData* data);
-    void TestIPAddress(PerfFuncData* data);
-    void TestEndpoint(PerfFuncData* data);
-    void TestNetConfig(PerfFuncData* data);
+    void DummyTest(PerfFuncData* data);
 
     IChannelListener* CreateLogger(uint32 serviceId, void* context);
-    IChannelListener* CreateEcho(uint32 serviceId, void* context);
-    void DeleteEcho(IChannelListener* obj, void* context);
     void DeleteLogger(IChannelListener* obj, void* context);
 
 private:
     void CreateUI();
-    void UpdateUI(bool waitStage, float32 left);
+    DAVA::UIButton* CreateButton(const wchar_t* caption, const DAVA::Rect& rc, DAVA::Font* font);
     void DestroyUI();
 
     size_t AnnounceDataSupplier(size_t length, void* buffer);
 
 private:
-    bool testingEcho;
-    TestEchoServer echoServer;
-    TestEchoClient echoClient;
+    bool quitFlag;
+    bool periodicFlag;
+    bool loggerInUse;
     DAVA::Net::NetLogger logger;
-    DAVA::Net::NetCore::TrackId idLogCtrl;
 
     DAVA::Net::PeerDescription peerDescr;
     Vector<uint8> peerDescrSerialized;
 
-    DAVA::UIStaticText* serverBytesRecv;
-    DAVA::UIStaticText* serverBytesSent;
-    DAVA::UIStaticText* serverBytesDelivered;
-    DAVA::UIStaticText* clientBytesRecv;
-    DAVA::UIStaticText* clientBytesSent;
-    DAVA::UIStaticText* clientBytesDelivered;
-    DAVA::UIStaticText* timeLeft;
-
-    DAVA::UIButton* btnClick;
+    DAVA::UIButton* btnDebug;
+    DAVA::UIButton* btnInfo;
+    DAVA::UIButton* btnWarn;
+    DAVA::UIButton* btnError;
+    DAVA::UIButton* btnPacket;
+    DAVA::UIButton* btnPeriodic;
     DAVA::UIButton* btnQuit;
 };
 

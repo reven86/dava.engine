@@ -95,7 +95,8 @@ void TCPClientTransport::Reset()
 int32 TCPClientTransport::Send(const Buffer* buffers, size_t bufferCount)
 {
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= SENDBUF_COUNT);
-    DVASSERT(true == isConnected && 0 == sendBufferCount);
+    DVASSERT(0 == sendBufferCount);
+    if (false == isConnected) return 0;
 
     for (size_t i = 0;i < bufferCount;++i)
     {

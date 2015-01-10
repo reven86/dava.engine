@@ -1,3 +1,5 @@
+#include <Utils/UTF8Utils.h>
+
 #include "DeviceLogWidget.h"
 #include "DeviceLogController.h"
 
@@ -35,12 +37,12 @@ void DeviceLogController::ShowView()
 
 void DeviceLogController::ChannelOpen()
 {
-    Output("************* Channel open");
+    //Output("************* Channel open");
 }
 
 void DeviceLogController::ChannelClosed()
 {
-    Output("************ Channel closed");
+    //Output("************ Channel closed");
 }
 
 void DeviceLogController::PacketReceived(const void* packet, size_t length)
@@ -51,5 +53,22 @@ void DeviceLogController::PacketReceived(const void* packet, size_t length)
 
 void DeviceLogController::Output(const String& msg)
 {
-    view->AppendText(msg.c_str());
+    // Temporal workaround to extract log level from message
+    QStringList list = QString(msg.c_str()).split(" ");
+    Logger::eLogLevel ll = Logger::LEVEL_WARNING;
+    // Current message format: <date> <time> <level> <text>
+    if (list.size() > 3)
+    {
+        if (list[2] == "framwork")
+            ll = Logger::LEVEL_FRAMEWORK;
+        else if (list[2] == "debug")
+            ll = Logger::LEVEL_DEBUG;
+        else if (list[2] == "info")
+            ll = Logger::LEVEL_INFO;
+        else if (list[2] == "warning")
+            ll = Logger::LEVEL_WARNING;
+        else if (list[2] == "error")
+            ll = Logger::LEVEL_ERROR;
+    }
+    view->AppendText(msg.c_str(), ll);
 }
