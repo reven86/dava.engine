@@ -21,9 +21,9 @@ xcopy ..\Teamcity\imagesplitter\*.bat app\ResourceEditor\dava.framework\Tools\Re
 xcopy %QT5_HOME_14%\bin\Qt5Core.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy %QT5_HOME_14%\bin\Qt5Gui.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy %QT5_HOME_14%\bin\Qt5Widgets.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
-xcopy %QT5_HOME_14%\bin\icudt52.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
-xcopy %QT5_HOME_14%\bin\icuin52.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
-xcopy %QT5_HOME_14%\bin\icuuc52.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy %QT5_HOME_14%\bin\icudt53.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy %QT5_HOME_14%\bin\icuin53.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy %QT5_HOME_14%\bin\icuuc53.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy %QT5_HOME_14%\plugins\platforms\qwindows.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor\platforms
 
 xcopy ..\..\..\..\dava.resourceeditor.beast\beast\bin\beast32.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
