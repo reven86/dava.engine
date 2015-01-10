@@ -73,6 +73,8 @@ public:
 	void AddSelection(DAVA::Entity *entity);
 	void RemSelection(DAVA::Entity *entity);
 	void Clear();
+    
+    bool IsEntitySelectable(DAVA::Entity *entity);
 
 	EntityGroup GetSelection() const;
 

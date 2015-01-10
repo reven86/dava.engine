@@ -300,25 +300,30 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 {
-	if(!IsLocked())
-	{
-		if(NULL != entity)
-		{
-			EntityGroupItem selectableItem;
+    if(IsEntitySelectable(entity))
+    {
+        EntityGroupItem selectableItem;
+        
+        selectableItem.entity = entity;
+        selectableItem.bbox = GetSelectionAABox(entity);
+        curSelections.Add(selectableItem);
+        
+        selectionHasChanges = true;
+        UpdateHoodPos();
+    }
+}
 
-			selectableItem.entity = entity;
-			selectableItem.bbox = GetSelectionAABox(entity);
-
-			if(!curSelections.HasEntity(entity) && (componentMaskForSelection & entity->GetAvailableComponentFlags()))
-			{
-				curSelections.Add(selectableItem);
-
-				selectionHasChanges = true;
-			}
-		}
-
-		UpdateHoodPos();
-	}
+bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity)
+{
+    if(!IsLocked() && entity)
+    {
+        if(!curSelections.HasEntity(entity) && (componentMaskForSelection & entity->GetAvailableComponentFlags()))
+        {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 void SceneSelectionSystem::RemSelection(DAVA::Entity *entity)
@@ -350,6 +355,8 @@ void SceneSelectionSystem::Clear()
 
 			selectionHasChanges = true;
 		}
+
+        UpdateHoodPos();
 	}
 }
 

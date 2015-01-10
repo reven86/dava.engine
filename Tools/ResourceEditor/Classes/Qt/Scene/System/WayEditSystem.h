@@ -92,6 +92,8 @@ protected:
     DAVA::UniqueHandle wayDrawState;
     
     DAVA::Vector<DAVA::Entity *> waypointEntities;
+    
+    DAVA::Entity * underCursorPathEntity;
 };
 
 #endif // __SCENE_WAYEDIT_SYSTEM_H__

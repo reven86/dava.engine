@@ -246,7 +246,7 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
 	SyncSelectionFromTree();
-
+    
 	// emit some signal about particles
 	EmitParticleSignals(selected);
 }
@@ -809,17 +809,8 @@ void SceneTree::SyncSelectionFromTree()
 		SceneEditor2* curScene = treeModel->GetScene();
 		if(NULL != curScene)
 		{
-			QSet<DAVA::Entity*> treeSelectedEntities;
-
 			// remove from selection system all entities that are not selected in tree
-			EntityGroup selGroup = curScene->selectionSystem->GetSelection();
-			for(size_t i = 0; i < selGroup.Size(); ++i)
-			{
-				if(!treeSelectedEntities.contains(selGroup.GetEntity(i)))
-				{
-					curScene->selectionSystem->RemSelection(selGroup.GetEntity(i));
-				}
-			}
+            curScene->selectionSystem->Clear();
 
 			// select items in scene
 			QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -827,11 +818,14 @@ void SceneTree::SyncSelectionFromTree()
 			{
 				DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
 
-				if(NULL != entity)
+				if(curScene->selectionSystem->IsEntitySelectable(entity))
 				{
-					treeSelectedEntities.insert(entity);
 					curScene->selectionSystem->AddSelection(entity);
 				}
+                else
+                {
+                    //ignore selection
+                }
 			}
 
 			// force selection system emit signals about new selection

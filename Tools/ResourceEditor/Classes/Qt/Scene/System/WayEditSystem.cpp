@@ -44,6 +44,7 @@ WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selecti
 , isEnabled(false)
 , selectionSystem(_selectionSystem)
 , collisionSystem(_collisionSystem)
+, underCursorPathEntity(NULL)
 {
     wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
         DAVA::RenderStateData::STATE_COLORMASK_ALL |
@@ -87,6 +88,8 @@ void WayEditSystem::ResetSelection()
 {
     selectedWaypoints.Clear();
     prevSelectedWaypoints.Clear();
+    
+    underCursorPathEntity = NULL;
 }
 
 void WayEditSystem::ProcessSelection()
@@ -115,10 +118,22 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
 {
     if (isEnabled)
     {
-        // process incoming event
-        if (event->phase == DAVA::UIEvent::PHASE_ENDED && event->tid == DAVA::UIEvent::BUTTON_1)
+        if((DAVA::UIEvent::BUTTON_1 == event->tid) && (DAVA::UIEvent::PHASE_MOVE == event->phase))
         {
-            
+            underCursorPathEntity = NULL;
+            const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
+            if (NULL != collObjects && collObjects->Size() > 0)
+            {
+                DAVA::Entity *underEntity = collObjects->GetEntity(0);
+                if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT))
+                {
+                    underCursorPathEntity = underEntity;
+                }
+            }
+        }
+        
+        if ((DAVA::UIEvent::PHASE_ENDED == event->phase) && (DAVA::UIEvent::BUTTON_1 == event->tid))
+        {
             int curKeyModifiers = QApplication::keyboardModifiers();
             if(0 == (curKeyModifiers & Qt::ShiftModifier))
             {   //we need use shift key to add waypoint or edge
@@ -293,7 +308,12 @@ void WayEditSystem::Draw()
         float32 redValue = 0.0f;
         float32 greenValue = 0.0f;
         
-        if(group.HasEntity(e))
+        if(e == underCursorPathEntity)
+        {
+            redValue = 0.6f;
+            greenValue = 0.6f;
+        }
+        else if(group.HasEntity(e))
         {
             redValue = 1.0f;
         }
