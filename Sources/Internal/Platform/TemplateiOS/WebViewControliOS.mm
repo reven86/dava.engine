@@ -38,6 +38,7 @@
 {
 	DAVA::IUIWebViewDelegate* delegate;
 	DAVA::UIWebView* webView;
+    DAVA::WebViewControl* webViewControl;
 }
 
 - (id)init;
@@ -50,10 +51,10 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;
 - (void)leftGesture;
 - (void)rightGesture;
-- (UIImage *)takeSnapshotOfView:(UIView *)view;
-- (void)setUIWebViewControl:(DAVA::UIWebView*) uiWebControl;
+- (UIImage *)renderUIViewToImage:(UIView *)view;
+- (void)setDAVAUIWebView:(DAVA::UIWebView*) uiWebControl;
 - (void)onExecuteJScript:(NSArray *)result;
-
+- (void)setDAVAWebViewControl:(DAVA::WebViewControl*) webViewControl;
 @end
 
 @implementation WebViewURLDelegate
@@ -63,8 +64,9 @@
 	self = [super init];
 	if (self)
 	{
-		delegate = NULL;
-		webView = NULL;
+		delegate = nullptr;
+		webView = nullptr;
+        webViewControl = nullptr;
 	}
 	return self;
 }
@@ -135,48 +137,14 @@
 
 - (void)webViewDidFinishLoad:(UIWebView *)webViewParam
 {
-    // TODO render to image test
-    UIImage* image = [self takeSnapshotOfView:webViewParam];
-    DVASSERT(image);
+    DVASSERT(webViewControl);
+    DVASSERT(webView);
     
-    // First get the image into your data buffer
-    CGImageRef imageRef = [image CGImage];
-    DAVA::int32 width = static_cast<DAVA::int32>(CGImageGetWidth(imageRef));
-    DAVA::int32 height = static_cast<DAVA::int32>(CGImageGetHeight(imageRef));
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    
-    DAVA::Image* imageRGB = DAVA::Image::Create(width, height, DAVA::FORMAT_RGBA8888);
-    DVASSERT(imageRGB);
-    DAVA::uint8 *rawData = const_cast<DAVA::uint8*>(imageRGB->GetData()); // (unsigned char*) calloc(height * width * 4, sizeof(unsigned char));
-    NSUInteger bytesPerPixel = 4;
-    NSUInteger bytesPerRow = bytesPerPixel * width;
-    NSUInteger bitsPerComponent = 8;
-    CGContextRef context = CGBitmapContextCreate(rawData, width, height,
-                    bitsPerComponent, bytesPerRow, colorSpace,
-                    kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-    CGColorSpaceRelease(colorSpace);
-
-    CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
-    CGContextRelease(context);
-
-    DAVA::Texture* tex = DAVA::Texture::CreateFromData(imageRGB, false);
-    DAVA::Rect rect = webView->GetRect();
-    DAVA::Vector2 spriteSize(rect.dx, rect.dy);
-    DAVA::Vector2 textureSize(width, height);
-    DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(textureSize, tex, DAVA::Vector2(0, 0), spriteSize);
-    DVASSERT(spr);
-    
-    // TODO set webView
-    
-    webView->GetBackground()->SetSprite(spr, 0);
-    
-    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString * basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-
-    NSData * binaryImageData = UIImagePNGRepresentation(image);
-
-    [binaryImageData writeToFile:[basePath stringByAppendingPathComponent:@"test_outimage.png"] atomically:YES];
-
+    if (webViewControl->IsRenderToTexture())
+    {
+        webViewControl->RenderToTextureAndSetAsBackgroundSpriteToControl(
+                                                                    *webView);
+    }
     
     if (delegate && self->webView)
 	{
@@ -192,30 +160,19 @@
     }
 }
 
-- (UIImage *)takeSnapshotOfView:(UIView *)view
+- (UIImage *)renderUIViewToImage:(UIView *)view
 {
-    CFTimeInterval startTime = CACurrentMediaTime();
-    CGFloat contentScaleFactor = 2.f;//[view contentScaleFactor];
+    CGFloat contentScaleFactor =  [HelperAppDelegate GetScale];
     
     size_t w = view.frame.size.width * contentScaleFactor;
     size_t h = view.frame.size.height * contentScaleFactor;
     
-//#define TEST_ON 1
-#ifdef TEST_ON
-    [view.layer setNeedsDisplay];
     UIGraphicsBeginImageContext(CGSizeMake(w, h));
-    CGContextRef ctx = UIGraphicsGetCurrentContext();
-    [view.layer renderInContext:ctx];
-#else
-    UIGraphicsBeginImageContext(CGSizeMake(w, h));
-    [view drawViewHierarchyInRect:CGRectMake(0, 0, w, h) afterScreenUpdates:YES];
-#endif
+    CGRect rect = CGRectMake(0, 0, w, h);
+    [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
+
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    
-    CFTimeInterval elapsedTime = CACurrentMediaTime() - startTime;
-    
-    NSLog(@"time to render webview to image = %.4lfs", elapsedTime);
     
     return image;
 }
@@ -231,9 +188,16 @@
     [result release];
 }
 
-- (void)setUIWebViewControl:(DAVA::UIWebView*) uiWebControl
+- (void)setDAVAUIWebView:(DAVA::UIWebView*) uiWebControl
 {
+    DVASSERT(uiWebControl);
     webView = uiWebControl;
+}
+
+- (void)setDAVAWebViewControl:(DAVA::WebViewControl*) control
+{
+    DVASSERT(control);
+    webViewControl = control;
 }
 
 @end
@@ -249,7 +213,8 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
     isVisible(true),
     uiWebView(uiWeb)
 {
-    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication]
+                                                                    delegate];
     BackgroundView* backgroundView = [appDelegate glController].backgroundView;
     
     ::UIWebView* localWebView = [backgroundView CreateWebView];
@@ -261,10 +226,77 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
     SetBounces(false);
     
     webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
-    [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
-    [(WebViewURLDelegate*)webViewURLDelegatePtr setUIWebViewControl:&uiWebView];
+    WebViewURLDelegate* viewURLDelegate =
+                            (WebViewURLDelegate*)webViewURLDelegatePtr;
+    [localWebView setDelegate:viewURLDelegate];
+    [viewURLDelegate setDAVAUIWebView:&uiWebView];
+    [viewURLDelegate setDAVAWebViewControl:this];
     
     [localWebView becomeFirstResponder];
+}
+
+void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
+                                            DAVA::UIWebView& control)
+{
+    WebViewURLDelegate* webURLDelegate =
+                (WebViewURLDelegate*)webViewURLDelegatePtr;
+    DVASSERT(webURLDelegate);
+    
+    ::UIWebView* iosWebView = (::UIWebView*)webViewPtr;
+    DVASSERT(iosWebView);
+    
+    
+    UIImage* image = [webURLDelegate renderUIViewToImage:iosWebView];
+    DVASSERT(image);
+    
+    // copy image into our buffer with bitmap context
+    CGImageRef imageRef = [image CGImage];
+    DAVA::int32 width = static_cast<DAVA::int32>(CGImageGetWidth(imageRef));
+    DAVA::int32 height = static_cast<DAVA::int32>(CGImageGetHeight(imageRef));
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    {
+        DAVA::Image* imageRGB = DAVA::Image::Create(width, height,
+                                                    DAVA::FORMAT_RGBA8888);
+        DVASSERT(imageRGB);
+        
+        DAVA::uint8 *rawData = imageRGB->GetData();
+        
+        NSUInteger bytesPerPixel = 4;
+        NSUInteger bytesPerRow = bytesPerPixel * width;
+        NSUInteger bitsPerComponent = 8;
+        
+        // this way we can copy image from system memory into our buffer
+        
+        CGContextRef context = CGBitmapContextCreate(rawData, width, height,
+                                bitsPerComponent, bytesPerRow, colorSpace,
+                                kCGImageAlphaPremultipliedLast
+                                                     | kCGBitmapByteOrder32Big);
+        CGColorSpaceRelease(colorSpace);
+        
+        CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+        CGContextRelease(context);
+        
+        {
+            DAVA::Texture* tex = DAVA::Texture::CreateFromData(imageRGB, false);
+            DVASSERT(tex);
+            
+            DAVA::Rect rect = uiWebView.GetRect();
+            DAVA::Vector2 spriteSize(rect.dx, rect.dy);
+            DAVA::Vector2 textureSize(width, height);
+            {
+                DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(textureSize,
+                                                        tex, DAVA::Vector2(0, 0),
+                                                        spriteSize);
+                DVASSERT(spr);
+                
+                uiWebView.GetBackground()->SetSprite(spr, 0);
+                DAVA::SafeRelease(spr);
+            }
+            DAVA::SafeRelease(tex);
+        }
+        DAVA::SafeRelease(imageRGB);
+    }
 }
 
 namespace DAVA
@@ -432,18 +464,18 @@ void WebViewControl::SetRect(const Rect& rect)
     
     Rect physicalRect = VCS.ConvertVirtualToPhysical(rect);
     
+    webViewRect.origin.x = physicalRect.x + VCS.GetPhysicalDrawOffset().x;
+    webViewRect.origin.y = physicalRect.y + VCS.GetPhysicalDrawOffset().y;
+    
     if (isRenderToTexture)
     {
-        webViewRect.origin.x = physicalRect.x + VCS.GetPhysicalDrawOffset().x
-                                                                - 10000;
-        webViewRect.origin.y = physicalRect.y + VCS.GetPhysicalDrawOffset().y
-                                                                - 10000;
+        const int32 offScreenPos = -10000;
+        // on iOS just move window away and we can render it into our texture
+        // if we will add/remove to view hierarchy - bug with memory
+        // if we hide windows render to texture - always blank texture
+        webViewRect.origin.x = offScreenPos;
     }
-    else
-    {
-        webViewRect.origin.x = physicalRect.x + VCS.GetPhysicalDrawOffset().x;
-        webViewRect.origin.y = physicalRect.y + VCS.GetPhysicalDrawOffset().y;
-    }
+
     webViewRect.size.width = physicalRect.dx;
     webViewRect.size.height = physicalRect.dy;
 	
@@ -628,10 +660,27 @@ void WebViewControl::SetRenderToTexture(bool value)
 {
     isRenderToTexture = value;
     
-    // hide windows - move to x=-10000, y=-10000 position
+    // hide windows - move to offScreenPos position
     // so it still can render WebView into
     DAVA::Rect r = uiWebView.GetRect();
     SetRect(r);
+    
+    if (isRenderToTexture)
+    {
+        // we have to show window or we can't render web view into texture
+        if ([(UIWebView*)webViewPtr isHidden])
+        {
+            [(UIWebView*)webViewPtr setHidden:NO];
+        }
+        
+        RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
+    } else
+    {
+        if (isVisible)
+        {
+            [(UIWebView*)webViewPtr setHidden:NO];
+        }
+    }
 }
 
 bool WebViewControl::IsRenderToTexture() const

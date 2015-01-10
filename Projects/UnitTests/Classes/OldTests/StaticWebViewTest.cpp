@@ -76,12 +76,12 @@ void StaticWebViewTest::LoadResources()
 	FileSystem::Instance()->CopyFile(srcFile, cpyFile);
 	String url = "file:///" + cpyFile.GetAbsolutePathname();
 
-	webView2 = new UIWebView(Rect(710, 5, 300, 250));
-	webView2->SetVisible(true);
-    webView2->SetDebugDraw(true);
-	webView2->SetBackgroundTransparency(true);
-    webView2->OpenURL(url);
-	AddControl(webView2);
+//	webView2 = new UIWebView(Rect(710, 5, 300, 250));
+//	webView2->SetVisible(true);
+//    webView2->SetDebugDraw(true);
+//	webView2->SetBackgroundTransparency(true);
+//    webView2->OpenURL(url);
+//	AddControl(webView2);
 
 	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);

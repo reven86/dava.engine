@@ -69,8 +69,8 @@ public:
 
     void SetScalesPageToFit(bool isScalesToFit) override;
 
-	void SetDelegate(DAVA::IUIWebViewDelegate *delegate,
-                             DAVA::UIWebView* webView) override;
+	void SetDelegate(IUIWebViewDelegate *delegate,
+                             UIWebView* webView) override;
 	void SetBackgroundTransparency(bool enabled) override;
 
 	// Bounces control.
@@ -84,6 +84,8 @@ public:
     
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
+    
+    void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control);
 
 private:
 
@@ -95,8 +97,8 @@ private:
 
 	void* webViewURLDelegatePtr;
 
-    void *rightSwipeGesturePtr;
-    void *leftSwipeGesturePtr;
+    void* rightSwipeGesturePtr;
+    void* leftSwipeGesturePtr;
 
     
 	Map<void*, bool> subviewVisibilityMap;
@@ -108,7 +110,7 @@ private:
     bool isRenderToTexture;
     bool isVisible;
     
-    DAVA::UIWebView& uiWebView;
+    UIWebView& uiWebView;
     
     static int runScriptID;
 };
