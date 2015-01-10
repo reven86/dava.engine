@@ -87,7 +87,7 @@ public:
     uint32 GetComponentCount();
     uint32 GetComponentCount(uint32 componentType);
     
-    inline uint32 GetAvailableComponentFlags();
+    inline uint64 GetAvailableComponentFlags();
 
 
 	// working with childs
@@ -372,7 +372,6 @@ protected:
 
     String RecursiveBuildFullName(Entity * node, Entity * endNode);
 
-//    virtual Entity* CopyDataTo(Entity *dstNode);
 	void SetParent(Entity * node);
 
 	Scene * scene;
@@ -387,8 +386,7 @@ protected:
 private:
         
 	Vector<Component *> components;
-    uint32 componentFlags;
-    uint32 componentUpdateMarks;
+    uint64 componentFlags;
     
 #if defined(COMPONENT_STORAGE_STDMAP)
 
@@ -411,9 +409,6 @@ public:
         MEMBER( flags, "Flags", I_SAVE | I_VIEW | I_EDIT )
 
         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-
-		//COLLECTION(components, "Components", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-		//COLLECTION(children, "Children nodes", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
     );
 };
 	
@@ -521,7 +516,7 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Compo
     }	
 }
 
-uint32 Entity::GetAvailableComponentFlags()
+uint64 Entity::GetAvailableComponentFlags()
 {
     return componentFlags;
 }
