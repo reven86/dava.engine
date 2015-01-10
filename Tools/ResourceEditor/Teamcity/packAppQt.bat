@@ -30,5 +30,6 @@ xcopy /e ..\..\..\..\dava.resourceeditor.beast\*.* app\ResourceEditor\dava.resou
 xcopy ..\..\..\..\dava.framework\Libs\fmod\bin\fmodex.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\..\..\..\dava.framework\Libs\fmod\bin\fmod_event.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 xcopy ..\..\..\..\dava.framework\Tools\Bin\IMagickHelper.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
+xcopy ..\..\..\..\dava.framework\Tools\Bin\TextureConverter.dll app\ResourceEditor\dava.framework\Tools\ResourceEditor
 
 wzzip -p -r %1 app\*.*	
