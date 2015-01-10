@@ -117,7 +117,7 @@ bool LocalizationTest::CompareFiles(const FilePath& file1, const FilePath& file2
             read2 = f2->ReadLine(buf2, size);
 
             res &= (read1 == read2);
-            res &= !memcmp(buf1, buf2, read1);
+            res &= !Memcmp(buf1, buf2, read1);
         }
 
         res &= (f1->IsEof() && f2->IsEof());

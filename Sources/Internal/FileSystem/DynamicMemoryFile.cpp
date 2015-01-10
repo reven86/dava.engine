@@ -37,7 +37,6 @@ DynamicMemoryFile * DynamicMemoryFile::Create(const uint8 * data, int32 dataSize
 {
 	DynamicMemoryFile *fl = new DynamicMemoryFile();
 	fl->filename = Format("memoryfile_%p", fl);
-//	fl->filename.InitFromPathname(Format("memoryfile_%p", fl));
 	fl->Write(data, dataSize);
 	fl->fileAttributes = attributes;
 	fl->currentPtr = 0;
@@ -79,6 +78,8 @@ void * DynamicMemoryFile::GetData()
 
 uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 {
+    DVASSERT(NULL != pointerToData);
+
 	if (!(fileAttributes & File::WRITE) && !(fileAttributes & File::APPEND))
 	{
 		return 0;
@@ -99,6 +100,8 @@ uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 
 uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
 {
+    DVASSERT(NULL != pointerToData);
+
 	if (!(fileAttributes & File::READ))
 	{
 		return 0;
@@ -152,24 +155,18 @@ bool DynamicMemoryFile::Seek(int32 position, uint32 seekType)
 
     if (pos < 0)
     {
-	    isEof = true;
 	    return false;
     }
-    if (pos >= (int32)GetSize())
-    {
-        isEof = true;
-        return false;
-    }
 
+    // behavior taken from std::FILE - don't move pointer to less than 0 value
     currentPtr = pos;
+
+    // like in std::FILE
+    // The end-of-file internal indicator of the stream is cleared after a successful call to this function
     isEof = false;
+
     return true;
 	
-}
-
-bool DynamicMemoryFile::IsEof()
-{
-	return isEof;
 }
 	
 };
