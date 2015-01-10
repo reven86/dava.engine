@@ -21,11 +21,9 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            if (sourceProp && sourceProp->GetValue() != member->Value(bg))
-                member->SetValue(bg, sourceProp->GetValue());
             
-            ValueProperty *prop = new ValueProperty(bg, member);
+            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+            ValueProperty *prop = new ValueProperty(bg, member, sourceProp);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -54,7 +52,7 @@ void BackgroundPropertiesSection::CreateControlBackground()
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *prop = new ValueProperty(bg, member);
+            ValueProperty *prop = new ValueProperty(bg, member, NULL);
             AddProperty(prop);
             SafeRelease(prop);
         }

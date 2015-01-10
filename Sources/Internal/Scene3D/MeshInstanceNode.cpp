@@ -171,10 +171,6 @@ uint64 PolygonGroupWithMaterial::GetSortID()
     return 0;
 }
     
-void PolygonGroupWithMaterial::Draw()
-{
-    
-}
 
 MeshInstanceNode::MeshInstanceNode()
 :	Entity()

@@ -41,7 +41,7 @@ void HeightMapValidator::ErrorNotifyInternal(const QVariant &v) const
     QMessageBox::warning(NULL, "Wrong file selected", notifyMessage.c_str(), QMessageBox::Ok);
 }
 
-bool HeightMapValidator::ValidateInternal(QVariant &v)
+bool HeightMapValidator::ValidateInternal(const QVariant &v)
 {
     if(!PathValidator::ValidateInternal(v))
     {

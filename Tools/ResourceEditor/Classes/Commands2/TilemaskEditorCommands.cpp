@@ -214,6 +214,8 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
     Sprite::DrawState drawState;
     drawState.SetRenderState(noBlendDrawState);
 	drawState.SetPosition(0.f, 0.f);
+
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(s, &drawState);
 	SafeRelease(s);
     
@@ -263,6 +265,8 @@ void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
     Sprite::DrawState drawState;
     drawState.SetRenderState(noBlendDrawState);
 	drawState.SetPosition(rect.x, rect.y);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
     
     RenderSystem2D::Instance()->ClipPop();
