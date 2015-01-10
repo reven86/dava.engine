@@ -54,9 +54,9 @@ namespace DAVA
 
 RenderSystem::RenderSystem()
     :   renderPassManager()
+    ,   forceUpdateLights(false)
     ,   mainCamera(0)
     ,   drawCamera(0)
-    ,   forceUpdateLights(false)
     ,   globalMaterial(NULL)
 {
     //mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_FORWARD);

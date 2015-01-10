@@ -38,10 +38,12 @@ class QtPropertyDataValidator
 public:
 
     bool Validate(QVariant &v);
+    
+    virtual ~QtPropertyDataValidator() {};
 
 protected:
     
-    virtual bool ValidateInternal(QVariant &v) = 0;
+    virtual bool ValidateInternal(const QVariant &v) = 0;
     virtual void FixupInternal(QVariant &v) const {};
 
     virtual void ErrorNotifyInternal(const QVariant &v) const {}

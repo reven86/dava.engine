@@ -45,12 +45,12 @@
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
 ,	toolImageSprite(NULL)
-,	originalImage(NULL)
+,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
 ,	colorIndex(0)
+,	editingIsEnabled(false)
+,	originalImage(NULL)
 {
     cursorSize = 120;
 

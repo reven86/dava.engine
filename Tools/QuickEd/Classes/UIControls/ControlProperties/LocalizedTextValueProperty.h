@@ -14,7 +14,7 @@
 class LocalizedTextValueProperty : public ValueProperty
 {
 public:
-    LocalizedTextValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member);
+    LocalizedTextValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty);
     virtual ~LocalizedTextValueProperty();
     
     virtual int GetCount() const override;

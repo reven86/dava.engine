@@ -53,11 +53,11 @@ public:
 			scale = 1;
 		}
 		
-		ScreenInfo(int32 w, int32 h, int32 scale)
+		ScreenInfo(int32 w, int32 h, int32 _scale)
 		{
 			width = w;
 			height = h;
-			scale = scale;
+			scale = _scale;
 		}
 	};
 

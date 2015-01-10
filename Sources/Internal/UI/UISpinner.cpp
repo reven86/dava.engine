@@ -85,19 +85,20 @@ void SpinnerAdapter::DisplaySelectedData(UISpinner * spinner)
     FillScrollableContent(spinner->GetContent(), CURRENT);
 }
     
+    
 UISpinner::UISpinner(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/) 
     : UIControl(rect, rectInAbsoluteCoordinates)
+    , adapter(NULL)
     , buttonNext(new UIButton())
     , buttonPrevious(new UIButton())
     , content(new UIControl())
     , nextContent(new UIControl())
     , contentViewport(new UIControl())
-    , adapter(NULL)
+    , dragAnchorX(X_UNDEFINED)
+    , previousTouchX(X_UNDEFINED)
+    , currentTouchX(X_UNDEFINED)
     , totalGestureTime(0)
     , totalGestureDx(0)
-    , currentTouchX(X_UNDEFINED)
-    , previousTouchX(X_UNDEFINED)
-    , dragAnchorX(X_UNDEFINED)
 {
     buttonNext->SetName(UISPINNER_BUTTON_NEXT_NAME);
     buttonPrevious->SetName(UISPINNER_BUTTON_PREVIOUS_NAME);

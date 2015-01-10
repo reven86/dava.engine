@@ -53,8 +53,8 @@ QtPropertyDataDavaVariant::QtPropertyDataDavaVariant(const DAVA::VariantType &va
 	: curVariantValue(value)
 	, allowedValuesLocked(false)
 	, allowedButton(NULL)
-    , isSettingMeFromChilds(false)
-    , allowedValueType(Default)
+	, allowedValueType(Default)
+	, isSettingMeFromChilds(false)
 {
 	InitFlags();
 	ChildsCreate();
@@ -286,7 +286,6 @@ QVariant QtPropertyDataDavaVariant::GetValueAlias() const
 	{
         if (allowedValueType == TypeFlags)
         {
-            const quint64 val = FromDavaVariant(curVariantValue).toULongLong();
             const QString alias = GetFlagsList().join(" | ");
             ret = alias;
         }

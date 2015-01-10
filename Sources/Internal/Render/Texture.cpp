@@ -197,17 +197,17 @@ void Texture::AddToMap(Texture *tex)
     }
 }
 
-
+    
 Texture::Texture()
 :	id(0)
 ,	width(0)
 ,	height(0)
+,	loadedAsFile(GPU_PNG)
+,	state(STATE_INVALID)
+,	textureType(Texture::TEXTURE_2D)
 ,	depthFormat(DEPTH_NONE)
 ,	isRenderTarget(false)
-,   loadedAsFile(GPU_PNG)
-,	textureType(Texture::TEXTURE_2D)
 ,	isPink(false)
-,	state(STATE_INVALID)
 ,	invalidater(NULL)
 {
 #ifdef __DAVAENGINE_DIRECTX9__
