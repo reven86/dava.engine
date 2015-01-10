@@ -5,32 +5,69 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.CookieManager;
 import android.widget.FrameLayout;
 
 @SuppressLint("UseSparseArrays")
 public class JNIWebView {
 	final static String TAG = "JNIWebView";
+	final static Paint paint = new Paint();
 	static Map<Integer, WebView> views = new HashMap<Integer, WebView>();
 	
 	private static class InternalViewClient extends WebViewClient {
 		int id;
 		
+		// TODO remember back reference to WebView to check isVisible
+		
+		boolean isRenderToTexture = false;
+		
+		public boolean isRenderToTexture() {
+			return isRenderToTexture;
+		}
+
+		public void setRenderToTexture(boolean isRenderToTexture) {
+			this.isRenderToTexture = isRenderToTexture;
+		}
+
 		public InternalViewClient(int _id) {
 			id = _id;
+		}
+		
+		class OnPageLoadedNativeRunnable implements Runnable {
+			int[] pixels;
+			int width;
+			int height;
+			
+			OnPageLoadedNativeRunnable(int[] pixels, int width, int height) {
+				this.pixels = pixels;
+				this.width = width;
+				this.height = height;
+			}
+			
+			@Override
+			public void run() {
+				Log.d(TAG, "id = " + id + " pixels = " + pixels + " width = "
+						+ width + " height = " + height);
+				OnPageLoaded(id, pixels, width, height);
+				Log.d(TAG, "finish onPageLoded");
+			}
 		}
 		
 		@Override
@@ -39,12 +76,57 @@ public class JNIWebView {
 			JNIActivity activity = JNIActivity.GetActivity();
 			if (null == activity || activity.GetIsPausing())
 				return;
-			JNIActivity.GetActivity().PostEventToGL(new Runnable() {
-				@Override
-				public void run() {
-					OnPageLoaded(id);
-				}
-			});
+			int pixels[] = null;
+			int width = 0;
+			int height = 0;
+			
+			if (isRenderToTexture)
+			{
+				// render webview into bitmap and pass it to native code
+				Bitmap bitmap = renderWebViewIntoBitmap(view);
+				width = bitmap.getWidth();
+				height = bitmap.getHeight();
+				pixels = new int[width * height]; 
+				// copy ARGB pixels values into our buffer
+				bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+				Log.d(TAG, "prepare bitmap for webview texture");
+			}
+			
+			JNIActivity.GetActivity().PostEventToGL(
+					new OnPageLoadedNativeRunnable(pixels, width, height));
+		}
+
+		private Bitmap renderWebViewIntoBitmap(WebView view) {
+			assert view != null;
+			assert view.getMeasuredWidth() != 0;
+			assert view.getMeasuredHeight() != 0;
+			
+			int view_width = view.getMeasuredWidth();
+			int view_height = view.getMeasuredHeight();
+			
+			Bitmap bm = Bitmap.createBitmap(view_width,
+                    view_height, Bitmap.Config.ARGB_8888);
+			
+            assert bm != null;
+            Canvas bigcanvas = new Canvas(bm);
+            int height = bm.getHeight();
+            bigcanvas.drawBitmap(bm, 0, height, paint);
+            view.draw(bigcanvas);
+//            try {
+//                String path = Environment.getExternalStorageDirectory()
+//                        .toString();
+//                OutputStream fOut = null;
+//                File file = new File(path, "/test_output.png");
+//                fOut = new FileOutputStream(file);
+//
+//                bm.compress(Bitmap.CompressFormat.PNG, 50, fOut);
+//                fOut.flush();
+//                fOut.close();
+//                bm.recycle();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+            return bm;
 		};
 		
 		
@@ -245,7 +327,7 @@ public class JNIWebView {
 		if (null == activity || activity.GetIsPausing())
 			return;
 
-		activity.runOnUiThread(new Runnable() {			
+		activity.runOnUiThread(new Runnable() {		
 			@Override
 			public void run() {
 				if (!views.containsKey(id))
@@ -387,7 +469,11 @@ public class JNIWebView {
 					return;
 				}
 				WebView view = views.get(id);
-				view.setVisibility(isVisible ? WebView.VISIBLE : WebView.GONE);
+				
+				InternalWebClient internalClient = (InternalWebClient)view.getW
+				
+				int visible = isVisible ? WebView.VISIBLE : WebView.INVISIBLE;
+				view.setVisibility(visible);
 			}
 		});
 	}
@@ -469,6 +555,6 @@ public class JNIWebView {
 	}
 	
 	private static native int OnUrlChange(int id, String url);
-	private static native int OnPageLoaded(int id);
+	private static native int OnPageLoaded(int id, int[] pixels, int width, int height);
 	private static native void OnExecuteJScript(int id, int requestId, String result);
 }
