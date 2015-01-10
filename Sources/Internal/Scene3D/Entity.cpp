@@ -153,7 +153,7 @@ void Entity::AddComponent(Component * component)
 #endif
 	}
 		
-	componentFlags |= ((uint64)1 << (uint64)component->GetType());
+	componentFlags |= (1 << (uint64)component->GetType());
 
 	if (scene)
 		scene->RegisterComponent(this, component);
