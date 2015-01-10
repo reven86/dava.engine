@@ -6,6 +6,13 @@ project               ( UIEditor )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
+if ( MSVC )#tmp hack
+    set( CMAKE_PREFIX_PATH    "${QT4_PATH_WIN}")
+    set( QT_MOC_EXECUTABLE    "${QT4_PATH_WIN}/bin/moc.exe" )
+    set( QT_RCC_EXECUTABLE    "${QT4_PATH_WIN}/bin/rcc.exe" )
+    set( QT_UIC_EXECUTABLE    "${QT4_PATH_WIN}/bin/uic.exe" )
+endif()
+
 find_package          ( Qt4           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 include               ( ${QT_USE_FILE} )
