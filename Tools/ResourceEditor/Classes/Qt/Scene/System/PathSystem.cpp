@@ -268,23 +268,37 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
 
 void PathSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-//    if(command->GetId() == CMDID_INSP_MEMBER_MODIFY)
-//    {
-//        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-//        if (String("Name") == cmd->member->Name())
-//        {
-//            VariantType newValue = (redo) ? cmd->newValue: cmd->oldValue;
-//            VariantType oldValue = (redo) ? cmd->oldValue: cmd->newValue;
-//            
-//            
-//            const DAVA::uint32 count = pathes.size();
-//            for(DAVA::uint32 p = 0; p < count; ++p)
-//            {
-//                const DAVA::PathComponent *pc = DAVA::GetPathComponent(pathes[p]);
-//                
-//            }
-//        }
-//    }
+    if(command->GetId() == CMDID_INSP_MEMBER_MODIFY)
+    {
+        const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+        if (String("name") == cmd->member->Name())
+        {
+            const DAVA::uint32 count = pathes.size();
+            for(DAVA::uint32 p = 0; p < count; ++p)
+            {
+                const DAVA::PathComponent *pc = DAVA::GetPathComponent(pathes[p]);
+
+                if(cmd->object == pc)
+                {
+                    FastName newPathName = (redo) ? cmd->newValue.AsFastName(): cmd->oldValue.AsFastName();
+                    FastName oldPathName = (redo) ? cmd->oldValue.AsFastName(): cmd->newValue.AsFastName();
+                    
+                    const DAVA::uint32 childrenCount = pathes[p]->GetChildrenCount();
+                    for(DAVA::uint32 c = 0; c < childrenCount; ++c)
+                    {
+                        DAVA::WaypointComponent *wp = static_cast<DAVA::WaypointComponent *>(pathes[p]->GetChild(c)->GetComponent(DAVA::Component::WAYPOINT_COMPONENT));
+                        
+                        if(wp && wp->GetPathName() == oldPathName)
+                        {
+                            wp->SetPathName(newPathName);
+                        }
+                    }
+                    
+                    break;
+                }
+            }
+        }
+    }
 }
 
 
