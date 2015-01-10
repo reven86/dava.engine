@@ -38,10 +38,10 @@
 #include "Utils/Utils.h"
 #include "Input/AccelerometerAndroid.h"
 #include "AndroidDelegate.h"
-#include "AndroidCrashReport.h"
+#include "Platform/TemplateAndroid/AndroidCrashReport.h"
 
-#include "JniExtensions.h"
-#include "WebViewControl.h"
+#include "Platform/TemplateAndroid/JniExtensions.h"
+#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 #include "Debug/DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"

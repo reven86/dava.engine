@@ -47,48 +47,49 @@ class WebViewControl : public IWebViewControl
 {
 	friend class JniWebView;
 public:
-	WebViewControl(UIWebView* uiWebViewPtr);
+	WebViewControl(UIWebView& uiWebViewPtr);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
+	void Initialize(const Rect& rect) override;
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
+	void OpenURL(const String& urlToOpen) override;
 	// Load html page from string
-	virtual void LoadHtmlString(const WideString& htmlString);
+	void LoadHtmlString(const WideString& htmlString) override;
 	// Delete all cookies associated with target URL
-	virtual void DeleteCookies(const String& targetUrl);
+	void DeleteCookies(const String& targetUrl) override;
 	// Get cookie for specific domain and name
-	virtual String GetCookie(const String& url, const String& name) const;
+	String GetCookie(const String& url, const String& name) const override;
 	// Get the list of cookies for specific domain
-	virtual Map<String, String> GetCookies(const String& url) const;
+	Map<String, String> GetCookies(const String& url) const override;
 	// Perform Java script
-	virtual int32 ExecuteJScript(const String& scriptString);
+	int32 ExecuteJScript(const String& scriptString) override;
 	
-	void OpenFromBuffer(const String& string, const FilePath& basePath);
+	void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 
 	// Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
+	void SetRect(const Rect& rect) override;
+	void SetVisible(bool isVisible, bool hierarchic) override;
 
-	virtual void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
-	virtual void SetBackgroundTransparency(bool enabled);
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView*) override;
+	void SetBackgroundTransparency(bool enabled) override;
 
 	void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
 
-    UIWebView* GetUIWebView() const
+    UIWebView& GetUIWebView() const
     {
     	return webView;
     }
 
 private:
-	static int32 webViewIdCount;
 	int32 webViewId;
 	IUIWebViewDelegate *delegate;
-	UIWebView* webView;
+	UIWebView& webView;
+
 	static int32 requestId;
+	static int32 webViewIdCount;
 };
 
 class JniWebView: public JniExtension

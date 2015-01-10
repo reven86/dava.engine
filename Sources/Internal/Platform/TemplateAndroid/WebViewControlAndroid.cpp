@@ -229,7 +229,7 @@ IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 	if (!delegate)
 		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 
-	return delegate->URLChanged(control->webView, newURL, true);
+	return delegate->URLChanged(&control->webView, newURL, true);
 }
 
 void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
@@ -245,18 +245,18 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
 	IUIWebViewDelegate *delegate = control->delegate;
 	if (delegate)
 	{
-		delegate->PageLoaded(control->webView);
+		delegate->PageLoaded(&control->webView);
 	}
 
 	// TODO
-	UIWebView* webView = control->GetUIWebView();
-	if (webView && rawPixels)
+	UIWebView& webView = control->GetUIWebView();
+	if (rawPixels)
 	{
 		Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888, reinterpret_cast<uint8*>(rawPixels), width, height, false);
-		Rect rect = webView->GetRect();
+		Rect rect = webView.GetRect();
 		Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx, rect.dy);
-		webView->GetBackground()->SetSprite(spr, 0);
-		webView->SetDebugDraw(true);
+		webView.GetBackground()->SetSprite(spr, 0);
+		webView.SetDebugDraw(true);
 		SafeRelease(spr);
 		SafeRelease(tex);
 	}
@@ -275,11 +275,11 @@ void JniWebView::OnExecuteJScript(int id, int requestId, const String& result)
 	IUIWebViewDelegate *delegate = control->delegate;
 	if (delegate)
 	{
-		delegate->OnExecuteJScript(control->webView, requestId, result);
+		delegate->OnExecuteJScript(&control->webView, requestId, result);
 	}
 }
 
-WebViewControl::WebViewControl(UIWebView* uiWebViewPtr):
+WebViewControl::WebViewControl(UIWebView& uiWebViewPtr):
 		webView(uiWebViewPtr)
 {
 	delegate = nullptr;
@@ -356,10 +356,9 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 	jniWebView.SetVisible(webViewId, isVisible);
 }
 
-void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)
+void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, UIWebView*)
 {
-	this->delegate = delegate;
-	this->webView = webView;
+    this->delegate = delegate;
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
