@@ -76,9 +76,6 @@ void WayEditSystem::Process(DAVA::float32 timeElapsed)
 {
     if (isEnabled)
     {
-        // draw this collision point
-        collisionSystem->SetDrawMode(collisionSystem->GetDrawMode() | CS_DRAW_LAND_COLLISION);
-        
         ProcessSelection();
     }
 }
