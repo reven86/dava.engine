@@ -77,7 +77,7 @@ void CullingSystem::SetCamera(Camera * _camera)
     camera = _camera;
 }
     
-void CullingSystem::Process()
+void CullingSystem::Process(float32 timeElapsed)
 {
     int32 objectsCulled = 0;
     

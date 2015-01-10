@@ -464,6 +464,8 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 
     if (landscapeEditorDrawSystem)
         landscapeEditorDrawSystem->ProcessCommand(command, redo);
+    
+    pathSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity( Entity *editorEntity )

@@ -44,6 +44,7 @@ WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selecti
 , isEnabled(false)
 , selectionSystem(_selectionSystem)
 , collisionSystem(_collisionSystem)
+, underCursorPathEntity(NULL)
 {
     wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
         DAVA::RenderStateData::STATE_COLORMASK_ALL |
@@ -75,9 +76,6 @@ void WayEditSystem::Process(DAVA::float32 timeElapsed)
 {
     if (isEnabled)
     {
-        // draw this collision point
-        collisionSystem->SetDrawMode(collisionSystem->GetDrawMode() | CS_DRAW_LAND_COLLISION);
-        
         ProcessSelection();
     }
 }
@@ -87,6 +85,8 @@ void WayEditSystem::ResetSelection()
 {
     selectedWaypoints.Clear();
     prevSelectedWaypoints.Clear();
+    
+    underCursorPathEntity = NULL;
 }
 
 void WayEditSystem::ProcessSelection()
@@ -115,10 +115,22 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
 {
     if (isEnabled)
     {
-        // process incoming event
-        if (event->phase == DAVA::UIEvent::PHASE_ENDED && event->tid == DAVA::UIEvent::BUTTON_1)
+        if((DAVA::UIEvent::BUTTON_1 == event->tid) && (DAVA::UIEvent::PHASE_MOVE == event->phase))
         {
-            
+            underCursorPathEntity = NULL;
+            const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
+            if (NULL != collObjects && collObjects->Size() > 0)
+            {
+                DAVA::Entity *underEntity = collObjects->GetEntity(0);
+                if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT))
+                {
+                    underCursorPathEntity = underEntity;
+                }
+            }
+        }
+        
+        if ((DAVA::UIEvent::PHASE_ENDED == event->phase) && (DAVA::UIEvent::BUTTON_1 == event->tid))
+        {
             int curKeyModifiers = QApplication::keyboardModifiers();
             if(0 == (curKeyModifiers & Qt::ShiftModifier))
             {   //we need use shift key to add waypoint or edge
@@ -266,32 +278,25 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-//    int id = command->GetId();
-//
-//    switch (id)
-//    {
-//        case CMDID_COMPONENT_ADD:
-//        case CMDID_COMPONENT_REMOVE:
-//        case CMDID_ENTITY_ADD:
-//        case CMDID_ENTITY_REMOVE:
-//        case CMDID_ENTITY_CHANGE_PARENT:
-//            ResetSelection();
-//            ProcessSelection();
-//            break;
-//            
-//        default:
-//            break;
-//    }
-    
 }
 
 
 void WayEditSystem::Draw()
 {
+    const EntityGroup & group = (currentSelection.Size()) ? currentSelection : prevSelectedWaypoints;
+
     const uint32 count = waypointEntities.size();
     for(uint32 i = 0; i < count; ++i)
     {
         Entity *e = waypointEntities[i];
+        Entity *path = e->GetParent();
+        DVASSERT(path);
+        
+        if(!e->GetVisible() || !path->GetVisible())
+        {
+            continue;
+        }
+        
 
         RenderManager::SetDynamicParam(PARAM_WORLD, &e->GetWorldTransform(), (pointer_size)&e->GetWorldTransform());
         
@@ -300,7 +305,12 @@ void WayEditSystem::Draw()
         float32 redValue = 0.0f;
         float32 greenValue = 0.0f;
         
-        if(currentSelection.HasEntity(e))
+        if(e == underCursorPathEntity)
+        {
+            redValue = 0.6f;
+            greenValue = 0.6f;
+        }
+        else if(group.HasEntity(e))
         {
             redValue = 1.0f;
         }
@@ -309,7 +319,7 @@ void WayEditSystem::Draw()
             greenValue = 1.0f;
         }
         
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, 0.0f, 0.5f));
+        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, 0.0f, 0.3f));
         DAVA::RenderHelper::Instance()->FillBox(worldBox, wayDrawState);
         DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, 0.0f, 1.0f));
         DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, wayDrawState);

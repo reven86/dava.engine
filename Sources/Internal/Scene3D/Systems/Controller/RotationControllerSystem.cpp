@@ -49,9 +49,9 @@ const float32 RotationControllerSystem::maxViewAngle = 89.0f;
     
 RotationControllerSystem::RotationControllerSystem(Scene * scene)
     : SceneSystem(scene)
-    , rotationSpeed(0.15f)
     , curViewAngleZ(0)
     , curViewAngleY(0)
+    , rotationSpeed(0.15f)
     , oldCamera(NULL)
 {
     inputCallback = new InputCallback(this, &RotationControllerSystem::Input, InputSystem::INPUT_DEVICE_TOUCH);

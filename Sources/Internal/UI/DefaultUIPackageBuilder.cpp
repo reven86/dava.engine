@@ -132,7 +132,7 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &cu
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
 {
-    UIControl *prototype;
+    UIControl *prototype = NULL;
     if (packageName.empty())
     {
         prototype = package->GetControl(prototypeName);

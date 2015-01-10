@@ -60,12 +60,19 @@ public:
 protected:
     
     void Draw();
+    void DrawInEditableMode();
+    void DrawInViewOnlyMode();
+    void DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish);
+    
+    
+    void ProcessCommand(const Command2 *command, bool redo);
+
+    
+    DAVA::Color GetPathColor(DAVA::Entity *path);
     SceneEditor2* GetSceneEditor() const;
     
     
     DAVA::UniqueHandle pathDrawState;
-
-    
     
     DAVA::Vector<DAVA::Entity *> pathes;
    

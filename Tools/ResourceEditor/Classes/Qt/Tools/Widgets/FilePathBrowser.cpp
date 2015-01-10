@@ -17,8 +17,8 @@ namespace
 
 FilePathBrowser::FilePathBrowser(QWidget* parent)
     : LineEditEx(parent)
-    , allowInvalidPath(false)
     , iconCache(2)
+    , allowInvalidPath(false)
 {
     InitButtons();
 

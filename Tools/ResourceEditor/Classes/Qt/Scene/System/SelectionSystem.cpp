@@ -49,14 +49,14 @@ ENUM_DECLARE(SelectionSystemDrawMode)
 
 SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys)
 	: DAVA::SceneSystem(scene)
-    , selectionAllowed(true)
-    , componentMaskForSelection(ALL_COMPONENTS_MASK)
-    , applyOnPhaseEnd(false)
-    , invalidSelectionBoxes(false)
+	, selectionAllowed(true)
+	, componentMaskForSelection(ALL_COMPONENTS_MASK)
+	, applyOnPhaseEnd(false)
+	, invalidSelectionBoxes(false)
 	, collisionSystem(collSys)
 	, hoodSystem(hoodSys)
 	, selectionHasChanges(false)
-    , curPivotPoint(ST_PIVOT_COMMON_CENTER)
+	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
 {
     DAVA::RenderStateData selectionStateData;
     DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, selectionStateData);
@@ -300,25 +300,27 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 {
-	if(!IsLocked())
-	{
-		if(NULL != entity)
-		{
-			EntityGroupItem selectableItem;
+    if(IsEntitySelectable(entity) && !curSelections.HasEntity(entity))
+    {
+        EntityGroupItem selectableItem;
+        
+        selectableItem.entity = entity;
+        selectableItem.bbox = GetSelectionAABox(entity);
+        curSelections.Add(selectableItem);
+        
+        selectionHasChanges = true;
+        UpdateHoodPos();
+    }
+}
 
-			selectableItem.entity = entity;
-			selectableItem.bbox = GetSelectionAABox(entity);
-
-			if(!curSelections.HasEntity(entity) && (componentMaskForSelection & entity->GetAvailableComponentFlags()))
-			{
-				curSelections.Add(selectableItem);
-
-				selectionHasChanges = true;
-			}
-		}
-
-		UpdateHoodPos();
-	}
+bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity)
+{
+    if(!IsLocked() && entity)
+    {
+        return (componentMaskForSelection & entity->GetAvailableComponentFlags());
+    }
+    
+    return false;
 }
 
 void SceneSelectionSystem::RemSelection(DAVA::Entity *entity)
@@ -350,6 +352,8 @@ void SceneSelectionSystem::Clear()
 
 			selectionHasChanges = true;
 		}
+
+        UpdateHoodPos();
 	}
 }
 

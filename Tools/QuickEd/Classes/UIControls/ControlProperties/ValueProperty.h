@@ -16,7 +16,7 @@ class SubValueProperty;
 class ValueProperty : public BaseProperty
 {
 public:
-    ValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member);
+    ValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty);
     virtual ~ValueProperty();
     
     virtual int GetCount() const override;

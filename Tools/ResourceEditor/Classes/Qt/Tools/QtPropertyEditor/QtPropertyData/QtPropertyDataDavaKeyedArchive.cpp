@@ -45,8 +45,8 @@
 
 QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(DAVA::KeyedArchive *_archive)
 	: archive(_archive)
-	, lastAddedType(DAVA::VariantType::TYPE_STRING)
 	, lastCommand(NULL)
+	, lastAddedType(DAVA::VariantType::TYPE_STRING)
 {
 	if(NULL != archive)
 	{
