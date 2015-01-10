@@ -46,19 +46,27 @@ else   ()
     
 endif  ()
 
+set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
-if( NOT EXISTS "${DAVA_ROOT_DIR}/DavaConfig.in")
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaConfigTemplate.in
-                    ${DAVA_ROOT_DIR}/DavaConfig.in COPYONLY )
+if( CUSTOM_DAVA_CONFIG_PATH  )
+    set( DAVA_CONFIG_PATH ${CUSTOM_DAVA_CONFIG_PATH} )
+
+else()
+    set( DAVA_CONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR}/config.in )
+    
+    if( NOT EXISTS "${DAVA_ROOT_DIR}/DavaConfig.in")
+        configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaConfigTemplate.in
+                        ${DAVA_ROOT_DIR}/DavaConfig.in COPYONLY )
+
+    endif()
+
+    configure_file( ${DAVA_ROOT_DIR}/DavaConfig.in 
+                    ${DAVA_CONFIG_PATH} )
 
 endif()
 
-set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
-configure_file( ${DAVA_ROOT_DIR}/DavaConfig.in 
-                ${CMAKE_CURRENT_BINARY_DIR}/config.in )
-
-file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/config.in ConfigContents )
+file( STRINGS ${DAVA_CONFIG_PATH} ConfigContents )
 foreach(NameAndValue ${ConfigContents})
   string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
   string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
