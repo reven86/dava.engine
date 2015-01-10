@@ -817,15 +817,7 @@ void SceneTree::SyncSelectionFromTree()
 			for (int i = 0; i < indexList.size(); ++i)
 			{
 				DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
-
-				if(curScene->selectionSystem->IsEntitySelectable(entity))
-				{
-					curScene->selectionSystem->AddSelection(entity);
-				}
-                else
-                {
-                    //ignore selection
-                }
+                curScene->selectionSystem->AddSelection(entity);
 			}
 
 			// force selection system emit signals about new selection
@@ -848,60 +840,62 @@ void SceneTree::EmitParticleSignals(const QItemSelection & selected)
 	if(selected.size() == 1) 
 	{
 		QModelIndexList indexList = selectionModel()->selection().indexes();
-		SceneTreeItem *item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[0]));
-
-		if(NULL != item)
-		{
-			switch(item->ItemType())
-			{
-			case SceneTreeItem::EIT_Entity:
-				{
-					DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
-					if(NULL != DAVA::GetEffectComponent(entity))
-					{
-						SceneSignals::Instance()->EmitEffectSelected(curScene, GetEffectComponent(entity));
-						isParticleElements = true;
-					}
-				}
-				break;
-			case SceneTreeItem::EIT_Emitter:
-                curScene->particlesSystem->SetEmitterSelected(((SceneTreeItemParticleEmitter *) item)->effect->GetEntity(), ((SceneTreeItemParticleEmitter *) item)->emitter);
-                emitterSelected = true;
-			case SceneTreeItem::EIT_InnerEmitter:				
-				SceneSignals::Instance()->EmitEmitterSelected(curScene, ((SceneTreeItemParticleEmitter *) item)->effect, ((SceneTreeItemParticleEmitter *) item)->emitter);
-					isParticleElements = true;
-				break;
-			case SceneTreeItem::EIT_Layer:
-				{
-					SceneTreeItemParticleLayer *itemLayer = (SceneTreeItemParticleLayer *) item;
-					if(NULL != itemLayer->emitter && NULL != itemLayer->layer)
-					{
-						SceneSignals::Instance()->EmitLayerSelected(curScene, itemLayer->effect, itemLayer->emitter, itemLayer->layer, false);
-						isParticleElements = true;
-					}
-				}
-				break;
-			case SceneTreeItem::EIT_Force:
-				{
-					SceneTreeItemParticleForce *itemForce = (SceneTreeItemParticleForce *) item;
-					DAVA::ParticleLayer* layer = itemForce->layer;
-					if(NULL != layer)
-					{
-						for(int i = 0; i < (int) layer->forces.size(); ++i)
-						{
-							if(layer->forces[i] == itemForce->force)
-							{
-								SceneSignals::Instance()->EmitForceSelected(curScene, layer, i);
-								isParticleElements = true;
-
-								break;
-							}
-						}
-					}
-				}
-				break;
-			}
-		}
+        if(indexList.size())
+        {
+            SceneTreeItem *item = treeModel->GetItem(filteringProxyModel->mapToSource(indexList[0]));
+            if(NULL != item)
+            {
+                switch(item->ItemType())
+                {
+                    case SceneTreeItem::EIT_Entity:
+                    {
+                        DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
+                        if(NULL != DAVA::GetEffectComponent(entity))
+                        {
+                            SceneSignals::Instance()->EmitEffectSelected(curScene, GetEffectComponent(entity));
+                            isParticleElements = true;
+                        }
+                    }
+                        break;
+                    case SceneTreeItem::EIT_Emitter:
+                        curScene->particlesSystem->SetEmitterSelected(((SceneTreeItemParticleEmitter *) item)->effect->GetEntity(), ((SceneTreeItemParticleEmitter *) item)->emitter);
+                        emitterSelected = true;
+                    case SceneTreeItem::EIT_InnerEmitter:
+                        SceneSignals::Instance()->EmitEmitterSelected(curScene, ((SceneTreeItemParticleEmitter *) item)->effect, ((SceneTreeItemParticleEmitter *) item)->emitter);
+                        isParticleElements = true;
+                        break;
+                    case SceneTreeItem::EIT_Layer:
+                    {
+                        SceneTreeItemParticleLayer *itemLayer = (SceneTreeItemParticleLayer *) item;
+                        if(NULL != itemLayer->emitter && NULL != itemLayer->layer)
+                        {
+                            SceneSignals::Instance()->EmitLayerSelected(curScene, itemLayer->effect, itemLayer->emitter, itemLayer->layer, false);
+                            isParticleElements = true;
+                        }
+                    }
+                        break;
+                    case SceneTreeItem::EIT_Force:
+                    {
+                        SceneTreeItemParticleForce *itemForce = (SceneTreeItemParticleForce *) item;
+                        DAVA::ParticleLayer* layer = itemForce->layer;
+                        if(NULL != layer)
+                        {
+                            for(int i = 0; i < (int) layer->forces.size(); ++i)
+                            {
+                                if(layer->forces[i] == itemForce->force)
+                                {
+                                    SceneSignals::Instance()->EmitForceSelected(curScene, layer, i);
+                                    isParticleElements = true;
+                                    
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                        break;
+                }
+            }
+        }
 	}
 
     if (!emitterSelected)

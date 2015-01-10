@@ -815,6 +815,24 @@ int SceneTreeModel::GetDropType(const QMimeData *data) const
 	return ret;
 }
 
+
+Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
+{
+    const Qt::ItemFlags f = QStandardItemModel::flags(index);
+    
+    DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
+    if(NULL != entity)
+    {
+        if(!curScene->selectionSystem->IsEntitySelectable(entity))
+        {
+            return (f & ~Qt::ItemIsSelectable);
+        }
+    }
+    
+    return f;
+}
+
+
 SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QObject *parent /* = NULL */)
 	: QSortFilterProxyModel(parent)
 	, treeModel(_treeModel)
@@ -856,3 +874,5 @@ QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) cons
 
     return val;
 }
+
+
