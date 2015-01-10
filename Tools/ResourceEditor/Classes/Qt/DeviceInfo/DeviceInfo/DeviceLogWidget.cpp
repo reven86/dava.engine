@@ -11,7 +11,7 @@ DeviceLogWidget::DeviceLogWidget(QWidget *parent)
 {
     ui->setupUi(this);
 
-    ui->logger->SetUseSettings(false);
+    ui->logger->SetRegisterLoggerAsLocal(false);
 }
 
 DeviceLogWidget::~DeviceLogWidget() {}

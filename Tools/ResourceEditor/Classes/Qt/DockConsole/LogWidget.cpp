@@ -31,7 +31,7 @@ LogWidget::LogWidget(QWidget* parent)
     , doAutoScroll(true)
     , eventSkipper(new QTimer(this))
     , scrollStateDetected(false)
-    , useSettings(true)
+    , registerLoggerAsLocal( true )
 {
     ui->setupUi(this);
 
@@ -62,8 +62,6 @@ LogWidget::LogWidget(QWidget* parent)
     connect(ui->log->model(), SIGNAL( modelReset() ), eventSkipper, SLOT( start() ));
     connect(eventSkipper, SIGNAL( timeout() ), SLOT( DoAutoScroll() ) );
 
-    DAVA::Logger::AddCustomOutput(logModel);
-
     QMetaObject::invokeMethod( this, "LoadSettings", Qt::QueuedConnection );
     QMetaObject::invokeMethod( this, "OnFilterChanged", Qt::QueuedConnection );
 }
@@ -71,12 +69,11 @@ LogWidget::LogWidget(QWidget* parent)
 LogWidget::~LogWidget()
 {
     SaveSettings();
-    DAVA::Logger::RemoveCustomOutput(logModel);
 }
 
-void LogWidget::SetUseSettings(bool use)
+void LogWidget::SetRegisterLoggerAsLocal( bool isLocal )
 {
-    useSettings = use;
+    registerLoggerAsLocal = isLocal;
 }
 
 LogModel* LogWidget::Model()
@@ -129,7 +126,7 @@ void LogWidget::FillFiltersCombo()
 
 void LogWidget::LoadSettings()
 {
-    if (!useSettings)
+    if (!registerLoggerAsLocal)
         return;
 
     DAVA::VariantType v = SettingsManager::Instance()->GetValue(Settings::Internal_LogLevelFilter);
@@ -149,8 +146,10 @@ void LogWidget::LoadSettings()
 
 void LogWidget::SaveSettings()
 {
-    if ( !useSettings )
+    if (!registerLoggerAsLocal)
         return;
+
+    DAVA::Logger::RemoveCustomOutput(logModel);
 
     const QList<QVariant>& selection = ui->filter->GetSelectedUserData();
     const int n = selection.size();

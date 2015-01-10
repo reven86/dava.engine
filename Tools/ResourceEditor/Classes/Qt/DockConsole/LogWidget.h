@@ -27,7 +27,7 @@ public:
     explicit LogWidget(QWidget* parent = NULL);
     ~LogWidget();
 
-    void SetUseSettings(bool use);
+    void SetRegisterLoggerAsLocal(bool isLocal);
     LogModel *Model();
 
 private slots:
@@ -50,7 +50,7 @@ private:
     QPointer<QTimer> eventSkipper;
     bool doAutoScroll;
     bool scrollStateDetected;
-    bool useSettings;
+    bool registerLoggerAsLocal;
 };
 
 
