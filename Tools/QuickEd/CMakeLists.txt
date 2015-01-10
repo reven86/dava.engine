@@ -6,9 +6,8 @@ project               ( QuickEd )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
-find_package          ( Qt4           REQUIRED )
+find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
-include               ( ${QT_USE_FILE} )
 
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
@@ -36,13 +35,13 @@ set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 
 
 file              ( GLOB_RECURSE QT_LIST "Classes/*.h" )
-qt4_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
+qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
 file              ( GLOB UI_LIST "Ui/*.ui" )
-qt4_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
+qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
 file              ( GLOB RCC_LIST "Data/*.qrc" )
-qt4_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
+qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 set               ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set               ( UiList       ${UI_LIST} )
@@ -50,7 +49,7 @@ set               ( UiList       ${UI_LIST} )
 define_source_folders          ( SRC_ROOT "Classes" GLOB_ERASE_FOLDERS "_build" )
 add_subdirectory               ( "${CMAKE_CURRENT_LIST_DIR}/../../Sources/Tools" ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 generate_source_groups_project (  SRC_ROOT "Classes" GROUP_FOLDERS Generated UiList )
- 
+
 
 if( APPLE )
 
@@ -129,17 +128,20 @@ elseif ( MSVC )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
 
     set( DAVA_PATH  "${DAVA_TOOLS_BIN_DIR};${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin" )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor_QT4.in
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor_QT5.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
-    if( OUTPUT_TO_BUILD_DIR )
-        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
-        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-     endif()
+    set( OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/$(Configuration)" )
+    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
+    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+endif()
 
+get_filename_component(version_file "../../gitTime.txt" ABSOLUTE)
+if( EXISTS ${version_file})
+    file (STRINGS ${version_file} BUILD_VERION)
+    add_definitions( -DUI_EDITOR_VERSION=\"${BUILD_VERION}\" )   
 endif()
 
 target_link_libraries( ${PROJECT_NAME}

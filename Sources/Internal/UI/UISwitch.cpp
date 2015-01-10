@@ -52,9 +52,9 @@ public:
     TogglePositionAnimation(bool _isCausedByTap, UISwitch * _uiSwitch, float32 * _var, float32 _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
         : LinearAnimation(_uiSwitch->GetToggle(), _var, _endValue, _animationTimeLength, _iType)
         , uiSwitch(SafeRetain(_uiSwitch))
-        , centerPos(0.f)
-        , centerNotPassed(_isCausedByTap) //center is not yet passed by in this case
         , isFromLeftToRight(false)
+        , centerNotPassed(_isCausedByTap) //center is not yet passed by in this case
+        , centerPos(0.f)
     {
         if (_isCausedByTap) //toggle is on opposite side from _endValue, we can calculate center
         {

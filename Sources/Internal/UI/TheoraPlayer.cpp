@@ -53,16 +53,17 @@ struct TheoraData
     ogg_int64_t         videoBufGranulePos;
 };
     
-TheoraPlayer::TheoraPlayer(const FilePath & _filePath) :
-isPlaying(false),
-theora_p(0),
-isVideoBufReady(false),
-videoTime(0),
-isRepeat(false),
-currFrameTime(0),
-frameTime(0),
-file(0),
-frameBuffer(0)
+    
+TheoraPlayer::TheoraPlayer(const FilePath & _filePath)
+    : currFrameTime(0)
+    , frameTime(0)
+    , videoTime(0)
+    , file(0)
+    , frameBuffer(0)
+    , theora_p(0)
+    , isVideoBufReady(false)
+    , isPlaying(false)
+    , isRepeat(false)
 {
     theoraData = new TheoraData();
     theoraData->thSetup = 0;

@@ -90,8 +90,8 @@ FMODFileSoundEvent * FMODFileSoundEvent::CreateWithFlags(const FilePath & fileNa
     
 FMODFileSoundEvent::FMODFileSoundEvent(const FilePath & _fileName, uint32 _flags, int32 _priority) :
     fileName(_fileName),
-    flags(_flags),
     priority(_priority),
+    flags(_flags),
     fmodSound(0),
     fmodInstanceGroup(0)
 {

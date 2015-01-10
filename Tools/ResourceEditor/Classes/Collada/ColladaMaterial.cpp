@@ -120,7 +120,6 @@ ColladaMaterial::ColladaMaterial( ColladaScene * scene, FCDMaterial * _material 
 	diffuseTexture = 0;
 
 	// diffuse texture
-    int32 diffuseChannelCount = standardProfile->GetTextureCount(FUDaeTextureChannel::DIFFUSE);
 	if (standardProfile->GetTextureCount(FUDaeTextureChannel::DIFFUSE) > 0) 
 	{
 		FCDTexture * texture = standardProfile->GetTexture(FUDaeTextureChannel::DIFFUSE, 0);

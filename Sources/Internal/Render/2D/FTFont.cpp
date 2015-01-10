@@ -256,10 +256,11 @@ FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b)
 }
     
 FTInternalFont::FTInternalFont(const FilePath & path)
-:	face(NULL),
-	fontPath(path),
-    streamFont(),
-	fontFile(NULL)
+: fontPath(path)
+, streamFont()
+, fontFile(NULL)
+, face(NULL)
+	
 {
     FilePath pathName(path);
     pathName.ReplaceDirectory(path.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
