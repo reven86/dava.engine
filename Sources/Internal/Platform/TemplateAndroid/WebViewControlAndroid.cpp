@@ -28,11 +28,11 @@
 
 
 
-#include "WebViewControl.h"
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 
 #include "Render/Texture.h"
 #include "Render/2D/Sprite.h"

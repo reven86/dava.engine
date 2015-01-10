@@ -29,7 +29,7 @@
 
 
 #include "AndroidLayer.h"
-#include "Platform/TemplateAndroid/WebViewControl.h"
+#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 
 extern "C"
 {
