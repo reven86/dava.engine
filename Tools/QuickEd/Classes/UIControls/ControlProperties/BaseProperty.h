@@ -30,6 +30,12 @@ public:
         EF_ADD_REMOVE = 1 << 1,
     };
     
+    enum eCopyType
+    {
+        COPY_VALUES,
+        COPY_FULL
+    };
+    
 public:
     BaseProperty();
     virtual ~BaseProperty();

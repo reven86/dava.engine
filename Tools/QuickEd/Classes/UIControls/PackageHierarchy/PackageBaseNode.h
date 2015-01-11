@@ -16,8 +16,10 @@ public:
 
 public:
     PackageBaseNode(PackageBaseNode *parent);
+protected:
     virtual ~PackageBaseNode();
-    
+
+public:
     virtual int GetCount() const = 0;
     virtual PackageBaseNode *Get(int index) const = 0;
     int GetIndex(PackageBaseNode *node) const;
