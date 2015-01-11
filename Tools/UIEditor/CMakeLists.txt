@@ -11,7 +11,7 @@ if ( MSVC )#tmp hack
     set( QT_MOC_EXECUTABLE    "${QT4_PATH_WIN}/bin/moc.exe" )
     set( QT_RCC_EXECUTABLE    "${QT4_PATH_WIN}/bin/rcc.exe" )
     set( QT_UIC_EXECUTABLE    "${QT4_PATH_WIN}/bin/uic.exe" )
-    
+    set( QT_BINARY_DIR        "${QT4_PATH_WIN}/bin"         )
     message ( "QT4_PATH_WIN      -"  ${QT4_PATH_WIN}      )
     message ( "QT_MOC_EXECUTABLE -"  ${QT_MOC_EXECUTABLE} )
     message ( "QT_RCC_EXECUTABLE -"  ${QT_RCC_EXECUTABLE} )
@@ -143,7 +143,7 @@ elseif ( MSVC )
 
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )    
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
-
+    
     set( DAVA_PATH  "${DAVA_TOOLS_BIN_DIR};${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin" )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor_QT4.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
