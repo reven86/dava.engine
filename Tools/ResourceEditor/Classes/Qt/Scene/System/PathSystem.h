@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Scene/System/SelectionSystem.h"
 
+class SceneEditor2;
 class PathSystem: public DAVA::SceneSystem
 {
     friend class SceneEditor2;

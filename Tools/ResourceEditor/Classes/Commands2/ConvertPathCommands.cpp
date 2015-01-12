@@ -90,12 +90,14 @@ ExpandPathCommand::~ExpandPathCommand()
 {
 	SafeRelease(parentEntity);
 
-    MapWaypoint2Entity::const_iterator it = mapWaypoint2Entity.begin();
-    MapWaypoint2Entity::const_iterator mapEnd = mapWaypoint2Entity.end();
+    MapWaypoint2Entity::iterator it = mapWaypoint2Entity.begin();
+    MapWaypoint2Entity::iterator mapEnd = mapWaypoint2Entity.end();
     for (; it != mapEnd; ++it)
     {
-        SafeRelease((DAVA::Entity*)it->second);
+        SafeRelease(it->second);
     }
+    
+    mapWaypoint2Entity.clear();
 }
 
 DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent::Waypoint* waypoint, const DAVA::FastName & name)
