@@ -56,6 +56,10 @@
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
 
+#include "Classes/Qt/Main/mainwindow.h"
+#include "ui_mainwindow.h"
+
+
 DavaGLWidget::DavaGLWidget(QWidget *parent)
 	: QWidget(parent)
 	, maxFPS(60)
@@ -104,6 +108,14 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 	// start render
 	QTimer::singleShot(0, this, SLOT(Render()));
+
+    // Debug TODO: remove
+    QTimer::singleShot( 0, this, SLOT( Debug() ) );
+}
+
+void DavaGLWidget::Debug()
+{
+    QtMainWindow::Instance()->GetUI()->dockProperties->installEventFilter( this );
 }
 
 DavaGLWidget::~DavaGLWidget()
@@ -178,6 +190,74 @@ bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, lon
 	return false;
 }
 
+bool DavaGLWidget::eventFilter( QObject* watched, QEvent* e )
+{
+    switch ( e->type() )
+    {
+    case QEvent::MouseButtonPress:
+        qDebug() << "QEvent::MouseButtonPress";
+        break;
+    case QEvent::MouseButtonRelease:
+        qDebug() << "QEvent::MouseButtonRelease";
+        break;
+    case QEvent::Show:
+        qDebug() << "QEvent::Show";
+        break;
+    case QEvent::Hide:
+        qDebug() << "QEvent::Hide";
+        break;
+    case QEvent::ShowToParent:
+        qDebug() << "QEvent::ShowToParent";
+        break;
+    case QEvent::HideToParent:
+        qDebug() << "QEvent::HideToParent";
+        break;
+    case QEvent::NonClientAreaMouseButtonPress:
+        qDebug() << "QEvent::NonClientAreaMouseButtonPress";
+        break;
+    case QEvent::NonClientAreaMouseButtonRelease:
+        qDebug() << "QEvent::NonClientAreaMouseButtonRelease";
+        break;
+    case QEvent::ZOrderChange:
+        qDebug() << "QEvent::ZOrderChange";
+        break;
+    case QEvent::WinIdChange:
+        qDebug() << "QEvent::WinIdChange";
+        break;
+    case QEvent::Destroy:
+    case QEvent::NonClientAreaMouseMove:
+    case QEvent::InputMethodQuery:
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+    case QEvent::MouseMove:
+    case QEvent::Move:
+    case QEvent::Enter:
+    case QEvent::Leave:
+    case QEvent::Paint:
+    case QEvent::PolishRequest:
+    case QEvent::LayoutRequest:
+    case QEvent::ChildRemoved:
+    case QEvent::WindowBlocked:
+    case QEvent::ChildAdded:
+    case QEvent::EnabledChange:
+    case QEvent::WindowUnblocked:
+    case QEvent::WindowActivate:
+    case QEvent::WindowDeactivate:
+    case QEvent::UpdateLater:
+    case QEvent::Resize:
+    case QEvent::ToolTip:
+    case QEvent::UpdateRequest:
+    case QEvent::ActivationChange:
+    case QEvent::FocusAboutToChange:
+        break;
+    default:
+        qDebug() << "Event: " << e->type();
+        break;
+    }
+
+    return QWidget::eventFilter( watched, e );
+}
+
 void DavaGLWidget::paintEvent(QPaintEvent *event)
 {
 	//Q_UNUSED(event);
@@ -212,7 +292,6 @@ void DavaGLWidget::hideEvent(QHideEvent *e)
 
 void DavaGLWidget::focusInEvent(QFocusEvent *e)
 {
-    qDebug() << __FUNCTION__;
     RegisterEventFilter();
     QWidget::focusInEvent( e );
     
@@ -228,7 +307,6 @@ void DavaGLWidget::focusInEvent(QFocusEvent *e)
 
 void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
-    qDebug() << __FUNCTION__;
     UnregisterEventFilter();
     QWidget::focusOutEvent( e );
     
@@ -263,6 +341,16 @@ void DavaGLWidget::changeEvent(QEvent* e)
     default:
         break;
     }
+}
+
+void DavaGLWidget::enterEvent(QEvent* e)
+{
+    RegisterEventFilter();
+}
+
+void DavaGLWidget::leaveEvent(QEvent* e)
+{
+    UnregisterEventFilter();
 }
 
 void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
@@ -368,7 +456,6 @@ void DavaGLWidget::RegisterEventFilter()
 {
     if ( eventFilterCount == 0 )
     {
-        qDebug() << __FUNCTION__;
         QAbstractEventDispatcher::instance()->installNativeEventFilter( this );
     }
     eventFilterCount++;
@@ -378,7 +465,6 @@ void DavaGLWidget::UnregisterEventFilter()
 {
     if ( eventFilterCount == 1 )
     {
-        qDebug() << __FUNCTION__;
         QAbstractEventDispatcher::instance()->removeNativeEventFilter( this );
     }
     eventFilterCount--;

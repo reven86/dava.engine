@@ -56,6 +56,7 @@ public:
     
 	virtual QPaintEngine *paintEngine() const;
 	bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
+    virtual bool eventFilter(QObject * watched, QEvent * e);
    
 signals:
 	void OnDrop(const QMimeData *mimeData);
@@ -63,6 +64,7 @@ signals:
 
 private slots:
 	void Render();
+    void Debug();
 
 private:
 	virtual void paintEvent(QPaintEvent *);
@@ -79,6 +81,8 @@ private:
 	virtual void dragEnterEvent(QDragEnterEvent *);
 
     virtual void changeEvent(QEvent *e);
+    virtual void enterEvent(QEvent *e);
+    virtual void leaveEvent(QEvent *e);
     
 #if defined (Q_OS_MAC)
     virtual void mouseMoveEvent(QMouseEvent *);
