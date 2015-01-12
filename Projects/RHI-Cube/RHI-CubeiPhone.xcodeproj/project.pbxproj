@@ -20,6 +20,8 @@
 		5CDC2533156CE21000742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2532156CE20F00742348 /* libz.dylib */; };
 		74AF633D18852FE100070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF633C18852FE100070C35 /* Security.framework */; };
 		74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74BF98191876B3A7001D4CFE /* GameController.framework */; };
+		874B5A771A5E7C1E00A94F6F /* libRHI-Metal-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 874B5A741A5E7BED00A94F6F /* libRHI-Metal-iOS.a */; };
+		874B5A791A5E7ED900A94F6F /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 874B5A781A5E7ED900A94F6F /* Metal.framework */; };
 		875FBAD31A5BCA380092136F /* ios_gl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 875FBAD21A5BCA380092136F /* ios_gl.mm */; };
 		87F3800A1A5AA26A00085E07 /* rhi_ShaderCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F380071A5AA26A00085E07 /* rhi_ShaderCache.cpp */; };
 		87F3800B1A5AA26A00085E07 /* rhi_VertexLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F380091A5AA26A00085E07 /* rhi_VertexLayout.cpp */; };
@@ -35,7 +37,6 @@
 		87F380271A5AA29A00085E07 /* support.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F3801B1A5AA29A00085E07 /* support.cpp */; };
 		87F380281A5AA29A00085E07 /* system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F3801C1A5AA29A00085E07 /* system.cpp */; };
 		87F380321A5AA6D800085E07 /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 87F380311A5AA6D800085E07 /* libfribidi_ios.a */; };
-		87FFBBB61A5A8FCA00907D79 /* libRHI-GLES2-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 87CE38C61A5A86CE0014567D /* libRHI-GLES2-iOS.a */; };
 		87FFBBC31A5A99C000907D79 /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 87FFBBC01A5A99AF00907D79 /* libFramework.a */; };
 		C12DE7A218E322B2002EEBB4 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */; };
 		E878726319A210D9007AAA6B /* FrameworkMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E878725919A210D9007AAA6B /* FrameworkMain.cpp */; };
@@ -51,6 +52,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		874B5A731A5E7BED00A94F6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 874B5A6E1A5E7BED00A94F6F /* RHI-Metal-iOS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 879FC9EC1A4945460057D86C;
+			remoteInfo = "RHI-Metal-iOS";
+		};
+		874B5A751A5E7C0B00A94F6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 874B5A6E1A5E7BED00A94F6F /* RHI-Metal-iOS.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 879FC9EB1A4945460057D86C;
+			remoteInfo = "RHI-Metal-iOS";
+		};
 		875FBACF1A5ACED20092136F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 87FFBBB91A5A99AE00907D79 /* Framework.xcodeproj */;
@@ -63,13 +78,6 @@
 			containerPortal = 87CE38C11A5A86CE0014567D /* RHI-GLES2-iOS.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 879FC9EC1A4945460057D86C;
-			remoteInfo = "RHI-GLES2-iOS";
-		};
-		87FFBBB31A5A8FA100907D79 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 87CE38C11A5A86CE0014567D /* RHI-GLES2-iOS.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 879FC9EB1A4945460057D86C;
 			remoteInfo = "RHI-GLES2-iOS";
 		};
 		87FFBBBF1A5A99AF00907D79 /* PBXContainerItemProxy */ = {
@@ -104,6 +112,8 @@
 		5CDC2532156CE20F00742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		74AF633C18852FE100070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		74BF98191876B3A7001D4CFE /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
+		874B5A6E1A5E7BED00A94F6F /* RHI-Metal-iOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "RHI-Metal-iOS.xcodeproj"; path = "RHI-Metal-iOS/RHI-Metal-iOS.xcodeproj"; sourceTree = "<group>"; };
+		874B5A781A5E7ED900A94F6F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		875FBAD11A5BCA380092136F /* ios_gl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ios_gl.h; path = iOSSpecific/ios_gl.h; sourceTree = "<group>"; };
 		875FBAD21A5BCA380092136F /* ios_gl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ios_gl.mm; path = iOSSpecific/ios_gl.mm; sourceTree = "<group>"; };
 		87CE38C11A5A86CE0014567D /* RHI-GLES2-iOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "RHI-GLES2-iOS.xcodeproj"; path = "RHI-GLES2-iOS/RHI-GLES2-iOS.xcodeproj"; sourceTree = "<group>"; };
@@ -157,9 +167,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				874B5A791A5E7ED900A94F6F /* Metal.framework in Frameworks */,
+				874B5A771A5E7C1E00A94F6F /* libRHI-Metal-iOS.a in Frameworks */,
 				87FFBBC31A5A99C000907D79 /* libFramework.a in Frameworks */,
 				87F380321A5AA6D800085E07 /* libfribidi_ios.a in Frameworks */,
-				87FFBBB61A5A8FCA00907D79 /* libRHI-GLES2-iOS.a in Frameworks */,
 				17FE6F3019810E9D00194FAE /* libmongodb_ios.a in Frameworks */,
 				17DD1618193F512600B73BEE /* liblua_ios.a in Frameworks */,
 				C12DE7A218E322B2002EEBB4 /* AssetsLibrary.framework in Frameworks */,
@@ -248,7 +259,9 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				874B5A781A5E7ED900A94F6F /* Metal.framework */,
 				87F380311A5AA6D800085E07 /* libfribidi_ios.a */,
+				874B5A6E1A5E7BED00A94F6F /* RHI-Metal-iOS.xcodeproj */,
 				87CE38C11A5A86CE0014567D /* RHI-GLES2-iOS.xcodeproj */,
 				17FE6F2F19810E9D00194FAE /* libmongodb_ios.a */,
 				17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */,
@@ -277,6 +290,14 @@
 				5CDC252F156CDED900742348 /* MainWindow-iPad.xib */,
 			);
 			name = iPad;
+			sourceTree = "<group>";
+		};
+		874B5A6F1A5E7BED00A94F6F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				874B5A741A5E7BED00A94F6F /* libRHI-Metal-iOS.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		87CE38C21A5A86CE0014567D /* Products */ = {
@@ -356,8 +377,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				874B5A761A5E7C0B00A94F6F /* PBXTargetDependency */,
 				875FBAD01A5ACED20092136F /* PBXTargetDependency */,
-				87FFBBB41A5A8FA100907D79 /* PBXTargetDependency */,
 			);
 			name = "RHI-Cube";
 			productName = TemplateProjectiPhone;
@@ -402,6 +423,10 @@
 					ProductGroup = 87CE38C21A5A86CE0014567D /* Products */;
 					ProjectRef = 87CE38C11A5A86CE0014567D /* RHI-GLES2-iOS.xcodeproj */;
 				},
+				{
+					ProductGroup = 874B5A6F1A5E7BED00A94F6F /* Products */;
+					ProjectRef = 874B5A6E1A5E7BED00A94F6F /* RHI-Metal-iOS.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -411,6 +436,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		874B5A741A5E7BED00A94F6F /* libRHI-Metal-iOS.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libRHI-Metal-iOS.a";
+			remoteRef = 874B5A731A5E7BED00A94F6F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		87CE38C61A5A86CE0014567D /* libRHI-GLES2-iOS.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -491,15 +523,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		874B5A761A5E7C0B00A94F6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "RHI-Metal-iOS";
+			targetProxy = 874B5A751A5E7C0B00A94F6F /* PBXContainerItemProxy */;
+		};
 		875FBAD01A5ACED20092136F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = Framework;
 			targetProxy = 875FBACF1A5ACED20092136F /* PBXContainerItemProxy */;
-		};
-		87FFBBB41A5A8FA100907D79 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "RHI-GLES2-iOS";
-			targetProxy = 87FFBBB31A5A8FA100907D79 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

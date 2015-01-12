@@ -45,10 +45,17 @@
 
 #include "Utils/Utils.h"
 
+#define USE_METAL 1
 
-static CAEAGLLayer* _ViewLayer = nil;
+#if USE_METAL
+#include <QuartzCore/CAMetalLayer.h>
+#include <Metal/Metal.h>
+#endif
 
-CAEAGLLayer* GetAppViewLayer() { return _ViewLayer; }
+
+static CALayer* _ViewLayer = nil;
+
+CALayer* GetAppViewLayer() { return _ViewLayer; }
 
 
 @implementation EAGLView
@@ -59,7 +66,11 @@ CAEAGLLayer* GetAppViewLayer() { return _ViewLayer; }
 // You must implement this method
 + (Class) layerClass
 {
-    return [CAEAGLLayer class];
+    #if USE_METAL
+        return [CAMetalLayer class];
+    #else
+        return [CAEAGLLayer class];
+    #endif
 }
 
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
@@ -96,12 +107,20 @@ CAEAGLLayer* GetAppViewLayer() { return _ViewLayer; }
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
-        CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+        #if USE_METAL 
+        CAMetalLayer*   layer = (CAMetalLayer*)self.layer;
+        #else
+        CAEAGLLayer*    layer = (CAEAGLLayer*)self.layer;
+        #endif
         
-        eaglLayer.opaque = TRUE;
-        eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+        layer.opaque = TRUE;
+        
+        #if USE_METAL
+        #else
+        layer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
                                         [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
-            
+        #endif
+        
         DAVA::KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
         DAVA::Core::eRenderer rendererRequested = (DAVA::Core::eRenderer)options->GetInt32("renderer", DAVA::Core::RENDERER_OPENGL_ES_1_0);
 
@@ -196,7 +215,8 @@ CAEAGLLayer* GetAppViewLayer() { return _ViewLayer; }
         DAVA::Logger::Debug("OpenGL ES View Created successfully. displayLink: %d", (int)displayLinkSupported);
     }
 	
-    _ViewLayer = (CAEAGLLayer*)self.layer;;
+
+    _ViewLayer = self.layer;
 
     return self;
 }

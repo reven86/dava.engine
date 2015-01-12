@@ -94,7 +94,7 @@
 @end
 
 
-CAEAGLLayer* GetAppViewLayer();
+CALayer* GetAppViewLayer();
 
 
 #endif //__DAVAENGINE_IPHONE__

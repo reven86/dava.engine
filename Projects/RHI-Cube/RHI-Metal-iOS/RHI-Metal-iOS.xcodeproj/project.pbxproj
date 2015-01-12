@@ -1,0 +1,319 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		872F22551A6154AB007BABE5 /* rhi_RingBufferMetal.h in Headers */ = {isa = PBXBuildFile; fileRef = 872F22531A6154AB007BABE5 /* rhi_RingBufferMetal.h */; };
+		872F22561A6154AB007BABE5 /* rhi_RingBufferMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 872F22541A6154AB007BABE5 /* rhi_RingBufferMetal.mm */; };
+		874B5A6A1A5E74D900A94F6F /* rhi_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B5A691A5E74D900A94F6F /* rhi_Metal.mm */; };
+		874B5A7D1A5E952F00A94F6F /* _metal.h in Headers */ = {isa = PBXBuildFile; fileRef = 874B5A7A1A5E952F00A94F6F /* _metal.h */; };
+		874B5A7E1A5E952F00A94F6F /* rhi_CommandBufferMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B5A7B1A5E952F00A94F6F /* rhi_CommandBufferMetal.mm */; };
+		874B5A7F1A5E952F00A94F6F /* rhi_Metal.h in Headers */ = {isa = PBXBuildFile; fileRef = 874B5A7C1A5E952F00A94F6F /* rhi_Metal.h */; };
+		874B5A811A5EC08400A94F6F /* rhi_VertexBufferMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B5A801A5EC08400A94F6F /* rhi_VertexBufferMetal.mm */; };
+		874B5A831A5EC42E00A94F6F /* rhi_IndexBufferMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B5A821A5EC42E00A94F6F /* rhi_IndexBufferMetal.mm */; };
+		874B5A851A5EC68500A94F6F /* rhi_PipelineStateMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B5A841A5EC68500A94F6F /* rhi_PipelineStateMetal.mm */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		872F22531A6154AB007BABE5 /* rhi_RingBufferMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_RingBufferMetal.h; path = "../RHI-Metal/rhi_RingBufferMetal.h"; sourceTree = "<group>"; };
+		872F22541A6154AB007BABE5 /* rhi_RingBufferMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rhi_RingBufferMetal.mm; path = "../RHI-Metal/rhi_RingBufferMetal.mm"; sourceTree = "<group>"; };
+		874B5A691A5E74D900A94F6F /* rhi_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rhi_Metal.mm; path = "../RHI-Metal/rhi_Metal.mm"; sourceTree = "<group>"; };
+		874B5A7A1A5E952F00A94F6F /* _metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = _metal.h; path = "../RHI-Metal/_metal.h"; sourceTree = "<group>"; };
+		874B5A7B1A5E952F00A94F6F /* rhi_CommandBufferMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rhi_CommandBufferMetal.mm; path = "../RHI-Metal/rhi_CommandBufferMetal.mm"; sourceTree = "<group>"; };
+		874B5A7C1A5E952F00A94F6F /* rhi_Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_Metal.h; path = "../RHI-Metal/rhi_Metal.h"; sourceTree = "<group>"; };
+		874B5A801A5EC08400A94F6F /* rhi_VertexBufferMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rhi_VertexBufferMetal.mm; path = "../RHI-Metal/rhi_VertexBufferMetal.mm"; sourceTree = "<group>"; };
+		874B5A821A5EC42E00A94F6F /* rhi_IndexBufferMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rhi_IndexBufferMetal.mm; path = "../RHI-Metal/rhi_IndexBufferMetal.mm"; sourceTree = "<group>"; };
+		874B5A841A5EC68500A94F6F /* rhi_PipelineStateMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rhi_PipelineStateMetal.mm; path = "../RHI-Metal/rhi_PipelineStateMetal.mm"; sourceTree = "<group>"; };
+		879FC9EC1A4945460057D86C /* libRHI-Metal-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libRHI-Metal-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		879FCA281A4990EC0057D86C /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		879FC9E91A4945460057D86C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		879FC9E31A4945460057D86C = {
+			isa = PBXGroup;
+			children = (
+				872F22531A6154AB007BABE5 /* rhi_RingBufferMetal.h */,
+				872F22541A6154AB007BABE5 /* rhi_RingBufferMetal.mm */,
+				874B5A841A5EC68500A94F6F /* rhi_PipelineStateMetal.mm */,
+				874B5A821A5EC42E00A94F6F /* rhi_IndexBufferMetal.mm */,
+				874B5A801A5EC08400A94F6F /* rhi_VertexBufferMetal.mm */,
+				874B5A7A1A5E952F00A94F6F /* _metal.h */,
+				874B5A7B1A5E952F00A94F6F /* rhi_CommandBufferMetal.mm */,
+				874B5A7C1A5E952F00A94F6F /* rhi_Metal.h */,
+				874B5A691A5E74D900A94F6F /* rhi_Metal.mm */,
+				879FCA281A4990EC0057D86C /* libc++.dylib */,
+				879FC9ED1A4945460057D86C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		879FC9ED1A4945460057D86C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				879FC9EC1A4945460057D86C /* libRHI-Metal-iOS.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		879FC9EA1A4945460057D86C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				872F22551A6154AB007BABE5 /* rhi_RingBufferMetal.h in Headers */,
+				874B5A7F1A5E952F00A94F6F /* rhi_Metal.h in Headers */,
+				874B5A7D1A5E952F00A94F6F /* _metal.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		879FC9EB1A4945460057D86C /* RHI-Metal-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 879FC9F01A4945460057D86C /* Build configuration list for PBXNativeTarget "RHI-Metal-iOS" */;
+			buildPhases = (
+				879FC9E81A4945460057D86C /* Sources */,
+				879FC9E91A4945460057D86C /* Frameworks */,
+				879FC9EA1A4945460057D86C /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RHI-Metal-iOS";
+			productName = "RHI-Metal-iOS";
+			productReference = 879FC9EC1A4945460057D86C /* libRHI-Metal-iOS.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		879FC9E41A4945460057D86C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+				ORGANIZATIONNAME = "Aleksey Podverbnyy";
+				TargetAttributes = {
+					879FC9EB1A4945460057D86C = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+				};
+			};
+			buildConfigurationList = 879FC9E71A4945460057D86C /* Build configuration list for PBXProject "RHI-Metal-iOS" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 879FC9E31A4945460057D86C;
+			productRefGroup = 879FC9ED1A4945460057D86C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				879FC9EB1A4945460057D86C /* RHI-Metal-iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		879FC9E81A4945460057D86C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				874B5A851A5EC68500A94F6F /* rhi_PipelineStateMetal.mm in Sources */,
+				874B5A6A1A5E74D900A94F6F /* rhi_Metal.mm in Sources */,
+				874B5A811A5EC08400A94F6F /* rhi_VertexBufferMetal.mm in Sources */,
+				874B5A831A5EC42E00A94F6F /* rhi_IndexBufferMetal.mm in Sources */,
+				874B5A7E1A5E952F00A94F6F /* rhi_CommandBufferMetal.mm in Sources */,
+				872F22561A6154AB007BABE5 /* rhi_RingBufferMetal.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		879FC9EE1A4945460057D86C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-marm",
+				);
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = iphoneos;
+				VALID_ARCHS = "armv7 armv7s";
+			};
+			name = Debug;
+		};
+		879FC9EF1A4945460057D86C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-marm",
+				);
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = iphoneos;
+				VALID_ARCHS = "armv7 armv7s";
+			};
+			name = Release;
+		};
+		879FC9F11A4945460057D86C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Entitlements.plist;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DAVA_DEBUG=1",
+					"$(inherited)",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility=hidden",
+					"-marm",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "../../../Sources/Internal RHI-Metal";
+				VALID_ARCHS = "armv7 armv7s";
+			};
+			name = Debug;
+		};
+		879FC9F21A4945460057D86C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Entitlements.plist;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = s;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility=hidden",
+					"-marm",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				VALID_ARCHS = "armv7 armv7s";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		879FC9E71A4945460057D86C /* Build configuration list for PBXProject "RHI-Metal-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				879FC9EE1A4945460057D86C /* Debug */,
+				879FC9EF1A4945460057D86C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		879FC9F01A4945460057D86C /* Build configuration list for PBXNativeTarget "RHI-Metal-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				879FC9F11A4945460057D86C /* Debug */,
+				879FC9F21A4945460057D86C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 879FC9E41A4945460057D86C /* Project object */;
+}

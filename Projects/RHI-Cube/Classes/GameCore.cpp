@@ -44,6 +44,7 @@ GameCore::GameCore()
 GameCore::~GameCore()
 {
 }
+
 void    
 GameCore::SetupTriangle()
 {
@@ -54,18 +55,18 @@ GameCore::SetupTriangle()
 
     if( v )
     {
-        v[0].x = -0.2f;
-        v[0].y = 0.0f;
+        v[0].x = -0.52;
+        v[0].y = -0.10f;
         v[0].z = 0.0f;
         
         v[1].x = 0.0f;
-        v[1].y = 0.2f;
+        v[1].y = 0.52f;
         v[1].z = 0.0f;
         
-        v[2].x = 0.2f;
-        v[2].y = 0.0f;
+        v[2].x = 0.52;
+        v[2].y = -0.10f;
         v[2].z = 0.0f;
-        
+
         rhi::VertexBuffer::Unmap( triangle.vb );
     }
 
@@ -76,17 +77,55 @@ GameCore::SetupTriangle()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-simple"),
+"#include <metal_stdlib>\n"
+"#include <metal_graphics>\n"
+"#include <metal_matrix>\n"
+"#include <metal_geometric>\n"
+"#include <metal_math>\n"
+"#include <metal_texture>\n"
+"using namespace metal;\n"
+"struct VP_Input { packed_float3 position; };\n"
+"struct VP_Output { float4 position [[position]]; };\n"
+"vertex VP_Output vp_main\n"
+"( \n"
+"    constant VP_Input*  in    [[ buffer(0) ]],\n"
+"    uint                vid   [[ vertex_id ]]\n"
+")\n"
+"{\n"
+"    VP_Output   OUT;\n"
+"    VP_Input    IN  = in[vid];\n"
+"\n"
+"    OUT.position = float4(IN.position[0],IN.position[1],IN.position[2],1.0);\n"
+"\n"
+"    return OUT;\n"
+"}\n"
+/*
 "precision highp float;\n"
         "attribute vec4 attr_position;\n"
         "void main()\n"
         "{\n"
         "    gl_Position = vec4(attr_position.x,attr_position.y,attr_position.z,1.0);\n"
         "}\n"
+*/    
     );
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-simple"),
-"precision highp float;\n"
+"#include <metal_stdlib>\n"
+"#include <metal_graphics>\n"
+"#include <metal_matrix>\n"
+"#include <metal_geometric>\n"
+"#include <metal_math>\n"
+"#include <metal_texture>\n"
+"using namespace metal;\n"
+"struct FP_Buffer0 { packed_float4 data[4]; };\n"
+"float4 fragment fp_main( constant FP_Buffer0* buf0 [[ buffer(0) ]] )\n"
+"{\n"
+"    float4 clr = float4(buf0->data[0]);\n"
+"    return clr;\n"
+"}\n"
+/*
+        "precision highp float;\n"
 #if DV_USE_UNIFORMBUFFER_OBJECT
         "uniform FP_Buffer0_Block { vec4 FP_Buffer0[4]; };\n"
 #else
@@ -96,6 +135,7 @@ GameCore::SetupTriangle()
         "{\n"
         "    gl_FragColor = FP_Buffer0[0];\n"
         "}\n"
+*/    
     );
 
 
@@ -145,6 +185,48 @@ GameCore::SetupCube()
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-shaded"),
+"#include <metal_stdlib>\n"
+"#include <metal_graphics>\n"
+"#include <metal_matrix>\n"
+"#include <metal_geometric>\n"
+"#include <metal_math>\n"
+"#include <metal_texture>\n"
+"using namespace metal;\n"
+"struct VP_Input"
+"{\n" 
+"    packed_float3 position;\n"
+"    packed_float3 normal;\n"
+"    packed_float2 texcoord;\n"
+"};\n"
+"struct VP_Output\n" 
+"{\n"
+"    float4 position [[ position ]];\n" 
+"    float4 color [[ user(texturecoord) ]];\n" 
+"};\n"
+"struct VP_Buffer0 { packed_float4 data[16]; };\n"
+"struct VP_Buffer1 { packed_float4 data[16]; };\n"
+"vertex VP_Output vp_main\n"
+"( \n"
+"    constant VP_Input*   in    [[ buffer(0) ]],\n"
+"    constant VP_Buffer0* buf0  [[ buffer(1) ]],\n"
+"    constant VP_Buffer1* buf1  [[ buffer(2) ]],\n"
+"    uint                 vid   [[ vertex_id ]]\n"
+")\n"
+"{\n"
+"    VP_Output   OUT;\n"
+"    VP_Input    IN  = in[vid];\n"
+"\n"
+"    float4x4 ViewProjection = float4x4( buf0->data[0], buf0->data[1], buf0->data[2], buf0->data[3] );\n"
+"    float4x4 World = float4x4( buf1->data[0], buf1->data[1], buf1->data[2], buf1->data[3] );\n"
+"    float3x3 World3 = float3x3( float3(float4(buf1->data[0])), float3(float4(buf1->data[1])), float3(float4(buf1->data[2])) );\n"
+"    float4 wpos = World * float4(IN.position[0],IN.position[1],IN.position[2],1.0);\n"
+"    float i   = dot( float3(0,0,-1), normalize(World3*float3(IN.normal)) );\n"
+"    OUT.position   = ViewProjection * wpos;\n"
+"    OUT.color      = float4(i,i,i,1.0);\n"
+"\n"
+"    return OUT;\n"
+"}\n"
+/*
 "precision highp float;\n"
 #if DV_USE_UNIFORMBUFFER_OBJECT
         "uniform VP_Buffer0_Block { vec4 VP_Buffer0[16]; };\n"
@@ -168,10 +250,34 @@ GameCore::SetupCube()
 //        "    var_Color.rgb = i;\n"
         "    var_Color.rgb = vec3(i,i,i);\n"
         "}\n"
+*/    
     );
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded"),
+"#include <metal_stdlib>\n"
+"#include <metal_graphics>\n"
+"#include <metal_matrix>\n"
+"#include <metal_geometric>\n"
+"#include <metal_math>\n"
+"#include <metal_texture>\n"
+"using namespace metal;\n"
+"struct FP_Input\n"
+"{\n"
+"    float4 position [[position]];\n" 
+"    float4 color [[user(texturecoord)]];\n"
+"};\n"
+"struct FP_Buffer0 { packed_float4 data[4]; };\n"
+"float4 fragment fp_main\n"
+"(\n"
+"    FP_Input IN                [[ stage_in ]],\n"
+"    constant FP_Buffer0* buf0  [[ buffer(0) ]]\n"
+")\n"
+"{\n"
+"    float4 clr = float4(buf0->data[0]) * IN.color;\n"
+"    return clr;\n"
+"}\n"
+/*
 "precision highp float;\n"
 #if DV_USE_UNIFORMBUFFER_OBJECT
         "uniform FP_Buffer0_Block { vec4 FP_Buffer0[4]; };\n"
@@ -184,6 +290,7 @@ GameCore::SetupCube()
         "    gl_FragColor.rgb = FP_Buffer0[0].xyz * var_Color;\n"
         "    gl_FragColor.a   = FP_Buffer0[0].a;\n"
         "}\n"
+*/    
     );
 
 
@@ -210,7 +317,7 @@ void GameCore::OnAppStarted()
     rhi::Initialize();
     rhi::ShaderCache::Initialize();
     
-    SetupTriangle();
+///    SetupTriangle();
     SetupCube();
 }
 
@@ -266,7 +373,7 @@ GameCore::Draw()
     
     rhi::CommandBuffer::Begin( cb );
     rhi::CommandBuffer::Clear( cb );
-    
+
 #if 0
     
     rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
@@ -308,6 +415,7 @@ GameCore::Draw()
     rhi::CommandBuffer::DrawPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 12 );
     
 #endif
+
     
     rhi::CommandBuffer::End( cb );
 }

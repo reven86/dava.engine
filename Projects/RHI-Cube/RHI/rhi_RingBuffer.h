@@ -43,9 +43,10 @@ public:
                 RingBuffer();
 
     void        Initialize( unsigned sz );
+    void        Initialize( void* data, unsigned sz );
     void        Uninitialize();
 
-    float*      Alloc( unsigned cnt );
+    float*      Alloc( unsigned cnt, unsigned align=16 );
     void        Reset();
     
 
@@ -57,6 +58,8 @@ private:
 
     unsigned    memUsed;
     unsigned    allocCount;
+
+    unsigned    ownData:1;
 };
 
 
@@ -67,7 +70,8 @@ RingBuffer::RingBuffer()
   : size(0),
     dataPtr(0),
     cur(0),
-    memUsed(0)
+    memUsed(0),
+    ownData(false)
 {
 }
 
@@ -78,7 +82,23 @@ inline void
 RingBuffer::Initialize( unsigned sz )
 {
     size        = sz;
-    dataPtr     = (uint8*)::malloc( sz );    
+    dataPtr     = (uint8*)::malloc( sz );
+    ownData     = true;    
+
+    cur         = dataPtr;
+    memUsed     = 0;
+    allocCount  = 0;
+}
+
+
+//------------------------------------------------------------------------------
+
+inline void
+RingBuffer::Initialize( void* data, unsigned sz )
+{
+    size        = sz;
+    dataPtr     = (uint8*)data;
+    ownData     = false;    
 
     cur         = dataPtr;
     memUsed     = 0;
@@ -91,7 +111,7 @@ RingBuffer::Initialize( unsigned sz )
 inline void        
 RingBuffer::Uninitialize()
 {
-    if( dataPtr )
+    if( dataPtr  &&  ownData )
         ::free( dataPtr );
 
     size    = 0;
@@ -103,11 +123,11 @@ RingBuffer::Uninitialize()
 //------------------------------------------------------------------------------
 
 inline float*
-RingBuffer::Alloc( unsigned cnt )
+RingBuffer::Alloc( unsigned cnt, unsigned align )
 {
     DVASSERT(cur);
 
-    unsigned    sz  = L_ALIGNED_SIZE(cnt*sizeof(float),16);
+    unsigned    sz  = L_ALIGNED_SIZE(cnt*sizeof(float),align);
     uint8*      buf = cur + sz;
     uint8*      p   = cur;
 
