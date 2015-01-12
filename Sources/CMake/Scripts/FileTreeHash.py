@@ -18,7 +18,7 @@ tree_hash  = hashlib.md5()
 for arg in sys.argv:
     for rootdir, dirs, files in os.walk( arg ):
         for file in files:   
-            if file.endswith( ( '.c','.cpp','.h','.hpp','.m','.mm' ) ): 
+            if file.endswith( ( '.c','.cpp','.h','.hpp','.m','.mm','.ui','.qrc' ) ): 
                 array.append( os.path.relpath(( rootdir + file ), ( arg + '/..' ) )  ) 
 #                print os.path.relpath(( rootdir + file ), ( arg + '/..' ) ) 
 #                count= count + 1  

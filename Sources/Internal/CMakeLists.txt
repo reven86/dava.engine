@@ -24,18 +24,14 @@ set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGET
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
 
-
 if( ANDROID )
     find_package( ZLIB )
-    set ( LIBRARY_TYPE STATIC )
-
-
+ 
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")  
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon" )    
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wno-invalid-offsetof -frtti" )    
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof" )
-
-
+ 
     set ( LIST_LIBRARIES
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_android.a"
@@ -68,8 +64,6 @@ if( ANDROID )
 
 elseif( MACOS )
     find_package( ZLIB )
-    set ( LIBRARY_TYPE STATIC )
-
     add_definitions( -D__DAVAENGINE_PTHREAD__ ) 
 
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
@@ -97,9 +91,7 @@ elseif( MACOS )
     set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
 
 elseif( IOS )  
-  
     find_package( ZLIB )
-    set ( LIBRARY_TYPE STATIC )
 
     add_definitions( -DDDARWIN_NO_CARBON ) 
     
@@ -141,23 +133,19 @@ elseif( IOS )
 
 
 elseif( WIN32 ) 
-    set ( LIBRARY_TYPE STATIC ) 
 
-    if( NOT DISABLE_MT )
-        set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
-        set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) #/VERBOSE
-    endif()
-    
-    if ( MSVC )
-        file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
-        list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) 
 
-        file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
-        list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
+    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
+    list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
 
-        set  ( LIST_SHARED_LIBRARIES "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" )
-  
-    endif()
+    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
+
+    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
+    list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
 
 endif()
 
@@ -178,7 +166,7 @@ include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
 
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
-add_library            ( ${PROJECT_NAME} ${LIBRARY_TYPE} ${PROJECT_SOURCE_FILES} ${RESOURCE} )
+add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
 
 if( LINK_THIRD_PARTY )                 
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} ALL     "${LIST_SHARED_LIBRARIES}" )
