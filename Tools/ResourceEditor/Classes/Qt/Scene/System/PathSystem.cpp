@@ -75,7 +75,7 @@ static const String PATH_COLOR_PROP_NAME = "pathColor";
 PathSystem::PathSystem(DAVA::Scene * scene)
     : DAVA::SceneSystem(scene)
     , currentPath(NULL)
-    , isEnabled(false)
+    , isEditingEnabled(false)
 {
     pathDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
                                                                           DAVA::RenderStateData::STATE_COLORMASK_ALL |
@@ -136,8 +136,7 @@ void PathSystem::Draw()
     const DAVA::uint32 count = pathes.size();
     if(!count) return;
 
-    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
-    if(sceneEditor->wayEditSystem->IsWayEditEnabled())
+    if(isEditingEnabled)
     {
         DrawInEditableMode();
     }
@@ -193,6 +192,9 @@ void PathSystem::DrawInViewOnlyMode()
 
     SceneEditor2 *sceneEditor = GetSceneEditor();
     EntityGroup gruop = sceneEditor->selectionSystem->GetSelection();
+
+    const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
+
     
     const size_t count = gruop.Size();
     for(size_t p = 0; p < count; ++p)
@@ -204,16 +206,29 @@ void PathSystem::DrawInViewOnlyMode()
             continue;
         }
      
-        DAVA::Color color = GetPathColor(path);
-        RenderManager::Instance()->SetColor(color);
+        RenderManager::SetDynamicParam(PARAM_WORLD, &path->GetWorldTransform(), (pointer_size)&path->GetWorldTransform());
 
+        DAVA::Color pathColor = GetPathColor(path);
+
+        
         const Vector<PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
         const DAVA::uint32 waypointsCount = (const DAVA::uint32)waypoints.size();
         for(DAVA::uint32 w = 0; w < waypointsCount; ++w)
         {
+            const DAVA::AABBox3 wpBoundingBox(waypoints[w]->position, boxScale);
+            
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, 0.0f, 0.3f));
+            DAVA::RenderHelper::Instance()->FillBox(wpBoundingBox, pathDrawState);
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, 0.0f, 1.0f));
+            DAVA::RenderHelper::Instance()->DrawBox(wpBoundingBox, 1.0f, pathDrawState);
+        
+            //draw edges
             const DAVA::uint32 edgesCount = (const DAVA::uint32)waypoints[w]->edges.size();
             if(edgesCount)
             {
+                RenderManager::Instance()->SetColor(pathColor);
+
+                
                 const Vector3 & startPosition = waypoints[w]->position;
                 for(DAVA::uint32 e = 0; e < edgesCount; ++e)
                 {
@@ -274,7 +289,8 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
 
 void PathSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    if(command->GetId() == CMDID_INSP_MEMBER_MODIFY)
+    const int commandId = command->GetId();
+    if(CMDID_INSP_MEMBER_MODIFY == commandId)
     {
         const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
         if (String("name") == cmd->member->Name())
@@ -304,6 +320,16 @@ void PathSystem::ProcessCommand(const Command2 *command, bool redo)
                 }
             }
         }
+    }
+    
+    //Enable system without runnig commands
+    if(CMDID_COLLAPSE_PATH == commandId)
+    {
+        isEditingEnabled = !redo;
+    }
+    else if(CMDID_EXPAND_PATH == commandId)
+    {
+        isEditingEnabled = redo;
     }
 }
 
@@ -348,8 +374,8 @@ void PathSystem::EnablePathEdit(bool enable)
     SceneEditor2 *sceneEditor = GetSceneEditor();
     DVASSERT(sceneEditor);
 
-    isEnabled = enable;
-    if(isEnabled)
+    isEditingEnabled = enable;
+    if(isEditingEnabled)
     {
         sceneEditor->BeginBatch("Expand pathes to entities");
 
@@ -389,8 +415,4 @@ void PathSystem::EnablePathEdit(bool enable)
     }
 }
 
-bool PathSystem::IsPathEditEnabled() const
-{
-    return isEnabled;
-}
 

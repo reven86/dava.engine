@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Scene/System/SelectionSystem.h"
 
+class SceneEditor2;
 class PathSystem: public DAVA::SceneSystem
 {
     friend class SceneEditor2;
@@ -79,7 +80,7 @@ protected:
     EntityGroup currentSelection;
     DAVA::Entity * currentPath;
 
-    bool isEnabled;
+    bool isEditingEnabled;
 };
 
 inline const DAVA::Vector<DAVA::Entity *> & PathSystem::GetPathes() const
@@ -90,6 +91,11 @@ inline const DAVA::Vector<DAVA::Entity *> & PathSystem::GetPathes() const
 inline DAVA::Entity * PathSystem::GetCurrrentPath() const
 {
     return currentPath;
+}
+
+inline bool PathSystem::IsPathEditEnabled() const
+{
+    return isEditingEnabled;
 }
 
 

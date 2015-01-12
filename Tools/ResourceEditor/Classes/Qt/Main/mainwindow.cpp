@@ -1035,6 +1035,25 @@ void QtMainWindow::UpdateModificationActionsState()
     modificationWidget->setEnabled(canModify);
 }
 
+
+void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
+{
+    int commandId = command->GetId();
+    if(CMDID_COLLAPSE_PATH == commandId)
+    {
+        ui->actionWayEditor->blockSignals(true);
+        ui->actionWayEditor->setChecked(!redo);
+        ui->actionWayEditor->blockSignals(false);
+    }
+    else if(CMDID_EXPAND_PATH == commandId)
+    {
+        ui->actionWayEditor->blockSignals(true);
+        ui->actionWayEditor->setChecked(redo);
+        ui->actionWayEditor->blockSignals(false);
+    }
+}
+
+
 void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
 	if(scene == GetCurrentScene())
@@ -1047,6 +1066,8 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* com
         {
             ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
         }
+        
+        UpdateWayEditor(command, redo);
 	}
 }
 
@@ -2675,7 +2696,13 @@ bool QtMainWindow::IsSavingAllowed()
 		QMessageBox::warning(this, "Saving is not allowed", "Disable landscape editing before save!");
 		return false;
 	}
-	
+
+    if (!scene || scene->wayEditSystem->IsWayEditEnabled())
+    {
+        QMessageBox::warning(this, "Saving is not allowed", "Disable path editing before save!");
+        return false;
+    }
+
 	return true;
 }
 
