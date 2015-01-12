@@ -12,10 +12,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -189,17 +191,28 @@ public class JNIWebView {
 			int view_width = view.getMeasuredWidth();
 			int view_height = view.getMeasuredHeight();
 			
-			if (bitmapCache == null 
-				|| bitmapCache.getWidth() != view_width
-				|| bitmapCache.getHeight() != view_height)
-			{
-				bitmapCache = Bitmap.createBitmap(view_width,
-                    view_height, Bitmap.Config.ARGB_8888);
-				canvas = new Canvas(bitmapCache);
-			}
+//			if (bitmapCache == null 
+//				|| bitmapCache.getWidth() != view_width
+//				|| bitmapCache.getHeight() != view_height)
+//			{
+//				bitmapCache = Bitmap.createBitmap(view_width,
+//                    view_height, Bitmap.Config.ARGB_8888);
+//				//canvas = new Canvas(bitmapCache);
+//			}
             //int height = bitmapCache.getHeight();
             //canvas.drawBitmap(bitmapCache, 0, height, paint);
-            view.draw(canvas);
+			//view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), 
+				//	MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+			
+			view.setDrawingCacheEnabled(true); // TODO test it
+			//Rect r = new Rect();
+			//view.getDrawingRect(r);
+			//view.layout(r.left, r.top, r.right, r.bottom);
+			view.buildDrawingCache();
+			bitmapCache = Bitmap.createBitmap(view.getDrawingCache()); // ;
+			//Canvas c = new Canvas(b);
+            //view.draw(c);
+            view.setDrawingCacheEnabled(false); // clear drawing cache
 //            try {
 //                String path = Environment.getExternalStorageDirectory()
 //                        .toString();
@@ -215,6 +228,7 @@ public class JNIWebView {
 //                e.printStackTrace();
 //            }
             return bitmapCache;
+            //return b;
 		};
 		
 		
@@ -315,6 +329,7 @@ public class JNIWebView {
 				webView.getSettings().setJavaScriptEnabled(true);
 				webView.getSettings().setLoadWithOverviewMode(true);
 				webView.getSettings().setUseWideViewPort(false);
+				
 				if (android.os.Build.VERSION.SDK_INT >= 11)
 				{
 					webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
