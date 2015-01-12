@@ -260,6 +260,8 @@ Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fi
                            srcSprite->GetHeight());
     drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(
         Vector2((dstSprite->GetTexture()->GetWidth() - sideSize) / 2.0f, (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f)));
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 	RenderManager::Instance()->RestoreRenderTarget();
 	

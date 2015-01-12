@@ -121,3 +121,6 @@ REGISTER_CLASS(ParticleEffectComponent);
 REGISTER_CLASS(CameraComponent);
 REGISTER_CLASS(StaticOcclusionComponent);
 REGISTER_CLASS(StaticOcclusionDataComponent);
+REGISTER_CLASS(WASDControllerComponent);
+REGISTER_CLASS(RotationControllerComponent);
+REGISTER_CLASS(SnapToLandscapeControllerComponent);

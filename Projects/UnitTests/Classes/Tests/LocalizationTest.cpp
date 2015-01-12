@@ -61,6 +61,7 @@ void LocalizationTest::LoadResources()
 
 void LocalizationTest::UnloadResources()
 {
+    FileSystem::Instance()->DeleteDirectory(cpyDir);
 }
 
 void LocalizationTest::Draw(const DAVA::UIGeometricData &geometricData)
@@ -108,19 +109,16 @@ bool LocalizationTest::CompareFiles(const FilePath& file1, const FilePath& file2
 		char* buf1 = new char[size];
 		char* buf2 = new char[size];
 
-		while (res && !f1->IsEof() && !f2->IsEof())
-		{
-			int32 read1;
-			int32 read2;
+        int32 read1;
+        int32 read2;
 
-			read1 = f1->ReadLine(buf1, size);
-			read2 = f2->ReadLine(buf2, size);
+        read1 = f1->Read(buf1, size);
+        read2 = f2->Read(buf2, size);
 
-			res &= (read1 == read2);
-			res &= !memcmp(buf1, buf2, read1);
-		}
 
-		res &= (f1->IsEof() && f2->IsEof());
+        res &= (read1 == read2);
+        res &= !memcmp(buf1, buf2, read1);
+
 
 		delete[] buf1;
 		delete[] buf2;

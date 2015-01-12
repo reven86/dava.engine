@@ -30,26 +30,26 @@
 #include "QtPropertyDataValidator.h"
 
 QtPropertyData::QtPropertyData()
-	: curFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable)
-	, parent(NULL)
+	: isValuesMerged( true )
+	, curFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable)
 	, updatingValue(false)
 	, model(NULL)
+	, parent(NULL)
 	, userData(NULL)
 	, optionalButtonsViewport(NULL)
-    , validator(NULL)
-    , isValuesMerged( true )
+	, validator(NULL)
 { }
 
 QtPropertyData::QtPropertyData(const QVariant &value, Qt::ItemFlags flags)
 	: curValue(value)
+	, isValuesMerged( true )
 	, curFlags(flags)
-	, parent(NULL)
 	, updatingValue(false)
 	, model(NULL)
+	, parent(NULL)
 	, userData(NULL)
 	, optionalButtonsViewport(NULL)
-    , validator(NULL)
-    , isValuesMerged( true )
+	, validator(NULL)
 { }
 
 QtPropertyData::~QtPropertyData()
@@ -992,10 +992,10 @@ bool QtPropertyData::SetEditorDataInternal(QWidget *editor)
 
 QtPropertyToolButton::QtPropertyToolButton(QtPropertyData* data, QWidget * parent /* = 0 */)
 	: QToolButton(parent)
-	, propertyData(data)
-	, eventsPassThrought(false) 
+	, eventsPassThrought(false)
 	, overlayed(false)
-    , stateVariant(ACTIVE_ALWAYS)
+	, propertyData(data)
+	, stateVariant(ACTIVE_ALWAYS)
 {}
 
 QtPropertyToolButton::~QtPropertyToolButton()

@@ -102,6 +102,7 @@ namespace DAVA
 
 	public:
 		InspMember(const char *_name, const InspDesc &_desc, const long int _offset, const MetaInfo *_type, int _flags = 0);
+        virtual ~InspMember() {};
 
 		// Имя члена интроспекции, соответствует имени члена класса
 		const char* Name() const;

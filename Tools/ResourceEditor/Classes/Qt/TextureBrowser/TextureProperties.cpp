@@ -37,8 +37,8 @@
 TextureProperties::TextureProperties( QWidget *parent /*= 0*/ )
 	: QtPropertyEditor(parent)
 	, curTextureDescriptor(NULL)
+	, curGPU(DAVA::GPU_PNG)
 	, skipPropSizeChanged(false)
-    , curGPU(DAVA::GPU_PNG)
 {
 	SetEditTracking(true);
 }

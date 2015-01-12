@@ -982,12 +982,12 @@ void NMaterial::SetRenderLayers(uint32 bitmask)
 }
 
 inline NMaterial::RenderPassInstance::RenderPassInstance() :
-textureIndexMap(8),
 dirtyState(false),
 texturesDirty(true),
+propsDirty(true),
+textureIndexMap(8),
 activeUniformsCachePtr(NULL),
-activeUniformsCacheSize(0),
-propsDirty(true)
+activeUniformsCacheSize(0)
 {
     renderState.shader = NULL;
 }
@@ -1243,8 +1243,8 @@ inline const FilePath& NMaterial::TextureBucket::GetPath() const
 
 inline NMaterial::UniformCacheEntry::UniformCacheEntry() :
 uniform(NULL),
-prop(NULL),
-index(-1)
+index(-1),
+prop(NULL)
 {
 }
 

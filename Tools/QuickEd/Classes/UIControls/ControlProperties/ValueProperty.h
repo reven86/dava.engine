@@ -16,9 +16,12 @@ class SubValueProperty;
 class ValueProperty : public BaseProperty
 {
 public:
-    ValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member);
+    ValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType);
+    
+protected:
     virtual ~ValueProperty();
     
+public:
     virtual int GetCount() const override;
     virtual BaseProperty *GetProperty(int index) const override;
 

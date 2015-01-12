@@ -110,9 +110,8 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 
 Landscape::Landscape()
     : indices(0)
-    , foliageSystem(NULL)
     , tileMaskMaterial(NULL)
-	  //currentMaterial(NULL)
+    , foliageSystem(NULL)
 {
 	drawIndices = 0;
     //textureNames.resize(TEXTURE_COUNT);
