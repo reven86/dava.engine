@@ -215,9 +215,11 @@ void UnpackHelpDoc()
 
 void FixOSXFonts()
 {
+#ifdef Q_OS_MAC
     if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
     {
         // fix Mac OS X 10.9 (mavericks) font issue
         QFont::insertSubstitution( ".Lucida Grande UI", "Lucida Grande" );
     }
+#endif
 }
