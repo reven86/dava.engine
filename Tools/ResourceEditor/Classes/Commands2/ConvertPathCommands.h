@@ -36,6 +36,7 @@
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
+#include "Commands2/EntityAddCommand.h"
 
 typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::Entity*> MapWaypoint2Entity;
 typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::uint32> MapWaypoint2uint;
@@ -55,8 +56,8 @@ public:
 protected:
     DAVA::Entity* CreateWaypointEntity(const DAVA::PathComponent::Waypoint* waypoint, const DAVA::FastName & name);
 
-    DAVA::Entity* parentEntity;
-    MapWaypoint2Entity mapWaypoint2Entity;
+    DAVA::Entity* pathEntity;
+    DAVA::Vector<EntityAddCommand*> entityAddCommands;
 };
 
 class CollapsePathCommand : public Command2
@@ -91,7 +92,7 @@ protected:
     void InitMyWaypoint(MyWaypoint& myWaypoint, DAVA::Entity* wpEntity, DAVA::WaypointComponent* wpComponent);
     void ReconstructWaypointHierarchy(const DAVA::Vector<MyWaypoint>& waypointsVec);
 
-    DAVA::Entity* parentEntity;
+    DAVA::Entity* pathEntity;
     DAVA::PathComponent* destPathComponent;
     EntityList entitiesToCollapse;
     DAVA::Vector<MyWaypoint> waypointsOriginState;
