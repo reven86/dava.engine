@@ -193,6 +193,9 @@ void PathSystem::DrawInViewOnlyMode()
 
     SceneEditor2 *sceneEditor = GetSceneEditor();
     EntityGroup gruop = sceneEditor->selectionSystem->GetSelection();
+
+    const DAVA::float32 boxScale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
+
     
     const size_t count = gruop.Size();
     for(size_t p = 0; p < count; ++p)
@@ -204,16 +207,29 @@ void PathSystem::DrawInViewOnlyMode()
             continue;
         }
      
-        DAVA::Color color = GetPathColor(path);
-        RenderManager::Instance()->SetColor(color);
+        RenderManager::SetDynamicParam(PARAM_WORLD, &path->GetWorldTransform(), (pointer_size)&path->GetWorldTransform());
 
+        DAVA::Color pathColor = GetPathColor(path);
+
+        
         const Vector<PathComponent::Waypoint *> & waypoints = pathComponent->GetPoints();
         const DAVA::uint32 waypointsCount = (const DAVA::uint32)waypoints.size();
         for(DAVA::uint32 w = 0; w < waypointsCount; ++w)
         {
+            const DAVA::AABBox3 wpBoundingBox(waypoints[w]->position, boxScale);
+            
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.3f, 0.3f, 0.0f, 0.3f));
+            DAVA::RenderHelper::Instance()->FillBox(wpBoundingBox, pathDrawState);
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.7f, 0.7f, 0.0f, 1.0f));
+            DAVA::RenderHelper::Instance()->DrawBox(wpBoundingBox, 1.0f, pathDrawState);
+        
+            //draw edges
             const DAVA::uint32 edgesCount = (const DAVA::uint32)waypoints[w]->edges.size();
             if(edgesCount)
             {
+                RenderManager::Instance()->SetColor(pathColor);
+
+                
                 const Vector3 & startPosition = waypoints[w]->position;
                 for(DAVA::uint32 e = 0; e < edgesCount; ++e)
                 {
