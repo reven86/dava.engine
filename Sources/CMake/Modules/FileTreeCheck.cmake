@@ -4,22 +4,25 @@ FIND_PROGRAM( PYTHON_BINARY python )
 MACRO( FILE_TREE_CHECK folders ) 
 
     if( PYTHON_BINARY )
+
+        if( MACOS )
+            set( SH_PREFIX "sh" )
+
+        elseif( WIN32 )
+            set( SH_PREFIX ) 
+
+        endif()
+
         EXECUTE_PROCESS(
             COMMAND ${PYTHON_BINARY} "${DAVA_SCRIPTS_FILES_PATH}/FileTreeHash.py" ${folders}
             OUTPUT_VARIABLE FILE_TREE_HASH
         )
         
-        set( GET_VERSIONS_COMMAND "python ${DAVA_SCRIPTS_FILES_PATH}/FileTreeHash.py #1" )
-        set( CURRENT_VERSIONS    "#2"   )
+        set( GET_VERSIONS_COMMAND "$(python ${DAVA_SCRIPTS_FILES_PATH}/FileTreeHash.py $1)" )
+        set( CURRENT_VERSIONS    "$2"   )
 
         configure_file( ${DAVA_CONFIGURE_FILES_PATH}/VersionsCheck.in ${CMAKE_BINARY_DIR}/VersionsCheck.sh @ONLY )
         
-        if    ( MACOS )
-            set( SH_PREFIX "sh" )
-        elseif( WIN32 )
-            set( SH_PREFIX ) 
-        endif()
-
         add_custom_target ( FILE_TREE ALL 
             COMMAND ${SH_PREFIX} ${CMAKE_BINARY_DIR}/VersionsCheck.sh '${folders}' ${FILE_TREE_HASH}
         )
