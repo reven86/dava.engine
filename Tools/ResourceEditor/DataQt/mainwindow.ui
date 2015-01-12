@@ -1978,7 +1978,7 @@
    </property>
    <property name="icon">
     <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/switch.png</normaloff>:/QtIcons/switch.png</iconset>
+     <normaloff>:/QtIcons/path.png</normaloff>:/QtIcons/path.png</iconset>
    </property>
    <property name="text">
     <string>WayEditor</string>
