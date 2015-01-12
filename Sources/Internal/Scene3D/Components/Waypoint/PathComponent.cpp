@@ -135,18 +135,75 @@ PathComponent::~PathComponent()
     Reset();
 }
 
+PathComponent::Waypoint* NewWaypoint()
+{
+    return new PathComponent::Waypoint;
+}
+
+/*
 Component * PathComponent::Clone(Entity * toEntity)
 {
-	PathComponent * newComponent = new PathComponent();
-	newComponent->SetEntity(toEntity);
-    
+    PathComponent * newComponent = new PathComponent();
+    newComponent->SetEntity(toEntity);
+
     ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
     SerializationContext context;
     context.SetDebugLogEnabled(false);
     context.SetVersion(SCENE_FILE_CURRENT_VERSION);
-    
+
     Serialize(archieve, &context);
     newComponent->Deserialize(archieve, &context);
+
+    return newComponent;
+}
+*/
+
+Component * PathComponent::Clone(Entity * toEntity)
+{
+	PathComponent * newComponent = new PathComponent();
+    DVASSERT(newComponent);
+
+    newComponent->SetName(name);
+	newComponent->SetEntity(toEntity);
+
+    const uint32 waypointCount = waypoints.size();
+    if(waypointCount)
+    {
+        newComponent->waypoints.resize(waypointCount);
+        std::generate(newComponent->waypoints.begin(),newComponent->waypoints.end(),NewWaypoint);
+
+        const Waypoint *firstWaypoint = waypoints.front();
+        for(uint32 w = 0; w < waypointCount; ++w)
+        {
+            const Waypoint* waypoint = waypoints[w];
+            DVASSERT(waypoint);
+
+            Waypoint* newWaypoint = newComponent->waypoints[w];
+            DVASSERT(newWaypoint);
+
+            newWaypoint->name = waypoint->name;
+            newWaypoint->position = waypoint->position;
+            newWaypoint->SetProperties(waypoint->GetProperties());
+
+            const uint32 edgesCount = waypoint->edges.size();
+            for(uint32 e = 0; e < edgesCount; ++e)
+            {
+                Edge *edge = waypoint->edges[e];
+                DVASSERT(edge);
+                DVASSERT(edge->destination);
+
+                uint32 destWaypointIdx = edge->destination - firstWaypoint;
+                DVASSERT(destWaypointIdx < waypointCount);
+
+                Edge *newEdge = new Edge;
+                DVASSERT(newEdge);
+
+                newEdge->SetProperties(edge->GetProperties());
+                newEdge->destination = newComponent->waypoints[destWaypointIdx];
+                newWaypoint->AddEdge(newEdge);
+            }
+        }
+    }
 
     return newComponent;
 }

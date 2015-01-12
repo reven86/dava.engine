@@ -37,11 +37,9 @@
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Commands2/EntityAddCommand.h"
-
-typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::Entity*> MapWaypoint2Entity;
-typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::uint32> MapWaypoint2uint;
-typedef DAVA::Map<DAVA::Entity*, DAVA::uint32> MapEntity2uint;
-typedef DAVA::List<DAVA::Entity*> EntityList;
+#include "Commands2/EntityRemoveCommand.h"
+#include "Commands2/AddComponentCommand.h"
+#include "Commands2/RemoveComponentCommand.h"
 
 class ExpandPathCommand : public Command2
 {
@@ -54,6 +52,8 @@ public:
     virtual DAVA::Entity* GetEntity() const;
 
 protected:
+    typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::Entity*> MapWaypoint2Entity;
+
     DAVA::Entity* CreateWaypointEntity(const DAVA::PathComponent::Waypoint* waypoint, const DAVA::FastName & name);
 
     DAVA::Entity* pathEntity;
@@ -71,32 +71,18 @@ public:
     virtual DAVA::Entity* GetEntity() const;
 
 protected:
-    typedef DAVA::RefPtr<DAVA::KeyedArchive> KeyedArchivePtr;
-    struct MyEdge
-    {
-        MyEdge(DAVA::uint32 id, DAVA::KeyedArchive* ar);
-        DAVA::uint32 wpId;
-        KeyedArchivePtr properties;
-    };
-    struct MyWaypoint
-    {
-        DAVA::FastName name;
-        DAVA::Vector3 position;
-        KeyedArchivePtr properties;
-        DAVA::List<MyEdge> edges;
-    };
-
-protected:
     DAVA::PathComponent::Waypoint* CreateWaypoint(DAVA::Entity* entity);
-    void InitMyWaypoint(MyWaypoint& myWaypoint, DAVA::PathComponent::Waypoint* waypoint);
-    void InitMyWaypoint(MyWaypoint& myWaypoint, DAVA::Entity* wpEntity, DAVA::WaypointComponent* wpComponent);
-    void ReconstructWaypointHierarchy(const DAVA::Vector<MyWaypoint>& waypointsVec);
+    void InitWaypoint(DAVA::PathComponent::Waypoint* waypoint, DAVA::Entity* wpEntity, DAVA::WaypointComponent* wpComponent);
+
+    typedef DAVA::Map<DAVA::Entity*, DAVA::uint32> MapEntity2uint;
+    typedef DAVA::List<DAVA::Entity*> EntityList;
 
     DAVA::Entity* pathEntity;
+    DAVA::PathComponent* origPathComponent;
     DAVA::PathComponent* destPathComponent;
-    EntityList entitiesToCollapse;
-    DAVA::Vector<MyWaypoint> waypointsOriginState;
-    DAVA::Vector<MyWaypoint> waypointsFinalState;
+    DAVA::Vector<EntityRemoveCommand*> entityRemoveCommands;
+    AddComponentCommand* addNextComponent;
+    RemoveComponentCommand* removePrevComponent;
 };
 
 #endif // __CONVERT_PATH_COMMANDS_H__
