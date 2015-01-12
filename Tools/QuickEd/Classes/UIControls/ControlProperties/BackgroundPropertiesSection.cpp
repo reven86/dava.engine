@@ -4,7 +4,7 @@
 
 using namespace DAVA;
 
-BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection) : control(NULL), bg(NULL), bgNum(bgNum)
+BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCopyType copyType) : control(NULL), bg(NULL), bgNum(bgNum)
 {
     this->control = SafeRetain(control);
     
@@ -23,7 +23,7 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int
             const InspMember *member = insp->Member(j);
             
             ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            ValueProperty *prop = new ValueProperty(bg, member, sourceProp);
+            ValueProperty *prop = new ValueProperty(bg, member, sourceProp, copyType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -52,7 +52,7 @@ void BackgroundPropertiesSection::CreateControlBackground()
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *prop = new ValueProperty(bg, member, NULL);
+            ValueProperty *prop = new ValueProperty(bg, member, NULL, COPY_VALUES);
             AddProperty(prop);
             SafeRelease(prop);
         }
