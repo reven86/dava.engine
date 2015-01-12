@@ -80,7 +80,7 @@ protected:
     EntityGroup currentSelection;
     DAVA::Entity * currentPath;
 
-    bool isEnabled;
+    bool isEditingEnabled;
 };
 
 inline const DAVA::Vector<DAVA::Entity *> & PathSystem::GetPathes() const
@@ -91,6 +91,11 @@ inline const DAVA::Vector<DAVA::Entity *> & PathSystem::GetPathes() const
 inline DAVA::Entity * PathSystem::GetCurrrentPath() const
 {
     return currentPath;
+}
+
+inline bool PathSystem::IsPathEditEnabled() const
+{
+    return isEditingEnabled;
 }
 
 

@@ -75,7 +75,7 @@ static const String PATH_COLOR_PROP_NAME = "pathColor";
 PathSystem::PathSystem(DAVA::Scene * scene)
     : DAVA::SceneSystem(scene)
     , currentPath(NULL)
-    , isEnabled(false)
+    , isEditingEnabled(false)
 {
     pathDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
                                                                           DAVA::RenderStateData::STATE_COLORMASK_ALL |
@@ -136,8 +136,7 @@ void PathSystem::Draw()
     const DAVA::uint32 count = pathes.size();
     if(!count) return;
 
-    SceneEditor2 *sceneEditor = static_cast<SceneEditor2 *>(GetScene());
-    if(sceneEditor->wayEditSystem->IsWayEditEnabled())
+    if(isEditingEnabled)
     {
         DrawInEditableMode();
     }
@@ -290,7 +289,8 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
 
 void PathSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    if(command->GetId() == CMDID_INSP_MEMBER_MODIFY)
+    const int commandId = command->GetId();
+    if(CMDID_INSP_MEMBER_MODIFY == commandId)
     {
         const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
         if (String("name") == cmd->member->Name())
@@ -320,6 +320,16 @@ void PathSystem::ProcessCommand(const Command2 *command, bool redo)
                 }
             }
         }
+    }
+    
+    //Enable system without runnig commands
+    if(CMDID_COLLAPSE_PATH == commandId)
+    {
+        isEditingEnabled = !redo;
+    }
+    else if(CMDID_EXPAND_PATH == commandId)
+    {
+        isEditingEnabled = redo;
     }
 }
 
@@ -364,8 +374,8 @@ void PathSystem::EnablePathEdit(bool enable)
     SceneEditor2 *sceneEditor = GetSceneEditor();
     DVASSERT(sceneEditor);
 
-    isEnabled = enable;
-    if(isEnabled)
+    isEditingEnabled = enable;
+    if(isEditingEnabled)
     {
         sceneEditor->BeginBatch("Expand pathes to entities");
 
@@ -405,8 +415,4 @@ void PathSystem::EnablePathEdit(bool enable)
     }
 }
 
-bool PathSystem::IsPathEditEnabled() const
-{
-    return isEnabled;
-}
 

@@ -278,6 +278,16 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
+    //Enable system without runnig commands
+    const int commandId = command->GetId();
+    if(CMDID_COLLAPSE_PATH == commandId)
+    {
+        isEnabled = !redo;
+    }
+    else if(CMDID_EXPAND_PATH == commandId)
+    {
+        isEnabled = redo;
+    }
 }
 
 

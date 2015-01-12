@@ -279,6 +279,7 @@ private:
 	void EnableProjectActions(bool enable);
 	void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
+    void UpdateWayEditor(const Command2* command, bool redo);
 
 	void LoadViewState(SceneEditor2 *scene);
 	void LoadUndoRedoState(SceneEditor2 *scene);
