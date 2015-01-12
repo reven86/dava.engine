@@ -87,9 +87,13 @@ private:
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
+    void RegisterEventFilter();
+    void UnregisterEventFilter();
+
 	int maxFPS;
     int minFrameTimeMs;
 	int fps;
+    int eventFilterCount;
 
 	qint64 fpsCountTime;
 	int fpsCount;

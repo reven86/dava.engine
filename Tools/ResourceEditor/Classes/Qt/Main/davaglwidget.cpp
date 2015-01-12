@@ -63,6 +63,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	, fpsCountTime(0)
 	, fpsCount(0)
 	, minFrameTimeMs(0)
+    , eventFilterCount(0)
 {
 	setAttribute(Qt::WA_OpaquePaintEvent, true);
 	setAttribute(Qt::WA_NoSystemBackground, true);
@@ -100,7 +101,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	// Setup FPS
 	SetMaxFPS(maxFPS);
 
-	QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
 
 	// start render
 	QTimer::singleShot(0, this, SLOT(Render()));
@@ -108,7 +108,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 DavaGLWidget::~DavaGLWidget()
 {
-	QAbstractEventDispatcher::instance()->removeNativeEventFilter(this);
 }
 
 QPaintEngine *DavaGLWidget::paintEngine() const
@@ -213,7 +212,11 @@ void DavaGLWidget::hideEvent(QHideEvent *e)
 
 void DavaGLWidget::focusInEvent(QFocusEvent *e)
 {
-	DAVA::QtLayer::Instance()->LockKeyboardInput(true);
+    qDebug() << __FUNCTION__;
+    RegisterEventFilter();
+    QWidget::focusInEvent( e );
+    
+    DAVA::QtLayer::Instance()->LockKeyboardInput( true );
 
 #if defined(Q_OS_WIN)
 	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
@@ -221,12 +224,15 @@ void DavaGLWidget::focusInEvent(QFocusEvent *e)
     core->SetFocused(true);
 #endif
 
-    QWidget::focusInEvent(e);
 }
 
 void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
-	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
+    qDebug() << __FUNCTION__;
+    UnregisterEventFilter();
+    QWidget::focusOutEvent( e );
+    
+    DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 
 #if defined(Q_OS_WIN)
@@ -234,8 +240,6 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 	DVASSERT(core);
     core->SetFocused(false);
 #endif
-
-    QWidget::focusOutEvent(e);
 }
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -358,4 +362,24 @@ void DavaGLWidget::Quit()
 void DavaGLWidget::ShowAssertMessage(const char * message)
 {
     QMessageBox::critical(this, "", message);
+}
+
+void DavaGLWidget::RegisterEventFilter()
+{
+    if ( eventFilterCount == 0 )
+    {
+        qDebug() << __FUNCTION__;
+        QAbstractEventDispatcher::instance()->installNativeEventFilter( this );
+    }
+    eventFilterCount++;
+}
+
+void DavaGLWidget::UnregisterEventFilter()
+{
+    if ( eventFilterCount == 1 )
+    {
+        qDebug() << __FUNCTION__;
+        QAbstractEventDispatcher::instance()->removeNativeEventFilter( this );
+    }
+    eventFilterCount--;
 }
