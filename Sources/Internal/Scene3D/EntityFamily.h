@@ -42,12 +42,12 @@ public:
     static EntityFamily * GetOrCreate (const Vector<Component*> & components);
     uint32 GetComponentIndex (uint32 componentType, uint32 index) const;
     uint32 GetComponentsCount (uint32 componentType) const;
-    uint32 GetComponentsFlags () const;
+    uint64 GetComponentsFlags () const;
 
 private:
     uint32 componentIndices[Component::COMPONENT_COUNT];
     uint32 componentCount[Component::COMPONENT_COUNT];
-    uint32 componentsFlags;
+    uint64 componentsFlags;
     static Vector<EntityFamily*> families;
     friend bool operator==(const EntityFamily & lhs, const EntityFamily & rhs);
 };
@@ -62,7 +62,7 @@ inline uint32 EntityFamily::GetComponentsCount (uint32 componentType) const
     return componentCount[componentType];
 }
 
-inline uint32 EntityFamily::GetComponentsFlags () const
+inline uint64 EntityFamily::GetComponentsFlags () const
 {
     return componentsFlags;
 }
