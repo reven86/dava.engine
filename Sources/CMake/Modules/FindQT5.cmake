@@ -13,8 +13,6 @@ set ( QT5_FOUND 0 )
 find_path( QT5_LIB_PATH 
   NAMES 
     ${QT_CORE_LIB}
-  HINTS 
-    ENV QT5_HOME
   PATHS 
     ${QT5_PATH_MAC}
     ${QT5_PATH_WIN}    

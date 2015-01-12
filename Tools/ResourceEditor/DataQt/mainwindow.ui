@@ -29,23 +29,14 @@
    <string>MainWindow</string>
   </property>
   <property name="dockOptions">
-   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks</set>
   </property>
   <widget class="QFrame" name="mainFrame">
    <layout class="QVBoxLayout" name="verticalLayout_8">
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="leftMargin">
-     <number>1</number>
-    </property>
-    <property name="topMargin">
-     <number>1</number>
-    </property>
-    <property name="rightMargin">
-     <number>1</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>1</number>
     </property>
     <item>
@@ -85,16 +76,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -121,16 +103,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -169,16 +142,7 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -244,7 +208,7 @@
      <x>0</x>
      <y>0</y>
      <width>1126</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -486,8 +450,8 @@
   <widget class="QDockWidget" name="dockParticleEditor">
    <property name="maximumSize">
     <size>
-     <width>16777215</width>
-     <height>16777215</height>
+     <width>524287</width>
+     <height>524287</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -501,8 +465,8 @@
   <widget class="QDockWidget" name="dockParticleEditorTimeLine">
    <property name="maximumSize">
     <size>
-     <width>16777215</width>
-     <height>16777215</height>
+     <width>524287</width>
+     <height>524287</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -562,16 +526,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -617,16 +572,7 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="leftMargin">
-      <number>1</number>
-     </property>
-     <property name="topMargin">
-      <number>1</number>
-     </property>
-     <property name="rightMargin">
-      <number>1</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>1</number>
      </property>
      <item>
@@ -658,16 +604,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
