@@ -51,8 +51,6 @@ add_definitions       (
 -D_DISABLE_IMAGE_MAGICK
 )
 
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
-
 
 file              ( GLOB_RECURSE QT_LIST "Classes/Qt/*.h"  )
 qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
@@ -111,8 +109,6 @@ add_executable ( ${PROJECT_NAME} MACOSX_BUNDLE
                               
 if( APPLE )
     
-    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
-
     set( BUILD_MODE $<CONFIG> ) #$<$<CONFIG:debug>:Debug>$<$<CONFIG:release>:Release> )
 
     ADD_CUSTOM_COMMAND(
@@ -139,15 +135,10 @@ if( APPLE )
 
 elseif( MSVC )
 
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) 
-
     set( LIBRARIES  "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib"  )
 
-    set( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup" )
-
-    set( DAVA_PATH  "${DAVA_TOOLS_BIN_DIR};${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin" )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor_QT5.in
+    list( APPEND DAVA_BINARY_WIN32_DIR "${QT5_PATH_WIN}/bin" )
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaVcxprojUserTemplate.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )

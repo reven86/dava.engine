@@ -22,15 +22,8 @@ endif()
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
-
 if( ANDROID )
     find_package( ZLIB )
- 
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")  
-    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon" )    
-    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wno-invalid-offsetof -frtti" )    
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof" )
  
     set ( LIST_LIBRARIES
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
@@ -95,11 +88,6 @@ elseif( IOS )
 
     add_definitions( -DDDARWIN_NO_CARBON ) 
     
-    set ( CMAKE_C_FLAGS    "-mno-thumb"  )
-    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
-
-    #set ( LIST_SHARED_LIBRARIES  libz.dylib libbz2.dylib    )
-
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
     foreach( NAME  CoreGraphics 
                    Foundation 
@@ -133,9 +121,6 @@ elseif( IOS )
 
 
 elseif( WIN32 ) 
-
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) 
 
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )

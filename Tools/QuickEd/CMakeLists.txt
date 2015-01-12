@@ -32,8 +32,6 @@ add_definitions       (
 -DQT_THREAD_SUPPORT
 )
 
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
-
 
 file              ( GLOB_RECURSE QT_LIST "Classes/*.h" )
 qt4_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
@@ -117,15 +115,11 @@ if( APPLE )
 
 elseif ( MSVC )
 
-    set( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP"  )
-    set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP /fp:fast /Zi /GS- /D _SECURE_SCL=0" )
-    set( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup" )
-
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )    
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
 
-    set( DAVA_PATH  "${DAVA_TOOLS_BIN_DIR};${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin" )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/editor_QT4.in
+    list( APPEND DAVA_BINARY_WIN32_DIR "${QT_BINARY_DIR}" )
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaVcxprojUserTemplate.in
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
     if( OUTPUT_TO_BUILD_DIR )

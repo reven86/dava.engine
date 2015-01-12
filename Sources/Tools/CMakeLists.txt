@@ -22,9 +22,6 @@ if( APPLE )
     target_link_libraries  ( TextureTool libbz2.dylib libz.dylib stdc++.6.dylib )
 
 elseif( WIN32 )
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" )
-
     target_link_libraries  ( TextureTool  ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/IMagickHelper.lib )
 
 endif()
