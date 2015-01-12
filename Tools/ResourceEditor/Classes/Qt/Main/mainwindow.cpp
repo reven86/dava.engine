@@ -2675,7 +2675,13 @@ bool QtMainWindow::IsSavingAllowed()
 		QMessageBox::warning(this, "Saving is not allowed", "Disable landscape editing before save!");
 		return false;
 	}
-	
+
+    if (!scene || scene->wayEditSystem->IsWayEditEnabled())
+    {
+        QMessageBox::warning(this, "Saving is not allowed", "Disable path editing before save!");
+        return false;
+    }
+
 	return true;
 }
 
