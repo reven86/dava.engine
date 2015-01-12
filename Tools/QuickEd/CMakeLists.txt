@@ -142,6 +142,8 @@ elseif ( MSVC )
 
 endif()
 
+file_tree_check( "${DAVA_FOLDERS}" )
+
 target_link_libraries( ${PROJECT_NAME}
     ${DAVA_LIBRARY}
     ${QT_LIBRARIES} 

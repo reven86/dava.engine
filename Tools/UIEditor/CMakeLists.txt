@@ -152,6 +152,8 @@ target_link_libraries( ${PROJECT_NAME}
     TextureTool
 )
 
+file_tree_check( "${DAVA_FOLDERS}" )
+
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
 endforeach ()
