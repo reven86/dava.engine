@@ -50,10 +50,10 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene * scene, SceneCol
 	, collisionSystem(colSys)
 	, cameraSystem(camSys)
 	, hoodSystem(hoodSys)
+	, cloneState(CLONE_DONT)
 	, inModifState(false)
 	, modified(false)
 	, snapToLandscape(false)
-	, cloneState(CLONE_DONT)
 {
 	SetModifMode(ST_MODIF_OFF);
 	SetModifAxis(ST_AXIS_Z);
@@ -756,8 +756,6 @@ DAVA::Matrix4 EntityModificationSystem::SnapToLandscape(const DAVA::Vector3 &poi
 	if(NULL != landscape)
 	{
 		DAVA::Vector3 resPoint;
-		DAVA::Vector3 realPoint = point * originalParentTransform;
-
 		if(landscape->PlacePoint(point, resPoint))
 		{
 			resPoint = resPoint - point;

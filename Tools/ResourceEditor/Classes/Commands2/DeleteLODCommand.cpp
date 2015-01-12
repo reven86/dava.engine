@@ -71,7 +71,7 @@ void DeleteLODCommand::Redo()
     for(DAVA::int32 i = count-1; i >= 0; --i)
     {
         DAVA::int32 lodIndex = 0, switchIndex = 0;
-        DAVA::RenderBatch *batch = ro->GetRenderBatch(i, lodIndex, switchIndex);
+        ro->GetRenderBatch(i, lodIndex, switchIndex);
         if(lodIndex == deletedLodIndex && (requestedSwitchIndex == switchIndex || requestedSwitchIndex == -1))
         {
             DeleteRenderBatchCommand *command = new DeleteRenderBatchCommand(entity, ro, i);

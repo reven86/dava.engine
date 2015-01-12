@@ -222,6 +222,9 @@ public class JNIWebView {
 	public static void LoadHtmlString(final int id, final String htmlString)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -260,6 +263,8 @@ public class JNIWebView {
 	public static void ExecuteJScript(final int id, final int requestId, final String scriptString)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {

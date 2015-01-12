@@ -206,25 +206,25 @@ void IlluminationParams::SetParent(NMaterial* parentMaterial)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-NMaterial::NMaterial() :
-materialType(NMaterial::MATERIALTYPE_NONE),
-materialKey(0),
-parent(NULL),
-requiredVertexFormat(0),
-lightCount(0),
-illuminationParams(NULL),
-materialSetFlags(8),
-baseTechnique(NULL),
-activePassInstance(NULL),
-activeRenderPass(NULL),
-instancePasses(4),
-textures(8),
-dynamicBindFlags(0),
-materialTemplate(NULL),
-materialProperties(16),
-instancePassRenderStates(4),
-materialSortKey(0)
+    
+NMaterial::NMaterial()
+    : materialType(NMaterial::MATERIALTYPE_NONE)
+    , materialKey(0)
+    , materialProperties(16)
+    , textures(8)
+    , parent(NULL)
+    , requiredVertexFormat(0)
+    , lightCount(0)
+    , dynamicBindFlags(0)
+    , materialSortKey(0)
+    , baseTechnique(NULL)
+    , instancePasses(4)
+    , instancePassRenderStates(4)
+    , activePassInstance(NULL)
+    , activeRenderPass(NULL)
+    , illuminationParams(NULL)
+    , materialTemplate(NULL)
+    , materialSetFlags(8)
 {
 	memset(lights, 0, sizeof(lights));
 }

@@ -95,10 +95,6 @@ Texture* Scene::stubTexture2dLightmap = NULL; //this texture should be all-pink 
     
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	: Entity()
-    , mainCamera(0)
-    , drawCamera(0)
-	, imposterManager(0)
-    , systemsMask(_systemsMask)
     , transformSystem(0)
     , renderUpdateSystem(0)
     , lodSystem(0)
@@ -116,10 +112,14 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , windSystem(0)
     , animationSystem(0)
     , staticOcclusionDebugDrawSystem(0)
-	, sceneGlobalMaterial(0)
-    , isDefaultGlobalMaterial(true)
+    , systemsMask(_systemsMask)
     , clearBuffers(RenderManager::ALL_BUFFERS)
-{   
+    , isDefaultGlobalMaterial(true)
+    , sceneGlobalMaterial(0)
+    , mainCamera(0)
+    , drawCamera(0)
+    , imposterManager(0)
+{
 	CreateComponents();
 	CreateSystems();
 
