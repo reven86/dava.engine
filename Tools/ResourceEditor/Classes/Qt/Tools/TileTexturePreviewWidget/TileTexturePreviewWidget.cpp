@@ -331,6 +331,8 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
     Sprite::DrawState drawState;
 	drawState.SetPosition(0.f, 0.f);
     drawState.SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 
 	RenderManager::Instance()->ResetColor();

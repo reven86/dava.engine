@@ -93,6 +93,7 @@ void SceneTreeModel::SetScene(SceneEditor2 *scene)
 	}
 
 	ResyncStructure(invisibleRootItem(), curScene);
+    SetFilter(filterText);  // Apply filter to new model
 }
 
 SceneEditor2* SceneTreeModel::GetScene() const

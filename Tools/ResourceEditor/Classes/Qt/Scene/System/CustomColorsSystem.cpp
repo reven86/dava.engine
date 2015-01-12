@@ -252,6 +252,8 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
     Sprite::DrawState drawState;
 	drawState.SetScaleSize(spriteSize.x, spriteSize.y, toolImageSprite->GetWidth(), toolImageSprite->GetHeight());
     drawState.SetPosition(spritePos);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
 	
 	RenderManager::Instance()->RestoreRenderTarget();
@@ -364,6 +366,7 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		}
 		RenderManager::Instance()->SetRenderTarget(drawSystem->GetCustomColorsProxy()->GetSprite());
         
+        RenderSystem2D::Instance()->Setup2DMatrices();
         RenderSystem2D::Instance()->Draw(sprite);
         
 		RenderManager::Instance()->RestoreRenderTarget();

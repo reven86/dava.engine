@@ -5,7 +5,7 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection) : control(SafeRetain(control))
+ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCopyType copyType) : control(SafeRetain(control))
 {
     name = typeInfo->Name();
     
@@ -20,9 +20,9 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, con
 
             ValueProperty *prop;
             if (String(member->Name()) == "text")
-                prop = new LocalizedTextValueProperty(control, member, sourceProperty);
+                prop = new LocalizedTextValueProperty(control, member, sourceProperty, copyType);
             else
-                prop = new ValueProperty(control, member, sourceProperty);
+                prop = new ValueProperty(control, member, sourceProperty, copyType);
 
             AddProperty(prop);
             SafeRelease(prop);

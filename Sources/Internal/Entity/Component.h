@@ -89,7 +89,7 @@ public:
 	Component();
 	virtual ~Component();
 
-    virtual uint32 GetType() = 0;
+    virtual uint32 GetType() const = 0;
     virtual Component* Clone(Entity * toEntity) = 0;
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
@@ -121,7 +121,7 @@ public:
 		);
 };
 
-#define IMPLEMENT_COMPONENT_TYPE(TYPE) virtual uint32 GetType() { return TYPE; }; 
+#define IMPLEMENT_COMPONENT_TYPE(TYPE) virtual uint32 GetType() const { return TYPE; };
     
 template<template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T> & container)
@@ -140,7 +140,6 @@ void Component::GetDataNodes(Container<T> & container)
     }	
 }
 
-    
     
 };
 #endif //__DAVAENGINE_SCENE3D_COMPONENT_H__

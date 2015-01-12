@@ -282,6 +282,9 @@
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 // Application core 
 #include "Core/Core.h"
