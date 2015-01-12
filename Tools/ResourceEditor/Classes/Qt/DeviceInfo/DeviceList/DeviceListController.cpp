@@ -23,18 +23,20 @@ DeviceListController::DeviceListController(QObject* parent)
 {
     initModel();
 
-    NetCore::Instance()->RegisterService(0, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
+    // Register network service for recieving logs from device
+    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
 
+    // Create controller for discovering remote devices
     DAVA::Net::Endpoint endpoint("239.192.100.1", 9999);
     DAVA::Net::NetCore::Instance()->CreateDiscoverer(endpoint, DAVA::MakeFunction(this, &DeviceListController::DiscoverCallback));
 }
 
-DeviceListController::~DeviceListController()
-{
-}
+DeviceListController::~DeviceListController() {}
 
 void DeviceListController::OnCloseEvent()
 {
+    // Received signal to close window so destroy all network controllers
+    // When all controllers are destroyed call AllStopped method
     NetCore::Instance()->DestroyAllControllers(MakeFunction(this, &DeviceListController::AllStopped));
 }
 
@@ -43,6 +45,7 @@ void DeviceListController::AllStopped()
     // Call UnregisterAllServices here, not in destructor:
     //  when closing ResourceEditor's main window while DeviceListWidget is open
     //  NetCore destructor is called before DeviceListController's destructor
+    // We need to unregister services as we register them on window creation and duplicate services are not allowed
     NetCore::Instance()->UnregisterAllServices();
     view->deleteLater();
 }
@@ -69,9 +72,14 @@ QStandardItem* DeviceListController::GetItemFromIndex(const QModelIndex& index)
     return model->itemFromIndex(index);
 }
 
-IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* arg)
+IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* context)
 {
-    int row = static_cast<int>(reinterpret_cast<intptr_t>(arg));
+    // Service creator method is called each time when connection has been established
+    // As network service was created when 'Connect' button has been pressed so here simply return 
+    // pointer to created service
+
+    // Context holds index of discovered device
+    int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     DVASSERT(model != NULL && 0 <= row && row < model->rowCount());
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
@@ -82,13 +90,19 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* arg
     return NULL;
 }
 
-void DeviceListController::DeleteLogger(IChannelListener*, void* arg)
+void DeviceListController::DeleteLogger(IChannelListener*, void* context)
 {
-    int row = static_cast<int>(reinterpret_cast<intptr_t>(arg));
+    // Service deleter method is called each time when connection has been lost
+    // Make actual delete of service only after user disconnected from device
+
+    // Context holds index of discovered device
+    int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     DVASSERT(model != NULL && 0 <= row && row < model->rowCount());
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
         QModelIndex index = model->index(row, 0);
+        // If ROLE_CONNECTION_ID contains NetCore::INVALID_TRACK_ID than user has pressed 'Disconnect' button
+        // so network service should be actually deleted
         NetCore::TrackId trackId = static_cast<NetCore::TrackId>(index.data(ROLE_CONNECTION_ID).toULongLong());
         if (trackId == NetCore::INVALID_TRACK_ID)
         {
@@ -107,6 +121,7 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* arg)
 
 void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIndex)
 {
+    // Check whether we have connection with device
     NetCore::TrackId trackId = static_cast<NetCore::TrackId>(index.data(ROLE_CONNECTION_ID).toULongLong());
     if (trackId != NetCore::INVALID_TRACK_ID) return;
 
@@ -118,9 +133,11 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
         trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()));
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
+            // Create network service
             DeviceServices services;
             services.log = new DeviceLogController(peer, view, this);
 
+            // Update item's ROLE_CONNECTION_ID and ROLE_PEER_SERVICES
             QStandardItem* item = model->itemFromIndex(index);
             item->setData(QVariant(static_cast<qulonglong>(trackId)), ROLE_CONNECTION_ID);
             {
@@ -134,28 +151,35 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
 
 void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
 {
+    // Check whether we have connection with device
     NetCore::TrackId trackId = static_cast<NetCore::TrackId>(index.data(ROLE_CONNECTION_ID).toULongLong());
     if (NetCore::INVALID_TRACK_ID == trackId) return;
 
+    // Cleare item's ROLE_CONNECTION_ID to 
     QStandardItem* item = model->itemFromIndex(index);
     item->setData(QVariant(static_cast<qulonglong>(NetCore::INVALID_TRACK_ID)), ROLE_CONNECTION_ID);
+    // And destroy controller related to remote device
     DAVA::Net::NetCore::Instance()->DestroyController(trackId);
 }
 
 void DeviceListController::OnConnectDevice()
 {
+    // 'Connect' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)
     {
         QModelIndex& index = selection[i];
         if (index.parent().isValid())
             continue;
+        // Do actual connect to device which description is stored in item identified by index
+        // and using device's first network interface
         ConnectDeviceInternal(index, 0);
     }
 }
 
 void DeviceListController::OnDisconnectDevice()
 {
+    // 'Disconnect' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)
     {
@@ -168,6 +192,7 @@ void DeviceListController::OnDisconnectDevice()
 
 void DeviceListController::OnShowLog()
 {
+    // 'Show log' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
     for (int i = 0; i < selection.size(); i++)
     {
@@ -175,6 +200,7 @@ void DeviceListController::OnShowLog()
         if (index.parent().isValid())
             continue;
 
+        // If connection has been established then show log output window
         NetCore::TrackId trackId = static_cast<NetCore::TrackId>(index.data(ROLE_CONNECTION_ID).toULongLong());
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
@@ -186,12 +212,19 @@ void DeviceListController::OnShowLog()
 
 QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, const PeerDescription& peerDescr)
 {
+    // Item text in the form of <name> - <platform>
+    // E.g., 9f5656fd - Android
     const QString caption = QString("%1 - %2")
         .arg(peerDescr.GetName().c_str())
         .arg(peerDescr.GetPlatformString().c_str());
     QStandardItem *item = new QStandardItem();
     item->setText(caption);
 
+    // Set item's properties:
+    //  - empty connection id
+    //  - endpoint from which device description has been obtained
+    //  - obtained device description
+    //  - empty network services
     item->setData(QVariant(static_cast<qulonglong>(NetCore::INVALID_TRACK_ID)), ROLE_CONNECTION_ID);
     {
         QVariant v;
@@ -210,6 +243,8 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
     }
 
     {
+        // Add subitem with text: <manufacturer> <model> <platform> <version>
+        // E.g. Samsung SM-G900F Android 4.4.2
         const QString text = QString("%1 %2 %3 %4")
             .arg(peerDescr.GetManufacturer().c_str())
             .arg(peerDescr.GetModel().c_str())
@@ -220,6 +255,7 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
         item->appendRow(subitem);
     }
     {
+        // Add list of available network interfaces
         QStandardItem* top = new QStandardItem();
         top->setText("Available interfaces");
         item->appendRow(top);
@@ -246,6 +282,7 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
         }
     }
     {
+        // Add list of available transports
         QStandardItem* top = new QStandardItem();
         top->setText("Available transports");
         item->appendRow(top);
@@ -265,6 +302,7 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
         }
     }
     {
+        // Add list of available services, here service name becomes useful
         QStandardItem* top = new QStandardItem();
         top->setText("Available services");
         item->appendRow(top);
@@ -285,6 +323,9 @@ QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, cons
 
 void DeviceListController::DiscoverCallback(size_t buflen, const void* buffer, const DAVA::Net::Endpoint& endpoint)
 {
+    // This method is called when announce packet has arrived
+
+    // Check whether device has been already announced, check by address from which packet recieved
     if (!AlreadyInModel(endpoint))
     {
         PeerDescription peer;
