@@ -6,23 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>594</width>
+    <width>560</width>
     <height>427</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Device info</string>
   </property>
-  <widget class="QTextEdit" name="textEdit">
-   <property name="geometry">
-    <rect>
-     <x>90</x>
-     <y>30</y>
-     <width>211</width>
-     <height>301</height>
-    </rect>
-   </property>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTextEdit" name="textEdit"/>
+   </item>
+  </layout>
  </widget>
  <resources>
   <include location="QtIcons.qrc"/>

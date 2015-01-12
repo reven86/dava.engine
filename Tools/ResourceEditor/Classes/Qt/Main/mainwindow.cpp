@@ -118,6 +118,7 @@
 #include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "Classes/Qt/DockConsole/LogWidget.h"
+#include "Classes/Qt/DockConsole/LogModel.h"
 
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
@@ -598,6 +599,7 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
+        DAVA::Logger::AddCustomOutput(logWidget->Model());
         dockConsole = new QDockWidget(logWidget->windowTitle(), this);
         dockConsole->setWidget(logWidget);
         dockConsole->setObjectName(QString( "dock_%1" ).arg(dockConsole->widget()->objectName()));

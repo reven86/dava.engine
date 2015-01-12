@@ -63,22 +63,6 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-    new MathTest();
-    new FunctionBindSignalTest();
-    new ImageSizeTest();
-    new SaveImageTest();
-    new StringFormatTest();
-    new ComponentsTest();
-    new FileListTest();
-    new FileSystemTest();
-    new DateTimeTest();
-    new LocalizationTest();
-    new MemoryAllocatorsTest();
-    new HashMapTest();
-    new SplitTest();
-    new TextSizeTest();
-    new KeyedArchiveYamlTest();
-    new JobManagerTest();
     new NetworkTest();
 }
 

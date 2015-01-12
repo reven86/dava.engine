@@ -38,9 +38,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="showInfo">
+      <widget class="QPushButton" name="showLog">
        <property name="text">
-        <string>ShowInfo</string>
+        <string>Show log</string>
        </property>
       </widget>
      </item>

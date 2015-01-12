@@ -4,6 +4,7 @@
 
 
 #include <QDebug>
+#include <QCloseEvent> 
 
 
 DeviceListWidget::DeviceListWidget( QWidget *parent )
@@ -14,7 +15,7 @@ DeviceListWidget::DeviceListWidget( QWidget *parent )
 
     connect( ui->connectDevice, &QPushButton::clicked, this, &DeviceListWidget::connectClicked );
     connect( ui->disconnectDevice, &QPushButton::clicked, this, &DeviceListWidget::disconnectClicked );
-    connect( ui->showInfo, &QPushButton::clicked, this, &DeviceListWidget::showInfoClicked );
+    connect( ui->showLog, &QPushButton::clicked, this, &DeviceListWidget::showLogClicked );
 }
 
 DeviceListWidget::~DeviceListWidget()
@@ -24,4 +25,10 @@ DeviceListWidget::~DeviceListWidget()
 QTreeView* DeviceListWidget::ItemView()
 {
     return ui->view;
+}
+
+void DeviceListWidget::closeEvent(QCloseEvent *e)
+{
+    emit closeRequest();
+    e->ignore();
 }
