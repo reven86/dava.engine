@@ -45,6 +45,7 @@ EdgeComponent::EdgeComponent()
 EdgeComponent::~EdgeComponent()
 {
     SafeRelease(properties);
+    SafeRelease(nextEntity);
 }
 
 EdgeComponent::EdgeComponent(const EdgeComponent& cp)
@@ -79,6 +80,16 @@ void EdgeComponent::SetProperties(KeyedArchive *archieve)
     SafeRelease(properties);
     properties = new KeyedArchive(*archieve);
 }
+    
+void EdgeComponent::SetNextEntity(Entity * _entity)
+{
+    if(nextEntity != _entity) 
+    {
+        SafeRelease(nextEntity);
+        nextEntity = SafeRetain(_entity);
+    }
+}
+
 
 
 }

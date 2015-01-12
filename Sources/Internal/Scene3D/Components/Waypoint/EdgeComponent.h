@@ -72,11 +72,6 @@ public:
     );
 };
 
-    
-inline void EdgeComponent::SetNextEntity(Entity * _entity)
-{
-    nextEntity = _entity;
-}
 
 inline Entity * EdgeComponent::GetNextEntity() const
 {
