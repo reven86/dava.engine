@@ -372,7 +372,7 @@ void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate,
 	sink->SetDelegate(delegate, webView);
 }
 
-VOID WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
+void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
     UIWebView& control)
 {
     // Update the browser window according to the holder window.
@@ -452,7 +452,6 @@ VOID WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
                     control.SetSprite(spr, 0);
                     SafeRelease(spr);
                 }
-                control.SetDebugDraw(true);
                 // CImage in BMP format so we need to flip image
                 control.GetBackground()->SetModification(ESM_VFLIP);
 

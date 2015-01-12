@@ -215,6 +215,35 @@ void JniWebView::SetBackgroundTransparency(int id, bool enabled)
 	}
 }
 
+void JniWebView::SetRenderToTexture(int id, bool renderToTexture)
+{
+    jmethodID mid = GetMethodID("setRenderToTexture", "(IZ)V");
+    if (mid)
+    {
+        GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id,
+                renderToTexture);
+    } else
+    {
+        DVASSERT(false);
+        abort();
+    }
+}
+
+bool JniWebView::IsRenderToTexture(int id)
+{
+    jmethodID mid = GetMethodID("isRenderToTexture", "(I)Z");
+    if (mid)
+    {
+        jboolean result = GetEnvironment()->CallStaticBooleanMethod(
+                GetJavaClass(), mid, id);
+        return result == 0 ? false : true;
+    } else
+    {
+        DVASSERT(false);
+        abort();
+    }
+}
+
 IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 {
 	CONTROLS_MAP::iterator iter = controls.find(id);
@@ -248,17 +277,25 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
 		delegate->PageLoaded(&control->webView);
 	}
 
-	// TODO
 	UIWebView& webView = control->GetUIWebView();
 	if (rawPixels)
 	{
-		Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888, reinterpret_cast<uint8*>(rawPixels), width, height, false);
-		Rect rect = webView.GetRect();
-		Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx, rect.dy);
-		webView.GetBackground()->SetSprite(spr, 0);
-		webView.SetDebugDraw(true);
-		SafeRelease(spr);
-		SafeRelease(tex);
+		{
+		    Texture* tex = Texture::CreateFromData(FORMAT_RGBA8888,
+		            reinterpret_cast<uint8*>(rawPixels), width, height, false);
+            Rect rect = webView.GetRect();
+            {
+                Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, rect.dx,
+                        rect.dy);
+                webView.GetBackground()->SetSprite(spr, 0);
+                SafeRelease(spr);
+            }
+            SafeRelease(tex);
+		}
+	} else
+	{
+		// reset sprite to prevent render old sprite under native webveiw
+		webView.SetSprite(nullptr, 0);
 	}
 }
 
@@ -369,12 +406,13 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 void WebViewControl::SetRenderToTexture(bool value)
 {
-    // TODO
+    JniWebView jniWebView;
+    jniWebView.SetRenderToTexture(webViewId, value);
 }
 bool WebViewControl::IsRenderToTexture() const
 {
-    // TODO
-    return true;
+    JniWebView jniWebView;
+    return jniWebView.IsRenderToTexture(webViewId);
 }
 
 }//namespace DAVA

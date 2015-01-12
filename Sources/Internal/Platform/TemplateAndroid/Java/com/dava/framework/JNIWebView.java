@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -25,25 +25,99 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
-@SuppressLint("UseSparseArrays")
 public class JNIWebView {
 	final static String TAG = "JNIWebView";
 	final static Paint paint = new Paint();
-	static Map<Integer, WebView> views = new HashMap<Integer, WebView>();
 	
-	private static class InternalViewClient extends WebViewClient {
+	public static class WebViewWrapper extends android.webkit.WebView
+	{
+		public WebViewWrapper(Context context) {
+			super(context);
+		}
+
+		private InternalViewClient client = null;
+		
+		void setWebViewClient(InternalViewClient client)
+		{
+			assert this.client == null;
+			assert client != null;
+			
+			this.client = client;
+			super.setWebViewClient(client);
+		}
+		
+		InternalViewClient getInternalViewClient()
+		{
+			assert client != null;
+			return client;
+		}
+	}
+	
+	static Map<Integer, WebViewWrapper> views = new HashMap<Integer, WebViewWrapper>();
+	
+	public static class InternalViewClient extends WebViewClient {
 		int id;
 		
 		// TODO remember back reference to WebView to check isVisible
 		
 		boolean isRenderToTexture = false;
+		boolean isVisible = true;
 		
+		// precache as much as possible
+		Bitmap bitmapCache = null;
+		Canvas canvas = null;
+		int pixels[] = null;
+		int width = 0;
+		int height = 0;
+		
+		public boolean isVisible() {
+			return isVisible;
+		}
+
+		public void setVisible(WebView view, boolean isVisible) {
+			int visible = isVisible ? WebView.VISIBLE : WebView.INVISIBLE;
+			
+			view.setVisibility(visible);
+			this.isVisible = isVisible;
+		}
+
 		public boolean isRenderToTexture() {
 			return isRenderToTexture;
 		}
 
-		public void setRenderToTexture(boolean isRenderToTexture) {
+		public void setRenderToTexture(WebView view, 
+				boolean isRenderToTexture) {
 			this.isRenderToTexture = isRenderToTexture;
+			Log.d(TAG, "setRenderToTexture value = " + isRenderToTexture);
+			
+			if (isRenderToTexture)
+			{	
+				if (view.getMeasuredWidth() != 0 &&
+					view.getMeasuredHeight() != 0)
+				{
+					renderToBitmapAndCopyPixels(view);
+				} else
+				{
+					Log.d(TAG, "android web view:" + id + " pixels = " + 
+							pixels + " width = "
+						+ width + " height = " + height);
+				}
+				
+				//JNIWebView.OnPageLoaded(id, pixels, width, height);
+				JNIActivity.GetActivity().PostEventToGL(
+					new OnPageLoadedNativeRunnable(pixels, width, height));
+				
+				view.setVisibility(WebView.INVISIBLE);
+			} else
+			{
+				if (isVisible)
+				{
+					view.setVisibility(WebView.VISIBLE);
+					// we need remove sprite in c++ native code
+					JNIActivity.GetActivity().PostEventToGL(
+						new OnPageLoadedNativeRunnable(null, 0, 0));
+				}
+			}
 		}
 
 		public InternalViewClient(int _id) {
@@ -76,42 +150,56 @@ public class JNIWebView {
 			JNIActivity activity = JNIActivity.GetActivity();
 			if (null == activity || activity.GetIsPausing())
 				return;
-			int pixels[] = null;
-			int width = 0;
-			int height = 0;
 			
 			if (isRenderToTexture)
 			{
 				// render webview into bitmap and pass it to native code
-				Bitmap bitmap = renderWebViewIntoBitmap(view);
+				renderToBitmapAndCopyPixels(view);
+				
+				JNIActivity.GetActivity().PostEventToGL(
+					new OnPageLoadedNativeRunnable(pixels, width, height));
+			} else
+			{
+				JNIActivity.GetActivity().PostEventToGL(
+					new OnPageLoadedNativeRunnable(null, 0, 0));
+			}
+		}
+
+		private void renderToBitmapAndCopyPixels(WebView view) {
+			Bitmap bitmap = renderWebViewIntoBitmap(view);
+
+			if (pixels == null
+				|| width != bitmap.getWidth()
+				|| height != bitmap.getHeight())
+			{
 				width = bitmap.getWidth();
 				height = bitmap.getHeight();
-				pixels = new int[width * height]; 
-				// copy ARGB pixels values into our buffer
-				bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-				Log.d(TAG, "prepare bitmap for webview texture");
-			}
-			
-			JNIActivity.GetActivity().PostEventToGL(
-					new OnPageLoadedNativeRunnable(pixels, width, height));
+				pixels = new int[width * height];
+			} 
+			// copy ARGB pixels values into our buffer
+			bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+			Log.d(TAG, "prepare bitmap for webview texture");
 		}
 
 		private Bitmap renderWebViewIntoBitmap(WebView view) {
 			assert view != null;
-			assert view.getMeasuredWidth() != 0;
-			assert view.getMeasuredHeight() != 0;
+			assert view.getMeasuredWidth() > 0;
+			assert view.getMeasuredHeight() > 0;
 			
 			int view_width = view.getMeasuredWidth();
 			int view_height = view.getMeasuredHeight();
 			
-			Bitmap bm = Bitmap.createBitmap(view_width,
+			if (bitmapCache == null 
+				|| bitmapCache.getWidth() != view_width
+				|| bitmapCache.getHeight() != view_height)
+			{
+				bitmapCache = Bitmap.createBitmap(view_width,
                     view_height, Bitmap.Config.ARGB_8888);
-			
-            assert bm != null;
-            Canvas bigcanvas = new Canvas(bm);
-            int height = bm.getHeight();
-            bigcanvas.drawBitmap(bm, 0, height, paint);
-            view.draw(bigcanvas);
+				canvas = new Canvas(bitmapCache);
+			}
+            //int height = bitmapCache.getHeight();
+            //canvas.drawBitmap(bitmapCache, 0, height, paint);
+            view.draw(canvas);
 //            try {
 //                String path = Environment.getExternalStorageDirectory()
 //                        .toString();
@@ -126,7 +214,7 @@ public class JNIWebView {
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //            }
-            return bm;
+            return bitmapCache;
 		};
 		
 		
@@ -216,7 +304,7 @@ public class JNIWebView {
 					Log.d(TAG, String.format("WebView with id %d already initialized", id));
 					return;
 				}
-				WebView webView = new WebView(activity);
+				WebViewWrapper webView = new WebViewWrapper(activity);
 				FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
 						new FrameLayout.MarginLayoutParams((int)(dx + 0.5f), (int)(dy + 0.5f)));
 				params.leftMargin = (int)x;
@@ -229,7 +317,7 @@ public class JNIWebView {
 				webView.getSettings().setUseWideViewPort(false);
 				if (android.os.Build.VERSION.SDK_INT >= 11)
 				{
-				webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+					webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
 				}
 				webView.setWebChromeClient(new InternalWebClient(id));
 				webView.setOnTouchListener(new View.OnTouchListener()
@@ -468,14 +556,46 @@ public class JNIWebView {
 					Log.d(TAG, String.format("Unknown view id %d", id));
 					return;
 				}
-				WebView view = views.get(id);
-				
-				InternalWebClient internalClient = (InternalWebClient)view.getW
-				
-				int visible = isVisible ? WebView.VISIBLE : WebView.INVISIBLE;
-				view.setVisibility(visible);
+				WebViewWrapper view = views.get(id);
+				InternalViewClient client = view.getInternalViewClient();
+				client.setVisible(view, isVisible);
 			}
 		});
+	}
+	
+	public static void setRenderToTexture(final int id, final boolean renderToTexture)
+	{
+		final JNIActivity activity = JNIActivity.GetActivity();
+		if (null == activity || activity.GetIsPausing())
+			return;
+
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (!views.containsKey(id))
+				{
+					Log.d(TAG, String.format("Unknown view id %d", id));
+					return;
+				}
+				WebViewWrapper view = views.get(id);
+				InternalViewClient client = view.getInternalViewClient();
+				client.setRenderToTexture(view, renderToTexture);
+			}
+		});
+	}
+
+	public static boolean isRenderToTexture(final int id)
+	{
+		if (!views.containsKey(id))
+		{
+			Log.d(TAG, String.format("Unknown view id %d", id));
+			return false;
+		} else 
+		{
+			WebViewWrapper view = views.get(id);
+			InternalViewClient client = view.getInternalViewClient();
+			return client.isRenderToTexture();
+		}
 	}
 
 	public static void SetBackgroundTransparency(final int id, final boolean enabled)

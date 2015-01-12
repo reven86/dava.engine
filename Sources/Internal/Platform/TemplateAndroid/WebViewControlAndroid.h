@@ -111,6 +111,9 @@ public:
 
 	void SetBackgroundTransparency(int id, bool isVisible);
 
+	void SetRenderToTexture(int id, bool renderToTexture);
+	bool IsRenderToTexture(int id);
+
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
 	static void PageLoaded(int id, int* rawPixels, int width, int height);
 	static void OnExecuteJScript(int id, int requestId, const String& result);
