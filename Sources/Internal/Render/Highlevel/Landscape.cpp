@@ -110,9 +110,8 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 
 Landscape::Landscape()
     : indices(0)
-    , foliageSystem(NULL)
     , tileMaskMaterial(NULL)
-	  //currentMaterial(NULL)
+    , foliageSystem(NULL)
 {
 	drawIndices = 0;
     //textureNames.resize(TEXTURE_COUNT);
@@ -764,8 +763,8 @@ void Landscape::DrawFans()
     
     ClearQueue();
     
-    List<LandQuadTreeNode<LandscapeQuad>*>::const_iterator end = fans.end();
-    for (List<LandQuadTreeNode<LandscapeQuad>*>::iterator t = fans.begin(); t != end; ++t)
+    Vector<LandQuadTreeNode<LandscapeQuad>*>::const_iterator end = fans.end();
+    for (Vector<LandQuadTreeNode<LandscapeQuad>*>::iterator t = fans.begin(); t != end; ++t)
     {
         //uint16 * drawIndices = indices;
         LandQuadTreeNode<LandscapeQuad>* node = *t;

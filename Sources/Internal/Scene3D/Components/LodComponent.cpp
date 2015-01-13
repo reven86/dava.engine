@@ -186,10 +186,10 @@ void LodComponent::Deserialize(KeyedArchive *archive, SerializationContext *seri
 }
 
 LodComponent::LodComponent()
-:	forceLodLayer(INVALID_LOD_LAYER),
-	forceDistance(INVALID_DISTANCE),
-	forceDistanceSq(INVALID_DISTANCE),
-    currentLod(INVALID_LOD_LAYER)
+: currentLod(INVALID_LOD_LAYER)
+, forceLodLayer(INVALID_LOD_LAYER)
+, forceDistance(INVALID_DISTANCE)
+, forceDistanceSq(INVALID_DISTANCE)
 {
 	lodLayersArray.resize(MAX_LOD_LAYERS);
 

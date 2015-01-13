@@ -1123,6 +1123,8 @@
 		CCEB543D1886FF0C0018491F /* LodToLod2Converter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB54391886FF0C0018491F /* LodToLod2Converter.h */; };
 		CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */; };
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
+		CCF00D691A443F6200A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D671A443F6200A577C2 /* EntityFamily.cpp */; };
+		CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = CCF00D681A443F6200A577C2 /* EntityFamily.h */; };
 		D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D7CC265D19C517E500A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC264F19C517E500A3B754 /* LocalNotification.cpp */; };
@@ -2101,6 +2103,8 @@
 		CCEB54391886FF0C0018491F /* LodToLod2Converter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LodToLod2Converter.h; sourceTree = "<group>"; };
 		CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SwitchToRenerObjectConverter.cpp; sourceTree = "<group>"; };
 		CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchToRenerObjectConverter.h; sourceTree = "<group>"; };
+		CCF00D671A443F6200A577C2 /* EntityFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityFamily.cpp; sourceTree = "<group>"; };
+		CCF00D681A443F6200A577C2 /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D751821719BF03E400BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
 		D7CC264F19C517E500A3B754 /* LocalNotification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotification.cpp; sourceTree = "<group>"; };
@@ -3729,6 +3733,8 @@
 		E8B3C9A316B9326E002BD35F /* Scene3D */ = {
 			isa = PBXGroup;
 			children = (
+				CCF00D671A443F6200A577C2 /* EntityFamily.cpp */,
+				CCF00D681A443F6200A577C2 /* EntityFamily.h */,
 				CCEB54371886FF0C0018491F /* Converters */,
 				A695E52F18113327008A0F20 /* SceneFile */,
 				11CB614719C338DF00B48A92 /* AnimationData.cpp */,
@@ -4716,6 +4722,7 @@
 				024BD5BB1A2C9299000BECC1 /* RenderSystem2D.h in Headers */,
 				64493E1A19476F4700AB2715 /* VegetationRenderObject.h in Headers */,
 				64493E0E19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
+				CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */,
 				E8B3CB6016B9326E002BD35F /* RectPacker.h in Headers */,
 				E8B3CB6116B9326E002BD35F /* Sphere.h in Headers */,
 				E8983CC618C8A540002FB974 /* ES3Renderer.h in Headers */,
@@ -5602,6 +5609,7 @@
 				64493E0A19476F4700AB2715 /* VegetationGeometry.cpp in Sources */,
 				E8B3CB3E16B9326E002BD35F /* InputSystem.cpp in Sources */,
 				E8B3CB4016B9326E002BD35F /* KeyboardDevice.cpp in Sources */,
+				CCF00D691A443F6200A577C2 /* EntityFamily.cpp in Sources */,
 				029BAE591859C80500478671 /* musicios.mm in Sources */,
 				64493E1019476F4700AB2715 /* VegetationPropertyNames.cpp in Sources */,
 				E8B3CB4216B9326E002BD35F /* AABBox2.cpp in Sources */,
@@ -6178,7 +6186,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
@@ -6232,7 +6239,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
@@ -6415,7 +6421,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
@@ -6508,7 +6513,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";

@@ -89,8 +89,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	delegate(0)
 ,	cursorBlinkingTime(0.0f)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
-,   textFont(NULL)
 ,   staticText(NULL)
+,   textFont(NULL)
 #endif
 {
     customInput = MakeFunction(this, &UITextField::CustomInput);

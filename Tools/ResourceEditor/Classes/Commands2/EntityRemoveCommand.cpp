@@ -33,8 +33,8 @@
 EntityRemoveCommand::EntityRemoveCommand(DAVA::Entity* _entity)
 	: Command2(CMDID_ENTITY_REMOVE, "Remove entity")
 	, entity(_entity)
-	, parent(NULL)
 	, before(NULL)
+	, parent(NULL)
 {
 	SafeRetain(entity);
 
