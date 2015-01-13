@@ -120,6 +120,9 @@ public:
     
 private:
     
+    uint32 GetWaypointIndex(const Waypoint * point);
+    
+    
     FastName name;
     Vector<Waypoint *> waypoints;
 

@@ -172,7 +172,6 @@ Component * PathComponent::Clone(Entity * toEntity)
         newComponent->waypoints.resize(waypointCount);
         std::generate(newComponent->waypoints.begin(),newComponent->waypoints.end(),NewWaypoint);
 
-        const Waypoint *firstWaypoint = waypoints.front();
         for(uint32 w = 0; w < waypointCount; ++w)
         {
             const Waypoint* waypoint = waypoints[w];
@@ -192,7 +191,7 @@ Component * PathComponent::Clone(Entity * toEntity)
                 DVASSERT(edge);
                 DVASSERT(edge->destination);
 
-                uint32 destWaypointIdx = edge->destination - firstWaypoint;
+                uint32 destWaypointIdx = GetWaypointIndex(edge->destination);
                 DVASSERT(destWaypointIdx < waypointCount);
 
                 Edge *newEdge = new Edge;
@@ -221,13 +220,13 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
 
         if(waypointCount)
         {
-            const Waypoint *firstWaypoint = waypoints.front();
             for(uint32 w = 0; w < waypointCount; ++w)
             {
                 const Waypoint *wp = waypoints[w];
                 
                 KeyedArchive * wpArchieve = new KeyedArchive();
-                
+
+                wpArchieve->SetFastName("name", wp->name);
                 wpArchieve->SetVector3("position", wp->position);
                 if(wp->GetProperties())
                 {
@@ -247,7 +246,7 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
                     }
                     
                     DVASSERT(edge->destination);
-                    edgeArchieve->SetUInt32("destination", (edge->destination - firstWaypoint)); //index in waypoints array
+                    edgeArchieve->SetUInt32("destination", GetWaypointIndex(edge->destination)); //index in waypoints array
                     
                     archive->SetArchive(Format("edge_%d", e), edgeArchieve);
                     SafeRelease(edgeArchieve);
@@ -258,6 +257,22 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
             }
         }
     }
+}
+
+    
+uint32 PathComponent::GetWaypointIndex(const PathComponent::Waypoint * point)
+{
+    const uint32 waypointCount = (const uint32)waypoints.size();
+    for(uint32 w = 0; w < waypointCount; ++w)
+    {
+        if(point == waypoints[w])
+        {
+            return w;
+        }
+    }
+    
+    DVASSERT(false);
+    return -1;
 }
 
 void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
@@ -276,10 +291,7 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
     if(!waypointCount) return;
     
     waypoints.resize(waypointCount);
-    for(uint32 w = 0; w < waypointCount; ++w)
-    {
-        waypoints.push_back(new Waypoint());
-    }
+    std::generate(waypoints.begin(),waypoints.end(),NewWaypoint);
 
     for(uint32 w = 0; w < waypointCount; ++w)
     {
@@ -287,7 +299,8 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
         
         KeyedArchive * wpArchieve = archive->GetArchive(Format("waypoint_%d", w));
         DVASSERT(wpArchieve);
-        
+
+        wp->name = wpArchieve->GetFastName("name");
         wp->position = wpArchieve->GetVector3("position");
         
         KeyedArchive *wpProperties = wpArchieve->GetArchive("properties");

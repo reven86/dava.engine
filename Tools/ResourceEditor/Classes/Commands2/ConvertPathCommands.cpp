@@ -274,14 +274,16 @@ void CollapsePathCommand::Redo()
     {
         RedoInternalCommand(entityRemoveCommands[i]);
     }
-    RedoInternalCommand(removePrevComponent);
+    
     RedoInternalCommand(addNextComponent);
+    RedoInternalCommand(removePrevComponent);
 }
 
 void CollapsePathCommand::Undo()
 {
-    UndoInternalCommand(addNextComponent);
     UndoInternalCommand(removePrevComponent);
+    UndoInternalCommand(addNextComponent);
+
     DAVA::uint32 count = entityRemoveCommands.size();
     for (DAVA::int32 i=count-1; i >= 0; --i)
     {
