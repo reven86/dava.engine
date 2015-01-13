@@ -376,7 +376,7 @@ protected:
     
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;
 
-    List<LandQuadTreeNode<LandscapeQuad>*> fans;
+    Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
     
     int32 allocatedMemoryForQuads;
     
