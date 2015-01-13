@@ -90,6 +90,7 @@ void JobManager::Update()
                 curMainJob.fn();
                 mainJobLastExecutedID = curMainJob.id;
                 mainQueueMutex.Lock();
+                SafeRelease(curMainJob.owner);
             }
 
             curMainJob = MainJob();
@@ -108,7 +109,7 @@ uint32 JobManager::GetWorkersCount() const
     return workerThreads.size();
 }
 
-uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJobType)
+uint32 JobManager::CreateMainJob(const Function<void()>& fn, BaseObject * owner, eMainJobType mainJobType)
 {
     uint32 jobID = 0;
 
@@ -132,6 +133,7 @@ uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJo
 
         {
             LockGuard<Mutex> guard(mainQueueMutex);
+            job.owner = SafeRetain(owner);
             mainJobs.push_back(job);
         }
     }

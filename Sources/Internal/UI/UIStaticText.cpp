@@ -548,7 +548,7 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
 
 void UIStaticText::PrepareSprite()
 {
-	JobManager::Instance()->CreateMainJob(MakeFunction(this, &UIStaticText::PrepareSpriteInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &UIStaticText::PrepareSpriteInternal), this);
 }
 
 void UIStaticText::PrepareSpriteInternal()

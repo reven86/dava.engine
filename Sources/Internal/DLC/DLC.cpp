@@ -153,7 +153,7 @@ FilePath DLC::GetMetaStorePath() const
 void DLC::PostEvent(DLCEvent event)
 {
 	Function<void()> fn = Bind(MakeFunction(this, &DLC::FSM), event);
-	JobManager::Instance()->CreateMainJob(fn);
+	JobManager::Instance()->CreateMainJob(fn, this);
 }
 
 void DLC::PostError(DLCError error)
@@ -833,7 +833,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
     }
 
 	Function<void()> fn(this, &DLC::StepPatchFinish);
-	JobManager::Instance()->CreateMainJob(fn);
+	JobManager::Instance()->CreateMainJob(fn, this);
 }
 
 void DLC::StepClean()

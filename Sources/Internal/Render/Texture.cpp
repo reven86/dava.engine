@@ -686,7 +686,7 @@ void Texture::SetParamsFromImages(const Vector<Image *> * images)
 void Texture::FlushDataToRenderer(Vector<Image *> * images)
 {
 	Function<void()> fn = Bind(MakeFunction(this, &Texture::FlushDataToRendererInternal), images);
-	JobManager::Instance()->CreateMainJob(fn);
+	JobManager::Instance()->CreateMainJob(fn, this);
 }
 
 void Texture::FlushDataToRendererInternal(Vector<Image *> * images)
@@ -932,7 +932,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
 #if defined(__DAVAENGINE_OPENGL__)
 void Texture::HWglCreateFBOBuffers()
 {
-	JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::HWglCreateFBOBuffersInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(this, &Texture::HWglCreateFBOBuffersInternal), this);
 }
 
 void Texture::HWglCreateFBOBuffersInternal()
