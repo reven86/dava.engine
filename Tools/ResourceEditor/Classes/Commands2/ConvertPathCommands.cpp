@@ -277,8 +277,8 @@ void CollapsePathCommand::Redo()
     {
         RedoInternalCommand(entityRemoveCommands[i]);
     }
-    RedoInternalCommand(removePrevComponent);
     RedoInternalCommand(addNextComponent);
+    RedoInternalCommand(removePrevComponent);
 }
 
 void CollapsePathCommand::Undo()

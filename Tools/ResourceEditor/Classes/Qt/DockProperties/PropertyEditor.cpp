@@ -740,6 +740,8 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
     case CMDID_SOUND_REMOVE_EVENT:
 	case CMDID_DELETE_RENDER_BATCH:
 	case CMDID_CLONE_LAST_BATCH:
+    case CMDID_EXPAND_PATH:
+    case CMDID_COLLAPSE_PATH:
         {
             bool doReset = (command->GetEntity() == NULL);
             for ( int i = 0; !doReset && i < curNodes.size(); i++ )
