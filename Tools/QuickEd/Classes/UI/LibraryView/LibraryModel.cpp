@@ -24,6 +24,7 @@ LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractItemMo
     defaultControls.push_back("UIScrollView");
     defaultControls.push_back("UISpinner");
     defaultControls.push_back("UISwitch");
+    defaultControls.push_back("UIParticles");
 
     defaultControlsCount = defaultControls.size();
     

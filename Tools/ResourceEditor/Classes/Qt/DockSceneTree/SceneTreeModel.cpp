@@ -52,12 +52,7 @@ SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/ )
 	, curScene(NULL)
 	, dropAccepted(false)
 {
-	setColumnCount(1);
-
-	QStringList headerLabels;
-	headerLabels.append("Scene hierarchy");
-	setHorizontalHeaderLabels(headerLabels);
-
+    SetScene(NULL);
 	QObject::connect(this, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(ItemChanged(QStandardItem *)));
 }
 
@@ -77,8 +72,9 @@ Qt::DropActions SceneTreeModel::supportedDragActions() const
 
 void SceneTreeModel::SetScene(SceneEditor2 *scene)
 {
-	// remove add rows
-	removeRows(0, rowCount());
+    clear();
+    setColumnCount(1);
+    setHorizontalHeaderLabels( QStringList() << "Scene hierarchy" );
 
 	if(NULL != curScene)
 	{
