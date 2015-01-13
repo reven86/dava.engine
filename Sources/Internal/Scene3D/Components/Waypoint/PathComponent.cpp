@@ -248,7 +248,7 @@ void PathComponent::Serialize(KeyedArchive *archive, SerializationContext *seria
                     DVASSERT(edge->destination);
                     edgeArchieve->SetUInt32("destination", GetWaypointIndex(edge->destination)); //index in waypoints array
                     
-                    archive->SetArchive(Format("edge_%d", e), edgeArchieve);
+                    wpArchieve->SetArchive(Format("edge_%d", e), edgeArchieve);
                     SafeRelease(edgeArchieve);
                 }
                 
@@ -304,28 +304,18 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
         wp->position = wpArchieve->GetVector3("position");
         
         KeyedArchive *wpProperties = wpArchieve->GetArchive("properties");
-        if(wpProperties)
-        {
-            KeyedArchive* p = new KeyedArchive(*wpProperties);
-            wp->SetProperties(p);
-            SafeRelease(p);
-        }
+        wp->SetProperties(wpProperties);
         
         const uint32 edgesCount = wpArchieve->GetUInt32("edgesCount");
         for(uint32 e = 0; e < edgesCount; ++e)
         {
             Edge *edge = new Edge();
             
-            KeyedArchive * edgeArchieve = archive->GetArchive(Format("edge_%d", e));
+            KeyedArchive * edgeArchieve = wpArchieve->GetArchive(Format("edge_%d", e));
             DVASSERT(edgeArchieve);
             
             KeyedArchive *edgeProperties = edgeArchieve->GetArchive("properties");
-            if(edgeProperties)
-            {
-                KeyedArchive* p = new KeyedArchive(*edgeProperties);
-                edge->SetProperties(p);
-                SafeRelease(p);
-            }
+            edge->SetProperties(edgeProperties);
             
             uint32 index = edgeArchieve->GetUInt32("destination");
             DVASSERT(index < waypointCount);
