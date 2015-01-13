@@ -12,12 +12,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -60,8 +58,6 @@ public class JNIWebView {
 	public static class InternalViewClient extends WebViewClient {
 		int id;
 		
-		// TODO remember back reference to WebView to check isVisible
-		
 		boolean isRenderToTexture = false;
 		boolean isVisible = true;
 		
@@ -90,34 +86,25 @@ public class JNIWebView {
 		public void setRenderToTexture(WebView view, 
 				boolean isRenderToTexture) {
 			this.isRenderToTexture = isRenderToTexture;
-			Log.d(TAG, "setRenderToTexture value = " + isRenderToTexture);
+			
+			JNIActivity activity = JNIActivity.GetActivity();
 			
 			if (isRenderToTexture)
 			{	
-				if (view.getMeasuredWidth() != 0 &&
-					view.getMeasuredHeight() != 0)
-				{
-					renderToBitmapAndCopyPixels(view);
-				} else
-				{
-					Log.d(TAG, "android web view:" + id + " pixels = " + 
-							pixels + " width = "
-						+ width + " height = " + height);
-				}
+				renderToBitmapAndCopyPixels(view);
 				
-				//JNIWebView.OnPageLoaded(id, pixels, width, height);
-				JNIActivity.GetActivity().PostEventToGL(
-					new OnPageLoadedNativeRunnable(pixels, width, height));
-				
-				view.setVisibility(WebView.INVISIBLE);
+				activity.PostEventToGL(
+					new OnPageLoadedNativeRunnable(view, pixels, width, 
+							height));
 			} else
 			{
 				if (isVisible)
 				{
 					view.setVisibility(WebView.VISIBLE);
-					// we need remove sprite in c++ native code
-					JNIActivity.GetActivity().PostEventToGL(
-						new OnPageLoadedNativeRunnable(null, 0, 0));
+					// we need remove sprite in c++ native code to reduce
+					// memory usage, but only after native view appear 
+					activity.PostEventToGL(
+						new OnPageLoadedNativeRunnable(null, null, 0, 0));
 				}
 			}
 		}
@@ -127,11 +114,14 @@ public class JNIWebView {
 		}
 		
 		class OnPageLoadedNativeRunnable implements Runnable {
+			WebView view = null;
 			int[] pixels;
 			int width;
 			int height;
 			
-			OnPageLoadedNativeRunnable(int[] pixels, int width, int height) {
+			OnPageLoadedNativeRunnable(WebView view, int[] pixels, int width, 
+					int height) {
+				this.view = view;
 				this.pixels = pixels;
 				this.width = width;
 				this.height = height;
@@ -139,64 +129,85 @@ public class JNIWebView {
 			
 			@Override
 			public void run() {
-				Log.d(TAG, "id = " + id + " pixels = " + pixels + " width = "
-						+ width + " height = " + height);
+				
 				OnPageLoaded(id, pixels, width, height);
-				Log.d(TAG, "finish onPageLoded");
+				
+				JNIActivity.GetActivity().runOnUiThread(new Runnable(){
+					@Override
+					public void run() {
+						if (view != null && pixels != null)
+						{
+							view.setVisibility(WebView.INVISIBLE);
+						}
+					}
+					
+				});
+				
 			}
 		}
 		
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
+			
 			JNIActivity activity = JNIActivity.GetActivity();
 			if (null == activity || activity.GetIsPausing())
+			{
 				return;
+			}
 			
 			if (isRenderToTexture)
 			{
 				// render webview into bitmap and pass it to native code
 				renderToBitmapAndCopyPixels(view);
 				
-				JNIActivity.GetActivity().PostEventToGL(
-					new OnPageLoadedNativeRunnable(pixels, width, height));
+				activity.PostEventToGL(
+					new OnPageLoadedNativeRunnable(view, pixels, width, 
+							height));
 			} else
 			{
-				JNIActivity.GetActivity().PostEventToGL(
-					new OnPageLoadedNativeRunnable(null, 0, 0));
+				activity.PostEventToGL(
+					new OnPageLoadedNativeRunnable(null, null, 0, 0));
 			}
 		}
 
 		private void renderToBitmapAndCopyPixels(WebView view) {
 			Bitmap bitmap = renderWebViewIntoBitmap(view);
-
-			if (pixels == null
-				|| width != bitmap.getWidth()
-				|| height != bitmap.getHeight())
+			if (bitmap != null)
 			{
-				width = bitmap.getWidth();
-				height = bitmap.getHeight();
-				pixels = new int[width * height];
-			} 
-			// copy ARGB pixels values into our buffer
-			bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+				if (pixels == null
+					|| width != bitmap.getWidth()
+					|| height != bitmap.getHeight())
+				{
+					width = bitmap.getWidth();
+					height = bitmap.getHeight();
+					pixels = new int[width * height];
+				} 
+				// copy ARGB pixels values into our buffer
+				bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+			}
 		}
 
 		private Bitmap renderWebViewIntoBitmap(WebView view) {
-			assert view != null;
-			
-			view.setDrawingCacheEnabled(true);
 
-			view.buildDrawingCache();
 			if (bitmapCache != null)
 			{
 				bitmapCache.recycle();
 			}
+			
+			// we need to do it every time because this only works with 
+			// scrolling
+			view.setDrawingCacheEnabled(true);
+			view.buildDrawingCache();
 			// Returns an immutable bitmap from the source bitmap. 
 			// The new bitmap may be the same object as source, or a copy may 
 			// have been made. It is initialized with the same density as the 
 			// original bitmap. 
-			bitmapCache = Bitmap.createBitmap(view.getDrawingCache());
+			Bitmap cacheImage = view.getDrawingCache();
+			if (cacheImage != null)
+			{
+				bitmapCache = Bitmap.createBitmap(view.getDrawingCache());
+			}
 			
             view.setDrawingCacheEnabled(false);
             return bitmapCache;
@@ -236,14 +247,6 @@ public class JNIWebView {
 			} catch (ExecutionException e) {
 				e.printStackTrace();
 			}
-			
-			/*enum eAction
-			{
-				PROCESS_IN_WEBVIEW = 0,
-				PROCESS_IN_SYSTEM_BROWSER,
-				NO_PROCESS,
-				ACTIONS_COUNT
-			};*/
 
 			if (res == 0) {
 				return false;
