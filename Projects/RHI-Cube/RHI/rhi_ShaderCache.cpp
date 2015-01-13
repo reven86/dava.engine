@@ -161,11 +161,129 @@ GetProg( const DAVA::FastName& uid, std::vector<uint8>* bin )
 
 //------------------------------------------------------------------------------
 
+static const char* _ShaderHeader_Metal =
+"#include <metal_stdlib>\n"
+"#include <metal_graphics>\n"
+"#include <metal_matrix>\n"
+"#include <metal_geometric>\n"
+"#include <metal_math>\n"
+"#include <metal_texture>\n"
+"using namespace metal;\n\n"
+;
+    
+static const char* _ShaderDefine_Metal =
+"#define VPROG_IN_BEGIN          struct VP_Input {\n"
+"#define VPROG_IN_POSITION       packed_float3 position; \n"
+"#define VPROG_IN_NORMAL         packed_float3 normal; \n"
+"#define VPROG_IN_TEXCOORD       packed_float2 texcoord; \n"
+"#define VPROG_IN_END            };\n"
+
+"#define VPROG_OUT_BEGIN         struct VP_Output {\n"
+"#define VPROG_OUT_POSITION      float4 position [[ position ]]; \n"
+"#define VPROG_OUT_TEXCOORD0(name,size)    float##size name [[ user(texturecoord) ]];\n"
+"#define VPROG_OUT_END           };\n"
+
+"#define DECL_VPROG_BUFFER(idx,sz) struct __VP_Buffer##idx { packed_float4 data[sz]; };\n"
+
+"#define VPROG_BEGIN             vertex VP_Output vp_main"
+"("
+"    constant VP_Input*  in    [[ buffer(0) ]]"
+"    VPROG_IN_BUFFER_0 "
+"    VPROG_IN_BUFFER_1 "
+"    ,uint                vid   [[ vertex_id ]]"
+")"
+"{"
+"    VPROG_BUFFER_0 "
+"    VPROG_BUFFER_1 "
+"    VP_Output   OUT;"
+"    VP_Input    IN  = in[vid];\n"
+
+"#define VPROG_END               return OUT;"
+"}\n"
+
+"#define VP_IN_POSITION          (float3(IN.position))\n"
+"#define VP_IN_NORMAL            (float3(IN.normal))\n"
+"#define VP_IN_TEXCOORD          (float2(IN.texcoord))\n"
+
+"#define VP_OUT_POSITION         OUT.position\n"
+"#define VP_OUT(name)            OUT.name\n"
+
+
+"#define FPROG_IN_BEGIN              struct FP_Input { float4 position [[position]]; \n"
+"#define FPROG_IN_TEXCOORD0(name,size)    float##size name [[user(texturecoord)]];\n"
+"#define FPROG_IN_END                };\n"
+
+"#define FPROG_OUT_BEGIN         struct FP_Output {\n"
+"#define FPROG_OUT_COLOR         float4 color [[color(0)]];\n"
+"#define FPROG_OUT_END           };\n"
+
+"#define FP_OUT_COLOR            OUT.color\n"
+
+"#define DECL_FPROG_BUFFER(idx,sz) struct __FP_Buffer##idx { packed_float4 data[sz]; };\n"
+
+"#define FPROG_BEGIN             fragment FP_Output fp_main"
+"("
+"    FP_Input IN                 [[ stage_in ]]"
+"    FPROG_IN_BUFFER_0 "
+")"
+"{"
+"    FPROG_BUFFER_0 "
+//"    const packed_float4* FP_Buffer0 = buf0->data;"
+"    FP_Output   OUT;\n"
+"#define FPROG_END               return OUT; }\n"
+
+;
+
 static void
 PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
 {
-    _PreprocessedText = preprocessedText;
-    mcpp__set_input( srcText, strlen(srcText) );
+
+    char    src[64*1024] = "";
+
+    switch( targetApi )
+    {
+        case RHI_DX11   : break;
+        case RHI_DX9    : break;
+        case RHI_GLES2  : break;
+        
+        case RHI_METAL  : 
+        {
+            const char* s = srcText;
+            const char* decl;
+
+            while( (decl = strstr( s, "DECL_FPROG_BUFFER" )) )
+            {
+                int i   = 0;
+                int len = strlen( src );
+
+                sscanf( decl, "DECL_FPROG_BUFFER(%i,", &i );
+
+                len += sprintf( src+len, "#define FPROG_IN_BUFFER_%i  ,constant __FP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, i );
+                len += sprintf( src+len, "#define FPROG_BUFFER_%i    constant packed_float4* FP_Buffer%i = buf%i->data; \n", i, i, i );
+
+                s += strlen("DECL_FPROG_BUFFER");
+            }
+            
+            s = srcText;
+            while( (decl = strstr( s, "DECL_VPROG_BUFFER" )) )
+            {
+                int i   = 0;
+                int len = strlen( src );
+
+                sscanf( decl, "DECL_VPROG_BUFFER(%i,", &i );
+
+                len += sprintf( src+len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, 1+i );
+                len += sprintf( src+len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i );
+
+                s += strlen("DECL_VPROG_BUFFER");
+            }
+
+            strcat( src, _ShaderDefine_Metal );
+        }   break;
+    }
+
+    strcat( src, srcText );
+
 
     char*   argv[] = 
     { 
@@ -175,9 +293,15 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
         "<input>"
     };
 
+DAVA::Logger::Info( "src=\n%s\n", src );
+    _PreprocessedText = preprocessedText;
+    mcpp__set_input( src, strlen(src) );
+
     mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
     mcpp_lib_main( countof(argv), argv );
     _PreprocessedText = 0;
+    preprocessedText->insert( 0, _ShaderHeader_Metal );
+DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
 }
 
 

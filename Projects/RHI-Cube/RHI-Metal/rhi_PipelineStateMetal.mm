@@ -368,12 +368,12 @@ Create( const PipelineState::Descriptor& desc )
         
         if( fp_func == nil )
         {
-            Logger::Error( "FAILED to get fprog \"%s\" function", desc.vprogUid.c_str() );
+            Logger::Error( "FAILED to get fprog \"%s\" function", desc.fprogUid.c_str() );
         }
     }
     else
     {
-        Logger::Error( "FAILED to compile fprog \"%s\" :\n%s", desc.vprogUid.c_str(), fp_err.localizedDescription.UTF8String );
+        Logger::Error( "FAILED to compile fprog \"%s\" :\n%s", desc.fprogUid.c_str(), fp_err.localizedDescription.UTF8String );
     }
 
 
