@@ -180,53 +180,25 @@ public class JNIWebView {
 			} 
 			// copy ARGB pixels values into our buffer
 			bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-			Log.d(TAG, "prepare bitmap for webview texture");
 		}
 
 		private Bitmap renderWebViewIntoBitmap(WebView view) {
 			assert view != null;
-			assert view.getMeasuredWidth() > 0;
-			assert view.getMeasuredHeight() > 0;
 			
-			int view_width = view.getMeasuredWidth();
-			int view_height = view.getMeasuredHeight();
-			
-//			if (bitmapCache == null 
-//				|| bitmapCache.getWidth() != view_width
-//				|| bitmapCache.getHeight() != view_height)
-//			{
-//				bitmapCache = Bitmap.createBitmap(view_width,
-//                    view_height, Bitmap.Config.ARGB_8888);
-//				//canvas = new Canvas(bitmapCache);
-//			}
-            //int height = bitmapCache.getHeight();
-            //canvas.drawBitmap(bitmapCache, 0, height, paint);
-			//view.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), 
-				//	MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-			
-			view.setDrawingCacheEnabled(true); // TODO test it
-			//Rect r = new Rect();
-			//view.getDrawingRect(r);
-			//view.layout(r.left, r.top, r.right, r.bottom);
+			view.setDrawingCacheEnabled(true);
+
 			view.buildDrawingCache();
-			bitmapCache = Bitmap.createBitmap(view.getDrawingCache()); // ;
-			//Canvas c = new Canvas(b);
-            //view.draw(c);
-            view.setDrawingCacheEnabled(false); // clear drawing cache
-//            try {
-//                String path = Environment.getExternalStorageDirectory()
-//                        .toString();
-//                OutputStream fOut = null;
-//                File file = new File(path, "/test_output.png");
-//                fOut = new FileOutputStream(file);
-//
-//                bm.compress(Bitmap.CompressFormat.PNG, 50, fOut);
-//                fOut.flush();
-//                fOut.close();
-//                bm.recycle();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+			if (bitmapCache != null)
+			{
+				bitmapCache.recycle();
+			}
+			// Returns an immutable bitmap from the source bitmap. 
+			// The new bitmap may be the same object as source, or a copy may 
+			// have been made. It is initialized with the same density as the 
+			// original bitmap. 
+			bitmapCache = Bitmap.createBitmap(view.getDrawingCache());
+			
+            view.setDrawingCacheEnabled(false);
             return bitmapCache;
             //return b;
 		};
