@@ -1,4 +1,3 @@
-
 if ( GLOBAL_VAR_FOUND )
     return ()
 endif ()
@@ -54,8 +53,6 @@ elseif ( WIN32)
 endif  ()
 
 #compiller flags
-
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-invalid-offsetof" )  

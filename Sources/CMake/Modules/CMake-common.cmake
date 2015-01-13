@@ -3,6 +3,9 @@ include ( CMakeParseArguments  )
 include ( GlobalVariables      )
 include ( MergeStaticLibrarees )
 include ( FileTreeCheck        )
+include ( DavaTemplate         )
+
+set ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 # Macro for precompiled headers
 macro (enable_pch)
