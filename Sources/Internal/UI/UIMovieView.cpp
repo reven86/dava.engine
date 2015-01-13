@@ -50,7 +50,7 @@ UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates) :
 	movieViewControl(new MovieViewControl),
 	UIControl(rect, rectInAbsoluteCoordinates)
 {
-    customDrawAfterChilds = Function<void(const UIGeometricData&)>(this, &UIMovieView::CustomDrawAfterChilds);
+    customDrawAfterChilds = MakeFunction(this, &UIMovieView::CustomDrawAfterChilds);
 
 	movieViewControl->Initialize(rect);
 }

@@ -51,8 +51,8 @@ UIScrollBar::UIScrollBar(const Rect &rect, eScrollOrientation requiredOrientatio
 ,   orientation(requiredOrientation)
 ,   resizeSliderProportionally(true)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIScrollBar::CustomDraw);
-    customInput = Function<void(UIEvent*)>(this, &UIScrollBar::CustomInput);
+    customDraw = MakeFunction(this, &UIScrollBar::CustomDraw);
+    customInput = MakeFunction(this, &UIScrollBar::CustomInput);
     
 	InitControls(rect);
 }

@@ -43,8 +43,8 @@ UIScreen::UIScreen(const Rect &rect)
 	:UIControl(rect)
 ,	groupId(groupIdCounter)
 {
-    customBeforeSystemDraw = Function<void(const UIGeometricData&)>(this, &UIScreen::CustomBeforeSystemDraw);
-    customAfterSystemDraw = Function<void(const UIGeometricData&)>(this, &UIScreen::CustomAfterSystemDraw);
+    customBeforeSystemDraw = MakeFunction(this, &UIScreen::CustomBeforeSystemDraw);
+    customAfterSystemDraw = MakeFunction(this, &UIScreen::CustomAfterSystemDraw);
 
 	// add screen to list
 	appScreens.push_back(this);

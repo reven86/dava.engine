@@ -68,8 +68,8 @@ UIList::UIList(const Rect &rect/* = Rect()*/, eListOrientation requiredOrientati
     , scroll(NULL)
     , aggregatorPath(FilePath())
 {
-    customInput = Function<void(UIEvent*)>(this, &UIList::CustomInput);
-    customSystemInput = Function<bool(UIEvent*)>(this, &UIList::CustomSystemInput);
+    customInput = MakeFunction(this, &UIList::CustomInput);
+    customSystemInput = MakeFunction(this, &UIList::CustomSystemInput);
 
     InitAfterYaml();
 }

@@ -35,6 +35,7 @@
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
 #include "Base/Function.h"
+#include "Base/Bind.h"
 
 namespace DAVA
 {

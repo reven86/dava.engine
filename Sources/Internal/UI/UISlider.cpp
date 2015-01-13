@@ -60,8 +60,8 @@ UISlider::UISlider(const Rect & rect)
 ,	thumbButton(NULL)
 ,   spritesEmbedded(false)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UISlider::CustomDraw);
-    customInput = Function<void(UIEvent*)>(this, &UISlider::CustomInput);
+    customDraw = MakeFunction(this, &UISlider::CustomDraw);
+    customInput = MakeFunction(this, &UISlider::CustomInput);
     
     SetInputEnabled(true, false);
 	isEventsContinuos = true;

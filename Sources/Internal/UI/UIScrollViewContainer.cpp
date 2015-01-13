@@ -53,9 +53,9 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsolu
 	state(STATE_NONE),
     currentScroll(NULL)
 {
-    customInput = Function<void(UIEvent*)>(this, &UIScrollViewContainer::CustomInput);
-    customInputCancelled = Function<void(UIEvent*)>(this, &UIScrollViewContainer::CustomInputCancelled);
-    customSystemInput = Function<bool(UIEvent*)>(this, &UIScrollViewContainer::CustomSystemInput);
+    customInput = MakeFunction(this, &UIScrollViewContainer::CustomInput);
+    customInputCancelled = MakeFunction(this, &UIScrollViewContainer::CustomInputCancelled);
+    customSystemInput = MakeFunction(this, &UIScrollViewContainer::CustomSystemInput);
 
 	this->SetInputEnabled(true);
 	this->SetMultiInput(true);

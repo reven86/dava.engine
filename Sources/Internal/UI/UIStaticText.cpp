@@ -61,7 +61,7 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 :	UIControl(rect, rectInAbsoluteCoordinates)
     , shadowOffset(0, 0)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIStaticText::CustomDraw);
+    customDraw = MakeFunction(this, &UIStaticText::CustomDraw);
 
     SetInputEnabled(false, false);
     textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));

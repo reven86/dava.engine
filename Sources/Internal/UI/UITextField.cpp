@@ -93,7 +93,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,   staticText(NULL)
 #endif
 {
-    customInput = Function<void(UIEvent*)>(this, &UITextField::CustomInput);
+    customInput = MakeFunction(this, &UITextField::CustomInput);
     
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);

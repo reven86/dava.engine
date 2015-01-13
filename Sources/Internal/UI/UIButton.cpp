@@ -50,8 +50,8 @@ UIButton::UIButton(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     , selectedTextBlock(NULL)
     , oldControlState(0)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIButton::CustomDraw);
-    customInput = Function<void(UIEvent*)>(this, &UIButton::CustomInput);
+    customDraw = MakeFunction(this, &UIButton::CustomDraw);
+    customInput = MakeFunction(this, &UIButton::CustomInput);
 
     for(int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {

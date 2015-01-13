@@ -49,8 +49,8 @@ void UIHierarchyDelegate::DragAndDrop(void * /*who*/, void * /*target*/, int32 /
 UIHierarchy::UIHierarchy(const Rect &rect, bool rectInAbsoluteCoordinates)
 : UIControl(rect, rectInAbsoluteCoordinates)
 {
-    customInput = Function<void(UIEvent*)>(this, &UIHierarchy::CustomInput);
-    customSystemInput = Function<bool(UIEvent*)>(this, &UIHierarchy::CustomSystemInput);
+    customInput = MakeFunction(this, &UIHierarchy::CustomInput);
+    customSystemInput = MakeFunction(this, &UIHierarchy::CustomSystemInput);
 
     baseNode = new UIHierarchyNode(NULL);
     baseNode->isOpen = true;

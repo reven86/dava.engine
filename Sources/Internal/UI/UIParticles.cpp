@@ -62,7 +62,7 @@ UIParticles::UIParticles(const Rect &rect, bool rectInAbsoluteCoordinates)
     , delayedActionTime(0.0f)
     , delayedDeleteAllParticles(false)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &UIParticles::CustomDraw);
+    customDraw = MakeFunction(this, &UIParticles::CustomDraw);
 
     matrix.Identity();    
 }

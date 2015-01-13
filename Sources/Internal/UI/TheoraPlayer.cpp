@@ -64,7 +64,7 @@ frameTime(0),
 file(0),
 frameBuffer(0)
 {
-    customDraw = Function<void(const UIGeometricData&)>(this, &TheoraPlayer::CustomDraw);
+    customDraw = MakeFunction(this, &TheoraPlayer::CustomDraw);
 
     theoraData = new TheoraData();
     theoraData->thSetup = 0;

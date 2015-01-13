@@ -46,8 +46,8 @@ UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 ,	mainTouch(TOUCH_INVALID_ID)
 ,   stick(NULL)
 {
-    customInput = Function<void(UIEvent*)>(this, &UIJoypad::CustomInput);
-    customInputCancelled = Function<void(UIEvent*)>(this, &UIJoypad::CustomInputCancelled);
+    customInput = MakeFunction(this, &UIJoypad::CustomInput);
+    customInputCancelled = MakeFunction(this, &UIJoypad::CustomInputCancelled);
 
     SetInputEnabled(true, false);
 }
