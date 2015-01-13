@@ -60,9 +60,9 @@ using namespace DAVA;
 
 SceneInfo::SceneInfo(QWidget *parent /* = 0 */)
 	: QtPropertyEditor(parent)
-    , activeScene(NULL)
+	, treeStateHelper(this, curModel)
+	, activeScene(NULL)
 	, landscape(NULL)
-    , treeStateHelper(this, curModel)
 	, isUpToDate(false)
 {
 	// global scene manager signals

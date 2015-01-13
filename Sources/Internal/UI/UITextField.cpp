@@ -89,8 +89,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	delegate(0)
 ,	cursorBlinkingTime(0.0f)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
-,   textFont(NULL)
 ,   staticText(NULL)
+,   textFont(NULL)
 #endif
 {
 #if defined(__DAVAENGINE_ANDROID__)
@@ -1036,6 +1036,7 @@ int32 UITextField::GetMaxLength() const
     return maxLength;
 }
 
+
 void UITextField::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();
@@ -1071,7 +1072,7 @@ String UITextField::GetFontPresetName() const
     return FontManager::Instance()->GetFontName(font);
 }
 
-void UITextField::SetFontPresetName( const String &presetName )
+void UITextField::SetFontByPresetName( const String &presetName )
 {
     Font *font = NULL;
 

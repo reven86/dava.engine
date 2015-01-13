@@ -98,6 +98,12 @@ protected:
 	
 	virtual bool GetTextUseRtlAlign();
 	virtual void SetTextUseRtlAlign(bool value);
+
+    virtual bool GetTextMultiline() const;
+    virtual void SetTextMultiline(bool value);
+
+    virtual bool GetTextMultilineBySymbol() const;
+    virtual void SetTextMultilineBySymbol(bool value);
 	
 	bool GetIsPassword() const;
 	void SetIsPassword(bool value);

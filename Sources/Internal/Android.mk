@@ -61,6 +61,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/2D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Effects/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Highlevel/*.cpp) \
@@ -69,9 +70,11 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Components/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Components/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Converters/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/SceneFile/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \

@@ -80,14 +80,6 @@ protected:
 class RenderManager : public Singleton<RenderManager>
 {
 public:
-    static FastName FLAT_COLOR_SHADER;
-    static FastName TEXTURE_MUL_FLAT_COLOR_SHADER;
-    
-    static Shader * FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
-    
     enum eDrawCommandType
     {
         DC_DRAW_ARRAYS,
@@ -279,7 +271,7 @@ public:
         \brief 
         
      */
-    void SetViewport(const Rect & rect, bool precaleulatedCoordinates);
+    void SetViewport(const Rect & rect);
     
     
     void SetCullOrder(eCullOrder cullOrder);
@@ -360,33 +352,6 @@ public:
 	void HWDrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices); 
 
     void HWDrawElementsInstanced(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices, int32 instanceCount); 
-		
-	/** 
-	 \brief Sets the clip rect
-	 \param[in] rect
-	 */
-	void SetClip(const Rect &rect);
-
-	/** 
-	 \brief Sets the clip rect as an intersection of the current rect and rect sent to method
-	 \param[in] rect
-	 */
-	void ClipRect(const Rect &rect);
-	
-	/** 
-	 \brief Sets clip yo the full screen
-	 */
-	void RemoveClip();
-
-	/** 
-	 \brief Store current clip
-	 */
-	void ClipPush();
-
-	/** 
-	 \brief Restore current screen
-	 */
-	void ClipPop();
     
     void Clear(const Color & color, float32 depth, int32 stencil);
 	
@@ -453,45 +418,6 @@ public:
     int32 GetFPS();
 
 	void SetDebug(bool isDebugEnabled);
-
-
-	/** 
-	 \brief 
-	 \param[in] offset
-	 */
-	void SetDrawTranslate(const Vector2 &offset);
-    
-	void SetDrawTranslate(const Vector3 &offset);
-
-    const Vector2& GetDrawTranslate() const;
-
-	/** 
-	 \brief 
-	 \param[in] offset
-	 */
-	void SetDrawScale(const Vector2 &scale);
-    const Vector2& GetDrawScale() const;
-
-	void IdentityDrawMatrix();
-	void IdentityMappingMatrix();
-	void IdentityModelMatrix();
-	
-	/*
-		TODO:	Hottych - напиши пожалуйста что делают эти функции детально, 
-				чтобы было понятно как и в каких случаях их надо использовать
-				Думаю что пока воспоминания свежи, напиши документацию по системе виртуальных преобразований
-				Можешь писать на русском - я переведу потом.
-	 */
-	void SetPhysicalViewScale();
-	void SetPhysicalViewOffset();
-	void SetVirtualViewScale();
-	void SetVirtualViewOffset();
-
-	void PushDrawMatrix();
-    void PopDrawMatrix();
-
-    void PushMappingMatrix();
-	void PopMappingMatrix();
     
     void SetRenderContextId(uint64 contextId);
 	uint64 GetRenderContextId();
@@ -628,59 +554,15 @@ public:
 protected:
     //do nothing right now
     DAVA_DEPRECATED(void RectFromRenderOrientationToViewport(Rect & rect));
-    
-	// SHOULD BE REPLACED WITH MATRICES IN FUTURE
-	Vector2 userDrawOffset;
-	Vector2 userDrawScale;
 
-	//need to think about optimization two matrices (userDraw matrix and mapping matrix) to the one matrix
-	Vector2 viewMappingDrawOffset;
-	Vector2 viewMappingDrawScale;
-
-	Vector2 currentDrawOffset;
-	Vector2 currentDrawScale;
-    
-    bool mappingMatrixChanged;
-	
-	void PrepareRealMatrix();
-    
-    struct Renderer2D
-    {
-        
-        Matrix4 viewMatrix;
-        Matrix4 projMatrix;
-        Matrix4 viewProjMatrix;
-        
-	};
-    Renderer2D renderer2d;
 public:
-    void Setup2DMatrices();
-    Renderer2D * GetRenderer2D() { return &renderer2d; };
-
-	/**
-	 \brief 
-	 \returns 
-	 */
-	int32 GetScreenWidth();
-	
-	/** 
-	 \brief 
-	 \returns 
-	 */
-	int32 GetScreenHeight();
-	
-	
 	typedef struct RenderTarget_t 
-		{
-			Sprite *spr;
-			int orientation;
-		} RenderTarget;
+    {
+        Sprite *spr;
+        int orientation;
+    } RenderTarget;
 
-	typedef struct DrawMatrix_t 
-	{
-		Vector2 userDrawOffset;
-		Vector2 userDrawScale;
-	} DrawMatrix;
+    Matrix4 projMatrix;
 	
 	// fbo data
 	uint32 fboViewRenderbuffer;
@@ -699,10 +581,7 @@ public:
     
     int32 renderOrientation;
 	Sprite *currentRenderTarget;
-	std::stack<Rect> clipStack;
 	std::stack<RenderTarget> renderTargetStack;
-	std::stack<DrawMatrix> matrixStack;
-	std::stack<DrawMatrix> mappingMatrixStack;
 
 	Shader * currentRenderEffect;
 	
@@ -717,8 +596,6 @@ public:
     
 	int32 frameBufferWidth;
 	int32 frameBufferHeight;
-	int32 retScreenWidth;
-	int32 retScreenHeight;
 	
 	int32 fps;
 
@@ -727,8 +604,6 @@ public:
 	Mutex glMutex;
     Mutex renderStateMutex;
     Mutex textureStateMutex;
-	
-	Rect currentClip;
 	
 	void SetHWClip(const Rect &rect);
 	void SetHWRenderTargetSprite(Sprite *renderTarget);

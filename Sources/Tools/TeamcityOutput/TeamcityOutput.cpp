@@ -88,10 +88,21 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
     
     return str;
 }
+    
+#ifdef __DAVAENGINE_ANDROID__
+#include <android/log.h>
+#define  LOG_TAG    "TeamcityOutput"
+#endif
 
 void TeamcityOutput::PlatformOutput(const String &text) const
 {
+#ifdef __DAVAENGINE_IPHONE__
+    NSLog(@"%s", text.c_str());
+#elif  defined(__DAVAENGINE_ANDROID__)
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", text.c_str());
+#else
     std::cout << text << std::endl;
+#endif
 }
     
 }; // end of namespace DAVA

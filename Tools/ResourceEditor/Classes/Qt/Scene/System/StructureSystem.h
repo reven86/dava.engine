@@ -76,7 +76,6 @@ protected:
 	virtual void Process(DAVA::float32 timeElapsed);
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	virtual void AddEntity(DAVA::Entity * entity);

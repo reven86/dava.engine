@@ -51,10 +51,10 @@
 
 GradientPickerWidget::GradientPickerWidget(QWidget *parent) :
 	QWidget(parent),
-	selectedPointIndex(-1),
-	showCursorPos(false),
 	minTime(0.f),
 	maxTime(1.f),
+	selectedPointIndex(-1),
+	showCursorPos(false),
 	legend("")
 {
 	setMinimumHeight(WIDGET_MIN_HEIGHT);

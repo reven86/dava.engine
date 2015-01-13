@@ -30,35 +30,43 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 namespace DAVA
 {
 
-	AutotestingSystem::AutotestingSystem()
-		: isInit(false)
-		, isRunning(false)
-		, needExitApp(false)
-		, timeBeforeExit(0.0f)
-		, testsDate("not_found")
-		, buildDate("not_found")
-		, testIndex(0)
-		, isDB(false)
-		, needClearGroupInDB(false)
-		, groupName("default")
-		, deviceId("not-initialized")
-		, deviceName("not-initialized")
-		, buildId("zero-build")
-		, branch("branch")
-		, framework("framework")
-		, branchRev("0")
-		, frameworkRev("0")
-		, isMaster(true)
-		, requestedHelpers(0)
-		, isWaiting(false)
-		, isRegistered(false)
-		, waitTimeLeft(0.0f)
-		, waitCheckTimeLeft(0.0f)
-		, masterRunId(0)
-		, isInitMultiplayer(false)
-		, stepIndex(0)
-		, logIndex(0)
-		, startTimeMS(0)
+    AutotestingSystem::AutotestingSystem()
+        : startTimeMS(0)
+        , isInit(false)
+        , isRunning(false)
+        , needExitApp(false)
+        , timeBeforeExit(0.0f)
+        , projectName("")
+        , groupName("default")
+        , deviceId("not-initialized")
+        , deviceName("not-initialized")
+        , testsDate("not_found")
+        , runId("not_found")
+        , testIndex(0)
+        , stepIndex(0)
+        , logIndex(0)
+        , testName("")
+        , testFileName("")
+        , testFilePath("")
+        , buildDate("not_found")
+        , buildId("zero-build")
+        , branch("branch")
+        , framework("framework")
+        , branchRev("0")
+        , frameworkRev("0")
+        , isDB(false)
+        , needClearGroupInDB(false)
+        , isMaster(true)
+        , requestedHelpers(0)
+        , masterId("")
+        , masterTask("")
+        , masterRunId(0)
+        , isRegistered(false)
+        , isWaiting(false)
+        , isInitMultiplayer(false)
+        , multiplayerName("")
+        , waitTimeLeft(0.0f)
+        , waitCheckTimeLeft(0.0f)
 	{
 		new AutotestingSystemLua();
 		new AutotestingDB();
@@ -170,6 +178,7 @@ namespace DAVA
 		{
 			ForceQuit("Couldn't get Date parameter from DB.");
 		}
+		runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
 
 		Logger::Debug("AutotestingSystem::FetchParametersFromDB Date=%s Group=%s Filename=%s TestIndex=%d", testsDate.c_str(), groupName.c_str(), testFileName.c_str(), testIndex);
 	}
@@ -217,20 +226,8 @@ namespace DAVA
 
 	String AutotestingSystem::GetCurrentTimeString()
 	{
-		Timestamp time = DateTime::Now().GetTimestamp();
-		std::stringstream strm;
-		strm << time;
-	    return strm.str().c_str();
-	}
-
-	String AutotestingSystem::GetCurrentTimeMsString()
-	{
-		uint64 timeAbsMs = SystemTimer::Instance()->AbsoluteMS();
-		uint16 hours = (timeAbsMs/3600000)%12;
-		uint16 minutes = (timeAbsMs/60000)%60;
-		uint16 seconds = (timeAbsMs/1000)%60;
-		uint16 miliseconds = (timeAbsMs)%1000;
-		return Format("%02d:%02d:%02d.%03d", hours, minutes, seconds, miliseconds);
+		DateTime time = DateTime::Now();
+		return Format("%02d-%02d-%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
 	}
 
 	void AutotestingSystem::OnTestStart(const String &_testName)
@@ -348,7 +345,7 @@ namespace DAVA
 	{
 		Logger::Debug("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
-		screenShotName = Format("%s_%s_%s_%s", AUTOTESTING_PLATFORM_NAME, deviceName.c_str(), groupName.c_str(), currentDateTime.c_str());
+		screenShotName = Format("%s_%s_%s_%s", runId.c_str(), deviceName.c_str(), groupName.c_str(), currentDateTime.c_str());
 		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		RenderManager::Instance()->RequestGLScreenShot(this);
 	}

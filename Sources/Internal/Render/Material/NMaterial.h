@@ -342,7 +342,13 @@ public:
 	//{TODO: these should be removed and changed to a generic system
 	//setting properties via special setters
 	inline uint8 GetDynamicBindFlags() const;
-	//}END TODO	    
+	//}END TODO
+
+    /**
+    \brief Returns using material flags.
+    \param[in] reference vector
+    */
+    inline void GetFlags(Vector<FastName> &flagsCollection) const;   
 	
     /**
 	 \brief Sets flag to the material affectively altering its shaders by define
@@ -998,10 +1004,10 @@ void NMaterial::SetRenderLayers(uint32 bitmask)
 }
 
 inline NMaterial::RenderPassInstance::RenderPassInstance() :
-textureIndexMap(8),
 dirtyState(false),
 texturesDirty(true),
-propsDirty(true)
+propsDirty(true),
+textureIndexMap(8)
 {
     renderState.shader = NULL;
 }
@@ -1159,6 +1165,17 @@ inline uint8 NMaterial::GetDynamicBindFlags() const
     return dynamicBindFlags;
 }
 
+inline void NMaterial::GetFlags(Vector<FastName> &flagsCollection) const
+{
+    flagsCollection.reserve(flagsCollection.size() + materialSetFlags.size());
+
+    const HashMap<FastName, int32>& hash = materialSetFlags;
+    for (HashMap<FastName, int32>::iterator it = hash.begin(); it != hash.end(); ++it)
+    {
+        flagsCollection.push_back((*it).first);
+    }
+}
+
 inline IlluminationParams::IlluminationParams(NMaterial* parentMaterial) :
                                                                 isUsed(true),
                                                                 castShadow(true),
@@ -1251,8 +1268,8 @@ inline const FilePath& NMaterial::TextureBucket::GetPath() const
 
 inline UniformCacheEntry::UniformCacheEntry() :
 uniform(NULL),
-prop(NULL),
-index(-1)
+index(-1),
+prop(NULL)
 {
 }
 

@@ -37,12 +37,6 @@
 #include "Platform/Mutex.h"
 #include "FileSystem/FilePath.h"
 
-struct FT_FaceRec_;
-typedef struct FT_FaceRec_*  FT_Face;
-
-struct FT_GlyphRec_;
-typedef struct FT_GlyphRec_*  FT_Glyph;
-
 namespace DAVA
 {	
 	

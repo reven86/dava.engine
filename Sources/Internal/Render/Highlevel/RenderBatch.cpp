@@ -48,16 +48,16 @@ namespace DAVA
     
 RenderBatch::RenderBatch()
     :   renderLayerIDsBitmaskFromMaterial(0)
-    ,   sortingKey(SORTING_KEY_DEF_VALUE)
     ,   dataSource(0)
+    ,   sortingKey(SORTING_KEY_DEF_VALUE)
     ,   renderDataObject(0)
     ,   material(0)
+    ,   renderObject(0)    
     ,   startIndex(0)
     ,   indexCount(0)
-    ,   type(PRIMITIVETYPE_TRIANGLELIST)
-    ,   renderObject(0)
+    ,   type(PRIMITIVETYPE_TRIANGLELIST)    
     ,   aabbox(Vector3(), Vector3())    
-{	
+{
 }
     
 RenderBatch::~RenderBatch()

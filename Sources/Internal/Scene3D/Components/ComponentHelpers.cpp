@@ -52,6 +52,7 @@
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 namespace DAVA
 {
@@ -437,5 +438,15 @@ KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity)
     return NULL;
 }
 
+SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity * fromEntity)
+{
+    if(fromEntity)
+    {
+        return (static_cast<SnapToLandscapeControllerComponent *>(fromEntity->GetComponent(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)));
+    }
+    
+    return NULL;
+}
+    
     
 }

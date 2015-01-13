@@ -20,8 +20,21 @@ void main()
 #endif
 
 #ifdef IMAGE_A8
+
+#ifdef ADD_COLOR
+	gl_FragColor = vec4(renderColor.rgb, texColor.a + renderColor.a);
+#else
     gl_FragColor = vec4(renderColor.rgb, texColor.a * renderColor.a);
+#endif //ADD_COLOR
+
+#else
+
+#ifdef ADD_COLOR
+	gl_FragColor = texColor + renderColor;
 #else
     gl_FragColor = texColor * renderColor;
-#endif
+#endif //ADD_COLOR
+
+#endif //IMAGE_A8
+
 }

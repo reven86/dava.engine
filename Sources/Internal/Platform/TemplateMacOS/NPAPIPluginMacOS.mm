@@ -485,6 +485,7 @@ extern void FrameworkWillTerminate();
 
 	FrameworkDidLaunched();
     DAVA::RenderManager::Create(DAVA::Core::RENDERER_OPENGL);
+    DAVA::RenderSystem2D::Instance()->Init();
 
 	appCore = DAVA::Core::GetApplicationCore();
 }
@@ -496,9 +497,9 @@ extern void FrameworkWillTerminate();
 	NSRect rect = NSRectFromCGRect([openGLLayer frame]);
 	DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
 	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
-	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	DAVA::Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
-    DAVA::Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
+	DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+	DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
 	
 	NSLog(@"[NPAPICoreMacOSPlatform] SystemAppStarted");
 	DAVA::Core::Instance()->SystemAppStarted();

@@ -38,12 +38,12 @@ using namespace DAVA;
 
 CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent, int32 _fromLodLayer, uint32 _textureSize, const DAVA::FilePath & texturePath)
     : Command2(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
-    , newSwitchIndex(-1)
-    , planeImage(NULL)
+    , lodComponent(_lodComponent)
     , planeBatch(NULL)
+    , planeImage(NULL)
+    , newSwitchIndex(-1)
     , fromLodLayer(_fromLodLayer)
     , textureSize(_textureSize)
-    , lodComponent(_lodComponent)
     , textureSavePath(texturePath)
 {
     DVASSERT(GetRenderObject(GetEntity()));
@@ -129,7 +129,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
 
     RenderManager::Instance()->SetRenderTarget(toTexture);
 
-	RenderManager::Instance()->SetViewport(newViewport, true);
+	RenderManager::Instance()->SetViewport(newViewport);
 
     Scene * tempScene = new Scene();
     if(clearTarget)
@@ -167,7 +167,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     SafeRelease(entity);
     SafeRelease(tempScene);
 
-    RenderManager::Instance()->SetViewport(oldViewport, true);
+    RenderManager::Instance()->SetViewport(oldViewport);
 
 #ifdef __DAVAENGINE_OPENGL__
     RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
@@ -242,7 +242,6 @@ void CreatePlaneLODCommand::CreatePlaneBatch()
     bool isMeshHorizontal = IsHorisontalMesh(bbox);
     
     const Vector3 & min = bbox.min;
-    const Vector3 & max = bbox.max;
     Vector3 size = bbox.GetSize();
 
     //

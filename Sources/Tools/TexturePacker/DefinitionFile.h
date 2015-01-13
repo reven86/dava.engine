@@ -40,8 +40,8 @@ namespace DAVA
 class DefinitionFile 
 {
 public:
-	bool Load(const FilePath & filename);
-	bool LoadPNGDef(const FilePath & filename, const FilePath & pathToProcess);
+	bool Load(const FilePath & filename, bool useTwoSideMargin, uint32 marginInPixels);
+	bool LoadPNGDef(const FilePath & filename, const FilePath & pathToProcess, bool useTwoSideMargin, uint32 marginInPixels);
 	
 	DefinitionFile();
 	~DefinitionFile();
@@ -60,6 +60,7 @@ public:
 	Rect2i		* frameRects;
 
 	Vector<String> pathsInfo;
+    Vector<String> frameNames;
 };
 
 };

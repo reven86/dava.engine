@@ -121,7 +121,9 @@ macro (define_source_folders )
             define_source_files ( GLOB_CPP_PATTERNS ${CPP_PATTERNS}
                                   GLOB_H_PATTERNS   ${FOLDER_ITEM}/*.h ${FOLDER_ITEM}/*.hpp )
                                   
-            FILE( GLOB SOURCE_FOLDERS "${FOLDER_ITEM}/*" )
+            FILE( GLOB LIST_SOURCE_FOLDERS "${FOLDER_ITEM}/*" )
+
+            list ( APPEND SOURCE_FOLDERS  ${LIST_SOURCE_FOLDERS} ) 
             list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} ) 
             list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   ) 
             list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
@@ -137,8 +139,7 @@ macro (define_source_folders )
         list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
 
     ENDIF()
-    
-
+  
              
     FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
         IF( IS_DIRECTORY "${FOLDER_ITEM}" )
@@ -154,7 +155,7 @@ macro (define_source_folders )
             IF( ${NOT_FIND_ERASE_ITEM} )
                 FILE(GLOB FIND_CMAKELIST "${FOLDER_ITEM}/CMakeLists.txt")
                 IF( FIND_CMAKELIST )
-                    add_subdirectory (${FOLDER_NAME})
+                    add_subdirectory ( ${FOLDER_ITEM} )
                     list ( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_CPP_FILES} ${${FOLDER_NAME}_H_FILES} )    
     		        list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
                     list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
@@ -222,22 +223,29 @@ macro ( generate_source_groups_project )
             ENDIF()
             source_group( "${GROUP_PREFIX}${FILE_GROUP}" FILES ${ITEM} )
 
-            #message( "<> " ${GROUP_PREFIX}" ][ "${FILE_GROUP} " ][ " ${ITEM} )
+            #message( "<> "${GROUP_PREFIX}" ][ "${FILE_GROUP}" ][ "${ITEM} )
         ENDFOREACH()
 
     ENDFOREACH()
 
     IF( NOT ARG_RECURSIVE_CALL )
         FOREACH( GROUP_ITEM ${ARG_GROUP_FOLDERS} )
-            generate_source_groups_project( RECURSIVE_CALL GROUP_PREFIX ${GROUP_ITEM}  ROOT_DIR ${${GROUP_ITEM}}  SRC_ROOT ${${GROUP_ITEM}}  )
+            if( IS_DIRECTORY "${${GROUP_ITEM}}" )
+                generate_source_groups_project( RECURSIVE_CALL GROUP_PREFIX ${GROUP_ITEM}  ROOT_DIR ${${GROUP_ITEM}}  SRC_ROOT ${${GROUP_ITEM}}  )
+            else()
+                source_group( "${GROUP_ITEM}" FILES ${${GROUP_ITEM}} )
+            endif()
+
         ENDFOREACH()
     ENDIF()
 
 endmacro ()
 
-
 #
 macro ( install_libraries TARGET_NAME )
+
+IF( DAVA_INSTALL )
+
 install(
         TARGETS
         ${TARGET_NAME}
@@ -262,6 +270,7 @@ install(
         PATTERN
         "*.hpp" )
 
+ENDIF()
 
 endmacro ()
 

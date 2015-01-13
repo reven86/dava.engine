@@ -107,6 +107,15 @@ QVariant PropertiesTreeModel::data(const QModelIndex &index, int role) const
             }
             break;
 
+        case Qt::ToolTipRole:
+            {
+                if (index.column() == 0)
+                    return QVariant(property->GetName().c_str());
+
+                return makeQVariant(property);
+            }
+            break;
+
         case Qt::EditRole:
             {
                 QVariant var;
@@ -127,7 +136,7 @@ QVariant PropertiesTreeModel::data(const QModelIndex &index, int role) const
             break;
 
         case Qt::BackgroundRole:
-            return property->GetType() == BaseProperty::TYPE_HEADER ? Qt::lightGray : Qt::white;
+            return property->GetType() == BaseProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
             {

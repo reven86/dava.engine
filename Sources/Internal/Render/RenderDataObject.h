@@ -81,9 +81,9 @@ public:
         for interleaved data. This means we can have only 1 buffer for 1 RenderDataObject
     */
     void BuildVertexBuffer(int32 vertexCount, bool synchronously = false); // pack data to VBOs and allow to use VBOs instead of SetStreams
-	void BuildVertexBufferInternal(BaseObject * caller, void * param, void *callerData);
-	void DeleteBuffersInternal(BaseObject * caller, void * param, void *callerData);
-    
+	void BuildVertexBufferInternal(int32 vertexCount);
+	void DeleteBuffersInternal(uint32 vboBuffer, uint32 indexBuffer);
+
 #if defined (__DAVAENGINE_ANDROID__)
 	virtual void SaveToSystemMemory();
 	virtual void Lost();
@@ -95,7 +95,7 @@ public:
     
     void SetIndices(eIndexFormat format, uint8 * indices, int32 count);
     void BuildIndexBuffer(bool synchronously = false);
-	void BuildIndexBufferInternal(BaseObject * caller, void * param, void *callerData);
+	void BuildIndexBufferInternal();
     uint32 GetIndexBufferID() const { return indexBuffer; };
     
     void AttachVertices(RenderDataObject* vertexSource);

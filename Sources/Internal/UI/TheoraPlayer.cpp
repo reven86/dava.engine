@@ -30,6 +30,7 @@
 
 #include "UI/TheoraPlayer.h"
 #include "FileSystem/YamlNode.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
@@ -52,16 +53,17 @@ struct TheoraData
     ogg_int64_t         videoBufGranulePos;
 };
     
-TheoraPlayer::TheoraPlayer(const FilePath & _filePath) :
-isPlaying(false),
-theora_p(0),
-isVideoBufReady(false),
-videoTime(0),
-isRepeat(false),
-currFrameTime(0),
-frameTime(0),
-file(0),
-frameBuffer(0)
+    
+TheoraPlayer::TheoraPlayer(const FilePath & _filePath)
+    : currFrameTime(0)
+    , frameTime(0)
+    , videoTime(0)
+    , file(0)
+    , frameBuffer(0)
+    , theora_p(0)
+    , isVideoBufReady(false)
+    , isPlaying(false)
+    , isRepeat(false)
 {
     theoraData = new TheoraData();
     theoraData->thSetup = 0;
@@ -406,8 +408,7 @@ void TheoraPlayer::Draw(const UIGeometricData &geometricData)
     {
         Sprite::DrawState drawState;
         drawState.SetPosition(geometricData.position);
-        
-        sprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(sprite, &drawState);
     }
 }
     

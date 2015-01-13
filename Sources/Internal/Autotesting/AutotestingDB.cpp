@@ -131,7 +131,7 @@ namespace DAVA
 			testsName = Format("%s_%s_%s", AutotestingSystem::Instance()->buildDate.c_str(), AutotestingSystem::Instance()->buildId.c_str(), AutotestingSystem::Instance()->deviceName.c_str());
 		}
 
-		KeyedArchive* dbUpdateData;
+		KeyedArchive* dbUpdateData = NULL;
 		bool isFound = dbClient->FindObjectByKey(testsName, dbUpdateObject);
 		
 		if(!isFound)
@@ -160,7 +160,6 @@ namespace DAVA
 			testsName = Format("%s_%s_%s", AutotestingSystem::Instance()->buildDate.c_str(), AutotestingSystem::Instance()->buildId.c_str(), AutotestingSystem::Instance()->deviceName.c_str());
 		}
 
-		KeyedArchive* dbUpdateData;
 		bool isFound = dbClient->FindObjectByKey(testsName, dbUpdateObject);
 
 		if(!isFound)
@@ -169,6 +168,7 @@ namespace DAVA
 
 			dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
 			dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
+			dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId.c_str());
 			dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
 			dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
 			dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
@@ -183,7 +183,7 @@ namespace DAVA
 		}
 
 		dbUpdateObject->LoadData();
-		dbUpdateData = dbUpdateObject->GetData();
+		KeyedArchive* dbUpdateData = dbUpdateObject->GetData();
 
 		return dbUpdateData;
 	}
@@ -204,6 +204,7 @@ namespace DAVA
 
 		dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
 		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
+		dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId.c_str());
 		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
 		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
 		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());

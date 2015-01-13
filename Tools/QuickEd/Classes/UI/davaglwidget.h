@@ -32,78 +32,66 @@
 
 #include <QWidget>
 #include <QTimer>
+#include <QMimeData>
+#include <QAbstractNativeEventFilter>
 
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 
-namespace Ui {
-	class DavaGLWidget;
-}
 
-class DavaGLWidget : public QWidget, public DAVA::QtLayerDelegate
+class DavaGLWidget
+	: public QWidget
+	, public DAVA::QtLayerDelegate
+    , public QAbstractNativeEventFilter
 {
-	Q_OBJECT
-
+    Q_OBJECT
+    
 public:
-	explicit DavaGLWidget(QWidget *parent = 0);
-	~DavaGLWidget();
+    explicit DavaGLWidget(QWidget *parent = 0);
+    ~DavaGLWidget();
 
 	void SetMaxFPS(int fps);
 	int GetMaxFPS();
-	int GetFPS();
-
-	QSize GetPrevSize() const { return prevSize;};
-
-protected:
+	int GetFPS() const;
+    
 	virtual QPaintEngine *paintEngine() const;
-	virtual void paintEvent(QPaintEvent *);
+	bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
+   
+signals:
+	void OnDrop(const QMimeData *mimeData);
+	void Resized(int width, int height);
 
+private slots:
+	void Render();
+
+private:
+	virtual void paintEvent(QPaintEvent *);
 	virtual void resizeEvent(QResizeEvent *);
-	virtual void wheelEvent(QWheelEvent *);
 
 	virtual void showEvent(QShowEvent *);
 	virtual void hideEvent(QHideEvent *);
 
-	virtual void focusInEvent(QFocusEvent *);
-	virtual void focusOutEvent(QFocusEvent *);
+    virtual void focusInEvent(QFocusEvent *);
+    virtual void focusOutEvent(QFocusEvent *);
 
-	virtual void dropEvent(QDropEvent *event);
-	virtual void dragMoveEvent(QDragMoveEvent *event);
-	virtual void dragEnterEvent(QDragEnterEvent *event);
-    virtual void dragLeaveEvent(QDragLeaveEvent * event);
+	virtual void dropEvent(QDropEvent *);
+	virtual void dragMoveEvent(QDragMoveEvent *);
+	virtual void dragEnterEvent(QDragEnterEvent *);
 
-	virtual void keyPressEvent(QKeyEvent *);
-	virtual void keyReleaseEvent(QKeyEvent *);
-
-	virtual void mouseMoveEvent(QMouseEvent *);
-
-#if defined(Q_WS_WIN)
-	virtual bool winEvent(MSG *message, long *result);
-#endif //#if defined(Q_WS_WIN)
-
-protected slots:
-    void Render();
-
-signals:
-    void resized();
-
-protected:
-    // Recalculate "raw" guide coord to internal.
-    DAVA::Vector2 GuideToInternal(const QPoint& pos);
-    DAVA::float32 ToNearestInteger(DAVA::float32 value);
+    virtual void changeEvent(QEvent *e);
+    
+#if defined (Q_OS_MAC)
+    virtual void mouseMoveEvent(QMouseEvent *);
+#endif //#if defined (Q_OS_MAC)
 
 	virtual void Quit();
-	virtual void ShowAssertMessage(const char * message);
-
-private:
-	Ui::DavaGLWidget *ui;
+    DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
 	int maxFPS;
-	int minFrameTimeMs;
+    int minFrameTimeMs;
+	int fps;
 
-	// Previous widget size.
-	QSize prevSize;
-
+	qint64 fpsCountTime;
+	int fpsCount;
 };
 
 #endif // DAVAGLWIDGET_H
-

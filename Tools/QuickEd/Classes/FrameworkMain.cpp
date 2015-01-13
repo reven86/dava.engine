@@ -48,11 +48,11 @@ void FrameworkDidLaunched()
     Size2i screenSize = DPIHelper::GetScreenSize();
     appOptions->SetInt32("width",  screenSize.dx);
 	appOptions->SetInt32("height", screenSize.dy);
-    Core::Instance()->SetVirtualScreenSize(screenSize.dx, screenSize.dy);
-    Core::Instance()->RegisterAvailableResourceSize(screenSize.dx, screenSize.dy, "Gfx");
+    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(screenSize.dx, screenSize.dy);
+    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(screenSize.dx, screenSize.dy, "Gfx");
 
     Core::Instance()->SetOptions(appOptions);
-    Core::Instance()->EnableReloadResourceOnResize(false);
+    VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
     GameCore * core = new GameCore();
     Core::SetApplicationCore(core);

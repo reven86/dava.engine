@@ -34,7 +34,7 @@ attribute vec3 inTexCoord0;
 attribute vec2 inTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 attribute vec2 inTexCoord1;
 #endif
 
@@ -212,7 +212,7 @@ varying vec3 varTexCoord0;
 varying vec2 varTexCoord0;
 #endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 varying vec2 varTexCoord1;
 #endif
 
@@ -847,7 +847,7 @@ void main()
     varDecalTileTexCoord = varTexCoord0 * decalTileCoordScale;
 #endif
     
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
 	
 	#if defined(SETUP_LIGHTMAP)
 		varLightmapSize = lightmapSize;

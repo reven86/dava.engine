@@ -218,9 +218,8 @@ void LandscapeProxy::UpdateDisplayedTexture()
     RenderManager::Instance()->SetColor(Color::White);
     RenderHelper::Instance()->FillRect(Rect(0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight), RenderState::RENDERSTATE_2D_BLEND);
 
-    Sprite::DrawState drawState;
-    drawState.SetPosition(0.f, 0.f);
-	fullTiledSprite->Draw(&drawState);
+    RenderSystem2D::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->Draw(fullTiledSprite);
 	SafeRelease(fullTiledSprite);
 
 	Texture* notPassableTexture = texturesToBlend[TEXTURE_TYPE_NOT_PASSABLE];
@@ -230,8 +229,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 		RenderManager::Instance()->SetColor(Color::White);
 		notPassableSprite = Sprite::CreateFromTexture(notPassableTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight, true);
         
-        drawState.Reset();
-		notPassableSprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(notPassableSprite);
 	}
 	SafeRelease(notPassableSprite);
 
@@ -242,8 +240,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 		RenderManager::Instance()->SetColor(1.f, 1.f, 1.f, .5f);
 		customColorsSprite = Sprite::CreateFromTexture(customColorsTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight, true);
         
-        drawState.Reset();
-		customColorsSprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(customColorsSprite);
 		RenderManager::Instance()->SetColor(Color::White);
 	}
 	SafeRelease(customColorsSprite);
@@ -255,8 +252,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 		RenderManager::Instance()->SetColor(Color::White);
 		visibilityCheckToolSprite = Sprite::CreateFromTexture(visibilityCheckToolTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight, true);
         
-        drawState.Reset();
-		visibilityCheckToolSprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(visibilityCheckToolSprite);
 	}
 	SafeRelease(visibilityCheckToolSprite);
 
@@ -267,8 +263,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 		RenderManager::Instance()->SetColor(Color::White);
 		rulerToolSprite = Sprite::CreateFromTexture(rulerToolTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight, true);
         
-        drawState.Reset();
-		rulerToolSprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(rulerToolSprite);
 	}
 	SafeRelease(rulerToolSprite);
 

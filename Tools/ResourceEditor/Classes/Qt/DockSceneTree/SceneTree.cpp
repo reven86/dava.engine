@@ -107,38 +107,13 @@ SceneTree::~SceneTree()
 
 void SceneTree::SetFilter(const QString &filter)
 {
-// 	if(!filter.isEmpty())
-// 	{
-// 		treeModel->ResetFilterAcceptFlag();
-// 	}
-
-	filteringProxyModel->setFilterRegExp(QRegExp(filter, Qt::CaseInsensitive, QRegExp::FixedString));
+    treeModel->SetFilter(filter);
+    filteringProxyModel->invalidate();
     SyncSelectionToTree();
 
-	if(!filter.isEmpty())
+	if (!filter.isEmpty())
 	{
-		for(int i = 0; i < filteringProxyModel->rowCount(); ++i)
-		{
-			ExpandUntilFilterAccepted(filteringProxyModel->index(i, 0));
-		}
-	}
-// 	else
-// 	{
-// 		treeModel->ResetFilterAcceptFlag();
-// 	}
-}
-
-void SceneTree::ExpandUntilFilterAccepted(const QModelIndex &index)
-{
-	SceneTreeItem *item = treeModel->GetItem(filteringProxyModel->mapToSource(index));
-	if(NULL != item && !item->IsAcceptedByFilter())
-	{
-		expand(index);
-
-		for(int i = 0; i < filteringProxyModel->rowCount(index); ++i)
-		{
-			ExpandUntilFilterAccepted(filteringProxyModel->index(i, 0, index));
-		}
+        ExpandFilteredItems();
 	}
 }
 
@@ -240,7 +215,8 @@ void SceneTree::dragEnterEvent(QDragEnterEvent *event)
 void SceneTree::SceneActivated(SceneEditor2 *scene)
 {
 	treeModel->SetScene(scene);
-	SyncSelectionToTree();
+    SyncSelectionToTree();
+    filteringProxyModel->invalidate();
 }
 
 void SceneTree::SceneDeactivated(SceneEditor2 *scene)
@@ -389,17 +365,21 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 		SceneSelectionSystem *selSystem = scene->selectionSystem;
 		size_t selectionSize = selSystem->GetSelectionCount();
 
-		QMenu contextMenu;
+        Camera *camera = GetCamera(entity);
+
+        QMenu contextMenu;
 		if(entityCustomFlags & SceneTreeModel::CF_Disabled)
 		{
-            if(selectionSize == 1 && GetCamera(entity))
+            if(selectionSize == 1 && camera)
             {
                 AddCameraActions(contextMenu);
                 contextMenu.addSeparator();
             }
-
-            // disabled entities can only be removed
-            contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+            
+            if(camera != scene->GetCurrentCamera())
+            {
+                contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+            }
         }
 		else
 		{
@@ -407,14 +387,14 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 			contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Look at", this, SLOT(LookAtSelection()));
 
 			// look from
-			if(NULL != GetCamera(entity))
+			if(NULL != camera)
 			{
                 AddCameraActions(contextMenu);
 			}
 
 			// add/remove
 			contextMenu.addSeparator();
-            if(entity->GetLocked() == false)
+            if(entity->GetLocked() == false && (camera != scene->GetCurrentCamera()))
             {
 			    contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
             }
@@ -451,8 +431,8 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
                     contextMenu.addAction("Reload Model...", this, SLOT(ReloadModel()));
 				}
 			}
-			//DF-2004: Reload for every entity at scene
-			QAction *reloadModelAsAction = contextMenu.addAction("Reload Model As...", this, SLOT(ReloadModelAs()));			
+			// Reload for every entity at scene
+            contextMenu.addAction("Reload Model As...", this, SLOT(ReloadModelAs()));
 
 			// particle effect
 			DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
@@ -1351,6 +1331,32 @@ void SceneTree::AddCameraActions(QMenu &menu)
 {
     menu.addAction(QIcon(":/QtIcons/eye.png"), "Look from", this, SLOT(SetCurrentCamera()));
     menu.addAction(QIcon(":/QtIcons/camera.png"), "Set custom draw camera", this, SLOT(SetCustomDrawCamera()));
+}
+
+void SceneTree::ExpandFilteredItems()
+{
+    QSet<QModelIndex> indexSet;
+    BuildExpandItemsSet(indexSet);
+
+    for (auto i = indexSet.begin(); i != indexSet.end(); ++i)
+    {
+        expand(*i);
+    }
+}
+
+void SceneTree::BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent)
+{
+    const int n = filteringProxyModel->rowCount(parent);
+    for (int i = 0; i < n; i++)
+    {
+        const QModelIndex _index = filteringProxyModel->index(i, 0, parent);
+        SceneTreeItem *item = treeModel->GetItem(filteringProxyModel->mapToSource(_index));
+        if (item->IsHighlighed())
+        {
+            indexSet << _index.parent();
+        }
+        BuildExpandItemsSet(indexSet, _index);
+    }
 }
 
 void SceneTree::SetCurrentCamera()

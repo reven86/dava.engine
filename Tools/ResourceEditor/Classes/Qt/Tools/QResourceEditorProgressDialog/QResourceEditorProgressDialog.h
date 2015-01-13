@@ -31,12 +31,13 @@
 #ifndef __Q_RESOURSE_EDITOR_PROGRESS_DIALOG_H__
 #define __Q_RESOURSE_EDITOR_PROGRESS_DIALOG_H__
 
-#include <QtGui/qprogressdialog.h>
-#include <qtimer.h>
+#include <QProgressDialog>
+#include <QTimer>
 
 class QProgressBar;
 
-class  QResourceEditorProgressDialog : public QProgressDialog
+class  QResourceEditorProgressDialog
+	: public QProgressDialog
 {
 
 	Q_OBJECT
