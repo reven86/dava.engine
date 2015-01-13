@@ -111,12 +111,10 @@ DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent:
     wpEntity->AddComponent(wpComponent);
     wpEntity->SetName(waypoint->name);
 
-    DAVA::Matrix4 pm = pathEntity->GetWorldTransform();
-    pm.Inverse();
     DAVA::Matrix4 m;
     m.SetTranslationVector(waypoint->position);
-    wpEntity->SetLocalTransform(m * pm);
-
+    wpEntity->SetLocalTransform(m);
+    
     return wpEntity;
 }
 
@@ -263,7 +261,7 @@ void CollapsePathCommand::InitWaypoint(DAVA::PathComponent::Waypoint* waypoint, 
 {
     waypoint->name = wpEntity->GetName();
     waypoint->SetProperties(wpComponent->GetProperties());
-    DAVA::Matrix4 m = wpEntity->GetLocalTransform() * pathEntity->GetWorldTransform();
+    DAVA::Matrix4 m = wpEntity->GetLocalTransform();
     waypoint->position = m.GetTranslationVector();
 }
 
