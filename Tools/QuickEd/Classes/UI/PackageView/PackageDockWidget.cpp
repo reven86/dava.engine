@@ -7,6 +7,9 @@
 //
 
 #include "PackageDockWidget.h"
+
+#include <QClipboard>
+
 #include "ui_PackageDockWidget.h"
 #include "UIPackageModel.h"
 #include "DAVAEngine.h"
@@ -214,7 +217,16 @@ void PackageDockWidget::OnImport()
 
 void PackageDockWidget::OnCopy()
 {
-
+//    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+//    QModelIndexList selectedIndexList = selected.indexes();
+//    QClipboard *clipboard = QApplication::clipboard();
+//    
+//    if (!selectedIndexList.empty())
+//    {
+//        clipboard->setMimeData(<#QMimeData *data#>)
+//        //foreach(QModelIndex index, selectedIndexList)
+//        
+//    }
 }
 
 void PackageDockWidget::OnPaste()

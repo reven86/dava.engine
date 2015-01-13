@@ -12,10 +12,30 @@
 
 using namespace DAVA;
 
-ValueProperty::ValueProperty(BaseObject *object, const InspMember *member) : object(NULL), member(member), replaced(false)
+ValueProperty::ValueProperty(BaseObject *object, const InspMember *member, ValueProperty *sourceProperty, eCopyType copyType)
+    : object(NULL), member(member), replaced(false)
 {
     this->object = SafeRetain(object);
-    defaultValue = member->Value(object);
+    
+    if (sourceProperty)
+    {
+        if (sourceProperty->GetValue() != member->Value(object))
+            member->SetValue(object, sourceProperty->GetValue());
+        
+        if (copyType == BaseProperty::COPY_FULL)
+        {
+            defaultValue = sourceProperty->defaultValue;
+            replaced = sourceProperty->replaced;
+        }
+        else
+        {
+            defaultValue = member->Value(object);
+        }
+    }
+    else
+    {
+        defaultValue = member->Value(object);
+    }
     
     if (defaultValue.GetType() == VariantType::TYPE_VECTOR2)
     {

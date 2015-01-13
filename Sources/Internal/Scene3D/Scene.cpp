@@ -95,10 +95,6 @@ Texture* Scene::stubTexture2dLightmap = NULL; //this texture should be all-pink 
     
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	: Entity()
-    , mainCamera(0)
-    , drawCamera(0)
-	, imposterManager(0)
-    , systemsMask(_systemsMask)
     , transformSystem(0)
     , renderUpdateSystem(0)
     , lodSystem(0)
@@ -116,10 +112,14 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , windSystem(0)
     , animationSystem(0)
     , staticOcclusionDebugDrawSystem(0)
-	, sceneGlobalMaterial(0)
-    , isDefaultGlobalMaterial(true)
+    , systemsMask(_systemsMask)
     , clearBuffers(RenderManager::ALL_BUFFERS)
-{   
+    , isDefaultGlobalMaterial(true)
+    , sceneGlobalMaterial(0)
+    , mainCamera(0)
+    , drawCamera(0)
+    , imposterManager(0)
+{
 	CreateComponents();
 	CreateSystems();
 
@@ -488,12 +488,12 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
 {
 #if 1
     uint32 systemsCount = systems.size();
-    uint32 updatedComponentFlag = 1 << componentType;
-    uint32 componentsInEntity = entity->GetAvailableComponentFlags();
+    uint64 updatedComponentFlag = 1 << componentType;
+    uint64 componentsInEntity = entity->GetAvailableComponentFlags();
 
     for (uint32 k = 0; k < systemsCount; ++k)
     {
-        uint32 requiredComponentFlags = systems[k]->GetRequiredComponents();
+        uint64 requiredComponentFlags = systems[k]->GetRequiredComponents();
         
         if (((requiredComponentFlags & updatedComponentFlag) != 0) && ((requiredComponentFlags & componentsInEntity) == requiredComponentFlags))
         {
@@ -501,13 +501,13 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
         }
     }
 #else
-    uint32 componentsInEntity = entity->GetAvailableComponentFlags();
+    uint64 componentsInEntity = entity->GetAvailableComponentFlags();
     Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentsInEntity);
     
     for (Set<SceneSystem*>::iterator it = systemSetForType.begin(); it != systemSetForType.end(); ++it)
     {
         SceneSystem * system = *it;
-        uint32 requiredComponentFlags = system->GetRequiredComponents();
+        uint64 requiredComponentFlags = system->GetRequiredComponents();
         if ((requiredComponentFlags & componentsInEntity) == requiredComponentFlags)
             eventSystem->NotifySystem(system, entity, event);
     }
@@ -515,7 +515,7 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
 }
 #endif
     
-void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, uint32 processFlags /*= 0*/, SceneSystem * insertBeforeSceneForProcess /* = NULL */)
+void Scene::AddSystem(SceneSystem * sceneSystem, uint64 componentFlags, uint32 processFlags /*= 0*/, SceneSystem * insertBeforeSceneForProcess /* = NULL */)
 {
     sceneSystem->SetRequiredComponents(componentFlags);
     //Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentFlags);

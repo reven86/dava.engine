@@ -39,8 +39,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Base/HashMap.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
-
-//#define COMPONENT_STORAGE_STDMAP 1
+#include "Scene3D/EntityFamily.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 
 namespace DAVA
@@ -87,7 +86,7 @@ public:
     uint32 GetComponentCount();
     uint32 GetComponentCount(uint32 componentType);
     
-    inline uint32 GetAvailableComponentFlags();
+    inline uint64 GetAvailableComponentFlags();
 
 
 	// working with childs
@@ -361,9 +360,9 @@ public:
     
     Vector<Entity*> children;
     
-protected:
+    void UpdateFamily();
     
-    inline void CleanupComponent(Component* component, uint32 componentCount);
+protected:
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);
     void LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext);
@@ -372,35 +371,20 @@ protected:
 
     String RecursiveBuildFullName(Entity * node, Entity * endNode);
 
-//    virtual Entity* CopyDataTo(Entity *dstNode);
 	void SetParent(Entity * node);
 
 	Scene * scene;
 	Entity * parent;
-	
-
-	FastName	name;
-	int32	tag;
-
+	FastName name;
+	int32 tag;
     uint32 flags;
     
 private:
         
 	Vector<Component *> components;
-    uint32 componentFlags;
-    uint32 componentUpdateMarks;
-    
-#if defined(COMPONENT_STORAGE_STDMAP)
-
-    typedef Map<uint32, Vector<Component*>* > ComponentsMap;
-    ComponentsMap componentsMap;
-
-#else
-    
-    typedef HashMap<uint32, Vector<Component*>* > ComponentsMap;
-    ComponentsMap componentsMap;
-    
-#endif
+    EntityFamily * family;
+    void DetachComponent(const Vector<Component *>::iterator & it);
+    void RemoveComponent(const Vector<Component *>::iterator & it);
 
    	friend class Scene;
     
@@ -411,9 +395,6 @@ public:
         MEMBER( flags, "Flags", I_SAVE | I_VIEW | I_EDIT )
 
         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-
-		//COLLECTION(components, "Components", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-		//COLLECTION(children, "Children nodes", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
     );
 };
 	
@@ -521,19 +502,80 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Compo
     }	
 }
 
-uint32 Entity::GetAvailableComponentFlags()
+inline uint64 Entity::GetAvailableComponentFlags()
 {
-    return componentFlags;
+    return family->GetComponentsFlags();
 }
     
-Entity * Entity::GetChild(int32 index) const
+inline Entity * Entity::GetChild (int32 index) const
 {
     return children[index];
 }
 
-int32 Entity::GetChildrenCount() const
+inline int32 Entity::GetChildrenCount () const
 {
     return (int32)children.size();
+}
+
+inline uint32 Entity::GetComponentCount ()
+{
+    return components.size ();
+}
+
+inline void Entity::UpdateFamily ()
+{
+    family = EntityFamily::GetOrCreate (components);
+}
+
+inline void Entity::RemoveAllComponents ()
+{
+    while (!components.empty ())
+    {
+        RemoveComponent (--components.end ());
+    }
+}
+
+inline void Entity::RemoveComponent (const Vector<Component *>::iterator & it)
+{
+    if (it != components.end ())
+    {
+        Component * c = *it;
+        DetachComponent (it);
+        SafeDelete (c);
+    }
+}
+
+inline void Entity::RemoveComponent (uint32 componentType, uint32 index)
+{
+    Component * c = GetComponent (componentType, index);
+    if (c)
+    {
+        RemoveComponent (c);
+    }
+}
+
+inline void Entity::RemoveComponent (Component * component)
+{
+    DetachComponent (component);
+    SafeDelete (component);
+}
+
+inline void Entity::DetachComponent (Component * component)
+{
+    DVASSERT (component);
+
+    auto it = std::find (components.begin (), components.end (), component);
+    DetachComponent (it);
+}
+
+inline Scene * Entity::GetScene ()
+{
+    return scene;
+}
+
+inline uint32 Entity::GetComponentCount (uint32 componentType)
+{
+    return family->GetComponentsCount (componentType);
 }
 
 

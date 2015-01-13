@@ -49,16 +49,9 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	: QWidget(parent)
 	, davaUIScreenID(0)
 	, dava3DViewMargin(3)
+	, previewDialog(NULL)
 	, newSceneCounter(0)
 	, curScene(NULL)
-	, previewDialog(NULL)
-	/*
-	, curModifAxis(ST_AXIS_X)
-	, curModifMode(ST_MODIF_MOVE)
-	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
-	, curSelDrawMode(ST_SELDRAW_DRAW_CORNERS | ST_SELDRAW_FILL_SHAPE)
-	, curColDrawMode(ST_COLL_DRAW_NOTHING)
-	*/
 {
 	this->setMouseTracking(true);
 

@@ -45,8 +45,8 @@
 
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	editingIsEnabled(false)
 ,	curToolSize(0)
+,	editingIsEnabled(false)
 ,	originalImage(NULL)
 ,	state(VT_STATE_NORMAL)
 ,	textureLevel(Landscape::TEXTURE_TILE_FULL)
@@ -322,6 +322,8 @@ void VisibilityToolSystem::SetVisibilityPointInternal()
     Sprite::DrawState drawState;
     drawState.SetPosition(0.f, 0.f);
 	drawState.SetScaleSize(sprite->GetWidth(), sprite->GetHeight(), cursorSprite->GetWidth(), cursorSprite->GetHeight());
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(cursorSprite, &drawState);
 
 	RenderManager::Instance()->RestoreRenderTarget();
@@ -579,6 +581,7 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 
 		manager->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
 		manager->SetColor(areaPointColors[colorIndex]);
+        RenderSystem2D::Instance()->Setup2DMatrices();
 		helper->DrawPoint(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(pos), 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
 	}
 
