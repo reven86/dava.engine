@@ -49,7 +49,7 @@ ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
         DAVA::PathComponent::Waypoint * waypoint = waypoints[wpIdx];
         DVASSERT(waypoint);
 
-        DAVA::Entity * wpEntity = CreateWaypointEntity(waypoint,pathComponent->GetName());
+        DAVA::ScopedPtr<DAVA::Entity> wpEntity(CreateWaypointEntity(waypoint,pathComponent->GetName()));
         mapWaypoint2Entity[waypoint] = wpEntity;
         entityAddCommands.push_back(new EntityAddCommand(wpEntity, pathEntity));
     }
@@ -150,9 +150,9 @@ DAVA::PathComponent::Waypoint* NewWaypoint()
 
 CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
     : Command2(CMDID_COLLAPSE_PATH, "Collapse path entities")
+    , pathEntity(NULL)
     , origPathComponent(pathComponent)
     , destPathComponent(NULL)
-    , pathEntity(NULL)
     , addNextComponent(NULL)
     , removePrevComponent(NULL)
 {
@@ -163,15 +163,12 @@ CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
     SafeRetain(pathEntity);
 
     destPathComponent = new DAVA::PathComponent();
-    DVASSERT(destPathComponent);
 
     const DAVA::FastName& pathName = origPathComponent->GetName();
     destPathComponent->SetName(pathName);
 
     addNextComponent = new AddComponentCommand(pathEntity,destPathComponent);
     removePrevComponent = new RemoveComponentCommand(pathEntity,origPathComponent);
-    DVASSERT(addNextComponent);
-    DVASSERT(removePrevComponent);
 
     // define the list of entities to collapse
     DAVA::uint32 entityCount=0;
