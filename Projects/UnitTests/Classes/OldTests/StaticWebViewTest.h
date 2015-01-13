@@ -63,6 +63,10 @@ private:
     void OnButtonUncheckTransparancy(BaseObject *obj, void *data, 
         void *callerData);
 
+    void CreateUIButton(UIButton*& button, Font * font, const Rect& rect,
+        const WideString& str,
+        void (StaticWebViewTest::*targetFunction)(BaseObject*, void*, void*));
+
     UIButton* finishTestButton;
     UIButton* setStaticButton;
     UIButton* setNormalButton;

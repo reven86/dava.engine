@@ -76,84 +76,42 @@ void StaticWebViewTest::LoadResources()
 	FileSystem::Instance()->CopyFile(srcFile, cpyFile);
 	String url = "file:///" + cpyFile.GetAbsolutePathname();
 
-//	webView2 = new UIWebView(Rect(710, 5, 300, 250));
-//	webView2->SetVisible(true);
-//    webView2->SetDebugDraw(true);
-//	webView2->SetBackgroundTransparency(true);
-//    webView2->OpenURL(url);
-//	AddControl(webView2);
+	webView2 = new UIWebView(Rect(710, 5, 300, 250));
+	webView2->SetVisible(true);
+    webView2->SetDebugDraw(true);
+	webView2->SetBackgroundTransparency(true);
+    webView2->OpenURL(url);
+	AddControl(webView2);
 
 	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
 	font->SetSize(20);
 
-	finishTestButton = new UIButton(Rect(0, 510, 300, 30));
-	finishTestButton->SetStateFont(0xFF, font);
-	finishTestButton->SetStateText(0xFF, L"Finish Test");
-	finishTestButton->SetStateFontColor(0xFF, Color::White);
-	finishTestButton->SetDebugDraw(true);
-	finishTestButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, 
-        &StaticWebViewTest::OnButtonPressed));
-	AddControl(finishTestButton);
+    CreateUIButton(finishTestButton, font, Rect(0, 510, 300, 30), 
+        L"Finish Test", &StaticWebViewTest::OnButtonPressed);
 
-	setStaticButton = new UIButton(Rect(0 + 300, 510, 300, 30));
-    setStaticButton->SetStateFont(0xFF, font);
-    setStaticButton->SetStateText(0xFF, L"Render To Texture");
-    setStaticButton->SetStateFontColor(0xFF, Color::White);
-    setStaticButton->SetDebugDraw(true);
-    setStaticButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, 
-        &StaticWebViewTest::OnButtonSetStatic));
-    AddControl(setStaticButton);
+    CreateUIButton(setStaticButton, font, Rect(0 + 300, 510, 300, 30),
+        L"Render To Texture", &StaticWebViewTest::OnButtonSetStatic);
 
-    setNormalButton = new UIButton(Rect(0 + 300 * 2, 510, 300, 30));
-    setNormalButton->SetStateFont(0xFF, font);
-    setNormalButton->SetStateText(0xFF, L"Normal View");
-    setNormalButton->SetStateFontColor(0xFF, Color::White);
-    setNormalButton->SetDebugDraw(true);
-    setNormalButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, 
-        &StaticWebViewTest::OnButtonSetNormal));
-    AddControl(setNormalButton);
-
+    CreateUIButton(setNormalButton, font, Rect(0 + 300 * 2, 510, 300, 30),
+        L"Normal View", &StaticWebViewTest::OnButtonSetNormal);
     
+    CreateUIButton(add10ToAlfaButton, font, Rect(0 + 300 * 1, 510 + 30, 300, 30),
+        L"+10 to Alfa", &StaticWebViewTest::OnButtonAdd10ToAlfa);
 
-    add10ToAlfaButton = new UIButton(Rect(0 + 300 * 1, 510 + 30, 300, 30));
-    add10ToAlfaButton->SetStateFont(0xFF, font);
-    add10ToAlfaButton->SetStateText(0xFF, L"+10 to Alfa");
-    add10ToAlfaButton->SetStateFontColor(0xFF, Color::White);
-    add10ToAlfaButton->SetDebugDraw(true);
-    add10ToAlfaButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, 
-        &StaticWebViewTest::OnButtonAdd10ToAlfa));
-    AddControl(add10ToAlfaButton);
+    CreateUIButton(minus10FromAlfaButton, font, 
+        Rect(0 + 300 * 2, 510 + 30, 300, 30),
+        L"-10 to Alfa", &StaticWebViewTest::OnButtonMinus10FromAlfa);
 
-    minus10FromAlfaButton = new UIButton(Rect(0 + 300 * 2, 510 + 30, 300, 30));
-    minus10FromAlfaButton->SetStateFont(0xFF, font);
-    minus10FromAlfaButton->SetStateText(0xFF, L"-10 to Alfa");
-    minus10FromAlfaButton->SetStateFontColor(0xFF, Color::White);
-    minus10FromAlfaButton->SetDebugDraw(true);
-    minus10FromAlfaButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, 
-        Message(this, &StaticWebViewTest::OnButtonMinus10FromAlfa));
-    AddControl(minus10FromAlfaButton);
+    CreateUIButton(checkTransparancyButton, font,
+        Rect(0 + 300 * 1, 510 + 30 * 2, 300, 30),
+        L"set Transparent Background", 
+        &StaticWebViewTest::OnButtonCheckTransparancy);
 
-    checkTransparancyButton = new UIButton(
-        Rect(0 + 300 * 1, 510 + 30 * 2, 300, 30));
-    checkTransparancyButton->SetStateFont(0xFF, font);
-    checkTransparancyButton->SetStateText(0xFF, L"set Transparent Background");
-    checkTransparancyButton->SetStateFontColor(0xFF, Color::White);
-    checkTransparancyButton->SetDebugDraw(true);
-    checkTransparancyButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, 
-        Message(this, &StaticWebViewTest::OnButtonCheckTransparancy));
-    AddControl(checkTransparancyButton);
-
-    uncheckTransparancyButton = new UIButton(
-        Rect(0 + 300 * 2, 510 + 30 * 2, 300, 30));
-    uncheckTransparancyButton->SetStateFont(0xFF, font);
-    uncheckTransparancyButton->SetStateText(0xFF,
-                                            L"unset Transparent Background");
-    uncheckTransparancyButton->SetStateFontColor(0xFF, Color::White);
-    uncheckTransparancyButton->SetDebugDraw(true);
-    uncheckTransparancyButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE,
-        Message(this, &StaticWebViewTest::OnButtonUncheckTransparancy));
-    AddControl(uncheckTransparancyButton);
+    CreateUIButton(uncheckTransparancyButton, font,
+        Rect(0 + 300 * 2, 510 + 30 * 2, 300, 30),
+        L"unset Transparent Background",
+        &StaticWebViewTest::OnButtonUncheckTransparancy);
 
 	SafeRelease(font);
 }
@@ -218,7 +176,7 @@ void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject *obj, void *data,
     {
         Color color = back->GetColor();
         color.a += 0.1f;
-        color.a = color.a <= 1.0f ? color.a : 1.0f;
+        color.a = Min(1.0f, color.a);
         back->SetColor(color);
     }
 }
@@ -232,7 +190,7 @@ void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject *obj, void *data,
     {
         Color color = back->GetColor();
         color.a -= 0.1f;
-        color.a = color.a <= 1.0f ? color.a : 1.0f;
+        color.a = Max(0.f, color.a);
         back->SetColor(color);
     }
 }
@@ -247,4 +205,18 @@ void StaticWebViewTest::OnButtonUncheckTransparancy(BaseObject *obj, void *data,
                                                     void *callerData)
 {
     webView1->SetBackgroundTransparency(false);
+}
+
+void StaticWebViewTest::CreateUIButton(UIButton*& button, Font * font, 
+    const Rect& rect, const WideString& str, 
+    void (StaticWebViewTest::*targetFunction)(BaseObject*, void*, void*))
+{
+    button = new UIButton(rect);
+    button->SetStateFont(0xFF, font);
+    button->SetStateText(0xFF, str);
+    button->SetStateFontColor(0xFF, Color::White);
+    button->SetDebugDraw(true);
+    button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, 
+        Message(this, targetFunction));
+    AddControl(button);
 }
