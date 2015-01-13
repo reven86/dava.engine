@@ -319,18 +319,18 @@ const InstanceParamDescriptor INSTANCE_PARAM_DESCRIPTORS[] =
 {
     InstanceParamDescriptor(FastName("nonInstanced"), FastName("nonInstanced"), UNKNOWN_SEMANTIC),
     //lightmaps - may be we should unite them into 1 uniform
-    InstanceParamDescriptor(FastName("uvOffsetI[0]"), FastName("uvOffset"), UNKNOWN_SEMANTIC),
-    InstanceParamDescriptor(FastName("uvScaleI[0]"), FastName("uvScale"), UNKNOWN_SEMANTIC),
+    InstanceParamDescriptor(FastName("uvOffset[0]"), FastName("uvOffset"), UNKNOWN_SEMANTIC),
+    InstanceParamDescriptor(FastName("uvScale[0]"), FastName("uvScale"), UNKNOWN_SEMANTIC),
     //fog - in current maps - on all objects
-    InstanceParamDescriptor(FastName("worldMatrixI[0]"), FastName("worldMatrix"), PARAM_WORLD),
-    InstanceParamDescriptor(FastName("worldViewMatrixI[0]"), FastName("worldViewMatrix"), PARAM_WORLD_VIEW),
-    InstanceParamDescriptor(FastName("worldViewProjMatrixI[0]"), FastName("worldViewProjMatrix"), PARAM_WORLD_VIEW_PROJ),
+    InstanceParamDescriptor(FastName("worldMatrix[0]"), FastName("worldMatrix"), PARAM_WORLD),
+    InstanceParamDescriptor(FastName("worldViewMatrix[0]"), FastName("worldViewMatrix"), PARAM_WORLD_VIEW),
+    InstanceParamDescriptor(FastName("worldViewProjMatrix[0]"), FastName("worldViewProjMatrix"), PARAM_WORLD_VIEW_PROJ),
     //trees
-    InstanceParamDescriptor(FastName("worldScaleI[0]"), FastName("worldScale"), PARAM_WORLD_SCALE),
-    InstanceParamDescriptor(FastName("leafOscillationParamsI[0]"), FastName("leafOscillationParams"), PARAM_SPEED_TREE_LEAFS_OSCILLATION),
-    InstanceParamDescriptor(FastName("treeLeafOcclusionMulI[0]"), FastName("treeLeafOcclusionMul"), UNKNOWN_SEMANTIC),
-    InstanceParamDescriptor(FastName("treeLeafColorMulI[0]"), FastName("treeLeafColorMul"), UNKNOWN_SEMANTIC), 
-    InstanceParamDescriptor(FastName("treeLeafOcclusionOffsetI[0]"), FastName("treeLeafOcclusionOffset"), UNKNOWN_SEMANTIC)        
+    InstanceParamDescriptor(FastName("worldScale[0]"), FastName("worldScale"), PARAM_WORLD_SCALE),
+    InstanceParamDescriptor(FastName("leafOscillationParams[0]"), FastName("leafOscillationParams"), PARAM_SPEED_TREE_LEAFS_OSCILLATION),
+    InstanceParamDescriptor(FastName("treeLeafOcclusionMul[0]"), FastName("treeLeafOcclusionMul"), UNKNOWN_SEMANTIC),
+    InstanceParamDescriptor(FastName("treeLeafColorMul[0]"), FastName("treeLeafColorMul"), UNKNOWN_SEMANTIC), 
+    InstanceParamDescriptor(FastName("treeLeafOcclusionOffset[0]"), FastName("treeLeafOcclusionOffset"), UNKNOWN_SEMANTIC)        
 };
 
 RenderGuard::RenderGuard()

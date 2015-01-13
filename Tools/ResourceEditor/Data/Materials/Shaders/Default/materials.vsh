@@ -74,14 +74,16 @@ attribute float inTime;
 // UNIFORMS
 
 #if defined(INSTANCING)
-uniform mat4 worldViewProjMatrixI[MAX_INSTANCES];
+uniform mat4 worldViewProjMatrix[MAX_INSTANCES];
+#define worldViewProjMatrix worldViewProjMatrix[gl_InstanceID]
 #else
 uniform mat4 worldViewProjMatrix;
 #endif
 
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPEED_TREE_LEAF) || defined(SPHERICAL_LIT)
 #if defined(INSTANCING)
-uniform mat4 worldViewMatrixI[MAX_INSTANCES];
+uniform mat4 worldViewMatrix[MAX_INSTANCES];
+#define worldViewMatrix worldViewMatrix[gl_InstanceID]
 #else
 uniform mat4 worldViewMatrix;
 #endif
@@ -137,8 +139,10 @@ uniform vec3 metalFresnelReflectance;
 
 #if defined(MATERIAL_LIGHTMAP)
 #if defined(INSTANCING)
-uniform mediump vec2 uvOffsetI[MAX_INSTANCES];
-uniform mediump vec2 uvScaleI[MAX_INSTANCES];
+uniform vec2 uvOffset[MAX_INSTANCES];
+#define uvOffset uvOffset[gl_InstanceID]
+uniform vec2 uvScale[MAX_INSTANCES];
+#define uvScale uvScale[gl_InstanceID]
 #else
 uniform mediump vec2 uvOffset;
 uniform mediump vec2 uvScale;
@@ -152,7 +156,8 @@ uniform mediump vec2 trunkOscillationParams;
 #if defined(SPEED_TREE_LEAF)
 uniform vec3 worldViewTranslate;
 #if defined(INSTANCING)
-uniform vec3 worldScaleI[MAX_INSTANCES];
+uniform vec3 worldScale[MAX_INSTANCES];
+#define worldScale worldScale[gl_InstanceID]
 #else
 uniform vec3 worldScale;
 #endif
@@ -162,9 +167,12 @@ uniform float cutDistance;
 
 	#if !defined(SPHERICAL_LIT) //legacy for old tree lighting
         #if defined(INSTANCING)
-            uniform lowp vec3 treeLeafColorMulI[MAX_INSTANCES];            
-            uniform lowp float treeLeafOcclusionMulI[MAX_INSTANCES];            
-            uniform lowp float treeLeafOcclusionOffsetI[MAX_INSTANCES];            
+            uniform lowp vec3 treeLeafColorMul[MAX_INSTANCES];
+            #define treeLeafColorMul treeLeafColorMul[gl_InstanceID]
+            uniform lowp float treeLeafOcclusionMul[MAX_INSTANCES];
+            #define treeLeafOcclusionMul treeLeafOcclusionMul[gl_InstanceID]
+            uniform lowp float treeLeafOcclusionOffset[MAX_INSTANCES];
+            #define treeLeafOcclusionOffset treeLeafOcclusionOffset[gl_InstanceID]
         #else
             uniform lowp vec3 treeLeafColorMul;
             uniform lowp float treeLeafOcclusionMul;
@@ -174,7 +182,8 @@ uniform float cutDistance;
 	
 	#if defined(WIND_ANIMATION)
         #if defined(INSTANCING)
-            uniform mediump vec2 leafOscillationParamsI[MAX_INSTANCES];            
+            uniform mediump vec2 leafOscillationParams[MAX_INSTANCES];
+            #define leafOscillationParams leafOscillationParams[gl_InstanceID]
         #else
             uniform mediump vec2 leafOscillationParams; //x: A*sin(T); y: A*cos(T);
         #endif
@@ -259,7 +268,8 @@ uniform mediump vec2 texture0Shift;
 uniform vec3 cameraPosition;
 
 #if defined(INSTANCING)
-uniform mat4 worldMatrixI[MAX_INSTANCES];
+uniform mat4 worldMatrix[MAX_INSTANCES];
+#define worldMatrix worldMatrix[gl_InstanceID]
 #else
 uniform mat4 worldMatrix;
 #endif
@@ -366,31 +376,6 @@ vec4 Wave(float time, vec4 pos, vec2 uv)
 
 void main()
 {
-
-#if defined(INSTANCING)
-    int currInstanceId = gl_InstanceID;
-    mat4 worldViewProjMatrix = worldViewProjMatrixI[currInstanceId];
-    #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPEED_TREE_LEAF) || defined(SPHERICAL_LIT)
-        mat4 worldViewMatrix = worldViewMatrixI[currInstanceId];
-    #endif
-    mat4 worldMatrix = worldMatrixI[currInstanceId];
-    #if defined(MATERIAL_LIGHTMAP)
-        mediump vec2 uvOffset=uvOffsetI[currInstanceId];
-        mediump vec2 uvScale=uvScaleI[currInstanceId];
-    #endif
-    #if defined(SPEED_TREE_LEAF)
-        vec3 worldScale = worldScaleI[currInstanceId];       
-        #if !defined(SPHERICAL_LIT) //legacy for old tree lighting            
-            lowp vec3 treeLeafColorMul = treeLeafColorMulI[currInstanceId];
-            lowp float treeLeafOcclusionMul = treeLeafOcclusionMulI[currInstanceId];
-            lowp float treeLeafOcclusionOffset = treeLeafOcclusionOffsetI[currInstanceId];                
-        #endif
-        #if defined(WIND_ANIMATION)        
-            mediump vec2 leafOscillationParams = leafOscillationParamsI[currInstanceId];            
-        #endif        
-    #endif    
-    
-#endif
 
 #if defined (SKINNING)
     //compute final state - for now just effected by 1 bone - later blend everything here
@@ -847,7 +832,7 @@ void main()
     varDecalTileTexCoord = varTexCoord0 * decalTileCoordScale;
 #endif
     
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
 	
 	#if defined(SETUP_LIGHTMAP)
 		varLightmapSize = lightmapSize;
@@ -862,6 +847,5 @@ void main()
 #if defined(FRAME_BLEND)
 	varTime = inTime;
 #endif
-
 
 }
