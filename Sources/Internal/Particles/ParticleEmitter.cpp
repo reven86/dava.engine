@@ -55,8 +55,8 @@ void PartilceEmitterLoadProxy::Load(KeyedArchive *archive, SerializationContext 
 }
 
 ParticleEmitter::ParticleEmitter() 
-    : requireDeepClone(true)
-    , shortEffect(false)
+    : shortEffect(false)
+    , requireDeepClone(true)
 {        
 	Cleanup(false);
 }

@@ -19,7 +19,7 @@ QWidget * FilePathPropertyDelegate::createEditor( QWidget * parent, const QStyle
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    connect(lineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(OnValueChanged()));
+    connect(lineEdit, SIGNAL(textEdited(const QString &)), this, SLOT(OnValueChanged()));
 
     return lineEdit;
 }
@@ -29,10 +29,8 @@ void FilePathPropertyDelegate::setEditorData( QWidget * rawEditor, const QModelI
     QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    QString stringValue = StringToQString(variant.AsFilePath().GetAbsolutePathname());
-    editor->blockSignals(true);
+    QString stringValue = StringToQString(variant.AsFilePath().GetStringValue());
     editor->setText(stringValue);
-    editor->blockSignals(false);
 }
 
 bool FilePathPropertyDelegate::setModelData( QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index ) const 

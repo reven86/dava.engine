@@ -35,12 +35,14 @@
 #include <QTreeView>
 #include <QTableView>
 #include <QTimer>
+#include <QPointer>
 
 #include "Scene/SceneSignals.h"
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
 
-class SceneTree : public QTreeView
+class SceneTree
+    : public QTreeView
 {
 	Q_OBJECT
 
@@ -149,8 +151,8 @@ private:
 	ParticleLayer* selectedLayer;
 	ParticleForce* selectedForce;
 
-	SceneTreeModel * treeModel;
-	SceneTreeFilteringModel *filteringProxyModel;
+	QPointer< SceneTreeModel > treeModel;
+	QPointer< SceneTreeFilteringModel > filteringProxyModel;
 	SceneTreeDelegate *treeDelegate;
 	QTimer refreshTimer;
 
