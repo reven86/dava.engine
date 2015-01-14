@@ -496,7 +496,8 @@ const V& HashMap<K, V>::valueByIndex(size_t index) const
 	}
 	if (curIndex == index)
 	{
-	    DAVA::HashMap<K, V>::HashMapItem* item = stateIter.operator ->();
+	    // fix clang warning on return local variable pointer
+	    HashMap<K, V>::HashMapItem* item = stateIter.operator ->();
 	    return item->second;
 	}
 	return defaultV;

@@ -47,7 +47,7 @@ StaticWebViewTest::StaticWebViewTest()
     onScreenTime(0.f)
 {
 	RegisterFunction(this, &StaticWebViewTest::TestFunction,
-                     Format("StaticWebViewTest"), NULL);
+                     Format("StaticWebViewTest"), nullptr);
 }
 
 void StaticWebViewTest::LoadResources()

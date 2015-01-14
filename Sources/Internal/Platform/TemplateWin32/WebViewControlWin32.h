@@ -37,18 +37,13 @@
 #include "UI/IWebViewControl.h"
 #include "FileSystem/FilePath.h"
 
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-
+namespace Gdiplus
+{
+    using std::min;
+    using std::max;
+}
 #include <gdiplus.h>
-
-#undef min
-#undef max
+#include <atlimage.h>
 
 // Helper class to contain Web Browser.
 interface IWebBrowser2;
@@ -146,28 +141,28 @@ public:
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
+	void Initialize(const Rect& rect) override;
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
-	// Load html page from stringss
-	virtual void LoadHtmlString(const WideString& htmlString);
+	void OpenURL(const String& urlToOpen) override;
+	// Load html page from string
+	void LoadHtmlString(const WideString& htmlString) override;
 	// Delete all cookies associated with target URL
-	virtual void DeleteCookies(const String& targetUrl);
+	void DeleteCookies(const String& targetUrl) override;
 	// Get cookie for specific domain and name
-	virtual String GetCookie(const String& url, const String& name) const;
+	String GetCookie(const String& url, const String& name) const override;
 	// Get the list of cookies for specific domain
-	virtual Map<String, String> GetCookies(const String& url) const;
+	Map<String, String> GetCookies(const String& url) const override;
 	// Execute javascript string in webview
-	virtual int32 ExecuteJScript(const String& scriptString);
+	int32 ExecuteJScript(const String& scriptString) override;
 	
-    void OpenFromBuffer(const String& string, const FilePath& basePath);
+    void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 
     // Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
+	void SetRect(const Rect& rect) override;
+	void SetVisible(bool isVisible, bool hierarchic) override;
 
-	virtual void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView) override;
 
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
@@ -190,6 +185,11 @@ protected:
     bool renderToTexture;
     bool isVisible;
 };
+
+inline bool WebViewControl::IsRenderToTexture() const
+{
+    return renderToTexture;
+}
 
 };
 #endif //__WEBVIEWCONTROL_WIN32_H__

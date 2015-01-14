@@ -90,16 +90,10 @@ public:
 	virtual void SetRect(const Rect& rect) = 0;
 	virtual void SetVisible(bool isVisible, bool hierarchic) = 0;
 	// Page scale property change
-    virtual void SetScalesPageToFit(bool isScalesToFit)
-    {
-        Logger::Debug("unsupported");
-    };
+    virtual void SetScalesPageToFit(bool isScalesToFit);
 	
 	virtual void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView) = 0;
-	virtual void SetBackgroundTransparency(bool enabled)
-	{
-        Logger::Debug("unsupported");
-	};
+    virtual void SetBackgroundTransparency(bool enabled);
 
 	// Bounces settings.
 	virtual bool GetBounces() const {return false;};
@@ -112,6 +106,16 @@ public:
     
     virtual void SetRenderToTexture(bool value) = 0;
     virtual bool IsRenderToTexture() const = 0;
+};
+
+inline void IWebViewControl::SetScalesPageToFit(bool isScalesToFit)
+{
+    Logger::Debug("unsupported SetScalesPageToFit");
+};
+
+inline void IWebViewControl::SetBackgroundTransparency(bool enabled)
+{
+    Logger::Debug("unsupported SetBackgroundTransparency");
 };
 
 };

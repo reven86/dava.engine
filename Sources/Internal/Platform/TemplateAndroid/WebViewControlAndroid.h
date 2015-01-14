@@ -78,10 +78,7 @@ public:
 	void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override;
 
-    UIWebView& GetUIWebView() const
-    {
-    	return webView;
-    }
+    UIWebView& GetUIWebView() const {return webView;}
 
 private:
 	int32 webViewId;

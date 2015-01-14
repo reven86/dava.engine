@@ -222,10 +222,6 @@ void JniWebView::SetRenderToTexture(int id, bool renderToTexture)
     {
         GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id,
                 renderToTexture);
-    } else
-    {
-        DVASSERT(false);
-        abort();
     }
 }
 
@@ -237,11 +233,8 @@ bool JniWebView::IsRenderToTexture(int id)
         jboolean result = GetEnvironment()->CallStaticBooleanMethod(
                 GetJavaClass(), mid, id);
         return result == 0 ? false : true;
-    } else
-    {
-        DVASSERT(false);
-        abort();
     }
+    return false; // if we come here java exception will throw
 }
 
 IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
@@ -249,16 +242,18 @@ IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
 	{
-		Logger::Debug("Error web view id=%d", id);
+		Logger::Error("Error web view id=%d", id);
 		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 	}
 
 	WebViewControl* control = iter->second;
 	IUIWebViewDelegate *delegate = control->delegate;
-	if (!delegate)
-		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 
-	return delegate->URLChanged(&control->webView, newURL, true);
+	if (delegate)
+	{
+	    return delegate->URLChanged(&control->webView, newURL, true);
+	}
+	return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
 void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
@@ -266,7 +261,7 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
 	{
-		Logger::Debug("Error web view id=%d", id);
+		Logger::Error("Error web view id=%d", id);
 		return;
 	}
 
@@ -304,7 +299,7 @@ void JniWebView::OnExecuteJScript(int id, int requestId, const String& result)
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
 	{
-		Logger::Debug("Error web view id=%d", id);
+		Logger::Error("Error web view id=%d", id);
 		return;
 	}
 
@@ -317,11 +312,10 @@ void JniWebView::OnExecuteJScript(int id, int requestId, const String& result)
 }
 
 WebViewControl::WebViewControl(UIWebView& uiWebView):
-	webViewId(0),
+	webViewId(-1),
 	delegate(nullptr),
 	webView(uiWebView)
 {
-	delegate = nullptr;
 	webView = uiWebView;
 
 	webViewId = webViewIdCount++;

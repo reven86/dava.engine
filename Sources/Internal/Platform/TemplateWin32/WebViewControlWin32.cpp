@@ -35,19 +35,7 @@
 #include <atlbase.h>
 #pragma warning(pop)
 #include <atlcom.h>
-#include <atlstr.h> // see http://msdn.microsoft.com/en-us/library/bwea7by5.aspx
-// see http://www.suodenjoki.dk/us/archive/2010/min-max.htm
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-
-#include <atlimage.h>
-#undef min
-#undef max
+#include <atlstr.h>
 #include <ExDisp.h>
 #include <ExDispid.h>
 #include "Utils/Utils.h"
@@ -350,25 +338,28 @@ public:
 WebBrowserContainer::WebBrowserContainer() :
 	hwnd(0),
 	webBrowser(nullptr),
+    sink(nullptr),
     openFromBufferQueued(false)
 {
 }
 
 WebBrowserContainer::~WebBrowserContainer()
 {
+    DVASSERT(sink);
 	sink->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
 	delete sink;
 
 	if (webBrowser)
 	{
 		webBrowser->Release();
-		webBrowser = NULL;
+		webBrowser = nullptr;
 	}
 }
 
 void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, 
     UIWebView* webView)
 {
+    DVASSERT(sink);
 	sink->SetDelegate(delegate, webView);
 }
 
@@ -434,7 +425,7 @@ void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
         DVASSERT(image.GetPitch() < 0);
         DVASSERT(image.GetPitch() * -1 == imageWidth * 3); // RGB
 
-        uint8* rawData = rawData = reinterpret_cast<uint8*>(
+        uint8* rawData = reinterpret_cast<uint8*>(
             image.GetPixelAddress(0, imageHeight - 1));
         {
             Image* imageBGR = Image::CreateFromData(imageWidth, imageHeight,
@@ -466,7 +457,7 @@ void WebBrowserContainer::RenderToTextureAndSetAsBackgroundSpriteToControl(
 
 bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
 {
-	this->hwnd = parentWindow;
+	hwnd = parentWindow;
 
 	IOleObject* oleObject = NULL;
 	HRESULT hRes = CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IOleObject, (void**)&oleObject);
@@ -487,7 +478,7 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
 	// Activating the container.
 	RECT rect = {0};
 	GetClientRect(hwnd, &rect);
-	hRes = oleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, this->hwnd, &rect);
+	hRes = oleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, hwnd, &rect);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebBrowserContainer::InititalizeBrowserContainer(), IOleObject::DoVerb() failed!, error code %i", hRes);
@@ -496,7 +487,7 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
 	}
 
 	// Prepare the browser itself.
-	hRes = oleObject->QueryInterface(IID_IWebBrowser2, (void**)&this->webBrowser);
+	hRes = oleObject->QueryInterface(IID_IWebBrowser2, (void**)&webBrowser);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebViewControl::InititalizeBrowserContainer(), IOleObject::QueryInterface(IID_IWebBrowser2) failed!, error code %i", hRes);
@@ -504,10 +495,10 @@ bool WebBrowserContainer::Initialize(HWND parentWindow, UIWebView& control)
 		return false;
 	}
 
+    DVASSERT(nullptr == sink);
 	sink = new EventSink(*this);
-	EventSink* s = sink;
     sink->SetWebView(control);
-	hRes = s->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
+	hRes = sink->DispEventAdvise(webBrowser, &DIID_DWebBrowserEvents2);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebViewControl::InititalizeBrowserContainer(), EventSink::DispEventAdvise(&DIID_DWebBrowserEvents2) failed!, error code %i", hRes);
@@ -600,20 +591,22 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 		return false;
 	}
 	// Initialize html document
-	webBrowser->Navigate( L"about:blank", NULL, NULL, NULL, NULL); 
+	webBrowser->Navigate( L"about:blank", nullptr, nullptr, nullptr, nullptr); 
 
-	IDispatch * m_pDoc;
-	IStream * pStream = NULL;
-	IPersistStreamInit * pPSI = NULL;
+    CComPtr<IDispatch> pDoc;
+    IStream* pStream;
+    IPersistStreamInit* pPSI;
 	HGLOBAL hHTMLContent;
 	HRESULT hr;
 	bool bResult = false;
 
+    size_t len = ::_tcslen(pszHTMLContent) + 1;
 	// allocate global memory to copy the HTML content to
-	hHTMLContent = ::GlobalAlloc( GPTR, ( ::_tcslen( pszHTMLContent ) + 1 ) * sizeof(TCHAR) );
-	if (!hHTMLContent)
-		return false;
-
+    hHTMLContent = ::GlobalAlloc(GPTR, len * sizeof(TCHAR));
+    if (!hHTMLContent)
+    {
+        return false;
+    }
 	::_tcscpy( (TCHAR *) hHTMLContent, pszHTMLContent );
 
 	// create a stream object based on the HTML content
@@ -621,13 +614,13 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 	if (SUCCEEDED(hr))
 	{
 
-		IDispatch * pDisp = NULL;
+        CComPtr<IDispatch> pDisp;
 
 		// get the document's IDispatch*
 		hr = this->webBrowser->get_Document( &pDisp );
 		if (SUCCEEDED(hr))
 		{
-			m_pDoc = pDisp;
+			pDoc = pDisp;
 		}
 		else
 		{
@@ -635,7 +628,7 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 		}
 
 		// request the IPersistStreamInit interface
-		hr = m_pDoc->QueryInterface( IID_IPersistStreamInit, (void **) &pPSI );
+		hr = pDoc->QueryInterface( IID_IPersistStreamInit, (void **)&pPSI );
 
 		if (SUCCEEDED(hr))
 		{
@@ -655,10 +648,10 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 
 			pPSI->Release();
 		}
-
-		// implicitly calls ::GlobalFree to free the global memory
 		pStream->Release();
 	}
+
+    GlobalFree(hHTMLContent);
 
 	return bResult;
 }
@@ -670,7 +663,7 @@ String WebBrowserContainer::GetCookie(const String& targetUrl, const String& nam
 		return String();
 	}
 
-	LPTSTR lpszData = NULL;   // buffer to hold the cookie data
+	LPTSTR lpszData = nullptr;   // buffer to hold the cookie data
 	DWORD dwSize = 4096; // Initial size of buffer		
 	String retCookie;
 
@@ -701,7 +694,7 @@ Map<String, String> WebBrowserContainer::GetCookies(const String& targetUrl)
 		return Map<String, String>();
 	}
 
-	LPTSTR lpszData = NULL;   // buffer to hold the cookie data
+	LPTSTR lpszData = nullptr;   // buffer to hold the cookie data
 	DWORD dwSize = 4096; // Initial size of buffer
 	Map<String, String> cookiesMap;
 
@@ -745,7 +738,7 @@ bool WebBrowserContainer::GetInternetCookies(const String& targetUrl, const Stri
 											&dwSize,
 											INTERNET_COOKIE_HTTPONLY,
 											NULL);
-	// Encrease buffer if its size is not enough
+	// increase buffer if its size is not enough
 	if (!bResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
 	{
 		delete [] lpszData;
@@ -809,7 +802,7 @@ bool WebBrowserContainer::DeleteCookies(const String& targetUrl)
 	// clean up		
 	delete [] cacheEntry; 
 	FindCloseUrlCache(cacheEnumHandle);  
-	// Syncronize cookies storage
+	// Synchronize cookies storage
 	InternetSetOption(0, INTERNET_OPTION_END_BROWSER_SESSION, 0, 0); 
     
 	return bResult;
@@ -931,7 +924,7 @@ bool WebBrowserContainer::OpenFromBuffer(const String& buffer, const FilePath& b
 
 void WebBrowserContainer::UpdateRect()
 {
-	IOleInPlaceObject* oleInPlaceObject = NULL;
+	IOleInPlaceObject* oleInPlaceObject = nullptr;
 	HRESULT hRes = webBrowser->QueryInterface(IID_IOleInPlaceObject, (void**)&oleInPlaceObject);
 	if (FAILED(hRes))
 	{
@@ -1015,11 +1008,6 @@ void WebViewControl::SetRenderToTexture(bool value)
             ::ShowWindow(browserWindow, SW_SHOW);
         }
     }
-}
-
-bool WebViewControl::IsRenderToTexture() const
-{
-    return renderToTexture;
 }
 
 void WebViewControl::Initialize(const Rect& rect)

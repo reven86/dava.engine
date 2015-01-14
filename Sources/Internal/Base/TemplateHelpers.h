@@ -31,6 +31,9 @@
 #define __DAVAENGINE_TEMPLATEHELPERS_H__
 
 #include <typeinfo>
+#ifdef DAVA_DEBUG
+#include <cassert>
+#endif
 #include "NullType.h"
 #include "TypeList.h"
 
@@ -231,14 +234,8 @@ template<class C, class O>
 C DynamicTypeCheck(O* pObject)
 {
 #ifdef DAVA_DEBUG
-    if(!pObject) return static_cast<C>(pObject);
-        
     C c = dynamic_cast<C>(pObject);
-    if (!c)
-    {//assert emulation )
-        int *i = 0;
-        *(i) = 0;
-    }
+    assert(c);
     return c;
 #else
     return static_cast<C>(pObject);

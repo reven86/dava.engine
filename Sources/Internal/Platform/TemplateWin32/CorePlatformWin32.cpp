@@ -750,7 +750,8 @@ namespace DAVA
             if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize,
                 sizeof(RAWINPUTHEADER)) != dwSize)
             {
-                OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+                Logger::FrameworkDebug(
+                    TEXT("GetRawInputData does not return correct size !\n"));
             }
 
             RAWINPUT* raw = (RAWINPUT*)lpb;
@@ -794,7 +795,7 @@ namespace DAVA
         {
             // if we have WebView (Ole Windows control) we need to 
             // change focus if user move to main window to get WM_INPUT
-            CoreWin32Platform* corePlatform = dynamic_cast<CoreWin32Platform*>(Core::Instance());
+            CoreWin32Platform* corePlatform = static_cast<CoreWin32Platform*>(Core::Instance());
             HWND mainWinowHandler = corePlatform->GetWindow();
             if (GetFocus() != mainWinowHandler)
             {
