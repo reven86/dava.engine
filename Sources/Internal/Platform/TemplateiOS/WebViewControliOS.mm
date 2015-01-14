@@ -682,10 +682,5 @@ void WebViewControl::SetRenderToTexture(bool value)
         }
     }
 }
-
-bool WebViewControl::IsRenderToTexture() const
-{
-    return isRenderToTexture;
-}
     
 } // end namespace DAVA

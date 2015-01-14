@@ -83,7 +83,7 @@ public:
     int32 GetDataDetectorTypes() const override;
     
     void SetRenderToTexture(bool value) override;
-    bool IsRenderToTexture() const override;
+    bool IsRenderToTexture() const override {return isRenderToTexture;}
     
     void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control);
 

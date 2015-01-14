@@ -173,18 +173,14 @@ using namespace DAVA;
 
 - (void)setWebViewControl:(WebViewControl*) webControl
 {
-    if (webControl)
-    {
-        webViewControl = webControl;
-    }
+    DVASSERT(webControl);
+    webViewControl = webControl;
 }
                            
 - (void)setUiWebViewControl:(UIWebView*) uiWebControl
 {
-   if (uiWebControl)
-   {
-       webView = uiWebControl;
-   }
+    DVASSERT(uiWebControl);
+    webView = uiWebControl;
 }
 
 @end
@@ -273,6 +269,7 @@ void WebViewControl::LoadHtmlString(const WideString& htlmString)
 													   length: htlmString.size() * sizeof(wchar_t)
 													 encoding:NSUTF32LittleEndianStringEncoding] autorelease];
     [[(WebView*)webViewPtr mainFrame] loadHTMLString:htmlPageToLoad baseURL:nil];
+    [htmlPageToLoad release];
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
@@ -381,11 +378,6 @@ void WebViewControl::SetRenderToTexture(bool value)
             [openGLView addSubview:(WebView*)webViewPtr];
         }
     }
-}
-
-bool WebViewControl::IsRenderToTexture() const
-{
-    return isRenderToTexture;
 }
 
 void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(

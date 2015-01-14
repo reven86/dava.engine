@@ -67,7 +67,7 @@ public:
 	void SetBackgroundTransparency(bool enabled) override;
     
     void SetRenderToTexture(bool value) override;
-    bool IsRenderToTexture() const override;
+    bool IsRenderToTexture() const override {return isRenderToTexture;}
     
     void SetImageCache(void* ptr);
     void* GetImageCache() const;
