@@ -51,8 +51,11 @@ protected:
         SERVICE_LOG,
     };
 
+    static const uint16 ANNOUNCE_PORT = 9999;
+    static const uint32 ANNOUNCE_TIME_PERIOD = 5;
+    static const char8 announceMulticastGroup[];
+
     static const uint16 LOGGER_PORT = 9999;
-    static const uint16 ECHO_PORT = 10101;
 
 public:
     NetworkTest();

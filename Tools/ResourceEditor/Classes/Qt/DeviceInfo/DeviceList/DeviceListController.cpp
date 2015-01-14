@@ -17,17 +17,19 @@
 using namespace DAVA;
 using namespace DAVA::Net;
 
+const char8 DeviceListController::announceMulticastGroup[] = "239.192.100.1";
+
 DeviceListController::DeviceListController(QObject* parent)
     : QObject(parent)
     , model(NULL)
 {
-    initModel();
+    model = new QStandardItemModel(this);
 
     // Register network service for recieving logs from device
     NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
 
     // Create controller for discovering remote devices
-    DAVA::Net::Endpoint endpoint("239.192.100.1", 9999);
+    DAVA::Net::Endpoint endpoint(announceMulticastGroup, ANNOUNCE_PORT);
     DAVA::Net::NetCore::Instance()->CreateDiscoverer(endpoint, DAVA::MakeFunction(this, &DeviceListController::DiscoverCallback));
 }
 
@@ -55,21 +57,10 @@ void DeviceListController::SetView(DeviceListWidget* _view)
     view = _view;
     view->ItemView()->setModel(model);
 
-    connect(view, &DeviceListWidget::connectClicked, this, &DeviceListController::OnConnectDevice);
-    connect(view, &DeviceListWidget::disconnectClicked, this, &DeviceListController::OnDisconnectDevice);
-    connect(view, &DeviceListWidget::showLogClicked, this, &DeviceListController::OnShowLog);
+    connect(view, &DeviceListWidget::connectClicked, this, &DeviceListController::OnConnectButtonPressed);
+    connect(view, &DeviceListWidget::disconnectClicked, this, &DeviceListController::OnDisconnectButtonPressed);
+    connect(view, &DeviceListWidget::showLogClicked, this, &DeviceListController::OnShowLogButtonPressed);
     connect(view, &DeviceListWidget::closeRequest, this, &DeviceListController::OnCloseEvent);
-}
-
-void DeviceListController::initModel()
-{
-    delete model;
-    model = new QStandardItemModel(this);
-}
-
-QStandardItem* DeviceListController::GetItemFromIndex(const QModelIndex& index)
-{
-    return model->itemFromIndex(index);
 }
 
 IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* context)
@@ -80,7 +71,6 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* con
 
     // Context holds index of discovered device
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
-    DVASSERT(model != NULL && 0 <= row && row < model->rowCount());
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
         QModelIndex index = model->index(row, 0);
@@ -97,7 +87,6 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* context)
 
     // Context holds index of discovered device
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
-    DVASSERT(model != NULL && 0 <= row && row < model->rowCount());
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
         QModelIndex index = model->index(row, 0);
@@ -162,7 +151,7 @@ void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
     DAVA::Net::NetCore::Instance()->DestroyController(trackId);
 }
 
-void DeviceListController::OnConnectDevice()
+void DeviceListController::OnConnectButtonPressed()
 {
     // 'Connect' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
@@ -177,7 +166,7 @@ void DeviceListController::OnConnectDevice()
     }
 }
 
-void DeviceListController::OnDisconnectDevice()
+void DeviceListController::OnDisconnectButtonPressed()
 {
     // 'Disconnect' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
@@ -190,7 +179,7 @@ void DeviceListController::OnDisconnectDevice()
     }
 }
 
-void DeviceListController::OnShowLog()
+void DeviceListController::OnShowLogButtonPressed()
 {
     // 'Show log' button has been pressed
     QModelIndexList selection = view->ItemView()->selectionModel()->selectedRows();
@@ -210,7 +199,7 @@ void DeviceListController::OnShowLog()
     }
 }
 
-QStandardItem *DeviceListController::createDeviceItem(const Endpoint& endp, const PeerDescription& peerDescr)
+QStandardItem *DeviceListController::CreateDeviceItem(const Endpoint& endp, const PeerDescription& peerDescr)
 {
     // Item text in the form of <name> - <platform>
     // E.g., 9f5656fd - Android
@@ -331,7 +320,7 @@ void DeviceListController::DiscoverCallback(size_t buflen, const void* buffer, c
         PeerDescription peer;
         if (peer.Deserialize(buffer, buflen) > 0)
         {
-            QStandardItem *item = createDeviceItem(endpoint, peer);
+            QStandardItem *item = CreateDeviceItem(endpoint, peer);
             model->appendRow(item);
             if (view)
             {

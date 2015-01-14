@@ -44,6 +44,8 @@
 using namespace DAVA;
 using namespace DAVA::Net;
 
+const char8 NetworkTest::announceMulticastGroup[] = "239.192.100.1";
+
 NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , quitFlag(false)
                            , periodicFlag(false)
@@ -57,13 +59,8 @@ NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , btnPeriodic(NULL)
                            , btnQuit(NULL)
 {
-    new NetCore();
-
-    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &NetworkTest::CreateLogger), MakeFunction(this, &NetworkTest::DeleteLogger));
-
+    // This project is based on UnitTests project, so create dummy test to run this app
     RegisterFunction(this, &NetworkTest::DummyTest, "DummyTest", NULL);
-
-    Logger::Debug("NetworkTest ctor");
 }
 
 NetworkTest::~NetworkTest()
@@ -78,6 +75,9 @@ void NetworkTest::DummyTest(PerfFuncData* data)
 
 void NetworkTest::LoadResources()
 {
+    new NetCore();
+    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &NetworkTest::CreateLogger), MakeFunction(this, &NetworkTest::DeleteLogger));
+
     CreateUI();
     {
         NetConfig config(SERVER_ROLE);
@@ -86,8 +86,8 @@ void NetworkTest::LoadResources()
 
         peerDescr = PeerDescription(config);
 
-        Endpoint annoEndpoint("239.192.100.1", 9999);
-        NetCore::Instance()->CreateAnnouncer(annoEndpoint, 5, MakeFunction(this, &NetworkTest::AnnounceDataSupplier));
+        Endpoint annoEndpoint(announceMulticastGroup, ANNOUNCE_PORT);
+        NetCore::Instance()->CreateAnnouncer(annoEndpoint, ANNOUNCE_TIME_PERIOD, MakeFunction(this, &NetworkTest::AnnounceDataSupplier));
         NetCore::Instance()->CreateController(config, NULL);
     }
     {

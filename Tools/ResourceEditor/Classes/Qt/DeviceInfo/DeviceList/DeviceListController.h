@@ -48,6 +48,9 @@ class DeviceListController : public QObject
         ROLE_PEER_SERVICES                      // Store network services to communicate with remote device
     };
 
+    static const DAVA::uint16 ANNOUNCE_PORT = 9999;
+    static const DAVA::char8 announceMulticastGroup[];
+
 public:
     explicit DeviceListController(QObject *parent = NULL);
     ~DeviceListController();
@@ -60,16 +63,12 @@ public:
     void AllStopped();
 
 private slots:
-    void OnConnectDevice();
-    void OnDisconnectDevice();
-    void OnShowLog();
+    void OnConnectButtonPressed();
+    void OnDisconnectButtonPressed();
+    void OnShowLogButtonPressed();
     void OnCloseEvent();
 
 private:
-    void initModel();
-
-    QStandardItem* GetItemFromIndex(const QModelIndex& index);
-
     void ConnectDeviceInternal(QModelIndex& index, size_t ifIndex);
     void DisonnectDeviceInternal(QModelIndex& index);
 
@@ -85,7 +84,7 @@ private:
     QPointer<DeviceListWidget> view;
 
 private:
-    static QStandardItem *createDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);
+    static QStandardItem *CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);
 };
 
 
