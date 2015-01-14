@@ -3,6 +3,10 @@ FIND_PROGRAM( PYTHON_BINARY python )
 
 MACRO( FILE_TREE_CHECK folders ) 
 
+    if ( IGNORE_FILE_TREE_CHECK )
+        return ()
+    endif ()
+
     if( PYTHON_BINARY )
 
         if( MACOS )

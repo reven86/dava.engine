@@ -134,6 +134,8 @@ if( EXISTS ${version_file})
     add_definitions( -DUI_EDITOR_VERSION=\"${BUILD_VERION}\" )   
 endif()
 
+file_tree_check( "${DAVA_FOLDERS}" )
+
 target_link_libraries( ${PROJECT_NAME}
     ${DAVA_LIBRARY}
     ${QT_LIBRARIES} 
