@@ -36,6 +36,9 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 #include "FileSystem/YamlNode.h"
+#include "UI/Components/UIInputComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
+
 #ifdef __DAVAENGINE_ANDROID__
 #include "UITextFieldAndroid.h"
 #endif
@@ -93,7 +96,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,   textFont(NULL)
 #endif
 {
-    customInput = MakeFunction(this, &UITextField::CustomInput);
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UITextField::CustomInput));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UITextField::CustomUpdate));
     
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
@@ -188,7 +192,7 @@ void UITextField::CloseKeyboard()
 #endif
 }
 	
-void UITextField::Update(float32 timeElapsed)
+void UITextField::CustomUpdate(float32 timeElapsed)
 {
 #ifdef __DAVAENGINE_IPHONE__
 	Rect rect = GetGeometricData().GetUnrotatedRect();//GetRect(true);

@@ -26,41 +26,45 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#ifndef __DAVAENGINE_UI_FADE_TRANSITION_H__
-#define __DAVAENGINE_UI_FADE_TRANSITION_H__
-
-#include "Base/BaseTypes.h"
-#include "UI/UIScreenTransition.h"
-
+#include "UIComponent.h"
+#include "UI/UIControl.h"
+#include "UIRenderComponent.h"
+#include "UIInputComponent.h"
+#include "UIUpdateComponent.h"
 
 namespace DAVA
 {
 
-class UIFadeTransition : public UIScreenTransition
+UIComponent::UIComponent()
+    : control(NULL)
 {
-public:
-	UIFadeTransition();
-	virtual ~UIFadeTransition();
-	
-	enum eType
-	{
-		FADE_MIX = 0, 
-		FADE_IN_FADE_OUT, 
-	};
 
-	virtual void SetType(eType _type);
-	
-    void CustomUpdate(float32 timeElapsed);
-	void CustomDraw(const UIGeometricData &geometricData);
+}
 
-private:
-	eType type;
-};
+UIComponent::~UIComponent()
+{
+}
 
-};
+Component* UIComponent::Clone(Entity* toEntity)
+{
+    // Empty stub
+    return NULL;
+}
 
+UIComponent* UIComponent::CreateByType(uint32 componentType)
+{
+    switch (componentType)
+    {
+    case Component::UI_RENDER_COMPONENT:
+        return new UIRenderComponent();
+    case Component::UI_INPUT_COMPONENT:
+        return new UIInputComponent();
+    case Component::UI_UPDATE_COMPONENT:
+        return new UIUpdateComponent();
+    default:
+        DVASSERT(0)
+        return 0;
+    }
+}
 
-
-#endif // __DAVAENGINE_UI_MOVEIN_TRANSITION_H__
+}

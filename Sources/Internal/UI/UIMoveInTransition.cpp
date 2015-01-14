@@ -33,6 +33,7 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Components/UIRenderComponent.h"
 
 namespace DAVA 
 {
@@ -40,7 +41,7 @@ namespace DAVA
 	
 UIMoveInTransition::UIMoveInTransition()
 {
-    customDraw = MakeFunction(this, &UIMoveInTransition::CustomDraw);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIMoveInTransition::CustomDraw));
 
 	type = FROM_TOP;
 	isOver = false;
@@ -54,11 +55,6 @@ void UIMoveInTransition::SetType(eType _type, bool moveOver)
 {
 	type = _type;
 	isOver = moveOver;
-}
-
-void UIMoveInTransition::Update(float32 timeElapsed)
-{
-	UIScreenTransition::Update(timeElapsed);
 }
 
 void UIMoveInTransition::CustomDraw(const UIGeometricData &geometricData)

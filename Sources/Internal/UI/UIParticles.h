@@ -56,8 +56,7 @@ public:
     bool IsPaused();
 
     virtual void AddControl(UIControl *control);
-    virtual void Update(float32 timeElapsed);
-
+    
     virtual void WillAppear();
 
     // Cloning.
@@ -69,6 +68,7 @@ public:
     virtual YamlNode* SaveToYamlNode(UIYamlLoader * loader);
 
     void CustomDraw(const UIGeometricData &geometricData);
+    void CustomUpdate(float32 timeElapsed);
 
     void Load(const FilePath& path);
     void Reload();

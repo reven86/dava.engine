@@ -48,11 +48,12 @@ public:
 	static void ReleaseRenderTargets();
 	
 	virtual void StartTransition(UIScreen * _prevScreen, UIScreen * _nextScreen);
-	virtual void Update(float32 timeElapsed);
+	
 	virtual void SetDuration(float32 timeInSeconds);
 	virtual bool IsLoadingTransition(); 
 
     void CustomDraw(const UIGeometricData &geometricData);
+    void CustomUpdate(float32 timeElapsed);
 
 protected:
 	static Sprite * renderTargetPrevScreen;

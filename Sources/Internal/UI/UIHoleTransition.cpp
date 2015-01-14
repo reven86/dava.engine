@@ -34,6 +34,8 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA 
 {
@@ -41,7 +43,8 @@ namespace DAVA
 	
 UIHoleTransition::UIHoleTransition()
 {
-    customDraw = MakeFunction(this, &UIHoleTransition::CustomDraw);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIHoleTransition::CustomDraw));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIHoleTransition::CustomUpdate));
 
 	duration = 0.8f;
 }
@@ -61,9 +64,9 @@ void UIHoleTransition::SetPolygon(const Polygon2 & pts)
     realPoly = pts;
 }
 
-void UIHoleTransition::Update(float32 timeElapsed)
+void UIHoleTransition::CustomUpdate(float32 timeElapsed)
 {
-	UIScreenTransition::Update(timeElapsed);
+	UIScreenTransition::CustomUpdate(timeElapsed);
 	normalizedTime = currentTime / duration;
 	
 	float scaleCoef = 1.0f;

@@ -38,6 +38,8 @@
 #include "FileSystem/VariantType.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIInputComponent.h"
 
 namespace DAVA
 {
@@ -50,8 +52,8 @@ UIButton::UIButton(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     , selectedTextBlock(NULL)
     , oldControlState(0)
 {
-    customDraw = MakeFunction(this, &UIButton::CustomDraw);
-    customInput = MakeFunction(this, &UIButton::CustomInput);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIButton::CustomDraw));
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UIButton::CustomInput));
 
     for(int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {

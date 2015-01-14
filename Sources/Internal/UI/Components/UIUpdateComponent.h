@@ -26,41 +26,70 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_UI_UPDATE_COMPONENT_H__
+#define __DAVAENGINE_UI_UPDATE_COMPONENT_H__
 
-
-#ifndef __DAVAENGINE_UI_FADE_TRANSITION_H__
-#define __DAVAENGINE_UI_FADE_TRANSITION_H__
-
-#include "Base/BaseTypes.h"
-#include "UI/UIScreenTransition.h"
-
+#include "UIComponent.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
 
-class UIFadeTransition : public UIScreenTransition
+class UIUpdateComponent : public UIComponent
 {
 public:
-	UIFadeTransition();
-	virtual ~UIFadeTransition();
-	
-	enum eType
-	{
-		FADE_MIX = 0, 
-		FADE_IN_FADE_OUT, 
-	};
+    static const uint32 TYPE = Component::UI_UPDATE_COMPONENT;
 
-	virtual void SetType(eType _type);
-	
-    void CustomUpdate(float32 timeElapsed);
-	void CustomDraw(const UIGeometricData &geometricData);
+    UIUpdateComponent();
+    virtual ~UIUpdateComponent();
+
+    virtual Component* Clone(UIControl * toControl) override;
+    virtual uint32 GetType() const override;
+
+    inline const Function<void(float32)>& GetCustomUpdate() const;
+    inline const Function<bool()>& GetCustomNeedUpdateCheck() const;
+    inline const Function<bool()>& GetCustomNeedSystemUpdateCheck() const;
+    inline void SetCustomUpdate(const Function<void(float32)>& f);
+    inline void SetCustomNeedUpdateCheck(const Function<bool()>& f);
+    inline void SetCustomNeedSystemUpdateCheck(const Function<bool()>& f);
 
 private:
-	eType type;
-};
+    Function<void(float32)> customUpdate;
+    Function<bool()> customNeedUpdateCheck;
+    Function<bool()> customNeedSystemUpdateCheck;
 
 };
 
+inline const Function<void(float32)>& UIUpdateComponent::GetCustomUpdate() const
+{
+    return customUpdate;
+}
 
+inline const Function<bool()>& UIUpdateComponent::GetCustomNeedUpdateCheck() const
+{
+    return customNeedUpdateCheck;
+}
 
-#endif // __DAVAENGINE_UI_MOVEIN_TRANSITION_H__
+inline const Function<bool()>& UIUpdateComponent::GetCustomNeedSystemUpdateCheck() const
+{
+    return customNeedSystemUpdateCheck;
+}
+
+inline void UIUpdateComponent::SetCustomUpdate(const Function<void(float32)>& f)
+{
+    customUpdate = f;
+}
+
+inline void UIUpdateComponent::SetCustomNeedUpdateCheck(const Function<bool()>& f)
+{
+    customNeedUpdateCheck = f;
+}
+
+inline void UIUpdateComponent::SetCustomNeedSystemUpdateCheck(const Function<bool()>& f)
+{
+    customNeedSystemUpdateCheck = f;
+}
+
+}
+
+#endif //__DAVAENGINE_UI_UPDATE_COMPONENT_H__

@@ -45,6 +45,7 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/Systems/UIRenderSystem.h"
+#include "UI/Components/UIRenderComponent.h"
 
 namespace DAVA
 {
@@ -61,7 +62,7 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 :	UIControl(rect, rectInAbsoluteCoordinates)
     , shadowOffset(0, 0)
 {
-    customDraw = MakeFunction(this, &UIStaticText::CustomDraw);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIStaticText::CustomDraw));
 
     SetInputEnabled(false, false);
     textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));

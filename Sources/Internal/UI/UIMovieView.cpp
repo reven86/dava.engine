@@ -44,13 +44,15 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
+#include "UI/Components/UIRenderComponent.h"
+
 namespace DAVA {
 
 UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates)
     : UIControl(rect, rectInAbsoluteCoordinates)
     , movieViewControl(new MovieViewControl)
 {
-    customDrawAfterChilds = MakeFunction(this, &UIMovieView::CustomDrawAfterChilds);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDrawAfterChilds(MakeFunction(this, &UIMovieView::CustomDrawAfterChilds));
 
 	movieViewControl->Initialize(rect);
 }

@@ -33,6 +33,8 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA 
 {
@@ -40,7 +42,8 @@ namespace DAVA
 	
 UIFadeTransition::UIFadeTransition()
 {
-    customDraw = MakeFunction(this, &UIFadeTransition::CustomDraw);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIFadeTransition::CustomDraw));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIFadeTransition::CustomUpdate));
 
 	type = FADE_MIX;
 }
@@ -54,9 +57,9 @@ void UIFadeTransition::SetType(eType _type)
 	type = _type;
 }
 
-void UIFadeTransition::Update(float32 timeElapsed)
+void UIFadeTransition::CustomUpdate(float32 timeElapsed)
 {
-	UIScreenTransition::Update(timeElapsed);
+	UIScreenTransition::CustomUpdate(timeElapsed);
 }
 
 void UIFadeTransition::CustomDraw(const UIGeometricData &geometricData)

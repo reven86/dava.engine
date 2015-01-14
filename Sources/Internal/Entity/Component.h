@@ -74,6 +74,10 @@ public:
         SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT,
         WASD_CONTROLLER_COMPONENT,
         
+        // UI components
+        UI_RENDER_COMPONENT,
+        UI_UPDATE_COMPONENT,
+        UI_INPUT_COMPONENT,
 
         //debug components - note that everything below won't be serialized
         DEBUG_COMPONENTS,

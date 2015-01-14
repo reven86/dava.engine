@@ -319,7 +319,7 @@ void UIControlSystem::Update()
     updateCounter = 0;
 	ProcessScreenLogic();
 	
-    GetSystem<UIUpdateSystem>()->Process();
+    GetSystem<UIUpdateSystem>()->Update();
 	
 	SafeRelease(prevScreen);
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
@@ -327,7 +327,7 @@ void UIControlSystem::Update()
 	
 void UIControlSystem::Draw()
 {
-	GetSystem<UIRenderSystem>()->Process();
+	GetSystem<UIRenderSystem>()->Draw();
 }
 	
 void UIControlSystem::ScreenSizeChanged()

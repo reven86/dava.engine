@@ -180,7 +180,7 @@ public:
 	void SetDelegate(UITextFieldDelegate * delegate);
 	UITextFieldDelegate * GetDelegate();
 
-	virtual void Update(float32 timeElapsed);
+	void CustomUpdate(float32 timeElapsed);
 	
 	void OpenKeyboard();
 	void CloseKeyboard();

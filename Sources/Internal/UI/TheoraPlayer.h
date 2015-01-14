@@ -78,7 +78,7 @@ public:
      Default realization is empty.
 	 \param[in] timeElapsed Current frame time delta.
 	 */
-    virtual void Update(float32 timeElapsed);
+    void CustomUpdate(float32 timeElapsed);
     
     /**
 	 \brief Set player playing state (play/pause)

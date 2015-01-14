@@ -53,7 +53,6 @@ public:
     Scene * GetScene() const;
 
     virtual void AddControl(UIControl *control);
-    virtual void Update(float32 timeElapsed);
     virtual void WillBecomeVisible(); 	
 	virtual void WillBecomeInvisible();
 
@@ -65,10 +64,9 @@ public:
     virtual void SetSize(const Vector2 &newSize);
     virtual UIControl* Clone();
 
+    void CustomUpdate(float32 timeElapsed);
     void CustomDraw(const UIGeometricData &geometricData);
-
-    virtual void CustomInput(UIEvent *currentInput);
-
+    void CustomInput(UIEvent *currentInput);
     
 protected:
     Scene * scene;

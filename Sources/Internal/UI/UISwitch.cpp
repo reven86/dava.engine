@@ -31,6 +31,7 @@
 #include "UISwitch.h"
 #include "Animation/LinearAnimation.h"
 #include "UI/UIEvent.h"
+#include "UI/Components/UIInputComponent.h"
 
 namespace DAVA 
 {
@@ -90,7 +91,7 @@ UISwitch::UISwitch(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     , toggle(new UIButton())
     , switchOnTapBesideToggle(true)
 {
-    customInput = MakeFunction(this, &UISwitch::CustomInput);
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UISwitch::CustomInput));
     
     buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
     buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);

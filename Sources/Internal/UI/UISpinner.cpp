@@ -31,6 +31,8 @@
 #include "UISpinner.h"
 #include "UI/UIEvent.h"
 #include "Animation/Animation.h"
+#include "UI/Components/UIInputComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA 
 {
@@ -100,7 +102,8 @@ UISpinner::UISpinner(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*
     , totalGestureTime(0)
     , totalGestureDx(0)
 {
-    customInput = MakeFunction(this, &UISpinner::CustomInput);
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UISpinner::CustomInput));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UISpinner::CustomUpdate));
     
     buttonNext->SetName(UISPINNER_BUTTON_NEXT_NAME);
     buttonPrevious->SetName(UISPINNER_BUTTON_PREVIOUS_NAME);
@@ -124,7 +127,7 @@ UISpinner::~UISpinner()
     SafeRelease(nextContent);
 }
     
-void UISpinner::Update(DAVA::float32 timeElapsed)
+void UISpinner::CustomUpdate(DAVA::float32 timeElapsed)
 {
     if (currentTouchX < X_UNDEFINED)
     {

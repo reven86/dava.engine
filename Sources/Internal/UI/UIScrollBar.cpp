@@ -36,6 +36,8 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/Systems/UIRenderSystem.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIInputComponent.h"
 
 namespace DAVA 
 {
@@ -52,8 +54,8 @@ UIScrollBar::UIScrollBar(const Rect &rect, eScrollOrientation requiredOrientatio
 ,   slider(NULL)
 ,   resizeSliderProportionally(true)
 {
-    customDraw = MakeFunction(this, &UIScrollBar::CustomDraw);
-    customInput = MakeFunction(this, &UIScrollBar::CustomInput);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIScrollBar::CustomDraw));
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UIScrollBar::CustomInput));
     
 	InitControls(rect);
 }

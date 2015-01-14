@@ -36,6 +36,8 @@
 #include "Animation/Interpolation.h"
 #include "Base/Function.h"
 #include "Base/Bind.h"
+#include "UI/Components/UIComponent.h"
+#include "Scene3D/EntityFamily.h"
 
 namespace DAVA
 {
@@ -199,30 +201,6 @@ private:
 
             -when the control is removed from the hierarchy SystemDidDisappear() and DidDisappear() calls at the same way.
 
-        Every frame:
-
-            -SystemUpdate() is calls. SystemUpdate() calls Updadte() for the control then calls SystemUpdate()
-                for the all control children.
-
-            -SystemDraw() is calls. SystemDraw() calculates current control geometric data. Transmit information
-                about the parent color to the control background. Sets clip if requested. Calls Draw().
-                Calls SystemDraw() for the all control children. Calls DrawAfterChilds(). Returns clip back.
-                Draw() method proceed control background drawing by default.
-                You can't remove, add or sort controls on the draw step.
-
-        Every input:
-
-            -SystemInput() is calls. At the first control process SystemInput() for all their children. If one
-                of the children returns true from their SystemInput(), control is returns true too. If no one
-                of the children returns true control is returns result of the SystemProcessInput() method.
-
-            -SystemProcessInput() method checks if the control is responsible to process current input. If input
-                is possible to process, SystemProcessInput() sets system flags and calls Input() method, then returns true.
-                If input is inpossible to process SystemProcessInput() returns false.
-
-        Each control contain UIControlBackground object responsible for visual
-        representation. UIControlBackground can be changed for the custom. Or you can
-        just overload Draw() method for the custom drawing.
      */
 class UIControl : public AnimatedObject
 {
@@ -271,25 +249,44 @@ public:
 
 
 public:
+    void AddComponent(UIComponent * component);
+    void RemoveComponent(UIComponent * component);
+    void RemoveComponent(uint32 componentType, uint32 index = 0);
+    void RemoveAllComponents();
+    void DetachComponent(UIComponent * component);
 
-    Function<void(const UIGeometricData&)> customDraw;
-    Function<void(const UIGeometricData&)> customDrawAfterChilds;
-    Function<void(const UIGeometricData&)> customBeforeSystemDraw;
-    Function<void(const UIGeometricData&)> customAfterSystemDraw;
-    Function<void(const UIGeometricData&)> customSystemDraw;
+    UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
+    UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
+    uint32 GetComponentCount();
+    uint32 GetComponentCount(uint32 componentType);
 
-    Function<bool()> customNeedUpdateCheck;
-    Function<bool()> customNeedSystemUpdateCheck;
+    template<class T> T* GetComponent(uint32 index = 0) const
+    {
+        return DynamicTypeCheck<T*>(GetComponent(T::TYPE, index));
+    }
+    template<class T> T* GetOrCreateComponent(uint32 index = 0)
+    {
+        return DynamicTypeCheck<T*>(GetOrCreateComponent(T::TYPE, index));
+    }
+    template<class T> uint32 GetComponentCount()
+    {
+        return GetComponentCount(T::TYPE);
+    }
 
-    Function<void(UIEvent*)> customInput;
-    Function<void(UIEvent*)> customInputCancelled;
-    Function<bool(UIEvent*)> customSystemInput;
-    Function<void(UIEvent*)> customSystemInputCancelled;
-    Function<bool(UIEvent*)> customSystemProcessInput;
+    inline uint64 GetAvailableComponentFlags();
 
-	friend class UIRenderSystem;
-	friend class UIUpdateSystem;
+private:
+    Vector<Component *> components;
+    EntityFamily * family;
+    void DetachComponent(const Vector<Component *>::iterator & it);
+    void RemoveComponent(const Vector<Component *>::iterator & it);
+    void UpdateFamily();
+
+    friend class UIRenderSystem;
+    friend class UIUpdateSystem;
     friend class UIInputSystem;
+
+public:
 
     /**
      \brief Creates control with requested size and position.
@@ -1178,48 +1175,10 @@ public:
     virtual void ScreenSizeDidChanged(const Rect &newFullScreenRect);
 
     /**
-     \brief SystemUpdate() calls Updadte() for the control then SystemUpdate() calls for the all control children.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call or adjust functionality.
-     \param[in] timeElapsed Current frame time delta.
-     */
-    //virtual void SystemUpdate(float32 timeElapsed);
-    /**
-     \brief Calls on every frame to process controls drawing.
-        Firstly this method calls Draw() for the curent control. When SystemDraw() called for the every control child.
-        And at the end DrawAfterChilds() called for current control.
-        Internal method used by ControlSystem.
-        Can be overriden to adjust draw hierarchy.
-     \param[in] geometricData Parent geometric data.
-     */
-    //virtual void SystemDraw(const UIGeometricData &geometricData);// Internal method used by ControlSystem
-
-    /**
      \brief set parent draw color into control
      \param[in] parentColor draw color of parent background.
      */
     virtual void SetParentColor(const Color &parentColor);
-
-//     /**
-//      \brief Calls on every input event. Calls SystemInput() for all control children.
-//         If no one of the children is processed input. Calls ProcessInput() for the current control.
-//         Internal method used by ControlSystem.
-//      \param[in] currentInput Input information.
-//      \returns true if control processed this input.
-//      */
-//     virtual bool SystemInput(UIEvent *currentInput);
-//     /**
-//      \brief Process incoming input and if it's necessary calls Input() method for the control.
-//         Internal method used by ControlSystem.
-//      \param[in] currentInput Input information.
-//      \returns true if control processed this input.
-//      */
-//     virtual bool SystemProcessInput(UIEvent *currentInput);// Internal method used by ControlSystem
-//     /**
-//      \brief Calls when input processd by control is cancelled.
-//         Internal method used by ControlSystem.
-//      \param[in] currentInput Input information.
-//      */
-//     virtual void SystemInputCancelled(UIEvent *currentInput);
 
     /**
      \brief Called when control is set as the hovered (by the mouse) control.
@@ -1242,48 +1201,6 @@ public:
      Can be overriden to implement end hoverig reaction.
      */
     virtual void DidRemoveHovered();
-
-
-//     /**
-//      \brief Calls on every input event coming to control.
-//         Should be overriden to implement custom input reaction.
-//         During one input processing step into control may come more then one input event.
-//         For example: Pressing began event and pressing ended or five conituous mose move events etc.
-//         Called only if control inputEnable is true.
-//      \param[in] currentInput Input information.
-//      */
-//     virtual void Input(UIEvent *currentInput);
-//     /**
-//      \brief Calls when input processd by control is cancelled.
-//         Should be overriden to implement custom input cancelling reaction.
-//      \param[in] currentInput Input information.
-//      */
-//     virtual void InputCancelled(UIEvent *currentInput);
-
-
-
-    /**
-     \brief Calls on every frame with frame delata time parameter.
-        Should be overriden to implement perframe functionality.
-        Default realization is empty.
-     \param[in] timeElapsed Current frame time delta.
-     */
-    virtual void Update(float32 timeElapsed);
-
-    /**
-     \brief Calls on every frame to draw control.
-        Can be overriden to implement custom draw functionality.
-        Default realization is drawing UIControlBackground with requested parameters.
-     \param[in] geometricData Control geometric data.
-     */
-    //virtual void Draw(const UIGeometricData &geometricData);
-    /**
-     \brief Calls on every frame with UIGeometricData after all children is drawed.
-        Can be overriden to implement after children drawing.
-        Default realization is empty.
-     \param[in] geometricData Control geometric data.
-     */
-    //virtual void DrawAfterChilds(const UIGeometricData &geometricData);
 
 protected:
     virtual void SystemWillBecomeVisible();
@@ -1739,7 +1656,69 @@ void UIControl::SetAndApplyBottomAlignEnabled(bool isEnabled)
 {
     SetBottomAlignEnabled(isEnabled, true);
 }
-};
 
+// Components
+
+inline uint32 UIControl::GetComponentCount()
+{
+    return components.size();
+}
+
+inline void UIControl::UpdateFamily()
+{
+    family = EntityFamily::GetOrCreate(components);
+}
+
+inline void UIControl::RemoveAllComponents()
+{
+    while (!components.empty())
+    {
+        RemoveComponent(--components.end());
+    }
+}
+
+inline void UIControl::RemoveComponent(const Vector<Component *>::iterator & it)
+{
+    if (it != components.end())
+    {
+        UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
+        DetachComponent(it);
+        SafeDelete(c);
+    }
+}
+
+inline void UIControl::RemoveComponent(uint32 componentType, uint32 index)
+{
+    UIComponent * c = GetComponent(componentType, index);
+    if (c)
+    {
+        RemoveComponent(c);
+    }
+}
+
+inline void UIControl::RemoveComponent(UIComponent * component)
+{
+    DetachComponent(component);
+    SafeDelete(component);
+}
+
+inline void UIControl::DetachComponent(UIComponent * component)
+{
+    DVASSERT(component);
+    auto it = std::find(components.begin(), components.end(), component);
+    DetachComponent(it);
+}
+
+inline uint32 UIControl::GetComponentCount(uint32 componentType)
+{
+    return family->GetComponentsCount(componentType);
+}
+
+inline uint64 UIControl::GetAvailableComponentFlags()
+{
+    return family->GetComponentsFlags();
+}
+
+};
 
 #endif

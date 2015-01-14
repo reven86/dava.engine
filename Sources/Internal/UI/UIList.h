@@ -240,8 +240,7 @@ protected:
 
     void FullRefresh();
 
-    virtual void Update(float32 timeElapsed);
-
+    void CustomUpdate(float32 timeElapsed);
     void CustomInput(UIEvent *currentInput);
     bool CustomSystemInput(UIEvent *currentInput);
 

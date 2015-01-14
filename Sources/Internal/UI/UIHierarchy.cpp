@@ -35,6 +35,8 @@
 #include "Input/KeyboardDevice.h"
 
 #include "ui/Systems/UIInputSystem.h"
+#include "UI/Components/UIInputComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -49,8 +51,9 @@ void UIHierarchyDelegate::DragAndDrop(void * /*who*/, void * /*target*/, int32 /
 UIHierarchy::UIHierarchy(const Rect &rect, bool rectInAbsoluteCoordinates)
 : UIControl(rect, rectInAbsoluteCoordinates)
 {
-    customInput = MakeFunction(this, &UIHierarchy::CustomInput);
-    customSystemInput = MakeFunction(this, &UIHierarchy::CustomSystemInput);
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UIHierarchy::CustomInput));
+    GetOrCreateComponent<UIInputComponent>()->SetCustomSystemInput(MakeFunction(this, &UIHierarchy::CustomSystemInput));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIHierarchy::CustomUpdate));
 
     baseNode = new UIHierarchyNode(NULL);
     baseNode->isOpen = true;
@@ -286,7 +289,7 @@ void UIHierarchy::Redraw()
     needRedraw = true;
 }
 
-void UIHierarchy::Update(float32 timeElapsed)
+void UIHierarchy::CustomUpdate(float32 timeElapsed)
 {
     if(!delegate)
     {

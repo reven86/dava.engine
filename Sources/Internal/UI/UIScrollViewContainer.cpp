@@ -34,6 +34,8 @@
 #include "UI/ScrollHelper.h"
 
 #include "UI/Systems/UIInputSystem.h"
+#include "UI/Components/UIInputComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA 
 {
@@ -54,9 +56,10 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsolu
 , enableHorizontalScroll(true)
 , enableVerticalScroll(true)
 {
-    customInput = MakeFunction(this, &UIScrollViewContainer::CustomInput);
-    customInputCancelled = MakeFunction(this, &UIScrollViewContainer::CustomInputCancelled);
-    customSystemInput = MakeFunction(this, &UIScrollViewContainer::CustomSystemInput);
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UIScrollViewContainer::CustomInput));
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInputCancelled(MakeFunction(this, &UIScrollViewContainer::CustomInputCancelled));
+    GetOrCreateComponent<UIInputComponent>()->SetCustomSystemInput(MakeFunction(this, &UIScrollViewContainer::CustomSystemInput));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIScrollViewContainer::CustomUpdate));
 
 	this->SetInputEnabled(true);
 	this->SetMultiInput(true);
@@ -209,10 +212,8 @@ bool UIScrollViewContainer::CustomSystemInput(UIEvent *currentTouch)
 	return systemInput;
 }
 
-void UIScrollViewContainer::Update(float32 timeElapsed)
+void UIScrollViewContainer::CustomUpdate(float32 timeElapsed)
 {
-
-	
 	UIScrollView *scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
 	if (scrollView)
 	{

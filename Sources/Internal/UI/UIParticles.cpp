@@ -33,6 +33,8 @@
 #include "Render/RenderHelper.h"
 #include "Core/Core.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA {
 
@@ -62,7 +64,8 @@ UIParticles::UIParticles(const Rect &rect, bool rectInAbsoluteCoordinates)
     , delayedActionTime(0.0f)
     , delayedDeleteAllParticles(false)
 {
-    customDraw = MakeFunction(this, &UIParticles::CustomDraw);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIParticles::CustomDraw));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIParticles::CustomUpdate));
 
     matrix.Identity();    
 }
@@ -205,7 +208,7 @@ void UIParticles::AddControl(UIControl *control)
 }
 
     
-void UIParticles::Update(float32 timeElapsed)
+void UIParticles::CustomUpdate(float32 timeElapsed)
 {
     updateTime = timeElapsed;        
     if (delayedActionType != UIParticles::actionNone)

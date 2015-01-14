@@ -26,41 +26,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#ifndef __DAVAENGINE_UI_FADE_TRANSITION_H__
-#define __DAVAENGINE_UI_FADE_TRANSITION_H__
-
-#include "Base/BaseTypes.h"
-#include "UI/UIScreenTransition.h"
-
+#include "UIInputComponent.h"
 
 namespace DAVA
 {
 
-class UIFadeTransition : public UIScreenTransition
+UIInputComponent::UIInputComponent()
 {
-public:
-	UIFadeTransition();
-	virtual ~UIFadeTransition();
-	
-	enum eType
-	{
-		FADE_MIX = 0, 
-		FADE_IN_FADE_OUT, 
-	};
+}
 
-	virtual void SetType(eType _type);
-	
-    void CustomUpdate(float32 timeElapsed);
-	void CustomDraw(const UIGeometricData &geometricData);
+UIInputComponent::~UIInputComponent()
+{
+}
 
-private:
-	eType type;
-};
+Component* UIInputComponent::Clone(UIControl * toControl)
+{
+    return NULL;
+}
 
-};
+uint32 UIInputComponent::GetType() const
+{
+    return Component::UI_INPUT_COMPONENT;
+}
 
-
-
-#endif // __DAVAENGINE_UI_MOVEIN_TRANSITION_H__
+}

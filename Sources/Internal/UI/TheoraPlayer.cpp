@@ -31,6 +31,8 @@
 #include "UI/TheoraPlayer.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
@@ -65,7 +67,8 @@ TheoraPlayer::TheoraPlayer(const FilePath & _filePath)
     , isPlaying(false)
     , isRepeat(false)
 {
-    customDraw = MakeFunction(this, &TheoraPlayer::CustomDraw);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &TheoraPlayer::CustomDraw));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &TheoraPlayer::CustomUpdate));
 
     theoraData = new TheoraData();
     theoraData->thSetup = 0;
@@ -256,7 +259,7 @@ bool TheoraPlayer::IsPlaying()
     return isPlaying;
 }
 
-void TheoraPlayer::Update(float32 timeElapsed)
+void TheoraPlayer::CustomUpdate(float32 timeElapsed)
 {
     if(!isPlaying)
         return;

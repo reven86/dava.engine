@@ -49,13 +49,13 @@ public:
 	virtual void CopyDataFrom(UIControl *srcControl);
 	
 public:
-	virtual void Update(float32 timeElapsed);
 	virtual void SetRect(const Rect &rect);
     virtual void WillDisappear();
 
     void CustomInput(UIEvent *currentTouch);
     void CustomInputCancelled(UIEvent *currentInput);
     bool CustomSystemInput(UIEvent *currentInput);
+    void CustomUpdate(float32 timeElapsed);
 
 	// The amount of pixels user must move the finger on the button to switch from button to scrolling (default 15)
 	void SetTouchTreshold(int32 holdDelta);

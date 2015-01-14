@@ -1,7 +1,36 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
 #include "UIInputSystem.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "Debug/Replay.h"
+#include "UI/Components/UIInputComponent.h"
 
 namespace DAVA
 {
@@ -17,9 +46,9 @@ UIInputSystem::~UIInputSystem()
 
 }
 
-uint32 UIInputSystem::GetRequiredComponents() const
+uint64 UIInputSystem::GetRequiredComponents() const
 {
-    return 0;
+    return (1 << Component::UI_INPUT_COMPONENT);
 }
 
 uint32 UIInputSystem::GetType() const
@@ -27,14 +56,18 @@ uint32 UIInputSystem::GetType() const
     return UISystem::UI_INPUT_SYSTEM;
 }
 
-void UIInputSystem::Process()
-{
-    
-}
-
-
 bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput)
 {
+    DVASSERT(control);
+
+    if ((control->GetAvailableComponentFlags() & GetRequiredComponents()) != GetRequiredComponents())
+    {
+        return false; // Ignore control without input component
+    }
+
+    UIInputComponent * component = control->GetComponent<UIInputComponent>();
+    DVASSERT(component);
+
     if (!control->inputEnabled || !control->GetSystemVisible() || control->controlState & UIControl::STATE_DISABLED)
     {
         return false;
@@ -49,9 +82,9 @@ bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
     case UIEvent::PHASE_KEYCHAR:
     {
-        if (control->customInput != (int)NULL)
+        if (component->GetCustomInput() != (int)NULL)
         {
-            control->customInput(currentInput);
+            component->GetCustomInput()(currentInput);
         }
     }
     break;
@@ -60,9 +93,9 @@ bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput
         if (!currentInput->touchLocker && control->IsPointInside(currentInput->point))
         {
             UIControlSystem::Instance()->SetHoveredControl(control);
-            if (control->customInput != (int)NULL)
+            if (component->GetCustomInput() != (int)NULL)
             {
-                control->customInput(currentInput);
+                component->GetCustomInput()(currentInput);
             }
             return true;
         }
@@ -70,9 +103,9 @@ bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput
     break;
     case UIEvent::PHASE_WHEEL:
     {
-        if (control->customInput != (int)NULL)
+        if (component->GetCustomInput() != (int)NULL)
         {
-            control->customInput(currentInput);
+            component->GetCustomInput()(currentInput);
         }
     }
     break;
@@ -105,9 +138,9 @@ bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput
                     control->currentInputID = currentInput->tid;
                 }
 
-                if (control->customInput != (int)NULL)
+                if (component->GetCustomInput() != (int)NULL)
                 {
-                    control->customInput(currentInput);
+                    component->GetCustomInput()(currentInput);
                 }
                 return true;
             }
@@ -159,9 +192,9 @@ bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput
                     }
                 }
 
-                if (control->customInput != (int)NULL)
+                if (component->GetCustomInput() != (int)NULL)
                 {
-                    control->customInput(currentInput);
+                    component->GetCustomInput()(currentInput);
                 }
             }
             return true;
@@ -174,9 +207,9 @@ bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput
         {
             if (control->multiInput || control->currentInputID == currentInput->tid)
             {
-                if (control->customInput != (int)NULL)
+                if (component->GetCustomInput() != (int)NULL)
                 {
-                    control->customInput(currentInput);
+                    component->GetCustomInput()(currentInput);
                 }
                 if (currentInput->tid == control->currentInputID)
                 {
@@ -237,9 +270,9 @@ bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput
     break;
     case UIEvent::PHASE_JOYSTICK:
     {
-        if (control->customInput != (int)NULL)
+        if (component->GetCustomInput() != (int)NULL)
         {
-            control->customInput(currentInput);
+            component->GetCustomInput()(currentInput);
         }
     }
     }
@@ -249,6 +282,8 @@ bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput
 
 bool UIInputSystem::SystemInput(UIControl* control, UIEvent *currentInput)
 {
+    DVASSERT(control);
+
     inputCounter++;
     control->isUpdated = true;
 
@@ -285,10 +320,25 @@ bool UIInputSystem::SystemInput(UIControl* control, UIEvent *currentInput)
             if (!current->isUpdated)
             {
                 current->Retain();
-                if (current->inputProcessorsCount > 0 && (current->customSystemInput != (int)0 ? current->customSystemInput(currentInput) : SystemInput(current, currentInput)) )
+                if (current->inputProcessorsCount > 0) // TODO: think about controls without input components in hierarchy
                 {
-                    current->Release();
-                    return true;
+                    bool systemInputCheck;
+                    if ((current->GetAvailableComponentFlags() & GetRequiredComponents()) == GetRequiredComponents())
+                    {
+                        UIInputComponent* currentComponent = control->GetComponent<UIInputComponent>();
+                        systemInputCheck = (currentComponent != NULL && currentComponent->GetCustomSystemInput() != (int)0)
+                            ? currentComponent->GetCustomSystemInput()(currentInput) // Use systemInput from component
+                            : SystemInput(current, currentInput); // Use systemInput from system if control hasn't component or component hasn't customSystemInput
+                    }
+                    else
+                    {
+                        systemInputCheck = SystemInput(current, currentInput);
+                    }
+                    if (systemInputCheck)
+                    {
+                        current->Release();
+                        return true;
+                    }
                 }
                 current->Release();
                 if (control->isIteratorCorrupted)
@@ -300,15 +350,34 @@ bool UIInputSystem::SystemInput(UIControl* control, UIEvent *currentInput)
             ++it;
         }
     }
-    if (control->customSystemProcessInput != (int)0)
+
+    if ((control->GetAvailableComponentFlags() & GetRequiredComponents()) != GetRequiredComponents())
     {
-        return control->customSystemProcessInput(currentInput);
+        return false; // Ignore control without input component
+    }
+
+    UIInputComponent * component = control->GetComponent<UIInputComponent>();
+    DVASSERT(component);
+
+    if (component->GetCustomSystemProcessInput() != (int)0)
+    {
+        return component->GetCustomSystemProcessInput()(currentInput);
     }
     return SystemProcessInput(control, currentInput);
 }
 
 void UIInputSystem::SystemInputCancelled(UIControl* control, UIEvent *currentInput)
 {
+    DVASSERT(control);
+
+    if ((control->GetAvailableComponentFlags() & GetRequiredComponents()) != GetRequiredComponents())
+    {
+        return; // Ignore control without input component
+    }
+
+    UIInputComponent * component = control->GetComponent<UIInputComponent>();
+    DVASSERT(component);
+
     if (currentInput->controlState != UIEvent::CONTROL_STATE_RELEASED)
     {
         --control->totalTouches;
@@ -336,9 +405,9 @@ void UIInputSystem::SystemInputCancelled(UIControl* control, UIEvent *currentInp
     }
     currentInput->touchLocker = NULL;
 
-    if (control->customInputCancelled != (int)NULL)
+    if (component->GetCustomInputCancelled() != (int)NULL)
     {
-        control->customInputCancelled(currentInput);
+        component->GetCustomInputCancelled()(currentInput);
     }
 }
 
@@ -561,9 +630,18 @@ void UIInputSystem::CancelInput(UIEvent *touch)
 {
 	if(touch->touchLocker)
 	{
-        if (touch->touchLocker->customSystemInputCancelled != NULL)
+        if ((touch->touchLocker->GetAvailableComponentFlags() & GetRequiredComponents()) == GetRequiredComponents())
         {
-            touch->touchLocker->customSystemInputCancelled(touch);
+            UIInputComponent * component = touch->touchLocker->GetComponent<UIInputComponent>();
+            DVASSERT(component);
+            if (component->GetCustomSystemInputCancelled() != NULL)
+            {
+                component->GetCustomSystemInputCancelled()(touch);
+            }
+            else
+            {
+                SystemInputCancelled(touch->touchLocker, touch);
+            }
         }
         else
         {
@@ -571,11 +649,20 @@ void UIInputSystem::CancelInput(UIEvent *touch)
         }
 	}
     UIControl* currentScreen = UIControlSystem::Instance()->GetScreen();
-	if (touch->touchLocker != currentScreen)
+	if (touch->touchLocker != currentScreen && currentScreen != NULL)
 	{
-        if (currentScreen->customSystemInputCancelled != NULL)
+        if ((currentScreen->GetAvailableComponentFlags() & GetRequiredComponents()) == GetRequiredComponents())
         {
-            currentScreen->customSystemInputCancelled(touch);
+            UIInputComponent * component = currentScreen->GetComponent<UIInputComponent>();
+            DVASSERT(component);
+            if (component->GetCustomSystemInputCancelled() != NULL)
+            {
+                component->GetCustomSystemInputCancelled()(touch);
+            }
+            else
+            {
+                SystemInputCancelled(currentScreen, touch);
+            }
         }
         else
         {

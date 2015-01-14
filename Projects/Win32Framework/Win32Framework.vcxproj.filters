@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -162,6 +162,9 @@
     </Filter>
     <Filter Include="Internal\Scene3D\Systems\Controller">
       <UniqueIdentifier>{dc214c6e-aa38-43ad-93ff-6dc237488743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\UI\Components">
+      <UniqueIdentifier>{3c5ae3bb-55c2-4925-9239-9e7e8ba89339}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1654,6 +1657,18 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIRenderComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIUpdateComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIInputComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2979,6 +2994,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIRenderComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIUpdateComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIInputComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

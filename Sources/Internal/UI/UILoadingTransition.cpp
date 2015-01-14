@@ -36,6 +36,8 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 
 #include "UI/Systems/UIInputSystem.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA 
 {
@@ -43,7 +45,8 @@ namespace DAVA
 	
 UILoadingTransition::UILoadingTransition()
 {
-    customDraw = MakeFunction(this, &UILoadingTransition::CustomDraw);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UILoadingTransition::CustomDraw));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UILoadingTransition::CustomUpdate));
 
 	thread = 0;
 	backgroundSprite = 0;
@@ -129,7 +132,7 @@ void UILoadingTransition::DidAppear()
 	}
 }
 
-void UILoadingTransition::Update(float32 timeElapsed)
+void UILoadingTransition::CustomUpdate(float32 timeElapsed)
 {
 	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
 	{

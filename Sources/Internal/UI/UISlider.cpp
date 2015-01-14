@@ -43,6 +43,8 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/Systems/UIRenderSystem.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIInputComponent.h"
 
 namespace DAVA 
 {
@@ -60,8 +62,8 @@ UISlider::UISlider(const Rect & rect)
 ,	thumbButton(NULL)
 ,   spritesEmbedded(false)
 {
-    customDraw = MakeFunction(this, &UISlider::CustomDraw);
-    customInput = MakeFunction(this, &UISlider::CustomInput);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UISlider::CustomDraw));
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UISlider::CustomInput));
     
     SetInputEnabled(true, false);
 	isEventsContinuos = true;

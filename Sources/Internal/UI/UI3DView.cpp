@@ -36,6 +36,9 @@
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIInputComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
@@ -50,8 +53,9 @@ UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
     ,   scene(0)
     ,   registeredInUIControlSystem(false)
 {
-    customDraw = MakeFunction(this, &UI3DView::CustomDraw);
-    customInput = MakeFunction(this, &UI3DView::CustomInput);
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UI3DView::CustomDraw));
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UI3DView::CustomInput));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UI3DView::CustomUpdate));
 }
 
 UI3DView::~UI3DView()
@@ -87,7 +91,7 @@ void UI3DView::AddControl(UIControl *control)
 }
 
     
-void UI3DView::Update(float32 timeElapsed)
+void UI3DView::CustomUpdate(float32 timeElapsed)
 {
     if (scene)
         scene->Update(timeElapsed);

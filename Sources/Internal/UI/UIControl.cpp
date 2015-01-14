@@ -43,11 +43,16 @@
 
 #include "UI/Systems/UIInputSystem.h"
 
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIInputComponent.h"
+
 namespace DAVA
 {
-
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
     {
+        UpdateFamily();
+        GetOrCreateComponent<UIRenderComponent>(); // Create render component for all controls
+        
         parent = NULL;
         controlState = STATE_NORMAL;
         visible = true;
@@ -1350,11 +1355,6 @@ namespace DAVA
     {
     }
 
-    void UIControl::Update(float32 timeElapsed)
-    {
-
-    }
-
     void UIControl::SystemWillBecomeVisible()
     {
         WillBecomeVisible();
@@ -2310,5 +2310,54 @@ namespace DAVA
                 child->UpdateLayout();
             }
         }
+    }
+
+
+    // Components 
+
+    bool CotrolComponentLessPredicate(Component * left, Component * right)
+    {
+        return left->GetType() < right->GetType();
+    }
+
+    void UIControl::AddComponent(UIComponent * component)
+    {
+        component->SetControl(this);
+        components.push_back(component);
+
+        std::stable_sort(components.begin(), components.end(), CotrolComponentLessPredicate);
+        UpdateFamily();
+    }
+
+    void UIControl::DetachComponent(const Vector<Component *>::iterator & it)
+    {
+        UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
+        components.erase(it);
+        UpdateFamily();
+        c->SetControl(0);
+    }
+
+    UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
+    {
+        UIComponent * ret = 0;
+        uint32 maxCount = family->GetComponentsCount(componentType);
+        if (index < maxCount)
+        {
+            ret = DynamicTypeCheck<UIComponent*>(components[family->GetComponentIndex(componentType, index)]);
+        }
+
+        return ret;
+    }
+
+    UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+    {
+        UIComponent * ret = GetComponent(componentType, index);
+        if (!ret)
+        {
+            ret = UIComponent::CreateByType(componentType);
+            AddComponent(ret);
+        }
+
+        return ret;
     }
 }

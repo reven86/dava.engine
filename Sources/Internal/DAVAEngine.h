@@ -192,6 +192,10 @@
 #include "UI/Systems/UIRenderSystem.h"
 #include "UI/Systems/UIUpdateSystem.h"
 
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIInputComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
+
 // Game object manager / 2D Scene
 #include "Scene2D/GameObject.h"
 #include "Scene2D/GameObjectManager.h"

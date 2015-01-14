@@ -45,9 +45,9 @@ public:
 	virtual ~UIHoleTransition();
 	
     virtual void SetPolygon(const Polygon2 & pts);
-	virtual void Update(float32 timeElapsed);
-
-	void CustomDraw(const UIGeometricData &geometricData);
+	
+    void CustomUpdate(float32 timeElapsed);
+    void CustomDraw(const UIGeometricData &geometricData);
 
 private:
 	Polygon2 clipPoly;

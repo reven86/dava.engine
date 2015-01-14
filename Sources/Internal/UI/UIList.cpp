@@ -38,6 +38,8 @@
 #include "UI/UIControlHelpers.h"
 
 #include "UI/Systems/UIInputSystem.h"
+#include "UI/Components/UIInputComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -68,8 +70,9 @@ UIList::UIList(const Rect &rect/* = Rect()*/, eListOrientation requiredOrientati
     , scroll(NULL)
     , aggregatorPath(FilePath())
 {
-    customInput = MakeFunction(this, &UIList::CustomInput);
-    customSystemInput = MakeFunction(this, &UIList::CustomSystemInput);
+    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UIList::CustomInput));
+    GetOrCreateComponent<UIInputComponent>()->SetCustomSystemInput(MakeFunction(this, &UIList::CustomSystemInput));
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIList::CustomUpdate));
 
     InitAfterYaml();
 }
@@ -303,7 +306,7 @@ void UIList::Refresh()
     needRefresh = TRUE;
 }
 
-void UIList::Update(float32 timeElapsed)
+void UIList::CustomUpdate(float32 timeElapsed)
 {
     if(!delegate)
     {

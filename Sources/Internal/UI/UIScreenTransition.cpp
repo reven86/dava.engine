@@ -40,6 +40,7 @@
 #include "UI/Systems/UIRenderSystem.h"
 #include "UI/Systems/UIUpdateSystem.h"
 #include "UI/Systems/UIInputSystem.h"
+#include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -50,6 +51,8 @@ UniqueHandle UIScreenTransition::alphaClearStateHandle = InvalidUniqueHandle;
 
 UIScreenTransition::UIScreenTransition()
 {
+    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIScreenTransition::CustomUpdate));
+
     duration = 0.7f;
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
@@ -167,7 +170,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     currentTime = 0;
 }
 
-void UIScreenTransition::Update(float32 timeElapsed)
+void UIScreenTransition::CustomUpdate(float32 timeElapsed)
 {
     currentTime += timeElapsed;
     normalizedTime = interpolationFunc(currentTime / duration);

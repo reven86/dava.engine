@@ -57,7 +57,6 @@ public:
 	};
 
 	virtual void SetType(eType _type, bool moveOver = false);
-	virtual void Update(float32 timeElapsed);
 	
     void CustomDraw(const UIGeometricData &geometricData);
 
