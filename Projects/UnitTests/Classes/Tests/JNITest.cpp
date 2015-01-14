@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "JNITest.h"
+#if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
 JNITest::JNITest()
@@ -50,19 +51,36 @@ void JNITest::UnloadResources()
 
 void JNITest::ThreadFunc(BaseObject * caller, void * callerData, void * userData)
 {
+
+    JNI::JavaClass inThreadInitedClass("com/dava/framework/JNINotificationProvider");
+
     auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
+    auto showNotificationProgressThread = inThreadInitedClass.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
 
     jstring jStrTitle = JNI::CreateJString(L"test");
     jstring jStrText = JNI::CreateJString(L"test2");
 
     showNotificationText(jStrTitle, jStrTitle, jStrTitle);
+    showNotificationProgressThread(jStrTitle, jStrTitle, jStrTitle, 100, 100);
 
     JNI::GetEnv()->DeleteLocalRef(jStrTitle);
     JNI::GetEnv()->DeleteLocalRef(jStrText);
+
+    JNI::JavaClass jniText("com/dava/framework/JNITextField");
+
 }
 
 void JNITest::TestFunction(PerfFuncData * data)
 {
+    // try to use Java Class from !Main thread.
+    Thread *someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
+    someThread->Start();
+    while(someThread->GetState() != Thread::STATE_ENDED)
+    {
+        JobManager::Instance()->Update();
+    }
+    someThread->Join();
+    someThread->Release();
 
     // test that we have no local ref table overflow (512 refs allowed).
     for (int i = 0; i < 1024; ++i)
@@ -134,13 +152,7 @@ void JNITest::TestFunction(PerfFuncData * data)
 
     env->DeleteLocalRef(str);
 
-    // try to use Java Class from !Main thread.
-    Thread *someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
-    someThread->Start();
-    someThread->Join();
-    someThread->Release();
-
 }
-
+#endif
 
 

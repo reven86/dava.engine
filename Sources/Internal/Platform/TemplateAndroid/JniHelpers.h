@@ -1366,8 +1366,6 @@ public:
 /*
 	Java Class implementation
 */
-
-
 class JavaClass
 {
 public:
@@ -1411,19 +1409,13 @@ public:
 
     template<class Ret, class P1, class P2, class P3, class P4, class P5>
 	Function<Ret (P1, P2, P3, P4, P5)> GetStaticMethod(String name) const;
-/*
-    template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-    Function<Ret (jobject, P1, P2, P3, P4, P5, P6)> GetMethod(String name) const;
 
-    template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-	Function<Ret (P1, P2, P3, P4, P5, P6)> GetStaticMethod(String name) const;
-*/
 private:
     template <class T>
     void CheckOperationResult(T value, String name) const;
+    void FindJavaClass(String name);
 
 private:
-    JavaVM *jvm;
     jclass javaClass;
     String name;
 };
@@ -1540,26 +1532,6 @@ Function<Ret (P1, P2, P3, P4, P5)> JavaClass::GetStaticMethod(String name) const
 	CheckOperationResult(javaMethod, name);
 	return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::CallStatic, javaClass, javaMethod, _1, _2, _3, _4, _5);
 }
-
-/*
-template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-Function<Ret (jobject, P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name) const
-{
-	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
-	jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(), parametersString.c_str());
-	CheckOperationResult(javaMethod, name);
-	return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::Call, javaClass, javaMethod, _1, _2, _3, _4, _5, _6);
-}
-
-template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
-Function<Ret (P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) const
-{
-	String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
-	jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(), parametersString.c_str());
-	CheckOperationResult(javaMethod, name);
-	return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::CallStatic, javaClass, javaMethod, _1, _2, _3, _4, _5, _6);
-}
-*/
 
 template <class T>
 void JavaClass::CheckOperationResult(T value, String name) const

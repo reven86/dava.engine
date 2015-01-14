@@ -63,7 +63,9 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+#if defined(__DAVAENGINE_ANDROID__)
 	new JNITest();
+#endif
     new MathTest();
     new FunctionBindSignalTest();
     new ImageSizeTest();

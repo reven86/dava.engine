@@ -33,6 +33,7 @@
 
 #include "DAVAEngine.h"
 using namespace DAVA;
+#if defined(__DAVAENGINE_ANDROID__)
 
 #include "TestTemplate.h"
 
@@ -54,5 +55,5 @@ private:
     Function<void (jstring, jstring, jstring)> showNotificationText;
 };
 
-
+#endif
 #endif // __THREAD_SYNC_TEST_H__

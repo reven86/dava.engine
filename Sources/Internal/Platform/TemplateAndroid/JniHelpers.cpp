@@ -31,6 +31,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Job/JobManager.h"
 
 jstringArray::jstringArray(const jobjectArray &arr)
 {
@@ -45,9 +46,8 @@ namespace JNI
 
 JavaVM *GetJVM()
 {
-    CorePlatformAndroid *core = static_cast<DAVA::CorePlatformAndroid *>(Core::Instance());
-    AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
-    return delegate->GetVM();
+    static JavaVM *jvm = static_cast<DAVA::CorePlatformAndroid *>(Core::Instance())->GetAndroidSystemDelegate()->GetVM();
+    return jvm;
 }
 
 JNIEnv *GetEnv()
@@ -148,39 +148,15 @@ jstring CreateJString(JNIEnv *env, const DAVA::WideString& string)
 }
 
 JavaClass::JavaClass(const String &className)
+    : javaClass(NULL)
 {
-    jvm = GetJVM();
-    JNIEnv *env = GetEnv();
-
+    DVASSERT(!className.empty());
     name = className;
 
-    jclass classToFind = env->FindClass(name.c_str());
-    CheckOperationResult(classToFind, name);
-
-    jclass objectClass = env->GetObjectClass(classToFind);
-
-    jclass classLoaderClass = env->FindClass("java/lang/ClassLoader");
-    jmethodID getClassLoaderMethod = env->GetMethodID(objectClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
-    jobject gClassLoader = env->CallObjectMethod(classToFind, getClassLoaderMethod);
-    jmethodID gFindClassMethod = env->GetMethodID(classLoaderClass, "findClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-
-    jstring jname = env->NewStringUTF(name.c_str());
-    jclass foundClass = static_cast<jclass>(env->CallObjectMethod(gClassLoader, gFindClassMethod, jname));
-    env->DeleteLocalRef(jname);
-
-    if (NULL != foundClass)
-    {
-        javaClass = static_cast<jclass>(env->NewGlobalRef(foundClass));
-    }
-
-    env->DeleteLocalRef(classToFind);
-    env->DeleteLocalRef(objectClass);
-    env->DeleteLocalRef(classLoaderClass);
-    env->DeleteLocalRef(gClassLoader);
-    env->DeleteLocalRef(foundClass);
-
-    CheckOperationResult(javaClass, name);
-
+    Function<void (String)> findJClass (this, &JavaClass::FindJavaClass);
+    auto findJClassName = Bind(findJClass, name);
+    uint32 jobId = JobManager::Instance()->CreateMainJob(findJClassName);
+    JobManager::Instance()->WaitMainJobID(jobId);
 }
 
 JavaClass::~JavaClass()
@@ -188,8 +164,24 @@ JavaClass::~JavaClass()
     GetEnv()->DeleteGlobalRef(javaClass);
 }
 
+void JavaClass::FindJavaClass(String name)
+{
+    DVASSERT(Thread::IsMainThread());
+
+    JNIEnv *env = GetEnv();
+
+    jclass foundLocalRefClass = env->FindClass(name.c_str());
+    CheckOperationResult(foundLocalRefClass, name);
+
+    if (NULL == foundLocalRefClass)
+    {
+        javaClass = NULL;
+        return;
+    }
+    javaClass = static_cast<jclass>(env->NewGlobalRef(foundLocalRefClass));
+    env->DeleteLocalRef(foundLocalRefClass);
 }
 
-
+}
 }
 #endif
