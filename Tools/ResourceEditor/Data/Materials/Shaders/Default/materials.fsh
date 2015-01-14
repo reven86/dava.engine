@@ -92,7 +92,6 @@ varying highp vec2 varTexCoord1;
 #endif
 
 #if defined(MATERIAL_DETAIL)
-uniform lowp float detailColorMul;
 varying mediump vec2 varDetailTexCoord;
 #endif
 
@@ -484,7 +483,7 @@ void main()
 #endif
     
 #if defined(MATERIAL_DETAIL)
-	color *= detailTextureColor.rgb * detailColorMul;
+	color *= detailTextureColor.rgb * 2.0;
 #endif
 	
 #if defined(ALPHABLEND) && defined(MATERIAL_TEXTURE)

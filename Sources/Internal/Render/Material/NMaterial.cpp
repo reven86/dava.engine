@@ -98,7 +98,6 @@ const FastName NMaterial::PARAM_SHADOW_COLOR("shadowColor");
 const FastName NMaterial::PARAM_DECAL_TILE_SCALE("decalTileCoordScale");
 const FastName NMaterial::PARAM_DECAL_TILE_COLOR("decalTileColor");
 const FastName NMaterial::PARAM_DETAIL_TILE_SCALE("detailTileCoordScale");
-const FastName NMaterial::PARAM_DETAIL_COLOR_MUL("detailColorMul");
 const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 
