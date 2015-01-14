@@ -75,7 +75,6 @@ void NetworkTest::DummyTest(PerfFuncData* data)
 
 void NetworkTest::LoadResources()
 {
-    new NetCore();
     NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &NetworkTest::CreateLogger), MakeFunction(this, &NetworkTest::DeleteLogger));
 
     CreateUI();
@@ -105,8 +104,6 @@ void NetworkTest::LoadResources()
 void NetworkTest::UnloadResources()
 {
     logger.Uninstall();     // Uninstall logger here
-    NetCore::Instance()->Finish(true);
-    NetCore::Instance()->Release();
     DestroyUI();
 }
 
@@ -137,7 +134,6 @@ void NetworkTest::Update(float32 timeElapsed)
         timeCounter = 0.0f;
     }
     TestTemplate<NetworkTest>::Update(timeElapsed);
-    NetCore::Instance()->Poll();
 }
 
 IChannelListener* NetworkTest::CreateLogger(uint32 serviceId, void* context)
