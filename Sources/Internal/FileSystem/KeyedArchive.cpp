@@ -71,8 +71,12 @@ bool KeyedArchive::Load(const FilePath & pathName)
 bool KeyedArchive::Load(File *archive)
 {
     char header[2];
-    archive->Read(header, 2);
-    if ((header[0] != 'K') || (header[1] != 'A'))
+    uint32 wasRead = archive->Read(header, 2);
+    if (wasRead != 2)
+    {
+        Logger::Error("[KeyedArchive] error loading keyed archive from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+    }
+    else if ((header[0] != 'K') || (header[1] != 'A'))
     {
         archive->Seek(0,File::SEEK_FROM_START);
         while(!archive->IsEof())

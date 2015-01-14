@@ -53,7 +53,7 @@ EntityFamily * EntityFamily::GetOrCreate (const Vector<Component*> & components)
         uint32 type = components[i]->GetType ();
         localFamily.componentIndices[type] = i;
         localFamily.componentCount[type]++;
-        localFamily.componentsFlags |= 1 << type;
+        localFamily.componentsFlags |= (uint64)1 << type;
     }
 
     //check if such family already exists in cache

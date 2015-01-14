@@ -86,7 +86,7 @@ public:
     uint32 GetComponentCount();
     uint32 GetComponentCount(uint32 componentType);
     
-    inline uint32 GetAvailableComponentFlags();
+    inline uint64 GetAvailableComponentFlags();
 
 
 	// working with childs
@@ -371,7 +371,6 @@ protected:
 
     String RecursiveBuildFullName(Entity * node, Entity * endNode);
 
-//    virtual Entity* CopyDataTo(Entity *dstNode);
 	void SetParent(Entity * node);
 
 	Scene * scene;
@@ -503,7 +502,7 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Compo
     }	
 }
 
-inline uint32 Entity::GetAvailableComponentFlags()
+inline uint64 Entity::GetAvailableComponentFlags()
 {
     return family->GetComponentsFlags();
 }
