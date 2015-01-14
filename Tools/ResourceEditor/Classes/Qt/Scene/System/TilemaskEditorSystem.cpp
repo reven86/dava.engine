@@ -170,6 +170,8 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 			Vector2 toolSize = Vector2(cursorSize, cursorSize);
 			Vector2 toolPos = cursorPosition - toolSize / 2.f;
 
+            RenderSystem2D::Instance()->Setup2DMatrices();
+
 			if (activeDrawingType == TILEMASK_DRAW_NORMAL)
 			{
 				RenderManager::Instance()->SetRenderTarget(toolSprite);
@@ -246,7 +248,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 	}
 }
 
-void TilemaskEditorSystem::ProcessUIEvent(UIEvent* event)
+void TilemaskEditorSystem::Input(UIEvent* event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -462,6 +464,8 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
                            srcSprite->GetHeight());
 	drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
                                   (dstSprite->GetTexture()->GetHeight() - sideSize) / 2.0f)));
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 	RenderManager::Instance()->RestoreRenderTarget();
 	
@@ -579,6 +583,8 @@ void TilemaskEditorSystem::CreateMaskFromTexture(Texture* texture)
         Sprite::DrawState drawState;
         drawState.SetPosition(0.f, 0.f);
         drawState.SetRenderState(noBlendDrawState);
+        
+        RenderSystem2D::Instance()->Setup2DMatrices();
         RenderSystem2D::Instance()->Draw(oldMask, &drawState);
         
 		RenderManager::Instance()->RestoreRenderTarget();

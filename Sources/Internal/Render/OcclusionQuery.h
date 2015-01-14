@@ -127,8 +127,8 @@ class FrameOcclusionQueryManager : public Singleton<FrameOcclusionQueryManager>
         FrameQuery(const FastName & name) : 
             queryPool(FRAME_QUERY_POOL_SIZE),
             drawedFrameStats(0),
-            isQueryOpen(false),
-            queryName(name)
+            queryName(name),
+            isQueryOpen(false)
             {}
     };
 

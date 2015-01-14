@@ -85,7 +85,7 @@ set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
 set( LIBRARIES            ${BEAST_LIB} TextureTool )
 set( LIBRARIES_RELEASE    ${QT_LIBRARIES} )
 set( LIBRARIES_DEBUG      ${QT_LIBRARIES} )
-set( ADDED_BINARY_DIR      ${QT5_PATH_WIN}/bin )
+set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()
 

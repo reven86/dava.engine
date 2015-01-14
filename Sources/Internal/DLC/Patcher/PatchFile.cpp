@@ -150,9 +150,9 @@ bool PatchInfo::ReadString(File* file, String &str)
 // PatchFileWriter
 // ======================================================================================
 PatchFileWriter::PatchFileWriter(const FilePath &path, PatchFileWriter::WriterMode mode, BSType _diffType, bool beVerbose)
-: diffType(_diffType)
-, patchPath(path)
-, verbose(beVerbose)
+    : patchPath(path)
+    , diffType(_diffType)
+    , verbose(beVerbose)
 {
     switch(mode)
     {

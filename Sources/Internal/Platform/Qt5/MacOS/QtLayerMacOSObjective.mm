@@ -141,6 +141,9 @@ void QtLayerMacOS::HandleEvent(void *message)
         case NSKeyUp:
             [openGLView keyUp:event];
             break;
+        case NSFlagsChanged:
+            [openGLView flagsChanged:event];
+            break;
         default:
             break;
     }

@@ -6,9 +6,8 @@ project               ( QuickEd )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
-find_package          ( Qt4           REQUIRED )
+find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
-include               ( ${QT_USE_FILE} )
 
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
@@ -32,13 +31,13 @@ add_definitions       (
 )
                               
 file                          ( GLOB_RECURSE QT_LIST "Classes/*.h" )
-qt4_wrap_cpp                  ( MOC_APP_SRCS ${QT_LIST} )
+qt5_wrap_cpp                  ( MOC_APP_SRCS ${QT_LIST} )
 
 file                          ( GLOB UI_LIST "Ui/*.ui" )
-qt4_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
+qt5_wrap_ui                   ( UI_APP_HDRS  ${UI_LIST} )
 
 file                          ( GLOB RCC_LIST "Data/*.qrc" )
-qt4_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
+qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
 set                           ( Generated    ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
@@ -55,7 +54,8 @@ set( ADDED_SRC                  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set( LIBRARIES                  ${QT_LIBRARIES} TextureTool )
 set( LIBRARIES_RELEASE        )
 set( LIBRARIES_DEBUG          )
-set( ADDED_BINARY_DIR           ${QT_BINARY_DIR} )
+set( ADDED_BINARY_DIR           ${QT5_PATH_WIN}/bin )
+
 set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 
 setup_main_executable()

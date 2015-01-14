@@ -94,14 +94,14 @@ TextBlock * TextBlock::Create(const Vector2 & size)
 
 TextBlock::TextBlock()
     : cacheFinalSize(0.f, 0.f)
-    , cacheW(0)
-    , cacheDx(0)
-    , cacheDy(0)
-    , cacheOx(0)
-    , cacheOy(0)
-	, textureForInvalidation(NULL)
     , cacheTextSize(0.f,0.f)
     , renderSize(1.f)
+    , cacheDx(0)
+    , cacheDy(0)
+    , cacheW(0)
+    , cacheOx(0)
+    , cacheOy(0)
+    , textureForInvalidation(NULL)
 {
     font = NULL;
     isMultilineEnabled = false;

@@ -3,7 +3,7 @@ FIND_PROGRAM( PYTHON_BINARY python )
 
 MACRO( FILE_TREE_CHECK folders ) 
 
-    if( PYTHON_BINARY )
+    if( PYTHON_BINARY AND NOT IGNORE_FILE_TREE_CHECK )
 
         if( MACOS )
             set( SH_PREFIX "sh" )
