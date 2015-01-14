@@ -55,7 +55,7 @@ GameCore::SetupTriangle()
 
     if( v )
     {
-        v[0].x = -0.52;
+        v[0].x = -0.52f;
         v[0].y = -0.10f;
         v[0].z = 0.0f;
         
@@ -63,7 +63,7 @@ GameCore::SetupTriangle()
         v[1].y = 0.52f;
         v[1].z = 0.0f;
         
-        v[2].x = 0.52;
+        v[2].x = 0.52f;
         v[2].y = -0.10f;
         v[2].z = 0.0f;
 
@@ -279,7 +279,7 @@ GameCore::SetupCube()
         "DECL_FPROG_BUFFER(0,4)\n"
         "\n"
         "FPROG_BEGIN\n"
-        "    FP_OUT_COLOR = float4(FP_Buffer0[0]) * IN.color;;\n"
+        "    FP_OUT_COLOR = float4(FP_Buffer0[0]) * FP_IN(color);\n"
         "FPROG_END\n"
 /*
 "struct FP_Input\n"
@@ -338,7 +338,7 @@ void GameCore::OnAppStarted()
     rhi::Initialize();
     rhi::ShaderCache::Initialize();
     
-///    SetupTriangle();
+    SetupTriangle();
     SetupCube();
 }
 

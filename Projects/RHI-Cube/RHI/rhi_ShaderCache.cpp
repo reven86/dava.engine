@@ -217,6 +217,8 @@ static const char* _ShaderDefine_Metal =
 "#define FPROG_OUT_COLOR         float4 color [[color(0)]];\n"
 "#define FPROG_OUT_END           };\n"
 
+"#define FP_IN(name)             IN.##name\n"
+
 "#define FP_OUT_COLOR            OUT.color\n"
 
 "#define DECL_FPROG_BUFFER(idx,sz) struct __FP_Buffer##idx { packed_float4 data[sz]; };\n"
@@ -234,6 +236,67 @@ static const char* _ShaderDefine_Metal =
 
 ;
 
+
+
+static const char* _ShaderHeader_GLES2 =
+"#define float2                 vec2\n"
+"#define float3                 vec3\n"
+"#define float4                 vec4\n"
+"#define float4x4               mat4\n"
+"#define float3x3               mat3\n"
+
+"vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
+"vec3 mul( mat3 m, vec3 v ) { return v*m; }\n"
+
+"float4 tex2D( sampler2D s, vec2 t ) { return texture2D(s,t); }\n"
+;
+
+static const char* _ShaderDefine_GLES2 =
+"#define VPROG_IN_BEGIN          \n"
+"#define VPROG_IN_POSITION       attribute vec3 attr_position;\n"
+"#define VPROG_IN_NORMAL         attribute vec3 attr_normal;\n"
+"#define VPROG_IN_TEXCOORD       attribute vec2 attr_texcoord;\n"
+"#define VPROG_IN_END            \n"
+
+"#define VPROG_OUT_BEGIN         \n"
+"#define VPROG_OUT_POSITION      \n"
+"#define VPROG_OUT_TEXCOORD0(name,size)    varying vec##size var_##name;\n"
+"#define VPROG_OUT_END           \n"
+
+"#define DECL_VPROG_BUFFER(idx,sz) uniform vec4 VP_Buffer##idx[sz];\n"
+
+"#define VPROG_BEGIN             void main() {\n"
+"#define VPROG_END               }\n"
+
+"#define VP_IN_POSITION          attr_position\n"
+"#define VP_IN_NORMAL            attr_normal\n"
+"#define VP_IN_TEXCOORD          attr_texcoord\n"
+
+"#define VP_OUT_POSITION         gl_Position\n"
+"#define VP_OUT(name)            var_##name\n"
+
+
+"#define FPROG_IN_BEGIN          \n"
+"#define FPROG_IN_TEXCOORD0(name,size)    varying vec##size var_##name;\n"
+"#define FPROG_IN_END            \n"
+
+"#define FPROG_OUT_BEGIN         \n"
+"#define FPROG_OUT_COLOR         \n"
+"#define FPROG_OUT_END           \n"
+
+"#define FP_IN(name)             var_##name\n"
+
+"#define FP_OUT_COLOR            gl_FragColor\n"
+
+"#define DECL_FPROG_BUFFER(idx,sz) uniform vec4 FP_Buffer##idx[sz];\n"
+
+"#define FPROG_BEGIN             void main() {\n"
+"#define FPROG_END               }\n"
+
+;
+
+
+
 static void
 PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
 {
@@ -244,7 +307,10 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
     {
         case RHI_DX11   : break;
         case RHI_DX9    : break;
-        case RHI_GLES2  : break;
+        case RHI_GLES2  : 
+        {
+            strcat( src, _ShaderDefine_GLES2 );
+        }   break;
         
         case RHI_METAL  : 
         {
@@ -300,7 +366,14 @@ DAVA::Logger::Info( "src=\n%s\n", src );
     mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
     mcpp_lib_main( countof(argv), argv );
     _PreprocessedText = 0;
-    preprocessedText->insert( 0, _ShaderHeader_Metal );
+    switch( targetApi )
+    {
+        case RHI_DX11   : break;
+        case RHI_DX9    : break;
+        case RHI_GLES2  : preprocessedText->insert( 0, _ShaderHeader_GLES2 ); break;        
+        case RHI_METAL  : preprocessedText->insert( 0, _ShaderHeader_Metal ); break;
+    }
+    ;
 DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
 }
 
