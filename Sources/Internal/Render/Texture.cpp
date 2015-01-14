@@ -567,7 +567,8 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
 	bool loaded = texture->LoadImages(gpu, images);
     if(!loaded)
 	{
-		Logger::Error("[Texture::CreateFromImage] Cannot load texture from image");
+		Logger::Error("[Texture::CreateFromImage] Cannot load texture from image. Descriptor: %s, GPU: %s",
+            descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
 
         SafeDelete(images);
 		SafeRelease(texture);
@@ -584,8 +585,11 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 {
     DVASSERT(gpu != GPU_INVALID);
     
-	if(!IsLoadAvailable(gpu))
-		return false;
+    if (!IsLoadAvailable(gpu))
+    {
+        Logger::Error("[Texture::LoadImages] Load not avalible: invalid requsted GPU family (%s)", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
+        return false;
+    }
 	
     int32 baseMipMap = GetBaseMipMap();
     
@@ -637,12 +641,17 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
         }
     }
 
-	if(0 == images->size())
-		return false;
+    if (0 == images->size())
+    {
+        Logger::Error("[Texture::LoadImages] Loaded images count is zero");
+        return false;
+    }
 
 	bool isSizeCorrect = CheckImageSize(*images);
 	if(!isSizeCorrect)
 	{
+        Logger::Error("[Texture::LoadImages] Size if loaded images is invalid (not power of 2)");
+
 		ReleaseImages(images);
 		return false;
 	}
