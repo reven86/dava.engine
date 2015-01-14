@@ -185,7 +185,7 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
 	}
     else
     {
-        JobManager::Instance()->CreateMainJob(fn, this);
+        JobManager::Instance()->CreateOwnedMainJob(fn, this);
     }
 }
 
@@ -256,7 +256,7 @@ void RenderDataObject::BuildIndexBuffer(bool synchronously)
 	}
     else
     {
-        JobManager::Instance()->CreateMainJob(fn, this);
+        JobManager::Instance()->CreateOwnedMainJob(fn, this);
     }
 }
 
