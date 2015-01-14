@@ -47,7 +47,7 @@ class WebViewControl : public IWebViewControl
 {
 	friend class JniWebView;
 public:
-	WebViewControl(UIWebView& uiWebViewPtr);
+	WebViewControl(UIWebView& uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.

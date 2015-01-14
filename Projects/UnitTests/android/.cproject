@@ -32,7 +32,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="Platform/TemplateWin32" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="jni"/>
+						<entry excluding="Internal/Platform/TemplateWin32|Internal/Platform/TemplateMacOS|Internal/Platform/TemplateiOS|Platform/TemplateWin32" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="jni"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
