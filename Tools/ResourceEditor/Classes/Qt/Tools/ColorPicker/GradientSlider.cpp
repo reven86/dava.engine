@@ -7,14 +7,14 @@
 
 GradientSlider::GradientSlider(QWidget* parent)
     : AbstractSlider(parent)
-      , arrowSize(9, 9)
-      , orientation(Qt::Horizontal)
-      , bgBrush(PaintingHelper::DrawGridBrush(QSize(5, 5)))
-      , arrows(0)
-      , ofsL(0)
-      , ofsR(0)
-      , ofsT(0)
-      , ofsB(0)
+    , arrowSize(9, 9)
+    , arrows(0)
+    , orientation(Qt::Horizontal)
+    , ofsL(0)
+    , ofsR(0)
+    , ofsT(0)
+    , ofsB(0)
+    , bgBrush(PaintingHelper::DrawGridBrush(QSize(5, 5)))
 {
 }
 

@@ -26,76 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "WASDControllerComponent.h"
 
-
-
-#ifndef __DAVAENGINE_CAMERA_CONTROLLER_H__
-#define __DAVAENGINE_CAMERA_CONTROLLER_H__
-
-#include "DAVAEngine.h"
-
-namespace DAVA 
+namespace DAVA
 {
-class CameraController : public BaseObject
+
+Component * WASDControllerComponent::Clone(Entity * toEntity)
 {
-protected:
-    ~CameraController();
-public:
-    CameraController(float32 newSpeed);
+    WASDControllerComponent * component = new WASDControllerComponent();
+    component->SetEntity(toEntity);
     
-    virtual void SetScene(Scene *scene);
-    virtual void Input(UIEvent * event);
-    
-    virtual void Update(float32 timeElapsed) {};
+    return component;
+}
 
-    inline void SetSelection(Entity * _selection)
-	{
-		selection = _selection;
-	}
-
-    void SetSpeed(float32 newSpeed);
-    inline float32 GetSpeed() { return speed; };
-
-protected:
-    Scene * currScene;
-    Entity *selection;
-    float32 speed;
-};
-    
-class WASDCameraController : public CameraController
-{
-protected:
-    ~WASDCameraController();
-public:
-    WASDCameraController(float32 newSpeed);
-    
-    virtual void Input(UIEvent * event);
-    
-    virtual void Update(float32 timeElapsed);
-	virtual void SetScene(Scene *_scene);
-
-    void LookAtSelection();
-    
-    
-protected:
-    float32 viewZAngle, viewYAngle;
-    Vector2 oldTouchPoint;
-	
-	Vector2 startPt;
-    Vector2 stopPt;
-
-	void UpdateAngels(Camera * camera);
-	void UpdateCamAlt3But(Camera * camera);
-	void UpdateCam3But(Camera * camera);
-	void UpdateCam2But(Camera * camera);
-	    
-    float32 radius;
-	Vector3 center;
-	Camera * lastCamera;
-    
+  
 };
 
-};
-
-
-#endif // __DAVAENGINE_CAMERA_CONTROLLER_H__

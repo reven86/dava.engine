@@ -49,16 +49,9 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	: QWidget(parent)
 	, davaUIScreenID(0)
 	, dava3DViewMargin(3)
+	, previewDialog(NULL)
 	, newSceneCounter(0)
 	, curScene(NULL)
-	, previewDialog(NULL)
-	/*
-	, curModifAxis(ST_AXIS_X)
-	, curModifMode(ST_MODIF_MOVE)
-	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
-	, curSelDrawMode(ST_SELDRAW_DRAW_CORNERS | ST_SELDRAW_FILL_SHAPE)
-	, curColDrawMode(ST_COLL_DRAW_NOTHING)
-	*/
 {
 	this->setMouseTracking(true);
 
@@ -135,8 +128,8 @@ SceneTabWidget::~SceneTabWidget()
 
 void SceneTabWidget::InitDAVAUI()
 {
-	dava3DView = new DAVAUI3DView(this, DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
-	//dava3DView->SetDebugDraw(true);
+    dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
+    dava3DView->SetInputEnabled(true, true);
 
 	davaUIScreen = new DAVA::UIScreen();
 	davaUIScreen->AddControl(dava3DView);
@@ -333,14 +326,6 @@ int SceneTabWidget::GetTabCount() const
 	return tabBar->count();
 }
 
-void SceneTabWidget::ProcessDAVAUIEvent(DAVA::UIEvent *event)
-{
-	SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
-	if(NULL != scene)
-	{
-		scene->PostUIEvent(event);
-	}
-}
 
 void SceneTabWidget::TabBarCurrentChanged(int index)
 {

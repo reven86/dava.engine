@@ -6,7 +6,7 @@
 class InternalControlPropertiesSection : public PropertiesSection
 {
 public:
-    InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection);
+    InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCopyType copyType);
     virtual ~InternalControlPropertiesSection();
 
     virtual DAVA::UIControl *GetInternalControl() const;
