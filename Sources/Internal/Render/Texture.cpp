@@ -587,7 +587,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
     
     if (!IsLoadAvailable(gpu))
     {
-        Logger::Error("[Texture::LoadImages] Load not avalible: invalid requsted GPU family");
+        Logger::Error("[Texture::LoadImages] Load not avalible: invalid requsted GPU family (%s)", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
         return false;
     }
 	
