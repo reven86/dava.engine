@@ -76,7 +76,7 @@ public:
      \param[in] dataSize size of data we want to write
      \returns number of bytes actually written
      */
-    virtual uint32 Write(const void * pointerToData, uint32 dataSize) override;
+    uint32 Write(const void * pointerToData, uint32 dataSize) override;
 
     /**
      \brief Read [dataSize] bytes from this file to [pointerToData]
@@ -84,18 +84,18 @@ public:
      \param[in] dataSize size of data we want to read
      \return number of bytes actually read
      */
-    virtual uint32 Read(void * pointerToData, uint32 dataSize) override;
+    uint32 Read(void * pointerToData, uint32 dataSize) override;
 
     /**
      \brief Get current file position
      */
-    virtual uint32 GetPos() override;
+    uint32 GetPos() override;
 
     /**
      \brief Get current file size if writing
      \brief and get real file size if file for reading
      */
-    virtual uint32 GetSize() override;
+    uint32 GetSize() override;
 
     /**
      \brief Set current file position
@@ -103,10 +103,10 @@ public:
      \param seekType \ref IO::eFileSeek flag to set type of positioning
      \return true if successful otherwise false.
      */
-    virtual bool Seek(int32 position, uint32 seekType) override;
+    bool Seek(int32 position, uint32 seekType) override;
 
     //! return true if end of file reached and false in another case
-    inline virtual bool IsEof() override;
+    inline bool IsEof() override;
 
 protected:
     uint32 currentPtr;

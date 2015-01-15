@@ -70,7 +70,7 @@ void * DynamicMemoryFile::GetData()
 {
 	if(!data.size())
 	{
-		return NULL;
+		return nullptr;
 	}
 	return &(data[0]);
 }
@@ -100,7 +100,7 @@ uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 
 uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
 {
-    DVASSERT(NULL != pointerToData);
+    DVASSERT(nullptr != pointerToData);
 
 	if (!(fileAttributes & File::READ))
 	{
