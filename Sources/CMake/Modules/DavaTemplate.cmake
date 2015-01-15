@@ -8,6 +8,7 @@
 #set( LIBRARIES_RELEASE    )
 #set( LIBRARIES_DEBUG      )
 #set( ADDED_BINARY_DIR     )
+#set( EXECUTABLE_FLAG      )
 #
 macro( setup_main_executable )
 

@@ -65,4 +65,18 @@ if( APPLE )
         COMMAND install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}            
     )
 
+elseif( WIN32 )
+    set( OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/$(Configuration)" )
+    foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+        string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
+    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+
+endif()
+
+get_filename_component(version_file "../../gitTime.txt" ABSOLUTE)
+if( EXISTS ${version_file})
+    file (STRINGS ${version_file} BUILD_VERION)
+    add_definitions( -DUI_EDITOR_VERSION=\"${BUILD_VERION}\" )   
+
 endif()
