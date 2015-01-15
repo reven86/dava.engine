@@ -352,6 +352,7 @@ void DavaGLWidget::enterEvent(QEvent* e)
 
 void DavaGLWidget::leaveEvent(QEvent* e)
 {
+    // Bug in OS X, leave event called twice in some cases.
     // UnregisterEventFilter();
 }
 
