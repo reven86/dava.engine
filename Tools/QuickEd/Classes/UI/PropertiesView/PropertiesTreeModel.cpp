@@ -299,7 +299,7 @@ QVariant PropertiesTreeModel::makeQVariant(const BaseProperty *property) const
             return QColorToHex(ColorToQColor(val.AsColor()));
 
         case VariantType::TYPE_FILEPATH:
-            return StringToQString(val.AsFilePath().GetAbsolutePathname());
+            return StringToQString(val.AsFilePath().GetStringValue());
             
         case VariantType::TYPE_BYTE_ARRAY:
         case VariantType::TYPE_KEYED_ARCHIVE:
