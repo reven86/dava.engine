@@ -220,7 +220,6 @@
 
 -(void)cursorUpdate:(NSEvent *)theEvent
 {
-//	NSLog(@"OpenGLView  Cursor update");
 }
 
 - (BOOL)acceptsFirstResponder
