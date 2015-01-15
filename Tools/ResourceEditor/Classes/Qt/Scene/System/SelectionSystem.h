@@ -74,7 +74,7 @@ public:
 	void RemSelection(DAVA::Entity *entity);
 	void Clear();
     
-    bool IsEntitySelectable(DAVA::Entity *entity);
+    bool IsEntitySelectable(DAVA::Entity *entity) const;
 
 	EntityGroup GetSelection() const;
 

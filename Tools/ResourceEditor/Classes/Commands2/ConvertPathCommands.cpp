@@ -77,7 +77,6 @@ ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
             DVASSERT(destinationEntity);
 
             DAVA::EdgeComponent * edgeComponent = new DAVA::EdgeComponent();
-            DVASSERT(edgeComponent);
 
             edgeComponent->SetProperties(edge->GetProperties());
             edgeComponent->SetNextEntity(destinationEntity);
@@ -103,8 +102,6 @@ DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent:
 
     DAVA::Entity* wpEntity = new DAVA::Entity();
     DAVA::WaypointComponent * wpComponent = new DAVA::WaypointComponent();
-    DVASSERT(wpEntity);
-    DVASSERT(wpComponent);
 
     wpComponent->SetPathName(pathname);
     wpComponent->SetProperties(waypoint->GetProperties());
@@ -232,8 +229,6 @@ CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
                 DVASSERT(destIdx < entityCount);
 
                 DAVA::PathComponent::Edge* edge = new DAVA::PathComponent::Edge;
-                DVASSERT(edge);
-
                 edge->destination = waypointsVec[destIdx];
                 edge->SetProperties(edgeComponent->GetProperties());
 

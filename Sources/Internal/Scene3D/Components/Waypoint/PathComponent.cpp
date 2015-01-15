@@ -28,6 +28,7 @@
 
 
 
+#include "Utils/Utils.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
@@ -66,11 +67,6 @@ void PathComponent::Waypoint::SetProperties(KeyedArchive* p)
     }
 }
 
-KeyedArchive* PathComponent::Waypoint::GetProperties() const
-{
-    return properties;
-}
-
 void PathComponent::Waypoint::AddEdge(PathComponent::Edge *edge)
 {
     edges.push_back(edge);
@@ -84,7 +80,7 @@ void PathComponent::Waypoint::RemoveEdge(PathComponent::Edge *edge)
         if(edge == edges[e])
         {
             SafeDelete(edges[e]);
-            edges.erase(edges.begin() + e);
+            RemoveExchangingWithLast(edges,e);
             break;
         }
     }
@@ -118,10 +114,6 @@ void PathComponent::Edge::SetProperties(KeyedArchive* p)
     }
 }
 
-KeyedArchive* PathComponent::Edge::GetProperties() const
-{
-    return properties;
-}
     
     
 //== PathComponent ==
@@ -140,28 +132,9 @@ PathComponent::Waypoint* NewWaypoint()
     return new PathComponent::Waypoint;
 }
 
-/*
-Component * PathComponent::Clone(Entity * toEntity)
-{
-    PathComponent * newComponent = new PathComponent();
-    newComponent->SetEntity(toEntity);
-
-    ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-    SerializationContext context;
-    context.SetDebugLogEnabled(false);
-    context.SetVersion(SCENE_FILE_CURRENT_VERSION);
-
-    Serialize(archieve, &context);
-    newComponent->Deserialize(archieve, &context);
-
-    return newComponent;
-}
-*/
-
 Component * PathComponent::Clone(Entity * toEntity)
 {
 	PathComponent * newComponent = new PathComponent();
-    DVASSERT(newComponent);
 
     newComponent->SetName(name);
 	newComponent->SetEntity(toEntity);
@@ -170,7 +143,7 @@ Component * PathComponent::Clone(Entity * toEntity)
     if(waypointCount)
     {
         newComponent->waypoints.resize(waypointCount);
-        std::generate(newComponent->waypoints.begin(),newComponent->waypoints.end(),NewWaypoint);
+        std::generate(newComponent->waypoints.begin(), newComponent->waypoints.end(),NewWaypoint);
 
         for(uint32 w = 0; w < waypointCount; ++w)
         {
@@ -195,7 +168,6 @@ Component * PathComponent::Clone(Entity * toEntity)
                 DVASSERT(destWaypointIdx < waypointCount);
 
                 Edge *newEdge = new Edge;
-                DVASSERT(newEdge);
 
                 newEdge->SetProperties(edge->GetProperties());
                 newEdge->destination = newComponent->waypoints[destWaypointIdx];
@@ -291,7 +263,7 @@ void PathComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
     if(!waypointCount) return;
     
     waypoints.resize(waypointCount);
-    std::generate(waypoints.begin(),waypoints.end(),NewWaypoint);
+    std::generate(waypoints.begin(), waypoints.end(), NewWaypoint);
 
     for(uint32 w = 0; w < waypointCount; ++w)
     {
@@ -363,20 +335,7 @@ void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint *point)
 
 void PathComponent::RemoveAllPoints()
 {
-    uint32 waypointCount = waypoints.size();
-    for(uint32 w = 0; w < waypointCount; ++w)
-    {
-        Waypoint *wp = waypoints[w];
-        DVASSERT(wp);
-
-        uint32 edgesCount = wp->edges.size();
-        for(uint32 e = 0; e < edgesCount; ++e)
-        {
-            SafeDelete(wp->edges[e]);
-        }
-
-        SafeDelete(wp);
-    }
+    Reset();
     waypoints.clear();
 }
 

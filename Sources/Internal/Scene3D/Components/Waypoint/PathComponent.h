@@ -94,8 +94,6 @@ public:
         );
     };
 
-
-protected:
 public:
 	IMPLEMENT_COMPONENT_TYPE(PATH_COMPONENT);
 
@@ -146,6 +144,16 @@ inline void PathComponent::SetName(const FastName & _name)
 inline const FastName & PathComponent::GetName() const
 {
     return name;
+}
+
+inline KeyedArchive* PathComponent::Waypoint::GetProperties() const
+{
+    return properties;
+}
+
+inline KeyedArchive* PathComponent::Edge::GetProperties() const
+{
+    return properties;
 }
 
     

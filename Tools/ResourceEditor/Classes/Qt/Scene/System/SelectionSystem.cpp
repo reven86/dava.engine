@@ -313,7 +313,7 @@ void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
     }
 }
 
-bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity)
+bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity) const
 {
     if(!IsLocked() && entity)
     {

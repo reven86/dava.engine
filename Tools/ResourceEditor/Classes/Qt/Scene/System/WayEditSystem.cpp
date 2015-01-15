@@ -58,17 +58,12 @@ WayEditSystem::~WayEditSystem()
 
 void WayEditSystem::AddEntity(DAVA::Entity * entity)
 {
-    if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
-    {
-        waypointEntities.push_back(entity);
-    }
+    waypointEntities.push_back(entity);
+
 }
 void WayEditSystem::RemoveEntity(DAVA::Entity * entity)
 {
-    if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
-    {
-        DAVA::FindAndRemoveExchangingWithLast(waypointEntities, entity);
-    }
+    DAVA::FindAndRemoveExchangingWithLast(waypointEntities, entity);
 }
 
 

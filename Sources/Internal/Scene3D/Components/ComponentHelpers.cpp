@@ -444,10 +444,10 @@ PathComponent * GetPathComponent(const Entity *fromEntity)
     if(fromEntity)
     {
         return (PathComponent*) fromEntity->GetComponent(Component::PATH_COMPONENT);
-	    }
+    }
 
-	    return NULL;
-	}
+        return NULL;
+    }
 
 SnapToLandscapeControllerComponent * GetSnapToLandscapeControllerComponent(const Entity * fromEntity)
 {

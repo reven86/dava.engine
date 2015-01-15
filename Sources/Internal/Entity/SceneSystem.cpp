@@ -149,7 +149,7 @@ void SceneSystem::SetLocked(bool locked)
 	this->locked = locked;
 }
 
-bool SceneSystem::IsLocked()
+bool SceneSystem::IsLocked() const
 {
 	return locked;
 }
