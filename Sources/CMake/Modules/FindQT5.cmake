@@ -25,6 +25,8 @@ if( QT5_LIB_PATH )
     set ( QT5_MODULE_PATH ${QT5_LIB_PATH}/cmake)
     set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
 
+    message ( "QT5_LIB_PATH - " ${QT5_LIB_PATH} )
+
     find_package ( Qt5Core )
 
     if( Qt5Core_FOUND  )
