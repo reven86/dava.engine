@@ -136,11 +136,51 @@ void QtLayerWin32::Move(int32 x, int32 y)
     
 void QtLayerWin32::ProcessFrame()
 {
+//    if(willQuit)
+//        return;
+
+//    if (activeCursor != RenderManager::Instance()->GetCursor())
+//    {
+//        activeCursor = RenderManager::Instance()->GetCursor();
+//    }
+
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    glClearColor(1.0f, 0.5f, 0.1f, 1.f);
+    
     DAVA::RenderManager::Instance()->Lock();
+    
+//    if (isFirstDraw)
+//    {
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+// 
+//        isFirstDraw = false;
+//    }
     
     DAVA::Core::Instance()->SystemProcessFrame();
     
-    DAVA::RenderManager::Instance()->Unlock();
+    /*	// This is an optimization.  If the view is being
+     // resized, don't do a buffer swap.  The GL content
+     // will be updated as part of the window flush anyway.
+     // This makes live resize look nicer as the GL view
+     // won't get flushed ahead of the window flush.  It also
+     // makes live resize faster since we're not flushing twice.
+     // Because I want the animtion to continue while resize
+     // is happening, I use my own flag rather than calling
+     // [self inLiveReize].  For most apps this wouldn't be
+     // necessary.
+     
+     if(!sizeChanged)
+     {
+     [[self openGLContext] flushBuffer];
+     }
+     else glFlush();
+     sizeChanged = NO; */
+//    if(DAVA::Core::Instance()->IsActive())
+//    {
+//        [[self openGLContext] flushBuffer];
+//    }
+    
+    DAVA::RenderManager::Instance()->Unlock();   
 }
 
 void QtLayerWin32::LockKeyboardInput(bool locked)
