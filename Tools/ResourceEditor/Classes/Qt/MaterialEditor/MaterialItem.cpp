@@ -40,18 +40,17 @@
 
 namespace
 {
-    const int MAX_PREVIEW_HEIGHT = 24;
     const int MAX_MATERIAL_HEIGHT = 30;
 }
 
 MaterialItem::MaterialItem(DAVA::NMaterial * _material)
-    : QStandardItem()
-    , QObject( NULL )
+    : QObject( NULL )
+    , QStandardItem()
     , material(_material)
+    , curFlag(0)
     , isPreviewRequested(false)
     , lodIndex(-1)
     , switchIndex(-1)
-    , curFlag(0)
 {
 	DVASSERT(material);
 

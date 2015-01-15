@@ -1618,6 +1618,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h">
       <Filter>Internal\Render\2D\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\EntityFamily.h">
+      <Filter>Internal\Scene3D</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.h">
       <Filter>Internal\Scene3D\Components\Controller</Filter>
     </ClInclude>
@@ -2931,6 +2934,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp">
       <Filter>Internal\Render\2D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\EntityFamily.cpp">
+      <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.cpp">
       <Filter>Internal\Scene3D\Components\Controller</Filter>

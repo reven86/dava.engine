@@ -46,9 +46,9 @@
 
 namespace DAVA {
 
-UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates) :
-	movieViewControl(new MovieViewControl),
-	UIControl(rect, rectInAbsoluteCoordinates)
+UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates)
+    : UIControl(rect, rectInAbsoluteCoordinates)
+    , movieViewControl(new MovieViewControl)
 {
 	movieViewControl->Initialize(rect);
 }

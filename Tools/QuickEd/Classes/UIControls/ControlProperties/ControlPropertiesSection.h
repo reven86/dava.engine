@@ -6,9 +6,12 @@
 class ControlPropertiesSection : public PropertiesSection
 {
 public:
-    ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection);
+    ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCopyType copyType);
+
+protected:
     virtual ~ControlPropertiesSection();
-    
+
+public:
     virtual DAVA::String GetName() const;
     void AddPropertiesToNode(DAVA::YamlNode *node) const;
 
