@@ -552,8 +552,13 @@ void Core::SystemProcessFrame()
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
-        // Poll for network I/O events
+
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+        // Poll for network I/O events here only for mobile platforms due to strange behaviour
+        // in Resource Editor on Mac OS (DeviceList dialog permanently stays on screen)
+        // For desktop platforms poll for events in DavaGLWidget::Render
         Net::NetCore::Instance()->Poll();
+#endif
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
 		core->Draw();

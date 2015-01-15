@@ -55,6 +55,9 @@
 	#include "Win32/CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#include "Network/NetCore.h"
+#endif
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
 	: QWidget(parent)
@@ -325,6 +328,12 @@ void DavaGLWidget::Render()
 	QElapsedTimer frameTimer;
 	frameTimer.start();
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+    // Poll for network I/O events here only for desktop platforms due to strange behaviour
+    // in Resource Editor on Mac OS (DeviceList dialog permanently stays on screen)
+    // For desktop platforms poll for events in Core::SystemProcessFrame
+    DAVA::Net::NetCore::Instance()->Poll();
+#endif
 	if(isEnabled() && DAVA::QtLayer::Instance()->IsDAVAEngineEnabled())
 	{
 		DAVA::QtLayer::Instance()->ProcessFrame();
