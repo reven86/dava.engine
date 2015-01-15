@@ -141,6 +141,8 @@ void ActionSetVisibilityPoint::Redo()
 
     Sprite::DrawState drawState;
     drawState.SetPosition(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(redoVisibilityPoint - cursorSprite->GetSize() / 2.f));
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(cursorSprite, &drawState);
 
 	RenderManager::Instance()->RestoreRenderTarget();
@@ -229,6 +231,9 @@ void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
     
 	RenderSystem2D::Instance()->ClipPush();
     RenderSystem2D::Instance()->SetClip(rect);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->UpdateClip();
 
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     

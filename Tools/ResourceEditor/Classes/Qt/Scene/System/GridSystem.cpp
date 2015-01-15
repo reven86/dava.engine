@@ -57,10 +57,6 @@ void SceneGridSystem::Process(float timeElapsed)
 
 }
 
-void SceneGridSystem::ProcessUIEvent(DAVA::UIEvent *event)
-{
-
-}
 
 void SceneGridSystem::Draw()
 {

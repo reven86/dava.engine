@@ -44,10 +44,10 @@ class SoundComponent;
 struct SoundComponentElement
 {
     SoundComponentElement(SoundEvent * _soundEvent, uint32 _flags, const Vector3 & _localDirection) : 
-         soundEvent(_soundEvent), 
-         flags(_flags),
-         localDirection(_localDirection)
-         {}
+        soundEvent(_soundEvent),
+        localDirection(_localDirection),
+        flags(_flags)
+        {}
 
     SoundEvent * soundEvent;
     Vector3 localDirection;

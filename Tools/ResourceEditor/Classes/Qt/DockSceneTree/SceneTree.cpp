@@ -215,7 +215,8 @@ void SceneTree::dragEnterEvent(QDragEnterEvent *event)
 void SceneTree::SceneActivated(SceneEditor2 *scene)
 {
 	treeModel->SetScene(scene);
-	SyncSelectionToTree();
+    SyncSelectionToTree();
+    filteringProxyModel->invalidate();
 }
 
 void SceneTree::SceneDeactivated(SceneEditor2 *scene)
@@ -364,17 +365,21 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 		SceneSelectionSystem *selSystem = scene->selectionSystem;
 		size_t selectionSize = selSystem->GetSelectionCount();
 
-		QMenu contextMenu;
+        Camera *camera = GetCamera(entity);
+
+        QMenu contextMenu;
 		if(entityCustomFlags & SceneTreeModel::CF_Disabled)
 		{
-            if(selectionSize == 1 && GetCamera(entity))
+            if(selectionSize == 1 && camera)
             {
                 AddCameraActions(contextMenu);
                 contextMenu.addSeparator();
             }
-
-            // disabled entities can only be removed
-            contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+            
+            if(camera != scene->GetCurrentCamera())
+            {
+                contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+            }
         }
 		else
 		{
@@ -382,14 +387,14 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 			contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Look at", this, SLOT(LookAtSelection()));
 
 			// look from
-			if(NULL != GetCamera(entity))
+			if(NULL != camera)
 			{
                 AddCameraActions(contextMenu);
 			}
 
 			// add/remove
 			contextMenu.addSeparator();
-            if(entity->GetLocked() == false)
+            if(entity->GetLocked() == false && (camera != scene->GetCurrentCamera()))
             {
 			    contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
             }
@@ -426,8 +431,8 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
                     contextMenu.addAction("Reload Model...", this, SLOT(ReloadModel()));
 				}
 			}
-			//DF-2004: Reload for every entity at scene
-			QAction *reloadModelAsAction = contextMenu.addAction("Reload Model As...", this, SLOT(ReloadModelAs()));			
+			// Reload for every entity at scene
+            contextMenu.addAction("Reload Model As...", this, SLOT(ReloadModelAs()));
 
 			// particle effect
 			DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);

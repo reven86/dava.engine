@@ -102,6 +102,9 @@ public slots:
     void OnAddWaveComponent();
     void OnAddModelTypeComponent();
     void OnAddSkeletonComponent();
+    void OnAddRotationControllerComponent();
+    void OnAddSnapToLandscapeControllerComponent();
+    void OnAddWASDControllerComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
 	
@@ -142,6 +145,7 @@ protected:
 	void ApplyCustomExtensions(QtPropertyData *data);
 
     void OnAddComponent(Component::eType type);
+    void OnAddComponent(Component *component);
 
 	void AddFavoriteChilds(QtPropertyData *parent);
 	void RemFavoriteChilds(QtPropertyData *parent);

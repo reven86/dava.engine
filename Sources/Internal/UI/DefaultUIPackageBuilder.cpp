@@ -39,7 +39,8 @@
 namespace DAVA
 {
     
-const String DefaultUIPackageBuilder::EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
+const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
+const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
 DefaultUIPackageBuilder::DefaultUIPackageBuilder()
 : package(NULL), currentObject(NULL)
@@ -95,7 +96,7 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &classNam
     if (!control)
         Logger::Error("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
 
-    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD)//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
@@ -107,13 +108,14 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &classNam
 UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(customClassName);
-    if (className != EXCEPTION_CLASS_UI_TEXT_FIELD)//TODO: fix internal staticText for Win\Mac
-    {
-        control->RemoveAllControls();
-    }
 
     if (!control)
         control = ObjectFactory::Instance()->New<UIControl>(className); // TODO: remove
+
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
+    {
+        control->RemoveAllControls();
+    }
     
     if (control)
     {
@@ -130,7 +132,7 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &cu
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
 {
-    UIControl *prototype;
+    UIControl *prototype = NULL;
     if (packageName.empty())
     {
         prototype = package->GetControl(prototypeName);

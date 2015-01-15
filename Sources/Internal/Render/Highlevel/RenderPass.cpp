@@ -147,10 +147,10 @@ void RenderPass::ClearBuffers(uint32 clearBuffers)
 
 
 MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID id):RenderPass(name, id),
-    reflectionTexture(NULL), 
-    refractionTexture(NULL), 
-    reflectionPass(NULL), 
-    refractionPass(NULL), 
+    reflectionPass(NULL),
+    refractionPass(NULL),
+    reflectionTexture(NULL),
+    refractionTexture(NULL),
     needWaterPrepass(false)
 {
     const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();

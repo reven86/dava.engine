@@ -230,6 +230,7 @@ RenderSystem2D::RenderSystem2D()
     , spriteVertexStream(0)
     , spriteTexCoordStream(0)
     , spriteClipping(true)
+    , clipChanged(false)
 {
 }
 
@@ -378,13 +379,12 @@ void RenderSystem2D::ScreenSizeChanged()
 void RenderSystem2D::SetClip(const Rect &rect)
 {
     currentClip = rect;
-    RenderManager::Instance()->SetHWClip(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(currentClip));
+    clipChanged = true;
 }
 
 void RenderSystem2D::RemoveClip()
 {
-    currentClip = Rect(0,0,-1,-1);
-    RenderManager::Instance()->SetHWClip(currentClip);
+    SetClip(Rect(0.f, 0.f, -1.f, -1.f));
 }
 
 void RenderSystem2D::ClipRect(const Rect &rect)
@@ -401,8 +401,7 @@ void RenderSystem2D::ClipRect(const Rect &rect)
 
     r = r.Intersection(rect);
 
-    currentClip = r;
-    RenderManager::Instance()->SetHWClip(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(currentClip));
+    SetClip(r);
 }
 
 void RenderSystem2D::ClipPush()
@@ -423,6 +422,32 @@ void RenderSystem2D::ClipPop()
         SetClip(r);
     }
     clipStack.pop();
+}
+
+void RenderSystem2D::UpdateClip()
+{
+    if (clipChanged)
+    {
+        if (currentClip.dx < 0.f || currentClip.dx < 0.f) //disable clip
+        {
+            RenderManager::Instance()->SetHWClip(currentClip);
+        }
+        else
+        {
+            RenderManager::ComputeWorldViewMatrixIfRequired();
+            const Matrix4 & transformMx = RenderManager::GetDynamicParamMatrix(PARAM_WORLD_VIEW);
+
+            Vector3 clipTopLeftCorner(currentClip.x, currentClip.y, 0.f);
+            Vector3 clipBottomRightCorner(currentClip.x + currentClip.dx, currentClip.y + currentClip.dy, 0.f);
+
+            clipTopLeftCorner = clipTopLeftCorner * transformMx;
+            clipBottomRightCorner = clipBottomRightCorner * transformMx;
+
+            Rect transformedClip(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
+            RenderManager::Instance()->SetHWClip(transformedClip);
+        }
+        clipChanged = false;
+    }
 }
 
 void RenderSystem2D::SetSpriteClipping(bool clipping)
@@ -535,6 +560,8 @@ void RenderSystem2D::Flush()
 
         RENDERER_UPDATE_STATS(spriteDrawCount++);
 
+        UpdateClip();
+        
         RenderManager::Instance()->SetRenderState(batch.renderState);
         RenderManager::Instance()->SetTextureState(batch.textureHandle);
         RenderManager::Instance()->SetRenderEffect(batch.shader);

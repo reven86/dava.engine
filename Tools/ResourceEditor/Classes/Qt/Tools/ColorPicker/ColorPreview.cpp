@@ -15,8 +15,8 @@
 ColorPreview::ColorPreview(QWidget* parent)
     : QWidget(parent)
     , bgBrush(PaintingHelper::DrawGridBrush(QSize(7, 7)))
-    , mouse(new MouseHelper(this))
     , dragPreviewSize(21, 21)
+    , mouse(new MouseHelper(this))
 {
     setMouseTracking(true);
     setCursor(Qt::OpenHandCursor);
@@ -61,7 +61,7 @@ void ColorPreview::OnMousePress(const QPoint& pos)
     drag->setPixmap(pix);
     drag->setHotSpot(QPoint(dragPreviewSize.width() / 2, dragPreviewSize.height() / 2));
 
-    Qt::DropAction dropAction = drag->exec(Qt::MoveAction);
+    drag->exec(Qt::MoveAction);
 }
 
 void ColorPreview::OnMouseRelease(const QPoint& pos)

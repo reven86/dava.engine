@@ -187,7 +187,8 @@ public:
     
 	void ClipPush();
 	void ClipPop();
-    
+    void UpdateClip();
+
     void ScreenSizeChanged();
     
     void Setup2DMatrices();
@@ -220,6 +221,7 @@ private:
     Vector<uint16> indexBufferTmp;
 
     bool spriteClipping;
+    bool clipChanged;
     
     Vector<RenderBatch2D> batches;
     RenderBatch2D currentBatch;
