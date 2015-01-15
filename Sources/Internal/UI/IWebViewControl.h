@@ -54,7 +54,7 @@ public:
 	};
 
 	virtual eAction URLChanged(UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick) = 0;
-	virtual void OnExecuteJScript(UIWebView* webview, int32 requestId, const String& result) {};
+	virtual void OnExecuteJScript(UIWebView* webview, const String& result) {};
 	
 	virtual void PageLoaded(UIWebView* webview) = 0;
 	virtual void SwipeGesture(bool left){};
@@ -81,8 +81,8 @@ public:
 	virtual String GetCookie(const String& url, const String& name) const { return String(); };
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& url) const { return Map<String, String>(); };
-	// Execute javascript command, return request ID
-	virtual int32 ExecuteJScript(const String& scriptString) { return 0; };
+	// Execute javascript command
+	virtual void ExecuteJScript(const String& scriptString) {};
 	
     virtual void OpenFromBuffer(const String& string, const FilePath& basePath) = 0;
     

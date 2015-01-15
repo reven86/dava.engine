@@ -80,12 +80,22 @@ extern "C"
 
 	}
 
-	void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, int requestId, jstring jResult)
+	void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, jstring jResult)
 	{
-		char resultStr[1024];
-		CreateStringFromJni(env, jResult, resultStr);
+		// string with result can be large with JSON inside
 
-		DAVA::JniWebView::OnExecuteJScript(id, requestId, resultStr);
+	    // Returns the length in bytes of the modified UTF-8
+	    // representation of a string.
+	    // http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html
+	    size_t size = env->GetStringUTFLength(jResult);
+	    const char* utf8Data = env->GetStringUTFChars(jResult, NULL);
+
+	    DAVA::String str(utf8Data, size);
+
+		DAVA::JniWebView::OnExecuteJScript(id, str);
+
+		// http://stackoverflow.com/questions/5859673/should-you-call-releasestringutfchars-if-getstringutfchars-returned-a-copy
+		env->ReleaseStringUTFChars(jResult, utf8Data);
 	}
 
 };

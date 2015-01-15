@@ -64,7 +64,7 @@ public:
 	// Get the list of cookies for specific domain
 	Map<String, String> GetCookies(const String& url) const override;
 	// Perform Java script
-	int32 ExecuteJScript(const String& scriptString) override;
+	void ExecuteJScript(const String& scriptString) override;
 	
 	void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 
@@ -85,7 +85,6 @@ private:
 	IUIWebViewDelegate *delegate;
 	UIWebView& webView;
 
-	static int32 requestId;
 	static int32 webViewIdCount;
 };
 
@@ -100,7 +99,7 @@ public:
 	void DeleteCookies(const String& targetUrl);
 	String GetCookie(const String& targetUrl, const String& name);
 	Map<String, String> GetCookies(const String& targetUrl);
-	void ExecuteJScript(int id, int requestId, const String& scriptString);
+	void ExecuteJScript(int id, const String& scriptString);
 	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
 	void SetRect(int id, const Rect& rect);
@@ -113,7 +112,7 @@ public:
 
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
 	static void PageLoaded(int id, int* rawPixels, int width, int height);
-	static void OnExecuteJScript(int id, int requestId, const String& result);
+	static void OnExecuteJScript(int id, const String& result);
 
 protected:
 	virtual jclass GetJavaClass() const;

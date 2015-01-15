@@ -420,7 +420,7 @@ public class JNIWebView {
 		});
 	}
 	
-	public static void ExecuteJScript(final int id, final int requestId, final String scriptString)
+	public static void ExecuteJScript(final int id, final String scriptString)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
 		if (null == activity || activity.GetIsPausing())
@@ -434,9 +434,19 @@ public class JNIWebView {
 					return;
 				}
 				WebView webView = views.get(id);
-				//String a = "javascript:function call_back_func(){return \"" + requestId +", \" + " + scriptString + ";}javascript:alert(call_back_func())";
-				String a = "javascript:function call_back_func(){return \"" + requestId +", \" + eval(\"" + scriptString + "\");}javascript:alert(call_back_func())";
-				webView.loadUrl(a);
+				
+				// if you need return data from javascript just
+				// return JSON string you can parse it in c++ 
+				// with yaml parser
+				
+				String javaScript = 
+						"javascript:function call_back_func()"
+						+"{"
+						+"    return \"\" + eval(\"" + scriptString + "\");"
+						+"}"
+						+"javascript:alert(call_back_func())";
+				Log.d(TAG, "exec JS: " + javaScript);
+				webView.loadUrl(javaScript);
 			}
 		});
 	}
@@ -621,36 +631,24 @@ public class JNIWebView {
 		public boolean onJsAlert(WebView view, String url, String message,
 				JsResult result) {
 
-			class jsCallback implements Callable<Void> {
+			class jsCallback implements Runnable {
 				int id;
-				int requestId;
 				String result;
 				
-				jsCallback(int id, int requestId, String result){
+				jsCallback(int id, String result){
 					this.id = id;
-					this.requestId = requestId;
 					this.result = result;
 				}
 
 				@Override
-				public Void call() throws Exception {
-					OnExecuteJScript(this.id, this.requestId, this.result);
-					return null;
+				public void run() {
+					OnExecuteJScript(id, result);
 				}
-				
 			}
 			
-			int split = message.indexOf(",");
-			if (split > 0)
-			{
-				FutureTask<Void> task = new FutureTask<Void>(new jsCallback(
-						id,
-						Integer.parseInt((String) message.subSequence(0, split)),
-						(String) message.subSequence(split + 2, message.length())));
-			
-				JNIActivity.GetActivity().PostEventToGL(task);
-			}
-			
+			Log.d(TAG,  "alert on WebView id=" + id);
+
+			JNIActivity.GetActivity().PostEventToGL(new jsCallback(id, message));
 			result.confirm();
 			return true;
 		}
@@ -666,5 +664,5 @@ public class JNIWebView {
 	
 	private static native int OnUrlChange(int id, String url);
 	private static native int OnPageLoaded(int id, int[] pixels, int width, int height);
-	private static native void OnExecuteJScript(int id, int requestId, String result);
+	private static native void OnExecuteJScript(int id, String result);
 }
