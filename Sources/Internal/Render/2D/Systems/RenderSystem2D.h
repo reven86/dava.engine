@@ -117,22 +117,14 @@ public:
     void SetVertexData(uint32 count, float32 * data);
     void SetIndexData(uint32 count, uint8 * data);
 
-    void MapBuffers();
-    void UnmapBuffers();
     void RenewBuffers(uint32 size);
-    void MapVertexBuffer();
-    void UnmapVertexBuffer();
-    void MapIndexBuffer();
-    void UnmapIndexBuffer();
     
     inline RenderDataObject* GetDataObject() const;
-    inline float32 * GetVertexBufferPointer() const;
-    inline uint16 * GetIndexBufferPointer() const;
     inline uint32 GetVertexBufferSize() const;
     inline uint32 GetIndexBufferSize() const;
 
     static const int32 vertexStride;
-    
+
 private:
     Vector<RenderDataObject*> dataObjects;
     uint8 currentDataObjectIndex;
@@ -140,8 +132,6 @@ private:
     RenderDataObject * currentDataObject;
     uint32 currentVertexBufferSize;
     uint32 currentIndexBufferSize;
-    float32 * currentVertexBufferPointer;
-    uint16 * currentIndexBufferPointer;
     
 };
 
@@ -232,27 +222,17 @@ private:
 
 };
     
-RenderDataObject* VboPool::GetDataObject() const
+inline RenderDataObject* VboPool::GetDataObject() const
 {
     return currentDataObject;
 }
 
-float32* VboPool::GetVertexBufferPointer() const
-{
-    return currentVertexBufferPointer;
-}
-
-uint16* VboPool::GetIndexBufferPointer() const
-{
-    return currentIndexBufferPointer;
-}
-
-uint32 VboPool::GetVertexBufferSize() const
+inline uint32 VboPool::GetVertexBufferSize() const
 {
     return currentVertexBufferSize;
 }
 
-uint32 VboPool::GetIndexBufferSize() const
+inline uint32 VboPool::GetIndexBufferSize() const
 {
     return currentIndexBufferSize;
 }

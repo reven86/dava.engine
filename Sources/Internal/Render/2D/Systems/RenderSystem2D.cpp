@@ -39,8 +39,7 @@
 namespace DAVA
 {
 
-#define USE_MAPPING false
-#define USE_BATCHING true
+#define USE_BATCHING 1
 #define MAX_VERTEXES 4096
 #define MAX_INDECES 8192
 #define VBO_POOL_SIZE 10
@@ -72,14 +71,12 @@ VboPool::VboPool(uint32 size, uint8 count)
     for (uint8 i = 0; i < count; ++i)
     {
         RenderDataObject* obj = new RenderDataObject();
-#if USE_MAPPING
         obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, 0);
-        obj->BuildVertexBuffer(size, RenderDataObject::DYNAMIC_DRAW, false);
+        obj->BuildVertexBuffer(size, BDT_DYNAMIC_DRAW, false);
         obj->SetIndices(EIF_16, 0, size * 2);
         obj->BuildIndexBuffer(false);
-#endif
         dataObjects.push_back(obj);
     }
     currentDataObjectIndex = 0;
@@ -107,7 +104,7 @@ void VboPool::SetVertexData(uint32 count, float32* data)
     currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, data);
     currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, data + 2);
     currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, data + 4);
-    currentDataObject->UpdateVertexBuffer(count, RenderDataObject::DYNAMIC_DRAW);
+    currentDataObject->UpdateVertexBuffer(count);
     currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
     currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, (void*)8);
     currentDataObject->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, (void*)16);
@@ -119,109 +116,21 @@ void VboPool::SetIndexData(uint32 count, uint8* data)
     currentDataObject->UpdateIndexBuffer();
 }
 
-void VboPool::MapBuffers()
-{
-#if USE_MAPPING
-    uint32 vbid = currentDataObject->GetVertexBufferID();
-    uint32 ibid = currentDataObject->GetIndexBufferID();
-
-    RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid);
-    RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid);
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBufferOES(GL_ARRAY_BUFFER, GL_WRITE_ONLY_OES));
-    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY_OES));
-#else
-    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
-#endif
-#endif
-}
-
-void VboPool::UnmapBuffers()
-{
-#if USE_MAPPING
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(glUnmapBufferOES(GL_ARRAY_BUFFER));
-    RENDER_VERIFY(glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER));
-#else
-    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
-    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
-#endif
-    currentVertexBufferPointer = 0;
-    currentIndexBufferPointer = 0;
-#endif
-}
-
-void VboPool::MapVertexBuffer()
-{
-#if USE_MAPPING
-    uint32 vbid = currentDataObject->GetVertexBufferID();
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid));
-    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBufferOES(GL_ARRAY_BUFFER, GL_WRITE_ONLY_OES));
-#else
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vbid));
-    RENDER_VERIFY(currentVertexBufferPointer = (float32*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-#endif
-#endif
-}
-
-void VboPool::UnmapVertexBuffer()
-{
-#if USE_MAPPING
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(glUnmapBufferOES(GL_ARRAY_BUFFER));
-#else
-    RENDER_VERIFY(glUnmapBuffer(GL_ARRAY_BUFFER));
-#endif
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, NULL));
-    currentVertexBufferPointer = 0;
-#endif
-}
-
-void VboPool::MapIndexBuffer()
-{
-#if USE_MAPPING
-    uint32 ibid = currentDataObject->GetIndexBufferID();
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibid));
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY_OES));
-#else
-    RENDER_VERIFY(currentIndexBufferPointer = (uint16*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
-#endif
-#endif
-}
-
-void VboPool::UnmapIndexBuffer()
-{
-#if USE_MAPPING
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER));
-#else
-    RENDER_VERIFY(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
-#endif
-    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL));
-    currentIndexBufferPointer = 0;
-#endif
-}
-
 void VboPool::RenewBuffers(uint32 size)
 {
-#if USE_MAPPING
     currentVertexBufferSize = size * vertexStride;
     currentIndexBufferSize = size * 2 * sizeof(uint16);
-    const uint32 count = (uint32)dataObjects.size();
-    for (uint32 i = 0; i < count; ++i)
+    uint32 count = (uint32)dataObjects.size();
+    for (uint8 i = 0; i < count; ++i)
     {
         RenderDataObject* obj = dataObjects[i];
         obj->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, 0);
         obj->SetStream(EVF_COLOR, TYPE_FLOAT, 4, vertexStride, 0);
-        obj->BuildVertexBuffer(size, RenderDataObject::DYNAMIC_DRAW, false);
+        obj->BuildVertexBuffer(size, BDT_DYNAMIC_DRAW, false);
         obj->SetIndices(EIF_16, 0, size * 2);
         obj->BuildIndexBuffer(false);
     }
-#endif
 }
 
 RenderSystem2D::RenderSystem2D() 
@@ -239,12 +148,9 @@ void RenderSystem2D::Init()
 #if USE_BATCHING
     if(!pool)
     {
-        // Create pool on first BeginFrame call
         pool = new VboPool(MAX_VERTEXES, VBO_POOL_SIZE);
-#if !USE_MAPPING
         vertexBufferTmp.resize(MAX_VERTEXES * VboPool::vertexStride);
         indexBufferTmp.resize(MAX_INDECES);
-#endif
     }
 #else
     if (!spriteRenderObject) //used as flag 'isInited'
@@ -533,15 +439,8 @@ void RenderSystem2D::Flush()
 
     spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLELIST;
 
-#if !USE_MAPPING
     pool->SetVertexData(vertexIndex, &vertexBufferTmp[0]);
     pool->SetIndexData(indexIndex, (uint8*)&indexBufferTmp[0]);
-#else
-    // Need set streams because on pool constructor we can't set they (deadlock)
-    pool->GetDataObject()->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, VboPool::vertexStride, 0);
-    pool->GetDataObject()->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, VboPool::vertexStride, (void*)8);
-    pool->GetDataObject()->SetStream(EVF_COLOR, TYPE_FLOAT, 4, VboPool::vertexStride, (void*)16);
-#endif
     
     RenderManager::Instance()->SetRenderData(pool->GetDataObject());
 
@@ -863,12 +762,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
     
         uint32 vi = vertexIndex * 8;
         uint32 ii = indexIndex;
-#if USE_MAPPING
-        pool->MapVertexBuffer();
-        float32* vb = pool->GetVertexBufferPointer();
-#else
         float32* vb = &vertexBufferTmp.front();
-#endif
+        uint16* ib = &indexBufferTmp.front();
 
         spriteIndexCount = 6;
 
@@ -885,24 +780,12 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
             vb[vi++] = c.a;
         }
 
-#if USE_MAPPING
-        pool->UnmapVertexBuffer();
-        pool->MapIndexBuffer();
-        uint16* ib = pool->GetIndexBufferPointer();
-#else
-        uint16* ib = &indexBufferTmp.front();
-#endif
-
         static uint32 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
         for (int32 i = 0; i < spriteIndexCount; ++i)
         {
             ib[ii++] = vertexIndex + spriteIndeces[i];
         }
 
-#if USE_MAPPING
-        pool->UnmapIndexBuffer();
-#endif
-        
 #else //USE_BATCHING
         
         spriteVertexStream->Set(TYPE_FLOAT, 2, 0, spriteTempVertices);
@@ -930,12 +813,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
         
         uint32 vi = vertexIndex * 8;
         uint32 ii = indexIndex;
-#if USE_MAPPING
-        pool->MapVertexBuffer();
-        float32* vb = pool->GetVertexBufferPointer();
-#else
         float32* vb = &vertexBufferTmp.front();
-#endif
+        uint16* ib = &indexBufferTmp.front();
 
         spriteVertexCount = sprite->clipPolygon->GetPointCount();
         DVASSERT(spriteVertexCount >= 2);
@@ -966,14 +845,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
             vb[vi++] = c.a;
         }
 
-#if USE_MAPPING
-        pool->UnmapVertexBuffer();
-        pool->MapIndexBuffer();
-        uint16* ib = pool->GetIndexBufferPointer();
-#else
-        uint16* ib = &indexBufferTmp.front();
-#endif
-
         for (int32 i = 2; i < spriteVertexCount; ++i)
         {
             ib[ii++] = vertexIndex;
@@ -981,10 +852,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
             ib[ii++] = vertexIndex + i;
         }
 
-#if USE_MAPPING
-        pool->UnmapIndexBuffer();
-#endif
-    
 #else //USE_BATCHING
     
         if (sprite->flags & Sprite::EST_SCALE)
@@ -1143,12 +1010,8 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 	
     uint32 vi = vertexIndex * 8;
     uint32 ii = indexIndex;
-#if USE_MAPPING
-    pool->MapVertexBuffer();
-    float32* vb = pool->GetVertexBufferPointer();
-#else
     float32* vb = &vertexBufferTmp.front();
-#endif
+    uint16* ib = &indexBufferTmp.front();
 
     spriteVertexCount = (int32)sd.transformedVertices.size();
     spriteIndexCount = sd.GetVertexInTrianglesCount();
@@ -1166,22 +1029,10 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
         vb[vi++] = (c.a);
     }
 
-#if USE_MAPPING
-    pool->UnmapVertexBuffer();
-    pool->MapIndexBuffer();
-    uint16* ib = pool->GetIndexBufferPointer();
-#else
-    uint16* ib = &indexBufferTmp.front();
-#endif
-
     for (int32 i = 0; i < spriteIndexCount; ++i)
     {
         ib[ii++] = vertexIndex + sd.indeces[i];
     }
-
-#if USE_MAPPING
-    pool->UnmapIndexBuffer();
-#endif
 
     PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), TEXTURE_MUL_FLAT_COLOR, currentClip);
 	
@@ -1268,12 +1119,8 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
 	
     uint32 vi = vertexIndex * 8;
     uint32 ii = indexIndex;
-#if USE_MAPPING
-    pool->MapVertexBuffer();
-    float32* vb = pool->GetVertexBufferPointer();
-#else
     float32* vb = &vertexBufferTmp.front();
-#endif
+    uint16* ib = &indexBufferTmp.front();
 
     spriteVertexCount = (int32)td.transformedVertices.size();
     spriteIndexCount = (int32)td.indeces.size();
@@ -1291,22 +1138,10 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
         vb[vi++] = (c.a);
     }
 
-#if USE_MAPPING
-    pool->UnmapVertexBuffer();
-    pool->MapIndexBuffer();
-    uint16* ib = pool->GetIndexBufferPointer();
-#else
-    uint16* ib = &indexBufferTmp.front();
-#endif
-
     for (int32 i = 0; i < spriteIndexCount; ++i)
     {
         ib[ii++] = vertexIndex + td.indeces[i];
     }
-
-#if USE_MAPPING
-    pool->UnmapIndexBuffer();
-#endif
 
     PushBatch(state->renderState, sprite->GetTextureHandle(state->frame), TEXTURE_MUL_FLAT_COLOR, currentClip);
 
