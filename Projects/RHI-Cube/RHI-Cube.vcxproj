@@ -47,9 +47,15 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(IntDir);./../../Projects/Win32Framework/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Win32Framework.lib;RHI-GLES2.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(IntDir);./../../Projects/Win32Framework/$(Configuration);$(DXSDK_DIR)/lib/x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Win32Framework.lib;RHI-DX9.lib;glu32.lib;d3d9.lib;d3dx9.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -98,13 +104,13 @@
     <ClInclude Include="rhi_VertexLayout.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="RHI-GLES2\RHI-GLES2.vcxproj">
-      <Project>{55e50e53-117b-4d4e-b479-3ab6c722eb75}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="MCPP\mcpp-manual.html" />
     <None Include="MCPP\mcpp-porting.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="RHI-DX9\RHI-DX9.vcxproj">
+      <Project>{ebd4c4ac-6f43-4984-b2e2-61aeb10cabe3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

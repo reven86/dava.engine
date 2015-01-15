@@ -169,6 +169,9 @@ static const char* _ShaderHeader_Metal =
 "#include <metal_math>\n"
 "#include <metal_texture>\n"
 "using namespace metal;\n\n"
+
+"float4 mul( float4 v, float4x4 m ) { return v*m; }\n"
+"float3 mul( float3 v, float3x3 m ) { return v*m; }\n"
 ;
     
 static const char* _ShaderDefine_Metal =
@@ -245,8 +248,8 @@ static const char* _ShaderHeader_GLES2 =
 "#define float4x4               mat4\n"
 "#define float3x3               mat3\n"
 
-"vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
-"vec3 mul( mat3 m, vec3 v ) { return v*m; }\n"
+"vec4 mul( vec4 v, mat4 m ) { return v*m; }\n"
+"vec3 mul( vec3 v, mat3 m ) { return v*m; }\n"
 
 "float4 tex2D( sampler2D s, vec2 t ) { return texture2D(s,t); }\n"
 ;
@@ -296,6 +299,56 @@ static const char* _ShaderDefine_GLES2 =
 ;
 
 
+static const char* _ShaderHeader_DX9 =
+//"float4 tex2D( sampler2D s, float2 t ) { return texture2D(s,t); }\n"
+""
+;
+
+static const char* _ShaderDefine_DX9 =
+"#define VPROG_IN_BEGIN          struct VP_Input {\n"
+"#define VPROG_IN_POSITION       float3 position : POSITION0;\n"
+"#define VPROG_IN_NORMAL         float3 normal : NORMAL0;\n"
+"#define VPROG_IN_TEXCOORD       float2 texcoord : TEXCOORD0;\n"
+"#define VPROG_IN_END            };\n"
+
+"#define VPROG_OUT_BEGIN         struct VP_Output {\n"
+"#define VPROG_OUT_POSITION      float4 position : POSITION0;\n"
+"#define VPROG_OUT_TEXCOORD0(name,size)    float##size name : TEXCOORD0;\n"
+"#define VPROG_OUT_END           };\n"
+
+"#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"
+
+"#define VPROG_BEGIN             VP_Output vp_main( VP_Input IN ) { VP_Output OUT;\n"
+"#define VPROG_END               return OUT; }\n"
+
+"#define VP_IN_POSITION          IN.position\n"
+"#define VP_IN_NORMAL            IN.normal\n"
+"#define VP_IN_TEXCOORD          IN.texcoord\n"
+
+"#define VP_OUT_POSITION         OUT.position\n"
+"#define VP_OUT(name)            OUT.##name\n"
+
+
+"#define FPROG_IN_BEGIN          struct FP_Input {\n"
+"#define FPROG_IN_TEXCOORD0(name,size)    float##size name : TEXCOORD0;\n"
+"#define FPROG_IN_END            };\n"
+
+"#define FPROG_OUT_BEGIN         struct FP_Output {\n"
+"#define FPROG_OUT_COLOR         float4 color : COLOR0;\n"
+"#define FPROG_OUT_END           };\n"
+
+"#define FP_IN(name)             IN.##name\n"
+
+"#define FP_OUT_COLOR            OUT.color\n"
+
+"#define DECL_FPROG_BUFFER(idx,sz) uniform float4 FP_Buffer##idx[sz];\n"
+
+"#define FPROG_BEGIN             FP_Output fp_main( FP_Input IN ) { FP_Output OUT;\n"
+"#define FPROG_END               return OUT; }\n"
+
+;
+
+
 
 static void
 PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
@@ -306,13 +359,18 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
     switch( targetApi )
     {
         case RHI_DX11   : break;
-        case RHI_DX9    : break;
-        case RHI_GLES2  : 
+
+        case RHI_DX9 : 
+        {
+            strcat( src, _ShaderDefine_DX9 );
+        }   break;
+
+        case RHI_GLES2 : 
         {
             strcat( src, _ShaderDefine_GLES2 );
         }   break;
         
-        case RHI_METAL  : 
+        case RHI_METAL : 
         {
             const char* s = srcText;
             const char* decl;
@@ -369,8 +427,8 @@ DAVA::Logger::Info( "src=\n%s\n", src );
     switch( targetApi )
     {
         case RHI_DX11   : break;
-        case RHI_DX9    : break;
-        case RHI_GLES2  : preprocessedText->insert( 0, _ShaderHeader_GLES2 ); break;        
+        case RHI_DX9    : preprocessedText->insert( 0, _ShaderHeader_DX9 ); break;
+        case RHI_GLES2  : preprocessedText->insert( 0, _ShaderHeader_GLES2 ); break;
         case RHI_METAL  : preprocessedText->insert( 0, _ShaderHeader_Metal ); break;
     }
     ;

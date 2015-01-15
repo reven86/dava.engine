@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32Framework", "..\Win32F
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RHI-GLES2", "RHI-GLES2\RHI-GLES2.vcxproj", "{55E50E53-117B-4D4E-B479-3AB6C722EB75}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RHI-DX9", "RHI-DX9\RHI-DX9.vcxproj", "{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -46,6 +48,16 @@ Global
 		{55E50E53-117B-4D4E-B479-3AB6C722EB75}.ReleaseAutotesting|Win32.Build.0 = Release|Win32
 		{55E50E53-117B-4D4E-B479-3AB6C722EB75}.ReleaseQt|Win32.ActiveCfg = Release|Win32
 		{55E50E53-117B-4D4E-B479-3AB6C722EB75}.ReleaseQt|Win32.Build.0 = Release|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.Debug|Win32.Build.0 = Debug|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.DebugQt|Win32.ActiveCfg = Debug|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.DebugQt|Win32.Build.0 = Debug|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.Release|Win32.ActiveCfg = Release|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.Release|Win32.Build.0 = Release|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.ReleaseAutotesting|Win32.ActiveCfg = Release|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.ReleaseAutotesting|Win32.Build.0 = Release|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.ReleaseQt|Win32.ActiveCfg = Release|Win32
+		{EBD4C4AC-6F43-4984-B2E2-61AEB10CABE3}.ReleaseQt|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

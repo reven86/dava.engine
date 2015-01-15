@@ -91,6 +91,7 @@ GameCore::SetupTriangle()
         "    VP_OUT_POSITION = float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
         "\n"
         "VPROG_END\n"
+
 /*
 "precision highp float;\n"
         "attribute vec4 attr_position;\n"
@@ -115,6 +116,7 @@ GameCore::SetupTriangle()
         "FPROG_BEGIN\n"
         "    FP_OUT_COLOR = float4(FP_Buffer0[0]);\n"
         "FPROG_END\n"
+
 /*
         "precision highp float;\n"
 #if DV_USE_UNIFORMBUFFER_OBJECT
@@ -192,14 +194,14 @@ GameCore::SetupCube()
         "\n"
         "VPROG_BEGIN\n"
         "\n"
-        "    float3 in_pos    = VP_IN_POSITION;"
-        "    float3 in_normal = VP_IN_NORMAL;"
+        "    float3 in_pos    = VP_IN_POSITION;\n"
+        "    float3 in_normal = VP_IN_NORMAL;\n"
         "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
         "    float4x4 World = float4x4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
-        "    float3x3 World3 = float3x3( float3(float4(VP_Buffer1[0])), float3(float4(VP_Buffer1[1])), float3(float4(VP_Buffer1[2])) );\n"
-        "    float4 wpos = World * float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
-        "    float i   = dot( float3(0,0,-1), normalize(World3*float3(in_normal)) );\n"
-        "    VP_OUT_POSITION   = ViewProjection * wpos;\n"
+        "    float3x3 World3 = float3x3( (float3)(float4(VP_Buffer1[0])), (float3)(float4(VP_Buffer1[1])), (float3)(float4(VP_Buffer1[2])) );\n"
+        "    float4 wpos = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), World );\n"
+        "    float i   = dot( float3(0,0,-1), normalize(mul(float3(in_normal),World3)) );\n"
+        "    VP_OUT_POSITION   = mul( wpos, ViewProjection );\n"
         "    VP_OUT(color)     = float4(i,i,i,1.0);\n"
         "\n"
         "VPROG_END\n"
@@ -269,7 +271,7 @@ GameCore::SetupCube()
     ( 
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded"),
         "FPROG_IN_BEGIN\n"
-        "FPROG_IN_TEXCOORD0(color,4);\n"
+        "FPROG_IN_TEXCOORD0(color,4)\n"
         "FPROG_IN_END\n"
         "\n"
         "FPROG_OUT_BEGIN\n"
@@ -338,7 +340,7 @@ void GameCore::OnAppStarted()
     rhi::Initialize();
     rhi::ShaderCache::Initialize();
     
-    SetupTriangle();
+///    SetupTriangle();
     SetupCube();
 }
 
@@ -399,9 +401,9 @@ GameCore::Draw()
     
     rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
     
+    rhi::CommandBuffer::SetPipelineState( cb, triangle.ps );
     rhi::CommandBuffer::SetVertexData( cb, triangle.vb );
     rhi::CommandBuffer::SetIndices( cb, triangle.ib );
-    rhi::CommandBuffer::SetPipelineState( cb, triangle.ps );
     rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, triangle.fp_const );
     rhi::CommandBuffer::DrawIndexedPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 1 );
     
@@ -428,8 +430,8 @@ GameCore::Draw()
     rhi::ConstBuffer::SetConst( cube.vp_const[0], 0, 4, view_proj.data );
     rhi::ConstBuffer::SetConst( cube.vp_const[1], 0, 4, world.data );
     
-    rhi::CommandBuffer::SetVertexData( cb, cube.vb );
     rhi::CommandBuffer::SetPipelineState( cb, cube.ps );
+    rhi::CommandBuffer::SetVertexData( cb, cube.vb );
     rhi::CommandBuffer::SetVertexConstBuffer( cb, 0, cube.vp_const[0] );
     rhi::CommandBuffer::SetVertexConstBuffer( cb, 1, cube.vp_const[1] );
     rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, cube.fp_const );
