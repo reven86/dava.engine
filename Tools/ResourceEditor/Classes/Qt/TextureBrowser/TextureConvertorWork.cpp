@@ -135,6 +135,6 @@ int JobStack::size()
 
 JobStack::JobItemWrapper::JobItemWrapper(const JobItem &item)
 	: JobItem(item)
-	, prev(NULL)
 	, next(NULL)
+	, prev(NULL)
 { }

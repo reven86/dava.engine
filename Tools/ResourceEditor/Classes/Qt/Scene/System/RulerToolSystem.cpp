@@ -43,8 +43,8 @@
 RulerToolSystem::RulerToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
-,	previewEnabled(true)
 ,	lineWidth(1)
+,	previewEnabled(true)
 {
 }
 

@@ -152,8 +152,8 @@ namespace DAVA
 
 	private:
 		MetaInfo(const char *_type_name, int _type_size, bool is_pointer)
-			: type_name(_type_name)
-			, type_size(_type_size)
+            : type_size(_type_size)
+            , type_name(_type_name)
             , introspection(NULL)
 			, introspectionFnPtr(NULL)
             , introspectionOneTimeSet(false)

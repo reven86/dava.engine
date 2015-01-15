@@ -32,8 +32,8 @@
 namespace DAVA
 {
 VegetationRenderData::VegetationRenderData() :
-    vertexRenderDataObject(NULL),
-    material(NULL)
+    material(NULL),
+    vertexRenderDataObject(NULL)
 {
 }
     

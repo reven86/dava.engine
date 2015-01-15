@@ -36,21 +36,21 @@
 namespace DAVA
 {
 
-
+    
 static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_STATIC_OCCLUSION;
 
 RenderObject::RenderObject()
-    :   type(TYPE_RENDEROBJECT)
+    :   startClippingPlane(0)
+    ,   renderSystem(0)
+    ,   type(TYPE_RENDEROBJECT)
     ,   flags(DEFAULT_FLAGS)
-    ,   removeIndex(-1)
-	,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
-    ,   staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
-	,   startClippingPlane(0)
     ,   debugFlags(0)
+    ,   removeIndex(-1)
+    ,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
+    ,   staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
     ,   worldTransform(0)
-	,	renderSystem(0)
-	,	lodIndex(-1)
-	,	switchIndex(-1)
+    ,	lodIndex(-1)
+    ,	switchIndex(-1)
 {
     lights[0] = NULL;
     lights[1] = NULL;

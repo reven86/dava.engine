@@ -220,7 +220,6 @@
 
 -(void)cursorUpdate:(NSEvent *)theEvent
 {
-	NSLog(@"OpenGLView  Cursor update");
 }
 
 - (BOOL)acceptsFirstResponder
@@ -500,8 +499,6 @@ static int32 oldModifersFlags = 0;
             InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed([event keyCode]);
         }
     }
-
-	[super keyDown:event];
 }
 
 - (void) keyUp:(NSEvent *)event
@@ -510,8 +507,6 @@ static int32 oldModifersFlags = 0;
     {
         InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed([event keyCode]);
     }
-
-	[super keyUp:event];
 }
 
 - (void) flagsChanged :(NSEvent *)event

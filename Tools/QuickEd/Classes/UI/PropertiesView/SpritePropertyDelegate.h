@@ -17,6 +17,8 @@ public:
 
 private slots:
     void openFileDialogClicked();
+    void clearSpriteClicked();
+    void valueChanged();
 };
 
 #endif // __SPRITE_PROPERTY_DELEGATE_H__

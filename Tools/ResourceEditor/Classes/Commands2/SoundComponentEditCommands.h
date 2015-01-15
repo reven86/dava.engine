@@ -66,7 +66,6 @@ private:
 
     DAVA::Entity *entity;
     DAVA::SoundEvent *savedEvent;
-    bool wasActive;
 };
 
 class SetSoundEventFlagsCommand : public Command2
