@@ -78,7 +78,7 @@ void * DynamicMemoryFile::GetData()
 
 uint32 DynamicMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 {
-    DVASSERT(NULL != pointerToData);
+    DVASSERT(nullptr != pointerToData);
 
 	if (!(fileAttributes & File::WRITE) && !(fileAttributes & File::APPEND))
 	{
