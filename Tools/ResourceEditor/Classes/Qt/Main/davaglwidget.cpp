@@ -96,7 +96,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 		DAVA::QtLayer::Instance()->SetDelegate(this);
 		DAVA::QtLayer::Instance()->Resize(size().width(), size().height());
-
 	}
 
 	//EnableCustomPaintFlags(true);
@@ -105,17 +104,8 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	// Setup FPS
 	SetMaxFPS(maxFPS);
 
-
 	// start render
 	QTimer::singleShot(0, this, SLOT(Render()));
-
-    // Debug TODO: remove
-    QTimer::singleShot( 0, this, SLOT( Debug() ) );
-}
-
-void DavaGLWidget::Debug()
-{
-    QtMainWindow::Instance()->GetUI()->dockProperties->installEventFilter( this );
 }
 
 DavaGLWidget::~DavaGLWidget()
@@ -190,6 +180,10 @@ bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, lon
 	return false;
 }
 
+/*
+
+// Helper for debugging QDockWidgets
+
 bool DavaGLWidget::eventFilter( QObject* watched, QEvent* e )
 {
     switch ( e->type() )
@@ -257,6 +251,7 @@ bool DavaGLWidget::eventFilter( QObject* watched, QEvent* e )
 
     return QWidget::eventFilter( watched, e );
 }
+*/
 
 void DavaGLWidget::paintEvent(QPaintEvent *event)
 {

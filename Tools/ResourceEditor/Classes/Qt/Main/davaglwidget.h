@@ -56,7 +56,6 @@ public:
     
 	virtual QPaintEngine *paintEngine() const;
 	bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
-    virtual bool eventFilter(QObject * watched, QEvent * e);
    
 signals:
 	void OnDrop(const QMimeData *mimeData);
@@ -64,7 +63,6 @@ signals:
 
 private slots:
 	void Render();
-    void Debug();
 
 private:
 	virtual void paintEvent(QPaintEvent *);
