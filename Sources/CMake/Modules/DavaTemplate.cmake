@@ -36,7 +36,7 @@ if( APPLE )
 
 endif()
 
-add_executable( ${PROJECT_NAME} MACOSX_BUNDLE
+add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
     ${ADDED_SRC} 
     ${PROJECT_SOURCE_FILES} 
     ${RESOURCES_LIST}
