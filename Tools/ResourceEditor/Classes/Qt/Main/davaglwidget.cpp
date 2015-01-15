@@ -110,6 +110,11 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 DavaGLWidget::~DavaGLWidget()
 {
+    if (eventFilterCount > 0)
+    {
+        QAbstractEventDispatcher::instance()->removeNativeEventFilter( this );
+        eventFilterCount = 0;
+    }
 }
 
 QPaintEngine *DavaGLWidget::paintEngine() const
@@ -458,6 +463,7 @@ void DavaGLWidget::RegisterEventFilter()
 
 void DavaGLWidget::UnregisterEventFilter()
 {
+    DVASSERT( eventFilterCount > 0 );
     if ( eventFilterCount == 1 )
     {
         QAbstractEventDispatcher::instance()->removeNativeEventFilter( this );
