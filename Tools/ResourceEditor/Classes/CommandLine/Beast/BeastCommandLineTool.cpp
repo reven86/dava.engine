@@ -49,12 +49,14 @@ BeastCommandLineTool::BeastCommandLineTool()
 void BeastCommandLineTool::PrintUsage()
 {
     printf("\n");
-    printf("-beast -file <file> -output <output_path>\n");
+    printf("-beast -file <file> [-output <output_path>]\n");
     printf("\twill beast scene file and place output to output_path\n");
     printf("\t-file - full pathname of scene for beasting\n");
     printf("\t-output - full path for output of beasting\n");
+    printf("\tIf -output is omitted, 'lightmaps' folder will be used\n");
     printf("\n");
     printf("Samples:\n");
+    printf("-beast -file /Projects/WOT/wot.blitz/DataSource/3d/Maps/karelia/karelia.sc2\n");
     printf("-beast -file /Projects/WOT/wot.blitz/DataSource/3d/Maps/karelia/karelia.sc2 -output /Projects/WOT/wot.blitz/DataSource/3d/Maps/karelia/lightmap\n");
 
 }
@@ -68,15 +70,18 @@ bool BeastCommandLineTool::InitializeFromCommandLine()
 {
     scenePathname = CommandLineParser::GetCommandParam(String("-file"));
     outputPath = CommandLineParser::GetCommandParam( String( "-output" ) );
-    if (scenePathname.IsEmpty() || outputPath.IsEmpty())
+    if (scenePathname.IsEmpty())
     {
-        errors.insert(String("Incorrect params for beasting of the scene"));
+        errors.insert(String("Beast -file param is wrong"));
         return false;
     }
 
+    if (outputPath.IsEmpty())
+        outputPath = scenePathname.GetDirectory() + "lightmaps/";
+
     if(!scenePathname.IsEqualToExtension(".sc2"))
     {
-        errors.insert(String("Wrong pathname. Need path ot *.sc2"));
+        errors.insert(String("Wrong pathname. Need path to *.sc2"));
         return false;
     }
     
