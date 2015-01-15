@@ -103,7 +103,9 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 	// Setup FPS
 	SetMaxFPS(maxFPS);
-
+    
+    RegisterEventFilter();
+    
 	// start render
 	QTimer::singleShot(0, this, SLOT(Render()));
 }
@@ -292,7 +294,7 @@ void DavaGLWidget::hideEvent(QHideEvent *e)
 
 void DavaGLWidget::focusInEvent(QFocusEvent *e)
 {
-    RegisterEventFilter();
+    // RegisterEventFilter();
     QWidget::focusInEvent( e );
     
     DAVA::QtLayer::Instance()->LockKeyboardInput( true );
@@ -307,7 +309,7 @@ void DavaGLWidget::focusInEvent(QFocusEvent *e)
 
 void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
-    UnregisterEventFilter();
+    // UnregisterEventFilter();
     QWidget::focusOutEvent( e );
     
     DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
@@ -345,12 +347,12 @@ void DavaGLWidget::changeEvent(QEvent* e)
 
 void DavaGLWidget::enterEvent(QEvent* e)
 {
-    RegisterEventFilter();
+    // RegisterEventFilter();
 }
 
 void DavaGLWidget::leaveEvent(QEvent* e)
 {
-    UnregisterEventFilter();
+    // UnregisterEventFilter();
 }
 
 void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
