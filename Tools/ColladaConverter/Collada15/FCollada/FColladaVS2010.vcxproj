@@ -1447,10 +1447,6 @@
       <Project>{5a441cc6-f281-4a83-8bc4-323d4148c7c0}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="LibXML\LibXML.vcxproj">
-      <Project>{d7f466f4-2aea-4648-be09-024c887bc157}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
