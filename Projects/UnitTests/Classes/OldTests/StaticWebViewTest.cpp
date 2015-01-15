@@ -40,6 +40,8 @@ StaticWebViewTest::StaticWebViewTest()
     minus10FromAlfaButton(nullptr),
     checkTransparancyButton(nullptr),
     uncheckTransparancyButton(nullptr),
+    executeJSButton(nullptr),
+    loadHTMLString(nullptr),
     overlapedImage(nullptr),
     webView1(nullptr),
     webView2(nullptr),
@@ -112,6 +114,14 @@ void StaticWebViewTest::LoadResources()
         Rect(0 + 300 * 2, 510 + 30 * 2, 300, 30),
         L"unset Transparent Background",
         &StaticWebViewTest::OnButtonUncheckTransparancy);
+
+    CreateUIButton(executeJSButton, font,
+            Rect(0 + 300 * 1, 510 + 30 * 3, 300, 30), L"exec JS",
+            &StaticWebViewTest::OnButtonExecJS);
+
+    CreateUIButton(loadHTMLString, font,
+            Rect(0 + 300 * 2, 510 + 30 * 3, 300, 30),L"load HTML String",
+            &StaticWebViewTest::OnLoadHTMLString);
 
 	SafeRelease(font);
 }
@@ -219,4 +229,48 @@ void StaticWebViewTest::CreateUIButton(UIButton*& button, Font * font,
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, 
         Message(this, targetFunction));
     AddControl(button);
+}
+
+void StaticWebViewTest::OnButtonExecJS(BaseObject* obj, void*, void*)
+{
+    webView1->ExecuteJScript("alert('Hello, World!');");
+}
+
+void StaticWebViewTest::OnLoadHTMLString(BaseObject* obj, void*, void*)
+{
+    static bool switchHtml = false;
+    switchHtml = !switchHtml;
+
+    if (switchHtml)
+    {
+        webView1->LoadHtmlString(
+            L"<!DOCTYPE html PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n"
+            L"<HTML>\n"
+            L"   <HEAD>\n"
+            L"      <TITLE>\n"
+            L"         A Small Hello \n"
+            L"      </TITLE>\n"
+            L"   </HEAD>\n"
+            L"<BODY>\n"
+            L"   <H1>Hi</H1>\n"
+            L"   <P>This is very minimal \"hello world\" HTML document.</P> \n"
+            L"</BODY>\n"
+            L"</HTML>\n");
+    }
+    else
+    {
+        webView1->LoadHtmlString(
+            L"<!DOCTYPE html PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n"
+            L"<HTML>\n"
+            L"   <HEAD>\n"
+            L"      <TITLE>\n"
+            L"         Second A Small Hello \n"
+            L"      </TITLE>\n"
+            L"   </HEAD>\n"
+            L"<BODY bgcolor=\"#E6E6FA\">\n"
+            L"   <H1>Hi</H1>\n"
+            L"   <P>This is very minimal \"hello World Of Blitz\" HTML document.</P> \n"
+            L"</BODY>\n"
+            L"</HTML>\n");
+    }
 }

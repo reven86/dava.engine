@@ -72,22 +72,22 @@ public:
     void OpenFromBuffer(const String& string, const FilePath& basePath);
     
 	// Overloaded virtual methods.
-	virtual void SetPosition(const Vector2 &position);
-	virtual void SetSize(const Vector2 &newSize);
+	void SetPosition(const Vector2 &position) override;
+	void SetSize(const Vector2 &newSize) override;
 
 	// Page scale property change
 	void SetScalesPageToFit(bool isScalesToFit);
 
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
+	YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
 
-    virtual UIControl* Clone();
-    virtual void CopyDataFrom(UIControl *srcControl);
+    UIControl* Clone() override;
+    void CopyDataFrom(UIControl *srcControl) override;
 
 protected:
-    virtual void WillBecomeVisible();
-    virtual void WillBecomeInvisible();
-    virtual void DidAppear();
+    void WillBecomeVisible() override;
+    void WillBecomeInvisible() override;
+    void DidAppear() override;
 
 public:
     void SetRenderToTexture(bool value);

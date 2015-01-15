@@ -586,72 +586,67 @@ bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 
 bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 {
+    bool bResult = false;
+
 	if (!webBrowser || !pszHTMLContent)
 	{
 		return false;
 	}
 	// Initialize html document
-	webBrowser->Navigate( L"about:blank", nullptr, nullptr, nullptr, nullptr); 
-
-    CComPtr<IDispatch> pDoc;
-    IStream* pStream;
-    IPersistStreamInit* pPSI;
-	HGLOBAL hHTMLContent;
-	HRESULT hr;
-	bool bResult = false;
+	webBrowser->Navigate(L"about:blank", nullptr, nullptr, nullptr, nullptr);
 
     size_t len = ::_tcslen(pszHTMLContent) + 1;
 	// allocate global memory to copy the HTML content to
-    hHTMLContent = ::GlobalAlloc(GPTR, len * sizeof(TCHAR));
+    HGLOBAL hHTMLContent = ::GlobalAlloc(GPTR, len * sizeof(TCHAR));
     if (!hHTMLContent)
     {
         return false;
     }
-	::_tcscpy( (TCHAR *) hHTMLContent, pszHTMLContent );
+	::_tcscpy( static_cast<TCHAR *>(hHTMLContent), pszHTMLContent );
 
+    CComPtr<IStream> pMemoryStream;
 	// create a stream object based on the HTML content
-	hr = ::CreateStreamOnHGlobal( hHTMLContent, TRUE, &pStream );
+    HRESULT hr = ::CreateStreamOnHGlobal(hHTMLContent, 
+        FALSE, // delete global memory on release 
+        &pMemoryStream);
+
 	if (SUCCEEDED(hr))
 	{
 
-        CComPtr<IDispatch> pDisp;
+        {
+            CComPtr<IDispatch> pWebDocument;
 
-		// get the document's IDispatch*
-		hr = this->webBrowser->get_Document( &pDisp );
-		if (SUCCEEDED(hr))
-		{
-			pDoc = pDisp;
-		}
-		else
-		{
-			return false;
-		}
+            // get the document's IDispatch*
+            hr = webBrowser->get_Document(&pWebDocument);
+            if (FAILED(hr))
+            {
+                return false;
+            }
 
-		// request the IPersistStreamInit interface
-		hr = pDoc->QueryInterface( IID_IPersistStreamInit, (void **)&pPSI );
+            CComPtr<IPersistStreamInit> pDocumentStream;
+            // request the IPersistStreamInit interface
+            hr = pWebDocument->QueryInterface(IID_IPersistStreamInit,
+                reinterpret_cast<void **>(&pDocumentStream));
 
-		if (SUCCEEDED(hr))
-		{
-			// initialize the persist stream object
-			hr = pPSI->InitNew();
+            if (SUCCEEDED(hr))
+            {
+                // initialize the persist stream object
+                hr = pDocumentStream->InitNew();
 
-			if (SUCCEEDED(hr))
-			{
-				// load the data into it
-				hr = pPSI->Load( pStream );
+                if (SUCCEEDED(hr))
+                {
+                    // load the data into it
+                    hr = pDocumentStream->Load(pMemoryStream);
 
-				if (SUCCEEDED(hr))
-				{
-					bResult = true;
-				}
-			}
-
-			pPSI->Release();
-		}
-		pStream->Release();
+                    if (SUCCEEDED(hr))
+                    {
+                        bResult = true;
+                    }
+                }
+            }
+        }
+        GlobalFree(hHTMLContent);
 	}
-
-    GlobalFree(hHTMLContent);
 
 	return bResult;
 }
@@ -967,16 +962,8 @@ WebViewControl::WebViewControl(UIWebView& webView) :
 
 WebViewControl::~WebViewControl()
 {
-    Gdiplus::GdiplusShutdown(gdiplusToken);
-    gdiplusToken = 0;
+    CleanData();
 
-	if (browserWindow != 0)
-	{
-		::DestroyWindow(browserWindow);
-        browserWindow = 0;
-	}
-
-	SafeDelete(browserContainer);
 }
 
 void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
@@ -1041,7 +1028,7 @@ bool WebViewControl::InititalizeBrowserContainer()
 	}
 
 	this->browserContainer= new WebBrowserContainer();
-	return browserContainer->Initialize(this->browserWindow, uiWebView);
+	return browserContainer->Initialize(browserWindow, uiWebView);
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
@@ -1054,10 +1041,23 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 
 void WebViewControl::LoadHtmlString(const WideString& htmlString)
 {
-	if (browserContainer)
-	{
-		browserContainer->LoadHtmlString(htmlString.c_str());
-	}
+    // On Windows we have to recreate browser container to change
+    // document content with custom html from memory
+    // http://msdn.microsoft.com/en-us/library/ie/aa752047%28v=vs.85%29.aspx
+
+    Rect r = uiWebView.GetRect(true);
+
+    // destroy browser window
+    CleanData();
+
+    // create new browser window
+    Initialize(r);
+
+    DVASSERT(browserContainer);
+	browserContainer->LoadHtmlString(htmlString.c_str());
+	
+    // render new content into texture or show native window
+    SetRenderToTexture(IsRenderToTexture());
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
@@ -1153,6 +1153,20 @@ void WebViewControl::SetRect(const Rect& rect)
 	{
 		browserContainer->UpdateRect();
 	}
+}
+
+void WebViewControl::CleanData()
+{
+    Gdiplus::GdiplusShutdown(gdiplusToken);
+    gdiplusToken = 0;
+
+    if (browserWindow != 0)
+    {
+        ::DestroyWindow(browserWindow);
+        browserWindow = 0;
+    }
+
+    SafeDelete(browserContainer);
 }
 
 } // end namespace DAVA

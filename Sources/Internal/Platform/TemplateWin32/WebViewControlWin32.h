@@ -139,7 +139,7 @@ class WebViewControl : public IWebViewControl
 public:
     WebViewControl(UIWebView& uiWebView);
 	virtual ~WebViewControl();
-	
+
 	// Initialize the control.
 	void Initialize(const Rect& rect) override;
 	
@@ -170,6 +170,8 @@ public:
 protected:
 	// Initialize the COM and create the browser container.
 	bool InititalizeBrowserContainer();
+
+    void CleanData();
 
 	// Holder window for WebBrowser.
 	HWND browserWindow;
