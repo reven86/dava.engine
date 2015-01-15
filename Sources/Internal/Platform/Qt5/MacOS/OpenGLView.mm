@@ -187,40 +187,30 @@
     if(willQuit || !QtLayer::Instance()->IsDAVAEngineEnabled())
         return;
     
+    if (isFirstDraw)
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        isFirstDraw = false;
+    }
+
+    
 	DAVA::RenderManager::Instance()->Lock();
-	
-	if (isFirstDraw)
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		isFirstDraw = false;
-	}	
-
-	
-	
-	DAVA::Core::Instance()->SystemProcessFrame();
-
-	
     DAVA::RenderManager::Instance()->SetColor(Color::White);
-    
-    
     if(DAVA::Core::Instance()->IsActive())
     {
         [[self openGLContext] flushBuffer];
     }
 	DAVA::RenderManager::Instance()->Unlock();
-//	Logger::FrameworkDebug("drawRect ended");
 
 }
 
 - (void) resetCursorRects
 {
-//	NSLog(@"OpenGLView resetCursorRects");
     [super resetCursorRects];
 }
 
 -(void)cursorUpdate:(NSEvent *)theEvent
 {
-//	NSLog(@"OpenGLView  Cursor update");
 }
 
 - (BOOL)acceptsFirstResponder
@@ -500,8 +490,6 @@ static int32 oldModifersFlags = 0;
             InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed([event keyCode]);
         }
     }
-
-	[super keyDown:event];
 }
 
 - (void) keyUp:(NSEvent *)event
@@ -510,8 +498,6 @@ static int32 oldModifersFlags = 0;
     {
         InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed([event keyCode]);
     }
-
-	[super keyUp:event];
 }
 
 - (void) flagsChanged :(NSEvent *)event
