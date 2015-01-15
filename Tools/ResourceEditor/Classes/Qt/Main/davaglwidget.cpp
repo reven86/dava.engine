@@ -325,7 +325,10 @@ void DavaGLWidget::Render()
 	QElapsedTimer frameTimer;
 	frameTimer.start();
 
-    DAVA::QtLayer::Instance()->ProcessFrame();
+	if(isEnabled() && DAVA::QtLayer::Instance()->IsDAVAEngineEnabled())
+	{
+		DAVA::QtLayer::Instance()->ProcessFrame();
+	}
 
 	if(QDateTime::currentMSecsSinceEpoch() >= fpsCountTime)
 	{
