@@ -136,7 +136,8 @@ ActionSetVisibilityPoint::~ActionSetVisibilityPoint()
 void ActionSetVisibilityPoint::Redo()
 {
 	Sprite* visibilityToolSprite = visibilityToolProxy->GetSprite();
-	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(visibilityToolSprite);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
     Sprite::DrawState drawState;
@@ -145,7 +146,7 @@ void ActionSetVisibilityPoint::Redo()
     RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(cursorSprite, &drawState);
 
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
 	visibilityToolProxy->UpdateVisibilityPointSet(true);
 	visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, visibilityToolSprite->GetWidth(), visibilityToolSprite->GetHeight()));
@@ -225,11 +226,12 @@ void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 	texture->GeneratePixelesation();
 	Sprite* sprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)image->GetWidth(), (float32)image->GetHeight());
 
-	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(visibilityToolSprite);
 
     Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
     
-	RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(rect);
     
     RenderSystem2D::Instance()->Setup2DMatrices();
@@ -241,8 +243,8 @@ void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
     drawState.SetPosition(rect.x, rect.y);
     RenderSystem2D::Instance()->Draw(sprite, &drawState);
 
-    RenderSystem2D::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopClip();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
 	visibilityToolProxy->UpdateRect(updatedRect);
 

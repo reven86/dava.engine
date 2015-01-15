@@ -88,6 +88,7 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
+    RenderSystem2D::Instance()->Reset();
 	RenderManager::Instance()->BeginFrame();
 }
 

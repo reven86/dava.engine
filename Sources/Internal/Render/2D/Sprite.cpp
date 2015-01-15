@@ -339,9 +339,10 @@ void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat
 	this->type = SPRITE_RENDER_TARGET;
 
 	// Clear created render target first
-	RenderManager::Instance()->SetRenderTarget(this);
+    RenderSystem2D::Instance()->PushRenderTarget();
+	RenderSystem2D::Instance()->SetRenderTarget(this);
 	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 }
 
 Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded)

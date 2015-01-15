@@ -276,7 +276,7 @@ void Camera::RebuildProjectionMatrix()
     
     uint32 cullInvert = 0;
     
-    if (RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_TEXTURE)
+    if (RenderManager::Instance()->IsRenderTargetTexture())
     {
         yMinOrientation = ymax;
         yMaxOrientation = ymin;
@@ -448,7 +448,7 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
     if (externalClipPlane)
     {
         Vector4 clipPlane(*externalClipPlane);
-        if (RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_TEXTURE)
+        if (RenderManager::Instance()->IsRenderTargetTexture())
         {
             clipPlane = -clipPlane;
         }

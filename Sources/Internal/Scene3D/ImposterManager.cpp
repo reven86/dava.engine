@@ -108,7 +108,7 @@ void ImposterManager::ProcessQueue()
 	if(!queue.empty())
 	{
 		Camera * camera = scene->GetCurrentCamera();
-		RenderManager::Instance()->SetRenderTarget(sharedFBO->GetTexture());
+		RenderManager::Instance()->SetHWRenderTargetTexture(sharedFBO->GetTexture());
 
 		int32 maxCount = Min(MAX_UPDATES_PER_FRAME, (int32)queue.size());
 		for(int32 i = 0; i < maxCount; ++i)

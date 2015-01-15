@@ -127,7 +127,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     if(newViewport.dy == -1)
         newViewport.dy = (float32)toTexture->GetHeight();
 
-    RenderManager::Instance()->SetRenderTarget(toTexture);
+    RenderManager::Instance()->SetHWRenderTargetTexture(toTexture);
 
 	RenderManager::Instance()->SetViewport(newViewport);
 
