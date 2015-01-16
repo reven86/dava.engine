@@ -138,12 +138,6 @@ public:
         
         uint32 visibleRenderObjectCount;
         uint32 occludedRenderObjectCount;
-
-        UniqueHandle cachedState;
-        void* cachedShader;
-        UniqueHandle cachedTexture;
-        uint32 chunkCount;
-        bool forceMakeChunk;
     };
     
     static void Create(Core::eRenderer renderer);
