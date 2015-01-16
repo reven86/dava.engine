@@ -24,7 +24,7 @@ UIPackageModel::UIPackageModel(PackageDocument *document)
     , root(NULL)
     , document(document)
 {
-    root = SafeRetain(document->Package());
+    root = SafeRetain(document->GetPackage());
 }
 
 UIPackageModel::~UIPackageModel()
