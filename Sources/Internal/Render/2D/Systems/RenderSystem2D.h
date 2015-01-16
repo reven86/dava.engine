@@ -112,27 +112,20 @@ class VboPool
 public:
     VboPool(uint32 size, uint8 count);
     ~VboPool();
-    void Next();
 
+    void Next();
     void SetVertexData(uint32 count, float32 * data);
     void SetIndexData(uint32 count, uint8 * data);
 
-    void RenewBuffers(uint32 size);
-    
-    inline RenderDataObject* GetDataObject() const;
-    inline uint32 GetVertexBufferSize() const;
-    inline uint32 GetIndexBufferSize() const;
+    inline RenderDataObject* GetRenderDataObject() const;
 
-    static const int32 vertexStride;
+    static const uint32 vertexFormat;
 
 private:
+    RenderDataObject * currentDataObject;
     Vector<RenderDataObject*> dataObjects;
     uint8 currentDataObjectIndex;
-
-    RenderDataObject * currentDataObject;
-    uint32 currentVertexBufferSize;
-    uint32 currentIndexBufferSize;
-    
+    uint32 vertexStride;
 };
 
 class RenderSystem2D : public Singleton<RenderSystem2D>
@@ -166,7 +159,10 @@ public:
     void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
     void DrawFilled(Sprite * sprite, Sprite::DrawState * drawState, const UIGeometricData& gd);
 
-    void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip);
+    void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip,
+        uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
+        uint32 indexCount, const uint16* indexPointer,
+        const Color& color);
     
     void Reset();
     void Flush();
@@ -196,7 +192,6 @@ private:
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;
     RenderDataStream * spriteTexCoordStream;
-    RenderDataStream * spriteColorStream;
 
     float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;
@@ -221,20 +216,12 @@ private:
     VboPool* pool;
 
 };
+
+//Inline implementations
     
-inline RenderDataObject* VboPool::GetDataObject() const
+inline RenderDataObject* VboPool::GetRenderDataObject() const
 {
     return currentDataObject;
-}
-
-inline uint32 VboPool::GetVertexBufferSize() const
-{
-    return currentVertexBufferSize;
-}
-
-inline uint32 VboPool::GetIndexBufferSize() const
-{
-    return currentIndexBufferSize;
 }
     
 } // ns
