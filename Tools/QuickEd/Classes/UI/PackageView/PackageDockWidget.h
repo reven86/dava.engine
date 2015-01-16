@@ -29,6 +29,10 @@ public:
 
     void SetDocument(PackageDocument *newDocument);
 
+private:
+    void RefreshActions(const QModelIndexList &indexList);
+    void RefreshAction(QAction *action, bool enabled, bool visible);
+
 private slots:
     void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void filterTextChanged(const QString &);

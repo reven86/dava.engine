@@ -45,12 +45,12 @@
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
 ,	toolImageSprite(NULL)
-,	originalImage(NULL)
+,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
 ,	colorIndex(0)
+,	editingIsEnabled(false)
+,	originalImage(NULL)
 {
     cursorSize = 120;
 
@@ -165,7 +165,7 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void CustomColorsSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void CustomColorsSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -252,6 +252,8 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
     Sprite::DrawState drawState;
 	drawState.SetScaleSize(spriteSize.x, spriteSize.y, toolImageSprite->GetWidth(), toolImageSprite->GetHeight());
     drawState.SetPosition(spritePos);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
 	
 	RenderManager::Instance()->RestoreRenderTarget();
@@ -364,6 +366,7 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		}
 		RenderManager::Instance()->SetRenderTarget(drawSystem->GetCustomColorsProxy()->GetSprite());
         
+        RenderSystem2D::Instance()->Setup2DMatrices();
         RenderSystem2D::Instance()->Draw(sprite);
         
 		RenderManager::Instance()->RestoreRenderTarget();

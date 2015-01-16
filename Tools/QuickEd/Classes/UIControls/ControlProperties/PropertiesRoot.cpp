@@ -10,16 +10,16 @@ using namespace DAVA;
 
 PropertiesRoot::PropertiesRoot(UIControl *control)
 {
-    MakeControlPropertiesSection(control, control->GetTypeInfo(), NULL);
-    MakeBackgroundPropertiesSection(control, NULL);
-    MakeInternalControlPropertiesSection(control, NULL);
+    MakeControlPropertiesSection(control, control->GetTypeInfo(), NULL, COPY_VALUES);
+    MakeBackgroundPropertiesSection(control, NULL, COPY_VALUES);
+    MakeInternalControlPropertiesSection(control, NULL, COPY_VALUES);
 }
 
-PropertiesRoot::PropertiesRoot(UIControl *control, const PropertiesRoot *sourceProperties)
+PropertiesRoot::PropertiesRoot(UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType)
 {
-    MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties);
-    MakeBackgroundPropertiesSection(control, sourceProperties);
-    MakeInternalControlPropertiesSection(control, sourceProperties);
+    MakeControlPropertiesSection(control, control->GetTypeInfo(), sourceProperties, copyType);
+    MakeBackgroundPropertiesSection(control, sourceProperties, copyType);
+    MakeInternalControlPropertiesSection(control, sourceProperties, copyType);
 }
 
 PropertiesRoot::~PropertiesRoot()
@@ -96,11 +96,11 @@ BaseProperty::ePropertyType PropertiesRoot::GetType() const {
     return TYPE_HEADER;
 }
 
-void PropertiesRoot::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const PropertiesRoot *sourceProperties)
+void PropertiesRoot::MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const PropertiesRoot *sourceProperties, eCopyType copyType)
 {
     const InspInfo *baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
-        MakeControlPropertiesSection(control, baseInfo, sourceProperties);
+        MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
     
     bool hasProperties = false;
     for (int i = 0; i < typeInfo->MembersCount(); i++)
@@ -115,7 +115,7 @@ void PropertiesRoot::MakeControlPropertiesSection(DAVA::UIControl *control, cons
     if (hasProperties)
     {
         ControlPropertiesSection *sourceSection = sourceProperties == NULL ? NULL : sourceProperties->GetControlPropertiesSection(typeInfo->Name());
-        ControlPropertiesSection *section = new ControlPropertiesSection(control, typeInfo, sourceSection);
+        ControlPropertiesSection *section = new ControlPropertiesSection(control, typeInfo, sourceSection, copyType);
         section->SetParent(this);
         controlProperties.push_back(section);
     }
@@ -137,23 +137,23 @@ void PropertiesRoot::AddPropertiesToNode(YamlNode *node) const
         SafeRelease(componentsNode);
 }
 
-void PropertiesRoot::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties)
+void PropertiesRoot::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType)
 {
     for (int i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
         BackgroundPropertiesSection *sourceSection = sourceProperties == NULL ? NULL : sourceProperties->GetBackgroundPropertiesSection(i);
-        BackgroundPropertiesSection *section = new BackgroundPropertiesSection(control, i, sourceSection);
+        BackgroundPropertiesSection *section = new BackgroundPropertiesSection(control, i, sourceSection, copyType);
         section->SetParent(this);
         backgroundProperties.push_back(section);
     }
 }
 
-void PropertiesRoot::MakeInternalControlPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties)
+void PropertiesRoot::MakeInternalControlPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType)
 {
     for (int i = 0; i < control->GetInternalControlsCount(); i++)
     {
         InternalControlPropertiesSection *sourceSection = sourceProperties == NULL ? NULL : sourceProperties->GetInternalControlPropertiesSection(i);
-        InternalControlPropertiesSection *section = new InternalControlPropertiesSection(control, i, sourceSection);
+        InternalControlPropertiesSection *section = new InternalControlPropertiesSection(control, i, sourceSection, copyType);
         section->SetParent(this);
         internalControlProperties.push_back(section);
     }

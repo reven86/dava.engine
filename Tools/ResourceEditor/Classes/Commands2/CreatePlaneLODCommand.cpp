@@ -38,12 +38,12 @@ using namespace DAVA;
 
 CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent, int32 _fromLodLayer, uint32 _textureSize, const DAVA::FilePath & texturePath)
     : Command2(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
-    , newSwitchIndex(-1)
-    , planeImage(NULL)
+    , lodComponent(_lodComponent)
     , planeBatch(NULL)
+    , planeImage(NULL)
+    , newSwitchIndex(-1)
     , fromLodLayer(_fromLodLayer)
     , textureSize(_textureSize)
-    , lodComponent(_lodComponent)
     , textureSavePath(texturePath)
 {
     DVASSERT(GetRenderObject(GetEntity()));
@@ -242,7 +242,6 @@ void CreatePlaneLODCommand::CreatePlaneBatch()
     bool isMeshHorizontal = IsHorisontalMesh(bbox);
     
     const Vector3 & min = bbox.min;
-    const Vector3 & max = bbox.max;
     Vector3 size = bbox.GetSize();
 
     //

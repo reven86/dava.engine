@@ -33,11 +33,11 @@
 namespace DAVA
 {
 Box2DGameObject::Box2DGameObject()
-	: box2DBody(NULL)
-	, listenBeginContact(false)
+	: listenBeginContact(false)
 	, listenEndContact(false)
 	, listenPreSolveContact(false)
 	, listenPostSolveContact(false)
+	, box2DBody(NULL)
 {
 }
 	

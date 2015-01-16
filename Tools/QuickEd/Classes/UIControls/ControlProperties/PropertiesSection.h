@@ -17,8 +17,11 @@ class PropertiesSection : public BaseProperty
 {
 public:
     PropertiesSection();
+
+protected:
     virtual ~PropertiesSection();
     
+public:
     void AddProperty(ValueProperty *section);
     virtual int GetCount() const override;
     virtual BaseProperty *GetProperty(int index) const override;

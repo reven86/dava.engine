@@ -216,9 +216,8 @@ bool CustomColorsPanel::SaveTexture()
             {
                 continue;
             }
-
-            break;
         }
+        break;
     }
 
     selectedPathname = PathnameToDAVAStyle( filePath );

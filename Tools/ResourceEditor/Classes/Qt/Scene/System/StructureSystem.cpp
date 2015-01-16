@@ -435,11 +435,6 @@ void StructureSystem::Draw()
 
 }
 
-void StructureSystem::ProcessUIEvent(DAVA::UIEvent *event)
-{
-
-}
-
 void StructureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(NULL != command)

@@ -7,6 +7,10 @@
 //
 
 #include "PackageDockWidget.h"
+
+#include <QClipboard>
+#include <QFileDialog>
+
 #include "ui_PackageDockWidget.h"
 #include "UIPackageModel.h"
 #include "DAVAEngine.h"
@@ -15,8 +19,11 @@
 #include "UI/PackageView/PackageModelCommands.h"
 #include "UIControls/PackageHierarchy/PackageBaseNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
+#include "UIControls/PackageHierarchy/ImportedPackagesNode.h"
+#include "UIControls/PackageHierarchy/PackageControlsNode.h"
 
 #include "Project.h"
+#include "Utils/QtDavaConvertion.h"
 
 using namespace DAVA;
 
@@ -26,7 +33,7 @@ PackageDockWidget::PackageDockWidget(QWidget *parent)
     , document(NULL)
 {
     ui->setupUi(this);
-    ui->treeView->header()->setResizeMode(QHeaderView::ResizeToContents);
+    ui->treeView->header()->setSectionResizeMode/*setResizeMode*/(QHeaderView::ResizeToContents);
 
     connect(ui->filterLine, SIGNAL(textChanged(const QString &)), this, SLOT(filterTextChanged(const QString &)));
 
@@ -34,26 +41,30 @@ PackageDockWidget::PackageDockWidget(QWidget *parent)
     connect(importPackageAction, SIGNAL(triggered()), this, SLOT(OnImport()));
 
     cutAction = new QAction(tr("Cut"), this);
-    cutAction->setShortcut(QKeySequence(Qt::Key_Cut));
+    cutAction->setShortcut(QKeySequence(QKeySequence::Cut));
+    cutAction->setShortcutContext(Qt::WidgetShortcut);
     connect(cutAction, SIGNAL(triggered()), this, SLOT(OnCut()));
 
     copyAction = new QAction(tr("Copy"), this);
-    copyAction->setShortcut(QKeySequence(Qt::Key_Copy));
+    copyAction->setShortcut(QKeySequence(QKeySequence::Copy));
+    copyAction->setShortcutContext(Qt::WidgetShortcut);
     connect(copyAction, SIGNAL(triggered()), this, SLOT(OnCopy()));
 
     pasteAction = new QAction(tr("Paste"), this);
-    pasteAction->setShortcut(QKeySequence(Qt::Key_Paste));
+    pasteAction->setShortcut(QKeySequence(QKeySequence::Paste));
+    pasteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(pasteAction, SIGNAL(triggered()), this, SLOT(OnPaste()));
 
     delAction = new QAction(tr("Delete"), this);
-    delAction->setShortcut(QKeySequence(Qt::Key_Delete));
+    delAction->setShortcut(QKeySequence(QKeySequence::Delete));
+    delAction->setShortcutContext(Qt::WidgetShortcut);
     connect(delAction, SIGNAL(triggered()), this, SLOT(OnDelete()));
 
-    addAction(importPackageAction);
-    addAction(copyAction);
-    addAction(pasteAction);
-    addAction(cutAction);
-    addAction(delAction);
+    ui->treeView->addAction(importPackageAction);
+    ui->treeView->addAction(copyAction);
+    ui->treeView->addAction(pasteAction);
+    ui->treeView->addAction(cutAction);
+    ui->treeView->addAction(delAction);
 }
 
 PackageDockWidget::~PackageDockWidget()
@@ -89,6 +100,63 @@ void PackageDockWidget::SetDocument(PackageDocument *newDocument)
     }
 }
 
+void PackageDockWidget::RefreshActions(const QModelIndexList &indexList)
+{
+    bool editActionEnabled = !indexList.empty();
+    bool editActionVisible = editActionEnabled;
+
+    bool editImportPackageEnabled = !indexList.empty();
+    bool editImportPackageVisible = editImportPackageEnabled;
+
+    bool editControlsEnabled = !indexList.empty();
+    bool editControlsVisible = editControlsEnabled;
+
+    foreach(QModelIndex index, indexList)
+    {
+        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+
+        if (!node->GetControl())
+        {
+            editActionEnabled &= false;
+            editActionVisible &= false;
+        }
+        else
+        {
+            if ((node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) != 0)
+            {
+                editActionEnabled &= false;
+            }
+        }
+
+        ImportedPackagesNode *importNode = dynamic_cast<ImportedPackagesNode *>(node);
+        if (!importNode)
+        {
+            editImportPackageEnabled &= false;
+            editImportPackageVisible &= false;
+        }
+
+        PackageControlsNode *controlsNode = dynamic_cast<PackageControlsNode *>(node);
+        if (controlsNode)
+        {
+            editControlsEnabled &= false;
+            editControlsEnabled &= false;
+        }
+    }
+
+    RefreshAction(copyAction , editActionEnabled, editActionVisible);
+    RefreshAction(pasteAction, editActionEnabled, editActionVisible);
+    RefreshAction(cutAction  , editActionEnabled, editActionVisible);
+    RefreshAction(delAction  , editActionEnabled, editActionVisible);
+
+    RefreshAction(importPackageAction, editImportPackageEnabled, editImportPackageVisible);
+}
+
+void PackageDockWidget::RefreshAction( QAction *action, bool enabled, bool visible )
+{
+    action->setDisabled(!enabled);
+    action->setVisible(visible);
+}
+
 void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     QList<ControlNode*> selectedRootControl;
@@ -118,7 +186,7 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
             }
         }
     }
-    
+
     QModelIndexList deselectedIndexList = deselected.indexes();
     if (!selectedIndexList.empty())
     {
@@ -138,18 +206,49 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
         }
     }
 
+    RefreshActions(selectedIndexList);
+
     emit SelectionRootControlChanged(selectedRootControl, deselectedRootControl);
     emit SelectionControlChanged(selectedControl, deselectedControl);
 }
 
 void PackageDockWidget::OnImport()
 {
+    return;
+    QString dir;
 
+    //QString pathText = lineEdit->text();
+    const DAVA::FilePath &filePath = document->PackageFilePath();
+
+    if (!filePath.IsEmpty())
+    {
+        dir = StringToQString(filePath.GetDirectory().GetAbsolutePathname());
+    }
+    else
+    {
+        //dir = ResourcesManageHelper::GetSpritesDirectory();
+    }
+
+    QString filePathText = QFileDialog::getOpenFileName(this, tr("Select package to import"), dir, QString("*.yaml"));
+    if (!filePathText.isEmpty())
+    {
+        //ImportedPackagesNode *node = document->GetPackage()->GetImportedPackagesNode();
+        //node->Add(NULL);
+    }
 }
 
 void PackageDockWidget::OnCopy()
 {
-
+//    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+//    QModelIndexList selectedIndexList = selected.indexes();
+//    QClipboard *clipboard = QApplication::clipboard();
+//    
+//    if (!selectedIndexList.empty())
+//    {
+//        clipboard->setMimeData(<#QMimeData *data#>)
+//        //foreach(QModelIndex index, selectedIndexList)
+//        
+//    }
 }
 
 void PackageDockWidget::OnPaste()
