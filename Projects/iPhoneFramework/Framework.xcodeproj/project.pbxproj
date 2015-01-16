@@ -898,6 +898,10 @@
 		501620731A5ED5FC00E5A914 /* PeerDesription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501620701A5ED5FC00E5A914 /* PeerDesription.cpp */; };
 		501620741A5ED5FC00E5A914 /* PeerDesription.h in Headers */ = {isa = PBXBuildFile; fileRef = 501620711A5ED5FC00E5A914 /* PeerDesription.h */; };
 		501620751A5ED5FC00E5A914 /* PeerDesriptionSerialize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501620721A5ED5FC00E5A914 /* PeerDesriptionSerialize.cpp */; };
+		5016207D1A61693A00E5A914 /* Announcer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501620791A61693A00E5A914 /* Announcer.cpp */; };
+		5016207E1A61693A00E5A914 /* Announcer.h in Headers */ = {isa = PBXBuildFile; fileRef = 5016207A1A61693A00E5A914 /* Announcer.h */; };
+		5016207F1A61693A00E5A914 /* Discoverer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5016207B1A61693A00E5A914 /* Discoverer.cpp */; };
+		501620801A61693A00E5A914 /* Discoverer.h in Headers */ = {isa = PBXBuildFile; fileRef = 5016207C1A61693A00E5A914 /* Discoverer.h */; };
 		50194D9E1A52D92600557DAB /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D6A1A52D92600557DAB /* Buffer.h */; };
 		50194D9F1A52D92600557DAB /* DeadlineTimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50194D6B1A52D92600557DAB /* DeadlineTimer.cpp */; };
 		50194DA01A52D92600557DAB /* DeadlineTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D6C1A52D92600557DAB /* DeadlineTimer.h */; };
@@ -1964,6 +1968,10 @@
 		501620701A5ED5FC00E5A914 /* PeerDesription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PeerDesription.cpp; sourceTree = "<group>"; };
 		501620711A5ED5FC00E5A914 /* PeerDesription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PeerDesription.h; sourceTree = "<group>"; };
 		501620721A5ED5FC00E5A914 /* PeerDesriptionSerialize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PeerDesriptionSerialize.cpp; sourceTree = "<group>"; };
+		501620791A61693A00E5A914 /* Announcer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Announcer.cpp; sourceTree = "<group>"; };
+		5016207A1A61693A00E5A914 /* Announcer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Announcer.h; sourceTree = "<group>"; };
+		5016207B1A61693A00E5A914 /* Discoverer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Discoverer.cpp; sourceTree = "<group>"; };
+		5016207C1A61693A00E5A914 /* Discoverer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Discoverer.h; sourceTree = "<group>"; };
 		50194D6A1A52D92600557DAB /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		50194D6B1A52D92600557DAB /* DeadlineTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeadlineTimer.cpp; sourceTree = "<group>"; };
 		50194D6C1A52D92600557DAB /* DeadlineTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeadlineTimer.h; sourceTree = "<group>"; };
@@ -3027,6 +3035,10 @@
 		50194D8A1A52D92600557DAB /* Private */ = {
 			isa = PBXGroup;
 			children = (
+				501620791A61693A00E5A914 /* Announcer.cpp */,
+				5016207A1A61693A00E5A914 /* Announcer.h */,
+				5016207B1A61693A00E5A914 /* Discoverer.cpp */,
+				5016207C1A61693A00E5A914 /* Discoverer.h */,
 				50194D8B1A52D92600557DAB /* ITransport.h */,
 				50194D8C1A52D92600557DAB /* NetController.cpp */,
 				50194D8D1A52D92600557DAB /* NetController.h */,
@@ -4765,6 +4777,7 @@
 				32B074C319E53C0C0069981A /* UIPackage.h in Headers */,
 				641A620018CE0F61003359E7 /* FoliageSystem.h in Headers */,
 				E8B3CAA016B9326E002BD35F /* Data.h in Headers */,
+				501620801A61693A00E5A914 /* Discoverer.h in Headers */,
 				E8B3CAA216B9326E002BD35F /* DynamicObjectCache.h in Headers */,
 				E8B3CAA416B9326E002BD35F /* EventDispatcher.h in Headers */,
 				E8B3CAA516B9326E002BD35F /* Exception.h in Headers */,
@@ -5130,6 +5143,7 @@
 				E8B3CD1616B9326E002BD35F /* UIScreenManageriPhoneImpl.h in Headers */,
 				A6AFDEFD1871C3D1006E43A1 /* SpeedTreeObject.h in Headers */,
 				64493E0019476F4700AB2715 /* VegetationCustomGeometrySerializationData.h in Headers */,
+				5016207E1A61693A00E5A914 /* Announcer.h in Headers */,
 				E8B3CD1B16B9326E002BD35F /* UIScreenTransition.h in Headers */,
 				E8B3CD1D16B9326E002BD35F /* UIScrollBar.h in Headers */,
 				50194DA01A52D92600557DAB /* DeadlineTimer.h in Headers */,
@@ -5809,6 +5823,7 @@
 				E8B3CB3316B9326E002BD35F /* XMLParser.mm in Sources */,
 				E8B3CB3416B9326E002BD35F /* YamlArchive.cpp in Sources */,
 				E8B3CB3616B9326E002BD35F /* YamlParser.cpp in Sources */,
+				5016207D1A61693A00E5A914 /* Announcer.cpp in Sources */,
 				84D18BFB19201BEF009E3E90 /* Image.cpp in Sources */,
 				E8B3CB3816B9326E002BD35F /* Accelerometer.cpp in Sources */,
 				E8B3CB3D16B9326E002BD35F /* AccelerometeriPhone.mm in Sources */,
@@ -6107,6 +6122,7 @@
 				CCC7A4AE16F1D88C0061EA5D /* UpdateSystem.cpp in Sources */,
 				64493E1419476F4700AB2715 /* VegetationRenderData.cpp in Sources */,
 				497BF6E216F751ED00AC57C6 /* DeviceInfoiOS.mm in Sources */,
+				5016207F1A61693A00E5A914 /* Discoverer.cpp in Sources */,
 				E8B6B3C61705DEB4004F665E /* DeviceInfo.cpp in Sources */,
 				E8373BD817268CD9001A9770 /* UIAggregatorControl.cpp in Sources */,
 				E845D4E61732B7C9000DA8E7 /* FilePathObjective.mm in Sources */,
