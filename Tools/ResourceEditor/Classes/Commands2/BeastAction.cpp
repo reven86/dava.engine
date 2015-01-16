@@ -98,7 +98,7 @@ void BeastAction::Redo()
 		waitDialog->EnableCancel(false);
 	}
 
-	Finish();
+    Finish(canceled);
 
 	if(NULL != waitDialog)
 	{
@@ -127,9 +127,9 @@ bool BeastAction::Process()
 	return BeastProxy::Instance()->IsJobDone(beastManager);
 }
 
-void BeastAction::Finish()
+void BeastAction::Finish(bool canceled)
 {
-    if(beastMode == BeastProxy::MODE_LIGHTMAPS)
+    if (!canceled && beastMode == BeastProxy::MODE_LIGHTMAPS)
     {
 	    PackLightmaps();
     }
