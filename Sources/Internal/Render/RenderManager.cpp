@@ -485,6 +485,13 @@ void RenderManager::Stats::Clear()
     
     visibleRenderObjectCount = 0;
     occludedRenderObjectCount = 0;
+
+
+    cachedState = 0;
+    cachedShader = 0;
+    cachedTexture = 0;
+    chunkCount = 0;
+    forceMakeChunk = false;
 }
 
 void RenderManager::EnableOutputDebugStatsEveryNFrame(int32 _frameToShowDebugStats)
