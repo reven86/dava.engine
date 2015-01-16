@@ -170,8 +170,10 @@ static const char* _ShaderHeader_Metal =
 "#include <metal_texture>\n"
 "using namespace metal;\n\n"
 
-"float4 mul( float4 v, float4x4 m ) { return v*m; }\n"
-"float3 mul( float3 v, float3x3 m ) { return v*m; }\n"
+"float4 mul( float4 v, float4x4 m );\n"
+"float4 mul( float4 v, float4x4 m ) { return m*v; }\n"
+"float3 mul( float3 v, float3x3 m );\n"
+"float3 mul( float3 v, float3x3 m ) { return m*v; }\n"
 ;
     
 static const char* _ShaderDefine_Metal =
