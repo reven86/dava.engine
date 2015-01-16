@@ -26,9 +26,9 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "DateTime.h"
+#include "Platform/DateTime.h"
 
-#ifndef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WIN32__
 #include <time.h>
 #endif
 
