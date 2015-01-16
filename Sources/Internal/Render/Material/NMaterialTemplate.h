@@ -60,7 +60,6 @@ private:
 	NMaterialTemplate* Load(const FilePath& loadPath);
 			
 private:
-public:	
 	HashMap<FastName, NMaterialTemplate*> templateCache;
 };
 };

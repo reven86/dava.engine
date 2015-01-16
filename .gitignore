@@ -39,4 +39,5 @@ ddd
 fmod.log
 *.user
 /DavaConfig.in
+*.xccheckout
 .settings/

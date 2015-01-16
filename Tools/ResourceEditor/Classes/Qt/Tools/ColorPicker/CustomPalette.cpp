@@ -14,7 +14,6 @@
 namespace
 {
     const int BORDER = 1;
-    const int SPACE = 1;
 }
 
 

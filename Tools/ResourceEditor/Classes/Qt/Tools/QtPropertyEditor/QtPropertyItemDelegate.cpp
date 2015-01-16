@@ -84,7 +84,6 @@ QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptio
 
 	if(model == index.model())
 	{
-        int paddingRight = 0;
 		QtPropertyData* data = model->itemFromIndex(index);
 
 		if(NULL != data)

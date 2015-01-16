@@ -84,6 +84,10 @@ void  QtLayerMacOS::Move(int32 x, int32 y)
 void QtLayerMacOS::ProcessFrame()
 {
     [openGLView setNeedsDisplay:YES];
+    
+    DAVA::RenderManager::Instance()->Lock();
+    DAVA::Core::Instance()->SystemProcessFrame();
+    DAVA::RenderManager::Instance()->Unlock();
 }
 
 void QtLayerMacOS::AppFinished()
@@ -140,6 +144,9 @@ void QtLayerMacOS::HandleEvent(void *message)
             break;
         case NSKeyUp:
             [openGLView keyUp:event];
+            break;
+        case NSFlagsChanged:
+            [openGLView flagsChanged:event];
             break;
         default:
             break;

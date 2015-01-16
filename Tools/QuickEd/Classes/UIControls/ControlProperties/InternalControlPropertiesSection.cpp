@@ -4,7 +4,7 @@
 
 using namespace DAVA;
 
-InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection) : control(NULL), internalControl(NULL), internalControlNum(num)
+InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCopyType copyType) : control(NULL), internalControl(NULL), internalControlNum(num)
 {
     this->control = SafeRetain(control);
     
@@ -21,11 +21,9 @@ InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIContr
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            if (sourceProp && sourceProp->GetValue() != member->Value(internalControl))
-                member->SetValue(internalControl, sourceProp->GetValue());
             
-            ValueProperty *prop = new ValueProperty(internalControl, member);
+            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+            ValueProperty *prop = new ValueProperty(internalControl, member, sourceProp, copyType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -54,7 +52,7 @@ void InternalControlPropertiesSection::CreateInternalControl()
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *prop = new ValueProperty(internalControl, member);
+            ValueProperty *prop = new ValueProperty(internalControl, member, NULL, COPY_VALUES);
             AddProperty(prop);
             SafeRelease(prop);
         }

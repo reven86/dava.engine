@@ -29,7 +29,7 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 namespace DAVA
 {
 
-	AutotestingSystemLua::AutotestingSystemLua() : luaState(NULL), delegate(NULL), autotestingLocalizationSystem(NULL)
+	AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL)
 	{
 		autotestingLocalizationSystem = new LocalizationSystem();
 	}
@@ -625,8 +625,8 @@ namespace DAVA
 		touchDown.phase = UIEvent::PHASE_BEGAN;
 		touchDown.tid = touchId;
 		touchDown.tapCount = 1;
-        touchDown.physPoint = point;
-        touchDown.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point);
+        touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+        touchDown.point = point;
 		ProcessInput(touchDown);
 	}
 
@@ -635,8 +635,8 @@ namespace DAVA
 		UIEvent touchMove;
 		touchMove.tid = touchId;
 		touchMove.tapCount = 1;
-        touchMove.physPoint = point;
-        touchMove.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point);
+        touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+        touchMove.point = point;
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{

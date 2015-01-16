@@ -805,6 +805,18 @@
    </attribute>
    <addaction name="actionSwitchesWithDifferentLODs"/>
   </widget>
+  <widget class="QToolBar" name="cameraToolBar">
+   <property name="windowTitle">
+    <string>Camera Tool Bar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionSnapCameraToLandscape"/>
+  </widget>
   <action name="actionNewScene">
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -2025,6 +2037,45 @@
   <action name="actionDeviceList">
    <property name="text">
     <string>Device List</string>
+   </property>
+  </action>
+  <action name="actionAddWASDComponent">
+   <property name="text">
+    <string>Add WASD Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add WASD Component</string>
+   </property>
+  </action>
+  <action name="actionAddRotationComponent">
+   <property name="text">
+    <string>Add Rotation Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Rotation Component</string>
+   </property>
+  </action>
+  <action name="actionAddSnapToLandscapeComponent">
+   <property name="text">
+    <string>Add Snap to Landscape Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Snap to Landscape Component</string>
+   </property>
+  </action>
+  <action name="actionSnapCameraToLandscape">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/snapcamera.png</normaloff>:/QtIcons/snapcamera.png</iconset>
+   </property>
+   <property name="text">
+    <string>Snap Camera To Landscape</string>
+   </property>
+   <property name="toolTip">
+    <string>Snap Camera To Landscape</string>
    </property>
   </action>
  </widget>

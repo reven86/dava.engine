@@ -334,10 +334,7 @@ void DavaGLWidget::Render()
     // For desktop platforms poll for events in Core::SystemProcessFrame
     DAVA::Net::NetCore::Instance()->Poll();
 #endif
-	if(isEnabled() && DAVA::QtLayer::Instance()->IsDAVAEngineEnabled())
-	{
-		DAVA::QtLayer::Instance()->ProcessFrame();
-	}
+    DAVA::QtLayer::Instance()->ProcessFrame();
 
 	if(QDateTime::currentMSecsSinceEpoch() >= fpsCountTime)
 	{

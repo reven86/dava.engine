@@ -28,8 +28,8 @@ namespace
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LogWidget())
-    , doAutoScroll(true)
     , eventSkipper(new QTimer(this))
+    , doAutoScroll(true)
     , scrollStateDetected(false)
     , registerLoggerAsLocal( true )
 {
