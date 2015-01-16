@@ -328,12 +328,6 @@ void DavaGLWidget::Render()
 	QElapsedTimer frameTimer;
 	frameTimer.start();
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    // Poll for network I/O events here only for desktop platforms due to strange behaviour
-    // in Resource Editor on Mac OS (DeviceList dialog permanently stays on screen)
-    // For desktop platforms poll for events in Core::SystemProcessFrame
-    DAVA::Net::NetCore::Instance()->Poll();
-#endif
     DAVA::QtLayer::Instance()->ProcessFrame();
 
 	if(QDateTime::currentMSecsSinceEpoch() >= fpsCountTime)
