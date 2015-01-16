@@ -11,8 +11,10 @@
 
 #include <QWidget>
 #include <QVariant>
+#include <QPointer>
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Project.h"
 
 namespace Ui {
     class PackageDocument;
@@ -60,13 +62,14 @@ class PackageDocument: public QObject
 {
     Q_OBJECT
 public:
-    PackageDocument(PackageNode *package, QObject *parent = NULL);
+    PackageDocument(Project * project, PackageNode *package, QObject *parent = NULL);
     ~PackageDocument();
     
     bool IsModified() const;
     void ClearModified();
     const DAVA::FilePath &PackageFilePath() const;
-    PackageNode *Package() const {return package;}
+    PackageNode *GetPackage() const {return package;}
+    Project *GetProject() const { return project; }
     
     const QList<ControlNode*> &GetSelectedControls() const { return selectedControls; }
     const QList<ControlNode*> &GetActiveRootControls() const { return activeRootControls; }
@@ -95,6 +98,7 @@ private:
     void UpdateControlCanvas();
     
 private:
+    QPointer<Project> project;
     PackageNode *package;
     QList<ControlNode *> selectedControls;
     QList<ControlNode *> activeRootControls;

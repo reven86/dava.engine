@@ -50,6 +50,7 @@
 #include "Tests/KeyedArchiveYamlTest.h"
 #include "Tests/JobManagerTest.h"
 #include "Tests/NetworkTest.h"
+//$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
 {
@@ -64,6 +65,7 @@ void GameCore::OnError()
 void GameCore::RegisterTests()
 {
     new NetworkTest();
+//$UNITTEST_CTOR
 }
 
 #include <fstream>
