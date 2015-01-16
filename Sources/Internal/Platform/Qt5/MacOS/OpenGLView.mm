@@ -196,10 +196,6 @@
 	}	
 
 	
-	
-	DAVA::Core::Instance()->SystemProcessFrame();
-
-	
     DAVA::RenderManager::Instance()->SetColor(Color::White);
     
     
@@ -208,8 +204,6 @@
         [[self openGLContext] flushBuffer];
     }
 	DAVA::RenderManager::Instance()->Unlock();
-//	Logger::FrameworkDebug("drawRect ended");
-
 }
 
 - (void) resetCursorRects
