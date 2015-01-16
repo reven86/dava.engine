@@ -66,8 +66,6 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
-#include <Network/NetCore.h>
-
 void UnpackHelpDoc();
 
 int main(int argc, char *argv[])
@@ -159,9 +157,6 @@ int main(int argc, char *argv[])
 		    // check and unpack help documents
 		    UnpackHelpDoc();
 
-            using DAVA::Net::NetCore;
-            new NetCore();
-
 		    // create and init UI
 		    new QtMainWindow();
 		    QtMainWindow::Instance()->EnableGlobalTimeout(true);
@@ -172,9 +167,6 @@ int main(int argc, char *argv[])
 
 		    // start app
 		    ret = a.exec();
-
-            NetCore::Instance()->Finish(true);
-            NetCore::Instance()->Release();
 
 		    QtMainWindow::Instance()->Release();
 		    ControlsFactory::ReleaseFonts();

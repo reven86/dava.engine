@@ -55,7 +55,6 @@
 	#include "Win32/CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
-#include <Network/NetCore.h>
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
 	: QWidget(parent)
@@ -330,9 +329,6 @@ void DavaGLWidget::Render()
 	{
 		DAVA::QtLayer::Instance()->ProcessFrame();
 	}
-
-    using DAVA::Net::NetCore;
-    NetCore::Instance()->Poll();
 
 	if(QDateTime::currentMSecsSinceEpoch() >= fpsCountTime)
 	{

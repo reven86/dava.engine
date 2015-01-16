@@ -472,7 +472,6 @@
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
-    <addaction name="actionDeviceList"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -487,8 +486,8 @@
   <widget class="QDockWidget" name="dockParticleEditor">
    <property name="maximumSize">
     <size>
-     <width>524287</width>
-     <height>524287</height>
+     <width>16777215</width>
+     <height>16777215</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -502,8 +501,8 @@
   <widget class="QDockWidget" name="dockParticleEditorTimeLine">
    <property name="maximumSize">
     <size>
-     <width>524287</width>
-     <height>524287</height>
+     <width>16777215</width>
+     <height>16777215</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -2020,11 +2019,6 @@
   <action name="actionCreateTestSkinnedObject">
    <property name="text">
     <string>Create Test Skinned Object</string>
-   </property>
-  </action>
-  <action name="actionDeviceList">
-   <property name="text">
-    <string>Device List</string>
    </property>
   </action>
  </widget>

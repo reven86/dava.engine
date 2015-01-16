@@ -119,9 +119,6 @@
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "Classes/Qt/DockConsole/LogWidget.h"
 
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-
 #include "Classes/Commands2/PaintHeightDeltaAction.h"
 
 #include "Tools/HeightDeltaTool/HeightDeltaTool.h"
@@ -764,7 +761,6 @@ void QtMainWindow::SetupActions()
         connect(act, SIGNAL(triggered()), SLOT(DebugVersionInfo()));
 #endif
 	}
-    connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
     QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
     
@@ -3011,17 +3007,6 @@ void QtMainWindow::DebugColorPicker()
     ColorPicker *cp = new ColorPicker(this);
 
     cp->Exec();
-}
-
-void QtMainWindow::DebugDeviceList()
-{
-    DeviceListWidget *w = new DeviceListWidget( this );
-    w->setAttribute( Qt::WA_DeleteOnClose );
-
-    DeviceListController *c = new DeviceListController( w );
-    c->SetView( w );
-
-    w->show();
 }
 
 void QtMainWindow::OnGenerateHeightDelta()

@@ -251,7 +251,6 @@ private slots:
 
     void DebugVersionInfo();
     void DebugColorPicker();
-    void DebugDeviceList();
 
 private:
 	Ui::MainWindow *ui;
