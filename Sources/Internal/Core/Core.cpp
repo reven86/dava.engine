@@ -59,6 +59,8 @@
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 
+#include "Network/NetCore.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
@@ -182,6 +184,8 @@ void Core::CreateSingletons()
 
     RegisterDAVAClasses();
     CheckDataTypeSizes();
+
+    new Net::NetCore();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -194,6 +198,8 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
+    Net::NetCore::Instance()->Release();
+
 	UIControlBackground::ReleaseRenderObject();
 
 	LocalNotificationController::Instance()->Release();
@@ -459,7 +465,12 @@ void Core::SystemAppFinished()
 {
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->OnAppFinished();
-#endif //__DAVAENGINE_AUTOTESTING__    
+#endif //__DAVAENGINE_AUTOTESTING__
+
+    // Finish network infrastructure
+    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
+    Net::NetCore::Instance()->Finish(true);
+
 	if (core)core->OnAppFinished();
 }
 
@@ -541,6 +552,10 @@ void Core::SystemProcessFrame()
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
+
+        // Poll for network I/O events here
+        Net::NetCore::Instance()->Poll();
+
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
 		core->Draw();
