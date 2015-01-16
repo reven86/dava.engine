@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>300</width>
-    <height>200</height>
+    <width>800</width>
+    <height>600</height>
    </size>
   </property>
   <property name="contextMenuPolicy">

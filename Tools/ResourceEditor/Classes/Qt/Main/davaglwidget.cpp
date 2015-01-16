@@ -77,6 +77,8 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
     setFocusPolicy( Qt::StrongFocus );
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    
+    setMinimumSize(100, 100);
 
 	// Init OS-specific layer
 	{
