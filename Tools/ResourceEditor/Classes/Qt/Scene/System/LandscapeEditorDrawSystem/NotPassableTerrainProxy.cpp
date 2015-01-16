@@ -154,6 +154,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	
 	const float32 dx = (float32)notPassableMapSprite->GetWidth() / (float32)(heightmap->Size() - 1);
 	
+    RenderSystem2D::Instance()->PushRenderTarget();
     RenderSystem2D::Instance()->SetRenderTarget(notPassableMapSprite);
 	
 	const Rect drawRect(forRect.x * dx, (heightmap->Size() - (forRect.y + forRect.dy)) * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
