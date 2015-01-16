@@ -36,15 +36,44 @@ ControlNode::ControlNode(ControlNode *prototype, UIPackage *prototypePackage, eC
     }
     else
     {
+        DVASSERT(false);
+        
         this->creationType = CREATED_FROM_CLASS;
         childCreationType = CREATED_FROM_CLASS;
     }
 
-    propertiesRoot = new PropertiesRoot(control, prototype->GetPropertiesRoot());
+    propertiesRoot = new PropertiesRoot(control, prototype->GetPropertiesRoot(), PropertiesRoot::COPY_VALUES);
     
     for (auto it = prototype->nodes.begin(); it != prototype->nodes.end(); ++it)
     {
         ControlNode *childNode = new ControlNode(*it, NULL, childCreationType);
+        childNode->SetParent(this);
+        nodes.push_back(childNode);
+        control->AddControl(childNode->GetControl());
+    }
+}
+
+ControlNode::ControlNode(ControlNode *node)
+    : PackageBaseNode(NULL)
+    , control(NULL)
+    , propertiesRoot(NULL)
+    , prototype(NULL)
+    , prototypePackage(NULL)
+    , creationType(node->creationType)
+    , readOnly(node->readOnly)
+{
+    UIControl *sourceControl = node->GetControl();
+    control = ObjectFactory::Instance()->New<UIControl>(sourceControl->GetControlClassName());
+    control->SetCustomControlClassName(sourceControl->GetCustomControlClassName());
+    
+    prototype = SafeRetain(node->prototype);
+    prototypePackage = SafeRetain(node->prototypePackage);
+    
+    propertiesRoot = new PropertiesRoot(control, node->GetPropertiesRoot(), PropertiesRoot::COPY_FULL);
+    
+    for (auto it = node->nodes.begin(); it != node->nodes.end(); ++it)
+    {
+        ControlNode *childNode = new ControlNode(*it);
         childNode->SetParent(this);
         nodes.push_back(childNode);
         control->AddControl(childNode->GetControl());
@@ -61,6 +90,21 @@ ControlNode::~ControlNode()
     SafeRelease(propertiesRoot);
     SafeRelease(prototype);
     SafeRelease(prototypePackage);
+}
+
+ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
+{
+    return new ControlNode(control);
+}
+
+ControlNode *ControlNode::CreateFromPrototype(ControlNode *node, DAVA::UIPackage *prototypePackage)
+{
+    return new ControlNode(node, prototypePackage, CREATED_FROM_PROTOTYPE);
+}
+
+ControlNode *ControlNode::Clone()
+{
+    return new ControlNode(this);
 }
 
 void ControlNode::Add(ControlNode *node)

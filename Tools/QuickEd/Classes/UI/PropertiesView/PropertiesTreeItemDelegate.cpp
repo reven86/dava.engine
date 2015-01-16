@@ -27,6 +27,9 @@
 #include "IntegerPropertyDelegate.h"
 #include "FloatPropertyDelegate.h"
 #include "BoolPropertyDelegate.h"
+#include "SpritePropertyDelegate.h"
+
+using namespace DAVA;
 
 PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
@@ -43,10 +46,26 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_FLOAT] = new FloatPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
+
+    propertyNameTypeItemDelegates[QString("Sprite")] = new SpritePropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
 {
+    for (auto iter = propertyItemDelegates.begin(); iter != propertyItemDelegates.end(); ++iter)
+    {
+        SafeDelete(iter.value());
+    }
+
+    for (auto iter = variantTypeItemDelegates.begin(); iter != variantTypeItemDelegates.end(); ++iter)
+    {
+        SafeDelete(iter.value());
+    }
+
+    for (auto iter = propertyNameTypeItemDelegates.begin(); iter != propertyNameTypeItemDelegates.end(); ++iter)
+    {
+        SafeDelete(iter.value());
+    }
 }
 
 void PropertiesTreeItemDelegate::paint( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
@@ -96,6 +115,7 @@ QWidget *PropertiesTreeItemDelegate::createEditor( QWidget * parent, const QStyl
                 QToolButton *toolButton = new QToolButton(editorWidget);
                 toolButton->setDefaultAction(action);
                 toolButton->setIconSize(QSize(15, 15));
+                toolButton->setFocusPolicy(Qt::StrongFocus);
                 editorWidget->layout()->addWidget(toolButton);
             }
         }
@@ -151,10 +171,15 @@ AbstractPropertyDelegate * PropertiesTreeItemDelegate::GetCustomItemDelegateForI
     BaseProperty *property = static_cast<BaseProperty *>(index.internalPointer());
     if (property)
     {
-        QMap<BaseProperty::ePropertyType, AbstractPropertyDelegate *>::const_iterator prop_iter = propertyItemDelegates.find(property->GetType());
+        auto prop_iter = propertyItemDelegates.find(property->GetType());
         if (prop_iter != propertyItemDelegates.end())
             return prop_iter.value();
+
+        auto propName_iter = propertyNameTypeItemDelegates.find(StringToQString(property->GetName()));
+        if (propName_iter != propertyNameTypeItemDelegates.end())
+            return propName_iter.value();
     }
+
 
     QVariant editValue = index.data(Qt::EditRole);
     if (editValue.userType() == QMetaTypeId<DAVA::VariantType>::qt_metatype_id())

@@ -6,7 +6,7 @@
 class BackgroundPropertiesSection : public PropertiesSection
 {
 public:
-    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection);
+    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCopyType copyType);
     virtual ~BackgroundPropertiesSection();
     
     DAVA::UIControlBackground *GetBg() const;

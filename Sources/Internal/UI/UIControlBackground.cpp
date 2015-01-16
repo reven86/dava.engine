@@ -43,22 +43,22 @@ namespace DAVA
 {
 
 UIControlBackground::UIControlBackground()
-:	spr(NULL)
-,	frame(0)
-,	align(ALIGN_HCENTER|ALIGN_VCENTER)
-,	type(DRAW_ALIGNED)
-,	color(Color::White)
-,	drawColor(Color::White)
-,	leftStretchCap(0)
-,	topStretchCap(0)
-,	spriteModification(0)
-,	colorInheritType(COLOR_IGNORE_PARENT)
-,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
-,	lastDrawPos(0, 0)
-,	tiledData(NULL)
+:   color(Color::White)
+,   spr(NULL)
+,   align(ALIGN_HCENTER|ALIGN_VCENTER)
+,   type(DRAW_ALIGNED)
+,   spriteModification(0)
+,   leftStretchCap(0)
+,   topStretchCap(0)
+,   colorInheritType(COLOR_IGNORE_PARENT)
+,   frame(0)
+,   lastDrawPos(0, 0)
+,   perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
+,   tiledData(NULL)
 ,   stretchData(NULL)
-,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
+,   drawColor(Color::White)
+,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
 }
@@ -282,6 +282,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
     Rect drawRect = geometricData.GetUnrotatedRect();
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
+
+    RenderSystem2D::Instance()->UpdateClip();
 
     Sprite::DrawState drawState;
     drawState.SetRenderState(renderState);
@@ -515,11 +517,18 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         default:
             break;
     }
-
+#if defined(LOCALIZATION_DEBUG)
+    lastDrawState = drawState;
+#endif
     RenderManager::Instance()->ResetColor();
 
 }
-
+#if defined(LOCALIZATION_DEBUG)
+const Sprite::DrawState & UIControlBackground::GetLastDrawState() const
+{
+    return lastDrawState;
+}
+#endif
 void UIControlBackground::ReleaseDrawData()
 {
     SafeDelete(tiledData);

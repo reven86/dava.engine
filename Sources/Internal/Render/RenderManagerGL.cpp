@@ -35,7 +35,6 @@
 #include "Core/Core.h"
 #include "Render/OGLHelpers.h"
 #include "Render/Shader.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/FileSystem.h"
@@ -227,14 +226,10 @@ void RenderManager::BeginFrame()
 	DVASSERT(renderTargetStack.empty());
 	Reset();
 	isInsideDraw = true;
-    
-    RenderSystem2D::Instance()->Reset();
 }
 
 void RenderManager::EndFrame()
 {
-    RenderSystem2D::Instance()->Flush();
-
 	isInsideDraw = false;
 #if defined(__DAVAENGINE_WIN32__)
 	::SwapBuffers(hDC);

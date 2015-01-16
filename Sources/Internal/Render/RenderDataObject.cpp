@@ -173,7 +173,7 @@ uint32 RenderDataObject::GetResultFormat() const
     return resultVertexFormat;
 }
     
-void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eDrawType type, bool synchronously)
+void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type, bool synchronously)
 {
 	DVASSERT(!vertexAttachmentActive);
 
@@ -186,23 +186,10 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eDrawType type, bool
 	}
 }
 
-void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eDrawType type)
+void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawType type)
 {
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
-    
-    uint32 GLtype = GL_STATIC_DRAW;
-    switch (type) {
-        case STATIC_DRAW:
-            GLtype = GL_STATIC_DRAW;
-            break;
-        case DYNAMIC_DRAW:
-            GLtype = GL_DYNAMIC_COPY;
-            break;
-        default:
-            DVASSERT(false);
-            break;
-    }
     
     uint32 size = (uint32)streamArray.size();
     if (size == 0)return;
@@ -232,7 +219,7 @@ void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eDrawType ty
 #if defined (__DAVAENGINE_ANDROID__)
     savedVertexCount = vertexCount;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GLtype));
+    RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, BUFFERDRAWTYPE_MAP[type]));
 
     streamArray[0]->pointer = 0;
     for (uint32 k = 1; k < size; ++k)
@@ -293,7 +280,6 @@ void RenderDataObject::BuildIndexBufferInternal()
         indexBuffer = 0;
     }
     RENDER_VERIFY(glGenBuffers(1, &indexBuffer));
-//    Logger::FrameworkDebug("glGenBuffers index: %d", indexBuffer);
     RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
     RENDER_VERIFY(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_STATIC_DRAW));
 #endif
@@ -349,24 +335,22 @@ void RenderDataObject::DetachVertices()
     vertexAttachmentActive = false;
 }
 
-void RenderDataObject::UpdateVertexBuffer(int32 vertexCount, eDrawType type)
+void RenderDataObject::UpdateVertexBuffer(int32 offset, int32 vertexCount, bool synchronously)
+{
+    uint32 jobId = JobManager::Instance()->CreateMainJob(Bind(MakeFunction(this, &RenderDataObject::UpdateVertexBufferInternal), offset, vertexCount));
+
+    if (synchronously)
+    {
+        JobManager::Instance()->WaitMainJobID(jobId);
+    }
+}
+
+void RenderDataObject::UpdateVertexBufferInternal(int32 offset, int32 vertexCount)
 {
     DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
-    
-    uint32 GLtype = GL_STATIC_DRAW;
-    switch (type) {
-        case STATIC_DRAW:
-            GLtype = GL_STATIC_DRAW;
-            break;
-        case DYNAMIC_DRAW:
-            GLtype = GL_DYNAMIC_COPY;
-            break;
-        default:
-            DVASSERT(false);
-            break;
-    }
-    
+    DVASSERT(vboBuffer);
+
     uint32 size = (uint32)streamArray.size();
     if (size == 0)return;
 
@@ -380,26 +364,36 @@ void RenderDataObject::UpdateVertexBuffer(int32 vertexCount, eDrawType type)
     {
         format |= streamArray[k]->formatMark;
     }
-
     int32 stride = streamArray[0]->stride;
-
-    if (vboBuffer == 0)
-    {
-        RENDER_VERIFY(glGenBuffers(1, &vboBuffer));
-    }
 
 #if defined (__DAVAENGINE_ANDROID__)
     savedVertexCount = vertexCount;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
 
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vboBuffer));
-    RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GLtype));
+    RENDER_VERIFY(glBufferSubData(GL_ARRAY_BUFFER, offset, vertexCount * stride, streamArray[0]->pointer));
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, 0));
 
 #endif // #if defined (__DAVAENGINE_OPENGL__)
+
+    streamArray[0]->pointer = 0;
+    for (uint32 k = 1; k < size; ++k)
+    {
+        streamArray[k]->pointer = (uint8*)streamArray[k - 1]->pointer + GetVertexSize(streamArray[k - 1]->formatMark);
+    }
 }
 
-void RenderDataObject::UpdateIndexBuffer()
+void RenderDataObject::UpdateIndexBuffer(int32 offset, bool synchronously)
+{
+    uint32 jobId = JobManager::Instance()->CreateMainJob(Bind(MakeFunction(this, &RenderDataObject::UpdateIndexBufferInternal), offset));
+
+    if (synchronously)
+    {
+        JobManager::Instance()->WaitMainJobID(jobId);
+    }
+}
+
+void RenderDataObject::UpdateIndexBufferInternal(int32 offset)
 {
     DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
@@ -408,24 +402,16 @@ void RenderDataObject::UpdateIndexBuffer()
     buildIndexBuffer = true;
 #endif
 
-#if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
-    if (indexBuffer == 0)
-    {
-        RENDER_VERIFY(glGenBuffersARB(1, &indexBuffer));
-    }
+    DVASSERT(indexBuffer);
 
+#if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
     RENDER_VERIFY(glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer));
-    RENDER_VERIFY(glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_DYNAMIC_DRAW_ARB));
+    RENDER_VERIFY(glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices));
     RENDER_VERIFY(glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0));
 #else
-    if (indexBuffer == 0)
-    {
-        RENDER_VERIFY(glGenBuffers(1, &indexBuffer));
-    }
-
-    RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
-    RENDER_VERIFY(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_DYNAMIC_DRAW));
-    RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
+    RENDER_VERIFY(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices));
+    RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 #endif
 
 #endif // #if defined (__DAVAENGINE_OPENGL__)

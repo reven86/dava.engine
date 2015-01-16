@@ -273,6 +273,8 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
         Sprite::DrawState drawState;
 		drawState.SetPosition(0.f, 0.f);
         drawState.SetRenderState(noBlendDrawState);
+        
+        RenderSystem2D::Instance()->Setup2DMatrices();
         RenderSystem2D::Instance()->Draw(s, &drawState);
 		RenderManager::Instance()->RestoreRenderTarget();
 

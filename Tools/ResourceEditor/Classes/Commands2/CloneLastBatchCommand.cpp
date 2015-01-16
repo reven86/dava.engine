@@ -96,7 +96,7 @@ void CloneLastBatchCommand::Undo()
     for (DAVA::int32 i = count - 1; i >= 0; --i)
     {
         DAVA::int32 lod, sw;
-        DAVA::RenderBatch *batch = renderObject->GetRenderBatch(i, lod, sw);
+        renderObject->GetRenderBatch(i, lod, sw);
 
         if((sw == requestedSwitchIndex) && (lod > maxLodIndexes[requestedSwitchIndex]))
         {

@@ -60,11 +60,9 @@ void EyeDropper::InitShades()
     shades.resize(n);
     for (int i = 0; i < n; i++)
     {
-        QWidget *s = desktop->screen(i);
         QScreen *screen = QApplication::screens()[i];
         const double scale = screen->devicePixelRatio();
         QRect rc = screens[i].rc;
-        const bool scaled = scale > 1.0;
 
         QPixmap pix = screen->grabWindow(0, rc.left(), rc.top(), rc.width(), rc.height());
         pix.setDevicePixelRatio(scale);

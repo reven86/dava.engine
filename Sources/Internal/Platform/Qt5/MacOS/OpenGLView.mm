@@ -150,19 +150,21 @@
     if(RenderManager::Instance())
         RenderManager::Instance()->Init(boundRect.size.width, boundRect.size.height);
     
-    if(UIControlSystem::Instance())
-        UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+    if(RenderSystem2D::Instance())
+        RenderSystem2D::Instance()->Init();
     
-    Core *core = Core::Instance();
-    if(Core::Instance())
+    VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
+    if(vcs)
     {
-        core->UnregisterAllAvailableResourceSizes();
-        core->RegisterAvailableResourceSize(rect.size.width, rect.size.height, "Gfx");
-        core->RegisterAvailableResourceSize(rect.size.width*2.0f, rect.size.height*2.0f, "Gfx2");
+        vcs->SetInputScreenAreaSize(rect.size.width, rect.size.height);
         
-        core->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
-        core->SetVirtualScreenSize(rect.size.width, rect.size.height);
-        core->CalculateScaleMultipliers();
+        vcs->UnregisterAllAvailableResourceSizes();
+        vcs->RegisterAvailableResourceSize(rect.size.width, rect.size.height, "Gfx");
+        vcs->RegisterAvailableResourceSize(rect.size.width*2.0f, rect.size.height*2.0f, "Gfx2");
+        
+        vcs->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
+        vcs->SetVirtualScreenSize(rect.size.width, rect.size.height);
+        vcs->ScreenSizeChanged();
     }
 	
     isFirstDraw = true;
@@ -218,7 +220,7 @@
 
 -(void)cursorUpdate:(NSEvent *)theEvent
 {
-	NSLog(@"OpenGLView  Cursor update");
+//	NSLog(@"OpenGLView  Cursor update");
 }
 
 - (BOOL)acceptsFirstResponder

@@ -67,12 +67,6 @@ class RenderDataObject : public RenderResource //BaseObject
 protected:
     virtual ~RenderDataObject();
 public:
-    enum eDrawType
-    {
-        STATIC_DRAW = 0,
-        DYNAMIC_DRAW
-    };
-    
     RenderDataObject();
     
     RenderDataStream * SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer);
@@ -86,8 +80,8 @@ public:
         Interleaved data is the fastest way to submit data to any modern hw, so renderdataobject support buffers only 
         for interleaved data. This means we can have only 1 buffer for 1 RenderDataObject
     */
-    void BuildVertexBuffer(int32 vertexCount, eDrawType type = STATIC_DRAW, bool synchronously = false); // pack data to VBOs and allow to use VBOs instead of SetStreams
-    void BuildVertexBufferInternal(int32 vertexCount, eDrawType type);
+    void BuildVertexBuffer(int32 vertexCount, eBufferDrawType type = BDT_STATIC_DRAW, bool synchronously = false); // pack data to VBOs and allow to use VBOs instead of SetStreams
+    void BuildVertexBufferInternal(int32 vertexCount, eBufferDrawType type);
     void DeleteBuffersInternal(uint32 vboBuffer, uint32 indexBuffer);
     uint32 GetVertexBufferID() const { return vboBuffer; }
 
@@ -111,8 +105,10 @@ public:
 
     inline eIndexFormat GetIndexFormat() const;
     
-    void UpdateVertexBuffer(int32 vertexCount, eDrawType = STATIC_DRAW);
-    void UpdateIndexBuffer();
+    void UpdateVertexBuffer(int32 offset, int32 vertexCount, bool synchronously = false);
+    void UpdateVertexBufferInternal(int32 offset, int32 vertexCount);
+    void UpdateIndexBuffer(int32 offset, bool synchronously = false);
+    void UpdateIndexBufferInternal(int32 offset);
 
 private:
     Map<eVertexFormat, RenderDataStream *> streamMap;

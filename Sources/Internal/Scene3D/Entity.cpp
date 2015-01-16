@@ -51,17 +51,16 @@
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#define USE_VECTOR(x) (((1 << x) & vectorComponentsMask) != 0)
+#define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
 namespace DAVA
 {
 
 const int COMPONENT_COUNT_V6 = 18;
-const int COMPONENTS_IN_VECTOR_COUNT = 3;
     
-uint32 vectorComponentsMask = (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT) | (1 << Component::LOD_COMPONENT);
+uint64 vectorComponentsMask = (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT) | (1 << Component::LOD_COMPONENT);
 
-// Property Names.
+// Property Names
 const char* Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME = "editor.isSolid";
 const char* Entity::SCENE_NODE_IS_LOCKED_PROPERTY_NAME = "editor.isLocked";
 	
@@ -69,306 +68,62 @@ Entity::Entity()
 : scene(0)
 , parent(0)
 , tag(0)
-#if !defined(COMPONENT_STORAGE_STDMAP)
-, componentsMap(4)
-#endif
 {
-	//    Logger::FrameworkDebug("Entity: %p", this);
-	componentFlags = 0;
-		
-	components.resize(COMPONENTS_IN_VECTOR_COUNT);
-	for (uint32 k = 0; k < COMPONENTS_IN_VECTOR_COUNT; ++k)
-		components[k] = 0;
-		
-	//animation = 0;
-	//debugFlags = DEBUG_DRAW_NONE;
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
+    UpdateFamily();
 		
 	AddComponent(new TransformComponent());
-		
-	//    Stats::Instance()->RegisterEvent("Scene.Update.Entity.Update", "Entity update time");
-	//    Stats::Instance()->RegisterEvent("Scene.Draw.Entity.Draw", "Entity draw time");
 }
 	
 Entity::~Entity()
 {
-	/*
-		TODO: Double check that everything is working fine.
-		*/
-	//    if (scene)
-	//    {
-	//        scene->UnregisterNode(this);
-	//        scene = 0;
-	//    }
-        
     GlobalEventSystem::Instance()->RemoveAllEvents(this);
-		
-	RemoveAllChildren();
-		
-	RemoveAllComponents();
-		
+	RemoveAllChildren();	
+	RemoveAllComponents();	
 	SetScene(0);
-	//  Logger::Debug("~Entity: %p", this);
+}
 
-
-
+bool ComponentLessPredicate(Component * left, Component * right)
+{
+    return left->GetType() < right->GetType();
 }
     
 void Entity::AddComponent(Component * component)
 {
 	component->SetEntity(this);
+    components.push_back(component);
 		
-	uint32 componentType = component->GetType();
-	if(USE_VECTOR(componentType))
-	{
-		DVASSERT(NULL == components[componentType]);
-		components[componentType] = component;
-	}
-	else
-	{
-#if defined(COMPONENT_STORAGE_STDMAP)
-			
-		ComponentsMap::iterator it = componentsMap.find(componentType);
-		if(componentsMap.end() == it)
-		{
-			Vector<Component*>* componentsVector = new Vector<Component*>();
-			std::pair<ComponentsMap::iterator, bool> insertResult =
-            componentsMap.insert(std::pair<uint32, Vector<Component*>* >(componentType, componentsVector));
-			it = insertResult.first;
-		}
-			
-		it->second->reserve(it->second->size() + 1); //reserve memory to avoid capacity growth
-		it->second->push_back(component);
-#else
-			
-		Vector<Component*>* componentsVector = componentsMap.at(componentType);
-		if(NULL == componentsVector)
-		{
-			componentsVector = new Vector<Component*>();
-			componentsMap.insert(componentType, componentsVector);
-		}
-			
-		componentsVector->reserve(componentsVector->size() + 1); //reserve memory to avoid capacity growth
-		componentsVector->push_back(component);
-#endif
-	}
-		
-	componentFlags |= 1 << component->GetType();
+    std::stable_sort(components.begin(), components.end(), ComponentLessPredicate);
+    UpdateFamily();
 
 	if (scene)
 		scene->RegisterComponent(this, component);
 }
-    
-void Entity::RemoveAllComponents()
+
+void Entity::DetachComponent(const Vector<Component *>::iterator & it)
 {
-	for(int32 i = 0; i < COMPONENTS_IN_VECTOR_COUNT; ++i)
-	{
-		if(components[i])
-		{
-			CleanupComponent(components[i], 0);
-            SafeDelete(components[i]);
-		}
-	}
+    Component * c = *it;
 
-	for(ComponentsMap::iterator it = componentsMap.begin();
-		it != componentsMap.end();
-		++it)
-	{
-		Vector<Component*>* componentsVector = it->second;
-			
-		if(NULL != componentsVector)
-		{
-			int componentCount = componentsVector->size();
-				
-			for(Vector<Component*>::iterator compIt = componentsVector->begin();
-				compIt != componentsVector->end(); ++compIt)
-			{
-				componentCount--;
-				CleanupComponent(*compIt, componentCount);
-                SafeDelete(*compIt);
-            }
-		}
-
-		SafeDelete(componentsVector);
-	}
-
-	componentsMap.clear();
-}
-	
-void Entity::RemoveComponent(Component * component)
-{
-	int componentCount = 0;
-	uint32 componentType = component->GetType();
-    
-    DetachComponent(component);
-
-	if (!USE_VECTOR(componentType))
-	{
-        Vector<Component*>* componentsVector = NULL;
-
-#if defined(COMPONENT_STORAGE_STDMAP)
-        ComponentsMap::iterator it = componentsMap.find( componentType );
-        componentsVector = (it != componentsMap.end()) ? it->second : NULL;
-#else
-        componentsVector = componentsMap[componentType];
-#endif
-
-        if ( componentsVector != NULL )
-        {
-            componentCount = componentsVector->size();
-        }
-    }
-
-	CleanupComponent(component, componentCount);
-    SafeDelete(component);
-}
-
-void Entity::DetachComponent( Component * component )
-{
-    if ( scene )
-        scene->UnregisterComponent( this, component );
-
-    uint32 componentType = component->GetType();
-    uint32 componentCount = 0;
-
-    if (USE_VECTOR(componentType))
+    if (scene)
     {
-        components[componentType] = 0;
+        scene->UnregisterComponent (this, c);
     }
-    else
-    {
-#if defined(COMPONENT_STORAGE_STDMAP)
-
-        ComponentsMap::iterator it = componentsMap.find( componentType );
-        if (componentsMap.end() != it)
-        {
-            for (Vector<Component*>::iterator i = it->second->begin();
-                i != it->second->end(); ++i )
-            {
-                if ((*i) == component)
-                {
-                    it->second->erase(i);
-                    break;
-                }
-            }
-        }
-
-#else
-
-        Vector<Component*>* componentsVector = componentsMap[componentType];
-        if (NULL != componentsVector)
-        {
-            for (Vector<Component*>::iterator i = componentsVector->begin();
-                i != componentsVector->end(); ++i)
-            {
-                if ((*i) == component)
-                {
-                    componentsVector->erase(i);
-                    break;
-                }
-            }
-            componentCount = componentsVector->size();
-        }
-
-#endif
-    }
-
-    CleanupComponent(component, componentCount);
-}
     
-void Entity::RemoveComponent(uint32 componentType, uint32 index)
-{
-	if (scene)
-	{
-		Component *c = GetComponent(componentType, index);
-		if(c)
-			scene->UnregisterComponent(this, c);
-	}
-
-	Component* component = NULL;
-	int componentCount = 0;
-	if(USE_VECTOR(componentType))
-	{
-		component = components[componentType];
-		components[componentType] = NULL;
-	}
-	else
-	{
-#if defined(COMPONENT_STORAGE_STDMAP)
-			
-		ComponentsMap::iterator it = componentsMap.find(componentType);
-		if(componentsMap.end() != it &&
-			it->second->size() > index)
-		{
-			component = it->second->at(index);
-			it->second->erase(it->second->begin() + index);
-				
-			componentCount = it->second->size();
-		}
-			
-#else
-			
-		Vector<Component*>* componentsVector = componentsMap[componentType];
-		if(NULL != componentsVector &&
-			componentsVector->size() > index)
-		{
-			component = componentsVector->at(index);
-			componentsVector->erase(componentsVector->begin() + index);
-				
-			componentCount = componentsVector->size();
-		}
-			
-#endif
-	}
-		
-	if(NULL != component)
-	{
-		CleanupComponent(component, componentCount);
-        SafeDelete(component);
-	}
+    components.erase(it);
+    UpdateFamily();
+    c->SetEntity(0);
 }
-    
-inline void Entity::CleanupComponent(Component* component, uint32 componentCount)
-{
-	component->SetEntity(0);
-		
-	if(componentCount <= 0)
-	{
-		componentFlags &= ~(1 << component->GetType());
-	}
-}
-    
+  
 Component * Entity::GetComponent(uint32 componentType, uint32 index) const
 {
-	Component* component = NULL;
-	if(USE_VECTOR(componentType))
-	{
-		component = components[componentType];
-	}
-	else
-	{
-#if defined(COMPONENT_STORAGE_STDMAP)
-			
-		ComponentsMap::iterator it = componentsMap.find(componentType);
-		if(componentsMap.end() != it &&
-			it->second->size() > index)
-		{
-			component = it->second->at(index);
-		}
-			
-#else
-			
-		Vector<Component*>* componentsVector = componentsMap[componentType];
-		if(NULL != componentsVector &&
-			componentsVector->size() > index)
-		{
-			component = componentsVector->at(index);
-		}
-			
-#endif
-	}
-		
-	return component;
+    Component * ret = 0;
+    uint32 maxCount = family->GetComponentsCount(componentType);
+    if(index < maxCount)
+    {
+        ret = components[family->GetComponentIndex(componentType, index)];
+    }
+    
+    return ret;
 }
 	
 Component * Entity::GetOrCreateComponent(uint32 componentType, uint32 index)
@@ -382,82 +137,6 @@ Component * Entity::GetOrCreateComponent(uint32 componentType, uint32 index)
 		
 	return ret;
 }
-    
-uint32 Entity::GetComponentCount()
-{
-	uint32 count = 0;
-	for (uint32 k = 0; k < COMPONENTS_IN_VECTOR_COUNT; ++k)
-		if ((componentFlags >> k) & 1)
-			count++;
-		
-#if defined(COMPONENT_STORAGE_STDMAP)
-		
-	if(componentsMap.size() > 0)
-	{
-			
-		for(ComponentsMap::iterator it = componentsMap.begin();
-			it != componentsMap.end(); ++it)
-		{
-			count += it->second->size();
-		}
-	}
-		
-#else
-		
-	if(componentsMap.size() > 0)
-	{
-		ComponentsMap::iterator end = componentsMap.end();
-		for(ComponentsMap::iterator it = componentsMap.begin();
-			it != end;
-			++it)
-		{
-			Vector<Component*>* componentsVector = it->second;
-				
-			if(NULL != componentsVector)
-			{
-				count += componentsVector->size();
-			}
-		}
-	}
-
-#endif
-	return count;
-}
-	
-uint32 Entity::GetComponentCount(uint32 componentType)
-{
-	int componentCount = 0;
-		
-	if(USE_VECTOR(componentType))
-	{
-		if(components[componentType] != NULL)
-		{
-			componentCount = 1;
-		}
-	}
-	else
-	{
-#if defined(COMPONENT_STORAGE_STDMAP)
-			
-		ComponentsMap::iterator it = componentsMap.find(componentType);
-		if(componentsMap.end() != it)
-		{
-			componentCount = it->second->size();
-		}
-			
-#else
-			
-		Vector<Component*>* componentsVector = componentsMap[componentType];
-		if(NULL != componentsVector)
-		{
-			componentCount = componentsVector->size();
-		}
-			
-#endif
-	}
-		
-	return componentCount;
-}
 	
 void Entity::SetScene(Scene * _scene)
 {
@@ -465,7 +144,7 @@ void Entity::SetScene(Scene * _scene)
 	{
 		return;
 	}
-	// РЎheck
+
 	if (scene)
 	{
 		scene->UnregisterEntity(this);
@@ -476,21 +155,13 @@ void Entity::SetScene(Scene * _scene)
 		scene->RegisterEntity(this);
 		GlobalEventSystem::Instance()->PerformAllEventsFromCache(this);
 	}
-		
-		
-		
+
 	const std::vector<Entity*>::iterator & childrenEnd = children.end();
 	for (std::vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
 	{
 		(*t)->SetScene(_scene);
 	}
 }
-    
-Scene * Entity::GetScene()
-{
-	return scene;
-}
-	
 	
 void Entity::SetParent(Entity * _parent)
 {
@@ -881,50 +552,17 @@ Entity* Entity::Clone(Entity *dstNode)
 	}
 		
 	dstNode->RemoveAllComponents();
-	for (uint32 k = 0; k < COMPONENTS_IN_VECTOR_COUNT;++k)
+    size_t size = components.size();
+	for (size_t k = 0; k < size;++k)
 	{
-		if(components[k])
-		{
-			dstNode->AddComponent(components[k]->Clone(dstNode));
-		}
+        dstNode->AddComponent(components[k]->Clone(dstNode));
 	}
-		
-#if defined(COMPONENT_STORAGE_STDMAP)
-		
-	for(ComponentsMap::iterator it = componentsMap.begin();
-		it != componentsMap.end(); ++it)
-	{
-		for(Vector<Component*>::iterator compIt = it->second->begin();
-			compIt != it->second->end(); ++compIt)
-		{
-			dstNode->AddComponent((*compIt)->Clone(dstNode));
-		}
-	}
-		
-#else
-		
-	for(ComponentsMap::iterator it = componentsMap.begin();
-		it != componentsMap.end(); ++it)
-	{
-		Vector<Component*>* componentsVector = it->second;
-			
-		if(NULL != componentsVector)
-		{
-			for(Vector<Component*>::iterator compIt = componentsVector->begin();
-				compIt != componentsVector->end(); ++compIt)
-			{
-				dstNode->AddComponent((*compIt)->Clone(dstNode));
-			}
-		}
-	}
-		
-#endif
 		
 	dstNode->name = name;
 	dstNode->tag = tag;
+    
+    //flags are intentionally not cloned
 	//dstNode->flags = flags;
-		
-	//dstNode->nodeAnimations = nodeAnimations;
 		
 	dstNode->RemoveAllChildren();
     dstNode->children.reserve(children.size());
@@ -1081,71 +719,27 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
         
 	KeyedArchive *compsArch = new KeyedArchive();
 	uint32 savedIndex = 0;
-	for(uint32 i = 0; i < components.size(); ++i)
-	{
-		if(NULL != components[i])
-		{                       
-            DVASSERT(i < Component::DEBUG_COMPONENTS); //Bad idea to allocate debug components in vector
-			//don't save empty custom properties
-			if(Component::CUSTOM_PROPERTIES_COMPONENT == i)
-			{
-				CustomPropertiesComponent* customProps = cast_if_equal<CustomPropertiesComponent*>(components[i]);
-				if(customProps && customProps->GetArchive()->Count() <= 0)
-				{
-					continue;
-				}
-			}
-				
-			KeyedArchive *compArch = new KeyedArchive();
-			components[i]->Serialize(compArch, serializationContext);
-			compsArch->SetArchive(KeyedArchive::GenKeyFromIndex(savedIndex), compArch);
-			compArch->Release();
-			savedIndex++;
-		}
+    for (uint32 i = 0; i < components.size (); ++i)
+    {
+        if (components[i]->GetType () < Component::DEBUG_COMPONENTS)
+        {
+            //don't save empty custom properties
+            if (Component::CUSTOM_PROPERTIES_COMPONENT == i)
+            {
+                CustomPropertiesComponent* customProps = cast_if_equal<CustomPropertiesComponent*> (components[i]);
+                if (customProps && customProps->GetArchive ()->Count () <= 0)
+                {
+                    continue;
+                }
+            }
+
+            KeyedArchive *compArch = new KeyedArchive ();
+            components[i]->Serialize (compArch, serializationContext);
+            compsArch->SetArchive (KeyedArchive::GenKeyFromIndex (savedIndex), compArch);
+            compArch->Release ();
+            savedIndex++;
+        }
 	}
-		
-#if defined(COMPONENT_STORAGE_STDMAP)
-		
-	for(ComponentsMap::iterator it = componentsMap.begin();
-		it != componentsMap.end(); ++it)
-	{
-		for(Vector<Component*>::iterator compIt = it->second->begin();
-			compIt != it->second->end(); ++compIt)
-		{
-			KeyedArchive *compArch = new KeyedArchive();
-			(*compIt)->Serialize(compArch, sceneFileV2);
-			compsArch->SetArchive(compTypeName, compArch);
-			compArch->Release();
-			savedIndex++;
-		}
-	}
-		
-#else
-		
-	for(ComponentsMap::iterator it = componentsMap.begin();
-		it != componentsMap.end();
-		++it)
-	{
-        //dont save debug components
-        if (it->first > Component::DEBUG_COMPONENTS) 
-            continue; 
-		Vector<Component*>* componentsVector = it->second;
-			
-		if(NULL != componentsVector)
-		{
-			for(Vector<Component*>::iterator compIt = componentsVector->begin();
-				compIt != componentsVector->end(); ++compIt)
-			{
-				KeyedArchive *compArch = new KeyedArchive();
-				(*compIt)->Serialize(compArch, serializationContext);
-				compsArch->SetArchive(KeyedArchive::GenKeyFromIndex(savedIndex), compArch);
-				compArch->Release();
-				savedIndex++;
-			}
-		}
-	}
-		
-#endif
 		
 	compsArch->SetUInt32("count", savedIndex);
 	archive->SetArchive("components", compsArch);
@@ -1295,47 +889,15 @@ bool Entity::GetLocked()
 	
 void Entity::GetDataNodes(Set<DataNode*> & dataNodes)
 {
-	for (uint32 k = 0; k < components.size(); ++k)
+    size_t size = components.size();
+	for (size_t k = 0; k < size; ++k)
 	{
-		if(components[k])
-		{
-			components[k]->GetDataNodes(dataNodes);
-		}
+        components[k]->GetDataNodes(dataNodes);
 	}
+
 		
-#if defined(COMPONENT_STORAGE_STDMAP)
-		
-	for(ComponentsMap::iterator it = componentsMap.begin();
-		it != componentsMap.end(); ++it)
-	{
-		for(Vector<Component*>::iterator compIt = it->second->begin();
-			compIt != it->second->end(); ++compIt)
-		{
-			(*compIt)->GetDataNodes(dataNodes);
-		}
-	}
-		
-#else
-		
-	for(ComponentsMap::iterator it = componentsMap.begin();
-		it != componentsMap.end(); ++it)
-	{
-		Vector<Component*>* componentsVector = it->second;
-			
-		if(NULL != componentsVector)
-		{
-			for(Vector<Component*>::iterator compIt = componentsVector->begin();
-				compIt != componentsVector->end(); ++compIt)
-			{
-				(*compIt)->GetDataNodes(dataNodes);
-			}
-		}
-	}
-		
-#endif
-		
-	uint32 size = (uint32)children.size();
-	for (uint32 c = 0; c < size; ++c)
+    size = children.size();
+	for (size_t c = 0; c < size; ++c)
 	{
 		children[c]->GetDataNodes(dataNodes);
 	}

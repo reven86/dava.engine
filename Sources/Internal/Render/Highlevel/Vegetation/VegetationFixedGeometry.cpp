@@ -549,7 +549,7 @@ void VegetationFixedGeometry::GenerateRenderDataObjects(VegetationRenderData& re
     vertexRenderDataObject->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].binormal));
     vertexRenderDataObject->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(VegetationVertex), &(vertexData[0].tangent));
     vertexRenderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(VegetationVertex), &(vertexData[0].texCoord0));
-    vertexRenderDataObject->BuildVertexBuffer(vertexData.size(), RenderDataObject::STATIC_DRAW, true);
+    vertexRenderDataObject->BuildVertexBuffer(vertexData.size(), BDT_STATIC_DRAW, true);
     
     size_t totalIndexObjectArrayCount = indexRenderDataObject.size();
     for(size_t indexArrayIndex = 0; indexArrayIndex < totalIndexObjectArrayCount; ++indexArrayIndex)
