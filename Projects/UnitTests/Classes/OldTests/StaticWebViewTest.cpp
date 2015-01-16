@@ -120,7 +120,7 @@ void StaticWebViewTest::LoadResources()
             &StaticWebViewTest::OnButtonExecJS);
 
     CreateUIButton(loadHTMLString, font,
-            Rect(0 + 300 * 2, 510 + 30 * 3, 300, 30),L"load HTML String",
+            Rect(0 + 300 * 2, 510 + 30 * 3, 300, 30), L"load HTML String",
             &StaticWebViewTest::OnLoadHTMLString);
 
 	SafeRelease(font);

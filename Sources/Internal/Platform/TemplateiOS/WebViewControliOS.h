@@ -59,7 +59,7 @@ public:
 	// Get the list of cookies for specific domain
     Map<String, String> GetCookies(const String& targetUrl) const override;
 	// Perfrom Java script
-    int32 ExecuteJScript(const String& scriptString) override;
+    void ExecuteJScript(const String& scriptString) override;
 
     void OpenFromBuffer(const String& string, const FilePath& basePath) override;
     
@@ -111,8 +111,6 @@ private:
     bool isVisible;
     
     UIWebView& uiWebView;
-    
-    static int runScriptID;
 };
 
 };

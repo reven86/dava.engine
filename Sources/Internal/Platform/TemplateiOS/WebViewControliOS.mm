@@ -177,15 +177,12 @@
     return image;
 }
 
-- (void)onExecuteJScript:(NSArray *)result
+- (void)onExecuteJScript:(NSString *)result
 {
     if (delegate)
     {
-        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
-        NSString* requestResult = (NSString*)[result objectAtIndex:1];
-        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
+        delegate->OnExecuteJScript(webView, DAVA::String([result UTF8String]));
     }
-    [result release];
 }
 
 - (void)setDAVAUIWebView:(DAVA::UIWebView*) uiWebControl
@@ -306,8 +303,6 @@ namespace DAVA
 	//Use unqualified UIWebView and UIScreen from global namespace, i.e. from UIKit
 	using ::UIWebView;
 	using ::UIScreen;
-
-int WebViewControl::runScriptID = 0;
 
     static const struct
     {
@@ -440,20 +435,20 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 	return resultMap;
 }
 
-int32 WebViewControl::ExecuteJScript(const String& scriptString)
+void WebViewControl::ExecuteJScript(const String& scriptString)
 {
-    int requestID = runScriptID++;
-	NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
-	NSString *resultString = [(UIWebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
+	NSString *jScriptString = [NSString stringWithUTF8String:
+                                                scriptString.c_str()];
+    
+	NSString *resultString = [(UIWebView*)webViewPtr
+                        stringByEvaluatingJavaScriptFromString:jScriptString];
 
     WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
     if (w)
     {
-        NSArray* array = [NSArray arrayWithObjects:[NSNumber numberWithInt:requestID], resultString, nil];
-        [array retain];
-        [w performSelector:@selector(onExecuteJScript:) withObject:array afterDelay:0.0];
+        [w performSelector:@selector(onExecuteJScript:)
+                withObject:resultString afterDelay:0.0];
     }
-    return requestID;
 }
 
 void WebViewControl::SetRect(const Rect& rect)
