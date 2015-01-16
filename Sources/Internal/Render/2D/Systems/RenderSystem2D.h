@@ -168,7 +168,7 @@ public:
     void Flush();
     
     void SetClip(const Rect &rect);
-	void ClipRect(const Rect &rect);
+	void AccumulateClipRect(const Rect &rect);
 	void RemoveClip();
     
 	void ClipPush();
