@@ -190,7 +190,7 @@ void Scene::InitGlobalMaterial()
 
     Vector3 defaultVec3;
     Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
-    //float32 defaultFloat0 = 0.0f;
+    float32 defaultFloat0 = 0.0f;
     float32 defaultFloat05 = 0.5f;
     float32 defaultFloat10 = 1.0f;
     Vector2 defaultVec2;
@@ -244,6 +244,15 @@ void Scene::InitGlobalMaterial()
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DETAIL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DETAIL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_SHADOW_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
 
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_REFLECTION_TINT_COLOR0)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_REFLECTION_TINT_COLOR0, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_REFLECTION_TINT_COLOR1)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_REFLECTION_TINT_COLOR1, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_REFLECTION_TINT_COLOR2)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_REFLECTION_TINT_COLOR2, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FRESNEL_BIAS0)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FRESNEL_BIAS0, Shader::UT_FLOAT, 1, &defaultFloat0);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FRESNEL_BIAS1)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FRESNEL_BIAS1, Shader::UT_FLOAT, 1, &defaultFloat0);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FRESNEL_BIAS2)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FRESNEL_BIAS2, Shader::UT_FLOAT, 1, &defaultFloat0);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FRESNEL_POW0)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FRESNEL_POW0, Shader::UT_FLOAT, 1, &defaultFloat0);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FRESNEL_POW1)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FRESNEL_POW1, Shader::UT_FLOAT, 1, &defaultFloat0);
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FRESNEL_POW2)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FRESNEL_POW2, Shader::UT_FLOAT, 1, &defaultFloat0);
 }
 
 void Scene::CreateSystems()

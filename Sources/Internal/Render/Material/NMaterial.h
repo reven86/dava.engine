@@ -218,7 +218,16 @@ public:
     static const FastName PARAM_DETAIL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
-    
+    static const FastName PARAM_REFLECTION_TINT_COLOR0;
+    static const FastName PARAM_REFLECTION_TINT_COLOR1;
+    static const FastName PARAM_REFLECTION_TINT_COLOR2;
+    static const FastName PARAM_FRESNEL_BIAS0;
+    static const FastName PARAM_FRESNEL_BIAS1;
+    static const FastName PARAM_FRESNEL_BIAS2;
+    static const FastName PARAM_FRESNEL_POW0;
+    static const FastName PARAM_FRESNEL_POW1;
+    static const FastName PARAM_FRESNEL_POW2;
+
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;

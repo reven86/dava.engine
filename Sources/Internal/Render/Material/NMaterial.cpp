@@ -100,6 +100,15 @@ const FastName NMaterial::PARAM_DECAL_TILE_COLOR("decalTileColor");
 const FastName NMaterial::PARAM_DETAIL_TILE_SCALE("detailTileCoordScale");
 const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
+const FastName NMaterial::PARAM_REFLECTION_TINT_COLOR0("reflectionTintColor0");
+const FastName NMaterial::PARAM_REFLECTION_TINT_COLOR1("reflectionTintColor1");
+const FastName NMaterial::PARAM_REFLECTION_TINT_COLOR2("reflectionTintColor2");
+const FastName NMaterial::PARAM_FRESNEL_BIAS0("fresnelBias0");
+const FastName NMaterial::PARAM_FRESNEL_BIAS1("fresnelBias1");
+const FastName NMaterial::PARAM_FRESNEL_BIAS2("fresnelBias2");
+const FastName NMaterial::PARAM_FRESNEL_POW0("fresnelPow0");
+const FastName NMaterial::PARAM_FRESNEL_POW1("fresnelPow1");
+const FastName NMaterial::PARAM_FRESNEL_POW2("fresnelPow2");
 
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
