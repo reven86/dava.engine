@@ -569,7 +569,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
 // calc time_t by hand to get time stamp in utc(system function
 // returns it with local timezone shift only )
 // code from http://stackoverflow.com/questions/16647819/timegm-cross-platform
-Timestamp DateTime::InternalTimeGm(std::tm *t) const
+Timestamp DateTime::InternalTimeGm(tm *t) const
 {
     int32 year = t->tm_year + 1900;
     int32 month = t->tm_mon;
