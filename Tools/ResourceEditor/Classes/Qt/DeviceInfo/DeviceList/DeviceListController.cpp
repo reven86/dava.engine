@@ -122,9 +122,18 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
         trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()));
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
-            // Create network service
-            DeviceServices services;
-            services.log = new DeviceLogController(peer, view, this);
+            // Temporal workaround for situation:
+            // 1. connection to device has been established and log window is on screen
+            // 2. device app exits and breaks connection
+            // 3. log window stays on screen, controller tries to establish connection
+            // 4. press 'Disconnect' button, log windows stays on screen, i.e. connection
+            //    has been broken already and DeleteLogger has been invoked, but not destroyed log window
+            // Here reuse log service and its window
+            DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+            if (NULL == services.log)
+            {
+                services.log = new DeviceLogController(peer, view, this);
+            }
 
             // Update item's ROLE_CONNECTION_ID and ROLE_PEER_SERVICES
             QStandardItem* item = model->itemFromIndex(index);
