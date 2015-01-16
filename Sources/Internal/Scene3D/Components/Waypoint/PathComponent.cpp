@@ -143,7 +143,7 @@ Component * PathComponent::Clone(Entity * toEntity)
     if(waypointCount)
     {
         newComponent->waypoints.resize(waypointCount);
-        std::generate(newComponent->waypoints.begin(), newComponent->waypoints.end(),NewWaypoint);
+        std::generate(newComponent->waypoints.begin(), newComponent->waypoints.end(), NewWaypoint);
 
         for(uint32 w = 0; w < waypointCount; ++w)
         {
@@ -331,12 +331,6 @@ void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint *point)
             --waypointCount;
         }
     }
-}
-
-void PathComponent::RemoveAllPoints()
-{
-    Reset();
-    waypoints.clear();
 }
 
 PathComponent::Waypoint * PathComponent::GetWaypoint(const FastName & name)

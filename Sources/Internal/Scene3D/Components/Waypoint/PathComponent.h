@@ -106,7 +106,6 @@ public:
 
     void AddPoint(Waypoint *point);
     void RemovePoint(Waypoint *point);
-    void RemoveAllPoints();
     
     Waypoint * GetWaypoint(const FastName & name);
     const Vector<Waypoint *> & GetPoints() const;
