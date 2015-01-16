@@ -495,7 +495,7 @@ void MainWindow::OnSaveDocument()
     if (!document || !document->IsModified())
         return;
 
-    DVVERIFY(project->SavePackage(activeDocument->Package()));
+    DVVERIFY(project->SavePackage(activeDocument->GetPackage()));
     activeDocument->ClearModified();
 }
 
@@ -506,7 +506,7 @@ void MainWindow::OnSaveAllDocuments()
         PackageDocument * document = GetTabDocument(i);
         if (!document)
             continue;
-        DVVERIFY(project->SavePackage(document->Package()));
+        DVVERIFY(project->SavePackage(document->GetPackage()));
         document->ClearModified();
     }
 }
@@ -714,7 +714,7 @@ void MainWindow::UpdateSaveButtons()
 int MainWindow::CreateTabContent(PackageNode *package)
 {
     int oldIndex = ui->tabBar->currentIndex();
-    PackageDocument *document = new PackageDocument(package, this);
+    PackageDocument *document = new PackageDocument(project, package, this);
     
     QVariant var;
     var.setValue<PackageDocument *>(document);
