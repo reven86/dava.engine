@@ -28,6 +28,12 @@
 
 #include "DateTime.h"
 
+#ifndef __DAVAENGINE_WIN32__
+#include <time.h>
+#endif
+
+
+
 #define SKIP_WHITESPACE while (*s == ' ' || *s == '\t') s++;
 #define SKIP_NON_WHITESPACE while (*s != ' ' && *s != '\t' && *s != '\0') s++;
 #define CHECK_PREMATURE_END    if (*s == '\0') return false;
