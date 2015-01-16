@@ -115,8 +115,6 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 			boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
 			boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
 
-			DAVA::Vector3 pos = curEntityTransform.GetTranslationVector();
-
 			btObject = new btCollisionObject();
 			btShape = new btBvhTriangleMeshShape(btTriangles, true, true);
 

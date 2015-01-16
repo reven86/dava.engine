@@ -96,6 +96,8 @@ protected:
     
     void UpdateWidgetVisibility();
     
+    void UpdateDeleteLODButtons();
+    
 private:
 	Ui::LODEditor *ui;
     QtPosSaver posSaver;

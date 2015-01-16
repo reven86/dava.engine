@@ -15,11 +15,17 @@ public:
         CREATED_FROM_PROTOTYPE_CHILD
     };
     
-public:
+private:
     ControlNode(DAVA::UIControl *control);
-    ControlNode(ControlNode *node, DAVA::UIPackage *prototypePackage, eCreationType creationType = CREATED_FROM_PROTOTYPE);
+    ControlNode(ControlNode *node, DAVA::UIPackage *prototypePackage, eCreationType creationType);
+    ControlNode(ControlNode *node);
     virtual ~ControlNode();
 
+public:
+    static ControlNode *CreateFromControl(DAVA::UIControl *control);
+    static ControlNode *CreateFromPrototype(ControlNode *node, DAVA::UIPackage *prototypePackage);
+    ControlNode *Clone();
+    
     void Add(ControlNode *node);
     void InsertBelow(ControlNode *node, const ControlNode *belowThis);
     void Remove(ControlNode *node);

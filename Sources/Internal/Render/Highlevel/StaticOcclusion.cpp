@@ -495,14 +495,22 @@ namespace DAVA
         recordedBatches.push_back(std::pair<RenderBatch*, OcclusionQueryPoolHandle>(batch, handle));
     }
     
-    
+    AABBox3 bbox;
+    uint32 sizeX;
+    uint32 sizeY;
+    uint32 sizeZ;
+    uint32  blockCount;
+    uint32  objectCount;
+    uint32 * data;
+    float32* cellHeightOffset;
+
     StaticOcclusionData::StaticOcclusionData()
-    : data(0)
-    , objectCount(0)
-    , blockCount(0)
-    , sizeX(5)
+    : sizeX(5)
     , sizeY(5)
     , sizeZ(2)
+    , blockCount(0)
+    , objectCount(0)
+    , data(0)
     , cellHeightOffset(0)
     {
         

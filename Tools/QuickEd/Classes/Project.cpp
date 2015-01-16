@@ -171,29 +171,29 @@ bool Project::Open(const QString &path)
     return true;
 }
 
-PackageNode *Project::OpenPackage(const QString &packagePath)
+DAVA::RefPtr<PackageNode> Project::NewPackage(const QString &path)
+{
+    return DAVA::RefPtr<PackageNode>();
+}
+
+RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
 {
     FilePath path(packagePath.toStdString());
     String fwPath = path.GetFrameworkPath();
 
     EditorUIPackageBuilder builder;
     UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
+    if (!newPackage)
+    {
+        newPackage = LegacyEditorUIPackageLoader(&builder, legacyData).LoadPackage(path);
+    }
+
     if (newPackage)
     {
         SafeRelease(newPackage);
         return builder.GetPackageNode();
     }
-    else
-    {
-        EditorUIPackageBuilder b2;
-        newPackage = LegacyEditorUIPackageLoader(&b2, legacyData).LoadPackage(path);
-        if (newPackage)
-        {
-            SafeRelease(newPackage);
-            return b2.GetPackageNode();
-        }
-    }
-    return NULL;
+    return RefPtr<PackageNode>();
 }
 
 bool Project::SavePackage(PackageNode *package)

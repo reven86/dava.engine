@@ -100,7 +100,7 @@ Vector2 CoreMacOSPlatformQt::GetMousePosition()
     //TODO: write correct code
     Vector2 mouseLocation;
     mouseLocation.x = 0.f;
-    mouseLocation.y = Core::Instance()->GetPhysicalScreenHeight() - 0.f;
+    mouseLocation.y = (float32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 
     return mouseLocation;
 }

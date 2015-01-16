@@ -10,8 +10,9 @@ class PackageNode : public PackageBaseNode
 {
 public:
     PackageNode(DAVA::UIPackage *package);
+private:
     virtual ~PackageNode();
-    
+public:
     virtual int GetCount() const override;
     virtual PackageBaseNode *Get(int index) const override;
 

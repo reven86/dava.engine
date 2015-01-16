@@ -89,10 +89,12 @@ void ApplicationCore::Draw()
 void ApplicationCore::BeginFrame()
 {
 	RenderManager::Instance()->BeginFrame();
+    RenderSystem2D::Instance()->Reset();
 }
 
 void ApplicationCore::EndFrame()
 {
+    RenderSystem2D::Instance()->Flush();
 	RenderManager::Instance()->EndFrame();
     RenderManager::Instance()->ProcessStats();
 }

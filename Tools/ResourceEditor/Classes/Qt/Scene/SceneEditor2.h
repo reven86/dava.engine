@@ -64,6 +64,11 @@
 #include "Scene/System/OwnersSignatureSystem.h"
 #include "Scene/System/EditorMaterialSystem.h"
 
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+
+
 class FogSettingsChangedReceiver;
 
 class SceneEditor2 : public DAVA::Scene
@@ -109,6 +114,10 @@ public:
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
 
+    DAVA::WASDControllerSystem *wasdSystem;
+    DAVA::RotationControllerSystem *rotationSystem;
+    DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
+
 	// save/load
 	bool Load(const DAVA::FilePath &path);
     virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
@@ -143,7 +152,6 @@ public:
 	bool IsHUDVisible() const;
 
 	// DAVA events
-	void PostUIEvent(DAVA::UIEvent *event);
 	virtual void Update(float timeElapsed);
 
 	// this function should be called each time UI3Dview changes its position

@@ -257,8 +257,8 @@ namespace DAVA
 		}
 
 	protected:
-		FunctionPointerHolder fnPointerHolder;
 		ObjectPointerHolder objPointerHolder;
+		FunctionPointerHolder fnPointerHolder;
 
 		typedef R(*InvokerType0)(void *obj, const FunctionPointerHolder&);
 		typedef R(*InvokerType1)(void *obj, const FunctionPointerHolder&, ParamRefType1);

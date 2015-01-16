@@ -38,12 +38,6 @@
     DAVA::NativeViewPool<UITextFieldHolder> textFieldPool;
 }
 
-- (void)drawRect:(CGRect)rect
-{
-    // Do nothing to reduce fill usage.
-}
-
-
 - (UIView *) PrepareView: (UIView *)view
 {
     if([view superview] == nil)

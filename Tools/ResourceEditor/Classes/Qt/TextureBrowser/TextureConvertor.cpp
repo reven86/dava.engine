@@ -51,13 +51,13 @@
 #include "Settings/SettingsManager.h"
 
 TextureConvertor::TextureConvertor()
-	: curJobOriginal(NULL)
-	, curJobThumbnail(NULL)
-	, curJobConverted(NULL)
-	, jobIdCounter(1)
+	: jobIdCounter(1)
 	, convertJobQueueSize(0)
 	, waitingComletion(0)
-    , waitDialog(NULL)
+	, curJobThumbnail(NULL)
+	, curJobOriginal(NULL)
+	, curJobConverted(NULL)
+	, waitDialog(NULL)
 {
 	// slots will be called in connector(this) thread
 	QObject::connect(&thumbnailWatcher, SIGNAL(finished()), this, SLOT(threadThumbnailFinished()), Qt::QueuedConnection);
@@ -493,7 +493,6 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 	TextureInfo result;
 
 	DAVA::Vector<DAVA::Image*> convertedImages;
-	DAVA::Image* davaImg = NULL;
 
 	if(NULL != item)
 	{
