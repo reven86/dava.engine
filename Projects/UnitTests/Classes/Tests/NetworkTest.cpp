@@ -214,18 +214,15 @@ void TestEchoClient::SendParcel(Parcel* parcel)
 //////////////////////////////////////////////////////////////////////////
 NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , testingEcho(true)
-                           , logger()
+#ifdef NETWORKTEST_WITH_UI_FOR_LOCAL
                            , serverBytesRecv(NULL)
                            , serverBytesSent(NULL)
                            , serverBytesDelivered(NULL)
                            , clientBytesRecv(NULL)
                            , clientBytesSent(NULL)
                            , clientBytesDelivered(NULL)
-                           , timeLeft(NULL)
+#endif  // NETWORKTEST_WITH_UI_FOR_LOCAL
 {
-    new NetCore();
-
-    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &NetworkTest::CreateLogger), MakeFunction(this, &NetworkTest::DeleteLogger));
     NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateEcho), MakeFunction(this, &NetworkTest::DeleteEcho));
 
     RegisterFunction(this, &NetworkTest::TestEcho, "TestEcho", NULL);
@@ -241,24 +238,9 @@ NetworkTest::~NetworkTest()
 
 void NetworkTest::LoadResources()
 {
+#ifdef NETWORKTEST_WITH_UI_FOR_LOCAL
     CreateUI();
-    {
-        NetConfig loggerConfig(SERVER_ROLE);
-        loggerConfig.AddTransport(TRANSPORT_TCP, Endpoint(LOGGER_PORT));
-        loggerConfig.AddService(SERVICE_LOG);
-
-        NetCore::Instance()->CreateController(loggerConfig);
-    }
-    {
-    	// Cannot log wide string uniformly on all platforms, maybe due to incorrect format flag
-        Logger::Debug( "Name        : %s", UTF8Utils::EncodeToUTF8(DeviceInfo::GetName()).c_str());
-        Logger::Debug( "Platfrom    : %s", DeviceInfo::GetPlatformString().c_str());
-        Logger::Debug( "Model       : %s", DeviceInfo::GetModel().c_str());
-        Logger::Debug( "Version     : %s", DeviceInfo::GetVersion().c_str());
-        Logger::Debug( "Manufacturer: %s", DeviceInfo::GetManufacturer().c_str());
-        Logger::Debug( "CPU count   : %d", DeviceInfo::GetCpuCount());
-        Logger::Debug( "UDID        : %s", DeviceInfo::GetUDID().c_str());
-    }
+#endif  // NETWORKTEST_WITH_UI_FOR_LOCAL
 
     NetConfig serverConfig(SERVER_ROLE);
     serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(ECHO_PORT));
@@ -273,10 +255,9 @@ void NetworkTest::LoadResources()
 
 void NetworkTest::UnloadResources()
 {
-    logger.Uninstall();     // Uninstall logger here
-    NetCore::Instance()->Finish(true);
-    NetCore::Instance()->Release();
+#ifdef NETWORKTEST_WITH_UI_FOR_LOCAL
     DestroyUI();
+#endif  // NETWORKTEST_WITH_UI_FOR_LOCAL
 }
 
 bool NetworkTest::RunTest(int32 testNum)
@@ -287,18 +268,10 @@ bool NetworkTest::RunTest(int32 testNum)
 
 void NetworkTest::Update(float32 timeElapsed)
 {
-    if (echoServer.IsTestDone() && echoClient.IsTestDone())
-    {
-        static float32 delay = 0.0f;
-        delay += timeElapsed;
-        if (delay > 10.0f)  // wait 10 sec after finishing test to allow logger to send enqueued records
-            testingEcho = false;
-        UpdateUI(true, 10.0f - delay);
-    }
-    else
-        UpdateUI(false, 0.0f);
-    NetCore::Instance()->Poll();
-
+    testingEcho = !(echoServer.IsTestDone() && echoClient.IsTestDone());
+#ifdef NETWORKTEST_WITH_UI_FOR_LOCAL
+    UpdateUI();
+#endif  // NETWORKTEST_WITH_UI_FOR_LOCAL
     TestTemplate<NetworkTest>::Update(timeElapsed);
 }
 
@@ -379,11 +352,6 @@ void NetworkTest::TestNetConfig(PerfFuncData* data)
     TEST_VERIFY(3 == config2.Services().size());
 }
 
-IChannelListener* NetworkTest::CreateLogger(uint32 serviceId, void* context)
-{
-    return &logger;
-}
-
 IChannelListener* NetworkTest::CreateEcho(uint32 serviceId, void* context)
 {
     if (ECHO_SERVER_CONTEXT == reinterpret_cast<intptr_t>(context))
@@ -398,12 +366,8 @@ void NetworkTest::DeleteEcho(IChannelListener* obj, void* context)
     // Do nothing as services are members of NetworkTest
 }
 
-void NetworkTest::DeleteLogger(IChannelListener* obj, void* context)
-{
-    // Do nothing as logger is member of NetworkTest
-}
-
-void NetworkTest::UpdateUI(bool waitStage, float32 left)
+#ifdef NETWORKTEST_WITH_UI_FOR_LOCAL
+void NetworkTest::UpdateUI()
 {
     serverBytesRecv->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesRecieved())));
     serverBytesSent->SetText(Format(L"%u", static_cast<uint32>(echoServer.BytesSent())));
@@ -412,11 +376,6 @@ void NetworkTest::UpdateUI(bool waitStage, float32 left)
     clientBytesRecv->SetText(Format(L"%u", static_cast<uint32>(echoClient.BytesRecieved())));
     clientBytesSent->SetText(Format(L"%u", static_cast<uint32>(echoClient.BytesSent())));
     clientBytesDelivered->SetText(Format(L"%u", static_cast<uint32>(echoClient.BytesDelivered())));
-
-    if (waitStage)
-    {
-        timeLeft->SetText(Format(L"%.1f", left));
-    }
 }
 
 void NetworkTest::CreateUI()
@@ -542,13 +501,6 @@ void NetworkTest::CreateUI()
         clientBytesDelivered->SetText(L"0");
         AddControl(clientBytesDelivered);
     }
-    //////////////////////////////////////////////////////////////////////////
-    {
-        timeLeft = new UIStaticText;
-        timeLeft->SetFont(font);
-        timeLeft->SetRect(Rect(SERVER_X, CONTROL_HEIGHT * 5, VALUE_WIDTH, CONTROL_HEIGHT));
-        AddControl(timeLeft);
-    }
     SafeRelease(font);
 }
 
@@ -560,5 +512,5 @@ void NetworkTest::DestroyUI()
     SafeRelease(clientBytesRecv);
     SafeRelease(clientBytesSent);
     SafeRelease(clientBytesDelivered);
-    SafeRelease(timeLeft);
 }
+#endif  // NETWORKTEST_WITH_UI_FOR_LOCAL

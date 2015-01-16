@@ -26,15 +26,16 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __NETWORK_TEST_H
-#define __NETWORK_TEST_H
+#ifndef __NETWORK_TEST_H__
+#define __NETWORK_TEST_H__
 
 #include <DAVAEngine.h>
 
 #include <Network/NetService.h>
-#include <Network/Services/NetLogger.h>
 
 #include "TestTemplate.h"
+
+//#define NETWORKTEST_WITH_UI_FOR_LOCAL
 
 using DAVA::Net::IChannel;
 using DAVA::Net::IChannelListener;
@@ -117,7 +118,6 @@ protected:
 
     enum eServiceTypes
     {
-        SERVICE_LOG,
         SERVICE_ECHO
     };
 
@@ -127,8 +127,7 @@ protected:
         ECHO_CLIENT_CONTEXT
     };
 
-    static const uint16 LOGGER_PORT = 9999;
-    static const uint16 ECHO_PORT = 10101;
+    static const uint16 ECHO_PORT = 9999;
 
 public:
     NetworkTest();
@@ -144,29 +143,29 @@ public:
     void TestEndpoint(PerfFuncData* data);
     void TestNetConfig(PerfFuncData* data);
 
-    IChannelListener* CreateLogger(uint32 serviceId, void* context);
     IChannelListener* CreateEcho(uint32 serviceId, void* context);
     void DeleteEcho(IChannelListener* obj, void* context);
-    void DeleteLogger(IChannelListener* obj, void* context);
 
+#ifdef NETWORKTEST_WITH_UI_FOR_LOCAL
 private:
     void CreateUI();
-    void UpdateUI(bool waitStage, float32 left);
+    void UpdateUI();
     void DestroyUI();
+#endif  // NETWORKTEST_WITH_UI_FOR_LOCAL
 
 private:
     bool testingEcho;
     TestEchoServer echoServer;
     TestEchoClient echoClient;
-    DAVA::Net::NetLogger logger;
 
+#ifdef NETWORKTEST_WITH_UI_FOR_LOCAL
     DAVA::UIStaticText* serverBytesRecv;
     DAVA::UIStaticText* serverBytesSent;
     DAVA::UIStaticText* serverBytesDelivered;
     DAVA::UIStaticText* clientBytesRecv;
     DAVA::UIStaticText* clientBytesSent;
     DAVA::UIStaticText* clientBytesDelivered;
-    DAVA::UIStaticText* timeLeft;
+#endif  // NETWORKTEST_WITH_UI_FOR_LOCAL
 };
 
 #endif  // __NETWORK_TEST_H
