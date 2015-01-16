@@ -125,7 +125,7 @@ public:
 
     
 	virtual void SetLocked(bool locked);
-	virtual bool IsLocked() const;
+	bool IsLocked() const;
 	
 protected:
 	inline Scene * GetScene() const;
