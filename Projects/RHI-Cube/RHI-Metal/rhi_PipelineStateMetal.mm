@@ -211,7 +211,7 @@ PipelineStateMetal_t::VertexProg::GetBufferInfo( MTLRenderPipelineReflection* in
 
 Handle 
 PipelineStateMetal_t::VertexProg::InstanceConstBuffer( unsigned bufIndex )
-{
+{	
     Handle  handle = InvalidHandle;
 
     DVASSERT(bufIndex < countof(cbuf));

@@ -189,6 +189,7 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_OUT_END           };\n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) struct __VP_Buffer##idx { packed_float4 data[sz]; };\n"
+"#define VP_BUF_FLOAT3X3(buf,reg)  float3x3( (float3)(float4(VP_Buffer##buf[reg+0])), (float3)(float4(VP_Buffer##buf[reg+1])), (float3)(float4(VP_Buffer##buf[reg+2])) );\n"
 
 "#define VPROG_BEGIN             vertex VP_Output vp_main"
 "("
@@ -250,8 +251,8 @@ static const char* _ShaderHeader_GLES2 =
 "#define float4x4               mat4\n"
 "#define float3x3               mat3\n"
 
-"vec4 mul( vec4 v, mat4 m ) { return v*m; }\n"
-"vec3 mul( vec3 v, mat3 m ) { return v*m; }\n"
+"vec4 mul( vec4 v, mat4 m ) { return m*v; }\n"
+"vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
 
 "float4 tex2D( sampler2D s, vec2 t ) { return texture2D(s,t); }\n"
 ;
@@ -269,6 +270,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_OUT_END           \n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform vec4 VP_Buffer##idx[sz];\n"
+"#define VP_BUF_FLOAT3X3(buf,reg)  float3x3( float3(VP_Buffer##buf[reg+0]), float3(VP_Buffer##buf[reg+1]), float3(VP_Buffer##buf[reg+2]) );\n"
 
 "#define VPROG_BEGIN             void main() {\n"
 "#define VPROG_END               }\n"
@@ -319,6 +321,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VPROG_OUT_END           };\n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"
+"#define VP_BUF_FLOAT3X3(buf,reg)  float3x3( (float3)(float4(VP_Buffer##buf[reg+0])), (float3)(float4(VP_Buffer##buf[reg+1])), (float3)(float4(VP_Buffer##buf[reg+2])) );\n"
 
 "#define VPROG_BEGIN             VP_Output vp_main( VP_Input IN ) { VP_Output OUT;\n"
 "#define VPROG_END               return OUT; }\n"
