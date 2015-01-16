@@ -1666,7 +1666,7 @@ Texture * Landscape::CreateLandscapeTexture()
     Texture *fullTiled = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
     RenderManager::Instance()->SetHWRenderTargetTexture(fullTiled);
     RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()));
-
+    RenderManager::Instance()->SetHWClip(Rect(0.f, 0.f, -1.f, -1.f));
 
 	RenderManager::Instance()->ClearWithColor(1.f, 0.f, 1.f, 1.f);
  
