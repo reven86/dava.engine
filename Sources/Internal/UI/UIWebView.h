@@ -67,6 +67,10 @@ public:
 	// Get the list of cookies for specific domain
 	Map<String, String> GetCookies(const String& targetUrl) const;
 	// Perform Java script
+	// if you need return data from javascript just
+	// return JSON string you can parse it in c++
+	// with yaml parser, call back with JSON will come to
+	// IUIWebViewDelegate::OnExecuteJScript
 	void ExecuteJScript(const String& scriptString);
     
     void OpenFromBuffer(const String& string, const FilePath& basePath);

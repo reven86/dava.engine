@@ -233,7 +233,9 @@ void StaticWebViewTest::CreateUIButton(UIButton*& button, Font * font,
 
 void StaticWebViewTest::OnButtonExecJS(BaseObject* obj, void*, void*)
 {
-    webView1->ExecuteJScript("alert('Hello, World!');");
+    webView1->ExecuteJScript(
+            "document.body.innerHTML = \"<H1>Hi from JS!</H1>"
+            "<P>Test only test</P>\"");
 }
 
 void StaticWebViewTest::OnLoadHTMLString(BaseObject* obj, void*, void*)

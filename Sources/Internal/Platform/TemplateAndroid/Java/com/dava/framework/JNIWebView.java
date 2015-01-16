@@ -435,17 +435,15 @@ public class JNIWebView {
 				}
 				WebView webView = views.get(id);
 				
-				// if you need return data from javascript just
-				// return JSON string you can parse it in c++ 
-				// with yaml parser
+				String escapedJS = scriptString.replace("\"", "\\\"");
 				
 				String javaScript = 
 						"javascript:function call_back_func()"
 						+"{"
-						+"    return \"\" + eval(\"" + scriptString + "\");"
+						+"    return \"\" + eval(\"" + escapedJS + "\");"
 						+"}"
 						+"javascript:alert(call_back_func())";
-				Log.d(TAG, "exec JS: " + javaScript);
+
 				webView.loadUrl(javaScript);
 			}
 		});

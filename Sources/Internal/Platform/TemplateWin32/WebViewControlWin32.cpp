@@ -1088,13 +1088,12 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 	return Map<String, String>();
 }
 
-int32 WebViewControl::ExecuteJScript(const String& targetScript)
+void WebViewControl::ExecuteJScript(const String& targetScript)
 {
 	if (browserContainer)
 	{
-		return browserContainer->ExecuteJScript(targetScript);
+		browserContainer->ExecuteJScript(targetScript);
 	}
-	return 0;
 }
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)

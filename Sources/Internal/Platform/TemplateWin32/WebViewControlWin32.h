@@ -154,7 +154,7 @@ public:
 	// Get the list of cookies for specific domain
 	Map<String, String> GetCookies(const String& url) const override;
 	// Execute javascript string in webview
-	int32 ExecuteJScript(const String& scriptString) override;
+	void ExecuteJScript(const String& scriptString) override;
 	
     void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 

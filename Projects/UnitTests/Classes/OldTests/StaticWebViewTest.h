@@ -32,7 +32,7 @@
 #include "DAVAEngine.h"
 #include "UI/UIWebView.h"
 
-#include "TestTemplate.h"
+#include "Infrastructure/TestTemplate.h"
 
 using namespace DAVA;
 

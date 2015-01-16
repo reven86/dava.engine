@@ -82,6 +82,9 @@ public:
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& url) const { return Map<String, String>(); };
 	// Execute javascript command
+	// if you need return data from javascript just
+	// return JSON string you can parse it in c++
+	// with yaml parser
 	virtual void ExecuteJScript(const String& scriptString) {};
 	
     virtual void OpenFromBuffer(const String& string, const FilePath& basePath) = 0;
