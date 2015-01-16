@@ -26,7 +26,13 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "DateTime.h"
+#include "Platform/DateTime.h"
+
+#ifdef __DAVAENGINE_WIN32__
+#include <time.h>
+#endif
+
+
 
 #define SKIP_WHITESPACE while (*s == ' ' || *s == '\t') s++;
 #define SKIP_NON_WHITESPACE while (*s != ' ' && *s != '\t' && *s != '\0') s++;
