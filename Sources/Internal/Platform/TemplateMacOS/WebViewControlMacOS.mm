@@ -71,7 +71,7 @@ using namespace DAVA;
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
 - (void)setDelegate:(IUIWebViewDelegate*)d andWebView:(UIWebView*)w;
-- (void)onExecuteJScript:(NSArray *)result;
+- (void)onExecuteJScript:(NSString *)result;
 - (void)setWebViewControl:(WebViewControl*) webControl;
 - (void)setUiWebViewControl:(UIWebView*) uiWebControl;
 
@@ -159,16 +159,12 @@ using namespace DAVA;
 	}
 }
 
-- (void)onExecuteJScript:(NSArray *)result
+- (void)onExecuteJScript:(NSString *)result
 {
     if (delegate)
     {
-        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
-        NSString* requestResult = (NSString*)[result objectAtIndex:1];
-        delegate->OnExecuteJScript(webView, [requestId intValue],
-                                   DAVA::String([requestResult UTF8String]));
+        delegate->OnExecuteJScript(webView, DAVA::String([result UTF8String]));
     }
-    [result release];
 }
 
 - (void)setWebViewControl:(WebViewControl*) webControl
@@ -184,8 +180,6 @@ using namespace DAVA;
 }
 
 @end
-
-int32 WebViewControl::runScriptID = 0;
 
 WebViewControl::WebViewControl(DAVA::UIWebView& ptr) :
     webImageCachePtr(0),
@@ -265,11 +259,13 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 
 void WebViewControl::LoadHtmlString(const WideString& htlmString)
 {
-	NSString* htmlPageToLoad = [[[NSString alloc] initWithBytes: htlmString.data()
-													   length: htlmString.size() * sizeof(wchar_t)
-													 encoding:NSUTF32LittleEndianStringEncoding] autorelease];
-    [[(WebView*)webViewPtr mainFrame] loadHTMLString:htmlPageToLoad baseURL:nil];
-    [htmlPageToLoad release];
+	NSString* htmlPageToLoad = [[[NSString alloc]
+                                 initWithBytes: htlmString.data()
+                                        length: htlmString.size() * sizeof(wchar_t)
+                                      encoding: NSUTF32LittleEndianStringEncoding] autorelease];
+    [[(WebView*)webViewPtr mainFrame]
+        loadHTMLString:htmlPageToLoad
+        baseURL:[[NSBundle mainBundle] bundleURL]];
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
@@ -462,20 +458,16 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
     }
 }
 
-int32 WebViewControl::ExecuteJScript(const String& scriptString)
+void WebViewControl::ExecuteJScript(const String& scriptString)
 {
-    int requestID = runScriptID++;
     NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
     NSString *resultString = [(WebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
 
     WebViewPolicyDelegate* w = (WebViewPolicyDelegate*) webViewPolicyDelegatePtr;
     if (w)
     {
-        NSArray* array = [NSArray arrayWithObjects:[NSNumber numberWithInt:requestID], resultString, nil];
-        [array retain];
-        [w performSelector:@selector(onExecuteJScript:) withObject:array afterDelay:0.0];
+        [w performSelector:@selector(onExecuteJScript:) withObject:resultString afterDelay:0.0];
     }
-    return requestID;
 }
 
 void WebViewControl::SetImageCache(void* ptr)

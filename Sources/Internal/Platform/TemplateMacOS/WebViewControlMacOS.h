@@ -54,7 +54,7 @@ public:
 	// Delete all cookies associated with target URL
     void DeleteCookies(const String& targetUrl) override;
     // Execute javascript command, return request ID
-    int32 ExecuteJScript(const String& scriptString) override;
+    void ExecuteJScript(const String& scriptString) override;
     
     void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 
@@ -90,8 +90,6 @@ private:
     
     bool isRenderToTexture;
     bool isVisible;
-
-    static int32 runScriptID;
 };
 
 };
