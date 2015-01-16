@@ -459,7 +459,7 @@ void RenderManager::HWDrawElementsInstanced(ePrimitiveType type, int32 count, eI
         Logger::FrameworkDebug("Draw arrays texture state: id %d", currentState.textureState);
     }
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    RENDER_VERIFY(glDrawElementsInstanced(mode, count, indexTypes[indexFormat], indices, instanceCount));
+    RENDER_VERIFY(glDrawElementsInstancedEXT(mode, count, indexTypes[indexFormat], indices, instanceCount));
 #else 
     RENDER_VERIFY(glDrawElementsInstancedARB(mode, count, indexTypes[indexFormat], indices, instanceCount));
 #endif 
