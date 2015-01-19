@@ -25,7 +25,7 @@ QWidget * SpritePropertyDelegate::createEditor(QWidget * parent, const QStyleOpt
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
-    lineEdit->setReadOnly(true);
+    connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(valueChanged()));
 
     return lineEdit;
 }
@@ -63,6 +63,11 @@ void SpritePropertyDelegate::enumEditorActions(QWidget *parent, const QModelInde
     actions.push_back(openFileDialogAction);
     connect(openFileDialogAction, SIGNAL(triggered(bool)), this, SLOT(openFileDialogClicked()));
 
+    QAction *clearSpriteAction = new QAction(QIcon(":/Icons/editclear.png"), tr("clear"), parent);
+    clearSpriteAction->setToolTip(tr("Clear sprite descriptor"));
+    actions.push_back(clearSpriteAction);
+    connect(clearSpriteAction, SIGNAL(triggered(bool)), this, SLOT(clearSpriteClicked()));
+
     BasePropertyDelegate::enumEditorActions(parent, index, actions);
 }
 
@@ -98,4 +103,36 @@ void SpritePropertyDelegate::openFileDialogClicked()
         BasePropertyDelegate::SetValueModified(editor, true);
         itemDelegate->emitCommitData(editor);
     }
+}
+
+void SpritePropertyDelegate::clearSpriteClicked()
+{
+    QAction *clearSpriteAction = qobject_cast<QAction *>(sender());
+    if (!clearSpriteAction)
+        return;
+
+    QWidget *editor = clearSpriteAction->parentWidget();
+    if (!editor)
+        return;
+
+    QLineEdit *lineEdit = editor->findChild<QLineEdit*>("lineEdit");
+
+    lineEdit->setText(QString(""));
+
+    BasePropertyDelegate::SetValueModified(editor, true);
+    itemDelegate->emitCommitData(editor);
+}
+
+void SpritePropertyDelegate::valueChanged()
+{
+    QWidget *lineEdit = qobject_cast<QWidget *>(sender());
+    if (!lineEdit)
+        return;
+
+    QWidget *editor = lineEdit->parentWidget();
+    if (!editor)
+        return;
+
+    BasePropertyDelegate::SetValueModified(editor, true);
+    itemDelegate->emitCommitData(editor);
 }

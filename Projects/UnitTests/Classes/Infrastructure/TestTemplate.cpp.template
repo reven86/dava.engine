@@ -25,53 +25,19 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#ifndef __DAVAENGINE_ENTITY_FAMILY_H__
-#define __DAVAENGINE_ENTITY_FAMILY_H__
 
-#include "Base/BaseTypes.h"
-#include "Entity/Component.h"
 
-namespace DAVA
+#include "$UNITTEST_CLASSNAME$.h"
+
+using namespace DAVA;
+
+$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ ()
+: TestTemplate<$UNITTEST_CLASSNAME$> ("$UNITTEST_CLASSNAME$")
 {
-
-class EntityFamily
-{
-public:
-    EntityFamily ();
-
-    static EntityFamily * GetOrCreate (const Vector<Component*> & components);
-    uint32 GetComponentIndex (uint32 componentType, uint32 index) const;
-    uint32 GetComponentsCount (uint32 componentType) const;
-    uint64 GetComponentsFlags () const;
-
-private:
-    uint32 componentIndices[Component::COMPONENT_COUNT];
-    uint32 componentCount[Component::COMPONENT_COUNT];
-    uint64 componentsFlags;
-    static Vector<EntityFamily*> families;
-    friend bool operator==(const EntityFamily & lhs, const EntityFamily & rhs);
-};
-
-inline uint32 EntityFamily::GetComponentIndex(uint32 componentType, uint32 index) const
-{
-    return componentIndices[componentType] + index;
+    RegisterFunction (this, &$UNITTEST_CLASSNAME$::TestFunc, String ("TestFunc"), NULL);
 }
 
-inline uint32 EntityFamily::GetComponentsCount (uint32 componentType) const
+void $UNITTEST_CLASSNAME$::TestFunc (PerfFuncData * data)
 {
-    return componentCount[componentType];
+    TEST_VERIFY (false);
 }
-
-inline uint64 EntityFamily::GetComponentsFlags () const
-{
-    return componentsFlags;
-}
-
-inline bool operator==(const EntityFamily & lhs, const EntityFamily & rhs)
-{
-    return (lhs.componentsFlags == rhs.componentsFlags) && (0 == Memcmp (lhs.componentCount, rhs.componentCount, sizeof (lhs.componentCount)));
-}
-
-}
-
-#endif //__DAVAENGINE_ENTITY_FAMILY_H_

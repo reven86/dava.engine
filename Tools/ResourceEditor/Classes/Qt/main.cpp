@@ -188,7 +188,6 @@ int main(int argc, char *argv[])
 	SettingsManager::Instance()->Release();
 	BeastProxy::Instance()->Release();
 	DAVA::QtLayer::Instance()->Release();
-	DAVA::Core::Instance()->ReleaseSingletons();
 	DAVA::Core::Instance()->Release();
 
 	return ret;
