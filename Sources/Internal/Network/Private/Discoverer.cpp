@@ -29,7 +29,7 @@
 #include <Base/FunctionTraits.h>
 #include <Debug/DVAssert.h>
 
-#include "Discoverer.h"
+#include <Network/Private/Discoverer.h>
 
 namespace DAVA
 {
@@ -39,11 +39,15 @@ namespace Net
 Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback)
     : loop(ioLoop)
     , socket(ioLoop)
+    , timer(ioLoop)
     , endpoint(endp)
     , isTerminating(false)
+    , runningObjects(0)
     , dataCallback(dataReadyCallback)
 {
-    DVASSERT(loop != NULL && dataCallback != 0 && true == endpoint.Address().IsMulticast());
+    DVVERIFY(true == endpoint.Address().ToString(endpAsString, COUNT_OF(endpAsString)));
+    DVASSERT(true == endpoint.Address().IsMulticast());
+    DVASSERT(loop != NULL && dataCallback != 0);
 }
 
 Discoverer::~Discoverer()
@@ -59,7 +63,8 @@ void Discoverer::Start()
 
 void Discoverer::Stop(Function<void (IController*)> callback)
 {
-    DVASSERT(callback != 0 && false == isTerminating);
+    DVASSERT(false == isTerminating);
+    DVASSERT(callback != 0);
     isTerminating = true;
     stopCallback = callback;
     loop->Post(MakeFunction(this, &Discoverer::DoStop));
@@ -67,33 +72,74 @@ void Discoverer::Stop(Function<void (IController*)> callback)
 
 void Discoverer::DoStart()
 {
-    char8 addr[30];
-    DVVERIFY(true == endpoint.Address().ToString(addr, COUNT_OF(addr)));
+    DVASSERT(0 == runningObjects && "****** invalid call sequence");
 
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);
     if (0 == error)
     {
-        error = socket.JoinMulticastGroup(addr, NULL);
+        error = socket.JoinMulticastGroup(endpAsString, NULL);
         if (0 == error)
             error = socket.StartReceive(CreateBuffer(inbuf, sizeof(inbuf)), MakeFunction(this, &Discoverer::SocketHandleReceive));
     }
-    DVASSERT(0 == error);
+    if (error != 0 && false == isTerminating)
+    {
+        DoStop();
+    }
 }
 
 void Discoverer::DoStop()
 {
-    socket.Close(MakeFunction(this, &Discoverer::SocketHandleClose));
+    DVASSERT(0 == runningObjects && "****** invalid call sequence");
+
+    if (true == socket.IsOpen() && false == socket.IsClosing())
+    {
+        runningObjects += 1;
+        socket.Close(MakeFunction(this, &Discoverer::SocketHandleClose));
+    }
+    if (true == timer.IsOpen() && false == timer.IsClosing())
+    {
+        runningObjects += 1;
+        timer.Close(MakeFunction(this, &Discoverer::TimerHandleClose));
+    }
 }
 
+void Discoverer::DoObjectClose()
+{
+    DVASSERT(runningObjects > 0 && "****** errorneous extra call");
+
+    runningObjects -= 1;
+    if (0 == runningObjects)
+    {
+        if (true == isTerminating)
+        {
+            loop->Post(MakeFunction(this, &Discoverer::DoBye));
+        }
+        else
+        {
+            timer.Wait(3000, MakeFunction(this, &Discoverer::TimerHandleDelay));
+        }
+    }
+}
+
+void Discoverer::DoBye()
+{
+    isTerminating = false;
+    stopCallback(this);
+}
+    
+void Discoverer::TimerHandleClose(DeadlineTimer* timer)
+{
+    DoObjectClose();
+}
+
+void Discoverer::TimerHandleDelay(DeadlineTimer* timer)
+{
+    DoStart();
+}
+    
 void Discoverer::SocketHandleClose(UDPSocket* socket)
 {
-    if (true == isTerminating)
-    {
-        isTerminating = false;
-        stopCallback(this);
-    }
-    else
-        DoStart();
+    DoObjectClose();
 }
 
 void Discoverer::SocketHandleReceive(UDPSocket* socket, int32 error, size_t nread, const Endpoint& endpoint, bool partial)

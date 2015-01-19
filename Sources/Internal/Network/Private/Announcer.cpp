@@ -29,7 +29,7 @@
 #include <Base/FunctionTraits.h>
 #include <Debug/DVAssert.h>
 
-#include "Announcer.h"
+#include <Network/Private/Announcer.h>
 
 namespace DAVA
 {
@@ -46,7 +46,9 @@ Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Fu
     , runningObjects(0)
     , dataCallback(needDataCallback)
 {
-    DVASSERT(loop != NULL && announcePeriod > 0 && true == endpoint.Address().IsMulticast() && dataCallback != 0);
+    DVASSERT(true == endpoint.Address().IsMulticast());
+    DVVERIFY(true == endpoint.Address().ToString(endpAsString, COUNT_OF(endpAsString)));
+    DVASSERT(loop != NULL && announcePeriod > 0 && dataCallback != 0);
 }
 
 Announcer::~Announcer()
@@ -62,7 +64,8 @@ void Announcer::Start()
 
 void Announcer::Stop(Function<void (IController*)> callback)
 {
-    DVASSERT(callback != 0 && false == isTerminating);
+    DVASSERT(false == isTerminating);
+    DVASSERT(callback != 0);
     isTerminating = true;
     stopCallback = callback;
     loop->Post(MakeFunction(this, &Announcer::DoStop));
@@ -70,43 +73,69 @@ void Announcer::Stop(Function<void (IController*)> callback)
 
 void Announcer::DoStart()
 {
-    DVASSERT(0 == runningObjects);
-    runningObjects = 2;     // timer and socket
-
-    char8 addr[30];
-    DVVERIFY(true == endpoint.Address().ToString(addr, COUNT_OF(addr)));
+    DVASSERT(0 == runningObjects && "****** invalid call sequence");
 
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);
     if (0 == error)
     {
-        error = socket.JoinMulticastGroup(addr, NULL);
+        error = socket.JoinMulticastGroup(endpAsString, NULL);
         if (0 == error)
             error = timer.Wait(0, MakeFunction(this, &Announcer::TimerHandleTimer));
     }
-    if (error != 0)
+    if (error != 0 && false == isTerminating)
+    {
         DoStop();
+    }
 }
 
 void Announcer::DoStop()
 {
-    socket.Close(MakeFunction(this, &Announcer::SocketHandleClose));
-    timer.Close(MakeFunction(this, &Announcer::TimerHandleClose));
+    DVASSERT(0 == runningObjects && "****** invalid call sequence");
+
+    if (true == socket.IsOpen() && false == socket.IsClosing())
+    {
+        runningObjects += 1;
+        socket.Close(MakeFunction(this, &Announcer::SocketHandleClose));
+    }
+    if (true == timer.IsOpen() && false == timer.IsClosing())
+    {
+        runningObjects += 1;
+        timer.Close(MakeFunction(this, &Announcer::TimerHandleClose));
+    }
 }
 
 void Announcer::DoObjectClose()
 {
-    DVASSERT(runningObjects > 0);
+    DVASSERT(runningObjects > 0 && "****** errorneous extra call");
+    
     runningObjects -= 1;
     if (0 == runningObjects)
     {
         if (true == isTerminating)
         {
-            isTerminating = false;
-            stopCallback(this);
+            loop->Post(MakeFunction(this, &Announcer::DoBye));
         }
         else
-            DoStart();
+        {
+            timer.Wait(3000, MakeFunction(this, &Announcer::TimerHandleDelay));
+        }
     }
+}
+
+void Announcer::DoBye()
+{
+	isTerminating = false;
+	stopCallback(this);
+}
+
+void Announcer::TimerHandleClose(DeadlineTimer* timer)
+{
+    DoObjectClose();
+}
+
+void Announcer::SocketHandleClose(UDPSocket* socket)
+{
+    DoObjectClose();
 }
 
 void Announcer::TimerHandleTimer(DeadlineTimer* timer)
@@ -114,17 +143,26 @@ void Announcer::TimerHandleTimer(DeadlineTimer* timer)
     if (true == isTerminating) return;
 
     size_t length = dataCallback(sizeof(buffer), buffer);
-    DVASSERT(length > 0);
     if (length > 0)
     {
         Buffer buf = CreateBuffer(buffer, length);
-        DVVERIFY(0 == socket.Send(endpoint, &buf, 1, MakeFunction(this, &Announcer::SocketHandleSend)));
+        int32 error = socket.Send(endpoint, &buf, 1, MakeFunction(this, &Announcer::SocketHandleSend));
+        if (error != 0)
+        {
+            DoStop();
+        }
     }
+}
+
+void Announcer::TimerHandleDelay(DeadlineTimer* timer)
+{
+    DoStart();
 }
 
 void Announcer::SocketHandleSend(UDPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)
 {
     if (true == isTerminating) return;
+    
     if (0 == error)
     {
         timer.Wait(announcePeriod, MakeFunction(this, &Announcer::TimerHandleTimer));

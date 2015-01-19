@@ -42,7 +42,7 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop)
     , socket(aLoop)
     , timer(aLoop)
     , listener(NULL)
-    , readTimeout(3600 * 1000)
+    , readTimeout(5 * 1000)
     , isInitiator(false)
     , isTerminating(false)
     , isConnected(false)
@@ -57,7 +57,7 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint)
     , socket(aLoop)
     , timer(aLoop)
     , listener(NULL)
-    , readTimeout(3600 * 1000)
+    , readTimeout(5 * 1000)
     , isInitiator(true)
     , isTerminating(false)
     , isConnected(false)
@@ -177,6 +177,8 @@ void TCPClientTransport::TimerHandleClose(DeadlineTimer* timer)
 void TCPClientTransport::TimerHandleTimeout(DeadlineTimer* timer)
 {
     if (true == isTerminating) return;
+    timer->Wait(readTimeout, MakeFunction(this, &TCPClientTransport::TimerHandleTimeout));
+    listener->OnTransportReadTimeout(this);
 }
 
 void TCPClientTransport::SocketHandleClose(TCPSocket* socket)

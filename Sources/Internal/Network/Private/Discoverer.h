@@ -30,6 +30,7 @@
 #define __DAVAENGINE_DISCOVERER_H__
 
 #include <Network/Base/UDPSocket.h>
+#include <Network/Base/DeadlineTimer.h>
 
 #include <Network/IController.h>
 
@@ -53,6 +54,11 @@ public:
 private:
     void DoStart();
     void DoStop();
+    void DoObjectClose();
+    void DoBye();
+
+    void TimerHandleClose(DeadlineTimer* timer);
+    void TimerHandleDelay(DeadlineTimer* timer);
 
     void SocketHandleClose(UDPSocket* socket);
     void SocketHandleReceive(UDPSocket* socket, int32 error, size_t nread, const Endpoint& endpoint, bool partial);
@@ -60,8 +66,11 @@ private:
 private:
     IOLoop* loop;
     UDPSocket socket;
+    DeadlineTimer timer;
     Endpoint endpoint;
+    char8 endpAsString[30];
     bool isTerminating;
+    size_t runningObjects;
     Function<void (IController*)> stopCallback;
     Function<void (size_t, const void*, const Endpoint&)> dataCallback;
     uint8 inbuf[64 * 1024];
