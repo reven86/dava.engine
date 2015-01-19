@@ -9,6 +9,7 @@
 #include "PackageDockWidget.h"
 
 #include <QClipboard>
+#include <QFileDialog>
 
 #include "ui_PackageDockWidget.h"
 #include "UIPackageModel.h"
@@ -22,6 +23,7 @@
 #include "UIControls/PackageHierarchy/PackageControlsNode.h"
 
 #include "Project.h"
+#include "Utils/QtDavaConvertion.h"
 
 using namespace DAVA;
 
@@ -212,7 +214,27 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
 
 void PackageDockWidget::OnImport()
 {
+    return;
+    QString dir;
 
+    //QString pathText = lineEdit->text();
+    const DAVA::FilePath &filePath = document->PackageFilePath();
+
+    if (!filePath.IsEmpty())
+    {
+        dir = StringToQString(filePath.GetDirectory().GetAbsolutePathname());
+    }
+    else
+    {
+        //dir = ResourcesManageHelper::GetSpritesDirectory();
+    }
+
+    QString filePathText = QFileDialog::getOpenFileName(this, tr("Select package to import"), dir, QString("*.yaml"));
+    if (!filePathText.isEmpty())
+    {
+        //ImportedPackagesNode *node = document->GetPackage()->GetImportedPackagesNode();
+        //node->Add(NULL);
+    }
 }
 
 void PackageDockWidget::OnCopy()

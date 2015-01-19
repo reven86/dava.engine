@@ -16,7 +16,7 @@
 class PackageNode;
 class LegacyControlData;
 
-class Project : QObject
+class Project : public QObject
 {
     Q_OBJECT
 public:
