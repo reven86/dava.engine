@@ -202,7 +202,8 @@ namespace ResourceEditor
     static const String LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT     = "Warning: custom color texture is absent. Default texture will be created.";
 
 	static const String ADD_SWITCH_NODE_DIALOG_NO_CHILDREN			= "Error: switch node must be created with state nodes.";
-    static const String ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS	= "Error: entities should contain mesh render components.";
+    static const String ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS    = "Error: entities should contain render components with mesh render objects.";
+    static const String ADD_SWITCH_NODE_DIALOG_DENY_SRC_SWITCH      = "Error: entities should not contain switch components";
 	static const String SCENE_TREE_WRONG_REF_TO_OWNER				= "Wrong reference(s) to owner: ";
 
 }
