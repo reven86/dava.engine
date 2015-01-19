@@ -136,30 +136,33 @@ inline void DavaDebugBreak()
 #else
 
 #define DVASSERT(expr)\
-	if (!(expr))\
-	{\
+    if (!(expr))\
+    {\
         LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
-		if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, "", __FILE__, __LINE__))\
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
+                #expr, "", __FILE__, __LINE__))\
         { \
-            DavaDebugBreak()\
+            DavaDebugBreak();\
         } \
 	}\
 
 #define DVASSERT_MSG(expr, msg)\
-	if (!(expr))\
-	{\
+    if (!(expr))\
+    {\
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
-		if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, msg, __FILE__, __LINE__))\
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
+                #expr, msg, __FILE__, __LINE__))\
         { \
-            DavaDebugBreak()\
+            DavaDebugBreak();\
         } \
-	}\
+    }\
 
 #define DVWARNING(expr, msg)\
     if (!(expr))\
     {\
         LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__);\
-		MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", #expr, msg, __FILE__, __LINE__);\
+		MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", \
+		        #expr, msg, __FILE__, __LINE__);\
     }\
 
 #define DVVERIFY(expr) DVASSERT(expr)
