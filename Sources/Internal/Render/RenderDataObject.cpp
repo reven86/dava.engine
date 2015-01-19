@@ -397,22 +397,15 @@ void RenderDataObject::UpdateIndexBufferInternal(int32 offset)
 {
     DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
+    DVASSERT(indexBuffer);
 
 #if defined (__DAVAENGINE_ANDROID__)
     buildIndexBuffer = true;
 #endif
 
-    DVASSERT(indexBuffer);
-
-#if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
-    RENDER_VERIFY(glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer));
-    RENDER_VERIFY(glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices));
-    RENDER_VERIFY(glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0));
-#else
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
     RENDER_VERIFY(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices));
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-#endif
 
 #endif // #if defined (__DAVAENGINE_OPENGL__)
 }

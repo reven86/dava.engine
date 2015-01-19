@@ -262,6 +262,10 @@ void RenderSystem2D::ScreenSizeChanged()
 
 void RenderSystem2D::SetClip(const Rect &rect)
 {
+    if ((currentClip == rect) || (currentClip.dx < 0 && rect.dx < 0) || (currentClip.dy < 0 && rect.dy < 0))
+    {
+        return;
+    }
     currentClip = rect;
     clipChanged = true;
 }
@@ -400,8 +404,6 @@ void RenderSystem2D::Flush()
 
 #if USE_BATCHING
     
-    Setup2DMatrices();
-
     if (currentBatch.count > 0)
     {
         batches.push_back(currentBatch);
@@ -422,18 +424,15 @@ void RenderSystem2D::Flush()
     
     RenderManager::Instance()->SetRenderData(pool->GetRenderDataObject());
 
+    ClipPush();
+
     Vector<RenderBatch2D>::iterator it = batches.begin();
     Vector<RenderBatch2D>::iterator eit = batches.end();
     for (; it != eit; ++it)
     {
         const RenderBatch2D& batch = *it;
 
-        bool clip = batch.clipRect.dx != -1;
-        if (clip)
-        {
-            ClipPush();
-            SetClip(batch.clipRect);
-        }
+        SetClip(batch.clipRect);
 
         RENDERER_UPDATE_STATS(spriteDrawCount++);
 
@@ -444,13 +443,11 @@ void RenderSystem2D::Flush()
         RenderManager::Instance()->SetRenderEffect(batch.shader);
         RenderManager::Instance()->DrawElements(spritePrimitiveToDraw, batch.count, EIF_16, reinterpret_cast<void*>(batch.indexOffset * 2));
 
-        if (clip)
-        {
-            ClipPop();
-        }
     }
 
     RenderManager::Instance()->SetRenderData(NULL);
+
+    ClipPop();
 
     batches.clear();
 
@@ -517,9 +514,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
 		return;
 	}
 
-#if !USE_BATCHING
-    Setup2DMatrices();
-#else
+#if USE_BATCHING
     static uint16 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
     Vector<uint16> spriteClippedIndecex;
 #endif
