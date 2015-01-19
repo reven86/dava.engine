@@ -37,9 +37,9 @@ namespace DAVA
 {
 
 JobManager::JobManager() 
-: workerDoneSem(0)
-, mainJobIDCounter(1)
+: mainJobIDCounter(1)
 , mainJobLastExecutedID(0)
+, workerDoneSem(0)
 {
     uint32 cpuCoresCount = DeviceInfo::GetCpuCount();
     workerThreads.reserve(cpuCoresCount);

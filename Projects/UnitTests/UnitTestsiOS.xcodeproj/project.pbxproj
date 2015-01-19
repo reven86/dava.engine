@@ -590,8 +590,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					"$(ARCHS_STANDARD)",
+					i386,
+					arm64,
 					armv7s,
+					armv7,
 				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Entitlements.plist;
@@ -619,7 +621,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = AdHoc;
 		};
@@ -657,8 +659,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					"$(ARCHS_STANDARD)",
+					i386,
+					arm64,
 					armv7s,
+					armv7,
 				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -681,12 +685,13 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Debug;
 		};
@@ -694,8 +699,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					"$(ARCHS_STANDARD)",
+					i386,
+					arm64,
 					armv7s,
+					armv7,
 				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -722,7 +729,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s i386";
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Release;
 		};

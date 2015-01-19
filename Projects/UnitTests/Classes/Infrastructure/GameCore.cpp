@@ -49,6 +49,7 @@
 #include "Tests/TextSizeTest.h"
 #include "Tests/KeyedArchiveYamlTest.h"
 #include "Tests/JobManagerTest.h"
+//$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
 {
@@ -80,6 +81,7 @@ void GameCore::RegisterTests()
     new TextSizeTest();
     new KeyedArchiveYamlTest();
     new JobManagerTest();
+//$UNITTEST_CTOR
 }
 
 #include <fstream>

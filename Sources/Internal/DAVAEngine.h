@@ -46,6 +46,7 @@
 
 #include "FileSystem/Logger.h"
 #include "Platform/SystemTimer.h"
+#include "Platform/DateTime.h"
 
 // system stuff
 #include "Utils/Utils.h"
@@ -281,6 +282,9 @@
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 // Application core 
 #include "Core/Core.h"

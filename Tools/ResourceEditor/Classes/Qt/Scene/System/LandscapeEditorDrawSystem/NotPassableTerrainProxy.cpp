@@ -37,7 +37,6 @@ NotPassableTerrainProxy::NotPassableTerrainProxy()
 	 
 	notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
 	notPassableMapSprite = Sprite::CreateAsRenderTarget(2048, 2048, DAVA::FORMAT_RGBA8888, true);
-    notPassableMapSprite->ConvertToVirtualSize();
 }
 
 NotPassableTerrainProxy::~NotPassableTerrainProxy()
@@ -152,8 +151,8 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	const float32 angleHeightDelta = landSize.z / (float32)(Heightmap::MAX_VALUE - 1);
 	const float32 tanCoef = angleHeightDelta / angleCellDistance;
 	
-	Texture *notPassableMap = notPassableMapSprite->GetTexture();
-	const float32 dx = (float32)notPassableMapSprite->GetWidth() / (float32)(heightmap->Size() - 1);
+    const float32 physicalTargetWidth = (float32)notPassableMapSprite->GetTexture()->GetWidth();
+    const float32 dx = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(physicalTargetWidth / (float32)(heightmap->Size() - 1));
 	
 	RenderManager* renderManager = RenderManager::Instance();
     RenderSystem2D * renderSystem2d = RenderSystem2D::Instance();
@@ -165,6 +164,8 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
     renderSystem2d->ClipPush();
     renderSystem2d->SetClip(drawRect);
 	
+    renderSystem2d->Setup2DMatrices();
+
 	renderManager->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 	const int32 lastY = (int32)(forRect.y + forRect.dy);

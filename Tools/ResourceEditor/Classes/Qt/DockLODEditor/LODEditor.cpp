@@ -208,8 +208,8 @@ void LODEditor::LODDataChanged()
 
     ui->lastLodToFrontButton->setEnabled(editedLODData->CanCreatePlaneLOD());
     ui->createPlaneLodButton->setEnabled(editedLODData->CanCreatePlaneLOD());
-    ui->buttonDeleteFirstLOD->setEnabled(editedLODData->CanDeleteLod());
-    ui->buttonDeleteLastLOD->setEnabled(editedLODData->CanDeleteLod());
+
+    UpdateDeleteLODButtons();
 }
 
 void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous)
@@ -363,6 +363,16 @@ void LODEditor::EditorModeChanged(int newMode)
 	SettingsManager::SetValue(Settings::Internal_LODEditorMode, value);
 
 	editedLODData->EnableAllSceneMode(allSceneModeEnabled);
+    
+    UpdateDeleteLODButtons();
+}
+
+void LODEditor::UpdateDeleteLODButtons()
+{
+    bool canDeleteLOD = editedLODData->CanDeleteLod();
+    
+    ui->buttonDeleteFirstLOD->setEnabled(canDeleteLOD);
+    ui->buttonDeleteLastLOD->setEnabled(canDeleteLOD);
 }
 
 

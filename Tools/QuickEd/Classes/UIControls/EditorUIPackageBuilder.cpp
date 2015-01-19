@@ -82,7 +82,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(new ControlNode(control), true));
+    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
     return control;
 }
 
@@ -95,7 +95,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(new ControlNode(control), true));
+    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
     return control;
 }
 
@@ -122,7 +122,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
         }
     }
     DVASSERT(prototypeNode);
-    ControlNode *node = new ControlNode(prototypeNode, prototypePackage);
+    ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode, prototypePackage);
     node->GetControl()->SetCustomControlClassName(customClassName);
     controlsStack.push_back(ControlDescr(node, true));
 

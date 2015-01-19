@@ -76,6 +76,7 @@ static const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
 // Additional text constants
 static const QString GFX = "/Gfx/";
 static const QString FONTS = "/Fonts/";
+static const QString UI = "/UI/";
 // Project DATASOURCE folder
 static const QString PROJECT_DATASOURCE = "%1/DataSource";
 // Project DATA folder
@@ -101,7 +102,6 @@ static const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not loca
 //Available fonts extensions
 static const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def" << "*.df");
 
-QString ResourcesManageHelper::buttonBackgroundImagePath;
 QString ResourcesManageHelper::projectTitle;
 
 QString ResourcesManageHelper::GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont)
@@ -214,8 +214,6 @@ QStringList ResourcesManageHelper::GetFontsList()
 
 void ResourcesManageHelper::InitInternalResources()
 {
-	buttonBackgroundImagePath = QString::fromStdString(FilePath(BACKGROUND_IMAGE_PATH).GetAbsolutePathname());
-	
 	// Save project default title
     if(DAVA::Core::Instance())
     {
@@ -228,11 +226,6 @@ void ResourcesManageHelper::InitInternalResources()
 	// If project name wasn't set - create default name
 	if (projectTitle.isNull() || projectTitle.isEmpty())
 		projectTitle = PROJECT_TITLE;
-}
-
-QString ResourcesManageHelper::GetButtonBackgroundImagePath()
-{
-	return buttonBackgroundImagePath;
 }
 
 QString ResourcesManageHelper::GetDocumentationPath()
@@ -308,11 +301,6 @@ QString ResourcesManageHelper::GetSpritesDirectory()
 QString ResourcesManageHelper::GetFontSpritesDirectory()
 {
 	return GetResourceFolder(PROJECT_DATA_GRAPHICS_FONTS);
-}
-
-QString ResourcesManageHelper::GetSpritesDatasourceDirectory()
-{
-	return GetResourceFolder(PROJECT_DATASOURCE_GFX);
 }
 
 QString ResourcesManageHelper::GetFontSpritesDatasourceDirectory()

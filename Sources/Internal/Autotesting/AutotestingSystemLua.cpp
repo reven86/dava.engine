@@ -29,7 +29,7 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 namespace DAVA
 {
 
-	AutotestingSystemLua::AutotestingSystemLua() : luaState(NULL), delegate(NULL), autotestingLocalizationSystem(NULL)
+	AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL)
 	{
 		autotestingLocalizationSystem = new LocalizationSystem();
 	}
