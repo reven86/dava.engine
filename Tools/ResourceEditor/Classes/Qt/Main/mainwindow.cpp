@@ -1040,10 +1040,14 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* com
         Entity *entity = command->GetEntity();
         if(entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
         {
+            bool b = ui->actionSnapCameraToLandscape->blockSignals(true);
             ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+            ui->actionSnapCameraToLandscape->blockSignals(b);
         }
 	}
 }
+
+
 
 // ###################################################################################################
 // Mainwindow Qt actions
