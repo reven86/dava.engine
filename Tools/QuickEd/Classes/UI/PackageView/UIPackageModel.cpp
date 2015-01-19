@@ -24,7 +24,7 @@ UIPackageModel::UIPackageModel(PackageDocument *document)
     , root(NULL)
     , document(document)
 {
-    root = SafeRetain(document->Package());
+    root = SafeRetain(document->GetPackage());
 }
 
 UIPackageModel::~UIPackageModel()
@@ -286,7 +286,7 @@ void UIPackageModel::InsertItem(const QString &name, int dstRow, const QModelInd
         {
             ControlNode *prototype = packageControls->FindControlNodeByName(controlName);
             if (prototype)
-                node = new ControlNode(prototype, packageControls->GetPackage());
+                node = ControlNode::CreateFromPrototype(prototype, packageControls->GetPackage());
         }
     }
     else
@@ -294,14 +294,14 @@ void UIPackageModel::InsertItem(const QString &name, int dstRow, const QModelInd
         UIControl *control = ObjectFactory::Instance()->New<UIControl>(controlName);
         if (control)
         {
-            node = new ControlNode(control);
+            node = ControlNode::CreateFromControl(control);
             SafeRelease(control);
         }
         else
         {
             ControlNode *prototype = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
             if (prototype)
-                node = new ControlNode(prototype, NULL);
+                node = ControlNode::CreateFromPrototype(prototype, NULL);
         }
     }
     
@@ -352,7 +352,7 @@ void UIPackageModel::CopyItem(const QModelIndex &srcItem, int dstRow, const QMod
     {
         beginInsertRows(dstParent, dstRow, dstRow);
         {
-            ControlNode* node = new ControlNode(sourceNode, NULL, ControlNode::CREATED_FROM_CLASS);
+            ControlNode* node = sourceNode->Clone();
             InsertNode(node, dstParent, dstRow);
             SafeRelease(node);
         }

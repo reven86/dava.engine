@@ -28,9 +28,10 @@
 
 
 
-#include "../../Platform/DateTime.h"
-#include "../../Utils/Utils.h"
-#include "../../FileSystem/LocalizationSystem.h"
+#include "Platform/DateTime.h"
+#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
+#include "FileSystem/LocalizationSystem.h"
 
 
 #if defined(__DAVAENGINE_ANDROID__)

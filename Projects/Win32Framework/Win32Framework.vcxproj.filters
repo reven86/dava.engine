@@ -1620,7 +1620,7 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\EntityFamily.h">
       <Filter>Internal\Scene3D</Filter>
-    </ClInclude>  </ItemGroup>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.h">
       <Filter>Internal\Scene3D\Components\Controller</Filter>
     </ClInclude>
@@ -2937,7 +2937,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\EntityFamily.cpp">
       <Filter>Internal\Scene3D</Filter>
-    </ClCompile>  </ItemGroup>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.cpp">
       <Filter>Internal\Scene3D\Components\Controller</Filter>
     </ClCompile>

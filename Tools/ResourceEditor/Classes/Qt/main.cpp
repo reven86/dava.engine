@@ -70,17 +70,14 @@
 #endif //__DAVAENGINE_BEAST__
 
 void UnpackHelpDoc();
+void FixOSXFonts();
 
 int main(int argc, char *argv[])
 {
 	int ret = 0;
 
 #ifdef Q_OS_MAC
-    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
-    {
-        // fix Mac OS X 10.9 (mavericks) font issue
-        QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
-    }
+    FixOSXFonts();  // Must be called before creating QApplication instance
 #endif
 
     QApplication a(argc, argv);
@@ -191,7 +188,6 @@ int main(int argc, char *argv[])
 	SettingsManager::Instance()->Release();
 	BeastProxy::Instance()->Release();
 	DAVA::QtLayer::Instance()->Release();
-	DAVA::Core::Instance()->ReleaseSingletons();
 	DAVA::Core::Instance()->Release();
 
 	return ret;
@@ -216,3 +212,13 @@ void UnpackHelpDoc()
 	SettingsManager::SetValue(Settings::Internal_EditorVersion, VariantType(String(RESOURCE_EDITOR_VERSION)));
 }
 
+void FixOSXFonts()
+{
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
+    {
+        // fix Mac OS X 10.9 (mavericks) font issue
+        QFont::insertSubstitution( ".Lucida Grande UI", "Lucida Grande" );
+    }
+#endif
+}
