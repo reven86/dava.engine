@@ -50,12 +50,9 @@
 #include "Tests/KeyedArchiveYamlTest.h"
 #include "Tests/JobManagerTest.h"
 
-#include "OldTests/StaticWebViewTest.h"
-
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
-    runOnlyThisTest = "StaticWebViewTest";
 }
 
 void GameCore::OnError()
@@ -66,8 +63,6 @@ void GameCore::OnError()
 void GameCore::RegisterTests()
 {
     RunOnlyThisTest();
-    new StaticWebViewTest();
-
 
     new MathTest();
     new FunctionBindSignalTest();

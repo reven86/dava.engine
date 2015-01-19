@@ -29,7 +29,6 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/*.cpp) \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Infrastructure/*.cpp) \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/*.cpp) \
-	$(wildcard $(MY_PROJECT_ROOT)/Classes/OldTests/StaticWebViewTest.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )

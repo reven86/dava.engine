@@ -113,12 +113,12 @@ public:
 
 inline void IWebViewControl::SetScalesPageToFit(bool isScalesToFit)
 {
-    Logger::Debug("unsupported SetScalesPageToFit");
+    Logger::FrameworkDebug("unsupported SetScalesPageToFit");
 };
 
 inline void IWebViewControl::SetBackgroundTransparency(bool enabled)
 {
-    Logger::Debug("unsupported SetBackgroundTransparency");
+    Logger::FrameworkDebug("unsupported SetBackgroundTransparency");
 };
 
 };

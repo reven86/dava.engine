@@ -349,11 +349,7 @@ WebBrowserContainer::~WebBrowserContainer()
 	sink->DispEventUnadvise(webBrowser, &DIID_DWebBrowserEvents2);
 	delete sink;
 
-	if (webBrowser)
-	{
-		webBrowser->Release();
-		webBrowser = nullptr;
-	}
+    SafeRelease(webBrowser);
 }
 
 void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, 

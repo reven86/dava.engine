@@ -30,6 +30,7 @@
 
 #include "AndroidLayer.h"
 #include "Platform/TemplateAndroid/WebViewControlAndroid.h"
+#include "Render/Image/ImageConvert.h"
 
 extern "C"
 {
@@ -57,21 +58,12 @@ extern "C"
 			DVASSERT(height);
 			DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
 
-			// on android we got ARGB and have to change to RGBA
-			for(int y = 0; y < height; ++y)
-			{
-				int lineIndex = y * width;
-				for(int x = 0; x < width; ++x)
-				{
-					int& pixel = rawData[lineIndex + x];
-					// input color  //0xAARRGGBB
-					// result color //0xAABBGGRR
-					pixel = (pixel & 0xFF000000)       | // A
-							(pixel & 0x00FF0000) >> 16 | // R
-							(pixel & 0x0000FF00)       | // G
-							(pixel & 0x000000FF) << 16;  // B
-				}
-			}
+			DAVA::uint32 pitch = width * 4; // 4 byte per pixel
+
+			// covert on the same memory
+			DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
+                DAVA::FORMAT_RGBA8888, rawData, width, height, pitch, rawData,
+                width, height, pitch);
 
 			DAVA::JniWebView::PageLoaded(id, rawData, width, height);
 

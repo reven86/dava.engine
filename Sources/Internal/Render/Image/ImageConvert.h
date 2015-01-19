@@ -48,6 +48,27 @@ struct BGR888
     uint8 r;
 };
 
+struct BGRA8888
+{
+    uint8 b;
+    uint8 g;
+    uint8 r;
+    uint8 a;
+};
+
+struct ConverBGRA8888toRGBA8888
+{
+    // input and output is the same memory
+    inline void operator()(const BGRA8888* input, uint32* output)
+    {
+        BGRA8888 in = *input;
+        BGRA8888 tmp = in;
+        tmp.b = in.r;
+        tmp.r = in.b;
+        *output = *reinterpret_cast<uint32*>(&tmp);
+    }
+};
+
 struct ConvertRGBA8888toRGB888
 {
     inline void operator()(const uint32 * input, RGB888 *output)
@@ -396,6 +417,16 @@ public:
         {
             ConvertDirect<BGR888, RGB888, ConvertBGR888toRGB888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if(inFormat == FORMAT_BGRA8888 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<BGRA8888, uint32, ConverBGRA8888toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else
+        {
+            Logger::FrameworkDebug("Unsupported image conversion from format %d to %d", inFormat, outFormat);
+            DVASSERT(false);
         }
 	}
 

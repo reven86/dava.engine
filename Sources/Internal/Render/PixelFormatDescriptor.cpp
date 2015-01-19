@@ -154,7 +154,7 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
         caps = RenderManager::Instance()->GetCaps();
     }
 
-    DVASSERT(FORMAT_COUNT == 32); // add new format below
+    DVASSERT(FORMAT_COUNT == 33); // add new format below
 
 	SetPixelDescription(FORMAT_INVALID, FastName("WRONG FORMAT"), 0);
 	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, GL_UNSIGNED_BYTE, GL_RGBA, GL_RGBA, true, false);
