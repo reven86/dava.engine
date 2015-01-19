@@ -32,6 +32,7 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
+
 #include "UI/Components/UIRenderComponent.h"
 
 namespace DAVA 
@@ -44,8 +45,9 @@ UIScreen::UIScreen(const Rect &rect)
 	:UIControl(rect)
 ,	groupId(groupIdCounter)
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomBeforeSystemDraw(MakeFunction(this, &UIScreen::CustomBeforeSystemDraw));
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomAfterSystemDraw(MakeFunction(this, &UIScreen::CustomAfterSystemDraw));
+    UIRenderComponent* renderComponent = GetOrCreateComponent<UIRenderComponent>();
+    renderComponent->SetCustomBeforeSystemDraw(MakeFunction(this, &UIScreen::CustomBeforeSystemDraw));
+    renderComponent->SetCustomAfterSystemDraw(MakeFunction(this, &UIScreen::CustomAfterSystemDraw));
 
 	// add screen to list
 	appScreens.push_back(this);

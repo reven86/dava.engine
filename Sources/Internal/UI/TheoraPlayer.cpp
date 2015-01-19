@@ -33,6 +33,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/Components/UIRenderComponent.h"
 #include "UI/Components/UIUpdateComponent.h"
+#include "Base/FunctionTraits.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 

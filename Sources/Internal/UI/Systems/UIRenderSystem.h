@@ -30,21 +30,22 @@
 #define __DAVAENGINE_RENDER_2D_SYSTEM_H__
 
 #include "UISystem.h"
-#include "UI/UIControl.h"
+#include "Entity/Component.h"
 
 namespace DAVA
 {
+class UIControl;
+class UIGeometricData;
+struct Rect;
 
 class UIRenderSystem : public UISystem
 {
 public:
-    static const uint32 TYPE = UISystem::UI_RENDER_SYSTEM;
+    IMPLEMENT_SYSTEM_TYPE(UISystem::UI_RENDER_SYSTEM);
+    IMPLEMENT_REQUIRED_COMPONENTS(MAKE_COMPONENT_MASK(Component::UI_RENDER_COMPONENT));
     
     UIRenderSystem();
     virtual ~UIRenderSystem();
-
-    virtual uint64 GetRequiredComponents() const override;
-    virtual uint32 GetType() const override;
 
     void Draw();
 

@@ -30,21 +30,20 @@
 #define __DAVEENGINE_UI_UPDATE_SYSTEM_H__
 
 #include "UISystem.h"
-#include "UI/UIControl.h"
+#include "Entity/Component.h"
 
 namespace DAVA
 {
+class UIControl;
 
 class UIUpdateSystem : public UISystem
 {
 public:
-	static const uint32 TYPE = UISystem::UI_UPDATE_SYSTEM;
+    IMPLEMENT_SYSTEM_TYPE(UISystem::UI_UPDATE_SYSTEM);
+    IMPLEMENT_REQUIRED_COMPONENTS(MAKE_COMPONENT_MASK(Component::UI_UPDATE_COMPONENT));
 
 	UIUpdateSystem();
 	virtual ~UIUpdateSystem();
-
-	virtual uint64 GetRequiredComponents() const;
-	virtual uint32 GetType() const;
 
     void Update();
 	void SystemUpdate(UIControl* control, float32 timeElapsed);

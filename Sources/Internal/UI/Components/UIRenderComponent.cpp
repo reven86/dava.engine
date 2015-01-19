@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "UIRenderComponent.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
@@ -41,23 +42,9 @@ UIRenderComponent::~UIRenderComponent()
 
 Component* UIRenderComponent::Clone(UIControl* toControl)
 {
-    return NULL;
+    UIRenderComponent* comp = new UIRenderComponent();
+    comp->SetControl(toControl);
+    return comp;
 }
-
-uint32 UIRenderComponent::GetType() const
-{
-    return Component::UI_RENDER_COMPONENT;
-}
-
-void UIRenderComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-
-}
-
-void UIRenderComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-
-}
-
 
 }

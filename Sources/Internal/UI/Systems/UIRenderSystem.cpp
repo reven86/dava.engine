@@ -27,12 +27,13 @@
 =====================================================================================*/
 
 #include "UIRenderSystem.h"
-#include "UI/Components/UIRenderComponent.h"
-#include "UI/UIControlSystem.h"
-#include "Render/OcclusionQuery.h"
 #include "Debug/Stats.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/OcclusionQuery.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/UIControl.h"
+#include "UI/UIControlSystem.h"
+#include "UI/Components/UIRenderComponent.h"
 
 namespace DAVA
 {
@@ -43,16 +44,6 @@ UIRenderSystem::UIRenderSystem()
 
 UIRenderSystem::~UIRenderSystem()
 {
-}
-
-uint64 UIRenderSystem::GetRequiredComponents() const
-{
-    return (1 << Component::UI_RENDER_COMPONENT);
-}
-
-uint32 UIRenderSystem::GetType() const
-{
-    return Component::UI_RENDER_COMPONENT;
 }
 
 void UIRenderSystem::Draw()
@@ -97,11 +88,14 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
     if (control == NULL || !control->GetSystemVisible())
         return;
 
-    bool hasComponent = (control->GetAvailableComponentFlags() & GetRequiredComponents()) == GetRequiredComponents();
-    UIRenderComponent* component = control->GetComponent<UIRenderComponent>();
-    DVASSERT(hasComponent && component);
+    UIRenderComponent* component = NULL;
+    if ((control->GetAvailableComponentFlags() & GetRequiredComponents()) == GetRequiredComponents())
+    {
+        component = control->GetComponent<UIRenderComponent>();
+        DVASSERT(component);
+    }
 
-    if (hasComponent && component->GetCustomBeforeSystemDraw() != (int)NULL)
+    if (component && component->GetCustomBeforeSystemDraw() != (int)NULL)
     {
         component->GetCustomBeforeSystemDraw()(geometricData);
     }
@@ -122,19 +116,21 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
         RenderSystem2D::Instance()->ClipRect(drawData.GetAABBox());
     }
 
-    if (hasComponent && component->GetCustomDraw() != (int)NULL)
+    if (component)
     {
-        component->GetCustomDraw() (drawData);
-    }
-    else
-    {
-        Draw(control, drawData);
+        if (component->GetCustomDraw() != (int)NULL)
+        {
+            component->GetCustomDraw() (drawData);
+        }
+        else
+        {
+            Draw(control, drawData);
+        }
     }
 
     control->isIteratorCorrupted = false;
-    List<UIControl*> childen(control->GetChildren());
-    List<UIControl*>::iterator it = childen.begin();
-    List<UIControl*>::iterator itEnd = childen.end();
+    List<UIControl*>::iterator it = control->childs.begin();
+    List<UIControl*>::iterator itEnd = control->childs.end();
     for (; it != itEnd; ++it)
     {
         if (((*it)->GetAvailableComponentFlags() & GetRequiredComponents()) == GetRequiredComponents())
@@ -157,7 +153,7 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
         DVASSERT(!control->isIteratorCorrupted);
     }
 
-    if (hasComponent && component->GetCustomDrawAfterChilds() != (int)NULL)
+    if (component && component->GetCustomDrawAfterChilds() != (int)NULL)
     {
         component->GetCustomDrawAfterChilds()(drawData);
     }
@@ -176,7 +172,7 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
         RenderSystem2D::Instance()->ClipPop();
     }
 
-    if (hasComponent && component->GetCustomAfterSystemDraw() != (int)NULL)
+    if (component && component->GetCustomAfterSystemDraw() != (int)NULL)
     {
         component->GetCustomAfterSystemDraw()(geometricData);
     }
@@ -256,6 +252,10 @@ void UIRenderSystem::DrawPivotPoint(UIControl* control, const Rect& drawRect)
 
 void UIRenderSystem::Draw(UIControl* control, const UIGeometricData& geometricData)
 {
+    if ((control->GetAvailableComponentFlags() & GetRequiredComponents()) != GetRequiredComponents())
+    {
+        return;
+    }
     control->GetBackground()->Draw(geometricData);
 }
 

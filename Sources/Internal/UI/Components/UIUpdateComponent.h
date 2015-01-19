@@ -30,21 +30,21 @@
 #define __DAVAENGINE_UI_UPDATE_COMPONENT_H__
 
 #include "UIComponent.h"
-#include "UI/UIControl.h"
+#include "Base/Function.h"
 
 namespace DAVA
 {
+class UIControl;
 
 class UIUpdateComponent : public UIComponent
 {
 public:
-    static const uint32 TYPE = Component::UI_UPDATE_COMPONENT;
+    IMPLEMENT_COMPONENT_TYPE(Component::UI_UPDATE_COMPONENT);
 
     UIUpdateComponent();
     virtual ~UIUpdateComponent();
 
     virtual Component* Clone(UIControl * toControl) override;
-    virtual uint32 GetType() const override;
 
     inline const Function<void(float32)>& GetCustomUpdate() const;
     inline const Function<bool()>& GetCustomNeedUpdateCheck() const;

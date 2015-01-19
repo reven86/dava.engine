@@ -30,21 +30,21 @@
 #define __DAVEENGINE_UI_INPUT_SYSTEM_H__
 
 #include "UISystem.h"
-#include "UI/UIControl.h"
+#include "Entity/Component.h"
 
 namespace DAVA
 {
+class UIControl;
+class UIEvent;
 
 class UIInputSystem : public UISystem
 {
 public:
-    static const uint32 TYPE = UISystem::UI_INPUT_SYSTEM;
+    IMPLEMENT_SYSTEM_TYPE(UISystem::UI_INPUT_SYSTEM);
+    IMPLEMENT_REQUIRED_COMPONENTS(MAKE_COMPONENT_MASK(Component::UI_INPUT_COMPONENT));
 
     UIInputSystem();
     virtual ~UIInputSystem();
-
-    virtual uint64 GetRequiredComponents() const override;
-    virtual uint32 GetType() const override;
 
     /**
     \brief Calls on every input event. Calls SystemInput() for all control children.
@@ -96,7 +96,7 @@ public:
     \brief Returns all currently active inputs.
     \returns all inputs active in the system
     */
-    const Vector<UIEvent>  &GetAllInputs();
+    inline const Vector<UIEvent>& GetAllInputs() const;
 
     /**
     \brief Sets input with the requested ID to the required control.
@@ -119,7 +119,7 @@ public:
     \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
     \returns exclusive input locker
     */
-    UIControl *GetExclusiveInputLocker();
+    inline UIControl* GetExclusiveInputLocker() const;
 
     /**
     \brief Disabled all controls inputs.
@@ -139,7 +139,7 @@ public:
     \brief Returns lock input counter.
     \returns current lock input counter
     */
-    int32 GetLockInputCounter() const;
+    inline int32 GetLockInputCounter() const;
 
 
 private:
@@ -150,6 +150,21 @@ private:
 
 
 };
+
+inline const Vector<UIEvent>& UIInputSystem::GetAllInputs() const
+{
+    return totalInputs;
+}
+
+inline int32 UIInputSystem::GetLockInputCounter() const
+{
+    return lockInputCounter;
+}
+
+inline UIControl* UIInputSystem::GetExclusiveInputLocker() const
+{
+    return exclusiveInputLocker;
+}
 
 }
 

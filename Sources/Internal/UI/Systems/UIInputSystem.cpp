@@ -27,9 +27,9 @@
 =====================================================================================*/
 
 #include "UIInputSystem.h"
+#include "Debug/Replay.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
-#include "Debug/Replay.h"
 #include "UI/Components/UIInputComponent.h"
 
 namespace DAVA
@@ -44,16 +44,6 @@ UIInputSystem::UIInputSystem()
 UIInputSystem::~UIInputSystem()
 {
 
-}
-
-uint64 UIInputSystem::GetRequiredComponents() const
-{
-    return (1 << Component::UI_INPUT_COMPONENT);
-}
-
-uint32 UIInputSystem::GetType() const
-{
-    return UISystem::UI_INPUT_SYSTEM;
 }
 
 bool UIInputSystem::SystemProcessInput(UIControl* control, UIEvent *currentInput)
@@ -344,6 +334,7 @@ bool UIInputSystem::SystemInput(UIControl* control, UIEvent *currentInput)
                 if (control->isIteratorCorrupted)
                 {
                     it = control->childs.rbegin();
+                    itEnd = control->childs.rend();
                     continue;
                 }
             }
@@ -729,16 +720,6 @@ int32 UIInputSystem::UnlockInput()
 	return lockInputCounter;
 }
 	
-int32 UIInputSystem::GetLockInputCounter() const
-{
-	return lockInputCounter;
-}
-
-const Vector<UIEvent> & UIInputSystem::GetAllInputs()
-{
-	return totalInputs;
-}
-	
 void UIInputSystem::SetExclusiveInputLocker(UIControl *locker, int32 lockEventId)
 {
 	SafeRelease(exclusiveInputLocker);
@@ -755,11 +736,6 @@ void UIInputSystem::SetExclusiveInputLocker(UIControl *locker, int32 lockEventId
 	exclusiveInputLocker = SafeRetain(locker);
 }
 	
-UIControl *UIInputSystem::GetExclusiveInputLocker()
-{
-	return exclusiveInputLocker;
-}
-
 }
 
 

@@ -30,7 +30,6 @@
 #define __DAVAENGINE_UI_COMPONENT_H__
 
 #include "Entity/Component.h"
-#include "Scene3D/Entity.h"
 
 namespace DAVA
 {
@@ -39,8 +38,6 @@ class UIControl;
 class UIComponent : public Component
 {
 public:
-    static UIComponent* CreateByType(uint32 componentType);
-
     UIComponent();
     virtual ~UIComponent();
     inline void SetControl(UIControl* control);
@@ -61,7 +58,7 @@ public:
 
 inline void UIComponent::SetControl(UIControl* control)
 {
-    control = control;
+    this->control = control;
 }
 
 inline UIControl* UIComponent::GetControl() const

@@ -34,10 +34,9 @@
 #include "UI/UIControlBackground.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
-#include "Base/Function.h"
-#include "Base/Bind.h"
-#include "UI/Components/UIComponent.h"
+
 #include "Scene3D/EntityFamily.h"
+#include "Scene3D/Entity.h"
 
 namespace DAVA
 {
@@ -249,31 +248,31 @@ public:
 
 
 public:
-    void AddComponent(UIComponent * component);
-    void RemoveComponent(UIComponent * component);
+    void AddComponent(Component * component);
+    void RemoveComponent(Component * component);
     void RemoveComponent(uint32 componentType, uint32 index = 0);
     void RemoveAllComponents();
-    void DetachComponent(UIComponent * component);
+    void DetachComponent(Component * component);
 
-    UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
-    UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
-    uint32 GetComponentCount();
-    uint32 GetComponentCount(uint32 componentType);
+    Component * GetComponent(uint32 componentType, uint32 index = 0) const;
+    Component * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
 
-    template<class T> T* GetComponent(uint32 index = 0) const
+    template<class T> inline T* GetComponent(uint32 index = 0) const
     {
-        return DynamicTypeCheck<T*>(GetComponent(T::TYPE, index));
+        return DynamicTypeCheck<T*>(GetComponent(T::C_TYPE, index));
     }
-    template<class T> T* GetOrCreateComponent(uint32 index = 0)
+    template<class T> inline T* GetOrCreateComponent(uint32 index = 0)
     {
-        return DynamicTypeCheck<T*>(GetOrCreateComponent(T::TYPE, index));
+        return DynamicTypeCheck<T*>(GetOrCreateComponent(T::C_TYPE, index));
     }
-    template<class T> uint32 GetComponentCount()
+    template<class T> inline uint32 GetComponentCount() const
     {
-        return GetComponentCount(T::TYPE);
+        return GetComponentCount(T::C_TYPE);
     }
 
-    inline uint64 GetAvailableComponentFlags();
+    inline uint32 GetComponentCount() const;
+    inline uint32 GetComponentCount(uint32 componentType) const;
+    inline uint64 GetAvailableComponentFlags() const;
 
 private:
     Vector<Component *> components;
@@ -1659,62 +1658,17 @@ void UIControl::SetAndApplyBottomAlignEnabled(bool isEnabled)
 
 // Components
 
-inline uint32 UIControl::GetComponentCount()
+inline uint32 UIControl::GetComponentCount() const
 {
     return components.size();
 }
 
-inline void UIControl::UpdateFamily()
-{
-    family = EntityFamily::GetOrCreate(components);
-}
-
-inline void UIControl::RemoveAllComponents()
-{
-    while (!components.empty())
-    {
-        RemoveComponent(--components.end());
-    }
-}
-
-inline void UIControl::RemoveComponent(const Vector<Component *>::iterator & it)
-{
-    if (it != components.end())
-    {
-        UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
-        DetachComponent(it);
-        SafeDelete(c);
-    }
-}
-
-inline void UIControl::RemoveComponent(uint32 componentType, uint32 index)
-{
-    UIComponent * c = GetComponent(componentType, index);
-    if (c)
-    {
-        RemoveComponent(c);
-    }
-}
-
-inline void UIControl::RemoveComponent(UIComponent * component)
-{
-    DetachComponent(component);
-    SafeDelete(component);
-}
-
-inline void UIControl::DetachComponent(UIComponent * component)
-{
-    DVASSERT(component);
-    auto it = std::find(components.begin(), components.end(), component);
-    DetachComponent(it);
-}
-
-inline uint32 UIControl::GetComponentCount(uint32 componentType)
+inline uint32 UIControl::GetComponentCount(uint32 componentType) const
 {
     return family->GetComponentsCount(componentType);
 }
 
-inline uint64 UIControl::GetAvailableComponentFlags()
+inline uint64 UIControl::GetAvailableComponentFlags() const
 {
     return family->GetComponentsFlags();
 }

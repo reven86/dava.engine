@@ -41,6 +41,7 @@
 #include "UI/Systems/UIUpdateSystem.h"
 #include "UI/Systems/UIInputSystem.h"
 #include "UI/Components/UIUpdateComponent.h"
+#include "UI/Components/UIRenderComponent.h"
 
 namespace DAVA
 {
@@ -52,6 +53,7 @@ UniqueHandle UIScreenTransition::alphaClearStateHandle = InvalidUniqueHandle;
 UIScreenTransition::UIScreenTransition()
 {
     GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIScreenTransition::CustomUpdate));
+    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIScreenTransition::CustomDraw));
 
     duration = 0.7f;
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);

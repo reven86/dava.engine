@@ -38,8 +38,10 @@
 #include "FileSystem/VariantType.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/FontManager.h"
+
 #include "UI/Components/UIRenderComponent.h"
 #include "UI/Components/UIInputComponent.h"
+#include "Base/FunctionTraits.h"
 
 namespace DAVA
 {

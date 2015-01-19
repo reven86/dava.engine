@@ -39,6 +39,8 @@
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "UI/UIControl.h"
+#include "Scene3D/Entity.h"
 #include "UI/Systems/UIRenderSystem.h"
 #include "UI/Systems/UIUpdateSystem.h"
 #include "UI/Systems/UIInputSystem.h"

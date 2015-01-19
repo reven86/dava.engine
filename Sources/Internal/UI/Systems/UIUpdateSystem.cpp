@@ -27,8 +27,9 @@
 =====================================================================================*/
 
 #include "UIUpdateSystem.h"
-#include "UI/UIControlSystem.h"
 #include "Platform/SystemTimer.h"
+#include "UI/UIControl.h"
+#include "UI/UIControlSystem.h"
 #include "UI/Components/UIUpdateComponent.h"
 
 namespace DAVA
@@ -40,16 +41,6 @@ UIUpdateSystem::UIUpdateSystem()
 
 UIUpdateSystem::~UIUpdateSystem()
 {
-}
-
-uint64 UIUpdateSystem::GetRequiredComponents() const
-{
-    return (1 << Component::UI_UPDATE_COMPONENT);
-}
-
-uint32 UIUpdateSystem::GetType() const
-{
-    return UISystem::UI_UPDATE_SYSTEM;
 }
 
 void UIUpdateSystem::Update()
@@ -86,13 +77,14 @@ void UIUpdateSystem::SystemUpdate(UIControl* control, float32 timeElapsed)
     control->isUpdated = true;
 
     List<UIControl*>::iterator it = control->childs.begin();
-    for (; it != control->childs.end(); ++it)
+    List<UIControl*>::iterator itEnd = control->childs.end();
+    for (; it != itEnd; ++it)
     {
         (*it)->isUpdated = false;
     }
 
     it = control->childs.begin();
-    while (it != control->childs.end())
+    while (it != itEnd)
     {
         control->isIteratorCorrupted = false;
         UIControl *current = *it;
@@ -109,6 +101,7 @@ void UIUpdateSystem::SystemUpdate(UIControl* control, float32 timeElapsed)
             if (control->isIteratorCorrupted)
             {
                 it = control->childs.begin();
+                itEnd = control->childs.end();
                 continue;
             }
         }

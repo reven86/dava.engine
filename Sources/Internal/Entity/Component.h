@@ -123,7 +123,11 @@ public:
 		);
 };
 
-#define IMPLEMENT_COMPONENT_TYPE(TYPE) virtual uint32 GetType() const { return TYPE; };
+#define IMPLEMENT_COMPONENT_TYPE(TYPE) \
+    virtual uint32 GetType() const { return TYPE; }; \
+    static const uint32 C_TYPE = TYPE; 
+
+#define MAKE_COMPONENT_MASK(TYPE) ((uint64)(1 << TYPE))
     
 template<template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T> & container)

@@ -219,9 +219,8 @@ public:
     void UI3DViewAdded();
     void UI3DViewRemoved();
 
-    inline UISystem* GetSystem(const UISystem::eSystemType system) const;
-    template<class T>
-    inline T* GetSystem() const;
+    inline UISystem* GetSystem(uint32 system) const;
+    template<class T> inline T* GetSystem() const;
 
 private:
 	/**
@@ -270,15 +269,15 @@ private:
     friend class UIInputSystem;
 };
 
-inline UISystem* UIControlSystem::GetSystem(const UISystem::eSystemType system) const
+inline UISystem* UIControlSystem::GetSystem(uint32 system) const
 {
-    return systems[(uint32)system];
+    return systems[system];
 }
 
 template<class T>
 inline T* UIControlSystem::GetSystem() const
 {
-    return reinterpret_cast<T*>(GetSystem((const UISystem::eSystemType)T::TYPE));
+    return DynamicTypeCheck<T*>(GetSystem(T::S_TYPE));
 }
 
 };

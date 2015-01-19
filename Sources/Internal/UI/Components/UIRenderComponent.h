@@ -30,92 +30,91 @@
 #define __DAVAENGINE_RENDER_2D_COMPONENT_H__
 
 #include "UIComponent.h"
-#include "UI/UIControl.h"
+#include "Base/Function.h"
 
 namespace DAVA
 {
+class UIControl;
+class UIGeometricData;
 
 class UIRenderComponent : public UIComponent
 {
 public:
-    static const uint32 TYPE = Component::UI_RENDER_COMPONENT;
+    typedef Function<void(const UIGeometricData&)> RenderFunctor;
+
+    IMPLEMENT_COMPONENT_TYPE(Component::UI_RENDER_COMPONENT);
 
     UIRenderComponent();
     virtual ~UIRenderComponent();
 
     virtual Component * Clone(UIControl* toControl);
-    virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-    virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
-    virtual uint32 GetType() const override;
-
-    inline void SetCustomDraw(Function<void(const UIGeometricData&)>& f);
-    inline void SetCustomDrawAfterChilds(Function<void(const UIGeometricData&)>& f);
-    inline void SetCustomBeforeSystemDraw(Function<void(const UIGeometricData&)>& f);
-    inline void SetCustomAfterSystemDraw(Function<void(const UIGeometricData&)>& f);
-    inline void SetCustomSystemDraw(Function<void(const UIGeometricData&)>& f);
-
-    inline const Function<void(const UIGeometricData&)>& GetCustomDraw() const;
-    inline const Function<void(const UIGeometricData&)>& GetCustomDrawAfterChilds() const;
-    inline const Function<void(const UIGeometricData&)>& GetCustomBeforeSystemDraw() const;
-    inline const Function<void(const UIGeometricData&)>& GetCustomAfterSystemDraw() const;
-    inline const Function<void(const UIGeometricData&)>& GetCustomSystemDraw() const;
+    inline void SetCustomDraw(const RenderFunctor& f);
+    inline void SetCustomDrawAfterChilds(const RenderFunctor& f);
+    inline void SetCustomBeforeSystemDraw(const RenderFunctor& f);
+    inline void SetCustomAfterSystemDraw(const RenderFunctor& f);
+    inline void SetCustomSystemDraw(const RenderFunctor& f);
+    inline const RenderFunctor& GetCustomDraw() const;
+    inline const RenderFunctor& GetCustomDrawAfterChilds() const;
+    inline const RenderFunctor& GetCustomBeforeSystemDraw() const;
+    inline const RenderFunctor& GetCustomAfterSystemDraw() const;
+    inline const RenderFunctor& GetCustomSystemDraw() const;
 
 private:
-    Function<void(const UIGeometricData&)> customDraw;
-    Function<void(const UIGeometricData&)> customDrawAfterChilds;
-    Function<void(const UIGeometricData&)> customBeforeSystemDraw;
-    Function<void(const UIGeometricData&)> customAfterSystemDraw;
-    Function<void(const UIGeometricData&)> customSystemDraw;
+    RenderFunctor customDraw;
+    RenderFunctor customDrawAfterChilds;
+    RenderFunctor customBeforeSystemDraw;
+    RenderFunctor customAfterSystemDraw;
+    RenderFunctor customSystemDraw;
 
 };
 
-void UIRenderComponent::SetCustomDraw(Function<void(const UIGeometricData&)>& f)
+void UIRenderComponent::SetCustomDraw(const RenderFunctor& f)
 {
     customDraw = f;
 }
 
-void UIRenderComponent::SetCustomDrawAfterChilds(Function<void(const UIGeometricData&)>& f)
+void UIRenderComponent::SetCustomDrawAfterChilds(const RenderFunctor& f)
 {
     customDrawAfterChilds = f;
 }
 
-void UIRenderComponent::SetCustomBeforeSystemDraw(Function<void(const UIGeometricData&)>& f)
+void UIRenderComponent::SetCustomBeforeSystemDraw(const RenderFunctor& f)
 {
     customBeforeSystemDraw = f;
 }
 
-void UIRenderComponent::SetCustomAfterSystemDraw(Function<void(const UIGeometricData&)>& f)
+void UIRenderComponent::SetCustomAfterSystemDraw(const RenderFunctor& f)
 {
     customAfterSystemDraw = f;
 }
 
-void UIRenderComponent::SetCustomSystemDraw(Function<void(const UIGeometricData&)>& f)
+void UIRenderComponent::SetCustomSystemDraw(const RenderFunctor& f)
 {
     customSystemDraw = f;
 }
 
-const Function<void(const UIGeometricData&)>& UIRenderComponent::GetCustomDraw() const
+const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomDraw() const
 {
     return customDraw;
 }
 
-const Function<void(const UIGeometricData&)>& UIRenderComponent::GetCustomDrawAfterChilds() const
+const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomDrawAfterChilds() const
 {
     return customDrawAfterChilds;
 }
 
-const Function<void(const UIGeometricData&)>& UIRenderComponent::GetCustomBeforeSystemDraw() const
+const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomBeforeSystemDraw() const
 {
     return customBeforeSystemDraw;
 }
 
-const Function<void(const UIGeometricData&)>& UIRenderComponent::GetCustomAfterSystemDraw() const
+const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomAfterSystemDraw() const
 {
     return customAfterSystemDraw;
 }
 
-const Function<void(const UIGeometricData&)>& UIRenderComponent::GetCustomSystemDraw() const
+const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomSystemDraw() const
 {
     return customSystemDraw;
 }

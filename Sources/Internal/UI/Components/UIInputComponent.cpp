@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "UIInputComponent.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
@@ -41,12 +42,9 @@ UIInputComponent::~UIInputComponent()
 
 Component* UIInputComponent::Clone(UIControl * toControl)
 {
-    return NULL;
-}
-
-uint32 UIInputComponent::GetType() const
-{
-    return Component::UI_INPUT_COMPONENT;
+    UIInputComponent* comp = new UIInputComponent();
+    comp->SetControl(toControl);
+    return comp;
 }
 
 }

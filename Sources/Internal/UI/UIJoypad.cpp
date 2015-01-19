@@ -32,7 +32,9 @@
 #include "UI/UIEvent.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/YamlNode.h"
+
 #include "UI/Components/UIInputComponent.h"
+#include "Base/FunctionTraits.h"
 
 namespace DAVA 
 {
@@ -47,8 +49,9 @@ UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 ,	needRecalcAnalog(true)
 ,	currentPos(Vector2(0,0))
 {
-    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UIJoypad::CustomInput));
-    GetOrCreateComponent<UIInputComponent>()->SetCustomInputCancelled(MakeFunction(this, &UIJoypad::CustomInputCancelled));
+    UIInputComponent* inputComponent = GetOrCreateComponent<UIInputComponent>();
+    inputComponent->SetCustomInput(MakeFunction(this, &UIJoypad::CustomInput));
+    inputComponent->SetCustomInputCancelled(MakeFunction(this, &UIJoypad::CustomInputCancelled));
 
     SetInputEnabled(true, false);
 }

@@ -28,9 +28,6 @@
 
 #include "UIComponent.h"
 #include "UI/UIControl.h"
-#include "UIRenderComponent.h"
-#include "UIInputComponent.h"
-#include "UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -49,22 +46,6 @@ Component* UIComponent::Clone(Entity* toEntity)
 {
     // Empty stub
     return NULL;
-}
-
-UIComponent* UIComponent::CreateByType(uint32 componentType)
-{
-    switch (componentType)
-    {
-    case Component::UI_RENDER_COMPONENT:
-        return new UIRenderComponent();
-    case Component::UI_INPUT_COMPONENT:
-        return new UIInputComponent();
-    case Component::UI_UPDATE_COMPONENT:
-        return new UIUpdateComponent();
-    default:
-        DVASSERT(0)
-        return 0;
-    }
 }
 
 }

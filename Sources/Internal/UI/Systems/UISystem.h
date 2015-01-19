@@ -55,6 +55,13 @@ public:
 
 };
 
+#define IMPLEMENT_SYSTEM_TYPE(TYPE) \
+    virtual uint32 GetType() const override { return TYPE; }; \
+    static const uint32 S_TYPE = TYPE; 
+
+#define IMPLEMENT_REQUIRED_COMPONENTS(MASK) \
+    virtual uint64 GetRequiredComponents() const override { return (uint64)(MASK); }
+
 }
 
 

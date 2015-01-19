@@ -51,7 +51,7 @@ namespace DAVA
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
     {
         UpdateFamily();
-        GetOrCreateComponent<UIRenderComponent>(); // Create render component for all controls
+        AddComponent(Component::CreateByType(Component::UI_RENDER_COMPONENT)); // Create render component for all controls
         
         parent = NULL;
         controlState = STATE_NORMAL;
@@ -110,6 +110,7 @@ namespace DAVA
     UIControl::~UIControl()
     {
         UIControlSystem::Instance()->GetSystem<UIInputSystem>()->CancelInputs(this);
+        RemoveAllComponents();
         SafeRelease(background);
         SafeRelease(eventDispatcher);
         RemoveAllControls();
@@ -2320,11 +2321,10 @@ namespace DAVA
         return left->GetType() < right->GetType();
     }
 
-    void UIControl::AddComponent(UIComponent * component)
+    void UIControl::AddComponent(Component * component)
     {
-        component->SetControl(this);
+        DynamicTypeCheck<UIComponent*>(component)->SetControl(this);
         components.push_back(component);
-
         std::stable_sort(components.begin(), components.end(), CotrolComponentLessPredicate);
         UpdateFamily();
     }
@@ -2337,7 +2337,7 @@ namespace DAVA
         c->SetControl(0);
     }
 
-    UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
+    Component * UIControl::GetComponent(uint32 componentType, uint32 index) const
     {
         UIComponent * ret = 0;
         uint32 maxCount = family->GetComponentsCount(componentType);
@@ -2349,15 +2349,61 @@ namespace DAVA
         return ret;
     }
 
-    UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+    Component * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
     {
-        UIComponent * ret = GetComponent(componentType, index);
+        Component * ret = GetComponent(componentType, index);
         if (!ret)
         {
-            ret = UIComponent::CreateByType(componentType);
+            ret = Component::CreateByType(componentType);
             AddComponent(ret);
         }
 
         return ret;
     }
+
+    inline void UIControl::UpdateFamily()
+    {
+        family = EntityFamily::GetOrCreate(components);
+    }
+
+    inline void UIControl::RemoveAllComponents()
+    {
+        while (!components.empty())
+        {
+            RemoveComponent(--components.end());
+        }
+    }
+
+    void UIControl::RemoveComponent(const Vector<Component *>::iterator & it)
+    {
+        if (it != components.end())
+        {
+            UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
+            DetachComponent(it);
+            SafeDelete(c);
+        }
+    }
+
+    void UIControl::RemoveComponent(uint32 componentType, uint32 index)
+    {
+        Component * c = GetComponent(componentType, index);
+        if (c)
+        {
+            RemoveComponent(c);
+        }
+    }
+
+    void UIControl::RemoveComponent(Component * component)
+    {
+        DetachComponent(component);
+        SafeDelete(component);
+    }
+
+    void UIControl::DetachComponent(Component * component)
+    {
+        DVASSERT(component);
+        auto it = std::find(components.begin(), components.end(), component);
+        DetachComponent(it);
+    }
+
 }

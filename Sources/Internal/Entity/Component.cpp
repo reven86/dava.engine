@@ -56,6 +56,12 @@
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 
+#include "UI/UIControl.h"
+#include "UI/Components/UIComponent.h"
+#include "UI/Components/UIInputComponent.h"
+#include "UI/Components/UIRenderComponent.h"
+#include "UI/Components/UIUpdateComponent.h"
+
 #include "Base/ObjectFactory.h"
 
 namespace DAVA
@@ -113,6 +119,13 @@ Component * Component::CreateByType(uint32 componentType)
         return new SnapToLandscapeControllerComponent();
     case WASD_CONTROLLER_COMPONENT:
         return new WASDControllerComponent();
+
+    case Component::UI_RENDER_COMPONENT:
+        return new UIRenderComponent();
+    case Component::UI_INPUT_COMPONENT:
+        return new UIInputComponent();
+    case Component::UI_UPDATE_COMPONENT:
+        return new UIUpdateComponent();
 
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:

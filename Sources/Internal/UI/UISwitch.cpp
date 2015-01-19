@@ -31,7 +31,9 @@
 #include "UISwitch.h"
 #include "Animation/LinearAnimation.h"
 #include "UI/UIEvent.h"
+
 #include "UI/Components/UIInputComponent.h"
+#include "Base/FunctionTraits.h"
 
 namespace DAVA 
 {

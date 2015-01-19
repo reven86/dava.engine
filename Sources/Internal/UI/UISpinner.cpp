@@ -31,8 +31,10 @@
 #include "UISpinner.h"
 #include "UI/UIEvent.h"
 #include "Animation/Animation.h"
+
 #include "UI/Components/UIInputComponent.h"
 #include "UI/Components/UIUpdateComponent.h"
+#include "Base/FunctionTraits.h"
 
 namespace DAVA 
 {

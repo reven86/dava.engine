@@ -30,21 +30,22 @@
 #define __DAVEENGINE_UI_INPUT_COMPONENT_H__
 
 #include "UIComponent.h"
-#include "UI/UIControl.h"
+#include "Base/Function.h"
 
 namespace DAVA
 {
+class UIControl;
+class UIEvent;
 
 class UIInputComponent : public UIComponent
 {
 public:
-    static const uint32 TYPE = Component::UI_INPUT_COMPONENT;
+    IMPLEMENT_COMPONENT_TYPE(Component::UI_INPUT_COMPONENT);
 
     UIInputComponent();
     virtual ~UIInputComponent();
 
     virtual Component* Clone(UIControl * toControl) override;
-    virtual uint32 GetType() const override;
 
     inline const Function<void(UIEvent*)>& GetCustomInput() const;
     inline void SetCustomInput(const Function<void(UIEvent*)>& val);

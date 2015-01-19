@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "UIUpdateComponent.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
@@ -42,12 +43,9 @@ UIUpdateComponent::~UIUpdateComponent()
 
 Component* UIUpdateComponent::Clone(UIControl * toControl)
 {
-    return NULL;
-}
-
-uint32 UIUpdateComponent::GetType() const
-{
-    return Component::UI_UPDATE_COMPONENT;
+    UIUpdateComponent* comp = new UIUpdateComponent();
+    comp->SetControl(toControl);
+    return comp;
 }
 
 }
