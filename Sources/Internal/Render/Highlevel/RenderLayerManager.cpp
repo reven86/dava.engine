@@ -72,7 +72,7 @@ RenderLayerManager::RenderLayerManager()
     : array(RENDER_LAYER_ID_COUNT)
     , map(NextPowerOf2(RENDER_LAYER_ID_COUNT))
 {
-    RenderLayer * renderLayerOpaque = new InstancedRenderLayer(LAYER_OPAQUE,
+    RenderLayer * renderLayerOpaque = new /*Instanced*/RenderLayer(LAYER_OPAQUE,
                                                       RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
                                                       RENDER_LAYER_OPAQUE_ID);
     InsertLayer(renderLayerOpaque);
@@ -82,7 +82,7 @@ RenderLayerManager::RenderLayerManager()
                                                            RENDER_LAYER_AFTER_OPAQUE_ID);
     InsertLayer(renderLayerAfterOpaque);
     
-    RenderLayer * renderLayerAlphaTest = new InstancedRenderLayer(LAYER_ALPHA_TEST_LAYER,
+    RenderLayer * renderLayerAlphaTest = new /*Instanced*/RenderLayer(LAYER_ALPHA_TEST_LAYER,
                                                            RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
                                                            RENDER_LAYER_ALPHA_TEST_LAYER_ID);
     InsertLayer(renderLayerAlphaTest);
