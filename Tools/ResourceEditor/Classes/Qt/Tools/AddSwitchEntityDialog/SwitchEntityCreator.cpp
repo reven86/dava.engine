@@ -48,7 +48,12 @@ DAVA::Entity *SwitchEntityCreator::CreateSwitchEntity(const DAVA::Vector<DAVA::E
 		clonedEntities.push_back(fromEntities[i]->Clone());
 
 		FindRenderObjectsRecursive(clonedEntities[i], renderPairs[i]);
-		if(renderPairs[i].size() > 1)
+        if (renderPairs[i].size()==0)
+        {
+            SafeRelease(switchEntity);
+            return NULL;
+        }
+        else if(renderPairs[i].size() > 1)
 		{
 			singleMode = false;
 		}

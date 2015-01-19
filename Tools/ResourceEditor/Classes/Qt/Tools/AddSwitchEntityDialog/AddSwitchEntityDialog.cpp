@@ -150,6 +150,11 @@ void AddSwitchEntityDialog::accept()
 		}
 
 		Entity* switchEntity = creator.CreateSwitchEntity(vector);
+        if (!switchEntity)
+        {
+            ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS);
+            return;
+        }
 
 		scene->Exec(new EntityAddCommand(switchEntity, scene));
 
