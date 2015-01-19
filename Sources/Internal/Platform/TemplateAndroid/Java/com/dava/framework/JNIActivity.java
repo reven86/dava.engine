@@ -22,7 +22,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.bda.controller.Controller;
+//import com.bda.controller.Controller;
 
 import java.util.Calendar;
 
@@ -35,7 +35,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
-	private Controller mController;
+//	private Controller mController;
 	
 	private native void nativeOnCreate(boolean isFirstRun);
 	private native void nativeOnStart();
@@ -113,19 +113,19 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setFocusable(true);
         glView.requestFocus();
         
-        mController = Controller.getInstance(this);
-        if(mController != null)
-        {
-            if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
-            {		
-        	    MogaFixForLollipop.init(mController, this);
-			}
-            else
-            {
-                mController.init();
-            }
-        	mController.setListener(glView.mogaListener, new Handler());
-        }
+//        mController = Controller.getInstance(this);
+//        if(mController != null)
+//        {
+//            if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
+//            {		
+//        	    MogaFixForLollipop.init(mController, this);
+//			}
+//            else
+//            {
+//                mController.init();
+//            }
+//        	mController.setListener(glView.mogaListener, new Handler());
+//        }
         
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
@@ -206,10 +206,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		
 		JNITextField.HideAllTextFields();
 		
-		if(mController != null)
-		{
-			mController.onResume();
-		}
+//		if(mController != null)
+//		{
+//			mController.onResume();
+//		}
 		
         // activate accelerometer
         if(null != accelerometer)
@@ -241,10 +241,10 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onPause] start");
 
-		if(mController != null)
-		{
-			mController.onPause();
-		}
+//		if(mController != null)
+//		{
+//			mController.onPause();
+//		}
 		
         // deactivate accelerometer
         if(null != accelerometer)
@@ -296,8 +296,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     {
         Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] start");
 
-        if(mController != null)
-        	mController.exit();
+//        if(mController != null)
+//        	mController.exit();
         
         //call native method
         nativeOnDestroy();

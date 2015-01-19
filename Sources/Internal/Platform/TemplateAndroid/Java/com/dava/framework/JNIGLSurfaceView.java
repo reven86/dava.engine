@@ -16,8 +16,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-import com.bda.controller.ControllerListener;
-import com.bda.controller.StateEvent;
+//import com.bda.controller.ControllerListener;
+//import com.bda.controller.StateEvent;
 
 public class JNIGLSurfaceView extends GLSurfaceView
 {
@@ -27,7 +27,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	
-	MOGAListener mogaListener = null;
+	//MOGAListener mogaListener = null;
 
 	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode() + 1];
 
@@ -75,7 +75,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		setRenderer(mRenderer);
 		setRenderMode(RENDERMODE_CONTINUOUSLY);
 		
-		mogaListener = new MOGAListener(this);
+//		mogaListener = new MOGAListener(this);
 		
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
 		{
@@ -335,7 +335,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	return true;
     }
     
-    class MOGAListener implements ControllerListener
+/*    class MOGAListener implements ControllerListener
     {
     	GLSurfaceView parent = null;
     	
@@ -370,5 +370,5 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		{
 			
 		}
-    }
+    } */
 }
