@@ -31,6 +31,7 @@
 #include "FileSystem/Logger.h"
 #include "Collision/CollisionObject2.h"
 #include "Render/RenderManager.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene2D/Box2DGameObject.h"
 
 namespace DAVA
@@ -150,16 +151,13 @@ void Box2DGameObjectManager::Draw()
 
 	if(debugDraw)
 	{
-        RenderManager::Instance()->PushDrawMatrix();
-        RenderManager::Instance()->SetDrawTranslate(cameraPosition);
-        RenderManager::Instance()->SetDrawScale(cameraScale);
-
-		//debugDraw->SetCameraPos(drawState.position);
-        //debugDraw->SetPTDRatio(pixelsInMeterRatio * GetCameraScale());
+        Matrix4 worldMx;
+        worldMx.glTranslate(cameraPosition.x, cameraPosition.y, 0.f);
+        worldMx = worldMx * Matrix4::MakeScale(Vector3(cameraScale.x, cameraScale.y, 1.f));
+        RenderManager::SetDynamicParam(PARAM_WORLD, &worldMx, UPDATE_SEMANTIC_ALWAYS);
+        
 		box2DWorld->SetDebugDraw(debugDraw);
 		box2DWorld->DrawDebugData();
-
-        RenderManager::Instance()->PopDrawMatrix();
 	}
 }
 	
@@ -310,9 +308,9 @@ void Box2DGameObjectManager::PostSolve(b2Contact* contact, const b2ContactImpuls
 	}
 }
 
-void Box2DGameObjectManager::RemoveObject(Box2DGameObject * _object)
+void Box2DGameObjectManager::RemoveObject(GameObject * _object)
 {
-    if(b2Body *body = _object->GetBox2DBody())
+    if(b2Body *body = ((Box2DGameObject *)_object)->GetBox2DBody())
         body->SetActive(false);
     GameObjectManager::RemoveObject(_object);
 }

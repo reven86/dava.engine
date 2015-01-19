@@ -45,9 +45,24 @@ public:
 	enum FuncType
 	{
 		LINEAR = 0,
+		//EASY
 		EASY_IN,
 		EASY_OUT,
-		EASY_IN_EASY_OUT
+		EASY_IN_EASY_OUT,
+		//SINE
+		SINE_IN,
+		SINE_OUT,
+		SINE_IN_SINE_OUT,
+		//ELASTIC
+		ELASTIC_IN,
+		ELASTIC_OUT,
+		ELASTIC_IN_ELASTIC_OUT,
+		//BOUNCE
+		BOUNCE_IN,
+		BOUNCE_OUT,
+		BOUNCE_IN_BOUNCE_OUT,
+        
+        FUNC_TYPE_COUNT
 	};
 	/**
 		\brief This type describes our interpolation functions. 

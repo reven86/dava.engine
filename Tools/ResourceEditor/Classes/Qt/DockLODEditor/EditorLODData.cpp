@@ -480,12 +480,21 @@ FilePath EditorLODData::GetDefaultTexturePathForPlaneEntity()
 
 bool EditorLODData::CanDeleteLod()
 {
-    if(lodData.size() == 0)
+    const uint32 count = (const uint32)lodData.size();
+    if(count == 0)
+    {
         return false;
+    }
     
-    Entity * componentOwner = lodData[0]->GetEntity();
-    if(componentOwner->GetComponent(Component::PARTICLE_EFFECT_COMPONENT) || componentOwner->GetParent()->GetComponent(Component::PARTICLE_EFFECT_COMPONENT))
-        return false;
+    for(uint32 i = 0; i < count; ++i)
+    {
+        Entity * componentOwner = lodData[i]->GetEntity();
+        if(     componentOwner->GetComponent(Component::PARTICLE_EFFECT_COMPONENT)
+           ||   componentOwner->GetParent()->GetComponent(Component::PARTICLE_EFFECT_COMPONENT))
+        {
+            return false;
+        }
+    }
     
     return true;
 }

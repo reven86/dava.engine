@@ -49,15 +49,22 @@ LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
 UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
 {
     RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
-    
-    YamlNode *rootNode = parser.Valid() ? parser->GetRootNode() : NULL;
-    if (!rootNode)
+
+    if (parser.Get() == NULL)
         return NULL;
     
-    UIPackage *package = builder->BeginPackage(packagePath);
+    YamlNode *rootNode = parser->GetRootNode();
+    if (!rootNode)//empty yaml equal to empty UIPackage
+    {
+        RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+        builder->EndPackage();
+        return SafeRetain(package.Get());
+    }
+    
+    RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
     
     UIControl *legacyControl = builder->BeginControlWithClass("UIControl");
-    builder->BeginControlPropretiesSection("UIControl");
+    builder->BeginControlPropertiesSection("UIControl");
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
@@ -74,7 +81,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (!childrenNode)
         childrenNode = rootNode;
 
-    for (int i = 0; i < (int)childrenNode->GetCount(); i++)
+    for (int32 i = 0; i < (int)childrenNode->GetCount(); i++)
     {
         const YamlNode *childNode = childrenNode->Get(i);
         if (childNode->Get("type"))
@@ -84,11 +91,11 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
         }
     }
     
-    builder->EndControl();
+    builder->EndControl(true);
     
     builder->EndPackage();
     
-    return package;
+    return SafeRetain(package.Get());
 }
 
 bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/)
@@ -105,8 +112,8 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     if (type->AsString() == "UIAggregatorControl")
     {
         const YamlNode *pathNode = node->Get("aggregatorPath");
-        UIPackage *importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
-        DVASSERT(importedPackage);
+        RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
+        DVASSERT(importedPackage.Get());
         builder->BeginControlWithPrototype(importedPackage->GetName(), importedPackage->GetControl(0)->GetName(), "", this);
     }
     else if (baseType)
@@ -140,7 +147,7 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         control->ApplyAlignSettingsForChildren();
         // yamlLoader->PostLoad(control);
     }
-    builder->EndControl();
+    builder->EndControl(false);
 }
 
 void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node)
@@ -149,10 +156,10 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
     if (baseInfo)
         LoadControlPropertiesFromYamlNode(control, baseInfo, node);
     
-    builder->BeginControlPropretiesSection(typeInfo->Name());
+    builder->BeginControlPropertiesSection(typeInfo->Name());
 
     String className = control->GetControlClassName();
-    for (int i = 0; i < typeInfo->MembersCount(); i++)
+    for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
         String memberName = member->Name();
@@ -183,7 +190,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
 void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
     String className = control->GetControlClassName();
-    for (int i = 0; i < control->GetBackgroundComponentsCount(); i++)
+    for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
         UIControlBackground *bg = builder->BeginBgPropertiesSection(i, true);
         if (bg)
@@ -191,11 +198,11 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
             const InspInfo *insp = bg->GetTypeInfo();
             String bgName = control->GetBackgroundComponentName(i);
             
-            for (int j = 0; j < insp->MembersCount(); j++)
+            for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
                 String memberName = member->Name();
-                int subNodeIndex = -1;
+                int32 subNodeIndex = -1;
                 
                 memberName = GetOldPropertyName(className, memberName);
                 if (memberName == "stateSprite")
@@ -227,7 +234,7 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
 void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
     String className = control->GetControlClassName();
-    for (int i = 0; i < control->GetInternalControlsCount(); i++)
+    for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
     {
         UIControl *internalControl = builder->BeginInternalControlSection(i, true);
         if (internalControl)
@@ -235,7 +242,7 @@ void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UICo
             const InspInfo *insp = internalControl->GetTypeInfo();
             String internalControlName = control->GetInternalControlName(i);
             
-            for (int j = 0; j < insp->MembersCount(); j++)
+            for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
                 String memberName = member->Name();
@@ -249,7 +256,7 @@ void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UICo
     }
 }
 
-VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, int subNodeIndex, const String &propertyName)
+VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, int32 subNodeIndex, const String &propertyName)
 {
     const YamlNode *valueNode = node->Get(propertyName);
     if (valueNode)
@@ -259,7 +266,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
         
         if (member->Desc().type == InspDesc::T_ENUM)
         {
-            int val = 0;
+            int32 val = 0;
             if (member->Desc().enumMap->ToValue(valueNode->AsString().c_str(), val))
             {
                 return VariantType(val);
@@ -289,11 +296,11 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
         }
         else if (member->Desc().type == InspDesc::T_FLAGS)
         {
-            int val = 0;
+            int32 val = 0;
             for (uint32 i = 0; i < valueNode->GetCount(); i++)
             {
                 const YamlNode *flagNode = valueNode->Get(i);
-                int flag = 0;
+                int32 flag = 0;
                 if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
                 {
                     val |= flag;

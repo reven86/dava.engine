@@ -37,10 +37,12 @@ extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {
@@ -58,8 +60,8 @@ namespace DAVA
 
 	Core::eDeviceFamily Core::GetDeviceFamily()
 	{
-		float32 width = GetPhysicalScreenWidth();
-		float32 height = GetPhysicalScreenHeight();
+		float32 width = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
+		float32 height = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 		float32 dpi = GetScreenDPI();
 
 		float32 inches = sqrt((width * width) + (height * height)) / dpi;
@@ -145,31 +147,28 @@ namespace DAVA
             if(fps > 0)
             {
                 sleepMs = (1000 / fps) - elapsedTime;
-                if(sleepMs < 1)
+                if(sleepMs > 0)
                 {
-                    sleepMs = 1;
+                	Thread::Sleep(sleepMs);
                 }
             }
-            Thread::Sleep(sleepMs);
 		}
 	}
 
 	void CorePlatformAndroid::ResizeView(int32 w, int32 h)
 	{
-		if(width != w || height != h)
-		{
-			width = w;
-			height = h;
+		width = w;
+		height = h;
+		DeviceInfo::InitializeScreenInfo();
 
-			UpdateScreenMode();
-		}
+		UpdateScreenMode();
 	}
 
 	void CorePlatformAndroid::UpdateScreenMode()
 	{
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
-		UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-		Core::Instance()->SetPhysicalScreenSize(width, height);
+		VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+		VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
 
 		RenderManager::Instance()->InitFBSize(width, height);
         RenderManager::Instance()->Init(width, height);
@@ -211,9 +210,8 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
-			
 			SceneCache::Instance()->InvalidateSceneMaterials();
-		}
+        }
 		else
 		{
 			wasCreated = true;
@@ -251,12 +249,13 @@ namespace DAVA
 			}
 
 			FileSystem::Instance()->Init();
+			RenderSystem2D::Instance()->Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");
 
 			ResizeView(w, h);
-
+			// Set proper width and height before call FrameworkDidlaunched
 			FrameworkDidLaunched();
 
 			RenderManager::Instance()->SetFPS(60);
@@ -330,9 +329,6 @@ namespace DAVA
 		DAVA::Core::Instance()->GoBackground(isLock);
 
 		foreground = false;
-
-		width = 0;
-		height = 0;
 	}
 
 	void CorePlatformAndroid::KeyUp(int32 keyCode)

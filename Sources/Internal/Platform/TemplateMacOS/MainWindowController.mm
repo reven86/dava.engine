@@ -29,6 +29,8 @@
 
 #import "MainWindowController.h"
 #include "CorePlatformMacOS.h"
+#include "Platform/DeviceInfo.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -116,7 +118,7 @@ namespace DAVA
 
         Vector2 mouseLocation;
 		mouseLocation.x = p.x;
-		mouseLocation.y = Core::Instance()->GetPhysicalScreenHeight() - p.y;
+		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
 		// mouseLocation.y = 
 		return mouseLocation;
 	}
@@ -165,7 +167,6 @@ namespace DAVA
 	FrameworkDidLaunched();
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     
-	
 	//Core::Instance()->Creat();
     
 		// do all ground work & setup window itself according to value specified by user
@@ -194,6 +195,7 @@ namespace DAVA
 	
 	core = Core::GetApplicationCore();
     RenderManager::Instance()->DetectRenderingCapabilities();
+    RenderSystem2D::Instance()->Init();
 
 
 	// start animation
@@ -426,8 +428,8 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	NSLog(@"[CoreMacOSPlatform] init internal renderer: %d x %d", currentMode.width, currentMode.height);
 	
 	RenderManager::Instance()->Init(currentMode.width, currentMode.height);
-	UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-	Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 	
 	
 	RENDER_VERIFY(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
@@ -815,6 +817,8 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+    mainWindowController->openGLView.willQuit = true;
+    
 	Core::Instance()->SystemAppFinished();
 	FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();

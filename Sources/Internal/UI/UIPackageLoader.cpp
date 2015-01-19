@@ -51,7 +51,7 @@ UIPackageLoader::~UIPackageLoader()
 {
     builder = NULL;
 }
-    
+
 UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
 {
     if (!loadingQueue.empty())
@@ -63,11 +63,20 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (!packagePath.Exists())
         return NULL;
     
-    ScopedPtr<YamlParser> parser(YamlParser::Create(packagePath));
+    RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
     
-    YamlNode *rootNode = parser->GetRootNode();
-    if (!rootNode)
+    if (parser.Get() == NULL)
+    {
         return NULL;
+    }
+
+    YamlNode *rootNode = parser->GetRootNode();
+    if (!rootNode)//empty yaml equal to empty UIPackage
+    {
+        RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+        builder->EndPackage();
+        return SafeRetain(package.Get());
+    }
     
     const YamlNode *headerNode = rootNode->Get("Header");
     if (!headerNode)
@@ -77,7 +86,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     if (versionNode == NULL || versionNode->GetType() != YamlNode::TYPE_STRING)
         return NULL;
     
-    UIPackage *package = SafeRetain(builder->BeginPackage(packagePath));
+    RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
 
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
@@ -115,7 +124,7 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
     }
     builder->EndPackage();
     
-    return package;
+    return SafeRetain(package.Get());
 }
     
 bool UIPackageLoader::LoadControlByName(const String &name)
@@ -170,7 +179,6 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
             packageName = controlName.substr(0, pos);
             controlName = controlName.substr(pos + 1, controlName.length() - pos - 1);
         }
-        
         control = builder->BeginControlWithPrototype(packageName, controlName, customClass, this);
     }
     else if (classNode)
@@ -207,7 +215,7 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
         // yamlLoader->PostLoad(control);
 
     }
-    builder->EndControl();
+    builder->EndControl(root);
 }
 
 void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node)
@@ -216,7 +224,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     if (baseInfo)
         LoadControlPropertiesFromYamlNode(control, baseInfo, node);
     
-    builder->BeginControlPropretiesSection(typeInfo->Name());
+    builder->BeginControlPropertiesSection(typeInfo->Name());
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);

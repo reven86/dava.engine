@@ -27,8 +27,10 @@
 =====================================================================================*/
 
 #include "Base/BaseTypes.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Platform/DeviceInfo.h"
 
 #import <UIKit/UIKit.h>
 #import "HelperAppDelegate.h"
@@ -43,31 +45,36 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	DAVA::Core * core = new DAVA::Core();
     core->SetCommandLine(argc, argv);
 	core->CreateSingletons();
-	FrameworkDidLaunched();
 	
-	{//detecting physical screen size and initing core system with this size
-		
-		::UIScreen* mainScreen = [::UIScreen mainScreen];
-		unsigned int width = [mainScreen bounds].size.width;
-		unsigned int height = [mainScreen bounds].size.height;
-        eScreenOrientation orientation = Instance()->GetScreenOrientation();
-        //if (UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation]))
-        if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
-        {
-            width = [mainScreen bounds].size.height;
-            height = [mainScreen bounds].size.width;
-        }
-		unsigned int scale = [HelperAppDelegate GetScale];
-		
-		DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-		DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
+    FrameworkDidLaunched();
+    
+	//detecting physical screen size and initing core system with this size
+    const DeviceInfo::ScreenInfo & screenInfo = DeviceInfo::GetScreenInfo();
+    int32 width = screenInfo.width;
+    int32 height = screenInfo.height;
+    
+	eScreenOrientation orientation = Instance()->GetScreenOrientation();
+	if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
+		(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
+		(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
+	{
+        width = screenInfo.height;
+        height = screenInfo.width;
 	}
+		
+	int32 scale = 1;
+    if(DAVA::Core::IsAutodetectContentScaleFactor())
+    {
+        scale = screenInfo.scale;
+    }
+		
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width * scale, height * scale);
 		
 	int retVal = UIApplicationMain(argc, argv, nil, nil);
 	
 	[pool release];
-	
-	return retVal;		
+	return retVal;
 }
 
 DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()

@@ -56,19 +56,19 @@ public:
     AbstractUIPackageBuilder();
     virtual ~AbstractUIPackageBuilder();
     
-    virtual UIPackage *BeginPackage(const FilePath &packagePath) = 0;
+    virtual RefPtr<UIPackage> BeginPackage(const FilePath &packagePath) = 0;
     virtual void EndPackage() = 0;
     
-    virtual UIPackage *ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
+    virtual RefPtr<UIPackage> ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
     
     virtual UIControl *BeginControlWithClass(const String &className) = 0;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) = 0;
     virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader) = 0;
     virtual UIControl *BeginControlWithPath(const String &pathName) = 0;
     virtual UIControl *BeginUnknownControl(const YamlNode *node) = 0;
-    virtual void EndControl() = 0;
+    virtual void EndControl(bool isRoot) = 0;
     
-    virtual void BeginControlPropretiesSection(const String &name) = 0;
+    virtual void BeginControlPropertiesSection(const String &name) = 0;
     virtual void EndControlPropertiesSection() = 0;
     
     virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) = 0;

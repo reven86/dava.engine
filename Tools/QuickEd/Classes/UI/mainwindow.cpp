@@ -57,6 +57,7 @@
 #include "UI/PackageDocument.h"
 #include "UI/UIPackageLoader.h"
 #include "Utils/QtDavaConvertion.h"
+#include "UIControls/PackageHierarchy/PackageNode.h"
 
 const QString APP_NAME = "QuickEd";
 const QString APP_COMPANY = "DAVA";
@@ -494,7 +495,7 @@ void MainWindow::OnSaveDocument()
     if (!document || !document->IsModified())
         return;
 
-    DVVERIFY(project->SavePackage(activeDocument->Package()));
+    DVVERIFY(project->SavePackage(activeDocument->GetPackage()));
     activeDocument->ClearModified();
 }
 
@@ -505,7 +506,7 @@ void MainWindow::OnSaveAllDocuments()
         PackageDocument * document = GetTabDocument(i);
         if (!document)
             continue;
-        DVVERIFY(project->SavePackage(document->Package()));
+        DVVERIFY(project->SavePackage(document->GetPackage()));
         document->ClearModified();
     }
 }
@@ -532,10 +533,10 @@ void MainWindow::OnOpenPackageFile(const QString &path)
             int index = GetTabIndexByPath(path);
             if (index == -1)
             {
-                PackageNode *package = project->OpenPackage(path);
-                if (package)
+                RefPtr<PackageNode> package = project->OpenPackage(path);
+                if (package.Get() != NULL)
                 {
-                    index = CreateTabContent(package);
+                    index = CreateTabContent(package.Get());
                 }
             }
             
@@ -713,7 +714,7 @@ void MainWindow::UpdateSaveButtons()
 int MainWindow::CreateTabContent(PackageNode *package)
 {
     int oldIndex = ui->tabBar->currentIndex();
-    PackageDocument *document = new PackageDocument(package, this);
+    PackageDocument *document = new PackageDocument(project, package, this);
     
     QVariant var;
     var.setValue<PackageDocument *>(document);

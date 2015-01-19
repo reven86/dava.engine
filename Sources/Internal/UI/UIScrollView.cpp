@@ -108,9 +108,9 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
 	const List<UIControl*> &childslist = parentControl->GetRealChildren();
 	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{
-	   	UIControl *childControl = (*it);
-		if (!childControl)
-			continue;
+        UIControl *childControl = (*it);
+        if (!(childControl && childControl->GetVisible()))
+            continue;
 		
 		Rect childRect = childControl->GetRect();
 		
@@ -137,9 +137,9 @@ Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 current
 	const List<UIControl*> &childslist = parentControl->GetRealChildren();
 	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{	
-	   	UIControl *childControl = (*it);
-		if (!childControl)
-			continue;
+        UIControl *childControl = (*it);
+        if (!(childControl && childControl->GetVisible()))
+            continue;
 		
 		Rect childRect = childControl->GetRect();	
 		float32 controlPosX = currentContentOffset.x + childRect.x;
@@ -161,28 +161,25 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 	const List<UIControl*> &childslist = parentControl->GetRealChildren();
 	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{
-    	UIControl *childControl = (*it);
-		if ( !(childControl && childControl->GetVisible()) )
-			continue;
-		
-		const Rect &childRect = childControl->GetRect();
-        
-        if (childControl->GetVisible())
+        UIControl *childControl = (*it);
+        if ( !(childControl && childControl->GetVisible()) )
+            continue;
+
+        const Rect &childRect = childControl->GetRect();
+
+        // Calculate control full "length" and "height"
+        float32 controlSizeX = Abs(parentOffset.x) + childRect.x + childRect.dx;
+        float32 controlSizeY = Abs(parentOffset.y) + childRect.y + childRect.dy;
+        // Check horizontal size
+        if (controlSizeX >= maxSize.x)
         {
-            // Calculate control full "length" and "height"
-            float32 controlSizeX = Abs(parentOffset.x) + childRect.x + childRect.dx;
-            float32 controlSizeY = Abs(parentOffset.y) + childRect.y + childRect.dy;
-            // Check horizontal size
-            if (controlSizeX >= maxSize.x)
-            {
-                maxSize.x = controlSizeX;
-            }
-            if (controlSizeY >= maxSize.y)
-            {
-                maxSize.y = controlSizeY;
-            }
+            maxSize.x = controlSizeX;
         }
-        
+        if (controlSizeY >= maxSize.y)
+        {
+            maxSize.y = controlSizeY;
+        }
+
 		// Change global offset - it has to include parent offset and current child offset
 		Vector2 offset;
 		offset.x = Abs(parentOffset.x) + childRect.x;

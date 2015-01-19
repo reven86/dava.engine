@@ -69,15 +69,12 @@ public:
     void SetLightmapCanvasVisible(bool enable);
     bool IsLightmapCanvasVisible() const;
 
-	virtual void Process(DAVA::float32 timeElapsed);
-
 protected:
 	virtual void AddEntity(DAVA::Entity * entity);
 	virtual void RemoveEntity(DAVA::Entity * entity);
 
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	void AddMaterial(DAVA::NMaterial *material, DAVA::Entity *entity, const DAVA::RenderBatch *rb);

@@ -38,10 +38,10 @@
 #include "Utils/Utils.h"
 #include "Input/AccelerometerAndroid.h"
 #include "AndroidDelegate.h"
-#include "AndroidCrashReport.h"
+#include "Platform/TemplateAndroid/AndroidCrashReport.h"
 
-#include "JniExtensions.h"
-#include "WebViewControl.h"
+#include "Platform/TemplateAndroid/JniExtensions.h"
+#include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 #include "Debug/DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
@@ -73,7 +73,7 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv * env, jobject classthis, jboolean isFirstRun);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeIsFinishing(JNIEnv * env, jobject classthis);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeFinishing(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z);
 
@@ -305,7 +305,7 @@ void Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv * env, jobject clas
 	}
 }
 
-void Java_com_dava_framework_JNIActivity_nativeIsFinishing(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIActivity_nativeFinishing(JNIEnv * env, jobject classthis)
 {
 //	LOGI("___ ON FINISHING ___");
 	DeinitApplication();

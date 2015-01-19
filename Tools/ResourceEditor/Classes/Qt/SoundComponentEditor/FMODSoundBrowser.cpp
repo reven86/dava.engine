@@ -37,10 +37,10 @@
 #include <QSlider>
 #include <QToolTip>
 
-FMODSoundBrowser::FMODSoundBrowser(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::FMODSoundBrowser),
-    selectedItem(0)
+FMODSoundBrowser::FMODSoundBrowser(QWidget *parent)
+    : QDialog(parent)
+    , selectedItem(0)
+    , ui(new Ui::FMODSoundBrowser)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);

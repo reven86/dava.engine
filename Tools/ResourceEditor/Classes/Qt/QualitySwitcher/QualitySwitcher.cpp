@@ -207,7 +207,7 @@ void QualitySwitcher::OnTxQualitySelect(int index)
     QComboBox *combo = dynamic_cast<QComboBox *>(QObject::sender());
     if(NULL != combo)
     {
-        DAVA::FastName newTxQuality(combo->itemText(index).toAscii());
+        DAVA::FastName newTxQuality(combo->itemText(index).toLatin1());
         if(newTxQuality != DAVA::QualitySettingsSystem::Instance()->GetCurTextureQuality())
         {
             DAVA::QualitySettingsSystem::Instance()->SetCurTextureQuality(newTxQuality);
@@ -221,8 +221,8 @@ void QualitySwitcher::OnMaQualitySelect(int index)
     QComboBox *combo = dynamic_cast<QComboBox *>(QObject::sender());
     if(NULL != combo)
     {
-        DAVA::FastName newMaQuality(combo->itemText(index).toAscii());
-        DAVA::FastName group(combo->itemData(index).toString().toAscii());
+        DAVA::FastName newMaQuality(combo->itemText(index).toLatin1());
+        DAVA::FastName group(combo->itemData(index).toString().toLatin1());
 
         if(newMaQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMaterialQuality(group))
         {

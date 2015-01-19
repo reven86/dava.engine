@@ -30,6 +30,7 @@
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/TemplateWin32/WindowsSpecifics.h"
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -196,11 +197,11 @@ namespace DAVA
 		RenderManager::Create(Core::RENDERER_OPENGL);
 #endif
 		RenderManager::Instance()->Create(hInstance, hWindow);
+        RenderSystem2D::Instance()->Init();
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
 
-		//fullscreenMode = GetCurrentDisplayMode();
 		fullscreenMode = GetCurrentDisplayMode();//FindBestMode(fullscreenMode);
 		if (options)
 		{
@@ -254,8 +255,8 @@ namespace DAVA
 
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
-		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-        Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
 		return true;
 	}
@@ -319,45 +320,6 @@ namespace DAVA
 		FrameworkWillTerminate();
 	}
 
-/*	void CoreWin32Platform::InitOpenGL()
-	{
-		hDC = GetDC(hWindow);
-
-		PIXELFORMATDESCRIPTOR pfd;
-		ZeroMemory( &pfd, sizeof( pfd ) );
-		pfd.nSize = sizeof( pfd );
-		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.cColorBits = 24;
-		pfd.cDepthBits = 16;
-		pfd.iLayerType = PFD_MAIN_PLANE;
-		int iFormat = ChoosePixelFormat(hDC, &pfd);
-		SetPixelFormat(hDC, iFormat, &pfd);
-
-		hRC = wglCreateContext(hDC);
-		Thread::secondaryContext = wglCreateContext(hDC);
-		Thread::currentDC = hDC;
-		
-		wglShareLists(Thread::secondaryContext, hRC);
-		wglMakeCurrent(hDC, hRC);
-
-		Thread * t = Thread::Create(Message());
-		t->EnableCopyContext();
-		t->Start();
-
-		glewInit();
-		const GLubyte * extensions = glGetString(GL_EXTENSIONS);
-		Logger::FrameworkDebug("[CoreWin32Platform] gl extensions: %s", (const char*)extensions);
-	}*/
-
-	void CoreWin32Platform::ReleaseOpenGL()
-	{
-		wglMakeCurrent(0, 0);
-		wglDeleteContext(hRC);
-		ReleaseDC(hWindow, hDC);		
-	}
-	
 	RECT CoreWin32Platform::GetWindowedRectForDisplayMode(DisplayMode & dm)
 	{
 		RECT clientSize;
@@ -399,8 +361,8 @@ namespace DAVA
 
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
-		UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-        Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 	}
 
 	Core::eScreenMode CoreWin32Platform::GetScreenMode()
@@ -780,12 +742,17 @@ namespace DAVA
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, 
                 sizeof(RAWINPUTHEADER));
             LPBYTE lpb = new BYTE[dwSize];
-            if (lpb == NULL)
+            if (lpb == nullptr)
+            {
                 return 0;
+            }
 
-            if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, 
-                sizeof(RAWINPUTHEADER)) != dwSize )
-                OutputDebugString (TEXT("GetRawInputData does not return correct size !\n")); 
+            if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize,
+                sizeof(RAWINPUTHEADER)) != dwSize)
+            {
+                Logger::FrameworkDebug(
+                    TEXT("GetRawInputData does not return correct size !\n"));
+            }
 
             RAWINPUT* raw = (RAWINPUT*)lpb;
 
@@ -817,7 +784,6 @@ namespace DAVA
                 GetClientRect(hWnd, &clientRect);
 
                 bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
-
                 OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
             }
 
@@ -825,10 +791,23 @@ namespace DAVA
 
             break;
         }
-		case WM_MOUSEMOVE:
-            //OnMouseEvent(message, wParam, lParam);
+        case WM_MOUSEMOVE:
+        {
+            // if we have WebView (Ole Windows control) we need to 
+            // change focus if user move to main window to get WM_INPUT
+            CoreWin32Platform* corePlatform = static_cast<CoreWin32Platform*>(Core::Instance());
+            HWND mainWinowHandler = corePlatform->GetWindow();
+            if (GetFocus() != mainWinowHandler)
+            {
+                POINT p = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+                HWND windowUnderCursor = WindowFromPoint(p);
+                if (windowUnderCursor == mainWinowHandler)
+                {
+                    SetFocus(mainWinowHandler);
+                }
+            }
+        }
 			break;
-
 		case WM_NCMOUSEMOVE:
 			if (!mouseCursorShown)
 			{	

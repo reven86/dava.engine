@@ -33,144 +33,79 @@
 #include "TexturePacker/CommandLineParser.h"
 #include "Utils/Utils.h"
 
-#include "Config.h"
-#include "BaseScreen.h"
-#include "SampleTest.h"
-#include "EntityTest.h"
-#include "MemoryAllocatorsTest.h"
-#include "HashMapTest.h"
-#include "SoundTest.h"
-#include "AlignTest.h"
-#include "SplitTest.h"
-#include "MaterialCompilerTest.h"
-#include "PVRTest.h"
-#include "DXTTest.h"
-#include "KeyedArchiveYamlTest.h"
-#include "CloneTest.h"
-#include "DPITest.h"
-#include "InputTest.h"
-#include "FilePathTest.h"
-#include "FileListTest.h"
-#include "FileSystemTest.h"
-#include "DeviceInfoTest.h"
-#include "LocalizationTest.h"
-#include "UIListTest.h"
-#include "TransparentWebViewTest.h"
-#include "FormatsTest.h"
-#include "UIScrollViewTest.h"
-#include "ThreadSyncTest.h"
-#include "UIMovieTest.h"
-#include "DFFontTest.h"
-#include "ComponentsTest.h"
-#include "RectSpriteTest.h"
-#include "OpenGLES30FormatTest.h"
-#include "StringFormatTest.h"
-#include "SaveImageTest.h"
-#include "JPEGTest.h"
-#include "DateTimeTest.h"
-#include "SceneSystemTest.h"
-#include "ParseTextTest.h"
-#include "ImageSizeTest.h"
-#include "DLCDownloadTest.h"
-#include "FunctionBindSingalTest.h"
-#include "MathTest.h"
-#include "BiDiTest.h"
-#include "TextSizeTest.h"
+#include "Tests/MathTest.h"
+#include "Tests/FunctionBindSingalTest.h"
+#include "Tests/ImageSizeTest.h"
+#include "Tests/SaveImageTest.h"
+#include "Tests/StringFormatTest.h"
+#include "Tests/ComponentsTest.h"
+#include "Tests/FileListTest.h"
+#include "Tests/FileSystemTest.h"
+#include "Tests/DateTimeTest.h"
+#include "Tests/LocalizationTest.h"
+#include "Tests/MemoryAllocatorsTest.h"
+#include "Tests/HashMapTest.h"
+#include "Tests/SplitTest.h"
+#include "Tests/TextSizeTest.h"
+#include "Tests/KeyedArchiveYamlTest.h"
+#include "Tests/JobManagerTest.h"
+//$UNITTEST_INCLUDE
+
+void GameCore::RunOnlyThisTest()
+{
+    //runOnlyThisTest = "TestClassName";
+}
+
+void GameCore::OnError()
+{
+    DavaDebugBreak();
+}
+
+void GameCore::RegisterTests()
+{
+    RunOnlyThisTest();
+
+    new MathTest();
+    new FunctionBindSignalTest();
+    new ImageSizeTest();
+    new SaveImageTest();
+    new StringFormatTest();
+    new ComponentsTest();
+    new FileListTest();
+    new FileSystemTest();
+    new DateTimeTest();
+    new LocalizationTest();
+    new MemoryAllocatorsTest();
+    new HashMapTest();
+    new SplitTest();
+    new TextSizeTest();
+    new KeyedArchiveYamlTest();
+    new JobManagerTest();
+//$UNITTEST_CTOR
+}
 
 #include <fstream>
 #include <algorithm>
 
 using namespace DAVA;
 
-
-void GameCore::RunOnlyThisTest()
+void GameCore::OnAppStarted()
 {
-    //runOnlyThisTest = "TestClassName";
-    //runOnlyThisTest = "TextSizeTest";
+    InitLogging();
+    RunOnlyThisTest();
+    RegisterTests();
+    RunTests();
 }
 
-void GameCore::OnError()
-{
-    DebugBreak();
-}
-
-GameCore::GameCore():currentScreen(NULL),
-    currentScreenIndex(0),
-    currentTestIndex(0)
+GameCore::GameCore() 
+: currentScreen(NULL),
+currentScreenIndex(0),
+currentTestIndex(0)
 {
 }
 
 GameCore::~GameCore()
 {
-}
-
-void GameCore::OnAppStarted()
-{
-    InitLogging();
-    RunOnlyThisTest();
-
-    RenderManager::Instance()->SetFPS(60);
-
-    //new DLCDownloadTest();
-    new MathTest();
-    new FunctionBindSignalTest();
-#ifndef __DAVAENGINE_ANDROID__
-    new ThreadSyncTest(); // TODO this test hang on on teamcity build machine
-                          // TODO this test crush on android
-#endif
-
-    new ImageSizeTest();
-    //new DeviceInfoTest();
-    new PVRTest();
-    new DXTTest();
-    new JPEGTest();
-
-    new ParseTextTest(Font::TYPE_FT);
-    //    new ParseTextTest(Font::TYPE_GRAPHICAL);
-    //new OpenGLES30FormatTest();
-    new SaveImageTest();
-    //   
-    //   new OpenGLES30FormatTest(); // TODO duplicate? second run?
-    new StringFormatTest();
-    //new RectSpriteTest();
-
-    new ComponentsTest();
-    //new FilePathTest();
-    new FileListTest();
-    new FileSystemTest();
-    
-    new UIMovieTest();
-    //new InputTest();
-    //new FormatsTest();
- 
-    new DateTimeTest();
-    //new TransparentWebViewTest();
-    new LocalizationTest();
- 
-    new SampleTest();
-    //new EntityTest(); 
-    new MemoryAllocatorsTest();
-    new HashMapTest();
-    //new SoundTest();
-    new SplitTest();
-    new AlignTest();
-
-    //new EMailTest();
-    //new DPITest();
-    new MaterialCompilerTest(); // TODO empty
-    new CloneTest(); // TODO empty
-    new BiDiTest();
-    new TextSizeTest();
-
-    new EntityTest(); // TODO empty
-    new KeyedArchiveYamlTest();
-    //new UIListTest();
-    //new UIScrollViewTest();
- 
-
-    //new SceneSystemTest();
-
-    RunTests();
 }
 
 void GameCore::RegisterScreen(BaseScreen *screen)
@@ -425,6 +360,8 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
+
+
 
 
 

@@ -191,6 +191,11 @@ public:
      */
     virtual void SetFrame(int32 drawFrame);
     /**
+     \brief Sets Sprite frame you want to use.
+     \param[in] frameName Sprite frame name.
+     */
+	virtual void SetFrame(const FastName& frameName);
+    /**
      \brief Sets size of the left and right unscalable sprite part.
         Middle sprite part would be scaled along a full control width.
         Used for DRAW_STRETCH_HORIZONTAL, DRAW_STRETCH_BOTH draw types.
@@ -252,6 +257,7 @@ public:
         Default color is Color(1,1,1,1).
      \param[in] geometricData Control geometric data.
      */
+
     virtual void Draw(const UIGeometricData &geometricData);
 
     /**
@@ -306,6 +312,10 @@ public:
     void SetRenderState(UniqueHandle renderState);
     UniqueHandle GetRenderState() const;
 
+	static void CreateRenderObject();
+	static void ReleaseRenderObject();
+
+
 protected:
     void DrawStretched(const UIGeometricData &geometricData, UniqueHandle renderState);
     void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);
@@ -321,9 +331,9 @@ protected:
     int32 frame;
 
     Vector2 lastDrawPos;
-    RenderDataObject * rdoObject;
-    RenderDataStream * vertexStream;
-    RenderDataStream * texCoordStream;
+	static RenderDataObject * rdoObject;
+	static RenderDataStream * vertexStream;
+	static RenderDataStream * texCoordStream;
 
     ePerPixelAccuracyType perPixelAccuracyType;//!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
@@ -363,8 +373,7 @@ private:
         int32 frame;
         Vector2 size;
         int32 type;
-        float32 leftStretchCap;
-        float32 topStretchCap;
+        Vector2 stretchCap;
         Matrix3 transformMatr;
     };
     
@@ -374,7 +383,9 @@ private:
 
 public:
     void ReleaseDrawData(); // Delete all spec draw data
-
+#if defined(LOCALIZATION_DEBUG)
+    const Sprite::DrawState & GetLastDrawState()const;
+#endif
 protected:
     ~UIControlBackground();
     Color drawColor;
@@ -382,6 +393,9 @@ protected:
     Shader *shader;
     
     UniqueHandle renderState;
+#if defined(LOCALIZATION_DEBUG)
+    Sprite::DrawState lastDrawState;
+#endif
     
 public:
     

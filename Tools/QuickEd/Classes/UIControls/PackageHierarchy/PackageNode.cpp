@@ -13,9 +13,9 @@
 
 using namespace DAVA;
 
-PackageNode::PackageNode(DAVA::UIPackage *package)
+PackageNode::PackageNode(DAVA::UIPackage *aPackage)
     : PackageBaseNode(NULL)
-    , package(SafeRetain(package))
+    , package(SafeRetain(aPackage))
     , importedPackagesNode(NULL)
     , packageControlsNode(NULL)
 {

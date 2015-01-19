@@ -74,27 +74,31 @@
 
 #if defined(ENABLE_ASSERT_BREAK)
 
-    #if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
 
-        #define DebugBreak() { __debugbreak(); }
+#include <signal.h>
+#include <unistd.h>
 
-    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-        // see http://stackoverflow.com/questions/3644465/can-i-create-a-breakpoint-in-code-in-ios-like-asmint-3-on-vc-and-conti
-        #include <signal.h>
-        #define DebugBreak() __builtin_trap();
-    #elif defined(__DAVAENGINE_ANDROID__)
+#endif //PLATFORMS
 
-        #include <signal.h>
-        // see http://androidxref.com/5.0.0_r2/xref/system/core/liblog/logd_write.c function: __android_log_assert
-        // works and __builtin_trap(); and raise(SIGTRAP); but prefer more standard way
-        #define DebugBreak() raise(SIGTRAP);
-    #else
-        #error "add debug break on current platform"
-    #endif
+inline void DavaDebugBreak()
+{
+#if defined(__DAVAENGINE_WIN32__)
+
+    __debugbreak();
+
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
+
+    raise(SIGTRAP);
+
+#else //PLATFORMS
+    //other platforms
+#endif //PLATFORMS
+}
 
 #else
 
-#define DebugBreak() 
+#define DavaDebugBreak() 
 
 #endif  //__DAVAENGINE_DEBUG__
 
@@ -137,7 +141,7 @@
         LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
 		if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, "", __FILE__, __LINE__))\
         { \
-            DebugBreak()\
+            DavaDebugBreak()\
         } \
 	}\
 
@@ -147,7 +151,7 @@
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
 		if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, msg, __FILE__, __LINE__))\
         { \
-            DebugBreak()\
+            DavaDebugBreak()\
         } \
 	}\
 

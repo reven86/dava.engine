@@ -22,8 +22,8 @@
 QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(void *_object, DAVA::InspInfoDynamic *_dynamicInfo, DAVA::FastName _name)
 	: QtPropertyDataDavaVariant(DAVA::VariantType())
 	, object(_object)
-	, dynamicInfo(_dynamicInfo)
 	, name(_name)
+	, dynamicInfo(_dynamicInfo)
 	, inspFlags(0)
 	, lastCommand(NULL)
 {

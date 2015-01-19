@@ -16,6 +16,7 @@ LOCAL_MODULE := UnitTestsLib
 # set path for includes
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes
+LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes/OldTests
 LOCAL_C_INCLUDES += $(MY_PROJECT_ROOT)/Classes/Infrastructure
 LOCAL_C_INCLUDES += $(DAVA_ROOT)/Sources/Tools
 
@@ -27,6 +28,7 @@ LOCAL_SRC_FILES := \
 	$(subst $(LOCAL_PATH)/,, \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/*.cpp) \
 	$(wildcard $(MY_PROJECT_ROOT)/Classes/Infrastructure/*.cpp) \
+	$(wildcard $(MY_PROJECT_ROOT)/Classes/Tests/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )

@@ -11,11 +11,12 @@
 
 #include <QObject>
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 
 class PackageNode;
 class LegacyControlData;
 
-class Project : QObject
+class Project : public QObject
 {
     Q_OBJECT
 public:
@@ -24,10 +25,11 @@ public:
 
     bool Open(const QString &path);
 
-    PackageNode *NewPackage(const QString &path){return NULL;}
-    PackageNode *OpenPackage(const QString &path);
+    DAVA::RefPtr<PackageNode> NewPackage(const QString &path);
+    DAVA::RefPtr<PackageNode> OpenPackage(const QString &path);
     bool SavePackage(PackageNode *package);
     bool SaveAsPackage(PackageNode *package){return false;}
+    QString GetProjectDir() const { return projectDir; };
 
 signals:
     void ProjectOpened();

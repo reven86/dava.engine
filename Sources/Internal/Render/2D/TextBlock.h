@@ -90,6 +90,7 @@ public:
 
     virtual Font * GetFont();
     virtual const WideString & GetText();
+    virtual const WideString & GetVisualText();
     virtual const Vector<WideString> & GetMultilineStrings();
     virtual bool GetMultiline();
     virtual bool GetMultilineBySymbol();
@@ -121,6 +122,10 @@ public:
     const Vector<int32> & GetStringSizes() const;
     
     void ForcePrepare(Texture *texture);
+#if defined(LOCALIZATION_DEBUG)
+    int32 GetFittingOptionUsed();
+	bool IsVisualTextCroped();
+#endif
 
     /**
      * \brief Sets BiDi transformation support enabled.
@@ -133,14 +138,23 @@ public:
      * \return true if BiDi trasformations supported.
      */
     static bool IsBiDiSupportEnabled();
-    
+    TextBlockRender* GetRenderer(){ return textBlockRender; }
+
+    /**
+    * \brief Clean line.
+    * \param [in,out] string The string.
+    * \param trimRight (Optional) true to trim right.
+    */
+    static void CleanLine(WideString& string, bool trimRight = false);
+
 protected:
-    TextBlock();
-    ~TextBlock();
-    
-    void Prepare(Texture *texture = NULL);
-    void PrepareInternal(BaseObject * caller, void * param, void *callerData);
-    void CalculateCacheParams();
+
+	TextBlock();
+	virtual ~TextBlock();
+	
+ 	void Prepare(Texture *texture = NULL);
+	void PrepareInternal();
+	void CalculateCacheParams();
 
 	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)
 
@@ -162,15 +176,9 @@ protected:
      */
     void SplitTextBySymbolsToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
-    /**
-     * \brief Clean line.
-     * \param [in,out] string The string.
-     * \param trimRight (Optional) true to trim right.
-     */
-    void CleanLine(WideString& string, bool trimRight = false);
+   
 
     Vector2 rectSize;
-    bool needRedraw;
     Vector2 requestedSize;
 
     Vector2 cacheFinalSize;
@@ -187,6 +195,10 @@ protected:
     int32 cacheOy;
 
     int32 fittingType;
+#if defined(LOCALIZATION_DEBUG)
+    int32 fittingTypeUsed;
+    bool visualTextCroped;
+#endif //LOCALIZATION_DEBUG
     Vector2 position;
     Vector2 pivotPoint;
     int32 align;
@@ -206,6 +218,7 @@ protected:
     bool isPredrawed:1;
     bool cacheUseJustify:1;
     bool treatMultilineAsSingleLine:1;
+	bool needPrepareInternal:1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
     static BiDiHelper bidiHelper;
@@ -214,8 +227,10 @@ protected:
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicsRender;
     friend class TextBlockDistanceRender;
+    
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;
+	Texture *textureForInvalidation;
 };
 
 }; //end of namespace
