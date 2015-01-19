@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.6)
+cmake_minimum_required( VERSION 3.0 )
 
 project( DavaFramework )
 
@@ -19,28 +19,12 @@ if( NOT DISABLE_SOUNDS )
 
 endif()
 
-#set_property( GLOBAL PROPERTY USE_FOLDERS ON )
-
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG")
-
-find_package( ZLIB )
-if( ZLIB_FOUND )
-    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH ${ZLIB_INCLUDE_DIR} )
-    list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
-endif()
+set_property( GLOBAL PROPERTY USE_FOLDERS ON )
+set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
 if( ANDROID )
-    set ( LIBRARY_TYPE STATIC )
-
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=c++11")  
-    set( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS}  -mfloat-abi=softfp -mfpu=neon" )    
-    set( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS}  -Wno-invalid-offsetof -frtti" )    
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-invalid-offsetof" )
-
-#    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
-#    list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )
-#    link_directories( "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/" )
+    find_package( ZLIB )
+ 
     set ( LIST_LIBRARIES
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_android.a"
@@ -72,8 +56,7 @@ if( ANDROID )
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
 
 elseif( MACOS )
-    set ( LIBRARY_TYPE STATIC )
-
+    find_package( ZLIB )
     add_definitions( -D__DAVAENGINE_PTHREAD__ ) 
 
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
@@ -101,18 +84,10 @@ elseif( MACOS )
     set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
 
 elseif( IOS )  
-  
-    set ( LIBRARY_TYPE STATIC )
+    find_package( ZLIB )
 
     add_definitions( -DDDARWIN_NO_CARBON ) 
     
-    set ( CMAKE_C_FLAGS    "-mno-thumb"  )
-    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
-    #set ( LIST_SHARED_LIBRARIES 
-    #                libz.dylib 
-    #               libbz2.dylib
-    #            )
-
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
     foreach( NAME  CoreGraphics 
                    Foundation 
@@ -146,24 +121,22 @@ elseif( IOS )
 
 
 elseif( WIN32 ) 
-    set ( LIBRARY_TYPE STATIC ) 
 
-    if( NOT DISABLE_MT )
-        set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
-        set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP" ) #/VERBOSE
-    endif()
-    
-    if ( MSVC )
-        file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
-        list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
+    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
+    list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
 
-        file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
-        list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
+    file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-        set  ( LIST_SHARED_LIBRARIES "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib"  )
-  
-    endif()
+    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
+    list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
 
+endif()
+
+if( ZLIB_FOUND )
+    list (APPEND DAVA_THIRD_PARTY_INCLUDES_PATH ${ZLIB_INCLUDE_DIR} )
+    list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
 endif()
 
 
@@ -178,13 +151,14 @@ include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
 
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
-add_library            ( ${PROJECT_NAME} ${LIBRARY_TYPE} ${PROJECT_SOURCE_FILES} ${RESOURCE} )
+add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
 
 if( LINK_THIRD_PARTY )                 
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} ALL     "${LIST_SHARED_LIBRARIES}" )
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} DEBUG   "${LIST_SHARED_LIBRARIES_DEBUG}" )
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} RELEASE "${LIST_SHARED_LIBRARIES_RELEASE}" )
 endif()
+
 
 target_link_libraries  ( ${PROJECT_NAME} ${LIST_SHARED_LIBRARIES} ${LIST_ADDED_SHARED_LIBRARIES} )  
 

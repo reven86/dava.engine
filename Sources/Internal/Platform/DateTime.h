@@ -31,7 +31,7 @@
 #define __DAVAENGINE_DATE_TIME_H__
 
 #include "Base/BaseTypes.h"
-#include "DAVAEngine.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -193,7 +193,7 @@ private:
     
     inline int32 DaysFrom1jan(int32 year, int32 month, int32 day) const;
     
-    Timestamp InternalTimeGm(std::tm *t) const;
+    Timestamp InternalTimeGm(tm *t) const;
     
     bool IsNumber(const char * s) const;
     

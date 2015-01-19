@@ -25,48 +25,47 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#include "Platform/DateTime.h"
-#include "Utils/UTF8Utils.h"
-#include "Utils/Utils.h"
-#include "FileSystem/LocalizationSystem.h"
 
-namespace DAVA
+
+#include "ImageSizeTest.h"
+
+ImageSizeTest::ImageSizeTest()
+: TestTemplate<ImageSizeTest>("ImageSizeTest")
 {
-	DAVA::WideString DateTime::AsWString(const wchar_t* format) const
-	{
-		DAVA::String configLocale = LocalizationSystem::Instance()->GetCountryCode();
-		configLocale.replace(configLocale.find("_"), 1, "-");
-		LCID locale = LocaleNameToLCID(StringToWString(configLocale).c_str(), 0);
-		int nchars = GetLocaleInfoW(locale, LOCALE_SENGLANGUAGE, NULL, 0);
-		wchar_t* languageCode = new wchar_t[nchars];
-		memset(languageCode, 0, nchars);
-		GetLocaleInfoW(locale, LOCALE_SENGLANGUAGE, languageCode, nchars);
-
-		DAVA::WideString locID(languageCode);
-		SafeDeleteArray(languageCode);
-
-		struct tm timeinfo = {0};
-        wchar_t buffer [256] = {0};
-		
-        Timestamp timeWithTZ = innerTime + timeZoneOffset;
-
-		GmTimeThreadSafe(&timeinfo, &timeWithTZ);
-
-        _locale_t loc = _create_locale(LC_ALL, UTF8Utils::EncodeToUTF8(locID).c_str());
-		DVASSERT(loc);
-        _wcsftime_l(buffer, 256, format, &timeinfo, loc);
-
-        DAVA::WideString str(buffer);
-		return str;
-    }
-
-    int32 DateTime::GetLocalTimeZoneOffset()
-    {
-		TIME_ZONE_INFORMATION TimeZoneInfo;
-		GetTimeZoneInformation( &TimeZoneInfo );
-	
-		// TimeZoneInfo.Bias is the difference between local time
-		// and GMT in minutes.
-        return TimeZoneInfo.Bias*(-60);
-    }
+	RegisterFunction(this, &ImageSizeTest::TestFunction, "ImageSizeTest", NULL);
 }
+
+void ImageSizeTest::LoadResources()
+{
+    GetBackground()->SetColor(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f));
+}
+
+
+void ImageSizeTest::UnloadResources()
+{
+    RemoveAllControls();
+}
+
+void ImageSizeTest::TestFunction(PerfFuncData * data)
+{
+	static const DAVA::FilePath imagePathnames[DAVA::ImageSystem::FILE_FORMAT_COUNT] = 
+	{
+		"~res:/TestData/ImageSizeTest/image.png",
+		"~res:/TestData/ImageSizeTest/image.jpg",
+		"~res:/TestData/ImageSizeTest/image.pvr",
+		"~res:/TestData/ImageSizeTest/image.dds"
+	};
+
+
+    //TODO: -1 due to DF-5704
+	for(uint32 i = 0; i < DAVA::ImageSystem::FILE_FORMAT_COUNT-1; ++i)
+	{
+		DAVA::ImageFormatInterface *im = DAVA::ImageSystem::Instance()->GetImageFormatInterface(imagePathnames[i]);	
+		Size2i imageSize = im->GetImageSize(imagePathnames[i]);
+
+		TEST_VERIFY(imageSize.dx == 128);
+		TEST_VERIFY(imageSize.dy == 128);
+	}
+}
+
+

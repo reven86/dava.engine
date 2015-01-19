@@ -618,7 +618,10 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+<<<<<<< HEAD
+=======
 				VALID_ARCHS = "armv7 armv7s i386 arm64";
+>>>>>>> development
 			};
 			name = AdHoc;
 		};
@@ -686,7 +689,10 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+<<<<<<< HEAD
+=======
 				VALID_ARCHS = "armv7 armv7s i386 arm64";
+>>>>>>> development
 			};
 			name = Debug;
 		};
@@ -725,7 +731,10 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+<<<<<<< HEAD
+=======
 				VALID_ARCHS = "armv7 armv7s i386 arm64";
+>>>>>>> development
 			};
 			name = Release;
 		};
