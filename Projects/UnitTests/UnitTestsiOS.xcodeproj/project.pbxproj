@@ -11,7 +11,6 @@
 		0264E31F1A43002200BD7279 /* JobManagerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0264E31D1A43002200BD7279 /* JobManagerTest.cpp */; };
 		032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 032D348A1A0912B5007509C3 /* CommandLineParser.cpp */; };
 		035A09741A614FF000945E1D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 035A09731A614FF000945E1D /* Images.xcassets */; };
-		03EBDD4C1A6014A8000BAE65 /* StaticWebViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03EBDD4A1A6014A8000BAE65 /* StaticWebViewTest.cpp */; };
 		1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1770DF4617DF497600000391 /* MediaPlayer.framework */; };
 		17D4116E1973E95F00CF6BC0 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */; };
 		17DD1618193F512600B73BEE /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17DD1617193F512600B73BEE /* liblua_ios.a */; };
@@ -90,8 +89,6 @@
 		032D348A1A0912B5007509C3 /* CommandLineParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandLineParser.cpp; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.cpp; sourceTree = "<group>"; };
 		032D348B1A0912B5007509C3 /* CommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CommandLineParser.h; path = ../../../Sources/Tools/TexturePacker/CommandLineParser.h; sourceTree = "<group>"; };
 		035A09731A614FF000945E1D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = UnitTests/Images.xcassets; sourceTree = "<group>"; };
-		03EBDD4A1A6014A8000BAE65 /* StaticWebViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StaticWebViewTest.cpp; path = OldTests/StaticWebViewTest.cpp; sourceTree = "<group>"; };
-		03EBDD4B1A6014A8000BAE65 /* StaticWebViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StaticWebViewTest.h; path = OldTests/StaticWebViewTest.h; sourceTree = "<group>"; };
 		1770DF4617DF497600000391 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		17DD1617193F512600B73BEE /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
@@ -237,8 +234,6 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				03EBDD4A1A6014A8000BAE65 /* StaticWebViewTest.cpp */,
-				03EBDD4B1A6014A8000BAE65 /* StaticWebViewTest.h */,
 				032D34881A091285007509C3 /* CommandLineParser */,
 				001CF9251A02539600751045 /* TeamcityOutput */,
 				001CF9121A02537B00751045 /* Infrastructure */,
@@ -497,7 +492,6 @@
 				CC1198771A38BF27006931D7 /* MemoryAllocatorsTest.cpp in Sources */,
 				CC1198781A38BF27006931D7 /* SaveImageTest.cpp in Sources */,
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
-				03EBDD4C1A6014A8000BAE65 /* StaticWebViewTest.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				001CF9281A02539600751045 /* TeamcityOutput.cpp in Sources */,
 				CC11984B1A38BF0D006931D7 /* FrameworkMain.cpp in Sources */,
