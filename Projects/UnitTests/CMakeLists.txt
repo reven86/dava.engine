@@ -57,8 +57,6 @@ include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
 add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
 
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
-
 set( TeamcityOutput          ${DAVA_TOOLS_DIR}/TeamcityOutput  )
 set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )
 
