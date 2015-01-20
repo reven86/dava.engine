@@ -152,6 +152,8 @@ void Announcer::TimerHandleTimer(DeadlineTimer* timer)
             DoStop();
         }
     }
+    else
+        timer->Wait(announcePeriod, MakeFunction(this, &Announcer::TimerHandleTimer));
 }
 
 void Announcer::TimerHandleDelay(DeadlineTimer* timer)
