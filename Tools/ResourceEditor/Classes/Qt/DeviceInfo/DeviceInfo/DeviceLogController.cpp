@@ -37,12 +37,12 @@ void DeviceLogController::ShowView()
 
 void DeviceLogController::ChannelOpen()
 {
-    //Output("************* Channel open");
+    Output("************* Channel open");
 }
 
 void DeviceLogController::ChannelClosed()
 {
-    //Output("************ Channel closed");
+    Output("************ Channel closed");
 }
 
 void DeviceLogController::PacketReceived(const void* packet, size_t length)

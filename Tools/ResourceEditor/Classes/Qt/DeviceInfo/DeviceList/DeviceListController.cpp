@@ -73,6 +73,8 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* con
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
+        Logger::Debug("************ create logger service");
+
         QModelIndex index = model->index(row, 0);
         DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
         return services.log;
@@ -82,28 +84,24 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* con
 
 void DeviceListController::DeleteLogger(IChannelListener*, void* context)
 {
-    // Service deleter method is called each time when connection has been lost
-    // Make actual delete of service only after user disconnected from device
+    // Service deleter method is called before connector is destroyed
 
     // Context holds index of discovered device
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
-        QModelIndex index = model->index(row, 0);
-        // If ROLE_CONNECTION_ID contains NetCore::INVALID_TRACK_ID than user has pressed 'Disconnect' button
-        // so network service should be actually deleted
-        NetCore::TrackId trackId = static_cast<NetCore::TrackId>(index.data(ROLE_CONNECTION_ID).toULongLong());
-        if (trackId == NetCore::INVALID_TRACK_ID)
-        {
-            DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            SafeDelete(services.log);
+        Logger::Debug("************ delete logger service");
 
-            QStandardItem* item = model->itemFromIndex(index);
-            {
-                QVariant v;
-                v.setValue(services);
-                item->setData(v, ROLE_PEER_SERVICES);
-            }
+        QModelIndex index = model->index(row, 0);
+
+        DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+        SafeDelete(services.log);
+
+        QStandardItem* item = model->itemFromIndex(index);
+        {
+            QVariant v;
+            v.setValue(services);
+            item->setData(v, ROLE_PEER_SERVICES);
         }
     }
 }
@@ -112,7 +110,12 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
 {
     // Check whether we have connection with device
     NetCore::TrackId trackId = static_cast<NetCore::TrackId>(index.data(ROLE_CONNECTION_ID).toULongLong());
-    if (trackId != NetCore::INVALID_TRACK_ID) return;
+    if (trackId != NetCore::INVALID_TRACK_ID)
+    {
+        DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+        services.log->ShowView();
+        return;
+    }
 
     PeerDescription peer = index.data(ROLE_PEER_DESCRIPTION).value<PeerDescription>();
     if (ifIndex < peer.NetworkInterfaces().size())
@@ -137,6 +140,10 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
 
             // Update item's ROLE_CONNECTION_ID and ROLE_PEER_SERVICES
             QStandardItem* item = model->itemFromIndex(index);
+
+            QString s = item->text();
+            item->setText("ACTIVE! " + s);
+
             item->setData(QVariant(static_cast<qulonglong>(trackId)), ROLE_CONNECTION_ID);
             {
                 QVariant v;
@@ -158,6 +165,13 @@ void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
     item->setData(QVariant(static_cast<qulonglong>(NetCore::INVALID_TRACK_ID)), ROLE_CONNECTION_ID);
     // And destroy controller related to remote device
     DAVA::Net::NetCore::Instance()->DestroyController(trackId);
+
+    QString s = item->text();
+    int pos = s.indexOf('!');
+    if (pos > 0)
+    {
+        item->setText(s.mid(pos + 2));
+    }
 }
 
 void DeviceListController::OnConnectButtonPressed()
@@ -220,6 +234,7 @@ QStandardItem *DeviceListController::CreateDeviceItem(const Endpoint& endp, cons
 
     // Set item's properties:
     //  - empty connection id
+    //  - zero active flag
     //  - endpoint from which device description has been obtained
     //  - obtained device description
     //  - empty network services

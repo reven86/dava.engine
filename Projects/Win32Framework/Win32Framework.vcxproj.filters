@@ -160,6 +160,9 @@
     <Filter Include="Internal\Scene3D\Systems\Controller">
       <UniqueIdentifier>{dc214c6e-aa38-43ad-93ff-6dc237488743}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Network">
+      <UniqueIdentifier>{fbd90c04-d90b-434c-a9c5-9777bb3cbbb6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Network\Base">
       <UniqueIdentifier>{2bea0d8c-2886-4354-b3e4-345bf610ea57}</UniqueIdentifier>
     </Filter>
@@ -3087,6 +3090,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.cpp">
       <Filter>Internal\Network\Base</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPSocket.cpp">
       <Filter>Internal\Network\Base</Filter>
     </ClCompile>

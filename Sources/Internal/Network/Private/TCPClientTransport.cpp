@@ -84,6 +84,7 @@ int32 TCPClientTransport::Start(IClientListener* aListener)
 void TCPClientTransport::Stop()
 {
     DVASSERT(listener != NULL && false == isTerminating);
+    Logger::Debug("Stop: nobj=%u", runningObjects);
     isTerminating = true;
     CleanUp(0);
 }
@@ -141,6 +142,7 @@ int32 TCPClientTransport::DoConnected()
 
 void TCPClientTransport::CleanUp(int32 error)
 {
+    Logger::Debug("Cleanup, enter: nobj=%u, connected=%d", runningObjects, isConnected);
     if (true == isConnected)
     {
         isConnected = false;
@@ -159,11 +161,13 @@ void TCPClientTransport::CleanUp(int32 error)
         runningObjects += 1;
         timer.Close(MakeFunction(this, &TCPClientTransport::TimerHandleClose));
     }
+    Logger::Debug("Cleanup, exit: nobj=%u", runningObjects);
 }
 
 void TCPClientTransport::RunningObjectStopped()
 {
     DVASSERT(runningObjects > 0);
+    Logger::Debug("RunningObjectStopped: nobj=%u", runningObjects);
     runningObjects -= 1;
     if (runningObjects > 0) return;
 
@@ -179,6 +183,7 @@ void TCPClientTransport::RunningObjectStopped()
 
 void TCPClientTransport::DoBye()
 {
+    Logger::Debug("DoBye");
     IClientListener* p = listener;
     listener = NULL;
     isTerminating = false;
@@ -209,7 +214,10 @@ void TCPClientTransport::SocketHandleConnect(TCPSocket* socket, int32 error)
     if (0 == error)
         error = DoConnected();
     if (error != 0)
+    {
+        Logger::Debug("SocketHandleConnect: %s", uv_strerror(error));
         CleanUp(error);
+    }
 }
 
 void TCPClientTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread)
@@ -222,6 +230,7 @@ void TCPClientTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t
     }
     else
     {
+        Logger::Debug("SocketHandleRead: %s", uv_strerror(error));
         CleanUp(error);
     }
 }
@@ -237,6 +246,7 @@ void TCPClientTransport::SocketHandleWrite(TCPSocket* socket, int32 error, const
     }
     else
     {
+        Logger::Debug("SocketHandleWrite: %s", uv_strerror(error));
         CleanUp(error);
     }
 }
