@@ -29,7 +29,6 @@
 #include <Debug/DVAssert.h>
 #include <Utils/UTF8Utils.h>
 
-#include <Network/NetCore.h>
 #include <Network/PeerDesription.h>
 
 namespace DAVA
@@ -55,9 +54,13 @@ PeerDescription::PeerDescription(const NetConfig& config)
     , screenInfo(DeviceInfo::GetScreenInfo())
     , gpuFamily(DeviceInfo::GetGPUFamily())
     , netConfig(config)
-    , ifaddr(NetCore::Instance()->InstalledInterfaces())
 {
     DVASSERT(true == netConfig.Validate());
+}
+
+void PeerDescription::SetNetworkInterfaces(const Vector<IfAddress>& availIfAddr)
+{
+    ifaddr = availIfAddr;
 }
 
 #ifdef __DAVAENGINE_DEBUG__

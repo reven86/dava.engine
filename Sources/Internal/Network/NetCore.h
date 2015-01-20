@@ -71,7 +71,7 @@ public:
     int32 Poll();
     void Finish(bool runOutLoop = false);
 
-    const Vector<IfAddress>& InstalledInterfaces() const;
+    Vector<IfAddress> InstalledInterfaces() const;
 
 private:
     void DoStart(IController* ctrl);
@@ -89,7 +89,6 @@ private:
     Set<IController*> trackedObjects;               // Running objects
     Set<IController*> dyingObjects;
     ServiceRegistrar registrar;
-    Vector<IfAddress> installedInterfaces;
     Function<void ()> controllersStoppedCallback;
     bool isFinishing;
 };
@@ -110,9 +109,9 @@ inline const char8* NetCore::ServiceName(uint32 serviceId) const
     return registrar.Name(serviceId);
 }
 
-inline const Vector<IfAddress>& NetCore::InstalledInterfaces() const
+inline Vector<IfAddress> NetCore::InstalledInterfaces() const
 {
-    return installedInterfaces;
+    return IfAddress::GetInstalledInterfaces(false);
 }
 
 inline int32 NetCore::Run()

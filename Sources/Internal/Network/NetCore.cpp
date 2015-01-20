@@ -45,7 +45,6 @@ NetCore::NetCore()
     : loop(true)
     , isFinishing(false)
 {
-    installedInterfaces = IfAddress::GetInstalledInterfaces(false);
 }
 
 NetCore::~NetCore()
