@@ -77,6 +77,8 @@ protected:
     void ResetSelection();
     void ProcessSelection();
     
+
+	void UpdateSelectionMask();
     
 protected:
     bool isEnabled;

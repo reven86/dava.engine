@@ -273,15 +273,17 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
-    //Enable system without runnig commands
+    //Enable system without running commands
     const int commandId = command->GetId();
     if(CMDID_COLLAPSE_PATH == commandId)
     {
         isEnabled = !redo;
+		UpdateSelectionMask();
     }
     else if(CMDID_EXPAND_PATH == commandId)
     {
         isEnabled = redo;
+		UpdateSelectionMask();
     }
 }
 
@@ -336,19 +338,24 @@ void WayEditSystem::EnableWayEdit(bool enable)
     ResetSelection();
 
     isEnabled = enable;
-    if(isEnabled)
-    {
-        selectionSystem->SetSelectionComponentMask((DAVA::uint64)1 << DAVA::Component::WAYPOINT_COMPONENT | (DAVA::uint64)1 << DAVA::Component::PATH_COMPONENT);
-    }
-    else
-    {
-        selectionSystem->ResetSelectionComponentMask();
-    }
+	UpdateSelectionMask();
 }
 
 bool WayEditSystem::IsWayEditEnabled() const
 {
     return isEnabled;
+}
+
+void WayEditSystem::UpdateSelectionMask()
+{
+	if(isEnabled)
+	{
+		selectionSystem->SetSelectionComponentMask((DAVA::uint64)1 << DAVA::Component::WAYPOINT_COMPONENT | (DAVA::uint64)1 << DAVA::Component::PATH_COMPONENT);
+	}
+	else
+	{
+		selectionSystem->ResetSelectionComponentMask();
+	}
 }
 
 
