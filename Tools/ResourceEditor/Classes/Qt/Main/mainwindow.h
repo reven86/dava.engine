@@ -239,6 +239,8 @@ protected:
 	
 	bool SelectCustomColorsTexturePath();
 	
+	void SetActionCheckedSilently(QAction *action, bool checked);
+
 private slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();

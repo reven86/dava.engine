@@ -1041,15 +1041,11 @@ void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
     int commandId = command->GetId();
     if(CMDID_COLLAPSE_PATH == commandId)
     {
-        ui->actionWayEditor->blockSignals(true);
-        ui->actionWayEditor->setChecked(!redo);
-        ui->actionWayEditor->blockSignals(false);
+		SetActionCheckedSilently(ui->actionWayEditor, !redo);
     }
     else if(CMDID_EXPAND_PATH == commandId)
     {
-        ui->actionWayEditor->blockSignals(true);
-        ui->actionWayEditor->setChecked(redo);
-        ui->actionWayEditor->blockSignals(false);
+		SetActionCheckedSilently(ui->actionWayEditor, redo);
     }
 }
 
@@ -1064,9 +1060,7 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* com
         Entity *entity = command->GetEntity();
         if(entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
         {
-            bool b = ui->actionSnapCameraToLandscape->blockSignals(true);
-            ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
-            ui->actionSnapCameraToLandscape->blockSignals(b);
+			SetActionCheckedSilently(ui->actionSnapCameraToLandscape, scene->cameraSystem->IsEditorCameraSnappedToLandscape());
         }
         
         UpdateWayEditor(command, redo);
@@ -2398,7 +2392,7 @@ void QtMainWindow::OnHeightmapEditor()
 	{
 		return;
 	}
-	
+
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableHeightmapEditor(sceneEditor));
@@ -2550,9 +2544,10 @@ void QtMainWindow::OnWayEditor(bool show)
         return;
     }
 
-    sceneEditor->wayEditSystem->EnableWayEdit(show);
-    sceneEditor->pathSystem->EnablePathEdit(show);
+	sceneEditor->wayEditSystem->EnableWayEdit(show);
+	sceneEditor->pathSystem->EnablePathEdit(show);
 }
+
 
 void QtMainWindow::OnBuildStaticOcclusion()
 {
@@ -3150,4 +3145,13 @@ void QtMainWindow::OnSnapCameraToLandscape(bool snap)
     {
         ui->actionSnapCameraToLandscape->setChecked(!snap);
     }
+}
+
+void QtMainWindow::SetActionCheckedSilently( QAction *action, bool checked )
+{
+	DVASSERT(action);
+	
+	bool b = action->blockSignals(true);
+	action->setChecked(checked);
+	action->blockSignals(b);
 }
