@@ -115,9 +115,7 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget *parent/* = 0*/) :
 	
 	Init(0, 0);
 	
-	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    //setSizeIncrement(0, 0);
-    //setFixedHeight(0);
+	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
 
 	// Init and start updating the particles grid.
 	infoColumns.push_back(new ParticlesCountColumn(this, this));
@@ -675,7 +673,9 @@ void ParticleTimeLineWidget::UpdateSizePolicy()
     {
         linesSize = 1;
     }
+    resize(size().width(), linesSize);
     updateGeometry();
+    repaint();
 }
 
 QSize ParticleTimeLineWidget::sizeHint() const
