@@ -91,5 +91,37 @@ void EdgeComponent::SetNextEntity(Entity * _entity)
 }
 
 
+void EdgeComponent::SetNextEntityName(const FastName & name)
+{
+	//do nothing
+}
+
+const FastName EdgeComponent::GetNextEntityName() const
+{
+	FastName nextEntityName;
+	if(nextEntity)
+	{
+		nextEntityName = nextEntity->GetName();
+	}
+
+	return nextEntityName;
+}
+
+void EdgeComponent::SetNextEntityTag(int32 tag)
+{
+	//do nothing
+}
+
+int32 EdgeComponent::GetNextEntityTag() const
+{
+	if(nextEntity)
+	{
+		return nextEntity->GetTag();
+	}
+
+	return 0;
+}
+
+
 
 }

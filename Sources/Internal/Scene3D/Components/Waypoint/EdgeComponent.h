@@ -61,14 +61,24 @@ public:
     KeyedArchive * GetProperties() const;
     
 private:
+
+	//For property panel
+	void SetNextEntityName(const FastName & name);
+	const FastName GetNextEntityName() const;
+
+	void SetNextEntityTag(int32 tag);
+	int32 GetNextEntityTag() const;
+
+private:
     
     Entity * nextEntity;
     KeyedArchive *properties;
     
 public:
 	INTROSPECTION_EXTEND(EdgeComponent, Component,
-        MEMBER(nextEntity, "Next Waypoint Entity", I_VIEW)
-        MEMBER(properties, "Edge properties", I_SAVE | I_VIEW | I_EDIT)
+		MEMBER(properties, "Edge properties", I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("nextEntityName", "Next Entity Name", GetNextEntityName, SetNextEntityName, I_VIEW)
+		PROPERTY("nextEntityTag", "Next Entity Tag", GetNextEntityTag, SetNextEntityTag, I_VIEW)
     );
 };
 
