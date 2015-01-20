@@ -44,15 +44,16 @@ KeyboardDevice::~KeyboardDevice()
     
 bool KeyboardDevice::IsKeyPressed(int32 keyCode)
 {
+    DVASSERT( keyCode < DVKEY_COUNT );
+
 #ifdef __DAVAENGINE_WIN32__
 	if(DVKEY_ALT == keyCode)
 	{
-		SHORT isAlt = GetAsyncKeyState(VK_MENU);
-		return isAlt != 0;
+        auto isAlt = ::GetKeyState(VK_MENU);
+        keyStatus[keyCode] = (isAlt < 0);
 	}
 #endif 
 
-    DVASSERT(keyCode < DVKEY_COUNT);
     return keyStatus[keyCode];
 }
 
