@@ -104,6 +104,7 @@ void LODEditor::SetupInternalUI()
     connect(ui->forceSlider, SIGNAL(valueChanged(int)), SLOT(ForceDistanceChanged(int)));
     ui->forceSlider->setRange(0, DAVA::LodComponent::MAX_LOD_DISTANCE);
     ui->forceSlider->setValue(0);
+	ui->forceSlider->setEnabled(ui->enableForceDistance->isChecked());
     
     connect(ui->distanceSlider, SIGNAL(DistanceChanged(const QVector<int> &, bool)), SLOT(LODDistanceChangedBySlider(const QVector<int> &, bool)));
     
