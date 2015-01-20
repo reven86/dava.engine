@@ -275,7 +275,7 @@ void RenderSystem2D::RemoveClip()
     SetClip(Rect(0.f, 0.f, -1.f, -1.f));
 }
 
-void RenderSystem2D::AccumulateClipRect(const Rect &rect)
+void RenderSystem2D::IntersectClipRect(const Rect &rect)
 {
     Rect r = currentClip;
     if(r.dx < 0)
@@ -856,7 +856,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH )
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) );
         }
-        AccumulateClipRect(clipRect);
+        IntersectClipRect(clipRect);
     }
 
 #if USE_BATCHING
