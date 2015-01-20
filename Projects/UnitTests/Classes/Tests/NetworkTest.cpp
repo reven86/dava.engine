@@ -153,21 +153,16 @@ void NetworkTest::DeleteLogger(IChannelListener* obj, void* context)
 
 size_t NetworkTest::AnnounceDataSupplier(size_t length, void* buffer)
 {
-    size_t sz = peerDescrSerialized.size();
-    if (peerDescrSerialized.empty())
+    if (true == peerDescr.NetworkInterfaces().empty())
     {
-        sz = peerDescr.SerializedSize();
-        peerDescrSerialized.resize(sz);
-        void* p = &*peerDescrSerialized.begin();
-        if (0 == peerDescr.Serialize(p, sz))
-            peerDescrSerialized.clear();
+        // Get list of available network interfaces
+        // If list is empty then network is unavailable, this can happen on Android, maybe on iOS
+        // It's strange if no network but AnnounceDataSupplier has been invoked 
+        peerDescr.SetNetworkInterfaces(NetCore::Instance()->InstalledInterfaces());
+        if (true == peerDescr.NetworkInterfaces().empty())
+            return 0;
     }
-    if (!peerDescrSerialized.empty() && peerDescrSerialized.size() <= length)
-    {
-        Memcpy(buffer, &*peerDescrSerialized.begin(), peerDescrSerialized.size());
-        return peerDescrSerialized.size();
-    }
-    return 0;
+    return peerDescr.Serialize(buffer, length);
 }
 
 void NetworkTest::CreateUI()

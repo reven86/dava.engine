@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __NETWORK_TEST_H
-#define __NETWORK_TEST_H
+#ifndef __NETWORK_TEST_H__
+#define __NETWORK_TEST_H__
 
 #include <DAVAEngine.h>
 
