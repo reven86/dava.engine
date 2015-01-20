@@ -46,6 +46,7 @@
 
 #include "FileSystem/Logger.h"
 #include "Platform/SystemTimer.h"
+#include "Platform/DateTime.h"
 
 // system stuff
 #include "Utils/Utils.h"
