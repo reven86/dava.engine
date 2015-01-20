@@ -100,6 +100,7 @@ void LODEditor::SetupInternalUI()
     connect(ui->editLODButton, SIGNAL(released()), SLOT(EditLODButtonReleased()));
     
     connect(ui->enableForceDistance, SIGNAL(stateChanged(int)), SLOT(ForceDistanceStateChanged(int)));
+	connect(ui->enableForceDistance, SIGNAL(toggled(bool)), ui->forceSlider, SLOT(setEnabled(bool)));
     connect(ui->forceSlider, SIGNAL(valueChanged(int)), SLOT(ForceDistanceChanged(int)));
     ui->forceSlider->setRange(0, DAVA::LodComponent::MAX_LOD_DISTANCE);
     ui->forceSlider->setValue(0);
@@ -140,7 +141,8 @@ void LODEditor::ForceDistanceStateChanged(int checked)
         editedLODData->SetForceLayer(layer);
     }
     
-    ui->forceSlider->setEnabled(enable);
+	ui->enableForceDistance->setChecked(checked);
+	ui->forceSlider->setValue(editedLODData->GetForceDistance());
     ui->forceLayer->setEnabled(!enable);
 }
 
