@@ -169,6 +169,7 @@ endif
 endif
 
 # set build flags
+LOCAL_CPPFLAGS += -std=c++11
 LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 LOCAL_CPPFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
