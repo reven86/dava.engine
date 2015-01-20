@@ -55,7 +55,7 @@
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Notification/LocalNotificationController.h"
 
-#include "Base/Profiler.hpp"
+#include "Base/Profiler.h"
 #define PROF__FRAME             0
 #define PROF__FRAME_UPDATE      1
 #define PROF__FRAME_DRAW        2

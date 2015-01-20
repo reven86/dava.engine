@@ -47,7 +47,7 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Material/NMaterialNames.h"
 
-#include "Base/Profiler.hpp"
+#include "Base/Profiler.h"
 #define PROF__RHI_SETUNIFORM    10
 #define PROF__RHI_SETDYNPARAM   11
 #define PROF__RHI_SETMATPARAM   12
