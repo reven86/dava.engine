@@ -46,7 +46,7 @@ WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selecti
 , collisionSystem(_collisionSystem)
 , underCursorPathEntity(NULL)
 {
-    wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
+    wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
         DAVA::RenderStateData::STATE_COLORMASK_ALL |
         DAVA::RenderStateData::STATE_DEPTH_TEST);
 }

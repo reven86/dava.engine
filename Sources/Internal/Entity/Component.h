@@ -38,6 +38,8 @@
 namespace DAVA 
 {
     
+#define MAKE_COMPONENT_MASK(x) ((uint64)1 << (uint64)x)
+
 class Entity;
 class Component : public Serializable, public InspBase
 {

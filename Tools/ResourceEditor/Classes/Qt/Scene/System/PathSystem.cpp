@@ -77,8 +77,7 @@ PathSystem::PathSystem(DAVA::Scene * scene)
     , currentPath(NULL)
     , isEditingEnabled(false)
 {
-    pathDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
-                                                                          DAVA::RenderStateData::STATE_COLORMASK_ALL |
+    pathDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_COLORMASK_ALL |
                                                                           DAVA::RenderStateData::STATE_DEPTH_TEST);
 }
 
