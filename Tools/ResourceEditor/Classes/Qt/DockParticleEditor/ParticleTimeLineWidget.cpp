@@ -663,7 +663,8 @@ void ParticleTimeLineWidget::NotifyLayersExtraInfoChanged()
 void ParticleTimeLineWidget::UpdateSizePolicy()
 {
     //setFixedHeight((lines.size() + 1) * LINE_STEP + BOTTOM_INDENT + TOP_INDENT + PARTICLES_INFO_CONTROL_OFFSET);
-    //updateGeometry();
+    updateGeometry();
+    repaint();
 }
 
 void ParticleTimeLineWidget::mouseMoveEvent(QMouseEvent * event)
