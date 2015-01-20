@@ -66,7 +66,6 @@ public:
 	~ParticleTimeLineWidget();
 	
 	void Init(float32 minTime, float32 maxTime);
-    virtual QSize sizeHint() const;
 
 	struct LINE
 	{
@@ -158,7 +157,6 @@ private:
 	void CleanupTimelines();
 
 	LINE_MAP lines;
-    uint32 linesSize;
 	QFont nameFont;
 	
 	QPoint selectedPoint;
