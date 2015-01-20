@@ -153,6 +153,23 @@ VertexDataTypeName( VertexDataType t )
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// texture
+
+enum
+TextureFormat
+{
+    TEXTURE_FORMAT_A8R8G8B8,
+    TEXTURE_FORMAT_D24S8
+};
+
+enum
+TextureOptions
+{
+    TEXTURE_OPT_RENDERTARGET
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
 // pipeline-state
 
 struct

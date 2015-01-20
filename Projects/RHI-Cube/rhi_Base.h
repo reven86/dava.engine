@@ -45,6 +45,24 @@ void    Present();
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// render-target
+
+struct
+RenderPassConfig
+{
+    struct
+    {
+        Handle  texture;
+    }   colorBuffer [MAX_RENDER_TARGET_COUNT];
+
+    struct
+    {
+        Handle  texture;
+    }   depthBuffer;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
 // vertex-buffer
 
 namespace VertexBuffer
@@ -76,6 +94,19 @@ void*   Map( Handle ib, uint32 offset, uint32 size );
 void    Unmap( Handle ib );
 
 } // namespace IndexBuffer
+
+
+////////////////////////////////////////////////////////////////////////////////
+// pipeline-state
+
+namespace 
+Texture
+{
+
+Handle  Create( unsigned width, unsigned height, TextureFormat format, uint32 options=0 );
+void    Delete( Handle tex );
+
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -123,6 +154,7 @@ namespace CommandBuffer
 Handle  Default();
 
 void    Begin( Handle cmdBuf );
+void    Begin( Handle cmdBuf, const RenderPassConfig& pass );
 void    End( Handle cmdBuf );
 void    Clear( Handle cmdBuf );
 
