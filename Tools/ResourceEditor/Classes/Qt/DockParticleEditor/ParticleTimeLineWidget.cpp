@@ -673,9 +673,11 @@ void ParticleTimeLineWidget::UpdateSizePolicy()
     {
         linesSize = 1;
     }
-    resize(size().width(), linesSize);
     updateGeometry();
+    //setFixedHeight(linesSize);
+    ((QWidget *)parent())->setFixedHeight(linesSize);
     repaint();
+
 }
 
 QSize ParticleTimeLineWidget::sizeHint() const
