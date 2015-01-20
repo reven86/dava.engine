@@ -187,12 +187,12 @@ void NetController::OnTransportTerminated(IServerTransport* tr)
 
 void NetController::OnTransportTerminated(IClientTransport* tr)
 {
+    List<ClientEntry>::iterator i = std::find(clients.begin(), clients.end(), tr);
+    DVASSERT(i != clients.end());
+    ClientEntry& entry = *i;
+
     if (SERVER_ROLE == role)
     {
-        List<ClientEntry>::iterator i = std::find(clients.begin(), clients.end(), tr);
-        DVASSERT(i != clients.end());
-
-        ClientEntry& entry = *i;
         entry.parent->ReclaimClient(entry.client);
         delete entry.driver;
         clients.erase(i);
@@ -204,6 +204,8 @@ void NetController::OnTransportTerminated(IClientTransport* tr)
     }
     else
     {
+        entry.driver->ReleaseServices();
+
         DVASSERT(runningObjects > 0);
         runningObjects -= 1;
         if (0 == runningObjects)

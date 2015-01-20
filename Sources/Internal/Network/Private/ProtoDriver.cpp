@@ -111,6 +111,18 @@ void ProtoDriver::SendControl(uint32 code, uint32 channelId, uint32 packetId)
     }
 }
 
+void ProtoDriver::ReleaseServices()
+{
+    for (size_t i = 0, n = channels.size();i < n;++i)
+    {
+        if (channels[i].service != NULL)
+        {
+            registrar.Delete(channels[i].channelId, channels[i].service, serviceContext);
+            channels[i].service = NULL;
+        }
+    }
+}
+
 void ProtoDriver::OnConnected(const Endpoint& endp)
 {
     if (SERVER_ROLE == role)
@@ -147,6 +159,7 @@ void ProtoDriver::OnDisconnected()
         }
     }
     ClearQueues();
+    if (CLIENT_ROLE == role) return;
     for (size_t i = 0, n = channels.size();i < n;++i)
     {
         if (channels[i].service != NULL)

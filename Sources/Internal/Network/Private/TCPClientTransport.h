@@ -63,6 +63,7 @@ private:
     int32 DoConnected();
     void CleanUp(int32 error);
     void RunningObjectStopped();
+    void DoBye();
 
     void TimerHandleClose(DeadlineTimer* timer);
     void TimerHandleTimeout(DeadlineTimer* timer);
@@ -73,6 +74,7 @@ private:
     void SocketHandleWrite(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount);
 
 private:
+    IOLoop* loop;
     Endpoint endpoint;
     Endpoint remoteEndpoint;
     size_t runningObjects;

@@ -146,7 +146,7 @@ bool TCPSocketTemplate<T>::IsOpen() const
 template <typename T>
 bool TCPSocketTemplate<T>::IsClosing() const
 {
-    return IsClosing;
+    return isClosing;
 }
 
 template <typename T>

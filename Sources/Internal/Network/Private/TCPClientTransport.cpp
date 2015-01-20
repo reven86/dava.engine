@@ -37,7 +37,8 @@ namespace Net
 {
 
 TCPClientTransport::TCPClientTransport(IOLoop* aLoop)
-    : endpoint()
+    : loop(aLoop)
+    , endpoint()
     , runningObjects(0)
     , socket(aLoop)
     , timer(aLoop)
@@ -52,7 +53,8 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop)
 }
 
 TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint)
-    : endpoint(aEndpoint)
+    : loop(aLoop)
+    , endpoint(aEndpoint)
     , runningObjects(0)
     , socket(aLoop)
     , timer(aLoop)
@@ -112,13 +114,12 @@ int32 TCPClientTransport::Send(const Buffer* buffers, size_t bufferCount)
 void TCPClientTransport::DoStart()
 {
     DVASSERT(0 == runningObjects);
-    runningObjects = 2; // Socket and timer
 
     // Try to establish connection if connection is initiated by this
     // Otherwise connection should be already accepted
     int32 error = true == isInitiator ? socket.Connect(endpoint, MakeFunction(this, &TCPClientTransport::SocketHandleConnect))
                                       : DoConnected();
-    DVASSERT(0 == error);
+    DVASSERT_MSG(0 == error, uv_strerror(error));
     if (error != 0)
         CleanUp(error);
 }
@@ -134,7 +135,7 @@ int32 TCPClientTransport::DoConnected()
         isConnected = true;
         listener->OnTransportConnected(this, remoteEndpoint);
     }
-    DVASSERT(0 == error);
+    DVASSERT_MSG(0 == error, uv_strerror(error));
     return error;
 }
 
@@ -146,8 +147,18 @@ void TCPClientTransport::CleanUp(int32 error)
         sendBufferCount = 0;
         listener->OnTransportDisconnected(this, error);
     }
-    socket.Close(MakeFunction(this, &TCPClientTransport::SocketHandleClose));
-    timer.Close(MakeFunction(this, &TCPClientTransport::TimerHandleClose));
+
+    DVASSERT(0 == runningObjects && "****** invalid call sequence");
+    if (true == socket.IsOpen() && false == socket.IsClosing())
+    {
+        runningObjects += 1;
+        socket.Close(MakeFunction(this, &TCPClientTransport::SocketHandleClose));
+    }
+    if (true == timer.IsOpen() && false == timer.IsClosing())
+    {
+        runningObjects += 1;
+        timer.Close(MakeFunction(this, &TCPClientTransport::TimerHandleClose));
+    }
 }
 
 void TCPClientTransport::RunningObjectStopped()
@@ -158,15 +169,20 @@ void TCPClientTransport::RunningObjectStopped()
 
     if (true == isTerminating || false == isInitiator)
     {
-        IClientListener* p = listener;
-        listener = NULL;
-        isTerminating = false;
-        p->OnTransportTerminated(this); // This can be the last executed line of object instance
+        loop->Post(MakeFunction(this, &TCPClientTransport::DoBye));
     }
     else if (true == isInitiator)
     {
         DoStart();
     }
+}
+
+void TCPClientTransport::DoBye()
+{
+    IClientListener* p = listener;
+    listener = NULL;
+    isTerminating = false;
+    p->OnTransportTerminated(this); // This can be the last executed line of object instance
 }
 
 void TCPClientTransport::TimerHandleClose(DeadlineTimer* timer)
