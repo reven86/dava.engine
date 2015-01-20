@@ -50,6 +50,7 @@ ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistr
     , serviceContext(aServiceContext)
     , transport(NULL)
     , whatIsSending()
+    , pendingPong(false)
 {
     DVASSERT(loop != NULL);
     Memset(&curPacket, 0, sizeof(curPacket));
@@ -161,6 +162,7 @@ bool ProtoDriver::OnDataReceived(const void* buffer, size_t length)
     bool canContinue = true;
     ProtoDecoder::DecodeResult result;
     ProtoDecoder::eDecodeStatus status = ProtoDecoder::DECODE_INVALID;
+    pendingPong = false;
     do {
         status = proto.Decode(buffer, length, &result);
         if (ProtoDecoder::DECODE_OK == status)
@@ -227,6 +229,17 @@ void ProtoDriver::OnSendComplete()
     {
         senderLock.Unlock();    // Nothing to send, unlock sender
     }
+}
+
+bool ProtoDriver::OnTimeout()
+{
+    if (false == pendingPong)
+    {
+        pendingPong = true;
+        SendControl(TYPE_PING, 0, 0);
+        return true;
+    }
+    return false;
 }
 
 bool ProtoDriver::ProcessDataPacket(ProtoDecoder::DecodeResult* result)

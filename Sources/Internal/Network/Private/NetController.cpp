@@ -240,6 +240,17 @@ void NetController::OnTransportSendComplete(IClientTransport* tr)
     GetClientEntry(tr)->driver->OnSendComplete();
 }
 
+void NetController::OnTransportReadTimeout(IClientTransport* tr)
+{
+    DVASSERT(GetClientEntry(tr) != NULL);
+    
+    ClientEntry* entry = GetClientEntry(tr);
+    if (false == entry->driver->OnTimeout())
+    {
+        entry->client->Reset();
+    }
+}
+
 NetController::ClientEntry* NetController::GetClientEntry(IClientTransport* client)
 {
     List<ClientEntry>::iterator i = std::find(clients.begin(), clients.end(), client);

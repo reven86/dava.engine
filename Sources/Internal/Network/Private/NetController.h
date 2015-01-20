@@ -80,6 +80,7 @@ public:
     virtual void OnTransportDisconnected(IClientTransport* tr, int32 error);
     virtual void OnTransportDataReceived(IClientTransport* tr, const void* buffer, size_t length);
     virtual void OnTransportSendComplete(IClientTransport* tr);
+    virtual void OnTransportReadTimeout(IClientTransport* tr);
 
 private:
     void DoStartServers();

@@ -76,6 +76,7 @@ struct IClientListener
     virtual void OnTransportDisconnected(IClientTransport* tr, int32 error) = 0;
     virtual void OnTransportDataReceived(IClientTransport* tr, const void* buffer, size_t length) = 0;
     virtual void OnTransportSendComplete(IClientTransport* tr) = 0;
+    virtual void OnTransportReadTimeout(IClientTransport* tr) = 0;
 };
 
 }   // namespace Net

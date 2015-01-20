@@ -94,6 +94,7 @@ public:
     void OnDisconnected();
     bool OnDataReceived(const void* buffer, size_t length);
     void OnSendComplete();
+    bool OnTimeout();
 
 private:
     Channel* GetChannel(uint32 channelId);
@@ -126,6 +127,7 @@ private:
     Spinlock senderLock;
     Mutex queueMutex;
     eSendingFrameType whatIsSending;
+    bool pendingPong;
 
     Packet curPacket;
     Deque<Packet> dataQueue;

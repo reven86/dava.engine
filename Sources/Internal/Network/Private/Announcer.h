@@ -55,9 +55,11 @@ private:
     void DoStart();
     void DoStop();
     void DoObjectClose();
+    void DoBye();
 
     void TimerHandleClose(DeadlineTimer* timer);
     void TimerHandleTimer(DeadlineTimer* timer);
+    void TimerHandleDelay(DeadlineTimer* timer);
 
     void SocketHandleClose(UDPSocket* socket);
     void SocketHandleSend(UDPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount);
@@ -67,24 +69,14 @@ private:
     UDPSocket socket;
     DeadlineTimer timer;
     Endpoint endpoint;
+    char8 endpAsString[30];
     uint32 announcePeriod;
     bool isTerminating;
-    uint32 runningObjects;
+    size_t runningObjects;
     Function<void (IController*)> stopCallback;
     Function<size_t (size_t, void*)> dataCallback;
     uint8 buffer[64 * 1024];
 };
-
-//////////////////////////////////////////////////////////////////////////
-inline void Announcer::TimerHandleClose(DeadlineTimer* timer)
-{
-    DoObjectClose();
-}
-
-inline void Announcer::SocketHandleClose(UDPSocket* socket)
-{
-    DoObjectClose();
-}
 
 }   // namespace Net
 }   // namespace DAVA
