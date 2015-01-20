@@ -46,6 +46,9 @@ elseif( MACOS )
 
     list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
     list ( APPEND LIBRARIES       ${DYLIB_FILES} )
+
+elseif( WIN32 )
+    set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     
 endif()
 
@@ -66,11 +69,11 @@ set( PackerToolsSCR          ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.h
                              ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.cpp )
 
 
-
 define_source_folders ( SRC_ROOT "Classes" ${TeamcityOutput}  ${PLATFORM_SPECIFIC_FOLDER} 
                         GLOB_ERASE_FOLDERS "_build"  )
 
-generate_source_groups_project ( ROOT_DIR "Classes"  GROUP_FOLDERS TeamcityOutput PackerTools )
+generate_source_groups_project ( ROOT_DIR "Classes" ${PLATFORM_SPECIFIC_FOLDER}  ${PLATFORM_SPECIFIC_FOLDER}  
+                                 GROUP_FOLDERS TeamcityOutput PackerTools )
 
 if( ANDROID )
     
@@ -78,7 +81,7 @@ if( ANDROID )
         ${PROJECT_SOURCE_FILES}  ${PackerToolsSCR} )
 
 else()                             
-    add_executable  ( ${PROJECT_NAME} MACOSX_BUNDLE
+    add_executable  ( ${PROJECT_NAME} MACOSX_BUNDLE WIN32
         ${PROJECT_SOURCE_FILES} 
         ${RESOURCES_LIST} ${PackerToolsSCR} )
 
@@ -140,6 +143,13 @@ elseif( MACOS )
                           )
 
 
+elseif( WIN32 )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )    
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
+    list( APPEND DAVA_BINARY_WIN32_DIR "${ADDED_BINARY_DIR}" )
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaVcxprojUserTemplate.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
+    
 endif()
 
 target_link_libraries( ${PROJECT_NAME}
