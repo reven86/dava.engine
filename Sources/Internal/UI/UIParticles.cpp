@@ -64,8 +64,8 @@ UIParticles::UIParticles(const Rect &rect, bool rectInAbsoluteCoordinates)
     , delayedActionTime(0.0f)
     , delayedDeleteAllParticles(false)
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIParticles::CustomDraw));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIParticles::CustomUpdate));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UIParticles::CustomDraw);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UIParticles::CustomUpdate);
 
     matrix.Identity();    
 }

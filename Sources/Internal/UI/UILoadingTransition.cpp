@@ -45,8 +45,8 @@ namespace DAVA
 	
 UILoadingTransition::UILoadingTransition()
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UILoadingTransition::CustomDraw));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UILoadingTransition::CustomUpdate));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UILoadingTransition::CustomDraw);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UILoadingTransition::CustomUpdate);
 
 	thread = 0;
 	backgroundSprite = 0;

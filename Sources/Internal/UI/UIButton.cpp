@@ -54,8 +54,8 @@ UIButton::UIButton(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     , selectedTextBlock(NULL)
     , oldControlState(0)
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIButton::CustomDraw));
-    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UIButton::CustomInput));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UIButton::CustomDraw);
+    GetOrCreateComponent<UIInputComponent>()->customInput = MakeFunction(this, &UIButton::CustomInput);
 
     for(int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {

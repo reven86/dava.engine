@@ -69,9 +69,9 @@ void UIUpdateSystem::SystemUpdate(UIControl* control, float32 timeElapsed)
     UIControlSystem::Instance()->updateCounter++;
 
     UIUpdateComponent* component = control->GetComponent<UIUpdateComponent>();
-    if (component != NULL && component->GetCustomUpdate() != (int)NULL)
+    if (component != NULL && component->customUpdate != (int)NULL)
     {
-        component->GetCustomUpdate()(timeElapsed);
+        component->customUpdate(timeElapsed);
     }
 
     control->isUpdated = true;
@@ -89,7 +89,7 @@ void UIUpdateSystem::SystemUpdate(UIControl* control, float32 timeElapsed)
         control->isIteratorCorrupted = false;
         UIControl *current = *it;
         UIUpdateComponent* currComponent = current->GetComponent<UIUpdateComponent>();
-        if (currComponent != NULL && currComponent->GetCustomNeedSystemUpdateCheck() != (int)NULL && !currComponent->GetCustomNeedSystemUpdateCheck()())
+        if (currComponent != NULL && currComponent->customNeedSystemUpdateCheck != (int)NULL && !currComponent->customNeedSystemUpdateCheck())
         {
             continue;
         }

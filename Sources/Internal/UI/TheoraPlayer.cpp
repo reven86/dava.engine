@@ -68,8 +68,8 @@ TheoraPlayer::TheoraPlayer(const FilePath & _filePath)
     , isPlaying(false)
     , isRepeat(false)
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &TheoraPlayer::CustomDraw));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &TheoraPlayer::CustomUpdate));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &TheoraPlayer::CustomDraw);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &TheoraPlayer::CustomUpdate);
 
     theoraData = new TheoraData();
     theoraData->thSetup = 0;

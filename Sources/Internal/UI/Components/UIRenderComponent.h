@@ -40,7 +40,7 @@ class UIGeometricData;
 class UIRenderComponent : public UIComponent
 {
 public:
-    typedef Function<void(const UIGeometricData&)> RenderFunctor;
+    typedef Function<void(const UIGeometricData&)> RenderFunction;
 
     IMPLEMENT_COMPONENT_TYPE(Component::UI_RENDER_COMPONENT);
 
@@ -49,75 +49,13 @@ public:
 
     virtual Component * Clone(UIControl* toControl);
 
-    inline void SetCustomDraw(const RenderFunctor& f);
-    inline void SetCustomDrawAfterChilds(const RenderFunctor& f);
-    inline void SetCustomBeforeSystemDraw(const RenderFunctor& f);
-    inline void SetCustomAfterSystemDraw(const RenderFunctor& f);
-    inline void SetCustomSystemDraw(const RenderFunctor& f);
-    inline const RenderFunctor& GetCustomDraw() const;
-    inline const RenderFunctor& GetCustomDrawAfterChilds() const;
-    inline const RenderFunctor& GetCustomBeforeSystemDraw() const;
-    inline const RenderFunctor& GetCustomAfterSystemDraw() const;
-    inline const RenderFunctor& GetCustomSystemDraw() const;
-
-private:
-    RenderFunctor customDraw;
-    RenderFunctor customDrawAfterChilds;
-    RenderFunctor customBeforeSystemDraw;
-    RenderFunctor customAfterSystemDraw;
-    RenderFunctor customSystemDraw;
+    RenderFunction customDraw;
+    RenderFunction customDrawAfterChilds;
+    RenderFunction customBeforeSystemDraw;
+    RenderFunction customAfterSystemDraw;
+    RenderFunction customSystemDraw;
 
 };
-
-void UIRenderComponent::SetCustomDraw(const RenderFunctor& f)
-{
-    customDraw = f;
-}
-
-void UIRenderComponent::SetCustomDrawAfterChilds(const RenderFunctor& f)
-{
-    customDrawAfterChilds = f;
-}
-
-void UIRenderComponent::SetCustomBeforeSystemDraw(const RenderFunctor& f)
-{
-    customBeforeSystemDraw = f;
-}
-
-void UIRenderComponent::SetCustomAfterSystemDraw(const RenderFunctor& f)
-{
-    customAfterSystemDraw = f;
-}
-
-void UIRenderComponent::SetCustomSystemDraw(const RenderFunctor& f)
-{
-    customSystemDraw = f;
-}
-
-const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomDraw() const
-{
-    return customDraw;
-}
-
-const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomDrawAfterChilds() const
-{
-    return customDrawAfterChilds;
-}
-
-const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomBeforeSystemDraw() const
-{
-    return customBeforeSystemDraw;
-}
-
-const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomAfterSystemDraw() const
-{
-    return customAfterSystemDraw;
-}
-
-const UIRenderComponent::RenderFunctor& UIRenderComponent::GetCustomSystemDraw() const
-{
-    return customSystemDraw;
-}
 
 }
 

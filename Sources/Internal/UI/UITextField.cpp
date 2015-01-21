@@ -97,8 +97,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,   textFont(NULL)
 #endif
 {
-    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UITextField::CustomInput));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UITextField::CustomUpdate));
+    GetOrCreateComponent<UIInputComponent>()->customInput = MakeFunction(this, &UITextField::CustomInput);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UITextField::CustomUpdate);
     
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);

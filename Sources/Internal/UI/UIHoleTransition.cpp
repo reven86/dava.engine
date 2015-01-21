@@ -43,8 +43,8 @@ namespace DAVA
 	
 UIHoleTransition::UIHoleTransition()
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIHoleTransition::CustomDraw));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIHoleTransition::CustomUpdate));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UIHoleTransition::CustomDraw);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UIHoleTransition::CustomUpdate);
 
 	duration = 0.8f;
 }

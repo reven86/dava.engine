@@ -41,7 +41,7 @@ namespace DAVA
 	
 UIMoveInTransition::UIMoveInTransition()
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIMoveInTransition::CustomDraw));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UIMoveInTransition::CustomDraw);
 
 	type = FROM_TOP;
 	isOver = false;

@@ -42,8 +42,8 @@ namespace DAVA
 	
 UIFadeTransition::UIFadeTransition()
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIFadeTransition::CustomDraw));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIFadeTransition::CustomUpdate));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UIFadeTransition::CustomDraw);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UIFadeTransition::CustomUpdate);
 
 	type = FADE_MIX;
 }

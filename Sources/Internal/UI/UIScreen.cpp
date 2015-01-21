@@ -46,8 +46,8 @@ UIScreen::UIScreen(const Rect &rect)
 ,	groupId(groupIdCounter)
 {
     UIRenderComponent* renderComponent = GetOrCreateComponent<UIRenderComponent>();
-    renderComponent->SetCustomBeforeSystemDraw(MakeFunction(this, &UIScreen::CustomBeforeSystemDraw));
-    renderComponent->SetCustomAfterSystemDraw(MakeFunction(this, &UIScreen::CustomAfterSystemDraw));
+    renderComponent->customBeforeSystemDraw = MakeFunction(this, &UIScreen::CustomBeforeSystemDraw);
+    renderComponent->customAfterSystemDraw = MakeFunction(this, &UIScreen::CustomAfterSystemDraw);
 
 	// add screen to list
 	appScreens.push_back(this);

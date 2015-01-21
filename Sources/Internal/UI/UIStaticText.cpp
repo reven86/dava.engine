@@ -62,7 +62,7 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 :	UIControl(rect, rectInAbsoluteCoordinates)
     , shadowOffset(0, 0)
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIStaticText::CustomDraw));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UIStaticText::CustomDraw);
 
     SetInputEnabled(false, false);
     textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
@@ -241,7 +241,7 @@ void UIStaticText::CustomDraw(const UIGeometricData &geometricData)
 {
     if (GetText().empty())
     {
-        UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->Draw(this, geometricData);
+        GetBackground()->Draw(geometricData);
         return;
     }
 	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
@@ -252,7 +252,7 @@ void UIStaticText::CustomDraw(const UIGeometricData &geometricData)
 	textBlock->PreDraw();
 	PrepareSprite();
 
-    UIControlSystem::Instance()->GetSystem<UIRenderSystem>()->Draw(this, geometricData);
+    GetBackground()->Draw(geometricData);
 
 	UIGeometricData textGeomData;
 	textGeomData.position = textBlock->GetSpriteOffset();

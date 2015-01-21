@@ -104,8 +104,8 @@ UISpinner::UISpinner(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*
     , totalGestureTime(0)
     , totalGestureDx(0)
 {
-    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UISpinner::CustomInput));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UISpinner::CustomUpdate));
+    GetOrCreateComponent<UIInputComponent>()->customInput = MakeFunction(this, &UISpinner::CustomInput);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UISpinner::CustomUpdate);
     
     buttonNext->SetName(UISPINNER_BUTTON_NEXT_NAME);
     buttonPrevious->SetName(UISPINNER_BUTTON_PREVIOUS_NAME);

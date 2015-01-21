@@ -50,8 +50,8 @@ UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 ,	currentPos(Vector2(0,0))
 {
     UIInputComponent* inputComponent = GetOrCreateComponent<UIInputComponent>();
-    inputComponent->SetCustomInput(MakeFunction(this, &UIJoypad::CustomInput));
-    inputComponent->SetCustomInputCancelled(MakeFunction(this, &UIJoypad::CustomInputCancelled));
+    inputComponent->customInput = MakeFunction(this, &UIJoypad::CustomInput);
+    inputComponent->customInputCancelled = MakeFunction(this, &UIJoypad::CustomInputCancelled);
 
     SetInputEnabled(true, false);
 }

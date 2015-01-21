@@ -40,7 +40,7 @@ class UIComponent : public Component
 public:
     UIComponent();
     virtual ~UIComponent();
-    inline void SetControl(UIControl* control);
+    inline void SetControl(UIControl* _control);
     inline UIControl* GetControl() const;
 
     virtual Component* Clone(Entity* toEntity);
@@ -56,9 +56,9 @@ public:
 
 };
 
-inline void UIComponent::SetControl(UIControl* control)
+inline void UIComponent::SetControl(UIControl* _control)
 {
-    this->control = control;
+    control = _control;
 }
 
 inline UIControl* UIComponent::GetControl() const

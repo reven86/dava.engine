@@ -52,8 +52,8 @@ UniqueHandle UIScreenTransition::alphaClearStateHandle = InvalidUniqueHandle;
 
 UIScreenTransition::UIScreenTransition()
 {
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIScreenTransition::CustomUpdate));
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UIScreenTransition::CustomDraw));
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UIScreenTransition::CustomUpdate);
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UIScreenTransition::CustomDraw);
 
     duration = 0.7f;
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);

@@ -53,9 +53,9 @@ UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
     ,   scene(0)
     ,   registeredInUIControlSystem(false)
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UI3DView::CustomDraw));
-    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UI3DView::CustomInput));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UI3DView::CustomUpdate));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UI3DView::CustomDraw);
+    GetOrCreateComponent<UIInputComponent>()->customInput = MakeFunction(this, &UI3DView::CustomInput);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UI3DView::CustomUpdate);
 }
 
 UI3DView::~UI3DView()

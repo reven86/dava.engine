@@ -47,18 +47,6 @@ public:
 
     virtual Component* Clone(UIControl * toControl) override;
 
-    inline const Function<void(UIEvent*)>& GetCustomInput() const;
-    inline void SetCustomInput(const Function<void(UIEvent*)>& val);
-    inline const Function<void(UIEvent*)>& GetCustomInputCancelled() const;
-    inline void SetCustomInputCancelled(const Function<void(UIEvent*)>& val);
-    inline const Function<bool(UIEvent*)>& GetCustomSystemProcessInput() const;
-    inline void SetCustomSystemProcessInput(const Function<bool(UIEvent*)>& val);
-    inline const Function<void(UIEvent*)>& GetCustomSystemInputCancelled() const;
-    inline void SetCustomSystemInputCancelled(const Function<void(UIEvent*)>& val);
-    inline const Function<bool(UIEvent*)>& GetCustomSystemInput() const;
-    inline void SetCustomSystemInput(const Function<bool(UIEvent*)>& val);
-
-private:
     Function<void(UIEvent*)> customInput;
     Function<void(UIEvent*)> customInputCancelled;
     Function<bool(UIEvent*)> customSystemInput;
@@ -66,56 +54,6 @@ private:
     Function<bool(UIEvent*)> customSystemProcessInput;
 
 };
-
-inline const Function<void(UIEvent*)>& UIInputComponent::GetCustomInput() const
-{
-    return customInput;
-}
-
-inline void UIInputComponent::SetCustomInput(const Function<void(UIEvent*)>& val)
-{
-    customInput = val;
-}
-
-inline const Function<void(UIEvent*)>& UIInputComponent::GetCustomInputCancelled() const
-{
-    return customInputCancelled;
-}
-
-inline void UIInputComponent::SetCustomInputCancelled(const Function<void(UIEvent*)>& val)
-{
-    customInputCancelled = val;
-}
-
-inline const Function<bool(UIEvent*)>& UIInputComponent::GetCustomSystemProcessInput() const
-{
-    return customSystemProcessInput;
-}
-
-inline void UIInputComponent::SetCustomSystemProcessInput(const Function<bool(UIEvent*)>& val)
-{
-    customSystemProcessInput = val;
-}
-
-inline const Function<void(UIEvent*)>& UIInputComponent::GetCustomSystemInputCancelled() const
-{
-    return customSystemInputCancelled;
-}
-
-inline void UIInputComponent::SetCustomSystemInputCancelled(const Function<void(UIEvent*)>& val)
-{
-    customSystemInputCancelled = val;
-}
-
-inline const Function<bool(UIEvent*)>& UIInputComponent::GetCustomSystemInput() const
-{
-    return customSystemInput;
-}
-
-inline void UIInputComponent::SetCustomSystemInput(const Function<bool(UIEvent*)>& val)
-{
-    customSystemInput = val;
-}
 
 }
 

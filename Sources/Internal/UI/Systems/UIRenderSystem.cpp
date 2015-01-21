@@ -95,9 +95,9 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
         DVASSERT(component);
     }
 
-    if (component && component->GetCustomBeforeSystemDraw() != (int)NULL)
+    if (component && component->customBeforeSystemDraw != (int)NULL)
     {
-        component->GetCustomBeforeSystemDraw()(geometricData);
+        component->customBeforeSystemDraw(geometricData);
     }
 
     UIControlSystem::Instance()->drawCounter++;
@@ -118,9 +118,9 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
 
     if (component)
     {
-        if (component->GetCustomDraw() != (int)NULL)
+        if (component->customDraw != (int)NULL)
         {
-            component->GetCustomDraw() (drawData);
+            component->customDraw(drawData);
         }
         else
         {
@@ -137,9 +137,9 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
         {
             UIRenderComponent* itComponent = (*it)->GetComponent<UIRenderComponent>();
             DVASSERT(itComponent);
-            if (itComponent->GetCustomSystemDraw() != (int)NULL)
+            if (itComponent->customSystemDraw != (int)NULL)
             {
-                itComponent->GetCustomSystemDraw()(drawData);
+                itComponent->customSystemDraw(drawData);
             }
             else
             {
@@ -153,9 +153,9 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
         DVASSERT(!control->isIteratorCorrupted);
     }
 
-    if (component && component->GetCustomDrawAfterChilds() != (int)NULL)
+    if (component && component->customDrawAfterChilds != (int)NULL)
     {
-        component->GetCustomDrawAfterChilds()(drawData);
+        component->customDrawAfterChilds(drawData);
     }
 
     if (control->GetClipContents())
@@ -172,9 +172,9 @@ void UIRenderSystem::SystemDraw(UIControl* control, const UIGeometricData& geome
         RenderSystem2D::Instance()->ClipPop();
     }
 
-    if (component && component->GetCustomAfterSystemDraw() != (int)NULL)
+    if (component && component->customAfterSystemDraw != (int)NULL)
     {
-        component->GetCustomAfterSystemDraw()(geometricData);
+        component->customAfterSystemDraw(geometricData);
     }
 
 }

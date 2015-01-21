@@ -52,7 +52,7 @@ UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates)
     : UIControl(rect, rectInAbsoluteCoordinates)
     , movieViewControl(new MovieViewControl)
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDrawAfterChilds(MakeFunction(this, &UIMovieView::CustomDrawAfterChilds));
+    GetOrCreateComponent<UIRenderComponent>()->customDrawAfterChilds = MakeFunction(this, &UIMovieView::CustomDrawAfterChilds);
 
 	movieViewControl->Initialize(rect);
 }

@@ -93,7 +93,7 @@ UISwitch::UISwitch(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     , toggle(new UIButton())
     , switchOnTapBesideToggle(true)
 {
-    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UISwitch::CustomInput));
+    GetOrCreateComponent<UIInputComponent>()->customInput = MakeFunction(this, &UISwitch::CustomInput);
     
     buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
     buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);

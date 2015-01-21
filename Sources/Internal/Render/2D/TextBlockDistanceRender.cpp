@@ -65,7 +65,7 @@ TextBlockDistanceRender::TextBlockDistanceRender(TextBlock* textBlock) :
 {
 	charDrawed = 0;
 	renderObject = new RenderDataObject();
-	
+
 	dfFont = (DFFont*)textBlock->font;
 	
     shader = ShaderCache::Instance()->Get(FastName("~res:/Shaders/Default/df_font"), FastNameSet());

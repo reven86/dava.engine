@@ -46,49 +46,11 @@ public:
 
     virtual Component* Clone(UIControl * toControl) override;
 
-    inline const Function<void(float32)>& GetCustomUpdate() const;
-    inline const Function<bool()>& GetCustomNeedUpdateCheck() const;
-    inline const Function<bool()>& GetCustomNeedSystemUpdateCheck() const;
-    inline void SetCustomUpdate(const Function<void(float32)>& f);
-    inline void SetCustomNeedUpdateCheck(const Function<bool()>& f);
-    inline void SetCustomNeedSystemUpdateCheck(const Function<bool()>& f);
-
-private:
     Function<void(float32)> customUpdate;
     Function<bool()> customNeedUpdateCheck;
     Function<bool()> customNeedSystemUpdateCheck;
 
 };
-
-inline const Function<void(float32)>& UIUpdateComponent::GetCustomUpdate() const
-{
-    return customUpdate;
-}
-
-inline const Function<bool()>& UIUpdateComponent::GetCustomNeedUpdateCheck() const
-{
-    return customNeedUpdateCheck;
-}
-
-inline const Function<bool()>& UIUpdateComponent::GetCustomNeedSystemUpdateCheck() const
-{
-    return customNeedSystemUpdateCheck;
-}
-
-inline void UIUpdateComponent::SetCustomUpdate(const Function<void(float32)>& f)
-{
-    customUpdate = f;
-}
-
-inline void UIUpdateComponent::SetCustomNeedUpdateCheck(const Function<bool()>& f)
-{
-    customNeedUpdateCheck = f;
-}
-
-inline void UIUpdateComponent::SetCustomNeedSystemUpdateCheck(const Function<bool()>& f)
-{
-    customNeedSystemUpdateCheck = f;
-}
 
 }
 

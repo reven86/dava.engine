@@ -71,9 +71,9 @@ UIList::UIList(const Rect &rect/* = Rect()*/, eListOrientation requiredOrientati
     , aggregatorPath(FilePath())
 {
     UIInputComponent* inputComponent = GetOrCreateComponent<UIInputComponent>();
-    inputComponent->SetCustomInput(MakeFunction(this, &UIList::CustomInput));
-    inputComponent->SetCustomSystemInput(MakeFunction(this, &UIList::CustomSystemInput));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIList::CustomUpdate));
+    inputComponent->customInput = MakeFunction(this, &UIList::CustomInput);
+    inputComponent->customSystemInput = MakeFunction(this, &UIList::CustomSystemInput);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UIList::CustomUpdate);
 
     InitAfterYaml();
 }

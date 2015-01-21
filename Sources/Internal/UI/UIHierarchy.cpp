@@ -52,9 +52,9 @@ UIHierarchy::UIHierarchy(const Rect &rect, bool rectInAbsoluteCoordinates)
 : UIControl(rect, rectInAbsoluteCoordinates)
 {
     UIInputComponent* inputComponent = GetOrCreateComponent<UIInputComponent>();
-    inputComponent->SetCustomInput(MakeFunction(this, &UIHierarchy::CustomInput));
-    inputComponent->SetCustomSystemInput(MakeFunction(this, &UIHierarchy::CustomSystemInput));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIHierarchy::CustomUpdate));
+    inputComponent->customInput = MakeFunction(this, &UIHierarchy::CustomInput);
+    inputComponent->customSystemInput = MakeFunction(this, &UIHierarchy::CustomSystemInput);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UIHierarchy::CustomUpdate);
 
     baseNode = new UIHierarchyNode(NULL);
     baseNode->isOpen = true;

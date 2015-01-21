@@ -57,10 +57,10 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsolu
 , enableVerticalScroll(true)
 {
     UIInputComponent* inputComponent = GetOrCreateComponent<UIInputComponent>();
-    inputComponent->SetCustomInput(MakeFunction(this, &UIScrollViewContainer::CustomInput));
-    inputComponent->SetCustomInputCancelled(MakeFunction(this, &UIScrollViewContainer::CustomInputCancelled));
-    inputComponent->SetCustomSystemInput(MakeFunction(this, &UIScrollViewContainer::CustomSystemInput));
-    GetOrCreateComponent<UIUpdateComponent>()->SetCustomUpdate(MakeFunction(this, &UIScrollViewContainer::CustomUpdate));
+    inputComponent->customInput = MakeFunction(this, &UIScrollViewContainer::CustomInput);
+    inputComponent->customInputCancelled = MakeFunction(this, &UIScrollViewContainer::CustomInputCancelled);
+    inputComponent->customSystemInput = MakeFunction(this, &UIScrollViewContainer::CustomSystemInput);
+    GetOrCreateComponent<UIUpdateComponent>()->customUpdate = MakeFunction(this, &UIScrollViewContainer::CustomUpdate);
 
 	this->SetInputEnabled(true);
 	this->SetMultiInput(true);

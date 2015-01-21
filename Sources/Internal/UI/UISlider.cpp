@@ -62,8 +62,8 @@ UISlider::UISlider(const Rect & rect)
 ,	thumbButton(NULL)
 ,   spritesEmbedded(false)
 {
-    GetOrCreateComponent<UIRenderComponent>()->SetCustomDraw(MakeFunction(this, &UISlider::CustomDraw));
-    GetOrCreateComponent<UIInputComponent>()->SetCustomInput(MakeFunction(this, &UISlider::CustomInput));
+    GetOrCreateComponent<UIRenderComponent>()->customDraw = MakeFunction(this, &UISlider::CustomDraw);
+    GetOrCreateComponent<UIInputComponent>()->customInput = MakeFunction(this, &UISlider::CustomInput);
     
     SetInputEnabled(true, false);
 	isEventsContinuos = true;
