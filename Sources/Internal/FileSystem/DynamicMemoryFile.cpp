@@ -108,7 +108,7 @@ uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
 	}
 	
 	int32 realReadSize = dataSize;
-	int32 size = (int32)data.size();
+	uint32 size = data.size();
 	if (currentPtr + realReadSize > size)
 	{
 	    isEof = true;
@@ -168,5 +168,10 @@ bool DynamicMemoryFile::Seek(int32 position, uint32 seekType)
     return true;
 	
 }
-	
+
+bool DynamicMemoryFile::IsEof()
+{
+    return isEof;
+}
+
 };

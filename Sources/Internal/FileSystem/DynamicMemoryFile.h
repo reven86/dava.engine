@@ -106,7 +106,7 @@ public:
     bool Seek(int32 position, uint32 seekType) override;
 
     //! return true if end of file reached and false in another case
-    inline bool IsEof() override;
+    bool IsEof() override;
 
 protected:
     uint32 currentPtr;
@@ -114,11 +114,6 @@ protected:
     uint32 fileAttributes;
     bool isEof;
 };
-
-inline bool DynamicMemoryFile::IsEof()
-{
-    return isEof;
-}
 
 };
 
