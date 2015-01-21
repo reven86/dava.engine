@@ -570,7 +570,7 @@ void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
 {
     componentMaskForSelection = mask;
 
-    if(curSelections.Size())
+    if(curSelections.Size() != 0)
     {
         Clear();
     }
