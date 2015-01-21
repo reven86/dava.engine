@@ -105,6 +105,8 @@ Texture
 
 Handle  Create( unsigned width, unsigned height, TextureFormat format, uint32 options=0 );
 void    Delete( Handle tex );
+void*   Map( Handle tex, unsigned level=0 );
+void    Unmap( Handle tex );
 
 };
 

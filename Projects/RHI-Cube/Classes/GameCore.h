@@ -94,6 +94,7 @@ protected:
         rhi::Handle ps;
         rhi::Handle vp_const[2];
         rhi::Handle fp_const;
+        rhi::Handle tex;
     };
 
     Object      triangle;

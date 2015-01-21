@@ -60,6 +60,11 @@ void    InitializeRingBuffer( uint32 size );
 void    SetToRHI( Handle cb );
 }
 
+namespace TextureDX9
+{
+void    SetToRHI( Handle tex, unsigned unitIndex );
+}
+
 
 //==============================================================================
 }

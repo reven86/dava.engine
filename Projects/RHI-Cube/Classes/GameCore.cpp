@@ -74,6 +74,7 @@ GameCore::SetupTriangle()
 
     rhi::IndexBuffer::Update( triangle.ib, i, 0, 3*sizeof(uint16) );
 
+
     rhi::ShaderCache::UpdateProg
     ( 
         rhi::HostApi(), rhi::PROG_VERTEX, FastName("vp-simple"),
@@ -151,28 +152,59 @@ GameCore::SetupCube()
     cube.ib = rhi::InvalidHandle;
 
     float       sz    = 0.2f;
+    float       u0    = 0.0f;
+    float       u1    = 1.0f;
+    float       v0    = 0.0f;
+    float       v1    = 1.0f;
     VertexPNT   v[36] = 
     {
-        { -sz,-sz,-sz, 0,0,-1, 0,0 }, { -sz,sz,-sz, 0,0,-1, 0,0 }, { sz,-sz,-sz, 0,0,-1, 0,0 },
-        { -sz,sz,-sz, 0,0,-1, 0,0 }, { sz,sz,-sz, 0,0,-1, 0,0 }, { sz,-sz,-sz, 0,0,-1, 0,0 },
+        { -sz,-sz,-sz, 0,0,-1, u0,v1 }, { -sz,sz,-sz, 0,0,-1, u0,v0 }, { sz,-sz,-sz, 0,0,-1, u1,v1 },
+        { -sz,sz,-sz, 0,0,-1, u0,v0 }, { sz,sz,-sz, 0,0,-1, u1,v0 }, { sz,-sz,-sz, 0,0,-1, u1,v1 },
 
-        { sz,-sz,-sz, 1,0,0, 0,0 }, { sz,sz,-sz, 1,0,0, 0,0 }, { sz,-sz,sz, 1,0,0, 0,0 },   
-        { sz,sz,-sz, 1,0,0, 0,0 }, { sz,sz,sz, 1,0,0, 0,0 }, { sz,-sz,sz, 1,0,0, 0,0 },
+        { sz,-sz,-sz, 1,0,0, u0,v1 }, { sz,sz,-sz, 1,0,0, u0,v0 }, { sz,-sz,sz, 1,0,0, u1,v1 },
+        { sz,sz,-sz, 1,0,0, u0,v0 }, { sz,sz,sz, 1,0,0, u1,v0 }, { sz,-sz,sz, 1,0,0, u1,v1 },
     
-        { sz,-sz,sz, 0,0,1, 0,0 }, { sz,sz,sz, 0,0,1, 0,0 }, { -sz,-sz,sz, 0,0,1, 0,0 },    
-        { sz,sz,sz, 0,0,1, 0,0 }, { -sz,sz,sz, 0,0,1, 0,0 }, { -sz,-sz,sz, 0,0,1, 0,0 },
+        { sz,-sz,sz, 0,0,1, u0,v1 }, { sz,sz,sz, 0,0,1, u0,v0 }, { -sz,-sz,sz, 0,0,1, u1,v1 },    
+        { sz,sz,sz, 0,0,1, u0,v0 }, { -sz,sz,sz, 0,0,1, u1,v0 }, { -sz,-sz,sz, 0,0,1, u1,v1 },
     
-        { -sz,-sz,sz, -1,0,0, 0,0 }, { -sz,sz,sz, -1,0,0, 0,0 }, { -sz,sz,-sz, -1,0,0, 0,0 },    
-        { -sz,sz,-sz, -1,0,0, 0,0 }, { -sz,-sz,-sz, -1,0,0, 0,0 }, { -sz,-sz,sz, -1,0,0, 0,0 },
+        { -sz,-sz,sz, -1,0,0, u0,v1 }, { -sz,sz,sz, -1,0,0, u0,v0 }, { -sz,sz,-sz, -1,0,0, u1,v0 },
+        { -sz,sz,-sz, -1,0,0, u1,v0 }, { -sz,-sz,-sz, -1,0,0, u1,v1 }, { -sz,-sz,sz, -1,0,0, u0,v1 },
 
-        { -sz,sz,-sz, 0,1,0, 0,0 }, { -sz,sz,sz, 0,1,0, 0,0 }, { sz,sz,-sz, 0,1,0, 0,0 },
-        { -sz,sz,sz, 0,1,0, 0,0 }, { sz,sz,sz, 0,1,0, 0,0 }, { sz,sz,-sz, 0,1,0, 0,0 },
+        { -sz,sz,-sz, 0,1,0, u0,v1 }, { -sz,sz,sz, 0,1,0, u0,v0 }, { sz,sz,-sz, 0,1,0, u1,v1 },
+        { -sz,sz,sz, 0,1,0, u0,v0 }, { sz,sz,sz, 0,1,0, u1,v0 }, { sz,sz,-sz, 0,1,0, u1,v1 },
                 
-        { -sz,-sz,-sz, 0,-1,0, 0,0 }, { sz,-sz,-sz, 0,-1,0, 0,0 }, { -sz,-sz,sz, 0,-1,0, 0,0 },        
-        { sz,-sz,-sz, 0,-1,0, 0,0 }, { sz,-sz,sz, 0,-1,0, 0,0 }, { -sz,-sz,sz, 0,-1,0, 0,0 }
+        { -sz,-sz,-sz, 0,-1,0, u0,v0 }, { sz,-sz,-sz, 0,-1,0, u1,v0 }, { -sz,-sz,sz, 0,-1,0, u0,v1 },
+        { sz,-sz,-sz, 0,-1,0, u1,v0 }, { sz,-sz,sz, 0,-1,0, u1,v1 }, { -sz,-sz,sz, 0,-1,0, u0,v1 }
     };
 
     rhi::VertexBuffer::Update( cube.vb, v, 0, sizeof(v) );
+
+
+    cube.tex = rhi::Texture::Create( 128, 128, rhi::TEXTURE_FORMAT_A8R8G8B8 );
+    
+    uint8*  tex = (uint8*)(rhi::Texture::Map( cube.tex ));
+
+    if( tex )
+    {
+        uint8   color1[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
+        uint8   color2[4] = { 0x80, 0x80, 0x80, 0x80 };
+        uint32  cell_size = 8;
+
+        for( unsigned y=0; y!=128; ++y )
+        {
+            for( unsigned x=0; x!=128; ++x )
+            {
+                uint8*  p = tex + y*sizeof(uint32)*128 + x*sizeof(uint32);
+                uint8*  c = ( ((y/cell_size) & 0x1) ^ ((x/cell_size) & 0x1) )
+                            ? color1
+                            : color2;
+
+                memcpy( p, c, sizeof(uint32) );                
+            }
+        }
+
+        rhi::Texture::Unmap( cube.tex );
+    }
 
 
     rhi::ShaderCache::UpdateProg
@@ -186,7 +218,8 @@ GameCore::SetupCube()
         "\n"
         "VPROG_OUT_BEGIN\n"
         "    VPROG_OUT_POSITION\n"
-        "    VPROG_OUT_TEXCOORD0(color,4)\n"
+        "    VPROG_OUT_TEXCOORD0(uv,2)\n"
+        "    VPROG_OUT_TEXCOORD1(color,4)\n"
         "VPROG_OUT_END\n"
         "\n"
         "DECL_VPROG_BUFFER(0,16)\n"
@@ -194,8 +227,9 @@ GameCore::SetupCube()
         "\n"
         "VPROG_BEGIN\n"
         "\n"
-        "    float3 in_pos    = VP_IN_POSITION;\n"
-        "    float3 in_normal = VP_IN_NORMAL;\n"
+        "    float3 in_pos      = VP_IN_POSITION;\n"
+        "    float3 in_normal   = VP_IN_NORMAL;\n"
+        "    float2 in_texcoord = VP_IN_TEXCOORD;\n"
         "    float4x4 ViewProjection = float4x4( VP_Buffer0[0], VP_Buffer0[1], VP_Buffer0[2], VP_Buffer0[3] );\n"
         "    float4x4 World = float4x4( VP_Buffer1[0], VP_Buffer1[1], VP_Buffer1[2], VP_Buffer1[3] );\n"
 //        "    float3x3 World3 = float3x3( (float3)(float4(VP_Buffer1[0])), (float3)(float4(VP_Buffer1[1])), (float3)(float4(VP_Buffer1[2])) );\n"
@@ -204,6 +238,7 @@ GameCore::SetupCube()
         "    float4 wpos = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), World );\n"
         "    float i   = dot( float3(0,0,-1), normalize(mul(float3(in_normal),World3)) );\n"
         "    VP_OUT_POSITION   = mul( wpos, ViewProjection );\n"
+        "    VP_OUT(uv)        = in_texcoord;\n"
         "    VP_OUT(color)     = float4(i,i,i,1.0);\n"
         "\n"
         "VPROG_END\n"
@@ -273,17 +308,22 @@ GameCore::SetupCube()
     ( 
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded"),
         "FPROG_IN_BEGIN\n"
-        "FPROG_IN_TEXCOORD0(color,4)\n"
+        "FPROG_IN_TEXCOORD0(uv,2)\n"
+        "FPROG_IN_TEXCOORD1(color,4)\n"
         "FPROG_IN_END\n"
         "\n"
         "FPROG_OUT_BEGIN\n"
         "    FPROG_OUT_COLOR\n"
         "FPROG_OUT_END\n"
         "\n"
+        "DECL_SAMPLER2D(0)\n"
+        "\n"
+        "\n"
         "DECL_FPROG_BUFFER(0,4)\n"
         "\n"
         "FPROG_BEGIN\n"
-        "    FP_OUT_COLOR = float4(FP_Buffer0[0]) * FP_IN(color);\n"
+        "    float4  diffuse = FP_TEXTURE2D( 0, FP_IN(uv) );\n"
+        "    FP_OUT_COLOR = diffuse * float4(FP_Buffer0[0]) * FP_IN(color);\n"
         "FPROG_END\n"
 /*
 "struct FP_Input\n"
@@ -422,7 +462,7 @@ GameCore::Draw()
     
     world.Identity();
     world.CreateRotation( Vector3(0,1,0), cube_angle );
-    //    world.CreateRotation( Vector3(1,0,0), cube_angle );
+//    world.CreateRotation( Vector3(1,0,0), cube_angle );
     world.SetTranslationVector( Vector3(0,0,5) );
     view_proj.Identity();
     view_proj.BuildProjectionFovLH( 75.0f, Core::Instance()->GetPhysicalScreenWidth()/Core::Instance()->GetPhysicalScreenHeight(), 1.0f,1000.0f );
@@ -437,6 +477,7 @@ GameCore::Draw()
     rhi::CommandBuffer::SetVertexConstBuffer( cb, 0, cube.vp_const[0] );
     rhi::CommandBuffer::SetVertexConstBuffer( cb, 1, cube.vp_const[1] );
     rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, cube.fp_const );
+    rhi::CommandBuffer::SetFragmentTexture( cb, 0, cube.tex );
     rhi::CommandBuffer::DrawPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 12 );
     
 #endif

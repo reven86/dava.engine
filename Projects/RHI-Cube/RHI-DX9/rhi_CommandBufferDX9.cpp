@@ -207,6 +207,7 @@ void
 SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 {
 //    L_ASSERT(tex);
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_TEXTURE, unitIndex, (uint64)(tex) );
 }
 
 
@@ -479,6 +480,12 @@ SCOPED_FUNCTION_TIMING();
             {
                 ConstBufferDX9::SetToRHI( (Handle)(arg[1]) );
                 c += 1;
+            }   break;
+
+            case DX9__SET_TEXTURE :
+            {
+                TextureDX9::SetToRHI( (Handle)(arg[1]), (unsigned)(arg[0]) );
+                c += 2;
             }   break;
             
             case DX9__DRAW_PRIMITIVE :

@@ -15,6 +15,7 @@
     <ClCompile Include="rhi_DX9.cpp" />
     <ClCompile Include="rhi_IndexBufferDX9.cpp" />
     <ClCompile Include="rhi_PipelineStateDX9.cpp" />
+    <ClCompile Include="rhi_TextureDX9.cpp" />
     <ClCompile Include="rhi_VertexBufferDX9.cpp" />
     <ClCompile Include="_dx9.cpp" />
   </ItemGroup>

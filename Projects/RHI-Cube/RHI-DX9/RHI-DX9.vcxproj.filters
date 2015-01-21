@@ -33,6 +33,9 @@
     <ClCompile Include="rhi_PipelineStateDX9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rhi_TextureDX9.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rhi_DX9.h">

@@ -318,6 +318,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VPROG_OUT_BEGIN         struct VP_Output {\n"
 "#define VPROG_OUT_POSITION      float4 position : POSITION0;\n"
 "#define VPROG_OUT_TEXCOORD0(name,size)    float##size name : TEXCOORD0;\n"
+"#define VPROG_OUT_TEXCOORD1(name,size)    float##size name : TEXCOORD1;\n"
 "#define VPROG_OUT_END           };\n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"
@@ -336,12 +337,16 @@ static const char* _ShaderDefine_DX9 =
 
 "#define FPROG_IN_BEGIN          struct FP_Input {\n"
 "#define FPROG_IN_TEXCOORD0(name,size)    float##size name : TEXCOORD0;\n"
+"#define FPROG_IN_TEXCOORD1(name,size)    float##size name : TEXCOORD1;\n"
 "#define FPROG_IN_END            };\n"
 
 "#define FPROG_OUT_BEGIN         struct FP_Output {\n"
 "#define FPROG_OUT_COLOR         float4 color : COLOR0;\n"
 "#define FPROG_OUT_END           };\n"
 
+"#define DECL_SAMPLER2D(unit)    sampler2D Texture##unit;\n"
+
+"#define FP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv );\n"
 "#define FP_IN(name)             IN.##name\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
