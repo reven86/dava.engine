@@ -1,5 +1,6 @@
 <CONFIG>
 uniform sampler2D normalmap = 0
+uniform sampler2D normalmap1 = 3
 uniform sampler2D albedo = 0
 uniform samplerCube cubemap = 1
 uniform sampler2D decal = 2
@@ -37,11 +38,18 @@ varying highp vec2 varTexCoordDecal;
 
 #elif defined(PIXEL_LIT)
 
+
 uniform sampler2D normalmap; // [1]:ONCE
+uniform sampler2D normalmap1; // [1]:ONCE
 
 uniform mat3 worldInvTransposeMatrix;
 varying mediump vec3 cameraToPointInTangentSpace;
 varying mediump mat3 tbnToWorldMatrix;
+
+#if defined (DEBUG_Z_NORMAL_SCALE)
+uniform lowp float normal0_z_scale;
+uniform lowp float normal1_z_scale;
+#endif
 
 #if defined(SPECULAR)
 varying vec3 varLightVec;
@@ -123,9 +131,17 @@ void main()
 #elif defined(PIXEL_LIT)
   
     //compute normal
-    lowp vec3 normal1 = texture2D (normalmap, varTexCoord0).rgb;
-    lowp vec3 normal2 = texture2D (normalmap, varTexCoord1).rgb;
-    lowp vec3 normal = normalize (normal1 + normal2 - 1.0); //same as * 2 -2
+    lowp vec3 normal0 = texture2D (normalmap, varTexCoord0).rgb;
+    lowp vec3 normal1 = texture2D (normalmap1, varTexCoord1).rgb;    
+    #if defined (DEBUG_Z_NORMAL_SCALE)
+        normal0 = normal0 * 2.0 - 1.0;
+        normal1 = normal1 * 2.0 - 1.0;
+        normal0.xy *= normal0_z_scale;
+        normal1.xy *= normal1_z_scale;
+        lowp vec3 normal = normalize (normal0 + normal1);
+    #else    
+        lowp vec3 normal = normalize (normal0 + normal1 - 1.0); //same as * 2 -2
+    #endif
 	
 #if defined (DEBUG_UNITY_Z_NORMAL)    
 	normal = vec3(0.0,0.0,1.0);
@@ -164,7 +180,7 @@ void main()
     #if defined (SPECULAR)
         resColor+=resSpecularColor;
     #endif
-    gl_FragColor = vec4(resColor, 1.0);
+    gl_FragColor = vec4(resColor, 1.0);    
 	//gl_FragColor = vec4(vec3(normalize(eyeDist)/100.0), 1.0);
 #else
     lowp vec3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpaceNorm, normal);
