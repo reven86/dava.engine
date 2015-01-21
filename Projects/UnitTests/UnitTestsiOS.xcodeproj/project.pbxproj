@@ -530,7 +530,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
+				ARCHS = (
+					armv7,
+					armv7s,
+					i386,
+					arm64,
+				);
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -554,7 +559,7 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = armv7;
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Debug;
 		};
@@ -562,7 +567,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
+				ARCHS = (
+					armv7,
+					armv7s,
+					i386,
+					arm64,
+				);
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -584,7 +594,7 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = armv7;
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Release;
 		};
@@ -631,7 +641,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
+				ARCHS = (
+					armv7,
+					armv7s,
+					i386,
+					arm64,
+				);
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -653,7 +668,7 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = armv7;
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = AdHoc;
 		};
