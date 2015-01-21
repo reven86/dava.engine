@@ -56,6 +56,7 @@ public:
     ~DeviceListController();
 
     void SetView(DeviceListWidget *view);
+    void ShowView();
 
     // Method invoked when announce packet arrived
     void DiscoverCallback(size_t buflen, const void* buffer, const DAVA::Net::Endpoint& endpoint);
@@ -66,7 +67,6 @@ private slots:
     void OnConnectButtonPressed();
     void OnDisconnectButtonPressed();
     void OnShowLogButtonPressed();
-    void OnCloseEvent();
 
 private:
     void ConnectDeviceInternal(QModelIndex& index, size_t ifIndex);

@@ -3046,13 +3046,17 @@ void QtMainWindow::DebugColorPicker()
 
 void QtMainWindow::DebugDeviceList()
 {
-    DeviceListWidget *w = new DeviceListWidget( this );
-    w->setAttribute( Qt::WA_DeleteOnClose );
+    // Create controller and window if they are not exist
+    // Pointer deviceListController automatically becomes NULL on window destruction
+    if (nullptr == deviceListController)
+    {
+        DeviceListWidget *w = new DeviceListWidget(this);
+        w->setAttribute(Qt::WA_DeleteOnClose);
 
-    DeviceListController *c = new DeviceListController( w );
-    c->SetView( w );
-
-    w->show();
+        deviceListController = new DeviceListController(w);
+        deviceListController->SetView(w);
+    }
+    deviceListController->ShowView();
 }
 
 void QtMainWindow::OnGenerateHeightDelta()

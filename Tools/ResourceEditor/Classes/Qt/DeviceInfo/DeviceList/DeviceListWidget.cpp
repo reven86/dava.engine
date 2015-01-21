@@ -26,9 +26,3 @@ QTreeView* DeviceListWidget::ItemView()
 {
     return ui->view;
 }
-
-void DeviceListWidget::closeEvent(QCloseEvent *e)
-{
-    emit closeRequest();
-    e->ignore();
-}

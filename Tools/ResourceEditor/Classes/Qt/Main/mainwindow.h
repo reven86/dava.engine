@@ -54,6 +54,7 @@ class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
 
+class DeviceListController;
 
 class QtMainWindow
     : public QMainWindow
@@ -302,6 +303,8 @@ private:
     //Need for any debug functionality
     DeveloperTools *developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
+
+    QPointer<DeviceListController> deviceListController;
 };
 
 

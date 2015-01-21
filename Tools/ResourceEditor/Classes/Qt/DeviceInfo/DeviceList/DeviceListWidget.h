@@ -21,16 +21,12 @@ signals:
     void connectClicked();
     void disconnectClicked();
     void showLogClicked();
-    void closeRequest();
 
 public:
     explicit DeviceListWidget( QWidget *parent = NULL );
     ~DeviceListWidget();
 
     QTreeView *ItemView();
-
-private:
-    void closeEvent(QCloseEvent *e);
 
     QScopedPointer<Ui::DeviceListWidget> ui;
 };

@@ -21,7 +21,7 @@ public:
     void ShowView();
 
     virtual void ChannelOpen();
-    virtual void ChannelClosed();
+    virtual void ChannelClosed(const DAVA::char8* message);
     virtual void PacketReceived(const void* packet, size_t length);
 
 private:

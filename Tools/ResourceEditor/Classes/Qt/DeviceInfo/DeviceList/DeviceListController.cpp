@@ -33,23 +33,12 @@ DeviceListController::DeviceListController(QObject* parent)
     DAVA::Net::NetCore::Instance()->CreateDiscoverer(endpoint, DAVA::MakeFunction(this, &DeviceListController::DiscoverCallback));
 }
 
-DeviceListController::~DeviceListController() {}
-
-void DeviceListController::OnCloseEvent()
+DeviceListController::~DeviceListController()
 {
-    // Received signal to close window so destroy all network controllers
-    // When all controllers are destroyed call AllStopped method
-    NetCore::Instance()->DestroyAllControllers(MakeFunction(this, &DeviceListController::AllStopped));
-}
-
-void DeviceListController::AllStopped()
-{
-    // Call UnregisterAllServices here, not in destructor:
-    //  when closing ResourceEditor's main window while DeviceListWidget is open
-    //  NetCore destructor is called before DeviceListController's destructor
+    // Block until all controllers are destroyed
+    NetCore::Instance()->DestroyAllControllersBlocked();
     // We need to unregister services as we register them on window creation and duplicate services are not allowed
     NetCore::Instance()->UnregisterAllServices();
-    view->deleteLater();
 }
 
 void DeviceListController::SetView(DeviceListWidget* _view)
@@ -60,7 +49,17 @@ void DeviceListController::SetView(DeviceListWidget* _view)
     connect(view, &DeviceListWidget::connectClicked, this, &DeviceListController::OnConnectButtonPressed);
     connect(view, &DeviceListWidget::disconnectClicked, this, &DeviceListController::OnDisconnectButtonPressed);
     connect(view, &DeviceListWidget::showLogClicked, this, &DeviceListController::OnShowLogButtonPressed);
-    connect(view, &DeviceListWidget::closeRequest, this, &DeviceListController::OnCloseEvent);
+}
+
+void DeviceListController::ShowView()
+{
+    if (view)
+    {
+        // Here code to show view if hidden or restore view if minimized or hidden by main window
+        view->showNormal();
+        view->activateWindow();
+        view->raise();
+    }
 }
 
 IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* context)
@@ -73,8 +72,6 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* con
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
-        Logger::Debug("************ create logger service");
-
         QModelIndex index = model->index(row, 0);
         DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
         return services.log;
@@ -90,8 +87,6 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* context)
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
-        Logger::Debug("************ delete logger service");
-
         QModelIndex index = model->index(row, 0);
 
         DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
@@ -125,27 +120,18 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
         trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()));
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
-            // Temporal workaround for situation:
-            // 1. connection to device has been established and log window is on screen
-            // 2. device app exits and breaks connection
-            // 3. log window stays on screen, controller tries to establish connection
-            // 4. press 'Disconnect' button, log windows stays on screen, i.e. connection
-            //    has been broken already and DeleteLogger has been invoked, but not destroyed log window
-            // Here reuse log service and its window
-            DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            if (NULL == services.log)
-            {
-                services.log = new DeviceLogController(peer, view, this);
-            }
-
-            // Update item's ROLE_CONNECTION_ID and ROLE_PEER_SERVICES
             QStandardItem* item = model->itemFromIndex(index);
 
+            // Append prefix 'ACTIVE!' to distinguish active objects
             QString s = item->text();
             item->setText("ACTIVE! " + s);
 
+            // Update item's ROLE_CONNECTION_ID and ROLE_PEER_SERVICES
             item->setData(QVariant(static_cast<qulonglong>(trackId)), ROLE_CONNECTION_ID);
             {
+                DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+                services.log = new DeviceLogController(peer, view, this);
+
                 QVariant v;
                 v.setValue(services);
                 item->setData(v, ROLE_PEER_SERVICES);
