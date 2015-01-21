@@ -42,6 +42,7 @@ Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Fu
     , timer(ioLoop)
     , endpoint(endp)
     , announcePeriod(sendPeriod * 1000)
+    , restartDelayPeriod(3000)
     , isTerminating(false)
     , runningObjects(0)
     , dataCallback(needDataCallback)
@@ -73,8 +74,6 @@ void Announcer::Stop(Function<void (IController*)> callback)
 
 void Announcer::DoStart()
 {
-    DVASSERT(0 == runningObjects && "****** invalid call sequence");
-
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);
     if (0 == error)
     {
@@ -90,8 +89,6 @@ void Announcer::DoStart()
 
 void Announcer::DoStop()
 {
-    DVASSERT(0 == runningObjects && "****** invalid call sequence");
-
     if (true == socket.IsOpen() && false == socket.IsClosing())
     {
         runningObjects += 1;
@@ -106,8 +103,6 @@ void Announcer::DoStop()
 
 void Announcer::DoObjectClose()
 {
-    DVASSERT(runningObjects > 0 && "****** errorneous extra call");
-    
     runningObjects -= 1;
     if (0 == runningObjects)
     {
@@ -117,7 +112,7 @@ void Announcer::DoObjectClose()
         }
         else
         {
-            timer.Wait(3000, MakeFunction(this, &Announcer::TimerHandleDelay));
+            timer.Wait(restartDelayPeriod, MakeFunction(this, &Announcer::TimerHandleDelay));
         }
     }
 }

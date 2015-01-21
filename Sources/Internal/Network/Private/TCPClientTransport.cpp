@@ -44,6 +44,7 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop)
     , timer(aLoop)
     , listener(NULL)
     , readTimeout(5 * 1000)
+    , restartDelayPeriod(3000)
     , isInitiator(false)
     , isTerminating(false)
     , isConnected(false)
@@ -60,6 +61,7 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint)
     , timer(aLoop)
     , listener(NULL)
     , readTimeout(5 * 1000)
+    , restartDelayPeriod(3000)
     , isInitiator(true)
     , isTerminating(false)
     , isConnected(false)
@@ -84,7 +86,6 @@ int32 TCPClientTransport::Start(IClientListener* aListener)
 void TCPClientTransport::Stop()
 {
     DVASSERT(listener != NULL && false == isTerminating);
-    Logger::Debug("Stop: nobj=%u", runningObjects);
     isTerminating = true;
     CleanUp(0);
 }
@@ -108,19 +109,15 @@ int32 TCPClientTransport::Send(const Buffer* buffers, size_t bufferCount)
     }
     sendBufferCount = bufferCount;
 
-    int32 error = socket.Write(sendBuffers, sendBufferCount, MakeFunction(this, &TCPClientTransport::SocketHandleWrite));
-    return error;
+    return socket.Write(sendBuffers, sendBufferCount, MakeFunction(this, &TCPClientTransport::SocketHandleWrite));
 }
 
 void TCPClientTransport::DoStart()
 {
-    DVASSERT(0 == runningObjects);
-
     // Try to establish connection if connection is initiated by this
     // Otherwise connection should be already accepted
     int32 error = true == isInitiator ? socket.Connect(endpoint, MakeFunction(this, &TCPClientTransport::SocketHandleConnect))
                                       : DoConnected();
-    DVASSERT_MSG(0 == error, uv_strerror(error));
     if (error != 0)
         CleanUp(error);
 }
@@ -136,13 +133,11 @@ int32 TCPClientTransport::DoConnected()
         isConnected = true;
         listener->OnTransportConnected(this, remoteEndpoint);
     }
-    DVASSERT_MSG(0 == error, uv_strerror(error));
     return error;
 }
 
 void TCPClientTransport::CleanUp(int32 error)
 {
-    Logger::Debug("Cleanup, enter: nobj=%u, connected=%d", runningObjects, isConnected);
     if (true == isConnected)
     {
         isConnected = false;
@@ -150,7 +145,6 @@ void TCPClientTransport::CleanUp(int32 error)
         listener->OnTransportDisconnected(this, error);
     }
 
-    DVASSERT(0 == runningObjects && "****** invalid call sequence");
     if (true == socket.IsOpen() && false == socket.IsClosing())
     {
         runningObjects += 1;
@@ -161,29 +155,26 @@ void TCPClientTransport::CleanUp(int32 error)
         runningObjects += 1;
         timer.Close(MakeFunction(this, &TCPClientTransport::TimerHandleClose));
     }
-    Logger::Debug("Cleanup, exit: nobj=%u", runningObjects);
 }
 
 void TCPClientTransport::RunningObjectStopped()
 {
-    DVASSERT(runningObjects > 0);
-    Logger::Debug("RunningObjectStopped: nobj=%u", runningObjects);
     runningObjects -= 1;
-    if (runningObjects > 0) return;
-
-    if (true == isTerminating || false == isInitiator)
+    if (0 == runningObjects)
     {
-        loop->Post(MakeFunction(this, &TCPClientTransport::DoBye));
-    }
-    else if (true == isInitiator)
-    {
-        DoStart();
+        if (true == isTerminating || false == isInitiator)
+        {
+            loop->Post(MakeFunction(this, &TCPClientTransport::DoBye));
+        }
+        else if (true == isInitiator)
+        {
+            timer.Wait(restartDelayPeriod, MakeFunction(this, &TCPClientTransport::TimerHandleDelay));
+        }
     }
 }
 
 void TCPClientTransport::DoBye()
 {
-    Logger::Debug("DoBye");
     IClientListener* p = listener;
     listener = NULL;
     isTerminating = false;
@@ -198,8 +189,14 @@ void TCPClientTransport::TimerHandleClose(DeadlineTimer* timer)
 void TCPClientTransport::TimerHandleTimeout(DeadlineTimer* timer)
 {
     if (true == isTerminating) return;
+
     timer->Wait(readTimeout, MakeFunction(this, &TCPClientTransport::TimerHandleTimeout));
     listener->OnTransportReadTimeout(this);
+}
+
+void TCPClientTransport::TimerHandleDelay(DeadlineTimer* timer)
+{
+    DoStart();
 }
 
 void TCPClientTransport::SocketHandleClose(TCPSocket* socket)
@@ -214,23 +211,20 @@ void TCPClientTransport::SocketHandleConnect(TCPSocket* socket, int32 error)
     if (0 == error)
         error = DoConnected();
     if (error != 0)
-    {
-        Logger::Debug("SocketHandleConnect: %s", uv_strerror(error));
         CleanUp(error);
-    }
 }
 
 void TCPClientTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread)
 {
-    DVASSERT(false == isTerminating && true == isConnected);
+    if (false == isConnected) return;
+
     if (0 == error)
     {
-        listener->OnTransportDataReceived(this, inbuf, nread);
         timer.Wait(readTimeout, MakeFunction(this, &TCPClientTransport::TimerHandleTimeout));
+        listener->OnTransportDataReceived(this, inbuf, nread);
     }
     else
     {
-        Logger::Debug("SocketHandleRead: %s", uv_strerror(error));
         CleanUp(error);
     }
 }
@@ -246,7 +240,6 @@ void TCPClientTransport::SocketHandleWrite(TCPSocket* socket, int32 error, const
     }
     else
     {
-        Logger::Debug("SocketHandleWrite: %s", uv_strerror(error));
         CleanUp(error);
     }
 }

@@ -85,7 +85,6 @@ int32 TCPServerTransport::DoStart()
     {
         error = acceptor.StartListen(MakeFunction(this, &TCPServerTransport::AcceptorHandleConnect));
     }
-    DVASSERT(0 == error);
     return error;
 }
 
@@ -111,7 +110,9 @@ void TCPServerTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 erro
             listener->OnTransportSpawned(this, client);
         }
         else
+        {
             delete client;
+        }
     }
     // Say nothing about errors, simply wait for another connection
 }

@@ -71,6 +71,7 @@ private:
     Endpoint endpoint;
     char8 endpAsString[30];
     uint32 announcePeriod;
+    uint32 restartDelayPeriod;
     bool isTerminating;
     size_t runningObjects;
     Function<void (IController*)> stopCallback;

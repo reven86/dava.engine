@@ -67,6 +67,7 @@ private:
 
     void TimerHandleClose(DeadlineTimer* timer);
     void TimerHandleTimeout(DeadlineTimer* timer);
+    void TimerHandleDelay(DeadlineTimer* timer);
 
     void SocketHandleClose(TCPSocket* socket);
     void SocketHandleConnect(TCPSocket* socket, int32 error);
@@ -82,6 +83,7 @@ private:
     DeadlineTimer timer;
     IClientListener* listener;  // Who receive notifications; also indicator that Start has been called
     uint32 readTimeout;
+    uint32 restartDelayPeriod;
     bool isInitiator;       // true: establishes connection; false: created from accepted connection
     bool isTerminating;     // Stop has been invoked
     bool isConnected;       // Connections has been established
