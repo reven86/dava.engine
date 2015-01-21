@@ -3048,7 +3048,7 @@ void QtMainWindow::DebugDeviceList()
 {
     // Create controller and window if they are not exist
     // Pointer deviceListController automatically becomes NULL on window destruction
-    if (nullptr == deviceListController)
+    if (NULL == deviceListController)
     {
         DeviceListWidget *w = new DeviceListWidget(this);
         w->setAttribute(Qt::WA_DeleteOnClose);
