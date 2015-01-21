@@ -565,3 +565,18 @@ DAVA::AABBox3 SceneSelectionSystem::GetSelectionAABox(DAVA::Entity *entity, cons
 
 	return ret;
 }
+
+void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
+{
+    componentMaskForSelection = mask;
+
+    if(curSelections.Size())
+    {
+        Clear();
+    }
+    else
+    {
+        selectionHasChanges = true; // magic to say to selectionModel() of scene tree to reset selection
+    }
+}
+

@@ -146,14 +146,9 @@ private:
 
 inline void SceneSelectionSystem::ResetSelectionComponentMask()
 {
-    componentMaskForSelection = ALL_COMPONENTS_MASK;
+    SetSelectionComponentMask(ALL_COMPONENTS_MASK);
 }
 
-
-inline void SceneSelectionSystem::SetSelectionComponentMask(DAVA::uint64 mask)
-{
-    componentMaskForSelection = mask;
-}
 
 inline DAVA::uint64 SceneSelectionSystem::GetSelectionComponentMask() const
 {
