@@ -66,6 +66,7 @@ public:
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     void DestroyController(TrackId id);
     void DestroyAllControllers(Function<void ()> callback);
+    void DestroyAllControllersBlocked();
 
     int32 Run();
     int32 Poll();
@@ -91,6 +92,7 @@ private:
     ServiceRegistrar registrar;
     Function<void ()> controllersStoppedCallback;
     bool isFinishing;
+    volatile bool allStopped;                       // Flag indicating that all controllers are stopped; used in DestroyAllControllersBlocked
 };
 
 //////////////////////////////////////////////////////////////////////////

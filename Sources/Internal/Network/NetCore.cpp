@@ -44,6 +44,7 @@ namespace Net
 NetCore::NetCore()
     : loop(true)
     , isFinishing(false)
+    , allStopped(false)
 {
 }
 
@@ -86,7 +87,8 @@ NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<vo
 
 void NetCore::DestroyController(TrackId id)
 {
-    DVASSERT(false == isFinishing && GetTrackedObject(id) != NULL);
+    DVASSERT(false == isFinishing);
+    DVASSERT(GetTrackedObject(id) != NULL);
     loop.Post(Bind(MakeFunction(this, &NetCore::DoDestroy), id));
 }
 
@@ -96,6 +98,18 @@ void NetCore::DestroyAllControllers(Function<void ()> callback)
 
     controllersStoppedCallback = callback;
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
+}
+
+void NetCore::DestroyAllControllersBlocked()
+{
+    DVASSERT(false == isFinishing && false == allStopped && controllersStoppedCallback == 0);
+    loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
+
+    // Block until all controllers are stopped and destroyed
+    do {
+        Poll();
+    } while(false == allStopped);
+    allStopped = false;
 }
 
 void NetCore::Finish(bool runOutLoop)
@@ -141,6 +155,7 @@ void NetCore::DoDestroyAll()
 
 void NetCore::AllDestroyed()
 {
+    allStopped = true;
     if (controllersStoppedCallback != 0)
     {
         controllersStoppedCallback();
@@ -167,7 +182,7 @@ void NetCore::TrackedObjectStopped(IController* obj)
         delete obj;
     }
 
-    if (true == dyingObjects.empty())
+    if (true == dyingObjects.empty() && true == trackedObjects.empty())
     {
         AllDestroyed();
     }
