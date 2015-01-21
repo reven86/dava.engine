@@ -241,10 +241,10 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     if (textBlock->GetFont()->GetFontType() != Font::TYPE_FT)
     {
         // Correct rect and setup position and scale for NON freetype fonts
-        textBlockRect.x = textBlockRect.x - pivotPoint.x * scale.x;
-        textBlockRect.y = textBlockRect.y - pivotPoint.y * scale.y;
-        textBlockRect.dx *= scale.dx;
-        textBlockRect.dy *= scale.dy;
+        textBlockRect.x = textBlockRect.x - pivotPoint.x * geometricData.scale.x;
+        textBlockRect.y = textBlockRect.y - pivotPoint.y * geometricData.scale.y;
+        textBlockRect.dx *= geometricData.scale.dx;
+        textBlockRect.dy *= geometricData.scale.dy;
         textBlock->SetScale(geometricData.scale);
     }
     textBlock->SetRectSize(textBlockRect.GetSize());
