@@ -184,7 +184,7 @@ SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 {
 //    L_ASSERT(tex);
 
-    if( tex )
+    if( tex != InvalidHandle )
         CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_TEXTURE, unitIndex, tex );
 }
 
@@ -486,6 +486,12 @@ SCOPED_NAMED_TIMING("CommandBuffer_t::Replay");
                 fp_const[ arg[0] ]      = (Handle)(arg[1]);
                 fp_const_data[ arg[0] ] = (void*)(arg[2]);
                 c += 3;
+            }   break;
+
+            case GLES2__SET_TEXTURE :
+            {
+                TextureGLES2::SetToRHI( (Handle)(arg[1]), unsigned(arg[0]) );
+                c += 2;    
             }   break;
             
             case GLES2__DRAW_PRIMITIVE :

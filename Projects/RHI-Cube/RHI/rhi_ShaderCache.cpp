@@ -267,6 +267,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_OUT_BEGIN         \n"
 "#define VPROG_OUT_POSITION      \n"
 "#define VPROG_OUT_TEXCOORD0(name,size)    varying vec##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD1(name,size)    varying vec##size var_##name;\n"
 "#define VPROG_OUT_END           \n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform vec4 VP_Buffer##idx[sz];\n"
@@ -285,12 +286,16 @@ static const char* _ShaderDefine_GLES2 =
 
 "#define FPROG_IN_BEGIN          \n"
 "#define FPROG_IN_TEXCOORD0(name,size)    varying vec##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD1(name,size)    varying vec##size var_##name;\n"
 "#define FPROG_IN_END            \n"
 
 "#define FPROG_OUT_BEGIN         \n"
 "#define FPROG_OUT_COLOR         \n"
 "#define FPROG_OUT_END           \n"
+    
+"#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
 
+"#define FP_TEXTURE2D(unit,uv)   texture2D( Texture##unit, uv );\n"
 "#define FP_IN(name)             var_##name\n"
 
 "#define FP_OUT_COLOR            gl_FragColor\n"
@@ -344,7 +349,7 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_OUT_COLOR         float4 color : COLOR0;\n"
 "#define FPROG_OUT_END           };\n"
 
-"#define DECL_SAMPLER2D(unit)    sampler2D Texture##unit;\n"
+"#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
 
 "#define FP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv );\n"
 "#define FP_IN(name)             IN.##name\n"

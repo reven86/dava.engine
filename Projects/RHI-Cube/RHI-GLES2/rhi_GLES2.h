@@ -46,6 +46,10 @@ namespace IndexBufferGLES2
 void    SetToRHI( Handle vb );
 }
 
+namespace TextureGLES2
+{ 
+void    SetToRHI( Handle tex, unsigned unit_i );
+}
 
 namespace PipelineStateGLES2
 {

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8765D2A71A6FD5E300B54EB7 /* rhi_TextureGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8765D2A61A6FD5E300B54EB7 /* rhi_TextureGLES2.cpp */; };
 		879FCA061A4945F20057D86C /* _gl.h in Headers */ = {isa = PBXBuildFile; fileRef = 879FC9FD1A4945F20057D86C /* _gl.h */; };
 		879FCA071A4945F20057D86C /* rhi_CommandBufferGLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 879FC9FE1A4945F20057D86C /* rhi_CommandBufferGLES2.cpp */; };
 		879FCA081A4945F20057D86C /* rhi_GLES2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 879FC9FF1A4945F20057D86C /* rhi_GLES2.cpp */; };
@@ -19,6 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8765D2A61A6FD5E300B54EB7 /* rhi_TextureGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_TextureGLES2.cpp; path = "../RHI-GLES2/rhi_TextureGLES2.cpp"; sourceTree = "<group>"; };
 		879FC9EC1A4945460057D86C /* libRHI-GLES2-MacOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libRHI-GLES2-MacOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		879FC9FD1A4945F20057D86C /* _gl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = _gl.h; path = "../RHI-GLES2/_gl.h"; sourceTree = "<group>"; };
 		879FC9FE1A4945F20057D86C /* rhi_CommandBufferGLES2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_CommandBufferGLES2.cpp; path = "../RHI-GLES2/rhi_CommandBufferGLES2.cpp"; sourceTree = "<group>"; };
@@ -46,6 +48,7 @@
 		879FC9E31A4945460057D86C = {
 			isa = PBXGroup;
 			children = (
+				8765D2A61A6FD5E300B54EB7 /* rhi_TextureGLES2.cpp */,
 				879FCA281A4990EC0057D86C /* libc++.dylib */,
 				879FC9FD1A4945F20057D86C /* _gl.h */,
 				879FC9FE1A4945F20057D86C /* rhi_CommandBufferGLES2.cpp */,
@@ -140,6 +143,7 @@
 				879FCA0C1A4945F20057D86C /* rhi_ProgGLES2.cpp in Sources */,
 				879FCA0E1A4945F20057D86C /* rhi_VertexBufferGLES2.cpp in Sources */,
 				879FCA071A4945F20057D86C /* rhi_CommandBufferGLES2.cpp in Sources */,
+				8765D2A71A6FD5E300B54EB7 /* rhi_TextureGLES2.cpp in Sources */,
 				879FCA0B1A4945F20057D86C /* rhi_PipelineStateGLES2.cpp in Sources */,
 				879FCA0A1A4945F20057D86C /* rhi_IndexBufferGLES2.cpp in Sources */,
 				879FCA081A4945F20057D86C /* rhi_GLES2.cpp in Sources */,
@@ -288,6 +292,7 @@
 				879FC9F21A4945460057D86C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
