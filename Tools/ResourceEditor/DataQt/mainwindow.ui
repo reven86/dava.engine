@@ -411,6 +411,7 @@
     <addaction name="actionRulerTool"/>
     <addaction name="actionCustomColorsEditor"/>
     <addaction name="actionVisibilityCheckTool"/>
+    <addaction name="actionWayEditor"/>
     <addaction name="menuLandscape_2"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
@@ -422,6 +423,8 @@
     <addaction name="menuObjectTypes"/>
     <addaction name="actionHangingObjects"/>
     <addaction name="actionSwitchesWithDifferentLODs"/>
+    <addaction name="separator"/>
+    <addaction name="actionSnapCameraToLandscape"/>
    </widget>
    <widget class="QMenu" name="menuQuality">
     <property name="title">
