@@ -32,6 +32,7 @@
 #include <Debug/DVAssert.h>
 
 #include <Network/Base/IOLoop.h>
+#include <Network/Base/NetworkUtils.h>
 #include <Network/ServiceRegistrar.h>
 #include <Network/NetConfig.h>
 
@@ -190,6 +191,7 @@ void NetController::OnTransportTerminated(IClientTransport* tr)
     List<ClientEntry>::iterator i = std::find(clients.begin(), clients.end(), tr);
     DVASSERT(i != clients.end());
     ClientEntry& entry = *i;
+    entry.driver->ReleaseServices();
 
     if (SERVER_ROLE == role)
     {
@@ -204,8 +206,6 @@ void NetController::OnTransportTerminated(IClientTransport* tr)
     }
     else
     {
-        entry.driver->ReleaseServices();
-
         DVASSERT(runningObjects > 0);
         runningObjects -= 1;
         if (0 == runningObjects)
@@ -222,7 +222,7 @@ void NetController::OnTransportConnected(IClientTransport* tr, const Endpoint& e
 void NetController::OnTransportDisconnected(IClientTransport* tr, int32 error)
 {
     DVASSERT(GetClientEntry(tr) != NULL);
-    GetClientEntry(tr)->driver->OnDisconnected();
+    GetClientEntry(tr)->driver->OnDisconnected(error ? ErrorToString(error) : "");
 }
 
 void NetController::OnTransportDataReceived(IClientTransport* tr, const void* buffer, size_t length)

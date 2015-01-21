@@ -46,13 +46,13 @@ public:
 
     // IChannelListener
     virtual void OnChannelOpen(IChannel* aChannel);
-    virtual void OnChannelClosed(IChannel* aChannel);
+    virtual void OnChannelClosed(IChannel* aChannel, const char8* message);
     virtual void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length);
     virtual void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length);
     virtual void OnPacketDelivered(IChannel* aChannel, uint32 packetId);
 
     virtual void ChannelOpen() {}
-    virtual void ChannelClosed() {}
+    virtual void ChannelClosed(const char8* message) {}
     virtual void PacketReceived(const void* packet, size_t length) {}
     virtual void PacketSent() {}
     virtual void PacketDelivered() {}

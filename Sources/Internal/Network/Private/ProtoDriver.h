@@ -93,7 +93,7 @@ public:
     void ReleaseServices();
 
     void OnConnected(const Endpoint& endp);
-    void OnDisconnected();
+    void OnDisconnected(const char* message);
     bool OnDataReceived(const void* buffer, size_t length);
     void OnSendComplete();
     bool OnTimeout();
