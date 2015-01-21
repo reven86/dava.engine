@@ -237,11 +237,18 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         UIControl::Draw(geometricData);
         return;
     }
-	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
+	Rect textBlockRect = CalculateTextBlockRect(geometricData);
+    if (textBlock->GetFont()->GetFontType() != Font::TYPE_FT)
+    {
+        // Correct rect and setup position and scale for NON freetype fonts
+        textBlockRect.x = textBlockRect.x - pivotPoint.x * scale.x;
+        textBlockRect.y = textBlockRect.y - pivotPoint.y * scale.y;
+        textBlockRect.dx *= scale.dx;
+        textBlockRect.dy *= scale.dy;
+        textBlock->SetScale(geometricData.scale);
+    }
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());
-
-	textBlock->SetPivotPoint(geometricData.pivotPoint);
 	textBlock->PreDraw();
 	PrepareSprite();
 
@@ -251,6 +258,12 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 	textGeomData.position = textBlock->GetSpriteOffset();
 	textGeomData.size = GetSize();
     textGeomData.AddGeometricData(geometricData);
+
+    if (textBlock->GetFont()->GetFontType() != Font::TYPE_FT)
+    {
+        // Clear scale for draw FBO with text, because scale already included in font and sprite size
+        textGeomData.scale = Vector2(); 
+    }
 
     if(!FLOAT_EQUAL(shadowBg->GetDrawColor().a, 0.0f) && (!FLOAT_EQUAL(shadowOffset.dx, 0.0f) || !FLOAT_EQUAL(shadowOffset.dy, 0.0f)))
     {
@@ -589,7 +602,6 @@ Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) 
         resultRect.dx -= (margins->right + margins->left);
         resultRect.dy -= (margins->bottom + margins->top);
     }
-
     return resultRect;
 }
 
