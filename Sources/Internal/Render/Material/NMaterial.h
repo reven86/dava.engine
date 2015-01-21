@@ -239,6 +239,7 @@ public:
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
+    static const FastName FLAG_DEBUG_Z_NORMAL_SCALE;
 
     static const FastName FLAG_SKINNING;
     
