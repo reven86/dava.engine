@@ -259,12 +259,6 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 	textGeomData.size = GetSize();
     textGeomData.AddGeometricData(geometricData);
 
-    if (textBlock->GetFont()->GetFontType() != Font::TYPE_FT)
-    {
-        // Clear scale for draw FBO with text, because scale already included in font and sprite size
-        textGeomData.scale = Vector2(); 
-    }
-
     if(!FLOAT_EQUAL(shadowBg->GetDrawColor().a, 0.0f) && (!FLOAT_EQUAL(shadowOffset.dx, 0.0f) || !FLOAT_EQUAL(shadowOffset.dy, 0.0f)))
     {
 		textBlock->Draw(shadowBg->GetDrawColor(), &shadowOffset);
