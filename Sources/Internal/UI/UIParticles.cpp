@@ -34,6 +34,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Core/Core.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA {
 
@@ -225,6 +226,8 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
     system->Process(updateTime);
     updateTime = 0;    		        
     
+    RenderSystem2D::Instance()->UpdateClip();
+
     effect->effectRenderObject->PrepareToRender(defaultCamera.camera);
     for (int32 i=0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i<sz; ++i)
         effect->effectRenderObject->GetActiveRenderBatch(i)->Draw(PASS_FORWARD, defaultCamera.camera);

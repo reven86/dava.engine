@@ -38,6 +38,7 @@ ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
 LOCAL_ARM_NEON := true
 LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
 endif
+LOCAL_CFLAGS += -std=c++11
 
 # set included libraries
 LOCAL_STATIC_LIBRARIES := libInternal

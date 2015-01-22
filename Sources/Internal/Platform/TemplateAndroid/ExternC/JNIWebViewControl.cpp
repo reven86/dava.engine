@@ -30,6 +30,7 @@
 
 #include "AndroidLayer.h"
 #include "WebViewControl.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 extern "C"
 {
@@ -37,7 +38,7 @@ extern "C"
 	{
 		int res = 0;
 		char url[1024];
-		CreateStringFromJni(env, jUrl, url);
+		DAVA::JNI::CreateStringFromJni(env, jUrl, url);
 		res = DAVA::JniWebView::URLChanged(id, url);
 		return res;
 	}
@@ -50,7 +51,7 @@ extern "C"
 	void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, int requestId, jstring jResult)
 	{
 		char resultStr[1024];
-		CreateStringFromJni(env, jResult, resultStr);
+		DAVA::JNI::CreateStringFromJni(env, jResult, resultStr);
 
 		DAVA::JniWebView::OnExecuteJScript(id, requestId, resultStr);
 	}
