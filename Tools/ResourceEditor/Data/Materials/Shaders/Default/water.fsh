@@ -70,8 +70,9 @@ uniform lowp float eta;
 #endif
 
 #if defined(SPECULAR)
-uniform mediump float materialSpecularShininess;
-uniform lowp vec3 materialLightSpecularColor;    // engine pass premultiplied material * light specular color
+uniform lowp vec3 lightColor0;   
+uniform float inGlossiness;
+uniform float inSpecularity;
 #endif
 
 #if defined (REAL_REFLECTION)
@@ -153,7 +154,13 @@ void main()
     lowp float fresnel = FresnelShlick(lambertFactor, fresnelBias, fresnelPow);
 #if defined (SPECULAR)
     lowp vec3 halfVec = normalize(normalize(varLightVec)-cameraToPointInTangentSpaceNorm);
-    lowp vec3 resSpecularColor = pow (max (dot (halfVec, normal), 0.0), materialSpecularShininess) * materialLightSpecularColor;
+    //lowp vec3 resSpecularColor = pow (max (dot (halfVec, normal), 0.0), materialSpecularShininess) * lightColor0;
+    
+    float glossPower = pow(5000.0, inGlossiness); //textureColor0.a;
+    float specularNorm = (glossPower + 2.0) / 8.0;
+    float specularNormalized = specularNorm * pow(max (dot (halfVec, normal), 0.0), glossPower) * inSpecularity;
+    float specular = specularNormalized  * fresnel;
+    lowp vec3 resSpecularColor = lightColor0*specular;
 #endif
 
     //compute reflection
@@ -178,7 +185,8 @@ void main()
     #endif	    
     lowp vec3 resColor = mix(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor, fresnel);
     #if defined (SPECULAR)
-        resColor+=resSpecularColor;
+        resColor+=resSpecularColor*reflectionColor;
+        //resColor+=saturate(resSpecularColor)*reflectionColor;
     #endif
     gl_FragColor = vec4(resColor, 1.0);    
 	//gl_FragColor = vec4(vec3(normalize(eyeDist)/100.0), 1.0);
