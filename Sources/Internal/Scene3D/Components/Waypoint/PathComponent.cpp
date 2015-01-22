@@ -114,6 +114,36 @@ void PathComponent::Edge::SetProperties(KeyedArchive* p)
     }
 }
 
+void PathComponent::Edge::SetDestinationName(const FastName & name)
+{
+    //do nothing
+}
+
+const FastName PathComponent::Edge::GetDestinationName() const
+{
+    if(destination)
+    {
+        return destination->name;
+    }
+    
+    return FastName();
+}
+
+void PathComponent::Edge::SetDestinationPoint(const Vector3 & point)
+{
+    //do nothing
+}
+
+const Vector3 PathComponent::Edge::GetDestinationPoint() const
+{
+    if(destination)
+    {
+        return destination->position;
+    }
+    
+    return Vector3();
+}
+
     
     
 //== PathComponent ==

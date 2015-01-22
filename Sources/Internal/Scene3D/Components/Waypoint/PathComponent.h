@@ -84,12 +84,20 @@ public:
     private:
         KeyedArchive* properties;
 
+        //For property panel
+        void SetDestinationName(const FastName & name);
+        const FastName GetDestinationName() const;
+        
+        void SetDestinationPoint(const Vector3 & point);
+        const Vector3 GetDestinationPoint() const;
+        
     public:
         void SetProperties(KeyedArchive* p);
         KeyedArchive* GetProperties() const;
         
         INTROSPECTION(Edge,
-            MEMBER(destination, "Destination", I_SAVE | I_EDIT | I_VIEW)
+            PROPERTY("DestinationName", "Destination Name", GetDestinationName, SetDestinationName, I_VIEW)
+            PROPERTY("DestinationPoint", "Destination Point", GetDestinationPoint, SetDestinationPoint, I_VIEW)
             MEMBER(properties, "Edge Properties", I_SAVE | I_EDIT | I_VIEW)
         );
     };
