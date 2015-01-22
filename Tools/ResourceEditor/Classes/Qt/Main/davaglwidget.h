@@ -79,6 +79,8 @@ private:
 	virtual void dragEnterEvent(QDragEnterEvent *);
 
     virtual void changeEvent(QEvent *e);
+    virtual void enterEvent(QEvent *e);
+    virtual void leaveEvent(QEvent *e);
     
 #if defined (Q_OS_MAC)
     virtual void mouseMoveEvent(QMouseEvent *);
@@ -87,9 +89,13 @@ private:
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
+    void RegisterEventFilter();
+    void UnregisterEventFilter();
+
 	int maxFPS;
     int minFrameTimeMs;
 	int fps;
+    int eventFilterCount;
 
 	qint64 fpsCountTime;
 	int fpsCount;
