@@ -179,7 +179,7 @@ void NetCore::TrackedObjectStopped(IController* obj)
     DVASSERT(dyingObjects.find(obj) != dyingObjects.end());
     if (dyingObjects.erase(obj) > 0)    // erase returns number of erased elements
     {
-        delete obj;
+        SafeDelete(obj);
     }
 
     if (true == dyingObjects.empty() && true == trackedObjects.empty())

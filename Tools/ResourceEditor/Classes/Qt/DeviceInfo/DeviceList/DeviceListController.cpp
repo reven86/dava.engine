@@ -89,11 +89,12 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* context)
     {
         QModelIndex index = model->index(row, 0);
 
-        DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-        SafeDelete(services.log);
-
         QStandardItem* item = model->itemFromIndex(index);
+        if (item != NULL)
         {
+            DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+            SafeDelete(services.log);
+
             QVariant v;
             v.setValue(services);
             item->setData(v, ROLE_PEER_SERVICES);
@@ -121,6 +122,7 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
             QStandardItem* item = model->itemFromIndex(index);
+            if (NULL == item) return;
 
             // Append prefix 'ACTIVE!' to distinguish active objects
             QString s = item->text();
@@ -148,6 +150,8 @@ void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
 
     // Cleare item's ROLE_CONNECTION_ID to 
     QStandardItem* item = model->itemFromIndex(index);
+    if (NULL == item) return;
+
     item->setData(QVariant(static_cast<qulonglong>(NetCore::INVALID_TRACK_ID)), ROLE_CONNECTION_ID);
     // And destroy controller related to remote device
     DAVA::Net::NetCore::Instance()->DestroyController(trackId);

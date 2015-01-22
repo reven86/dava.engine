@@ -43,6 +43,8 @@ class IOLoop;
 
 class Announcer : public IController
 {
+    static const uint32 RESTART_DELAY_PERIOD = 3000;
+
 public:
     Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
     virtual ~Announcer();
@@ -71,7 +73,6 @@ private:
     Endpoint endpoint;
     char8 endpAsString[30];
     uint32 announcePeriod;
-    uint32 restartDelayPeriod;
     bool isTerminating;
     size_t runningObjects;
     Function<void (IController*)> stopCallback;

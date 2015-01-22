@@ -44,7 +44,6 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop)
     , timer(aLoop)
     , listener(NULL)
     , readTimeout(5 * 1000)
-    , restartDelayPeriod(3000)
     , isInitiator(false)
     , isTerminating(false)
     , isConnected(false)
@@ -61,7 +60,6 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint)
     , timer(aLoop)
     , listener(NULL)
     , readTimeout(5 * 1000)
-    , restartDelayPeriod(3000)
     , isInitiator(true)
     , isTerminating(false)
     , isConnected(false)
@@ -168,7 +166,7 @@ void TCPClientTransport::RunningObjectStopped()
         }
         else if (true == isInitiator)
         {
-            timer.Wait(restartDelayPeriod, MakeFunction(this, &TCPClientTransport::TimerHandleDelay));
+            timer.Wait(RESTART_DELAY_PERIOD, MakeFunction(this, &TCPClientTransport::TimerHandleDelay));
         }
     }
 }

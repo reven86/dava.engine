@@ -41,7 +41,6 @@ Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size
     , socket(ioLoop)
     , timer(ioLoop)
     , endpoint(endp)
-    , restartDelayPeriod(3000)
     , isTerminating(false)
     , runningObjects(0)
     , dataCallback(dataReadyCallback)
@@ -111,7 +110,7 @@ void Discoverer::DoObjectClose()
         }
         else
         {
-            timer.Wait(restartDelayPeriod, MakeFunction(this, &Discoverer::TimerHandleDelay));
+            timer.Wait(RESTART_DELAY_PERIOD, MakeFunction(this, &Discoverer::TimerHandleDelay));
         }
     }
 }

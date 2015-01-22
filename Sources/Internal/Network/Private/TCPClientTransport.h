@@ -43,6 +43,8 @@ namespace Net
 class IOLoop;
 class TCPClientTransport : public IClientTransport
 {
+    static const uint32 RESTART_DELAY_PERIOD = 3000;
+
 public:
     // Constructor for accepted connection
     TCPClientTransport(IOLoop* aLoop);
@@ -83,7 +85,6 @@ private:
     DeadlineTimer timer;
     IClientListener* listener;  // Who receive notifications; also indicator that Start has been called
     uint32 readTimeout;
-    uint32 restartDelayPeriod;
     bool isInitiator;       // true: establishes connection; false: created from accepted connection
     bool isTerminating;     // Stop has been invoked
     bool isConnected;       // Connections has been established

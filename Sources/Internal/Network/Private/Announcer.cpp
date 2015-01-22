@@ -42,7 +42,6 @@ Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Fu
     , timer(ioLoop)
     , endpoint(endp)
     , announcePeriod(sendPeriod * 1000)
-    , restartDelayPeriod(3000)
     , isTerminating(false)
     , runningObjects(0)
     , dataCallback(needDataCallback)
@@ -112,7 +111,7 @@ void Announcer::DoObjectClose()
         }
         else
         {
-            timer.Wait(restartDelayPeriod, MakeFunction(this, &Announcer::TimerHandleDelay));
+            timer.Wait(RESTART_DELAY_PERIOD, MakeFunction(this, &Announcer::TimerHandleDelay));
         }
     }
 }

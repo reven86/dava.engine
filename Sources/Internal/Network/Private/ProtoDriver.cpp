@@ -159,15 +159,6 @@ void ProtoDriver::OnDisconnected(const char* message)
         }
     }
     ClearQueues();
-    /*if (CLIENT_ROLE == role) return;
-    for (size_t i = 0, n = channels.size();i < n;++i)
-    {
-        if (channels[i].service != NULL)
-        {
-            registrar.Delete(channels[i].channelId, channels[i].service, serviceContext);
-            channels[i].service = NULL;
-        }
-    }*/
 }
 
 bool ProtoDriver::OnDataReceived(const void* buffer, size_t length)
@@ -306,7 +297,8 @@ bool ProtoDriver::ProcessChannelAllow(ProtoDecoder::DecodeResult* result)
         ch->service->OnChannelOpen(ch);
         return true;
     }
-    DVASSERT(0);
+    DVASSERT(ch != NULL);
+    DVASSERT(ch->service != NULL);
     return false;
 }
 
@@ -321,7 +313,8 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
         ch->service->OnChannelClosed(ch, "Remote service is unavailable");
         return true;
     }
-    DVASSERT(0);
+    DVASSERT(ch != NULL);
+    DVASSERT(ch->service != NULL);
     return false;
 }
 

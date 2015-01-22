@@ -111,7 +111,7 @@ void TCPServerTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 erro
         }
         else
         {
-            delete client;
+            SafeDelete(client);
         }
     }
     // Say nothing about errors, simply wait for another connection
