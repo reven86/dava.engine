@@ -28,30 +28,32 @@
 
 
 
-#ifndef __DAVAENGINE_DVASSERT_MESSAGE_ANDROID_H__
-#define __DAVAENGINE_DVASSERT_MESSAGE_ANDROID_H__
+#ifndef __JNI_TEST_H__
+#define __JNI_TEST_H__
 
-#include "Base/BaseTypes.h"
-#ifdef __DAVAENGINE_ANDROID__
-#include "JniExtensions.h"
+#include "DAVAEngine.h"
+using namespace DAVA;
+#if defined(__DAVAENGINE_ANDROID__)
 
-namespace DAVA {
+#include "TestTemplate.h"
 
-class JniDVAssertMessage: public JniExtension
+class JNITest : public TestTemplate<JNITest>
 {
-public:
-	void ShowMessage(const char* message);
-
 protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
+    ~JNITest(){}
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+    JNITest();
+
+	virtual void LoadResources();
+	virtual void UnloadResources();
+
+	void ThreadFunc(BaseObject * caller, void * callerData, void * userData);
+    void TestFunction(PerfFuncData * data);
+
+private:
+    JNI::JavaClass javaNotificationProvider;
+    Function<void (jstring, jstring, jstring)> showNotificationText;
 };
 
-};
-#endif //__DAVAENGINE_ANDROID__
-
-#endif // __DAVAENGINE_DVASSERT_MESSAGE_ANDROID_H__
+#endif
+#endif // __THREAD_SYNC_TEST_H__

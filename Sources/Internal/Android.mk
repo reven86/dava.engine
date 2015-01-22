@@ -106,6 +106,8 @@ LOCAL_CFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
 LOCAL_CPPFLAGS += -std=c++1y
 
+LOCAL_CPP_FEATURES += exceptions
+
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
 $(info ==============)

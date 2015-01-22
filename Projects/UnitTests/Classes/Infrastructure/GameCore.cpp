@@ -50,6 +50,8 @@
 #include "Tests/KeyedArchiveYamlTest.h"
 #include "Tests/JobManagerTest.h"
 #include "Tests/Cpp14.h"
+#include "Tests/JNITest.h"
+//$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
 {
@@ -63,6 +65,9 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+#if defined(__DAVAENGINE_ANDROID__)
+	new JNITest();
+#endif
     new MathTest();
     new FunctionBindSignalTest();
     new ImageSizeTest();
