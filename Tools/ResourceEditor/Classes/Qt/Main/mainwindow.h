@@ -267,7 +267,6 @@ private:
 	QList<QAction *> recentScenes;
 	ModificationWidget *modificationWidget;
 
-	QtLabelWithActions *objectTypesLabel;
     QComboBox *objectTypesWidget;
 
 	AddSwitchEntityDialog*	addSwitchEntityDialog;
