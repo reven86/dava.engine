@@ -51,6 +51,7 @@
 #include "Tests/JobManagerTest.h"
 #include "Tests/Cpp14.h"
 #include "Tests/JNITest.h"
+#include "Tests/DataVaultTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -65,6 +66,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new DataVaultTest();
 #if defined(__DAVAENGINE_ANDROID__)
 	new JNITest();
 #endif

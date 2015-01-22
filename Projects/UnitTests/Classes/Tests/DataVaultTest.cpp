@@ -31,7 +31,7 @@
 #include "DataVault/DataVault.h"
 
 DataVaultTest::DataVaultTest()
-    : TestTemplate<DataVaultTest>("LocalizationTest")
+    : TestTemplate<DataVaultTest>("DataVaultTest")
 {
     RegisterFunction(this, &DataVaultTest::TestFunction, "TestFunction", NULL);
 }
@@ -52,5 +52,18 @@ void DataVaultTest::Draw(const DAVA::UIGeometricData &geometricData)
 
 void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data)
 {
+    Logger::Warning("____________");
     DataStorage *storage = DataVault::GetStorage(DataStorage::CLOUD);
+
+    storage->Clear();
+    storage->Push();
+    storage->SetEntryValue("Test", "Test");
+    String ret = storage->GetEntryValue("Test");
+    TEST_VERIFY("Test" != ret);
+    storage->Push();
+    ret = storage->GetEntryValue("Test");
+    TEST_VERIFY("Test" == ret);
+
+    SafeRelease(storage);
+    Logger::Warning("____________");
 }

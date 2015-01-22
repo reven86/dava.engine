@@ -32,35 +32,35 @@
 namespace DAVA
 {
 
-DataStorage::DataStorage(Type preferredType)
-{
-    type = preferredType;
-}
-
 DataStorage::~DataStorage()
 {
     SafeDelete(impl);
     DataVault::RemoveStorage(type);
 }
 
-void DataStorage::SetEntry(String &key, String &value)
+String DataStorage::GetEntryValue(const String &key)
 {
-
+    return impl->GetEntryValue(key);
 }
 
-void DataStorage::RemoveEntry(String &key)
+void DataStorage::SetEntryValue(const String &key, const String &value)
 {
+    impl->SetEntryValue(key, value);
+}
 
+void DataStorage::RemoveEntry(const String &key)
+{
+    impl->RemoveEntry(key);
 }
 
 void DataStorage::Clear()
 {
-
+    impl->Clear();
 }
 
 void DataStorage::Push()
 {
-
+    impl->Push();
 }
 
 }

@@ -31,6 +31,7 @@
 #define __SHARED_PREFERENCES_H__
 
 #include "DataVault/DataStorage.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -38,10 +39,27 @@ namespace DAVA
 class SharedPreferences : public IDataStorage
 {
 public:
-    void SetEntry(String &key, String &value) override;
-    void RemoveEntry(String &key) override;
+    SharedPreferences();
+    ~SharedPreferences();
+
+public: // IDataStorage implementation
+    String GetEntryValue(const String &key) override;
+    void SetEntryValue(const String &key, const String &value) override;
+    void RemoveEntry(const String &key) override;
     void Clear() override;
     void Push() override;
+
+private:
+    JNI::JavaClass jniSharedPreferences;
+    Function<jobject (jstring, jint)> getSharedPreferences;
+
+    jobject preferencesObject;
+
+    Function<void (jstring, jstring)> putString;
+    Function<jstring (jstring, jstring)> getString;
+    Function<void (jstring)> remove;
+    Function<void (void)> clear;
+    Function<void (void)> push;
 };
 
 } //namespace DAVA

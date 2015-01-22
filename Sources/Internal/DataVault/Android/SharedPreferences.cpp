@@ -31,24 +31,91 @@
 namespace DAVA
 {
 
-void SharedPreferences::SetEntry(String &key, String &value)
+SharedPreferences::SharedPreferences()
+    : jniSharedPreferences("com/dava/framework/JNISharedPreferences")
 {
+    getSharedPreferences = jniSharedPreferences.GetStaticMethod<jobject, jstring, jint>("GetSharedPreferences");
+
+    String name = "SharedPreferences";
+    JNIEnv *env = JNI::GetEnv();
+    jstring jname = env->NewStringUTF(name.c_str());
+    jobject tmp = getSharedPreferences(jname, 0);
+    env->DeleteLocalRef(jname);
+    preferencesObject = env->NewGlobalRef(tmp);
+    env->DeleteLocalRef(tmp);
+
+
+    auto tempPutString = jniSharedPreferences.GetMethod<void, jstring, jstring>("PutString");
+    putString = Bind(tempPutString, preferencesObject, _1, _2);
+
+    auto tempGetString = jniSharedPreferences.GetMethod<jstring, jstring, jstring>("GetString");
+    getString = Bind(tempGetString, preferencesObject, _1, _2);
+
+    auto tempRemove = jniSharedPreferences.GetMethod<void, jstring>("Remove");
+    remove = Bind(tempRemove, preferencesObject, _1);
+
+    auto tempClear = jniSharedPreferences.GetMethod<void>("Clear");
+    clear = Bind(tempClear, preferencesObject);
+
+    auto tempPush = jniSharedPreferences.GetMethod<void>("Push");
+    push = Bind(tempPush, preferencesObject);
 
 }
 
-void SharedPreferences::RemoveEntry(String &key)
+SharedPreferences::~SharedPreferences()
 {
+    JNI::GetEnv()->DeleteGlobalRef(preferencesObject);
+}
 
+String SharedPreferences::GetEntryValue(const String &key)
+{
+    Logger::FrameworkDebug("Trying to Get value for %s key", key.c_str());
+
+    JNIEnv *env = JNI::GetEnv();
+
+    jstring jkey = env->NewStringUTF(key.c_str());
+    jstring jdefvalue = env->NewStringUTF("");
+
+    jstring jvalue = getString(jkey, jdefvalue);
+
+    String retValue;
+    JNI::CreateStringFromJni(env, jvalue, retValue);
+    env->DeleteLocalRef(jkey);
+    env->DeleteLocalRef(jdefvalue);
+
+    return retValue;
+}
+
+void SharedPreferences::SetEntryValue(const String &key, const String &value)
+{
+    Logger::FrameworkDebug("Trying to set %s value for %s key", value.c_str(), key.c_str());
+    JNIEnv *env = JNI::GetEnv();
+
+    jstring jkey = env->NewStringUTF(key.c_str());
+    jstring jvalue = env->NewStringUTF(value.c_str());
+
+    putString(jkey, jvalue);
+
+    env->DeleteLocalRef(jkey);
+    env->DeleteLocalRef(jvalue);
+}
+
+void SharedPreferences::RemoveEntry(const String &key)
+{
+    JNIEnv *env = JNI::GetEnv();
+    jstring jkey = env->NewStringUTF(key.c_str());
+    remove(jkey);
+    env->DeleteLocalRef(jkey);
 }
 
 void SharedPreferences::Clear()
 {
-
+    clear();
 }
 
 void SharedPreferences::Push()
 {
-
+    push();
 }
 
 }

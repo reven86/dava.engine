@@ -40,8 +40,9 @@ class IDataStorage
 public:
     virtual ~IDataStorage() {};
 
-    virtual void SetEntry(String &key, String &value) = 0;
-    virtual void RemoveEntry(String &key) = 0;
+    virtual String GetEntryValue(const String &key) = 0;
+    virtual void SetEntryValue(const String &key, const String &value) = 0;
+    virtual void RemoveEntry(const String &key) = 0;
     virtual void Clear() = 0;
     virtual void Push() = 0;
 };
@@ -57,25 +58,21 @@ public:
         SHARED_FILE,
     };
 
-protected:
+public:
     DataStorage(Type preferredType);
+
+protected:
     ~DataStorage();
 
 public:
     static DataStorage *Create(Type preferredType);
 
 public: // IDataStorage intergace implementation
-    void SetEntry(String &key, String &value) override;
-    void RemoveEntry(String &key) override;
+    String GetEntryValue(const String &key) override;
+    void SetEntryValue(const String &key, const String &value) override;
+    void RemoveEntry(const String &key) override;
     void Clear() override;
     void Push() override;
-
-private:
-    template<class T>
-    void CreateImpl()
-    {
-        impl = new T();
-    }
 
 private:
     IDataStorage *impl;

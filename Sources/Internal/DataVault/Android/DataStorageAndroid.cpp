@@ -32,12 +32,10 @@
 namespace DAVA
 {
 
-DataStorage *DataStorage::Create(Type preferredType)
+DataStorage::DataStorage(Type preferredType)
 {
-    DataStorage *storage = new DataStorage(preferredType);
-    storage->CreateImpl<SharedPreferences>();
-
-    return storage;
+    type = preferredType;
+    impl = new SharedPreferences();
 }
 
 }

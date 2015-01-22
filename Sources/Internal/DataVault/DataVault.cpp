@@ -44,7 +44,7 @@ DataStorage *DataVault::GetStorage(DataStorage::Type type)
     }
     else
     {
-        storage = DataStorage::Create(type);
+        storage = new DataStorage(type);
         DataVault::activeStorages.insert(std::pair<DataStorage::Type, DataStorage *>(type, storage));
     }
 
