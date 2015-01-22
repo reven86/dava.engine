@@ -282,6 +282,12 @@ void PathSystem::Process(DAVA::float32 timeElapsed)
                 currentPath = entity;
                 break;
             }
+            
+            if(entity->GetComponent(Component::WAYPOINT_COMPONENT))
+            {
+                currentPath = entity->GetParent();
+                break;
+            }
         }
     }
 }
