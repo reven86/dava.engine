@@ -28,35 +28,32 @@
 
 
 
-#ifndef __DAVAENGINE_FILELISTANDROID_H__
-#define __DAVAENGINE_FILELISTANDROID_H__
+#ifndef __JNI_TEST_H__
+#define __JNI_TEST_H__
 
-#include "Base/BaseTypes.h"
+#include "DAVAEngine.h"
+using namespace DAVA;
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "TestTemplate.h"
 
-namespace DAVA {
-
-class JniFileList
+class JNITest : public TestTemplate<JNITest>
 {
+protected:
+    ~JNITest(){}
 public:
-	struct JniFileListEntry
-	{
-		String name;
-		uint32 size;
-		bool isDirectory;
-	};
-	JniFileList();
-	Vector<JniFileListEntry> GetFileList(const String& path);
+    JNITest();
+
+	virtual void LoadResources();
+	virtual void UnloadResources();
+
+	void ThreadFunc(BaseObject * caller, void * callerData, void * userData);
+    void TestFunction(PerfFuncData * data);
 
 private:
-	JNI::JavaClass jniFileList;
-	Function<jstringArray (jstring)> getFileList;
+    JNI::JavaClass javaNotificationProvider;
+    Function<void (jstring, jstring, jstring)> showNotificationText;
 };
 
-};
-
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-
-#endif /* defined(__DAVAENGINE_FILELISTANDROID_H__) */
+#endif
+#endif // __THREAD_SYNC_TEST_H__
