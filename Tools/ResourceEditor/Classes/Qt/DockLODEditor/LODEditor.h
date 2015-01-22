@@ -43,7 +43,7 @@ class QLabel;
 class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
-class EditorLODData;
+class SceneLODSystem;
 
 class LODEditor: public QWidget
 {
@@ -102,7 +102,7 @@ private:
 	Ui::LODEditor *ui;
     QtPosSaver posSaver;
     
-    EditorLODData *editedLODData;
+    SceneLODSystem *sceneLODSystem;
 
 	bool allSceneModeEnabled;
 };

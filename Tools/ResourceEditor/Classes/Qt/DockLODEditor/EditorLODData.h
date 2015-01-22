@@ -46,7 +46,6 @@ public:
 
     EditorLODData();
     virtual ~EditorLODData();
-
     
     DAVA::uint32 GetLayersCount() const;
     DAVA::float32 GetLayerDistance(DAVA::uint32 layerNum) const;
