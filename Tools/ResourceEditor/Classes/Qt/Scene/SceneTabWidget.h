@@ -87,8 +87,6 @@ public:
 	void ShowScenePreview(const DAVA::FilePath &scenePath);
 	void HideScenePreview();
     
-    void AddToolWidget(QWidget *widget);
-
 	DavaGLWidget * GetDavaWidget() const;
    
 signals:
@@ -117,13 +115,9 @@ protected:
 	const int davaUIScreenID;
 	const int dava3DViewMargin;
 
-	QWidget *toolWidgetContainer;
-	QLayout *toolWidgetLayout;
-
 	void InitDAVAUI();
 	void ReleaseDAVAUI();
 	void UpdateTabName(int index);
-	void UpdateToolWidget();
 
 	void SetTabScene(int index, SceneEditor2* scene);
 

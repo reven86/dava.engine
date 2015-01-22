@@ -13,8 +13,6 @@ set ( QT5_FOUND 0 )
 find_path( QT5_LIB_PATH 
   NAMES 
     ${QT_CORE_LIB}
-  HINTS 
-    ENV QT5_HOME
   PATHS 
     ${QT5_PATH_MAC}
     ${QT5_PATH_WIN}    
@@ -26,6 +24,8 @@ find_path( QT5_LIB_PATH
 if( QT5_LIB_PATH )
     set ( QT5_MODULE_PATH ${QT5_LIB_PATH}/cmake)
     set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
+
+    message ( "QT5_LIB_PATH - " ${QT5_LIB_PATH} )
 
     find_package ( Qt5Core )
 
