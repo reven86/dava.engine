@@ -240,6 +240,7 @@ public:
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
     static const FastName FLAG_DEBUG_Z_NORMAL_SCALE;
+    static const FastName FLAG_DEBUG_NORMAL_ROTATION;
 
     static const FastName FLAG_SKINNING;
     

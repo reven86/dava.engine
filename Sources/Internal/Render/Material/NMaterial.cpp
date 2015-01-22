@@ -122,6 +122,8 @@ const FastName NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGE
 
 const FastName NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UNITY_Z_NORMAL");
 const FastName NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE = FastName("DEBUG_Z_NORMAL_SCALE");
+const FastName NMaterial::FLAG_DEBUG_NORMAL_ROTATION = FastName("DEBUG_NORMAL_ROTATION");
+
 
 const FastName NMaterial::FLAG_SKINNING = FastName("SKINNING");
 
@@ -148,7 +150,9 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 	NMaterial::FLAG_TEXTUREONLY,
 	NMaterial::FLAG_SETUPLIGHTMAP,
 
-    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,        
+    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,
+    NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE,
+    NMaterial::FLAG_DEBUG_NORMAL_ROTATION,
 	
 	NMaterial::FLAG_VIEWALBEDO,
 	NMaterial::FLAG_VIEWAMBIENT,
