@@ -56,7 +56,8 @@ void ImageSizeTest::TestFunction(PerfFuncData * data)
 		"~res:/TestData/ImageSizeTest/image.dds"
 	};
 
-    //-1 for libdxt on arm64 issue
+
+    //TODO: -1 due to DF-5704
 	for(uint32 i = 0; i < DAVA::ImageSystem::FILE_FORMAT_COUNT-1; ++i)
 	{
 		DAVA::ImageFormatInterface *im = DAVA::ImageSystem::Instance()->GetImageFormatInterface(imagePathnames[i]);	
