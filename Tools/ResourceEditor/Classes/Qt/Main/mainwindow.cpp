@@ -143,7 +143,6 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 	, beastWaitDialog(NULL)
 	, globalInvalidate(false)
     , modificationWidget(NULL)
-    , objectTypesLabel(NULL)
     , addSwitchEntityDialog(NULL)
     , hangingObjectsWidget(NULL)
     , developerTools(new DeveloperTools(this))
@@ -773,13 +772,6 @@ void QtMainWindow::SetupActions()
 	}
 
     QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
-    
- 	//Collision Box Types
-    objectTypesLabel = new QtLabelWithActions();
- 	objectTypesLabel->setMenu(ui->menuObjectTypes);
- 	objectTypesLabel->setDefaultAction(ui->actionNoObject);
-	
-    ui->sceneTabWidget->AddToolWidget(objectTypesLabel);
 
 	ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
 	ui->actionNoObject->setData(ResourceEditor::ESOT_NO_COLISION);
@@ -2647,20 +2639,6 @@ void QtMainWindow::LoadObjectTypes( SceneEditor2 *scene )
 {
 	if(!scene) return;
 	ResourceEditor::eSceneObjectType objectType = scene->debugDrawSystem->GetRequestedObjectType();
-
-	QList<QAction *> actions = ui->menuObjectTypes->actions();
-
-	auto endIt = actions.end();
-	for(auto it = actions.begin(); it != endIt; ++it)
-	{
-		ResourceEditor::eSceneObjectType objectTypeAction = (ResourceEditor::eSceneObjectType) (*it)->data().toInt();
-		if(objectTypeAction == objectType)
-		{
-			objectTypesLabel->setDefaultAction(*it);
-			break;
-		}
-	}
-
     objectTypesWidget->setCurrentIndex(objectType + 1);
 }
 
