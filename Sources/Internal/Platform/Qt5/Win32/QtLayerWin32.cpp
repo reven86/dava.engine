@@ -29,6 +29,9 @@
 
 #include "QtLayerWin32.h"
 
+#include "DAVAEngine.h"
+
+
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Win32/CorePlatformWin32Qt.h"
@@ -109,8 +112,19 @@ void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int
 	AppStarted();
 }
 
+void QtLayerWin32::SetupWidget( uint64 contextId )
+{
+    RenderManager::Create( Core::RENDERER_OPENGL );
+    RenderManager::Instance()->SetRenderContextId( contextId );
+    RenderSystem2D::Instance()->Init();
 
-void QtLayerWin32::Resize(int32 width, int32 height)
+    FrameworkDidLaunched();
+
+    Resize( 200, 200 );
+    AppStarted();
+}
+
+    void QtLayerWin32::Resize(int32 width, int32 height)
 {
 	RenderManager::Instance()->Init(width, height);
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);

@@ -12,19 +12,11 @@
 #include <QVBoxLayout>
 
 LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* parent)
-:	QWidget(parent)
-,	activeScene(NULL)
-,	currentPanel(NULL)
+    :	QWidget(parent)
+    ,	activeScene(NULL)
+    ,	currentPanel(NULL)
 {
-	InitUI();
-	ConnectToSignals();
-
-	customColorsPanel = new CustomColorsPanel();
-	rulerToolPanel = new RulerToolPanel();
-	visibilityToolPanel = new VisibilityToolPanel();
-	tilemaskEditorPanel = new TilemaskEditorPanel();
-	heightmapEditorPanel = new HeightmapEditorPanel();
-    grassEditorPanel = new GrassEditorPanel();
+    QMetaObject::invokeMethod( this, "Construct", Qt::QueuedConnection );
 }
 
 LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
@@ -35,6 +27,19 @@ LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
 	SafeDelete(tilemaskEditorPanel);
 	SafeDelete(heightmapEditorPanel);
     SafeDelete(grassEditorPanel);
+}
+
+void LandscapeEditorControlsPlaceholder::Construct()
+{
+    InitUI();
+    ConnectToSignals();
+
+    customColorsPanel = new CustomColorsPanel();
+    rulerToolPanel = new RulerToolPanel();
+    visibilityToolPanel = new VisibilityToolPanel();
+    tilemaskEditorPanel = new TilemaskEditorPanel();
+    heightmapEditorPanel = new HeightmapEditorPanel();
+    grassEditorPanel = new GrassEditorPanel();
 }
 
 void LandscapeEditorControlsPlaceholder::InitUI()

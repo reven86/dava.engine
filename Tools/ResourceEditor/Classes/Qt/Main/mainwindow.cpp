@@ -574,7 +574,8 @@ void QtMainWindow::SetupStatusBar()
     staticOcclusionStatusBtn->setMaximumSize(QSize(16, 16));
     ui->statusBar->insertPermanentWidget(0, staticOcclusionStatusBtn);
 
-	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
+    // TODO !!!!!
+	//QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
 }
 
 

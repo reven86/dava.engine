@@ -17,3 +17,11 @@ void FrameworkLoop::ProcessFrame()
 {
     DAVA::QtLayer::Instance()->ProcessFrame();
 }
+
+void FrameworkLoop::Quit()
+{
+}
+
+void FrameworkLoop::ShowAssertMessage( const char* message )
+{
+}

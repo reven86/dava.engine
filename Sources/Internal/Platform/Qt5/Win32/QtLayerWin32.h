@@ -30,7 +30,6 @@
 #ifndef __DAVAENGINE_QT_LAYER_WIN32_H__
 #define __DAVAENGINE_QT_LAYER_WIN32_H__
 
-#include "DAVAEngine.h"
 #include "QtLayer.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -60,6 +59,8 @@ public:
     virtual void LockKeyboardInput(bool locked);
 
 	void SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int32 height);
+
+    void SetupWidget( uint64 contextId );
 };	
 
 };

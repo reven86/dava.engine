@@ -27,8 +27,9 @@ public:
 private slots:
 	void SceneActivated(SceneEditor2* scene);
 	void SceneDeactivated(SceneEditor2* scene);
-
 	void EditorToggled(SceneEditor2* scene);
+
+    void Construct();
 
 private:
 	SceneEditor2* activeScene;

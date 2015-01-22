@@ -48,6 +48,7 @@
 #include "FileSystem/FilePath.h"
 
 
+
 namespace DAVA
 {
 	class UIEvent;
@@ -57,7 +58,7 @@ namespace DAVA
 
 class SceneEditor2;
 class MainTabBar;
-class DavaGLWidget;
+class DavaGLWidgetV2;
 class ScenePreviewDialog;
 class Request;
 class EntityGroup;
@@ -87,7 +88,7 @@ public:
 	void ShowScenePreview(const DAVA::FilePath &scenePath);
 	void HideScenePreview();
     
-	DavaGLWidget * GetDavaWidget() const;
+	DavaGLWidgetV2 * GetDavaWidget() const;
    
 signals:
     
@@ -107,9 +108,14 @@ public slots:
 	void SceneSaved(SceneEditor2 *scene);
 	void SceneModifyStatusChanged(SceneEditor2 *scene, bool modified);
 
-protected:
+private slots:
+    void DelayedInit();
+
+private:
 	MainTabBar *tabBar;
-	DavaGLWidget *davaWidget;
+	// DavaGLWidget *davaWidget;
+    DavaGLWidgetV2 *davaWidget;
+
 	DAVA::UIScreen *davaUIScreen;
 	DAVA::UI3DView *dava3DView;
 	const int davaUIScreenID;
@@ -130,11 +136,11 @@ protected:
 
 	int FindTab(const DAVA::FilePath & scenePath);
 
-private:
     bool TestSceneCompatibility(const DAVA::FilePath &scenePath);
 
 	int newSceneCounter;
 	SceneEditor2 *curScene;
+
 };
 
 // tabBar widged to handle drop actions and emit signal about it
