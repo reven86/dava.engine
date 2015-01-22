@@ -38,7 +38,6 @@ void ColourFit::SetColourSet( ColourSet const* colours, int flags )
 	m_flags = flags;
 }
     
-#if defined (IOS) || defined (ANDROID)
 void ColourFit::Compress( void* block )
 {
 	bool isDxt1 = ( ( m_flags & kDxt1 ) != 0 );
@@ -56,6 +55,5 @@ void ColourFit::Compress( void* block )
 		Compress4( block );
 	}
 }
-#endif //#ifdef ANDROID || IOS
 
 } // namespace squish

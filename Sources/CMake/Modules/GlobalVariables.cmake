@@ -55,7 +55,7 @@ endif  ()
 #compiller flags
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-invalid-offsetof" )  
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-invalid-offsetof" )  
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
     
 elseif ( IOS     ) 
@@ -63,7 +63,7 @@ elseif ( IOS     )
     set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
   
 elseif ( MACOS )
-    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
 
 elseif ( WIN32)
     set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 

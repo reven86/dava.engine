@@ -27,6 +27,7 @@
  =====================================================================================*/
 
 #include "Platform/DateTime.h"
+#include <stdlib.h>
 
 #ifdef __DAVAENGINE_WIN32__
 #include <time.h>
