@@ -32,10 +32,14 @@
 namespace DAVA
 {
 
+#if defined(__DAVAENGINE_ANDROID__)
+
 DataStorage::DataStorage(Type preferredType)
 {
     type = preferredType;
     impl = new SharedPreferences();
 }
+
+#endif
 
 }

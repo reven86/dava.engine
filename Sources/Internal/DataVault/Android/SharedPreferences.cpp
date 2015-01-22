@@ -31,6 +31,8 @@
 namespace DAVA
 {
 
+#if defined(__DAVAENGINE_ANDROID__)
+
 SharedPreferences::SharedPreferences()
     : jniSharedPreferences("com/dava/framework/JNISharedPreferences")
 {
@@ -117,5 +119,7 @@ void SharedPreferences::Push()
 {
     push();
 }
+
+#endif
 
 }

@@ -36,6 +36,8 @@
 namespace DAVA
 {
 
+#if defined(__DAVAENGINE_ANDROID__)
+
 class SharedPreferences : public IDataStorage
 {
 public:
@@ -61,6 +63,8 @@ private:
     Function<void (void)> clear;
     Function<void (void)> push;
 };
+
+#endif
 
 } //namespace DAVA
 

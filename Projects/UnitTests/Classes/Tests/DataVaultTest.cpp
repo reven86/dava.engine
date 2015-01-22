@@ -64,6 +64,11 @@ void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data
     ret = storage->GetEntryValue("Test");
     TEST_VERIFY("Test" == ret);
 
+    storage->RemoveEntry("Test");
+    storage->Push();
+    ret = storage->GetEntryValue("Test");
+    TEST_VERIFY("Test" != ret);
+
     SafeRelease(storage);
     Logger::Warning("____________");
 }
