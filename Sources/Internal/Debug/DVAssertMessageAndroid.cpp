@@ -32,44 +32,23 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "ExternC/AndroidLayer.h"
 
 #include "AndroidCrashReport.h"
 
 using namespace DAVA;
 
-jclass JniDVAssertMessage::gJavaClass = NULL;
-const char* JniDVAssertMessage::gJavaClassName = NULL;
-
-jclass JniDVAssertMessage::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniDVAssertMessage::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
-
-
-void JniDVAssertMessage::ShowMessage(const char* message)
-{
-	jmethodID mid = GetMethodID("Assert", "(Ljava/lang/String;)V");
-	if (mid)
-	{
-		jstring jStrMessage = GetEnvironment()->NewStringUTF(message);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jStrMessage);
-		GetEnvironment()->DeleteLocalRef(jStrMessage);
-	}
-}
-
-
 void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
-	JniDVAssertMessage msg;
-	msg.ShowMessage(message);
+	JNI::JavaClass msg("com/dava/framework/JNIAssert");
+	auto showMessage = msg.GetStaticMethod<void, jstring>("Assert");
+
+	JNIEnv *env = JNI::GetEnv();
+	jstring jStrMessage = env->NewStringUTF(message);
+	showMessage(jStrMessage);
+	env->DeleteLocalRef(jStrMessage);
 
 	AndroidCrashReport::ThrowExeption(message);
 }
