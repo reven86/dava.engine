@@ -85,11 +85,11 @@ inline float asinf_assert(const float f)
 }
 
 // Replace default functions with asserting ones.
-#define sqrt sqrt_assert
+//#define sqrt sqrt_assert
 #define sqrtf sqrtf_assert
-#define acos acos_assert
+//#define acos acos_assert
 #define acosf acosf_assert
-#define asin asin_assert
+//#define asin asin_assert
 #define asinf asinf_assert
 
 #if NV_OS_WIN32

@@ -106,7 +106,7 @@ LOCAL_CFLAGS += -Dnullptr=0
 LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 LOCAL_CFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
-LOCAL_CPPFLAGS += -std=c++11
+LOCAL_CPPFLAGS += -std=c++1y
 
 LOCAL_CPP_FEATURES += exceptions
 

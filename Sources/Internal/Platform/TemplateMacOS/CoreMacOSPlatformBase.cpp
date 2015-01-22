@@ -37,57 +37,67 @@
 namespace DAVA
 {
 
-// some macros to make code more readable.
-#define GetModeWidth(mode) GetDictionaryLong((mode), kCGDisplayWidth)
-#define GetModeHeight(mode) GetDictionaryLong((mode), kCGDisplayHeight)
-#define GetModeRefreshRate(mode) GetDictionaryLong((mode), kCGDisplayRefreshRate)
-#define GetModeBitsPerPixel(mode) GetDictionaryLong((mode), kCGDisplayBitsPerPixel)
-
-//------------------------------------------------------------------------------------------
-long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
+int GetBPPFromMode(CGDisplayModeRef displayMode)
 {
-    // get a long from the dictionary
-    long value = 0;
-    CFNumberRef numRef;
-    numRef = (CFNumberRef)CFDictionaryGetValue(theDict, key);
-    if (numRef != NULL)
-        CFNumberGetValue(numRef, kCFNumberLongType, &value);
-    return value;
+    CFStringRef pixelEncoding = CGDisplayModeCopyPixelEncoding(displayMode);
+
+    int depth = 0;
+    if ((CFStringCompare(pixelEncoding, CFSTR(kIO30BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo))
+    {
+        depth = 30;
+    }
+    else if (CFStringCompare(pixelEncoding, CFSTR(IO32BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
+    {
+        depth = 32;
+    }
+    else if (CFStringCompare(pixelEncoding, CFSTR(IO16BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
+    {
+        depth = 16;
+    }
+    else if (CFStringCompare(pixelEncoding, CFSTR(IO8BitIndexedPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)
+    {
+        depth = 8;
+    }
+
+    CFRelease(pixelEncoding);
+    
+    return depth;
 }
 	
 DisplayMode CoreMacOSPlatformBase::GetCurrentDisplayMode()
 {
-    CFDictionaryRef currentMode = CGDisplayCurrentMode(kCGDirectMainDisplay);
-        
-    // look at each mode in the available list
-    //CFDictionaryRef modeSystem = (CFDictionaryRef)CFArrayGetValueAtIndex(currentMode, mode);
+    CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(kCGDirectMainDisplay);
         
     DisplayMode mode;
-    mode.width = GetModeWidth(currentMode);
-    mode.height = GetModeHeight(currentMode);
-    mode.refreshRate = GetModeRefreshRate(currentMode);
-    mode.bpp = GetModeBitsPerPixel(currentMode);
+    mode.width = CGDisplayModeGetWidth(currentMode);
+    mode.height = CGDisplayModeGetHeight(currentMode);
+    mode.refreshRate = CGDisplayModeGetRefreshRate(currentMode);
+    mode.bpp = GetBPPFromMode(currentMode);
+    
+    CGDisplayModeRelease(currentMode);
 
     return mode;
 }
 
 void CoreMacOSPlatformBase::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
 {
-    CFArrayRef availableModesSystem = CGDisplayAvailableModes(kCGDirectMainDisplay);
+    CFArrayRef availableModesSystem = CGDisplayCopyAllDisplayModes(kCGDirectMainDisplay, NULL);
     int32 numberOfAvailableModes = CFArrayGetCount(availableModesSystem);
 
     for (int modeIndex = 0; modeIndex < numberOfAvailableModes; ++modeIndex)
     {
         // look at each mode in the available list
-        CFDictionaryRef modeSystem = (CFDictionaryRef)CFArrayGetValueAtIndex(availableModesSystem, modeIndex);
+        CGDisplayModeRef modeSystem = (CGDisplayModeRef)CFArrayGetValueAtIndex(availableModesSystem, modeIndex);
 
         DisplayMode mode;
-        mode.width = GetModeWidth(modeSystem);
-        mode.height = GetModeHeight(modeSystem);
-        mode.refreshRate = GetModeRefreshRate(modeSystem);
-        mode.bpp = GetModeBitsPerPixel(modeSystem);
+        mode.width = CGDisplayModeGetWidth(modeSystem);
+        mode.height = CGDisplayModeGetHeight(modeSystem);
+        mode.refreshRate = CGDisplayModeGetRefreshRate(modeSystem);
+        mode.bpp = GetBPPFromMode(modeSystem);
         availableModes.push_back(mode);
     }
+    
+    CFRelease(availableModesSystem);
 }
 
 }
