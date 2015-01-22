@@ -188,7 +188,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     Rect viewportSave = RenderManager::Instance()->GetViewport();
     uint32 currFboId = RenderManager::Instance()->HWglGetLastFBO();
         
-    RenderManager::Instance()->SetHWRenderTargetTexture(reflectionTexture);
+    RenderManager::Instance()->SetRenderTarget(reflectionTexture);
     //discard everything here
     RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
@@ -200,7 +200,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
         
         
-    RenderManager::Instance()->SetHWRenderTargetTexture(refractionTexture);
+    RenderManager::Instance()->SetRenderTarget(refractionTexture);
         
     RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 

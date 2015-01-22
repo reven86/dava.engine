@@ -146,7 +146,7 @@ void RenderSystem2D::Setup2DMatrices()
 
 void RenderSystem2D::ScreenSizeChanged()
 {
-    Matrix4 glTranslate, glScale, glOrtho;
+    Matrix4 glTranslate, glScale;
     
     Vector2 scale = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(Vector2(1.f, 1.f));
     Vector2 realDrawOffset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
@@ -213,7 +213,7 @@ void RenderSystem2D::UpdateClip()
     {
         if (currentClip.dx < 0.f || currentClip.dx < 0.f) //disable clip
         {
-            RenderManager::Instance()->SetHWClip(currentClip);
+            RenderManager::Instance()->SetClip(currentClip);
         }
         else
         {
@@ -227,7 +227,7 @@ void RenderSystem2D::UpdateClip()
             clipBottomRightCorner = clipBottomRightCorner * transformMx;
 
             Rect transformedClip(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
-            RenderManager::Instance()->SetHWClip(transformedClip);
+            RenderManager::Instance()->SetClip(transformedClip);
         }
         clipChanged = false;
     }
@@ -255,14 +255,14 @@ void RenderSystem2D::SetRenderTarget(Sprite * target)
     {
         viewport.dx = (float32)currentRenderTarget->GetTexture()->GetWidth();
         viewport.dy = (float32)currentRenderTarget->GetTexture()->GetHeight();
-        RenderManager::Instance()->SetHWRenderTargetTexture(currentRenderTarget->GetTexture());
+        RenderManager::Instance()->SetRenderTarget(currentRenderTarget->GetTexture());
     }
     else
     {
         Size2i framebufferSize = RenderManager::Instance()->GetFramebufferSize();
         viewport.dx = (float32)framebufferSize.dx;
         viewport.dy = (float32)framebufferSize.dy;
-        RenderManager::Instance()->SetHWRenderTargetTexture(0);
+        RenderManager::Instance()->SetRenderTarget(0);
     }
 
     RenderManager::Instance()->SetViewport(viewport);
@@ -336,7 +336,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
 
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
 {
-    if (RenderManager::Instance()->IsRenderTargetTexture())
+    if (RenderManager::Instance()->IsRenderTarget())
         return true;
 
     Rect clipRect = currentClip;

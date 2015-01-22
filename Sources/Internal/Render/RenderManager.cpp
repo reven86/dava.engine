@@ -276,11 +276,6 @@ Size2i RenderManager::GetFramebufferSize()
     return Size2i(frameBufferWidth, frameBufferHeight);
 }
 
-bool RenderManager::IsRenderTargetTexture()
-{
-	return lastBindedFBO != fboViewFramebuffer;
-}
-
 void RenderManager::SetRenderEffect(Shader * renderEffect)
 {
     currentRenderEffect = renderEffect;

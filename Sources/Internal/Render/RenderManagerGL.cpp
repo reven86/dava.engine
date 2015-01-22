@@ -305,7 +305,7 @@ void RenderManager::SetViewport(const Rect & rect)
 {
     Rect viewportRect = viewport = rect;
 
-    if (!IsRenderTargetTexture())
+    if (!IsRenderTarget())
     {
         viewportRect.y = frameBufferHeight - viewportRect.y - viewportRect.dy;
     }
@@ -464,7 +464,7 @@ void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
     RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 }
 
-void RenderManager::SetHWClip(const Rect &rect)
+void RenderManager::SetClip(const Rect &rect)
 {
 	if(rect.dx < 0 || rect.dy < 0)
 	{
@@ -478,7 +478,7 @@ void RenderManager::SetHWClip(const Rect &rect)
 	int32 width = x2 - x;
 	int32 height = y2 - y;
     
-    if (!IsRenderTargetTexture())
+    if (!IsRenderTarget())
     {
         y = frameBufferHeight - y - height;
     }
@@ -487,7 +487,7 @@ void RenderManager::SetHWClip(const Rect &rect)
 	RENDER_VERIFY(glScissor(x, y, width, height));
 }
 
-void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
+void RenderManager::SetRenderTarget(Texture * renderTarget)
 {
     if (renderTarget)
 	    HWglBindFBO(renderTarget->fboID);

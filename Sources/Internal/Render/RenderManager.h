@@ -353,7 +353,7 @@ public:
 	 \brief Checks is render target using for drawing now
 	 \param[out] true if render manager sets to a render targe. false if render manager draws to the screen now
 	 */
-	bool IsRenderTargetTexture();
+	inline bool IsRenderTarget();
        
     Size2i GetFramebufferSize();
 
@@ -539,8 +539,8 @@ public:
     Mutex renderStateMutex;
     Mutex textureStateMutex;
 	
-	void SetHWClip(const Rect &rect);
-	void SetHWRenderTargetTexture(Texture * renderTarget);
+	void SetClip(const Rect &rect);
+	void SetRenderTarget(Texture * renderTarget);
     
     enum eClearBuffers
     {
@@ -889,7 +889,10 @@ inline void RenderManager::SetTextureState(UniqueHandle requestedState)
     currentState.textureState = requestedState;
 }
 
-    
+inline bool RenderManager::IsRenderTarget()
+{
+    return lastBindedFBO != fboViewFramebuffer;
+}
 
     
 };
