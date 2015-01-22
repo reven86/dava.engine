@@ -56,6 +56,13 @@
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/ControlsFactory.h"
 
+#ifdef __DAVAENGINE_BEAST__
+#include "BeastProxyImpl.h"
+#else
+#include "Beast/BeastProxy.h"
+#endif //__DAVAENGINE_BEAST__
+
+
 #if defined (__DAVAENGINE_MACOS__)
 	#include "MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
@@ -63,11 +70,10 @@
 	#include "Win32/CorePlatformWin32Qt.h"
 #endif
 
-#ifdef __DAVAENGINE_BEAST__
-#include "BeastProxyImpl.h"
-#else
-#include "Beast/BeastProxy.h"
-#endif //__DAVAENGINE_BEAST__
+
+#include "FrameworkBinding/DavaLoop.h"
+#include "FrameworkBinding/FrameworkLoop.h"
+
 
 void UnpackHelpDoc();
 void FixOSXFonts();
@@ -120,6 +126,9 @@ int main(int argc, char *argv[])
     const QString appUidPath = QCryptographicHash::hash( (appUid + a.applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
     RunGuard runGuard( appUidPath );
 	CommandLineManager cmdLine;
+
+    new DavaLoop();
+    DavaLoop::Instance()->StartLoop( new FrameworkLoop() );
 
 	if(cmdLine.IsEnabled())
 	{
@@ -185,6 +194,8 @@ int main(int argc, char *argv[])
             TextureCache::Instance()->Release();
         }
 	}
+
+    DavaLoop::Instance()->Release();
 
 	EditorConfig::Instance()->Release();
 	SettingsManager::Instance()->Release();
