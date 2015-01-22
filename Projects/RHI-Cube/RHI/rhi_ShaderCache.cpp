@@ -185,7 +185,8 @@ static const char* _ShaderDefine_Metal =
 
 "#define VPROG_OUT_BEGIN         struct VP_Output {\n"
 "#define VPROG_OUT_POSITION      float4 position [[ position ]]; \n"
-"#define VPROG_OUT_TEXCOORD0(name,size)    float##size name [[ user(texturecoord) ]];\n"
+"#define VPROG_OUT_TEXCOORD0(name,size)    float##size name [[ user(texcoord0) ]];\n"
+"#define VPROG_OUT_TEXCOORD1(name,size)    float##size name [[ user(texcoord1) ]];\n"
 "#define VPROG_OUT_END           };\n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) struct __VP_Buffer##idx { packed_float4 data[sz]; };\n"
@@ -216,13 +217,18 @@ static const char* _ShaderDefine_Metal =
 
 
 "#define FPROG_IN_BEGIN              struct FP_Input { float4 position [[position]]; \n"
-"#define FPROG_IN_TEXCOORD0(name,size)    float##size name [[user(texturecoord)]];\n"
+"#define FPROG_IN_TEXCOORD0(name,size)    float##size name [[ user(texcoord0) ]];\n"
+"#define FPROG_IN_TEXCOORD1(name,size)    float##size name [[ user(texcoord1) ]];\n"
 "#define FPROG_IN_END                };\n"
 
 "#define FPROG_OUT_BEGIN         struct FP_Output {\n"
 "#define FPROG_OUT_COLOR         float4 color [[color(0)]];\n"
 "#define FPROG_OUT_END           };\n"
 
+//"#define DECL_SAMPLER2D(unit)    texture2d<float> Texture##unit [[ texture(unit) ]]; sampler TextureSampler##unit ;\n"
+"#define DECL_SAMPLER2D(unit)    \n"
+
+"#define FP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv );\n"
 "#define FP_IN(name)             IN.##name\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
@@ -233,9 +239,11 @@ static const char* _ShaderDefine_Metal =
 "("
 "    FP_Input IN                 [[ stage_in ]]"
 "    FPROG_IN_BUFFER_0 "
+"    FPROG_IN_TEXTURE_0 "
 ")"
 "{"
 "    FPROG_BUFFER_0 "
+"    FPROG_SAMPLER_0 "
 //"    const packed_float4* FP_Buffer0 = buf0->data;"
 "    FP_Output   OUT;\n"
 "#define FPROG_END               return OUT; }\n"
@@ -403,6 +411,22 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
                 s += strlen("DECL_FPROG_BUFFER");
             }
             
+            s = srcText;
+            while( (decl = strstr( s, "DECL_SAMPLER2D" )) )
+            {
+                int i   = 0;
+                int len = strlen( src );
+
+                sscanf( decl, "DECL_SAMPLER2D(%i,", &i );
+
+                len += sprintf( src+len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> tex%i [[ texture(%i) ]]\n", i, i, i );
+                len += sprintf( src+len, "#define FPROG_SAMPLER_%i    sampler tex%i_sampler; \n", i, i );
+
+                s += strlen("DECL_SAMPLER2D");
+            }
+            
+            
+
             s = srcText;
             while( (decl = strstr( s, "DECL_VPROG_BUFFER" )) )
             {

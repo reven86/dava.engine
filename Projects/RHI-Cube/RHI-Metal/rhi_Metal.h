@@ -47,6 +47,11 @@ namespace IndexBufferMetal
 id<MTLBuffer> GetBuffer( Handle ib );
 }
 
+namespace TextureMetal
+{
+void    SetToRHI( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );
+}
+
 
 namespace PipelineStateMetal
 {

@@ -195,7 +195,9 @@ SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
 void
 SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle tex )
 {
-//    L_ASSERT(tex);
+    CommandBuffer_t*    cb = CommandBufferPool::Get( cmdBuf );
+
+    TextureMetal::SetToRHI( tex, unitIndex, cb->encoder );
 }
 
 
