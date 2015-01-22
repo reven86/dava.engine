@@ -238,7 +238,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         return;
     }
 	Rect textBlockRect = CalculateTextBlockRect(geometricData);
-    if (textBlock->GetFont()->GetFontType() != Font::TYPE_FT)
+    if (textBlock->GetFont() && textBlock->GetFont()->GetFontType() != Font::TYPE_FT)
     {
         // Correct rect and setup position and scale for NON freetype fonts
         textBlockRect.x = textBlockRect.x - pivotPoint.x * geometricData.scale.x;
