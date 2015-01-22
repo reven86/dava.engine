@@ -43,6 +43,7 @@ extern void FrameworkWillTerminate();
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Systems/UIInputSystem.h"
 
 namespace DAVA
 {
@@ -427,7 +428,11 @@ namespace DAVA
 			totalTouches.push_back(touchEvent);
 		}
 
-		UIControlSystem::Instance()->OnInput(touchEvent.phase, totalTouches, totalTouches);
+		UIInputSystem* inputSystem = UIControlSystem::Instance()->GetSystem<UIInputSystem>();
+		if (inputSystem)
+		{
+			inputSystem->OnInput(touchEvent.phase, totalTouches, totalTouches);
+		}
 
 		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); )
 		{

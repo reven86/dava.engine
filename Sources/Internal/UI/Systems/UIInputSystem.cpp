@@ -315,7 +315,7 @@ bool UIInputSystem::SystemInput(UIControl* control, UIEvent *currentInput)
                     bool systemInputCheck;
                     if ((current->GetAvailableComponentFlags() & GetRequiredComponents()) == GetRequiredComponents())
                     {
-                        UIInputComponent* currentComponent = control->GetComponent<UIInputComponent>();
+                        UIInputComponent* currentComponent = current->GetComponent<UIInputComponent>();
                         systemInputCheck = (currentComponent != NULL && currentComponent->customSystemInput != (int)0)
                             ? currentComponent->customSystemInput(currentInput) // Use systemInput from component
                             : SystemInput(current, currentInput); // Use systemInput from system if control hasn't component or component hasn't customSystemInput

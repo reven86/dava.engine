@@ -1077,6 +1077,29 @@
 		B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
 		B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
 		B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
+		B7F8977A1A6FE2310055F691 /* UIComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897721A6FE2310055F691 /* UIComponent.cpp */; };
+		B7F8977B1A6FE2310055F691 /* UIComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897721A6FE2310055F691 /* UIComponent.cpp */; };
+		B7F8977C1A6FE2310055F691 /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897731A6FE2310055F691 /* UIComponent.h */; };
+		B7F8977D1A6FE2310055F691 /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897731A6FE2310055F691 /* UIComponent.h */; };
+		B7F8977E1A6FE2310055F691 /* UIInputComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897741A6FE2310055F691 /* UIInputComponent.cpp */; };
+		B7F8977F1A6FE2310055F691 /* UIInputComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897741A6FE2310055F691 /* UIInputComponent.cpp */; };
+		B7F897801A6FE2310055F691 /* UIInputComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897751A6FE2310055F691 /* UIInputComponent.h */; };
+		B7F897811A6FE2310055F691 /* UIInputComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897751A6FE2310055F691 /* UIInputComponent.h */; };
+		B7F897821A6FE2310055F691 /* UIRenderComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897761A6FE2310055F691 /* UIRenderComponent.cpp */; };
+		B7F897831A6FE2310055F691 /* UIRenderComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897761A6FE2310055F691 /* UIRenderComponent.cpp */; };
+		B7F897841A6FE2310055F691 /* UIRenderComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897771A6FE2310055F691 /* UIRenderComponent.h */; };
+		B7F897851A6FE2310055F691 /* UIRenderComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897771A6FE2310055F691 /* UIRenderComponent.h */; };
+		B7F897861A6FE2310055F691 /* UIUpdateComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897781A6FE2310055F691 /* UIUpdateComponent.cpp */; };
+		B7F897871A6FE2310055F691 /* UIUpdateComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897781A6FE2310055F691 /* UIUpdateComponent.cpp */; };
+		B7F897881A6FE2310055F691 /* UIUpdateComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897791A6FE2310055F691 /* UIUpdateComponent.h */; };
+		B7F897891A6FE2310055F691 /* UIUpdateComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897791A6FE2310055F691 /* UIUpdateComponent.h */; };
+		B7F8978A1A6FE2390055F691 /* UIInputSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B73329991A600C4D006F3738 /* UIInputSystem.cpp */; };
+		B7F8978B1A6FE23E0055F691 /* UIInputSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = B733299A1A600C4D006F3738 /* UIInputSystem.h */; };
+		B7F8978C1A6FE23E0055F691 /* UIRenderSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B733299B1A600C4D006F3738 /* UIRenderSystem.cpp */; };
+		B7F8978D1A6FE23E0055F691 /* UIRenderSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = B733299C1A600C4D006F3738 /* UIRenderSystem.h */; };
+		B7F8978E1A6FE23E0055F691 /* UISystem.h in Headers */ = {isa = PBXBuildFile; fileRef = B733299D1A600C4D006F3738 /* UISystem.h */; };
+		B7F8978F1A6FE23E0055F691 /* UIUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B733299E1A600C4D006F3738 /* UIUpdateSystem.cpp */; };
+		B7F897901A6FE23E0055F691 /* UIUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = B733299F1A600C4D006F3738 /* UIUpdateSystem.h */; };
 		C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
 		C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */ = {isa = PBXBuildFile; fileRef = C13E6DB7186861FA00D1B2CE /* DFFont.h */; };
 		C172EC2A18C9F9D4004309CF /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */; };
@@ -2058,6 +2081,14 @@
 		B79723EC1A125F96009421F3 /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
 		B79723ED1A125F96009421F3 /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
 		B7D6C97319C9856B0095250A /* libfribidi_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_ios.a; path = ../../Libs/libs/libfribidi_ios.a; sourceTree = "<group>"; };
+		B7F897721A6FE2310055F691 /* UIComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIComponent.cpp; sourceTree = "<group>"; };
+		B7F897731A6FE2310055F691 /* UIComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIComponent.h; sourceTree = "<group>"; };
+		B7F897741A6FE2310055F691 /* UIInputComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIInputComponent.cpp; sourceTree = "<group>"; };
+		B7F897751A6FE2310055F691 /* UIInputComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIInputComponent.h; sourceTree = "<group>"; };
+		B7F897761A6FE2310055F691 /* UIRenderComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIRenderComponent.cpp; sourceTree = "<group>"; };
+		B7F897771A6FE2310055F691 /* UIRenderComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIRenderComponent.h; sourceTree = "<group>"; };
+		B7F897781A6FE2310055F691 /* UIUpdateComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIUpdateComponent.cpp; sourceTree = "<group>"; };
+		B7F897791A6FE2310055F691 /* UIUpdateComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIUpdateComponent.h; sourceTree = "<group>"; };
 		C13E6DB6186861FA00D1B2CE /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C13E6DB7186861FA00D1B2CE /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
 		C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextBlockDistanceRender.cpp; sourceTree = "<group>"; };
@@ -2950,6 +2981,21 @@
 				B733299F1A600C4D006F3738 /* UIUpdateSystem.h */,
 			);
 			path = Systems;
+			sourceTree = "<group>";
+		};
+		B7F897711A6FE2310055F691 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B7F897721A6FE2310055F691 /* UIComponent.cpp */,
+				B7F897731A6FE2310055F691 /* UIComponent.h */,
+				B7F897741A6FE2310055F691 /* UIInputComponent.cpp */,
+				B7F897751A6FE2310055F691 /* UIInputComponent.h */,
+				B7F897761A6FE2310055F691 /* UIRenderComponent.cpp */,
+				B7F897771A6FE2310055F691 /* UIRenderComponent.h */,
+				B7F897781A6FE2310055F691 /* UIUpdateComponent.cpp */,
+				B7F897791A6FE2310055F691 /* UIUpdateComponent.h */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		CC84B03518211BB600934482 /* Job */ = {
@@ -3924,6 +3970,7 @@
 		E8B3CA2E16B9326E002BD35F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				B7F897711A6FE2310055F691 /* Components */,
 				B73329981A600C4D006F3738 /* Systems */,
 				1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */,
 				150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */,
@@ -4216,6 +4263,7 @@
 				02FD7F601924997C007762C0 /* ResourceArchive.h in Headers */,
 				17675C2719472C1400054F8F /* LibPngHelpers.h in Headers */,
 				02FD7F611924997C007762C0 /* VariantType.h in Headers */,
+				B7F8978D1A6FE23E0055F691 /* UIRenderSystem.h in Headers */,
 				02FD7F621924997C007762C0 /* XMLParser.h in Headers */,
 				02FD7F631924997C007762C0 /* YamlArchive.h in Headers */,
 				02FD7F641924997C007762C0 /* YamlParser.h in Headers */,
@@ -4226,6 +4274,7 @@
 				64493E0F19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
 				02FD7F681924997C007762C0 /* KeyboardDevice.h in Headers */,
 				E8586C4219F8FEBA004FD709 /* BackgroundView.h in Headers */,
+				B7F8977D1A6FE2310055F691 /* UIComponent.h in Headers */,
 				02FD7F691924997C007762C0 /* AABBox2.h in Headers */,
 				02FD7F6A1924997C007762C0 /* AABBox3.h in Headers */,
 				022AA8E11934CECD009A4B84 /* WaveComponent.h in Headers */,
@@ -4274,6 +4323,7 @@
 				02FD7F941924997C007762C0 /* ParticlePropertyLine.h in Headers */,
 				17675C1F19472C1400054F8F /* ImageFormatInterface.h in Headers */,
 				02FD7F951924997C007762C0 /* Mutex.h in Headers */,
+				B7F897901A6FE23E0055F691 /* UIUpdateSystem.h in Headers */,
 				02FD7F961924997C007762C0 /* SystemTimer.h in Headers */,
 				02FD7F971924997C007762C0 /* EAGLView.h in Headers */,
 				02FD7F981924997C007762C0 /* EAGLViewController.h in Headers */,
@@ -4329,6 +4379,7 @@
 				02FD7FC01924997C007762C0 /* RenderSystem.h in Headers */,
 				02FD7FC11924997C007762C0 /* ShadowRect.h in Headers */,
 				02FD7FC21924997C007762C0 /* ShadowVolume.h in Headers */,
+				B7F8978B1A6FE23E0055F691 /* UIInputSystem.h in Headers */,
 				02FD7FC31924997C007762C0 /* ShadowVolumeRenderPass.h in Headers */,
 				D7FEF14A19864E5C00B2C7AF /* DownloaderCommon.h in Headers */,
 				02FD7FC71924997C007762C0 /* IndexBuffer.h in Headers */,
@@ -4378,6 +4429,7 @@
 				02FD7FF61924997C007762C0 /* CameraComponent.h in Headers */,
 				02FD7FF71924997C007762C0 /* DebugRenderComponent.h in Headers */,
 				02FD7FF81924997C007762C0 /* LightComponent.h in Headers */,
+				B7F897891A6FE2310055F691 /* UIUpdateComponent.h in Headers */,
 				02FD7FF91924997C007762C0 /* LodComponent.h in Headers */,
 				02FD7FFA1924997C007762C0 /* ParticleEffectComponent.h in Headers */,
 				02FD7FFB1924997C007762C0 /* RenderComponent.h in Headers */,
@@ -4409,12 +4461,14 @@
 				02FD80141924997C007762C0 /* SkeletonNode.h in Headers */,
 				02FD80151924997C007762C0 /* SpriteNode.h in Headers */,
 				02FD80161924997C007762C0 /* SwitchNode.h in Headers */,
+				B7F897851A6FE2310055F691 /* UIRenderComponent.h in Headers */,
 				02FD80171924997C007762C0 /* BaseProcessSystem.h in Headers */,
 				02FD80181924997C007762C0 /* DebugRenderSystem.h in Headers */,
 				02FD80191924997C007762C0 /* EventSystem.h in Headers */,
 				E8525D171A30910400FDF76E /* RotationControllerComponent.h in Headers */,
 				D7CC266819C517E500A3B754 /* LocalNotificationController.h in Headers */,
 				02AD131919767DFB00567AD2 /* VersionInfo.h in Headers */,
+				B7F897811A6FE2310055F691 /* UIInputComponent.h in Headers */,
 				02FD801A1924997C007762C0 /* LightUpdateSystem.h in Headers */,
 				02FD801B1924997C007762C0 /* LodSystem.h in Headers */,
 				02FD801C1924997C007762C0 /* SwitchToRenerObjectConverter.h in Headers */,
@@ -4521,6 +4575,7 @@
 				02FD806D1924997C007762C0 /* SoundUpdateSystem.h in Headers */,
 				0264E30A1A42F79500BD7279 /* JobManager.h in Headers */,
 				02FD806E1924997C007762C0 /* LodToLod2Converter.h in Headers */,
+				B7F8978E1A6FE23E0055F691 /* UISystem.h in Headers */,
 				02FD806F1924997C007762C0 /* OpenUDIDApple.h in Headers */,
 				B78601501A08EB140041F817 /* StringUtils.h in Headers */,
 				02FD80701924997C007762C0 /* OpenUDIDios.h in Headers */,
@@ -4589,6 +4644,7 @@
 				E8B3CA9216B9326E002BD35F /* AutotestingSystem.h in Headers */,
 				50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */,
 				E8B3CA9516B9326E002BD35F /* MongodbUpdateObject.h in Headers */,
+				B7F897881A6FE2310055F691 /* UIUpdateComponent.h in Headers */,
 				E8B3CA9916B9326E002BD35F /* BaseMath.h in Headers */,
 				E8525D161A30910400FDF76E /* RotationControllerComponent.h in Headers */,
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
@@ -4632,6 +4688,7 @@
 				E8B3CAC116B9326E002BD35F /* StaticSingleton.h in Headers */,
 				E8B3CAC216B9326E002BD35F /* TemplateHelpers.h in Headers */,
 				E8B3CAC416B9326E002BD35F /* CollisionObject2.h in Headers */,
+				B7F897841A6FE2310055F691 /* UIRenderComponent.h in Headers */,
 				E8B3CAC616B9326E002BD35F /* CollisionPolygons.h in Headers */,
 				E8B3CAC816B9326E002BD35F /* Collisions.h in Headers */,
 				E8B3CACA16B9326E002BD35F /* ApplicationCore.h in Headers */,
@@ -4731,6 +4788,7 @@
 				026A1DE219DAF24A00813AEF /* SkeletonComponent.h in Headers */,
 				1146E10F19D0066F009E5FAB /* AnimationComponent.h in Headers */,
 				D7FEF14919864E5C00B2C7AF /* DownloaderCommon.h in Headers */,
+				B7F897801A6FE2310055F691 /* UIInputComponent.h in Headers */,
 				022AA8E61934CED9009A4B84 /* WaveSystem.h in Headers */,
 				A61171481860C24D00E18F8C /* StaticOcclusion.h in Headers */,
 				C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */,
@@ -4817,6 +4875,7 @@
 				E8B3CC3516B9326E002BD35F /* RenderOptions.h in Headers */,
 				E8B3CC3716B9326E002BD35F /* RenderResource.h in Headers */,
 				D7FEF14519864E5C00B2C7AF /* Downloader.h in Headers */,
+				B7F8977C1A6FE2310055F691 /* UIComponent.h in Headers */,
 				E8B3CC3A16B9326E002BD35F /* RGBColor.h in Headers */,
 				E8B3CC3C16B9326E002BD35F /* Shader.h in Headers */,
 				E8B3CC4116B9326E002BD35F /* SharedFBO.h in Headers */,
@@ -5152,6 +5211,7 @@
 				02FD80A61924997C007762C0 /* FastName.cpp in Sources */,
 				647EFC7C195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
 				02FD80A71924997C007762C0 /* FixedSizePoolAllocator.cpp in Sources */,
+				B7F8977B1A6FE2310055F691 /* UIComponent.cpp in Sources */,
 				02FD80A81924997C007762C0 /* Message.cpp in Sources */,
 				02FD80A91924997C007762C0 /* ObjectFactory.cpp in Sources */,
 				8402ABA219BA033200111F35 /* TextBlockDistanceRender.cpp in Sources */,
@@ -5165,6 +5225,7 @@
 				02FD80AF1924997C007762C0 /* ApplicationCore.cpp in Sources */,
 				02FD80B01924997C007762C0 /* Core.cpp in Sources */,
 				024BD5BA1A2C9299000BECC1 /* RenderSystem2D.cpp in Sources */,
+				B7F8977F1A6FE2310055F691 /* UIInputComponent.cpp in Sources */,
 				02FD80B11924997C007762C0 /* MongodbClient.cpp in Sources */,
 				02FD80B21924997C007762C0 /* MongodbObject.cpp in Sources */,
 				D7D3A2C719C8313300CD6B51 /* NSStringUtils.mm in Sources */,
@@ -5179,6 +5240,7 @@
 				02FD80BD1924997C007762C0 /* SceneSystem.cpp in Sources */,
 				02FD80BE1924997C007762C0 /* Bitstream.cpp in Sources */,
 				02FD80BF1924997C007762C0 /* DynamicMemoryFile.cpp in Sources */,
+				B7F8978A1A6FE2390055F691 /* UIInputSystem.cpp in Sources */,
 				02FD80C01924997C007762C0 /* File.cpp in Sources */,
 				11CB614A19C338DF00B48A92 /* AnimationData.cpp in Sources */,
 				02FD80C11924997C007762C0 /* FileList.cpp in Sources */,
@@ -5251,6 +5313,7 @@
 				02FD80FA1924997C007762C0 /* FTFont.cpp in Sources */,
 				02FD80FB1924997C007762C0 /* GraphicsFont.cpp in Sources */,
 				02FD80FC1924997C007762C0 /* Sprite.cpp in Sources */,
+				B7F8978C1A6FE23E0055F691 /* UIRenderSystem.cpp in Sources */,
 				E890390D196D4FB9003126C8 /* ImageFormatInterface.cpp in Sources */,
 				02FD80FD1924997C007762C0 /* TextBlock.cpp in Sources */,
 				02FD80FE1924997C007762C0 /* AnimatedMesh.cpp in Sources */,
@@ -5391,6 +5454,7 @@
 				02FD81731924997C007762C0 /* ParticleRenderObject.cpp in Sources */,
 				02FD81751924997C007762C0 /* LightUpdateSystem.cpp in Sources */,
 				02FD81761924997C007762C0 /* MaterialSystem.cpp in Sources */,
+				B7F8978F1A6FE23E0055F691 /* UIUpdateSystem.cpp in Sources */,
 				02FD81771924997C007762C0 /* LodSystem.cpp in Sources */,
 				17675C2019472C1400054F8F /* ImageSystem.cpp in Sources */,
 				02FD81781924997C007762C0 /* ParticleEffectSystem.cpp in Sources */,
@@ -5462,6 +5526,7 @@
 				02FD81B01924997C007762C0 /* WebViewControliOS.mm in Sources */,
 				02FD81B11924997C007762C0 /* DPIHelperiOS.mm in Sources */,
 				02FD81B31924997C007762C0 /* DVAssertMessage.cpp in Sources */,
+				B7F897871A6FE2310055F691 /* UIUpdateComponent.cpp in Sources */,
 				02FD81B41924997C007762C0 /* DVAssertMessageApple.mm in Sources */,
 				02FD81B51924997C007762C0 /* UIAlertView_Modal.m in Sources */,
 				02E9B4CE19407C6B001DBDDF /* WindComponent.cpp in Sources */,
@@ -5527,6 +5592,7 @@
 				02FD81EC1924997C007762C0 /* SerializationContext.cpp in Sources */,
 				D7FEF14419864E5C00B2C7AF /* Downloader.cpp in Sources */,
 				02FD81EE1924997C007762C0 /* GamepadDevice.mm in Sources */,
+				B7F897831A6FE2310055F691 /* UIRenderComponent.cpp in Sources */,
 				02FD81EF1924997C007762C0 /* DateTime.cpp in Sources */,
 				02FD81F01924997C007762C0 /* GamepadManager.mm in Sources */,
 				9A0110F1302925F60E1FB064 /* LocalNotificationDelayed.cpp in Sources */,
@@ -5628,6 +5694,7 @@
 				84D18C0019201BEF009E3E90 /* ImageSystem.cpp in Sources */,
 				024BD5BD1A2C9299000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				D7FEF14B19864E5C00B2C7AF /* DownloadManager.cpp in Sources */,
+				B7F897821A6FE2310055F691 /* UIRenderComponent.cpp in Sources */,
 				E8B3CB7516B9326E002BD35F /* Particle.cpp in Sources */,
 				E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */,
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,
@@ -5810,6 +5877,7 @@
 				E8B3CCF316B9326E002BD35F /* UIControlSystem.cpp in Sources */,
 				E8B3CCF516B9326E002BD35F /* UIEvent.cpp in Sources */,
 				E8B3CCF716B9326E002BD35F /* UIFadeTransition.cpp in Sources */,
+				B7F8977A1A6FE2310055F691 /* UIComponent.cpp in Sources */,
 				E8B3CCF916B9326E002BD35F /* UIFileSystemDialog.cpp in Sources */,
 				E8525D271A30911400FDF76E /* RotationControllerSystem.cpp in Sources */,
 				E8B3CCFB16B9326E002BD35F /* UIHierarchy.cpp in Sources */,
@@ -5834,6 +5902,7 @@
 				1146E10819D00649009E5FAB /* AnimationSystem.cpp in Sources */,
 				647EFC6F195F0AC40073B3CB /* NMaterialHelper.cpp in Sources */,
 				E8B3CD1C16B9326E002BD35F /* UIScrollBar.cpp in Sources */,
+				B7F8977E1A6FE2310055F691 /* UIInputComponent.cpp in Sources */,
 				E8B3CD1E16B9326E002BD35F /* UISlider.cpp in Sources */,
 				E8B3CD2016B9326E002BD35F /* UIStaticText.cpp in Sources */,
 				E8B3CD2216B9326E002BD35F /* UITextField.cpp in Sources */,
@@ -5868,6 +5937,7 @@
 				E8525D1C1A30910400FDF76E /* WASDControllerComponent.cpp in Sources */,
 				D7CC266919C517E500A3B754 /* LocalNotificationIOS.cpp in Sources */,
 				CC247FF316D69F1700183D40 /* DVAssertMessageApple.mm in Sources */,
+				B7F897861A6FE2310055F691 /* UIUpdateComponent.cpp in Sources */,
 				CC247FF516D69F1700183D40 /* UIAlertView_Modal.m in Sources */,
 				64493E0619476F4700AB2715 /* VegetationFixedGeometry.cpp in Sources */,
 				E8525D181A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp in Sources */,

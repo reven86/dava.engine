@@ -2339,13 +2339,12 @@ namespace DAVA
 
     Component * UIControl::GetComponent(uint32 componentType, uint32 index) const
     {
-        UIComponent * ret = 0;
+        Component * ret = 0;
         uint32 maxCount = family->GetComponentsCount(componentType);
         if (index < maxCount)
         {
-            ret = DynamicTypeCheck<UIComponent*>(components[family->GetComponentIndex(componentType, index)]);
+            ret = components[family->GetComponentIndex(componentType, index)];
         }
-
         return ret;
     }
 

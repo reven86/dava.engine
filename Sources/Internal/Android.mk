@@ -78,6 +78,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Systems/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \
@@ -100,7 +102,7 @@ endif
 endif
 
 # set build flags
-LOCAL_CFLAGS += -Dnullptr=0
+LOCAL_CPPFLAGS += -std=c++11
 LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 LOCAL_CFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD

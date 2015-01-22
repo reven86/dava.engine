@@ -1230,6 +1230,14 @@
 		B7BEB94819CB1A47005B4BC7 /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
 		B7BEB94919CB1A48005B4BC7 /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
 		B7D6C98419CAC6980095250A /* libfribidi_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C98319CAC6980095250A /* libfribidi_macos.a */; };
+		B7F897611A6E8A060055F691 /* UIComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F897591A6E8A060055F691 /* UIComponent.cpp */; };
+		B7F897621A6E8A060055F691 /* UIComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F8975A1A6E8A060055F691 /* UIComponent.h */; };
+		B7F897631A6E8A060055F691 /* UIInputComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F8975B1A6E8A060055F691 /* UIInputComponent.cpp */; };
+		B7F897641A6E8A060055F691 /* UIInputComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F8975C1A6E8A060055F691 /* UIInputComponent.h */; };
+		B7F897651A6E8A060055F691 /* UIRenderComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F8975D1A6E8A060055F691 /* UIRenderComponent.cpp */; };
+		B7F897661A6E8A060055F691 /* UIRenderComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F8975E1A6E8A060055F691 /* UIRenderComponent.h */; };
+		B7F897671A6E8A060055F691 /* UIUpdateComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B7F8975F1A6E8A060055F691 /* UIUpdateComponent.cpp */; };
+		B7F897681A6E8A060055F691 /* UIUpdateComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = B7F897601A6E8A060055F691 /* UIUpdateComponent.h */; };
 		C151B17716D3747E00E09BAF /* DVAssertMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */; };
 		C151B17816D3747E00E09BAF /* DVAssertMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B17516D3747E00E09BAF /* DVAssertMessage.h */; };
 		C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */; };
@@ -2903,6 +2911,14 @@
 		B79723FB1A1260E9009421F3 /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
 		B79723FC1A1260E9009421F3 /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
 		B7D6C98319CAC6980095250A /* libfribidi_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_macos.a; path = ../../Libs/libs/libfribidi_macos.a; sourceTree = "<group>"; };
+		B7F897591A6E8A060055F691 /* UIComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIComponent.cpp; sourceTree = "<group>"; };
+		B7F8975A1A6E8A060055F691 /* UIComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIComponent.h; sourceTree = "<group>"; };
+		B7F8975B1A6E8A060055F691 /* UIInputComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIInputComponent.cpp; sourceTree = "<group>"; };
+		B7F8975C1A6E8A060055F691 /* UIInputComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIInputComponent.h; sourceTree = "<group>"; };
+		B7F8975D1A6E8A060055F691 /* UIRenderComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIRenderComponent.cpp; sourceTree = "<group>"; };
+		B7F8975E1A6E8A060055F691 /* UIRenderComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIRenderComponent.h; sourceTree = "<group>"; };
+		B7F8975F1A6E8A060055F691 /* UIUpdateComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIUpdateComponent.cpp; sourceTree = "<group>"; };
+		B7F897601A6E8A060055F691 /* UIUpdateComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIUpdateComponent.h; sourceTree = "<group>"; };
 		C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DVAssertMessage.cpp; sourceTree = "<group>"; };
 		C151B17516D3747E00E09BAF /* DVAssertMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DVAssertMessage.h; sourceTree = "<group>"; };
 		C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DVAssertMessageApple.mm; sourceTree = "<group>"; };
@@ -3849,6 +3865,21 @@
 			path = Systems;
 			sourceTree = "<group>";
 		};
+		B7F897581A6E8A060055F691 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B7F897591A6E8A060055F691 /* UIComponent.cpp */,
+				B7F8975A1A6E8A060055F691 /* UIComponent.h */,
+				B7F8975B1A6E8A060055F691 /* UIInputComponent.cpp */,
+				B7F8975C1A6E8A060055F691 /* UIInputComponent.h */,
+				B7F8975D1A6E8A060055F691 /* UIRenderComponent.cpp */,
+				B7F8975E1A6E8A060055F691 /* UIRenderComponent.h */,
+				B7F8975F1A6E8A060055F691 /* UIUpdateComponent.cpp */,
+				B7F897601A6E8A060055F691 /* UIUpdateComponent.h */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		CC84B00D18211A5600934482 /* Job */ = {
 			isa = PBXGroup;
 			children = (
@@ -4790,6 +4821,7 @@
 		E8989D4A16BD24E500732C04 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				B7F897581A6E8A060055F691 /* Components */,
 				B73329731A5FFCD9006F3738 /* Systems */,
 				322FFD3819C042880000ED71 /* UIControlHelpers.cpp */,
 				322FFD3919C042880000ED71 /* UIControlHelpers.h */,
@@ -5575,6 +5607,7 @@
 				E8989E7A16BD24E500732C04 /* Rect.h in Headers */,
 				E8989E7C16BD24E500732C04 /* RectPacker.h in Headers */,
 				E8989E7D16BD24E500732C04 /* Sphere.h in Headers */,
+				B7F897641A6E8A060055F691 /* UIInputComponent.h in Headers */,
 				E8989E7F16BD24E500732C04 /* Spline.h in Headers */,
 				E8989E8016BD24E500732C04 /* Vector.h in Headers */,
 				647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
@@ -5583,6 +5616,7 @@
 				E8989E9416BD24E500732C04 /* ParticleEmitter.h in Headers */,
 				E89EDE511A2E16FA0036E993 /* AutotestingSystemConfig.h in Headers */,
 				E8989E9A16BD24E500732C04 /* ParticleLayer.h in Headers */,
+				B7F897621A6E8A060055F691 /* UIComponent.h in Headers */,
 				E8989EA016BD24E500732C04 /* ParticlePropertyLine.h in Headers */,
 				D7E6C5AD198255BF00B96D1A /* DownloaderCommon.h in Headers */,
 				E8989EAB16BD24E500732C04 /* Mutex.h in Headers */,
@@ -5599,6 +5633,7 @@
 				E8989EDA16BD24E500732C04 /* Font.h in Headers */,
 				E8989EDC16BD24E500732C04 /* FontManager.h in Headers */,
 				E8989EDE16BD24E500732C04 /* FTFont.h in Headers */,
+				B7F897661A6E8A060055F691 /* UIRenderComponent.h in Headers */,
 				4F34E1BC1A234DDA000681BB /* JobThread.h in Headers */,
 				D7E6C5AF198255C000B96D1A /* DownloadManager.h in Headers */,
 				644C86E819476A7100964F91 /* VegetationMaterialTransformer.h in Headers */,
@@ -5748,6 +5783,7 @@
 				E898A01216BD24E500732C04 /* UIEvent.h in Headers */,
 				E898A01416BD24E500732C04 /* UIFadeTransition.h in Headers */,
 				E898A01616BD24E500732C04 /* UIFileSystemDialog.h in Headers */,
+				B7F897681A6E8A060055F691 /* UIUpdateComponent.h in Headers */,
 				E898A01816BD24E500732C04 /* UIHierarchy.h in Headers */,
 				E898A01A16BD24E500732C04 /* UIHierarchyCell.h in Headers */,
 				E898A01C16BD24E500732C04 /* UIHierarchyNode.h in Headers */,
@@ -6939,6 +6975,7 @@
 				E8989E6E16BD24E500732C04 /* Matrix4.cpp in Sources */,
 				E8989E7016BD24E500732C04 /* NeonMath.cpp in Sources */,
 				D7CC264619C43C7C00A3B754 /* LocalNotificationText.cpp in Sources */,
+				B7F897651A6E8A060055F691 /* UIRenderComponent.cpp in Sources */,
 				E8989E7416BD24E500732C04 /* Polygon2.cpp in Sources */,
 				E8989E7616BD24E500732C04 /* Polygon3.cpp in Sources */,
 				E89EDE661A2E16FA0036E993 /* KeyedArchiveSwig.cpp in Sources */,
@@ -7121,6 +7158,7 @@
 				D7E6C5A8198255BF00B96D1A /* CurlDownloader.cpp in Sources */,
 				E8FC12F2186972560095D8FE /* QualitySettingsComponent.cpp in Sources */,
 				644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */,
+				B7F897611A6E8A060055F691 /* UIComponent.cpp in Sources */,
 				E898A01916BD24E500732C04 /* UIHierarchyCell.cpp in Sources */,
 				E898A01B16BD24E500732C04 /* UIHierarchyNode.cpp in Sources */,
 				026A1DC819DAF0A300813AEF /* SkeletonSystem.cpp in Sources */,
@@ -7145,6 +7183,7 @@
 				E8B47D29196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				E898A03A16BD24E500732C04 /* UISlider.cpp in Sources */,
 				C172EC1018C9F1E9004309CF /* TextBlockRender.cpp in Sources */,
+				B7F897631A6E8A060055F691 /* UIInputComponent.cpp in Sources */,
 				84CB671E191FC8850086483D /* ImageSystem.cpp in Sources */,
 				E898A03C16BD24E500732C04 /* UIStaticText.cpp in Sources */,
 				E898A03E16BD24E500732C04 /* UITextField.cpp in Sources */,
@@ -7179,6 +7218,7 @@
 				D7E6C5AA198255BF00B96D1A /* Downloader.cpp in Sources */,
 				CCC7A42516F1D6170061EA5D /* Camera.cpp in Sources */,
 				CCC7A42916F1D6170061EA5D /* CullingSystem.cpp in Sources */,
+				B7F897671A6E8A060055F691 /* UIUpdateComponent.cpp in Sources */,
 				D7CC263A19C43C7C00A3B754 /* LocalNotificationNotImplemented.cpp in Sources */,
 				CCC7A42D16F1D6170061EA5D /* Frustum.cpp in Sources */,
 				CCC7A43116F1D6170061EA5D /* Heightmap.cpp in Sources */,
