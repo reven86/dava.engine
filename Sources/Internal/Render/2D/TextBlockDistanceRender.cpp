@@ -116,8 +116,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	if (charDrawed == 0)
 		return;
 	
-	int32 xOffset = (int32)(textBlock->position.x - textBlock->pivotPoint.x);
-	int32 yOffset = (int32)(textBlock->position.y - textBlock->pivotPoint.y);
+    int32 xOffset = (int32)(textBlock->position.x);
+    int32 yOffset = (int32)(textBlock->position.y);
 
 	if (offset)
 	{
