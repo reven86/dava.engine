@@ -35,21 +35,10 @@
 namespace DAVA
 {
 
-namespace DataVault
-{
-
-enum DataStorageType
-{
-    CLOUD,
-    LOCAL_PREFERENCES,
-    PRIVATE_FILE,
-    SHARED_FILE,
-};
-
-class IDataStorageImpl
+class IDataStorage
 {
 public:
-    virtual ~IDataStorageImpl() {};
+    virtual ~IDataStorage() {};
 
     virtual void SetEntry(String &key, String &value) = 0;
     virtual void RemoveEntry(String &key) = 0;
@@ -57,31 +46,41 @@ public:
     virtual void Push() = 0;
 };
 
-class IDataStorage : public IDataStorageImpl, public BaseObject
-{
-
-};
-
-class DataStorage : public IDataStorage
+class DataStorage : public IDataStorage, public BaseObject
 {
 public:
-    DataStorage(DataStorageType preferredType);
+    enum Type
+    {
+        CLOUD,
+        LOCAL_PREFERENCES,
+        PRIVATE_FILE,
+        SHARED_FILE,
+    };
+
+protected:
+    DataStorage(Type preferredType);
     ~DataStorage();
 
+public:
+    static DataStorage *Create(Type preferredType);
+
+public: // IDataStorage intergace implementation
     void SetEntry(String &key, String &value) override;
     void RemoveEntry(String &key) override;
     void Clear() override;
     void Push() override;
 
 private:
-    // definitions for different OS's placed inside platform files
-    IDataStorageImpl *CreateStorageImpl(DataStorageType preferredType);
+    template<class T>
+    void CreateImpl()
+    {
+        impl = new T();
+    }
 
 private:
-    IDataStorageImpl *impl;
+    IDataStorage *impl;
+    Type type;
 };
-
-} //namespace DataVault
 
 } //namespace DAVA
 

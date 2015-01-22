@@ -31,10 +31,6 @@
 namespace DAVA
 {
 
-namespace DataVault
-{
-
-}
 void SharedPreferences::SetEntry(String &key, String &value)
 {
 
@@ -56,6 +52,3 @@ void SharedPreferences::Push()
 }
 
 }
-
-}
-

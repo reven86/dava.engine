@@ -35,10 +35,7 @@
 namespace DAVA
 {
 
-namespace DataVault
-{
-
-class SharedPreferences : public IDataStorageImpl
+class SharedPreferences : public IDataStorage
 {
 public:
     void SetEntry(String &key, String &value) override;
@@ -46,9 +43,6 @@ public:
     void Clear() override;
     void Push() override;
 };
-
-
-} //namespace DataVault
 
 } //namespace DAVA
 

@@ -31,16 +31,35 @@
 namespace DAVA
 {
 
-namespace DataVault
+Map<DataStorage::Type, DataStorage *> DataVault::activeStorages;
+DataStorage *DataVault::GetStorage(DataStorage::Type type)
 {
+    auto storageIt = DataVault::activeStorages.find(type);
 
-IDataStorage *GetStorage(DataStorageType type)
-{
-    IDataStorageImpl *storage = new DataStorage(type);
+    DataStorage *storage = NULL;
+    if (DataVault::activeStorages.end() != storageIt)
+    {
+        storage = storageIt->second;
+        storage->Retain();
+    }
+    else
+    {
+        storage = DataStorage::Create(type);
+        DataVault::activeStorages.insert(std::pair<DataStorage::Type, DataStorage *>(type, storage));
+    }
+
     return storage;
 }
 
+void DataVault::RemoveStorage(DataStorage::Type type)
+{
+    auto storageIt = DataVault::activeStorages.find(type);
 
-} //namespace DataVault
+    if (DataVault::activeStorages.end() != storageIt)
+    {
+        DataVault::activeStorages.erase(storageIt);
+    }
+}
+
 
 } //namespace DAVA

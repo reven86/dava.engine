@@ -27,23 +27,20 @@
 =====================================================================================*/
 
 #include "DataStorage.h"
+#include "DataVault.h"
 
 namespace DAVA
 {
 
-namespace DataVault
+DataStorage::DataStorage(Type preferredType)
 {
-
-}
-DataStorage::DataStorage(DataStorageType preferredType)
-{
-    impl = CreateStrageImpl(preferredType);
-
+    type = preferredType;
 }
 
 DataStorage::~DataStorage()
 {
     SafeDelete(impl);
+    DataVault::RemoveStorage(type);
 }
 
 void DataStorage::SetEntry(String &key, String &value)

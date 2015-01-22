@@ -26,21 +26,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DataStorage.h"
+#include "DataVault/DataStorage.h"
 #include "SharedPreferences.h"
 
 namespace DAVA
 {
 
-namespace DataVault
+DataStorage *DataStorage::Create(Type preferredType)
 {
+    DataStorage *storage = new DataStorage(preferredType);
+    storage->CreateImpl<SharedPreferences>();
 
-IDataStorageImpl *DataStorage::CreateStorageImpl(DataStorageType preferredType)
-{
-    impl = new SharedPreferences();
-
-}
-
+    return storage;
 }
 
 }
