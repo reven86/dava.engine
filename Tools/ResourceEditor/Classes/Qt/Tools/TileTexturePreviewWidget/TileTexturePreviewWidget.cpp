@@ -183,7 +183,10 @@ void TileTexturePreviewWidget::UpdateImage(int32 number)
 void TileTexturePreviewWidget::UpdateColor(int32 number)
 {
 	DVASSERT(number >= 0 && number < (int32)images.size());
+    
+    bool blocked = blockSignals(true);
 
+    
 	QTreeWidgetItem* item = topLevelItem(number);
 	QColor color = ColorToQColor(colors[number]);
 
@@ -196,6 +199,8 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
 	item->setText(0, str);
 
 	UpdateImage(number);
+    
+    blockSignals(blocked);
 }
 
 void TileTexturePreviewWidget::UpdateSelection()

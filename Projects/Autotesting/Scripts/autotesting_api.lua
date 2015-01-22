@@ -355,8 +355,8 @@ function IsOnScreen(control, background)
     local rect = geomData:GetUnrotatedRect()
     geomData = screen:GetGeometricData()
     local backRect = geomData:GetUnrotatedRect()
-    return toboolean((rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y)
-            and (rect.y + rect.dy <= backRect.y + backRect.dy))
+    return toboolean((backRect.x - rect.x <= 1) and ((rect.x + rect.dx) - (backRect.x + backRect.dx) <= 1) and (backRect.y - rect.y <= 1)
+            and ((rect.y + rect.dy) - (backRect.y + backRect.dy) <= 1))
 end
 
 function IsCenterOnScreen(control, background)
