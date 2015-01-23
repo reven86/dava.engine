@@ -37,7 +37,6 @@
 
 #include "version.h"
 #include "Main/mainwindow.h"
-#include "Main/davaglwidget.h"
 #include "Project/ProjectManager.h"
 #include "TeamcityOutput/TeamcityOutput.h"
 #include "TexturePacker/CommandLineParser.h"
@@ -135,7 +134,6 @@ int main(int argc, char *argv[])
         DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
 
         new SceneValidator();
-		DavaGLWidget* davaGL = new DavaGLWidget();
         RenderManager::Instance()->Init(0, 0);
 
         DavaLoop::Instance()->StartLoop( new FrameworkLoop() );
@@ -156,7 +154,6 @@ int main(int argc, char *argv[])
 			cmdLine.PrintResults();
 		}
 
-		SafeDelete(davaGL);
 		SceneValidator::Instance()->Release();
 	}
 	else if ( runGuard.tryToRun() )

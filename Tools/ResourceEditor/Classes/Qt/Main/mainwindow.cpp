@@ -126,7 +126,6 @@
 
 #include "SceneProcessing/SceneProcessor.h"
 #include "QtLayer.h"
-#include "davaglwidget.h"
 
 
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
