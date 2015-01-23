@@ -95,36 +95,19 @@ void QtLayerWin32::AppFinished()
 #endif
 }
 
-
-void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int32 height)
-{
-	CoreWin32PlatformQt *core = static_cast<CoreWin32PlatformQt*>(CoreWin32PlatformQt::Instance());
-	DVASSERT(core);
-
-	core->SetupWindow(hInstance, hWindow);
-	RenderManager::Create(Core::RENDERER_OPENGL);		
-	RenderManager::Instance()->Create(hInstance, hWindow);
-    RenderSystem2D::Instance()->Init();
-
-	FrameworkDidLaunched();
-
-	Resize(width, height);
-	AppStarted();
-}
-
-void QtLayerWin32::SetupWidget( uint64 contextId )
+void QtLayerWin32::SetupWidget( uint64 contextId, int32 width, int32 height )
 {
     RenderManager::Create( Core::RENDERER_OPENGL );
-    RenderManager::Instance()->SetRenderContextId( contextId );
+    RenderManager::Instance()->Create( contextId );
     RenderSystem2D::Instance()->Init();
 
     FrameworkDidLaunched();
 
-    Resize( 200, 200 );
+    Resize( width, height );
     AppStarted();
 }
 
-    void QtLayerWin32::Resize(int32 width, int32 height)
+void QtLayerWin32::Resize(int32 width, int32 height)
 {
 	RenderManager::Instance()->Init(width, height);
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);

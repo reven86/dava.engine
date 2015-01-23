@@ -176,10 +176,11 @@ public:
 #endif 
 
 #ifdef __DAVAENGINE_WIN32__
-	bool Create(HINSTANCE hInstance, HWND hWnd);
+    bool Create( uint64 contextId );
 #else
 	bool Create();
 #endif 
+
 	bool ChangeDisplayMode(DisplayMode mode, bool isFullscreen);
 	
 #if defined(__DAVAENGINE_ANDROID__)

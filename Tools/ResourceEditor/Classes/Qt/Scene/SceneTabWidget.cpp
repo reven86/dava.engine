@@ -82,7 +82,7 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	layout->setMargin(0);
 	layout->setSpacing(1);
 	setLayout(layout);
-	setAcceptDrops(true);
+    setAcceptDrops( true ); DVASSERT( 1 );
 
     QMetaObject::invokeMethod( this, "DelayedInit", Qt::QueuedConnection );
 }

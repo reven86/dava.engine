@@ -128,7 +128,6 @@ int main(int argc, char *argv[])
 	CommandLineManager cmdLine;
 
     new DavaLoop();
-    DavaLoop::Instance()->StartLoop( new FrameworkLoop() );
 
 	if(cmdLine.IsEnabled())
 	{
@@ -138,6 +137,8 @@ int main(int argc, char *argv[])
         new SceneValidator();
 		DavaGLWidget* davaGL = new DavaGLWidget();
         RenderManager::Instance()->Init(0, 0);
+
+        DavaLoop::Instance()->StartLoop( new FrameworkLoop() );
 
 		cmdLine.InitalizeTool();
 		if(!cmdLine.IsToolInitialized())
@@ -183,6 +184,9 @@ int main(int argc, char *argv[])
                 QtMainWindow::Instance()->OnSceneNew();
             
             DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+
+            // Register event loop
+            DavaLoop::Instance()->StartLoop( new FrameworkLoop() );
 
 		    // start app
 		    ret = a.exec();

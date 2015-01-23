@@ -54,32 +54,9 @@ static HGLRC hRC;
 static HWND hWnd;
 static HINSTANCE hInstance;
 
-bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
+bool RenderManager::Create( uint64 contextId )
 {
-	hInstance = _hInstance;
-	hWnd = _hWnd;
-
-	hDC = GetDC(hWnd);
-
-	PIXELFORMATDESCRIPTOR pfd;
-	ZeroMemory( &pfd, sizeof( pfd ) );
-	pfd.nSize = sizeof( pfd );
-	pfd.nVersion = 1;
-	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = 24;
-	pfd.cDepthBits = 24;
-	pfd.cStencilBits = 8;
-	pfd.iLayerType = PFD_MAIN_PLANE;
-	int iFormat = ChoosePixelFormat( hDC, &pfd );
-	SetPixelFormat( hDC, iFormat, &pfd );
-
-	hRC = wglCreateContext(hDC);
-
-	renderContextId = (uint64)hRC;
-	
-	wglMakeCurrent(hDC, hRC);
-
+    renderContextId = contextId;
 	glewInit();
 
 	return true;

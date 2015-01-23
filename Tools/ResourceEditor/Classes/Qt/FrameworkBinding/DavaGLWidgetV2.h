@@ -3,10 +3,12 @@
 
 
 #include <QOpenGLWidget>
+#include <QOpenGLFunctions>
 
 
 class DavaGLWidgetV2
     : public QOpenGLWidget
+    //, protected QOpenGLFunctions
 {
     Q_OBJECT
 
@@ -15,8 +17,10 @@ public:
     ~DavaGLWidgetV2();
 
     void Init();
+    quint64 GetContextId() const;
 
 private:
+    void initializeGL() override;
 };
 
 

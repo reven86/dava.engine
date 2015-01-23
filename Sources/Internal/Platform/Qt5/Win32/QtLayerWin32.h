@@ -58,9 +58,7 @@ public:
 
     virtual void LockKeyboardInput(bool locked);
 
-	void SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int32 height);
-
-    void SetupWidget( uint64 contextId );
+    void SetupWidget( uint64 contextId, int32 width, int32 height );
 };	
 
 };
