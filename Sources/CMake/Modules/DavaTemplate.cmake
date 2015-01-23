@@ -61,7 +61,7 @@ if( APPLE )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
                             MACOSX_BUNDLE_INFO_PLIST ${MACOS_PLIST} 
                             XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
-                            RESOURCE ${MACOS_ICO}
+                            RESOURCE "${MACOS_ICO}"
                           )
 
 elseif ( MSVC )
