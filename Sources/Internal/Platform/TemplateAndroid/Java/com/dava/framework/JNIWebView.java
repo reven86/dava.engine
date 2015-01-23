@@ -18,7 +18,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -51,6 +50,13 @@ public class JNIWebView {
 			assert client != null;
 			return client;
 		}
+		
+		@Override
+		public void setVisibility(int visibility)
+		{
+		    Log.d(TAG, "web view visibility set to: " + visibility);
+		    super.setVisibility(visibility);
+		}
 	}
 	
 	static Map<Integer, WebViewWrapper> views = new HashMap<Integer, WebViewWrapper>();
@@ -73,10 +79,19 @@ public class JNIWebView {
 		}
 
 		public void setVisible(WebView view, boolean isVisible) {
-			int visible = isVisible ? WebView.VISIBLE : WebView.INVISIBLE;
 			
-			view.setVisibility(visible);
 			this.isVisible = isVisible;
+			int visible = View.VISIBLE;
+			
+			if (isRenderToTexture)
+			{
+			    visible = isVisible ? View.VISIBLE : View.INVISIBLE;
+			}
+			else
+			{
+			    visible = isVisible ? View.VISIBLE : View.GONE;
+			}
+			view.setVisibility(visible);
 		}
 
 		public boolean isRenderToTexture() {
@@ -89,22 +104,24 @@ public class JNIWebView {
 			
 			JNIActivity activity = JNIActivity.GetActivity();
 			
+			WebViewWrapper viewWrapper = (WebViewWrapper)view;
+			
 			if (isRenderToTexture)
 			{	
 				renderToBitmapAndCopyPixels(view);
 				
 				activity.PostEventToGL(
-					new OnPageLoadedNativeRunnable(view, pixels, width, 
+					new OnPageLoadedNativeRunnable(viewWrapper, pixels, width, 
 							height));
 			} else
 			{
 				if (isVisible)
 				{
-					view.setVisibility(WebView.VISIBLE);
+				    setVisible(viewWrapper, true);
 					// we need remove sprite in c++ native code to reduce
 					// memory usage, but only after native view appear 
 					activity.PostEventToGL(
-						new OnPageLoadedNativeRunnable(null, null, 0, 0));
+						new OnPageLoadedNativeRunnable(viewWrapper, null, 0, 0));
 				}
 			}
 		}
@@ -114,13 +131,13 @@ public class JNIWebView {
 		}
 		
 		class OnPageLoadedNativeRunnable implements Runnable {
-			WebView view = null;
+			WebViewWrapper view = null;
 			int[] pixels;
 			int width;
 			int height;
 			
-			OnPageLoadedNativeRunnable(WebView view, int[] pixels, int width, 
-					int height) {
+			OnPageLoadedNativeRunnable(WebViewWrapper view, int[] pixels, 
+			        int width, int height) {
 				this.view = view;
 				this.pixels = pixels;
 				this.width = width;
@@ -135,10 +152,9 @@ public class JNIWebView {
 				JNIActivity.GetActivity().runOnUiThread(new Runnable(){
 					@Override
 					public void run() {
-						if (view != null && pixels != null)
-						{
-							view.setVisibility(WebView.INVISIBLE);
-						}
+					    // update current visibility after load page
+					    boolean visible = view.getInternalViewClient().isVisible();
+					    view.getInternalViewClient().setVisible(view, visible);
 					}
 					
 				});
@@ -148,6 +164,7 @@ public class JNIWebView {
 		
 		@Override
 		public void onPageFinished(WebView view, String url) {
+		    Log.d(TAG, "on page finished url:" + url);
 			super.onPageFinished(view, url);
 			
 			JNIActivity activity = JNIActivity.GetActivity();
@@ -156,18 +173,20 @@ public class JNIWebView {
 				return;
 			}
 			
+			WebViewWrapper viewWrapper = (WebViewWrapper)view;
+			
 			if (isRenderToTexture)
 			{
-				// render webview into bitmap and pass it to native code
+				// render web view into bitmap and pass it to native code
 				renderToBitmapAndCopyPixels(view);
 				
 				activity.PostEventToGL(
-					new OnPageLoadedNativeRunnable(view, pixels, width, 
+					new OnPageLoadedNativeRunnable(viewWrapper, pixels, width, 
 							height));
 			} else
 			{
 				activity.PostEventToGL(
-					new OnPageLoadedNativeRunnable(null, null, 0, 0));
+					new OnPageLoadedNativeRunnable(viewWrapper, null, 0, 0));
 			}
 		}
 
@@ -213,6 +232,14 @@ public class JNIWebView {
             return bitmapCache;
             //return b;
 		};
+
+		@Override
+        public void onReceivedError(WebView view, int errorCode,
+                String description, String failingUrl) 
+        {
+            Log.e(TAG, "Error in webview errorCode:" + errorCode + 
+                    " description:" + description + " failingUrl:" + failingUrl);
+        }
 		
 		
 		@Override
@@ -279,7 +306,8 @@ public class JNIWebView {
 		}
 	}
 	
-	public static void Initialize(final int id, final float x, final float y, final float dx, final float dy)
+	public static void Initialize(final int id, final float x, final float y, 
+	        final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
 		if (null == activity || activity.GetIsPausing())
@@ -290,12 +318,15 @@ public class JNIWebView {
 			public void run() {
 				if (views.containsKey(id))
 				{
-					Log.d(TAG, String.format("WebView with id %d already initialized", id));
+					Log.d(TAG, String.format(
+					        "WebView with id %d already initialized", id));
 					return;
 				}
 				WebViewWrapper webView = new WebViewWrapper(activity);
 				FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-						new FrameLayout.MarginLayoutParams((int)(dx + 0.5f), (int)(dy + 0.5f)));
+						new FrameLayout.MarginLayoutParams((int)(dx + 0.5f), 
+						        (int)(dy + 0.5f)));
+				
 				params.leftMargin = (int)x;
 				params.topMargin = (int)y;
 				params.width = (int)(dx + 0.5f);
@@ -331,8 +362,6 @@ public class JNIWebView {
 				
 				activity.addContentView(webView, params);
 				views.put(id, webView);
-				
-				CookieSyncManager.createInstance(activity.getApplicationContext()); 
 			}
 		});
 	}
@@ -361,6 +390,8 @@ public class JNIWebView {
 	
 	public static void OpenURL(final int id, final String url)
 	{
+	    Log.d(TAG, "open url: " + url);
+	    
 		final JNIActivity activity = JNIActivity.GetActivity();
 		if (null == activity || activity.GetIsPausing())
 			return;
@@ -381,6 +412,8 @@ public class JNIWebView {
 	
 	public static void LoadHtmlString(final int id, final String htmlString)
 	{
+	    Log.d(TAG, "load html string: " + htmlString);
+	    
 		final JNIActivity activity = JNIActivity.GetActivity();
 		if (null == activity || activity.GetIsPausing())
 			return;
@@ -399,7 +432,8 @@ public class JNIWebView {
 		});
 	}
 		
-	public static void OpenFromBuffer(final int id, final String data, final String baseUrl)
+	public static void OpenFromBuffer(final int id, final String data, 
+	        final String baseUrl)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
 		if (null == activity || activity.GetIsPausing())
@@ -451,7 +485,8 @@ public class JNIWebView {
 	
 	public static void DeleteCookies(final String targetURL)
 	{
-		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 		
+		// The CookieSyncManager is used to synchronize the browser 
+	    // cookie store between RAM and permanent storage. 		
 		CookieManager cookieManager = CookieManager.getInstance();
 		if (cookieManager.hasCookies())
 		{
@@ -463,26 +498,19 @@ public class JNIWebView {
 		   	for (int i=0; i<cookies.length; i++) 
 		   	{
 		   		String[] cookieparts = cookies[i].split("=");
-		   		cookieManager.setCookie(targetURL, cookieparts[0].trim()+"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
+		   		String cookieKey = cookieparts[0].trim();
+		   		cookieManager.setCookie(targetURL, cookieKey
+		   		        +"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
 		   	}
-		   	// Synchronize cookies storage
-		   	CookieSyncManager.getInstance().sync();
 		    
-		   	// Check if cookies were removed - if not - delete all cookies
-		   	cookiestring = cookieManager.getCookie(targetURL);
-		   	cookies =  cookiestring.split(";");
-		   	if (cookies.length > 0)
-		   	{
-		   		cookieManager.removeExpiredCookie();
-		   		// Synchronize cookies storage
-		   		CookieSyncManager.getInstance().sync();
-		   	}	
+		   	cookieManager.flush();
 		}
 	}	
 	
 	public static String GetCookie(final String targetURL, final String cookieName)
 	{		
-		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
+		// The CookieSyncManager is used to synchronize the browser 
+	    // cookie store between RAM and permanent storage. 
 	    CookieManager cookieManager = CookieManager.getInstance();
 
 	    if (cookieManager.hasCookies())
@@ -536,6 +564,7 @@ public class JNIWebView {
 				params.width = (int)(dx + 0.5f);
 				params.height = (int)(dy + 0.5f); 
 				view.setLayoutParams(params);
+				Log.d(TAG, "set rect:" + x + "," + y + ", " + dx + ", " + dy);
 			}
 		});
 	}
