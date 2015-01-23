@@ -138,7 +138,7 @@ void main()
     #if defined(SPEARATE_NORMALMAPPS)
         lowp vec3 normal1 = texture2D (normalmap1, varTexCoord1).rgb;    
     #else
-        lowp vec3 normal1 = texture2D (normalmap0, varTexCoord1).rgb;
+        lowp vec3 normal1 = texture2D (normalmap, varTexCoord1).rgb;
     #endif
     
     #if defined (DEBUG_Z_NORMAL_SCALE)
