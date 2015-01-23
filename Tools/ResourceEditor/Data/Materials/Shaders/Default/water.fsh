@@ -39,8 +39,10 @@ varying highp vec2 varTexCoordDecal;
 #elif defined(PIXEL_LIT)
 
 
-uniform sampler2D normalmap; // [1]:ONCE
-uniform sampler2D normalmap1; // [1]:ONCE
+uniform sampler2D normalmap;
+#if defined(SPEARATE_NORMALMAPPS)
+uniform sampler2D normalmap1; 
+#endif
 
 uniform mat3 worldInvTransposeMatrix;
 varying mediump vec3 cameraToPointInTangentSpace;
@@ -133,7 +135,12 @@ void main()
   
     //compute normal
     lowp vec3 normal0 = texture2D (normalmap, varTexCoord0).rgb;
-    lowp vec3 normal1 = texture2D (normalmap1, varTexCoord1).rgb;    
+    #if defined(SPEARATE_NORMALMAPPS)
+        lowp vec3 normal1 = texture2D (normalmap1, varTexCoord1).rgb;    
+    #else
+        lowp vec3 normal1 = texture2D (normalmap0, varTexCoord1).rgb;
+    #endif
+    
     #if defined (DEBUG_Z_NORMAL_SCALE)
         normal0 = normal0 * 2.0 - 1.0;
         normal1 = normal1 * 2.0 - 1.0;

@@ -233,6 +233,7 @@ public:
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
+    static const FastName FLAG_SPEARATE_NORMALMAPPS;
 
     static const FastName FLAG_SPHERICAL_LIT;
 
