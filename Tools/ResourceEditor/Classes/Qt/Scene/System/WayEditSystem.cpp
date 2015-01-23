@@ -98,7 +98,7 @@ void WayEditSystem::ProcessSelection()
         for(size_t i = 0; i < count; ++i)
         {
             Entity * entity = currentSelection.GetEntity(i);
-            if(entity->GetComponent(Component::WAYPOINT_COMPONENT))
+            if(entity->GetComponent(Component::WAYPOINT_COMPONENT) && GetPathComponent(entity->GetParent()))
             {
                 selectedWaypoints.Add(entity);
             }
@@ -117,7 +117,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
             if (NULL != collObjects && collObjects->Size() > 0)
             {
                 DAVA::Entity *underEntity = collObjects->GetEntity(0);
-                if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT))
+                if (underEntity->GetComponent(Component::WAYPOINT_COMPONENT) && GetPathComponent(underEntity->GetParent()))
                 {
                     underCursorPathEntity = underEntity;
                 }
