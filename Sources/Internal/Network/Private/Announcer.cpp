@@ -71,6 +71,11 @@ void Announcer::Stop(Function<void (IController*)> callback)
     loop->Post(MakeFunction(this, &Announcer::DoStop));
 }
 
+void Announcer::Restart()
+{
+    loop->Post(MakeFunction(this, &Announcer::DoStop));
+}
+
 void Announcer::DoStart()
 {
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);

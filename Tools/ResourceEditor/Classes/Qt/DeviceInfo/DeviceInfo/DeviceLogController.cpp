@@ -31,8 +31,9 @@ void DeviceLogController::ShowView()
 
         connect(this, &QObject::destroyed, view, &QObject::deleteLater);
     }
-    if (!view->isVisible())
-        view->show();
+    view->showNormal();
+    view->activateWindow();
+    view->raise();
 }
 
 void DeviceLogController::ChannelOpen()

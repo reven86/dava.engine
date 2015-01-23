@@ -52,6 +52,7 @@ public:
     // IController
     virtual void Start();
     virtual void Stop(Function<void (IController*)> callback);
+    virtual void Restart();
 
 private:
     void DoStart();

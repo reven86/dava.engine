@@ -68,6 +68,8 @@ public:
     void DestroyAllControllers(Function<void ()> callback);
     void DestroyAllControllersBlocked();
 
+    void RestartAllControllers();
+
     int32 Run();
     int32 Poll();
     void Finish(bool runOutLoop = false);
@@ -76,6 +78,7 @@ public:
 
 private:
     void DoStart(IController* ctrl);
+    void DoRestart();
     void DoDestroy(TrackId id);
     void DoDestroyAll();
     void AllDestroyed();

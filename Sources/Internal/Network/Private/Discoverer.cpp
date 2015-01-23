@@ -70,6 +70,11 @@ void Discoverer::Stop(Function<void (IController*)> callback)
     loop->Post(MakeFunction(this, &Discoverer::DoStop));
 }
 
+void Discoverer::Restart()
+{
+    loop->Post(MakeFunction(this, &Discoverer::DoStop));
+}
+
 void Discoverer::DoStart()
 {
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);

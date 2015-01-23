@@ -112,6 +112,12 @@ void NetCore::DestroyAllControllersBlocked()
     allStopped = false;
 }
 
+void NetCore::RestartAllControllers()
+{
+    // Restart controllers on mobile devices
+    loop.Post(MakeFunction(this, &NetCore::DoRestart));
+}
+
 void NetCore::Finish(bool runOutLoop)
 {
     isFinishing = true;
@@ -124,6 +130,15 @@ void NetCore::DoStart(IController* ctrl)
 {
     trackedObjects.insert(ctrl);
     ctrl->Start();
+}
+
+void NetCore::DoRestart()
+{
+    for (Set<IController*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
+    {
+        IController* ctrl = *i;
+        ctrl->Restart();
+    }
 }
 
 void NetCore::DoDestroy(TrackId id)

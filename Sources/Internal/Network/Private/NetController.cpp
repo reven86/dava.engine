@@ -127,6 +127,17 @@ void NetController::Stop(Function<void (IController*)> handler)
                         : loop->Post(MakeFunction(this, &NetController::DoStopClients));
 }
 
+void NetController::Restart()
+{
+    for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end();i != e;++i)
+    {
+        ClientEntry& entry = *i;
+        entry.client->Reset();
+    }
+    for (size_t i = 0, n = servers.size();i < n;++i)
+        servers[i]->Reset();
+}
+
 void NetController::DoStartServers()
 {
     runningObjects = servers.size();

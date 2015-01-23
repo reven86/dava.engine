@@ -65,7 +65,13 @@ void TCPServerTransport::Stop()
 {
     DVASSERT(listener != NULL && false == isTerminating);
     isTerminating = true;
-    acceptor.Close(MakeFunction(this, &TCPServerTransport::AcceptorHandleClose));
+    DoStop();
+}
+
+void TCPServerTransport::Reset()
+{
+    DVASSERT(listener != NULL && false == isTerminating);
+    DoStop();
 }
 
 void TCPServerTransport::ReclaimClient(IClientTransport* client)
@@ -74,7 +80,7 @@ void TCPServerTransport::ReclaimClient(IClientTransport* client)
     if (spawnedClients.find(client) != spawnedClients.end())
     {
         spawnedClients.erase(client);
-        delete client;
+        SafeDelete(client);
     }
 }
 
@@ -85,21 +91,40 @@ int32 TCPServerTransport::DoStart()
     {
         error = acceptor.StartListen(MakeFunction(this, &TCPServerTransport::AcceptorHandleConnect));
     }
+    if (error != 0)
+    {
+        DoStop();
+    }
     return error;
+}
+
+void TCPServerTransport::DoStop()
+{
+    if (acceptor.IsOpen() && !acceptor.IsClosing())
+    {
+        acceptor.Close(MakeFunction(this, &TCPServerTransport::AcceptorHandleClose));
+    }
 }
 
 void TCPServerTransport::AcceptorHandleClose(TCPAcceptor* acceptor)
 {
-    IServerListener* p = listener;
-    listener = NULL;
-    isTerminating = false;
-    p->OnTransportTerminated(this);     // This can be the last executed line of object instance
+    if (isTerminating)
+    {
+        IServerListener* p = listener;
+        listener = NULL;
+        isTerminating = false;
+        p->OnTransportTerminated(this);     // This can be the last executed line of object instance
+    }
+    else
+    {
+        DoStart();
+    }
 }
 
 void TCPServerTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
 {
-    DVASSERT(false == isTerminating);
     if (true == isTerminating) return;
+    
     if (0 == error)
     {
         TCPClientTransport* client = new TCPClientTransport(loop);
@@ -114,7 +139,10 @@ void TCPServerTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 erro
             SafeDelete(client);
         }
     }
-    // Say nothing about errors, simply wait for another connection
+    else
+    {
+        DoStop();
+    }
 }
 
 }   // namespace Net

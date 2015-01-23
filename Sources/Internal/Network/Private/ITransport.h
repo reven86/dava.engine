@@ -47,6 +47,7 @@ struct IServerTransport
 
     virtual int32 Start(IServerListener* listener) = 0;
     virtual void Stop() = 0;
+    virtual void Reset() = 0;
     virtual void ReclaimClient(IClientTransport* client) = 0;
 };
 
