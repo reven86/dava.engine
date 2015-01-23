@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.8)
+
 project      ( UnitTestsLib )
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-
 find_package ( DavaFramework REQUIRED )
 
 include      ( CMake-common )
@@ -19,7 +19,7 @@ elseif( IOS )
 
     file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/iOSSpecific/*.xib" )
 
-  	list( APPEND RESOURCES_LIST ${XIB_LIST} )
+    list( APPEND RESOURCES_LIST ${XIB_LIST} )
     list( APPEND RESOURCES_LIST ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectiPhone-Info.plist )
 
 elseif( MACOS )
@@ -52,22 +52,19 @@ elseif( WIN32 )
     
 endif()
 
-
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
-add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
+add_definitions       ( -D_CRT_SECURE_NO_DEPRECATE )
 
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
-
+set( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 set( TeamcityOutput          ${DAVA_TOOLS_DIR}/TeamcityOutput  )
 set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )
 
 set( PackerToolsSCR          ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.h 
                              ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.cpp )
-
 
 define_source_folders ( SRC_ROOT "Classes" ${TeamcityOutput}  ${PLATFORM_SPECIFIC_FOLDER} 
                         GLOB_ERASE_FOLDERS "_build"  )
