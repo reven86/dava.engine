@@ -114,12 +114,13 @@ void EdgeComponent::SetNextEntityTag(int32 tag)
 
 int32 EdgeComponent::GetNextEntityTag() const
 {
+    int32 tag = 0;
 	if(nextEntity)
 	{
-		return nextEntity->GetTag();
+		tag = nextEntity->GetTag();
 	}
 
-	return 0;
+	return tag;
 }
 
 
