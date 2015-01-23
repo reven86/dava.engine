@@ -7,6 +7,14 @@ if( APPLE AND NOT IOS )
 	set ( MACOS 1 )
 endif ()
 
+if( TEAMCITY_DEPLOY )
+    set( OUTPUT_TO_BUILD_DIR true )
+    set( IGNORE_FILE_TREE_CHECK true )
+    set( DEBUG_INFO true )
+
+endif()
+
+
 #global paths
 
 set ( DAVA_LIBRARY                     "DavaFramework" )
