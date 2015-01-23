@@ -20,12 +20,10 @@ elseif( IOS )
     file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/iOSSpecific/*.xib" )
 
     list( APPEND RESOURCES_LIST ${XIB_LIST} )
-    list( APPEND RESOURCES_LIST ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectiPhone-Info.plist )
+    list( APPEND RESOURCES_LIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TemplateProjectiPhone-Info.plist )
 
 elseif( MACOS )
     set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
-
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
 
     file ( GLOB_RECURSE RESOURCES_LIST "${CMAKE_CURRENT_LIST_DIR}/Data/*" )
     foreach ( FILE ${RESOURCES_LIST} )
@@ -42,7 +40,7 @@ elseif( MACOS )
     file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/*.xib" )
 
     list( APPEND RESOURCES_LIST ${XIB_LIST} )
-    list( APPEND RESOURCES_LIST ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectMacOS-Info.plist )
+    list( APPEND RESOURCES_LIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TemplateProjectMacOS-Info.plist )
 
     list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
     list ( APPEND LIBRARIES       ${DYLIB_FILES} )
@@ -106,7 +104,7 @@ if( ANDROID )
 
 elseif( IOS )
 
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectiPhone-Info.plist 
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TemplateProjectiPhone-Info.plist 
                             RESOURCE "${XIB_LIST}"
                             XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
                           )
@@ -121,6 +119,10 @@ elseif( IOS )
 elseif( MACOS )    
     set( BUILD_MODE $<CONFIG> ) #$<$<CONFIG:debug>:Debug>$<$<CONFIG:release>:Release> )
 
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++0x -stdlib=libc++ -g -Wall")
+
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
     POST_BUILD
@@ -134,7 +136,7 @@ elseif( MACOS )
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/${BUILD_MODE}/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
     )
 
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/TemplateProjectMacOS-Info.plist
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TemplateProjectMacOS-Info.plist
                             RESOURCE "${XIB_LIST}"
                             XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
                           )
