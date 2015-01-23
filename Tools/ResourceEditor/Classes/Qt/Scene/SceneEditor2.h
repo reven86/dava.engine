@@ -63,6 +63,7 @@
 #include "Scene/System/BeastSystem.h"
 #include "Scene/System/OwnersSignatureSystem.h"
 #include "Scene/System/EditorMaterialSystem.h"
+#include "Scene/System/SceneLODSystem.h"
 
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
@@ -113,6 +114,7 @@ public:
 	OwnersSignatureSystem *ownersSignatureSystem;
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
+	SceneLODSystem *sceneLODSystem;
 
     DAVA::WASDControllerSystem *wasdSystem;
     DAVA::RotationControllerSystem *rotationSystem;

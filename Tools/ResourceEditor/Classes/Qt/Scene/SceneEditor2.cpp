@@ -144,6 +144,9 @@ SceneEditor2::SceneEditor2()
 	materialSystem = new EditorMaterialSystem(this);
 	AddSystem(materialSystem, 1 << Component::RENDER_COMPONENT, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
+	sceneLODSystem = new SceneLODSystem(this);
+	AddSystem(sceneLODSystem, 1 << Component::LOD_COMPONENT);
+
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);

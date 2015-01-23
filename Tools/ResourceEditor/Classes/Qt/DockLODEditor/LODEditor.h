@@ -78,6 +78,9 @@ protected slots:
     void ForceLayerActivated(int index);
 
 	void EditorModeChanged(int newMode);
+
+	void DeleteFirstLOD();
+	void DeleteLastLOD();
     
 protected:
 
@@ -102,7 +105,7 @@ private:
 	Ui::LODEditor *ui;
     QtPosSaver posSaver;
     
-    SceneLODSystem *sceneLODSystem;
+    SceneLODSystem *getCurrentSceneLODSystem();
 
 	bool allSceneModeEnabled;
 };

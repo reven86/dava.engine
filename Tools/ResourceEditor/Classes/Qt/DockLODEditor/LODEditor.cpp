@@ -31,7 +31,7 @@
 #include "LODEditor.h"
 #include "ui_LODEditor.h"
 
-#include "EditorLODData.h"
+#include "Scene/System/SceneLODSystem.h"
 #include "DistanceSlider.h"
 
 #include "Scene/SceneSignals.h"
@@ -65,9 +65,8 @@ LODEditor::LODEditor(QWidget* parent)
 	ui(new Ui::LODEditor)
 {
 	ui->setupUi(this);
-    
-    editedLODData = new EditorLODData();
-    connect(editedLODData, SIGNAL(DataChanged()), SLOT(LODDataChanged()));
+
+	//!connect(editedLODData, SIGNAL(DataChanged()), SLOT(LODDataChanged()));
 
     SetupInternalUI();
     SetupSceneSignals();
@@ -79,12 +78,12 @@ LODEditor::LODEditor(QWidget* parent)
 
 	allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
 	ui->checkBoxLodEditorMode->setChecked(allSceneModeEnabled);
-	editedLODData->EnableAllSceneMode(allSceneModeEnabled);
+	getCurrentSceneLODSystem()->EnableAllSceneMode(allSceneModeEnabled);
 }
 
 LODEditor::~LODEditor()
 {
-    SafeDelete(editedLODData);
+    //!SafeDelete(editedLODData);
     
 	delete ui;
 }
@@ -121,8 +120,8 @@ void LODEditor::SetupInternalUI()
     //TODO: remove after lod editing implementation
     connect(ui->lastLodToFrontButton, SIGNAL(clicked()), this, SLOT(CopyLODToLod0Clicked()));
     connect(ui->createPlaneLodButton, SIGNAL(clicked()), this, SLOT(CreatePlaneLODClicked()));
-    connect(ui->buttonDeleteFirstLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteFirstLOD()));
-    connect(ui->buttonDeleteLastLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteLastLOD()));
+    connect(ui->buttonDeleteFirstLOD, SIGNAL(clicked()), this, SLOT(DeleteFirstLOD()));
+    connect(ui->buttonDeleteLastLOD, SIGNAL(clicked()), this, SLOT(DeleteLastLOD()));
 }
 
 void LODEditor::SetupSceneSignals()
@@ -134,22 +133,22 @@ void LODEditor::SetupSceneSignals()
 void LODEditor::ForceDistanceStateChanged(int checked)
 {
     bool enable = (checked == Qt::Checked);
-    editedLODData->EnableForceDistance(enable);
+	getCurrentSceneLODSystem()->EnableForceDistance(enable);
     
     if(!enable)
     {
         int layer = ui->forceLayer->itemData(ui->forceLayer->currentIndex()).toInt();
-        editedLODData->SetForceLayer(layer);
+        getCurrentSceneLODSystem()->SetForceLayer(layer);
     }
     
 	ui->enableForceDistance->setChecked(checked);
-	ui->forceSlider->setValue(editedLODData->GetForceDistance());
+	ui->forceSlider->setValue(getCurrentSceneLODSystem()->GetForceDistance());
     ui->forceLayer->setEnabled(!enable);
 }
 
 void LODEditor::ForceDistanceChanged(int distance)
 {
-    editedLODData->SetForceDistance(distance);
+    getCurrentSceneLODSystem()->SetForceDistance(distance);
 }
 
 
@@ -186,7 +185,7 @@ void LODEditor::SceneDeactivated(SceneEditor2 *scene)
 
 void LODEditor::LODDataChanged()
 {
-    DAVA::uint32 lodLayersCount = editedLODData->GetLayersCount();
+    DAVA::uint32 lodLayersCount = getCurrentSceneLODSystem()->GetLayersCount();
     
     ui->distanceSlider->SetLayersCount(lodLayersCount);
     SetForceLayerValues(lodLayersCount);
@@ -195,12 +194,12 @@ void LODEditor::LODDataChanged()
     {
         distanceWidgets[i].SetVisible(true);
         
-        DAVA::float32 distance = editedLODData->GetLayerDistance(i);
+        DAVA::float32 distance = getCurrentSceneLODSystem()->GetLayerDistance(i);
         
         SetSpinboxValue(distanceWidgets[i].distance, distance);
         ui->distanceSlider->SetDistance(i, distance);
         
-        distanceWidgets[i].name->setText(Format("%d. (%d):", i, editedLODData->GetLayerTriangles(i)).c_str());
+        distanceWidgets[i].name->setText(Format("%d. (%d):", i, getCurrentSceneLODSystem()->GetLayerTriangles(i)).c_str());
     }
     for (DAVA::int32 i = lodLayersCount; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
@@ -209,8 +208,8 @@ void LODEditor::LODDataChanged()
     
     UpdateWidgetVisibility();
 
-    ui->lastLodToFrontButton->setEnabled(editedLODData->CanCreatePlaneLOD());
-    ui->createPlaneLodButton->setEnabled(editedLODData->CanCreatePlaneLOD());
+    ui->lastLodToFrontButton->setEnabled(getCurrentSceneLODSystem()->CanCreatePlaneLOD());
+    ui->createPlaneLodButton->setEnabled(getCurrentSceneLODSystem()->CanCreatePlaneLOD());
 
     UpdateDeleteLODButtons();
 }
@@ -235,7 +234,7 @@ void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bo
 			}
 		}
 
-		editedLODData->UpdateDistances(lodDistances);
+		getCurrentSceneLODSystem()->UpdateDistances(lodDistances);
 	}
 
 	ui->distanceSlider->LockDistances(false);
@@ -250,9 +249,9 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
         int lodLevel = spinBox->property(ResourceEditor::TAG.c_str()).toInt();
 
         {
-            const bool wasBlocked = editedLODData->blockSignals(true);
-            editedLODData->SetLayerDistance(lodLevel, value);
-            editedLODData->blockSignals(wasBlocked);
+            //!const bool wasBlocked = getCurrentSceneLODSystem()->blockSignals(true);
+            getCurrentSceneLODSystem()->SetLayerDistance(lodLevel, value);
+            //!getCurrentSceneLODSystem()->blockSignals(wasBlocked);
         }
         {
             const bool wasBlocked = ui->distanceSlider->blockSignals(true);
@@ -272,7 +271,7 @@ void LODEditor::SetSpinboxValue(QDoubleSpinBox *spinbox, double value)
 void LODEditor::ForceLayerActivated(int index)
 {
     int layer = ui->forceLayer->itemData(index).toInt();
-    editedLODData->SetForceLayer(layer);
+    getCurrentSceneLODSystem()->SetForceLayer(layer);
 }
 
 void LODEditor::SetForceLayerValues(int layersCount)
@@ -281,7 +280,7 @@ void LODEditor::SetForceLayerValues(int layersCount)
     
     ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
 
-	int requestedIndex = editedLODData->GetForceLayer() + 1;
+	int requestedIndex = getCurrentSceneLODSystem()->GetForceLayer() + 1;
 	int itemsCount = Max(requestedIndex, layersCount);
 	for(DAVA::int32 i = 0; i < itemsCount; ++i)
     {
@@ -302,8 +301,8 @@ void LODEditor::ViewLODButtonReleased()
     
     if(ui->frameViewLOD->isVisible() == false)
     {
-        editedLODData->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
-        editedLODData->SetForceLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
+        getCurrentSceneLODSystem()->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
+        getCurrentSceneLODSystem()->SetForceLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
         
         ui->enableForceDistance->setCheckState(Qt::Unchecked);
         ui->forceLayer->setCurrentIndex(0);
@@ -327,7 +326,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
 
 void LODEditor::UpdateWidgetVisibility()
 {
-    bool visible = (editedLODData->GetLayersCount() != 0);
+    bool visible = (getCurrentSceneLODSystem()->GetLayersCount() != 0);
     
     ui->viewLODButton->setVisible(visible);
     ui->frameViewLOD->setVisible(visible);
@@ -337,22 +336,22 @@ void LODEditor::UpdateWidgetVisibility()
 
 void LODEditor::CopyLODToLod0Clicked()
 {
-    if(editedLODData->CanCreatePlaneLOD())
-        editedLODData->CopyLastLodToLod0();
+    if(getCurrentSceneLODSystem()->CanCreatePlaneLOD())
+        getCurrentSceneLODSystem()->CopyLastLodToLod0();
 }
 
 void LODEditor::CreatePlaneLODClicked()
 {
-    if(editedLODData->CanCreatePlaneLOD())
+    if(getCurrentSceneLODSystem()->CanCreatePlaneLOD())
     {
-        FilePath defaultTexturePath = editedLODData->GetDefaultTexturePathForPlaneEntity();
+        FilePath defaultTexturePath = getCurrentSceneLODSystem()->GetDefaultTexturePathForPlaneEntity();
 
-        PlaneLODDialog dialog(editedLODData->GetLayersCount(), defaultTexturePath, this);
+        PlaneLODDialog dialog(getCurrentSceneLODSystem()->GetLayersCount(), defaultTexturePath, this);
         if(dialog.exec() == QDialog::Accepted)
         {
             QtMainWindow::Instance()->WaitStart("Creating Plane LOD", "Please wait...");
 
-            editedLODData->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
+            getCurrentSceneLODSystem()->CreatePlaneLOD(dialog.GetSelectedLayer(), dialog.GetSelectedTextureSize(), dialog.GetSelectedTexturePath());
 
             QtMainWindow::Instance()->WaitStop();
         }
@@ -365,17 +364,32 @@ void LODEditor::EditorModeChanged(int newMode)
 	DAVA::VariantType value(allSceneModeEnabled);
 	SettingsManager::SetValue(Settings::Internal_LODEditorMode, value);
 
-	editedLODData->EnableAllSceneMode(allSceneModeEnabled);
+	getCurrentSceneLODSystem()->EnableAllSceneMode(allSceneModeEnabled);
     
     UpdateDeleteLODButtons();
 }
 
 void LODEditor::UpdateDeleteLODButtons()
 {
-    bool canDeleteLOD = editedLODData->CanDeleteLod();
+    bool canDeleteLOD = getCurrentSceneLODSystem()->CanDeleteLod();
     
     ui->buttonDeleteFirstLOD->setEnabled(canDeleteLOD);
     ui->buttonDeleteLastLOD->setEnabled(canDeleteLOD);
+}
+
+SceneLODSystem *LODEditor::getCurrentSceneLODSystem()
+{
+	return QtMainWindow::Instance()->GetCurrentScene()->sceneLODSystem;
+}
+
+void LODEditor::DeleteFirstLOD()
+{
+	getCurrentSceneLODSystem()->DeleteFirstLOD();
+}
+
+void LODEditor::DeleteLastLOD()
+{
+	getCurrentSceneLODSystem()->DeleteLastLOD();
 }
 
 
