@@ -375,7 +375,8 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 - (void)CalcOffset:(NSEvent *)theEvent
 {
     NSPoint origPos = [self convertPointToBacking:[theEvent locationInWindow]];
-    NSPoint p = [self convertPointFromBase:origPos];
+    NSPoint p = [self convertPoint:origPos fromView:nil];
+    
     offset.x = [theEvent locationInWindow].x - p.x;
     offset.y = [theEvent locationInWindow].y - p.y;
     
