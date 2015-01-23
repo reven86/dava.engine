@@ -94,6 +94,7 @@ private:
     DAVA::UIButton* btnError;
     DAVA::UIButton* btnPacket;
     DAVA::UIButton* btnPeriodic;
+    DAVA::UIButton* btnRestart;
     DAVA::UIButton* btnQuit;
 };
 

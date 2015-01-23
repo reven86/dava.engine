@@ -57,6 +57,7 @@ NetworkTest::NetworkTest() : TestTemplate<NetworkTest>("NetworkTest")
                            , btnError(NULL)
                            , btnPacket(NULL)
                            , btnPeriodic(NULL)
+                           , btnRestart(NULL)
                            , btnQuit(NULL)
 {
     // This project is based on UnitTests project, so create dummy test to run this app
@@ -193,6 +194,8 @@ void NetworkTest::CreateUI()
     btnPacket = CreateButton(L"Log packet", Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT), font);
     y += BUTTON_HEIGHT + VERT_SPACE;
     btnPeriodic = CreateButton(L"Periodic off", Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT), font);
+    y += BUTTON_HEIGHT + VERT_SPACE;
+    btnRestart = CreateButton(L"Restart network", Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT), font);
     SafeRelease(font);
 }
 
@@ -216,6 +219,7 @@ void NetworkTest::DestroyUI()
     SafeRelease(btnError);
     SafeRelease(btnPacket);
     SafeRelease(btnPeriodic);
+    SafeRelease(btnRestart);
     SafeRelease(btnQuit);
 }
 
@@ -249,6 +253,11 @@ void NetworkTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
             btnPeriodic->SetStateText(0xFF, L"Periodic off");
             Logger::Info("Periodic off");
         }
+    }
+    else if (obj == btnRestart)
+    {
+        Logger::Info("Restarting network..");
+        NetCore::Instance()->RestartAllControllers();
     }
     else if (obj == btnQuit)
     {
