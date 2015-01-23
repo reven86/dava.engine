@@ -64,6 +64,8 @@ private:
         void *callerData);
     void OnButtonExecJS(BaseObject* obj, void*, void*);
     void OnLoadHTMLString(BaseObject* obj, void*, void*);
+    void OnButtonVisible(BaseObject*, void*, void*);
+    void OnButtonHide(BaseObject*, void*, void*);
 
     void CreateUIButton(UIButton*& button, Font * font, const Rect& rect,
         const WideString& str,
@@ -78,6 +80,8 @@ private:
     UIButton* uncheckTransparancyButton;
     UIButton* executeJSButton;
     UIButton* loadHTMLString;
+    UIButton* setVisibleButton;
+    UIButton* setHideButton;
 
     UIControl* overlapedImage;
 

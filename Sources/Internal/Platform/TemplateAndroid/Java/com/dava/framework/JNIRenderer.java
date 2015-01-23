@@ -120,7 +120,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         Log.d(JNIConst.LOG_TAG, "Activity Render OnPause start");
         PowerManager pm = (PowerManager) JNIApplication.GetApplication()
                 .getSystemService(Context.POWER_SERVICE);
-        nativeOnPauseView(!pm.isScreenOn());
+        nativeOnPauseView(!pm.isInteractive());
 
         isFirstFrameAfterDraw = true;
         Log.d(JNIConst.LOG_TAG, "Activity Render OnPause finish");

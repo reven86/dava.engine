@@ -242,8 +242,8 @@ public class JNIDeviceInfo {
 		path += "/";
 		StatFs statFs = new StatFs(path);
 
-		long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-		long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+		long capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
+		long free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
 
 		return new StorageInfo(path, false, false, capacity, free);
 	}
@@ -267,8 +267,8 @@ public class JNIDeviceInfo {
 			path += "/";
 			StatFs statFs = new StatFs(path);
 
-            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+            long capacity = (long)statFs.getBlockCountLong() * (long)statFs.getBlockSizeLong();
+            long free = (long)statFs.getAvailableBlocksLong() * (long)statFs.getBlockSizeLong();
 
             boolean isEmulated = Environment.isExternalStorageEmulated();
             boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
@@ -330,8 +330,8 @@ public class JNIDeviceInfo {
 							continue;
 						}
 
-			            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-			            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+			            long capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
+			            long free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
 
 						infos.add(new StorageInfo(mountPoint, readonly, false, capacity, free));
 					}

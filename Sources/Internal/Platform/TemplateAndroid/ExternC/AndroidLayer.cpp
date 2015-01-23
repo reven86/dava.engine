@@ -65,7 +65,7 @@ extern "C"
 	//JNIApplication
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName, jstring commandLineParams);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis);
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnLowMemory(JNIEnv * env, jobject classthis);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnLowMemoryWarning(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis);
  	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_SetAssetManager(JNIEnv * env, jobject classthis, jobject assetManager);
  	
@@ -242,7 +242,7 @@ void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env,
 	}
 }
 
-void Java_com_dava_framework_JNIApplication_OnLowMemory(JNIEnv * env, jobject classthis)
+void Java_com_dava_framework_JNIApplication_OnLowMemoryWarning(JNIEnv * env, jobject classthis)
 {
 	if(core)
 	{
