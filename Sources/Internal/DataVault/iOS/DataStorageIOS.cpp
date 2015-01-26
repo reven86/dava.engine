@@ -26,47 +26,20 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DataVault/DataStorage.h"
+#include "ICloudKeyValue.h"
 
-#include "DataVaultTest.h"
-#include "DataVault/DataVault.h"
-
-DataVaultTest::DataVaultTest()
-    : TestTemplate<DataVaultTest>("DataVaultTest")
+namespace DAVA
 {
-    RegisterFunction(this, &DataVaultTest::TestFunction, "TestFunction", NULL);
+
+#if defined(__DAVAENGINE_IPHONE__)
+
+DataStorage::DataStorage(Type preferredType)
+{
+    type = preferredType;
+    impl = new ICloudKeyValue();
 }
 
-void DataVaultTest::LoadResources()
-{
+#endif
 
-}
-
-void DataVaultTest::UnloadResources()
-{
-
-}
-
-void DataVaultTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
-
-void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data)
-{
-    DataStorage *storage = DataVault::GetStorage(DataStorage::CLOUD);
-
-    storage->Clear();
-    storage->Push();
-    storage->SetEntryValue("Test", "Test");
-    String ret = storage->GetEntryValue("Test");
-    TEST_VERIFY("Test" == ret);
-    storage->Push();
-    ret = storage->GetEntryValue("Test");
-    TEST_VERIFY("Test" == ret);
-
-    storage->RemoveEntry("Test");
-    storage->Push();
-    ret = storage->GetEntryValue("Test");
-    TEST_VERIFY("Test" != ret);
-
-    SafeRelease(storage);
 }

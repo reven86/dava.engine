@@ -16,7 +16,7 @@
 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURP§E ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -27,46 +27,33 @@
 =====================================================================================*/
 
 
-#include "DataVaultTest.h"
-#include "DataVault/DataVault.h"
+#ifndef __ICLOUD_KEYVALUE_H__
+#define __ICLOUD_KEYVALUE_H__
 
-DataVaultTest::DataVaultTest()
-    : TestTemplate<DataVaultTest>("DataVaultTest")
-{
-    RegisterFunction(this, &DataVaultTest::TestFunction, "TestFunction", NULL);
-}
+#include "DataVault/DataStorage.h"
 
-void DataVaultTest::LoadResources()
+namespace DAVA
 {
 
-}
+#if defined(__DAVAENGINE_IPHONE__)
 
-void DataVaultTest::UnloadResources()
+class ICloudKeyValue : public IDataStorage
 {
+public:
+    ICloudKeyValue();
+    ~ICloudKeyValue();
 
-}
+public: // IDataStorage implementation
+    String GetEntryValue(const String &key) override;
+    void SetEntryValue(const String &key, const String &value) override;
+    void RemoveEntry(const String &key) override;
+    void Clear() override;
+    void Push() override;
+};
 
-void DataVaultTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
+#endif
 
-void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data)
-{
-    DataStorage *storage = DataVault::GetStorage(DataStorage::CLOUD);
+} //namespace DAVA
 
-    storage->Clear();
-    storage->Push();
-    storage->SetEntryValue("Test", "Test");
-    String ret = storage->GetEntryValue("Test");
-    TEST_VERIFY("Test" == ret);
-    storage->Push();
-    ret = storage->GetEntryValue("Test");
-    TEST_VERIFY("Test" == ret);
+#endif // __DATA_VAULT_H__
 
-    storage->RemoveEntry("Test");
-    storage->Push();
-    ret = storage->GetEntryValue("Test");
-    TEST_VERIFY("Test" != ret);
-
-    SafeRelease(storage);
-}

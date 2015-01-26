@@ -1118,8 +1118,21 @@
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
 		CCF00D691A443F6200A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D671A443F6200A577C2 /* EntityFamily.cpp */; };
 		CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = CCF00D681A443F6200A577C2 /* EntityFamily.h */; };
+		D73A57701A739E4A009FF184 /* DataStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A57641A739E4A009FF184 /* DataStorage.cpp */; };
+		D73A57711A739E4A009FF184 /* DataStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A57641A739E4A009FF184 /* DataStorage.cpp */; };
+		D73A57721A739E4A009FF184 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D73A57651A739E4A009FF184 /* DataStorage.h */; };
+		D73A57731A739E4A009FF184 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D73A57651A739E4A009FF184 /* DataStorage.h */; };
+		D73A57741A739E4A009FF184 /* DataVault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A57661A739E4A009FF184 /* DataVault.cpp */; };
+		D73A57751A739E4A009FF184 /* DataVault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A57661A739E4A009FF184 /* DataVault.cpp */; };
+		D73A57761A739E4A009FF184 /* DataVault.h in Headers */ = {isa = PBXBuildFile; fileRef = D73A57671A739E4A009FF184 /* DataVault.h */; };
+		D73A57771A739E4A009FF184 /* DataVault.h in Headers */ = {isa = PBXBuildFile; fileRef = D73A57671A739E4A009FF184 /* DataVault.h */; };
 		D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
+		D7B5F6EE1A76536D00F47097 /* DataStorageIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B5F6EB1A76536D00F47097 /* DataStorageIOS.cpp */; };
+		D7B5F6EF1A76536D00F47097 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B5F6EC1A76536D00F47097 /* ICloudKeyValue.cpp */; };
+		D7B5F6F21A7656FF00F47097 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B5F6F11A7656FF00F47097 /* ICloudKeyValue.h */; };
+		D7B5F6F31A7656FF00F47097 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B5F6F11A7656FF00F47097 /* ICloudKeyValue.h */; };
+		D7B5F6F41A7658E100F47097 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B5F6EC1A76536D00F47097 /* ICloudKeyValue.cpp */; };
 		D7CC265D19C517E500A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC264F19C517E500A3B754 /* LocalNotification.cpp */; };
 		D7CC265E19C517E500A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC264F19C517E500A3B754 /* LocalNotification.cpp */; };
 		D7CC265F19C517E500A3B754 /* LocalNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265019C517E500A3B754 /* LocalNotification.h */; };
@@ -2092,7 +2105,14 @@
 		CCF00D671A443F6200A577C2 /* EntityFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityFamily.cpp; sourceTree = "<group>"; };
 		CCF00D681A443F6200A577C2 /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D73A57641A739E4A009FF184 /* DataStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorage.cpp; sourceTree = "<group>"; };
+		D73A57651A739E4A009FF184 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
+		D73A57661A739E4A009FF184 /* DataVault.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataVault.cpp; sourceTree = "<group>"; };
+		D73A57671A739E4A009FF184 /* DataVault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataVault.h; sourceTree = "<group>"; };
 		D751821719BF03E400BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
+		D7B5F6EB1A76536D00F47097 /* DataStorageIOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageIOS.cpp; sourceTree = "<group>"; };
+		D7B5F6EC1A76536D00F47097 /* ICloudKeyValue.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp.preprocessed; fileEncoding = 4; path = ICloudKeyValue.cpp; sourceTree = "<group>"; };
+		D7B5F6F11A7656FF00F47097 /* ICloudKeyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICloudKeyValue.h; sourceTree = "<group>"; };
 		D7CC264F19C517E500A3B754 /* LocalNotification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotification.cpp; sourceTree = "<group>"; };
 		D7CC265019C517E500A3B754 /* LocalNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotification.h; sourceTree = "<group>"; };
 		D7CC265319C517E500A3B754 /* LocalNotificationController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationController.cpp; sourceTree = "<group>"; };
@@ -2948,6 +2968,28 @@
 				CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */,
 			);
 			path = Converters;
+			sourceTree = "<group>";
+		};
+		D73A575F1A739E4A009FF184 /* DataVault */ = {
+			isa = PBXGroup;
+			children = (
+				D7B5F6EA1A76536D00F47097 /* iOS */,
+				D73A57641A739E4A009FF184 /* DataStorage.cpp */,
+				D73A57651A739E4A009FF184 /* DataStorage.h */,
+				D73A57661A739E4A009FF184 /* DataVault.cpp */,
+				D73A57671A739E4A009FF184 /* DataVault.h */,
+			);
+			path = DataVault;
+			sourceTree = "<group>";
+		};
+		D7B5F6EA1A76536D00F47097 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				D7B5F6EB1A76536D00F47097 /* DataStorageIOS.cpp */,
+				D7B5F6EC1A76536D00F47097 /* ICloudKeyValue.cpp */,
+				D7B5F6F11A7656FF00F47097 /* ICloudKeyValue.h */,
+			);
+			path = iOS;
 			sourceTree = "<group>";
 		};
 		D7CC264E19C517E500A3B754 /* Notification */ = {
@@ -4038,6 +4080,7 @@
 		FECFB32D12E5904400C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				D73A575F1A739E4A009FF184 /* DataVault */,
 				D7CC264E19C517E500A3B754 /* Notification */,
 				E8B3C7A116B9326D002BD35F /* Animation */,
 				E8B3C7B116B9326D002BD35F /* Autotesting */,
@@ -4190,6 +4233,7 @@
 				02FD7F621924997C007762C0 /* XMLParser.h in Headers */,
 				02FD7F631924997C007762C0 /* YamlArchive.h in Headers */,
 				02FD7F641924997C007762C0 /* YamlParser.h in Headers */,
+				D73A57771A739E4A009FF184 /* DataVault.h in Headers */,
 				02FD7F651924997C007762C0 /* Accelerometer.h in Headers */,
 				E8C486F7196BD2390082E634 /* LockGuard.h in Headers */,
 				02FD7F661924997C007762C0 /* AccelerometeriPhone.h in Headers */,
@@ -4266,6 +4310,7 @@
 				02FD7FA61924997C007762C0 /* AnimatedMesh.h in Headers */,
 				02FD7FA81924997C007762C0 /* OcclusionQuery.h in Headers */,
 				02FD7FA91924997C007762C0 /* EdgeAdjacency.h in Headers */,
+				D73A57731A739E4A009FF184 /* DataStorage.h in Headers */,
 				D7CC266C19C517E500A3B754 /* LocalNotificationIOS.h in Headers */,
 				02FD7FAA1924997C007762C0 /* PolygonGroup.h in Headers */,
 				026A1DEF19DAF26600813AEF /* SkinnedMesh.h in Headers */,
@@ -4517,6 +4562,7 @@
 				647EFC7E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				02FD80851924997C007762C0 /* MovieViewControliOS.h in Headers */,
 				D7CC266019C517E500A3B754 /* LocalNotification.h in Headers */,
+				D7B5F6F31A7656FF00F47097 /* ICloudKeyValue.h in Headers */,
 				02FD80861924997C007762C0 /* SpatialTree.h in Headers */,
 				D7FEF13E19864E5C00B2C7AF /* DLC.h in Headers */,
 				02FD80871924997C007762C0 /* FMODSoundEvent.h in Headers */,
@@ -4619,6 +4665,7 @@
 				647EFC75195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */,
 				E8B3CAE016B9326E002BD35F /* MemoryManager.h in Headers */,
+				D7B5F6F21A7656FF00F47097 /* ICloudKeyValue.h in Headers */,
 				E8B3CAE216B9326E002BD35F /* Replay.h in Headers */,
 				E8B3CAE416B9326E002BD35F /* Stats.h in Headers */,
 				17D4116A1973E4B700CF6BC0 /* Reachability.h in Headers */,
@@ -4821,6 +4868,7 @@
 				E8B3CC7116B9326E002BD35F /* LodComponent.h in Headers */,
 				E8B3CC7316B9326E002BD35F /* ParticleEffectComponent.h in Headers */,
 				E8B3CC7716B9326E002BD35F /* RenderComponent.h in Headers */,
+				D73A57721A739E4A009FF184 /* DataStorage.h in Headers */,
 				E8B3CC7916B9326E002BD35F /* SwitchComponent.h in Headers */,
 				E8B3CC7B16B9326E002BD35F /* TransformComponent.h in Headers */,
 				E8B3CC7D16B9326E002BD35F /* UpdatableComponent.h in Headers */,
@@ -4954,6 +5002,7 @@
 				CCC7A4AB16F1D8480061EA5D /* Entity.h in Headers */,
 				CCC7A4AF16F1D88C0061EA5D /* UpdateSystem.h in Headers */,
 				E8B6B3C71705DEB4004F665E /* DeviceInfo.h in Headers */,
+				D73A57761A739E4A009FF184 /* DataVault.h in Headers */,
 				A6B5D960185600050011D172 /* IntrospectionDynamic.h in Headers */,
 				A611714A1860C24D00E18F8C /* StaticOcclusionRenderPass.h in Headers */,
 				E8373BD917268CD9001A9770 /* UIAggregatorControl.h in Headers */,
@@ -5159,6 +5208,7 @@
 				D7FEF15219864E5C00B2C7AF /* bs_diff.c in Sources */,
 				02FD80C41924997C007762C0 /* FileSystemObjective.mm in Sources */,
 				02FD80C51924997C007762C0 /* KeyedArchive.cpp in Sources */,
+				D7B5F6F41A7658E100F47097 /* ICloudKeyValue.cpp in Sources */,
 				02FD80C61924997C007762C0 /* KeyedArchiver.cpp in Sources */,
 				02FD80C71924997C007762C0 /* KeyedUnarchiver.cpp in Sources */,
 				02E9B4CC19407C68001DBDDF /* WindSystem.cpp in Sources */,
@@ -5451,11 +5501,13 @@
 				E8525D151A30910400FDF76E /* RotationControllerComponent.cpp in Sources */,
 				02FD81C61924997C007762C0 /* UpdateSystem.cpp in Sources */,
 				02E9B4CA19407C4B001DBDDF /* SpeedTreeUpdateSystem.cpp in Sources */,
+				D73A57751A739E4A009FF184 /* DataVault.cpp in Sources */,
 				02FD81C71924997C007762C0 /* DeviceInfoiOS.mm in Sources */,
 				02FD81C81924997C007762C0 /* DeviceInfo.cpp in Sources */,
 				02FD81C91924997C007762C0 /* UIAggregatorControl.cpp in Sources */,
 				02FD81CA1924997C007762C0 /* FilePathObjective.mm in Sources */,
 				D7FEF14019864E5C00B2C7AF /* CurlDownloader.cpp in Sources */,
+				D73A57711A739E4A009FF184 /* DataStorage.cpp in Sources */,
 				02FD81CB1924997C007762C0 /* SoundComponent.cpp in Sources */,
 				02FD81CC1924997C007762C0 /* SoundUpdateSystem.cpp in Sources */,
 				02FD81CD1924997C007762C0 /* OpenUDIDApple.mm in Sources */,
@@ -5524,6 +5576,7 @@
 				E8B3CAA116B9326E002BD35F /* DynamicObjectCache.cpp in Sources */,
 				84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */,
 				E8B3CAA316B9326E002BD35F /* EventDispatcher.cpp in Sources */,
+				D7B5F6EF1A76536D00F47097 /* ICloudKeyValue.cpp in Sources */,
 				B786014D1A08EB140041F817 /* StringUtils.cpp in Sources */,
 				E8B3CAA616B9326E002BD35F /* FastName.cpp in Sources */,
 				E8B3CAA916B9326E002BD35F /* FixedSizePoolAllocator.cpp in Sources */,
@@ -5661,6 +5714,7 @@
 				D7FEF13B19864E5C00B2C7AF /* DLC.cpp in Sources */,
 				E8B3CC1A16B9326E002BD35F /* MaterialGraphNode.cpp in Sources */,
 				C172EC2A18C9F9D4004309CF /* TextBlockDistanceRender.cpp in Sources */,
+				D73A57701A739E4A009FF184 /* DataStorage.cpp in Sources */,
 				E8B3CC1C16B9326E002BD35F /* NMaterial.cpp in Sources */,
 				E8B3CC1F16B9326E002BD35F /* Material.cpp in Sources */,
 				E8B3CC2316B9326E002BD35F /* RenderBase.cpp in Sources */,
@@ -5811,6 +5865,7 @@
 				CCEB543C1886FF0C0018491F /* LodToLod2Converter.cpp in Sources */,
 				E8B3CD2E16B9326E002BD35F /* StringFormat.cpp in Sources */,
 				E8B3CD3216B9326E002BD35F /* Utils.cpp in Sources */,
+				D7B5F6EE1A76536D00F47097 /* DataStorageIOS.cpp in Sources */,
 				E8B3CD3416B9326E002BD35F /* UtilsMacOS.mm in Sources */,
 				E8CC1BFC16C10A5A009B49BF /* IntrospectionBase.cpp in Sources */,
 				E8F21DD016C1971F007F957A /* GlobalEventSystem.cpp in Sources */,
@@ -5825,6 +5880,7 @@
 				C7E76D3816DF69370041ED9A /* RectSwig.cpp in Sources */,
 				C7E76D3B16DF69370041ED9A /* UIControlSwig.cpp in Sources */,
 				E84B1A6A19FA394700E4D4BC /* UITextFieldHolder.mm in Sources */,
+				D73A57741A739E4A009FF184 /* DataVault.cpp in Sources */,
 				C7E76D3E16DF69370041ED9A /* VectorSwig.cpp in Sources */,
 				17F53E3016D36FF3004D5099 /* UIWebView.cpp in Sources */,
 				17F53E3516D3705E004D5099 /* WebViewControliOS.mm in Sources */,
@@ -6204,14 +6260,14 @@
 		1DEB922308733DC00010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libc++";
 				ARCHS = (
 					i386,
 					arm64,
 					armv7s,
 					armv7,
 				);
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6257,14 +6313,14 @@
 		1DEB922408733DC00010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libc++";
 				ARCHS = (
 					i386,
 					arm64,
 					armv7s,
 					armv7,
 				);
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6308,14 +6364,14 @@
 		785662DF109B65FE00DAF688 /* AdHoc */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libc++";
 				ARCHS = (
 					i386,
 					arm64,
 					armv7s,
 					armv7,
 				);
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6406,14 +6462,14 @@
 		FEFB031611CA5F1B00B65B8B /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
-				CLANG_CXX_LIBRARY = "libc++";
 				ARCHS = (
 					i386,
 					arm64,
 					armv7s,
 					armv7,
 				);
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
