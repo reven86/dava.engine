@@ -35,7 +35,6 @@
 #include "Entity/SceneSystem.h"
 #include "DAVAEngine.h"
 
-class SceneEditor2;
 class EntityGroup;
 class Command2;
 
@@ -85,8 +84,6 @@ public:
 
 	void SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
 	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
-
-
 protected:
 
 	void ClearLODData();
@@ -107,15 +104,10 @@ protected:
 	DAVA::float32 forceDistance;
 	DAVA::int32 forceLayer;
 
-
 	DAVA::Vector<DAVA::LodComponent *> lodData;
-
-	SceneEditor2 *activeScene;
-
+	SceneEditor2 *scene2;
 	bool allSceneModeEnabled;
 protected:
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
 
 protected:
 	DAVA::Set<DAVA::Entity*> entities;
