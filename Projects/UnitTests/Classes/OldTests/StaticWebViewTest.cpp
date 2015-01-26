@@ -43,6 +43,8 @@ StaticWebViewTest::StaticWebViewTest()
     executeJSButton(nullptr),
     loadHTMLString(nullptr),
     overlapedImage(nullptr),
+    setVisibleButton(nullptr),
+    setHideButton(nullptr),
     webView1(nullptr),
     webView2(nullptr),
     testFinished(false),
@@ -89,39 +91,49 @@ void StaticWebViewTest::LoadResources()
     DVASSERT(font);
 	font->SetSize(20);
 
-    CreateUIButton(finishTestButton, font, Rect(0, 510, 300, 30), 
+	const int32 w = 40;
+
+    CreateUIButton(finishTestButton, font, Rect(0, 510, 300, w),
         L"Finish Test", &StaticWebViewTest::OnButtonPressed);
 
-    CreateUIButton(setStaticButton, font, Rect(0 + 300, 510, 300, 30),
+    CreateUIButton(setStaticButton, font, Rect(0 + 300, 510, 300, w),
         L"Render To Texture", &StaticWebViewTest::OnButtonSetStatic);
 
-    CreateUIButton(setNormalButton, font, Rect(0 + 300 * 2, 510, 300, 30),
+    CreateUIButton(setNormalButton, font, Rect(0 + 300 * 2, 510, 300, w),
         L"Normal View", &StaticWebViewTest::OnButtonSetNormal);
     
-    CreateUIButton(add10ToAlfaButton, font, Rect(0 + 300 * 1, 510 + 30, 300, 30),
+    CreateUIButton(add10ToAlfaButton, font, Rect(0 + 300 * 1, 510 + w, 300, w),
         L"+10 to Alfa", &StaticWebViewTest::OnButtonAdd10ToAlfa);
 
     CreateUIButton(minus10FromAlfaButton, font, 
-        Rect(0 + 300 * 2, 510 + 30, 300, 30),
+        Rect(0 + 300 * 2, 510 + w, 300, w),
         L"-10 to Alfa", &StaticWebViewTest::OnButtonMinus10FromAlfa);
 
     CreateUIButton(checkTransparancyButton, font,
-        Rect(0 + 300 * 1, 510 + 30 * 2, 300, 30),
+        Rect(0 + 300 * 1, 510 + w * 2, 300, w),
         L"set Transparent Background", 
         &StaticWebViewTest::OnButtonCheckTransparancy);
 
     CreateUIButton(uncheckTransparancyButton, font,
-        Rect(0 + 300 * 2, 510 + 30 * 2, 300, 30),
+        Rect(0 + 300 * 2, 510 + w * 2, 300, w),
         L"unset Transparent Background",
         &StaticWebViewTest::OnButtonUncheckTransparancy);
 
     CreateUIButton(executeJSButton, font,
-            Rect(0 + 300 * 1, 510 + 30 * 3, 300, 30), L"exec JS",
+            Rect(0 + 300 * 1, 510 + w * 3, 300, w), L"exec JS",
             &StaticWebViewTest::OnButtonExecJS);
 
     CreateUIButton(loadHTMLString, font,
-            Rect(0 + 300 * 2, 510 + 30 * 3, 300, 30), L"load HTML String",
+            Rect(0 + 300 * 2, 510 + w * 3, 300, w), L"load HTML String",
             &StaticWebViewTest::OnLoadHTMLString);
+
+    CreateUIButton(setVisibleButton, font,
+        Rect(0 + 300 * 1, 510 + w * 4, 300, w), L"Show",
+        &StaticWebViewTest::OnButtonVisible);
+
+    CreateUIButton(setHideButton, font,
+        Rect(0 + 300 * 2, 510 + w * 4, 300, w), L"Hide",
+        &StaticWebViewTest::OnButtonHide);
 
 	SafeRelease(font);
 }
@@ -275,4 +287,14 @@ void StaticWebViewTest::OnLoadHTMLString(BaseObject* obj, void*, void*)
             L"</BODY>\n"
             L"</HTML>\n");
     }
+}
+
+void StaticWebViewTest::OnButtonVisible(BaseObject*, void*, void*)
+{
+    webView1->SetVisible(true);
+}
+
+void StaticWebViewTest::OnButtonHide(BaseObject*, void*, void*)
+{
+    webView1->SetVisible(false);
 }

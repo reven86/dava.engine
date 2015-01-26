@@ -276,9 +276,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 					
 					if (action == MotionEvent.ACTION_CANCEL ||
 						action == MotionEvent.ACTION_UP ||
-						action == MotionEvent.ACTION_POINTER_1_UP ||
-						action == MotionEvent.ACTION_POINTER_2_UP ||
-						action == MotionEvent.ACTION_POINTER_3_UP) {
+						action == MotionEvent.ACTION_POINTER_UP) {
 						RemoveTId(event.id);
 					}
 				}
