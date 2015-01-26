@@ -291,7 +291,11 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 	Set<DAVA::NMaterial *> materials;
 	matSystem->BuildMaterialList(scene, materials);
 
-    const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = ProjectManager::Instance()->GetAvailableMaterialTemplates(); 
+    const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
+    if (ProjectManager::Instance())
+    {
+        materialTemplates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
+    }
 
 	DAVA::Map<DAVA::Texture *, DAVA::String> texturesMap;
 	auto endItMaterials = materials.end();
@@ -340,7 +344,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
                     }
                 }
 
-                if ((*it)->GetMaterialTemplateName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
+                if (materialTemplates && (*it)->GetMaterialTemplateName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
                 {
                     bool templateFound = false;
                     for (int i = 0; i < materialTemplates->size(); ++i)
