@@ -97,8 +97,13 @@ void NetLogger::Output(Logger::eLogLevel ll, const char8* text)
 
 void NetLogger::Output(Logger::eLogLevel ll, const char16* text)
 {
+    // Logging of wide characters is not supported on Android for now
+    // see PlatformLog in LoggerAndroid.cpp :)
+    DVASSERT(0 && "Do not log wide strings");
     if(text)
-        Output(ll, UTF8Utils::EncodeToUTF8(WideString(text)).c_str());
+    {
+        DoOutput(ll, UTF8Utils::EncodeToUTF8(WideString(text)).c_str());
+    }
 }
 
 void NetLogger::DoOutput(Logger::eLogLevel ll, const char8* text)
@@ -113,7 +118,7 @@ void NetLogger::SendNextRecord()
     LogRecord record;
     if (IsChannelOpen() && true == GetFirstMessage(record))
     {
-        String timeStr = UTF8Utils::EncodeToUTF8(record.timestamp.AsWString(L"%Y-%m-%d %H:%M:%S"));
+        String timeStr = TimestampToString(record.timestamp);
         const char* levelStr = Logger::Instance()->GetLogLevelString(record.level);
 
         size_t n = timeStr.size() + 1 + strlen(levelStr) + 1 + record.message.size();
@@ -129,7 +134,7 @@ bool NetLogger::EnqueueMessage(Logger::eLogLevel ll, const char8* message)
     bool wasEmpty = recordQueue.empty();
     if (maxQueueSize <= recordQueue.size())
         recordQueue.pop_front();
-    recordQueue.push_back(LogRecord(DateTime::Now(), ll, message));
+    recordQueue.push_back(LogRecord(time(nullptr), ll, message));
     return wasEmpty;
 }
 
@@ -151,6 +156,19 @@ void NetLogger::RemoveFirstMessage()
     {
         recordQueue.pop_front();
     }
+}
+
+String NetLogger::TimestampToString(time_t timestamp) const
+{
+    tm tms = {0};
+#if defined(__DAVAENGINE_WIN32__)
+    localtime_s(&tms, &timestamp);
+#else   // __DAVAENGINE_WIN32__
+    localtime_r(&timestamp, &tms);
+#endif  // __DAVAENGINE_WIN32__
+    char8 buf[50] = {0};
+    strftime(buf, COUNT_OF(buf), "%Y-%m-%d %H:%M:%S", &tms);
+    return String(buf);
 }
 
 }   // namespace Net
