@@ -39,6 +39,7 @@
 		CC1197B91A38BAE1006931D7 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1197A81A38BAE1006931D7 /* StringFormatTest.cpp */; };
 		CC1197BA1A38BAE1006931D7 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1197AA1A38BAE1006931D7 /* TextSizeTest.cpp */; };
 		CC1197D01A38BBBA006931D7 /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CC1197C51A38BB7E006931D7 /* libFrameworkTools.a */; };
+		CC4FD2291A5174A3004FAF22 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */; };
 		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
 		FE9892E511638EF700500198 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E111638EF700500198 /* InfoPlist.strings */; };
 		FE9892E611638EF700500198 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E311638EF700500198 /* MainMenu.xib */; };
@@ -178,6 +179,8 @@
 		CC1197AA1A38BAE1006931D7 /* TextSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TextSizeTest.cpp; path = Classes/Tests/TextSizeTest.cpp; sourceTree = "<group>"; };
 		CC1197AB1A38BAE1006931D7 /* TextSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextSizeTest.h; path = Classes/Tests/TextSizeTest.h; sourceTree = "<group>"; };
 		CC1197BE1A38BB7E006931D7 /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
+		CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cpp14.cpp; path = Classes/Tests/Cpp14.cpp; sourceTree = "<group>"; };
+		CC4FD2281A5174A3004FAF22 /* Cpp14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cpp14.h; path = Classes/Tests/Cpp14.h; sourceTree = "<group>"; };
 		FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE9892E211638EF700500198 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = MacOSSpecific/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -316,6 +319,8 @@
 		CC11978D1A38BACC006931D7 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */,
+				CC4FD2281A5174A3004FAF22 /* Cpp14.h */,
 				0264E3241A43006E00BD7279 /* JobManagerTest.cpp */,
 				0264E3251A43006E00BD7279 /* JobManagerTest.h */,
 				CC11978E1A38BAE1006931D7 /* ComponentsTest.cpp */,
@@ -533,6 +538,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CC4FD2291A5174A3004FAF22 /* Cpp14.cpp in Sources */,
 				CC1197B71A38BAE1006931D7 /* SaveImageTest.cpp in Sources */,
 				CC1197B01A38BAE1006931D7 /* FunctionBindSingalTest.cpp in Sources */,
 				CC1197B21A38BAE1006931D7 /* ImageSizeTest.cpp in Sources */,
@@ -618,7 +624,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_LDFLAGS = "-headerpad_max_install_names";
 				PRODUCT_NAME = UnitTests;
 			};
@@ -652,7 +657,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_LDFLAGS = "-headerpad_max_install_names";
 				PRODUCT_NAME = UnitTests;
 			};
@@ -663,6 +667,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
@@ -675,7 +680,7 @@
 					/opt/local/include/,
 					../../Libs/include,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -691,6 +696,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -701,7 +707,7 @@
 					/opt/local/include/,
 					../../Libs/include,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",

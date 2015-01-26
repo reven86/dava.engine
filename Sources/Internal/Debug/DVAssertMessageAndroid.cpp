@@ -32,50 +32,25 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "ExternC/AndroidLayer.h"
 
 #include "AndroidCrashReport.h"
 
 using namespace DAVA;
 
-jclass JniDVAssertMessage::gJavaClass = NULL;
-const char* JniDVAssertMessage::gJavaClassName = NULL;
-
-jclass JniDVAssertMessage::GetJavaClass() const
+void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
-	return gJavaClass;
-}
+	JNI::JavaClass msg("com/dava/framework/JNIAssert");
+	auto showMessage = msg.GetStaticMethod<void, jboolean, jstring>("Assert");
 
-const char* JniDVAssertMessage::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+	JNIEnv *env = JNI::GetEnv();
+	jstring jStrMessage = env->NewStringUTF(message);
+    bool waitUserInput = (ALWAYS_MODAL == modalType);
+	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
+	env->DeleteLocalRef(jStrMessage);
 
-
-bool JniDVAssertMessage::ShowMessage(bool isModal, const char* message)
-{
-    bool result = false;
-	jmethodID mid = GetMethodID("Assert", "(ZLjava/lang/String;)Z");
-	if (mid)
-	{
-		jstring jStrMessage = GetEnvironment()->NewStringUTF(message);
-		jboolean paramIsModal = static_cast<jboolean>(isModal);
-		jboolean r = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, paramIsModal, jStrMessage);
-		result = JNI_FALSE == r ? false : true; // no warning on conversion
-		GetEnvironment()->DeleteLocalRef(jStrMessage);
-	}
-	return result;
-}
-
-
-bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
-{
-	JniDVAssertMessage msg;
-	bool waitUserInput = (ALWAYS_MODAL == modalType);
-
-	bool breakExecution = msg.ShowMessage(waitUserInput, message);
 	return breakExecution;
 }
 

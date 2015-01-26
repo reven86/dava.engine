@@ -35,7 +35,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "../../UI/IWebViewControl.h"
-#include "JniExtensions.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA {
 
@@ -88,9 +88,10 @@ private:
 	static int32 webViewIdCount;
 };
 
-class JniWebView: public JniExtension
+class JniWebView
 {
 public:
+	JniWebView();
 	void Initialize(WebViewControl* control, int id, const Rect& rect);
 	void Deinitialize(int id);
 
@@ -114,17 +115,22 @@ public:
 	static void PageLoaded(int id, int* rawPixels, int width, int height);
 	static void OnExecuteJScript(int id, const String& result);
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
-
 private:
 	typedef std::map<int, WebViewControl*> CONTROLS_MAP;
 	static CONTROLS_MAP controls;
+
+	JNI::JavaClass jniWebView;
+
+	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> initialize;
+	Function<void (jint)> deinitialize;
+	Function<void (jint, jstring)> openURL;
+	Function<void (jint, jstring)> loadHtmlString;
+	Function<void (jint, jint, jstring)> executeJScript;
+	Function<void (jstring)> deleteCookies;
+	Function<void (jint, jstring, jstring)> openFromBuffer;
+	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> setRect;
+	Function<void (jint, jboolean)> setVisible;
+	Function<void (jint, jboolean)> setBackgroundTransparency;
 };
 
 };
