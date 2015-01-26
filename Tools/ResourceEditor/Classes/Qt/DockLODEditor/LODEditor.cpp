@@ -68,21 +68,21 @@ LODEditor::LODEditor(QWidget* parent)
 
 	//!connect(editedLODData, SIGNAL(DataChanged()), SLOT(LODDataChanged()));
 
+	allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
+	ui->checkBoxLodEditorMode->setChecked(allSceneModeEnabled);
+
     SetupInternalUI();
     SetupSceneSignals();
     
-    ForceDistanceStateChanged(Qt::Unchecked);
-    LODDataChanged();
+    //!ForceDistanceStateChanged(Qt::Unchecked);
     
     posSaver.Attach(this);
 
-	allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
-	ui->checkBoxLodEditorMode->setChecked(allSceneModeEnabled);
-	getCurrentSceneLODSystem()->EnableAllSceneMode(allSceneModeEnabled);
+
 }
 
 LODEditor::~LODEditor()
-{
+{ 
     //!SafeDelete(editedLODData);
     
 	delete ui;
@@ -105,14 +105,14 @@ void LODEditor::SetupInternalUI()
     ui->forceSlider->setValue(0);
 	ui->forceSlider->setEnabled(ui->enableForceDistance->isChecked());
     
-    connect(ui->distanceSlider, SIGNAL(DistanceChanged(const QVector<int> &, bool)), SLOT(LODDistanceChangedBySlider(const QVector<int> &, bool)));
+    connect(ui->distanceSlider, SIGNAL(DistanceChanged(const QVector<int> &, bool)), this, SLOT(LODDistanceChangedBySlider(const QVector<int> &, bool)));
     
     InitDistanceSpinBox(ui->lod0Name, ui->lod0Distance, 0);
     InitDistanceSpinBox(ui->lod1Name, ui->lod1Distance, 1);
     InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 2);
     InitDistanceSpinBox(ui->lod3Name, ui->lod3Distance, 3);
     
-    SetForceLayerValues(DAVA::LodComponent::MAX_LOD_LAYERS);
+    createForceLayerValues(DAVA::LodComponent::MAX_LOD_LAYERS);
     connect(ui->forceLayer, SIGNAL(activated(int)), SLOT(ForceLayerActivated(int)));
 
 	connect(ui->checkBoxLodEditorMode, SIGNAL(stateChanged(int)), this, SLOT(EditorModeChanged(int)));
@@ -122,17 +122,43 @@ void LODEditor::SetupInternalUI()
     connect(ui->createPlaneLodButton, SIGNAL(clicked()), this, SLOT(CreatePlaneLODClicked()));
     connect(ui->buttonDeleteFirstLOD, SIGNAL(clicked()), this, SLOT(DeleteFirstLOD()));
     connect(ui->buttonDeleteLastLOD, SIGNAL(clicked()), this, SLOT(DeleteLastLOD()));
+	
+	//default state 
+	ui->viewLODButton->setVisible(false);
+	ui->frameViewLOD->setVisible(false);
+	ui->editLODButton->setVisible(false);
+	ui->frameEditLOD->setVisible(false);
 }
 
 void LODEditor::SetupSceneSignals()
 {
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
+	connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool)));
+	connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), SLOT(SceneStructureChanged(SceneEditor2 *, DAVA::Entity *)));
+	connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+	connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool)));
+}
+
+void LODEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
+{
+	if (command->GetId() == CMDID_BATCH)
+	{
+		CommandBatch *batch = (CommandBatch *)command;
+		Command2 *firstCommand = batch->GetCommand(0);
+		if (firstCommand && (firstCommand->GetId() == CMDID_LOD_DISTANCE_CHANGE ||
+			firstCommand->GetId() == CMDID_LOD_COPY_LAST_LOD ||
+			firstCommand->GetId() == CMDID_LOD_DELETE ||
+			firstCommand->GetId() == CMDID_LOD_CREATE_PLANE))
+		{
+			//!GetLODDataFromScene();
+		}
+	}
 }
 
 void LODEditor::ForceDistanceStateChanged(int checked)
 {
-    bool enable = (checked == Qt::Checked);
+    /*//!bool enable = (checked == Qt::Checked);
 	getCurrentSceneLODSystem()->EnableForceDistance(enable);
     
     if(!enable)
@@ -143,12 +169,12 @@ void LODEditor::ForceDistanceStateChanged(int checked)
     
 	ui->enableForceDistance->setChecked(checked);
 	ui->forceSlider->setValue(getCurrentSceneLODSystem()->GetForceDistance());
-    ui->forceLayer->setEnabled(!enable);
+    ui->forceLayer->setEnabled(!enable);*/
 }
 
 void LODEditor::ForceDistanceChanged(int distance)
 {
-    getCurrentSceneLODSystem()->SetForceDistance(distance);
+	getCurrentSceneLODSystem()->SetForceDistance(distance);
 }
 
 
@@ -185,6 +211,7 @@ void LODEditor::SceneDeactivated(SceneEditor2 *scene)
 
 void LODEditor::LODDataChanged()
 {
+	getCurrentSceneLODSystem()->GetLODDataFromScene();
     DAVA::uint32 lodLayersCount = getCurrentSceneLODSystem()->GetLayersCount();
     
     ui->distanceSlider->SetLayersCount(lodLayersCount);
@@ -290,6 +317,20 @@ void LODEditor::SetForceLayerValues(int layersCount)
 	ui->forceLayer->setCurrentIndex(requestedIndex);
 }
 
+void LODEditor::createForceLayerValues(int layersCount)
+{
+	ui->forceLayer->clear();
+
+	ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
+
+	for (DAVA::int32 i = 0; i < layersCount; ++i)
+	{
+		ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
+	}
+
+	ui->forceLayer->setCurrentIndex(0);
+}
+
 void LODEditor::LODEditorSettingsButtonReleased()
 {
     InvertFrameVisibility(ui->frameLodEditorSettings, ui->lodEditorSettingsButton);
@@ -379,6 +420,8 @@ void LODEditor::UpdateDeleteLODButtons()
 
 SceneLODSystem *LODEditor::getCurrentSceneLODSystem()
 {
+	DVASSERT(QtMainWindow::Instance());
+	DVASSERT(QtMainWindow::Instance()->GetCurrentScene());
 	return QtMainWindow::Instance()->GetCurrentScene()->sceneLODSystem;
 }
 
@@ -390,6 +433,16 @@ void LODEditor::DeleteFirstLOD()
 void LODEditor::DeleteLastLOD()
 {
 	getCurrentSceneLODSystem()->DeleteLastLOD();
+}
+
+void LODEditor::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
+{
+
+}
+
+void LODEditor::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
+{
+
 }
 
 

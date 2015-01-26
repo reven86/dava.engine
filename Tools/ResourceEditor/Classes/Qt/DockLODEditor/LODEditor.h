@@ -44,6 +44,8 @@ class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
 class SceneLODSystem;
+class EntityGroup;
+class Command2;
 
 class LODEditor: public QWidget
 {
@@ -64,8 +66,10 @@ protected slots:
 
     void SceneActivated(SceneEditor2 *scene);
 	void SceneDeactivated(SceneEditor2 *scene);
+	void SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
+	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
+	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
-    
     void LODDataChanged();
     void LODDistanceChangedBySpinbox(double value);
     void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous);
@@ -94,6 +98,7 @@ protected:
     
     void SetSpinboxValue(QDoubleSpinBox *spinbox, double value);
     void SetForceLayerValues(int layersCount);
+	void createForceLayerValues(int layersCount);
     
 	void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
     

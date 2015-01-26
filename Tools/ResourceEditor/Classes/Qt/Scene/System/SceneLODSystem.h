@@ -83,12 +83,9 @@ public:
 	void DeleteFirstLOD();
 	void DeleteLastLOD();
 
-	void SceneActivated(SceneEditor2 *scene);
-	void SceneDeactivated(SceneEditor2 *scene);
 	void SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
 	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 
-	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
 protected:
 

@@ -15,11 +15,7 @@ SceneLODSystem::SceneLODSystem(DAVA::Scene * scene)
 	,   activeScene(NULL)
 	,	allSceneModeEnabled(false)
 {
-	//!connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), SLOT(SceneActivated(SceneEditor2 *)));
-	//!connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), SLOT(SceneDeactivated(SceneEditor2 *)));
-	//!connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), SLOT(SceneStructureChanged(SceneEditor2 *, DAVA::Entity *)));
-	//!connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
-	//!connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool)));
+
 }
 
 
@@ -84,14 +80,14 @@ DAVA::uint32 SceneLODSystem::GetLayersCount() const
 
 DAVA::float32 SceneLODSystem::GetLayerDistance(DAVA::uint32 layerNum) const
 {
-	DVASSERT(layerNum < lodLayersCount)
-		return lodDistances[layerNum];
+	DVASSERT(layerNum < lodLayersCount);
+	return lodDistances[layerNum];
 }
 
 void SceneLODSystem::SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distance)
 {
-	DVASSERT(layerNum < lodLayersCount)
-		lodDistances[layerNum] = distance;
+	DVASSERT(layerNum < lodLayersCount);
+	lodDistances[layerNum] = distance;
 
 	DAVA::uint32 componentsCount = (DAVA::uint32)lodData.size();
 	if(componentsCount && activeScene)
@@ -346,7 +342,7 @@ DAVA::int32 SceneLODSystem::GetForceLayer() const
 	return forceLayer;
 }
 
-void SceneLODSystem::SceneActivated(SceneEditor2 *scene)
+/*void SceneLODSystem::SceneActivated(SceneEditor2 *scene)
 {
 	activeScene = scene;
 	GetLODDataFromScene();
@@ -355,7 +351,7 @@ void SceneLODSystem::SceneActivated(SceneEditor2 *scene)
 
 void SceneLODSystem::SceneDeactivated(SceneEditor2 *scene)
 {
-	if(activeScene)
+	if (activeScene)
 	{
 		ResetForceState(activeScene);
 		activeScene = NULL;
@@ -363,7 +359,7 @@ void SceneLODSystem::SceneDeactivated(SceneEditor2 *scene)
 
 	ClearLODData();
 	ClearForceData();
-}
+}*/
 
 void SceneLODSystem::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
@@ -386,23 +382,6 @@ void SceneLODSystem::UpdateForceData()
 	else if(forceLayer != DAVA::LodComponent::INVALID_LOD_LAYER)
 	{
 		SetForceLayer(forceLayer);
-	}
-}
-
-
-void SceneLODSystem::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
-{
-	if(command->GetId() == CMDID_BATCH)
-	{
-		CommandBatch *batch = (CommandBatch *)command;
-		Command2 *firstCommand = batch->GetCommand(0);
-		if(firstCommand && (firstCommand->GetId() == CMDID_LOD_DISTANCE_CHANGE || 
-			firstCommand->GetId() == CMDID_LOD_COPY_LAST_LOD ||
-			firstCommand->GetId() == CMDID_LOD_DELETE ||
-			firstCommand->GetId() == CMDID_LOD_CREATE_PLANE))
-		{
-			GetLODDataFromScene();
-		}
 	}
 }
 
@@ -528,7 +507,8 @@ void SceneLODSystem::EnableAllSceneMode( bool enabled )
 {
 	allSceneModeEnabled = enabled;
 
-	SceneActivated(activeScene);
+	GetLODDataFromScene();
+	ClearForceData();
 }
 
 
