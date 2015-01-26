@@ -403,6 +403,10 @@ void RenderSystem2D::Flush()
     */
 
 #if USE_BATCHING
+    if (vertexIndex == 0 && indexIndex == 0)
+    {
+        return;
+    }
     
     if (currentBatch.count > 0)
     {
@@ -410,12 +414,7 @@ void RenderSystem2D::Flush()
         currentBatch.Reset();
     }
 
-    if (batches.empty())
-    {
-        vertexIndex = 0;
-        indexIndex = 0;
-        return;
-    }
+    DVASSERT(!batches.empty());
 
     spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLELIST;
 
