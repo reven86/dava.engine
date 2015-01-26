@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,6 +19,7 @@
     <ClInclude Include="Classes\Infrastructure\TextureUtils.h" />
     <ClInclude Include="Classes\Infrastructure\UITestTemplate.h" />
     <ClInclude Include="Classes\Tests\ComponentsTest.h" />
+    <ClInclude Include="Classes\Tests\Cpp14.h" />
     <ClInclude Include="Classes\Tests\DateTimeTest.h" />
     <ClInclude Include="Classes\Tests\FileListTest.h" />
     <ClInclude Include="Classes\Tests\FileSystemTest.h" />
@@ -43,6 +44,7 @@
     <ClCompile Include="Classes\Infrastructure\TeamCityTestsOutput.cpp" />
     <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp" />
     <ClCompile Include="Classes\Tests\ComponentsTest.cpp" />
+    <ClCompile Include="Classes\Tests\Cpp14.cpp" />
     <ClCompile Include="Classes\Tests\DateTimeTest.cpp" />
     <ClCompile Include="Classes\Tests\FileListTest.cpp" />
     <ClCompile Include="Classes\Tests\FileSystemTest.cpp" />
@@ -79,10 +81,12 @@
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -129,7 +133,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>

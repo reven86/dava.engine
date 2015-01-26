@@ -40,4 +40,5 @@ fmod.log
 *.user
 /DavaConfig.in
 *.xccheckout
-.settings/
+Projects/UnitTests/android/assets
+

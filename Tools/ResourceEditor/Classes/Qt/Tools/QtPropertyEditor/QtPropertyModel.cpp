@@ -356,7 +356,7 @@ void QtPropertyModel::DataChanged(QtPropertyData *data, int reason)
 
 void QtPropertyModel::DataAboutToBeAdded(QtPropertyData *parent, int first, int last)
 {
-	if(NULL != parent)
+	//if(NULL != parent)
 	{
 		QModelIndex index = indexFromItem(parent);
 		beginInsertRows(index, first, last);
@@ -370,7 +370,7 @@ void QtPropertyModel::DataAdded()
 
 void QtPropertyModel::DataAboutToBeRemoved(QtPropertyData *parent, int first, int last)
 {
-	if(NULL != parent)
+	//if(NULL != parent)
 	{
 		QModelIndex index = indexFromItem(parent);
 		beginRemoveRows(index, first, last);

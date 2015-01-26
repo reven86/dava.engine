@@ -67,6 +67,9 @@
     <ClCompile Include="Classes\Tests\JobManagerTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Tests\Cpp14.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\Tests\NetworkTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
@@ -139,6 +142,9 @@
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Tests\JobManagerTest.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Tests\Cpp14.h">
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Tests\NetworkTest.h">
