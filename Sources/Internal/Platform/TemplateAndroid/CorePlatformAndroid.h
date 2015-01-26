@@ -88,6 +88,9 @@ public:
 	void KeyDown(int32 keyCode);
 
 	void OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount);
+	void OnGamepadElement(int32 elementKey, float32 value);
+
+	void OnGamepadAvailable(bool isAvailable);
 
 	bool DownloadHttpFile(const String & url, const String & documentsPathname);
 

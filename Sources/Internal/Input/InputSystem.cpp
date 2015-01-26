@@ -29,7 +29,7 @@
 
 #include "InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Input/GamepadManager.h"
+#include "Input/GamepadDevice.h"
 #include "UI/UIControlSystem.h"
 #include "Render/RenderManager.h"
 
@@ -40,7 +40,7 @@ InputSystem::InputSystem()
     :   isMultitouchEnabled(true)
 {
     keyboard = new KeyboardDevice();
-    gamepadManager = new GamepadManager();
+    gamepad = new GamepadDevice();
     AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }
@@ -48,7 +48,7 @@ InputSystem::InputSystem()
 InputSystem::~InputSystem()
 {
     SafeRelease(keyboard);
-    SafeRelease(gamepadManager);
+    SafeRelease(gamepad);
 }
 
 void InputSystem::ProcessInputEvent(UIEvent * event)
@@ -116,9 +116,9 @@ KeyboardDevice *InputSystem::GetKeyboard()
     return keyboard;
 }
 
-GamepadManager *InputSystem::GetGamepadManager()
+GamepadDevice *InputSystem::GetGamepadDevice()
 {
-    return gamepadManager;
+    return gamepad;
 }
 
 

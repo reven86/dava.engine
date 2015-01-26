@@ -69,6 +69,9 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobject classthis, jint action, jint id, jfloat x, jfloat y, jdouble time, jint source, jint tapCount);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyDown(JNIEnv * env, jobject classthis, jint keyCode);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyUp(JNIEnv * env, jobject classthis, jint keyCode);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadElement(JNIEnv * env, jobject classthis, jint elementKey, jfloat value);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadConnected(JNIEnv * env, jobject classthis, jint deviceId);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadDisconnected(JNIEnv * env, jobject classthis, jint deviceId);
 
 	//JNIRenderer
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeResize(JNIEnv * env, jobject classthis, jint w, jint h);
@@ -284,6 +287,29 @@ void Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyUp(JNIEnv * env, jobjec
 	}
 }
 
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadElement(JNIEnv * env, jobject classthis, jint elementKey, jfloat value)
+{
+	if(core)
+	{
+		core->OnGamepadElement(elementKey, value);
+	}
+}
+
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadConnected(JNIEnv * env, jobject classthis, jint deviceId)
+{
+	if(core)
+	{
+		core->OnGamepadAvailable(true);
+	}
+}
+
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadDisconnected(JNIEnv * env, jobject classthis, jint deviceId)
+{
+	if(core)
+	{
+		core->OnGamepadAvailable(false);
+	}
+}
 // END OF JNIGLSurfaceView
 
 
