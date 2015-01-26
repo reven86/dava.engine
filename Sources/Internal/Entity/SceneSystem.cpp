@@ -66,7 +66,7 @@ void SceneSystem::UnregisterEntity(Entity * entity)
 bool SceneSystem::IsEntityComponentFitsToSystem(Entity * entity, Component * component)
 {
     uint64 entityComponentFlags = entity->GetAvailableComponentFlags();
-    uint64 componentToCheckType = 1 << component->GetType();
+    uint64 componentToCheckType = MAKE_COMPONENT_MASK(component->GetType());
     uint64 requiredBySystemComponents = this->GetRequiredComponents();
 
     bool isAllRequiredComponentsAvailable = ((entityComponentFlags & requiredBySystemComponents) == requiredBySystemComponents);
@@ -149,7 +149,7 @@ void SceneSystem::SetLocked(bool locked)
 	this->locked = locked;
 }
 
-bool SceneSystem::IsLocked()
+bool SceneSystem::IsLocked() const
 {
 	return locked;
 }

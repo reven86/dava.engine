@@ -217,6 +217,12 @@ bool EntityGroup::operator==( const EntityGroup &ss ) const
 	return ret;
 }
 
+bool EntityGroup::operator!=( const EntityGroup &ss ) const
+{
+    return ((*this == ss) == false);
+}
+
+
 bool EntityGroup::Index(DAVA::Entity *entity, size_t &index) const
 {
 	for(size_t i = 0; i < entities.size(); ++i)
