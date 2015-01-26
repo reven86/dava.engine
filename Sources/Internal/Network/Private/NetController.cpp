@@ -129,13 +129,8 @@ void NetController::Stop(Function<void (IController*)> handler)
 
 void NetController::Restart()
 {
-    for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end();i != e;++i)
-    {
-        ClientEntry& entry = *i;
-        entry.client->Reset();
-    }
-    for (size_t i = 0, n = servers.size();i < n;++i)
-        servers[i]->Reset();
+    DVASSERT(false == isTerminating);
+    loop->Post(MakeFunction(this, &NetController::DoRestart));
 }
 
 void NetController::DoStartServers()
@@ -152,6 +147,17 @@ void NetController::DoStartClients()
     // For now there is always one transport in client role
     runningObjects = 1;
     clients.front().client->Start(this);
+}
+
+void NetController::DoRestart()
+{
+    for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end();i != e;++i)
+    {
+        ClientEntry& entry = *i;
+        entry.client->Reset();
+    }
+    for (size_t i = 0, n = servers.size();i < n;++i)
+        servers[i]->Reset();
 }
 
 void NetController::DoStopServers()

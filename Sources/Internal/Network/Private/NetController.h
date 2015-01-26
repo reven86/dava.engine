@@ -86,6 +86,7 @@ public:
 private:
     void DoStartServers();
     void DoStartClients();
+    void DoRestart();
     void DoStopServers();
     void DoStopClients();
 
