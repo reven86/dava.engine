@@ -85,7 +85,6 @@ private:
 #endif //#if defined (Q_OS_MAC)
 
 	virtual void Quit();
-    DAVA_DEPRECATED(virtual bool ShowAssertMessage(const char * message));
 
 	int maxFPS;
     int minFrameTimeMs;

@@ -54,9 +54,6 @@ MathTest::MathTest()
 void MathTest::LoadResources()
 {
 	GetBackground()->SetColor(Color::White);
-
-	//DVASSERT(false);
-    DVASSERT_MSG(false, "error");
 }
 
 void MathTest::UnloadResources()
