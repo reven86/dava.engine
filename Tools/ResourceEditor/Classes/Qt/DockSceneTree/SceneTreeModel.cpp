@@ -480,7 +480,7 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 	case DropingEntity:
 		{
 			ret = true;
-
+            
 			// don't accept entity to be dropped anywhere except other entity
 			if(NULL != parentItem && parentItem->ItemType() != SceneTreeItem::EIT_Entity)
 			{
@@ -535,6 +535,16 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 							ret = false;
 							break;
 						}
+                        
+                        //5. disabled drop waypoints to different pathes
+                        if(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT) || entity->GetComponent(DAVA::Component::PATH_COMPONENT))
+                        {
+                            if(entity->GetParent() != targetEntity)
+                            {
+                                ret = false;
+                                break;
+                            }
+                        }
 					}
 				}
 			}
@@ -812,6 +822,24 @@ int SceneTreeModel::GetDropType(const QMimeData *data) const
 	return ret;
 }
 
+
+Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
+{
+    const Qt::ItemFlags f = QStandardItemModel::flags(index);
+    
+    DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
+    if(NULL != entity)
+    {
+        if(!curScene->selectionSystem->IsEntitySelectable(entity))
+        {
+            return (f & ~Qt::ItemIsSelectable);
+        }
+    }
+    
+    return f;
+}
+
+
 SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QObject *parent /* = NULL */)
 	: QSortFilterProxyModel(parent)
 	, treeModel(_treeModel)
@@ -853,3 +881,5 @@ QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) cons
 
     return val;
 }
+
+

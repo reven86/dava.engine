@@ -1243,6 +1243,18 @@
 		C1DC1F001717EC1E001C5EC3 /* libTextureConverter_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1DC1EFB1717E791001C5EC3 /* libTextureConverter_macos.a */; };
 		C7FBCFB816CD1FE5006F1B3F /* AutotestingSystemYaml.h in Headers */ = {isa = PBXBuildFile; fileRef = C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */; };
 		C7FBCFC116CD2060006F1B3F /* liblua_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7FBCFC016CD2060006F1B3F /* liblua_macos.a */; };
+		CC0D7B351A76055A00309408 /* EdgeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B2F1A76055A00309408 /* EdgeComponent.cpp */; };
+		CC0D7B361A76055A00309408 /* EdgeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B2F1A76055A00309408 /* EdgeComponent.cpp */; };
+		CC0D7B371A76055A00309408 /* EdgeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B301A76055A00309408 /* EdgeComponent.h */; };
+		CC0D7B381A76055A00309408 /* EdgeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B301A76055A00309408 /* EdgeComponent.h */; };
+		CC0D7B391A76055A00309408 /* PathComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B311A76055A00309408 /* PathComponent.cpp */; };
+		CC0D7B3A1A76055A00309408 /* PathComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B311A76055A00309408 /* PathComponent.cpp */; };
+		CC0D7B3B1A76055A00309408 /* PathComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B321A76055A00309408 /* PathComponent.h */; };
+		CC0D7B3C1A76055A00309408 /* PathComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B321A76055A00309408 /* PathComponent.h */; };
+		CC0D7B3D1A76055A00309408 /* WaypointComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B331A76055A00309408 /* WaypointComponent.cpp */; };
+		CC0D7B3E1A76055A00309408 /* WaypointComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B331A76055A00309408 /* WaypointComponent.cpp */; };
+		CC0D7B3F1A76055A00309408 /* WaypointComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B341A76055A00309408 /* WaypointComponent.h */; };
+		CC0D7B401A76055A00309408 /* WaypointComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B341A76055A00309408 /* WaypointComponent.h */; };
 		CC24800816DD174E00183D40 /* UserComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24800616DD174E00183D40 /* UserComponent.cpp */; };
 		CC24800916DD174E00183D40 /* UserComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24800616DD174E00183D40 /* UserComponent.cpp */; };
 		CC24800A16DD174E00183D40 /* UserComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24800716DD174E00183D40 /* UserComponent.h */; };
@@ -2898,6 +2910,12 @@
 		C1DC1EFB1717E791001C5EC3 /* libTextureConverter_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libTextureConverter_macos.a; path = ../../Libs/libs/libTextureConverter_macos.a; sourceTree = "<group>"; };
 		C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingSystemYaml.h; sourceTree = "<group>"; };
 		C7FBCFC016CD2060006F1B3F /* liblua_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_macos.a; path = ../../Libs/libs/liblua_macos.a; sourceTree = "<group>"; };
+		CC0D7B2F1A76055A00309408 /* EdgeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EdgeComponent.cpp; sourceTree = "<group>"; };
+		CC0D7B301A76055A00309408 /* EdgeComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EdgeComponent.h; sourceTree = "<group>"; };
+		CC0D7B311A76055A00309408 /* PathComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PathComponent.cpp; sourceTree = "<group>"; };
+		CC0D7B321A76055A00309408 /* PathComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathComponent.h; sourceTree = "<group>"; };
+		CC0D7B331A76055A00309408 /* WaypointComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WaypointComponent.cpp; sourceTree = "<group>"; };
+		CC0D7B341A76055A00309408 /* WaypointComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointComponent.h; sourceTree = "<group>"; };
 		CC24800616DD174E00183D40 /* UserComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UserComponent.cpp; sourceTree = "<group>"; };
 		CC24800716DD174E00183D40 /* UserComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserComponent.h; sourceTree = "<group>"; };
 		CC24804116E0DF2800183D40 /* VectorSpinnerAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VectorSpinnerAdapter.h; sourceTree = "<group>"; };
@@ -3807,6 +3825,19 @@
 			path = SceneFile;
 			sourceTree = "<group>";
 		};
+		CC0D7B2E1A76055A00309408 /* Waypoint */ = {
+			isa = PBXGroup;
+			children = (
+				CC0D7B2F1A76055A00309408 /* EdgeComponent.cpp */,
+				CC0D7B301A76055A00309408 /* EdgeComponent.h */,
+				CC0D7B311A76055A00309408 /* PathComponent.cpp */,
+				CC0D7B321A76055A00309408 /* PathComponent.h */,
+				CC0D7B331A76055A00309408 /* WaypointComponent.cpp */,
+				CC0D7B341A76055A00309408 /* WaypointComponent.h */,
+			);
+			path = Waypoint;
+			sourceTree = "<group>";
+		};
 		CC84B00D18211A5600934482 /* Job */ = {
 			isa = PBXGroup;
 			children = (
@@ -4632,6 +4663,7 @@
 		E8989CC816BD24E500732C04 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				CC0D7B2E1A76055A00309408 /* Waypoint */,
 				E8990B281A288C2000FF71A1 /* Controller */,
 				026A1DBE19DAF09700813AEF /* SkeletonComponent.cpp */,
 				026A1DBF19DAF09700813AEF /* SkeletonComponent.h */,
@@ -5445,6 +5477,8 @@
 				E8989DDB16BD24E500732C04 /* ScopedPtr.h in Headers */,
 				E8989DDC16BD24E500732C04 /* Singleton.h in Headers */,
 				D7CC264319C43C7C00A3B754 /* LocalNotificationProgress.h in Headers */,
+				CC0D7B371A76055A00309408 /* EdgeComponent.h in Headers */,
+				CC0D7B3B1A76055A00309408 /* PathComponent.h in Headers */,
 				E8989DDD16BD24E500732C04 /* StaticSingleton.h in Headers */,
 				641A61DD18CDC2F4003359E7 /* FoliageSystem.h in Headers */,
 				E8989DDE16BD24E500732C04 /* TemplateHelpers.h in Headers */,
@@ -5789,6 +5823,7 @@
 				74A909AC1701FA51003FDB31 /* CRC32.h in Headers */,
 				840D24231703311400267C58 /* DeviceInfo.h in Headers */,
 				CC931B28188EC95F000375F9 /* SwitchToRenerObjectConverter.h in Headers */,
+				CC0D7B3F1A76055A00309408 /* WaypointComponent.h in Headers */,
 				7410E81D17144C160028AAAA /* UIAggregatorControl.h in Headers */,
 				E8951B761738FEEC00755339 /* GPUFamilyDescriptor.h in Headers */,
 				320A4B3019E6B5B80049D713 /* AbstractUIPackageBuilder.h in Headers */,
@@ -5925,6 +5960,7 @@
 				E898A09116BD265400732C04 /* ListAllocator.h in Headers */,
 				E898A09216BD265400732C04 /* MemoryManager.h in Headers */,
 				E898A09316BD265400732C04 /* Replay.h in Headers */,
+				CC0D7B3C1A76055A00309408 /* PathComponent.h in Headers */,
 				E898A09416BD265400732C04 /* Stats.h in Headers */,
 				CC84B02618211A9000934482 /* JobQueue.h in Headers */,
 				50A3044218575C370082CA8D /* StaticOcclusionRenderPass.h in Headers */,
@@ -5968,6 +6004,7 @@
 				E8990B3F1A288C2000FF71A1 /* WASDControllerComponent.h in Headers */,
 				E898A0B316BD265400732C04 /* Color.h in Headers */,
 				E898A0B416BD265400732C04 /* Math2D.h in Headers */,
+				CC0D7B401A76055A00309408 /* WaypointComponent.h in Headers */,
 				E898A0B516BD265400732C04 /* Math2DTemplateClasses.h in Headers */,
 				E898A0B616BD265400732C04 /* MathConstants.h in Headers */,
 				024BD5A21A2C8371000BECC1 /* VirtualCoordinatesSystem.h in Headers */,
@@ -6261,6 +6298,7 @@
 				EA56554E17CDFF4B00426EB8 /* PerformanceSettings.h in Headers */,
 				E89EDE611A2E16FA0036E993 /* GameAPI.h in Headers */,
 				84E975CA191FCE130054CCF9 /* LibJpegHelper.h in Headers */,
+				CC0D7B381A76055A00309408 /* EdgeComponent.h in Headers */,
 				50A5187417B256250022E8FA /* ShaderCache.h in Headers */,
 				A6B0518117E886D8000EED68 /* SerializationContext.h in Headers */,
 				A66533E917F98EC100B8906A /* Serializable.h in Headers */,
@@ -6930,12 +6968,14 @@
 				E8989F3216BD24E500732C04 /* MaterialCompiler.cpp in Sources */,
 				E8989F3416BD24E500732C04 /* MaterialGraph.cpp in Sources */,
 				E8989F3616BD24E500732C04 /* MaterialGraphNode.cpp in Sources */,
+				CC0D7B391A76055A00309408 /* PathComponent.cpp in Sources */,
 				E8989F3816BD24E500732C04 /* NMaterial.cpp in Sources */,
 				A650F4B81864A10100D3278D /* NMaterialTemplate.cpp in Sources */,
 				E8989F3B16BD24E500732C04 /* Material.cpp in Sources */,
 				E8989F3F16BD24E500732C04 /* RenderBase.cpp in Sources */,
 				E8989F4116BD24E500732C04 /* RenderDataObject.cpp in Sources */,
 				E8989F4316BD24E500732C04 /* RenderEffect.cpp in Sources */,
+				CC0D7B3D1A76055A00309408 /* WaypointComponent.cpp in Sources */,
 				6280BAA918D6F909007809B7 /* DateTimeApple.mm in Sources */,
 				CC84B01C18211A9000934482 /* JobManager.cpp in Sources */,
 				E8989F4516BD24E500732C04 /* RenderGrayscaleEffect.cpp in Sources */,
@@ -7038,6 +7078,7 @@
 				E8989FE016BD24E500732C04 /* ParticleEffectSystem.cpp in Sources */,
 				E879E2461988EF8D0026191D /* OGLHelpers.cpp in Sources */,
 				E8989FE416BD24E500732C04 /* RenderUpdateSystem.cpp in Sources */,
+				CC0D7B351A76055A00309408 /* EdgeComponent.cpp in Sources */,
 				E89EDE6F1A2E16FA0036E993 /* Polygon2_wrap.cxx in Sources */,
 				E8989FE616BD24E500732C04 /* SwitchSystem.cpp in Sources */,
 				E8989FE816BD24E500732C04 /* TransformSystem.cpp in Sources */,
@@ -7251,6 +7292,7 @@
 				E8990B491A288C8F00FF71A1 /* RotationControllerSystem.cpp in Sources */,
 				322FFD5119C042880000ED71 /* UIPackage.cpp in Sources */,
 				647EFC4A195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
+				CC0D7B3A1A76055A00309408 /* PathComponent.cpp in Sources */,
 				E898A1C016BD265400732C04 /* Replay.cpp in Sources */,
 				641A61DB18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
 				E898A1C116BD265400732C04 /* Stats.cpp in Sources */,
@@ -7308,6 +7350,7 @@
 				E898A1E716BD265400732C04 /* Spline.cpp in Sources */,
 				647EFC52195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				1146E11619D00874009E5FAB /* AnimationComponent.cpp in Sources */,
+				CC0D7B3E1A76055A00309408 /* WaypointComponent.cpp in Sources */,
 				84E975CD191FCE1D0054CCF9 /* LibPVRHelper.cpp in Sources */,
 				50A3044518575C370082CA8D /* StaticOcclusionRenderPass.cpp in Sources */,
 				4F53ED4519A23BF200D3869D /* bs_diff.c in Sources */,
@@ -7597,6 +7640,7 @@
 				E89EDE4C1A2E16FA0036E993 /* AutotestingSystem.cpp in Sources */,
 				A68290BB17F5EEF9007BAFDC /* SerializationContext.cpp in Sources */,
 				1AD7C36817D895AE00B9977C /* Vector.cpp in Sources */,
+				CC0D7B361A76055A00309408 /* EdgeComponent.cpp in Sources */,
 				C172EC5118CA0AEA004309CF /* DFFont.cpp in Sources */,
 				A63BCD6B17EB26E300EA4811 /* Process.cpp in Sources */,
 				EA84E16D17FAC0B400304C3C /* SpatialTree.cpp in Sources */,

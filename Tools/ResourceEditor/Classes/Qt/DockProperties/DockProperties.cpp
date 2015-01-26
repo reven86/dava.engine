@@ -70,6 +70,7 @@ void DockProperties::Init()
     addComponentMenu->addAction(ui->actionAddSoundComponent);
     addComponentMenu->addAction(ui->actionAddWaveComponent);
     addComponentMenu->addAction(ui->actionAddSkeletonComponent);
+    addComponentMenu->addAction(ui->actionAddPathComponent);
     addComponentMenu->addAction(ui->actionAddRotationComponent);
     addComponentMenu->addAction(ui->actionAddSnapToLandscapeComponent);
     addComponentMenu->addAction(ui->actionAddWASDComponent);

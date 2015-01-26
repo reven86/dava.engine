@@ -73,7 +73,8 @@ namespace Settings
     static const DAVA::FastName Scene_DebugBoxScale("Scene/DebugBoxScale");
     static const DAVA::FastName Scene_DebugBoxUserScale("Scene/DebugBoxUserScale");
     static const DAVA::FastName Scene_DebugBoxParticleScale("Scene/DebugBoxParticleScale");
-	static const DAVA::FastName Scene_DragAndDropWithShift("Scene/Drag&DropInTreeWithShift");
+    static const DAVA::FastName Scene_DebugBoxWaypointScale("Scene/DebugBoxWaypointScale");
+    static const DAVA::FastName Scene_DragAndDropWithShift("Scene/Drag&DropInTreeWithShift");
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");

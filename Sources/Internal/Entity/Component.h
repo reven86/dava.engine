@@ -38,6 +38,8 @@
 namespace DAVA 
 {
     
+#define MAKE_COMPONENT_MASK(x) ((uint64)1 << (uint64)x)
+
 class Entity;
 class Component : public Serializable, public InspBase
 {
@@ -69,15 +71,17 @@ public:
         WIND_COMPONENT,
         WAVE_COMPONENT,
         SKELETON_COMPONENT,
-        
+        PATH_COMPONENT,
         ROTATION_CONTROLLER_COMPONENT,
         SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT,
         WASD_CONTROLLER_COMPONENT,
         
-
         //debug components - note that everything below won't be serialized
         DEBUG_COMPONENTS,
         STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT,
+        WAYPOINT_COMPONENT,
+        EDGE_COMPONENT,
+
         COMPONENT_COUNT
     };
 
