@@ -449,11 +449,6 @@ void DavaGLWidget::Quit()
     exit(0);
 }
 
-void DavaGLWidget::ShowAssertMessage(const char * message)
-{
-    QMessageBox::critical(this, "", message);
-}
-
 void DavaGLWidget::RegisterEventFilter()
 {
     if ( eventFilterCount == 0 )
