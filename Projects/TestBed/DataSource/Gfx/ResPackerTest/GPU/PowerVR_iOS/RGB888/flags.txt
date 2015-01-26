@@ -1,0 +1,1 @@
+--PowerVR_iOS RGB888

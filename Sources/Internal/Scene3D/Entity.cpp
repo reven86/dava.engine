@@ -58,7 +58,7 @@ namespace DAVA
 
 const int COMPONENT_COUNT_V6 = 18;
     
-uint64 vectorComponentsMask = (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT) | (1 << Component::LOD_COMPONENT);
+uint64 vectorComponentsMask = MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT) | MAKE_COMPONENT_MASK(Component::LOD_COMPONENT);
 
 // Property Names
 const char* Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME = "editor.isSolid";

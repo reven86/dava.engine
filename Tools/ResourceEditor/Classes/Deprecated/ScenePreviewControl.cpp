@@ -78,7 +78,7 @@ void ScenePreviewControl::RecreateScene()
 
     rotationSystem = new RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);
-    editorScene->AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+    editorScene->AddSystem(rotationSystem, (MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT)), Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
     SetScene(editorScene);
 }
