@@ -1089,6 +1089,18 @@
 		C7E76D3B16DF69370041ED9A /* UIControlSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7E76D2B16DF69370041ED9A /* UIControlSwig.cpp */; };
 		C7E76D3E16DF69370041ED9A /* VectorSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7E76D2E16DF69370041ED9A /* VectorSwig.cpp */; };
 		C7E76D4316DF6CC70041ED9A /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7E76D4216DF6CC70041ED9A /* liblua_ios.a */; };
+		CC0D7B4B1A76066700309408 /* EdgeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B451A76066700309408 /* EdgeComponent.cpp */; };
+		CC0D7B4C1A76066700309408 /* EdgeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B451A76066700309408 /* EdgeComponent.cpp */; };
+		CC0D7B4D1A76066700309408 /* EdgeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B461A76066700309408 /* EdgeComponent.h */; };
+		CC0D7B4E1A76066700309408 /* EdgeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B461A76066700309408 /* EdgeComponent.h */; };
+		CC0D7B4F1A76066700309408 /* PathComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B471A76066700309408 /* PathComponent.cpp */; };
+		CC0D7B501A76066700309408 /* PathComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B471A76066700309408 /* PathComponent.cpp */; };
+		CC0D7B511A76066700309408 /* PathComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B481A76066700309408 /* PathComponent.h */; };
+		CC0D7B521A76066700309408 /* PathComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B481A76066700309408 /* PathComponent.h */; };
+		CC0D7B531A76066700309408 /* WaypointComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B491A76066700309408 /* WaypointComponent.cpp */; };
+		CC0D7B541A76066700309408 /* WaypointComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC0D7B491A76066700309408 /* WaypointComponent.cpp */; };
+		CC0D7B551A76066700309408 /* WaypointComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B4A1A76066700309408 /* WaypointComponent.h */; };
+		CC0D7B561A76066700309408 /* WaypointComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC0D7B4A1A76066700309408 /* WaypointComponent.h */; };
 		CC247FF116D69F1700183D40 /* DVAssertMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC247FEC16D69F1700183D40 /* DVAssertMessage.cpp */; };
 		CC247FF216D69F1700183D40 /* DVAssertMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = CC247FED16D69F1700183D40 /* DVAssertMessage.h */; };
 		CC247FF316D69F1700183D40 /* DVAssertMessageApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = CC247FEE16D69F1700183D40 /* DVAssertMessageApple.mm */; };
@@ -2063,6 +2075,12 @@
 		C7E76D2B16DF69370041ED9A /* UIControlSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlSwig.cpp; sourceTree = "<group>"; };
 		C7E76D2E16DF69370041ED9A /* VectorSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VectorSwig.cpp; sourceTree = "<group>"; };
 		C7E76D4216DF6CC70041ED9A /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
+		CC0D7B451A76066700309408 /* EdgeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EdgeComponent.cpp; sourceTree = "<group>"; };
+		CC0D7B461A76066700309408 /* EdgeComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EdgeComponent.h; sourceTree = "<group>"; };
+		CC0D7B471A76066700309408 /* PathComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PathComponent.cpp; sourceTree = "<group>"; };
+		CC0D7B481A76066700309408 /* PathComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathComponent.h; sourceTree = "<group>"; };
+		CC0D7B491A76066700309408 /* WaypointComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WaypointComponent.cpp; sourceTree = "<group>"; };
+		CC0D7B4A1A76066700309408 /* WaypointComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointComponent.h; sourceTree = "<group>"; };
 		CC247FEC16D69F1700183D40 /* DVAssertMessage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DVAssertMessage.cpp; sourceTree = "<group>"; };
 		CC247FED16D69F1700183D40 /* DVAssertMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DVAssertMessage.h; sourceTree = "<group>"; };
 		CC247FEE16D69F1700183D40 /* DVAssertMessageApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DVAssertMessageApple.mm; sourceTree = "<group>"; };
@@ -2924,6 +2942,19 @@
 			path = SceneFile;
 			sourceTree = "<group>";
 		};
+		CC0D7B441A76066700309408 /* Waypoint */ = {
+			isa = PBXGroup;
+			children = (
+				CC0D7B451A76066700309408 /* EdgeComponent.cpp */,
+				CC0D7B461A76066700309408 /* EdgeComponent.h */,
+				CC0D7B471A76066700309408 /* PathComponent.cpp */,
+				CC0D7B481A76066700309408 /* PathComponent.h */,
+				CC0D7B491A76066700309408 /* WaypointComponent.cpp */,
+				CC0D7B4A1A76066700309408 /* WaypointComponent.h */,
+			);
+			path = Waypoint;
+			sourceTree = "<group>";
+		};
 		CC84B03518211BB600934482 /* Job */ = {
 			isa = PBXGroup;
 			children = (
@@ -3777,6 +3808,7 @@
 		E8B3C9AC16B9326E002BD35F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				CC0D7B441A76066700309408 /* Waypoint */,
 				E8525D0D1A30910400FDF76E /* Controller */,
 				026A1DDE19DAF24A00813AEF /* SkeletonComponent.cpp */,
 				026A1DDF19DAF24A00813AEF /* SkeletonComponent.h */,
@@ -4140,6 +4172,8 @@
 				02FD7F351924997C007762C0 /* Singleton.h in Headers */,
 				02FD7F361924997C007762C0 /* StaticSingleton.h in Headers */,
 				02FD7F371924997C007762C0 /* TemplateHelpers.h in Headers */,
+				CC0D7B4E1A76066700309408 /* EdgeComponent.h in Headers */,
+				CC0D7B521A76066700309408 /* PathComponent.h in Headers */,
 				02FD7F381924997C007762C0 /* CollisionObject2.h in Headers */,
 				02FD7F391924997C007762C0 /* CollisionPolygons.h in Headers */,
 				02FD7F3A1924997C007762C0 /* Collisions.h in Headers */,
@@ -4484,6 +4518,7 @@
 				02FD80661924997C007762C0 /* UpdateSystem.h in Headers */,
 				D7FEF14219864E5C00B2C7AF /* CurlDownloader.h in Headers */,
 				02FD80671924997C007762C0 /* DeviceInfo.h in Headers */,
+				CC0D7B561A76066700309408 /* WaypointComponent.h in Headers */,
 				02FD80681924997C007762C0 /* IntrospectionDynamic.h in Headers */,
 				02FD80691924997C007762C0 /* StaticOcclusionRenderPass.h in Headers */,
 				02FD806A1924997C007762C0 /* UIAggregatorControl.h in Headers */,
@@ -4599,6 +4634,7 @@
 				E8B3CABE16B9326E002BD35F /* RefPtr.h in Headers */,
 				E8B3CABF16B9326E002BD35F /* ScopedPtr.h in Headers */,
 				B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */,
+				CC0D7B4D1A76066700309408 /* EdgeComponent.h in Headers */,
 				E8B3CAC016B9326E002BD35F /* Singleton.h in Headers */,
 				E8B3CAC116B9326E002BD35F /* StaticSingleton.h in Headers */,
 				E8B3CAC216B9326E002BD35F /* TemplateHelpers.h in Headers */,
@@ -4739,6 +4775,7 @@
 				4F25831119BDC94000C28926 /* FunctionTraits.h in Headers */,
 				E8B3CBE016B9326E002BD35F /* TextureMulColorAlphaTestEffect.h in Headers */,
 				E8B3CBE216B9326E002BD35F /* TextureMulColorEffect.h in Headers */,
+				CC0D7B511A76066700309408 /* PathComponent.h in Headers */,
 				E8B3CBE416B9326E002BD35F /* Camera.h in Headers */,
 				E8B3CBE616B9326E002BD35F /* CullingSystem.h in Headers */,
 				64493E0819476F4700AB2715 /* VegetationFixedGeometry.h in Headers */,
@@ -4986,6 +5023,7 @@
 				17DC600C17DE16D40075813E /* UIMovieView.h in Headers */,
 				17DC601017DE18460075813E /* MovieViewControliOS.h in Headers */,
 				EA84E17617FAC20100304C3C /* SpatialTree.h in Headers */,
+				CC0D7B551A76066700309408 /* WaypointComponent.h in Headers */,
 				E8525D1A1A30910400FDF76E /* SnapToLandscapeControllerComponent.h in Headers */,
 				02D4CFC118055E29007EC9EC /* FMODSoundEvent.h in Headers */,
 				02C4E8CD18154E520052803E /* AutotestingDB.h in Headers */,
@@ -5405,6 +5443,7 @@
 				02FD819A1924997C007762C0 /* UIStaticText.cpp in Sources */,
 				02FD819B1924997C007762C0 /* UITextField.cpp in Sources */,
 				02FD819C1924997C007762C0 /* UITextFieldiPhone.mm in Sources */,
+				CC0D7B501A76066700309408 /* PathComponent.cpp in Sources */,
 				02FD819D1924997C007762C0 /* UIYamlLoader.cpp in Sources */,
 				02FD819E1924997C007762C0 /* HTTPDownloader.mm in Sources */,
 				02FD819F1924997C007762C0 /* MD5.cpp in Sources */,
@@ -5469,6 +5508,8 @@
 				02FD81D41924997C007762C0 /* ActionComponent.cpp in Sources */,
 				02FD81D51924997C007762C0 /* CustomPropertiesComponent.cpp in Sources */,
 				02FD81D61924997C007762C0 /* ActionUpdateSystem.cpp in Sources */,
+				CC0D7B541A76066700309408 /* WaypointComponent.cpp in Sources */,
+				CC0D7B4C1A76066700309408 /* EdgeComponent.cpp in Sources */,
 				02FD81D71924997C007762C0 /* CRC32.cpp in Sources */,
 				02FD81D81924997C007762C0 /* MaterialOptimazer.cpp in Sources */,
 				02FD81D91924997C007762C0 /* SkyboxSystem.cpp in Sources */,
@@ -5644,12 +5685,14 @@
 				E8B3CBF416B9326E002BD35F /* Mesh.cpp in Sources */,
 				D7FEF15D19864E5C00B2C7AF /* ZLibStream.cpp in Sources */,
 				E8B3CBF816B9326E002BD35F /* RenderBatch.cpp in Sources */,
+				CC0D7B4F1A76066700309408 /* PathComponent.cpp in Sources */,
 				E8B3CBFB16B9326E002BD35F /* RenderLayer.cpp in Sources */,
 				A61171471860C24D00E18F8C /* StaticOcclusion.cpp in Sources */,
 				E8B3CBFD16B9326E002BD35F /* RenderObject.cpp in Sources */,
 				E8B3CBFF16B9326E002BD35F /* RenderPass.cpp in Sources */,
 				E8B3CC0116B9326E002BD35F /* RenderSystem.cpp in Sources */,
 				32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */,
+				CC0D7B531A76066700309408 /* WaypointComponent.cpp in Sources */,
 				E8B3CC0316B9326E002BD35F /* ShadowRect.cpp in Sources */,
 				02FD7EC319237D43007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
 				E8B3CC0516B9326E002BD35F /* ShadowVolume.cpp in Sources */,
@@ -5752,6 +5795,7 @@
 				E8B3CCBA16B9326E002BD35F /* DebugRenderSystem.cpp in Sources */,
 				E8FC1303186972B60095D8FE /* QualitySettingsComponent.cpp in Sources */,
 				E8B3CCBE16B9326E002BD35F /* EventSystem.cpp in Sources */,
+				CC0D7B4B1A76066700309408 /* EdgeComponent.cpp in Sources */,
 				EA10607818892B7C00CB99A3 /* ParticleRenderObject.cpp in Sources */,
 				E8B3CCC016B9326E002BD35F /* LightUpdateSystem.cpp in Sources */,
 				84D18C0419201BEF009E3E90 /* LibJpegHelper.cpp in Sources */,
@@ -6104,7 +6148,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6146,6 +6189,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Debug;
 		};
@@ -6153,7 +6197,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
+				ARCHS = (
+					armv7,
+					armv7s,
+					arm64,
+					i386,
+				);
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6192,6 +6241,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Release;
 		};
@@ -6204,7 +6254,8 @@
 					armv7s,
 					armv7,
 				);
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6229,7 +6280,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -6256,7 +6307,8 @@
 					armv7s,
 					armv7,
 				);
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6280,7 +6332,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6306,7 +6358,8 @@
 					armv7s,
 					armv7,
 				);
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6330,7 +6383,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6351,7 +6404,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
+				ARCHS = (
+					armv7,
+					armv7s,
+					arm64,
+					i386,
+				);
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6385,6 +6443,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = AdHoc;
 		};
@@ -6397,7 +6456,8 @@
 					armv7s,
 					armv7,
 				);
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6421,7 +6481,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6442,7 +6502,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LIBRARY = "compiler-default";
+				ARCHS = (
+					armv7,
+					armv7s,
+					arm64,
+					i386,
+				);
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6476,6 +6541,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Distribution;
 		};

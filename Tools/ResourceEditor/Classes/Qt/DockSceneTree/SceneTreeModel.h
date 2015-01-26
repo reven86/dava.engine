@@ -103,6 +103,8 @@ public:
     void SetFilter(const QString& text);
     bool IsFilterSet() const;
 
+    Qt::ItemFlags flags ( const QModelIndex & index ) const;
+    
 private slots:
 	void ItemChanged(QStandardItem * item);
 

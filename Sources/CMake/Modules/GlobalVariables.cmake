@@ -7,6 +7,14 @@ if( APPLE AND NOT IOS )
 	set ( MACOS 1 )
 endif ()
 
+if( TEAMCITY_DEPLOY )
+    set( OUTPUT_TO_BUILD_DIR true )
+    set( IGNORE_FILE_TREE_CHECK true )
+    set( DEBUG_INFO true )
+
+endif()
+
+
 #global paths
 
 set ( DAVA_LIBRARY                     "DavaFramework" )
@@ -57,7 +65,7 @@ endif  ()
 set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-invalid-offsetof" )  
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )  #-std=c++14
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
     
 elseif ( IOS     ) 
@@ -65,7 +73,7 @@ elseif ( IOS     )
     set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
   
 elseif ( MACOS )
-    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
 
 elseif ( WIN32)
     set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
@@ -75,25 +83,35 @@ elseif ( WIN32)
 endif  ()
 
 #DavaConfig
-if( NOT EXISTS "${DAVA_ROOT_DIR}/DavaConfig.in")
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaConfigTemplate.in
-                    ${DAVA_ROOT_DIR}/DavaConfig.in COPYONLY )
+set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
+
+if( CUSTOM_DAVA_CONFIG_PATH  )
+    set( DAVA_CONFIG_PATH ${CUSTOM_DAVA_CONFIG_PATH} )
+
+else()
+    set( DAVA_CONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR}/config.in )
+    
+    if( NOT EXISTS "${DAVA_ROOT_DIR}/DavaConfig.in")
+        configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaConfigTemplate.in
+                        ${DAVA_ROOT_DIR}/DavaConfig.in COPYONLY )
+
+    endif()
+
+    configure_file( ${DAVA_ROOT_DIR}/DavaConfig.in 
+                    ${DAVA_CONFIG_PATH} )
 
 endif()
 
-set ( DAVA_INCLUDE_DIR ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
-configure_file( ${DAVA_ROOT_DIR}/DavaConfig.in 
-                ${CMAKE_CURRENT_BINARY_DIR}/config.in )
-
-file( STRINGS ${CMAKE_CURRENT_BINARY_DIR}/config.in ConfigContents )
+file( STRINGS ${DAVA_CONFIG_PATH} ConfigContents )
 foreach(NameAndValue ${ConfigContents})
   string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})
   string(REGEX MATCH "^[^=]+" Name ${NameAndValue})
   string(REPLACE "${Name}=" "" Value ${NameAndValue})
   string(REGEX REPLACE " " "" Name   "${Name}")
   string(REGEX REPLACE " " "" Value  "${Value}")
-  set( ${Name} "${Value}" )
+  if( NOT ${Name} )
+      set( ${Name} "${Value}" )
+  endif()
 #  message("---" [${Name}] "  " [${Value}] )
-endforeach()                                     
-
+endforeach()   

@@ -37,7 +37,6 @@
 #include "Platform/Mutex.h"
 
 #include <cstdlib>
-
 namespace DAVA
 {
 class Mutex;
