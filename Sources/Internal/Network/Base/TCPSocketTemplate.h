@@ -223,6 +223,7 @@ void TCPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     TCPSocketTemplate* self = static_cast<TCPSocketTemplate*>(handle->data);
     self->isClosing = false;    // Mark socket has been closed
+    self->writeBufferCount = 0;
     // And clear handle and requests
     Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
     Memset(&self->uvconnect, 0, sizeof(self->uvconnect));

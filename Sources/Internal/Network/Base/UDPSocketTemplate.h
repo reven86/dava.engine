@@ -220,6 +220,7 @@ void UDPSocketTemplate<T>::HandleCloseThunk(uv_handle_t* handle)
 {
     UDPSocketTemplate* self = static_cast<UDPSocketTemplate*>(handle->data);
     self->isClosing = false;    // Mark socket has been closed
+    self->sendBufferCount = 0;
     // And clear handle and requests
     Memset(&self->uvhandle, 0, sizeof(self->uvhandle));
     Memset(&self->uvsend, 0, sizeof(self->uvsend));
