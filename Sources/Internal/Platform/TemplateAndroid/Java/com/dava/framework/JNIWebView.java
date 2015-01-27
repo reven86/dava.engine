@@ -100,13 +100,9 @@ public class JNIWebView {
             // update visibility after update isRenderToTexture
             setVisible(view, isVisible);
 
-            JNIActivity activity = JNIActivity.GetActivity();
-
             if (isRenderToTexture) {
-                setVisible(view, isVisible);
-
                 renderToBitmapAndCopyPixels(view);
-
+                JNIActivity activity = JNIActivity.GetActivity();
                 activity.PostEventToGL(new OnPageLoadedNativeRunnable(pixels,
                         width, height));
             }
