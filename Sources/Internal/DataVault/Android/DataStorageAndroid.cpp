@@ -34,10 +34,9 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-DataStorage::DataStorage(const String &name)
+DataStorage::DataStorage()
 {
-    this->name = name;
-    impl = new SharedPreferences(name);
+    impl = new SharedPreferences();
 }
 
 #endif

@@ -38,7 +38,7 @@ namespace DAVA
 class DataVault
 {
 public:
-    static DataStorage *GetStorage(const String &name);
+    static DataStorage *GetStorage();
 private:
     static DataStorage *activeStorage;
 };

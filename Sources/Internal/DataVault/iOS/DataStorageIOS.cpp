@@ -34,9 +34,8 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-DataStorage::DataStorage(const String &name)
+DataStorage::DataStorage()
 {
-    this->name = name;
     impl = new ICloudKeyValue();
 }
 

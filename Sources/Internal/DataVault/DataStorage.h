@@ -50,7 +50,7 @@ public:
 class DataStorage : public IDataStorage, public BaseObject
 {
 public:
-    explicit DataStorage(const String &name);
+    explicit DataStorage();
 
 protected:
     ~DataStorage();
@@ -61,10 +61,8 @@ public: // IDataStorage intergace implementation
     void RemoveEntry(const String &key) override;
     void Clear() override;
     void Push() override;
-    String GetName() const;
 
 private:
-    String name;
     IDataStorage *impl;
 };
 

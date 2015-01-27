@@ -41,7 +41,7 @@ namespace DAVA
 class SharedPreferences : public IDataStorage
 {
 public:
-    SharedPreferences(const String &name);
+    SharedPreferences();
     ~SharedPreferences();
 
 public: // IDataStorage implementation
@@ -53,7 +53,7 @@ public: // IDataStorage implementation
 
 private:
     JNI::JavaClass jniSharedPreferences;
-    Function<jobject (jstring, jint)> getSharedPreferences;
+    Function<jobject (void)> getSharedPreferences;
 
     jobject preferencesObject;
 

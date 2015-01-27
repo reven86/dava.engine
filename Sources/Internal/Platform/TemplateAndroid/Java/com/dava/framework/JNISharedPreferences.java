@@ -6,16 +6,23 @@ public class JNISharedPreferences {
 	
 	SharedPreferences preferences = null;
 	SharedPreferences.Editor editor = null;
+	static String name = "DavaPreferences";
 
-	static Object GetSharedPreferences(String name, int mode)
+	static String GetName()
 	{
-		JNISharedPreferences self = new JNISharedPreferences(name, mode);
+		return name;
+	}
+	
+	static Object GetSharedPreferences()
+	{
+		JNISharedPreferences self = new JNISharedPreferences();
 		return self;
 	}
 
-	JNISharedPreferences(String name, int mode)
+	JNISharedPreferences()
 	{
-		preferences = JNIActivity.GetActivity().getSharedPreferences(name, mode);
+		JNIBackupAgent.Restore();
+		preferences = JNIActivity.GetActivity().getSharedPreferences(name, 0);
 		editor = preferences.edit();
 	}
 

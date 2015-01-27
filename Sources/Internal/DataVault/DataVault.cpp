@@ -32,16 +32,15 @@ namespace DAVA
 {
 
 DataStorage *DataVault::activeStorage = NULL;
-DataStorage *DataVault::GetStorage(const String &name)
+DataStorage *DataVault::GetStorage()
 {
 
     if (NULL == activeStorage)
     {
-        activeStorage = new DataStorage(name);
+        activeStorage = new DataStorage();
     }
     else
     {
-        DVASSERT(name == activeStorage->GetName());
         activeStorage->Retain();
     }
 

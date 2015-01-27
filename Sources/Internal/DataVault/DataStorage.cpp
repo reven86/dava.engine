@@ -62,9 +62,4 @@ void DataStorage::Push()
     impl->Push();
 }
 
-String DataStorage::GetName() const
-{
-    return name;
-}
-
 }
