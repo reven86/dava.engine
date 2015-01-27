@@ -70,10 +70,13 @@ void Discoverer::Stop(Function<void (IController*)> callback)
     loop->Post(MakeFunction(this, &Discoverer::DoStop));
 }
 
+void Discoverer::Restart()
+{
+    loop->Post(MakeFunction(this, &Discoverer::DoStop));
+}
+
 void Discoverer::DoStart()
 {
-    DVASSERT(0 == runningObjects && "****** invalid call sequence");
-
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);
     if (0 == error)
     {
@@ -89,8 +92,6 @@ void Discoverer::DoStart()
 
 void Discoverer::DoStop()
 {
-    DVASSERT(0 == runningObjects && "****** invalid call sequence");
-
     if (true == socket.IsOpen() && false == socket.IsClosing())
     {
         runningObjects += 1;
@@ -105,8 +106,6 @@ void Discoverer::DoStop()
 
 void Discoverer::DoObjectClose()
 {
-    DVASSERT(runningObjects > 0 && "****** errorneous extra call");
-
     runningObjects -= 1;
     if (0 == runningObjects)
     {
@@ -116,7 +115,7 @@ void Discoverer::DoObjectClose()
         }
         else
         {
-            timer.Wait(3000, MakeFunction(this, &Discoverer::TimerHandleDelay));
+            timer.Wait(RESTART_DELAY_PERIOD, MakeFunction(this, &Discoverer::TimerHandleDelay));
         }
     }
 }

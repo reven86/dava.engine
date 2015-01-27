@@ -71,10 +71,13 @@ void Announcer::Stop(Function<void (IController*)> callback)
     loop->Post(MakeFunction(this, &Announcer::DoStop));
 }
 
+void Announcer::Restart()
+{
+    loop->Post(MakeFunction(this, &Announcer::DoStop));
+}
+
 void Announcer::DoStart()
 {
-    DVASSERT(0 == runningObjects && "****** invalid call sequence");
-
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);
     if (0 == error)
     {
@@ -90,8 +93,6 @@ void Announcer::DoStart()
 
 void Announcer::DoStop()
 {
-    DVASSERT(0 == runningObjects && "****** invalid call sequence");
-
     if (true == socket.IsOpen() && false == socket.IsClosing())
     {
         runningObjects += 1;
@@ -106,8 +107,6 @@ void Announcer::DoStop()
 
 void Announcer::DoObjectClose()
 {
-    DVASSERT(runningObjects > 0 && "****** errorneous extra call");
-    
     runningObjects -= 1;
     if (0 == runningObjects)
     {
@@ -117,7 +116,7 @@ void Announcer::DoObjectClose()
         }
         else
         {
-            timer.Wait(3000, MakeFunction(this, &Announcer::TimerHandleDelay));
+            timer.Wait(RESTART_DELAY_PERIOD, MakeFunction(this, &Announcer::TimerHandleDelay));
         }
     }
 }
@@ -152,6 +151,8 @@ void Announcer::TimerHandleTimer(DeadlineTimer* timer)
             DoStop();
         }
     }
+    else
+        timer->Wait(announcePeriod, MakeFunction(this, &Announcer::TimerHandleTimer));
 }
 
 void Announcer::TimerHandleDelay(DeadlineTimer* timer)

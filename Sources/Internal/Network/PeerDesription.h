@@ -58,6 +58,7 @@ public:
 
     const NetConfig& NetworkConfig() const;
     const Vector<IfAddress>& NetworkInterfaces() const;
+    void SetNetworkInterfaces(const Vector<IfAddress>& availIfAddr);
 
     size_t SerializedSize() const;
     size_t Serialize(void* dstBuffer, size_t buflen) const;

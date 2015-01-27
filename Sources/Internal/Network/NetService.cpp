@@ -42,11 +42,12 @@ void NetService::OnChannelOpen(IChannel* aChannel)
     ChannelOpen();
 }
 
-void NetService::OnChannelClosed(IChannel* aChannel)
+void NetService::OnChannelClosed(IChannel* aChannel, const char8* message)
 {
-    DVASSERT(channel == aChannel);
+    // OnChannelClosed can be called without corresponding OnChannelOpen, e.g. when remote service is unavailable
+    DVASSERT(NULL == channel || channel == aChannel);
     channel = NULL;
-    ChannelClosed();
+    ChannelClosed(message);
 }
 
 void NetService::OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length)

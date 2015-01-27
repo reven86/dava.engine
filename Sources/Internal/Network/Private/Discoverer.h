@@ -43,6 +43,8 @@ class IOLoop;
 
 class Discoverer : public IController
 {
+    static const uint32 RESTART_DELAY_PERIOD = 3000;
+
 public:
     Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     virtual ~Discoverer();
@@ -50,6 +52,7 @@ public:
     // IController
     virtual void Start();
     virtual void Stop(Function<void (IController*)> callback);
+    virtual void Restart();
 
 private:
     void DoStart();

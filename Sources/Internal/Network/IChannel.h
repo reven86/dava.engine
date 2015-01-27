@@ -47,8 +47,8 @@ struct IChannelListener
 
     // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
     virtual void OnChannelOpen(IChannel* channel) = 0;
-    // Channel is closed (underlying transport has disconnected)
-    virtual void OnChannelClosed(IChannel* channel) = 0;
+    // Channel is closed (underlying transport has disconnected) with reason
+    virtual void OnChannelClosed(IChannel* channel, const char8* message) = 0;
     // Some data arrived into channel
     virtual void OnPacketReceived(IChannel* channel, const void* buffer, size_t length) = 0;
     // Buffer has been sent and can be reused or freed

@@ -69,6 +69,7 @@ public:
     // IController
     virtual void Start();
     virtual void Stop(Function<void (IController*)> handler);
+    virtual void Restart();
 
     // IServerListener
     virtual void OnTransportSpawned(IServerTransport* parent, IClientTransport* child);
@@ -85,6 +86,7 @@ public:
 private:
     void DoStartServers();
     void DoStartClients();
+    void DoRestart();
     void DoStopServers();
     void DoStopClients();
 

@@ -43,6 +43,8 @@ namespace Net
 class IOLoop;
 class TCPClientTransport : public IClientTransport
 {
+    static const uint32 RESTART_DELAY_PERIOD = 3000;
+
 public:
     // Constructor for accepted connection
     TCPClientTransport(IOLoop* aLoop);
@@ -63,9 +65,11 @@ private:
     int32 DoConnected();
     void CleanUp(int32 error);
     void RunningObjectStopped();
+    void DoBye();
 
     void TimerHandleClose(DeadlineTimer* timer);
     void TimerHandleTimeout(DeadlineTimer* timer);
+    void TimerHandleDelay(DeadlineTimer* timer);
 
     void SocketHandleClose(TCPSocket* socket);
     void SocketHandleConnect(TCPSocket* socket, int32 error);
@@ -73,6 +77,7 @@ private:
     void SocketHandleWrite(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount);
 
 private:
+    IOLoop* loop;
     Endpoint endpoint;
     Endpoint remoteEndpoint;
     size_t runningObjects;

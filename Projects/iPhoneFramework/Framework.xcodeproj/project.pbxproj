@@ -6450,12 +6450,11 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/max/projects/wot/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				USE_HEADERMAP = NO;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
+				USE_HEADERMAP = NO;
 			};
 			name = Debug;
 		};
@@ -6504,12 +6503,11 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/max/projects/wot/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				USE_HEADERMAP = NO;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
+				USE_HEADERMAP = NO;
 			};
 			name = Release;
 		};
@@ -6708,12 +6706,11 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/max/projects/wot/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				USE_HEADERMAP = NO;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
+				USE_HEADERMAP = NO;
 			};
 			name = AdHoc;
 		};
@@ -6808,12 +6805,11 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
-					/Users/max/projects/wot/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				USE_HEADERMAP = NO;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
+				USE_HEADERMAP = NO;
 			};
 			name = Distribution;
 		};

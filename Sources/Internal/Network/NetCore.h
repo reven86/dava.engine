@@ -66,15 +66,19 @@ public:
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     void DestroyController(TrackId id);
     void DestroyAllControllers(Function<void ()> callback);
+    void DestroyAllControllersBlocked();
+
+    void RestartAllControllers();
 
     int32 Run();
     int32 Poll();
     void Finish(bool runOutLoop = false);
 
-    const Vector<IfAddress>& InstalledInterfaces() const;
+    Vector<IfAddress> InstalledInterfaces() const;
 
 private:
     void DoStart(IController* ctrl);
+    void DoRestart();
     void DoDestroy(TrackId id);
     void DoDestroyAll();
     void AllDestroyed();
@@ -89,9 +93,9 @@ private:
     Set<IController*> trackedObjects;               // Running objects
     Set<IController*> dyingObjects;
     ServiceRegistrar registrar;
-    Vector<IfAddress> installedInterfaces;
     Function<void ()> controllersStoppedCallback;
     bool isFinishing;
+    volatile bool allStopped;                       // Flag indicating that all controllers are stopped; used in DestroyAllControllersBlocked
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -110,9 +114,9 @@ inline const char8* NetCore::ServiceName(uint32 serviceId) const
     return registrar.Name(serviceId);
 }
 
-inline const Vector<IfAddress>& NetCore::InstalledInterfaces() const
+inline Vector<IfAddress> NetCore::InstalledInterfaces() const
 {
-    return installedInterfaces;
+    return IfAddress::GetInstalledInterfaces(false);
 }
 
 inline int32 NetCore::Run()

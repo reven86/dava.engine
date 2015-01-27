@@ -49,10 +49,12 @@ public:
     // IServerTransport
     virtual int32 Start(IServerListener* listener);
     virtual void Stop();
+    virtual void Reset();
     virtual void ReclaimClient(IClientTransport* client);
 
 private:
     int32 DoStart();
+    void DoStop();
 
     void AcceptorHandleClose(TCPAcceptor* acceptor);
     void AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error);

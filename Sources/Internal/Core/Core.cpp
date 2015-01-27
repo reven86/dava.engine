@@ -599,6 +599,7 @@ void Core::GoForeground()
 	{
 		core->OnForeground();
 	}
+    Net::NetCore::Instance()->RestartAllControllers();
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 }
 

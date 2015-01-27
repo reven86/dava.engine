@@ -29,6 +29,8 @@
 #ifndef __DAVAENGINE_NETLOGGER_H__
 #define __DAVAENGINE_NETLOGGER_H__
 
+#include <ctime>
+
 #include <Base/Noncopyable.h>
 #include <FileSystem/Logger.h>
 #include <Platform/DateTime.h>
@@ -50,12 +52,12 @@ class NetLogger : public NetService
 private:
     struct LogRecord
     {
-        LogRecord() : timestamp(DateTime::Now()), level(), message() {}
-        LogRecord(const DateTime& tstamp, Logger::eLogLevel ll, const char8* text) : timestamp(tstamp)
-                                                                                   , level(ll)
-                                                                                   , message(text) {}
+        LogRecord() : timestamp(), level(), message() {}
+        LogRecord(time_t tstamp, Logger::eLogLevel ll, const char8* text) : timestamp(tstamp)
+                                                                          , level(ll)
+                                                                          , message(text) {}
 
-        DateTime          timestamp;
+        time_t            timestamp;
         Logger::eLogLevel level;
         String            message;
     };
@@ -84,6 +86,8 @@ private:
     bool EnqueueMessage(Logger::eLogLevel ll, const char8* message);
     bool GetFirstMessage(LogRecord& record);
     void RemoveFirstMessage();
+    
+    String TimestampToString(time_t timestamp) const;
 
 private:
     bool selfInstall;

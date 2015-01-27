@@ -44,8 +44,8 @@ namespace Net
 NetCore::NetCore()
     : loop(true)
     , isFinishing(false)
+    , allStopped(false)
 {
-    installedInterfaces = IfAddress::GetInstalledInterfaces(false);
 }
 
 NetCore::~NetCore()
@@ -87,7 +87,8 @@ NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<vo
 
 void NetCore::DestroyController(TrackId id)
 {
-    DVASSERT(false == isFinishing && GetTrackedObject(id) != NULL);
+    DVASSERT(false == isFinishing);
+    DVASSERT(GetTrackedObject(id) != NULL);
     loop.Post(Bind(MakeFunction(this, &NetCore::DoDestroy), id));
 }
 
@@ -97,6 +98,24 @@ void NetCore::DestroyAllControllers(Function<void ()> callback)
 
     controllersStoppedCallback = callback;
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
+}
+
+void NetCore::DestroyAllControllersBlocked()
+{
+    DVASSERT(false == isFinishing && false == allStopped && controllersStoppedCallback == 0);
+    loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
+
+    // Block until all controllers are stopped and destroyed
+    do {
+        Poll();
+    } while(false == allStopped);
+    allStopped = false;
+}
+
+void NetCore::RestartAllControllers()
+{
+    // Restart controllers on mobile devices
+    loop.Post(MakeFunction(this, &NetCore::DoRestart));
 }
 
 void NetCore::Finish(bool runOutLoop)
@@ -111,6 +130,15 @@ void NetCore::DoStart(IController* ctrl)
 {
     trackedObjects.insert(ctrl);
     ctrl->Start();
+}
+
+void NetCore::DoRestart()
+{
+    for (Set<IController*>::iterator i = trackedObjects.begin(), e = trackedObjects.end();i != e;++i)
+    {
+        IController* ctrl = *i;
+        ctrl->Restart();
+    }
 }
 
 void NetCore::DoDestroy(TrackId id)
@@ -142,6 +170,7 @@ void NetCore::DoDestroyAll()
 
 void NetCore::AllDestroyed()
 {
+    allStopped = true;
     if (controllersStoppedCallback != 0)
     {
         controllersStoppedCallback();
@@ -165,10 +194,10 @@ void NetCore::TrackedObjectStopped(IController* obj)
     DVASSERT(dyingObjects.find(obj) != dyingObjects.end());
     if (dyingObjects.erase(obj) > 0)    // erase returns number of erased elements
     {
-        delete obj;
+        SafeDelete(obj);
     }
 
-    if (true == dyingObjects.empty())
+    if (true == dyingObjects.empty() && true == trackedObjects.empty())
     {
         AllDestroyed();
     }

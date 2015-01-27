@@ -37,7 +37,8 @@ namespace Net
 {
 
 TCPClientTransport::TCPClientTransport(IOLoop* aLoop)
-    : endpoint()
+    : loop(aLoop)
+    , endpoint()
     , runningObjects(0)
     , socket(aLoop)
     , timer(aLoop)
@@ -52,7 +53,8 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop)
 }
 
 TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint)
-    : endpoint(aEndpoint)
+    : loop(aLoop)
+    , endpoint(aEndpoint)
     , runningObjects(0)
     , socket(aLoop)
     , timer(aLoop)
@@ -105,20 +107,15 @@ int32 TCPClientTransport::Send(const Buffer* buffers, size_t bufferCount)
     }
     sendBufferCount = bufferCount;
 
-    int32 error = socket.Write(sendBuffers, sendBufferCount, MakeFunction(this, &TCPClientTransport::SocketHandleWrite));
-    return error;
+    return socket.Write(sendBuffers, sendBufferCount, MakeFunction(this, &TCPClientTransport::SocketHandleWrite));
 }
 
 void TCPClientTransport::DoStart()
 {
-    DVASSERT(0 == runningObjects);
-    runningObjects = 2; // Socket and timer
-
     // Try to establish connection if connection is initiated by this
     // Otherwise connection should be already accepted
     int32 error = true == isInitiator ? socket.Connect(endpoint, MakeFunction(this, &TCPClientTransport::SocketHandleConnect))
                                       : DoConnected();
-    DVASSERT(0 == error);
     if (error != 0)
         CleanUp(error);
 }
@@ -134,7 +131,6 @@ int32 TCPClientTransport::DoConnected()
         isConnected = true;
         listener->OnTransportConnected(this, remoteEndpoint);
     }
-    DVASSERT(0 == error);
     return error;
 }
 
@@ -146,27 +142,41 @@ void TCPClientTransport::CleanUp(int32 error)
         sendBufferCount = 0;
         listener->OnTransportDisconnected(this, error);
     }
-    socket.Close(MakeFunction(this, &TCPClientTransport::SocketHandleClose));
-    timer.Close(MakeFunction(this, &TCPClientTransport::TimerHandleClose));
+
+    if (true == socket.IsOpen() && false == socket.IsClosing())
+    {
+        runningObjects += 1;
+        socket.Close(MakeFunction(this, &TCPClientTransport::SocketHandleClose));
+    }
+    if (true == timer.IsOpen() && false == timer.IsClosing())
+    {
+        runningObjects += 1;
+        timer.Close(MakeFunction(this, &TCPClientTransport::TimerHandleClose));
+    }
 }
 
 void TCPClientTransport::RunningObjectStopped()
 {
-    DVASSERT(runningObjects > 0);
     runningObjects -= 1;
-    if (runningObjects > 0) return;
+    if (0 == runningObjects)
+    {
+        if (true == isTerminating || false == isInitiator)
+        {
+            loop->Post(MakeFunction(this, &TCPClientTransport::DoBye));
+        }
+        else if (true == isInitiator)
+        {
+            timer.Wait(RESTART_DELAY_PERIOD, MakeFunction(this, &TCPClientTransport::TimerHandleDelay));
+        }
+    }
+}
 
-    if (true == isTerminating || false == isInitiator)
-    {
-        IClientListener* p = listener;
-        listener = NULL;
-        isTerminating = false;
-        p->OnTransportTerminated(this); // This can be the last executed line of object instance
-    }
-    else if (true == isInitiator)
-    {
-        DoStart();
-    }
+void TCPClientTransport::DoBye()
+{
+    IClientListener* p = listener;
+    listener = NULL;
+    isTerminating = false;
+    p->OnTransportTerminated(this); // This can be the last executed line of object instance
 }
 
 void TCPClientTransport::TimerHandleClose(DeadlineTimer* timer)
@@ -177,8 +187,14 @@ void TCPClientTransport::TimerHandleClose(DeadlineTimer* timer)
 void TCPClientTransport::TimerHandleTimeout(DeadlineTimer* timer)
 {
     if (true == isTerminating) return;
+
     timer->Wait(readTimeout, MakeFunction(this, &TCPClientTransport::TimerHandleTimeout));
     listener->OnTransportReadTimeout(this);
+}
+
+void TCPClientTransport::TimerHandleDelay(DeadlineTimer* timer)
+{
+    DoStart();
 }
 
 void TCPClientTransport::SocketHandleClose(TCPSocket* socket)
@@ -198,11 +214,12 @@ void TCPClientTransport::SocketHandleConnect(TCPSocket* socket, int32 error)
 
 void TCPClientTransport::SocketHandleRead(TCPSocket* socket, int32 error, size_t nread)
 {
-    DVASSERT(false == isTerminating && true == isConnected);
+    if (false == isConnected) return;
+
     if (0 == error)
     {
-        listener->OnTransportDataReceived(this, inbuf, nread);
         timer.Wait(readTimeout, MakeFunction(this, &TCPClientTransport::TimerHandleTimeout));
+        listener->OnTransportDataReceived(this, inbuf, nread);
     }
     else
     {

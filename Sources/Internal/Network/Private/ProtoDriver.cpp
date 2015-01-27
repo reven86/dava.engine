@@ -111,6 +111,18 @@ void ProtoDriver::SendControl(uint32 code, uint32 channelId, uint32 packetId)
     }
 }
 
+void ProtoDriver::ReleaseServices()
+{
+    for (size_t i = 0, n = channels.size();i < n;++i)
+    {
+        if (channels[i].service != NULL)
+        {
+            registrar.Delete(channels[i].channelId, channels[i].service, serviceContext);
+            channels[i].service = NULL;
+        }
+    }
+}
+
 void ProtoDriver::OnConnected(const Endpoint& endp)
 {
     if (SERVER_ROLE == role)
@@ -136,25 +148,17 @@ void ProtoDriver::OnConnected(const Endpoint& endp)
     }
 }
 
-void ProtoDriver::OnDisconnected()
+void ProtoDriver::OnDisconnected(const char* message)
 {
     for (size_t i = 0, n = channels.size();i < n;++i)
     {
         if (channels[i].service != NULL && true == channels[i].confirmed)
         {
             channels[i].confirmed = false;
-            channels[i].service->OnChannelClosed(&channels[i]);
+            channels[i].service->OnChannelClosed(&channels[i], message);
         }
     }
     ClearQueues();
-    for (size_t i = 0, n = channels.size();i < n;++i)
-    {
-        if (channels[i].service != NULL)
-        {
-            registrar.Delete(channels[i].channelId, channels[i].service, serviceContext);
-            channels[i].service = NULL;
-        }
-    }
 }
 
 bool ProtoDriver::OnDataReceived(const void* buffer, size_t length)
@@ -293,7 +297,8 @@ bool ProtoDriver::ProcessChannelAllow(ProtoDecoder::DecodeResult* result)
         ch->service->OnChannelOpen(ch);
         return true;
     }
-    DVASSERT(0);
+    DVASSERT(ch != NULL);
+    DVASSERT(ch->service != NULL);
     return false;
 }
 
@@ -304,12 +309,12 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
     Channel* ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
-        registrar.Delete(ch->channelId, ch->service, serviceContext);
-        // Do not call OnChannelClosed as channel hasn't been opened
-        ch->service = NULL;
+        // Call OnChannelClosed when remote peer cannot provide service
+        ch->service->OnChannelClosed(ch, "Remote service is unavailable");
         return true;
     }
-    DVASSERT(0);
+    DVASSERT(ch != NULL);
+    DVASSERT(ch->service != NULL);
     return false;
 }
 

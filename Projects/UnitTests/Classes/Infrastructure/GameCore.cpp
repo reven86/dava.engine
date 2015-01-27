@@ -57,6 +57,7 @@
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
+    runOnlyThisTest = "NetworkTest";
 }
 
 void GameCore::OnError()
@@ -67,7 +68,7 @@ void GameCore::OnError()
 void GameCore::RegisterTests()
 {
 #if defined(__DAVAENGINE_ANDROID__)
-	new JNITest();
+    new JNITest();
 #endif
     new MathTest();
     new FunctionBindSignalTest();
