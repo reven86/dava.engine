@@ -373,21 +373,37 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 
 	if(qApp == obj && ProjectManager::Instance()->IsOpened())
 	{
-		if(QEvent::ApplicationActivate == eventType)
+		if(QEvent::ApplicationStateChange == eventType)
 		{
-			if(QtLayer::Instance())
-			{
-				QtLayer::Instance()->OnResume();
-				Core::Instance()->GetApplicationCore()->OnResume();
-			}
-		}
-		else if(QEvent::ApplicationDeactivate == eventType)
-		{
-			if(QtLayer::Instance())
-			{
-				QtLayer::Instance()->OnSuspend();
-				Core::Instance()->GetApplicationCore()->OnSuspend();
-			}
+            Qt::ApplicationState state = static_cast<QApplicationStateChangeEvent*>(event)->applicationState();
+
+            switch (state)
+            {
+            case Qt::ApplicationSuspended:
+                break;
+            case Qt::ApplicationHidden:
+                break;
+            case Qt::ApplicationInactive:
+            {
+                if (QtLayer::Instance())
+                {
+                    QtLayer::Instance()->OnSuspend();
+                    Core::Instance()->GetApplicationCore()->OnSuspend();
+                }
+                break;
+            }
+            case Qt::ApplicationActive:
+            {
+                if (QtLayer::Instance())
+                {
+                    QtLayer::Instance()->OnResume();
+                    Core::Instance()->GetApplicationCore()->OnResume();
+                }                    
+                break;
+            }
+            default:
+                break;
+            }
 		}
 	}
 
