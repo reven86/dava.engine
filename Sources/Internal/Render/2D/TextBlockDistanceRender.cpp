@@ -116,8 +116,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	if (charDrawed == 0)
 		return;
 	
-	int32 xOffset = (int32)(textBlock->position.x - textBlock->pivotPoint.x);
-	int32 yOffset = (int32)(textBlock->position.y - textBlock->pivotPoint.y);
+    int32 xOffset = (int32)(textBlock->position.x);
+    int32 yOffset = (int32)(textBlock->position.y);
 
 	if (offset)
 	{
@@ -144,6 +144,9 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
 
+    //TODO: temporary crutch until 2D render became fully stateless
+    const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
+    
     Matrix4 offsetMatrix;
     offsetMatrix.glTranslate((float32)xOffset, (float32)yOffset, 0.f);
     RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
@@ -164,6 +167,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     shader->SetUniformColor4ByIndex(idx, textColor);
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
+    
+    RenderManager::SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
 }
 	
 Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

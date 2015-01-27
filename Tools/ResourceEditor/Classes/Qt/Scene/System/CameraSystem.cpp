@@ -53,6 +53,11 @@
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 
+#include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/AddComponentCommand.h"
+
+
+
 
 #include "../StringConstants.h"
 
@@ -63,12 +68,12 @@
 
 SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	: SceneSystem(scene)
+	, debugCamerasCreated(false)
 	, curSceneCamera(NULL)
-	, activeSpeedIndex(0)
 	, animateToNewPos(false)
 	, animateToNewPosTime(0)
-	, debugCamerasCreated(false)
-    , distanceToCamera(0.f)
+	, distanceToCamera(0.f)
+	, activeSpeedIndex(0)
 {
 	renderState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL | RenderStateData::STATE_DEPTH_WRITE);
 }
@@ -348,8 +353,6 @@ void SceneCameraSystem::Draw()
 			DAVA::RenderManager::Instance()->ResetColor();
 		}
 	}
-
-	//DAVA::RenderManager::Instance()->SetState(oldState);
 }
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -559,9 +562,10 @@ bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
 {
     Entity *entity = GetEntityWithEditorCamera();
     if(!entity) return false;
+
+    SceneEditor2 *scene = static_cast<SceneEditor2 *>(GetScene());
     
     SnapToLandscapeControllerComponent *snapComponent = GetSnapToLandscapeControllerComponent(entity);
-    
     if(snap)
     {
         if(!snapComponent)
@@ -571,12 +575,12 @@ bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
             snapComponent = static_cast<SnapToLandscapeControllerComponent *>(Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
             snapComponent->SetHeightOnLandscape(height);
 
-            entity->AddComponent(snapComponent);
+            scene->Exec(new AddComponentCommand(entity, snapComponent));
         }
     }
     else if(snapComponent)
     {
-        entity->RemoveComponent(snapComponent);
+        scene->Exec(new RemoveComponentCommand(entity, snapComponent));
     }
     
     return true;

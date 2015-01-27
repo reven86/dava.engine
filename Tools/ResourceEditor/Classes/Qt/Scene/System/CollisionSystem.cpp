@@ -37,7 +37,6 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
 
-#include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/EntityParentChangeCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 
@@ -555,7 +554,12 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 		}
         else if(NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
         {
-            DAVA::float32 scale = SettingsManager::GetValue("Scene/DebugBoxUserScale").AsFloat();
+            DAVA::float32 scale = SettingsManager::GetValue(Settings::Scene_DebugBoxUserScale).AsFloat();
+            cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), SIMPLE_COLLISION_BOX_SIZE * scale);
+        }
+        else if(NULL != entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT))
+        {
+            DAVA::float32 scale = SettingsManager::GetValue(Settings::Scene_DebugBoxWaypointScale).AsFloat();
             cObj = new CollisionBox(entity, objectsCollWorld, entity->GetWorldTransform().GetTranslationVector(), SIMPLE_COLLISION_BOX_SIZE * scale);
         }
 	}

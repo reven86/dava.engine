@@ -2,7 +2,11 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( GlobalVariables      )
 include ( MergeStaticLibrarees )
+include ( FileTreeCheck        )
+include ( DavaTemplate         )
+include ( AndroidApk           )
 
+set ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 # Macro for precompiled headers
 macro (enable_pch)
@@ -105,6 +109,16 @@ macro (define_source_folders )
         set( PROJECT_SOURCE_FILES  ) 
         set( PROJECT_SOURCE_FILES_CPP  ) 
         set( PROJECT_SOURCE_FILES_HPP  ) 
+         
+        IF( ARG_SRC_ROOT )
+            FOREACH( FOLDER_ITEM ${ARG_SRC_ROOT} )
+                get_filename_component ( PATH ${FOLDER_ITEM} REALPATH ) 
+                list ( APPEND  DAVA_FOLDERS ${PATH} ) 
+            ENDFOREACH()
+        ELSE()
+            list ( APPEND DAVA_FOLDERS ${CMAKE_CURRENT_SOURCE_DIR} ) 
+        ENDIF()
+
     ENDIF()
     
     set( SOURCE_FOLDERS  )

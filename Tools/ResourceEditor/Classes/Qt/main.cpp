@@ -172,6 +172,8 @@ int main(int argc, char *argv[])
 		    ProjectManager::Instance()->ProjectOpenLast();
             if(ProjectManager::Instance()->IsOpened())
                 QtMainWindow::Instance()->OnSceneNew();
+            
+            DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
 
 		    // start app
 		    ret = a.exec();
@@ -188,7 +190,6 @@ int main(int argc, char *argv[])
 	SettingsManager::Instance()->Release();
 	BeastProxy::Instance()->Release();
 	DAVA::QtLayer::Instance()->Release();
-	DAVA::Core::Instance()->ReleaseSingletons();
 	DAVA::Core::Instance()->Release();
 
 	return ret;

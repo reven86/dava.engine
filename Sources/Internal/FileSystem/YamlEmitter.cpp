@@ -110,20 +110,20 @@ DAVA::YamlEmitter::YamlEmitter()
 
 bool YamlEmitter::SaveToYamlFile(const FilePath &outFileName, const YamlNode *node, uint32 attr)
 {
-    ScopedPtr<YamlEmitter> emitter(new YamlEmitter());
-    return emitter->Emit(node, outFileName, attr);
-}
-
-bool YamlEmitter::Emit(const YamlNode * node, const FilePath & outFileName, uint32 attr)
-{
-    ScopedPtr<File> yamlFile( File::Create(outFileName, attr) );
-    if ((File*)yamlFile == NULL)
+    ScopedPtr<File> outFile(File::Create(outFileName, attr));
+    if ((File*)outFile == NULL)
     {
         Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output", outFileName.GetStringValue().c_str());
         return false;
     }
 
-    return Emit(node, yamlFile);
+    return SaveToYamlFile(node, outFile);
+}
+
+bool YamlEmitter::SaveToYamlFile(const YamlNode *node, File *outfile)
+{
+    ScopedPtr<YamlEmitter> emitter(new YamlEmitter());
+    return emitter->Emit(node, outfile);
 }
 
 bool YamlEmitter::Emit(const YamlNode * node, File *outFile)

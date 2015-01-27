@@ -166,6 +166,9 @@
     <Filter Include="Internal\UI\Components">
       <UniqueIdentifier>{3c5ae3bb-55c2-4925-9239-9e7e8ba89339}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Scene3D\Components\Waypoint">
+      <UniqueIdentifier>{a6ae9957-6b3c-4e7f-a03d-1e52ed923446}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1669,6 +1672,15 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIInputComponent.h">
       <Filter>Internal\UI\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.h">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.h">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.h">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3006,6 +3018,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIInputComponent.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.cpp">
+      <Filter>Internal\Scene3D\Components\Waypoint</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

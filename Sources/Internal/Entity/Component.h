@@ -69,7 +69,7 @@ public:
         WIND_COMPONENT,
         WAVE_COMPONENT,
         SKELETON_COMPONENT,
-        
+        PATH_COMPONENT,
         ROTATION_CONTROLLER_COMPONENT,
         SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT,
         WASD_CONTROLLER_COMPONENT,
@@ -78,10 +78,12 @@ public:
         UI_RENDER_COMPONENT,
         UI_UPDATE_COMPONENT,
         UI_INPUT_COMPONENT,
-
         //debug components - note that everything below won't be serialized
         DEBUG_COMPONENTS,
         STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT,
+        WAYPOINT_COMPONENT,
+        EDGE_COMPONENT,
+
         COMPONENT_COUNT
     };
 
@@ -127,7 +129,7 @@ public:
     virtual uint32 GetType() const { return TYPE; }; \
     static const uint32 C_TYPE = TYPE; 
 
-#define MAKE_COMPONENT_MASK(TYPE) ((uint64)(1 << TYPE))
+#define MAKE_COMPONENT_MASK(x) ((uint64)1 << (uint64)x)
     
 template<template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T> & container)

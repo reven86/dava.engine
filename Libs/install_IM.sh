@@ -30,7 +30,7 @@ cp $currPath/include/libpng/*.h $currPath/$installPath/delegates/include/
 
 cd $imPath
 
-./configure CXXFLAGS=-stdlib=libstdc++ --prefix=$currPath/$installPath --disable-shared --without-dps --without-djvu --without-tiff --without-jpeg --without-fontconfig --without-gslib --without-gvc --without-lcms --without-lcms2 --without-lqr --without-lzma --without-openexr --without-rsvg --without-webp --without-wmf --without-xml --disable-openmp --disable-opencl --with-x=no --with-png=yes CPPFLAGS=-I$currPath/$installPath/delegates/include LDFLAGS=-L$currPath/$installPath/delegates/lib
+./configure CXXFLAGS=-stdlib=libc++ --prefix=$currPath/$installPath --disable-shared --without-dps --without-djvu --without-tiff --without-jpeg --without-fontconfig --without-gslib --without-gvc --without-lcms --without-lcms2 --without-lqr --without-lzma --without-openexr --without-rsvg --without-webp --without-wmf --without-xml --disable-openmp --disable-opencl --with-x=no --with-png=yes CPPFLAGS=-I$currPath/$installPath/delegates/include LDFLAGS=-L$currPath/$installPath/delegates/lib
 make
 sudo make install
 cd ..

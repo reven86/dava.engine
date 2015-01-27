@@ -253,115 +253,115 @@ void Scene::CreateSystems()
     if(SCENE_SYSTEM_STATIC_OCCLUSION_FLAG & systemsMask)
     {
         staticOcclusionSystem = new StaticOcclusionSystem(this);
-        AddSystem(staticOcclusionSystem, (1 << Component::STATIC_OCCLUSION_DATA_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(staticOcclusionSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_DATA_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_ANIMATION_FLAG & systemsMask)
     {
         animationSystem = new AnimationSystem(this);
-        AddSystem(animationSystem, (1 << Component::ANIMATION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(animationSystem, MAKE_COMPONENT_MASK(Component::ANIMATION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_TRANSFORM_FLAG & systemsMask)
     {
         transformSystem = new TransformSystem(this);
-        AddSystem(transformSystem, (1 << Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(transformSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_LOD_FLAG & systemsMask)
     {
         lodSystem = new LodSystem(this);
-        AddSystem(lodSystem, (1 << Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(lodSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SWITCH_FLAG & systemsMask)
     {
         switchSystem = new SwitchSystem(this);
-        AddSystem(switchSystem, (1 << Component::SWITCH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(switchSystem, MAKE_COMPONENT_MASK(Component::SWITCH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_PARTICLE_EFFECT_FLAG & systemsMask)
     {
         particleEffectSystem = new ParticleEffectSystem(this);
-        AddSystem(particleEffectSystem, (1 << Component::PARTICLE_EFFECT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(particleEffectSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SOUND_UPDATE_FLAG & systemsMask)
     {
         soundSystem = new SoundUpdateSystem(this);
-        AddSystem(soundSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::SOUND_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(soundSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::SOUND_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_RENDER_UPDATE_FLAG & systemsMask)
     {
         renderUpdateSystem = new RenderUpdateSystem(this);
-        AddSystem(renderUpdateSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(renderUpdateSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_UPDATEBLE_FLAG & systemsMask)
     {
         updatableSystem = new UpdateSystem(this);
-        AddSystem(updatableSystem, (1 << Component::UPDATABLE_COMPONENT));
+        AddSystem(updatableSystem, MAKE_COMPONENT_MASK(Component::UPDATABLE_COMPONENT));
     }
 
     if(SCENE_SYSTEM_LIGHT_UPDATE_FLAG & systemsMask)
     {
         lightUpdateSystem = new LightUpdateSystem(this);
-        AddSystem(lightUpdateSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::LIGHT_COMPONENT));
+        AddSystem(lightUpdateSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT));
     }
 
     if(SCENE_SYSTEM_ACTION_UPDATE_FLAG & systemsMask)
     {
         actionSystem = new ActionUpdateSystem(this);
-        AddSystem(actionSystem, (1 << Component::ACTION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(actionSystem, MAKE_COMPONENT_MASK(Component::ACTION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SKYBOX_FLAG & systemsMask)
     {
         skyboxSystem = new SkyboxSystem(this);
-        AddSystem(skyboxSystem, (1 << Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(skyboxSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_MATERIAL_FLAG & systemsMask)
     {
         materialSystem = new MaterialSystem(this);
-        AddSystem(materialSystem, (1 << Component::RENDER_COMPONENT));
+        AddSystem(materialSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT));
     }
 
     if(SCENE_SYSTEM_DEBUG_RENDER_FLAG & systemsMask)
     {
         debugRenderSystem = new DebugRenderSystem(this);
-        AddSystem(debugRenderSystem, (1 << Component::DEBUG_RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(debugRenderSystem, MAKE_COMPONENT_MASK(Component::DEBUG_RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
     
     if(SCENE_SYSTEM_FOLIAGE_FLAG & systemsMask)
     {
         foliageSystem = new FoliageSystem(this);
-        AddSystem(foliageSystem, (1 << Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(foliageSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG & systemsMask)
     {
         speedTreeUpdateSystem = new SpeedTreeUpdateSystem(this);
-        AddSystem(speedTreeUpdateSystem, (1 << Component::SPEEDTREE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(speedTreeUpdateSystem, MAKE_COMPONENT_MASK(Component::SPEEDTREE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_WIND_UPDATE_FLAG & systemsMask)
     {
         windSystem = new WindSystem(this);
-        AddSystem(windSystem, (1 << Component::WIND_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(windSystem, MAKE_COMPONENT_MASK(Component::WIND_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_WAVE_UPDATE_FLAG & systemsMask)
     {
         waveSystem = new WaveSystem(this);
-        AddSystem(waveSystem, (1 << Component::WAVE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(waveSystem, MAKE_COMPONENT_MASK(Component::WAVE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SKELETON_UPDATE_FLAG & systemsMask)
     {
         skeletonSystem = new SkeletonSystem(this);
-        AddSystem(skeletonSystem, (1 << Component::SKELETON_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(skeletonSystem, MAKE_COMPONENT_MASK(Component::SKELETON_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 }
 
@@ -488,7 +488,7 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
 {
 #if 1
     uint32 systemsCount = systems.size();
-    uint64 updatedComponentFlag = 1 << componentType;
+    uint64 updatedComponentFlag = MAKE_COMPONENT_MASK(componentType);
     uint64 componentsInEntity = entity->GetAvailableComponentFlags();
 
     for (uint32 k = 0; k < systemsCount; ++k)
@@ -764,7 +764,7 @@ void Scene::Update(float timeElapsed)
     if (needShowStaticOcclusion&&!staticOcclusionDebugDrawSystem)
     {
         staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
     }else if (!needShowStaticOcclusion&&staticOcclusionDebugDrawSystem)
     {
         RemoveSystem(staticOcclusionDebugDrawSystem);
