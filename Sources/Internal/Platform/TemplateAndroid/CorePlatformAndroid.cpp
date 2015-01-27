@@ -323,6 +323,28 @@ namespace DAVA
 		SafeDelete(keyEvent);
 	}
 
+	void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value)
+	{
+		int32 davaKey = InputSystem::Instance()->GetGamepadDevice()->GetDavaEventIdForSystemKey(elementKey);
+
+		if(davaKey == GamepadDevice::INVALID_DAVAKEY)
+			return;
+
+		UIEvent newEvent;
+		newEvent.tid = davaKey;
+		newEvent.physPoint.x = value;
+		newEvent.point.x = value;
+		newEvent.phase = DAVA::UIEvent::PHASE_JOYSTICK;
+
+		InputSystem::Instance()->GetGamepadDevice()->SystemProcessElement((GamepadDevice::eDavaGamepadElement)davaKey, value);
+		InputSystem::Instance()->ProcessInputEvent(&newEvent);
+	}
+
+	void CorePlatformAndroid::OnGamepadAvailable(bool isAvailable)
+	{
+		InputSystem::Instance()->GetGamepadDevice()->SetAvailable(isAvailable);
+	}
+
 	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
 	{
 		int32 phase = DAVA::UIEvent::PHASE_DRAG;
@@ -339,14 +361,7 @@ namespace DAVA
 			break;
 
 			case 2://ACTION_MOVE
-			{
-				if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
-				{
-					phase = DAVA::UIEvent::PHASE_JOYSTICK;
-				}
-				else //Touches
-					phase = DAVA::UIEvent::PHASE_DRAG;
-			}
+			phase = DAVA::UIEvent::PHASE_DRAG;
 			break;
 
 			case 3://ACTION_CANCEL
@@ -373,12 +388,6 @@ namespace DAVA
 	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
 	{
 		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source, tapCount);
-
-		if(touchEvent.phase == DAVA::UIEvent::PHASE_JOYSTICK)
-		{
-			InputSystem::Instance()->ProcessInputEvent(&touchEvent);
-			return;
-		}
 		
 		bool isFound = false;
 		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); ++it)

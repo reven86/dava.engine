@@ -31,27 +31,78 @@
 
 namespace DAVA
 {
-
-    // Not implemented for macos, win and android. See working iOS implementation in GamepadManager.mm
-
+#if defined(__DAVAENGINE_ANDROID__)
+    const uint8 GamepadDevice::INVALID_DAVAKEY = 0xFF;
+#endif
+    
     GamepadDevice::GamepadDevice()
-    { }
-
-    GamepadDevice::~GamepadDevice()
-    { }
-
-    eDavaGamepadProfile GamepadDevice::GetProfile()
     {
-        return eDavaGamepadProfile_None;
+        Reset();
+        
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+        InitInternal();
+#endif
     }
 
-    float32 GamepadDevice::GetElementState(eDavaGamepadElement element)
+    GamepadDevice::~GamepadDevice() { }
+    
+    void GamepadDevice::Reset()
     {
-        return 0;
+        isAvailable = false;
+        profile = GAMEPAD_PROFILE_EXTENDED;
+        Memset(elementValues, 0, sizeof(float32) * GAMEPAD_ELEMENT_COUNT);
+    }
+    
+    GamepadDevice::eDavaGamepadProfile GamepadDevice::GetProfile()
+    {
+        return profile;
     }
 
-    void GamepadDevice::ProcessElementStateChange(eDavaGamepadElement element, float32 value)
+    void GamepadDevice::SystemProcessElement(GamepadDevice::eDavaGamepadElement element, float32 value)
     {
-
+        DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
+        elementValues[element] = value;
     }
+    
+    float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement element)
+    {
+        DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
+        return elementValues[element];
+    }
+    
+#if defined(__DAVAENGINE_ANDROID__)
+    void GamepadDevice::InitInternal()
+    {
+        Memset(keyTranslator, INVALID_DAVAKEY, MAX_TRANSLATOR_KEYS);
+        
+        keyTranslator[0x60] = (uint8)GAMEPAD_ELEMENT_BUTTON_A;     //BUTTON_A
+        keyTranslator[0x61] = (uint8)GAMEPAD_ELEMENT_BUTTON_B;     //BUTTON_B
+        keyTranslator[0x63] = (uint8)GAMEPAD_ELEMENT_BUTTON_X;     //BUTTON_X
+        keyTranslator[0x64] = (uint8)GAMEPAD_ELEMENT_BUTTON_Y;     //BUTTON_Y
+        
+        keyTranslator[0x66] = (uint8)GAMEPAD_ELEMENT_BUTTON_LS;    //BUTTON_L1
+        keyTranslator[0x67] = (uint8)GAMEPAD_ELEMENT_BUTTON_RS;    //BUTTON_R1
+        keyTranslator[0x68] = (uint8)GAMEPAD_ELEMENT_LT;           //BUTTON_L2
+        keyTranslator[0x69] = (uint8)GAMEPAD_ELEMENT_RT;           //BUTTON_R2
+        
+        keyTranslator[0x11] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_LTRIGGER
+        keyTranslator[0x12] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_RTRIGGER
+        
+        keyTranslator[0x00] = (uint8)GAMEPAD_ELEMENT_AXIS_LX;      //AXIS_X
+        keyTranslator[0x01] = (uint8)GAMEPAD_ELEMENT_AXIS_LY;      //AXIS_Y
+        keyTranslator[0x0B] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_Z
+        keyTranslator[0x0E] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RZ
+        
+        keyTranslator[0x13] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_UP
+        keyTranslator[0x14] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_DOWN
+        keyTranslator[0x15] = (uint8)GAMEPAD_ELEMENT_DPAD_X;       //DPAD_LEFT
+        keyTranslator[0x16] = (uint8)GAMEPAD_ELEMENT_DPAD_X;       //DPAD_RIGHT
+    }
+    
+    GamepadDevice::eDavaGamepadElement GamepadDevice::GetDavaEventIdForSystemKey(int32 systemKey)
+    {
+        DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
+        return (eDavaGamepadElement)keyTranslator[systemKey];
+    }
+#endif
 }
