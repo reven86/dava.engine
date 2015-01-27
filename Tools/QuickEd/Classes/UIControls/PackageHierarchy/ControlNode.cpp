@@ -1,5 +1,7 @@
 #include "ControlNode.h"
 
+#include "../PackageSerializer.h"
+
 using namespace DAVA;
 
 ControlNode::ControlNode(UIControl *control)
@@ -220,16 +222,22 @@ void ControlNode::SetReadOnly()
         (*it)->SetReadOnly();
 }
 
-YamlNode *ControlNode::Serialize(YamlNode *prototypeChildren) const
+void ControlNode::Serialize(PackageSerializer *serializer) const
 {
-    YamlNode *node = YamlNode::CreateMapNode(false);
+    serializer->BeginMap();
     
     if (creationType == CREATED_FROM_PROTOTYPE)
     {
-        node->Add("prototype", GetPrototypeName());
+        serializer->PutValue("prototype", GetPrototypeName());
 
         if (!control->GetCustomControlClassName().empty() && prototype->GetControl()->GetCustomControlClassName() != control->GetCustomControlClassName())
-            node->Add("customClass", control->GetCustomControlClassName());
+            serializer->PutValue("customClass", control->GetCustomControlClassName());
+    }
+    else if (creationType == CREATED_FROM_CLASS)
+    {
+        serializer->PutValue("class", control->GetClassName());
+        if (!control->GetCustomControlClassName().empty())
+            serializer->PutValue("customClass", control->GetCustomControlClassName());
     }
     else if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
     {
@@ -240,50 +248,66 @@ YamlNode *ControlNode::Serialize(YamlNode *prototypeChildren) const
             path = p->GetName() + "/" + path;
             p = p->GetParent();
         }
-        node->Add("path", path);
+        serializer->PutValue("path", path);
     }
     else
     {
-        node->Add("class", control->GetClassName());
-        if (!control->GetCustomControlClassName().empty())
-            node->Add("customClass", control->GetCustomControlClassName());
+        DVASSERT(false);
     }
     
-    propertiesRoot->AddPropertiesToNode(node);
+    propertiesRoot->Serialize(serializer);
+    
     if (!nodes.empty())
     {
-        YamlNode *children = YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION);
-        YamlNode *newPrototypeChildren = creationType == CREATED_FROM_PROTOTYPE ? children : prototypeChildren;
-        for (auto it = nodes.begin(); it != nodes.end(); ++it)
-        {
-            ControlNode *child = *it;
-            YamlNode *childYamlNode = child->Serialize(newPrototypeChildren);
+        bool shouldProcessChildren = true;
+        Vector<ControlNode*> prototypeChildrenWithChanges;
 
-            switch (child->GetCreationType())
-            {
-                case CREATED_FROM_CLASS:
-                    children->Add(childYamlNode);
-                    break;
-                case CREATED_FROM_PROTOTYPE:
-                    children->Add(childYamlNode);
-                    break;
-                case CREATED_FROM_PROTOTYPE_CHILD:
-                    if (childYamlNode->GetCount() > 1) // for skip empty nodes (one node for path)
-                        newPrototypeChildren->Add(childYamlNode);
-                    else
-                        SafeRelease(childYamlNode);
-                    break;
-                default:
-                    DVASSERT(false);
-                    break;
-            }
+        if (creationType == CREATED_FROM_PROTOTYPE)
+        {
+            CollectPrototypeChildrenWithChanges(prototypeChildrenWithChanges);
+            shouldProcessChildren = !prototypeChildrenWithChanges.empty() || HasNonPrototypeChildren();
         }
         
-        if (children->GetCount() > 0)
-            node->Add("children", children);
-        else
-            SafeRelease(children);
+        if (shouldProcessChildren)
+        {
+            serializer->BeginArray("children");
+
+            for (const auto &child : prototypeChildrenWithChanges)
+                child->Serialize(serializer);
+
+            for (const auto &child : nodes)
+            {
+                if (child->GetCreationType() != CREATED_FROM_PROTOTYPE_CHILD)
+                    child->Serialize(serializer);
+            }
+            
+            serializer->EndArray();
+        }
     }
     
-    return node;
+    serializer->EndMap();
+}
+
+void ControlNode::CollectPrototypeChildrenWithChanges(Vector<ControlNode*> &out) const
+{
+    for (auto child : nodes)
+    {
+        if (child->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
+        {
+            if (child->HasNonPrototypeChildren() || child->propertiesRoot->HasChanges())
+                out.push_back(child);
+            
+            child->CollectPrototypeChildrenWithChanges(out);
+        }
+    }
+}
+
+bool ControlNode::HasNonPrototypeChildren() const
+{
+    for (const auto &child : nodes)
+    {
+        if (child->GetCreationType() != CREATED_FROM_PROTOTYPE_CHILD)
+            return true;
+    }
+    return false;
 }
