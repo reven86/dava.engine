@@ -12,6 +12,7 @@
 #include "PackageBaseNode.h"
 
 class PackageControlsNode;
+class PackageSerializer;
 
 class ImportedPackagesNode : public PackageBaseNode
 {
@@ -28,7 +29,7 @@ public:
 
     virtual int GetFlags() const override;
     
-    DAVA::YamlNode *Serialize() const;
+    void Serialize(PackageSerializer *serializer) const;
     
 private:
     DAVA::Vector<PackageControlsNode*> packageControlsNode;

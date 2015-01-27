@@ -32,6 +32,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 
 #include "Render/Texture.h"
@@ -43,98 +44,96 @@ namespace DAVA
 {
 
 int32 WebViewControl::webViewIdCount = 0;
-
-jclass JniWebView::gJavaClass = NULL;
-const char* JniWebView::gJavaClassName = NULL;
 JniWebView::CONTROLS_MAP JniWebView::controls;
 
-jclass JniWebView::GetJavaClass() const
+JniWebView::JniWebView()
+	: jniWebView("com/dava/framework/JNIWebView")
 {
-	return gJavaClass;
-}
 
-const char* JniWebView::GetJavaClassName() const
-{
-	return gJavaClassName;
+	initialize = jniWebView.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("Initialize");
+	deinitialize = jniWebView.GetStaticMethod<void, jint>("Deinitialize");
+	openURL = jniWebView.GetStaticMethod<void, jint, jstring>("OpenURL");
+	loadHtmlString = jniWebView.GetStaticMethod<void, jint, jstring>("LoadHtmlString");
+	executeJScript = jniWebView.GetStaticMethod<void, jint, jint, jstring>("ExecuteJScript");
+	deleteCookies = jniWebView.GetStaticMethod<void, jstring>("DeleteCookies");
+	openFromBuffer = jniWebView.GetStaticMethod<void, jint, jstring, jstring>("OpenFromBuffer");
+	setRect = jniWebView.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("SetRect");
+	setVisible = jniWebView.GetStaticMethod<void, jint, jboolean>("SetVisible");
+	setBackgroundTransparency = jniWebView.GetStaticMethod<void, jint, jboolean>("SetBackgroundTransparency");
 }
 
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
 {
 	controls[id] = control;
-	Rect rect = V2P(controlRect);
-
-	jmethodID mid = GetMethodID("Initialize", "(IFFFF)V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, rect.x, rect.y, rect.dx, rect.dy);
+	Rect rect = JNI::V2P(controlRect);
+	initialize(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniWebView::Deinitialize(int id)
 {
 	controls.erase(id);
-	jmethodID mid = GetMethodID("Deinitialize", "(I)V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+	deinitialize(id);
 }
 
 void JniWebView::OpenURL(int id, const String& urlToOpen)
 {
-	jmethodID mid = GetMethodID("OpenURL", "(ILjava/lang/String;)V");
-	if (mid)
-	{
-		jstring jUrlToOpen = GetEnvironment()->NewStringUTF(urlToOpen.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jUrlToOpen);
-		GetEnvironment()->DeleteLocalRef(jUrlToOpen);
-	}
+	JNIEnv *env = JNI::GetEnv();
+	jstring jUrlToOpen = env->NewStringUTF(urlToOpen.c_str());
+
+	openURL(id, jUrlToOpen);
+
+	env->DeleteLocalRef(jUrlToOpen);
 }
 
 void JniWebView::LoadHtmlString(int id, const String& htmlString)
 {
-	jmethodID mid = GetMethodID("LoadHtmlString", "(ILjava/lang/String;)V");
-	if (mid)
-	{
-		jstring jHtmlStringToOpen = GetEnvironment()->NewStringUTF(htmlString.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jHtmlStringToOpen);
-		GetEnvironment()->DeleteLocalRef(jHtmlStringToOpen);
-	}
+	JNIEnv *env = JNI::GetEnv();
+
+	jstring jHtmlStringToOpen = env->NewStringUTF(htmlString.c_str());
+
+	loadHtmlString(id, jHtmlStringToOpen);
+
+	env->DeleteLocalRef(jHtmlStringToOpen);
 }
 
 void JniWebView::ExecuteJScript(int id, const String& scriptString)
 {
-	jmethodID mid = GetMethodID("ExecuteJScript", "(ILjava/lang/String;)V");
-	if (mid)
-	{
-		jstring jScriptToExecute = GetEnvironment()->NewStringUTF(scriptString.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jScriptToExecute);
-		GetEnvironment()->DeleteLocalRef(jScriptToExecute);
-	}
+	JNIEnv *env = JNI::GetEnv();
+
+	jstring jScriptToExecute = env->NewStringUTF(scriptString.c_str());
+
+	executeJScript(id, jScriptToExecute);
+
+	env->DeleteLocalRef(jScriptToExecute);
 }
 
 void JniWebView::DeleteCookies(const String& targetURL)
 {
-	jmethodID mid = GetMethodID("DeleteCookies", "(Ljava/lang/String;)V");
-	if (mid)
-	{
-		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetURL.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jTargetURL);
-		GetEnvironment()->DeleteLocalRef(jTargetURL);
-	}
+	JNIEnv *env = JNI::GetEnv();
+	jstring jTargetURL = env->NewStringUTF(targetURL.c_str());
+
+	deleteCookies(jTargetURL);
+
+	env->DeleteLocalRef(jTargetURL);
 }
 
 String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 {
-	jmethodID mid = GetMethodID("GetCookie", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+	JNIEnv *env = JNI::GetEnv();
+
+	jmethodID mid = env->GetStaticMethodID(jniWebView, "GetCookie", JNI::SignatureString::FromTypes<jstring, jstring, jstring>().c_str());
 	String returnStr = "";
 
 	if (mid)
 	{
-		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
-		jstring jName = GetEnvironment()->NewStringUTF(cookieName.c_str());
-		jobject item = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL, jName);
+		jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
+		jstring jName = env->NewStringUTF(cookieName.c_str());
+		jobject item = env->CallStaticObjectMethod(jniWebView, mid, jTargetURL, jName);
 
-		CreateStringFromJni(GetEnvironment(), jstring(item), returnStr);
+		JNI::CreateStringFromJni(jstring(item), returnStr);
 
-		GetEnvironment()->DeleteLocalRef(jTargetURL);
-		GetEnvironment()->DeleteLocalRef(jName);
+		env->DeleteLocalRef(jTargetURL);
+		env->DeleteLocalRef(jName);
 	}
 
 	return returnStr;
@@ -142,22 +141,24 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 
 Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 {
-	jmethodID mid = GetMethodID("GetCookies", "(Ljava/lang/String;)[Ljava/lang/Object;");
+	JNIEnv *env = JNI::GetEnv();
+
+	jmethodID mid = env->GetStaticMethodID(jniWebView, "GetCookies", JNI::SignatureString::FromTypes<jobjectArray, jstring>().c_str());
 	Map<String, String> cookiesMap;
 
 	if (mid)
 	{
-		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
+		jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
 
-		jobjectArray jArray = (jobjectArray) GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL);
+		jobjectArray jArray = (jobjectArray) env->CallStaticObjectMethod(jniWebView, mid, jTargetURL);
 		if (jArray)
 		{
-			jsize size = GetEnvironment()->GetArrayLength(jArray);
+			jsize size = env->GetArrayLength(jArray);
 			for (jsize i = 0; i < size; ++i)
 			{
-				jobject item = GetEnvironment()->GetObjectArrayElement(jArray, i);
+				jobject item = env->GetObjectArrayElement(jArray, i);
 				String cookiesString = "";
-				CreateStringFromJni(GetEnvironment(), jstring(item), cookiesString);
+				JNI::CreateStringFromJni(jstring(item), cookiesString);
 
 				Vector<String> cookieEntry;
 				Split(cookiesString, "=", cookieEntry);
@@ -167,7 +168,7 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 			}
 		}
 
-		GetEnvironment()->DeleteLocalRef(jTargetURL);
+		env->DeleteLocalRef(jTargetURL);
 	}
 
 	return cookiesMap;
@@ -175,43 +176,31 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 
 void JniWebView::OpenFromBuffer(int id, const String& string, const String& baseUrl)
 {
-	jmethodID mid = GetMethodID("OpenFromBuffer", "(ILjava/lang/String;Ljava/lang/String;)V");
-	if (mid)
-	{
-		jstring jString = GetEnvironment()->NewStringUTF(string.c_str());
-		jstring jBaseUrl = GetEnvironment()->NewStringUTF(baseUrl.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jString, jBaseUrl);
-		GetEnvironment()->DeleteLocalRef(jString);
-		GetEnvironment()->DeleteLocalRef(jBaseUrl);
-	}
+	JNIEnv *env = JNI::GetEnv();
+
+	jstring jString = env->NewStringUTF(string.c_str());
+	jstring jBaseUrl = env->NewStringUTF(baseUrl.c_str());
+
+	openFromBuffer(id, jString, jBaseUrl);
+
+	env->DeleteLocalRef(jString);
+	env->DeleteLocalRef(jBaseUrl);
 }
 
 void JniWebView::SetRect(int id, const Rect& controlRect)
 {
-	Rect rect = V2P(controlRect);
-	jmethodID mid = GetMethodID("SetRect", "(IFFFF)V");
-	if (mid)
-	{
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, rect.x, rect.y, rect.dx, rect.dy);
-	}
+	Rect rect = JNI::V2P(controlRect);
+	setRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniWebView::SetVisible(int id, bool isVisible)
 {
-	jmethodID mid = GetMethodID("SetVisible", "(IZ)V");
-	if (mid)
-	{
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, isVisible);
-	}
+	setVisible(id, isVisible);
 }
 
 void JniWebView::SetBackgroundTransparency(int id, bool enabled)
 {
-	jmethodID mid = GetMethodID("SetBackgroundTransparency", "(IZ)V");
-	if (mid)
-	{
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, enabled);
-	}
+	setBackgroundTransparency(id, enabled);
 }
 
 void JniWebView::SetRenderToTexture(int id, bool renderToTexture)
@@ -247,12 +236,10 @@ IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 
 	WebViewControl* control = iter->second;
 	IUIWebViewDelegate *delegate = control->delegate;
+	if (!delegate)
+		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 
-	if (delegate)
-	{
-	    return delegate->URLChanged(&control->webView, newURL, true);
-	}
-	return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
+	return delegate->URLChanged(control->webView, newURL, true);
 }
 
 void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
@@ -315,8 +302,6 @@ WebViewControl::WebViewControl(UIWebView& uiWebView):
 	delegate(nullptr),
 	webView(uiWebView)
 {
-	webView = uiWebView;
-
 	webViewId = webViewIdCount++;
 }
 
@@ -386,7 +371,7 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 	jniWebView.SetVisible(webViewId, isVisible);
 }
 
-void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, UIWebView*)
+void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView*)
 {
     this->delegate = delegate;
 }

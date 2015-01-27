@@ -30,6 +30,7 @@
 
 #include "AndroidLayer.h"
 #include "Platform/TemplateAndroid/WebViewControlAndroid.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Render/Image/ImageConvert.h"
 
 extern "C"
@@ -38,7 +39,7 @@ extern "C"
 	{
 		int res = 0;
 		char url[1024];
-		CreateStringFromJni(env, jUrl, url);
+		DAVA::JNI::CreateStringFromJni(env, jUrl, url);
 		res = DAVA::JniWebView::URLChanged(id, url);
 		return res;
 	}

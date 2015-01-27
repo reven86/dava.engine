@@ -31,7 +31,11 @@
 #ifndef __WEBVIEWCONTROL_WIN32_H__
 #define __WEBVIEWCONTROL_WIN32_H__
 
+#pragma warning(push)
+#pragma warning(disable: 4005)//prevent 'macros redefinition' warning in winerror.h vs dxgitype.h
 #include <MsHTML.h>
+#pragma warning(pop)
+
 #include "Wininet.h" //for functions to delete cache entry and to end session
 
 #include "UI/IWebViewControl.h"
