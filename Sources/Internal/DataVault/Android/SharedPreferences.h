@@ -41,7 +41,7 @@ namespace DAVA
 class SharedPreferences : public IDataStorage
 {
 public:
-    SharedPreferences();
+    SharedPreferences(const String &name);
     ~SharedPreferences();
 
 public: // IDataStorage implementation

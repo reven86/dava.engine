@@ -52,15 +52,13 @@ void DataVaultTest::Draw(const DAVA::UIGeometricData &geometricData)
 
 void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data)
 {
-    DataStorage *storage = DataVault::GetStorage(DataStorage::CLOUD);
+    DataStorage *storage = DataVault::GetStorage("UnitTests");
 
     storage->Clear();
     storage->Push();
     storage->SetEntryValue("Test", "Test");
-    String ret = storage->GetEntryValue("Test");
-    TEST_VERIFY("Test" == ret);
     storage->Push();
-    ret = storage->GetEntryValue("Test");
+    String ret = storage->GetEntryValue("Test");
     TEST_VERIFY("Test" == ret);
 
     storage->RemoveEntry("Test");

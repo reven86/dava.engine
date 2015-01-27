@@ -1133,6 +1133,7 @@
 		D7B5F6F21A7656FF00F47097 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B5F6F11A7656FF00F47097 /* ICloudKeyValue.h */; };
 		D7B5F6F31A7656FF00F47097 /* ICloudKeyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B5F6F11A7656FF00F47097 /* ICloudKeyValue.h */; };
 		D7B5F6F41A7658E100F47097 /* ICloudKeyValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B5F6EC1A76536D00F47097 /* ICloudKeyValue.cpp */; };
+		D7C556151A77B19200175ED9 /* DataStorageIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7B5F6EB1A76536D00F47097 /* DataStorageIOS.cpp */; };
 		D7CC265D19C517E500A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC264F19C517E500A3B754 /* LocalNotification.cpp */; };
 		D7CC265E19C517E500A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC264F19C517E500A3B754 /* LocalNotification.cpp */; };
 		D7CC265F19C517E500A3B754 /* LocalNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CC265019C517E500A3B754 /* LocalNotification.h */; };
@@ -5229,6 +5230,7 @@
 				02FD80D41924997C007762C0 /* Accelerometer.cpp in Sources */,
 				026A1DED19DAF26600813AEF /* SkinnedMesh.cpp in Sources */,
 				02FD80D51924997C007762C0 /* AccelerometeriPhone.mm in Sources */,
+				D7C556151A77B19200175ED9 /* DataStorageIOS.cpp in Sources */,
 				02FD80D61924997C007762C0 /* InputSystem.cpp in Sources */,
 				64493E0B19476F4700AB2715 /* VegetationGeometry.cpp in Sources */,
 				02FD80D71924997C007762C0 /* KeyboardDevice.cpp in Sources */,

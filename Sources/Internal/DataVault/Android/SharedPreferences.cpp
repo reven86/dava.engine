@@ -33,12 +33,11 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-SharedPreferences::SharedPreferences()
+SharedPreferences::SharedPreferences(const String &name)
     : jniSharedPreferences("com/dava/framework/JNISharedPreferences")
 {
     getSharedPreferences = jniSharedPreferences.GetStaticMethod<jobject, jstring, jint>("GetSharedPreferences");
 
-    String name = "SharedPreferences";
     JNIEnv *env = JNI::GetEnv();
     jstring jname = env->NewStringUTF(name.c_str());
     jobject tmp = getSharedPreferences(jname, 0);

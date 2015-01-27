@@ -37,7 +37,7 @@ namespace DAVA
 
 ICloudKeyValue::ICloudKeyValue()
 {
-    NSUbiquitousKeyValueStore *iCloudStorage = [NSUbiquitousKeyValueStore defaultStore];
+    Sync();
 }
 
 ICloudKeyValue::~ICloudKeyValue()
@@ -76,6 +76,7 @@ void ICloudKeyValue::RemoveEntry(const String &key)
 void ICloudKeyValue::Clear()
 {
     NSUbiquitousKeyValueStore *iCloudStorage = [NSUbiquitousKeyValueStore defaultStore];
+    Sync();
     NSDictionary *dict = [iCloudStorage dictionaryRepresentation];
     NSArray *arr = [dict allKeys];
     
@@ -88,10 +89,16 @@ void ICloudKeyValue::Clear()
 
 void ICloudKeyValue::Push()
 {
+    Sync();
+}
+    
+void ICloudKeyValue::Sync()
+{
     NSUbiquitousKeyValueStore *iCloudStorage = [NSUbiquitousKeyValueStore defaultStore];
     [iCloudStorage synchronize];
 }
 
 }
+
 #endif
 

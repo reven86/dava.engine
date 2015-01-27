@@ -37,12 +37,10 @@ namespace DAVA
 
 class DataVault
 {
-    friend class DataStorage;
 public:
-    static DataStorage *GetStorage(DataStorage::Type type);
+    static DataStorage *GetStorage(const String &name);
 private:
-    static void RemoveStorage(DataStorage::Type type);
-    static Map<DataStorage::Type, DataStorage *> activeStorages;
+    static DataStorage *activeStorage;
 };
 
 

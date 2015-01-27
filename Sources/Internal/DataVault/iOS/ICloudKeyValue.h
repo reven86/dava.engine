@@ -49,6 +49,8 @@ public: // IDataStorage implementation
     void RemoveEntry(const String &key) override;
     void Clear() override;
     void Push() override;
+private:
+    void Sync();
 };
 
 #endif

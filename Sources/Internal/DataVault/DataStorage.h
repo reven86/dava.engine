@@ -50,22 +50,10 @@ public:
 class DataStorage : public IDataStorage, public BaseObject
 {
 public:
-    enum Type
-    {
-        CLOUD,
-        LOCAL_PREFERENCES,
-        PRIVATE_FILE,
-        SHARED_FILE,
-    };
-
-public:
-    DataStorage(Type preferredType);
+    explicit DataStorage(const String &name);
 
 protected:
     ~DataStorage();
-
-public:
-    static DataStorage *Create(Type preferredType);
 
 public: // IDataStorage intergace implementation
     String GetEntryValue(const String &key) override;
@@ -73,10 +61,11 @@ public: // IDataStorage intergace implementation
     void RemoveEntry(const String &key) override;
     void Clear() override;
     void Push() override;
+    String GetName() const;
 
 private:
+    String name;
     IDataStorage *impl;
-    Type type;
 };
 
 } //namespace DAVA

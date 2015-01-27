@@ -35,7 +35,6 @@ namespace DAVA
 DataStorage::~DataStorage()
 {
     SafeDelete(impl);
-    DataVault::RemoveStorage(type);
 }
 
 String DataStorage::GetEntryValue(const String &key)
@@ -61,6 +60,11 @@ void DataStorage::Clear()
 void DataStorage::Push()
 {
     impl->Push();
+}
+
+String DataStorage::GetName() const
+{
+    return name;
 }
 
 }
