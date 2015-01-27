@@ -43,7 +43,7 @@ class QLabel;
 class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
-class SceneLODSystem;
+class EditorLODSystem;
 class EntityGroup;
 class Command2;
 
@@ -104,12 +104,13 @@ protected:
     void UpdateWidgetVisibility();
     
     void UpdateDeleteLODButtons();
-    
+
+	EditorLODSystem *GetCurrentEditorLODSystem();
+
 private:
 	Ui::LODEditor *ui;
     QtPosSaver posSaver;
     
-    SceneLODSystem *getCurrentSceneLODSystem();
 };
 
 #endif //#ifndef __LOD_EDITOR_H__

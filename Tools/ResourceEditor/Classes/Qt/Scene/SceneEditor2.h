@@ -63,7 +63,9 @@
 #include "Scene/System/BeastSystem.h"
 #include "Scene/System/OwnersSignatureSystem.h"
 #include "Scene/System/EditorMaterialSystem.h"
-#include "Scene/System/SceneLODSystem.h"
+#include "Scene/System/EditorLODSystem.h"
+#include "Scene/System/WayEditSystem.h"
+#include "Scene/System/PathSystem.h"
 
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
@@ -114,11 +116,14 @@ public:
 	OwnersSignatureSystem *ownersSignatureSystem;
     StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 	EditorMaterialSystem *materialSystem;
-	SceneLODSystem *sceneLODSystem;
+	EditorLODSystem *editorLODSystem;
 
-    DAVA::WASDControllerSystem *wasdSystem;
-    DAVA::RotationControllerSystem *rotationSystem;
-    DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
+	DAVA::WASDControllerSystem *wasdSystem;
+	DAVA::RotationControllerSystem *rotationSystem;
+	DAVA::SnapToLandscapeControllerSystem *snapToLandscapeSystem;
+
+	WayEditSystem *wayEditSystem;
+	PathSystem *pathSystem;
 
 	// save/load
 	bool Load(const DAVA::FilePath &path);

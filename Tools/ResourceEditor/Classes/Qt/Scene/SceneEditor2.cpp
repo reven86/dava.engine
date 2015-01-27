@@ -73,16 +73,16 @@ SceneEditor2::SceneEditor2()
 	AddSystem(gridSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     cameraSystem = new SceneCameraSystem(this);
-    AddSystem(cameraSystem, (1 << DAVA::Component::CAMERA_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, transformSystem);
+    AddSystem(cameraSystem, MAKE_COMPONENT_MASK(DAVA::Component::CAMERA_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, transformSystem);
 
     rotationSystem = new RotationControllerSystem(this);
-    AddSystem(rotationSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::ROTATION_CONTROLLER_COMPONENT)), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
+    AddSystem(rotationSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
     
     snapToLandscapeSystem = new SnapToLandscapeControllerSystem(this);
-    AddSystem(snapToLandscapeSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT)), SCENE_SYSTEM_REQUIRE_PROCESS);
+    AddSystem(snapToLandscapeSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     
     wasdSystem = new WASDControllerSystem(this);
-    AddSystem(wasdSystem, ((1 << Component::CAMERA_COMPONENT) | (1 << Component::WASD_CONTROLLER_COMPONENT)), SCENE_SYSTEM_REQUIRE_PROCESS);
+    AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     
 	collisionSystem = new SceneCollisionSystem(this);
 	AddSystem(collisionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
@@ -121,13 +121,13 @@ SceneEditor2::SceneEditor2()
 	AddSystem(structureSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     particlesSystem = new EditorParticlesSystem(this);
-    AddSystem(particlesSystem, (1 << DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
+    AddSystem(particlesSystem, MAKE_COMPONENT_MASK(DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
 
 	textDrawSystem = new TextDrawSystem(this, cameraSystem);
     AddSystem(textDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     editorLightSystem = new EditorLightSystem(this);
-    AddSystem(editorLightSystem, 1 << Component::LIGHT_COMPONENT, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    AddSystem(editorLightSystem, MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
 	debugDrawSystem = new DebugDrawSystem(this);
 	AddSystem(debugDrawSystem, 0);
@@ -139,13 +139,19 @@ SceneEditor2::SceneEditor2()
 	AddSystem(ownersSignatureSystem, 0);
     
     staticOcclusionBuildSystem = new StaticOcclusionBuildSystem(this);
-    AddSystem(staticOcclusionBuildSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT) | (1 << Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    AddSystem(staticOcclusionBuildSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT) | MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
 	materialSystem = new EditorMaterialSystem(this);
-	AddSystem(materialSystem, 1 << Component::RENDER_COMPONENT, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+	AddSystem(materialSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
-	sceneLODSystem = new SceneLODSystem(this);
-	AddSystem(sceneLODSystem, 1 << Component::LOD_COMPONENT);
+    wayEditSystem = new WayEditSystem(this, selectionSystem, collisionSystem);
+    AddSystem(wayEditSystem, MAKE_COMPONENT_MASK(Component::WAYPOINT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
+
+    pathSystem = new PathSystem(this);
+    AddSystem(pathSystem, MAKE_COMPONENT_MASK(Component::PATH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+    
+	editorLODSystem = new EditorLODSystem(this);
+	AddSystem(editorLODSystem, 1 << Component::LOD_COMPONENT);
 
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
@@ -423,6 +429,8 @@ void SceneEditor2::Draw()
 	{
 		particlesSystem->Draw();
 		debugDrawSystem->Draw();
+        wayEditSystem->Draw();
+        pathSystem->Draw();
 
 		// should be last
 		selectionSystem->Draw();
@@ -459,6 +467,9 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 
     if (landscapeEditorDrawSystem)
         landscapeEditorDrawSystem->ProcessCommand(command, redo);
+    
+    pathSystem->ProcessCommand(command, redo);
+    wayEditSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity( Entity *editorEntity )
