@@ -3,6 +3,11 @@
 
 #include "PropertiesSection.h"
 
+namespace DAVA
+{
+    class UIControl;
+}
+
 class InternalControlPropertiesSection : public PropertiesSection
 {
 public:
@@ -13,8 +18,8 @@ public:
     void CreateInternalControl();
     
     virtual DAVA::String GetName() const;
-
-    void AddPropertiesToNode(DAVA::YamlNode *node) const;
+    virtual bool HasChanges() const override;
+    virtual void Serialize(PackageSerializer *serializer) const override;
 
 private:
     DAVA::UIControl *control;
