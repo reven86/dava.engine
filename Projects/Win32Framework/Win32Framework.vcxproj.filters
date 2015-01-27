@@ -1308,9 +1308,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h">
-      <Filter>Internal\Input</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -2648,9 +2645,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp">
       <Filter>Internal\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp">
-      <Filter>Internal\Input</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp">
       <Filter>Internal\Input</Filter>
