@@ -375,20 +375,15 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 	{
 		if(QEvent::ApplicationStateChange == eventType)
 		{
-            Qt::ApplicationState state = static_cast<QApplicationStateChangeEvent*>(event)->applicationState();
-
+            QApplicationStateChangeEvent* stateChangeEvent = static_cast<QApplicationStateChangeEvent*>(event);
+            Qt::ApplicationState state = stateChangeEvent->applicationState();
             switch (state)
             {
-            case Qt::ApplicationSuspended:
-                break;
-            case Qt::ApplicationHidden:
-                break;
             case Qt::ApplicationInactive:
             {
                 if (QtLayer::Instance())
                 {
                     QtLayer::Instance()->OnSuspend();
-                    Core::Instance()->GetApplicationCore()->OnSuspend();
                 }
                 break;
             }
@@ -397,8 +392,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
                 if (QtLayer::Instance())
                 {
                     QtLayer::Instance()->OnResume();
-                    Core::Instance()->GetApplicationCore()->OnResume();
-                }                    
+                }
                 break;
             }
             default:
