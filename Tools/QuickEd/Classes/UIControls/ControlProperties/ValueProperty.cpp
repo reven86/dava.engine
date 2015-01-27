@@ -92,7 +92,7 @@ void ValueProperty::Serialize(PackageSerializer *serializer) const
             while (val > 0)
             {
                 if ((val & 0x01) != 0)
-                    values.push_bsack(member->Desc().enumMap->ToString(p));
+                    values.push_back(member->Desc().enumMap->ToString(p));
                 val >>= 1;
                 p <<= 1;
             }
