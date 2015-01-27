@@ -41,7 +41,7 @@
 #include "Platform/TemplateAndroid/AndroidCrashReport.h"
 #include "Platform/TemplateAndroid/JniExtensions.h"
 #include "Platform/TemplateAndroid/WebViewControlAndroid.h"
-#include "Debug/DVAssertMessageAndroid.h"
+#include "Debug/DVAssertMessage.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Utils/UtilsAndroid.h"

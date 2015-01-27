@@ -125,12 +125,14 @@ private:
 	Function<void (jint)> deinitialize;
 	Function<void (jint, jstring)> openURL;
 	Function<void (jint, jstring)> loadHtmlString;
-	Function<void (jint, jint, jstring)> executeJScript;
+	Function<void (jint, jstring)> executeJScript;
 	Function<void (jstring)> deleteCookies;
 	Function<void (jint, jstring, jstring)> openFromBuffer;
 	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> setRect;
 	Function<void (jint, jboolean)> setVisible;
 	Function<void (jint, jboolean)> setBackgroundTransparency;
+	Function<void (jint, jboolean)> setRenderToTexture;
+	Function<jboolean (jint)>       isRenderToTexture;
 };
 
 };

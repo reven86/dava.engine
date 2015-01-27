@@ -49,17 +49,18 @@ JniWebView::CONTROLS_MAP JniWebView::controls;
 JniWebView::JniWebView()
 	: jniWebView("com/dava/framework/JNIWebView")
 {
-
 	initialize = jniWebView.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("Initialize");
 	deinitialize = jniWebView.GetStaticMethod<void, jint>("Deinitialize");
 	openURL = jniWebView.GetStaticMethod<void, jint, jstring>("OpenURL");
 	loadHtmlString = jniWebView.GetStaticMethod<void, jint, jstring>("LoadHtmlString");
-	executeJScript = jniWebView.GetStaticMethod<void, jint, jint, jstring>("ExecuteJScript");
+	executeJScript = jniWebView.GetStaticMethod<void, jint, jstring>("ExecuteJScript");
 	deleteCookies = jniWebView.GetStaticMethod<void, jstring>("DeleteCookies");
 	openFromBuffer = jniWebView.GetStaticMethod<void, jint, jstring, jstring>("OpenFromBuffer");
 	setRect = jniWebView.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("SetRect");
 	setVisible = jniWebView.GetStaticMethod<void, jint, jboolean>("SetVisible");
 	setBackgroundTransparency = jniWebView.GetStaticMethod<void, jint, jboolean>("SetBackgroundTransparency");
+	setRenderToTexture = jniWebView.GetStaticMethod<void, jint, jboolean>("setRenderToTexture");
+	isRenderToTexture = jniWebView.GetStaticMethod<jboolean, jint>("isRenderToTexture");
 }
 
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
@@ -205,24 +206,12 @@ void JniWebView::SetBackgroundTransparency(int id, bool enabled)
 
 void JniWebView::SetRenderToTexture(int id, bool renderToTexture)
 {
-    jmethodID mid = GetMethodID("setRenderToTexture", "(IZ)V");
-    if (mid)
-    {
-        GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id,
-                renderToTexture);
-    }
+    setRenderToTexture(id, renderToTexture);
 }
 
 bool JniWebView::IsRenderToTexture(int id)
 {
-    jmethodID mid = GetMethodID("isRenderToTexture", "(I)Z");
-    if (mid)
-    {
-        jboolean result = GetEnvironment()->CallStaticBooleanMethod(
-                GetJavaClass(), mid, id);
-        return result == 0 ? false : true;
-    }
-    return false; // if we come here java exception will throw
+    return isRenderToTexture(id) == 0 ? false : true;
 }
 
 IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
@@ -239,7 +228,7 @@ IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 	if (!delegate)
 		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 
-	return delegate->URLChanged(control->webView, newURL, true);
+	return delegate->URLChanged(&control->webView, newURL, true);
 }
 
 void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
