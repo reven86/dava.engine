@@ -19,6 +19,7 @@
     #include "Base/Profiler.h"
 
     #include "_dx9.h"
+    #include <vector>
 
 
 
@@ -36,6 +37,8 @@ static bool _ResetPending   = false;
     if( FAILED(hr) ) \
         Logger::Error( "%s failed:\n%s\n", name, D3D9ErrorText(hr) ); \
 } \
+
+static std::vector<Handle>  _CmdQueue;
 
 
 //------------------------------------------------------------------------------
@@ -72,7 +75,7 @@ public:
 
     void        Begin();
     void        End();
-    void        Replay();
+    void        Execute();
 
     void        Command( uint64 cmd );
     void        Command( uint64 cmd, uint64 arg1 );
@@ -102,14 +105,18 @@ namespace CommandBuffer
 //------------------------------------------------------------------------------
 
 Handle
-Default()
+Allocate()
 {
-    static Handle cb = 0;
+    return CommandBufferPool::Alloc();
+}
 
-    if( !cb )
-        cb = CommandBufferPool::Alloc();
 
-    return cb;
+//------------------------------------------------------------------------------
+
+void
+Submit( Handle cb )
+{
+    _CmdQueue.push_back( cb );    
 }
 
 
@@ -414,7 +421,7 @@ CommandBuffer_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uin
 //------------------------------------------------------------------------------
 
 void        
-CommandBuffer_t::Replay()
+CommandBuffer_t::Execute()
 {
 SCOPED_FUNCTION_TIMING();
     Handle  cur_pipelinestate = InvalidHandle;
@@ -507,7 +514,6 @@ SCOPED_FUNCTION_TIMING();
 }
 
 
-
 //------------------------------------------------------------------------------
 
 void
@@ -515,7 +521,14 @@ Present()
 {
     DVASSERT(_D3D9_Device)
 
-    Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->Replay();
+    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
+    {
+        Handle  cb = _CmdQueue[i];
+
+        Pool<CommandBuffer_t>::Get( cb )->Execute();
+        Pool<CommandBuffer_t>::Free( cb );
+    }
+    _CmdQueue.clear();
 
 
 //-    bool    success = false;

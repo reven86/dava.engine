@@ -41,7 +41,7 @@ Api     HostApi();
 void    Initialize();
 void    Uninitialize();
 
-void    Present();
+void    Present(); // execute all submitted command-buffers & do flip/present
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,6 +105,7 @@ Texture
 
 Handle  Create( unsigned width, unsigned height, TextureFormat format, uint32 options=0 );
 void    Delete( Handle tex );
+
 void*   Map( Handle tex, unsigned level=0 );
 void    Unmap( Handle tex );
 
@@ -153,13 +154,15 @@ bool    SetConst( Handle cb, uint32 constIndex, uint32 constCount, const float* 
 namespace CommandBuffer
 {
 
-Handle  Default();
+Handle  Allocate();
+void    Submit( Handle cmdBuf ); // cmd.buf handle becomes invalid at this point
 
 void    Begin( Handle cmdBuf );
 void    Begin( Handle cmdBuf, const RenderPassConfig& pass );
 void    End( Handle cmdBuf );
-void    Clear( Handle cmdBuf );
 
+
+void    Clear( Handle cmdBuf );
 void    SetPipelineState( Handle cmdBuf, Handle ps );
 
 void    SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex=0 );

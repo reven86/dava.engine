@@ -305,7 +305,7 @@ GameCore::SetupCube()
 */    
     );
     rhi::ShaderCache::UpdateProg
-    ( 
+    (
         rhi::HostApi(), rhi::PROG_FRAGMENT, FastName("fp-shaded"),
         "FPROG_IN_BEGIN\n"
         "FPROG_IN_TEXCOORD0(uv,2)\n"
@@ -433,7 +433,7 @@ GameCore::Draw()
     SCOPED_NAMED_TIMING("GameCore::Draw");
     //-    ApplicationCore::BeginFrame();
     
-    rhi::Handle cb    = rhi::CommandBuffer::Default();
+    rhi::Handle cb     = rhi::CommandBuffer::Allocate();
     float       clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
     
     rhi::CommandBuffer::Begin( cb );
@@ -484,6 +484,7 @@ GameCore::Draw()
 
     
     rhi::CommandBuffer::End( cb );
+    rhi::CommandBuffer::Submit( cb );
 }
 
 void GameCore::EndFrame()
