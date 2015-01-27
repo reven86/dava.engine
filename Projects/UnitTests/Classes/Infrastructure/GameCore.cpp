@@ -49,7 +49,9 @@
 #include "Tests/TextSizeTest.h"
 #include "Tests/KeyedArchiveYamlTest.h"
 #include "Tests/JobManagerTest.h"
+#include "Tests/Cpp14.h"
 #include "Tests/NetworkTest.h"
+#include "Tests/JNITest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -64,6 +66,9 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+#if defined(__DAVAENGINE_ANDROID__)
+	new JNITest();
+#endif
     new MathTest();
     new FunctionBindSignalTest();
     new ImageSizeTest();
@@ -80,8 +85,8 @@ void GameCore::RegisterTests()
     new TextSizeTest();
     new KeyedArchiveYamlTest();
     new JobManagerTest();
+    new Cpp14Test ();
     new NetworkTest();
-//$UNITTEST_CTOR
 }
 
 #include <fstream>

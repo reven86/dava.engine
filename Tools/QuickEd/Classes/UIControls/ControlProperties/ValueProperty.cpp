@@ -1,14 +1,8 @@
-//
-//  ValueProperty.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 30.9.14.
-//
-//
-
 #include "ValueProperty.h"
 
 #include "SubValueProperty.h"
+#include "../PackageSerializer.h"
+#include "Base/BaseMath.h"
 
 using namespace DAVA;
 
@@ -77,6 +71,42 @@ int ValueProperty::GetCount() const
 BaseProperty *ValueProperty::GetProperty(int index) const
 {
     return children[index];
+}
+
+bool ValueProperty::HasChanges() const
+{
+    return replaced;
+}
+
+void ValueProperty::Serialize(PackageSerializer *serializer) const
+{
+    if (replaced)
+    {
+        VariantType value = GetValue();
+
+        if (value.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_FLAGS)
+        {
+            Vector<String> values;
+            int val = value.AsInt32();
+            int p = 1;
+            while (val > 0)
+            {
+                if ((val & 0x01) != 0)
+                    values.push_back(member->Desc().enumMap->ToString(p));
+                val >>= 1;
+                p <<= 1;
+            }
+            serializer->PutValue(member->Name(), values);
+        }
+        else if (value.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_ENUM)
+        {
+            serializer->PutValue(member->Name(), member->Desc().enumMap->ToString(value.AsInt32()));
+        }
+        else
+        {
+            serializer->PutValue(member->Name(), value);
+        }
+    }
 }
 
 String ValueProperty::GetName() const
@@ -259,33 +289,3 @@ void ValueProperty::SetSubValue(int index, const DAVA::VariantType &newValue)
     }
 }
 
-void ValueProperty::AddPropertiesToNode(YamlNode *node) const
-{
-    if (replaced)
-    {
-        VariantType value = GetValue();
-        if (value.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_FLAGS)
-        {
-            YamlNode *array = YamlNode::CreateArrayNode();
-
-            int val = value.AsInt32();
-            int p = 1;
-            while (val > 0)
-            {
-                if ((val & 0x01) != 0)
-                    array->Add(member->Desc().enumMap->ToString(p));
-                val >>= 1;
-                p <<= 1;
-            }
-            node->Add(member->Name(), array);
-        }
-        else if (value.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_ENUM)
-        {
-            node->Add(member->Name(), member->Desc().enumMap->ToString(value.AsInt32()));
-        }
-        else
-        {
-            node->Add(member->Name(), value);
-        }
-    }
-}

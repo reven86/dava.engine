@@ -4,7 +4,7 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include <QLineEdit>
-#include <QDoubleValidator>
+#include <QValidator>
 #include <QLayout>
 
 
@@ -24,7 +24,7 @@ QWidget * FloatPropertyDelegate::createEditor( QWidget * parent, const QStyleOpt
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     connect(lineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(OnValueChanged()));
-    lineEdit->setValidator( new QDoubleValidator(-999999.0, 999999.0, 6, lineEdit) );
+    lineEdit->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
 
     return lineEdit;
 }

@@ -1,12 +1,6 @@
-//
-//  LocalizedTextValueProperty.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 7.10.14.
-//
-//
-
 #include "LocalizedTextValueProperty.h"
+
+#include "FileSystem/LocalizationSystem.h"
 
 using namespace DAVA;
 

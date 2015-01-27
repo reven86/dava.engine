@@ -46,6 +46,7 @@
 		CC1198791A38BF27006931D7 /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1198671A38BF27006931D7 /* SplitTest.cpp */; };
 		CC11987A1A38BF27006931D7 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1198691A38BF27006931D7 /* StringFormatTest.cpp */; };
 		CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC11986B1A38BF27006931D7 /* TextSizeTest.cpp */; };
+		CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCB2B8F51A656699003A5D44 /* Cpp14.cpp */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
 		FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F51163F304009E83B6 /* AVFoundation.framework */; };
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
@@ -149,6 +150,8 @@
 		CC11986A1A38BF27006931D7 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringFormatTest.h; path = Tests/StringFormatTest.h; sourceTree = "<group>"; };
 		CC11986B1A38BF27006931D7 /* TextSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TextSizeTest.cpp; path = Tests/TextSizeTest.cpp; sourceTree = "<group>"; };
 		CC11986C1A38BF27006931D7 /* TextSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextSizeTest.h; path = Tests/TextSizeTest.h; sourceTree = "<group>"; };
+		CCB2B8F51A656699003A5D44 /* Cpp14.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cpp14.cpp; path = Tests/Cpp14.cpp; sourceTree = "<group>"; };
+		CCB2B8F61A656699003A5D44 /* Cpp14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cpp14.h; path = Tests/Cpp14.h; sourceTree = "<group>"; };
 		E80D2FB0164D518100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -316,6 +319,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				CCB2B8F51A656699003A5D44 /* Cpp14.cpp */,
+				CCB2B8F61A656699003A5D44 /* Cpp14.h */,
 				50194D641A52D91500557DAB /* NetworkTest.cpp */,
 				50194D651A52D91500557DAB /* NetworkTest.h */,
 				0264E31D1A43002200BD7279 /* JobManagerTest.cpp */,
@@ -502,6 +507,7 @@
 				CC1198761A38BF27006931D7 /* MathTest.cpp in Sources */,
 				CC11984E1A38BF0D006931D7 /* TextureUtils.cpp in Sources */,
 				CC1198751A38BF27006931D7 /* LocalizationTest.cpp in Sources */,
+				CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */,
 				CC11984A1A38BF0D006931D7 /* BaseScreen.cpp in Sources */,
 				032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */,
 				CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */,
@@ -530,8 +536,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
-				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -554,7 +558,6 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = armv7;
 			};
 			name = Debug;
 		};
@@ -562,8 +565,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
-				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -584,14 +585,20 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = armv7;
 			};
 			name = Release;
 		};
 		5CDC2528156CDD5F00742348 /* AdHoc */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					i386,
+					arm64,
+					armv7s,
+					armv7,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Entitlements.plist;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -617,7 +624,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s";
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = AdHoc;
 		};
@@ -625,8 +632,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
-				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -647,18 +652,24 @@
 				);
 				PRODUCT_NAME = UnitTests;
 				PROVISIONING_PROFILE = "";
-				VALID_ARCHS = armv7;
 			};
 			name = AdHoc;
 		};
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					i386,
+					arm64,
+					armv7s,
+					armv7,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = __DAVAENGINE_DEBUG__;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -675,19 +686,27 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s";
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Debug;
 		};
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					i386,
+					arm64,
+					armv7s,
+					armv7,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_OPTIMIZATION_LEVEL = s;
@@ -712,7 +731,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "armv7 armv7s";
+				VALID_ARCHS = "armv7 armv7s i386 arm64";
 			};
 			name = Release;
 		};

@@ -32,6 +32,8 @@
 
 #include <math.h>
 
+#include "Vector.h"
+
 namespace DAVA
 {
 /**	

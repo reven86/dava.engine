@@ -34,23 +34,21 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include "JniExtensions.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 
-class JniDpiHelper: public JniExtension
+class JniDpiHelper
 {
 public:
+	JniDpiHelper();
 	uint32 GetScreenDPI();
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
+private:
+	JNI::JavaClass jniDpiHelper;
+	Function<jint()> getScreenDPI;
 
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
 };
 
 };
