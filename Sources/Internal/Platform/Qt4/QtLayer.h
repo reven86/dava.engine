@@ -38,9 +38,7 @@ class QtLayerDelegate
 {
 public:
     
-    virtual void Quit() = 0;
-    virtual bool ShowAssertMessage(const char * message) = 0;
-    
+    virtual void Quit() = 0;  
 };
     
 class QtLayer: public Singleton<QtLayer>
