@@ -48,7 +48,7 @@ public:
 
     void        Begin();
     void        End();
-    void        Replay();
+    void        Execute();
 
     void        Command( uint64 cmd );
     void        Command( uint64 cmd, uint64 arg1 );
@@ -70,6 +70,7 @@ typedef Pool<CommandBuffer_t>   CommandBufferPool;
     
 const uint64   CommandBuffer_t::EndCmd = 0xFFFFFFFF;
 
+static std::vector<Handle>  _CmdQueue;
 
 
 namespace CommandBuffer
@@ -78,14 +79,20 @@ namespace CommandBuffer
 //------------------------------------------------------------------------------
 
 Handle
-Default()
+Allocate()
 {
-    static Handle cb = 0;
-
-    if( !cb )
-        cb = CommandBufferPool::Alloc();
+    Handle cb = CommandBufferPool::Alloc();
 
     return cb;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+Submit( Handle cb )
+{
+    _CmdQueue.push_back( cb );
 }
 
 
@@ -394,9 +401,9 @@ CommandBuffer_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uin
 //------------------------------------------------------------------------------
 
 void        
-CommandBuffer_t::Replay()
+CommandBuffer_t::Execute()
 {
-SCOPED_NAMED_TIMING("CommandBuffer_t::Replay");
+SCOPED_NAMED_TIMING("CommandBuffer_t::Execute");
     Handle  cur_ps = 0;
     Handle  vp_const[MAX_CONST_BUFFER_COUNT];
     void*   vp_const_data[MAX_CONST_BUFFER_COUNT];
@@ -552,7 +559,16 @@ SCOPED_NAMED_TIMING("CommandBuffer_t::Replay");
 void
 Present()
 {
-    Pool<CommandBuffer_t>::Get(CommandBuffer::Default())->Replay();
+    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
+    {
+        Handle  cb = _CmdQueue[i];
+
+        Pool<CommandBuffer_t>::Get(cb)->Execute();    
+        Pool<CommandBuffer_t>::Free( _CmdQueue[i] );
+    }
+    _CmdQueue.clear();
+
+    
  
 #if defined(__DAVAENGINE_WIN32__)
     

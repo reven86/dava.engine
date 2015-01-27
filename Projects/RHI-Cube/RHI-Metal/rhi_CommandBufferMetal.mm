@@ -32,7 +32,8 @@ public:
 
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
 
-static id<CAMetalDrawable>  _CurDrawable = nil;    
+static id<CAMetalDrawable>      _CurDrawable = nil;    
+static std::vector<Handle>      _CmdQueue;
 
 
 namespace CommandBuffer
@@ -41,19 +42,24 @@ namespace CommandBuffer
 //------------------------------------------------------------------------------
 
 Handle
-Default()
+Allocate()
 {
-    static Handle cb = 0;
+    Handle              handle  = CommandBufferPool::Alloc();
+    CommandBuffer_t*    cb      = CommandBufferPool::Get( handle );
 
-    if( !cb )
-    {
-        cb = CommandBufferPool::Alloc();
-        
-        CommandBufferPool::Get(cb)->buf     = nil;
-        CommandBufferPool::Get(cb)->encoder = nil;
-    }
+    cb->buf     = nil;
+    cb->encoder = nil;
 
-    return cb;
+    return handle;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+Submit( Handle cb )
+{
+    _CmdQueue.push_back( cb );
 }
 
 
@@ -65,7 +71,7 @@ Begin( Handle cmdBuf )
     CAMetalLayer*       layer   = (CAMetalLayer*)(GetAppViewLayer());
     CommandBuffer_t*    cb      = CommandBufferPool::Get( cmdBuf );
 
-//    if( !_CurDrawable )
+    if( !_CurDrawable )
         _CurDrawable = [layer nextDrawable];
 
 ///    _Metal_DefRenderPassDescriptor.colorAttachments[0].texture = _CurDrawable.texture;
@@ -270,15 +276,24 @@ DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 void
 Present()
 {
-    CAMetalLayer*       layer = (CAMetalLayer*)(GetAppViewLayer());
-    CommandBuffer_t*    cb    = Pool<CommandBuffer_t>::Get( CommandBuffer::Default() );
-
-    [cb->buf presentDrawable:_CurDrawable];
-    [cb->buf commit];
-    // force sync
-    [cb->buf waitUntilCompleted];
+//    CAMetalLayer*   layer = (CAMetalLayer*)(GetAppViewLayer());
     
-//    _CurDrawable = [layer nextDrawable];    
+//    _CurDrawable = [layer nextDrawable];
+    
+    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
+    {
+        CommandBuffer_t*    cb = Pool<CommandBuffer_t>::Get( _CmdQueue[i] );
+    
+        [cb->buf presentDrawable:_CurDrawable];
+        [cb->buf commit];
+        // force CPU-GPU sync
+        [cb->buf waitUntilCompleted];
+        
+        Pool<CommandBuffer_t>::Free( _CmdQueue[i] );
+    }
+    _CmdQueue.clear();
+//    _CurDrawable = [layer nextDrawable];
+    _CurDrawable = nil;
 }
 
 
