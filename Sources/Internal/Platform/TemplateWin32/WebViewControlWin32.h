@@ -41,6 +41,11 @@
 #include "UI/IWebViewControl.h"
 #include "FileSystem/FilePath.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4717)
+#include <atlbase.h>
+#pragma warning(pop)
+
 namespace Gdiplus
 {
     using std::min;
