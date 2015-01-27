@@ -113,10 +113,11 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
         return;
     }
 
+    Endpoint endp = index.data(ROLE_SOURCE_ADDRESS).value<Endpoint>();
     PeerDescription peer = index.data(ROLE_PEER_DESCRIPTION).value<PeerDescription>();
     if (ifIndex < peer.NetworkInterfaces().size())
     {
-        IPAddress addr = peer.NetworkInterfaces()[ifIndex].Address();
+        IPAddress addr = endp.Address();    // Use IP address from multicast packets
         NetConfig config = peer.NetworkConfig().Mirror(addr);
         trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()));
         if (trackId != NetCore::INVALID_TRACK_ID)
