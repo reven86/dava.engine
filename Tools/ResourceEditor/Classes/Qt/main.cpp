@@ -56,11 +56,10 @@
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/ControlsFactory.h"
 
+#include "Platform/Qt5/QtLayer.h"
 #if defined (__DAVAENGINE_MACOS__)
-	#include "MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
-	#include "Win32/QtLayerWin32.h"
-	#include "Win32/CorePlatformWin32Qt.h"
+	#include "Platform/Qt5/Win32/CorePlatformWin32Qt.h"
 #endif
 
 #ifdef __DAVAENGINE_BEAST__
@@ -86,12 +85,12 @@ int main(int argc, char *argv[])
 
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);
-	new DAVA::QtLayerMacOS();
+	new DAVA::QtLayer();
 	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCLI"));
 #elif defined (__DAVAENGINE_WIN32__)
 	HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
 	DAVA::Core::Run(argc, argv, hInstance);
-	new DAVA::QtLayerWin32();
+    new DAVA::QtLayer();
 	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCLI.exe"));
 #else
 	DVASSERT(false && "Wrong platform")

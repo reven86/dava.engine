@@ -32,330 +32,186 @@
 #include "UI/UIEvent.h"
 #include "UI/UIControlSystem.h"
 
-#include "davaglwidget.h"
-
-#include <QApplication>
-#include <QMessageBox>
-#include <QResizeEvent>
-#include <QTimer>
-#include <QElapsedTimer>
-#include <QMoveEvent>
-#include <QKeyEvent>
-#include <QMouseEvent>
-#include <QFocusEvent>
-#include <QDateTime>
-#include <QAbstractEventDispatcher>
-#include <QDebug>
+#include "Platform/Qt5/QtLayer.h"
 
 #if defined (__DAVAENGINE_MACOS__)
-	#include "MacOS/QtLayerMacOS.h"
-    #include "MacOS/CoreMacOSPlatformQt.h"
+    #include "Platform/Qt5/MacOS/CoreMacOSPlatformQt.h"
 #elif defined (__DAVAENGINE_WIN32__)
-	#include "Win32/QtLayerWin32.h"
-	#include "Win32/CorePlatformWin32Qt.h"
+    #include "Platform/Qt5/Win32/CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
+#include "davaglwidget.h"
 
-#include "Classes/Qt/Main/mainwindow.h"
+#include <QMessageBox>
+#include <QTimer>
+#include <QElapsedTimer>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QDebug>
+
+
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
+
+
+
+#include "Main/mainwindow.h"
 #include "ui_mainwindow.h"
 
 
+
 DavaGLWidget::DavaGLWidget(QWidget *parent)
-	: QWidget(parent)
-	, maxFPS(60)
-	, fps(0)
-	, fpsCountTime(0)
-	, fpsCount(0)
-	, minFrameTimeMs(0)
-    , eventFilterCount(0)
+	: QOpenGLWidget(parent)
+    , renderTimer(nullptr)
+    , fps(60)
 {
-	setAttribute(Qt::WA_OpaquePaintEvent, true);
-	setAttribute(Qt::WA_NoSystemBackground, true);
-	setAttribute(Qt::WA_PaintOnScreen, true);
-	setAttribute(Qt::WA_TranslucentBackground, true);
-	setAttribute(Qt::WA_NativeWindow, true);
-
     setFocusPolicy( Qt::StrongFocus );
-	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    
+    setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(100, 100);
+    
+    setAttribute(Qt::WA_TranslucentBackground);
 
-	// Init OS-specific layer
-	{
+    DAVA::QtLayer::Instance()->SetDelegate(this);
 
-#if defined (__DAVAENGINE_MACOS__)
-		setMouseTracking(true);
-		DAVA::QtLayerMacOS *qtLayer = (DAVA::QtLayerMacOS *) DAVA::QtLayer::Instance();
-		qtLayer->InitializeGlWindow((void *)this->winId(), this->size().width(), this->size().height());
-#elif defined (__DAVAENGINE_WIN32__)
-		DAVA::QtLayerWin32 *qtLayer = (DAVA::QtLayerWin32 *) DAVA::QtLayer::Instance();
-		HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
-		qtLayer->SetWindow(hInstance, (HWND)this->winId(), this->size().width(), this->size().height());
-		qtLayer->OnResume();
-#else
-		DVASSERT(false && "Wrong platform");
-#endif //#if defined (__DAVAENGINE_MACOS__)
-
-		DAVA::QtLayer::Instance()->SetDelegate(this);
-		DAVA::QtLayer::Instance()->Resize(size().width(), size().height());
-	}
-
-	//EnableCustomPaintFlags(true);
 	setAcceptDrops(true);
-
-	// Setup FPS
-	SetMaxFPS(maxFPS);
+    setMouseTracking(true);
     
-    RegisterEventFilter();
+    SetFPS(60);
     
-	// start render
-	QTimer::singleShot(0, this, SLOT(Render()));
+    renderTimer = new QTimer(this);
+    renderTimer->singleShot(1000 / fps, this, SLOT(OnRenderTimer()));
 }
 
 DavaGLWidget::~DavaGLWidget()
 {
-    if (eventFilterCount > 0)
-    {
-        QAbstractEventDispatcher::instance()->removeNativeEventFilter( this );
-        eventFilterCount = 0;
-    }
 }
 
-QPaintEngine *DavaGLWidget::paintEngine() const
+void DavaGLWidget::SetFPS(int _fps)
 {
-	return NULL;
-}
-
-bool DavaGLWidget::nativeEventFilter(const QByteArray& eventType, void* msg, long* result)
-{
-    Q_UNUSED(eventType);
+    DVASSERT(0 != fps);
     
-#if defined(Q_OS_WIN)
-
-	MSG *message = static_cast<MSG *>(msg);
-	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
-	DVASSERT(core);
-
-	bool processMessage = false;
-
-	if ( message->hwnd == reinterpret_cast<HWND>(winId()))
-	{
-		switch ( message->message )
-		{
-		case WM_LBUTTONDOWN:
-		case WM_RBUTTONDOWN:
-		case WM_MBUTTONDOWN:
-			core->SetFocused(true);
-			break;
-
-		default:
-			break;
-		}
-
-		processMessage = true;
-	}
-	else
-	{
-		// Qt5 doesn't pass WM_CHAR, WM_KEY** messages to child QWidget::nativeEvent callback,
-		// so handle this messages globaly
-		switch ( message->message )
-		{
-		case WM_KEYUP:
-		case WM_KEYDOWN:
-		case WM_CHAR:
-			processMessage = core->IsFocused() && hasFocus();
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	if (processMessage)
-	{
-		return core->WinEvent(message, result);
-	}
-
-#elif defined(Q_OS_MAC)
-    Q_UNUSED(result);
-
-    if (hasFocus())
-    {
-        DAVA::QtLayerMacOS *qtLayer = static_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
-        qtLayer->HandleEvent(msg);
-    }
-#endif
-
-	return false;
+    DAVA::RenderManager::Instance()->SetFPS(fps);
+    fps = _fps;
 }
 
-/*
 
-// Helper for debugging QDockWidgets
-
-bool DavaGLWidget::eventFilter( QObject* watched, QEvent* e )
+void DavaGLWidget::initializeGL()
 {
-    switch ( e->type() )
-    {
-    case QEvent::MouseButtonPress:
-        qDebug() << "QEvent::MouseButtonPress";
-        break;
-    case QEvent::MouseButtonRelease:
-        qDebug() << "QEvent::MouseButtonRelease";
-        break;
-    case QEvent::Show:
-        qDebug() << "QEvent::Show";
-        break;
-    case QEvent::Hide:
-        qDebug() << "QEvent::Hide";
-        break;
-    case QEvent::ShowToParent:
-        qDebug() << "QEvent::ShowToParent";
-        break;
-    case QEvent::HideToParent:
-        qDebug() << "QEvent::HideToParent";
-        break;
-    case QEvent::NonClientAreaMouseButtonPress:
-        qDebug() << "QEvent::NonClientAreaMouseButtonPress";
-        break;
-    case QEvent::NonClientAreaMouseButtonRelease:
-        qDebug() << "QEvent::NonClientAreaMouseButtonRelease";
-        break;
-    case QEvent::ZOrderChange:
-        qDebug() << "QEvent::ZOrderChange";
-        break;
-    case QEvent::WinIdChange:
-        qDebug() << "QEvent::WinIdChange";
-        break;
-    case QEvent::Destroy:
-    case QEvent::NonClientAreaMouseMove:
-    case QEvent::InputMethodQuery:
-    case QEvent::FocusIn:
-    case QEvent::FocusOut:
-    case QEvent::MouseMove:
-    case QEvent::Move:
-    case QEvent::Enter:
-    case QEvent::Leave:
-    case QEvent::Paint:
-    case QEvent::PolishRequest:
-    case QEvent::LayoutRequest:
-    case QEvent::ChildRemoved:
-    case QEvent::WindowBlocked:
-    case QEvent::ChildAdded:
-    case QEvent::EnabledChange:
-    case QEvent::WindowUnblocked:
-    case QEvent::WindowActivate:
-    case QEvent::WindowDeactivate:
-    case QEvent::UpdateLater:
-    case QEvent::Resize:
-    case QEvent::ToolTip:
-    case QEvent::UpdateRequest:
-    case QEvent::ActivationChange:
-    case QEvent::FocusAboutToChange:
-        break;
-    default:
-        qDebug() << "Event: " << e->type();
-        break;
-    }
-
-    return QWidget::eventFilter( watched, e );
-}
-*/
-
-void DavaGLWidget::paintEvent(QPaintEvent *event)
-{
-	//Q_UNUSED(event);
-
-    if (!isEnabled())
-    {
-        QWidget::paintEvent(event);
-    }
+    DAVA::QtLayer::Instance()->InitializeGlWindow();
 }
 
-void DavaGLWidget::resizeEvent(QResizeEvent *e)
+void DavaGLWidget::resizeGL(int w, int h)
 {
-    QWidget::resizeEvent(e);
-	DAVA::QtLayer::Instance()->Resize(e->size().width(), e->size().height());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	emit Resized(e->size().width(), e->size().height());
-}
-
-void DavaGLWidget::showEvent(QShowEvent *e)
-{
-	QWidget::showEvent(e);
-
-	DAVA::QtLayer::Instance()->OnResume();
-}
-
-void DavaGLWidget::hideEvent(QHideEvent *e)
-{
-	QWidget::hideEvent(e);
-
-	DAVA::QtLayer::Instance()->OnSuspend();
-}
-
-void DavaGLWidget::focusInEvent(QFocusEvent *e)
-{
-    // RegisterEventFilter();
-    QWidget::focusInEvent( e );
+    DAVA::QtLayer::Instance()->Resize(w * 2, h * 2);
     
-    DAVA::QtLayer::Instance()->LockKeyboardInput( true );
-
-#if defined(Q_OS_WIN)
-	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
-	DVASSERT(core);
-    core->SetFocused(true);
-#endif
-
+    emit Resized(w* 2, h* 2);
 }
 
-void DavaGLWidget::focusOutEvent(QFocusEvent *e)
-{
-    // UnregisterEventFilter();
-    QWidget::focusOutEvent( e );
-    
-    DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
-	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 
-#if defined(Q_OS_WIN)
-	DAVA::CoreWin32PlatformQt *core = static_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
-	DVASSERT(core);
-    core->SetFocused(false);
-#endif
+void DavaGLWidget::paintGL()
+{
+    DAVA::QtLayer::Instance()->ProcessFrame();
+}
+
+
+void DavaGLWidget::OnRenderTimer()
+{
+    update();
+    
+    DAVA::float32 requestedFrameDelta = 1000.f / fps;
+    DAVA::float32 frameDelta = DAVA::SystemTimer::Instance()->FrameDelta();
+
+    float32 nextFrameDelta = Max(1.f, requestedFrameDelta - frameDelta);
+    renderTimer->singleShot((int) nextFrameDelta, this, SLOT(OnRenderTimer()));
+}
+
+
+void DavaGLWidget::keyPressEvent(QKeyEvent *e)
+{
+    char16 keyChar = e->nativeVirtualKey();
+    DAVA::QtLayer::Instance()->KeyPressed(keyChar, e->count(), e->timestamp());
+}
+
+void DavaGLWidget::keyReleaseEvent(QKeyEvent *e)
+{
+    char16 keyChar = e->nativeVirtualKey();
+    DAVA::QtLayer::Instance()->KeyReleased(keyChar);
+}
+
+
+void DavaGLWidget::mouseMoveEvent(QMouseEvent * event)
+{
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
+
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+
+void DavaGLWidget::mousePressEvent(QMouseEvent * event)
+{
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
+
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+
+void DavaGLWidget::mouseReleaseEvent(QMouseEvent * event)
+{
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
+    
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+
+void DavaGLWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
+    davaEvent.tapCount = 2;
+    
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+
+DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event)
+{
+    DAVA::UIEvent davaEvent;
+    
+    QPoint pos = event->pos();
+    davaEvent.point = davaEvent.physPoint = Vector2(pos.x()* 2, pos.y()* 2);
+    davaEvent.tid = MapQtButtonToDAVA(event->button());
+    davaEvent.timestamp = event->timestamp();
+    davaEvent.tapCount = 1;
+
+    return davaEvent;
+}
+
+
+DAVA::UIEvent::eButtonID DavaGLWidget::MapQtButtonToDAVA(const Qt::MouseButton button)
+{
+    switch (button)
+    {
+        case Qt::LeftButton:
+            return DAVA::UIEvent::BUTTON_1;
+
+        case Qt::RightButton:
+            return DAVA::UIEvent::BUTTON_2;
+
+        case Qt::MiddleButton:
+            return DAVA::UIEvent::BUTTON_3;
+
+        default:
+            break;
+    }
+    
+    return DAVA::UIEvent::BUTTON_NONE;
 }
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
 {
     event->setDropAction(Qt::LinkAction);
 	event->accept();
-}
-
-void DavaGLWidget::changeEvent(QEvent* e)
-{
-    switch (e->type())
-    {
-    case QEvent::EnabledChange:
-	    setAttribute(Qt::WA_OpaquePaintEvent, isEnabled());
-	    setAttribute(Qt::WA_NoSystemBackground, isEnabled());
-	    setAttribute(Qt::WA_PaintOnScreen, isEnabled());
-	    setAttribute(Qt::WA_TranslucentBackground, isEnabled());
-        update();
-        break;
-
-    default:
-        break;
-    }
-}
-
-void DavaGLWidget::enterEvent(QEvent* e)
-{
-    // RegisterEventFilter();
-}
-
-void DavaGLWidget::leaveEvent(QEvent* e)
-{
-    // Bug in OS X, leave event called twice in some cases.
-    // UnregisterEventFilter();
 }
 
 void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
@@ -385,64 +241,6 @@ void DavaGLWidget::dropEvent(QDropEvent *event)
 	event->accept();
 }
 
-#if defined (Q_OS_MAC)
-void DavaGLWidget::mouseMoveEvent(QMouseEvent *e)
-{
-    DAVA::QtLayerMacOS *qtLayer = static_cast<DAVA::QtLayerMacOS *>(DAVA::QtLayer::Instance());
-	DVASSERT(qtLayer != NULL);
-    qtLayer->MouseMoved(e->x(), e->y());
-    QWidget::mouseMoveEvent(e);
-}
-#endif //#if defined (Q_OS_MAC)
-
-void DavaGLWidget::SetMaxFPS(int fps)
-{
-	maxFPS = fps;
-
-	if(0 != fps)
-	{
-		minFrameTimeMs = 1000 / fps;
-	}
-
-	DAVA::RenderManager::Instance()->SetFPS(maxFPS);
-}
-
-int DavaGLWidget::GetMaxFPS()
-{
-	return maxFPS;
-}
-
-int DavaGLWidget::GetFPS() const
-{
-	return fps;
-}
-
-void DavaGLWidget::Render()
-{
-	QElapsedTimer frameTimer;
-	frameTimer.start();
-
-    DAVA::QtLayer::Instance()->ProcessFrame();
-
-	if(QDateTime::currentMSecsSinceEpoch() >= fpsCountTime)
-	{
-		fps = fpsCount;
-		fpsCount = 0;
-		fpsCountTime = QDateTime::currentMSecsSinceEpoch() + 1000.0;
-	}
-	else
-	{
-		fpsCount++;
-	}
-
-	qint64 waitUntilNextFrameMs = (qint64) minFrameTimeMs - frameTimer.elapsed();
-	if(waitUntilNextFrameMs < 0)
-	{
-		waitUntilNextFrameMs = 0;
-	}
-
-	QTimer::singleShot(waitUntilNextFrameMs, this, SLOT(Render()));
-}
 
 void DavaGLWidget::Quit()
 {
@@ -454,21 +252,3 @@ void DavaGLWidget::ShowAssertMessage(const char * message)
     QMessageBox::critical(this, "", message);
 }
 
-void DavaGLWidget::RegisterEventFilter()
-{
-    if ( eventFilterCount == 0 )
-    {
-        QAbstractEventDispatcher::instance()->installNativeEventFilter( this );
-    }
-    eventFilterCount++;
-}
-
-void DavaGLWidget::UnregisterEventFilter()
-{
-    DVASSERT( eventFilterCount > 0 );
-    if ( eventFilterCount == 1 )
-    {
-        QAbstractEventDispatcher::instance()->removeNativeEventFilter( this );
-    }
-    eventFilterCount--;
-}

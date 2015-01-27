@@ -44,22 +44,7 @@ public:
     QtLayerWin32();
     virtual ~QtLayerWin32();
     
-    virtual void WidgetCreated();
-    virtual void WidgetDestroyed();
-    
-    virtual void OnSuspend();
-    virtual void OnResume();
-	
-    virtual void AppStarted();
-    virtual void AppFinished();
- 
 	virtual void Resize(int32 width, int32 height);
-	virtual void Move(int32 x, int32 y);
-    virtual void ProcessFrame();
-
-    virtual void LockKeyboardInput(bool locked);
-
-	void SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int32 height);
 };	
 
 };

@@ -67,8 +67,6 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 
 	// davawidget to display DAVAEngine content
 	davaWidget = new DavaGLWidget(this);
-	//davaWidget->setFocusPolicy(Qt::StrongFocus);
-	davaWidget->installEventFilter(this);
     
 	// put tab bar and davawidget into vertical layout
 	QVBoxLayout *layout = new QVBoxLayout();
@@ -86,25 +84,17 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	QObject::connect(tabBar, SIGNAL(tabCloseRequested(int)), this, SLOT(TabBarCloseRequest(int)));
 	QObject::connect(tabBar, SIGNAL(OnDrop(const QMimeData *)), this, SLOT(TabBarDataDropped(const QMimeData *)));
 	QObject::connect(davaWidget, SIGNAL(OnDrop(const QMimeData *)), this, SLOT(DAVAWidgetDataDropped(const QMimeData *)));
+    QObject::connect(davaWidget, SIGNAL(Resized(int, int)), this, SLOT(OnDavaGLWidgetResized(int, int)));
 
 	QObject::connect(SceneSignals::Instance(), SIGNAL(MouseOverSelection(SceneEditor2*, const EntityGroup*)), this, SLOT(MouseOverSelectedEntities(SceneEditor2*, const EntityGroup*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Saved(SceneEditor2*)), this, SLOT(SceneSaved(SceneEditor2*)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2 *, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2 *, bool)));
 
 	SetCurrentTab(0);
-
-	//QtLabelWithActions *objectTypesLabel = new QtLabelWithActions();
-	//objectTypesLabel->setMenu(QtMainWindow::Instance()->GetUI()->menuEdit);
-	//objectTypesLabel->setDefaultAction(QtMainWindow::Instance()->GetUI()->actionNoObject);
-
-	//QtLabelWithActions *objectTypesLabel1 = new QtLabelWithActions();
-	//objectTypesLabel1->setMenu(QtMainWindow::Instance()->GetUI()->menuView);
-	//objectTypesLabel1->setDefaultAction(QtMainWindow::Instance()->GetUI()->actionNoObject);
 }
 
 SceneTabWidget::~SceneTabWidget()
 {
-	davaWidget->removeEventFilter(this);
 	SafeRelease(previewDialog);
 
 	ReleaseDAVAUI();
@@ -458,24 +448,18 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2 *scene, bool modified
 	}
 }
 
-bool SceneTabWidget::eventFilter(QObject *object, QEvent *event)
+void SceneTabWidget::OnDavaGLWidgetResized(int width, int height)
 {
-	if(object == davaWidget && event->type() == QEvent::Resize)
-	{
-		QSize s = davaWidget->size();
+    davaUIScreen->SetSize(DAVA::Vector2(width, height));
+    dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
 
-		davaUIScreen->SetSize(DAVA::Vector2(s.width(), s.height()));
-		dava3DView->SetSize(DAVA::Vector2(s.width() - 2 * dava3DViewMargin, s.height() - 2 * dava3DViewMargin));
-
-		SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
-		if(NULL != scene)
-		{
-			scene->SetViewportRect(dava3DView->GetRect());
-		}
-	}
-
-	return QWidget::eventFilter(object, event);
+    SceneEditor2* scene = GetTabScene(tabBar->currentIndex());
+    if(NULL != scene)
+    {
+        scene->SetViewportRect(dava3DView->GetRect());
+    }
 }
+
 
 void SceneTabWidget::dragEnterEvent(QDragEnterEvent *event)
 {

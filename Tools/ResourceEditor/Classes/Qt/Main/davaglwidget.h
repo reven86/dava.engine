@@ -31,18 +31,17 @@
 #ifndef DAVAGLWIDGET_H
 #define DAVAGLWIDGET_H
 
-#include <QWidget>
+#include <QOpenGLWidget>
 #include <QTimer>
 #include <QMimeData>
-#include <QAbstractNativeEventFilter>
 
-#include "QtLayer.h"
 
+#include "UI/UIEvent.h"
+#include "Platform/Qt5/QtLayer.h"
 
 class DavaGLWidget
-	: public QWidget
+	: public QOpenGLWidget
 	, public DAVA::QtLayerDelegate
-    , public QAbstractNativeEventFilter
 {
     Q_OBJECT
     
@@ -50,55 +49,54 @@ public:
     explicit DavaGLWidget(QWidget *parent = 0);
     ~DavaGLWidget();
 
-	void SetMaxFPS(int fps);
-	int GetMaxFPS();
-	int GetFPS() const;
-    
-	virtual QPaintEngine *paintEngine() const;
-	bool nativeEventFilter(const QByteArray& eventType, void * message, long * result);
-   
+    void SetFPS(int fps);
+    int GetFPS() const;
+
 signals:
+    void Resized(int width, int height);
 	void OnDrop(const QMimeData *mimeData);
-	void Resized(int width, int height);
 
-private slots:
-	void Render();
+protected slots:
+    
+    void OnRenderTimer();
 
+protected:
+    virtual void initializeGL();
+    virtual void resizeGL(int w, int h);
+    virtual void paintGL();
+    
 private:
-	virtual void paintEvent(QPaintEvent *);
-	virtual void resizeEvent(QResizeEvent *);
-
-	virtual void showEvent(QShowEvent *);
-	virtual void hideEvent(QHideEvent *);
-
-    virtual void focusInEvent(QFocusEvent *);
-    virtual void focusOutEvent(QFocusEvent *);
-
+    
+    void keyPressEvent(QKeyEvent *) override;
+    void keyReleaseEvent(QKeyEvent *) override;
+    
+    void mouseMoveEvent(QMouseEvent * event) override;
+    void mousePressEvent(QMouseEvent * event) override;
+    void mouseReleaseEvent(QMouseEvent * event) override;
+    
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    
 	virtual void dropEvent(QDropEvent *);
 	virtual void dragMoveEvent(QDragMoveEvent *);
 	virtual void dragEnterEvent(QDragEnterEvent *);
 
-    virtual void changeEvent(QEvent *e);
-    virtual void enterEvent(QEvent *e);
-    virtual void leaveEvent(QEvent *e);
-    
-#if defined (Q_OS_MAC)
-    virtual void mouseMoveEvent(QMouseEvent *);
-#endif //#if defined (Q_OS_MAC)
-
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
-    void RegisterEventFilter();
-    void UnregisterEventFilter();
+    static DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event);
+    static DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button);
 
-	int maxFPS;
-    int minFrameTimeMs;
-	int fps;
-    int eventFilterCount;
-
-	qint64 fpsCountTime;
-	int fpsCount;
+private:
+    
+    QTimer * renderTimer;
+    int fps;
 };
+
+
+inline int DavaGLWidget::GetFPS() const
+{
+    return fps;
+}
+
 
 #endif // DAVAGLWIDGET_H

@@ -33,6 +33,8 @@
 #include "Base/Singleton.h"
 #include "Base/BaseTypes.h"
 
+#include "UI/UIEvent.h"
+
 namespace DAVA 
 {
 
@@ -51,34 +53,33 @@ class QtLayer
 {
 public:
     QtLayer();
-    virtual ~QtLayer() {};
+    virtual ~QtLayer();
     
-    virtual void WidgetCreated() = 0;
-    virtual void WidgetDestroyed() = 0;
-
-    virtual void OnSuspend() = 0;
-    virtual void OnResume() = 0;
+    void OnSuspend();
+    void OnResume();
 	
-    virtual void AppStarted() = 0;
-    virtual void AppFinished() = 0;
+    void AppStarted();
+    void AppFinished();
 
-	virtual void Resize(int32 width, int32 height) = 0;
-	virtual void Move(int32 x, int32 y) = 0;
+    void InitializeGlWindow();
     
-    virtual void ProcessFrame() = 0;
+	void Resize(int32 width, int32 height);
+    void ProcessFrame();
 
-    virtual void LockKeyboardInput(bool locked) = 0;
-
-    virtual void* CreateAutoreleasePool() { return NULL; };
-    virtual void ReleaseAutoreleasePool(void *pool);
+    void * CreateAutoreleasePool();
+    void ReleaseAutoreleasePool(void *pool);
 
     void Quit();
     void SetDelegate(QtLayerDelegate *delegate);
 
-	virtual void* GetOpenGLView() { return NULL; };
-    
     void ShowAsserMessage(const char * message);
     bool IsDAVAEngineEnabled() const { return isDAVAEngineEnabled; };
+    
+    void KeyPressed(char16 key, int32 count, uint64 timestamp);
+    void KeyReleased(char16 key);
+
+    void MouseEvent(const UIEvent & event);
+    
 protected:
     
     QtLayerDelegate *delegate;

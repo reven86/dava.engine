@@ -38,11 +38,6 @@
 #include <QMimeData>
 #include <QUrl>
 
-//#include "Qt/Scene/EntityGroup.h"
-//#include "Qt/Scene/SceneSignals.h"
-//#include "Qt/Scene/SceneTypes.h"
-//
-//#include "UI/UIScreen.h"
 #include "UI/UI3DView.h"
 
 #include "FileSystem/FilePath.h"
@@ -101,11 +96,14 @@ public slots:
 	void TabBarCloseCurrentRequest();
 	void TabBarDataDropped(const QMimeData *data);
 	void DAVAWidgetDataDropped(const QMimeData *data);
+    void OnDavaGLWidgetResized(int width, int height);
 
 	// scene signals
 	void MouseOverSelectedEntities(SceneEditor2* scene, const EntityGroup *entities);
 	void SceneSaved(SceneEditor2 *scene);
 	void SceneModifyStatusChanged(SceneEditor2 *scene, bool modified);
+    
+    
 
 protected:
 	MainTabBar *tabBar;
@@ -121,7 +119,6 @@ protected:
 
 	void SetTabScene(int index, SceneEditor2* scene);
 
-	virtual bool eventFilter(QObject *object, QEvent *event);
 	virtual void dragEnterEvent(QDragEnterEvent *event);
 	virtual void dropEvent(QDropEvent *event);
 	virtual void keyReleaseEvent(QKeyEvent * event);

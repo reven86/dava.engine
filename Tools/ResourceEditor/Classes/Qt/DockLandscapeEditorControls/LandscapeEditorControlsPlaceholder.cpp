@@ -19,12 +19,12 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 	InitUI();
 	ConnectToSignals();
 
-	customColorsPanel = new CustomColorsPanel();
-	rulerToolPanel = new RulerToolPanel();
-	visibilityToolPanel = new VisibilityToolPanel();
-	tilemaskEditorPanel = new TilemaskEditorPanel();
-	heightmapEditorPanel = new HeightmapEditorPanel();
-    grassEditorPanel = new GrassEditorPanel();
+//	customColorsPanel = new CustomColorsPanel();
+//	rulerToolPanel = new RulerToolPanel();
+//	visibilityToolPanel = new VisibilityToolPanel();
+//	tilemaskEditorPanel = new TilemaskEditorPanel();
+//	heightmapEditorPanel = new HeightmapEditorPanel();
+//    grassEditorPanel = new GrassEditorPanel();
 }
 
 LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()

@@ -43,55 +43,11 @@ namespace DAVA
     
 QtLayerWin32::QtLayerWin32()
 {
-    WidgetCreated();
 }
 
 QtLayerWin32::~QtLayerWin32()
 {
-    AppFinished();
-    WidgetDestroyed();
 }
-    
-    
-void QtLayerWin32::WidgetCreated()
-{
-}
-
-void QtLayerWin32::WidgetDestroyed()
-{
-    
-}
-    
-void QtLayerWin32::OnSuspend()
-{
-    SoundSystem::Instance()->Suspend();
-//    Core::Instance()->SetIsActive(false);
-}
-    
-void QtLayerWin32::OnResume()
-{
-    SoundSystem::Instance()->Resume();
-    Core::Instance()->SetIsActive(true);
-}
-    
-void QtLayerWin32::AppStarted()
-{
-    Core::Instance()->SystemAppStarted();
-}
-
-void QtLayerWin32::AppFinished()
-{
-    Core::Instance()->SystemAppFinished();
-    FrameworkWillTerminate();
-    Core::Instance()->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-    if (DAVA::MemoryManager::Instance() != 0)
-    {
-        DAVA::MemoryManager::Instance()->FinalLog();
-    }
-#endif
-}
-
 
 void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int32 height)
 {
@@ -110,36 +66,6 @@ void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int
 }
 
 
-void QtLayerWin32::Resize(int32 width, int32 height)
-{
-	RenderManager::Instance()->Init(width, height);
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
-
-	VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(width, height, "Gfx");
-    float64 screenScale = DPIHelper::GetDpiScaleFactor(0);
-    if (screenScale != 1.0f)
-    {
-        VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize((int32)(width*screenScale), (int32)(height*screenScale), "Gfx2");
-    }
-
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
-    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(width, height);
-    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-}
-    
-void QtLayerWin32::Move(int32 x, int32 y)
-{
-    
-}
-
-    
-void QtLayerWin32::ProcessFrame()
-{
-    DAVA::RenderManager::Instance()->Lock();
-    DAVA::Core::Instance()->SystemProcessFrame();
-    DAVA::RenderManager::Instance()->Unlock();   
-}
 
 void QtLayerWin32::LockKeyboardInput(bool locked)
 {
