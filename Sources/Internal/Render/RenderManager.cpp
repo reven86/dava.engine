@@ -205,6 +205,8 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 void RenderManager::Reset()
 {
 	ResetColor();
+    
+    lastBindedFBO = fboViewFramebuffer;
 }
 
 void RenderManager::SetColor(float32 r, float32 g, float32 b, float32 a)

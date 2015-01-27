@@ -891,7 +891,7 @@ inline void RenderManager::SetTextureState(UniqueHandle requestedState)
 
 inline bool RenderManager::IsRenderTarget()
 {
-    return lastBindedFBO != fboViewFramebuffer;
+    return lastBindedFBO != (int32)fboViewFramebuffer;
 }
 
     
