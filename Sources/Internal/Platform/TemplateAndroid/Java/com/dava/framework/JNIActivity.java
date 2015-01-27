@@ -35,7 +35,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	private FMODAudioDevice fmodDevice = new FMODAudioDevice();
 	
-	private Controller mController;
+	private Controller mController = null;
 	
 	private native void nativeOnCreate(boolean isFirstRun);
 	private native void nativeOnStart();
@@ -113,7 +113,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         glView.setFocusable(true);
         glView.requestFocus();
         
-        mController = Controller.getInstance(this);
+        //mController = Controller.getInstance(this);
         if(mController != null)
         {
             if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )

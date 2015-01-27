@@ -48,7 +48,7 @@ namespace DAVA
 {
 
 class KeyboardDevice;
-class GamepadManager;
+class GamepadDevice;
 
 class InputSystem : public Singleton<InputSystem>
 {
@@ -81,7 +81,7 @@ public:
     void OnAfterUpdate();
     
     KeyboardDevice *GetKeyboard();
-    GamepadManager *GetGamepadManager();
+    GamepadDevice *GetGamepadDevice();
 
     bool IsCursorPining();
     void SetCursorPining(bool isPin);
@@ -89,7 +89,7 @@ public:
 protected:
     
     KeyboardDevice *keyboard;
-    GamepadManager *gamepadManager;
+    GamepadDevice *gamepad;
 
     Vector<InputCallback> callbacks;
     bool pinCursor;
