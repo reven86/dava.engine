@@ -78,20 +78,8 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     
     DAVA::QtLayer::Instance()->SetDelegate(this);
     
-    QSurfaceFormat fmt;
-    fmt.setDepthBufferSize(24);
-    fmt.setStencilBufferSize(8);
-    fmt.setVersion(3, 2);
-    fmt.setSwapInterval(1);
-    fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    
-    QSurfaceFormat::setDefaultFormat(fmt);
-    setFormat(fmt); // must be called before the widget or its parent window gets shown
-    
-    
     SetFPS(60);
     renderTimer = new QTimer(this);
-    renderTimer->singleShot(10, this, SLOT(OnRenderTimer()));
 }
 
 DavaGLWidget::~DavaGLWidget()
@@ -129,28 +117,39 @@ void DavaGLWidget::resizeGL(int w, int h)
 }
 
 
+uint64 tt = 0;
+
 void DavaGLWidget::paintGL()
 {
-    int dpr = devicePixelRatio();
+    uint64 delta = SystemTimer::Instance()->AbsoluteMS() - tt;
+    tt = SystemTimer::Instance()->AbsoluteMS();
+    Logger::Info("FPS: %d (%lld)", (1000 / delta), delta);
+    //===
+
+    
+    QElapsedTimer frameTimer;
+    frameTimer.start();
+    
+    const int dpr = devicePixelRatio();
     if(dpr != currentDPR)
     {
         currentDPR = dpr;
         PerformSizeChange();
     }
     
+    
     DAVA::QtLayer::Instance()->ProcessFrame();
+    
+    const DAVA::uint64 requestedFrameDelta = 1000 / fps;
+    const DAVA::uint64 nextFrameDelta = Max((DAVA::uint64)1, requestedFrameDelta - frameTimer.elapsed());
+    
+    renderTimer->singleShot((int) nextFrameDelta, this, SLOT(OnRenderTimer()));
 }
 
 
 void DavaGLWidget::OnRenderTimer()
 {
     update();
-    
-    DAVA::float32 requestedFrameDelta = 1000.f / fps;
-    DAVA::float32 frameDelta = DAVA::SystemTimer::Instance()->FrameDelta();
-
-    float32 nextFrameDelta = Max(1.f, requestedFrameDelta - frameDelta);
-    renderTimer->singleShot((int) nextFrameDelta, this, SLOT(OnRenderTimer()));
 }
 
 
@@ -169,15 +168,15 @@ void DavaGLWidget::keyReleaseEvent(QKeyEvent *e)
 
 void DavaGLWidget::mouseMoveEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
-    davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
+    davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
 
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
 void DavaGLWidget::mousePressEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
 
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
@@ -185,7 +184,7 @@ void DavaGLWidget::mousePressEvent(QMouseEvent * event)
 
 void DavaGLWidget::mouseReleaseEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
@@ -193,19 +192,19 @@ void DavaGLWidget::mouseReleaseEvent(QMouseEvent * event)
 
 void DavaGLWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     davaEvent.tapCount = 2;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
-DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event)
+DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event, int dpr)
 {
     DAVA::UIEvent davaEvent;
     
     QPoint pos = event->pos();
-    davaEvent.point = davaEvent.physPoint = Vector2(pos.x(), pos.y());
+    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * dpr, pos.y() * dpr);
     davaEvent.tid = MapQtButtonToDAVA(event->button());
     davaEvent.timestamp = event->timestamp();
     davaEvent.tapCount = 1;
@@ -246,7 +245,7 @@ void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
 	DAVA::Vector<DAVA::UIEvent> emptyTouches;
 
 	DAVA::UIEvent newTouch;
-	newTouch.tid = 1;
+	newTouch.tid = DAVA::UIEvent::BUTTON_1;
 	newTouch.physPoint.x = event->pos().x() * currentDPR;
 	newTouch.physPoint.y = event->pos().y() * currentDPR;
 	newTouch.phase = DAVA::UIEvent::PHASE_MOVE;

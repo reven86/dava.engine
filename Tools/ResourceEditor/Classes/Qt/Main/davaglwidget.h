@@ -88,7 +88,7 @@ private:
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
-    static DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event);
+    static DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event, int dpr);
     static DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button);
 
     void PerformSizeChange();
