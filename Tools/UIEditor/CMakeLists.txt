@@ -74,7 +74,6 @@ set( LIBRARIES                  ${QT_LIBRARIES} TextureTool )
 set( LIBRARIES_RELEASE        )
 set( LIBRARIES_DEBUG          )
 set( ADDED_BINARY_DIR           ${QT_BINARY_DIR} )
-set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DDAVA_DEBUG" )
 
 setup_main_executable()
 
