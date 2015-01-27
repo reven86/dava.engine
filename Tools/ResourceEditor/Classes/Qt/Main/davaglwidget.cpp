@@ -104,9 +104,9 @@ void DavaGLWidget::resizeGL(int w, int h)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    DAVA::QtLayer::Instance()->Resize(w * 2, h * 2);
+    DAVA::QtLayer::Instance()->Resize(w, h);
     
-    emit Resized(w* 2, h* 2);
+    emit Resized(w, h);
 }
 
 
@@ -179,7 +179,7 @@ DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event)
     DAVA::UIEvent davaEvent;
     
     QPoint pos = event->pos();
-    davaEvent.point = davaEvent.physPoint = Vector2(pos.x()* 2, pos.y()* 2);
+    davaEvent.point = davaEvent.physPoint = Vector2(pos.x(), pos.y());
     davaEvent.tid = MapQtButtonToDAVA(event->button());
     davaEvent.timestamp = event->timestamp();
     davaEvent.tapCount = 1;
