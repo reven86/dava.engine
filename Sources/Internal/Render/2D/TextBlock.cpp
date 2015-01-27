@@ -853,6 +853,8 @@ void TextBlock::CalculateCacheParams()
         for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
         {
             Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
+            stringSize.drawRect.dx += stringSize.drawRect.x;
+            stringSize.drawRect.x = 0;
             stringSizes.push_back(stringSize.width);
             if(requestedSize.dx >= 0)
             {
