@@ -4,6 +4,8 @@
 #include "PackageBaseNode.h"
 #include "ControlNode.h"
 
+class PackageSerializer;
+
 class PackageControlsNode : public PackageBaseNode
 {
 public:
@@ -26,7 +28,7 @@ public:
     void SetReadOnly();
 
     ControlNode *FindControlNodeByName(const DAVA::String &name) const;
-    DAVA::YamlNode *Serialize() const;
+    void Serialize(PackageSerializer *serializer) const;
     
 
 private:

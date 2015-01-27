@@ -332,6 +332,8 @@ protected:
 
 	bool isPreparedForTiling;
 
+    bool textureInVirtualSpace;
+
 	int32 modification;
 
 	int32 flags;
