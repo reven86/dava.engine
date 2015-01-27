@@ -187,6 +187,11 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 
     QObject::connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
     
+    
+    QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
+
+    
+    
 	LoadGPUFormat();
     LoadMaterialLightViewMode();
 
@@ -576,7 +581,7 @@ void QtMainWindow::SetupStatusBar()
     staticOcclusionStatusBtn->setMaximumSize(QSize(16, 16));
     ui->statusBar->insertPermanentWidget(0, staticOcclusionStatusBtn);
 
-	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
+	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
 }
 
 

@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     
     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
+    a.setAttribute(Qt::AA_ShareOpenGLContexts);
 
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);

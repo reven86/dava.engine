@@ -13,18 +13,30 @@
 
 LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* parent)
 :	QWidget(parent)
-,	activeScene(NULL)
-,	currentPanel(NULL)
+,	activeScene(nullptr)
+,	currentPanel(nullptr)
+,   customColorsPanel(nullptr)
+,   rulerToolPanel(nullptr)
+,   visibilityToolPanel(nullptr)
+,   tilemaskEditorPanel(nullptr)
+,   heightmapEditorPanel(nullptr)
+,   grassEditorPanel(nullptr)
 {
 	InitUI();
 	ConnectToSignals();
 
-//	customColorsPanel = new CustomColorsPanel();
-//	rulerToolPanel = new RulerToolPanel();
-//	visibilityToolPanel = new VisibilityToolPanel();
-//	tilemaskEditorPanel = new TilemaskEditorPanel();
-//	heightmapEditorPanel = new HeightmapEditorPanel();
-//    grassEditorPanel = new GrassEditorPanel();
+}
+
+void LandscapeEditorControlsPlaceholder::OnOpenGLInitialized()
+{
+    DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel && !grassEditorPanel);
+    
+    customColorsPanel = new CustomColorsPanel();
+    rulerToolPanel = new RulerToolPanel();
+    visibilityToolPanel = new VisibilityToolPanel();
+    tilemaskEditorPanel = new TilemaskEditorPanel();
+    heightmapEditorPanel = new HeightmapEditorPanel();
+    grassEditorPanel = new GrassEditorPanel();
 }
 
 LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
@@ -149,3 +161,5 @@ void LandscapeEditorControlsPlaceholder::UpdatePanels()
         SetPanel(grassEditorPanel);
     }
 }
+
+

@@ -64,22 +64,34 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	: QOpenGLWidget(parent)
     , renderTimer(nullptr)
     , fps(60)
+    , isInitialized(false)
+    , currentDPR(1)
+    , currentWidth(0)
+    , currentHeight(0)
 {
+    setAcceptDrops(true);
+    setMouseTracking(true);
+
     setFocusPolicy( Qt::StrongFocus );
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(100, 100);
     
-    setAttribute(Qt::WA_TranslucentBackground);
-
     DAVA::QtLayer::Instance()->SetDelegate(this);
-
-	setAcceptDrops(true);
-    setMouseTracking(true);
+    
+    QSurfaceFormat fmt;
+    fmt.setDepthBufferSize(24);
+    fmt.setStencilBufferSize(8);
+    fmt.setVersion(3, 2);
+    fmt.setSwapInterval(1);
+    fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    
+    QSurfaceFormat::setDefaultFormat(fmt);
+    setFormat(fmt); // must be called before the widget or its parent window gets shown
+    
     
     SetFPS(60);
-    
     renderTimer = new QTimer(this);
-    renderTimer->singleShot(1000 / fps, this, SLOT(OnRenderTimer()));
+    renderTimer->singleShot(10, this, SLOT(OnRenderTimer()));
 }
 
 DavaGLWidget::~DavaGLWidget()
@@ -97,21 +109,35 @@ void DavaGLWidget::SetFPS(int _fps)
 
 void DavaGLWidget::initializeGL()
 {
+    currentDPR = devicePixelRatio();
+    
     DAVA::QtLayer::Instance()->InitializeGlWindow();
+    
+    isInitialized = true;
+    
+    emit Initialized();
 }
 
 void DavaGLWidget::resizeGL(int w, int h)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    DAVA::QtLayer::Instance()->Resize(w, h);
+    currentWidth = w;
+    currentHeight = h;
     
-    emit Resized(w, h);
+    PerformSizeChange();
 }
 
 
 void DavaGLWidget::paintGL()
 {
+    int dpr = devicePixelRatio();
+    if(dpr != currentDPR)
+    {
+        currentDPR = dpr;
+        PerformSizeChange();
+    }
+    
     DAVA::QtLayer::Instance()->ProcessFrame();
 }
 
@@ -221,8 +247,8 @@ void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
 
 	DAVA::UIEvent newTouch;
 	newTouch.tid = 1;
-	newTouch.physPoint.x = event->pos().x();
-	newTouch.physPoint.y = event->pos().y();
+	newTouch.physPoint.x = event->pos().x() * currentDPR;
+	newTouch.physPoint.y = event->pos().y() * currentDPR;
 	newTouch.phase = DAVA::UIEvent::PHASE_MOVE;
 	touches.push_back(newTouch);
 
@@ -250,5 +276,13 @@ void DavaGLWidget::Quit()
 void DavaGLWidget::ShowAssertMessage(const char * message)
 {
     QMessageBox::critical(this, "", message);
+}
+
+
+void DavaGLWidget::PerformSizeChange()
+{
+    DAVA::QtLayer::Instance()->Resize(currentWidth * currentDPR, currentHeight * currentDPR);
+    
+    emit Resized(currentWidth, currentHeight, currentDPR);
 }
 

@@ -32,24 +32,24 @@
 #include "CustomLandscape.h"
 
 LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
-:	displayingTexture(0)
-,	mode(MODE_ORIGINAL_LANDSCAPE)
+:	tilemaskImageCopy(nullptr)
 ,	tilemaskWasChanged(0)
-,	tilemaskImageCopy(NULL)
-,	fullTiledTexture(NULL)
+,	fullTiledTexture(nullptr)
+,   displayingTexture(nullptr)
+,	mode(MODE_ORIGINAL_LANDSCAPE)
 ,	fullTiledTextureState(InvalidUniqueHandle)
-,	cursorTexture(NULL)
+,	cursorTexture(nullptr)
 {
-	DVASSERT(landscape != NULL);
+	DVASSERT(landscape != nullptr);
 
-	tilemaskSprites[TILEMASK_SPRITE_SOURCE] = NULL;
-	tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = NULL;
+	tilemaskSprites[TILEMASK_SPRITE_SOURCE] = nullptr;
+	tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = nullptr;
 
 	baseLandscape = SafeRetain(landscape);
 	landscapeNode = SafeRetain(node);
 	for (int32 i = 0; i < TEXTURE_TYPES_COUNT; ++i)
 	{
-		texturesToBlend[i] = NULL;
+		texturesToBlend[i] = nullptr;
 		texturesEnabled[i] = false;
 	}
 	

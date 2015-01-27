@@ -56,7 +56,7 @@ public slots:
     
 	void UpdateByTimer();
 
-	void OnSceneGeometryChaged(int width, int height);
+	void OnSceneGeometryChaged(int width, int height, int dpr);
 
 protected:
 	void UpdateDistanceToCamera();

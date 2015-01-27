@@ -52,8 +52,13 @@ public:
     void SetFPS(int fps);
     int GetFPS() const;
 
+    bool IsInitialized() const;
+    
+    
 signals:
-    void Resized(int width, int height);
+    
+    void Initialized();
+    void Resized(int width, int height, int dpr);
 	void OnDrop(const QMimeData *mimeData);
 
 protected slots:
@@ -61,9 +66,9 @@ protected slots:
     void OnRenderTimer();
 
 protected:
-    virtual void initializeGL();
-    virtual void resizeGL(int w, int h);
-    virtual void paintGL();
+    void initializeGL() override;
+    void resizeGL(int w, int h) override;
+    void paintGL() override;
     
 private:
     
@@ -86,10 +91,19 @@ private:
     static DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event);
     static DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button);
 
+    void PerformSizeChange();
+    
+    
 private:
     
     QTimer * renderTimer;
     int fps;
+    
+    bool isInitialized;
+    
+    int currentDPR;
+    int currentWidth;
+    int currentHeight;
 };
 
 
@@ -98,5 +112,10 @@ inline int DavaGLWidget::GetFPS() const
     return fps;
 }
 
+
+inline bool DavaGLWidget::IsInitialized() const
+{
+    return isInitialized;
+}
 
 #endif // DAVAGLWIDGET_H

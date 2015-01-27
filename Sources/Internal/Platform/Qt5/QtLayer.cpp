@@ -142,7 +142,6 @@ void QtLayer::ProcessFrame()
 void QtLayer::InitializeGlWindow()
 {
     RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
-    RenderManager::Instance()->SetFPS(60);
 }
 
 

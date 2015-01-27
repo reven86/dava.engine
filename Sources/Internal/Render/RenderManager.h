@@ -406,7 +406,7 @@ public:
     int32 GetFPS();
 
 	void SetDebug(bool isDebugEnabled);
-    
+
     void SetRenderContextId(uint64 contextId);
 	uint64 GetRenderContextId();
 	void VerifyRenderContext();

@@ -538,6 +538,7 @@ uint64 RenderManager::GetRenderContextId()
 	return renderContextId;
 }
 	
+
 void RenderManager::VerifyRenderContext()
 {
 	
@@ -562,12 +563,17 @@ void RenderManager::VerifyRenderContext()
 	//In order to fix call QApplication::processEvents in case of Qt or equivalent in case of native app or
 	//postpone result processing via delayed selector execution.
     
-//	DVASSERT(curRenderContext == renderContextId);
-//    if(curRenderContext != renderContextId)
-//    {
-//        Logger::Error("[=+=] rc = %lld, crc = %lld", renderContextId, curRenderContext);
-//    }
-	
+//    DVASSERT(curRenderContext == renderContextId);
+    
+    if(curRenderContext == renderContextId)
+    {
+    }
+    else
+    {
+        Logger::Info("render context not equal");
+    }
+    
+
 #endif
 }
     
