@@ -32,6 +32,7 @@
 #include "Scene3D/Scene.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
+#include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA
 {
@@ -43,6 +44,7 @@ QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
     , curSoundQuality(0)
     , prerequiredVertexFromat(EVF_FORCE_DWORD) //default format set to keep all streams
+    , keepUnusedQualityEntities(false)
 {
     Load("~res:/quality.yaml");
 
@@ -463,35 +465,60 @@ void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)
 	Vector<Entity *> entitiesWithQualityComponent;
 	entity->GetChildEntitiesWithComponent(entitiesWithQualityComponent, Component::QUALITY_SETTINGS_COMPONENT);
 
-	if(entitiesWithQualityComponent.empty()) return;
-
-	RemoveModelsByType(entitiesWithQualityComponent);
+    for (uint32 i = 0, sz = entitiesWithQualityComponent.size(); i< sz; ++i)
+    {
+        if (!IsQualityVisible(entitiesWithQualityComponent[i]))
+        {
+            if (keepUnusedQualityEntities)
+            {
+                UpdateEntityVisibilityRecursively(entitiesWithQualityComponent[i], false);
+            }
+            else
+            {
+                Entity *parent = entitiesWithQualityComponent[i]->GetParent();
+                parent->RemoveNode(entitiesWithQualityComponent[i]);
+            }
+        }
+    }
 }
 
-void QualitySettingsSystem::RemoveModelsByType( const Vector<Entity *> & models )
-{
-	uint32 count = (uint32)models.size();
-	for(uint32 m = 0; m < count; ++m)
-	{
-		QualitySettingsComponent * comp = GetQualitySettingsComponent(models[m]);
 
-		if(IsOptionEnabled(comp->GetModelType()) == false)
-		{
-			Entity *parent = models[m]->GetParent();
-			parent->RemoveNode(models[m]);
-		}
-	}
-}
-
-bool QualitySettingsSystem::NeedLoadEntity(const Entity *entity)
-{
+bool QualitySettingsSystem::IsQualityVisible(const Entity *entity)
+{    
     QualitySettingsComponent * comp = GetQualitySettingsComponent(entity);
     if(comp)
     {
-        return IsOptionEnabled(comp->GetModelType());
+        if (comp->filterByType)
+            return IsOptionEnabled(comp->GetModelType());
+        else
+            return (GetCurMaterialQuality(comp->requiredGroup) == comp->requiredQuality);
     }
     
     return true;
+}
+
+void QualitySettingsSystem::UpdateEntityVisibility(Entity *e)
+{
+    QualitySettingsComponent * comp = GetQualitySettingsComponent(e);
+    if (comp)
+        UpdateEntityVisibilityRecursively(e, IsQualityVisible(e));
+}
+
+
+
+void QualitySettingsSystem::UpdateEntityVisibilityRecursively(Entity *e, bool qualityVisible)
+{
+    RenderObject *ro = GetRenderObject(e);
+    if (ro)
+    {
+        if (qualityVisible)
+            ro->AddFlag(RenderObject::VISIBLE_QUALITY);
+        else
+            ro->RemoveFlag(RenderObject::VISIBLE_QUALITY);
+    }
+
+    for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
+        UpdateEntityVisibilityRecursively(e->GetChild(i), qualityVisible);
 }
 
 

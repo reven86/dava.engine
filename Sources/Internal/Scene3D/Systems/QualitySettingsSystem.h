@@ -101,17 +101,20 @@ public:
     int32 GetOptionsCount() const;
     FastName GetOptionName(int32 index) const;
 
-    bool NeedLoadEntity(const Entity *entity);
+    bool IsQualityVisible(const Entity *entity);
     
 	void UpdateEntityAfterLoad(Entity *entity);
 
     int32 GetPrerequiredVertexFormat();
     void SetPrerequiredVertexFormat(int32 format);
-     
+
+    inline void SetKeepUnusedEntities(bool keep);
+    inline bool GetKeepUnusedEntities();
+         
+    void UpdateEntityVisibility(Entity *e);    
 
 protected:
-
-	void RemoveModelsByType(const Vector<Entity *> & models);
+    void UpdateEntityVisibilityRecursively(Entity *e, bool qualityVisible);	
 
 protected:
     struct TXQ
@@ -146,7 +149,20 @@ protected:
 	FastNameMap<bool> qualityOptions;
 
     int32 prerequiredVertexFromat;
+
+    bool keepUnusedQualityEntities; //for editor to prevent cutting entities with unused quality
 };
+
+
+void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
+{
+    keepUnusedQualityEntities = keep;
+}
+
+bool QualitySettingsSystem::GetKeepUnusedEntities()
+{
+    return keepUnusedQualityEntities;
+}
 	
 }
 

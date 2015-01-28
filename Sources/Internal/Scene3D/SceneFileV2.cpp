@@ -755,6 +755,7 @@ bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
 
 void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * parent, File * file, int32 level)
 {
+    bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
     KeyedArchive * archive = new KeyedArchive();
     archive->Load(file);
 
@@ -813,7 +814,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
             Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), name.c_str(), node->GetClassName().c_str());
         }
 
-        if(!skipNode && QualitySettingsSystem::Instance()->NeedLoadEntity(node))
+        if (!skipNode && (keepUnusedQualityEntities||QualitySettingsSystem::Instance()->IsQualityVisible(node)))
         {
             parent->AddNode(node);
         }
