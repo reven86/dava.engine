@@ -300,9 +300,9 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_OUT_BEGIN         \n"
 "#define FPROG_OUT_COLOR         \n"
 "#define FPROG_OUT_END           \n"
-    
+            
 "#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
-
+        
 "#define FP_TEXTURE2D(unit,uv)   texture2D( Texture##unit, uv );\n"
 "#define FP_IN(name)             var_##name\n"
 
@@ -358,7 +358,7 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_OUT_END           };\n"
 
 "#define DECL_SAMPLER2D(unit)    uniform sampler2D Texture##unit;\n"
-
+    
 "#define FP_TEXTURE2D(unit,uv)   tex2D( Texture##unit, uv );\n"
 "#define FP_IN(name)             IN.##name\n"
 
@@ -395,50 +395,84 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
         
         case RHI_METAL : 
         {
-            const char* s = srcText;
+            const char* s       = srcText;
             const char* decl;
+            int         src_len = 0;
+            bool        vp_buf_declared[16];
+            bool        fp_buf_declared[16];
+            bool        fp_tex_declared[16];
+
+            for( unsigned i=0; i!=countof(vp_buf_declared); ++i )
+                vp_buf_declared[i] = false;
+            for( unsigned i=0; i!=countof(fp_buf_declared); ++i )
+                fp_buf_declared[i] = false;
+            for( unsigned i=0; i!=countof(fp_tex_declared); ++i )
+                fp_tex_declared[i] = false;
 
             while( (decl = strstr( s, "DECL_FPROG_BUFFER" )) )
             {
-                int i   = 0;
-                int len = strlen( src );
+                int i = 0;
 
                 sscanf( decl, "DECL_FPROG_BUFFER(%i,", &i );
 
-                len += sprintf( src+len, "#define FPROG_IN_BUFFER_%i  ,constant __FP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, i );
-                len += sprintf( src+len, "#define FPROG_BUFFER_%i    constant packed_float4* FP_Buffer%i = buf%i->data; \n", i, i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_IN_BUFFER_%i  ,constant __FP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_BUFFER_%i    constant packed_float4* FP_Buffer%i = buf%i->data; \n", i, i, i );
+                fp_buf_declared[i] = true;
 
                 s += strlen("DECL_FPROG_BUFFER");
+            }
+            for( unsigned i=0; i!=countof(fp_buf_declared); ++i )
+            {
+                if( !fp_buf_declared[i] )
+                {
+                    src_len += sprintf( src+src_len, "#define FPROG_IN_BUFFER_%i \n", i );
+                    src_len += sprintf( src+src_len, "#define FPROG_BUFFER_%i \n", i );
+                }
             }
             
             s = srcText;
             while( (decl = strstr( s, "DECL_SAMPLER2D" )) )
             {
-                int i   = 0;
-                int len = strlen( src );
+                int i = 0;
 
                 sscanf( decl, "DECL_SAMPLER2D(%i,", &i );
 
-                len += sprintf( src+len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> tex%i [[ texture(%i) ]]\n", i, i, i );
-                len += sprintf( src+len, "#define FPROG_SAMPLER_%i    sampler tex%i_sampler; \n", i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> tex%i [[ texture(%i) ]]\n", i, i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler tex%i_sampler; \n", i, i );
+                fp_tex_declared[i] = true;
 
                 s += strlen("DECL_SAMPLER2D");
             }
-            
+            for( unsigned i=0; i!=countof(fp_tex_declared); ++i )
+            {
+                if( !fp_tex_declared[i] )
+                {
+                    src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i \n", i );
+                    src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i \n", i );
+                }
+            }
             
 
             s = srcText;
             while( (decl = strstr( s, "DECL_VPROG_BUFFER" )) )
             {
                 int i   = 0;
-                int len = strlen( src );
 
                 sscanf( decl, "DECL_VPROG_BUFFER(%i,", &i );
 
-                len += sprintf( src+len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, 1+i );
-                len += sprintf( src+len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i );
+                src_len += sprintf( src+src_len, "#define VPROG_IN_BUFFER_%i  ,constant __VP_Buffer%i* buf%i [[ buffer(%i) ]]\n", i, i, i, 1+i );
+                src_len += sprintf( src+src_len, "#define VPROG_BUFFER_%i    constant packed_float4* VP_Buffer%i = buf%i->data; \n", i, i, i );
+                vp_buf_declared[i] = true;
 
                 s += strlen("DECL_VPROG_BUFFER");
+            }
+            for( unsigned i=0; i!=countof(vp_buf_declared); ++i )
+            {
+                if( !vp_buf_declared[i] )
+                {
+                    src_len += sprintf( src+src_len, "#define VPROG_IN_BUFFER_%i \n", i );
+                    src_len += sprintf( src+src_len, "#define VPROG_BUFFER_%i \n", i );
+                }
             }
 
             strcat( src, _ShaderDefine_Metal );
