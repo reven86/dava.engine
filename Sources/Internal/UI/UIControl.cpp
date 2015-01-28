@@ -52,6 +52,7 @@ namespace DAVA
     {
         UpdateFamily();
         AddComponent(Component::CreateByType(Component::UI_RENDER_COMPONENT)); // Create render component for all controls
+        AddComponent(Component::CreateByType(Component::UI_INPUT_COMPONENT)); // Create input component for all controls (many controls use inputs events from dispatcher)
         
         parent = NULL;
         controlState = STATE_NORMAL;
