@@ -241,7 +241,7 @@ public:
 template<class C, class O>
 C DynamicTypeCheck(O* pObject)
 {
-#ifdef DAVA_DEBUG
+#ifdef __DAVAENGINE_DEBUG__
     if(!pObject) return static_cast<C>(pObject);
         
     C c = dynamic_cast<C>(pObject);
