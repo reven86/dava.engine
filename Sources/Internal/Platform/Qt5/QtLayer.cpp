@@ -173,7 +173,7 @@ void QtLayer::Resize(int32 width, int32 height)
     
 static Vector<UIEvent> activeTouches;
 
-void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
+void QtLayer::KeyPressed(char16 key1, char16 davaKey, int32 count, uint64 timestamp)
 {
     Vector<UIEvent> touches;
     Vector<UIEvent> emptyTouches;
@@ -188,7 +188,7 @@ void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
     ev.phase = UIEvent::PHASE_KEYCHAR;
     ev.timestamp = timestamp;
     ev.tapCount = 1;
-    ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(key);
+    ev.tid = davaKey;
     
     touches.push_back(ev);
     
@@ -196,13 +196,15 @@ void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
     touches.pop_back();
     UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
     
-    InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(key);
+//    InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(key);
+    InputSystem::Instance()->GetKeyboard()->OnKeyPressed(davaKey);
 }
 
 
-void QtLayer::KeyReleased(char16 key)
+void QtLayer::KeyReleased(char16 key, char16 davaKey)
 {
-    InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(key);
+    InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(davaKey);
+//    InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(key);
 }
     
     

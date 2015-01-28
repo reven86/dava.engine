@@ -70,6 +70,9 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
     
+    void paintEvent(QPaintEvent *) override;
+
+    
 private:
     
     void keyPressEvent(QKeyEvent *) override;
