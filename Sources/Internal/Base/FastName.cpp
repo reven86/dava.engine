@@ -39,7 +39,7 @@ namespace DAVA
 FastName::FastName()
 	: index(-1)
 {
-#ifdef DAVA_DEBUG
+#ifdef __DAVAENGINE_DEBUG__
 	debug_str_ptr = NULL;
 #endif
 }
@@ -59,7 +59,7 @@ FastName::FastName(const FastName &_name)
 {
     index = _name.index;
     
-#ifdef DAVA_DEBUG
+#ifdef __DAVAENGINE_DEBUG__
     debug_str_ptr = _name.debug_str_ptr;
 #endif
     
@@ -124,7 +124,7 @@ void FastName::Init(const char * name)
     }
     
     DVASSERT(index != -1);
-#ifdef DAVA_DEBUG
+#ifdef __DAVAENGINE_DEBUG__
     debug_str_ptr = c_str();
 #endif
 }
