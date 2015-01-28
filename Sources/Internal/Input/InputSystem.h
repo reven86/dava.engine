@@ -80,10 +80,10 @@ public:
     void OnBeforeUpdate();
     void OnAfterUpdate();
     
-    KeyboardDevice *GetKeyboard();
-    GamepadDevice *GetGamepadDevice();
+    inline KeyboardDevice & GetKeyboard();
+    inline GamepadDevice  & GetGamepadDevice();
 
-    bool IsCursorPining();
+    inline bool IsCursorPining();
     void SetCursorPining(bool isPin);
     
     inline void EnableMultitouch(bool enabled);
@@ -108,6 +108,21 @@ inline void InputSystem::EnableMultitouch(bool enabled)
 inline bool InputSystem::GetMultitouchEnabled() const
 {
 	return isMultitouchEnabled;
+}
+
+inline bool InputSystem::IsCursorPining()
+{
+    return pinCursor;
+}
+
+inline KeyboardDevice & InputSystem::GetKeyboard()
+{
+    return *keyboard;
+}
+
+inline GamepadDevice & InputSystem::GetGamepadDevice()
+{
+    return *gamepad;
 }
 
 };

@@ -364,7 +364,7 @@ namespace DAVA
 		newEvent.point.x = value;
 		newEvent.phase = DAVA::UIEvent::PHASE_JOYSTICK;
 
-		InputSystem::Instance()->GetGamepadDevice()->SystemProcessElement((GamepadDevice::eDavaGamepadElement)davaKey, value);
+        InputSystem::Instance()->GetGamepadDevice()->SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
 		InputSystem::Instance()->ProcessInputEvent(&newEvent);
 	}
 

@@ -36,88 +36,100 @@
 namespace DAVA
 {
     
-#if defined(__DAVAENGINE_ANDROID__)
-#define MAX_TRANSLATOR_KEYS 256
-#endif
-    
-    class GamepadDevice : public BaseObject
+class GamepadDevice : public BaseObject
+{
+public:
+    enum eDavaGamepadProfile
     {
-    public:
-        enum eDavaGamepadProfile
-        {
-            GAMEPAD_PROFILE_SIMPLE = 0,
-            GAMEPAD_PROFILE_EXTENDED,
+        GAMEPAD_PROFILE_SIMPLE = 0,
+        GAMEPAD_PROFILE_EXTENDED,
             
-            GAMEPAD_PROFILE_COUNT
-        };
+        GAMEPAD_PROFILE_COUNT
+    };
         
         
-        enum eDavaGamepadElement
-        {
-            GAMEPAD_ELEMENT_BUTTON_A = 0,
-            GAMEPAD_ELEMENT_BUTTON_B,
-            GAMEPAD_ELEMENT_BUTTON_X,
-            GAMEPAD_ELEMENT_BUTTON_Y,
-            GAMEPAD_ELEMENT_BUTTON_LS,  //Left shoulder
-            GAMEPAD_ELEMENT_BUTTON_RS,  //Right shoulder
+    enum eDavaGamepadElement
+    {
+        GAMEPAD_ELEMENT_BUTTON_A = 0,
+        GAMEPAD_ELEMENT_BUTTON_B,
+        GAMEPAD_ELEMENT_BUTTON_X,
+        GAMEPAD_ELEMENT_BUTTON_Y,
+        GAMEPAD_ELEMENT_BUTTON_LS,  //Left shoulder
+        GAMEPAD_ELEMENT_BUTTON_RS,  //Right shoulder
             
-            GAMEPAD_ELEMENT_LT,         //Left trigger
-            GAMEPAD_ELEMENT_RT,         //Right trigger
+        GAMEPAD_ELEMENT_LT,         //Left trigger
+        GAMEPAD_ELEMENT_RT,         //Right trigger
             
-            GAMEPAD_ELEMENT_AXIS_LX,    //Left joystick, axis X
-            GAMEPAD_ELEMENT_AXIS_LY,    //Left joystick, axis Y
-            GAMEPAD_ELEMENT_AXIS_RX,    //Right joystick, axis X
-            GAMEPAD_ELEMENT_AXIS_RY,    //Right joystick, axis Y
+        GAMEPAD_ELEMENT_AXIS_LX,    //Left joystick, axis X
+        GAMEPAD_ELEMENT_AXIS_LY,    //Left joystick, axis Y
+        GAMEPAD_ELEMENT_AXIS_RX,    //Right joystick, axis X
+        GAMEPAD_ELEMENT_AXIS_RY,    //Right joystick, axis Y
             
-            GAMEPAD_ELEMENT_DPAD_X,
-            GAMEPAD_ELEMENT_DPAD_Y,
+        GAMEPAD_ELEMENT_DPAD_X,
+        GAMEPAD_ELEMENT_DPAD_Y,
             
-            GAMEPAD_ELEMENT_COUNT
-        };
+        GAMEPAD_ELEMENT_COUNT
+    };
         
-        GamepadDevice();
-        ~GamepadDevice();
+    GamepadDevice();
         
-        void Reset();
+    void Reset();
         
-        inline bool IsAvailable();
-        eDavaGamepadProfile GetProfile();
-        float32 GetElementState(eDavaGamepadElement element);
+    inline bool IsAvailable();
+    inline eDavaGamepadProfile GetProfile();
+    inline float32 GetElementState(eDavaGamepadElement element);
         
-        void SystemProcessElement(eDavaGamepadElement element, float32 newValue);
+    inline void SystemProcessElement(eDavaGamepadElement element, float32 newValue);
+
+    void SetAvailable(bool available) { isAvailable = available; }
+
+private:
+    void InitInternal();
+
+    float32 elementValues[GAMEPAD_ELEMENT_COUNT];
+    eDavaGamepadProfile profile;
         
-    private:
-        float32 elementValues[GAMEPAD_ELEMENT_COUNT];
-        eDavaGamepadProfile profile;
-        
-        bool isAvailable;
-        
+    bool isAvailable;
+
 #if defined(__DAVAENGINE_IPHONE__)
-    public:
-        void OnControllerConnected(void * gameControllerObject);
-#endif
-        
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    private:
-        void InitInternal();
+public:
+    void OnControllerConnected(void * gameControllerObject);
 #endif
 
 #if defined(__DAVAENGINE_ANDROID__)
-    public:
-        static const uint8 INVALID_DAVAKEY;
+public:
+    static const uint8 INVALID_DAVAKEY = 0xFF;
+    static const uint32 MAX_TRANSLATOR_KEYS = 256;
         
-        void SetAvailable(bool available) { isAvailable = available; }
-        eDavaGamepadElement GetDavaEventIdForSystemKey(int32 systemKey);
+    eDavaGamepadElement GetDavaEventIdForSystemKey(int32 systemKey);
         
-    private:
-        uint8 keyTranslator[MAX_TRANSLATOR_KEYS];
+private:
+    uint8 keyTranslator[MAX_TRANSLATOR_KEYS];
 #endif
-    };
+};
     
-    inline bool GamepadDevice::IsAvailable()
-    {
-        return isAvailable;
-    }
+inline bool GamepadDevice::IsAvailable()
+{
+    return isAvailable;
+}
+
+inline GamepadDevice::eDavaGamepadProfile GamepadDevice::GetProfile()
+{
+    return profile;
+}
+
+inline void GamepadDevice::SystemProcessElement(GamepadDevice::eDavaGamepadElement element, float32 value)
+{
+    DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
+    elementValues[element] = value;
+}
+
+inline float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement element)
+{
+    DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
+    return elementValues[element];
+}
+
 }
 
 #endif //__GAMEPAD_DEVICE_H_
