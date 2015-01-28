@@ -147,6 +147,7 @@ public:
     */
     static void CleanLine(WideString& string, bool trimRight = false);
 
+	void SetAngle(const float _angle);
 protected:
 
 	TextBlock();
@@ -229,6 +230,8 @@ protected:
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;
 	Texture *textureForInvalidation;
+
+	float angle;
 };
 
 }; //end of namespace

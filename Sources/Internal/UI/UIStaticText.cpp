@@ -246,6 +246,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         textBlockRect.dx *= geometricData.scale.dx;
         textBlockRect.dy *= geometricData.scale.dy;
         textBlock->SetScale(geometricData.scale);
+		textBlock->SetAngle(geometricData.angle);
     }
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());
