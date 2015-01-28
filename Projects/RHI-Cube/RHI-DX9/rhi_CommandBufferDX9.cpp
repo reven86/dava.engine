@@ -174,7 +174,7 @@ SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidIndex )
-        CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer) );
+        CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX9::InstData(buffer)) );
 }
 
 
@@ -204,7 +204,7 @@ SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidIndex )
-        CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer) );
+        CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX9::InstData(buffer)) );
 }
 
 
@@ -479,14 +479,14 @@ SCOPED_FUNCTION_TIMING();
             
             case DX9__SET_VERTEX_PROG_CONST_BUFFER :
             {
-                ConstBufferDX9::SetToRHI( (Handle)(arg[1]) );
-                c += 1;
+                ConstBufferDX9::SetToRHI( (Handle)(arg[1]), (const void*)(arg[2]) );
+                c += 3;
             }   break;
 
             case DX9__SET_FRAGMENT_PROG_CONST_BUFFER :
             {
-                ConstBufferDX9::SetToRHI( (Handle)(arg[1]) );
-                c += 1;
+                ConstBufferDX9::SetToRHI( (Handle)(arg[1]), (const void*)(arg[2]) );
+                c += 3;
             }   break;
 
             case DX9__SET_TEXTURE :

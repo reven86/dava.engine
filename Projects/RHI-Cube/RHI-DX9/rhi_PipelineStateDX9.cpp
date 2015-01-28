@@ -2,6 +2,7 @@
 
     #include "../rhi_Base.h"
     #include "../RHI/rhi_Pool.h"
+    #include "../RHI/rhi_RingBuffer.h"
     #include "../RHI/rhi_ShaderCache.h"
     #include "rhi_DX9.h"
 
@@ -35,6 +36,9 @@ private:
     static std::vector<VDeclDX9>    _VDecl;
 };
 std::vector<VDeclDX9>   VDeclDX9::_VDecl;
+
+static RingBuffer       _DefConstRingBuf;
+
 
 
 //------------------------------------------------------------------------------
@@ -142,16 +146,20 @@ public:
         void        construct( ProgType type, unsigned reg_i, unsigned reg_count );
 
         unsigned    const_count() const;
+        const void* inst_data() const;
+
         bool        set_const( unsigned const_i, unsigned count, const float* data );
-        void        set_to_rhi() const;
+        void        set_to_rhi( const void* inst_data ) const;
 
 
     private:
 
-        float*      _value;
-        unsigned    _reg_i;
-        unsigned    _reg_count;
-        ProgType    _type;
+        float*          _value;
+        mutable float*  _value_inst;
+        unsigned        _reg_i;
+        unsigned        _reg_count;
+        ProgType        _type;
+        mutable uint32  _inst_valid:1;
     };
 
     struct
@@ -217,8 +225,10 @@ typedef Pool<PipelineStateDX9_t::ConstBuf>  ConstBufDX9Pool;
 
 PipelineStateDX9_t::ConstBuf::ConstBuf()
   : _value(0),
+    _value_inst(0),
     _reg_i(InvalidIndex),
-    _reg_count(0)
+    _reg_count(0),
+    _inst_valid(false)
 {
 }
 
@@ -246,6 +256,7 @@ PipelineStateDX9_t::ConstBuf::construct( ProgType type, unsigned reg_i, unsigned
     _value      = (float*)(malloc( reg_count*4*sizeof(float) ));
     _reg_i      = reg_i;
     _reg_count  = reg_count; 
+    _inst_valid = false;
 }
 
 
@@ -260,6 +271,22 @@ PipelineStateDX9_t::ConstBuf::const_count() const
 
 //------------------------------------------------------------------------------
 
+const void*
+PipelineStateDX9_t::ConstBuf::inst_data() const
+{
+    if( !_inst_valid )
+    {
+        _value_inst = _DefConstRingBuf.Alloc( 4*_reg_count );
+        memcpy( _value_inst, _value, _reg_count*4*sizeof(float) );
+        _inst_valid = true;
+    }
+
+    return _value_inst;
+}
+
+
+//------------------------------------------------------------------------------
+
 bool
 PipelineStateDX9_t::ConstBuf::set_const( unsigned const_i, unsigned const_count, const float* data )
 {
@@ -268,6 +295,7 @@ PipelineStateDX9_t::ConstBuf::set_const( unsigned const_i, unsigned const_count,
     if( const_i + const_count <= _reg_count )
     {
         memcpy( _value + const_i*4, data, const_count*4*sizeof(float) );
+        _inst_valid = false;
     }
     
     return success;
@@ -277,12 +305,12 @@ PipelineStateDX9_t::ConstBuf::set_const( unsigned const_i, unsigned const_count,
 //------------------------------------------------------------------------------
 
 void
-PipelineStateDX9_t::ConstBuf::set_to_rhi() const
+PipelineStateDX9_t::ConstBuf::set_to_rhi( const void* inst_data ) const
 {
     if( _type == PROG_VERTEX )
-        _D3D9_Device->SetVertexShaderConstantF( _reg_i, _value, _reg_count );
+        _D3D9_Device->SetVertexShaderConstantF( _reg_i, (const float*)inst_data, _reg_count );
     else
-        _D3D9_Device->SetPixelShaderConstantF( _reg_i, _value, _reg_count );
+        _D3D9_Device->SetPixelShaderConstantF( _reg_i, (const float*)inst_data, _reg_count );
 }
 
 
@@ -616,11 +644,26 @@ namespace ConstBufferDX9
 {
 
 void
-SetToRHI( Handle cb )
+InitializeRingBuffer( uint32 size )
+{
+    _DefConstRingBuf.Initialize( size );
+}
+
+
+const void*
+InstData( Handle cb )
 {
     PipelineStateDX9_t::ConstBuf* cb9 = ConstBufDX9Pool::Get( cb );
     
-    cb9->set_to_rhi();
+    return cb9->inst_data();
+}
+
+void
+SetToRHI( Handle cb, const void* instData )
+{
+    PipelineStateDX9_t::ConstBuf* cb9 = ConstBufDX9Pool::Get( cb );
+    
+    cb9->set_to_rhi( instData );
 }
 
 }

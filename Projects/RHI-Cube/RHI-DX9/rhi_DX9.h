@@ -38,12 +38,14 @@ namespace rhi
 
 namespace VertexBufferDX9
 {
-void    SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride );
+void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride );
 }
 
 namespace IndexBufferDX9
 {
-void    SetToRHI( Handle vb );
+
+void        SetToRHI( Handle vb );
+
 }
 
 
@@ -55,14 +57,15 @@ void        SetToRHI( Handle ps );
 
 namespace ConstBufferDX9
 {
-void    InitializeRingBuffer( uint32 size );
+void        InitializeRingBuffer( uint32 size );
 
-void    SetToRHI( Handle cb );
+const void* InstData( Handle cb );
+void        SetToRHI( Handle cb, const void* instData );
 }
 
 namespace TextureDX9
 {
-void    SetToRHI( Handle tex, unsigned unitIndex );
+void        SetToRHI( Handle tex, unsigned unitIndex );
 }
 
 

@@ -262,6 +262,8 @@ Initialize()
         {
             Logger::Error( "failed to create device:\n%s\n", D3D9ErrorText(hr) );
         }
+
+        ConstBufferDX9::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
     }
     else
     {
