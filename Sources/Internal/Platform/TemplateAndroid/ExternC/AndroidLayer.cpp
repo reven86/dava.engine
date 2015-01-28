@@ -78,21 +78,21 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeOnPauseView(JNIEnv * env, jobject classthis, jboolean isLock);
 };
 
-
-DAVA::CorePlatformAndroid *core = NULL;
-
 #define MAX_PATH_SZ 260
-char documentsFolderPathEx[MAX_PATH_SZ];
-char documentsFolderPathIn[MAX_PATH_SZ];
-char folderDocuments[MAX_PATH_SZ];
-char assetsFolderPath[MAX_PATH_SZ];
-char androidLogTag[MAX_PATH_SZ];
-char androidPackageName[MAX_PATH_SZ];
 
 namespace 
 {
-	DAVA::JNI::JavaClass gArrayListClass("java/util/ArrayList");
-	DAVA::JNI::JavaClass gInputEventClass("com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent");
+	DAVA::CorePlatformAndroid *core = NULL;
+
+	char documentsFolderPathEx[MAX_PATH_SZ];
+	char documentsFolderPathIn[MAX_PATH_SZ];
+	char folderDocuments[MAX_PATH_SZ];
+	char assetsFolderPath[MAX_PATH_SZ];
+	char androidLogTag[MAX_PATH_SZ];
+	char androidPackageName[MAX_PATH_SZ];
+
+	DAVA::JNI::JavaClass* gArrayListClass = nullptr;
+	DAVA::JNI::JavaClass* gInputEventClass = nullptr;
 
 	DAVA::Function< jobject(jobject, jint) > gArrayListGetMethod;
 	DAVA::Function< jint(jobject) > gArrayListSizeMethod;
@@ -102,9 +102,9 @@ namespace
 	jfieldID gInputEventYField;
 	jfieldID gInputEventTimeField;
 	jfieldID gInputEventTapCountField;
-}
 
-AndroidDelegate *androidDelegate;
+	AndroidDelegate *androidDelegate;
+}
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -114,21 +114,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 		LOGE("Failed get java environment");
 		return -1;
 	}
-
-//	DAVA::JniExtension::SetJavaClass(env, "java/util/ArrayList", &gArrayListClass, NULL);
-//	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent", &gInputEventClass, NULL);
-
-	// gArrayListGetMethod = env->GetMethodID(gArrayListClass, "get", JNI::SignatureString::FromTypes<jobject, jint>());
-	// gArrayListSizeMethod = env->GetMethodID(gArrayListClass, "size", JNI::SignatureString::FromTypes<jint>());
-
-	gArrayListGetMethod = gArrayListClass.GetMethod<jobject, jint>("get");
-	gArrayListSizeMethod = gArrayListClass.GetMethod<jint>("size");
-
-	gInputEventTidField = env->GetFieldID(gInputEventClass, "tid", DAVA::JNI::TypeMetrics<jint>());
-	gInputEventXField = env->GetFieldID(gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
-	gInputEventYField = env->GetFieldID(gInputEventClass, "y", DAVA::JNI::TypeMetrics<jfloat>());
-	gInputEventTimeField = env->GetFieldID(gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
-	gInputEventTapCountField = env->GetFieldID(gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
 
 	DAVA::Thread::InitMainThread();
 
@@ -190,6 +175,20 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
 	DAVA::JNI::CreateStringFromJni(env, commandLineParams, commandLine);
 
 	InitApplication(env, commandLine);
+
+	gArrayListClass = new DAVA::JNI::JavaClass("java/util/ArrayList");
+	gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent");
+
+	gArrayListGetMethod = gArrayListClass->GetMethod<jobject, jint>("get");
+	gArrayListSizeMethod = gArrayListClass->GetMethod<jint>("size");
+
+	gInputEventTidField = env->GetFieldID(*gInputEventClass, "tid", DAVA::JNI::TypeMetrics<jint>());
+	gInputEventXField = env->GetFieldID(*gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
+	gInputEventYField = env->GetFieldID(*gInputEventClass, "y", DAVA::JNI::TypeMetrics<jfloat>());
+	gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
+	gInputEventTapCountField = env->GetFieldID(*gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
+
+
 }
 
 void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis)
@@ -277,6 +276,9 @@ void Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv * env, jobject c
 	{
 		core->OnDestroyActivity();
 	}
+
+	DAVA::SafeDelete(gArrayListClass);
+	DAVA::SafeDelete(gInputEventClass);
 }
 
 void Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z)

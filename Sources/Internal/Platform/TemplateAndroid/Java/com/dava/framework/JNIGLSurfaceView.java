@@ -135,9 +135,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
             alreadyResumed = true;
         }
     };
-
-	Map<Integer, Integer> tIdMap = new HashMap<Integer, Integer>();
-	int nexttId = 1;
 	
 	public class InputRunnable implements Runnable
 	{
