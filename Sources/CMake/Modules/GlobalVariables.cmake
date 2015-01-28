@@ -7,6 +7,14 @@ if( APPLE AND NOT IOS )
 	set ( MACOS 1 )
 endif ()
 
+if( TEAMCITY_DEPLOY )
+    set( OUTPUT_TO_BUILD_DIR true )
+    set( IGNORE_FILE_TREE_CHECK true )
+    set( DEBUG_INFO true )
+
+endif()
+
+
 #global paths
 
 set ( DAVA_LIBRARY                     "DavaFramework" )
@@ -54,8 +62,10 @@ endif  ()
 
 #compiller flags
 
+set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
+
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-invalid-offsetof" )  
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )  #-std=c++14
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
     
 elseif ( IOS     ) 
