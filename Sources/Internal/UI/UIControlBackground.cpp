@@ -502,7 +502,17 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         break;
 
         case DRAW_FILL:
-        	RenderSystem2D::Instance()->DrawFilled(spr, &drawState, geometricData);
+            RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+            if (geometricData.angle != 0.0f)
+            {
+                Polygon2 poly;
+                geometricData.GetPolygon(poly);
+                RenderHelper::Instance()->FillPolygon(poly, drawState.GetRenderState());
+            }
+            else
+            {
+                RenderHelper::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawState.GetRenderState());
+            }
         break;
 
         case DRAW_STRETCH_BOTH:

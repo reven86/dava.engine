@@ -157,7 +157,6 @@ public:
     void Draw(Sprite * sprite, Sprite::DrawState * drawState = 0);
     void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData);
     void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
-    void DrawFilled(Sprite * sprite, Sprite::DrawState * drawState, const UIGeometricData& gd);
 
     void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip,
         uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,

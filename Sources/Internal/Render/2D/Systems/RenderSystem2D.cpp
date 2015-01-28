@@ -921,6 +921,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 
     bool needGenerateData = false;
     StretchDrawData * stretchData = 0;
+    bool needClearData = pStreachData == NULL;
     if(pStreachData)
     {
         stretchData = *pStreachData;
@@ -983,6 +984,11 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, sd.GetVertexInTrianglesCount(), EIF_16, (void*)sd.indeces);
     
 #endif //USE_BATCHING
+
+    if (needClearData)
+    {
+        SafeDelete(stretchData);
+    }
 }
 
 void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const Vector2& stretchCapVector, const UIGeometricData &gd, TiledDrawData ** pTiledData)
@@ -1012,6 +1018,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     bool needGenerateData = false;
 
 	TiledDrawData * tiledData = 0;
+    bool needClearData = pTiledData == NULL;
 	if( pTiledData )
 	{
 		tiledData = *pTiledData;
@@ -1073,21 +1080,10 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 	
 #endif //USE_BATCHING
-}
 
-void RenderSystem2D::DrawFilled(Sprite * sprite, Sprite::DrawState * state, const UIGeometricData& gd)
-{
-	Flush();
-	RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
-    if( gd.angle != 0.0f )
+    if (needClearData)
     {
-        Polygon2 poly;
-        gd.GetPolygon( poly );
-        RenderHelper::Instance()->FillPolygon( poly, state->renderState );
-    }
-    else
-    {
-        RenderHelper::Instance()->FillRect( gd.GetUnrotatedRect(), state->renderState );
+        SafeDelete(tiledData);
     }
 }
 
@@ -1096,49 +1092,59 @@ void TiledDrawData::GenerateTileData()
     Texture *texture = sprite->GetTexture(frame);
 
     Vector< Vector3 > cellsWidth;
-    GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX((float32)texture->GetWidth(), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth );
+    GenerateAxisData(size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
+        VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX((float32)texture->GetWidth(), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
 
     Vector< Vector3 > cellsHeight;
-    GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX((float32)texture->GetHeight(), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight );
+    GenerateAxisData(size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT),
+        VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY((float32)texture->GetHeight(), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
     int32 vertexCount = (int32)(4 * cellsHeight.size() * cellsWidth.size());
-    vertices.resize( vertexCount );
-    transformedVertices.resize( vertexCount );
-    texCoords.resize( vertexCount );
+    if (vertexCount >= std::numeric_limits<uint16>::max())
+    {
+        vertices.clear();
+        transformedVertices.clear();
+        texCoords.clear();
+        Logger::Error("[TiledDrawData::GenerateTileData] tile background too big!");
+        return;
+    }
+    vertices.resize(vertexCount);
+    transformedVertices.resize(vertexCount);
+    texCoords.resize(vertexCount);
 
     int32 indecesCount = (int32)(6 * cellsHeight.size() * cellsWidth.size());
-    indeces.resize( indecesCount );
+    indeces.resize(indecesCount);
 
     int32 offsetIndex = 0;
     const float32 * textCoords = sprite->GetTextureCoordsForFrame(frame);
     Vector2 trasformOffset;
-    const Vector2 tempTexCoordsPt( textCoords[0], textCoords[1] );
-    for( uint32 row = 0; row < cellsHeight.size(); ++row )
+    const Vector2 tempTexCoordsPt(textCoords[0], textCoords[1]);
+    for (uint32 row = 0; row < cellsHeight.size(); ++row)
     {
-        Vector2 cellSize( 0.0f, cellsHeight[row].x );
-        Vector2 texCellSize( 0.0f, cellsHeight[row].y );
-        Vector2 texTrasformOffset( 0.0f, cellsHeight[row].z );
+        Vector2 cellSize(0.0f, cellsHeight[row].x);
+        Vector2 texCellSize(0.0f, cellsHeight[row].y);
+        Vector2 texTrasformOffset(0.0f, cellsHeight[row].z);
         trasformOffset.x = 0.0f;
 
-        for( uint32 column = 0; column < cellsWidth.size(); ++column, ++offsetIndex )
+        for (uint32 column = 0; column < cellsWidth.size(); ++column, ++offsetIndex)
         {
             cellSize.x = cellsWidth[column].x;
             texCellSize.x = cellsWidth[column].y;
             texTrasformOffset.x = cellsWidth[column].z;
 
-            int32 vertIndex = offsetIndex*4;
+            int32 vertIndex = offsetIndex * 4;
             vertices[vertIndex + 0] = trasformOffset;
-            vertices[vertIndex + 1] = trasformOffset + Vector2( cellSize.x, 0.0f );
-            vertices[vertIndex + 2] = trasformOffset + Vector2( 0.0f, cellSize.y );
+            vertices[vertIndex + 1] = trasformOffset + Vector2(cellSize.x, 0.0f);
+            vertices[vertIndex + 2] = trasformOffset + Vector2(0.0f, cellSize.y);
             vertices[vertIndex + 3] = trasformOffset + cellSize;
 
             const Vector2 texel = tempTexCoordsPt + texTrasformOffset;
             texCoords[vertIndex + 0] = texel;
-            texCoords[vertIndex + 1] = texel + Vector2( texCellSize.x, 0.0f );
-            texCoords[vertIndex + 2] = texel + Vector2( 0.0f, texCellSize.y );
+            texCoords[vertIndex + 1] = texel + Vector2(texCellSize.x, 0.0f);
+            texCoords[vertIndex + 2] = texel + Vector2(0.0f, texCellSize.y);
             texCoords[vertIndex + 3] = texel + texCellSize;
 
-            int32 indecesIndex = offsetIndex*6;
+            int32 indecesIndex = offsetIndex * 6;
             indeces[indecesIndex + 0] = vertIndex;
             indeces[indecesIndex + 1] = vertIndex + 1;
             indeces[indecesIndex + 2] = vertIndex + 2;
@@ -1165,29 +1171,29 @@ void TiledDrawData::GenerateAxisData( float32 size, float32 spriteSize, float32 
 
     float32 partSize = 0.0f;
 
-    if( centerSize > 0.0f )
+    if (centerSize > 0.0f)
     {
-        gridSize = (int32)ceilf( ( size - sideSize * 2.0f ) / centerSize );
+        gridSize = (int32)ceilf((size - sideSize * 2.0f) / centerSize);
         const float32 tileAreaSize = size - sideSize * 2.0f;
-        partSize = tileAreaSize - floorf( tileAreaSize / centerSize ) * centerSize;
+        partSize = tileAreaSize - floorf(tileAreaSize / centerSize) * centerSize;
     }
 
-    if( sideSize > 0.0f )
+    if (sideSize > 0.0f)
         gridSize += 2;
 
-      axisData.resize( gridSize );
+    axisData.resize(gridSize);
 
     int32 beginOffset = 0;
     int32 endOffset = 0;
-    if( sideSize > 0.0f )
+    if (sideSize > 0.0f)
     {
-        axisData.front() = Vector3( sideSize, sideTexSize, 0.0f );
-        axisData.back() = Vector3( sideSize, sideTexSize, sideTexSize + centerTexSize );
+        axisData.front() = Vector3(sideSize, sideTexSize, 0.0f);
+        axisData.back() = Vector3(sideSize, sideTexSize, sideTexSize + centerTexSize);
         beginOffset = 1;
         endOffset = 1;
     }
 
-    if( partSize > 0.0f )
+    if (partSize > 0.0f)
     {
         ++endOffset;
         const int32 index = gridSize - endOffset;
@@ -1196,9 +1202,9 @@ void TiledDrawData::GenerateAxisData( float32 size, float32 spriteSize, float32 
         axisData[index].z = sideTexSize;
     }
 
-    if( centerSize > 0.0f )
+    if (centerSize > 0.0f)
     {
-        std::fill( axisData.begin() + beginOffset, axisData.begin() + gridSize - endOffset, Vector3( centerSize, centerTexSize, sideTexSize ) );
+        std::fill(axisData.begin() + beginOffset, axisData.begin() + gridSize - endOffset, Vector3(centerSize, centerTexSize, sideTexSize));
     }
 }
 
