@@ -98,18 +98,18 @@ void VboPool::Next()
     currentDataObject = dataObjects[currentDataObjectIndex];
 }
 
-void VboPool::SetVertexData(uint32 count, float32* data)
+void VboPool::SetVertexData(uint32 offset, uint32 count, float32* data)
 {
     currentDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, vertexStride, data);
     currentDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, data + 3);
     currentDataObject->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, vertexStride, data + 5);
-    currentDataObject->UpdateVertexBuffer(0, count);
+    currentDataObject->UpdateVertexBuffer(offset, count);
 }
 
-void VboPool::SetIndexData(uint32 count, uint8* data)
+void VboPool::SetIndexData(uint32 offset, uint32 count, uint8* data)
 {
     currentDataObject->SetIndices(EIF_16, data, count);
-    currentDataObject->UpdateIndexBuffer(0);
+    currentDataObject->UpdateIndexBuffer(offset);
 }
 
 RenderSystem2D::RenderSystem2D() 
@@ -119,6 +119,8 @@ RenderSystem2D::RenderSystem2D()
     , spriteTexCoordStream(0)
     , spriteClipping(true)
     , clipChanged(false)
+    , vboTemp(NULL)
+    , iboTemp(NULL)
 {
 }
 
@@ -128,8 +130,8 @@ void RenderSystem2D::Init()
     if(!pool)
     {
         pool = new VboPool(MAX_VERTEXES, VBO_POOL_SIZE);
-        vertexBufferTmp.resize(MAX_VERTEXES * GetVertexSize(VboPool::vertexFormat));
-        indexBufferTmp.resize(MAX_INDECES);
+        vboTemp = new float32[MAX_VERTEXES * GetVertexSize(VboPool::vertexFormat)];
+        iboTemp = new uint16[MAX_INDECES];
     }
 #else
     if (!spriteRenderObject) //used as flag 'isInited'
@@ -204,6 +206,8 @@ void RenderSystem2D::Init()
 RenderSystem2D::~RenderSystem2D()
 {
     SafeDelete(pool);
+    SafeDeleteArray(vboTemp);
+    SafeDeleteArray(iboTemp);
     SafeRelease(spriteRenderObject);
 
     SafeRelease(FLAT_COLOR);
@@ -418,8 +422,8 @@ void RenderSystem2D::Flush()
 
     spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLELIST;
 
-    pool->SetVertexData(vertexIndex, &vertexBufferTmp[0]);
-    pool->SetIndexData(indexIndex, (uint8*)&indexBufferTmp[0]);
+    pool->SetVertexData(0, vertexIndex, vboTemp);
+    pool->SetIndexData(0, indexIndex, (uint8*)iboTemp);
     
     RenderManager::Instance()->SetRenderData(pool->GetRenderDataObject());
 
@@ -467,21 +471,20 @@ void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader*
 
     uint32 vi = vertexIndex * 6;
     uint32 ii = indexIndex;
-    
     for (uint32 i = 0; i < vertexCount; ++i)
     {
-        vertexBufferTmp[vi++] = vertexPointer[i * 2];
-        vertexBufferTmp[vi++] = vertexPointer[i * 2 + 1];
-        vertexBufferTmp[vi++] = 0.f; // axe Z, empty but need for EVF_VERTEX format
-        vertexBufferTmp[vi++] = texCoordPointer[i * 2];
-        vertexBufferTmp[vi++] = texCoordPointer[i * 2 + 1];
-        *(uint32*)(&vertexBufferTmp[vi++]) = color.GetRGBA();
+        vboTemp[vi++] = vertexPointer[i * 2];
+        vboTemp[vi++] = vertexPointer[i * 2 + 1];
+        vboTemp[vi++] = 0.f; // axe Z, empty but need for EVF_VERTEX format
+        vboTemp[vi++] = texCoordPointer[i * 2];
+        vboTemp[vi++] = texCoordPointer[i * 2 + 1];
+        *(uint32*)(&vboTemp[vi++]) = color.GetRGBA();
     }
     for (uint32 i = 0; i < indexCount; ++i)
     {
-        indexBufferTmp[ii++] = vertexIndex + indexPointer[i];
+        iboTemp[ii++] = vertexIndex + indexPointer[i];
     }
-
+    
     if (currentBatch.renderState != state
         || currentBatch.textureHandle != texture
         || currentBatch.shader != convShader
