@@ -29,12 +29,11 @@ public:
         enum ProgType { PROG_VERTEX, PROG_FRAGMENT };
 
                             ConstBuf()
-                              : uid(nil),
-                                index(InvalidIndex),
+                              : index(InvalidIndex),
                                 count(0),
                                 data(0),
-                                data_offset(0),
-                                isDynamic(false)
+                                inst_offset(0),
+                                inst_valid(false)
                             {}
                             ~ConstBuf()
                             {
@@ -53,12 +52,12 @@ public:
     private:        
 
         ProgType            type;
-        id<MTLBuffer>       uid;
         unsigned            index;
         unsigned            count;
-        mutable float*      data;
-        mutable unsigned    data_offset;
-        mutable uint32      isDynamic:1;
+        float*              data;
+        mutable float*      inst;
+        mutable unsigned    inst_offset;
+        mutable uint32      inst_valid:1;
     };
 
     struct
@@ -240,13 +239,13 @@ bool
 PipelineStateMetal_t::ConstBuf::Construct( PipelineStateMetal_t::ConstBuf::ProgType ptype, unsigned buf_i, unsigned cnt )
 {
     type        = ptype;
-    uid         = [_Metal_Device newBufferWithLength:cnt*4*sizeof(float) options:MTLResourceOptionCPUCacheModeDefault];
     index       = buf_i;
     count       = cnt;
-    data        = (float*)uid.contents;
-    data_offset = 0;
-    isDynamic   = false;
-    
+    data        = (float*)::malloc( cnt*4*sizeof(float) );
+    inst        = 0;
+    inst_offset = 0;
+    inst_valid  = false;
+
     return true;
 }
 
@@ -256,9 +255,17 @@ PipelineStateMetal_t::ConstBuf::Construct( PipelineStateMetal_t::ConstBuf::ProgT
 void
 PipelineStateMetal_t::ConstBuf::Destroy()
 {
-    data  = 0;
-    index = InvalidIndex;
-    count = 0;
+    if( data )
+    {
+        ::free( data );
+        data = 0;
+    }
+    
+    index       = InvalidIndex;
+    count       = 0;
+    inst        = 0;
+    inst_offset = 0;
+    inst_valid  = false;
 }
 
 
@@ -281,6 +288,8 @@ PipelineStateMetal_t::ConstBuf::SetConst( unsigned const_i, unsigned const_count
     if( const_i + const_count <= count )
     {
         memcpy( data + const_i*4, cdata, const_count*4*sizeof(float) );
+        inst_valid = false;
+        success    = true;
     }
 
     return success;
@@ -292,27 +301,19 @@ PipelineStateMetal_t::ConstBuf::SetConst( unsigned const_i, unsigned const_count
 void
 PipelineStateMetal_t::ConstBuf::SetToRHI( unsigned bufIndex, id<MTLRenderCommandEncoder> ce ) const
 {
-    id<MTLBuffer>   buf    = uid;
-    unsigned        offset = data_offset;
-
-    if( isDynamic )
+    id<MTLBuffer>   buf = DefaultConstRingBuffer.BufferUID();
+    
+    if( !inst_valid )
     {
-        float*      old_data    = data;
-        unsigned    new_offset  = 0;
-        float*      new_data    = DefaultConstRingBuffer.Alloc( count*4*sizeof(float), &new_offset );
-
-        memcpy( new_data, old_data, 4*count*sizeof(float) );
-
-        data        = new_data;
-        data_offset = new_offset;
-        
-        buf         = DefaultConstRingBuffer.BufferUID();
+        inst = DefaultConstRingBuffer.Alloc( count*4*sizeof(float), &inst_offset );
+        memcpy( inst, data, count*4*sizeof(float) );
+        inst_valid = true;
     }
 
     if( type == PROG_VERTEX )
-        [ce setVertexBuffer:buf offset:offset atIndex:1+bufIndex]; // CRAP: vprog-buf#0 assumed to be vdata
+        [ce setVertexBuffer:buf offset:inst_offset atIndex:1+bufIndex]; // CRAP: vprog-buf#0 assumed to be vdata
     else
-        [ce setFragmentBuffer:buf offset:offset atIndex:bufIndex];
+        [ce setFragmentBuffer:buf offset:inst_offset atIndex:bufIndex];
 }
 
     
@@ -479,6 +480,7 @@ InitializeRingBuffer( uint32 size )
 {
     DefaultConstRingBuffer.Initialize( size );
 }
+
 
 void
 SetToRHI( Handle buf, unsigned bufIndex, id<MTLRenderCommandEncoder> ce )
