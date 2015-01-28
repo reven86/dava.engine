@@ -52,7 +52,7 @@ private:
 
 	void Start();
 	bool Process();
-	void Finish();
+	void Finish(bool canceled);
 
 	void PackLightmaps();
 	DAVA::FilePath GetLightmapDirectoryPath();

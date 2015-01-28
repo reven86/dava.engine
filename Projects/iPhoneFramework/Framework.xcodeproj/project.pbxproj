@@ -1116,6 +1116,8 @@
 		CCEB543D1886FF0C0018491F /* LodToLod2Converter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB54391886FF0C0018491F /* LodToLod2Converter.h */; };
 		CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */; };
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
+		CCF00D691A443F6200A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D671A443F6200A577C2 /* EntityFamily.cpp */; };
+		CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = CCF00D681A443F6200A577C2 /* EntityFamily.h */; };
 		D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D7CC265D19C517E500A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC264F19C517E500A3B754 /* LocalNotification.cpp */; };
@@ -1192,6 +1194,30 @@
 		E84B1A6B19FA394700E4D4BC /* UITextFieldHolder.mm in Sources */ = {isa = PBXBuildFile; fileRef = E84B1A6719FA394700E4D4BC /* UITextFieldHolder.mm */; };
 		E84E5BE71988D99000686C14 /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E84E5BE61988D99000686C14 /* OGLHelpers.cpp */; };
 		E84E5BE81988D99200686C14 /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E84E5BE61988D99000686C14 /* OGLHelpers.cpp */; };
+		E8525D141A30910400FDF76E /* RotationControllerComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D0E1A30910400FDF76E /* RotationControllerComponent.cpp */; };
+		E8525D151A30910400FDF76E /* RotationControllerComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D0E1A30910400FDF76E /* RotationControllerComponent.cpp */; };
+		E8525D161A30910400FDF76E /* RotationControllerComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D0F1A30910400FDF76E /* RotationControllerComponent.h */; };
+		E8525D171A30910400FDF76E /* RotationControllerComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D0F1A30910400FDF76E /* RotationControllerComponent.h */; };
+		E8525D181A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D101A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp */; };
+		E8525D191A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D101A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp */; };
+		E8525D1A1A30910400FDF76E /* SnapToLandscapeControllerComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D111A30910400FDF76E /* SnapToLandscapeControllerComponent.h */; };
+		E8525D1B1A30910400FDF76E /* SnapToLandscapeControllerComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D111A30910400FDF76E /* SnapToLandscapeControllerComponent.h */; };
+		E8525D1C1A30910400FDF76E /* WASDControllerComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D121A30910400FDF76E /* WASDControllerComponent.cpp */; };
+		E8525D1D1A30910400FDF76E /* WASDControllerComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D121A30910400FDF76E /* WASDControllerComponent.cpp */; };
+		E8525D1E1A30910400FDF76E /* WASDControllerComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D131A30910400FDF76E /* WASDControllerComponent.h */; };
+		E8525D1F1A30910400FDF76E /* WASDControllerComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D131A30910400FDF76E /* WASDControllerComponent.h */; };
+		E8525D271A30911400FDF76E /* RotationControllerSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D211A30911400FDF76E /* RotationControllerSystem.cpp */; };
+		E8525D281A30911400FDF76E /* RotationControllerSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D211A30911400FDF76E /* RotationControllerSystem.cpp */; };
+		E8525D291A30911400FDF76E /* RotationControllerSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D221A30911400FDF76E /* RotationControllerSystem.h */; };
+		E8525D2A1A30911400FDF76E /* RotationControllerSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D221A30911400FDF76E /* RotationControllerSystem.h */; };
+		E8525D2B1A30911400FDF76E /* SnapToLandscapeControllerSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D231A30911400FDF76E /* SnapToLandscapeControllerSystem.cpp */; };
+		E8525D2C1A30911400FDF76E /* SnapToLandscapeControllerSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D231A30911400FDF76E /* SnapToLandscapeControllerSystem.cpp */; };
+		E8525D2D1A30911400FDF76E /* SnapToLandscapeControllerSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D241A30911400FDF76E /* SnapToLandscapeControllerSystem.h */; };
+		E8525D2E1A30911400FDF76E /* SnapToLandscapeControllerSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D241A30911400FDF76E /* SnapToLandscapeControllerSystem.h */; };
+		E8525D2F1A30911400FDF76E /* WASDControllerSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D251A30911400FDF76E /* WASDControllerSystem.cpp */; };
+		E8525D301A30911400FDF76E /* WASDControllerSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8525D251A30911400FDF76E /* WASDControllerSystem.cpp */; };
+		E8525D311A30911400FDF76E /* WASDControllerSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D261A30911400FDF76E /* WASDControllerSystem.h */; };
+		E8525D321A30911400FDF76E /* WASDControllerSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8525D261A30911400FDF76E /* WASDControllerSystem.h */; };
 		E8586C4119F8FEBA004FD709 /* BackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = E8586C3F19F8FEBA004FD709 /* BackgroundView.h */; };
 		E8586C4219F8FEBA004FD709 /* BackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = E8586C3F19F8FEBA004FD709 /* BackgroundView.h */; };
 		E8586C4319F8FEBA004FD709 /* BackgroundView.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8586C4019F8FEBA004FD709 /* BackgroundView.mm */; };
@@ -2063,6 +2089,8 @@
 		CCEB54391886FF0C0018491F /* LodToLod2Converter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LodToLod2Converter.h; sourceTree = "<group>"; };
 		CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SwitchToRenerObjectConverter.cpp; sourceTree = "<group>"; };
 		CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchToRenerObjectConverter.h; sourceTree = "<group>"; };
+		CCF00D671A443F6200A577C2 /* EntityFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityFamily.cpp; sourceTree = "<group>"; };
+		CCF00D681A443F6200A577C2 /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D751821719BF03E400BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
 		D7CC264F19C517E500A3B754 /* LocalNotification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotification.cpp; sourceTree = "<group>"; };
@@ -2107,6 +2135,18 @@
 		E84B1A6619FA394700E4D4BC /* UITextFieldHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldHolder.h; sourceTree = "<group>"; };
 		E84B1A6719FA394700E4D4BC /* UITextFieldHolder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldHolder.mm; sourceTree = "<group>"; };
 		E84E5BE61988D99000686C14 /* OGLHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLHelpers.cpp; sourceTree = "<group>"; };
+		E8525D0E1A30910400FDF76E /* RotationControllerComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RotationControllerComponent.cpp; sourceTree = "<group>"; };
+		E8525D0F1A30910400FDF76E /* RotationControllerComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RotationControllerComponent.h; sourceTree = "<group>"; };
+		E8525D101A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SnapToLandscapeControllerComponent.cpp; sourceTree = "<group>"; };
+		E8525D111A30910400FDF76E /* SnapToLandscapeControllerComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SnapToLandscapeControllerComponent.h; sourceTree = "<group>"; };
+		E8525D121A30910400FDF76E /* WASDControllerComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WASDControllerComponent.cpp; sourceTree = "<group>"; };
+		E8525D131A30910400FDF76E /* WASDControllerComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WASDControllerComponent.h; sourceTree = "<group>"; };
+		E8525D211A30911400FDF76E /* RotationControllerSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RotationControllerSystem.cpp; sourceTree = "<group>"; };
+		E8525D221A30911400FDF76E /* RotationControllerSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RotationControllerSystem.h; sourceTree = "<group>"; };
+		E8525D231A30911400FDF76E /* SnapToLandscapeControllerSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SnapToLandscapeControllerSystem.cpp; sourceTree = "<group>"; };
+		E8525D241A30911400FDF76E /* SnapToLandscapeControllerSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SnapToLandscapeControllerSystem.h; sourceTree = "<group>"; };
+		E8525D251A30911400FDF76E /* WASDControllerSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WASDControllerSystem.cpp; sourceTree = "<group>"; };
+		E8525D261A30911400FDF76E /* WASDControllerSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WASDControllerSystem.h; sourceTree = "<group>"; };
 		E8586C3F19F8FEBA004FD709 /* BackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BackgroundView.h; sourceTree = "<group>"; };
 		E8586C4019F8FEBA004FD709 /* BackgroundView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BackgroundView.mm; sourceTree = "<group>"; };
 		E8586C4519F924D1004FD709 /* NativeViewPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NativeViewPool.h; sourceTree = "<group>"; };
@@ -2971,6 +3011,32 @@
 			path = bsdiff;
 			sourceTree = "<group>";
 		};
+		E8525D0D1A30910400FDF76E /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				E8525D0E1A30910400FDF76E /* RotationControllerComponent.cpp */,
+				E8525D0F1A30910400FDF76E /* RotationControllerComponent.h */,
+				E8525D101A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp */,
+				E8525D111A30910400FDF76E /* SnapToLandscapeControllerComponent.h */,
+				E8525D121A30910400FDF76E /* WASDControllerComponent.cpp */,
+				E8525D131A30910400FDF76E /* WASDControllerComponent.h */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
+		E8525D201A30911400FDF76E /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				E8525D211A30911400FDF76E /* RotationControllerSystem.cpp */,
+				E8525D221A30911400FDF76E /* RotationControllerSystem.h */,
+				E8525D231A30911400FDF76E /* SnapToLandscapeControllerSystem.cpp */,
+				E8525D241A30911400FDF76E /* SnapToLandscapeControllerSystem.h */,
+				E8525D251A30911400FDF76E /* WASDControllerSystem.cpp */,
+				E8525D261A30911400FDF76E /* WASDControllerSystem.h */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
 		E8B3C7A116B9326D002BD35F /* Animation */ = {
 			isa = PBXGroup;
 			children = (
@@ -3639,6 +3705,8 @@
 		E8B3C9A316B9326E002BD35F /* Scene3D */ = {
 			isa = PBXGroup;
 			children = (
+				CCF00D671A443F6200A577C2 /* EntityFamily.cpp */,
+				CCF00D681A443F6200A577C2 /* EntityFamily.h */,
 				CCEB54371886FF0C0018491F /* Converters */,
 				A695E52F18113327008A0F20 /* SceneFile */,
 				11CB614719C338DF00B48A92 /* AnimationData.cpp */,
@@ -3709,6 +3777,7 @@
 		E8B3C9AC16B9326E002BD35F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				E8525D0D1A30910400FDF76E /* Controller */,
 				026A1DDE19DAF24A00813AEF /* SkeletonComponent.cpp */,
 				026A1DDF19DAF24A00813AEF /* SkeletonComponent.h */,
 				1146E10C19D0066F009E5FAB /* AnimationComponent.cpp */,
@@ -3760,6 +3829,7 @@
 		E8B3C9FD16B9326E002BD35F /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				E8525D201A30911400FDF76E /* Controller */,
 				026A1DE419DAF25700813AEF /* SkeletonSystem.cpp */,
 				026A1DE519DAF25700813AEF /* SkeletonSystem.h */,
 				1146E10619D00649009E5FAB /* AnimationSystem.cpp */,
@@ -4213,6 +4283,7 @@
 				32B074C419E53C0C0069981A /* UIPackage.h in Headers */,
 				64493E0919476F4700AB2715 /* VegetationFixedGeometry.h in Headers */,
 				64493DFD19476F4700AB2715 /* VegetationCustomGeometry.h in Headers */,
+				E8525D321A30911400FDF76E /* WASDControllerSystem.h in Headers */,
 				02FD7FB51924997C007762C0 /* IRenderUpdatable.h in Headers */,
 				02FD7FB61924997C007762C0 /* LandscapeChunk.h in Headers */,
 				17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */,
@@ -4224,6 +4295,7 @@
 				02FD7FBC1924997C007762C0 /* RenderLayer.h in Headers */,
 				02FD7FBD1924997C007762C0 /* PixelFormatDescriptor.h in Headers */,
 				02FD7FBE1924997C007762C0 /* RenderObject.h in Headers */,
+				E8525D2A1A30911400FDF76E /* RotationControllerSystem.h in Headers */,
 				02FD7FBF1924997C007762C0 /* RenderPass.h in Headers */,
 				02FD7FC01924997C007762C0 /* RenderSystem.h in Headers */,
 				02FD7FC11924997C007762C0 /* ShadowRect.h in Headers */,
@@ -4247,6 +4319,7 @@
 				02FD7FD71924997C007762C0 /* RenderGrayscaleEffect.h in Headers */,
 				02FD7FD81924997C007762C0 /* RenderHelper.h in Headers */,
 				02FD7FDA1924997C007762C0 /* RenderManager.h in Headers */,
+				E8525D2E1A30911400FDF76E /* SnapToLandscapeControllerSystem.h in Headers */,
 				02FD7FDB1924997C007762C0 /* VisibilityArray.h in Headers */,
 				02FD7FDC1924997C007762C0 /* RenderOptions.h in Headers */,
 				02FD7FDD1924997C007762C0 /* RenderResource.h in Headers */,
@@ -4310,6 +4383,7 @@
 				02FD80171924997C007762C0 /* BaseProcessSystem.h in Headers */,
 				02FD80181924997C007762C0 /* DebugRenderSystem.h in Headers */,
 				02FD80191924997C007762C0 /* EventSystem.h in Headers */,
+				E8525D171A30910400FDF76E /* RotationControllerComponent.h in Headers */,
 				D7CC266819C517E500A3B754 /* LocalNotificationController.h in Headers */,
 				02AD131919767DFB00567AD2 /* VersionInfo.h in Headers */,
 				02FD801A1924997C007762C0 /* LightUpdateSystem.h in Headers */,
@@ -4386,6 +4460,7 @@
 				02FD80531924997C007762C0 /* ParticleForce.h in Headers */,
 				02FD80541924997C007762C0 /* AutotestingSystemLua.h in Headers */,
 				D7FEF14E19864E5C00B2C7AF /* DownloadManager.h in Headers */,
+				E8525D1F1A30910400FDF76E /* WASDControllerComponent.h in Headers */,
 				02FD80551924997C007762C0 /* IWebViewControl.h in Headers */,
 				02FD80561924997C007762C0 /* UIWebView.h in Headers */,
 				02FD80571924997C007762C0 /* WebViewControliOS.h in Headers */,
@@ -4428,6 +4503,7 @@
 				02FD80771924997C007762C0 /* ActionUpdateSystem.h in Headers */,
 				02FD80781924997C007762C0 /* CRC32.h in Headers */,
 				02FD80791924997C007762C0 /* MaterialOptimazer.h in Headers */,
+				E8525D1B1A30910400FDF76E /* SnapToLandscapeControllerComponent.h in Headers */,
 				17675C1E19472C1400054F8F /* ImageConvert.h in Headers */,
 				02FD807A1924997C007762C0 /* SkyboxSystem.h in Headers */,
 				02FD807B1924997C007762C0 /* AllocatorFactory.h in Headers */,
@@ -4485,6 +4561,7 @@
 				50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */,
 				E8B3CA9516B9326E002BD35F /* MongodbUpdateObject.h in Headers */,
 				E8B3CA9916B9326E002BD35F /* BaseMath.h in Headers */,
+				E8525D161A30910400FDF76E /* RotationControllerComponent.h in Headers */,
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
 				E8B3CA9D16B9326E002BD35F /* BaseObjectChecker.h in Headers */,
 				E8B3CA9E16B9326E002BD35F /* BaseTypes.h in Headers */,
@@ -4548,6 +4625,7 @@
 				EA10607918892B7C00CB99A3 /* ParticleRenderObject.h in Headers */,
 				A69C939A186C377C00EAC8BC /* RenderTechnique.h in Headers */,
 				E8B3CAED16B9326E002BD35F /* DoxygenDocumenation.h in Headers */,
+				E8525D311A30911400FDF76E /* WASDControllerSystem.h in Headers */,
 				E8B3CAEF16B9326E002BD35F /* Component.h in Headers */,
 				E8B3CAF116B9326E002BD35F /* SceneSystem.h in Headers */,
 				E8B3CB1116B9326E002BD35F /* Bitstream.h in Headers */,
@@ -4614,6 +4692,7 @@
 				024BD5BB1A2C9299000BECC1 /* RenderSystem2D.h in Headers */,
 				64493E1A19476F4700AB2715 /* VegetationRenderObject.h in Headers */,
 				64493E0E19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
+				CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */,
 				E8B3CB6016B9326E002BD35F /* RectPacker.h in Headers */,
 				E8B3CB6116B9326E002BD35F /* Sphere.h in Headers */,
 				E8983CC618C8A540002FB974 /* ES3Renderer.h in Headers */,
@@ -4721,6 +4800,7 @@
 				E8B3CC5116B9326E002BD35F /* Box2DGameObject.h in Headers */,
 				E8B3CC5316B9326E002BD35F /* Box2DGameObjectManager.h in Headers */,
 				E8B3CC5516B9326E002BD35F /* Box2DHelper.h in Headers */,
+				E8525D291A30911400FDF76E /* RotationControllerSystem.h in Headers */,
 				4F25831319BDC94000C28926 /* TypeHolders.h in Headers */,
 				E8B3CC5716B9326E002BD35F /* Box2DTileCollider.h in Headers */,
 				64493DFC19476F4700AB2715 /* VegetationCustomGeometry.h in Headers */,
@@ -4765,6 +4845,7 @@
 				02FD7EBE19237D33007762C0 /* WindComponent.h in Headers */,
 				E8B3CCA616B9326E002BD35F /* SceneManager.h in Headers */,
 				D7FEF15719864E5C00B2C7AF /* BSDiff.h in Headers */,
+				E8525D2D1A30911400FDF76E /* SnapToLandscapeControllerSystem.h in Headers */,
 				E8586C4719F924D1004FD709 /* NativeViewPool.h in Headers */,
 				E8B3CCAA16B9326E002BD35F /* SceneNodeAnimation.h in Headers */,
 				E8B3CCAC16B9326E002BD35F /* SceneNodeAnimationKey.h in Headers */,
@@ -4905,11 +4986,13 @@
 				17DC600C17DE16D40075813E /* UIMovieView.h in Headers */,
 				17DC601017DE18460075813E /* MovieViewControliOS.h in Headers */,
 				EA84E17617FAC20100304C3C /* SpatialTree.h in Headers */,
+				E8525D1A1A30910400FDF76E /* SnapToLandscapeControllerComponent.h in Headers */,
 				02D4CFC118055E29007EC9EC /* FMODSoundEvent.h in Headers */,
 				02C4E8CD18154E520052803E /* AutotestingDB.h in Headers */,
 				02C4E8CE18154E520052803E /* GameAPI.h in Headers */,
 				A695E52618113195008A0F20 /* ShaderCache.h in Headers */,
 				A695E52C18113315008A0F20 /* RenderBatchArray.h in Headers */,
+				E8525D1E1A30910400FDF76E /* WASDControllerComponent.h in Headers */,
 				A695E52E18113315008A0F20 /* RenderHierarchy.h in Headers */,
 				A695E53318113327008A0F20 /* SerializationContext.h in Headers */,
 				A6919536183A6E9B00D598AE /* RenderStateData.h in Headers */,
@@ -5162,6 +5245,7 @@
 				02FD810F1924997C007762C0 /* RenderBatch.cpp in Sources */,
 				02FD81101924997C007762C0 /* RenderLayer.cpp in Sources */,
 				026A1DE719DAF25700813AEF /* SkeletonSystem.cpp in Sources */,
+				E8525D301A30911400FDF76E /* WASDControllerSystem.cpp in Sources */,
 				02FD81111924997C007762C0 /* StaticOcclusion.cpp in Sources */,
 				02FD81131924997C007762C0 /* RenderObject.cpp in Sources */,
 				02FD81141924997C007762C0 /* RenderPass.cpp in Sources */,
@@ -5277,8 +5361,10 @@
 				02FD81771924997C007762C0 /* LodSystem.cpp in Sources */,
 				17675C2019472C1400054F8F /* ImageSystem.cpp in Sources */,
 				02FD81781924997C007762C0 /* ParticleEffectSystem.cpp in Sources */,
+				E8525D1D1A30910400FDF76E /* WASDControllerComponent.cpp in Sources */,
 				02FD81791924997C007762C0 /* RenderUpdateSystem.cpp in Sources */,
 				02FD817A1924997C007762C0 /* SwitchSystem.cpp in Sources */,
+				E8525D191A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp in Sources */,
 				02FD817B1924997C007762C0 /* TransformSystem.cpp in Sources */,
 				026A1DE119DAF24A00813AEF /* SkeletonComponent.cpp in Sources */,
 				02FD817C1924997C007762C0 /* UserNode.cpp in Sources */,
@@ -5305,12 +5391,14 @@
 				02FD818E1924997C007762C0 /* UIListCell.cpp in Sources */,
 				02FD818F1924997C007762C0 /* UILoadingTransition.cpp in Sources */,
 				02FD81901924997C007762C0 /* UIMoveInTransition.cpp in Sources */,
+				E8525D281A30911400FDF76E /* RotationControllerSystem.cpp in Sources */,
 				02FD81911924997C007762C0 /* UIPopup.cpp in Sources */,
 				02FD81921924997C007762C0 /* UIScreen.cpp in Sources */,
 				02FD81931924997C007762C0 /* UIScreenManageriPhone.mm in Sources */,
 				02FD81941924997C007762C0 /* UIScreenManageriPhoneImpl.mm in Sources */,
 				17675C2819472C1400054F8F /* LibPVRHelper.cpp in Sources */,
 				02FD81951924997C007762C0 /* StaticOcclusionRenderPass.cpp in Sources */,
+				E8525D2C1A30911400FDF76E /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				02FD81961924997C007762C0 /* UIScreenTransition.cpp in Sources */,
 				02FD81981924997C007762C0 /* UIScrollBar.cpp in Sources */,
 				02FD81991924997C007762C0 /* UISlider.cpp in Sources */,
@@ -5360,6 +5448,7 @@
 				02FD81C31924997C007762C0 /* Landscape.cpp in Sources */,
 				02FD81C41924997C007762C0 /* RenderState.cpp in Sources */,
 				02FD81C51924997C007762C0 /* Entity.cpp in Sources */,
+				E8525D151A30910400FDF76E /* RotationControllerComponent.cpp in Sources */,
 				02FD81C61924997C007762C0 /* UpdateSystem.cpp in Sources */,
 				02E9B4CA19407C4B001DBDDF /* SpeedTreeUpdateSystem.cpp in Sources */,
 				02FD81C71924997C007762C0 /* DeviceInfoiOS.mm in Sources */,
@@ -5487,6 +5576,7 @@
 				64493E0A19476F4700AB2715 /* VegetationGeometry.cpp in Sources */,
 				E8B3CB3E16B9326E002BD35F /* InputSystem.cpp in Sources */,
 				E8B3CB4016B9326E002BD35F /* KeyboardDevice.cpp in Sources */,
+				CCF00D691A443F6200A577C2 /* EntityFamily.cpp in Sources */,
 				029BAE591859C80500478671 /* musicios.mm in Sources */,
 				64493E1019476F4700AB2715 /* VegetationPropertyNames.cpp in Sources */,
 				E8B3CB4216B9326E002BD35F /* AABBox2.cpp in Sources */,
@@ -5603,6 +5693,7 @@
 				E8B3CC4B16B9326E002BD35F /* UberShader.cpp in Sources */,
 				E8B3CC4E16B9326E002BD35F /* Box2DDebugDraw.cpp in Sources */,
 				D7CC267519C517E500A3B754 /* LocalNotificationText.cpp in Sources */,
+				E8525D141A30910400FDF76E /* RotationControllerComponent.cpp in Sources */,
 				E8B3CC5016B9326E002BD35F /* Box2DGameObject.cpp in Sources */,
 				E8B3CC5216B9326E002BD35F /* Box2DGameObjectManager.cpp in Sources */,
 				E8B3CC5416B9326E002BD35F /* Box2DHelper.cpp in Sources */,
@@ -5621,6 +5712,7 @@
 				E8B3CC6C16B9326E002BD35F /* DebugRenderComponent.cpp in Sources */,
 				E8B3CC6E16B9326E002BD35F /* LightComponent.cpp in Sources */,
 				E8B3CC7016B9326E002BD35F /* LodComponent.cpp in Sources */,
+				E8525D2F1A30911400FDF76E /* WASDControllerSystem.cpp in Sources */,
 				A611714D1860C2A500E18F8C /* StaticOcclusionSystem.cpp in Sources */,
 				E8983CC718C8A540002FB974 /* ES3Renderer.mm in Sources */,
 				E8B3CC7216B9326E002BD35F /* ParticleEffectComponent.cpp in Sources */,
@@ -5686,6 +5778,7 @@
 				E8B3CCF516B9326E002BD35F /* UIEvent.cpp in Sources */,
 				E8B3CCF716B9326E002BD35F /* UIFadeTransition.cpp in Sources */,
 				E8B3CCF916B9326E002BD35F /* UIFileSystemDialog.cpp in Sources */,
+				E8525D271A30911400FDF76E /* RotationControllerSystem.cpp in Sources */,
 				E8B3CCFB16B9326E002BD35F /* UIHierarchy.cpp in Sources */,
 				E8B3CCFD16B9326E002BD35F /* UIHierarchyCell.cpp in Sources */,
 				E8B3CCFF16B9326E002BD35F /* UIHierarchyNode.cpp in Sources */,
@@ -5737,10 +5830,12 @@
 				17F53E3516D3705E004D5099 /* WebViewControliOS.mm in Sources */,
 				840ED3C916D506F900D2BA6C /* DPIHelperiOS.mm in Sources */,
 				CC247FF116D69F1700183D40 /* DVAssertMessage.cpp in Sources */,
+				E8525D1C1A30910400FDF76E /* WASDControllerComponent.cpp in Sources */,
 				D7CC266919C517E500A3B754 /* LocalNotificationIOS.cpp in Sources */,
 				CC247FF316D69F1700183D40 /* DVAssertMessageApple.mm in Sources */,
 				CC247FF516D69F1700183D40 /* UIAlertView_Modal.m in Sources */,
 				64493E0619476F4700AB2715 /* VegetationFixedGeometry.cpp in Sources */,
+				E8525D181A30910400FDF76E /* SnapToLandscapeControllerComponent.cpp in Sources */,
 				A6AFDEDA187187D3006E43A1 /* RenderPassManager.cpp in Sources */,
 				CC24801516DD17F300183D40 /* UserComponent.cpp in Sources */,
 				11CB614919C338DF00B48A92 /* AnimationData.cpp in Sources */,
@@ -5786,6 +5881,7 @@
 				A66BC2F117AB98E800B6252E /* SkyboxSystem.cpp in Sources */,
 				17816B8017B2748900B067E1 /* AllocatorFactory.cpp in Sources */,
 				A679102917B3CF2D000AA2F2 /* SkyboxRenderObject.cpp in Sources */,
+				E8525D2B1A30911400FDF76E /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				17D7E5F717A6C06B00861981 /* UIDismissionHandlerAlertView.mm in Sources */,
 				EA56555317CE00E100426EB8 /* PerformanceSettings.cpp in Sources */,
 				E8C0A6FA17D5D8B300F8F93C /* UIScrollView.cpp in Sources */,
@@ -6008,13 +6104,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv7,
-					armv7s,
-					arm64,
-					i386,
-				);
-				CLANG_CXX_LIBRARY = "compiler-default";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6054,7 +6143,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
@@ -6071,7 +6159,6 @@
 					arm64,
 					i386,
 				);
-				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6108,7 +6195,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
@@ -6118,7 +6204,14 @@
 		1DEB922308733DC00010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				ARCHS = (
+					i386,
+					arm64,
+					armv7s,
+					armv7,
+				);
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6143,7 +6236,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
@@ -6164,7 +6257,14 @@
 		1DEB922408733DC00010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				ARCHS = (
+					i386,
+					arm64,
+					armv7s,
+					armv7,
+				);
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6188,7 +6288,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6208,7 +6308,14 @@
 		785662DF109B65FE00DAF688 /* AdHoc */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				ARCHS = (
+					i386,
+					arm64,
+					armv7s,
+					armv7,
+				);
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6232,7 +6339,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6259,7 +6366,6 @@
 					arm64,
 					i386,
 				);
-				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6291,7 +6397,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
@@ -6301,7 +6406,14 @@
 		FEFB031611CA5F1B00B65B8B /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				ARCHS = (
+					i386,
+					arm64,
+					armv7s,
+					armv7,
+				);
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -6325,7 +6437,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -6352,7 +6464,6 @@
 					arm64,
 					i386,
 				);
-				CLANG_CXX_LIBRARY = "compiler-default";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
@@ -6384,7 +6495,6 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 				VALID_ARCHS = "armv7 armv7s arm64 i386 ";

@@ -172,6 +172,8 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 
     Sprite::DrawState drawState;
     drawState.SetPosition(rect.x, rect.y);
+    
+    RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(sprite, &drawState);
 	
     RenderSystem2D::Instance()->ClipPop();

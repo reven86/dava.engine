@@ -37,8 +37,8 @@ namespace DAVA
 {
 
 ImposterManager::ImposterManager(Scene * _scene)
-:	scene(_scene),
-	sharedFBO(0)
+    :	sharedFBO(0)
+    ,   scene(_scene)
 {
 	CreateFBO();
 }

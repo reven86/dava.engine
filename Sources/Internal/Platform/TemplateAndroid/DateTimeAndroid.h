@@ -31,25 +31,23 @@
 #ifndef __FRAMEWORK__DATETIMEANDROID__
 #define __FRAMEWORK__DATETIMEANDROID__
 
-#include "JniExtensions.h"
 #include "Base/BaseTypes.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 
-class JniDateTime: public JniExtension
+class JniDateTime
 {
 public:
+    JniDateTime();
 	WideString AsWString(const WideString& format, const String& countryCode, long timeStamp, int tzOffset);
 	int GetLocalTimeZoneOffset();
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+private:
+	JNI::JavaClass jniDateTime;
+	Function<jstring (jstring, jstring, jlong, jint)> getTimeAsString;
+	Function <jint ()> getLocalTimeZoneOffset;
 };
 
 };

@@ -7,7 +7,7 @@ APP_GNUSTL_FORCE_CPP_FEATURES := rtti
 #APP_CFLAGS += -DNDK_DEBUG=1 -O0
 #APP_CFLAGS += -D__DAVAENGINE_DEBUG__
 APP_OPTIM := debug
-APP_CFLAGS += -DUSE_LOCAL_RESOURCES #use local resources
+#APP_CFLAGS += -DUSE_LOCAL_RESOURCES #use local resources
 
 #release
 APP_CFLAGS += -O2
@@ -19,5 +19,4 @@ APP_LDLIBS := -fuse-ld=gold -fno-exceptions
 APP_ABI := armeabi-v7a x86
 APP_PLATFORM := android-14
 
-APP_CFLAGS += -std=c++11
-NDK_TOOLCHAIN_VERSION=4.8
+NDK_TOOLCHAIN_VERSION=clang

@@ -56,7 +56,6 @@ namespace DAVA
 }
 
 class SceneEditor2;
-class DAVAUI3DView;
 class MainTabBar;
 class DavaGLWidget;
 class ScenePreviewDialog;
@@ -88,8 +87,6 @@ public:
 	void ShowScenePreview(const DAVA::FilePath &scenePath);
 	void HideScenePreview();
     
-    void AddToolWidget(QWidget *widget);
-
 	DavaGLWidget * GetDavaWidget() const;
    
 signals:
@@ -99,7 +96,6 @@ signals:
     
 public slots:
 	// this slot redirects any UIEvent to the active sceneProxy for processing
-	void ProcessDAVAUIEvent(DAVA::UIEvent *event);
 	void TabBarCurrentChanged(int index);
 	void TabBarCloseRequest(int index);
 	void TabBarCloseCurrentRequest();
@@ -119,13 +115,9 @@ protected:
 	const int davaUIScreenID;
 	const int dava3DViewMargin;
 
-	QWidget *toolWidgetContainer;
-	QLayout *toolWidgetLayout;
-
 	void InitDAVAUI();
 	void ReleaseDAVAUI();
 	void UpdateTabName(int index);
-	void UpdateToolWidget();
 
 	void SetTabScene(int index, SceneEditor2* scene);
 
@@ -143,31 +135,6 @@ private:
 
 	int newSceneCounter;
 	SceneEditor2 *curScene;
-};
-
-// this is helper class
-// it is only used to grab all UIEvents from 3dView and
-// redirect them to the specified SceneTabWidget
-class DAVAUI3DView : public DAVA::UI3DView
-{
-public:
-	DAVAUI3DView(SceneTabWidget *tw, const DAVA::Rect &rect) 
-		: DAVA::UI3DView(rect)
-		, tabWidget(tw)
-	{
-		SetInputEnabled(true);
-	}
-
-	virtual void Input(DAVA::UIEvent *event)
-	{
-		if(NULL != tabWidget)
-		{
-			tabWidget->ProcessDAVAUIEvent(event);
-		}
-	}
-
-protected:
-	SceneTabWidget *tabWidget;
 };
 
 // tabBar widged to handle drop actions and emit signal about it

@@ -72,7 +72,8 @@ public:
     
 	void ClipPush();
 	void ClipPop();
-    
+    void UpdateClip();
+
     void ScreenSizeChanged();
     
     void Setup2DMatrices();
@@ -101,6 +102,7 @@ private:
 	Vector<Vector2> spriteClippedVertices;
 
     bool spriteClipping;
+    bool clipChanged;
 };
     
 } // ns

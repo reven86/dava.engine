@@ -210,6 +210,8 @@ public slots:
 
     void OnBatchProcessScene();
     
+    void OnSnapCameraToLandscape(bool);
+    
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);
@@ -265,7 +267,6 @@ private:
 	QList<QAction *> recentScenes;
 	ModificationWidget *modificationWidget;
 
-	QtLabelWithActions *objectTypesLabel;
     QComboBox *objectTypesWidget;
 
 	AddSwitchEntityDialog*	addSwitchEntityDialog;
