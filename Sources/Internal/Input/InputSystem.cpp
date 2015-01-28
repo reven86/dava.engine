@@ -36,7 +36,10 @@
 namespace DAVA 
 {
 
-InputSystem::InputSystem()
+InputSystem::InputSystem() :
+isMultitouchEnabled(true),
+keyboard(0),
+gamepad(0)
 {
     keyboard = new KeyboardDevice();
     gamepad = new GamepadDevice();
@@ -46,8 +49,8 @@ InputSystem::InputSystem()
     
 InputSystem::~InputSystem()
 {
-    SafeRelease(keyboard);
     SafeRelease(gamepad);
+    SafeRelease(keyboard);
 }
 
 void InputSystem::ProcessInputEvent(UIEvent * event)
@@ -61,9 +64,6 @@ void InputSystem::ProcessInputEvent(UIEvent * event)
 		else if(((*it).devices & INPUT_DEVICE_TOUCH))
 			(*it)(event);
 	}
-
-//	Logger::FrameworkDebug("InputSystem::ProcessInputEvent: keyCode: %d", event->tid);
-//	UIControlSystem::Instance()->OnInput(event);
 }
 
 void InputSystem::AddInputCallback(const InputCallback& inputCallback)
@@ -96,11 +96,6 @@ void InputSystem::OnAfterUpdate()
 {
     keyboard->OnAfterUpdate();
 }
-    
-bool InputSystem::IsCursorPining()
-{
-    return pinCursor;
-}
 
 void InputSystem::SetCursorPining(bool isPin)
 {
@@ -109,16 +104,5 @@ void InputSystem::SetCursorPining(bool isPin)
     Cursor::ShowSystemCursor(!isPin);
 #endif
 }
-    
-KeyboardDevice *InputSystem::GetKeyboard()
-{
-    return keyboard;
-}
-
-GamepadDevice *InputSystem::GetGamepadDevice()
-{
-    return gamepad;
-}
-
 
 };

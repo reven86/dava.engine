@@ -707,7 +707,7 @@ namespace DAVA
 
 		case WM_KEYUP:
 			{
-				InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed((int32)wParam);
+				InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed((int32)wParam);
 			};
 			break;
 
@@ -734,7 +734,7 @@ namespace DAVA
 				ev.keyChar = 0;
 				ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 				ev.tapCount = 1;
-				ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey((int32)wParam);
+				ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey((int32)wParam);
 
 				touches.push_back(ev);
 
@@ -742,7 +742,7 @@ namespace DAVA
 				touches.pop_back();
 				UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
 
-				InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed((int32)wParam);
+				InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed((int32)wParam);
 			};
 			break;
 

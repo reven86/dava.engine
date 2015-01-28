@@ -80,10 +80,10 @@ public:
     void OnBeforeUpdate();
     void OnAfterUpdate();
     
-    KeyboardDevice *GetKeyboard();
-    GamepadDevice *GetGamepadDevice();
+    inline KeyboardDevice & GetKeyboard();
+    inline GamepadDevice  & GetGamepadDevice();
 
-    bool IsCursorPining();
+    inline bool IsCursorPining();
     void SetCursorPining(bool isPin);
     
 protected:
@@ -94,6 +94,21 @@ protected:
     Vector<InputCallback> callbacks;
     bool pinCursor;
 };
+inline bool InputSystem::IsCursorPining()
+{
+    return pinCursor;
+}
+
+inline KeyboardDevice & InputSystem::GetKeyboard()
+{
+    return *keyboard;
+}
+
+inline GamepadDevice & InputSystem::GetGamepadDevice()
+{
+    return *gamepad;
+}
+
 };
 
 #endif
