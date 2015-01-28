@@ -131,7 +131,6 @@ public class JNIWebView {
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            Log.d(TAG, "on page finished url:" + url);
             super.onPageFinished(view, url);
 
             JNIActivity activity = JNIActivity.GetActivity();
@@ -237,6 +236,10 @@ public class JNIWebView {
                 JNIActivity.GetActivity().startActivity(exWeb);
                 return true;
             }
+            else
+            {
+                Log.e(TAG, "unknown result code res = " + res);
+            }
             return true;
         }
 
@@ -248,9 +251,6 @@ public class JNIWebView {
                     return OnUrlChange(id, url);
                 }
             };
-
-            if (url.contains("code"))
-                Log.d("shouldOverrideUrlLoading", url);
 
             FutureTask<Integer> task = new FutureTask<Integer>(urlChanged);
 
@@ -270,7 +270,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (views.containsKey(id)) {
-                    Log.d(TAG, String.format(
+                    Log.e(TAG, String.format(
                             "WebView with id %d already initialized", id));
                     return;
                 }
@@ -322,7 +322,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (!views.containsKey(id)) {
-                    Log.d(TAG, String.format("Unknown view id %d", id));
+                    Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
                 WebView view = views.get(id);
@@ -334,8 +334,6 @@ public class JNIWebView {
     }
 
     public static void OpenURL(final int id, final String url) {
-        Log.d(TAG, "open url: " + url);
-
         final JNIActivity activity = JNIActivity.GetActivity();
         if (null == activity || activity.GetIsPausing())
             return;
@@ -354,8 +352,6 @@ public class JNIWebView {
     }
 
     public static void LoadHtmlString(final int id, final String htmlString) {
-        Log.d(TAG, "load html string: " + htmlString);
-
         final JNIActivity activity = JNIActivity.GetActivity();
         if (null == activity || activity.GetIsPausing())
             return;
@@ -364,7 +360,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (!views.containsKey(id)) {
-                    Log.d(TAG, String.format("Unknown view id %d", id));
+                    Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
                 WebView webView = views.get(id);
@@ -383,7 +379,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (!views.containsKey(id)) {
-                    Log.d(TAG, String.format("Unknown view id %d", id));
+                    Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
 
@@ -402,7 +398,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (!views.containsKey(id)) {
-                    Log.d(TAG, String.format("Unknown view id %d", id));
+                    Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
                 WebView webView = views.get(id);
@@ -483,7 +479,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (!views.containsKey(id)) {
-                    Log.d(TAG, String.format("Unknown view id %d", id));
+                    Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
 
@@ -508,7 +504,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (!views.containsKey(id)) {
-                    Log.d(TAG, String.format("Unknown view id %d", id));
+                    Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
                 WebViewWrapper view = views.get(id);
@@ -528,7 +524,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (!views.containsKey(id)) {
-                    Log.d(TAG, String.format("Unknown view id %d", id));
+                    Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
                 WebViewWrapper view = views.get(id);
@@ -540,7 +536,7 @@ public class JNIWebView {
 
     public static boolean isRenderToTexture(final int id) {
         if (!views.containsKey(id)) {
-            Log.d(TAG, String.format("Unknown view id %d", id));
+            Log.e(TAG, String.format("Unknown view id %d", id));
             return false;
         } else {
             WebViewWrapper view = views.get(id);
@@ -559,7 +555,7 @@ public class JNIWebView {
             @Override
             public void run() {
                 if (!views.containsKey(id)) {
-                    Log.d(TAG, String.format("Unknown view id %d", id));
+                    Log.e(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
                 WebView view = views.get(id);
@@ -594,8 +590,6 @@ public class JNIWebView {
                     OnExecuteJScript(id, result);
                 }
             }
-
-            Log.d(TAG, "alert on WebView id=" + id);
 
             JNIActivity.GetActivity()
                     .PostEventToGL(new jsCallback(id, message));
