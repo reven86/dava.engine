@@ -35,6 +35,8 @@
 		026A1DEF19DAF26600813AEF /* SkinnedMesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 026A1DEB19DAF26600813AEF /* SkinnedMesh.h */; };
 		0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */; };
 		0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */; };
+		028B11E11A79175C008093B7 /* GamepadDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028B11E01A79175C008093B7 /* GamepadDevice.cpp */; };
+		028B11E21A79175C008093B7 /* GamepadDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 028B11E01A79175C008093B7 /* GamepadDevice.cpp */; };
 		02864523197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */; };
 		02864524197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */; };
 		02864525197960F200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 02864522197960F200ABCAA0 /* VirtualToPhysicalHelper.h */; };
@@ -1780,6 +1782,7 @@
 		026A1DEB19DAF26600813AEF /* SkinnedMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkinnedMesh.h; sourceTree = "<group>"; };
 		0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODFileSoundEvent.cpp; sourceTree = "<group>"; };
 		0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
+		028B11E01A79175C008093B7 /* GamepadDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GamepadDevice.cpp; sourceTree = "<group>"; };
 		02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualToPhysicalHelper.cpp; sourceTree = "<group>"; };
 		02864522197960F200ABCAA0 /* VirtualToPhysicalHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualToPhysicalHelper.h; sourceTree = "<group>"; };
 		029BAE511859B81700478671 /* musicios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = musicios.h; sourceTree = "<group>"; };
@@ -3211,6 +3214,7 @@
 				E8B3C86F16B9326D002BD35F /* InputSystem.h */,
 				E8B3C87016B9326D002BD35F /* KeyboardDevice.cpp */,
 				E8B3C87116B9326D002BD35F /* KeyboardDevice.h */,
+				028B11E01A79175C008093B7 /* GamepadDevice.cpp */,
 				9A011B491A9F000929E1677C /* GamepadDevice.mm */,
 				9A011D1A54C2070D923E1061 /* GamepadDevice.h */,
 			);
@@ -5171,6 +5175,7 @@
 				02FD81391924997C007762C0 /* TextureDescriptor.cpp in Sources */,
 				02FD813A1924997C007762C0 /* UberShader.cpp in Sources */,
 				02FD813B1924997C007762C0 /* Box2DDebugDraw.cpp in Sources */,
+				028B11E21A79175C008093B7 /* GamepadDevice.cpp in Sources */,
 				02FD813C1924997C007762C0 /* Box2DGameObject.cpp in Sources */,
 				02FD813D1924997C007762C0 /* Box2DGameObjectManager.cpp in Sources */,
 				02FD813E1924997C007762C0 /* Box2DHelper.cpp in Sources */,
@@ -5726,6 +5731,7 @@
 				CCC7A4A116F1D80C0061EA5D /* Landscape.cpp in Sources */,
 				02FD7EBD19237D33007762C0 /* WindComponent.cpp in Sources */,
 				CCC7A4A616F1D8200061EA5D /* RenderState.cpp in Sources */,
+				028B11E11A79175C008093B7 /* GamepadDevice.cpp in Sources */,
 				647EFC77195F0AC40073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				02AD131619767DFA00567AD2 /* VersionInfo.cpp in Sources */,
 				CCC7A4AA16F1D8480061EA5D /* Entity.cpp in Sources */,
