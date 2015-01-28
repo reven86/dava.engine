@@ -68,6 +68,7 @@ class LinearAnimation : public Animation
 protected:
     ~LinearAnimation(){}
 public:
+	LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _animationTimeLength, Interpolation::Func _iFunc);
 	LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType);
 	// TODO: 
 	//LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _fixedSpeed);
@@ -86,6 +87,14 @@ LinearAnimation<T>::LinearAnimation(AnimatedObject * _owner, T * _var, T _endVal
 {
 	var = _var;
 	endValue = _endValue;
+}
+
+template<class T>
+LinearAnimation<T>::LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _animationTimeLength, Interpolation::Func _iFunc)
+    : Animation(_owner, _animationTimeLength, _iFunc)
+{
+    var = _var;
+    endValue = _endValue;
 }
 /*
 template<class T>

@@ -5,6 +5,8 @@
 
 #include "UIControls/ControlProperties/PropertiesRoot.h"
 
+class PackageSerializer;
+
 class ControlNode : public PackageBaseNode
 {
 public:
@@ -43,7 +45,12 @@ public:
     eCreationType GetCreationType() const { return creationType; }
 
     PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
-    DAVA::YamlNode *Serialize(DAVA::YamlNode *prototypeChildren) const;
+    
+    void Serialize(PackageSerializer *serializer) const;
+    
+private:
+    void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
+    bool HasNonPrototypeChildren() const;
 
 private:
     DAVA::UIControl *control;
