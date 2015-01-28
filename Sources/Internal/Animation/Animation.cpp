@@ -34,17 +34,22 @@
 namespace DAVA 
 {
 
-Animation::Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int32 _defaultState)
+Animation::Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::Func _interpolationFunc, int32 _defaultState)
 {
     tagId = 0;
-	owner = _owner;
-	timeLength = _animationTimeLength;
-	interpolationFunc = Interpolation::GetFunction(_interpolationFunc);
-	state = _defaultState;
-	next = 0;
-	repeatCount = 0;
-	timeMultiplier = 1.f;
-	AnimationManager::Instance()->AddAnimation(this);
+    owner = _owner;
+    timeLength = _animationTimeLength;
+    interpolationFunc = _interpolationFunc;
+    state = _defaultState;
+    next = 0;
+    repeatCount = 0;
+    timeMultiplier = 1.f;
+    AnimationManager::Instance()->AddAnimation(this);
+}
+
+Animation::Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFuncType, int32 _defaultState)
+    : Animation(_owner, _animationTimeLength, Interpolation::GetFunction(_interpolationFuncType), _defaultState)
+{
 }
 
 Animation::~Animation()

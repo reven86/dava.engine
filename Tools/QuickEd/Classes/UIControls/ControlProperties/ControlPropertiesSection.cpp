@@ -1,5 +1,6 @@
 #include "ControlPropertiesSection.h"
 
+#include "UI/UIControl.h"
 #include "ValueProperty.h"
 #include "LocalizedTextValueProperty.h"
 
@@ -38,10 +39,4 @@ ControlPropertiesSection::~ControlPropertiesSection()
 DAVA::String ControlPropertiesSection::GetName() const
 {
     return name;
-}
-
-void ControlPropertiesSection::AddPropertiesToNode(YamlNode *node) const
-{
-    for (auto it = children.begin(); it != children.end(); ++it)
-        (*it)->AddPropertiesToNode(node);
 }

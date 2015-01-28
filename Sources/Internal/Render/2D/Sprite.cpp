@@ -84,7 +84,8 @@ Sprite::Sprite()
 	size.dy = 24;
 	frameCount = 0;
 
-	isPreparedForTiling = false;
+    isPreparedForTiling = false;
+    textureInVirtualSpace = false;
 
 	modification = 0;
 	flags = 0;
@@ -337,6 +338,7 @@ void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat
 	t->Release();
 
 	this->type = SPRITE_RENDER_TARGET;
+    this->textureInVirtualSpace = contentScaleIncluded;
 
 	// Clear created render target first
 	RenderManager::Instance()->SetRenderTarget(this);
@@ -487,7 +489,7 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 	this->textureCount = 1;
 	this->textures = new Texture*[this->textureCount];
 	this->textureNames = new FilePath[this->textureCount];
-
+    this->textureInVirtualSpace = contentScaleIncluded;
 
 	this->textures[0] = SafeRetain(fromTexture);
 	if(this->textures[0])

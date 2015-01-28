@@ -371,7 +371,7 @@ void RenderDataObject::UpdateVertexBufferInternal(int32 offset, int32 vertexCoun
 #endif //#if defined (__DAVAENGINE_ANDROID__)
 
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vboBuffer));
-    RENDER_VERIFY(glBufferSubData(GL_ARRAY_BUFFER, offset, vertexCount * stride, streamArray[0]->pointer));
+    RENDER_VERIFY(glBufferSubData(GL_ARRAY_BUFFER, offset * stride, vertexCount * stride, streamArray[0]->pointer));
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, 0));
 
 #endif // #if defined (__DAVAENGINE_OPENGL__)
@@ -404,7 +404,7 @@ void RenderDataObject::UpdateIndexBufferInternal(int32 offset)
 #endif
 
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
-    RENDER_VERIFY(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices));
+    RENDER_VERIFY(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * INDEX_FORMAT_SIZE[indexFormat], indexCount * INDEX_FORMAT_SIZE[indexFormat], indices));
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 
 #endif // #if defined (__DAVAENGINE_OPENGL__)

@@ -6,6 +6,12 @@
 class ControlPropertiesSection;
 class BackgroundPropertiesSection;
 class InternalControlPropertiesSection;
+class PackageSerializer;
+
+namespace DAVA
+{
+    class UIControl;
+}
 
 class PropertiesRoot : public BaseProperty
 {
@@ -24,11 +30,11 @@ public:
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
     InternalControlPropertiesSection *GetInternalControlPropertiesSection(int num) const;
     
+    virtual void Serialize(PackageSerializer *serializer) const override;
+
     virtual DAVA::String GetName() const;
     virtual ePropertyType GetType() const;
 
-    void AddPropertiesToNode(DAVA::YamlNode *node) const;
-    
 private:
     void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const PropertiesRoot *sourceProperties, eCopyType copyType);
     void MakeBackgroundPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType);

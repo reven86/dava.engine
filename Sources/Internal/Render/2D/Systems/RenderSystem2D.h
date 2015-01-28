@@ -114,8 +114,8 @@ public:
     ~VboPool();
 
     void Next();
-    void SetVertexData(uint32 count, float32 * data);
-    void SetIndexData(uint32 count, uint8 * data);
+    void SetVertexData(uint32 offset, uint32 count, float32 * data);
+    void SetIndexData(uint32 offset, uint32 count, uint8 * data);
 
     inline RenderDataObject* GetRenderDataObject() const;
 
@@ -201,8 +201,8 @@ private:
 
     Sprite::DrawState defaultSpriteDrawState;
 
-    Vector<float32> vertexBufferTmp;
-    Vector<uint16> indexBufferTmp;
+    float32* vboTemp;
+    uint16* iboTemp;
 
     bool spriteClipping;
     bool clipChanged;
