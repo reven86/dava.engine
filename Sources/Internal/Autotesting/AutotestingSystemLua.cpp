@@ -237,7 +237,7 @@ namespace DAVA
 
 	String AutotestingSystemLua::GetDeviceName()
 	{
-		if (AUTOTESTING_PLATFORM_NAME == "Android")
+		if (0 == strncmp(AUTOTESTING_PLATFORM_NAME, "Android", 256u))
 		{
 			return DeviceInfo::GetModel();
 		}

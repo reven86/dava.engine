@@ -40,10 +40,10 @@
 
 using namespace DAVA;
 
-void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
 	JNI::JavaClass msg("com/dava/framework/JNIAssert");
-	auto showMessage = msg.GetStaticMethod<void, jboolean, jstring>("Assert");
+	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
 
 	JNIEnv *env = JNI::GetEnv();
 	jstring jStrMessage = env->NewStringUTF(message);
@@ -51,7 +51,7 @@ void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
 	env->DeleteLocalRef(jStrMessage);
 
-	return breakExecution;
+	return breakExecution == JNI_FALSE? false : true;
 }
 
 #endif

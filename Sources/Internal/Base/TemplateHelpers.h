@@ -31,7 +31,6 @@
 #define __DAVAENGINE_TEMPLATEHELPERS_H__
 
 #include <typeinfo>
-
 #include "NullType.h"
 #include "TypeList.h"
 
@@ -232,11 +231,15 @@ template<class C, class O>
 C DynamicTypeCheck(O* pObject)
 {
 #ifdef __DAVAENGINE_DEBUG__
-    // from standard c++:
-    // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3337.pdf
-    // (5.2.7/4)If the value of v is a null pointer value in the pointer case,
-    // the result is the null pointer value of type T
-    return dynamic_cast<C>(pObject);
+    if(!pObject) return static_cast<C>(pObject);
+        
+    C c = dynamic_cast<C>(pObject);
+    if (!c)
+    {//assert emulation )
+        int *i = 0;
+        *(i) = 0;
+    }
+    return c;
 #else
     return static_cast<C>(pObject);
 #endif
