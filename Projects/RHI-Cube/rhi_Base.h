@@ -51,14 +51,41 @@ struct
 RenderPassConfig
 {
     struct
+    ColorBuffer
     {
-        Handle  texture;
-    }   colorBuffer [MAX_RENDER_TARGET_COUNT];
+        Handle      texture;
+        LoadAction  loadAction;
+        StoreAction storeAction;
+        float       clearColor[4];
+
+                    ColorBuffer()
+                      : texture(InvalidHandle),
+                        loadAction(LOADACTION_CLEAR),
+                        storeAction(STOREACTION_STORE)                        
+                    {
+                        clearColor[0]=0; clearColor[1]=0; clearColor[2]=0; clearColor[3]=1.0f;
+                    }
+    };
 
     struct
+    DepthBuffer
     {
-        Handle  texture;
-    }   depthBuffer;
+        Handle      texture;
+        LoadAction  loadAction;
+        StoreAction storeAction;
+        float       clearDepth;
+
+                    DepthBuffer()
+                      : texture(InvalidHandle),
+                        loadAction(LOADACTION_CLEAR),
+                        storeAction(STOREACTION_STORE),
+                        clearDepth(1.0f)
+                    {}
+
+    };
+
+    ColorBuffer colorBuffer[MAX_RENDER_TARGET_COUNT];
+    DepthBuffer depthBuffer;
 };
 
 

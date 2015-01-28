@@ -73,7 +73,7 @@ public:
                 CommandBuffer_t();
                 ~CommandBuffer_t();
 
-    void        Begin();
+    void        Begin( const RenderPassConfig& pass );
     void        End();
     void        Execute();
 
@@ -91,6 +91,9 @@ private:
     static const uint64   EndCmd/* = 0xFFFFFFFF*/;
 
     std::vector<uint64> _cmd;
+
+    RenderPassConfig    passCfg;
+    uint32              usePassCfg:1;
 };
 
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
@@ -125,6 +128,16 @@ Submit( Handle cb )
 void
 Begin( Handle cmdBuf )
 {
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__BEGIN );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+Begin( Handle cmdBuf, const RenderPassConfig& pass )
+{
+    CommandBufferPool::Get(cmdBuf)->Begin( pass );
     CommandBufferPool::Get(cmdBuf)->Command( DX9__BEGIN );
 }
 
@@ -280,6 +293,7 @@ DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 
 
 CommandBuffer_t::CommandBuffer_t()
+  : usePassCfg(false)
 {
 }
 
@@ -295,9 +309,12 @@ CommandBuffer_t::~CommandBuffer_t()
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Begin()
+CommandBuffer_t::Begin( const RenderPassConfig& pass )
 {
     _cmd.clear();
+
+    passCfg     = pass;
+    usePassCfg  = true;
 }
 
 
@@ -439,6 +456,25 @@ SCOPED_FUNCTION_TIMING();
             case DX9__BEGIN :
             {
                 DX9_CALL(_D3D9_Device->BeginScene(),"BeginScene");
+                if( usePassCfg )
+                {
+                    bool    clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
+                    bool    clear_depth = passCfg.depthBuffer.loadAction == LOADACTION_CLEAR;
+
+                    if( clear_color  ||  clear_depth )
+                    {
+                        DWORD   flags = 0;
+                        int     r     = int(passCfg.colorBuffer[0].clearColor[0] * 255.0f);
+                        int     g     = int(passCfg.colorBuffer[0].clearColor[1] * 255.0f);
+                        int     b     = int(passCfg.colorBuffer[0].clearColor[2] * 255.0f);
+                        int     a     = int(passCfg.colorBuffer[0].clearColor[3] * 255.0f);
+                        
+                        if( clear_color ) flags |= D3DCLEAR_TARGET;
+                        if( clear_depth ) flags |= D3DCLEAR_ZBUFFER;
+
+                        DX9_CALL(_D3D9_Device->Clear( 0,NULL, flags, D3DCOLOR_RGBA(r,g,b,a), passCfg.depthBuffer.clearDepth, 0 ),"Clear");
+                    }
+                }
             }   break;
             
             case DX9__END :

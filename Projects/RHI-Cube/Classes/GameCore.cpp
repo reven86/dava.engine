@@ -382,7 +382,7 @@ void GameCore::OnAppStarted()
     rhi::Initialize();
     rhi::ShaderCache::Initialize();
     
-///    SetupTriangle();
+    SetupTriangle();
     SetupCube();
 }
 
@@ -432,12 +432,30 @@ GameCore::Draw()
 {
     SCOPED_NAMED_TIMING("GameCore::Draw");
     //-    ApplicationCore::BeginFrame();
+
+#define USE_SECOND_CB 1
+
+    rhi::RenderPassConfig   pass;
+
+    pass.colorBuffer[0].loadAction      = rhi::LOADACTION_CLEAR;
+    pass.colorBuffer[0].storeAction     = rhi::STOREACTION_STORE;
+    pass.colorBuffer[0].clearColor[0]   = 0.25f;
+    pass.colorBuffer[0].clearColor[1]   = 0.25f;
+    pass.colorBuffer[0].clearColor[2]   = 0.35f;
+    pass.colorBuffer[0].clearColor[3]   = 1.0f;
+    pass.depthBuffer.loadAction         = rhi::LOADACTION_CLEAR;
+    pass.depthBuffer.storeAction        = rhi::STOREACTION_STORE;
+
     
     rhi::Handle cb     = rhi::CommandBuffer::Allocate();
+#if USE_SECOND_CB
+    rhi::Handle cb2    = rhi::CommandBuffer::Allocate();
+#endif
     float       clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
     
-    rhi::CommandBuffer::Begin( cb );
-    rhi::CommandBuffer::Clear( cb );
+    rhi::CommandBuffer::Begin( cb, pass );
+//-    rhi::CommandBuffer::Begin( cb );
+//-    rhi::CommandBuffer::Clear( cb );
 
 #if 0
     
@@ -471,7 +489,7 @@ GameCore::Draw()
     rhi::ConstBuffer::SetConst( cube.fp_const, 0, 1, clr );
     rhi::ConstBuffer::SetConst( cube.vp_const[0], 0, 4, view_proj.data );
     rhi::ConstBuffer::SetConst( cube.vp_const[1], 0, 4, world.data );
-    
+
     rhi::CommandBuffer::SetPipelineState( cb, cube.ps );
     rhi::CommandBuffer::SetVertexData( cb, cube.vb );
     rhi::CommandBuffer::SetVertexConstBuffer( cb, 0, cube.vp_const[0] );
@@ -479,12 +497,52 @@ GameCore::Draw()
     rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, cube.fp_const );
     rhi::CommandBuffer::SetFragmentTexture( cb, 0, cube.tex );
     rhi::CommandBuffer::DrawPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 12 );
+
+    #if USE_SECOND_CB
+    {
+        rhi::RenderPassConfig   pass2;
+        const float             w = 3.0f;
+        const unsigned          n = 5;
+
+        pass2.colorBuffer[0].loadAction  = rhi::LOADACTION_NONE;
+        pass2.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+        pass2.depthBuffer.loadAction     = rhi::LOADACTION_NONE;
+        pass2.depthBuffer.storeAction    = rhi::STOREACTION_STORE;
+    
+        rhi::CommandBuffer::Begin( cb2, pass2 );
+        for( unsigned i=0; i!=n; ++i )
+        {
+            const uint32 c      = (i+1) * 0x775511; // 0x15015
+            const uint8* cc     = (const uint8*)(&c);
+            const float  clr2[] = { float(cc[2])/255.0f, float(cc[1])/255.0f, float(cc[0])/255.0f, 1.0f };
+
+            world.Identity();
+            world.CreateRotation( Vector3(1,0,0), cube_angle );
+            world.SetTranslationVector( Vector3(-0.5f*w+float(i)*(w/float(n)),1,10) );
+
+            rhi::ConstBuffer::SetConst( cube.fp_const, 0, 1, clr2 );
+            rhi::ConstBuffer::SetConst( cube.vp_const[1], 0, 4, world.data );
+    
+            rhi::CommandBuffer::SetPipelineState( cb2, cube.ps );
+            rhi::CommandBuffer::SetVertexData( cb2, cube.vb );
+            rhi::CommandBuffer::SetVertexConstBuffer( cb2, 0, cube.vp_const[0] );
+            rhi::CommandBuffer::SetVertexConstBuffer( cb2, 1, cube.vp_const[1] );
+            rhi::CommandBuffer::SetFragmentConstBuffer( cb2, 0, cube.fp_const );
+            rhi::CommandBuffer::SetFragmentTexture( cb2, 0, cube.tex );
+            rhi::CommandBuffer::DrawPrimitive( cb2, rhi::PRIMITIVE_TRIANGLELIST, 12 );
+        }
+        rhi::CommandBuffer::End( cb2 );
+    }
+    #endif
     
 #endif
 
     
     rhi::CommandBuffer::End( cb );
     rhi::CommandBuffer::Submit( cb );
+    #if USE_SECOND_CB
+    rhi::CommandBuffer::Submit( cb2 );
+    #endif
 }
 
 void GameCore::EndFrame()

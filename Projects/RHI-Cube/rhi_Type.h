@@ -168,6 +168,23 @@ TextureOptions
     TEXTURE_OPT_RENDERTARGET
 };
 
+enum
+LoadAction
+{
+    LOADACTION_NONE     = 0,
+    LOADACTION_CLEAR    = 1
+//    LOADACTION_LOAD    = 2
+};
+
+enum
+StoreAction
+{
+    STOREACTION_NONE     = 0,
+    STOREACTION_STORE    = 1
+//    STOREACTION_RESOLVE    = 2
+};
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // pipeline-state
