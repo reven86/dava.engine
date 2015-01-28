@@ -1377,9 +1377,6 @@
 		CCF00D3F1A42F43D00A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D391A42F21B00A577C2 /* EntityFamily.cpp */; };
 		CCF00D411A42F63800A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D391A42F21B00A577C2 /* EntityFamily.cpp */; };
 		D2AAC088055469A000DB518D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
-		D73A574C1A739B5B009FF184 /* DataStorageAndroid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A57451A739B5B009FF184 /* DataStorageAndroid.cpp */; };
-		D73A574D1A739B5B009FF184 /* SharedPreferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A57461A739B5B009FF184 /* SharedPreferences.cpp */; };
-		D73A574E1A739B5B009FF184 /* SharedPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = D73A57471A739B5B009FF184 /* SharedPreferences.h */; };
 		D73A574F1A739B5B009FF184 /* DataStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A57481A739B5B009FF184 /* DataStorage.cpp */; };
 		D73A57501A739B5B009FF184 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D73A57491A739B5B009FF184 /* DataStorage.h */; };
 		D73A57511A739B5B009FF184 /* DataVault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A574A1A739B5B009FF184 /* DataVault.cpp */; };
@@ -2970,9 +2967,6 @@
 		CCF00D3A1A42F21B00A577C2 /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
-		D73A57451A739B5B009FF184 /* DataStorageAndroid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageAndroid.cpp; sourceTree = "<group>"; };
-		D73A57461A739B5B009FF184 /* SharedPreferences.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SharedPreferences.cpp; sourceTree = "<group>"; };
-		D73A57471A739B5B009FF184 /* SharedPreferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SharedPreferences.h; sourceTree = "<group>"; };
 		D73A57481A739B5B009FF184 /* DataStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorage.cpp; sourceTree = "<group>"; };
 		D73A57491A739B5B009FF184 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
 		D73A574A1A739B5B009FF184 /* DataVault.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataVault.cpp; sourceTree = "<group>"; };
@@ -3850,23 +3844,12 @@
 		D73A57431A739B5B009FF184 /* DataVault */ = {
 			isa = PBXGroup;
 			children = (
-				D73A57441A739B5B009FF184 /* Android */,
 				D73A57481A739B5B009FF184 /* DataStorage.cpp */,
 				D73A57491A739B5B009FF184 /* DataStorage.h */,
 				D73A574A1A739B5B009FF184 /* DataVault.cpp */,
 				D73A574B1A739B5B009FF184 /* DataVault.h */,
 			);
 			path = DataVault;
-			sourceTree = "<group>";
-		};
-		D73A57441A739B5B009FF184 /* Android */ = {
-			isa = PBXGroup;
-			children = (
-				D73A57451A739B5B009FF184 /* DataStorageAndroid.cpp */,
-				D73A57461A739B5B009FF184 /* SharedPreferences.cpp */,
-				D73A57471A739B5B009FF184 /* SharedPreferences.h */,
-			);
-			path = Android;
 			sourceTree = "<group>";
 		};
 		D7CC25FB19C3A24200A3B754 /* Notification */ = {
@@ -5875,7 +5858,6 @@
 				A670F2F11847A99E0030E075 /* TextureStateData.h in Headers */,
 				E8F43E27186C3D02006796CB /* MaterialSystem.h in Headers */,
 				9A0114637D598239F4C36EA3 /* GamepadDevice.h in Headers */,
-				D73A574E1A739B5B009FF184 /* SharedPreferences.h in Headers */,
 				9A0114DFC94738EDBF7B7A79 /* GamepadManager.h in Headers */,
 				D7CC263D19C43C7C00A3B754 /* LocalNotificationNotImplemented.h in Headers */,
 				9A0113CA721C6632B457850E /* NSStringUtils.h in Headers */,
@@ -7052,7 +7034,6 @@
 				E8989FBB16BD24E500732C04 /* SceneAnimationMixer.cpp in Sources */,
 				E8989FBD16BD24E500732C04 /* SceneFile.cpp in Sources */,
 				E8989FBF16BD24E500732C04 /* SceneFileV2.cpp in Sources */,
-				D73A574C1A739B5B009FF184 /* DataStorageAndroid.cpp in Sources */,
 				50A3044418575C370082CA8D /* StaticOcclusionRenderPass.cpp in Sources */,
 				E8989FC116BD24E500732C04 /* SceneManager.cpp in Sources */,
 				02FD7ED919237D96007762C0 /* WindSystem.cpp in Sources */,
@@ -7142,7 +7123,6 @@
 				E8F21DCA16C196DC007F957A /* GlobalEventSystem.cpp in Sources */,
 				CCB4C41A16CBC5B200F2B085 /* ComponentHelpers.cpp in Sources */,
 				1799E52616CCEC030058061F /* ParticleForce.cpp in Sources */,
-				D73A574D1A739B5B009FF184 /* SharedPreferences.cpp in Sources */,
 				E89EDE7B1A2E16FA0036E993 /* UIControl_wrap.cxx in Sources */,
 				62BD24C018C621EB00D2F0D3 /* DateTime.cpp in Sources */,
 				840ED3E316D5095000D2BA6C /* DPIHelperMacOS.mm in Sources */,

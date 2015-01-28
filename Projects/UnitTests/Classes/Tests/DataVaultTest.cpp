@@ -30,6 +30,8 @@
 #include "DataVaultTest.h"
 #include "DataVault/DataVault.h"
 
+#if defined(__DAVAENGINE_ANDROID) || defined(__DAVAENGINE_IPHONE)
+
 DataVaultTest::DataVaultTest()
     : TestTemplate<DataVaultTest>("DataVaultTest")
 {
@@ -68,3 +70,5 @@ void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data
 
     SafeRelease(storage);
 }
+
+#endif

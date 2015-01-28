@@ -32,6 +32,8 @@
 namespace DAVA
 {
 
+#if defined(__DAVAENGINE_ANDROID) || defined(__DAVAENGINE_IPHONE)
+
 DataStorage::~DataStorage()
 {
     SafeDelete(impl);
@@ -61,5 +63,7 @@ void DataStorage::Push()
 {
     impl->Push();
 }
+    
+#endif
 
 }

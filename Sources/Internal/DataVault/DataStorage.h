@@ -35,6 +35,8 @@
 namespace DAVA
 {
 
+#if defined(__DAVAENGINE_ANDROID) || defined(__DAVAENGINE_IPHONE)
+
 class IDataStorage
 {
 public:
@@ -65,6 +67,8 @@ public: // IDataStorage intergace implementation
 private:
     IDataStorage *impl;
 };
+    
+#endif
 
 } //namespace DAVA
 

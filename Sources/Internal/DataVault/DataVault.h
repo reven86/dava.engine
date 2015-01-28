@@ -35,6 +35,8 @@
 namespace DAVA
 {
 
+#if defined(__DAVAENGINE_ANDROID) || defined(__DAVAENGINE_IPHONE)
+    
 class DataVault
 {
 public:
@@ -42,7 +44,8 @@ public:
 private:
     static DataStorage *activeStorage;
 };
-
+    
+#endif
 
 } //namespace DAVA
 
