@@ -31,7 +31,7 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_ANDROID) || defined(__DAVAENGINE_IPHONE)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
 
 DataStorage *DataVault::activeStorage = NULL;
 DataStorage *DataVault::GetStorage()

@@ -21,7 +21,6 @@ public class JNISharedPreferences {
 
 	JNISharedPreferences()
 	{
-		JNIBackupAgent.Restore();
 		preferences = JNIActivity.GetActivity().getSharedPreferences(name, 0);
 		editor = preferences.edit();
 	}
