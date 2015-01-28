@@ -921,25 +921,30 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 
     bool needGenerateData = false;
     StretchDrawData * stretchData = 0;
-    bool needClearData = pStreachData == NULL;
     if(pStreachData)
     {
         stretchData = *pStreachData;
+        if (!stretchData)
+        {
+            stretchData = new StretchDrawData();
+            needGenerateData = true;
+            *pStreachData = stretchData;
+        }
+        else
+        {
+            needGenerateData |= sprite != stretchData->sprite;
+            needGenerateData |= frame != stretchData->frame;
+            needGenerateData |= gd.size != stretchData->size;
+            needGenerateData |= type != stretchData->type;
+            needGenerateData |= stretchCap != stretchData->stretchCap;
+        }
     }
-    if (!stretchData)
+    else
     {
         stretchData = new StretchDrawData();
         needGenerateData = true;
     }
-    else
-    {
-        needGenerateData |= sprite != stretchData->sprite;
-        needGenerateData |= frame != stretchData->frame;
-        needGenerateData |= gd.size != stretchData->size;
-        needGenerateData |= type != stretchData->type;
-        needGenerateData |= stretchCap != stretchData->stretchCap;
-    }
-
+    
     StretchDrawData &sd = *stretchData;
 
     if (needGenerateData)
@@ -985,7 +990,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     
 #endif //USE_BATCHING
 
-    if (needClearData)
+    if (!pStreachData)
     {
         SafeDelete(stretchData);
     }
@@ -1018,24 +1023,29 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     bool needGenerateData = false;
 
 	TiledDrawData * tiledData = 0;
-    bool needClearData = pTiledData == NULL;
-	if( pTiledData )
+    if (pTiledData)
 	{
 		tiledData = *pTiledData;
+        if (!tiledData)
+        {
+            tiledData = new TiledDrawData();
+            needGenerateData = true;
+            *pTiledData = tiledData;
+        }
+        else
+        {
+            needGenerateData |= stretchCap != tiledData->stretchCap;
+            needGenerateData |= frame != tiledData->frame;
+            needGenerateData |= sprite != tiledData->sprite;
+            needGenerateData |= size != tiledData->size;
+        }
 	}
-    if( !tiledData )
+    else
     {
         tiledData = new TiledDrawData();
         needGenerateData = true;
     }
-    else
-    {
-        needGenerateData |= stretchCap != tiledData->stretchCap;
-        needGenerateData |= frame != tiledData->frame;
-        needGenerateData |= sprite != tiledData->sprite;
-        needGenerateData |= size != tiledData->size;
-    }
-
+    
     TiledDrawData &td = *tiledData;
 
     if( needGenerateData )
@@ -1081,7 +1091,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
 	
 #endif //USE_BATCHING
 
-    if (needClearData)
+    if (!pTiledData)
     {
         SafeDelete(tiledData);
     }
