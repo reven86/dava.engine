@@ -175,6 +175,7 @@ LOCAL_CPPFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
 LOCAL_CPPFLAGS += -std=c++1y
 LOCAL_CFLAGS += -Qunused-arguments
+LOCAL_CFLAGS += -Werror
 
 LOCAL_CPP_FEATURES += exceptions
 
