@@ -113,6 +113,49 @@ Begin( Handle cmdBuf )
 //------------------------------------------------------------------------------
 
 void
+Begin( Handle cmdBuf, const RenderPassConfig& pass )
+{
+    CAMetalLayer*       layer   = (CAMetalLayer*)(GetAppViewLayer());
+    CommandBuffer_t*    cb      = CommandBufferPool::Get( cmdBuf );
+
+    if( !_CurDrawable )
+        _CurDrawable = [layer nextDrawable];
+
+    MTLRenderPassDescriptor*    desc = [MTLRenderPassDescriptor renderPassDescriptor];
+    
+    desc.colorAttachments[0].texture        = _CurDrawable.texture;
+    desc.colorAttachments[0].loadAction     = (pass.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+    desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
+    desc.colorAttachments[0].clearColor     = MTLClearColorMake(pass.colorBuffer[0].clearColor[0],pass.colorBuffer[0].clearColor[1],pass.colorBuffer[0].clearColor[2],pass.colorBuffer[0].clearColor[3]);
+
+    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
+    desc.depthAttachment.loadAction         = (pass.depthBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+    desc.depthAttachment.storeAction        = (pass.depthBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLLoadActionDontCare;
+    desc.depthAttachment.clearDepth         = pass.depthBuffer.clearDepth;
+
+    cb->buf     = [_Metal_DefCmdQueue commandBuffer];
+    cb->encoder = [cb->buf renderCommandEncoderWithDescriptor:desc];
+    cb->cur_ib  = InvalidHandle;
+
+    MTLViewport vp;
+
+    vp.originX  = 0;
+    vp.originY  = 0;
+    vp.width    = layer.bounds.size.width;
+    vp.height   = layer.bounds.size.height;
+    vp.znear    = 0;
+    vp.zfar     = 1;
+
+    [cb->encoder setViewport:vp];
+
+    
+    [cb->encoder setDepthStencilState:_Metal_DefDepthState];
+}
+
+
+//------------------------------------------------------------------------------
+
+void
 End( Handle cmdBuf )
 {
     CommandBuffer_t*    cb = CommandBufferPool::Get( cmdBuf );
@@ -283,8 +326,10 @@ Present()
     for( unsigned i=0; i!=_CmdQueue.size(); ++i )
     {
         CommandBuffer_t*    cb = Pool<CommandBuffer_t>::Get( _CmdQueue[i] );
-    
-        [cb->buf presentDrawable:_CurDrawable];
+        
+        if( i == _CmdQueue.size()-1 )
+            [cb->buf presentDrawable:_CurDrawable];
+        
         [cb->buf commit];
         // force CPU-GPU sync
         [cb->buf waitUntilCompleted];

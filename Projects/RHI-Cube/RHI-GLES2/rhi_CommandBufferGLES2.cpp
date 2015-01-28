@@ -46,7 +46,7 @@ public:
                 CommandBuffer_t();
                 ~CommandBuffer_t();
 
-    void        Begin();
+    void        Begin( const RenderPassConfig& pass );
     void        End();
     void        Execute();
 
@@ -64,6 +64,9 @@ private:
     static const uint64   EndCmd/* = 0xFFFFFFFF*/;
 
     std::vector<uint64> _cmd;
+
+    RenderPassConfig    passCfg;
+    uint32              usePassCfg:1;
 };
 
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
@@ -101,6 +104,16 @@ Submit( Handle cb )
 void
 Begin( Handle cmdBuf )
 {
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__BEGIN );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+Begin( Handle cmdBuf, const RenderPassConfig& pass )
+{
+    CommandBufferPool::Get(cmdBuf)->Begin( pass );
     CommandBufferPool::Get(cmdBuf)->Command( GLES2__BEGIN );
 }
 
@@ -260,6 +273,7 @@ DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 
 
 CommandBuffer_t::CommandBuffer_t()
+  : usePassCfg(false)
 {
 }
 
@@ -275,9 +289,12 @@ CommandBuffer_t::~CommandBuffer_t()
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Begin()
+CommandBuffer_t::Begin( const RenderPassConfig& pass )
 {
     _cmd.clear();
+
+    passCfg     = pass;
+    usePassCfg  = true;
 }
 
 
@@ -439,6 +456,28 @@ SCOPED_NAMED_TIMING("CommandBuffer_t::Execute");
                 GL_CALL(glEnable( GL_DEPTH_TEST ));
                 GL_CALL(glDepthFunc( GL_LEQUAL ));
                 GL_CALL(glDepthMask( GL_TRUE ));
+
+                GLuint  flags = 0;
+            
+                if( passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR )
+                {
+                    glClearColor( passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3] );
+                    flags |= GL_COLOR_BUFFER_BIT;
+                }
+
+                if( passCfg.depthBuffer.loadAction == LOADACTION_CLEAR )
+                {
+                    #if defined(__DAVAENGINE_IPHONE__)
+                    glClearDepthf( passCfg.depthBuffer.clearDepth );
+                    #else
+                    glClearDepth( passCfg.depthBuffer.clearDepth );
+                    #endif
+
+                    flags |= GL_DEPTH_BUFFER_BIT;
+                }
+
+                glClear( flags );
+
             }   break;
             
             case GLES2__END :
