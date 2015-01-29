@@ -76,12 +76,6 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 
-#ifdef Q_OS_MAC
-    FixOSXFonts();  // Must be called before creating QApplication instance
-#endif
-
-    QApplication a(argc, argv);
-
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);
 	new DAVA::QtLayerMacOS();
@@ -96,8 +90,6 @@ int main(int argc, char *argv[])
 #endif
 
 	DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
-
-// GUI instance is already started
 
 #ifdef __DAVAENGINE_BEAST__
 	new BeastProxyImpl();
@@ -122,7 +114,20 @@ int main(int argc, char *argv[])
         DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
 
         new SceneValidator();
-		DavaGLWidget* davaGL = new DavaGLWidget();
+
+#if defined (__DAVAENGINE_MACOS__)
+        DAVA::QtLayerMacOS *qtLayer = (DAVA::QtLayerMacOS *) DAVA::QtLayer::Instance();
+        qtLayer->InitializeGlWindow((void *)NULL, 0, 0);
+
+        DAVA::QtLayer::Instance()->Resize(0, 0);
+#elif defined (__DAVAENGINE_WIN32__)
+        QApplication a(argc, argv);
+        
+        DavaGLWidget* davaGL = new DavaGLWidget();
+#else
+        DVASSERT(false && "Wrong platform");
+#endif //#if defined (__DAVAENGINE_MACOS__)
+        
         RenderManager::Instance()->Init(0, 0);
 
 		cmdLine.InitalizeTool();
@@ -136,16 +141,25 @@ int main(int argc, char *argv[])
             VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
             VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
             
-            
 			cmdLine.Process();
 			cmdLine.PrintResults();
 		}
 
-		SafeDelete(davaGL);
+#if defined (__DAVAENGINE_MACOS__)
+#elif defined (__DAVAENGINE_WIN32__)
+        SafeDelete(davaGL);
+#endif //defined (__DAVAENGINE_WIN32__)
+        
 		SceneValidator::Instance()->Release();
 	}
     else
     {
+#ifdef Q_OS_MAC
+        FixOSXFonts();  // Must be called before creating QApplication instance
+#endif
+        
+        QApplication a(argc, argv);
+
         a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 
         const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
