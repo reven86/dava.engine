@@ -19,21 +19,118 @@
 namespace rhi
 {
 
-class
+struct
+RenderPass_t
+{
+    MTLRenderPassDescriptor*            desc;
+    id<MTLCommandBuffer>                buf;
+    id<MTLParallelRenderCommandEncoder> encoder;
+    std::vector<Handle>                 cmdBuf;
+};
+
+
+struct
 CommandBuffer_t
 {
-public:
-
-    id<MTLCommandBuffer>        buf;
     id<MTLRenderCommandEncoder> encoder;
 
     Handle                      cur_ib;
 };
 
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
+typedef Pool<RenderPass_t>      RenderPassPool;
 
 static id<CAMetalDrawable>      _CurDrawable = nil;    
 static std::vector<Handle>      _CmdQueue;
+
+
+namespace RenderPass
+{
+
+Handle
+Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf )
+{
+    DVASSERT(cmdBufCount);
+
+    Handle                      pass_h = RenderPassPool::Alloc();
+    RenderPass_t*               pass   = RenderPassPool::Get( pass_h );
+    CAMetalLayer*               layer  = (CAMetalLayer*)(GetAppViewLayer());
+    MTLRenderPassDescriptor*    desc   = [MTLRenderPassDescriptor renderPassDescriptor];
+    
+
+    if( !_CurDrawable )
+        _CurDrawable = [layer nextDrawable];
+
+
+    desc.colorAttachments[0].texture        = _CurDrawable.texture;
+    desc.colorAttachments[0].loadAction     = (passConf.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+    desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
+    desc.colorAttachments[0].clearColor     = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0],passConf.colorBuffer[0].clearColor[1],passConf.colorBuffer[0].clearColor[2],passConf.colorBuffer[0].clearColor[3]);
+
+    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
+    desc.depthAttachment.loadAction         = (passConf.depthBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+    desc.depthAttachment.storeAction        = (passConf.depthBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLLoadActionDontCare;
+    desc.depthAttachment.clearDepth         = passConf.depthBuffer.clearDepth;
+    
+
+    if( cmdBufCount == 1 )
+    {
+        Handle              cb_h = CommandBufferPool::Alloc();
+        CommandBuffer_t*    cb   = CommandBufferPool::Get( cb_h );
+        
+        pass->desc      = desc;
+        pass->encoder   = nil;
+        pass->buf       = [_Metal_DefCmdQueue commandBuffer];
+
+        cb->encoder = [pass->buf renderCommandEncoderWithDescriptor:desc];
+        cb->cur_ib  = InvalidHandle;
+        
+        pass->cmdBuf.push_back( cb_h );        
+        cmdBuf[0] = cb_h;
+    }
+    else
+    {
+        pass->desc      = desc;
+        pass->buf     = [_Metal_DefCmdQueue commandBuffer];
+        pass->encoder = [pass->buf parallelRenderCommandEncoderWithDescriptor:desc];
+        
+        for( unsigned i=0; i!=cmdBufCount; ++i )
+        {
+            Handle              cb_h = CommandBufferPool::Alloc();
+            CommandBuffer_t*    cb   = CommandBufferPool::Get( cb_h );
+
+            cb->encoder = [pass->encoder renderCommandEncoder];
+            cb->cur_ib  = InvalidHandle;        
+            
+            pass->cmdBuf.push_back( cb_h );        
+            cmdBuf[i] = cb_h;
+        }
+    }
+
+    return pass_h;
+}
+
+void
+Begin( Handle pass_h )
+{
+    RenderPass_t*   pass = RenderPassPool::Get( pass_h );
+
+    _CmdQueue.push_back( pass_h );
+}
+
+void
+End( Handle pass_h )
+{
+    RenderPass_t*   pass = RenderPassPool::Get( pass_h );
+
+    if( pass->cmdBuf.size() > 1 )
+    {
+        [pass->encoder endEncoding];
+    }
+}
+
+}
+
 
 
 namespace CommandBuffer
@@ -41,60 +138,12 @@ namespace CommandBuffer
 
 //------------------------------------------------------------------------------
 
-Handle
-Allocate()
-{
-    Handle              handle  = CommandBufferPool::Alloc();
-    CommandBuffer_t*    cb      = CommandBufferPool::Get( handle );
-
-    cb->buf     = nil;
-    cb->encoder = nil;
-
-    return handle;
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-Submit( Handle cb )
-{
-    _CmdQueue.push_back( cb );
-}
-
-
-//------------------------------------------------------------------------------
-
 void
 Begin( Handle cmdBuf )
 {
-    CAMetalLayer*       layer   = (CAMetalLayer*)(GetAppViewLayer());
-    CommandBuffer_t*    cb      = CommandBufferPool::Get( cmdBuf );
-
-    if( !_CurDrawable )
-        _CurDrawable = [layer nextDrawable];
-
-///    _Metal_DefRenderPassDescriptor.colorAttachments[0].texture = _CurDrawable.texture;
-///    _Metal_DefRenderPassDescriptor.depthAttachment.texture     = _Metal_DefDepthBuf;
-
-    MTLRenderPassDescriptor*    desc = [MTLRenderPassDescriptor renderPassDescriptor];
-    
-    desc.colorAttachments[0].texture        = _CurDrawable.texture;
-    desc.colorAttachments[0].loadAction     = MTLLoadActionClear;
-    desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
-    desc.colorAttachments[0].clearColor     = MTLClearColorMake(0.3,0.3,0.6,1);
-
-    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
-    desc.depthAttachment.loadAction         = MTLLoadActionClear;
-    desc.depthAttachment.storeAction        = MTLStoreActionStore;
-    desc.depthAttachment.clearDepth         = 1.0f;
-
-    cb->buf     = [_Metal_DefCmdQueue commandBuffer];
-//    cb->encoder = [cb->buf renderCommandEncoderWithDescriptor:_Metal_DefRenderPassDescriptor];
-    cb->encoder = [cb->buf renderCommandEncoderWithDescriptor:desc];
-    cb->cur_ib  = InvalidHandle;
-
-    MTLViewport vp;
+    CommandBuffer_t* cb    = CommandBufferPool::Get( cmdBuf );
+    CAMetalLayer*    layer = (CAMetalLayer*)(GetAppViewLayer());
+    MTLViewport      vp;
 
     vp.originX  = 0;
     vp.originY  = 0;
@@ -104,50 +153,6 @@ Begin( Handle cmdBuf )
     vp.zfar     = 1;
 
     [cb->encoder setViewport:vp];
-
-    
-    [cb->encoder setDepthStencilState:_Metal_DefDepthState];
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-Begin( Handle cmdBuf, const RenderPassConfig& pass )
-{
-    CAMetalLayer*       layer   = (CAMetalLayer*)(GetAppViewLayer());
-    CommandBuffer_t*    cb      = CommandBufferPool::Get( cmdBuf );
-
-    if( !_CurDrawable )
-        _CurDrawable = [layer nextDrawable];
-
-    MTLRenderPassDescriptor*    desc = [MTLRenderPassDescriptor renderPassDescriptor];
-    
-    desc.colorAttachments[0].texture        = _CurDrawable.texture;
-    desc.colorAttachments[0].loadAction     = (pass.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-    desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
-    desc.colorAttachments[0].clearColor     = MTLClearColorMake(pass.colorBuffer[0].clearColor[0],pass.colorBuffer[0].clearColor[1],pass.colorBuffer[0].clearColor[2],pass.colorBuffer[0].clearColor[3]);
-
-    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
-    desc.depthAttachment.loadAction         = (pass.depthBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-    desc.depthAttachment.storeAction        = (pass.depthBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLLoadActionDontCare;
-    desc.depthAttachment.clearDepth         = pass.depthBuffer.clearDepth;
-
-    cb->buf     = [_Metal_DefCmdQueue commandBuffer];
-    cb->encoder = [cb->buf renderCommandEncoderWithDescriptor:desc];
-    cb->cur_ib  = InvalidHandle;
-
-    MTLViewport vp;
-
-    vp.originX  = 0;
-    vp.originY  = 0;
-    vp.width    = layer.bounds.size.width;
-    vp.height   = layer.bounds.size.height;
-    vp.znear    = 0;
-    vp.zfar     = 1;
-
-    [cb->encoder setViewport:vp];
-
     
     [cb->encoder setDepthStencilState:_Metal_DefDepthState];
 }
@@ -323,19 +328,29 @@ Present()
     
 //    _CurDrawable = [layer nextDrawable];
     
-    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
+    for( unsigned p=0; p!=_CmdQueue.size(); ++p )
     {
-        CommandBuffer_t*    cb = Pool<CommandBuffer_t>::Get( _CmdQueue[i] );
+        RenderPass_t*   pass = RenderPassPool::Get( _CmdQueue[p] );
+
+        for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
+        {
+            Handle              cb_h = pass->cmdBuf[b];
+            CommandBuffer_t*    cb   = CommandBufferPool::Get( cb_h );
         
-        if( i == _CmdQueue.size()-1 )
-            [cb->buf presentDrawable:_CurDrawable];
+
+            CommandBufferPool::Free( cb_h );
+        }
         
-        [cb->buf commit];
+        [pass->buf presentDrawable:_CurDrawable];
+        [pass->buf commit];
         // force CPU-GPU sync
-        [cb->buf waitUntilCompleted];
+        [pass->buf waitUntilCompleted];
         
-        Pool<CommandBuffer_t>::Free( _CmdQueue[i] );
+        if( pass->cmdBuf.size() > 1 )
+        {
+        }
     }
+
     _CmdQueue.clear();
 //    _CurDrawable = [layer nextDrawable];
     _CurDrawable = nil;

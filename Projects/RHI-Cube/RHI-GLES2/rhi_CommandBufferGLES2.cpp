@@ -39,14 +39,21 @@ CommandGLES2
     GLES2__NOP
 };
 
-class
+struct
+RenderPass_t
+{
+    std::vector<Handle> cmdBuf;
+};
+
+
+struct
 CommandBuffer_t
 {
 public:
                 CommandBuffer_t();
                 ~CommandBuffer_t();
 
-    void        Begin( const RenderPassConfig& pass );
+    void        Begin();
     void        End();
     void        Execute();
 
@@ -59,21 +66,62 @@ public:
     void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6 );
 
 
-private:
-
     static const uint64   EndCmd/* = 0xFFFFFFFF*/;
 
     std::vector<uint64> _cmd;
 
     RenderPassConfig    passCfg;
-    uint32              usePassCfg:1;
+    uint32              isFirstInPass:1;
+    uint32              isLastInPass:1;
 };
 
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
+typedef Pool<RenderPass_t>      RenderPassPool;
     
 const uint64   CommandBuffer_t::EndCmd = 0xFFFFFFFF;
 
 static std::vector<Handle>  _CmdQueue;
+
+namespace RenderPass
+{
+
+Handle
+Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf )
+{
+    DVASSERT(cmdBufCount);
+
+    Handle          handle  = RenderPassPool::Alloc();
+    RenderPass_t*   pass    = RenderPassPool::Get( handle );
+
+    for( unsigned i=0; i!=cmdBufCount; ++i )
+    {
+        Handle              h  = CommandBufferPool::Alloc();
+        CommandBuffer_t*    cb = CommandBufferPool::Get( h );
+
+        cb->passCfg         = passConf;
+        cb->isFirstInPass   = i == 0;
+        cb->isLastInPass    = i == cmdBufCount - 1;
+        
+        pass->cmdBuf.push_back( h );
+        cmdBuf[i] = h;
+    }
+
+    return handle;
+}
+
+void
+Begin( Handle pass )
+{
+    _CmdQueue.push_back( pass );
+}
+
+void
+End( Handle pass )
+{
+}
+
+
+}
 
 
 namespace CommandBuffer
@@ -104,16 +152,6 @@ Submit( Handle cb )
 void
 Begin( Handle cmdBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( GLES2__BEGIN );
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-Begin( Handle cmdBuf, const RenderPassConfig& pass )
-{
-    CommandBufferPool::Get(cmdBuf)->Begin( pass );
     CommandBufferPool::Get(cmdBuf)->Command( GLES2__BEGIN );
 }
 
@@ -273,7 +311,8 @@ DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 
 
 CommandBuffer_t::CommandBuffer_t()
-  : usePassCfg(false)
+  : isFirstInPass(true),
+    isLastInPass(true)
 {
 }
 
@@ -289,12 +328,9 @@ CommandBuffer_t::~CommandBuffer_t()
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Begin( const RenderPassConfig& pass )
+CommandBuffer_t::Begin()
 {
     _cmd.clear();
-
-    passCfg     = pass;
-    usePassCfg  = true;
 }
 
 
@@ -457,32 +493,37 @@ SCOPED_NAMED_TIMING("CommandBuffer_t::Execute");
                 GL_CALL(glDepthFunc( GL_LEQUAL ));
                 GL_CALL(glDepthMask( GL_TRUE ));
 
-                GLuint  flags = 0;
-            
-                if( passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR )
+                if( isFirstInPass )
                 {
-                    glClearColor( passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3] );
-                    flags |= GL_COLOR_BUFFER_BIT;
+                    GLuint  flags = 0;
+                
+                    if( passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR )
+                    {
+                        glClearColor( passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3] );
+                        flags |= GL_COLOR_BUFFER_BIT;
+                    }
+
+                    if( passCfg.depthBuffer.loadAction == LOADACTION_CLEAR )
+                    {
+                        #if defined(__DAVAENGINE_IPHONE__)
+                        glClearDepthf( passCfg.depthBuffer.clearDepth );
+                        #else
+                        glClearDepth( passCfg.depthBuffer.clearDepth );
+                        #endif
+
+                        flags |= GL_DEPTH_BUFFER_BIT;
+                    }
+
+                    glClear( flags );
                 }
-
-                if( passCfg.depthBuffer.loadAction == LOADACTION_CLEAR )
-                {
-                    #if defined(__DAVAENGINE_IPHONE__)
-                    glClearDepthf( passCfg.depthBuffer.clearDepth );
-                    #else
-                    glClearDepth( passCfg.depthBuffer.clearDepth );
-                    #endif
-
-                    flags |= GL_DEPTH_BUFFER_BIT;
-                }
-
-                glClear( flags );
-
             }   break;
             
             case GLES2__END :
             {
-                glFlush();
+                if( isLastInPass )
+                {
+                    glFlush();
+                }
             }   break;
             
             case GLES2__CLEAR :
@@ -600,10 +641,18 @@ Present()
 {
     for( unsigned i=0; i!=_CmdQueue.size(); ++i )
     {
-        Handle  cb = _CmdQueue[i];
+        RenderPass_t*   pass = RenderPassPool::Get( _CmdQueue[i] );
 
-        Pool<CommandBuffer_t>::Get(cb)->Execute();    
-        Pool<CommandBuffer_t>::Free( _CmdQueue[i] );
+        for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
+        {
+            Handle           cb_h = pass->cmdBuf[b];
+            CommandBuffer_t* cb   = CommandBufferPool::Get( cb_h );
+
+            cb->Execute();
+            CommandBufferPool::Free( cb_h );
+        }
+
+        RenderPassPool::Free( _CmdQueue[i] );
     }
     _CmdQueue.clear();
 
