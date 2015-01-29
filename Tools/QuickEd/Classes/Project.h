@@ -1,11 +1,3 @@
-//
-//  Project.h
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 11.9.14.
-//
-//
-
 #ifndef __UI_EDITOR_PROJECT_H__
 #define __UI_EDITOR_PROJECT_H__
 

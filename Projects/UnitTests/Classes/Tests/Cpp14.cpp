@@ -34,8 +34,11 @@ using namespace DAVA;
 Cpp14Test::Cpp14Test ()
 : TestTemplate<Cpp14Test> ("Cpp14Test")
 {
-    RegisterFunction (this, &Cpp14Test::CompileTest, String ("ResTestFunction"), NULL);
+    RegisterFunction (this, &Cpp14Test::CompileTest, String ("CompileTest"), NULL);
+    RegisterFunction (this, &Cpp14Test::ScopeExit, String ("ScopeExit"), NULL);
 }
+
+auto f () -> int;
 
 auto f () -> int
 {
@@ -45,4 +48,15 @@ auto f () -> int
 void Cpp14Test::CompileTest (PerfFuncData * data)
 {
     TEST_VERIFY (f () == 42);
+}
+
+void Cpp14Test::ScopeExit (PerfFuncData * data)
+{
+    int32 i = 0;
+    {
+        SCOPE_EXIT{ ++i; };
+        TEST_VERIFY(0 == i);
+    }
+    TEST_VERIFY(1 == i);
+    
 }
