@@ -54,7 +54,11 @@ const float _PI = 3.141592654;
 // DECLARATIONS
 #if defined(MATERIAL_TEXTURE)
 uniform sampler2D albedo;
+#if defined(TEXTURE0_ANIMATION_SHIFT)
+varying highp vec2 varTexCoord0;
+#else
 varying mediump vec2 varTexCoord0;
+#endif
 #elif defined(MATERIAL_SKYBOX)
 uniform samplerCube cubemap;
 varying mediump vec3 varTexCoord0;
