@@ -375,8 +375,8 @@
 
 - (void)CalcOffset:(NSEvent *)theEvent
 {
-    NSPoint origPos = [self convertPointToBacking:[theEvent locationInWindow]];
-    NSPoint p = [self convertPointFromBase:origPos];
+    NSPoint p = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+    
     offset.x = [theEvent locationInWindow].x - p.x;
     offset.y = [theEvent locationInWindow].y - p.y;
     
@@ -390,14 +390,12 @@
     
     [self CalcOffset:theEvent];
     [self process:DAVA::UIEvent::PHASE_BEGAN touch:theEvent];
-	[super mouseDown:theEvent];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
     [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
-    [super mouseUp:theEvent];
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
