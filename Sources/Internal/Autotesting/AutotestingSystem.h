@@ -82,7 +82,7 @@ public:
     
 	// Parameters from DB
 	void FetchParametersFromDB();
-	void FetchParametersFromIdTxt();
+	void FetchParametersFromIdYaml();
 	void SetUpConnectionToDB();
 
 	void InitializeDevice(const String & device);
@@ -91,7 +91,7 @@ public:
 	void OnTestStart(const String &testName);
 	void OnStepStart( const String & stepName );
 	void OnStepFinished();
-	void OnTestsSatrted();
+	void OnTestStarted();
     void OnError(const String & errorMessage = "");
 	//void OnMessage(const String & logMessage = "");
 	void ForceQuit(const String & logMessage = "");
@@ -119,6 +119,8 @@ public:
 	uint64 GetCurrentTimeMS();
 	String GetCurrentTimeString();
 	String GetCurrentTimeMsString();
+
+
 protected:
 
 //DB
@@ -134,7 +136,6 @@ protected:
     void SaveTestToDB();
     void SaveTestStepToDB(const String &stepDescription, bool isPassed, const String &error = "");
     void SaveTestStepLogEntryToDB(const String &type, const String &time, const String &message);*/
-	void SaveScreenShotNameToDB();
 
     /*String ReadMasterIDFromDB(); //TODO: get first available master
     
@@ -162,7 +163,7 @@ public:
     int32 stepIndex;
     int32 logIndex;
 
-    String testName;
+	String testDescription;
     String testFileName;
     String testFilePath;
 

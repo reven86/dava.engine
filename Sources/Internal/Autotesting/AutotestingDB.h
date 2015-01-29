@@ -54,6 +54,8 @@ public:
 	// Getting and Setting data from/in DB
 	bool SaveToDB(MongodbUpdateObject *dbUpdateObject);
 
+	void WriteLogHeader();
+	void WriteLog(const char8 *text, ...);
 	void Log(const String &level, const String &message);
 
 	String GetStringTestParameter(const String & deviceName, const String & parameter);
@@ -62,7 +64,7 @@ public:
 	String ReadString(const String & name);
 	void WriteString(const String & name, const String & text);
 
-	bool SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName);
+	bool SaveKeyedArchiveToDevice(KeyedArchive *archive);
 
 	void UploadScreenshot(const String & name, Image *image);
 
@@ -74,9 +76,13 @@ public:
 	String ReadCommand(const String & device);
 
 	void SetTestStarted();
+
+	FilePath logsFolder;
+
 protected:
 	MongodbClient *dbClient;
-
+	FilePath logFilePath;
+	AutotestingSystem *autoSys;
 
 };
 

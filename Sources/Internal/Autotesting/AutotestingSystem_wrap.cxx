@@ -6164,34 +6164,26 @@ fail:
 }
 
 
-static int _wrap_AutotestingSystemLua_SaveKeyedArchiveToDB__SWIG_0(lua_State* L) {
+static int _wrap_AutotestingSystemLua_SaveKeyedArchiveToDevice(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-  DAVA::String *arg2 = 0 ;
-  DAVA::KeyedArchive *arg3 = (DAVA::KeyedArchive *) 0 ;
-  DAVA::String *arg4 = 0 ;
-  DAVA::String temp2 ;
-  DAVA::String temp4 ;
+  DAVA::KeyedArchive *arg2 = (DAVA::KeyedArchive *) 0 ;
   bool result;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",4,4)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",1,"DAVA::AutotestingSystemLua *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",2,"DAVA::String const &");
-  if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",3,"DAVA::KeyedArchive *");
-  if(!lua_isstring(L,4)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",4,"DAVA::String const &");
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",2,"DAVA::KeyedArchive *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDB",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+    SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDevice",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
   
-  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_DAVA__KeyedArchive,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDB",3,SWIGTYPE_p_DAVA__KeyedArchive);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__KeyedArchive,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDevice",2,SWIGTYPE_p_DAVA__KeyedArchive);
   }
   
-  temp4.assign(lua_tostring(L,4),lua_rawlen(L,4)); arg4=&temp4;
-  result = (bool)(arg1)->SaveKeyedArchiveToDB((DAVA::String const &)*arg2,arg3,(DAVA::String const &)*arg4);
+  result = (bool)(arg1)->SaveKeyedArchiveToDevice(arg2);
   lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   return SWIG_arg;
   
@@ -6200,120 +6192,6 @@ static int _wrap_AutotestingSystemLua_SaveKeyedArchiveToDB__SWIG_0(lua_State* L)
 fail:
   lua_error(L);
   return SWIG_arg;
-}
-
-
-static int _wrap_AutotestingSystemLua_SaveKeyedArchiveToDB__SWIG_1(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-  DAVA::String *arg2 = 0 ;
-  DAVA::KeyedArchive *arg3 = (DAVA::KeyedArchive *) 0 ;
-  DAVA::String temp2 ;
-  bool result;
-  
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",1,"DAVA::AutotestingSystemLua *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",2,"DAVA::String const &");
-  if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB",3,"DAVA::KeyedArchive *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDB",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
-  }
-  
-  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_DAVA__KeyedArchive,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDB",3,SWIGTYPE_p_DAVA__KeyedArchive);
-  }
-  
-  result = (bool)(arg1)->SaveKeyedArchiveToDB((DAVA::String const &)*arg2,arg3);
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_AutotestingSystemLua_SaveKeyedArchiveToDB(lua_State* L) {
-  int argc;
-  int argv[5]={
-    1,2,3,4,5
-  };
-  
-  argc = lua_gettop(L);
-  if (argc == 3) {
-    int _v;
-    {
-      void *ptr;
-      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__AutotestingSystemLua, 0)) {
-        _v = 0;
-      } else {
-        _v = 1;
-      }
-    }
-    if (_v) {
-      {
-        _v = lua_isstring(L,argv[1]);
-      }
-      if (_v) {
-        {
-          void *ptr;
-          if (SWIG_isptrtype(L,argv[2])==0 || SWIG_ConvertPtr(L,argv[2], (void **) &ptr, SWIGTYPE_p_DAVA__KeyedArchive, 0)) {
-            _v = 0;
-          } else {
-            _v = 1;
-          }
-        }
-        if (_v) {
-          return _wrap_AutotestingSystemLua_SaveKeyedArchiveToDB__SWIG_1(L);
-        }
-      }
-    }
-  }
-  if (argc == 4) {
-    int _v;
-    {
-      void *ptr;
-      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__AutotestingSystemLua, 0)) {
-        _v = 0;
-      } else {
-        _v = 1;
-      }
-    }
-    if (_v) {
-      {
-        _v = lua_isstring(L,argv[1]);
-      }
-      if (_v) {
-        {
-          void *ptr;
-          if (SWIG_isptrtype(L,argv[2])==0 || SWIG_ConvertPtr(L,argv[2], (void **) &ptr, SWIGTYPE_p_DAVA__KeyedArchive, 0)) {
-            _v = 0;
-          } else {
-            _v = 1;
-          }
-        }
-        if (_v) {
-          {
-            _v = lua_isstring(L,argv[3]);
-          }
-          if (_v) {
-            return _wrap_AutotestingSystemLua_SaveKeyedArchiveToDB__SWIG_0(L);
-          }
-        }
-      }
-    }
-  }
-  
-  SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'AutotestingSystemLua_SaveKeyedArchiveToDB'\n"
-    "  Possible C/C++ prototypes are:\n"
-    "    DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB(DAVA::String const &,DAVA::KeyedArchive *,DAVA::String const &)\n"
-    "    DAVA::AutotestingSystemLua::SaveKeyedArchiveToDB(DAVA::String const &,DAVA::KeyedArchive *)\n");
-  lua_error(L);return 0;
 }
 
 
@@ -6476,7 +6354,7 @@ static swig_lua_method swig_AutotestingSystemLua_methods[]= {
     { "GetDeviceName", _wrap_AutotestingSystemLua_GetDeviceName},
     { "GetPlatform", _wrap_AutotestingSystemLua_GetPlatform},
     { "IsPhoneScreen", _wrap_AutotestingSystemLua_IsPhoneScreen},
-    { "SaveKeyedArchiveToDB", _wrap_AutotestingSystemLua_SaveKeyedArchiveToDB},
+    { "SaveKeyedArchiveToDevice", _wrap_AutotestingSystemLua_SaveKeyedArchiveToDevice},
     { "GetTestParameter", _wrap_AutotestingSystemLua_GetTestParameter},
     { "WriteString", _wrap_AutotestingSystemLua_WriteString},
     { "ReadString", _wrap_AutotestingSystemLua_ReadString},

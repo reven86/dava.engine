@@ -1,18 +1,18 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
-    All rights reserved.
+	Copyright (c) 2008, DAVA, INC
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+	* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+	* Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+	THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	=====================================================================================*/
 #include "Autotesting/AutotestingDB.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -27,9 +27,12 @@
 namespace DAVA
 {
 	AutotestingDB::AutotestingDB()
-	:dbClient(NULL)
+		: dbClient(NULL)
+		, logFilePath(NULL)
+		, logsFolder(NULL)
+		, autoSys(NULL)
 	{
-
+		autoSys = AutotestingSystem::Instance();
 	}
 
 	AutotestingDB::~AutotestingDB()
@@ -42,109 +45,76 @@ namespace DAVA
 		DVASSERT(NULL == dbClient);
 
 		dbClient = MongodbClient::Create(dbHost.c_str(), dbPort);
-		if(dbClient)
+		if (dbClient)
 		{
 			dbClient->SetDatabaseName(dbName.c_str());
 			dbClient->SetCollectionName(collection.c_str());
 		}
-
 		return (NULL != dbClient);
 	}
 
 	void AutotestingDB::CloseConnection()
 	{
-		if(dbClient)
+		if (dbClient)
 		{
 			dbClient->Disconnect();
 			SafeRelease(dbClient);
 		}
 	}
 
-	String AutotestingDB::GetStringTestParameter(const String & deviceName, const String & parameter)
+	String AutotestingDB::GetStringTestParameter(const String &deviceName, const String &parameter)
 	{
 		Logger::Debug("AutotestingDB::GetStringTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
-
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
-		KeyedArchive* deviceArchive;
-		String result;
-		
-		deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
-		if (deviceArchive)
+		KeyedArchive* deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
+		if (!deviceArchive)
 		{
-			result = deviceArchive->GetString(parameter.c_str(), "not_found");
+			autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
 		}
-		else
-		{
-			AutotestingSystem::Instance()->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
-		}
-		
-
+		String result = deviceArchive->GetString(parameter.c_str(), "not_found");
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetStringTestParameter %s", result.c_str());
+		Logger::Debug("AutotestingDB::GetStringTestParameter value: %s", result.c_str());
 		return result;
 	}
 
-	int32 AutotestingDB::GetIntTestParameter(const String & deviceName, const String & parameter)
+	int32 AutotestingDB::GetIntTestParameter(const String &deviceName, const String &parameter)
 	{
 		Logger::Debug("AutotestingDB::GetIntTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
-
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 		KeyedArchive* currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
-		KeyedArchive* deviceArchive;
-		int32 result;
-
-		deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
-		if (deviceArchive)
+		KeyedArchive* deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
+		if (!deviceArchive)
 		{
-			result = deviceArchive->GetInt32(parameter.c_str(), -9999);
+			autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
 		}
-		else
-		{
-			result = -9999;
-		}
-
-
+		int32 result = deviceArchive->GetInt32(parameter.c_str(), -9999);
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetIntTestParameter %d", result);
+		Logger::Debug("AutotestingDB::GetIntTestParameter value: %d", result);
 		return result;
 	}
-	
-	/*
+
+	/* WTF?!
 	Design for AutotestDB:
 	Doc for current build: id = Date_BuildNum_Device
-		Doc for current test group: id = GroupName
-			Doc for current test: id = TestNum
+	Doc for current test group: id = GroupName
+	Doc for current test: id = TestNum
 	*/
 
 	// BUILD Level
 	KeyedArchive *AutotestingDB::FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg)
 	{
-		String testsName;
-
-		if (auxArg.length() != 0)
+		if (auxArg.length() == 0)
 		{
-			testsName = Format("%s", auxArg.c_str());
+			autoSys->ForceQuit("Archive name is empty.");
 		}
-		else
+		String archiveName = Format("%s", auxArg.c_str());
+		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
-			testsName = Format("%s_%s_%s", AutotestingSystem::Instance()->buildDate.c_str(), AutotestingSystem::Instance()->buildId.c_str(), AutotestingSystem::Instance()->deviceName.c_str());
+			autoSys->ForceQuit(Format("Couldn't find archive for %s device", archiveName.c_str()));
 		}
-
-		KeyedArchive* dbUpdateData = NULL;
-		bool isFound = dbClient->FindObjectByKey(testsName, dbUpdateObject);
-		
-		if(!isFound)
-		{
-			AutotestingSystem::Instance()->ForceQuit(Format("AutotestingDB::FindRunArchive couldn't find %s archive", testsName.c_str()));
-		}
-		else
-		{
-			dbUpdateObject->LoadData();
-			dbUpdateData = dbUpdateObject->GetData();
-		}
-
-		return dbUpdateData;
+		dbUpdateObject->LoadData();
+		return dbUpdateObject->GetData();
 	}
 
 	KeyedArchive *AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg)
@@ -157,28 +127,26 @@ namespace DAVA
 		}
 		else
 		{
-			testsName = Format("%s_%s_%s", AutotestingSystem::Instance()->buildDate.c_str(), AutotestingSystem::Instance()->buildId.c_str(), AutotestingSystem::Instance()->deviceName.c_str());
+			testsName = Format("%s_%s_%s", autoSys->buildDate.c_str(), autoSys->buildId.c_str(), autoSys->deviceName.c_str());
 		}
 
 		bool isFound = dbClient->FindObjectByKey(testsName, dbUpdateObject);
 
-		if(!isFound)
+		if (!isFound)
 		{
 			dbUpdateObject->SetObjectName(testsName);
-
 			dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
-			dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
-			dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId.c_str());
-			dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
-			dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
-			dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
-			dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
-			dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
-			dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
+			dbUpdateObject->AddString("Date", autoSys->buildDate.c_str());
+			dbUpdateObject->AddString("RunId", autoSys->runId.c_str());
+			dbUpdateObject->AddString("Device", autoSys->deviceName.c_str());
+			dbUpdateObject->AddString("BuildId", autoSys->buildId.c_str());
+			dbUpdateObject->AddString("Branch", autoSys->branch.c_str());
+			dbUpdateObject->AddString("BranchRevision", autoSys->branchRev.c_str());
+			dbUpdateObject->AddString("Framework", autoSys->framework.c_str());
+			dbUpdateObject->AddString("FrameworkRevision", autoSys->frameworkRev.c_str());
 			// TODO: After realization GetOsVersion() DF-3940
 			dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
 			dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
-
 			Logger::Debug("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
 		}
 
@@ -188,60 +156,42 @@ namespace DAVA
 		return dbUpdateData;
 	}
 
+	void AutotestingDB::WriteLogHeader()
+	{
+		FilePath logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
+		FileSystem::Instance()->CreateDirectoryW(logsFolder);
+		logFilePath = logsFolder + Format("/%s_%s.txt", autoSys->groupName.c_str(), autoSys->testFileName.c_str());
+		WriteLog("Platform:%s|Name:%s|Model:%s|OSVersion:%s", Format("%s", AUTOTESTING_PLATFORM_NAME).c_str(),
+			autoSys->deviceName.c_str(), DeviceInfo::GetModel().c_str(), DeviceInfo::GetVersion().c_str());
+		DateTime time = DateTime::Now();
+		WriteLog("BuildDate:%s|LaunchDate:%s|RunId:%s", autoSys->buildDate.c_str(), Format("%d-%d-%d", time.GetYear(), time.GetMonth(), time.GetDay()).c_str(), autoSys->runId.c_str());
+		WriteLog("Client:%s|ClientRevision:%s|Framework:%s|FrameworkRevision:%s", autoSys->branch.c_str(), autoSys->branchRev.c_str(), autoSys->framework.c_str(), autoSys->frameworkRev.c_str());
+	}
+
+	void AutotestingDB::WriteLog(const char8* text, ...)
+	{
+		if (!text || text[0] == '\0') return;
+		autoSys = autoSys;
+		File *file = File::Create(logFilePath, File::APPEND | File::WRITE);
+		if (!file)
+		{
+			Logger::Error("Can't open/create log file.");
+			return;
+		}
+		text += L'\n';
+		va_list vl;
+		va_start(vl, text);
+		file->Write(text, sizeof(char) * strlen(text));
+		file->Release();
+		va_end(vl);
+	}
+
 	void AutotestingDB::Log(const String &level, const String &message)
 	{
 		Logger::Debug("AutotestingDB::Log [%s]%s", level.c_str(), message.c_str());
-		uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-		String testId = AutotestingSystem::Instance()->GetTestId();
-		String stepId = AutotestingSystem::Instance()->GetStepId();
-		String logId = AutotestingSystem::Instance()->GetLogId();
-		AutotestingSystem::Instance()->logIndex++;
-
-		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
-
-		// Launch data
-		dbUpdateObject->SetUniqueObjectName();
-
-		dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
-		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
-		dbUpdateObject->AddString("RunId", AutotestingSystem::Instance()->runId.c_str());
-		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
-		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
-		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
-		dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
-		dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
-		dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
-		dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
-		dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
-
-		// Test data
-		dbUpdateObject->AddString("Group", AutotestingSystem::Instance()->groupName.c_str());
-		dbUpdateObject->AddString("Test", testId.c_str());
-		dbUpdateObject->AddString("Step", stepId.c_str());
-		dbUpdateObject->AddString("Log", logId.c_str());
-
-
-		// Log data
-		String currentTime = AutotestingSystem::Instance()->GetCurrentTimeString();
-		dbUpdateObject->AddString("Type", level);
-		dbUpdateObject->AddString("Time", currentTime);
-		dbUpdateObject->AddString("Message", message);
-		/*KeyedArchive* logEntry = new KeyedArchive();
-
-		logEntry->SetString("Type", level);
-		
-		logEntry->SetString("Time", currentTime);
-		logEntry->SetString("Message", message);
-		dbUpdateObject->Add*/
-
-		dbUpdateObject->LoadData();
-		SaveToDB(dbUpdateObject);
-		SafeRelease(dbUpdateObject);
-		
-		uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::Log FINISH  summary time %d", finishTime - startTime);
+		WriteLog("[%s] %s", autoSys->GetCurrentTimeString().c_str(), message.c_str());
 	}
-
+	
 	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadCommand(const String & device)
 	{
@@ -291,42 +241,11 @@ namespace DAVA
 		return result;
 	}
 
-	bool AutotestingDB::SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName)
+	bool AutotestingDB::SaveKeyedArchiveToDevice(KeyedArchive *archive)
 	{
-		Logger::Debug("AutotestingDB::SaveKeyedArchiveToDB %s to %s", archiveName.c_str(), docName.c_str());
-		String testId = AutotestingSystem::Instance()->GetTestId();
-		String stepId = AutotestingSystem::Instance()->GetStepId();
-		
-		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
-
-		// Launch data
-		dbUpdateObject->SetUniqueObjectName();
-
-		dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
-		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
-		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
-		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
-		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
-		dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
-		dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
-		dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
-		dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
-		dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
-
-		// Test data
-		dbUpdateObject->AddString("Group", AutotestingSystem::Instance()->groupName.c_str());
-		dbUpdateObject->AddString("Test", testId.c_str());
-		dbUpdateObject->AddString("Step", stepId.c_str());
-
-
-		// Insert Archive
-		dbUpdateObject->AddString("Type", docName.c_str());
-		dbUpdateObject->AddString("Name", archiveName.c_str());
-		dbUpdateObject->LoadData();
-		dbUpdateObject->GetData()->SetArchive(archiveName.c_str(), archive);
-		
-
-		return SaveToDB(dbUpdateObject);;
+		String fileName = Format("%s_%s.yaml", autoSys->groupName, autoSys->testFileName);
+		Logger::Debug("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
+		return archive->SaveToYamlFile(FileSystem::Instance()->GetCurrentDocumentsDirectory() + Format("%s.txt", fileName.c_str()));
 	}
 
 	bool AutotestingDB::SaveToDB(MongodbUpdateObject *dbUpdateObject)
@@ -336,7 +255,7 @@ namespace DAVA
 
 		bool ret = dbUpdateObject->SaveToDB(dbClient);
 
-		if(!ret)
+		if (!ret)
 		{
 			Logger::Error("AutotestingSystem::SaveToDB failed");
 		}
@@ -348,18 +267,11 @@ namespace DAVA
 
 	void AutotestingDB::UploadScreenshot(const String & name, Image *image)
 	{
-		//#if defined(__DAVAENGINE_ANDROID__)
-		//	image->ResizeImage(1280, 752);
-		//	image->ResizeCanvas(1280, 752);
-		//#else
-		//	image->ResizeImage(1024, 768);
-		//	image->ResizeCanvas(1024, 768);
-		//#endif
-		if(dbClient)
+		if (dbClient)
 		{
 			//Logger::Debug("Image: datasize %d, %d x %d", image->dataSize, image->GetHeight(), image->GetWidth());
-            dbClient->SaveBufferToGridFS(Format("%s_%dx%d", name.c_str(), image->GetWidth(), image->GetHeight()),
-                reinterpret_cast<char*>(image->GetData()), image->dataSize);
+			dbClient->SaveBufferToGridFS(Format("%s_%dx%d", name.c_str(), image->GetWidth(), image->GetHeight()),
+				reinterpret_cast<char*>(image->GetData()), image->dataSize);
 		}
 	}
 
@@ -410,29 +322,29 @@ namespace DAVA
 
 		Logger::Debug("AutotestingSystem::WriteString finish");
 	}
-	
+
 	// auxiliary methods
 	void AutotestingDB::SetTestStarted()
 	{
-		Logger::Debug("AutotestingSystem::SetTestStarted Test%03d: %s", AutotestingSystem::Instance()->testIndex, AutotestingSystem::Instance()->testName.c_str());
-
+		Logger::Debug("AutotestingSystem::SetTestStarted for test: %s", autoSys->testFileName.c_str());
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive* currentRunArchive = FindOrInsertBuildArchive(dbUpdateObject, "autotesting_system");
-		
-		KeyedArchive* deviceArchive = currentRunArchive->GetArchive(AutotestingSystem::Instance()->deviceName.c_str(), NULL);
-		
-		if (deviceArchive)
+		KeyedArchive* currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
+		if (!currentRunArchive)
 		{
-			deviceArchive->SetString("Started", "1");
-			deviceArchive->SetString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
-			deviceArchive->SetString("Date", AutotestingSystem::Instance()->testsDate.c_str());
-			deviceArchive->SetString("Framework", AutotestingSystem::Instance()->framework.c_str());
-			deviceArchive->SetString("Branch", AutotestingSystem::Instance()->branch.c_str());
+			autoSys->ForceQuit(Format("Couldn't find archive autotesting_system device"));
 		}
-		else
+		KeyedArchive* deviceArchive = currentRunArchive->GetArchive(autoSys->deviceName.c_str(), NULL);
+
+		if (!deviceArchive)
 		{
-			AutotestingSystem::Instance()->ForceQuit(Format("Couldn't find archive for %s device", AutotestingSystem::Instance()->deviceName.c_str()));
+			autoSys->ForceQuit(Format("Couldn't find archive for %s device", autoSys->deviceName.c_str()));
 		}
+
+		deviceArchive->SetString("Started", "1");
+		deviceArchive->SetString("BuildId", autoSys->buildId.c_str());
+		deviceArchive->SetString("Framework", autoSys->framework.c_str());
+		deviceArchive->SetString("Branch", autoSys->branch.c_str());
+
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
 	}

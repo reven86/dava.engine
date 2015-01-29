@@ -237,11 +237,17 @@ namespace DAVA
 
 	String AutotestingSystemLua::GetDeviceName()
 	{
+		String deviceName;
 		if (AUTOTESTING_PLATFORM_NAME == "Android")
 		{
-			return DeviceInfo::GetModel();
+			deviceName = DeviceInfo::GetModel();
 		}
-		return WStringToString(DeviceInfo::GetName());
+		else 
+		{
+			deviceName = WStringToString(DeviceInfo::GetName());
+		}
+		replace(deviceName.begin(), deviceName.end(), ' ', '_');
+		return deviceName;
 	}
 
 	bool AutotestingSystemLua::IsPhoneScreen()
@@ -274,10 +280,10 @@ namespace DAVA
 		AutotestingSystem::Instance()->OnError(errorMessage);
 	}
 
-	void AutotestingSystemLua::OnTestStart(const String &testName)
+	void AutotestingSystemLua::OnTestStart(const String &testDescription)
 	{
-		Logger::Debug("AutotestingSystemLua::OnTestStart %s", testName.c_str());
-		AutotestingSystem::Instance()->OnTestStart(testName);
+		Logger::Debug("AutotestingSystemLua::OnTestStart %s", testDescription.c_str());
+		AutotestingSystem::Instance()->OnTestStart(testDescription);
 	}
 
 	void AutotestingSystemLua::OnTestFinished()
@@ -309,10 +315,10 @@ namespace DAVA
 		return AutotestingDB::Instance()->ReadString(name);
 	}
 
-	bool AutotestingSystemLua::SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName)
+	bool AutotestingSystemLua::SaveKeyedArchiveToDevice(KeyedArchive *archive)
 	{
-		Logger::Debug("AutotestingSystemLua::SaveKeyedArchiveToDB");
-		return AutotestingDB::Instance()->SaveKeyedArchiveToDB(archiveName, archive, docName);
+		Logger::Debug("AutotestingSystemLua::SaveKeyedArchiveToDevice");
+		return AutotestingDB::Instance()->SaveKeyedArchiveToDevice(archive);
 	}
 
 	String AutotestingSystemLua::MakeScreenshot()
