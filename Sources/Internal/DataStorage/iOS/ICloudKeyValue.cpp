@@ -26,19 +26,75 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DataVault/DataStorage.h"
 #include "ICloudKeyValue.h"
+
+#if defined(__DAVAENGINE_IPHONE__)
+
+#import "Utils/NSStringUtils.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_IPHONE__)
-
-DataStorage::DataStorage()
+ICloudKeyValue::ICloudKeyValue()
 {
-    impl = new ICloudKeyValue();
+    Sync();
+}
+
+String ICloudKeyValue::GetEntryValue(const String &key)
+{
+    Logger::FrameworkDebug("Trying to Get value for %s key", key.c_str());
+
+    NSUbiquitousKeyValueStore *iCloudStorage = [NSUbiquitousKeyValueStore defaultStore];
+    NSString *value = [iCloudStorage stringForKey : NSStringFromString(key)];
+
+    if (nil != value)
+    {
+        return String([value UTF8String]);
+    }
+
+    return "";
+}
+
+void ICloudKeyValue::SetEntryValue(const String &key, const String &value)
+{
+    Logger::FrameworkDebug("Trying to set %s value for %s key", value.c_str(), key.c_str());
+    
+    NSUbiquitousKeyValueStore *iCloudStorage = [NSUbiquitousKeyValueStore defaultStore];
+    [iCloudStorage setString: NSStringFromString(value) forKey: NSStringFromString(key)];
+}
+
+void ICloudKeyValue::RemoveEntry(const String &key)
+{
+    NSUbiquitousKeyValueStore *iCloudStorage = [NSUbiquitousKeyValueStore defaultStore];
+    [iCloudStorage removeObjectForKey: NSStringFromString(key)];
+}
+
+void ICloudKeyValue::Clear()
+{
+    NSUbiquitousKeyValueStore *iCloudStorage = [NSUbiquitousKeyValueStore defaultStore];
+    Sync();
+    NSDictionary *dict = [iCloudStorage dictionaryRepresentation];
+    NSArray *arr = [dict allKeys];
+    
+    for (uint32 i=0; i < static_cast<uint32>(arr.count); i++)
+    {
+        NSString *key = [arr objectAtIndex: i];
+        [iCloudStorage removeObjectForKey: key];
+    }
+}
+
+void ICloudKeyValue::Push()
+{
+    Sync();
+}
+    
+void ICloudKeyValue::Sync()
+{
+    NSUbiquitousKeyValueStore *iCloudStorage = [NSUbiquitousKeyValueStore defaultStore];
+    [iCloudStorage synchronize];
+}
+
 }
 
 #endif
 
-}

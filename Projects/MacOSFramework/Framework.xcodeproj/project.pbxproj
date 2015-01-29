@@ -1377,16 +1377,21 @@
 		CCF00D3F1A42F43D00A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D391A42F21B00A577C2 /* EntityFamily.cpp */; };
 		CCF00D411A42F63800A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D391A42F21B00A577C2 /* EntityFamily.cpp */; };
 		D2AAC088055469A000DB518D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
-		D73A574F1A739B5B009FF184 /* DataStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A57481A739B5B009FF184 /* DataStorage.cpp */; };
-		D73A57501A739B5B009FF184 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D73A57491A739B5B009FF184 /* DataStorage.h */; };
-		D73A57511A739B5B009FF184 /* DataVault.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A574A1A739B5B009FF184 /* DataVault.cpp */; };
-		D73A57521A739B5B009FF184 /* DataVault.h in Headers */ = {isa = PBXBuildFile; fileRef = D73A574B1A739B5B009FF184 /* DataVault.h */; };
 		D751822119BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
 		D751822219BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
 		D751822319BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
 		D7C1C1D619CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D719CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D819CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
+		D7C556791A7A158600175ED9 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C556671A7A158600175ED9 /* DataStorage.h */; };
+		D7C5567A1A7A158600175ED9 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C556671A7A158600175ED9 /* DataStorage.h */; };
+		D7C5567B1A7A158600175ED9 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C556671A7A158600175ED9 /* DataStorage.h */; };
+		D7C556851A7A158600175ED9 /* DataStorageMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */; };
+		D7C556861A7A158600175ED9 /* DataStorageMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */; };
+		D7C556871A7A158600175ED9 /* DataStorageMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */; };
+		D7C556991A7A164600175ED9 /* DataStorageMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C556981A7A164600175ED9 /* DataStorageMacOS.h */; };
+		D7C5569A1A7A164600175ED9 /* DataStorageMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C556981A7A164600175ED9 /* DataStorageMacOS.h */; };
+		D7C5569B1A7A164600175ED9 /* DataStorageMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C556981A7A164600175ED9 /* DataStorageMacOS.h */; };
 		D7CC262819C43C7C00A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC261C19C43C7C00A3B754 /* LocalNotification.cpp */; };
 		D7CC262919C43C7C00A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC261C19C43C7C00A3B754 /* LocalNotification.cpp */; };
 		D7CC262A19C43C7C00A3B754 /* LocalNotification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7CC261C19C43C7C00A3B754 /* LocalNotification.cpp */; };
@@ -2967,12 +2972,11 @@
 		CCF00D3A1A42F21B00A577C2 /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
-		D73A57481A739B5B009FF184 /* DataStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorage.cpp; sourceTree = "<group>"; };
-		D73A57491A739B5B009FF184 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
-		D73A574A1A739B5B009FF184 /* DataVault.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataVault.cpp; sourceTree = "<group>"; };
-		D73A574B1A739B5B009FF184 /* DataVault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataVault.h; sourceTree = "<group>"; };
 		D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
 		D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
+		D7C556671A7A158600175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
+		D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageMacOS.cpp; sourceTree = "<group>"; };
+		D7C556981A7A164600175ED9 /* DataStorageMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorageMacOS.h; sourceTree = "<group>"; };
 		D7CC261C19C43C7C00A3B754 /* LocalNotification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotification.cpp; sourceTree = "<group>"; };
 		D7CC261D19C43C7C00A3B754 /* LocalNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotification.h; sourceTree = "<group>"; };
 		D7CC262019C43C7C00A3B754 /* LocalNotificationController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalNotificationController.cpp; sourceTree = "<group>"; };
@@ -3841,15 +3845,22 @@
 			name = Converters;
 			sourceTree = "<group>";
 		};
-		D73A57431A739B5B009FF184 /* DataVault */ = {
+		D7C556621A7A158600175ED9 /* DataStorage */ = {
 			isa = PBXGroup;
 			children = (
-				D73A57481A739B5B009FF184 /* DataStorage.cpp */,
-				D73A57491A739B5B009FF184 /* DataStorage.h */,
-				D73A574A1A739B5B009FF184 /* DataVault.cpp */,
-				D73A574B1A739B5B009FF184 /* DataVault.h */,
+				D7C556671A7A158600175ED9 /* DataStorage.h */,
+				D7C5566C1A7A158600175ED9 /* MacOS */,
 			);
-			path = DataVault;
+			path = DataStorage;
+			sourceTree = "<group>";
+		};
+		D7C5566C1A7A158600175ED9 /* MacOS */ = {
+			isa = PBXGroup;
+			children = (
+				D7C556981A7A164600175ED9 /* DataStorageMacOS.h */,
+				D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */,
+			);
+			path = MacOS;
 			sourceTree = "<group>";
 		};
 		D7CC25FB19C3A24200A3B754 /* Notification */ = {
@@ -4931,7 +4942,7 @@
 		FECFC0A512E87E3000C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
-				D73A57431A739B5B009FF184 /* DataVault */,
+				D7C556621A7A158600175ED9 /* DataStorage */,
 				D7CC25FB19C3A24200A3B754 /* Notification */,
 				E8989ABD16BD24E400732C04 /* Animation */,
 				E8989ACD16BD24E400732C04 /* Autotesting */,
@@ -5033,6 +5044,7 @@
 				E8990B3A1A288C2000FF71A1 /* SnapToLandscapeControllerComponent.h in Headers */,
 				176DE924174B5561007A983B /* StaticSingleton.h in Headers */,
 				E89EDE6E1A2E16FA0036E993 /* MongodbUpdateObject.h in Headers */,
+				D7C5569B1A7A164600175ED9 /* DataStorageMacOS.h in Headers */,
 				176DE925174B5561007A983B /* TemplateHelpers.h in Headers */,
 				E89C58E618B2458E002C25FE /* Atomic.h in Headers */,
 				176DE926174B5561007A983B /* CollisionObject2.h in Headers */,
@@ -5354,6 +5366,7 @@
 				176DEA2A174B5561007A983B /* RenderDataSource.h in Headers */,
 				176DEA2B174B5561007A983B /* RenderFastNames.h in Headers */,
 				176DEA2C174B5561007A983B /* RenderLayer.h in Headers */,
+				D7C5567B1A7A158600175ED9 /* DataStorage.h in Headers */,
 				176DEA2D174B5561007A983B /* RenderObject.h in Headers */,
 				176DEA2E174B5561007A983B /* RenderPass.h in Headers */,
 				176DEA2F174B5561007A983B /* RenderSystem.h in Headers */,
@@ -5461,6 +5474,7 @@
 				E8989DD716BD24E500732C04 /* Observer.h in Headers */,
 				E8989DD916BD24E500732C04 /* Radix.h in Headers */,
 				E8989DDA16BD24E500732C04 /* RefPtr.h in Headers */,
+				D7C556991A7A164600175ED9 /* DataStorageMacOS.h in Headers */,
 				D7E6C5B8198255C000B96D1A /* ZLibStream.h in Headers */,
 				E8989DDB16BD24E500732C04 /* ScopedPtr.h in Headers */,
 				E8989DDC16BD24E500732C04 /* Singleton.h in Headers */,
@@ -5515,7 +5529,6 @@
 				84CB671F191FC8850086483D /* ImageSystem.h in Headers */,
 				E8989E4C16BD24E500732C04 /* VariantType.h in Headers */,
 				E8989E4E16BD24E500732C04 /* XMLParser.h in Headers */,
-				D73A57521A739B5B009FF184 /* DataVault.h in Headers */,
 				E8989E5116BD24E500732C04 /* YamlArchive.h in Headers */,
 				E8989E5316BD24E500732C04 /* YamlParser.h in Headers */,
 				E8989E5516BD24E500732C04 /* Accelerometer.h in Headers */,
@@ -5592,7 +5605,6 @@
 				02FD7EDC19237D96007762C0 /* WindSystem.h in Headers */,
 				E8989EFE16BD24E500732C04 /* TextureMulColorEffect.h in Headers */,
 				E8989F2B16BD24E500732C04 /* IndexBuffer.h in Headers */,
-				D73A57501A739B5B009FF184 /* DataStorage.h in Headers */,
 				11CB615319C3391B00B48A92 /* AnimationData.h in Headers */,
 				E8989F3316BD24E500732C04 /* MaterialCompiler.h in Headers */,
 				E8989F3516BD24E500732C04 /* MaterialGraph.h in Headers */,
@@ -5701,6 +5713,7 @@
 				E8989FD716BD24E500732C04 /* DebugRenderSystem.h in Headers */,
 				E8989FDB16BD24E500732C04 /* EventSystem.h in Headers */,
 				E8989FDD16BD24E500732C04 /* LightUpdateSystem.h in Headers */,
+				D7C556791A7A158600175ED9 /* DataStorage.h in Headers */,
 				E8990B511A288C8F00FF71A1 /* SnapToLandscapeControllerSystem.h in Headers */,
 				E8989FDF16BD24E500732C04 /* LodSystem.h in Headers */,
 				E8989FE116BD24E500732C04 /* ParticleEffectSystem.h in Headers */,
@@ -6079,6 +6092,7 @@
 				E898A11B16BD265400732C04 /* RenderGrayscaleEffect.h in Headers */,
 				17B3EA8A18E9A3120069AE7A /* CoreMacOSPlatformBase.h in Headers */,
 				E898A11C16BD265400732C04 /* RenderHelper.h in Headers */,
+				D7C5569A1A7A164600175ED9 /* DataStorageMacOS.h in Headers */,
 				E898A11D16BD265400732C04 /* RenderManager.h in Headers */,
 				E898A11F16BD265400732C04 /* RenderOptions.h in Headers */,
 				026A1DCC19DAF0A300813AEF /* SkeletonSystem.h in Headers */,
@@ -6153,6 +6167,7 @@
 				E898A16016BD265400732C04 /* BaseProcessSystem.h in Headers */,
 				0282B87818BC72BE006F1EE4 /* FMODFileSoundEvent.h in Headers */,
 				E898A16116BD265400732C04 /* DebugRenderSystem.h in Headers */,
+				D7C5567A1A7A158600175ED9 /* DataStorage.h in Headers */,
 				E89EDE4F1A2E16FA0036E993 /* AutotestingSystem.h in Headers */,
 				E898A16316BD265400732C04 /* EventSystem.h in Headers */,
 				E898A16416BD265400732C04 /* LightUpdateSystem.h in Headers */,
@@ -6437,6 +6452,7 @@
 				176DEA55174B5561007A983B /* FixedSizePoolAllocator.cpp in Sources */,
 				E89EDE5C1A2E16FA0036E993 /* AutotestingSystemSwig.cpp in Sources */,
 				176DEA56174B5561007A983B /* Message.cpp in Sources */,
+				D7C556871A7A158600175ED9 /* DataStorageMacOS.cpp in Sources */,
 				02A03DAE1871C49F00FA72CE /* SpeedTreeObject.cpp in Sources */,
 				CC84B02418211A9000934482 /* JobQueue.cpp in Sources */,
 				176DEA57174B5561007A983B /* ObjectFactory.cpp in Sources */,
@@ -6969,7 +6985,6 @@
 				E8989F4C16BD24E500732C04 /* RenderManagerFactory.cpp in Sources */,
 				E8989F4D16BD24E500732C04 /* RenderManagerGL.cpp in Sources */,
 				C172EC0E18C9F1E9004309CF /* TextBlockGraphicsRender.cpp in Sources */,
-				D73A574F1A739B5B009FF184 /* DataStorage.cpp in Sources */,
 				76199F3D192DF73D008A47E2 /* VersionInfo.cpp in Sources */,
 				02FD7EE919237DA2007762C0 /* WindComponent.cpp in Sources */,
 				76C741AB1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */,
@@ -7134,7 +7149,6 @@
 				C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */,
 				C151B17D16D3755000E09BAF /* WebViewControlMacOS.mm in Sources */,
 				E89EDE691A2E16FA0036E993 /* MongodbUpdateObject.cpp in Sources */,
-				D73A57511A739B5B009FF184 /* DataVault.cpp in Sources */,
 				CC24800816DD174E00183D40 /* UserComponent.cpp in Sources */,
 				E9EA496C16DF93FA00C44B6F /* UISpinner.cpp in Sources */,
 				02141407181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
@@ -7210,6 +7224,7 @@
 				CC2C2F84197D4B960001E75D /* MovieViewControlMacOS.mm in Sources */,
 				A63BCD6A17EB26E300EA4811 /* Process.cpp in Sources */,
 				EA84E16C17FAC0B400304C3C /* SpatialTree.cpp in Sources */,
+				D7C556851A7A158600175ED9 /* DataStorageMacOS.cpp in Sources */,
 				024DF6E917FDE4C400138748 /* FMODSoundEvent.cpp in Sources */,
 				024DF6F517FDE4C400138748 /* FMODSoundSystem.cpp in Sources */,
 				84CB6719191FC8850086483D /* Image.cpp in Sources */,
@@ -7416,6 +7431,7 @@
 				E898A24516BD265400732C04 /* Box2DGameObject.cpp in Sources */,
 				E898A24616BD265400732C04 /* Box2DGameObjectManager.cpp in Sources */,
 				E898A24716BD265400732C04 /* Box2DHelper.cpp in Sources */,
+				D7C556861A7A158600175ED9 /* DataStorageMacOS.cpp in Sources */,
 				02FD7EDA19237D96007762C0 /* WindSystem.cpp in Sources */,
 				E898A24816BD265400732C04 /* Box2DTileCollider.cpp in Sources */,
 				E898A24916BD265400732C04 /* GameObject.cpp in Sources */,

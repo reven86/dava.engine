@@ -16,7 +16,7 @@
 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURP§E ARE
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -26,47 +26,23 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __SHARED_PREFERENCES_H__
-#define __SHARED_PREFERENCES_H__
-
-#include "DataVault/DataStorage.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "DataStorage/DataStorage.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_MACOS__)
 
-class SharedPreferences : public IDataStorage
+class DataStorageEmptyMac : public IDataStorage
 {
 public:
-    SharedPreferences();
-    ~SharedPreferences();
-
-public: // IDataStorage implementation
-    String GetEntryValue(const String &key) override;
-    void SetEntryValue(const String &key, const String &value) override;
-    void RemoveEntry(const String &key) override;
-    void Clear() override;
-    void Push() override;
-
-private:
-    JNI::JavaClass jniSharedPreferences;
-    Function<jobject (void)> getSharedPreferences;
-
-    jobject preferencesObject;
-
-    Function<void (jstring, jstring)> putString;
-    Function<jstring (jstring, jstring)> getString;
-    Function<void (jstring)> remove;
-    Function<void (void)> clear;
-    Function<void (void)> push;
+    String GetEntryValue(const String &key) override {return String();}
+    void SetEntryValue(const String &key, const String &value) override {}
+    void RemoveEntry(const String &key) override {}
+    void Clear() override {}
+    void Push() override {}
 };
 
 #endif
 
-} //namespace DAVA
-
-#endif // __DATA_VAULT_H__
-
+}

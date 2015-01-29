@@ -66,9 +66,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-#if defined(__DAVAENGINE_ANDROID) || defined(__DAVAENGINE_IPHONE)
     new DataVaultTest();
-#endif
 #if defined(__DAVAENGINE_ANDROID__)
 	new JNITest();
 #endif

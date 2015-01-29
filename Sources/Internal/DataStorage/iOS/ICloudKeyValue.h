@@ -27,50 +27,34 @@
 =====================================================================================*/
 
 
-#ifndef __DATA_STORAGE_H__
-#define __DATA_STORAGE_H__
+#ifndef __ICLOUD_KEYVALUE_H__
+#define __ICLOUD_KEYVALUE_H__
 
-#include "Base/BaseObject.h"
+#include "DataStorage/DataStorage.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__)
 
-class IDataStorage
+class ICloudKeyValue : public IDataStorage
 {
 public:
-    virtual ~IDataStorage() {};
+    ICloudKeyValue();
 
-    virtual String GetEntryValue(const String &key) = 0;
-    virtual void SetEntryValue(const String &key, const String &value) = 0;
-    virtual void RemoveEntry(const String &key) = 0;
-    virtual void Clear() = 0;
-    virtual void Push() = 0;
-};
-
-class DataStorage : public IDataStorage, public BaseObject
-{
-public:
-    explicit DataStorage();
-
-protected:
-    ~DataStorage();
-
-public: // IDataStorage intergace implementation
+public: // IDataStorage implementation
     String GetEntryValue(const String &key) override;
     void SetEntryValue(const String &key, const String &value) override;
     void RemoveEntry(const String &key) override;
     void Clear() override;
     void Push() override;
-
 private:
-    IDataStorage *impl;
+    void Sync();
 };
-    
+
 #endif
 
 } //namespace DAVA
 
-#endif // __DATA_STORAGE_H__
+#endif // __DATA_VAULT_H__
 

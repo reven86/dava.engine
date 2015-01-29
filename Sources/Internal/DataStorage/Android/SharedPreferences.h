@@ -27,24 +27,43 @@
 =====================================================================================*/
 
 
-#ifndef __DATA_VAULT_H__
-#define __DATA_VAULT_H__
+#ifndef __SHARED_PREFERENCES_H__
+#define __SHARED_PREFERENCES_H__
 
-#include "DataStorage.h"
+#include "DataStorage/DataStorage.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
-    
-class DataVault
+#if defined(__DAVAENGINE_ANDROID__)
+
+class SharedPreferences : public IDataStorage
 {
 public:
-    static DataStorage *GetStorage();
+    SharedPreferences();
+    ~SharedPreferences();
+
+public: // IDataStorage implementation
+    String GetEntryValue(const String &key) override;
+    void SetEntryValue(const String &key, const String &value) override;
+    void RemoveEntry(const String &key) override;
+    void Clear() override;
+    void Push() override;
+
 private:
-    static DataStorage *activeStorage;
+    JNI::JavaClass jniSharedPreferences;
+    Function<jobject (void)> getSharedPreferences;
+
+    jobject preferencesObject;
+
+    Function<void (jstring, jstring)> putString;
+    Function<jstring (jstring, jstring)> getString;
+    Function<void (jstring)> remove;
+    Function<void (void)> clear;
+    Function<void (void)> push;
 };
-    
+
 #endif
 
 } //namespace DAVA

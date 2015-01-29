@@ -26,29 +26,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DataVault.h"
+#include "DataStorage/DataStorage.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_WIN32_)
 
-DataStorage *DataVault::activeStorage = NULL;
-DataStorage *DataVault::GetStorage()
+IDataStorage *DataStorage::Create()
 {
-
-    if (NULL == activeStorage)
-    {
-        activeStorage = new DataStorage();
-    }
-    else
-    {
-        activeStorage->Retain();
-    }
-
-    return activeStorage;
+    return new DataStorageEmptyWin();
 }
 
 #endif
 
-} //namespace DAVA
+}

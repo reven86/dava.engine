@@ -26,49 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "DataVaultTest.h"
 #include "DataStorage/DataStorage.h"
+#include "SharedPreferences.h"
 
-DataVaultTest::DataVaultTest()
-    : TestTemplate<DataVaultTest>("DataVaultTest")
+namespace DAVA
 {
-    RegisterFunction(this, &DataVaultTest::TestFunction, "TestFunction", NULL);
+
+#if defined(__DAVAENGINE_ANDROID__)
+
+IDataStorage *DataStorage::Create()
+{
+    return new SharedPreferences();
 }
 
-void DataVaultTest::LoadResources()
-{
-
-}
-
-void DataVaultTest::UnloadResources()
-{
-
-}
-
-void DataVaultTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
-
-void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data)
-{
-    IDataStorage *storage = DataStorage::Create();
-
-    storage->Clear();
-    storage->Push();
-    storage->SetEntryValue("Test", "Test");
-    storage->Push();
-    String ret = storage->GetEntryValue("Test");
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-    TEST_VERIFY("" == ret);
-#else
-    TEST_VERIFY("Test" == ret);
 #endif
 
-    storage->RemoveEntry("Test");
-    storage->Push();
-    ret = storage->GetEntryValue("Test");
-    TEST_VERIFY("Test" != ret);
-
-    SafeRelease(storage);
 }

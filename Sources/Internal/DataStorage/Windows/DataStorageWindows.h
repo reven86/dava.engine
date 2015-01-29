@@ -26,19 +26,23 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DataVault/DataStorage.h"
-#include "SharedPreferences.h"
+#include "DataStorage/DataStorage.h"
 
 namespace DAVA
 {
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-DataStorage::DataStorage()
+    
+#if defined(__DAVAENGINE_WIN32__)
+    
+class DataStorageEmptyWin : public IDataStorage
 {
-    impl = new SharedPreferences();
-}
+public:
+    String GetEntryValue(const String &key) override {return String();}
+    void SetEntryValue(const String &key, const String &value) override {}
+    void RemoveEntry(const String &key) override {}
+    void Clear() override {}
+    void Push() override {}
+};
 
 #endif
-
+    
 }

@@ -26,44 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DataStorage.h"
-#include "DataVault.h"
+#include "DataStorage/DataStorage.h"
+#include "DataStorageMacOS.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_MACOS__)
 
-DataStorage::~DataStorage()
+IDataStorage *DataStorage::Create()
 {
-    SafeDelete(impl);
+    return new DataStorageEmptyMac();
 }
 
-String DataStorage::GetEntryValue(const String &key)
-{
-    return impl->GetEntryValue(key);
-}
-
-void DataStorage::SetEntryValue(const String &key, const String &value)
-{
-    impl->SetEntryValue(key, value);
-}
-
-void DataStorage::RemoveEntry(const String &key)
-{
-    impl->RemoveEntry(key);
-}
-
-void DataStorage::Clear()
-{
-    impl->Clear();
-}
-
-void DataStorage::Push()
-{
-    impl->Push();
-}
-    
 #endif
 
 }

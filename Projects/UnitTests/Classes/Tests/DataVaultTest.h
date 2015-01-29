@@ -33,8 +33,6 @@
 #include "DAVAEngine.h"
 using namespace DAVA;
 
-#if defined(__DAVAENGINE_ANDROID) || defined(__DAVAENGINE_IPHONE)
-
 #include "TestTemplate.h"
 
 class DataVaultTest : public TestTemplate<DataVaultTest>
@@ -52,7 +50,5 @@ public:
     void TestFunction(PerfFuncData * data);
 
 };
-
-#endif
 
 #endif /* defined(__TEMPLATEPROJECTMACOS__LOCALIZATIONTEST__) */
