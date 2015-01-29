@@ -35,11 +35,6 @@
 #ifndef __DAVAENGINE_CONFIG_H__
 #define __DAVAENGINE_CONFIG_H__
 
-// debug definition
-#if defined(DAVA_DEBUG)
-    #define __DAVAENGINE_DEBUG__
-#endif
-
 #define __DAVAENGINE_AUTOTESTING__
 #define AUTOTESTING_LUA
 
