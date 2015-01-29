@@ -148,6 +148,7 @@ public:
     static void CleanLine(WideString& string, bool trimRight = false);
 
 	void SetAngle(const float _angle);
+	void SetPivot(const Vector2 & _pivot);
 protected:
 
 	TextBlock();
@@ -232,6 +233,7 @@ protected:
 	Texture *textureForInvalidation;
 
 	float angle;
+	Vector2 pivot;
 };
 
 }; //end of namespace

@@ -150,7 +150,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	//NOTE: correct affine transformations
 
     Matrix4 offsetMatrix;
-    offsetMatrix.glTranslate((float32)xOffset, (float32)yOffset, 0.f);
+	offsetMatrix.glTranslate((float32)xOffset - textBlock->pivot.x, (float32)yOffset - textBlock->pivot.y, 0.f);
 
 	Matrix4 rotateMatrix;
 	rotateMatrix.glRotate(RadToDeg(textBlock->angle), 0.f, 0.f, 1.f);

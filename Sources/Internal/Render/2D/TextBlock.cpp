@@ -203,6 +203,11 @@ void TextBlock::SetAngle(const float _angle)
 	angle = _angle;
 }
 
+void TextBlock::SetPivot(const Vector2 & _pivot)
+{
+	pivot = _pivot;
+}
+
 void TextBlock::SetScale(const Vector2 & _scale)
 {
     mutex.Lock();
