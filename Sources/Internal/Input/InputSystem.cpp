@@ -37,7 +37,6 @@ namespace DAVA
 {
 
 InputSystem::InputSystem() :
-isMultitouchEnabled(true),
 keyboard(0),
 gamepad(0)
 {
