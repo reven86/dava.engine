@@ -108,8 +108,8 @@ public:
     int32 GetPrerequiredVertexFormat();
     void SetPrerequiredVertexFormat(int32 format);
 
-    inline void SetKeepUnusedEntities(bool keep);
-    inline bool GetKeepUnusedEntities();
+    void SetKeepUnusedEntities(bool keep);
+    bool GetKeepUnusedEntities();
          
     void UpdateEntityVisibility(Entity *e);    
 
@@ -154,12 +154,12 @@ protected:
 };
 
 
-void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
+inline void QualitySettingsSystem::SetKeepUnusedEntities(bool keep)
 {
     keepUnusedQualityEntities = keep;
 }
 
-bool QualitySettingsSystem::GetKeepUnusedEntities()
+inline bool QualitySettingsSystem::GetKeepUnusedEntities()
 {
     return keepUnusedQualityEntities;
 }
