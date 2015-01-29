@@ -33,6 +33,7 @@
 #include <typeinfo>
 #include "NullType.h"
 #include "TypeList.h"
+#include <type_traits>
 
 namespace DAVA
 {
@@ -285,14 +286,14 @@ public:
 
     ScopeGuardImpl(ScopeGuardImpl&& other) : function_(std::move(other.function_)) {}
 
-    ~ScopeGuardImpl() noexcept
+    ~ScopeGuardImpl()
     {
         execute();
     }
     
 private:
     void* operator new(size_t) = delete;
-    void execute() noexcept { function_(); }
+    void execute() { function_(); }
     FunctionType function_;
 };
 
@@ -319,7 +320,7 @@ operator+(ScopeGuardOnExit, FunctionType&& fn)
 
 #define SCOPE_EXIT \
   auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) \
-  = ::DAVA::ScopeGuardOnExit() + [&]() noexcept
+  = ::DAVA::ScopeGuardOnExit() + [&]()
 
 #endif // __DAVAENGINE_TEMPLATEHELPERS_H__
 
