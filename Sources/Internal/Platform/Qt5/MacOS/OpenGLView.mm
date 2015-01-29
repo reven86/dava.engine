@@ -390,14 +390,12 @@
     
     [self CalcOffset:theEvent];
     [self process:DAVA::UIEvent::PHASE_BEGAN touch:theEvent];
-	[super mouseDown:theEvent];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
     [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
-    [super mouseUp:theEvent];
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
