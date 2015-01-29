@@ -292,7 +292,7 @@ public:
     }
     
 private:
-    void* operator new(size_t) = delete;
+    void* operator new(std::size_t) = delete;
     void execute() { function_(); }
     FunctionType function_;
 };
