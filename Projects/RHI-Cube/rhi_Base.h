@@ -178,14 +178,24 @@ bool    SetConst( Handle cb, uint32 constIndex, uint32 constCount, const float* 
 } // namespace ConstBuffer
 
 
+namespace RenderPass
+{
+
+Handle  Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf );
+void    Begin( Handle pass );
+void    End( Handle pass );
+
+}
+
+
 namespace CommandBuffer
 {
 
-Handle  Allocate();
-void    Submit( Handle cmdBuf ); // cmd.buf handle becomes invalid at this point
+//- Handle  Allocate();
+//- void    Submit( Handle cmdBuf ); // cmd.buf handle becomes invalid at this point
 
 void    Begin( Handle cmdBuf );
-void    Begin( Handle cmdBuf, const RenderPassConfig& pass );
+//- void    Begin( Handle cmdBuf, const RenderPassConfig& pass );
 void    End( Handle cmdBuf );
 
 

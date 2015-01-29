@@ -66,6 +66,17 @@ CommandDX9
 };
 
 
+class 
+RenderPass_t
+{
+public:
+
+
+    std::vector<Handle> cmdBuf;
+};
+
+
+
 class
 CommandBuffer_t
 {
@@ -73,7 +84,7 @@ public:
                 CommandBuffer_t();
                 ~CommandBuffer_t();
 
-    void        Begin( const RenderPassConfig& pass );
+    void        Begin();
     void        End();
     void        Execute();
 
@@ -86,41 +97,71 @@ public:
     void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6 );
 
 
-private:
 
     static const uint64   EndCmd/* = 0xFFFFFFFF*/;
 
     std::vector<uint64> _cmd;
 
     RenderPassConfig    passCfg;
-    uint32              usePassCfg:1;
+    uint32              isFirstInPass:1;
+    uint32              isLastInPass:1;
 };
 
+
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
+typedef Pool<RenderPass_t>      RenderPassPool;
+
     
 const uint64   CommandBuffer_t::EndCmd = 0xFFFFFFFF;
+
+
+namespace RenderPass
+{
+
+Handle
+Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf )
+{
+    DVASSERT(cmdBufCount);
+
+    Handle          handle = RenderPassPool::Alloc();
+    RenderPass_t*   pass   = RenderPassPool::Get( handle );
+    
+    for( unsigned i=0; i!=cmdBufCount; ++i )
+    {
+        Handle              h  = CommandBufferPool::Alloc();
+        CommandBuffer_t*    cb = CommandBufferPool::Get( h );
+
+        cb->passCfg       = passDesc;
+        cb->isFirstInPass = i == 0;
+        cb->isLastInPass  = i == cmdBufCount-1;
+
+        pass->cmdBuf.push_back( h );
+        cmdBuf[i] = h;
+    }
+
+    return handle;
+}
+
+
+void
+Begin( Handle pass )
+{
+    _CmdQueue.push_back( pass );
+}
+
+
+void
+End( Handle pass )
+{
+}
+
+
+}
 
 
 
 namespace CommandBuffer
 {
-
-//------------------------------------------------------------------------------
-
-Handle
-Allocate()
-{
-    return CommandBufferPool::Alloc();
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-Submit( Handle cb )
-{
-    _CmdQueue.push_back( cb );    
-}
 
 
 //------------------------------------------------------------------------------
@@ -128,16 +169,6 @@ Submit( Handle cb )
 void
 Begin( Handle cmdBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( DX9__BEGIN );
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-Begin( Handle cmdBuf, const RenderPassConfig& pass )
-{
-    CommandBufferPool::Get(cmdBuf)->Begin( pass );
     CommandBufferPool::Get(cmdBuf)->Command( DX9__BEGIN );
 }
 
@@ -293,7 +324,8 @@ DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 
 
 CommandBuffer_t::CommandBuffer_t()
-  : usePassCfg(false)
+  : isFirstInPass(true),
+    isLastInPass(true)
 {
 }
 
@@ -309,12 +341,9 @@ CommandBuffer_t::~CommandBuffer_t()
 //------------------------------------------------------------------------------
 
 void
-CommandBuffer_t::Begin( const RenderPassConfig& pass )
+CommandBuffer_t::Begin()
 {
     _cmd.clear();
-
-    passCfg     = pass;
-    usePassCfg  = true;
 }
 
 
@@ -455,12 +484,13 @@ SCOPED_FUNCTION_TIMING();
         {
             case DX9__BEGIN :
             {
-                DX9_CALL(_D3D9_Device->BeginScene(),"BeginScene");
-                if( usePassCfg )
+                if( isFirstInPass )
                 {
                     bool    clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
                     bool    clear_depth = passCfg.depthBuffer.loadAction == LOADACTION_CLEAR;
 
+                    DX9_CALL(_D3D9_Device->BeginScene(),"BeginScene");
+                    
                     if( clear_color  ||  clear_depth )
                     {
                         DWORD   flags = 0;
@@ -476,10 +506,13 @@ SCOPED_FUNCTION_TIMING();
                     }
                 }
             }   break;
-            
+
             case DX9__END :
             {
-                DX9_CALL(_D3D9_Device->EndScene(),"EndScene");
+                if( isLastInPass )
+                {
+                    DX9_CALL(_D3D9_Device->EndScene(),"EndScene");
+                }
             }   break;
             
             case DX9__CLEAR :
@@ -559,10 +592,18 @@ Present()
 
     for( unsigned i=0; i!=_CmdQueue.size(); ++i )
     {
-        Handle  cb = _CmdQueue[i];
+        RenderPass_t*   pass = RenderPassPool::Get( _CmdQueue[i] );
 
-        Pool<CommandBuffer_t>::Get( cb )->Execute();
-        Pool<CommandBuffer_t>::Free( cb );
+        for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
+        {
+            Handle           cb_h = pass->cmdBuf[b];
+            CommandBuffer_t* cb   = CommandBufferPool::Get( cb_h );
+
+            cb->Execute();
+            Pool<CommandBuffer_t>::Free( cb_h );
+        }
+
+        RenderPassPool::Free( _CmdQueue[i] );
     }
     _CmdQueue.clear();
 
