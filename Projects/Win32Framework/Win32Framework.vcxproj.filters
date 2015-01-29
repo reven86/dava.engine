@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -159,6 +159,12 @@
     </Filter>
     <Filter Include="Internal\Scene3D\Systems\Controller">
       <UniqueIdentifier>{dc214c6e-aa38-43ad-93ff-6dc237488743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DataStorage">
+      <UniqueIdentifier>{6ed00645-b5a9-4746-a914-a3dcb592fd92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DataStorage\Windows">
+      <UniqueIdentifier>{0497b98a-b930-4fb6-8a65-92f3f18b2754}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1639,6 +1645,18 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h">
+      <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h">
+      <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h">
+      <Filter>Internal\DataStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h">
+      <Filter>Internal\DataStorage\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2955,6 +2973,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp">
       <Filter>Internal\Scene3D\Systems\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp">
+      <Filter>Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp">
+      <Filter>Internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp">
+      <Filter>Internal\DataStorage\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

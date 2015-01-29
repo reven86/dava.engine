@@ -27,11 +27,12 @@
 =====================================================================================*/
 
 #include "DataStorage/DataStorage.h"
+#include "DataStorageWindows.h"
 
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WIN32_)
+#if defined(__DAVAENGINE_WIN32__)
 
 IDataStorage *DataStorage::Create()
 {
