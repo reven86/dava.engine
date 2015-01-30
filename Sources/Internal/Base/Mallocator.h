@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_POOL_ALLOCATOR_H__
-#define __DAVAENGINE_POOL_ALLOCATOR_H__
+#ifndef __DAVAENGINE_MALLOCATOR_H__
+#define __DAVAENGINE_MALLOCATOR_H__
 
 #include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
@@ -198,4 +198,4 @@ template <typename T> void Mallocator<T>::destroy(T * const p) const
     
 };
 
-#endif // __DAVAENGINE_FIXED_SIZE_POOL_ALLOCATOR_H__
+#endif // __DAVAENGINE_MALLOCATOR_H__

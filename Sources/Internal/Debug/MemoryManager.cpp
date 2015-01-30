@@ -35,6 +35,14 @@
 #include <assert.h>
 #include "Base/Mallocator.h"
 #include "Utils/StringFormat.h"
+#include "Thread.h"
+#include "FileSystem/FileSystem.h"
+#include "Base/FastName.h"
+#include "Base/ObjectFactory.h"
+#include <malloc/malloc.h>
+#include <functional>
+#include <sstream>
+#include "Debug/Stats.h"
 
 
 #ifdef ENABLE_MEMORY_MANAGER
@@ -52,10 +60,13 @@ struct MemoryBlock
     MemoryBlock * prev;             // 8 or 4
     Backtrace   * backtrace;        // 8
     uint32        size;             // 4
+    uint32        mallocSize;
     uint32        flags;            // 4
-#if defined(_WIN32)
-	uint32		  align[3];
-#endif
+    FastName      userInfo;         //
+    eMemoryPool   poolIndex;
+//#if defined(_WIN32)
+	uint32		  align[1];
+//#endif
     
     // TOTAL: 32 bytes.
     
@@ -131,6 +142,8 @@ class MemoryManagerImpl : public MemoryManager
 {
 public:
     static const uint32 CHECK_SIZE = 32;
+    static const uint32 HALF_CHECK_SIZE = CHECK_SIZE / 2;
+    
     static const uint32 CHECK_CODE_HEAD = 0xCEECC0DE;
     static const uint32 CHECK_CODE_TAIL = 0xFEEDC0DE;
     static const uint32 FROM_PTR_TO_MEMORY_BLOCK = sizeof(MemoryBlock) + 16;
@@ -138,13 +151,11 @@ public:
 	MemoryManagerImpl();
 	virtual ~MemoryManagerImpl();
 	
-	virtual void	*New(size_t size);
-	//virtual void	*New(size_t size, void *pLoc);
+	virtual void	*New(size_t size, eMemoryPool poolIndex, const char * userInfo);
 	virtual void	Delete(void * pointer);
+    void            DumpLeaks(File * leaksLogFile, BacktraceTree::BacktraceTreeNode * node, int32 depth);
+	virtual void	DumpLog(uint32_t dumpFlags);
     
-	
-	virtual void	CheckMemoryLeaks();
-	virtual void	FinalLog();
 	void	CheckMemblockOverrun(MemoryBlock * memBlock);
 
 	static MemoryManagerImpl * Instance() 
@@ -177,51 +188,105 @@ public:
     {
         currentFlags |= FLAG_LEAK_TRACKING_ENABLED;
     }
+    
+    // Statistics
+    struct MemoryPoolStatistics
+    {
+        MemoryPoolStatistics()
+        {
+            currentAllocatedMemory = 0;
+            realAllocatedMemory = 0;
+            peakMemoryUsage = 0;
+            maximumBlockSize = 0;
+            managerOverheadSize = 0;
+            peakManagerOverheadSize = 0;
+        }
+        
+        int		peakMemoryUsage;
+        uint32	maximumBlockSize;
+        int		currentAllocatedMemory;
+        int     realAllocatedMemory;
+        int     managerOverheadSize;
+        int     peakManagerOverheadSize;
+    };
+    
+    // Tail of the memory block list / Circular list
+    struct MemoryPoolInfo
+    {
+        MemoryPoolInfo()
+        {
+            headBlock = (MemoryBlock*)malloc(sizeof(MemoryBlock*));
+            headBlock->next = headBlock;
+            headBlock->prev = headBlock;
+            blockCount = 0;
+        }
+        
+        ~MemoryPoolInfo()
+        {
+            free(headBlock);
+        }
+        
+        MemoryBlock * headBlock;
+        uint32 blockCount;
+        MemoryPoolStatistics stats;
+    };
 
     inline void PushMemoryBlock(MemoryBlock * item)
     {
-        MemoryBlock * insertAfter = headBlock;
+        MemoryPoolInfo * info = &memoryPools[item->poolIndex];
+        
+        MemoryBlock * insertAfter = info->headBlock;
         item->next = insertAfter->next;
         item->prev = insertAfter;
         
         insertAfter->next->prev = item;
         insertAfter->next = item;
-        blockCount++;
+        info->blockCount++;
+        
+        NewUpdateStats(item, info->stats);
+        NewUpdateStats(item, globalStats);
     }
     
     inline void EraseMemoryBlock(MemoryBlock * item)
     {
+        MemoryPoolInfo * info = &memoryPools[item->poolIndex];
         item->prev->next = item->next;
         item->next->prev = item->prev;
-        blockCount--;
+        info->blockCount--;
+        
+        DeleteUpdateStats(item, info->stats);
+        DeleteUpdateStats(item, globalStats);
     }
     
-    inline void NewUpdateStats(MemoryBlock * block)
+    inline void NewUpdateStats(MemoryBlock * block, MemoryPoolStatistics & stats)
     {
-        if (block->size > maximumBlockSize)
+        if (block->size > stats.maximumBlockSize)
         {
-            maximumBlockSize = block->size;
+            stats.maximumBlockSize = block->size;
         }
-        currentAllocatedMemory += block->size;
-        if (currentAllocatedMemory > peakMemoryUsage)
+        stats.currentAllocatedMemory += block->size;
+        stats.realAllocatedMemory += block->mallocSize;
+        
+        if (stats.currentAllocatedMemory > stats.peakMemoryUsage)
         {
-            peakMemoryUsage = currentAllocatedMemory;
+            stats.peakMemoryUsage = stats.currentAllocatedMemory;
         }
-        managerOverheadSize += CHECK_SIZE + sizeof(MemoryBlock);
-        if (managerOverheadSize > peakManagerOverheadSize)
-            peakManagerOverheadSize = managerOverheadSize;
+        
+        stats.managerOverheadSize += CHECK_SIZE + sizeof(MemoryBlock);
+        if (stats.managerOverheadSize > stats.peakManagerOverheadSize)
+            stats.peakManagerOverheadSize = stats.managerOverheadSize;
     }
     
-    inline void DeleteUpdateStats(MemoryBlock * block)
+    inline void DeleteUpdateStats(MemoryBlock * block, MemoryPoolStatistics & stats)
     {
-        currentAllocatedMemory -= block->size;
-        managerOverheadSize -= CHECK_SIZE + sizeof(MemoryBlock);
+        stats.realAllocatedMemory -= block->mallocSize;
+        stats.currentAllocatedMemory -= block->size;
+        stats.managerOverheadSize -= CHECK_SIZE + sizeof(MemoryBlock);
     }
     
-    // Tail of the memory block list / Circular list
-    MemoryBlock * headBlock;
-    uint32 blockCount;
-    MallocList<Backtrace*> backtraceList;
+    MemoryPoolInfo memoryPools[MEMORY_POOL_COUNT];
+    MemoryPoolStatistics globalStats;
+    
     
     typedef std::set<Backtrace*, BackTraceLessCompare, Mallocator<Backtrace*> > BacktraceSet;
     BacktraceSet backtraceSet;
@@ -231,12 +296,8 @@ public:
     bool        overwrittenCount;
     MemoryBlock * overwrittenArray[MAX_OVERWRITTEN_BLOCKS];
                                
-    // Statistics
-	int		peakMemoryUsage;
-	uint32	maximumBlockSize;
-	int		currentAllocatedMemory;
-    int     managerOverheadSize;
-    int     peakManagerOverheadSize;
+    
+    Mutex   mutex;
 	
 	static int useClass;
 	static MemoryManagerImpl * instance_new;
@@ -244,18 +305,18 @@ public:
 	
 	int MemoryManagerImpl::useClass = 0;
 	MemoryManagerImpl * MemoryManagerImpl::instance_new = 0;
-
-
 }
+
+//DAVA::FastName defaultUserInfo;
 
 void * operator new(size_t _size) throw(std::bad_alloc )
 {
-	return DAVA::MemoryManagerImpl::Instance()->New(_size);
+	return DAVA::MemoryManagerImpl::Instance()->New(_size, MEMORY_POOL_DEFAULT, 0);
 }
 
 void * operator new(size_t _size, const std::nothrow_t &) throw()
 {
-	return DAVA::MemoryManagerImpl::Instance()->New(_size);
+	return DAVA::MemoryManagerImpl::Instance()->New(_size, MEMORY_POOL_DEFAULT, 0);
 }
 
 void   operator delete(void * _ptr) throw()
@@ -271,12 +332,12 @@ void   operator delete(void * _ptr, const std::nothrow_t &) throw()
 
 void * operator new[](size_t _size) throw(std::bad_alloc)
 {
-	return DAVA::MemoryManagerImpl::Instance()->New(_size);
+	return DAVA::MemoryManagerImpl::Instance()->New(_size, MEMORY_POOL_DEFAULT, 0);
 }
 
 void * operator new[](size_t _size, const std::nothrow_t &) throw()
 {
-	return DAVA::MemoryManagerImpl::Instance()->New(_size);
+	return DAVA::MemoryManagerImpl::Instance()->New(_size, MEMORY_POOL_DEFAULT, 0);
 }
 
 void   operator delete[](void * _ptr) throw()
@@ -298,33 +359,25 @@ namespace DAVA
 {
 	
 
-
 MemoryManagerImpl::MemoryManagerImpl()
 {
 	//memoryLog.open("memory.log");
 	//memoryLog << "          M E M O R Y   M A N A G E R   L O G " << std::endl;
 	//memoryLog << "----------------------------------------------------------------------" << std::endl;
 	// clean statistics
-    headBlock = (MemoryBlock*)malloc(sizeof(MemoryBlock*)); 
-    headBlock->next = headBlock;
-    headBlock->prev = headBlock;
-    blockCount = 0;
+    uint32 checkMemoryBlockSize = sizeof(MemoryBlock);
+    DVASSERT((checkMemoryBlockSize % 16) == 0)
+    
     
     overwrittenCount = 0;
     for (uint32 k = 0; k < MAX_OVERWRITTEN_BLOCKS; ++k)
         overwrittenArray[k] = 0;
     
-	currentAllocatedMemory = 0;
-	peakMemoryUsage = 0;
-	maximumBlockSize = 0;
-    managerOverheadSize = 0;
-    peakManagerOverheadSize = 0;
     currentFlags = FLAG_LEAK_TRACKING_ENABLED;
 }
 
 MemoryManagerImpl::~MemoryManagerImpl()
 {
-    free(headBlock);
 }
 
 //void *malloc16 (size_t s) {
@@ -341,22 +394,27 @@ MemoryManagerImpl::~MemoryManagerImpl()
 //    porig = porig - *(porig-1);                 // by subtracting padding
 //    free (porig);                               // then free that
 //}
+    
+#define MEMORY_BLOCK_TO_PTR(x) ((uint8*)x + sizeof(MemoryBlock) + HALF_CHECK_SIZE)
+#define PTR_TO_MEMORY_BLOCK(x) (MemoryBlock*)((uint8*)x - sizeof(MemoryBlock) - HALF_CHECK_SIZE)
 
-void	*MemoryManagerImpl::New(size_t size)
+void	*MemoryManagerImpl::New(size_t size, eMemoryPool poolIndex, const char * userInfo)
 {
+    mutex.Lock();
+
     // Align to 4 byte boundary.
     if ((size & 15) != 0)
 	{
 		size += 16 - (size & 15);
 	}
-    uint32 memBlockSize = sizeof(MemoryBlock);
-//    uint32 allocSize = sizeof(MemoryBlock) + size + CHECK_SIZE;
+    
     MemoryBlock * block = (MemoryBlock *)malloc(sizeof(MemoryBlock) + CHECK_SIZE + size);
     
+
     //if (!block)throw std::bad_alloc();
     
     Backtrace bt;
-    GetBacktrace(&bt);
+    GetBacktrace(&bt, 2);
     
     BacktraceSet::iterator it = backtraceSet.find(&bt);
     if (it != backtraceSet.end())
@@ -365,19 +423,20 @@ void	*MemoryManagerImpl::New(size_t size)
     }else
     {
         Backtrace * backtrace = CreateBacktrace();
-        GetBacktrace(backtrace);
+        *backtrace = bt;
         block->backtrace = backtrace;
         backtraceSet.insert(backtrace);
     }
 
     block->size = size;
+    block->mallocSize = malloc_size(block);
     block->flags = currentFlags;
+    block->poolIndex = poolIndex;
     
     PushMemoryBlock(block);
-    NewUpdateStats(block);
 
     uint8 * checkHead = (uint8*)block + sizeof(MemoryBlock);
-    uint8 * checkTail = (uint8*)block + sizeof(MemoryBlock) + size + CHECK_SIZE - 16;
+    uint8 * checkTail = (uint8*)block + sizeof(MemoryBlock) + size + CHECK_SIZE - HALF_CHECK_SIZE;
     uint32 * checkHeadWrite = (uint32*)checkHead;
     uint32 * checkTailWrite = (uint32*)checkTail;
     *checkHeadWrite++ = CHECK_CODE_HEAD;
@@ -386,8 +445,9 @@ void	*MemoryManagerImpl::New(size_t size)
     *checkTailWrite = CHECK_CODE_TAIL;
     
     uint8 * outmemBlock = (uint8*)block;
-    outmemBlock += sizeof(MemoryBlock) + 16;
+    outmemBlock += sizeof(MemoryBlock) + HALF_CHECK_SIZE;
     //Logger::FrameworkDebug("malloc: %p %p", block, outmemBlock);
+    mutex.Unlock();
     return outmemBlock;
 }
 
@@ -418,28 +478,14 @@ void	MemoryManagerImpl::Delete(void * ptr)
 {
 	if (ptr)
 	{
-//        bool found = false;
-//        for (MallocList<void*>::Iterator it = allocatedPointers.Begin(); it != allocatedPointers.End(); ++it)
-//        {
-//            if (*it == ptr)
-//            {
-//                allocatedPointers.Erase(it);
-//                found = true;
-//                break;
-//            }
-//        }
-//        
-//        if (!found)
-//        {
-//            found = false;
-//        }
+        mutex.Lock();
         
         uint8 * uint8ptr = (uint8*)ptr; 
-        uint8ptr -= sizeof(MemoryBlock) + 16;
+        uint8ptr -= (sizeof(MemoryBlock) + HALF_CHECK_SIZE);
         MemoryBlock * block = (MemoryBlock*)(uint8ptr);
         
         uint8 * checkHead = (uint8*)block + sizeof(MemoryBlock);
-        uint8 * checkTail = (uint8*)block + sizeof(MemoryBlock) + block->size + CHECK_SIZE - 16;
+        uint8 * checkTail = (uint8*)block + sizeof(MemoryBlock) + block->size + CHECK_SIZE - HALF_CHECK_SIZE;
         uint32 * checkHeadRead = (uint32*)checkHead;
         uint32 * checkTailRead = (uint32*)checkTail;
 
@@ -452,86 +498,206 @@ void	MemoryManagerImpl::Delete(void * ptr)
         }
         //Logger::FrameworkDebug("free: %p %p", block, ptr);
         
-        DeleteUpdateStats(block);
         EraseMemoryBlock(block);
         free(block);
+        
+        mutex.Unlock();
 	}
 }
-
     
-// TODO: Add smart printing of sizes
-void MemoryManagerImpl::FinalLog()
+void MemoryManagerImpl::DumpLeaks(File * leaksLogFile, BacktraceTree::BacktraceTreeNode * node, int32 depth)
 {
-    DisableLeakTracking();
+    uint32 nodeHeaderMarker = 0x00DE00DE;
+    leaksLogFile->Write(&nodeHeaderMarker, 4);
+    uint64 ptr = (uint64)node->pointer;
+    leaksLogFile->Write(&ptr, 8);
+    uint32 sizeOfChildren = node->SizeOfAllChildren();
+    leaksLogFile->Write(&sizeOfChildren, 4);
+    uint32 size =  node->children.size();
+    leaksLogFile->Write(&size);
     
-	Logger::FrameworkDebug("    M E M O R Y     M A N A G E R     R E P O R T   ");
-	Logger::FrameworkDebug("----------------------------------------------------");
-	// 
-	Logger::FrameworkDebug("* Currently Allocated Memory Size : %d", currentAllocatedMemory);
-	Logger::FrameworkDebug("* Memory Leaks Count: %d", blockCount);
-	Logger::FrameworkDebug("* Peak Memory Usage : %d", peakMemoryUsage);
-	Logger::FrameworkDebug("* Max Allocated Block Size: %d", maximumBlockSize);
-    
-	Logger::FrameworkDebug("* Peak Manager Overhead: %d", peakManagerOverheadSize);
-	Logger::FrameworkDebug("* Current Manager Overhead : %d", managerOverheadSize);
-    Logger::FrameworkDebug("* Overhead percentage: %0.3f %%", (float)peakManagerOverheadSize / (float)peakMemoryUsage * 100.0f);
-    Logger::FrameworkDebug("* Total backtrace count: %d", backtraceSet.size()); 
-	
-    
-    EnableLeakTracking();
-    
-    CheckMemoryLeaks();
+    if (size > 0)
+    {
+        for (uint32 k = 0; k < node->children.size(); ++k)
+        {
+            DumpLeaks(leaksLogFile, node->children[k], depth + 1);
+        }
+    }
+
 }
 
-void MemoryManagerImpl::CheckMemoryLeaks()
+void MemoryManagerImpl::DumpLog(uint32 dumpFlags)
 {
+    //mutex.Lock();
     DisableLeakTracking();
+ 
     
+    //std::vector<char> buffer(50 * 1024 * 1024);
     std::ofstream memoryLog;
-    memoryLog.open("/memory.log");
-
- 	memoryLog << Format("    M E M O R Y     M A N A G E R     R E P O R T   ");
-	memoryLog << Format("----------------------------------------------------");
-	// 
-	memoryLog << Format("* Currently Allocated Memory Size : %d", currentAllocatedMemory) << std::endl;
-	memoryLog << Format("* Memory Leaks Count: %d", blockCount) << std::endl;
-	memoryLog << Format("* Peak Memory Usage : %d", peakMemoryUsage) << std::endl;
-	memoryLog << Format("* Max Allocated Block Size: %d", maximumBlockSize) << std::endl;
+    //memoryLog.rdbuf()->pubsetbuf(&buffer.front(), buffer.size());
     
-	memoryLog << Format("* Peak Manager Overhead: %d", peakManagerOverheadSize) << std::endl;
-	memoryLog << Format("* Current Manager Overhead : %d", managerOverheadSize) << std::endl;
-    memoryLog << Format("* Overhead percentage: %0.3f %%", (float)peakManagerOverheadSize / (float)peakMemoryUsage * 100.0f) << std::endl;
-    memoryLog << Format("* Total backtrace count: %d", backtraceSet.size()) << std::endl; 
+    FilePath documentsPath = FileSystem::GetUserDocumentsPath();
+    String path = documentsPath.GetAbsolutePathname() + "memory.log";
+    memoryLog.open(path.c_str());
 
-    uint32 index = 0;
-	for (MemoryBlock * currentBlock = headBlock->next; currentBlock != headBlock; currentBlock = currentBlock->next)
-	{
-        index++;
-		//MemoryBlock * block = currentBlock;
-		//CheckMemblockOverrun(block);
-		//if (block.filename)
-        if (currentBlock->flags & FLAG_LEAK_TRACKING_ENABLED)
-		{
-			//Logger::FrameworkDebug("****** 	Memory Leak Found	******");
-            memoryLog << "****** 	Memory Leak Found	******" << std::endl;
-			//Logger::FrameworkDebug("* Source File : %s", block->filename);
-			//Logger::FrameworkDebug("* Source Line : %d", block->line);
-			//Logger::FrameworkDebug("* Allocation Size : %d bytes", currentBlock->size);
-            memoryLog << Format("* Allocation Size : %d bytes", currentBlock->size) << std::endl;
-            BacktraceLog log;
-            CreateBacktraceLog(currentBlock->backtrace, &log);
-            for (uint32 k = 0; k < currentBlock->backtrace->size; ++k) 
+    if (dumpFlags & DUMP_GLOBAL_STATS)
+    {
+        memoryLog << Format("    M E M O R Y     M A N A G E R     R E P O R T   ") << std::endl;
+        memoryLog << Format("----------------------------------------------------") << std::endl;
+        // 
+        memoryLog << Format("* Currently Allocated Memory Size : %d", globalStats.currentAllocatedMemory) << std::endl;
+        memoryLog << Format("* Real Allocated Memory Size : %d", globalStats.realAllocatedMemory) << std::endl;
+        memoryLog << Format("* Peak Memory Usage : %d", globalStats.peakMemoryUsage) << std::endl;
+        memoryLog << Format("* Max Allocated Block Size: %d", globalStats.maximumBlockSize) << std::endl;
+        
+        memoryLog << Format("* Peak Manager Overhead: %d", globalStats.peakManagerOverheadSize) << std::endl;
+        memoryLog << Format("* Current Manager Overhead : %d", globalStats.managerOverheadSize) << std::endl;
+        memoryLog << Format("* Overhead percentage: %0.3f %%", (float)globalStats.peakManagerOverheadSize / (float)globalStats.peakMemoryUsage * 100.0f) << std::endl;
+        memoryLog << Format("* Total backtrace count: %d", backtraceSet.size()) << std::endl; 
+    }
+    
+    if (dumpFlags & DUMP_POOL_STATS)
+    {
+        for (uint32 poolIndex = 0; poolIndex < MEMORY_POOL_COUNT; ++poolIndex)
+        {
+            memoryLog << Format(" P O O L # %d  ", poolIndex) << std::endl;
+            memoryLog << Format("----------------------------------------------------") << std::endl;
+            memoryLog << Format("* Currently Allocated Memory Size : %d", memoryPools[poolIndex].stats.currentAllocatedMemory) << std::endl;
+            memoryLog << Format("* Real Allocated Memory Size : %d", memoryPools[poolIndex].stats.realAllocatedMemory) << std::endl;
+            memoryLog << Format("* Peak Memory Usage : %d", memoryPools[poolIndex].stats.peakMemoryUsage) << std::endl;
+            memoryLog << Format("* Max Allocated Block Size: %d", memoryPools[poolIndex].stats.maximumBlockSize) << std::endl;
+            
+            memoryLog << Format("* Peak Manager Overhead: %d", memoryPools[poolIndex].stats.peakManagerOverheadSize) << std::endl;
+            memoryLog << Format("* Current Manager Overhead : %d", memoryPools[poolIndex].stats.managerOverheadSize) << std::endl;
+            memoryLog << Format("* Overhead percentage: %0.3f %%", (float)memoryPools[poolIndex].stats.peakManagerOverheadSize / (float)memoryPools[poolIndex].stats.peakMemoryUsage * 100.0f) << std::endl;
+
+            memoryLog << Format("* Leaks in PoolIndex: %d Count: %d", poolIndex, memoryPools[poolIndex].blockCount) << std::endl << std::endl;
+        }
+    }
+    
+    if (dumpFlags & DUMP_BASE_OBJECTS)
+    {
+        memoryLog << Format(" B A S E   O B J E C T S") << std::endl;
+        memoryLog << Format("----------------------------------------------------") << std::endl;
+        
+        //MemoryPoolInfo & boPool = memoryPools[MEMORY_POOL_BASE_OBJECTS];
+        Map<String, size_t> boMemoryMap;
+        
+        //int32 sizeofObj = 0;
+        {
+            MemoryBlock * headBlock = memoryPools[MEMORY_POOL_BASE_OBJECTS].headBlock;
+            for (MemoryBlock * currentBlock = headBlock->next; currentBlock != headBlock; currentBlock = currentBlock->next)
             {
-                //Logger::FrameworkDebug("%s",log.strings[k]); 
-                memoryLog << log.strings[k] << std::endl;
+                if (currentBlock->flags & FLAG_LEAK_TRACKING_ENABLED)
+                {
+                    BaseObject * ptr = (BaseObject*)MEMORY_BLOCK_TO_PTR(currentBlock);
+                    //BaseObject * baseObject = dynamic_cast<BaseObject*>(ptr);
+                    if (ptr)
+                    {
+                        String name = ObjectFactory::Instance()->GetName(ptr);
+                        boMemoryMap[name] += currentBlock->size;
+                        //sizeofObj = currentBlock->size;
+                    }
+                }
             }
-            ReleaseBacktraceLog(&log);
-			//Logger::FrameworkDebug("* Was placed : " << (block.isPlaced ? " true" : " false")<< std::endl;
-			//Logger::FrameworkDebug("************************************");
-		}
-	}
+        }
+        for (auto it = boMemoryMap.begin(); it != boMemoryMap.end(); ++it)
+        {
+            memoryLog << Format("- Type: %s Size: %d", it->first.c_str(), it->second) << std::endl;
+        }
+    }
+    
+//    if (dumpFlags & DUMP_LEAKS)
+//    {
+//        memoryLog << Format(" C U R R E N T   L E A K S") << std::endl;
+//        memoryLog << Format("----------------------------------------------------") << std::endl;
+//
+//        uint32 index = 0;
+//        for (uint32 poolIndex = 0; poolIndex < MEMORY_POOL_COUNT; ++poolIndex)
+//        {
+//            MemoryBlock * headBlock = memoryPools[poolIndex].headBlock;
+//            for (MemoryBlock * currentBlock = headBlock->next; currentBlock != headBlock; currentBlock = currentBlock->next)
+//            {
+//                index++;
+//                //MemoryBlock * block = currentBlock;
+//                //CheckMemblockOverrun(block);
+//                //if (block.filename)
+//                if (currentBlock->flags & FLAG_LEAK_TRACKING_ENABLED)
+//                {
+//                    //Logger::FrameworkDebug("****** 	Memory Leak Found	******");
+//                    memoryLog << "****** 	Memory Leak Found	******" << std::endl;
+//                    //Logger::FrameworkDebug("* Source File : %s", block->filename);
+//                    //Logger::FrameworkDebug("* Source Line : %d", block->line);
+//                    //Logger::FrameworkDebug("* Allocation Size : %d bytes", currentBlock->size);
+//                    memoryLog << Format("* Allocation Size : %d bytes", currentBlock->size) << std::endl;
+//                    BacktraceLog log;
+//                    CreateBacktraceLog(currentBlock->backtrace, &log);
+//                    for (uint32 k = 0; k < currentBlock->backtrace->size; ++k) 
+//                    {
+//                        //Logger::FrameworkDebug("%s",log.strings[k]); 
+//                        memoryLog << log.strings[k] << std::endl;
+//                    }
+//                    ReleaseBacktraceLog(&log);
+//                    //Logger::FrameworkDebug("* Was placed : " << (block.isPlaced ? " true" : " false")<< std::endl;
+//                    //Logger::FrameworkDebug("************************************");
+//                }
+//            }
+//        }
+//    }
+    
+    if (dumpFlags & DUMP_LEAKS)
+    {
+        BacktraceTree backtraceTree;
+        {
+            ImmediateTimeMeasure immTimeMeasure(FastName("Build Backtrace Tree"));
+            
+            uint32 validateSize = 0;
+            for (uint32 poolIndex = 0; poolIndex < MEMORY_POOL_COUNT; ++poolIndex)
+            {
+                MemoryBlock * headBlock = memoryPools[poolIndex].headBlock;
+                for (MemoryBlock * currentBlock = headBlock->next; currentBlock != headBlock; currentBlock = currentBlock->next)
+                {
+                    if (currentBlock->flags & FLAG_LEAK_TRACKING_ENABLED)
+                    {
+                        backtraceTree.Insert(currentBlock->backtrace, currentBlock->size);
+                        validateSize += currentBlock->size;
+                    }
+                }
+            }
+            DVASSERT(validateSize == backtraceTree.head->SizeOfAllChildren());
+        }
+        {
+            ImmediateTimeMeasure immTimeMeasure(FastName("Generate Symbols"));
+            backtraceTree.GenerateSymbols();
+        }
+
+        FilePath documentsPath = FileSystem::GetUserDocumentsPath();
+        String path = documentsPath.GetAbsolutePathname() + "leaks.log";
+        File * leaksLogFile = File::PureCreate(FilePath(path.c_str()), File::CREATE | File::WRITE);
+        if (leaksLogFile)
+        {
+            ImmediateTimeMeasure immTimeMeasure(FastName("Prepare to Write Backtrace Tree"));
+
+            uint32 size = (uint64)backtraceTree.symbols.size();
+            leaksLogFile->Write(&size, 4);
+            for (auto it = backtraceTree.symbols.begin(); it != backtraceTree.symbols.end();++it)
+            {
+                uint64 ptr = (uint64)it->first;
+                leaksLogFile->Write(&ptr, 8);
+                leaksLogFile->WriteString(String(it->second));
+            }
+            
+            BacktraceTree::BacktraceTreeNode * currentItem = backtraceTree.head;
+
+            DumpLeaks(leaksLogFile, currentItem, 1);
+        }
+        SafeRelease(leaksLogFile);
+    }
+    
     memoryLog.close();
+    
     EnableLeakTracking();
+    //mutex.Unlock();
 }
 
 };

@@ -210,6 +210,8 @@ public slots:
 
     void OnBatchProcessScene();
     
+    void OnMemoryDumpViewerOpen();
+    
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);

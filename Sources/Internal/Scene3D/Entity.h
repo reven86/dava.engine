@@ -320,8 +320,8 @@ public:
     /**
         \brief Function to get data nodes of requested type to specific container you provide.
      */
-    template<template <typename> class Container, class T>
-	void GetDataNodes(Container<T> & container);
+    template<template <typename, typename> class Container, class T, class A>
+	void GetDataNodes(Container<T, A> & container);
 	/**
 	 \brief Optimize scene before export.
      */
@@ -341,11 +341,11 @@ public:
         }
         \endcode
      */
-    template<template <typename> class Container, class T>
-	void GetChildNodes(Container<T> & container);
+    template<template <typename, typename> class Container, class T, class A>
+	void GetChildNodes(Container<T, A> & container);
     
-    template<template <typename> class Container>
-    void GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type);
+    template<template <typename, typename> class Container, class A>
+    void GetChildEntitiesWithComponent(Container<Entity*, A> & container, Component::eType type);
 
     /**
         \brief This function is called after scene is loaded from file.
@@ -470,8 +470,8 @@ inline void Entity::SetTag(int32 _tag)
 }
 
     
-template<template <typename> class Container, class T>
-void Entity::GetDataNodes(Container<T> & container)
+template<template <typename, typename> class Container, class T, class A>
+void Entity::GetDataNodes(Container<T, A> & container)
 {
     Set<DataNode*> objects;
     GetDataNodes(objects);
@@ -487,8 +487,8 @@ void Entity::GetDataNodes(Container<T> & container)
     }	
 }
     
-template<template <typename> class Container, class T>
-void Entity::GetChildNodes(Container<T> & container)
+template<template <typename, typename> class Container, class T, class A>
+void Entity::GetChildNodes(Container<T, A> & container)
 {    
     Vector<Entity*>::const_iterator end = children.end();
     for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
@@ -503,8 +503,8 @@ void Entity::GetChildNodes(Container<T> & container)
     }	
 }
     
-template<template <typename> class Container>
-void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type)
+template<template <typename, typename> class Container, class A>
+void Entity::GetChildEntitiesWithComponent(Container<Entity*, A> & container, Component::eType type)
 {
     Vector<Entity*>::const_iterator end = children.end();
     for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)

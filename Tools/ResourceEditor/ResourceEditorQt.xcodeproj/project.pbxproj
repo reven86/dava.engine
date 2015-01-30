@@ -27,6 +27,10 @@
 		4FA4198A188EA4C500395C70 /* RunGuard.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 4FA41988188EA4C500395C70 /* RunGuard.cpp */; };
 		4FAC89C5190BF3C2005CECA5 /* SettingsDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 4FAC89C3190BF3C2005CECA5 /* SettingsDialog.cpp */; };
 		4FAC89C7190BF5C2005CECA5 /* SettingsDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 4FAC89C6190BF5C2005CECA5 /* SettingsDialog_moc.cpp */; };
+		502DDC181A4A0B9E001C9FFF /* MemoryDumpTreeItem.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 502DDC131A4A0B9E001C9FFF /* MemoryDumpTreeItem.cpp */; };
+		502DDC191A4A0B9E001C9FFF /* MemoryDumpTreeModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 502DDC151A4A0B9E001C9FFF /* MemoryDumpTreeModel.cpp */; };
+		502DDC241A4A1695001C9FFF /* MemoryDumpTreeItem_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 502DDC221A4A1695001C9FFF /* MemoryDumpTreeItem_moc.cpp */; };
+		502DDC251A4A1695001C9FFF /* MemoryDumpTreeModel_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 502DDC231A4A1695001C9FFF /* MemoryDumpTreeModel_moc.cpp */; };
 		504697D5190175CE00BE1E6C /* EntityLockCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 504697D4190175CE00BE1E6C /* EntityLockCommand.cpp */; };
 		5C190C9F15AEC6F9005731F8 /* Data in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 5C190C9E15AEC6F9005731F8 /* Data */; };
 		5C7F49F715B44EE50038AF3A /* icon.icns in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 5C7F49F615B44EE50038AF3A /* icon.icns */; };
@@ -739,6 +743,12 @@
 		4FAC89C3190BF3C2005CECA5 /* SettingsDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SettingsDialog.cpp; sourceTree = "<group>"; };
 		4FAC89C4190BF3C2005CECA5 /* SettingsDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SettingsDialog.h; sourceTree = "<group>"; };
 		4FAC89C6190BF5C2005CECA5 /* SettingsDialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SettingsDialog_moc.cpp; sourceTree = "<group>"; };
+		502DDC131A4A0B9E001C9FFF /* MemoryDumpTreeItem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryDumpTreeItem.cpp; sourceTree = "<group>"; };
+		502DDC141A4A0B9E001C9FFF /* MemoryDumpTreeItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryDumpTreeItem.h; sourceTree = "<group>"; };
+		502DDC151A4A0B9E001C9FFF /* MemoryDumpTreeModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryDumpTreeModel.cpp; sourceTree = "<group>"; };
+		502DDC161A4A0B9E001C9FFF /* MemoryDumpTreeModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryDumpTreeModel.h; sourceTree = "<group>"; };
+		502DDC221A4A1695001C9FFF /* MemoryDumpTreeItem_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryDumpTreeItem_moc.cpp; sourceTree = "<group>"; };
+		502DDC231A4A1695001C9FFF /* MemoryDumpTreeModel_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryDumpTreeModel_moc.cpp; sourceTree = "<group>"; };
 		504697D3190175CE00BE1E6C /* EntityLockCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityLockCommand.h; sourceTree = "<group>"; };
 		504697D4190175CE00BE1E6C /* EntityLockCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityLockCommand.cpp; sourceTree = "<group>"; };
 		52F4216CE5F81A8073DE30C0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = /System/Library/Frameworks/OpenAL.framework; sourceTree = "<absolute>"; };
@@ -1970,6 +1980,27 @@
 			path = RunGuard;
 			sourceTree = "<group>";
 		};
+		502DDC111A4A0B9E001C9FFF /* MemoryDumpViewer */ = {
+			isa = PBXGroup;
+			children = (
+				502DDC131A4A0B9E001C9FFF /* MemoryDumpTreeItem.cpp */,
+				502DDC141A4A0B9E001C9FFF /* MemoryDumpTreeItem.h */,
+				502DDC151A4A0B9E001C9FFF /* MemoryDumpTreeModel.cpp */,
+				502DDC161A4A0B9E001C9FFF /* MemoryDumpTreeModel.h */,
+			);
+			path = MemoryDumpViewer;
+			sourceTree = "<group>";
+		};
+		502DDC211A4A1695001C9FFF /* MemoryDumpViewer */ = {
+			isa = PBXGroup;
+			children = (
+				502DDC221A4A1695001C9FFF /* MemoryDumpTreeItem_moc.cpp */,
+				502DDC231A4A1695001C9FFF /* MemoryDumpTreeModel_moc.cpp */,
+			);
+			name = MemoryDumpViewer;
+			path = _GeneratedQt/MemoryDumpViewer;
+			sourceTree = "<group>";
+		};
 		5C190C9615AEC58B005731F8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -2289,6 +2320,7 @@
 				E8BAD6061859F50200C98C8D /* DockSceneTree */,
 				E8BAD60E1859F50200C98C8D /* Main */,
 				E8BAD6161859F50200C98C8D /* MaterialEditor */,
+				502DDC211A4A1695001C9FFF /* MemoryDumpViewer */,
 				E8BAD61B1859F50200C98C8D /* Project */,
 				E8BAD61D1859F50200C98C8D /* QtIcons_qrc.cpp */,
 				E8BAD61E1859F50200C98C8D /* Scene */,
@@ -3611,6 +3643,7 @@
 				E8C99166184CD0EB00AFBF3F /* SpeedTreeImport */,
 				E8C99169184CD0EB00AFBF3F /* SpritesPacker */,
 				E8C9916C184CD0EB00AFBF3F /* TextureBrowser */,
+				502DDC111A4A0B9E001C9FFF /* MemoryDumpViewer */,
 				E8C9917F184CD0EB00AFBF3F /* Tools */,
 			);
 			name = Qt;
@@ -4686,6 +4719,7 @@
 				76F04BC719B5FAFD0012A485 /* ColorCell.cpp in Build Sources */,
 				76405EC419D1D068000E470B /* LogWidget.cpp in Build Sources */,
 				E8BAD7181859F50300C98C8D /* TextureConvertorWork_moc.cpp in Build Sources */,
+				502DDC241A4A1695001C9FFF /* MemoryDumpTreeItem_moc.cpp in Build Sources */,
 				E8C992D5184CD0EC00AFBF3F /* ParticleEditorWidget.cpp in Build Sources */,
 				E8B1577B19010E1100E966EA /* FlagSelectorCombo_moc.cpp in Build Sources */,
 				E8BAD6F91859F50300C98C8D /* HeightmapEditorSystem_moc.cpp in Build Sources */,
@@ -4783,6 +4817,7 @@
 				E8C99220184CD0EC00AFBF3F /* btMultimaterialTriangleMeshShape.cpp in Build Sources */,
 				E8BAD73E1859F50300C98C8D /* SelectPathWidgetBase_moc.cpp in Build Sources */,
 				E8BAD6E71859F50300C98C8D /* SceneEditor2_moc.cpp in Build Sources */,
+				502DDC191A4A0B9E001C9FFF /* MemoryDumpTreeModel.cpp in Build Sources */,
 				E8C992FA184CD0EC00AFBF3F /* CollisionParticleEmitter.cpp in Build Sources */,
 				E8BAD5D61859F48600C98C8D /* MaterialModel.cpp in Build Sources */,
 				E8BAD6D01859F50300C98C8D /* PropertyEditorStateHelper_moc.cpp in Build Sources */,
@@ -4987,6 +5022,7 @@
 				E8C99251184CD0EC00AFBF3F /* btSliderConstraint.cpp in Build Sources */,
 				E8C991EE184CD0EC00AFBF3F /* btCollisionAlgorithm.cpp in Build Sources */,
 				E8BAD6B71859F50300C98C8D /* LandscapeEditorBasePanel_moc.cpp in Build Sources */,
+				502DDC251A4A1695001C9FFF /* MemoryDumpTreeModel_moc.cpp in Build Sources */,
 				E8BAD6B61859F50300C98C8D /* HeightmapEditorPanel_moc.cpp in Build Sources */,
 				76E5FFF719ADE9AB004AC39F /* ValueSlider_moc.cpp in Build Sources */,
 				E8C99217184CD0EC00AFBF3F /* btConvexInternalShape.cpp in Build Sources */,
@@ -5123,6 +5159,7 @@
 				E8C992F4184CD0EC00AFBF3F /* SceneSignals.cpp in Build Sources */,
 				E86F97CF18DB38F1007330E1 /* CloneLastBatchCommand.cpp in Build Sources */,
 				E8C9932B184CD0EC00AFBF3F /* EventFilterDoubleSpinBox.cpp in Build Sources */,
+				502DDC181A4A0B9E001C9FFF /* MemoryDumpTreeItem.cpp in Build Sources */,
 				E8C9923B184CD0EC00AFBF3F /* gim_tri_collision.cpp in Build Sources */,
 				E8C9926E184CD0EC00AFBF3F /* ColladaSceneNode.cpp in Build Sources */,
 				E8C9920B184CD0EC00AFBF3F /* btUnionFind.cpp in Build Sources */,

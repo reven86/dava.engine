@@ -37,39 +37,75 @@ namespace DAVA
 //namespace Backtrace 
 //{
     
-    #define MAX_BACKTRACE_DEPTH  50
+    #define MAX_BACKTRACE_DEPTH  60
     
-    struct Backtrace
+struct Backtrace
+{
+    uint32 size;
+    void * array[MAX_BACKTRACE_DEPTH];
+    pointer_size hash;   // identical backtraces have identical hash values. At the same time it does not guarantee that stacks are the same. 
+};
+
+/**
+    \brief Function to create backtrace from current point and calculate hash.
+ */
+Backtrace * CreateBacktrace();
+/**
+    \brief Function to release backtrace.
+ */
+void ReleaseBacktrace(Backtrace * backtrace);
+/*
+    \brief Get backtrace to created pointer
+ */
+void GetBacktrace(Backtrace * backtrace, uint32 stackLineSkipCount);
+
+
+struct BacktraceLog
+{
+    uint32 size;
+    char ** strings;
+};
+
+void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log);
+void ReleaseBacktraceLog(BacktraceLog * log);
+    
+void PrintBackTraceToLog();
+    
+    
+class BacktraceTree
+{
+public:
+    class BacktraceTreeNode
     {
+    public:
+        BacktraceTreeNode(void * _pointer, BacktraceTreeNode *parent);
+        ~BacktraceTreeNode();
+        BacktraceTreeNode * Insert(void * ptr);
+        int32 BinaryFind(void * pointer, int32 l, int32 r);
+        uint32 SizeOfAllChildren()const;
+        BacktraceTreeNode * parent;
+        void * pointer;
         uint32 size;
-        void * array[MAX_BACKTRACE_DEPTH];
-        pointer_size hash;   // identical backtraces have identical hash values. At the same time it does not guarantee that stacks are the same. 
+        Vector<BacktraceTreeNode*> children;
     };
     
-    /**
-        \brief Function to create backtrace from current point and calculate hash.
-     */
-    Backtrace * CreateBacktrace();
-    /**
-        \brief Function to release backtrace.
-     */
-    void ReleaseBacktrace(Backtrace * backtrace);
-    /*
-        \brief Get backtrace to created pointer
-     */
-    void GetBacktrace(Backtrace * backtrace);
+    BacktraceTree();
+    ~BacktraceTree();
+
     
+    void Insert(Backtrace * backtrace, uint32 size);
+
+    void Insert(BacktraceTreeNode * head, Backtrace * backtrace, uint32 depth, uint32 size);
+    Backtrace* GetBacktraceByTreeNode(BacktraceTreeNode * node);
     
-    struct BacktraceLog
-    {
-        uint32 size;
-        char ** strings;
-    };
+    BacktraceTreeNode * head;
     
-    void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log);
-    void ReleaseBacktraceLog(BacktraceLog * log);
-        
-    void PrintBackTraceToLog();
+    void MapAddress(void * address);
+    void GenerateSymbols();
+    Set<void*> uniqueAddresses;
+    Map<void*, char*> symbols;
+};
+
 //};
 };
 

@@ -277,6 +277,7 @@
     <addaction name="actionCubemapEditor"/>
     <addaction name="actionImageSplitter"/>
     <addaction name="actionHeightmap_Delta_Tool"/>
+    <addaction name="actionMemoryDumpViewer"/>
     <addaction name="separator"/>
     <addaction name="actionShowSettings"/>
    </widget>
@@ -1943,6 +1944,11 @@
   <action name="actionCreateTestSkinnedObject">
    <property name="text">
     <string>Create Test Skinned Object</string>
+   </property>
+  </action>
+  <action name="actionMemoryDumpViewer">
+   <property name="text">
+    <string>Memory Dump Viewer</string>
    </property>
   </action>
  </widget>

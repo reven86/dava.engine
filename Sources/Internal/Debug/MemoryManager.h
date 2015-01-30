@@ -30,12 +30,12 @@
 #ifndef __DAVAENGINE_MEMORYMANAGER_H__
 #define __DAVAENGINE_MEMORYMANAGER_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
 #include "Base/Singleton.h"
 #include "DAVAConfig.h"
 
-#ifdef ENABLE_MEMORY_MANAGER
+#include "MemoryManagerDebugNew.h"
+
+#if defined(ENABLE_MEMORY_MANAGER)
 
 #include <string>
 #include <map>
@@ -47,33 +47,27 @@ namespace DAVA
 
 /*
 	Class for finding memory leaks / overruns and so on
-	
  */
-
-//class	MemoryManager : public Singleton<MemoryManager>
-//{
-//public:
-//	void BeginAllocationTracking(const String & trackingId);
-//	void EndAllocationTracking(const String & trackingId);
-//	void CheckIfAllObjectsReleased(const String & trackingId);
-//
-//	void RegisterNewBaseObject(BaseObject * baseObject);
-//	void UnregistedDeletedBaseObject(BaseObject * baseObject);
-//private:
-//};
 	
 class MemoryManager : public Singleton<MemoryManager>
 {
 public:
-	MemoryManager(){};
+    enum
+    {
+        DUMP_GLOBAL_STATS = (1 << 0),
+        DUMP_POOL_STATS = (1 << 1),
+        DUMP_BASE_OBJECTS = (1 << 2),
+        DUMP_LEAKS = (1 << 3),
+        
+        DUMP_EVERYTHING = DUMP_GLOBAL_STATS | DUMP_POOL_STATS | DUMP_BASE_OBJECTS | DUMP_LEAKS,
+    };
+
+    
+    MemoryManager(){};
 	virtual ~MemoryManager() {};
 		
-//	virtual void	*New(size_t size, const char * _file, int _line) { return 0; };
-//	virtual void	*New(size_t size, void *pLoc, const char * _file, int _line) { return 0; };
-//	virtual void	Delete(void * pointer) {};
-	
-	virtual void	CheckMemoryLeaks() {};
-	virtual void	FinalLog() {};
+    virtual void	*New(size_t size, eMemoryPool poolIndex, const char * userInfo) { return 0; };
+	virtual void	DumpLog(uint32_t dumpFlags) {};
 };
 	
 }; 
@@ -96,7 +90,7 @@ void * operator new[](size_t _size, const std::nothrow_t &) throw();
 
 void   operator delete[](void * ptr) throw();
 void   operator delete[](void * ptr, const std::nothrow_t &) throw();
-#else defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WIN32__)
 void * operator new(size_t _size) throw();
 void * operator new(size_t _size, const std::nothrow_t &) throw();
 
@@ -110,17 +104,7 @@ void   operator delete[](void * ptr) throw();
 void   operator delete[](void * ptr, const std::nothrow_t &) throw();
 #endif
 
-
-//// Default placement versions of operator new.
-//inline void* operator new(std::size_t, void* __p) throw() { return __p; }
-//inline void* operator new[](std::size_t, void* __p) throw() { return __p; }
-//
-//// Default placement versions of operator delete.
-//inline void  operator delete  (void*, void*) throw() { }
-//inline void  operator delete[](void*, void*) throw() { }
-
-//#define new new (__FILE__, __LINE__)
-
 #endif // ENABLE_MEMORY_MANAGER
+
 #endif // __DAVAENGINE_MEMORYMANAGER_H__
 

@@ -38,6 +38,7 @@
 #include "Base/RefPtr.h"
 #include "Base/ScopedPtr.h"
 #include "Base/Atomic.h"
+#include "Debug/MemoryManager.h"
 #include <typeinfo>
 
 namespace DAVA
@@ -74,6 +75,7 @@ protected:
 	}
 
 public:
+    ENABLE_MEM_MANAGER_TRACK(MEMORY_POOL_BASE_OBJECTS);
 	
 	//! Constructor
 	BaseObject()

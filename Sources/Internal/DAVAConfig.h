@@ -44,7 +44,7 @@
 #define AUTOTESTING_LUA
 
 
-//#define ENABLE_MEMORY_MANAGER
+#define ENABLE_MEMORY_MANAGER
 
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations 
 

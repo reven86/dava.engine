@@ -135,6 +135,13 @@
 //#endif 
 //#define __DAVAENGINE_IPHONE__
 
+#if defined(ENABLE_MEMORY_MANAGER)
+#include "Base/STLDebugAllocator.h"
+#define DAVADefaultSTLAllocator std::allocator
+#else
+#define DAVADefaultSTLAllocator std::allocator
+#endif
+
 
 
 namespace DAVA
@@ -192,36 +199,57 @@ typedef std::string		String;
 //template <typename _Ty, typename _Ax = std::allocator(_Ty)> 
 //class List : public std::list<_Ty, _Ax>  {};
 
-
-//#define List std::list
-//#define Vector std::vector
-template < typename E > class List : public std::list< E > {};
-template < typename E > class Vector : public std::vector< E >
+    
+template <  typename _E,
+            typename _A = DAVADefaultSTLAllocator <_E> >
+class List : public std::list< _E, _A> {};
+    
+template < typename _E,
+           typename _A = DAVADefaultSTLAllocator < _E> >
+class Vector : public std::vector< _E, _A>
 {
 public:
-    typedef E	   value_type;
+    typedef _E	   value_type;
     typedef size_t size_type;
-    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E >(n, value) {}
-    Vector() : std::vector< E >() {}
+    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< _E, _A >(n, value) {}
+    Vector() : std::vector< _E, _A >() {}
 };
-template < class E > class Set : public std::set< E > {};
-template < class E > class Deque : public std::deque< E > {};
+
+//template < typename _E> class Vector : public std::vector< _E>
+//{
+//public:
+//    typedef _E	   value_type;
+//    typedef size_t size_type;
+//    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< _E>(n, value) {}
+//    Vector() : std::vector< _E>() {}
+//};
+
+    
+template <  class _Key,
+            class _Compare = std::less<_Key>,
+            class _Alloc = DAVADefaultSTLAllocator<_Key> >
+class Set : public std::set< _Key, _Compare, _Alloc > {};
+    
+    
+template < class _E , class _A = DAVADefaultSTLAllocator<_E> >
+class Deque : public std::deque< _E, _A> {};
 
 template<	class _Kty,
 			class _Ty,
 			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
+			class _Alloc = DAVADefaultSTLAllocator<std::pair<const _Kty, _Ty> > >
 class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
 
 template<	class _Kty,
 			class _Ty,
 			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
+			class _Alloc = DAVADefaultSTLAllocator<std::pair<const _Kty, _Ty> > >
 class MultiMap : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
 
-template < class T, class Container = std::deque<T> > class Stack : public std::stack< T, Container > {};
+template < class T, class Container = Deque<T> >
+class Stack : public std::stack< T, Container > {};
 
-template < class T, class Container = std::vector<T>, class Compare = std::less<typename Container::value_type> > 
+template < class T, class Container = Vector<T>, class Compare = std::less<typename Container::value_type> >
 class PriorityQueue : public std::priority_queue< T, Container, Compare > {};
 
 #ifdef min

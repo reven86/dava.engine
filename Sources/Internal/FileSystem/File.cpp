@@ -95,49 +95,56 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
         return NULL;
     }
     
+    return PureCreate(filename, attributes);
+}
 
-	FILE * file = 0;
-	uint32 size = 0;
+File * File::PureCreate(const FilePath & filePath, uint32 attributes)
+{
+    FILE * file = 0;
+    uint32 size = 0;
+    const char * absolutePathname = filePath.GetAbsolutePathname().c_str();
+    
     if((attributes & File::OPEN) && (attributes & File::READ))
     {
         if(attributes & File::WRITE)
         {
-    		file = fopen(filename.GetAbsolutePathname().c_str(),"r+b");
+            file = fopen(absolutePathname,"r+b");
         }
         else
         {
-            file = fopen(filename.GetAbsolutePathname().c_str(),"rb");
+            file = fopen(absolutePathname,"rb");
         }
-
-		if (!file) return NULL;
-		fseek(file, 0, SEEK_END);
-		size = ftell(file);
+        
+        if (!file) return NULL;
+        fseek(file, 0, SEEK_END);
+        size = ftell(file);
         fseek(file, 0, SEEK_SET);
     }
-	else if ((attributes & File::CREATE) && (attributes & File::WRITE))
-	{
-		file = fopen(filename.GetAbsolutePathname().c_str(),"wb");
-		if (!file)return NULL;
-	}
-	else if ((attributes & File::APPEND) && (attributes & File::WRITE))
-	{
-		file = fopen(filename.GetAbsolutePathname().c_str(),"ab");
-		if (!file)return NULL;
-		fseek(file, 0, SEEK_END);
-		size = ftell(file);
-	}
-	else 
-	{
-		return NULL;
-	}
-
-
-	File * fileInstance = new File();
-	fileInstance->filename = filename;
-	fileInstance->size = size;
-	fileInstance->file = file;
-	return fileInstance;
+    else if ((attributes & File::CREATE) && (attributes & File::WRITE))
+    {
+        file = fopen(absolutePathname,"wb");
+        if (!file)return NULL;
+    }
+    else if ((attributes & File::APPEND) && (attributes & File::WRITE))
+    {
+        file = fopen(absolutePathname,"ab");
+        if (!file)return NULL;
+        fseek(file, 0, SEEK_END);
+        size = ftell(file);
+    }
+    else 
+    {
+        return NULL;
+    }
+    
+    
+    File * fileInstance = new File();
+    fileInstance->filename = filePath;
+    fileInstance->size = size;
+    fileInstance->file = file;
+    return fileInstance;
 }
+    
 
 const FilePath & File::GetFilename()
 {

@@ -39,6 +39,7 @@
 #include <QMetaObject>
 #include <QMetaType>
 #include <QActionGroup>
+#include <QDesktopWidget>
 
 #include "mainwindow.h"
 #include "QtUtils.h"
@@ -125,6 +126,8 @@
 #include "Tools/ColorPicker/ColorPicker.h"
 
 #include "SceneProcessing/SceneProcessor.h"
+
+#include "Classes/Qt/MemoryDumpViewer/MemoryDumpTreeModel.h"
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -686,7 +689,10 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionEnableCameraLight, SIGNAL(triggered()), this, SLOT(OnSceneLightMode()));
 	QObject::connect(ui->actionCubemapEditor, SIGNAL(triggered()), this, SLOT(OnCubemapEditor()));
     QObject::connect(ui->actionImageSplitter, SIGNAL(triggered()), this, SLOT(OnImageSplitter()));
-
+    QObject::connect(ui->actionMemoryDumpViewer, SIGNAL(triggered()), this, SLOT(OnMemoryDumpViewerOpen()));
+   
+    
+    
 	QObject::connect(ui->actionShowNotPassableLandscape, SIGNAL(triggered()), this, SLOT(OnNotPassableTerrain()));
 	QObject::connect(ui->actionCustomColorsEditor, SIGNAL(triggered()), this, SLOT(OnCustomColorsEditor()));
 	QObject::connect(ui->actionHeightMapEditor, SIGNAL(triggered()), this, SLOT(OnHeightmapEditor()));
@@ -1517,6 +1523,34 @@ void QtMainWindow::OnImageSplitter()
 {
 	ImageSplitterDialog dlg(this);
 	dlg.exec();
+}
+
+void QtMainWindow::OnMemoryDumpViewerOpen()
+{
+    QTreeView * view = new QTreeView(this);
+    
+    MemoryDumpTreeModel * model = new MemoryDumpTreeModel("~/Documents/leaks5.log", view);
+    
+    QSortFilterProxyModel * sortProxyModel = new QSortFilterProxyModel(view);
+    sortProxyModel->setSourceModel(model);
+
+    view->setModel(sortProxyModel);
+    view->sortByColumn(2, Qt::DescendingOrder);
+    view->setWindowFlags(Qt::Window);
+    view->setAttribute(Qt::WA_DeleteOnClose);
+    view->resize(QDesktopWidget().availableGeometry(0).size() * 0.9);
+    view->show();
+    
+//    view.setModel
+    
+/*    QTreeView view;
+    view.resize(QDesktopWidget().availableGeometry(0).size() * 0.9);
+    //view.setModel(&sortProxyModel);
+    
+    view.sortByColumn(1, Qt::DescendingOrder);
+    view.setWindowTitle(QObject::tr("Simple Tree Model"));
+    view.setColumnWidth(0, QDesktopWidget().availableGeometry(0).size().width() * 0.7);
+    view.showNormal();*/
 }
 
 void QtMainWindow::OnSwitchEntityDialog()

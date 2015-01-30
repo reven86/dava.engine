@@ -844,6 +844,12 @@
 		5022951F186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
 		50229520186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
 		50229521186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
+		502BF2F61A3F7D830087534F /* MemoryManagerDebugNew.h in Headers */ = {isa = PBXBuildFile; fileRef = 502BF2F51A3F7D830087534F /* MemoryManagerDebugNew.h */; };
+		502BF2F71A3F7D830087534F /* MemoryManagerDebugNew.h in Headers */ = {isa = PBXBuildFile; fileRef = 502BF2F51A3F7D830087534F /* MemoryManagerDebugNew.h */; };
+		502BF2F81A3F7D830087534F /* MemoryManagerDebugNew.h in Headers */ = {isa = PBXBuildFile; fileRef = 502BF2F51A3F7D830087534F /* MemoryManagerDebugNew.h */; };
+		502BF2FA1A3F7DB90087534F /* MemoryManagerDebugNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502BF2F91A3F7DB90087534F /* MemoryManagerDebugNew.cpp */; };
+		502BF2FB1A3F7DB90087534F /* MemoryManagerDebugNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502BF2F91A3F7DB90087534F /* MemoryManagerDebugNew.cpp */; };
+		502BF2FC1A3F7DB90087534F /* MemoryManagerDebugNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 502BF2F91A3F7DB90087534F /* MemoryManagerDebugNew.cpp */; };
 		5043DDAB18706828005E3584 /* VisibilityArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 5043DDAA18706828005E3584 /* VisibilityArray.h */; };
 		5043DDAC18706828005E3584 /* VisibilityArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 5043DDAA18706828005E3584 /* VisibilityArray.h */; };
 		5043DDAD18706828005E3584 /* VisibilityArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 5043DDAA18706828005E3584 /* VisibilityArray.h */; };
@@ -889,6 +895,9 @@
 		50B06925186D4C4C00B44A39 /* RenderLayerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 50B0691F186D4C4C00B44A39 /* RenderLayerManager.h */; };
 		50D6C8EA16C107D500BB3F78 /* GlobalEventSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 50D6C8E716C107D500BB3F78 /* GlobalEventSystem.h */; };
 		50D6C8EB16C107D500BB3F78 /* GlobalEventSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 50D6C8E716C107D500BB3F78 /* GlobalEventSystem.h */; };
+		50E19B7E1A3F766600022055 /* STLDebugAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50E19B7D1A3F766600022055 /* STLDebugAllocator.h */; };
+		50E19B7F1A3F766600022055 /* STLDebugAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50E19B7D1A3F766600022055 /* STLDebugAllocator.h */; };
+		50E19B801A3F766600022055 /* STLDebugAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50E19B7D1A3F766600022055 /* STLDebugAllocator.h */; };
 		50ED334A1858B5A200A917D5 /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50ED33481858B5A200A917D5 /* StaticOcclusionComponent.cpp */; };
 		50ED334B1858B5A200A917D5 /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50ED33481858B5A200A917D5 /* StaticOcclusionComponent.cpp */; };
 		50ED334C1858B5A200A917D5 /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50ED33481858B5A200A917D5 /* StaticOcclusionComponent.cpp */; };
@@ -2664,6 +2673,8 @@
 		5013F6901859EB0400FB3C51 /* StaticOcclusionSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionSystem.h; sourceTree = "<group>"; };
 		5022951A186DD1BC00F55478 /* RenderPassManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderPassManager.cpp; sourceTree = "<group>"; };
 		5022951B186DD1BC00F55478 /* RenderPassManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderPassManager.h; sourceTree = "<group>"; };
+		502BF2F51A3F7D830087534F /* MemoryManagerDebugNew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryManagerDebugNew.h; sourceTree = "<group>"; };
+		502BF2F91A3F7DB90087534F /* MemoryManagerDebugNew.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryManagerDebugNew.cpp; sourceTree = "<group>"; };
 		5043DDAA18706828005E3584 /* VisibilityArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityArray.h; sourceTree = "<group>"; };
 		505EB40C1824CEC5009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
@@ -2681,6 +2692,7 @@
 		50B0691F186D4C4C00B44A39 /* RenderLayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderLayerManager.h; sourceTree = "<group>"; };
 		50D6C8E616C107D400BB3F78 /* GlobalEventSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalEventSystem.cpp; sourceTree = "<group>"; };
 		50D6C8E716C107D500BB3F78 /* GlobalEventSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalEventSystem.h; sourceTree = "<group>"; };
+		50E19B7D1A3F766600022055 /* STLDebugAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STLDebugAllocator.h; sourceTree = "<group>"; };
 		50ED33481858B5A200A917D5 /* StaticOcclusionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionComponent.cpp; sourceTree = "<group>"; };
 		50ED33491858B5A200A917D5 /* StaticOcclusionComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionComponent.h; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
@@ -3863,6 +3875,7 @@
 				E8989AF216BD24E400732C04 /* IntrospectionFlags.h */,
 				E8989AF316BD24E400732C04 /* IntrospectionProperty.h */,
 				E8989AF416BD24E400732C04 /* Mallocator.h */,
+				50E19B7D1A3F766600022055 /* STLDebugAllocator.h */,
 				E8989AF516BD24E400732C04 /* Message.cpp */,
 				E8989AF616BD24E400732C04 /* Message.h */,
 				E8989AF716BD24E400732C04 /* Meta.h */,
@@ -3948,6 +3961,8 @@
 				E8989B2516BD24E400732C04 /* ListAllocator.h */,
 				E8989B2616BD24E400732C04 /* MemoryManager.cpp */,
 				E8989B2716BD24E400732C04 /* MemoryManager.h */,
+				502BF2F91A3F7DB90087534F /* MemoryManagerDebugNew.cpp */,
+				502BF2F51A3F7D830087534F /* MemoryManagerDebugNew.h */,
 				E8989B2816BD24E400732C04 /* Replay.cpp */,
 				E8989B2916BD24E400732C04 /* Replay.h */,
 				E8989B2A16BD24E400732C04 /* Stats.cpp */,
@@ -4943,6 +4958,7 @@
 				176DE957174B5561007A983B /* Math2D.h in Headers */,
 				176DE958174B5561007A983B /* Math2DTemplateClasses.h in Headers */,
 				176DE959174B5561007A983B /* MathConstants.h in Headers */,
+				502BF2F81A3F7D830087534F /* MemoryManagerDebugNew.h in Headers */,
 				176DE95A174B5561007A983B /* MathDefines.h in Headers */,
 				176DE95B174B5561007A983B /* MathHelpers.h in Headers */,
 				4F53ED2719A23BE200D3869D /* DLC.h in Headers */,
@@ -5138,6 +5154,7 @@
 				176DEA01174B5561007A983B /* UIPopup.h in Headers */,
 				02FD8271192A3861007762C0 /* WaveComponent.h in Headers */,
 				644C86CF19476A7100964F91 /* VegetationCustomGeometry.h in Headers */,
+				50E19B801A3F766600022055 /* STLDebugAllocator.h in Headers */,
 				176DEA02174B5561007A983B /* UIScreen.h in Headers */,
 				176DEA03174B5561007A983B /* UIScreenManager.h in Headers */,
 				176DEA04174B5561007A983B /* UIScreenManagerMacOS.h in Headers */,
@@ -5650,6 +5667,7 @@
 				02E9E439173964DA00C501BC /* SoundUpdateSystem.h in Headers */,
 				4FE7D35A1745056700D2FCE6 /* GlobalEnum.h in Headers */,
 				E8C486F0196BC9AC0082E634 /* LockGuard.h in Headers */,
+				502BF2F61A3F7D830087534F /* MemoryManagerDebugNew.h in Headers */,
 				846CFE5F174D1A64004ECE3C /* OpenUDIDApple.h in Headers */,
 				846CFE63174D1A75004ECE3C /* OpenUDIDMacOS.h in Headers */,
 				4FA5CDC01757AF430040CC6E /* EnumMap.h in Headers */,
@@ -5669,6 +5687,7 @@
 				A6B0518017E886D8000EED68 /* SerializationContext.h in Headers */,
 				505EB4111824CEC5009BEA3C /* OcclusionQuery.h in Headers */,
 				A66533E817F98EC100B8906A /* Serializable.h in Headers */,
+				50E19B7E1A3F766600022055 /* STLDebugAllocator.h in Headers */,
 				17DC600117DE11650075813E /* UIMovieView.h in Headers */,
 				17B3EA8918E9A3120069AE7A /* CoreMacOSPlatformBase.h in Headers */,
 				1770DF5117DF67E500000391 /* MovieViewControlMacOS.h in Headers */,
@@ -5824,6 +5843,7 @@
 				E898A0C016BD265400732C04 /* Polygon3.h in Headers */,
 				E898A0C116BD265400732C04 /* Quaternion.h in Headers */,
 				E898A0C216BD265400732C04 /* Ray.h in Headers */,
+				50E19B7F1A3F766600022055 /* STLDebugAllocator.h in Headers */,
 				E898A0C316BD265400732C04 /* Rect.h in Headers */,
 				E898A0C416BD265400732C04 /* RectPacker.h in Headers */,
 				E898A0C516BD265400732C04 /* Sphere.h in Headers */,
@@ -6050,6 +6070,7 @@
 				17B3EA9218E9A4ED0069AE7A /* CoreMacOSPlatformQt.h in Headers */,
 				E8FC12FD186972740095D8FE /* QualitySettingsComponent.h in Headers */,
 				CCC7A44216F1D6170061EA5D /* LandscapeCursor.h in Headers */,
+				502BF2F71A3F7D830087534F /* MemoryManagerDebugNew.h in Headers */,
 				CCC7A44616F1D6170061EA5D /* Light.h in Headers */,
 				CCC7A44A16F1D6170061EA5D /* Mesh.h in Headers */,
 				CCC7A45216F1D6170061EA5D /* RenderBatch.h in Headers */,
@@ -6449,6 +6470,7 @@
 				176DEAF5174B5561007A983B /* SceneManager.cpp in Sources */,
 				176DEAF6174B5561007A983B /* SceneNodeAnimation.cpp in Sources */,
 				176DEAF7174B5561007A983B /* SceneNodeAnimationKey.cpp in Sources */,
+				502BF2FC1A3F7DB90087534F /* MemoryManagerDebugNew.cpp in Sources */,
 				176DEAF8174B5561007A983B /* SceneNodeAnimationList.cpp in Sources */,
 				176DEAF9174B5561007A983B /* ShadowVolumeNode.cpp in Sources */,
 				C172EC4B18CA0AD7004309CF /* TextBlockGraphicsRender.cpp in Sources */,
@@ -6955,6 +6977,7 @@
 				CCC7A46316F1D6170061EA5D /* RenderSystem.cpp in Sources */,
 				CCC7A46716F1D6170061EA5D /* ShadowRect.cpp in Sources */,
 				CCC7A46B16F1D6170061EA5D /* ShadowVolume.cpp in Sources */,
+				502BF2FA1A3F7DB90087534F /* MemoryManagerDebugNew.cpp in Sources */,
 				CCC7A46F16F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
 				CCC7A47316F1D6170061EA5D /* SpriteObject.cpp in Sources */,
 				CCC7A47716F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
@@ -7357,6 +7380,7 @@
 				CCC7A45C16F1D6170061EA5D /* RenderObject.cpp in Sources */,
 				155D77D9197DD22E006AEBCD /* YamlNode.cpp in Sources */,
 				CCC7A46016F1D6170061EA5D /* RenderPass.cpp in Sources */,
+				502BF2FB1A3F7DB90087534F /* MemoryManagerDebugNew.cpp in Sources */,
 				CCC7A46416F1D6170061EA5D /* RenderSystem.cpp in Sources */,
 				CCC7A46816F1D6170061EA5D /* ShadowRect.cpp in Sources */,
 				CCC7A46C16F1D6170061EA5D /* ShadowVolume.cpp in Sources */,
