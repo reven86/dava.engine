@@ -142,7 +142,7 @@ public:
     public:
                     ConstBuf();
                     ~ConstBuf();
-
+    
         void        construct( ProgType type, unsigned reg_i, unsigned reg_count );
 
         unsigned    const_count() const;
@@ -218,6 +218,9 @@ public:
 
 typedef Pool<PipelineStateDX9_t>            PipelineStateDX9Pool;
 typedef Pool<PipelineStateDX9_t::ConstBuf>  ConstBufDX9Pool;
+
+RHI_IMPL_POOL(PipelineStateDX9_t);
+RHI_IMPL_POOL(PipelineStateDX9_t::ConstBuf);
 
 
 //------------------------------------------------------------------------------

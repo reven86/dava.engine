@@ -71,7 +71,6 @@ RenderPass_t
 {
 public:
 
-
     std::vector<Handle> cmdBuf;
 };
 
@@ -111,6 +110,9 @@ public:
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
 typedef Pool<RenderPass_t>      RenderPassPool;
 
+RHI_IMPL_POOL(CommandBuffer_t);
+RHI_IMPL_POOL(RenderPass_t);
+
     
 const uint64   CommandBuffer_t::EndCmd = 0xFFFFFFFF;
 
@@ -126,6 +128,8 @@ Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf )
     Handle          handle = RenderPassPool::Alloc();
     RenderPass_t*   pass   = RenderPassPool::Get( handle );
     
+    pass->cmdBuf.resize( cmdBufCount );
+
     for( unsigned i=0; i!=cmdBufCount; ++i )
     {
         Handle              h  = CommandBufferPool::Alloc();
@@ -135,8 +139,8 @@ Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf )
         cb->isFirstInPass = i == 0;
         cb->isLastInPass  = i == cmdBufCount-1;
 
-        pass->cmdBuf.push_back( h );
-        cmdBuf[i] = h;
+        pass->cmdBuf[i] = h;
+        cmdBuf[i]       = h;
     }
 
     return handle;
