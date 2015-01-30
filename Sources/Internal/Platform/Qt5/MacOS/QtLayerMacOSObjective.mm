@@ -92,9 +92,6 @@ void QtLayerMacOS::ProcessFrame()
 
 void QtLayerMacOS::AppFinished()
 {
-    [openGLView release];
-    openGLView = nil;
-
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
 
@@ -106,6 +103,8 @@ void QtLayerMacOS::AppFinished()
     }
 #endif
     
+    [openGLView release];
+    openGLView = nil;
 }
     
 void QtLayerMacOS::MouseMoved(float32 x, float32 y)
