@@ -94,7 +94,7 @@ public:
 	inline DAVA::int32 GetForceLayer() const;
 	void SetForceLayer(DAVA::int32 layer);
 
-	inline bool GetAllSceneModeEnabled(bool enabled) const;
+	inline bool GetAllSceneModeEnabled() const;
 	void SetAllSceneModeEnabled(bool enabled);
 protected:
 	void UpdateForceLayer();
@@ -148,7 +148,7 @@ inline DAVA::int32 EditorLODSystem::GetForceLayer() const
 	return forceLayer;
 }
 
-inline bool EditorLODSystem::GetAllSceneModeEnabled(bool enabled) const
+inline bool EditorLODSystem::GetAllSceneModeEnabled() const
 {
 	return allSceneModeEnabled;
 }

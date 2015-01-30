@@ -153,7 +153,6 @@ void LODEditor::ForceDistanceChanged(int distance)
 	GetCurrentEditorLODSystem()->SetForceDistance(distance);
 }
 
-
 void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index)
 {
     spinbox->setRange(DAVA::LodComponent::MIN_LOD_DISTANCE, DAVA::LodComponent::MAX_LOD_DISTANCE);  //distance 
@@ -175,19 +174,19 @@ void LODEditor::SceneActivated(SceneEditor2 *scene)
 {
 	Q_UNUSED(scene);
 	EditorLODSystem *currentEditorLodSystem = GetCurrentEditorLODSystem();
-
-	GetCurrentEditorLODSystem()->SetAllSceneModeEnabled(ui->checkBoxLodEditorMode->isChecked());
-	ForceDistanceStateChanged(ui->enableForceDistance->checkState());
-	ForceDistanceChanged(ui->forceSlider->value());
-	ForceLayerActivated(ui->forceLayer->currentIndex());
-
+	ui->checkBoxLodEditorMode->setChecked(currentEditorLodSystem->GetAllSceneModeEnabled());
+	ui->enableForceDistance->setChecked(currentEditorLodSystem->GetForceDistanceEnabled());
+	ui->forceSlider->setValue(currentEditorLodSystem->GetForceDistance());
+	int index = ui->forceLayer->findData(currentEditorLodSystem->GetForceLayer());
+	if (-1 != index)
+	{
+		ui->forceLayer->setCurrentIndex(index);
+	}
 	LODDataChanged(); 
-
 }
 
 void LODEditor::LODDataChanged()
 {
-	//GetCurrentEditorLODSystem()->CollectLODDataFromScene();
 	DAVA::uint32 lodLayersCount = GetCurrentEditorLODSystem()->GetSceneLodsLayersCount();
 	DVASSERT(lodLayersCount <= DAVA::LodComponent::MAX_LOD_LAYERS);
 
@@ -218,7 +217,6 @@ void LODEditor::LODDataChanged()
 
 	ForceDistanceStateChanged(GetCurrentEditorLODSystem()->GetForceDistanceEnabled() ? Qt::Checked : Qt::Unchecked);
 }
-
 
 void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous)
 {
@@ -339,7 +337,6 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
 	frameButton->setIcon(icon);
 }
 
-
 void LODEditor::UpdateWidgetVisibility()
 {
     bool visible = (GetCurrentEditorLODSystem()->GetSceneLodsLayersCount() != 0);
@@ -419,8 +416,6 @@ void LODEditor::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 	scene->editorLODSystem->SceneSelectionChanged(selected, deselected);
 	LODDataChanged();
 }
-
-
 
 void LODEditor::DistanceWidget::SetVisible(bool visible)
 {
