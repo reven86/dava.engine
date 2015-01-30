@@ -116,8 +116,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	if (charDrawed == 0)
 		return;
 	
-    int32 xOffset = (int32)(textBlock->position.x);
-    int32 yOffset = (int32)(textBlock->position.y);
+	int32 xOffset = 0;// (int32)(textBlock->position.x);
+	int32 yOffset = 0;// (int32)(textBlock->position.y);
 
 	if (offset)
 	{
@@ -149,11 +149,28 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     //TODO: temporary crutch until 2D render became fully stateless
     const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
     
-    Matrix4 offsetMatrix;
-    offsetMatrix.glTranslate((float32)xOffset, (float32)yOffset, 0.f);
-    RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
+	//NOTE: correct affine transformations
 
-    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    Matrix4 offsetMatrix;
+	offsetMatrix.glTranslate((float32)xOffset - textBlock->pivot.x, (float32)yOffset - textBlock->pivot.y, 0.f);
+
+	Matrix4 rotateMatrix;
+	rotateMatrix.glRotate(RadToDeg(textBlock->angle), 0.f, 0.f, 1.f);
+
+	Matrix4 scaleMatrix;
+	//recalculate x scale - for non-uniform scale
+	const float difX = 1.0f - (textBlock->scale.dy - textBlock->scale.dx);
+	scaleMatrix.glScale(difX, 1.f, 1.0f);
+
+	Matrix4 worldMatrix;
+	worldMatrix.glTranslate(textBlock->position.x, textBlock->position.y, 0.f);
+
+	offsetMatrix = (scaleMatrix*offsetMatrix*rotateMatrix)*worldMatrix;
+	//offsetMatrix = (scaleMatrix * rotateMatrix * offsetMatrix)*worldMatrix;
+
+	RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
+
+	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
 	RenderManager::Instance()->SetShader(shader);
     RenderManager::Instance()->SetRenderData(renderObject);

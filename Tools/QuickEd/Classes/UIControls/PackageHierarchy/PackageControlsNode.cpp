@@ -3,28 +3,31 @@
 #include "ControlNode.h"
 
 #include "../PackageSerializer.h"
+#include "PackageNode.h"
 
 using namespace DAVA;
 
-PackageControlsNode::PackageControlsNode(PackageBaseNode *parent, UIPackage *aPackage)
-    : PackageBaseNode(parent)
+PackageControlsNode::PackageControlsNode(PackageNode *_parent, UIPackage *_package, const FilePath &_packagePath)
+    : PackageBaseNode(_parent)
     , name("Controls")
-    , package(SafeRetain(aPackage))
     , readOnly(false)
+    , package(SafeRetain(_package))
+    , packagePath(_packagePath)
 {
 }
 
 PackageControlsNode::~PackageControlsNode()
 {
-    for (auto it = nodes.begin(); it != nodes.end(); ++it)
-        (*it)->Release();
+    for (ControlNode *node : nodes)
+        node->Release();
     nodes.clear();
+    
     SafeRelease(package);
 }
 
 void PackageControlsNode::Add(ControlNode *node)
 {
-    DVASSERT(node->GetParent() == NULL);
+    DVASSERT(node->GetParent() == nullptr);
     node->SetParent(this);
     nodes.push_back(SafeRetain(node));
     package->AddControl(node->GetControl());
@@ -42,8 +45,8 @@ void PackageControlsNode::InsertBelow(ControlNode *node, const ControlNode *belo
     }
     else
     {
-        nodes.push_back(SafeRetain(node));
         package->AddControl(node->GetControl());
+        nodes.push_back(SafeRetain(node));
     }
 }
 
@@ -92,7 +95,7 @@ UIPackage *PackageControlsNode::GetPackage() const
 
 const FilePath &PackageControlsNode::GetPackagePath() const
 {
-    return package->GetFilePath();
+    return packagePath;
 }
 
 int PackageControlsNode::GetFlags() const

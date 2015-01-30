@@ -51,6 +51,9 @@ public:
     void SetFocused(bool focused);
 
 private:
+    int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches);
+
+    Vector<DAVA::UIEvent> allTouches;
     bool willQuit;
     bool needToSkipMouseUp;
     bool isFocused;
