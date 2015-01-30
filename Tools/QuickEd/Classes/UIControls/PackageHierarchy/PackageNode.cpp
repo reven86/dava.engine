@@ -6,14 +6,15 @@
 
 using namespace DAVA;
 
-PackageNode::PackageNode(DAVA::UIPackage *aPackage)
+PackageNode::PackageNode(DAVA::UIPackage *aPackage, const FilePath &_path)
     : PackageBaseNode(NULL)
     , package(SafeRetain(aPackage))
+    , path(_path)
     , importedPackagesNode(NULL)
     , packageControlsNode(NULL)
 {
     importedPackagesNode = new ImportedPackagesNode(this);
-    packageControlsNode = new PackageControlsNode(this, package);
+    packageControlsNode = new PackageControlsNode(this, package, path);
 }
 
 PackageNode::~PackageNode()
@@ -42,7 +43,7 @@ PackageBaseNode *PackageNode::Get(int index) const
 
 String PackageNode::GetName() const
 {
-    return package->GetName();
+    return path.GetBasename();
 }
 
 int PackageNode::GetFlags() const 
@@ -53,6 +54,11 @@ int PackageNode::GetFlags() const
 UIPackage *PackageNode::GetPackage() const
 {
     return package;
+}
+
+const FilePath &PackageNode::GetPath() const
+{
+    return path;
 }
 
 ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
@@ -68,7 +74,7 @@ PackageControlsNode *PackageNode::GetPackageControlsNode() const
 void PackageNode::Serialize(PackageSerializer *serializer) const
 {
     serializer->BeginMap("Header");
-    serializer->PutValue("version", "0");
+    serializer->PutValue("version", String("0"));
     serializer->EndMap();
 
     importedPackagesNode->Serialize(serializer);
