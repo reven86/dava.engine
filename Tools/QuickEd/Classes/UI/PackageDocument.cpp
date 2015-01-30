@@ -70,7 +70,7 @@ void PackageDocument::ClearModified()
 
 const DAVA::FilePath &PackageDocument::PackageFilePath() const
 {
-    return package->GetPackage()->GetFilePath();
+    return package->GetPath();
 }
 
 void PackageDocument::OnSelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls)
