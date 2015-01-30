@@ -74,7 +74,7 @@ namespace DAVA
 		}
 		String result = deviceArchive->GetString(parameter.c_str(), "not_found");
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetStringTestParameter value: %s", result.c_str());
+		Logger::Debug("AutotestingDB::GetStringTestParameter return deviceName=%s value: %s", deviceName.c_str(), result.c_str());
 		return result;
 	}
 
@@ -90,7 +90,7 @@ namespace DAVA
 		}
 		int32 result = deviceArchive->GetInt32(parameter.c_str(), -9999);
 		SafeRelease(dbUpdateObject);
-		Logger::Debug("AutotestingDB::GetIntTestParameter value: %d", result);
+		Logger::Debug("AutotestingDB::GetIntTestParameter return deviceName=%s value: %s", deviceName.c_str(), result);
 		return result;
 	}
 
@@ -158,38 +158,51 @@ namespace DAVA
 
 	void AutotestingDB::WriteLogHeader()
 	{
-		FilePath logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
-		FileSystem::Instance()->CreateDirectoryW(logsFolder);
+		logsFolder = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "/autoLogs";
+		if (!FileSystem::Instance()->IsDirectory(logsFolder))
+		{ 
+			FileSystem::Instance()->CreateDirectory(logsFolder);
+		}
 		logFilePath = logsFolder + Format("/%s_%s.txt", autoSys->groupName.c_str(), autoSys->testFileName.c_str());
-		WriteLog("Platform:%s|Name:%s|Model:%s|OSVersion:%s", Format("%s", AUTOTESTING_PLATFORM_NAME).c_str(),
+		if (FileSystem::Instance()->IsFile(logFilePath))
+		{
+			FileSystem::Instance()->DeleteFile(logFilePath);
+		}
+		String message = Format("Platform:%s|Name:%s|Model:%s|OSVersion:%s", Format("%s", AUTOTESTING_PLATFORM_NAME).c_str(),
 			autoSys->deviceName.c_str(), DeviceInfo::GetModel().c_str(), DeviceInfo::GetVersion().c_str());
+		WriteLog(message.c_str());
 		DateTime time = DateTime::Now();
-		WriteLog("BuildDate:%s|LaunchDate:%s|RunId:%s", autoSys->buildDate.c_str(), Format("%d-%d-%d", time.GetYear(), time.GetMonth(), time.GetDay()).c_str(), autoSys->runId.c_str());
-		WriteLog("Client:%s|ClientRevision:%s|Framework:%s|FrameworkRevision:%s", autoSys->branch.c_str(), autoSys->branchRev.c_str(), autoSys->framework.c_str(), autoSys->frameworkRev.c_str());
+		String currentDay = Format("%d-%d-%d", time.GetYear(), time.GetMonth(), time.GetDay());
+		message = Format("BuildDate:%s|LaunchDate:%s|RunId:%s", autoSys->buildDate.c_str(), currentDay.c_str(), autoSys->runId.c_str());
+		WriteLog(message.c_str());
+		message = Format("Client:%s|ClientRevision:%s|Framework:%s|FrameworkRevision:%s", autoSys->branch.c_str(), autoSys->branchRev.c_str(),
+			autoSys->framework.c_str(), autoSys->frameworkRev.c_str());
+		WriteLog(message.c_str());
 	}
 
-	void AutotestingDB::WriteLog(const char8* text, ...)
+	void AutotestingDB::WriteLog(const char8 *text)
 	{
 		if (!text || text[0] == '\0') return;
-		autoSys = autoSys;
 		File *file = File::Create(logFilePath, File::APPEND | File::WRITE);
 		if (!file)
 		{
 			Logger::Error("Can't open/create log file.");
 			return;
 		}
-		text += L'\n';
 		va_list vl;
 		va_start(vl, text);
-		file->Write(text, sizeof(char) * strlen(text));
+		char tmp[4096] = { 0 };
+		vsnprintf(tmp, sizeof(tmp) - 2, text, vl);
+		strcat(tmp, "\x0D\x0A");
+		file->Write(text, sizeof(char) * strlen(tmp));
 		file->Release();
 		va_end(vl);
 	}
 
 	void AutotestingDB::Log(const String &level, const String &message)
 	{
-		Logger::Debug("AutotestingDB::Log [%s]%s", level.c_str(), message.c_str());
-		WriteLog("[%s] %s", autoSys->GetCurrentTimeString().c_str(), message.c_str());
+		String textLog = Format("[%s] %s", autoSys->GetCurrentTimeString().c_str(), message.c_str());
+		WriteLog(textLog.c_str());
 	}
 	
 	// DEPRECATED: Rewrite for new DB conception

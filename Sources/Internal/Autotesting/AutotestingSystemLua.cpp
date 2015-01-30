@@ -257,11 +257,11 @@ namespace DAVA
 		return sqrtf(xInch*xInch + yInch*yInch) <= 6.5f; 
 	}
 
-	String AutotestingSystemLua::GetTestParameter(const String &device)
+	String AutotestingSystemLua::GetTestParameter(const String &parameter)
 	{
-		Logger::Debug("AutotestingSystemLua::GetTestParameter device=%s", device.c_str());
-		String result = AutotestingDB::Instance()->GetStringTestParameter(AutotestingSystem::Instance()->deviceName, device);
-		Logger::Debug("AutotestingSystemLua::GetTestParameter result=%s", result.c_str());
+		Logger::Debug("AutotestingSystemLua::GetTestParameter parameter=%s", parameter.c_str());
+		String result = AutotestingDB::Instance()->GetStringTestParameter(AutotestingSystem::Instance()->deviceName, parameter);
+		Logger::Debug("AutotestingSystemLua::GetTestParameter value=%s", result.c_str());
 		return result;
 	}
 

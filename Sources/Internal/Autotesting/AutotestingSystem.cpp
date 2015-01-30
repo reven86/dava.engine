@@ -340,7 +340,7 @@ namespace DAVA
 	{
 		Logger::Debug("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
 		uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-		image->Save(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str()));
+		image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
         uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
 		Logger::Debug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
 	}
