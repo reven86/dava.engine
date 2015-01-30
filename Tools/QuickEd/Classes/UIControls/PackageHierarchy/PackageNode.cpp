@@ -74,7 +74,7 @@ PackageControlsNode *PackageNode::GetPackageControlsNode() const
 void PackageNode::Serialize(PackageSerializer *serializer) const
 {
     serializer->BeginMap("Header");
-    serializer->PutValue("version", "0");
+    serializer->PutValue("version", String("0"));
     serializer->EndMap();
 
     importedPackagesNode->Serialize(serializer);
