@@ -31,6 +31,7 @@ public:
 };
 
 typedef Pool<TextureMetal_t>    TextureMetalPool;
+RHI_IMPL_POOL(TextureMetal_t);
 
 
 namespace Texture

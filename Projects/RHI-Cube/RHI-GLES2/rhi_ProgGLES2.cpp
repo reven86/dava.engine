@@ -19,6 +19,7 @@ namespace rhi
 //==============================================================================
 
 typedef Pool<ProgGLES2::ConstBuf>   ConstBufGLES2Pool;
+RHI_IMPL_POOL(ProgGLES2::ConstBuf);
 
 static RingBuffer   DefaultConstRingBuffer;
 

@@ -31,6 +31,7 @@ public:
 };
 
 typedef Pool<IndexBufferMetal_t>    IndexBufferMetalPool;
+RHI_IMPL_POOL(IndexBufferMetal_t);
 
 
 //==============================================================================

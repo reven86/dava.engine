@@ -40,6 +40,9 @@ CommandBuffer_t
 typedef Pool<CommandBuffer_t>   CommandBufferPool;
 typedef Pool<RenderPass_t>      RenderPassPool;
 
+RHI_IMPL_POOL(CommandBuffer_t);
+RHI_IMPL_POOL(RenderPass_t);
+
 static id<CAMetalDrawable>      _CurDrawable = nil;    
 static std::vector<Handle>      _CmdQueue;
 
@@ -72,6 +75,7 @@ Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf )
     desc.depthAttachment.storeAction        = (passConf.depthBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLLoadActionDontCare;
     desc.depthAttachment.clearDepth         = passConf.depthBuffer.clearDepth;
     
+    pass->cmdBuf.resize( cmdBufCount );
 
     if( cmdBufCount == 1 )
     {
@@ -85,8 +89,8 @@ Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf )
         cb->encoder = [pass->buf renderCommandEncoderWithDescriptor:desc];
         cb->cur_ib  = InvalidHandle;
         
-        pass->cmdBuf.push_back( cb_h );        
-        cmdBuf[0] = cb_h;
+        pass->cmdBuf[0] = cb_h;        
+        cmdBuf[0]       = cb_h;
     }
     else
     {
@@ -102,8 +106,8 @@ Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf )
             cb->encoder = [pass->encoder renderCommandEncoder];
             cb->cur_ib  = InvalidHandle;        
             
-            pass->cmdBuf.push_back( cb_h );        
-            cmdBuf[i] = cb_h;
+            pass->cmdBuf[i] = cb_h;        
+            cmdBuf[i]       = cb_h;
         }
     }
 

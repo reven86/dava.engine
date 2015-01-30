@@ -96,6 +96,7 @@ public:
 };
 
 typedef Pool<PipelineStateGLES2_t>  PipelineStateGLES2Pool;
+RHI_IMPL_POOL(PipelineStateGLES2_t);
 
 
 namespace PipelineState
