@@ -65,7 +65,6 @@ protected slots:
     void ForceDistanceChanged(int distance);
 
     void SceneActivated(SceneEditor2 *scene);
-	void SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
 	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
@@ -110,6 +109,15 @@ protected:
 private:
 	Ui::LODEditor *ui;
     QtPosSaver posSaver;
+
+	struct DistanceWidget
+	{
+		QLabel *name;
+		QDoubleSpinBox *distance;
+		void SetVisible(bool visible);
+	};
+	DAVA::Map<DAVA::uint32, DistanceWidget> distanceWidgets;
+
     
 };
 
