@@ -1,14 +1,25 @@
-//
-//  ControlPrototype.h
-//  QuickEd
-//
-//  Created by Dmitry Belsky on 29.1.15.
-//
-//
+#ifndef __QUICKED_CONTROL_PROTOTYPE_H__
+#define __QUICKED_CONTROL_PROTOTYPE_H__
 
-#ifndef __QuickEd__ControlPrototype__
-#define __QuickEd__ControlPrototype__
+#include "Base/BaseObject.h"
 
-#include <stdio.h>
+class ControlNode;
 
-#endif /* defined(__QuickEd__ControlPrototype__) */
+class ControlPrototype : public DAVA::BaseObject
+{
+public:
+    ControlPrototype(ControlNode *_controlNode, const DAVA::FilePath &packagePath = DAVA::FilePath());
+    
+protected:
+    virtual ~ControlPrototype();
+    
+public:
+    ControlNode *GetControlNode() const;
+    DAVA::String GetName() const;
+    
+private:
+    ControlNode *controlNode;
+    DAVA::FilePath packagePath;
+};
+
+#endif //__QUICKED_CONTROL_PROTOTYPE_H__

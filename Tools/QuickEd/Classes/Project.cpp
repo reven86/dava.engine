@@ -193,7 +193,7 @@ bool Project::SavePackage(PackageNode *package)
 {
     YamlPackageSerializer serializer;
     package->Serialize(&serializer);
-    serializer.WriteToFile(package->GetPackage()->GetFilePath());
+    serializer.WriteToFile(package->GetPath());
     return true;
 }
 
