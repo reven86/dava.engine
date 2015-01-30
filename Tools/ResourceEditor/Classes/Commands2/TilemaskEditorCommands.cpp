@@ -222,7 +222,6 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
     
     Rect rect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(updatedRect);
     
-    RenderManager::Instance()->Reset();
     RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(rect);
     

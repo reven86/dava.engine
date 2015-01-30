@@ -371,18 +371,19 @@ void TilemaskEditorSystem::UpdateBrushTool()
     
     RenderSystem2D::Instance()->PushRenderTarget();
     RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
-
+    RenderSystem2D::Instance()->Setup2DMatrices();
+    
 	Shader* shader = tileMaskEditorShader;
 	if (activeDrawingType == TILEMASK_DRAW_COPY_PASTE)
 	{
 		shader = tileMaskCopyPasteShader;
 	}
 
-    spriteTempVertices[0] = spriteTempVertices[4] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(srcSprite->GetFrameVerticesForFrame(0)[0]);
-    spriteTempVertices[5] = spriteTempVertices[7] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(srcSprite->GetFrameVerticesForFrame(0)[5]);
-    spriteTempVertices[1] = spriteTempVertices[3] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(srcSprite->GetFrameVerticesForFrame(0)[1]);
-    spriteTempVertices[2] = spriteTempVertices[6] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(srcSprite->GetFrameVerticesForFrame(0)[2]);
-
+    spriteTempVertices[0] = spriteTempVertices[4] = srcSprite->GetFrameVerticesForFrame(0)[0];
+    spriteTempVertices[5] = spriteTempVertices[7] = srcSprite->GetFrameVerticesForFrame(0)[5];
+    spriteTempVertices[1] = spriteTempVertices[3] = srcSprite->GetFrameVerticesForFrame(0)[1];
+    spriteTempVertices[2] = spriteTempVertices[6] = srcSprite->GetFrameVerticesForFrame(0)[2];
+    
     spriteVertexStream->Set(TYPE_FLOAT, 2, 0, spriteTempVertices);
     spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, srcSprite->GetTextureCoordsForFrame(0));
 
@@ -427,8 +428,6 @@ void TilemaskEditorSystem::UpdateBrushTool()
 
 	RenderManager::Instance()->ReleaseTextureState(textureState);
     
-//	srcSprite->GetTexture()->GenerateMipmaps();
-//	dstSprite->GetTexture()->GenerateMipmaps();
 	drawSystem->GetLandscapeProxy()->SetTilemaskTexture(dstSprite->GetTexture());
 	drawSystem->GetLandscapeProxy()->SwapTilemaskSprites();
 
