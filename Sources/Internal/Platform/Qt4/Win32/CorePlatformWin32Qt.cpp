@@ -65,7 +65,7 @@ int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 #ifdef ENABLE_MEMORY_MANAGER
 	if (DAVA::MemoryManager::Instance() != 0)
 	{
-		DAVA::MemoryManager::Instance()->FinalLog();
+        DAVA::MemoryManager::Instance()->DumpLog(DAVA::MemoryManager::DUMP_EVERYTHING);
 	}
 #endif
 	return 0;

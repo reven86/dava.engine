@@ -279,6 +279,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\STLDebugAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\TemplateHelpers.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
@@ -289,6 +290,7 @@
     <ClInclude Include="..\..\Sources\Internal\DAVAVersion.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssertMessage.h" />
+    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManagerDebugNew.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Stats.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\AnimatedObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\Animation.h" />
@@ -802,6 +804,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Debug\MemoryManager.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Debug\MemoryManagerDebugNew.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Replay.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Stats.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DLC\DLC.cpp" />

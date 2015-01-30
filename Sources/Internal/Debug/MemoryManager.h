@@ -37,6 +37,9 @@
 
 #if defined(ENABLE_MEMORY_MANAGER)
 
+// MSVC need this header
+#include <cstdint>
+
 #include <string>
 #include <map>
 #include <fstream>
@@ -91,13 +94,13 @@ void * operator new[](size_t _size, const std::nothrow_t &) throw();
 void   operator delete[](void * ptr) throw();
 void   operator delete[](void * ptr, const std::nothrow_t &) throw();
 #elif defined(__DAVAENGINE_WIN32__)
-void * operator new(size_t _size) throw();
+void * operator new(size_t _size);
 void * operator new(size_t _size, const std::nothrow_t &) throw();
 
 void   operator delete(void * ptr) throw();
 void   operator delete(void * ptr, const std::nothrow_t &) throw();
 
-void * operator new[](size_t _size) throw();
+void * operator new[](size_t _size);
 void * operator new[](size_t _size, const std::nothrow_t &) throw();
 
 void   operator delete[](void * ptr) throw();

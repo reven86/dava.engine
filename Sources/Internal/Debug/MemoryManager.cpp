@@ -35,15 +35,21 @@
 #include <assert.h>
 #include "Base/Mallocator.h"
 #include "Utils/StringFormat.h"
-#include "Thread.h"
+#include "Platform/Thread.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/FastName.h"
 #include "Base/ObjectFactory.h"
-#include <malloc/malloc.h>
 #include <functional>
 #include <sstream>
 #include "Debug/Stats.h"
 
+#if defined(__DAVAENGINE_WIN32__)
+#include <malloc.h>
+#elif defined(__DAVAENGINE_ANDROID__)
+#include <malloc.h>
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#include <malloc/malloc.h>
+#endif
 
 #ifdef ENABLE_MEMORY_MANAGER
 
@@ -309,7 +315,11 @@ public:
 
 //DAVA::FastName defaultUserInfo;
 
-void * operator new(size_t _size) throw(std::bad_alloc )
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+void * operator new(size_t _size) throw(std::bad_alloc)
+#elif defined(__DAVAENGINE_WIN32__)
+void * operator new(size_t _size)
+#endif
 {
 	return DAVA::MemoryManagerImpl::Instance()->New(_size, MEMORY_POOL_DEFAULT, 0);
 }
@@ -329,8 +339,11 @@ void   operator delete(void * _ptr, const std::nothrow_t &) throw()
 	DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
 }
 
-
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 void * operator new[](size_t _size) throw(std::bad_alloc)
+#elif defined(__DAVAENGINE_WIN32__)
+void * operator new[](size_t _size)
+#endif
 {
 	return DAVA::MemoryManagerImpl::Instance()->New(_size, MEMORY_POOL_DEFAULT, 0);
 }
@@ -429,7 +442,17 @@ void	*MemoryManagerImpl::New(size_t size, eMemoryPool poolIndex, const char * us
     }
 
     block->size = size;
-    block->mallocSize = malloc_size(block);
+#if defined(__DAVAENGINE_WIN32__)
+    block->mallocSize = static_cast<uint32>(_msize(block));
+#elif defined(__DAVAENGINE_ANDROID__)
+#error "cannot use malloc_usable_size on android"
+    block->mallocSize = 0;
+    //block->mallocSize = static_cast<uint32>(malloc_usable_size(block));
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+    block->mallocSize = static_cast<uint32>(malloc_size(block));
+#else
+#error "Platform not supported"
+#endif
     block->flags = currentFlags;
     block->poolIndex = poolIndex;
     
