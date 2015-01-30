@@ -203,7 +203,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
 
 				Rect dstRect = Rect(posTo, toolSize);
 				Vector2 spriteDeltaPos = dstRect.GetPosition() - posFrom;
-				Rect textureRect = Rect(spriteDeltaPos, dstSprite->GetSize());
+				Rect textureRect = Rect(spriteDeltaPos, Vector2(dstSprite->GetTexture()->GetWidth(), dstSprite->GetTexture()->GetHeight()));
 				textureRect.ClampToRect(dstRect);
 				if (dstRect.dx == 0.f || dstRect.dy == 0.f)
 				{
