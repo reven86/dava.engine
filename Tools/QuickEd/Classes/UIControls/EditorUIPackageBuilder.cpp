@@ -12,21 +12,27 @@
 
 using namespace DAVA;
 
-EditorUIPackageBuilder::EditorUIPackageBuilder() : packageNode(NULL), currentObject(NULL)
+const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
+const String EXCEPTION_CLASS_UI_LIST = "UIList";
+
+EditorUIPackageBuilder::EditorUIPackageBuilder()
+    : packageNode(NULL)
+    , currentObject(NULL)
 {
     
 }
 
 EditorUIPackageBuilder::~EditorUIPackageBuilder()
 {
-    
+    SafeRelease(packageNode);
 }
 
-UIPackage *EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
+RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
     DVASSERT(packageNode == NULL);
-    UIPackage *package = new UIPackage(packagePath);
-    packageNode = new PackageNode(package);
+    SafeRelease(packageNode);
+    RefPtr<UIPackage> package(new UIPackage(packagePath));
+    packageNode = new PackageNode(package.Get());
     return package;
 }
 
@@ -35,7 +41,7 @@ void EditorUIPackageBuilder::EndPackage()
     DVASSERT(packageNode != NULL);
 }
 
-UIPackage * EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
+RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
 {
     // store state
     PackageNode *prevPackageNode = packageNode;
@@ -51,7 +57,7 @@ UIPackage * EditorUIPackageBuilder::ProcessImportedPackage(const String &package
     currentSection = NULL;
     
     // load package
-    UIPackage *result = loader->LoadPackage(packagePath);
+    RefPtr<UIPackage> result(loader->LoadPackage(packagePath));
     PackageControlsNode *controlsNode = SafeRetain(packageNode->GetPackageControlsNode());
     controlsNode->SetName(packageNode->GetName());
     SafeRelease(packageNode);
@@ -71,12 +77,12 @@ UIPackage * EditorUIPackageBuilder::ProcessImportedPackage(const String &package
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
-    if (control && className != "UITextField")//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(new ControlNode(control), true));
+    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
     return control;
 }
 
@@ -84,12 +90,12 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
     control->SetCustomControlClassName(customClassName);
-    if (className != "UITextField")//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(new ControlNode(control), true));
+    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
     return control;
 }
 
@@ -116,7 +122,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
         }
     }
     DVASSERT(prototypeNode);
-    ControlNode *node = new ControlNode(prototypeNode, prototypePackage);
+    ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode, prototypePackage);
     node->GetControl()->SetCustomControlClassName(customClassName);
     controlsStack.push_back(ControlDescr(node, true));
 
@@ -241,6 +247,11 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
         if (property && value.GetType() != VariantType::TYPE_NONE)
             property->SetValue(value);
     }
+}
+
+RefPtr<PackageNode> EditorUIPackageBuilder::GetPackageNode() const
+{
+    return DAVA::RefPtr<PackageNode>(SafeRetain(packageNode));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

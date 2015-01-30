@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "UI/UITextFieldiPhone.h"
-#include "Core/Core.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #import <HelperAppDelegate.h>
 
@@ -45,9 +45,11 @@
 	{
         DAVA::float32 divider = [HelperAppDelegate GetScale];
         
-        self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider);
+        DAVA::Size2i physicalScreenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
         
-		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);
+        self.bounds = CGRectMake(0.0f, 0.0f, physicalScreenSize.dx/divider, physicalScreenSize.dy/divider);
+		self.center = CGPointMake(physicalScreenSize.dx/2.f/divider, physicalScreenSize.dy/2.f/divider);
+        
 		self.userInteractionEnabled = TRUE;
 		textInputAllowed = YES;
         useRtlAlign = NO;
@@ -70,11 +72,15 @@
     cppTextField = tf;
     if(tf)
     {
-        const DAVA::Rect rect = tf->GetRect();
-        textField.frame = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-                                     , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-                                     , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
-                                     , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor());
+        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(tf->GetRect());
+        DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+        CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x)
+                                       , (physicalRect.y + physicalOffset.y)
+                                       , physicalRect.dx
+                                       , physicalRect.dy);
+        
+        textField.frame = nativeRect;
+
     }
     else
     {
@@ -209,7 +215,7 @@
 	textField.autocorrectionType = [self convertAutoCorrectionType: (DAVA::UITextField::eAutoCorrectionType)cppTextField->GetAutoCorrectionType()];
 	
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
-	textField.spellCheckingType = [self convertSpellCheckingType: cppTextField->GetSpellCheckingType()];
+	textField.spellCheckingType = [self convertSpellCheckingType: (DAVA::UITextField::eSpellCheckingType)cppTextField->GetSpellCheckingType()];
 #endif
 	textField.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
 	textField.keyboardAppearance = [self convertKeyboardAppearanceType: (DAVA::UITextField::eKeyboardAppearanceType)cppTextField->GetKeyboardAppearanceType()];
@@ -465,12 +471,10 @@
 
 	// Recalculate to virtual coordinates.
 	DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
-	keyboardOrigin *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	keyboardOrigin += DAVA::UIControlSystem::Instance()->GetInputOffset();
+    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
 	
-	DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
-	keyboardSize *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	keyboardSize += DAVA::UIControlSystem::Instance()->GetInputOffset();
+    DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
+    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }

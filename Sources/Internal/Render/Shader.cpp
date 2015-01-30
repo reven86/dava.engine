@@ -442,7 +442,6 @@ void Shader::RecompileInternal(bool silentDelete)
         
         if(IsAutobindUniform(shaderSemantic))
         {
-            Logger::FrameworkDebug(Format("Autobind: %s %d", attrName.c_str(), shaderSemantic).c_str());
             autobindUniformCount++;
         }
         
@@ -933,22 +932,18 @@ GLint Shader::CompileShader(GLuint *shader, GLenum type, GLint count, const GLch
     
     RENDER_VERIFY(glCompileShader(*shader));					// compile shader
 
-#ifdef __DAVAENGINE_DEBUG__
+    RENDER_VERIFY(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
+    if (status == GL_FALSE)
     {
-        GLchar log[4096] = {0};
+        Logger::Error("Failed to compile shader: status == GL_FALSE\n");
+
+        GLchar log[4096] = { 0 };
         GLsizei logLength = 0;
         RENDER_VERIFY(glGetShaderInfoLog(*shader, 4096, &logLength, log));
         if (logLength)
         {
             Logger::Error("Shader compile log:\n%s", log);
         }
-    }
-#endif
-
-    RENDER_VERIFY(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
-    if (status == GL_FALSE)
-    {
-        Logger::Error("Failed to compile shader: status == GL_FALSE\n");
     }
     
     return status;

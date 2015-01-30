@@ -1,0 +1,1 @@
+--generateMipMaps --adreno RGBA8888

@@ -19,8 +19,8 @@
 InspDynamicModifyCommand::InspDynamicModifyCommand(DAVA::InspInfoDynamic *_dynamicInfo, void *_object, DAVA::FastName _key, const DAVA::VariantType &_newValue)
 	: Command2(CMDID_INSP_DYNAMIC_MODIFY, "Modify dynamic value")
 	, dynamicInfo(_dynamicInfo)
-	, object(_object)
 	, key(_key)
+	, object(_object)
 	, newValue(_newValue)
 {
 	if(NULL != dynamicInfo && NULL != object)

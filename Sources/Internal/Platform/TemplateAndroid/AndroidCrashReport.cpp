@@ -37,8 +37,6 @@
 
 
 #include "ExternC/AndroidLayer.h"
-#include "libunwind_stab.h"
-#include "AndroidCrashUtility.h"
 
 
 
@@ -62,44 +60,34 @@ static int fatalSignals[] = {
 static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 
 stack_t AndroidCrashReport::s_sigstk;
-bool AndroidCrashReport::s_libunwindLoaded = false;
-    
-jclass JniCrashReporter::gJavaClass = NULL;
-jclass JniCrashReporter::gStringClass = NULL;
-const char* JniCrashReporter::gJavaClassName = NULL;
 
-jclass JniCrashReporter::GetJavaClass() const
+JniCrashReporter::JniCrashReporter()
+	: jniCrashReporter("com/dava/framework/JNICrashReporter")
+    , jniString("java/lang/String")
 {
-	return gJavaClass;
-}
-
-const char* JniCrashReporter::GetJavaClassName() const
-{
-	return gJavaClassName;
+    throwJavaExpetion = jniCrashReporter.GetStaticMethod<void, jstringArray, jstringArray, jintArray>("ThrowJavaExpetion");
 }
 
 void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 {
-	jmethodID mid = GetMethodID("ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
-	if (mid)
-	{
-		jobjectArray jModuleArray = GetEnvironment()->NewObjectArray(chashSteps.size(), gStringClass, 0);
-		jobjectArray jFunctionArray = GetEnvironment()->NewObjectArray(chashSteps.size(), gStringClass, 0);
-		jintArray jFileLineArray = GetEnvironment()->NewIntArray(chashSteps.size());
+    JNIEnv *env = JNI::GetEnv();
 
-		int* fileLines = new int[chashSteps.size()];
-		for (uint i = 0; i < chashSteps.size(); ++i)
-		{
-			GetEnvironment()->SetObjectArrayElement(jModuleArray, i, GetEnvironment()->NewStringUTF(chashSteps[i].module.c_str()));
-			GetEnvironment()->SetObjectArrayElement(jFunctionArray, i, GetEnvironment()->NewStringUTF(chashSteps[i].function.c_str()));
-			fileLines[i] = chashSteps[i].fileLine;
-		}
-		GetEnvironment()->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
+    jobjectArray jModuleArray = env->NewObjectArray(chashSteps.size(), jniString, 0);
+    jobjectArray jFunctionArray = env->NewObjectArray(chashSteps.size(), jniString, 0);
+    jintArray jFileLineArray = env->NewIntArray(chashSteps.size());
 
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jModuleArray, jFunctionArray, jFileLineArray);
+    int* fileLines = new int[chashSteps.size()];
+    for (uint i = 0; i < chashSteps.size(); ++i)
+    {
+        env->SetObjectArrayElement(jModuleArray, i, env->NewStringUTF(chashSteps[i].module.c_str()));
+        env->SetObjectArrayElement(jFunctionArray, i, env->NewStringUTF(chashSteps[i].function.c_str()));
+        fileLines[i] = chashSteps[i].fileLine;
+    }
+    env->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
 
-		delete [] fileLines;
-	}
+    throwJavaExpetion(jModuleArray, jFunctionArray, jFileLineArray);
+
+    delete [] fileLines;
 }
 
 //libcorkscrew definition
@@ -153,7 +141,9 @@ void AndroidCrashReport::Init()
 	 *
 	 * define DESYM_STACK for desybolicating callstack with libcorkscrew
 	 */
-
+#if defined(__DAVAENGINE_DEBUG__) && defined(USE_NDKSTACK_TOOL)
+	return;
+#endif
 	void* libcorkscrew = dlopen("/system/lib/libcorkscrew.so", RTLD_NOW);
 	if (libcorkscrew)
 	{

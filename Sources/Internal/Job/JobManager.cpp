@@ -37,9 +37,9 @@ namespace DAVA
 {
 
 JobManager::JobManager() 
-: workerDoneSem(0)
-, mainJobIDCounter(1)
+: mainJobIDCounter(1)
 , mainJobLastExecutedID(0)
+, workerDoneSem(0)
 {
     uint32 cpuCoresCount = DeviceInfo::GetCpuCount();
     workerThreads.reserve(cpuCoresCount);
@@ -149,13 +149,21 @@ void JobManager::WaitMainJobID(uint32 mainJobID)
     CommonWaitMainJob(Bind(&JobManager::HasMainJobID, this, mainJobID));
 }
 
-void JobManager::CommonWaitMainJob(const Function<bool()> &checkFn)
+void JobManager::CommonWaitMainJob(const Function<bool()> &hasJobsFn)
 {
     if(Thread::IsMainThread())
     {
-        // if wait was invoked from main-thread we should immediately
-        // execute all lazy main-thread jobs
-        Update();
+        // if wait was invoked from main-thread 
+        // and there are some jobs user is waiting for
+        // we should immediately execute them 
+        if(hasJobsFn())
+        {
+            // just run update, it will execute all of main-thread jobs
+            Update();
+
+            // assert is something goes wrong
+            DVASSERT(!hasJobsFn() && "Job exepected to be executed at this point, but seems it is still in queue");
+        }
     }
     else
     {
@@ -165,7 +173,7 @@ void JobManager::CommonWaitMainJob(const Function<bool()> &checkFn)
 
         // Now check if there are some jobs in the queue and wait for them
         LockGuard<Mutex> guard(mainCVMutex);
-        while(checkFn())
+        while(hasJobsFn())
         {
             Thread::Wait(&mainCV, &mainCVMutex);
         }
@@ -208,7 +216,7 @@ bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
 
 bool JobManager::HasMainJobID(uint32 mainJobID)
 {
-    return (mainJobID >= mainJobLastExecutedID);
+    return (mainJobID > mainJobLastExecutedID);
 }
 
 void JobManager::CreateWorkerJob(const Function<void()>& fn)

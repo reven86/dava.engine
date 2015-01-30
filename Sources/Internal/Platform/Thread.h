@@ -36,7 +36,9 @@
 #include "Mutex.h"
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if !defined __DAVAENGINE_PTHREAD__
     #define __DAVAENGINE_PTHREAD__
+#endif
 #endif
 
 
@@ -195,11 +197,6 @@ private:
     \brief Function which processes in separate thread. Used to launch user defined code and handle state.
     */
     static void ThreadFunction(void *param);
-
-#if defined(__DAVAENGINE_ANDROID__)
-	static void AttachToJVM();
-	static void DetachFromJVM();
-#endif
 
 	Message	msg;
 	eThreadState state;

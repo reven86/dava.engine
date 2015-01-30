@@ -31,43 +31,9 @@
 #define __SCENE_PREVIEW_CONTROL_H__
 
 #include "DAVAEngine.h"
-#include "Deprecated/CameraController.h"
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
 using namespace DAVA;
-
-class PreviewCameraController: public CameraController
-{
-protected:
-    ~PreviewCameraController(){}
-public:
-    
-    PreviewCameraController();
-    
-    virtual void Input(UIEvent * event);
-    virtual void SetScene(Scene *scene);
-    void SetRadius(float32 _radius);
-    void UpdateCamera();
-    
-    void SetControlHeight(int32 height);
-    
-private:
-
-    
-    float32 angleVertical;
-    float32 angleHorizontal;
-    
-    float32 radius;
-    
-    Vector2 moveStartPt;
-    Vector2 moveStopPt;
-    
-    Vector2 zoomStartPt;
-    Vector2 zoomStopPt;
-    
-    float32 zoomLevel;
-    
-    int32 controlHeight;
-};
 
 class ScenePreviewControl: public UI3DView
 {
@@ -92,20 +58,20 @@ public:
     
 protected:
 
-    
+    void CreateCamera();
     void SetupCamera();
     
     //scene controls
     Scene * editorScene;
+    RotationControllerSystem * rotationSystem;
+    
 	Camera * activeCamera;
     UI3DView * scene3dView;
-    PreviewCameraController * cameraController;
     
     FilePath currentScenePath;
     Entity *rootNode;
     
     bool needSetCamera;
-    bool sceCamera;
 };
 
 

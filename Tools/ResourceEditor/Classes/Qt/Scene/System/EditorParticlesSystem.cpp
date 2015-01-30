@@ -70,16 +70,6 @@ EditorParticlesSystem::~EditorParticlesSystem()
 
 }
 
-void EditorParticlesSystem::Process(DAVA::float32 timeElapsed)
-{
-
-}
-
-void EditorParticlesSystem::ProcessUIEvent(DAVA::UIEvent *event)
-{
-
-}
-
 void EditorParticlesSystem::DrawDebugInfoForEffect(DAVA::Entity* effectEntity)
 {
 	SceneCollisionSystem *collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;

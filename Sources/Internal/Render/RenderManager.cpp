@@ -40,15 +40,6 @@
 
 namespace DAVA
 {
-    
-Shader * RenderManager::FLAT_COLOR = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
-Shader * RenderManager::TEXTURE_ADD_FLAT_COLOR = 0;
-Shader * RenderManager::TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
-Shader * RenderManager::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
-
 AutobindVariableData RenderManager::dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
 uint32  RenderManager::dynamicParamersRequireUpdate;
 Matrix4 RenderManager::worldViewMatrix;
@@ -82,24 +73,12 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 
 	frameBufferWidth = 0;
 	frameBufferHeight = 0;
-	retScreenWidth = 0;
-	retScreenHeight = 0;
 
 	fps = 60;
 
 	debugEnabled = false;
 	fboViewRenderbuffer = 0;
 	fboViewFramebuffer = 0;
-	
-	userDrawOffset = Vector2(0, 0);
-	userDrawScale = Vector2(1, 1);
-
-	viewMappingDrawOffset = Vector2(0, 0);
-	viewMappingDrawScale = Vector2(1, 1);
-
-	currentDrawOffset = Vector2(0, 0);
-	currentDrawScale = Vector2(1, 1);
-    mappingMatrixChanged = true;
 	
 	isInsideDraw = false;
 
@@ -131,14 +110,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     
     statsFrameCountToShowDebug = 0;
     frameToShowDebugStats = -1;
-    
-    FLAT_COLOR = 0;
-    TEXTURE_MUL_FLAT_COLOR = 0;
-    TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-    TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
-    TEXTURE_ADD_FLAT_COLOR = 0;
-    TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
-    TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
 	
 	renderContextId = 0;
     
@@ -161,13 +132,6 @@ RenderManager::~RenderManager()
     ShaderCache::Instance()->Release();
     
     currentRenderData = 0;
-    SafeRelease(FLAT_COLOR);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-    SafeRelease(TEXTURE_ADD_FLAT_COLOR);
-    SafeRelease(TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST);
-    SafeRelease(TEXTURE_ADD_FLAT_COLOR_IMAGE_A8);
 	SafeRelease(cursor);
 	Logger::FrameworkDebug("[RenderManager] released");
 }
@@ -208,62 +172,9 @@ void RenderManager::InitFBSize(int32 _frameBufferWidth, int32 _frameBufferHeight
 }
 #endif //    #ifdef __DAVAENGINE_ANDROID__    
 
-FastName RenderManager::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
-FastName RenderManager::TEXTURE_MUL_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
-
-
 void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 {
     DetectRenderingCapabilities();
-    
-    
-    if (!FLAT_COLOR)
-    {
-        FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
-    }
-    
-    if (!TEXTURE_MUL_FLAT_COLOR)
-    {
-        TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, FastNameSet()));
-
-    }
-    if (!TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST)
-    {
-        FastNameSet set;
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-    
-    if(!TEXTURE_MUL_FLAT_COLOR_IMAGE_A8)
-    {
-        FastNameSet set;
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-    
-    if (!TEXTURE_ADD_FLAT_COLOR)
-    {
-        FastNameSet set;
-        set.Insert(FastName("ADD_COLOR"));
-        TEXTURE_ADD_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-        
-    }
-    if (!TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST)
-    {
-        FastNameSet set;
-        set.Insert(FastName("ADD_COLOR"));
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-    
-    if(!TEXTURE_ADD_FLAT_COLOR_IMAGE_A8)
-    {
-        FastNameSet set;
-        set.Insert(FastName("ADD_COLOR"));
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 	currentState.direct3DDevice = GetD3DDevice();
@@ -300,37 +211,11 @@ void RenderManager::Reset()
 	ResetColor();
 
 	currentRenderTarget = NULL;
-
-	currentClip.x = 0;
-	currentClip.y = 0;
-	currentClip.dx = -1;
-	currentClip.dy = -1;
-	
-//	for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
-//        currentTexture[idx] = 0;
-
-	userDrawOffset = Vector2(0, 0);
-	userDrawScale = Vector2(1, 1);
-	
-	currentDrawOffset = Vector2(0, 0);
-	currentDrawScale = Vector2(1, 1);
-    mappingMatrixChanged = true;
-	//currentState.Reset(false);
-//	glLoadIdentity();
 }
 
 int32 RenderManager::GetRenderOrientation()
 {
 	return renderOrientation;
-}
-	
-int32 RenderManager::GetScreenWidth()
-{
-	return retScreenWidth;	
-}
-int32 RenderManager::GetScreenHeight()
-{
-	return retScreenHeight;
 }
 
 void RenderManager::SetColor(float32 r, float32 g, float32 b, float32 a)
@@ -401,53 +286,7 @@ void RenderManager::SetRenderData(RenderDataObject * object)
 {
     currentRenderData = object;
 }
-		
-void RenderManager::SetClip(const Rect &rect)
-{
-	SetHWClip(rect);
-}
-	
-void RenderManager::RemoveClip()
-{
-	SetHWClip(Rect(0,0,-1,-1));
-}
 
-void RenderManager::ClipRect(const Rect &rect)
-{
-	Rect r = currentClip;
-	if(r.dx < 0)
-	{
-		r.dx = (float32)retScreenWidth * Core::GetPhysicalToVirtualFactor();
-	}
-	if(r.dy < 0)
-	{
-		r.dy = (float32)retScreenHeight * Core::GetPhysicalToVirtualFactor();
-	}
-	
-	r = r.Intersection(rect);
-	SetHWClip(r);
-}
-
-void RenderManager::ClipPush()
-{
-	clipStack.push(currentClip);
-}
-
-void RenderManager::ClipPop()
-{
-	if(clipStack.empty())
-	{
-		Rect r(0, 0, -1, -1);
-		SetClip(r);
-	}
-	else
-	{
-		Rect r = clipStack.top();
-		SetClip(r);
-	}
-	clipStack.pop();
-}
-	
 void RenderManager::InitFBO(GLuint _viewRenderbuffer, GLuint _viewFramebuffer)
 {
 	fboViewRenderbuffer = _viewRenderbuffer;
@@ -456,16 +295,11 @@ void RenderManager::InitFBO(GLuint _viewRenderbuffer, GLuint _viewFramebuffer)
 
 void RenderManager::SetRenderTarget(Sprite *renderTarget)
 {
-//	Logger::Info("Set Render target");
 	RenderTarget rt;
 	rt.spr = currentRenderTarget;
 	rt.orientation = renderOrientation;
 	renderTargetStack.push(rt);
-		
-	ClipPush();
-	PushDrawMatrix();
-	PushMappingMatrix();
-	IdentityDrawMatrix();
+    
 	SetHWRenderTargetSprite(renderTarget);
 }
 
@@ -476,14 +310,9 @@ void RenderManager::SetRenderTarget(Texture * renderTarget)
 
 void RenderManager::RestoreRenderTarget()
 {
-//	Logger::Info("Restore Render target");
 	RenderTarget rt = renderTargetStack.top();
 	renderTargetStack.pop();
 	SetHWRenderTargetSprite(rt.spr);
-
-	PopDrawMatrix();
-	PopMappingMatrix();
-	ClipPop();
 }
 
 bool RenderManager::IsRenderTarget()
@@ -560,130 +389,6 @@ void RenderManager::SetFPS(int32 newFps)
 int32 RenderManager::GetFPS()
 {
 	return fps;
-}
-	
-	
-void RenderManager::SetDrawTranslate(const Vector2 &offset)
-{
-    mappingMatrixChanged = true;
-	userDrawOffset.x += offset.x * userDrawScale.x;
-	userDrawOffset.y += offset.y * userDrawScale.y;
-}
-
-void RenderManager::SetDrawTranslate(const Vector3 &offset)
-{
-    mappingMatrixChanged = true;
-    userDrawOffset.x += offset.x * userDrawScale.x;
-    userDrawOffset.y += offset.y * userDrawScale.y;
-}
-
-const Vector2& RenderManager::GetDrawTranslate() const
-{
-    return userDrawOffset;
-}
-
-void RenderManager::SetDrawScale(const Vector2 &scale)
-{
-    mappingMatrixChanged = true;
-	userDrawScale.x *= scale.x;
-	userDrawScale.y *= scale.y;
-}
-
-const Vector2& RenderManager::GetDrawScale() const
-{
-    return userDrawScale;
-}
-	
-void RenderManager::IdentityDrawMatrix()
-{
-    mappingMatrixChanged = true;
-	userDrawScale.x = 1.0f;
-	userDrawScale.y = 1.0f;
-
-	userDrawOffset.x = 0.0f;
-	userDrawOffset.y = 0.0f;
-}
-
-void RenderManager::IdentityMappingMatrix()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset = Vector2(0.0f, 0.0f);
-	viewMappingDrawScale = Vector2(1.0f, 1.0f);
-}
-	
-void RenderManager::IdentityModelMatrix()
-{
-    mappingMatrixChanged = true;
-    currentDrawOffset = Vector2(0.0f, 0.0f);
-    currentDrawScale = Vector2(1.0f, 1.0f);
-
-    renderer2d.viewMatrix = Matrix4::IDENTITY;
-}
-    
-	
-	
-void RenderManager::SetPhysicalViewScale()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawScale.x = 1.0f;
-	viewMappingDrawScale.y = 1.0f;
-}
-
-void RenderManager::SetPhysicalViewOffset()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset = Core::Instance()->GetPhysicalDrawOffset();
-}
-
-void RenderManager::SetVirtualViewScale()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawScale.x = Core::GetVirtualToPhysicalFactor();
-	viewMappingDrawScale.y = Core::GetVirtualToPhysicalFactor();
-}
-
-void RenderManager::SetVirtualViewOffset()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset.x -= Core::Instance()->GetVirtualScreenXMin() * viewMappingDrawScale.x;
-	viewMappingDrawOffset.y -= Core::Instance()->GetVirtualScreenYMin() * viewMappingDrawScale.y;
-}
-	
-void RenderManager::PushDrawMatrix()
-{
-	DrawMatrix dm;
-	dm.userDrawOffset = userDrawOffset;
-	dm.userDrawScale = userDrawScale;
-	matrixStack.push(dm);
-}
-
-void RenderManager::PopDrawMatrix()
-{
-	IdentityDrawMatrix();
-	DrawMatrix dm = matrixStack.top();
-	matrixStack.pop();
-	userDrawOffset = dm.userDrawOffset;
-	userDrawScale = dm.userDrawScale;
-	PrepareRealMatrix();
-}
-	
-void RenderManager::PushMappingMatrix()
-{
-	DrawMatrix dm;
-	dm.userDrawOffset = viewMappingDrawOffset;
-	dm.userDrawScale = viewMappingDrawScale;
-	mappingMatrixStack.push(dm);
-}
-
-void RenderManager::PopMappingMatrix()
-{
-	IdentityMappingMatrix();
-	DrawMatrix dm = mappingMatrixStack.top();
-	mappingMatrixStack.pop();
-	viewMappingDrawOffset = dm.userDrawOffset;
-	viewMappingDrawScale = dm.userDrawScale;
-    DVASSERT(mappingMatrixChanged == true);
-	PrepareRealMatrix();
 }
 
 void RenderManager::SetCursor(Cursor * _cursor)
@@ -861,19 +566,4 @@ void RenderManager::VerifyRenderContext()
 #endif
 }
     
-    
-void RenderManager::Setup2DMatrices()
-{
-    Matrix4 glTranslate, glScale;
-    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-    renderer2d.viewMatrix = glScale * glTranslate;
-    
-    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_VIEW, &renderer2d.viewMatrix, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
-}
-    
-
-	
 };

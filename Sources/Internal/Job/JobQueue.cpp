@@ -35,8 +35,8 @@ namespace DAVA
 
 JobQueueWorker::JobQueueWorker(uint32 maxCount /* = 1024 */)
     : jobsMaxCount(maxCount)
-    , nextPopIndex(0)
     , nextPushIndex(0)
+    , nextPopIndex(0)
     , processingCount(0)
 {
     jobs = new Function<void()>[jobsMaxCount];

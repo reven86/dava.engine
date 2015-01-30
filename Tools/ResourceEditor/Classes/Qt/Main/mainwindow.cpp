@@ -93,7 +93,6 @@
 #include "Classes/Commands2/VisibilityToolActions.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/EntityRemoveCommand.h"
 #include "Classes/Commands2/DynamicShadowCommands.h"
 
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
@@ -102,6 +101,7 @@
 #include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
 
 #include "Scene3D/Components/ActionComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 
@@ -125,17 +125,26 @@
 #include "Tools/ColorPicker/ColorPicker.h"
 
 #include "SceneProcessing/SceneProcessor.h"
+#include "QtLayer.h"
+#include "davaglwidget.h"
+
+#include "Commands2/ConvertPathCommands.h"
+
+
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+
+
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
 	, waitDialog(NULL)
 	, beastWaitDialog(NULL)
-	, objectTypesLabel(NULL)
-	, addSwitchEntityDialog(NULL)
-	, hangingObjectsWidget(NULL)
 	, globalInvalidate(false)
     , modificationWidget(NULL)
+    , addSwitchEntityDialog(NULL)
+    , hangingObjectsWidget(NULL)
     , developerTools(new DeveloperTools(this))
 {
 	new ProjectManager();
@@ -457,6 +466,7 @@ void QtMainWindow::SetupToolBars()
 	ui->menuToolbars->addAction(actionLandscapeToolbar);
 	ui->menuToolbars->addAction(ui->sceneToolBar->toggleViewAction());
     ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
+    ui->menuToolbars->addAction(ui->cameraToolBar->toggleViewAction());
 
 	// undo/redo
 	QToolButton *undoBtn = (QToolButton *) ui->mainToolBar->widgetForAction(ui->actionUndo);
@@ -694,6 +704,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionVisibilityCheckTool, SIGNAL(triggered()), this, SLOT(OnVisibilityTool()));
 	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
     QObject::connect(ui->actionGrasEditor, SIGNAL(triggered()), this, SLOT(OnGrasEditor()));
+    QObject::connect(ui->actionWayEditor, SIGNAL(toggled(bool)), this, SLOT(OnWayEditor(bool)));
 
 	QObject::connect(ui->actionLight, SIGNAL(triggered()), this, SLOT(OnLightDialog()));
 	QObject::connect(ui->actionCamera, SIGNAL(triggered()), this, SLOT(OnCameraDialog()));
@@ -711,6 +722,7 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionAddSkybox, SIGNAL(triggered()), this, SLOT(OnAddSkybox()));
 	QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
+    QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
 			
 	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 	
@@ -760,13 +772,6 @@ void QtMainWindow::SetupActions()
 	}
 
     QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
-    
- 	//Collision Box Types
-    objectTypesLabel = new QtLabelWithActions();
- 	objectTypesLabel->setMenu(ui->menuObjectTypes);
- 	objectTypesLabel->setDefaultAction(ui->actionNoObject);
-	
-    ui->sceneTabWidget->AddToolWidget(objectTypesLabel);
 
 	ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
 	ui->actionNoObject->setData(ResourceEditor::ESOT_NO_COLISION);
@@ -785,6 +790,8 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionSwitchesWithDifferentLODs, SIGNAL(triggered(bool)), this, SLOT(OnSwitchWithDifferentLODs(bool)));
     
     QObject::connect(ui->actionBatchProcess, SIGNAL(triggered(bool)), this, SLOT(OnBatchProcessScene()));
+    
+    QObject::connect(ui->actionSnapCameraToLandscape, SIGNAL(triggered(bool)), this, SLOT(OnSnapCameraToLandscape(bool)));
 }
 
 void QtMainWindow::SetupShortCuts()
@@ -883,10 +890,16 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 	UpdateConflictingActionsState(tools == 0);
     UpdateModificationActionsState();
 
-    ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
-
+    ui->actionSwitchesWithDifferentLODs->setChecked(false);
+    ui->actionSnapCameraToLandscape->setChecked(false);
     if(NULL != scene)
     {
+        if(scene->debugDrawSystem)
+            ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
+
+        if(scene->cameraSystem)
+            ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+        
         EntityGroup curSelection = scene->selectionSystem->GetSelection();
         SceneSelectionChanged(scene, &curSelection, NULL);
     }
@@ -959,6 +972,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionVisibilityCheckTool->setEnabled(enable);
 	ui->actionCustomColorsEditor->setEnabled(enable);
     ui->actionGrasEditor->setEnabled(enable);
+    ui->actionWayEditor->setEnabled(enable);
 
 	ui->actionEnableCameraLight->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
@@ -987,6 +1001,8 @@ void QtMainWindow::EnableSceneActions(bool enable)
     
     ui->actionReloadShader->setEnabled(enable);
     ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
+    
+    ui->actionSnapCameraToLandscape->setEnabled(enable);
 }
 
 void QtMainWindow::UpdateModificationActionsState()
@@ -1011,14 +1027,39 @@ void QtMainWindow::UpdateModificationActionsState()
     modificationWidget->setEnabled(canModify);
 }
 
+
+void QtMainWindow::UpdateWayEditor(const Command2* command, bool redo)
+{
+    int commandId = command->GetId();
+    if(CMDID_COLLAPSE_PATH == commandId)
+    {
+		SetActionCheckedSilently(ui->actionWayEditor, !redo);
+    }
+    else if(CMDID_EXPAND_PATH == commandId)
+    {
+		SetActionCheckedSilently(ui->actionWayEditor, redo);
+    }
+}
+
+
 void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
 	if(scene == GetCurrentScene())
 	{
 		LoadUndoRedoState(scene);
         UpdateModificationActionsState();
+        
+        Entity *entity = command->GetEntity();
+        if(entity && entity->GetName() == ResourceEditor::EDITOR_DEBUG_CAMERA)
+        {
+			SetActionCheckedSilently(ui->actionSnapCameraToLandscape, scene->cameraSystem->IsEditorCameraSnappedToLandscape());
+        }
+        
+        UpdateWayEditor(command, redo);
 	}
 }
+
+
 
 // ###################################################################################################
 // Mainwindow Qt actions
@@ -1636,6 +1677,9 @@ void QtMainWindow::OnCameraDialog()
     camera->RebuildCameraFromValues();
 
 	sceneNode->AddComponent(new CameraComponent(camera));
+    sceneNode->AddComponent(new WASDControllerComponent());
+    sceneNode->AddComponent(new RotationControllerComponent());
+    
 	sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(sceneEditor)
@@ -1681,8 +1725,8 @@ void QtMainWindow::On2DCameraDialog()
     Entity* sceneNode = new Entity();
     Camera * camera = new Camera();
     
-    float32 w = Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin();
-    float32 h = Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin();
+    float32 w = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx;
+    float32 h = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy;
     float32 aspect = w / h;
     camera->SetupOrtho(w, aspect, 1, 1000);        
     camera->SetPosition(Vector3(0,0, -10000));
@@ -1815,7 +1859,10 @@ void QtMainWindow::LoadModificationState(SceneEditor2 *scene)
 
 		// landscape snap
 		ui->actionModifySnapToLandscape->setChecked(scene->modifSystem->GetLandscapeSnap());
-	}
+
+        // way editor
+        ui->actionWayEditor->setChecked(scene->wayEditSystem->IsWayEditEnabled());
+    }
 }
 
 void QtMainWindow::LoadUndoRedoState(SceneEditor2 *scene)
@@ -2337,7 +2384,7 @@ void QtMainWindow::OnHeightmapEditor()
 	{
 		return;
 	}
-	
+
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableHeightmapEditor(sceneEditor));
@@ -2481,6 +2528,19 @@ void QtMainWindow::OnGrasEditor()
     }*/
 }
 
+void QtMainWindow::OnWayEditor(bool show)
+{
+    SceneEditor2* sceneEditor = GetCurrentScene();
+    if (!sceneEditor)
+    {
+        return;
+    }
+
+	sceneEditor->wayEditSystem->EnableWayEdit(show);
+	sceneEditor->pathSystem->EnablePathEdit(show);
+}
+
+
 void QtMainWindow::OnBuildStaticOcclusion()
 {
     SceneEditor2* scene = GetCurrentScene();
@@ -2537,7 +2597,13 @@ bool QtMainWindow::IsSavingAllowed()
 		QMessageBox::warning(this, "Saving is not allowed", "Disable landscape editing before save!");
 		return false;
 	}
-	
+
+    if (!scene || scene->wayEditSystem->IsWayEditEnabled())
+    {
+        QMessageBox::warning(this, "Saving is not allowed", "Disable path editing before save!");
+        return false;
+    }
+
 	return true;
 }
 
@@ -2573,20 +2639,6 @@ void QtMainWindow::LoadObjectTypes( SceneEditor2 *scene )
 {
 	if(!scene) return;
 	ResourceEditor::eSceneObjectType objectType = scene->debugDrawSystem->GetRequestedObjectType();
-
-	QList<QAction *> actions = ui->menuObjectTypes->actions();
-
-	auto endIt = actions.end();
-	for(auto it = actions.begin(); it != endIt; ++it)
-	{
-		ResourceEditor::eSceneObjectType objectTypeAction = (ResourceEditor::eSceneObjectType) (*it)->data().toInt();
-		if(objectTypeAction == objectType)
-		{
-			objectTypesLabel->setDefaultAction(*it);
-			break;
-		}
-	}
-
     objectTypesWidget->setCurrentIndex(objectType + 1);
 }
 
@@ -2786,6 +2838,26 @@ void QtMainWindow::OnAddWindEntity()
 
 	windEntity->Release();
 }
+
+
+void QtMainWindow::OnAddPathEntity()
+{
+    SceneEditor2* scene = GetCurrentScene();
+    if(!scene) return;
+    
+    Entity * pathEntity = new Entity();
+    pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
+    
+    DAVA::PathComponent *pc = new PathComponent();
+    pc->SetName(scene->pathSystem->GeneratePathName());
+    
+    pathEntity->AddComponent(pc);
+    scene->Exec(new EntityAddCommand(pathEntity, scene));
+    scene->selectionSystem->SetSelection(pathEntity);
+    
+    pathEntity->Release();
+}
+
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
 {
@@ -3030,4 +3102,34 @@ void QtMainWindow::OnBatchProcessScene()
     {
         SaveScene(sceneEditor);
     }
+}
+
+void QtMainWindow::OnSnapCameraToLandscape(bool snap)
+{
+    SceneEditor2 *scene = GetCurrentScene();
+    if(!scene) return;
+
+    bool toggleProcessed = false;
+    if(scene->cameraSystem)
+    {
+        toggleProcessed = scene->cameraSystem->SnapEditorCameraToLandscape(snap);
+    }
+    
+    if(toggleProcessed)
+    {
+        ui->propertyEditor->ResetProperties();
+    }
+    else
+    {
+        ui->actionSnapCameraToLandscape->setChecked(!snap);
+    }
+}
+
+void QtMainWindow::SetActionCheckedSilently( QAction *action, bool checked )
+{
+	DVASSERT(action);
+	
+	bool b = action->blockSignals(true);
+	action->setChecked(checked);
+	action->blockSignals(b);
 }

@@ -29,10 +29,18 @@ public:
 
     void SetDocument(PackageDocument *newDocument);
 
+private:
+    void RefreshActions(const QModelIndexList &indexList);
+    void RefreshAction(QAction *action, bool enabled, bool visible);
+
 private slots:
     void OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void filterTextChanged(const QString &);
-    void OnRemove();
+    void OnImport();
+    void OnCopy();
+    void OnPaste();
+    void OnCut();
+    void OnDelete();
 
 signals:
     void SelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls);
@@ -41,6 +49,11 @@ signals:
 private:
     Ui::PackageDockWidget *ui;
     PackageDocument *document;
+    QAction *importPackageAction;
+    QAction *copyAction;
+    QAction *pasteAction;
+    QAction *cutAction;
+    QAction *delAction;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

@@ -1,21 +1,14 @@
-//
-//  PackageNode.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 9.10.14.
-//
-//
-
 #include "PackageNode.h"
 
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
+#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
-PackageNode::PackageNode(DAVA::UIPackage *package)
+PackageNode::PackageNode(DAVA::UIPackage *aPackage)
     : PackageBaseNode(NULL)
-    , package(SafeRetain(package))
+    , package(SafeRetain(aPackage))
     , importedPackagesNode(NULL)
     , packageControlsNode(NULL)
 {
@@ -72,16 +65,12 @@ PackageControlsNode *PackageNode::GetPackageControlsNode() const
     return packageControlsNode;
 }
 
-YamlNode *PackageNode::Serialize() const
+void PackageNode::Serialize(PackageSerializer *serializer) const
 {
-    YamlNode *node = YamlNode::CreateMapNode(false, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_PLAIN_REPRESENTATION);
-    
-    YamlNode *headerNode = YamlNode::CreateMapNode(false, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_PLAIN_REPRESENTATION);
-    headerNode->Add("version", "0");
-    
-    node->Add("Header", headerNode);
-    node->Add("ImportedPackages", importedPackagesNode->Serialize());
-    node->Add("Controls", packageControlsNode->Serialize());
-    
-    return node;
+    serializer->BeginMap("Header");
+    serializer->PutValue("version", "0");
+    serializer->EndMap();
+
+    importedPackagesNode->Serialize(serializer);
+    packageControlsNode->Serialize(serializer);
 }

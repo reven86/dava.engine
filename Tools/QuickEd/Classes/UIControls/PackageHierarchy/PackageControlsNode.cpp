@@ -2,12 +2,14 @@
 
 #include "ControlNode.h"
 
+#include "../PackageSerializer.h"
+
 using namespace DAVA;
 
-PackageControlsNode::PackageControlsNode(PackageBaseNode *parent, UIPackage *package)
+PackageControlsNode::PackageControlsNode(PackageBaseNode *parent, UIPackage *aPackage)
     : PackageBaseNode(parent)
     , name("Controls")
-    , package(SafeRetain(package))
+    , package(SafeRetain(aPackage))
     , readOnly(false)
 {
 }
@@ -117,10 +119,12 @@ ControlNode *PackageControlsNode::FindControlNodeByName(const DAVA::String &name
     return NULL;
 }
 
-YamlNode *PackageControlsNode::Serialize() const
+void PackageControlsNode::Serialize(PackageSerializer *serializer) const
 {
-    YamlNode *arrayNode = YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION);
+    serializer->BeginArray("Controls");
+    
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
-        arrayNode->Add((*it)->Serialize(NULL));
-    return arrayNode;
+        (*it)->Serialize(serializer);
+    
+    serializer->EndArray();
 }

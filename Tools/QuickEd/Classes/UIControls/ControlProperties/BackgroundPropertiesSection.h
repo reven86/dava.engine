@@ -3,10 +3,16 @@
 
 #include "PropertiesSection.h"
 
+namespace DAVA
+{
+    class UIControl;
+    class UIControlBackground;
+}
+
 class BackgroundPropertiesSection : public PropertiesSection
 {
 public:
-    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection);
+    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCopyType copyType);
     virtual ~BackgroundPropertiesSection();
     
     DAVA::UIControlBackground *GetBg() const;
@@ -14,7 +20,8 @@ public:
 
     DAVA::String GetName() const;
     
-    void AddPropertiesToNode(DAVA::YamlNode *node) const;
+    virtual bool HasChanges() const override;
+    virtual void Serialize(PackageSerializer *serializer) const override;
 
 private:
     DAVA::UIControl *control;

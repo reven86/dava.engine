@@ -41,6 +41,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
+#include "UI/mainwindow.h"
+#include "Project.h"
 
 /* 
 	Project folders structure:
@@ -74,6 +76,7 @@ static const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
 // Additional text constants
 static const QString GFX = "/Gfx/";
 static const QString FONTS = "/Fonts/";
+static const QString UI = "/UI/";
 // Project DATASOURCE folder
 static const QString PROJECT_DATASOURCE = "%1/DataSource";
 // Project DATA folder
@@ -99,7 +102,6 @@ static const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not loca
 //Available fonts extensions
 static const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def" << "*.df");
 
-QString ResourcesManageHelper::buttonBackgroundImagePath;
 QString ResourcesManageHelper::projectTitle;
 
 QString ResourcesManageHelper::GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont)
@@ -212,8 +214,6 @@ QStringList ResourcesManageHelper::GetFontsList()
 
 void ResourcesManageHelper::InitInternalResources()
 {
-	buttonBackgroundImagePath = QString::fromStdString(FilePath(BACKGROUND_IMAGE_PATH).GetAbsolutePathname());
-	
 	// Save project default title
     if(DAVA::Core::Instance())
     {
@@ -228,11 +228,6 @@ void ResourcesManageHelper::InitInternalResources()
 		projectTitle = PROJECT_TITLE;
 }
 
-QString ResourcesManageHelper::GetButtonBackgroundImagePath()
-{
-	return buttonBackgroundImagePath;
-}
-
 QString ResourcesManageHelper::GetDocumentationPath()
 {
 	return DOCUMENTATION_PATH;
@@ -240,11 +235,12 @@ QString ResourcesManageHelper::GetDocumentationPath()
 
 QString ResourcesManageHelper::GetProjectPath()
 {
-//	const HierarchyTreeRootNode *rootNode = HierarchyTreeController::Instance()->GetTree().GetRootNode();
-//	if (!rootNode)
-		return QString();
-//	
-//	return rootNode->GetProjectDir();
+    MainWindow * win = qobject_cast<MainWindow *>(qApp->activeWindow());//TODO remove ugly code
+    if (win && win->GetProject())
+    {
+        return win->GetProject()->GetProjectDir();
+    }
+    return QString();
 }
 
 QString ResourcesManageHelper::GetProjectTitle()
@@ -305,11 +301,6 @@ QString ResourcesManageHelper::GetSpritesDirectory()
 QString ResourcesManageHelper::GetFontSpritesDirectory()
 {
 	return GetResourceFolder(PROJECT_DATA_GRAPHICS_FONTS);
-}
-
-QString ResourcesManageHelper::GetSpritesDatasourceDirectory()
-{
-	return GetResourceFolder(PROJECT_DATASOURCE_GFX);
 }
 
 QString ResourcesManageHelper::GetFontSpritesDatasourceDirectory()

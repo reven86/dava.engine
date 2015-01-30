@@ -59,7 +59,7 @@ public:
 	bool DisableLandscapeEdititing();
 	
 	virtual void Process(DAVA::float32 timeElapsed);
-	void ProcessUIEvent(DAVA::UIEvent *event);
+	virtual void Input(DAVA::UIEvent *event);
 	void Draw();
 	
 	void SetBrushSize(int32 brushSize);
@@ -106,6 +106,11 @@ protected:
 	eBlendMode dstBlendMode;
 	Shader* tileMaskEditorShader;
 	Shader* tileMaskCopyPasteShader;
+
+    float32 spriteTempVertices[8];
+    RenderDataObject * spriteRenderObject;
+    RenderDataStream * spriteVertexStream;
+    RenderDataStream * spriteTexCoordStream;
 
 	bool needCreateUndo;
 

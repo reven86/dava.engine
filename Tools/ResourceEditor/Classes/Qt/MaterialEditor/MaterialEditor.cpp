@@ -565,8 +565,8 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
             addRemoveButton->setIcon(QIcon(":/QtIcons/cminus.png"));
             addRemoveButton->setToolTip("Remove property");
 
-            // isn't set in parent or shader
-            if(!(memberFlags & DAVA::I_VIEW) && !(memberFlags & DAVA::I_SAVE))
+            // isn't set in shader
+            if(!(memberFlags & DAVA::I_SAVE))
             {
                 bgColor = QBrush(QColor(255, 0, 0, 25));
             }
@@ -879,7 +879,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
             materialContext.SetScene(curScene);
             materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
 
-            lastSavePath = outputFile.toAscii().data();
+            lastSavePath = outputFile.toLatin1().data();
             material->Save(materialArchive, &materialContext);
             materialArchive->Save(lastSavePath);
             materialArchive->Release();
@@ -903,7 +903,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
         {
             DAVA::KeyedArchive *materialArchive = new DAVA::KeyedArchive();
 
-            lastSavePath = inputFile.toAscii().data();
+            lastSavePath = inputFile.toLatin1().data();
             materialArchive->Load(lastSavePath);
 
             DAVA::uint32 userChoiseWhatToLoad = ExecMaterialLoadingDialog(lastCheckState, inputFile);

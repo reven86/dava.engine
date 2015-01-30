@@ -39,7 +39,8 @@
 namespace DAVA
 {
     
-const String DefaultUIPackageBuilder::EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
+const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
+const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
 DefaultUIPackageBuilder::DefaultUIPackageBuilder()
 : package(NULL), currentObject(NULL)
@@ -56,11 +57,11 @@ DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
     DVASSERT(package == NULL);
 }
 
-UIPackage *DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
+RefPtr<UIPackage> DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
     DVASSERT(package == NULL)
     package = new UIPackage(packagePath);
-    return package;
+    return RefPtr<UIPackage>(SafeRetain(package));
 }
 
 void DefaultUIPackageBuilder::EndPackage()
@@ -68,27 +69,25 @@ void DefaultUIPackageBuilder::EndPackage()
     SafeRelease(package);
 }
 
-UIPackage *DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
+RefPtr<UIPackage> DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
 {
-    UIPackage *result;
+    UIPackage *result = NULL;
     UIPackage *prevPackage = package;
     package = NULL;
     auto it = importedPackages.find(packagePath);
     if (it != importedPackages.end())
     {
         result = it->second;
-        prevPackage->AddPackage(it->second);
     }
     else
     {
-        UIPackage *loadedPackage = loader->LoadPackage(packagePath);
-        result = loadedPackage;
-        importedPackages[packagePath] = loadedPackage;
-        prevPackage->AddPackage(loadedPackage);
+        result = loader->LoadPackage(packagePath);
+        importedPackages[packagePath] = result;
     }
+    prevPackage->AddPackage(result);
     DVASSERT(package == NULL);
     package = prevPackage;
-    return result;
+    return RefPtr<UIPackage>(SafeRetain(result));
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -97,7 +96,7 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &classNam
     if (!control)
         Logger::Error("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
 
-    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD)//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
@@ -109,13 +108,14 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &classNam
 UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(customClassName);
-    if (className != EXCEPTION_CLASS_UI_TEXT_FIELD)//TODO: fix internal staticText for Win\Mac
-    {
-        control->RemoveAllControls();
-    }
 
     if (!control)
         control = ObjectFactory::Instance()->New<UIControl>(className); // TODO: remove
+
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
+    {
+        control->RemoveAllControls();
+    }
     
     if (control)
     {
@@ -132,7 +132,7 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &cu
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
 {
-    UIControl *prototype;
+    UIControl *prototype = NULL;
     if (packageName.empty())
     {
         prototype = package->GetControl(prototypeName);

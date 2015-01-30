@@ -65,6 +65,10 @@
 #include "ActionComponentEditor.h"
 #include "SoundComponentEditor/SoundComponentEditor.h"
 
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
+
+#include "Scene/System/PathSystem.h"
+
 #include "Deprecated/SceneValidator.h"
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
@@ -93,6 +97,10 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
     connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
     connect(mainUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
     connect(mainUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
+    connect(mainUi->actionAddPathComponent, SIGNAL(triggered()), SLOT(OnAddPathComponent()));
+    connect(mainUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
+    connect(mainUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
+    connect(mainUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
 
 	SetUpdateTimeout(5000);
 	SetEditTracking(true);
@@ -253,11 +261,8 @@ void PropertyEditor::ResetProperties()
 			QtPropertyData *row = root->ChildGet(0);
 			root->ChildExtract(row);
 
-			if(row->ChildCount() > 0)
-			{
-				AppendProperty(row->GetName(), row);
-				ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
-			}
+            AppendProperty(row->GetName(), row);
+            ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
 		}
 
 		delete root;
@@ -735,6 +740,8 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
     case CMDID_SOUND_REMOVE_EVENT:
 	case CMDID_DELETE_RENDER_BATCH:
 	case CMDID_CLONE_LAST_BATCH:
+    case CMDID_EXPAND_PATH:
+    case CMDID_COLLAPSE_PATH:
         {
             bool doReset = (command->GetEntity() == NULL);
             for ( int i = 0; !doReset && i < curNodes.size(); i++ )
@@ -1329,19 +1336,47 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 void PropertyEditor::OnAddComponent(Component::eType type)
 {
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    if(curNodes.size() > 0)
+    int size = curNodes.size();
+    if(size > 0)
     {
-        curScene->BeginBatch("Add Component");
+        curScene->BeginBatch(Format("Add Component: %d", type));
 
-        for(int i = 0; i < curNodes.size(); ++i)
+        for(int i = 0; i < size; ++i)
         {
             Entity* node = curNodes.at(i);
             if (node->GetComponentCount(type) == 0)
             {
-                curScene->Exec(new AddComponentCommand(curNodes.at(i), Component::CreateByType(type)));
+                Component *c = Component::CreateByType(type);
+                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
             }
         }
 
+        curScene->EndBatch();
+    }
+}
+
+void PropertyEditor::OnAddComponent(DAVA::Component *component)
+{
+    DVASSERT(component);
+    if(!component) return;
+    
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    int size = curNodes.size();
+    if(size > 0)
+    {
+        curScene->BeginBatch(Format("Add Component: %d", component->GetType()));
+        
+        for(int i = 0; i < size; ++i)
+        {
+            Entity* node = curNodes.at(i);
+            
+            if (node->GetComponentCount(component->GetType()) == 0)
+            {
+                Component *c = component->Clone(node);
+                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
+            }
+        }
+        
         curScene->EndBatch();
     }
 }
@@ -1374,6 +1409,39 @@ void PropertyEditor::OnAddModelTypeComponent()
 void PropertyEditor::OnAddSkeletonComponent()
 {
     OnAddComponent(Component::SKELETON_COMPONENT);
+}
+
+void PropertyEditor::OnAddPathComponent()
+{
+    PathComponent *pathComponent = static_cast<PathComponent *> (Component::CreateByType(Component::PATH_COMPONENT));
+
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    pathComponent->SetName(curScene->pathSystem->GeneratePathName());
+
+    OnAddComponent(pathComponent);
+    SafeDelete(pathComponent);
+}
+
+void PropertyEditor::OnAddRotationControllerComponent()
+{
+    OnAddComponent(Component::ROTATION_CONTROLLER_COMPONENT);
+}
+
+void PropertyEditor::OnAddSnapToLandscapeControllerComponent()
+{
+    SnapToLandscapeControllerComponent *snapComponent = static_cast<SnapToLandscapeControllerComponent *> (Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
+
+    float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
+    snapComponent->SetHeightOnLandscape(height);
+
+    OnAddComponent(snapComponent);
+    
+    SafeDelete(snapComponent);
+}
+
+void PropertyEditor::OnAddWASDControllerComponent()
+{
+    OnAddComponent(Component::WASD_CONTROLLER_COMPONENT);
 }
 
 void PropertyEditor::OnRemoveComponent()

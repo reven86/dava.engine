@@ -5,13 +5,15 @@
 
 class ImportedPackagesNode;
 class PackageControlsNode;
+class PackageSerializer;
 
 class PackageNode : public PackageBaseNode
 {
 public:
     PackageNode(DAVA::UIPackage *package);
+private:
     virtual ~PackageNode();
-    
+public:
     virtual int GetCount() const override;
     virtual PackageBaseNode *Get(int index) const override;
 
@@ -22,7 +24,7 @@ public:
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;
     
-    DAVA::YamlNode *Serialize() const;
+    void Serialize(PackageSerializer *serializer) const;
     
 private:
     DAVA::UIPackage *package;

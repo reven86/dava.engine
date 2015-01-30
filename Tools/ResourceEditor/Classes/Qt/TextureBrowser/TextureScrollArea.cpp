@@ -45,9 +45,6 @@
 #include <QMovie>
 #include <QLabel>
 
-const int TILE_WIDTH = 3;
-const int TILE_HEIGHT = 4;
-
 static int facePositions[6][2] =
 {
 	{2, 1}, //pos x
@@ -62,12 +59,12 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 	: QGraphicsView(parent)
 	, textureColorMask((int) ChannelAll)
 	, mouseInMoveState(false)
-	, textureScene(NULL)
 	, textureBorder(NULL)
+	, compositeImagesFlags(0)
+	, textureScene(NULL)
 	, zoomFactor(1.0)
 	, tiledBgDoDraw(false)
 	, noImageVisible(false)
-	, compositeImagesFlags(0)
 {
 	// create and setup scene
 	textureScene = new QGraphicsScene();

@@ -42,8 +42,8 @@ void BasePropertyDelegate::enumEditorActions( QWidget *parent, const QModelIndex
     BaseProperty *property = static_cast<BaseProperty *>(index.internalPointer());
     if (property && property->GetEditFlag() & BaseProperty::EF_CAN_RESET )
     {
-        QAction *resetAction = new QAction(QIcon(":/Icons/editclear.png"), tr("reset"), parent);
-        resetAction->setToolTip(tr("reset property value to default"));
+        QAction *resetAction = new QAction(QIcon(":/Icons/edit_undo.png"), tr("reset"), parent);
+        resetAction->setToolTip(tr("Reset property value to default"));
         actions.push_back(resetAction);
         connect(resetAction, SIGNAL(triggered(bool)), this, SLOT(resetClicked()));
     }

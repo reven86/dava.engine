@@ -29,8 +29,11 @@
 
 
 #include "DAVAEngine.h"
+
 #include <QApplication>
 #include <QCryptographicHash>
+#include <QFont>
+#include <QSysInfo>
 
 #include "version.h"
 #include "Main/mainwindow.h"
@@ -54,10 +57,10 @@
 #include "Deprecated/ControlsFactory.h"
 
 #if defined (__DAVAENGINE_MACOS__)
-	#include "Platform/Qt/MacOS/QtLayerMacOS.h"
+	#include "MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
-	#include "Platform/Qt/Win32/QtLayerWin32.h"
-	#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
+	#include "Win32/QtLayerWin32.h"
+	#include "Win32/CorePlatformWin32Qt.h"
 #endif
 
 #ifdef __DAVAENGINE_BEAST__
@@ -67,12 +70,19 @@
 #endif //__DAVAENGINE_BEAST__
 
 void UnpackHelpDoc();
+void FixOSXFonts();
 
 int main(int argc, char *argv[])
 {
 	int ret = 0;
 
+#ifdef Q_OS_MAC
+    FixOSXFonts();  // Must be called before creating QApplication instance
+#endif
+
     QApplication a(argc, argv);
+    
+    a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);
@@ -128,8 +138,8 @@ int main(int argc, char *argv[])
 		else
 		{
             //Trick for correct loading of sprites.
-            Core::Instance()->UnregisterAllAvailableResourceSizes();
-            Core::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
+            VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+            VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
             
             
 			cmdLine.Process();
@@ -162,6 +172,8 @@ int main(int argc, char *argv[])
 		    ProjectManager::Instance()->ProjectOpenLast();
             if(ProjectManager::Instance()->IsOpened())
                 QtMainWindow::Instance()->OnSceneNew();
+            
+            DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
 
 		    // start app
 		    ret = a.exec();
@@ -178,7 +190,6 @@ int main(int argc, char *argv[])
 	SettingsManager::Instance()->Release();
 	BeastProxy::Instance()->Release();
 	DAVA::QtLayer::Instance()->Release();
-	DAVA::Core::Instance()->ReleaseSingletons();
 	DAVA::Core::Instance()->Release();
 
 	return ret;
@@ -203,3 +214,13 @@ void UnpackHelpDoc()
 	SettingsManager::SetValue(Settings::Internal_EditorVersion, VariantType(String(RESOURCE_EDITOR_VERSION)));
 }
 
+void FixOSXFonts()
+{
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
+    {
+        // fix Mac OS X 10.9 (mavericks) font issue
+        QFont::insertSubstitution( ".Lucida Grande UI", "Lucida Grande" );
+    }
+#endif
+}

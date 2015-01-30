@@ -34,6 +34,8 @@
 #include "Core/Core.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #include <limits>
 
@@ -67,23 +69,26 @@ const uint16 UIControlBackground::StretchDrawData::indeces[18 * 3] = {
     11, 15, 14
 };
 
+    
+    
+    
 UIControlBackground::UIControlBackground()
-:	spr(NULL)
-,	frame(0)
-,	align(ALIGN_HCENTER|ALIGN_VCENTER)
-,	type(DRAW_ALIGNED)
-,	color(Color::White)
-,	drawColor(Color::White)
-,	leftStretchCap(0)
-,	topStretchCap(0)
-,	spriteModification(0)
-,	colorInheritType(COLOR_IGNORE_PARENT)
-,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
-,	lastDrawPos(0, 0)
-,	tiledData(NULL)
+:   color(Color::White)
+,   spr(NULL)
+,   align(ALIGN_HCENTER|ALIGN_VCENTER)
+,   type(DRAW_ALIGNED)
+,   spriteModification(0)
+,   leftStretchCap(0)
+,   topStretchCap(0)
+,   colorInheritType(COLOR_IGNORE_PARENT)
+,   frame(0)
+,   lastDrawPos(0, 0)
+,   perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
+,   tiledData(NULL)
 ,   stretchData(NULL)
-,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 ,   margins(NULL)
+,   drawColor(Color::White)
+,   shader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR))
 ,   renderState(RenderState::RENDERSTATE_2D_BLEND)
 {
 }
@@ -308,6 +313,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
+    RenderSystem2D::Instance()->UpdateClip();
+
     Sprite::DrawState drawState;
     drawState.SetRenderState(renderState);
     if (spr)
@@ -382,8 +389,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             }
 
             lastDrawPos = drawState.position;
-
-            spr->Draw(&drawState);
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 
@@ -421,8 +427,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 //			spr->SetScale(drawRect.dx / spr->GetSize().dx, drawRect.dy / spr->GetSize().dy);
 //			spr->SetPivotPoint(geometricData.pivotPoint.x / (geometricData.size.x / spr->GetSize().dx), geometricData.pivotPoint.y / (geometricData.size.y / spr->GetSize().dy));
 //			spr->SetAngle(geometricData.angle);
-
-            spr->Draw(&drawState);
+            
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 
@@ -520,8 +526,8 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             }
 
             lastDrawPos = drawState.position;
-
-            spr->Draw(&drawState);
+            
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 
@@ -544,11 +550,18 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         default:
             break;
     }
-
+#if defined(LOCALIZATION_DEBUG)
+    lastDrawState = drawState;
+#endif
     RenderManager::Instance()->ResetColor();
 
 }
-
+#if defined(LOCALIZATION_DEBUG)
+const Sprite::DrawState & UIControlBackground::GetLastDrawState() const
+{
+    return lastDrawState;
+}
+#endif
 void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, UniqueHandle renderState)
 {
     DVASSERT(rdoObject);
@@ -610,7 +623,7 @@ void UIControlBackground::DrawStretched(const UIGeometricData &geometricData, Un
 
     RenderManager::Instance()->SetTextureState(textureHandle);
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(rdoObject);
     RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, sd.GetVertexInTrianglesCount(), EIF_16, (void*)sd.indeces);
 
@@ -692,7 +705,7 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle rend
 
     RenderManager::Instance()->SetTextureState(textureHandle);
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(rdoObject);
     RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 }
@@ -797,18 +810,18 @@ void UIControlBackground::StretchDrawData::GenerateStretchData()
     }
 
     const Texture* texture = sprite->GetTexture(frame);
-    const float32 resMulFactor = 1.0f / Core::Instance()->GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
     const Vector2 textureSize((float32)texture->GetWidth(), (float32)texture->GetHeight());
 
     const Vector2 uvPos(sprite->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE) / textureSize.x,
                         sprite->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE) / textureSize.y);
 
-    const Vector2 uvSize(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) * resMulFactor / textureSize.x,
-                         sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) * resMulFactor / textureSize.y);
+    VirtualCoordinatesSystem * vcs = VirtualCoordinatesSystem::Instance();
 
-    const Vector2 uvLeftTopCap(xyRealLeftTopCap * resMulFactor / textureSize);
-
-    const Vector2 uvRightBottomCap(xyRealRightBottomCap * resMulFactor / textureSize);
+    const Vector2 uvSize = vcs->ConvertVirtualToResource(Vector2(sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT)),
+                                                         sprite->GetResourceSizeIndex()
+                                                        ) / textureSize;
+    const Vector2 uvLeftTopCap = vcs->ConvertVirtualToResource(xyRealLeftTopCap, sprite->GetResourceSizeIndex()) / textureSize;
+    const Vector2 uvRightBottomCap = vcs->ConvertVirtualToResource(xyRealRightBottomCap, sprite->GetResourceSizeIndex()) / textureSize;
 
     switch (type)
     {
@@ -921,10 +934,12 @@ void UIControlBackground::TiledDrawData::GenerateTileData()
     Texture *texture = sprite->GetTexture(frame);
 
     Vector< Vector3 > cellsWidth;
-    GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), (float32)texture->GetWidth() * sprite->GetResourceToVirtualFactor(), stretchCap.x, cellsWidth );
+    GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH),
+        VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX((float32)texture->GetWidth(), sprite->GetResourceSizeIndex()), stretchCap.x, cellsWidth);
 
     Vector< Vector3 > cellsHeight;
-    GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight() * sprite->GetResourceToVirtualFactor(), stretchCap.y, cellsHeight );
+    GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), 
+        VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY((float32)texture->GetHeight(), sprite->GetResourceSizeIndex()), stretchCap.y, cellsHeight);
 
     int32 vertexCount = 4 * cellsHeight.size() * cellsWidth.size();
     if (vertexCount>= std::numeric_limits<uint16>::max())

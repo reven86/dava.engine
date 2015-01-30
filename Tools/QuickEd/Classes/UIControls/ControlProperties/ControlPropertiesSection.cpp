@@ -1,11 +1,12 @@
 #include "ControlPropertiesSection.h"
 
+#include "UI/UIControl.h"
 #include "ValueProperty.h"
 #include "LocalizedTextValueProperty.h"
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection) : control(SafeRetain(control))
+ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCopyType copyType) : control(SafeRetain(control))
 {
     name = typeInfo->Name();
     
@@ -15,16 +16,15 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, con
         if ((member->Flags() & I_EDIT) != 0)
         {
             String memberName = member->Name();
-            ValueProperty *sourceProperty = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            if (sourceProperty)
-                member->SetValue(control, sourceProperty->GetValue());
             
+            ValueProperty *sourceProperty = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+
             ValueProperty *prop;
             if (String(member->Name()) == "text")
-                prop = new LocalizedTextValueProperty(control, member);
+                prop = new LocalizedTextValueProperty(control, member, sourceProperty, copyType);
             else
-                prop = new ValueProperty(control, member);
-            
+                prop = new ValueProperty(control, member, sourceProperty, copyType);
+
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -39,10 +39,4 @@ ControlPropertiesSection::~ControlPropertiesSection()
 DAVA::String ControlPropertiesSection::GetName() const
 {
     return name;
-}
-
-void ControlPropertiesSection::AddPropertiesToNode(YamlNode *node) const
-{
-    for (auto it = children.begin(); it != children.end(); ++it)
-        (*it)->AddPropertiesToNode(node);
 }

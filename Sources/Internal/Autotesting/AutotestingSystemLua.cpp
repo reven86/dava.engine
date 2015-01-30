@@ -29,7 +29,7 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 namespace DAVA
 {
 
-	AutotestingSystemLua::AutotestingSystemLua() : luaState(NULL), delegate(NULL), autotestingLocalizationSystem(NULL)
+	AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL)
 	{
 		autotestingLocalizationSystem = new LocalizationSystem();
 	}
@@ -246,8 +246,8 @@ namespace DAVA
 
 	bool AutotestingSystemLua::IsPhoneScreen()
 	{
-		float32 xInch = Core::Instance()->GetPhysicalScreenWidth() / static_cast<float32>(Core::Instance()->GetScreenDPI());
-		float32 yInch = Core::Instance()->GetPhysicalScreenHeight() / static_cast<float32>(Core::Instance()->GetScreenDPI());
+		float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
+		float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
 		return sqrtf(xInch*xInch + yInch*yInch) <= 6.5f; 
 	}
 
@@ -625,8 +625,8 @@ namespace DAVA
 		touchDown.phase = UIEvent::PHASE_BEGAN;
 		touchDown.tid = touchId;
 		touchDown.tapCount = 1;
-		UIControlSystem::Instance()->RecalculatePointToPhysical(point, touchDown.physPoint);
-		UIControlSystem::Instance()->RecalculatePointToVirtual(touchDown.physPoint, touchDown.point);
+        touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+        touchDown.point = point;
 		ProcessInput(touchDown);
 	}
 
@@ -635,8 +635,8 @@ namespace DAVA
 		UIEvent touchMove;
 		touchMove.tid = touchId;
 		touchMove.tapCount = 1;
-		UIControlSystem::Instance()->RecalculatePointToPhysical(point, touchMove.physPoint);
-		UIControlSystem::Instance()->RecalculatePointToVirtual(touchMove.physPoint, touchMove.point);
+        touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+        touchMove.point = point;
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{
@@ -672,10 +672,9 @@ namespace DAVA
 		Logger::Debug("AutotestingSystemLua::ProcessInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", input.tid, 
 			input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
 
-		Vector<UIEvent> emptyTouches;
 		Vector<UIEvent> touches;
 		touches.push_back(input);
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->OnInput(0, touches, touches);
 
 		AutotestingSystem::Instance()->OnInput(input);
 	}
