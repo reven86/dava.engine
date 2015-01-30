@@ -42,21 +42,22 @@ public:
 	RefCounter() : refCount(1)
 	{}
 
-	void AddRef()
+	void Retain()
 	{
-		AtomicIncrement(refCount);
+		refCount++;
 	}
 
-	void RemRef()
+	void Release()
 	{
-		if(0 == AtomicDecrement(refCount))
+		refCount--;
+		if (0 == refCount)
 		{
 			delete this;
 		}
 	}
 
 private:
-	int32 refCount;
+	uint32 refCount;
 };
 
 // ====================================================================================================================================================
@@ -115,99 +116,124 @@ struct FunctionPointerHolder
 // ObjectPointerHolder class 
 // Class to store a pointer to the object. It can delete the object if this object is RefCounter class
 // ====================================================================================================================================================
+struct OwnerRule
+{
+    virtual void Retain(void* pointer) const = 0;
+    virtual void Release(void* pointer) const = 0;
+};
+
+template<typename T>
+struct OwnerEmptyRule : OwnerRule
+{
+    virtual void Retain(T *pointer) const { }
+    virtual void Release(T* pointer) const { }
+};
+
+template<typename T>
+struct OwnerRetainReleaseRule : public OwnerRule
+{
+    virtual void Retain(void* pointer) const override { ((T *)pointer)->Retain(); }
+    virtual void Release(void* pointer) const override { ((T *)pointer)->Release(); }
+};
+
+template<typename T>
+struct PointerOwner
+{
+    template<typename R>
+    static PointerOwner<T> Own(T *_pointer)
+    {
+        static R rule;
+        return PointerOwner<T>(_pointer, &rule);
+    }
+
+    template<template<typename> class R>
+    static PointerOwner<T> Own(T *_pointer)
+    {
+        static R<T> rule;
+        return PointerOwner<T>(_pointer, &rule);
+    }
+
+    static PointerOwner<T> OwnRetainRelease(T *_pointer)
+    {
+        return Own<OwnerRetainReleaseRule>(_pointer);
+    }
+
+    T* pointer;
+    OwnerRule* staticRule;
+
+protected:
+    PointerOwner(T *_pointer, OwnerRule* _rule) 
+        : pointer(_pointer)
+        , staticRule(_rule)
+    { }
+};
+
 struct ObjectPointerHolder
 {
 public:
 	void *object;
+    OwnerRule *rule;
 
 	ObjectPointerHolder() 
-		: object(NULL)
-		, type(Holder_Regular)
-	{}
+        : object(NULL)
+    { 
+        SetDefaultRule();
+    }
 
-    ObjectPointerHolder(void *obj)
+	ObjectPointerHolder(void *obj) 
         : object(obj)
-        , type(Holder_Regular)
-    { }
+    {
+        SetDefaultRule();
+    }
+
+    ObjectPointerHolder(const void *obj)
+        : object(const_cast<void *>(obj))
+    {
+        SetDefaultRule();
+    }
 
     template<typename T>
-    ObjectPointerHolder(const T *obj)
-        : object(const_cast<T*>(obj))
-        , type(Holder_Regular)
-    { }
-
-	ObjectPointerHolder(RefCounter *obj) 
-		: object(obj)
-		, type(Holder_RefCounter)
-	{}
+ 	ObjectPointerHolder(const PointerOwner<T> &owner)
+ 		: object(owner.pointer)
+        , rule(owner.staticRule)
+ 	{
+        rule->Retain(object);
+    }
 
 	~ObjectPointerHolder()
 	{
-		RemRef();
+		rule->Release(object);
 	}
 
  	ObjectPointerHolder(const ObjectPointerHolder& holder)
  	{
- 		type = holder.type;
  		object = holder.object;
- 
- 		AddRef();
+        rule = holder.rule;
+
+        rule->Retain(object);
  	}
  
  	ObjectPointerHolder& operator=(const ObjectPointerHolder& holder)
  	{
         if(this != &holder)
         {
-            RemRef();
+            rule->Release(object);
  
-            type = holder.type;
             object = holder.object;
+            rule = holder.rule;
  
-            AddRef();
+            rule->Retain(object);
         }
  
  		return *this;
  	}
  
 protected:
-	enum HoldedType
-	{
-		Holder_Regular,
-		Holder_RefCounter
-	};
-
-	HoldedType type;
-
- 	inline void RemRef()
- 	{
-		switch (type)
-		{
-		case Holder_RefCounter:
-			if (NULL != object)
-			{
-				((RefCounter *)object)->RemRef();
-				object = NULL;
-			}
-			break;
-		default:
-			break;
-		}
-	}
- 
- 	inline void AddRef()
- 	{
-		switch (type)
-		{
-		case Holder_RefCounter:
-			if (NULL != object)
-			{
-				((RefCounter *)object)->AddRef();
-			}
-			break;
-		default:
-			break;
-		}
- 	}
+    void SetDefaultRule()
+    {
+        static OwnerEmptyRule<void> defaultRule;
+        rule = &defaultRule;
+    }
 };
 
 // ====================================================================================================================================================

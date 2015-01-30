@@ -177,7 +177,7 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
 {
 	DVASSERT(!vertexAttachmentActive);
 
-	Function<void()> fn = Bind(MakeFunction(this, &RenderDataObject::BuildVertexBufferInternal), vertexCount);
+    Function<void()> fn = Bind(MakeFunction(PointerOwner<RenderDataObject>::OwnRetainRelease(this), &RenderDataObject::BuildVertexBufferInternal), vertexCount);
 	if(synchronously)
     {
         uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
@@ -185,7 +185,7 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
 	}
     else
     {
-        JobManager::Instance()->CreateOwnedMainJob(fn, this);
+        JobManager::Instance()->CreateMainJob(fn);
     }
 }
 
@@ -248,15 +248,12 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
 
 void RenderDataObject::BuildIndexBuffer(bool synchronously)
 {
-    Function<void()> fn(this, &RenderDataObject::BuildIndexBufferInternal);
-	if(synchronously)
+    Function<void()> fn(PointerOwner<RenderDataObject>::OwnRetainRelease(this), &RenderDataObject::BuildIndexBufferInternal);
+    uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
+
+    if(synchronously)
     {
-        uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
-		JobManager::Instance()->WaitMainJobID(jobId);
-	}
-    else
-    {
-        JobManager::Instance()->CreateOwnedMainJob(fn, this);
+        JobManager::Instance()->WaitMainJobID(jobId);
     }
 }
 

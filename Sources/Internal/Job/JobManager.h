@@ -70,14 +70,6 @@ public:
 	*/
     uint32 CreateMainJob(const Function<void ()>& fn, eMainJobType mainJobType = JOB_MAIN);
 
-    /*! Add function to execute in the main-thread. Retain owner until job finished.
-    \param [in] fn Function to execute.
-    \param [in] owner BaseObject that owns job.
-    \param [in] mainJobType Type of execution. See ::eMainJobType for detailed description.
-    \return id Created job id. This id can be used to wait until this job finished.
-    */
-    uint32 CreateOwnedMainJob(const Function<void()>& fn, BaseObject * owner, eMainJobType mainJobType = JOB_MAIN);
-
 	/*! Wait for the main-thread jobs, that were added from other thread with the given ID. 
 		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
 	*/
@@ -112,12 +104,11 @@ public:
 protected:
     struct MainJob
     {
-        MainJob() : id(0), type(JOB_MAIN), invokerThreadId(0), owner(0) {}
+        MainJob() : id(0), type(JOB_MAIN), invokerThreadId(0) {}
 
         uint32 id;
         eMainJobType type;
         Thread::Id invokerThreadId;
-        BaseObject * owner;
 
         Function<void ()> fn;
     };

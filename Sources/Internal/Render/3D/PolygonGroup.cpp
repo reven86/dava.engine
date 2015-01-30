@@ -452,7 +452,7 @@ void PolygonGroup::ReleaseData()
 void PolygonGroup::BuildBuffers()
 {
     UpdateDataPointersAndStreams();
-	JobManager::Instance()->CreateOwnedMainJob(MakeFunction(this, &PolygonGroup::BuildBuffersInternal), this);
+	JobManager::Instance()->CreateMainJob(MakeFunction(PointerOwner<PolygonGroup>::OwnRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
 };
     
 void PolygonGroup::BuildBuffersInternal()
