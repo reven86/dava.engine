@@ -28,8 +28,8 @@ namespace DAVA
 {
 	AutotestingDB::AutotestingDB()
 		: dbClient(NULL)
-		, logFilePath(NULL)
-		, logsFolder(NULL)
+		, logFilePath(FilePath(""))
+		, logsFolder(FilePath(""))
 		, autoSys(NULL)
 	{
 		autoSys = AutotestingSystem::Instance();
@@ -111,7 +111,7 @@ namespace DAVA
 		String archiveName = Format("%s", auxArg.c_str());
 		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
-			autoSys->ForceQuit(Format("Couldn't find archive for %s device", archiveName.c_str()));
+			autoSys->ForceQuit(Format("Couldn't find '%s' archive.", archiveName.c_str()));
 		}
 		dbUpdateObject->LoadData();
 		return dbUpdateObject->GetData();

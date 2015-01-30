@@ -88,6 +88,10 @@ namespace DAVA
 			return;
 		}
 
+		SetUpConnectionToDB();
+
+		FetchParametersFromDB();
+
 		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s", groupName.c_str(), testFileName.c_str());
 		if (!FileSystem::Instance()->IsFile(FilePath(testFilePath)))
 		{
@@ -96,12 +100,6 @@ namespace DAVA
 		}
 
 		FetchParametersFromIdYaml();
-
-		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
-
-		SetUpConnectionToDB();
-
-		FetchParametersFromDB();
 
 		AutotestingDB::Instance()->WriteLogHeader();
 
@@ -157,6 +155,7 @@ namespace DAVA
 	// Get test parameters from autotesting db
 	void AutotestingSystem::FetchParametersFromDB()
 	{
+		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
 		Logger::Debug("AutotestingSystem::FetchParametersFromDB");
 		groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
 		if (groupName == "not_found")
