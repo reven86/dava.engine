@@ -312,6 +312,8 @@ private:
     void NotifyListenersWillSwitch( UIScreen* screen );
     void NotifyListenersDidSwitch( UIScreen* screen );
 
+    void CopyTouchData(UIEvent* dst, const UIEvent* src);
+
 	Vector<ScreenSwitchListener*> screenSwitchListeners;
 
 	UIScreen * currentScreen;

@@ -146,6 +146,16 @@ template<> struct TypeMetrics<jfloatArray>
 	DeclareTypeString("[F");
 };
 
+template<> struct TypeMetrics<jdouble>
+{
+    DeclareTypeString("D");
+};
+
+template<> struct TypeMetrics<jdoubleArray>
+{
+    DeclareTypeString("[D");
+};
+
 template<> struct TypeMetrics<jlong>
 {
 	DeclareTypeString("J");
