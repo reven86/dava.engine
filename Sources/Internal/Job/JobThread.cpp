@@ -48,7 +48,7 @@ JobThread::~JobThread()
     while(!threadFinished)
     {
         workerQueue->Broadcast();
-        Sleep(10); // sleep 10 ms until other check
+        Thread::Sleep(10); // sleep 10 ms until other check
     }
 
     // join and release thread
