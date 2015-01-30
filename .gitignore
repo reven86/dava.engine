@@ -37,3 +37,6 @@ ddd
 /testproj/
 fmod.log
 *.user
+/DavaConfig.in
+*.xccheckout
+Projects/UnitTests/android/assets

@@ -35,60 +35,180 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlHelpers.h"
 #include "FileSystem/LocalizationSystem.h"
+#include "UIPackagesCache.h"
 
 namespace DAVA
 {
     
-const String DefaultUIPackageBuilder::EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
+const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
+const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
-DefaultUIPackageBuilder::DefaultUIPackageBuilder()
-: package(NULL), currentObject(NULL)
+////////////////////////////////////////////////////////////////////////////////
+// PackageDescr
+////////////////////////////////////////////////////////////////////////////////
+    
+class DefaultUIPackageBuilder::PackageDescr
 {
+public:
+    PackageDescr(UIPackage *_package) : package(SafeRetain(_package))
+    {
+        
+    }
+    
+    ~PackageDescr()
+    {
+        SafeRelease(package);
+        
+        for (UIPackage *pack : importedPackages)
+            pack->Release();
+        importedPackages.clear();
+    }
+    
+    UIPackage *GetPackage() const
+    {
+        return package;
+    }
+
+    void PutImportredPackage(const FilePath &path, UIPackage *package)
+    {
+        int32 index = (int32) importedPackages.size();
+        importedPackages.push_back(SafeRetain(package));
+        packsByPaths[path] = index;
+        packsByNames[path.GetBasename()] = index;
+    }
+    
+    UIPackage *FindImportedPackageByName(const String &name) const
+    {
+        auto it = packsByNames.find(name);
+        if (it != packsByNames.end())
+            return importedPackages[it->second];
+        
+        return nullptr;
+    }
+    
+private:
+    UIPackage *package;
+    Vector<UIPackage*> importedPackages;
+    Map<FilePath, int32> packsByPaths;
+    Map<String, int32> packsByNames;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// ControlDescr
+////////////////////////////////////////////////////////////////////////////////
+
+struct DefaultUIPackageBuilder::ControlDescr
+{
+    UIControl *control;
+    bool addToParent;
+    
+    ControlDescr() : control(nullptr), addToParent(false)
+    {
+    }
+    
+    ControlDescr(UIControl *control, bool addToParent) : control(control), addToParent(addToParent)
+    {
+    }
+    
+    ControlDescr(const ControlDescr &descr) = delete;
+    
+    ~ControlDescr()
+    {
+        SafeRelease(control);
+    }
+    
+    ControlDescr &operator=(const ControlDescr &descr) = delete;
+};
+
+
+DefaultUIPackageBuilder::DefaultUIPackageBuilder(UIPackagesCache *_cache)
+    : currentObject(nullptr)
+{
+    if (_cache)
+        cache = SafeRetain(_cache);
+    else
+        cache = new UIPackagesCache();
     
 }
 
 DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
 {
-    for (auto it = importedPackages.begin(); it != importedPackages.end(); ++it)
-        it->second->Release();
-    importedPackages.clear();
+    SafeRelease(cache);
     
-    DVASSERT(package == NULL);
+    if (!packagesStack.empty())
+    {
+        for (auto &descr : packagesStack)
+            SafeDelete(descr);
+        
+        packagesStack.clear();
+        
+        DVASSERT(false);
+    }
+
+    if (!controlsStack.empty())
+    {
+        for (auto &descr : controlsStack)
+            SafeDelete(descr);
+
+        controlsStack.clear();
+        
+        DVASSERT(false);
+    }
 }
 
-UIPackage *DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
+RefPtr<UIPackage> DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
-    DVASSERT(package == NULL)
-    package = new UIPackage(packagePath);
+    RefPtr<UIPackage> package(new UIPackage());
+    
+    packagesStack.push_back(new PackageDescr(package.Get()));
+    
     return package;
 }
 
 void DefaultUIPackageBuilder::EndPackage()
 {
-    SafeRelease(package);
-}
-
-UIPackage *DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
-{
-    UIPackage *result;
-    UIPackage *prevPackage = package;
-    package = NULL;
-    auto it = importedPackages.find(packagePath);
-    if (it != importedPackages.end())
+    if (!packagesStack.empty())
     {
-        result = it->second;
-        prevPackage->AddPackage(it->second);
+        SafeDelete(packagesStack.back());
+        packagesStack.pop_back();
+        
+        if (!controlsStack.empty())
+        {
+            for (auto &descr : controlsStack)
+                SafeDelete(descr);
+            
+            controlsStack.clear();
+            
+            DVASSERT(false);
+        }
+        
     }
     else
     {
-        UIPackage *loadedPackage = loader->LoadPackage(packagePath);
-        result = loadedPackage;
-        importedPackages[packagePath] = loadedPackage;
-        prevPackage->AddPackage(loadedPackage);
+        DVASSERT(false);
     }
-    DVASSERT(package == NULL);
-    package = prevPackage;
-    return result;
+}
+
+RefPtr<UIPackage> DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
+{
+    UIPackage *cachedPackage = cache->GetPackage(packagePath);
+
+    PackageDescr *descr = packagesStack.back();
+
+    if (cachedPackage)
+    {
+        descr->PutImportredPackage(packagePath, cachedPackage);
+        return RefPtr<UIPackage>(SafeRetain(cachedPackage));
+    }
+    else
+    {
+        RefPtr<UIPackage> res(loader->LoadPackage(packagePath));
+
+        cache->PutPackage(packagePath, res.Get());
+        descr->PutImportredPackage(packagePath, res.Get());
+        
+        return res;
+    }
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -97,25 +217,26 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &classNam
     if (!control)
         Logger::Error("[DefaultUIControlFactory::CreateControl] Can't create control with class name \"%s\"", className.c_str());
 
-    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD)//TODO: fix internal staticText for Win\Mac
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(control, true));
+    controlsStack.push_back(new ControlDescr(control, true));
     return control;
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(customClassName);
-    if (className != EXCEPTION_CLASS_UI_TEXT_FIELD)//TODO: fix internal staticText for Win\Mac
-    {
-        control->RemoveAllControls();
-    }
 
     if (!control)
         control = ObjectFactory::Instance()->New<UIControl>(className); // TODO: remove
+
+    if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
+    {
+        control->RemoveAllControls();
+    }
     
     if (control)
     {
@@ -126,13 +247,15 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &cu
         DVASSERT(false);
     }
     
-    controlsStack.push_back(ControlDescr(control, true));
+    controlsStack.push_back(new ControlDescr(control, true));
     return control;
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
 {
-    UIControl *prototype;
+    UIControl *prototype = nullptr;
+    UIPackage *package = packagesStack.back()->GetPackage();
+    
     if (packageName.empty())
     {
         prototype = package->GetControl(prototypeName);
@@ -144,12 +267,12 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &pack
     }
     else
     {
-        UIPackage *importedPackage = package->GetPackage(packageName);
+        UIPackage *importedPackage = packagesStack.back()->FindImportedPackageByName(packageName);
         if (importedPackage)
             prototype = importedPackage->GetControl(prototypeName);
     }
     
-    DVASSERT(prototype != NULL);
+    DVASSERT(prototype != nullptr);
     
     UIControl *control;
     if (!customClassName.empty())
@@ -162,64 +285,66 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &pack
     else
         control = prototype->Clone();
     
-    controlsStack.push_back(ControlDescr(control, true));
+    controlsStack.push_back(new ControlDescr(control, true));
     return control;
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithPath(const String &pathName)
 {
-    UIControl *control = NULL;
+    UIControl *control = nullptr;
     if (!controlsStack.empty())
     {
-        control = controlsStack.back().control->FindByPath(pathName);
+        control = controlsStack.back()->control->FindByPath(pathName);
     }
 
     DVASSERT(control);
-    controlsStack.push_back(ControlDescr(SafeRetain(control), false));
+    controlsStack.push_back(new ControlDescr(SafeRetain(control), false));
     return control;
 }
 
 UIControl *DefaultUIPackageBuilder::BeginUnknownControl(const YamlNode *node)
 {
     DVASSERT(false);
-    controlsStack.push_back(ControlDescr(NULL, false));
-    return NULL;
+    controlsStack.push_back(new ControlDescr(nullptr, false));
+    return nullptr;
 }
 
 void DefaultUIPackageBuilder::EndControl(bool isRoot)
 {
-    ControlDescr lastControl = controlsStack.back();
+    ControlDescr *lastControl = controlsStack.back();
     controlsStack.pop_back();
-    if (lastControl.addToParent)
+    if (lastControl->addToParent)
     {
         if (controlsStack.empty() || isRoot)
         {
-            package->AddControl(lastControl.control);
+            packagesStack.back()->GetPackage()->AddControl(lastControl->control);
         }
         else
         {
-            UIControl *control = controlsStack.back().control;
-            control->AddControl(lastControl.control);
-            lastControl.control->UpdateLayout();
+            UIControl *control = controlsStack.back()->control;
+            control->AddControl(lastControl->control);
+            lastControl->control->UpdateLayout();
         }
+        
+        SafeDelete(lastControl);
     }
 }
 
 void DefaultUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 {
-    currentObject = controlsStack.back().control;
+    currentObject = controlsStack.back()->control;
 }
 
 void DefaultUIPackageBuilder::EndControlPropertiesSection()
 {
-    currentObject = NULL;
+    currentObject = nullptr;
 }
 
 UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int32 index, bool sectionHasProperties)
 {
     if (sectionHasProperties)
     {
-        UIControl *control = controlsStack.back().control;
+        UIControl *control = controlsStack.back()->control;
         if (!control->GetBackgroundComponent(index))
         {
             UIControlBackground *bg = control->CreateBackgroundComponent(index);
@@ -230,19 +355,19 @@ UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int32 ind
         currentObject = res;
         return res;
     }
-    return NULL;
+    return nullptr;
 }
 
 void DefaultUIPackageBuilder::EndBgPropertiesSection()
 {
-    currentObject = NULL;
+    currentObject = nullptr;
 }
 
 UIControl *DefaultUIPackageBuilder::BeginInternalControlSection(int32 index, bool sectionHasProperties)
 {
     if (sectionHasProperties)
     {
-        UIControl *control = controlsStack.back().control;
+        UIControl *control = controlsStack.back()->control;
         if (!control->GetInternalControl(index))
         {
             UIControl *internal = control->CreateInternalControl(index);
@@ -253,12 +378,12 @@ UIControl *DefaultUIPackageBuilder::BeginInternalControlSection(int32 index, boo
         currentObject = res;
         return res;
     }
-    return NULL;
+    return nullptr;
 }
 
 void DefaultUIPackageBuilder::EndInternalControlSection()
 {
-    currentObject = NULL;
+    currentObject = nullptr;
 }
 
 void DefaultUIPackageBuilder::ProcessProperty(const InspMember *member, const VariantType &value)
@@ -272,42 +397,6 @@ void DefaultUIPackageBuilder::ProcessProperty(const InspMember *member, const Va
         else
             member->SetValue(currentObject, value);
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ControlDescr
-////////////////////////////////////////////////////////////////////////////////
-
-DefaultUIPackageBuilder::ControlDescr::ControlDescr() : control(NULL), addToParent(false)
-{
-}
-
-DefaultUIPackageBuilder::ControlDescr::ControlDescr(UIControl *control, bool addToParent) : control(control), addToParent(addToParent)
-{
-}
-
-DefaultUIPackageBuilder::ControlDescr::ControlDescr(const ControlDescr &descr)
-{
-    control = DAVA::SafeRetain(descr.control);
-    addToParent = descr.addToParent;
-}
-
-DefaultUIPackageBuilder::ControlDescr::~ControlDescr()
-{
-    SafeRelease(control);
-}
-
-DefaultUIPackageBuilder::ControlDescr &DefaultUIPackageBuilder::ControlDescr::operator=(const ControlDescr &descr)
-{
-    if(&descr == this)
-        return *this;
-    
-    SafeRetain(descr.control);
-    SafeRelease(control);
-    
-    control = descr.control;
-    addToParent = descr.addToParent;
-    return *this;
 }
 
 }

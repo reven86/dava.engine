@@ -1,26 +1,20 @@
-//
-//  PackageNode.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 9.10.14.
-//
-//
-
 #include "PackageNode.h"
 
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
+#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
-PackageNode::PackageNode(DAVA::UIPackage *package)
+PackageNode::PackageNode(DAVA::UIPackage *aPackage, const FilePath &_path)
     : PackageBaseNode(NULL)
-    , package(SafeRetain(package))
+    , package(SafeRetain(aPackage))
+    , path(_path)
     , importedPackagesNode(NULL)
     , packageControlsNode(NULL)
 {
     importedPackagesNode = new ImportedPackagesNode(this);
-    packageControlsNode = new PackageControlsNode(this, package);
+    packageControlsNode = new PackageControlsNode(this, package, path);
 }
 
 PackageNode::~PackageNode()
@@ -49,7 +43,7 @@ PackageBaseNode *PackageNode::Get(int index) const
 
 String PackageNode::GetName() const
 {
-    return package->GetName();
+    return path.GetBasename();
 }
 
 int PackageNode::GetFlags() const 
@@ -62,6 +56,11 @@ UIPackage *PackageNode::GetPackage() const
     return package;
 }
 
+const FilePath &PackageNode::GetPath() const
+{
+    return path;
+}
+
 ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
 {
     return importedPackagesNode;
@@ -72,16 +71,12 @@ PackageControlsNode *PackageNode::GetPackageControlsNode() const
     return packageControlsNode;
 }
 
-YamlNode *PackageNode::Serialize() const
+void PackageNode::Serialize(PackageSerializer *serializer) const
 {
-    YamlNode *node = YamlNode::CreateMapNode(false, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_PLAIN_REPRESENTATION);
-    
-    YamlNode *headerNode = YamlNode::CreateMapNode(false, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_PLAIN_REPRESENTATION);
-    headerNode->Add("version", "0");
-    
-    node->Add("Header", headerNode);
-    node->Add("ImportedPackages", importedPackagesNode->Serialize());
-    node->Add("Controls", packageControlsNode->Serialize());
-    
-    return node;
+    serializer->BeginMap("Header");
+    serializer->PutValue("version", String("0"));
+    serializer->EndMap();
+
+    importedPackagesNode->Serialize(serializer);
+    packageControlsNode->Serialize(serializer);
 }

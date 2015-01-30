@@ -33,6 +33,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -70,9 +71,11 @@ void UIHoleTransition::Update(float32 timeElapsed)
 	for (int k = 0; k < clipPoly.pointCount; ++k)
 	{
 		realPoly.points[k] = clipPoly.points[k];
-		realPoly.points[k] -= Vector2(GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f);
+		realPoly.points[k] -= Vector2(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.0f,
+                                      VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 2.0f);
 		realPoly.points[k] *= scaleCoef;
-		realPoly.points[k] += Vector2(GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f);
+		realPoly.points[k] += Vector2(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.0f,
+                                      VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy / 2.0f);
 	}
 }
 
@@ -97,7 +100,11 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
     drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     
 	RenderManager::Instance()->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
-	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f, (float32)GetScreenWidth(), (float32)GetScreenHeight()), drawState.GetRenderState());
+	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f,
+                                            (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
+                                            (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy),
+                                       drawState.GetRenderState());
+    
 	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
     drawState.SetPosition(geometricData.position);
@@ -105,14 +112,12 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
     if (normalizedTime < 0.5f)
     {
         renderTargetPrevScreen->SetClipPolygon(&realPoly);
-        
-        renderTargetPrevScreen->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
     }
     else
     {
         renderTargetNextScreen->SetClipPolygon(&realPoly);
-        
-        renderTargetNextScreen->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
     }
     
 	/*Texture * tx = renderTargetPrevScreen->GetTexture();

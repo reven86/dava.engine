@@ -37,10 +37,12 @@ extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {
@@ -58,8 +60,8 @@ namespace DAVA
 
 	Core::eDeviceFamily Core::GetDeviceFamily()
 	{
-		float32 width = GetPhysicalScreenWidth();
-		float32 height = GetPhysicalScreenHeight();
+		float32 width = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
+		float32 height = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 		float32 dpi = GetScreenDPI();
 
 		float32 inches = sqrt((width * width) + (height * height)) / dpi;
@@ -145,31 +147,28 @@ namespace DAVA
             if(fps > 0)
             {
                 sleepMs = (1000 / fps) - elapsedTime;
-                if(sleepMs < 1)
+                if(sleepMs > 0)
                 {
-                    sleepMs = 1;
+                	Thread::Sleep(sleepMs);
                 }
             }
-            Thread::Sleep(sleepMs);
 		}
 	}
 
 	void CorePlatformAndroid::ResizeView(int32 w, int32 h)
 	{
-		if(width != w || height != h)
-		{
-			width = w;
-			height = h;
+		width = w;
+		height = h;
+		DeviceInfo::InitializeScreenInfo();
 
-			UpdateScreenMode();
-		}
+		UpdateScreenMode();
 	}
 
 	void CorePlatformAndroid::UpdateScreenMode()
 	{
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
-		UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-		Core::Instance()->SetPhysicalScreenSize(width, height);
+		VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+		VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
 
 		RenderManager::Instance()->InitFBSize(width, height);
         RenderManager::Instance()->Init(width, height);
@@ -199,8 +198,6 @@ namespace DAVA
 
 		Thread::InitGLThread();
 
-		totalTouches.clear();
-
 		if(wasCreated)
 		{
 			RenderManager::Instance()->Lost();
@@ -211,9 +208,8 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
-			
 			SceneCache::Instance()->InvalidateSceneMaterials();
-		}
+        }
 		else
 		{
 			wasCreated = true;
@@ -251,12 +247,13 @@ namespace DAVA
 			}
 
 			FileSystem::Instance()->Init();
+			RenderSystem2D::Instance()->Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");
 
 			ResizeView(w, h);
-
+			// Set proper width and height before call FrameworkDidlaunched
 			FrameworkDidLaunched();
 
 			RenderManager::Instance()->SetFPS(60);
@@ -330,9 +327,6 @@ namespace DAVA
 		DAVA::Core::Instance()->GoBackground(isLock);
 
 		foreground = false;
-
-		width = 0;
-		height = 0;
 	}
 
 	void CorePlatformAndroid::KeyUp(int32 keyCode)
@@ -355,94 +349,19 @@ namespace DAVA
 		SafeDelete(keyEvent);
 	}
 
-	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
+	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs)
 	{
-		int32 phase = DAVA::UIEvent::PHASE_DRAG;
-		switch(action)
+		DVASSERT(!allInputs.empty());
+		if (!allInputs.empty())
 		{
-			case 5: //ACTION_POINTER_DOWN
-			case 0://ACTION_DOWN
-			phase = DAVA::UIEvent::PHASE_BEGAN;
-			break;
-
-			case 6://ACTION_POINTER_UP
-			case 1://ACTION_UP
-			phase = DAVA::UIEvent::PHASE_ENDED;
-			break;
-
-			case 2://ACTION_MOVE
+			if((source & 0x10) > 0) // joystick
 			{
-				if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
-				{
-					phase = DAVA::UIEvent::PHASE_JOYSTICK;
-				}
-				else //Touches
-					phase = DAVA::UIEvent::PHASE_DRAG;
+				for (Vector< UIEvent >::iterator iter = activeInputs.begin(); iter != activeInputs.end(); ++iter)
+					InputSystem::Instance()->ProcessInputEvent(&(*iter));
+				return;
 			}
-			break;
-
-			case 3://ACTION_CANCEL
-			phase = DAVA::UIEvent::PHASE_CANCELLED;
-			break;
-
-			case 4://ACTION_OUTSIDE
-			break;
-		}
-
-		UIEvent newEvent;
-		newEvent.tid = id;
-		newEvent.physPoint.x = x;
-		newEvent.physPoint.y = y;
-		newEvent.point.x = x;
-		newEvent.point.y = y;
-		newEvent.phase = phase;
-		newEvent.tapCount = tapCount;
-		newEvent.timestamp = time;
-
-		return newEvent;
-	}
-
-	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
-	{
-		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source, tapCount);
-
-		if(touchEvent.phase == DAVA::UIEvent::PHASE_JOYSTICK)
-		{
-			InputSystem::Instance()->ProcessInputEvent(&touchEvent);
-			return;
-		}
-		
-		bool isFound = false;
-		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); ++it)
-		{
-			if((*it).tid == touchEvent.tid)
-			{
-				(*it).physPoint.x = touchEvent.physPoint.x;
-				(*it).physPoint.y = touchEvent.physPoint.y;
-				(*it).phase = touchEvent.phase;
-				(*it).tapCount = touchEvent.tapCount;
-
-				isFound = true;
-				break;
-			}
-		}
-		if(!isFound)
-		{
-			totalTouches.push_back(touchEvent);
-		}
-
-		UIControlSystem::Instance()->OnInput(touchEvent.phase, totalTouches, totalTouches);
-
-		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); )
-		{
-			if((DAVA::UIEvent::PHASE_ENDED == (*it).phase) || (DAVA::UIEvent::PHASE_CANCELLED == (*it).phase) || (DAVA::UIEvent::PHASE_JOYSTICK == (*it).phase))
-			{
-				it = totalTouches.erase(it);
-			}
-			else
-			{
-				++it;
-			}
+			
+			UIControlSystem::Instance()->OnInput(action, activeInputs, allInputs, allInputs[0].timestamp);
 		}
 	}
 

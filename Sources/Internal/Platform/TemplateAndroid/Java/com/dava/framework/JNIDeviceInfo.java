@@ -58,7 +58,7 @@ public class JNIDeviceInfo {
 
 	public static void GetTimeZone()
 	{
-		SetJString(TimeZone.getDefault().getDisplayName(Locale.US));
+		SetJString(TimeZone.getDefault().getID());
 	}
 
 	public static void GetUDID()
@@ -89,6 +89,23 @@ public class JNIDeviceInfo {
 	public static int GetZBufferSize()
 	{
 		return JNIConfigChooser.GetDepthBufferSize();
+	}
+	
+	public static String GetHTTPProxyHost()
+	{		
+		return System.getProperty("http.proxyHost");
+	}
+	
+	public static int GetHTTPProxyPort()
+	{
+		String portStr = System.getProperty("http.proxyPort");
+	    int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
+	    return proxyPort;
+	}
+	
+	public static String GetHTTPNonProxyHosts()
+	{
+		return System.getProperty("http.nonProxyHosts");
 	}
 	
 	static final int GPU_UNKNOWN = -1;

@@ -34,8 +34,8 @@ VisibilityToolProxy::VisibilityToolProxy(int32 size)
 :	changedRect(Rect())
 ,	spriteChanged(false)
 ,	size(size)
-,	isVisibilityPointSet(false)
 ,	visibilityPoint(Vector2(-1.f, -1.f))
+,	isVisibilityPointSet(false)
 {
 	visibilityToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
 }

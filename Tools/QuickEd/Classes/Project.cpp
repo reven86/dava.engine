@@ -1,11 +1,3 @@
-//
-//  Project.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 11.9.14.
-//
-//
-
 #include "Project.h"
 #include "DAVAEngine.h"
 #include "EditorFontManager.h"
@@ -14,6 +6,7 @@
 #include "UIControls/EditorUIPackageBuilder.h"
 #include "UIControls/LegacyEditorUIPackageLoader.h"
 #include "UIControls/PackageHierarchy/PackageNode.h"
+#include "UIControls/YamlPackageSerializer.h"
 
 #include <QDir>
 
@@ -171,36 +164,36 @@ bool Project::Open(const QString &path)
     return true;
 }
 
-PackageNode *Project::OpenPackage(const QString &packagePath)
+DAVA::RefPtr<PackageNode> Project::NewPackage(const QString &path)
+{
+    return DAVA::RefPtr<PackageNode>();
+}
+
+RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
 {
     FilePath path(packagePath.toStdString());
     String fwPath = path.GetFrameworkPath();
 
     EditorUIPackageBuilder builder;
     UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
+    if (!newPackage)
+    {
+        newPackage = LegacyEditorUIPackageLoader(&builder, legacyData).LoadPackage(path);
+    }
+
     if (newPackage)
     {
         SafeRelease(newPackage);
         return builder.GetPackageNode();
     }
-    else
-    {
-        EditorUIPackageBuilder b2;
-        newPackage = LegacyEditorUIPackageLoader(&b2, legacyData).LoadPackage(path);
-        if (newPackage)
-        {
-            SafeRelease(newPackage);
-            return b2.GetPackageNode();
-        }
-    }
-    return NULL;
+    return RefPtr<PackageNode>();
 }
 
 bool Project::SavePackage(PackageNode *package)
 {
-    YamlNode *node = package->Serialize();
-    YamlEmitter::SaveToYamlFile(package->GetPackage()->GetFilePath(), node);
-    SafeRelease(node);
+    YamlPackageSerializer serializer;
+    package->Serialize(&serializer);
+    serializer.WriteToFile(package->GetPath());
     return true;
 }
 

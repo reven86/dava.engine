@@ -47,7 +47,7 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget *parent/* = 0*/) :
 	effectNode(NULL),
 	selectedLayer(NULL),
 	activeScene(NULL),
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	nameFont("Courier", 8, QFont::Normal)
 #else
 	nameFont("Courier", 12, QFont::Normal)
@@ -114,8 +114,6 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget *parent/* = 0*/) :
 	
 	Init(0, 0);
 	
-	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-
 	// Init and start updating the particles grid.
 	infoColumns.push_back(new ParticlesCountColumn(this, this));
 	infoColumns.push_back(new ParticlesAverageCountColumn(this, this));
@@ -664,8 +662,9 @@ void ParticleTimeLineWidget::NotifyLayersExtraInfoChanged()
 
 void ParticleTimeLineWidget::UpdateSizePolicy()
 {
-	int height = (lines.size() + 1) * LINE_STEP + BOTTOM_INDENT + TOP_INDENT + PARTICLES_INFO_CONTROL_OFFSET;
-	setMinimumHeight(height);
+    //setFixedHeight((lines.size() + 1) * LINE_STEP + BOTTOM_INDENT + TOP_INDENT + PARTICLES_INFO_CONTROL_OFFSET);
+    updateGeometry();
+    repaint();
 }
 
 void ParticleTimeLineWidget::mouseMoveEvent(QMouseEvent * event)

@@ -35,7 +35,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "../../UI/IWebViewControl.h"
-#include "JniExtensions.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA {
 
@@ -54,6 +54,16 @@ public:
 	
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
+	// Load html page from string
+	virtual void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies associated with target URL
+	virtual void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& url, const String& name) const;
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& url) const;
+	// Perform Java script
+	virtual int32 ExecuteJScript(const String& scriptString);
 	
 	void OpenFromBuffer(const String& string, const FilePath& basePath);
 
@@ -65,19 +75,26 @@ public:
 	virtual void SetBackgroundTransparency(bool enabled);
 
 private:
-	static int webViewIdCount;
-	int webViewId;
+	static int32 webViewIdCount;
+	int32 webViewId;
 	IUIWebViewDelegate *delegate;
 	UIWebView* webView;
+	static int32 requestId;
 };
 
-class JniWebView: public JniExtension
+class JniWebView
 {
 public:
+	JniWebView();
 	void Initialize(WebViewControl* control, int id, const Rect& rect);
 	void Deinitialize(int id);
 
 	void OpenURL(int id, const String& urlToOpen);
+	void LoadHtmlString(int id, const String& htmlString);
+	void DeleteCookies(const String& targetUrl);
+	String GetCookie(const String& targetUrl, const String& name);
+	Map<String, String> GetCookies(const String& targetUrl);
+	void ExecuteJScript(int id, int requestId, const String& scriptString);
 	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
 	void SetRect(int id, const Rect& rect);
@@ -87,18 +104,24 @@ public:
 
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
 	static void PageLoaded(int id);
-
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	static void OnExecuteJScript(int id, int requestId, const String& result);
 
 private:
 	typedef std::map<int, WebViewControl*> CONTROLS_MAP;
 	static CONTROLS_MAP controls;
+
+	JNI::JavaClass jniWebView;
+
+	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> initialize;
+	Function<void (jint)> deinitialize;
+	Function<void (jint, jstring)> openURL;
+	Function<void (jint, jstring)> loadHtmlString;
+	Function<void (jint, jint, jstring)> executeJScript;
+	Function<void (jstring)> deleteCookies;
+	Function<void (jint, jstring, jstring)> openFromBuffer;
+	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> setRect;
+	Function<void (jint, jboolean)> setVisible;
+	Function<void (jint, jboolean)> setBackgroundTransparency;
 };
 
 };

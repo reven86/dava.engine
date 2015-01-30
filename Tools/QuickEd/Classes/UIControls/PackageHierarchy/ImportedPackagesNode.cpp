@@ -1,14 +1,7 @@
-//
-//  ImportedPackagesNode.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 9.10.14.
-//
-//
-
 #include "ImportedPackagesNode.h"
 
 #include "PackageControlsNode.h"
+#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
@@ -61,10 +54,12 @@ int ImportedPackagesNode::GetFlags() const
     return FLAG_READ_ONLY;
 }
 
-YamlNode *ImportedPackagesNode::Serialize() const
+void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const
 {
-    YamlNode *arrayNode = YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION);
-    for (auto it = packageControlsNode.begin(); it != packageControlsNode.end(); ++it)
-        arrayNode->Add((*it)->GetPackagePath().GetFrameworkPath());
-    return arrayNode;
+    serializer->BeginArray("ImportedPackages");
+    
+    for (PackageControlsNode *controlsNode : packageControlsNode)
+        serializer->PutValue(controlsNode->GetPackagePath().GetFrameworkPath());
+    
+    serializer->EndArray();
 }

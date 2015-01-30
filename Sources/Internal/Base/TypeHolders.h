@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <new>
 #include "TemplateHelpers.h"
 #include "Base/BaseTypes.h"
+#include "Base/Atomic.h"
 
 namespace DAVA
 {
@@ -44,20 +45,19 @@ public:
 
 	void AddRef()
 	{
-		refCount++;
+		AtomicIncrement(refCount);
 	}
 
 	void RemRef()
 	{
-		refCount--;
-		if (0 == refCount)
+		if(0 == AtomicDecrement(refCount))
 		{
 			delete this;
 		}
 	}
 
 private:
-	uint32 refCount;
+	int32 refCount;
 };
 
 // ====================================================================================================================================================
@@ -131,19 +131,15 @@ public:
         , type(Holder_Regular)
     { }
 
-    template<typename T>
-    ObjectPointerHolder(const T *obj)
-        : object(NULL)
+    ObjectPointerHolder(const void *obj)
+        : object(const_cast<void*>(obj))
         , type(Holder_Regular)
-    { 
-        T* t = const_cast<T*>(obj);
-        object = t;
-    }
+    { }
 
-	ObjectPointerHolder(RefCounter *obj) 
-		: object(obj)
-		, type(Holder_RefCounter)
-	{}
+    ObjectPointerHolder(RefCounter *obj) 
+        : object(obj)
+        , type(Holder_RefCounter)
+    {}
 
 	~ObjectPointerHolder()
 	{

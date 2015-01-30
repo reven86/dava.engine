@@ -310,12 +310,9 @@ bool Shader::IsReady()
     return (vertexShader != 0 && fragmentShader != 0 && program != 0);
 }
 
-void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerData)
+void Shader::RecompileInternal(bool silentDelete)
 {
-    bool silentDelete = (param != NULL);
-    
-    if(silentDelete &&
-       ((vertexShader != 0) || (fragmentShader != 0) || (program != 0)))
+    if(silentDelete && ((vertexShader != 0) || (fragmentShader != 0) || (program != 0)))
     {
         //VI: be a man: just delete shader and recompile instead of complaining with assert
         //VI: such behavior is needed for Landscape since it uses shaders directly but doesn't own them
@@ -445,7 +442,6 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         
         if(IsAutobindUniform(shaderSemantic))
         {
-            Logger::FrameworkDebug(Format("Autobind: %s %d", attrName.c_str(), shaderSemantic).c_str());
             autobindUniformCount++;
         }
         
@@ -545,11 +541,10 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
 
 bool Shader::Recompile(bool silentDelete)
 {
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
-                                                           Message(this, &Shader::RecompileInternal, (silentDelete) ? this : NULL));
-    JobInstanceWaiter waiter(job);
-    waiter.Wait();
-    
+	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Shader::RecompileInternal), silentDelete);
+	uint32 id = JobManager::Instance()->CreateMainJob(fn);
+	JobManager::Instance()->WaitMainJobID(id);
+
     return true;
 }
 
@@ -884,37 +879,29 @@ void Shader::DeleteShaders()
     //DVASSERT(fragmentShader != 0);
     //DVASSERT(program != 0);
     
-    DeleteShaderContainer * container = new DeleteShaderContainer();
-    container->program = program;
-    container->vertexShader = vertexShader;
-    container->fragmentShader = fragmentShader;
-    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::DeleteShadersInternal, container));
-    
+	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Shader::DeleteShadersInternal), program, vertexShader, fragmentShader);
+	JobManager::Instance()->CreateMainJob(fn);
+
     vertexShader = 0;
     fragmentShader = 0;
     program = 0;
 }
 
-void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *callerData)
+void Shader::DeleteShadersInternal(GLuint program, GLuint vertexShader, GLuint fragmentShader)
 {
-    DeleteShaderContainer * container = (DeleteShaderContainer*) param;
-    DVASSERT(container);
-    
-    if (container->program)
-    {
-        if (container->vertexShader)
-            RENDER_VERIFY(glDetachShader(container->program, container->vertexShader));
-        if (container->fragmentShader)
-            RENDER_VERIFY(glDetachShader(container->program, container->fragmentShader));
-        RENDER_VERIFY(glDeleteProgram(container->program));
-    }
-    
-    if (container->vertexShader)
-        RENDER_VERIFY(glDeleteShader(container->vertexShader));
-    if (container->fragmentShader)
-        RENDER_VERIFY(glDeleteShader(container->fragmentShader));
-    
-    SafeDelete(container);
+	if(program)
+	{
+		if(vertexShader)
+			RENDER_VERIFY(glDetachShader(program, vertexShader));
+		if(fragmentShader)
+			RENDER_VERIFY(glDetachShader(program, fragmentShader));
+		RENDER_VERIFY(glDeleteProgram(program));
+	}
+
+	if(vertexShader)
+		RENDER_VERIFY(glDeleteShader(vertexShader));
+	if(fragmentShader)
+		RENDER_VERIFY(glDeleteShader(fragmentShader));
 }
 
 /* Create and compile a shader from the provided source(s) */
@@ -945,22 +932,18 @@ GLint Shader::CompileShader(GLuint *shader, GLenum type, GLint count, const GLch
     
     RENDER_VERIFY(glCompileShader(*shader));					// compile shader
 
-#ifdef __DAVAENGINE_DEBUG__
+    RENDER_VERIFY(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
+    if (status == GL_FALSE)
     {
-        GLchar log[4096] = {0};
+        Logger::Error("Failed to compile shader: status == GL_FALSE\n");
+
+        GLchar log[4096] = { 0 };
         GLsizei logLength = 0;
         RENDER_VERIFY(glGetShaderInfoLog(*shader, 4096, &logLength, log));
         if (logLength)
         {
             Logger::Error("Shader compile log:\n%s", log);
         }
-    }
-#endif
-
-    RENDER_VERIFY(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
-    if (status == GL_FALSE)
-    {
-        Logger::Error("Failed to compile shader: status == GL_FALSE\n");
     }
     
     return status;

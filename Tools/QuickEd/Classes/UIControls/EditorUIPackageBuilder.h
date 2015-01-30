@@ -13,11 +13,11 @@ class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
 public:
     EditorUIPackageBuilder();
     virtual ~EditorUIPackageBuilder();
-    
-    virtual DAVA::UIPackage *BeginPackage(const DAVA::FilePath &packagePath) override;
+     
+    virtual DAVA::RefPtr<DAVA::UIPackage> BeginPackage(const DAVA::FilePath &packagePath) override;
     virtual void EndPackage() override;
     
-    virtual DAVA::UIPackage *ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
+    virtual DAVA::RefPtr<DAVA::UIPackage> ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
     
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
@@ -37,9 +37,7 @@ public:
     
     virtual void ProcessProperty(const DAVA::InspMember *member, const DAVA::VariantType &value) override;
 
-    PackageNode *GetPackageNode() const {
-        return packageNode;
-    }
+    DAVA::RefPtr<PackageNode> GetPackageNode() const;
     
 private:
     struct ControlDescr {

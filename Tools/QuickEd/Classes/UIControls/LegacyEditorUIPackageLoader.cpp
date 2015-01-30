@@ -49,12 +49,19 @@ LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
 UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
 {
     RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
-    
-    YamlNode *rootNode = parser.Valid() ? parser->GetRootNode() : NULL;
-    if (!rootNode)
+
+    if (parser.Get() == NULL)
         return NULL;
     
-    UIPackage *package = builder->BeginPackage(packagePath);
+    YamlNode *rootNode = parser->GetRootNode();
+    if (!rootNode)//empty yaml equal to empty UIPackage
+    {
+        RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+        builder->EndPackage();
+        return SafeRetain(package.Get());
+    }
+    
+    RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
     
     UIControl *legacyControl = builder->BeginControlWithClass("UIControl");
     builder->BeginControlPropertiesSection("UIControl");
@@ -88,7 +95,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     
     builder->EndPackage();
     
-    return package;
+    return SafeRetain(package.Get());
 }
 
 bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/)
@@ -105,9 +112,9 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     if (type->AsString() == "UIAggregatorControl")
     {
         const YamlNode *pathNode = node->Get("aggregatorPath");
-        UIPackage *importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
-        DVASSERT(importedPackage);
-        builder->BeginControlWithPrototype(importedPackage->GetName(), importedPackage->GetControl(0)->GetName(), "", this);
+        RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
+        DVASSERT(importedPackage.Get());
+        builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());

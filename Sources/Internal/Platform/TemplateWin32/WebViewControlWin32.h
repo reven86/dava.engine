@@ -31,7 +31,12 @@
 #ifndef __WEBVIEWCONTROL_WIN32_H__
 #define __WEBVIEWCONTROL_WIN32_H__
 
+#pragma warning(push)
+#pragma warning(disable: 4005)//prevent 'macros redefinition' warning in winerror.h vs dxgitype.h
 #include <MsHTML.h>
+#pragma warning(pop)
+
+#include "Wininet.h" //for functions to delete cache entry and to end session
 
 #include "UI/IWebViewControl.h"
 #include "FileSystem/FilePath.h"
@@ -55,6 +60,15 @@ public:
 
 	// Open the URL.
 	bool OpenUrl(const WCHAR* urlToOpen);
+
+	bool LoadHtmlString(LPCTSTR pszHTMLContent);
+
+	bool DeleteCookies(const String& targetUrl);
+
+	String GetCookie(const String& url, const String& name);
+	Map<String, String> GetCookies(const String& url);
+
+	int32 ExecuteJScript(const String& targetScript);
 
     bool OpenFromBuffer(const String& buffer, const FilePath& basePath);
     bool DoOpenBuffer();
@@ -101,6 +115,10 @@ protected:
 
 	void* sink;
 
+	HANDLE GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
+	bool GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
+	bool GetInternetCookies(const String& targetUrl, const String& name, LPTSTR &lpszData, DWORD &dwSize);
+
 	bool openFromBufferQueued;
 	String bufferToOpen; // temporary buffer
 	FilePath bufferToOpenPath;
@@ -118,6 +136,16 @@ public:
 	
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
+	// Load html page from stringss
+	virtual void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies associated with target URL
+	virtual void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& url, const String& name) const;
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& url) const;
+	// Execute javascript string in webview
+	virtual int32 ExecuteJScript(const String& scriptString);
 	
     void OpenFromBuffer(const String& string, const FilePath& basePath);
 

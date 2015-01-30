@@ -16,11 +16,17 @@ class SubValueProperty;
 class ValueProperty : public BaseProperty
 {
 public:
-    ValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member);
+    ValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType);
+    
+protected:
     virtual ~ValueProperty();
     
+public:
     virtual int GetCount() const override;
     virtual BaseProperty *GetProperty(int index) const override;
+
+    virtual bool HasChanges() const override;
+    virtual void Serialize(PackageSerializer *serializer) const override;
 
     virtual DAVA::String GetName() const;
     virtual ePropertyType GetType() const;
@@ -44,7 +50,6 @@ public:
     }
     
     virtual const EnumMap *GetEnumMap() const;
-    virtual void AddPropertiesToNode(DAVA::YamlNode *node) const;
 
 private:
     DAVA::BaseObject *object;

@@ -70,8 +70,8 @@ public:
     Vector2 scale;
     float32 angle;
 
-    float32 cosA;
-    float32 sinA;
+    mutable float32 cosA;
+    mutable float32 sinA;
 
     void AddGeometricData(const UIGeometricData &data)
     {
@@ -119,7 +119,13 @@ public:
 
         Matrix3 translateMatr;
         translateMatr.BuildTranslation( position );
-
+        // well it must be here otherwise there is a bug!
+        if (calculatedAngle != angle)
+        {
+            cosA = cosf(angle);
+            sinA = sinf(angle);
+            calculatedAngle = angle;
+        }
         Matrix3 rotateMatr;
         rotateMatr.BuildRotation( cosA, sinA );
 
@@ -163,7 +169,7 @@ public:
     }
 
 private:
-    float32 calculatedAngle;
+    mutable float32 calculatedAngle;
     Rect unrotatedRect;
 };
 
@@ -248,6 +254,7 @@ public:
         EVENT_FOCUS_SET             = 6,//!<Trigger when control becomes focused
         EVENT_FOCUS_LOST            = 7,//!<Trigger when control losts focus
         EVENT_TOUCH_UP_OUTSIDE      = 8,//!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
+        EVENT_ALL_ANIMATIONS_FINISHED	= 9,//!<Trigger when all animations associated with control are ended.
         EVENTS_COUNT
     };
 
@@ -313,6 +320,11 @@ public:
      \param[in] spriteFrame Sprite frame.
      */
     virtual void SetSpriteFrame(int32 spriteFrame);
+	 /**
+     \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
+     \param[in] frame Sprite frame name.
+     */
+	virtual void SetSpriteFrame(const FastName& frameName);
     /**
      \brief Sets draw type you want to use the control UIControlBackground object.
      \param[in] drawType Draw type to use for drawing.
@@ -575,7 +587,7 @@ public:
      \brief Returns actual control transformation and metrics.
      \returns control geometric data.
      */
-    virtual const UIGeometricData &GetGeometricData(bool absoluteCoordinates = true);
+    virtual const UIGeometricData &GetGeometricData() const;
 
     /**
      \brief Returns actual control local transformation and metrics.
@@ -1283,7 +1295,7 @@ public:
      \param[in] expandWithFocus Is area should be expanded with focus.
      \returns True if inside the control rect.
      */
-    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false);
+    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false) const;
 
     virtual bool IsLostFocusAllowed(UIControl *newFocus);
 
@@ -1295,6 +1307,8 @@ public:
 
     virtual void OnFocused();
 
+	virtual void OnAllAnimationsFinished();
+	
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
 
@@ -1373,7 +1387,7 @@ protected:
     float32 vcenterAlign;
     float32 bottomAlign;
 
-    UIGeometricData tempGeometricData;
+    mutable UIGeometricData tempGeometricData;
 
     EventDispatcher *eventDispatcher;
 

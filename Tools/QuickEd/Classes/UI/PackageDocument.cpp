@@ -1,11 +1,3 @@
-//
-//  UIPackageDocument.cpp
-//  UIEditor
-//
-//  Created by Alexey Strokachuk on 9/17/14.
-//
-//
-
 #include "PackageDocument.h"
 #include <DAVAEngine.h>
 #include <QLineEdit>
@@ -24,8 +16,9 @@
 
 using namespace DAVA;
 
-PackageDocument::PackageDocument(PackageNode *_package, QObject *parent)
+PackageDocument::PackageDocument(Project *_project, PackageNode *_package, QObject *parent)
 : QObject(parent)
+, project(_project)
 , package(SafeRetain(_package))
 , graphicsContext(NULL)
 {
@@ -77,7 +70,7 @@ void PackageDocument::ClearModified()
 
 const DAVA::FilePath &PackageDocument::PackageFilePath() const
 {
-    return package->GetPackage()->GetFilePath();
+    return package->GetPath();
 }
 
 void PackageDocument::OnSelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls)

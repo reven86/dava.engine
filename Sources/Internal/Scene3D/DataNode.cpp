@@ -38,12 +38,11 @@ const uint16 DataNode::NodeRuntimeFlag = 1;
     
     
 DataNode::DataNode()
-:   scene(0)
-,   index(-1)
-,   pointer(0)
-,	nodeFlags(0)
+:   pointer(0),
+    scene(0),
+    index(-1),
+    nodeFlags(0)
 {
-    
 }
 
 DataNode::~DataNode()

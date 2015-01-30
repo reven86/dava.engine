@@ -237,14 +237,16 @@ enum MoviePlayerHelperPlaybackState
 {
     NSRect movieViewRect = [videoView frame];
 
-    movieViewRect.size.width = videoRect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-    movieViewRect.size.height = videoRect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
+    DAVA::Rect convertedRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(videoRect);
+    
+    movieViewRect.size.width = convertedRect.dx;
+    movieViewRect.size.height = convertedRect.dy;
 
-    movieViewRect.origin.x = videoRect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-    movieViewRect.origin.y = (DAVA::Core::Instance()->GetPhysicalScreenHeight() - videoRect.y - videoRect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
+    movieViewRect.origin.x = convertedRect.x;
+    movieViewRect.origin.y = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - convertedRect.y - convertedRect.dy;
 
-    movieViewRect.origin.x += DAVA::Core::Instance()->GetPhysicalDrawOffset().x;
-    movieViewRect.origin.y += DAVA::Core::Instance()->GetPhysicalDrawOffset().y;
+    movieViewRect.origin.x += DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+    movieViewRect.origin.y += DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
     
     [videoView setFrame:movieViewRect];
 }

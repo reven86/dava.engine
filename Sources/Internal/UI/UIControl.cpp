@@ -31,12 +31,15 @@
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 #include "Animation/LinearAnimation.h"
+#include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/YamlNode.h"
 #include "Input/InputSystem.h"
 #include "Render/RenderHelper.h"
 #include "Render/RenderManager.h"
 #include "Utils/StringFormat.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA
 {
@@ -311,6 +314,10 @@ namespace DAVA
     {
         background->SetFrame(spriteFrame);
     }
+	void UIControl::SetSpriteFrame(const FastName& frameName)
+	{
+		background->SetFrame(frameName);
+	}
     void UIControl::SetSpriteDrawType(UIControlBackground::eDrawType drawType)
     {
         background->SetDrawType(drawType);
@@ -514,7 +521,7 @@ namespace DAVA
         return background;
     }
 
-    const UIGeometricData &UIControl::GetGeometricData(bool absoluteCoordinates /*true*/)
+    const UIGeometricData &UIControl::GetGeometricData() const
     {
         tempGeometricData.position = relativePosition;
         tempGeometricData.size = size;
@@ -525,10 +532,7 @@ namespace DAVA
         tempGeometricData.unrotatedRect.y = relativePosition.y - pivotPoint.y * scale.y;
         tempGeometricData.unrotatedRect.dx = size.x * scale.x;
         tempGeometricData.unrotatedRect.dy = size.y * scale.y;
-        if(!absoluteCoordinates)
-        {
-            return tempGeometricData;
-        }
+
         if(!parent)
         {
             tempGeometricData.AddGeometricData(UIControlSystem::Instance()->GetBaseGeometricData());
@@ -848,6 +852,7 @@ namespace DAVA
 
         isIteratorCorrupted = true;
     }
+    
     void UIControl::RemoveControl(UIControl *control)
     {
         if (NULL == control)
@@ -1336,8 +1341,8 @@ namespace DAVA
 
         if(clipContents)
         {//WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
-            RenderManager::Instance()->ClipPush();
-            RenderManager::Instance()->ClipRect(drawData.GetAABBox());
+            RenderSystem2D::Instance()->ClipPush();
+            RenderSystem2D::Instance()->ClipRect(drawData.GetAABBox());
         }
 
         Draw(drawData);
@@ -1355,16 +1360,16 @@ namespace DAVA
 
         if(clipContents)
         {
-            RenderManager::Instance()->ClipPop();
+            RenderSystem2D::Instance()->ClipPop();
         }
 
         if(debugDrawEnabled)
         {
-            RenderManager::Instance()->ClipPush();
-            RenderManager::Instance()->RemoveClip();
+            RenderSystem2D::Instance()->ClipPush();
+            RenderSystem2D::Instance()->RemoveClip();
             DrawDebugRect(drawData, false);
             DrawPivotPoint(unrotatedRect);
-            RenderManager::Instance()->ClipPop();
+            RenderSystem2D::Instance()->ClipPop();
         }
     }
 
@@ -1376,7 +1381,7 @@ namespace DAVA
     void UIControl::DrawDebugRect(const UIGeometricData &gd, bool useAlpha)
     {
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->ClipPush();
+        RenderSystem2D::Instance()->ClipPush();
 
         if (useAlpha)
         {
@@ -1401,7 +1406,7 @@ namespace DAVA
             RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND );
         }
 
-        RenderManager::Instance()->ClipPop();
+        RenderSystem2D::Instance()->ClipPop();
         RenderManager::Instance()->SetColor(oldColor);
     }
 
@@ -1421,7 +1426,7 @@ namespace DAVA
         static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
 
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->ClipPush();
+        RenderSystem2D::Instance()->ClipPush();
         RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.0f));
 
         Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
@@ -1440,18 +1445,18 @@ namespace DAVA
         lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
 
-        RenderManager::Instance()->ClipPop();
+        RenderSystem2D::Instance()->ClipPop();
         RenderManager::Instance()->SetColor(oldColor);
     }
 
-    bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/)
+    bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/) const
     {
         Vector2 point = _point;
 
         if(InputSystem::Instance()->IsCursorPining())
         {
-            point.x = Core::Instance()->GetVirtualScreenWidth() / 2;
-            point.y = Core::Instance()->GetVirtualScreenHeight() / 2;
+            point.x = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
+            point.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
         }
 
         const UIGeometricData &gd = GetGeometricData();
@@ -2349,6 +2354,11 @@ namespace DAVA
         return animation;
     }
 
+    void UIControl::OnAllAnimationsFinished()
+    {
+        PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
+    }
+	
     void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic/* = false*/)
     {
         debugDrawEnabled = _debugDrawEnabled;

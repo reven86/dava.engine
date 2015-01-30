@@ -46,9 +46,9 @@
 
 namespace DAVA {
 
-UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates) :
-	movieViewControl(new MovieViewControl),
-	UIControl(rect, rectInAbsoluteCoordinates)
+UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates)
+    : UIControl(rect, rectInAbsoluteCoordinates)
+    , movieViewControl(new MovieViewControl)
 {
 	movieViewControl->Initialize(rect);
 }
@@ -110,7 +110,6 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 
 #ifdef DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
 	Color curDebugDrawColor = GetDebugDrawColor();
-	RenderManager::Instance()->ClipPush();
 
 	Rect absRect = GetRect(true);
 	RenderManager::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
@@ -121,7 +120,6 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderState::RENDERSTATE_2D_BLEND);
 	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderState::RENDERSTATE_2D_BLEND);
 
-	RenderManager::Instance()->ClipPop();
 	SetDebugDrawColor(curDebugDrawColor);
 #endif
 }
@@ -140,8 +138,8 @@ void UIMovieView::WillBecomeInvisible()
 
 UIControl* UIMovieView::Clone()
 {
-    UIMovieView* ui3DView = new UIMovieView(GetRect());
-    ui3DView->CopyDataFrom(this);
-    return ui3DView;
+    UIMovieView* uiMoviewView = new UIMovieView(GetRect());
+    uiMoviewView->CopyDataFrom(this);
+    return uiMoviewView;
 }
 };
