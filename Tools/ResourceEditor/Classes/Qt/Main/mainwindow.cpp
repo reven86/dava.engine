@@ -1570,7 +1570,7 @@ void QtMainWindow::OnMemoryDumpViewerOpen()
 {
     QTreeView * view = new QTreeView(this);
     
-    MemoryDumpTreeModel * model = new MemoryDumpTreeModel("~/Documents/leaks5.log", view);
+    MemoryDumpTreeModel * model = new MemoryDumpTreeModel("~/Documents/leaks.log", view);
     
     QSortFilterProxyModel * sortProxyModel = new QSortFilterProxyModel(view);
     sortProxyModel->setSourceModel(model);
