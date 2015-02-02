@@ -345,6 +345,11 @@ namespace DAVA
 		InputSystem::Instance()->GetGamepadDevice().SetAvailable(isAvailable);
 	}
 
+	void CorePlatformAndroid::OnGamepadTriggersDisabled()
+	{
+		InputSystem::Instance()->GetGamepadDevice().OnTriggersDisabled();
+	}
+
 	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
 	{
 		int32 phase = DAVA::UIEvent::PHASE_DRAG;

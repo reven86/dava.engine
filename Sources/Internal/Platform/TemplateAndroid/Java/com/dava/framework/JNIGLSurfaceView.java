@@ -1,9 +1,12 @@
 package com.dava.framework;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
@@ -12,6 +15,7 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.InputDevice;
+import android.view.InputDevice.MotionRange;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ViewGroup.LayoutParams;
@@ -31,10 +35,13 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private native void nativeOnGamepadElement(int elementKey, float value);
 	private native void nativeOnGamepadConnected(int deviceId);
 	private native void nativeOnGamepadDisconnected(int deviceId);
+	private native void nativeOnGamepadTriggersDisabled();
 	
 	MOGAListener mogaListener = null;
 	GamepadListener gemapadListener = null;
 
+	Integer[] gamepadAxises = null;
+	
 	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode() + 1];
 
 	public int lastDoubleActionIdx = -1;
@@ -84,15 +91,39 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		mogaListener = new MOGAListener(this);
 		gemapadListener = new GamepadListener();
 		
+		final List<Integer> suppertedAxises = Arrays.asList(
+				MotionEvent.AXIS_X,
+				MotionEvent.AXIS_Y,
+				MotionEvent.AXIS_Z,
+				MotionEvent.AXIS_RX,
+				MotionEvent.AXIS_RY,
+				MotionEvent.AXIS_RZ,
+				MotionEvent.AXIS_LTRIGGER,
+				MotionEvent.AXIS_RTRIGGER
+		);
+				
 		int[] inputDevices = InputDevice.getDeviceIds();
+		Set<Integer> avalibleAxises = new HashSet<Integer>(); 
 		for(int id : inputDevices)
 		{
 			if((InputDevice.getDevice(id).getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
 			{
 				nativeOnGamepadConnected(id);
+				
+				List<MotionRange> ranges = InputDevice.getDevice(id).getMotionRanges();
+				for(MotionRange r : ranges)
+				{
+					int axisId = r.getAxis();
+					if(suppertedAxises.contains(axisId))
+						avalibleAxises.add(r.getAxis());
+				}
 			}
 		}
 		
+		gamepadAxises = avalibleAxises.toArray(new Integer[0]);
+		
+		if(!avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) || !avalibleAxises.contains(MotionEvent.AXIS_RTRIGGER))
+			nativeOnGamepadTriggersDisabled();
 		
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
 		{
@@ -167,17 +198,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				this.tapCount = tapCount;
 			}
 		}
-		
-		final int [] axis = {
-				MotionEvent.AXIS_X,
-				MotionEvent.AXIS_Y,
-				MotionEvent.AXIS_Z,
-				MotionEvent.AXIS_RX,
-				MotionEvent.AXIS_RY,
-				MotionEvent.AXIS_RZ,
-				MotionEvent.AXIS_LTRIGGER,
-				MotionEvent.AXIS_RTRIGGER
-		};
 
 		ArrayList<InputEvent> events;
 		double time;
@@ -207,14 +227,14 @@ public class JNIGLSurfaceView extends GLSurfaceView
 					if((eventSource & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
 					{
 						for (int h = 0; h < historySize; ++h) {
-							for (int a = 0; a < axis.length; ++a) {
-								events.add(new InputEvent(axis[a], event.getHistoricalAxisValue(axis[a], i, h), 0, eventSource, tapCount));
+							for (int a = 0; a < gamepadAxises.length; ++a) {
+								events.add(new InputEvent(gamepadAxises[a], event.getHistoricalAxisValue(gamepadAxises[a], i, h), 0, eventSource, tapCount));
 							}
 						}
 						
 						//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-						for (int a = 0; a < axis.length; ++a) {
-							events.add(new InputEvent(axis[a], event.getAxisValue(axis[a], i), 0, eventSource, tapCount));
+						for (int a = 0; a < gamepadAxises.length; ++a) {
+							events.add(new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0, eventSource, tapCount));
 						}
 	    			}
 	    		}
@@ -269,7 +289,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				
 				if ((event.source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
 				{
-					if(event.id == MotionEvent.AXIS_Y || event.id == MotionEvent.AXIS_RZ) 
+					if(event.id == MotionEvent.AXIS_Y || event.id == MotionEvent.AXIS_RZ || event.id == MotionEvent.AXIS_RY) 
 					{
 						nativeOnGamepadElement(event.id, -event.x);
 					} 

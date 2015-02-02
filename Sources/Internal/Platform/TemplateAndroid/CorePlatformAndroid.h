@@ -91,6 +91,7 @@ public:
 	void OnGamepadElement(int32 elementKey, float32 value);
 
 	void OnGamepadAvailable(bool isAvailable);
+	void OnGamepadTriggersDisabled();
 
 	bool DownloadHttpFile(const String & url, const String & documentsPathname);
 

@@ -42,6 +42,7 @@ public:
     enum eDavaGamepadProfile
     {
         GAMEPAD_PROFILE_SIMPLE = 0,
+        GAMEPAD_PROFILE_NO_TRIGGERS,
         GAMEPAD_PROFILE_EXTENDED,
             
         GAMEPAD_PROFILE_COUNT
@@ -102,6 +103,7 @@ public:
     static const uint32 MAX_TRANSLATOR_KEYS = 256;
         
     eDavaGamepadElement GetDavaEventIdForSystemKey(int32 systemKey);
+    void OnTriggersDisabled();
         
 private:
     uint8 keyTranslator[MAX_TRANSLATOR_KEYS];

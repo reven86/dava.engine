@@ -84,6 +84,7 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadElement(JNIEnv * env, jobject classthis, jint elementKey, jfloat value);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadConnected(JNIEnv * env, jobject classthis, jint deviceId);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadDisconnected(JNIEnv * env, jobject classthis, jint deviceId);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadTriggersDisabled(JNIEnv * env, jobject classthis);
 
 	//JNIRenderer
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeResize(JNIEnv * env, jobject classthis, jint w, jint h);
@@ -379,6 +380,14 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadD
 	if(core)
 	{
 		core->OnGamepadAvailable(false);
+	}
+}
+
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnGamepadTriggersDisabled(JNIEnv * env, jobject classthis)
+{
+	if(core)
+	{
+		core->OnGamepadTriggersDisabled();
 	}
 }
 // END OF JNIGLSurfaceView

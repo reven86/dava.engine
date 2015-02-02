@@ -89,6 +89,12 @@ GamepadDevice::eDavaGamepadElement GamepadDevice::GetDavaEventIdForSystemKey(int
     DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
     return (eDavaGamepadElement)keyTranslator[systemKey];
 }
+    
+void GamepadDevice::OnTriggersDisabled()
+{
+    profile = GAMEPAD_PROFILE_NO_TRIGGERS;
+}
+    
 #endif
 
 }
