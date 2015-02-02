@@ -38,7 +38,7 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 void CreateTextField(DAVA::UITextField  * tf)
 {

@@ -33,7 +33,7 @@
 #include "UI/UITextFieldiPhone.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 @implementation UITextFieldHolder
 
