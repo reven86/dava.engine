@@ -73,6 +73,9 @@
     <ClCompile Include="Classes\Tests\DataVaultTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Tests\NetworkTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Infrastructure\BaseScreen.h">
@@ -148,6 +151,10 @@
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Tests\DataVaultTest.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+  </ItemGroup>
+    <ClInclude Include="Classes\Tests\NetworkTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
   </ItemGroup>

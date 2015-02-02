@@ -39,6 +39,22 @@ int BaseProperty::GetIndex(BaseProperty *property) const
     return -1;
 }
 
+bool BaseProperty::HasChanges() const
+{
+    for (int i = 0; i < GetCount(); i++)
+    {
+        if (GetProperty(i)->HasChanges())
+            return true;
+    }
+    return false;
+}
+
+void BaseProperty::Serialize(PackageSerializer *serializer) const
+{
+    for (int i = 0; i < GetCount(); i++)
+        GetProperty(i)->Serialize(serializer);
+}
+
 DAVA::VariantType BaseProperty::GetValue() const
 {
     return DAVA::VariantType();

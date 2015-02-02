@@ -81,8 +81,9 @@ protected:
 	virtual ~Animation();
 
 public:
-	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int32 _defaultState = 0); 
-	
+    Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::Func _interpolationFunc, int32 _defaultState = STATE_STOPPED);
+    Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFuncType, int32 _defaultState = STATE_STOPPED);
+
 	virtual void	Reset();				
 	virtual void	Start(int32 _groupId);
 	virtual void	Stop();
@@ -113,7 +114,7 @@ protected:
 	float32	time;					// [0, animationTimeLength]
 	float32	timeLength;				// length of animation in seconds
 	float32 normalizedTime;			// [0, 1];
-	Interpolation::Func interpolationFunc;
+    Interpolation::Func interpolationFunc;
 	AnimatedObject * owner;
 	
 	Animation * next;
