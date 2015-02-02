@@ -61,6 +61,12 @@
         
         textField.userInteractionEnabled = NO;
 
+        cachedText = [[NSString alloc] initWithString:textField.text];
+        
+        [textField addTarget: self
+                      action: @selector(eventEditingChanged:)
+            forControlEvents: UIControlEventEditingChanged];
+
 		// Done!
 		[self addSubview:textField];
 	}
@@ -109,6 +115,8 @@
 
 - (void) dealloc
 {
+    [cachedText release];
+    cachedText = nil;
 	[textField release];
 	textField = 0;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -169,6 +177,26 @@
 	}
 
 	return TRUE;
+}
+
+- (void)eventEditingChanged:(UITextField *)sender
+{
+    if (sender == textField && cppTextField && cppTextField->GetDelegate()
+        && ![cachedText isEqualToString:textField.text])
+    {
+        DAVA::WideString oldString;
+        const char * cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
+        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), oldString);
+        
+        [cachedText release];
+        cachedText = [[NSString alloc] initWithString:textField.text];
+        
+        DAVA::WideString newString;
+        cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
+        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newString);
+        
+        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newString, oldString);
+    }
 }
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
