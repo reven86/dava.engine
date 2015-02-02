@@ -57,7 +57,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
         ret.push_back(NMaterial::FLAG_FAST_NORMALIZATION);
         
         ret.push_back(NMaterial::FLAG_SPECULAR);
-        ret.push_back(NMaterial::FLAG_SPEARATE_NORMALMAPPS);
+        ret.push_back(NMaterial::FLAG_SEPARATE_NORMALMAPS);
         ret.push_back(NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
         ret.push_back(NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL);
         ret.push_back(NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE);

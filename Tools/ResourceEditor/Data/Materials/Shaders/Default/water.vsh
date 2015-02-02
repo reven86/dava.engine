@@ -158,7 +158,7 @@ void main()
 	
 #if defined(PIXEL_LIT)||defined(MATERIAL_DECAL)	
 	varTexCoord0 = inTexCoord0 * normal0Scale + normal0ShiftPerSecond * globalTime;
-    #if defined(SPEARATE_NORMALMAPPS)
+    #if defined(SEPARATE_NORMALMAPS)
         #if defined(DEBUG_NORMAL_ROTATION)
             float rota = radians(normalRotation);        
             float cr = cos(rota);
