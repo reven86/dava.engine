@@ -36,7 +36,7 @@
 #include "DockProperties/PropertyEditorStateHelper.h"
 
 #include <QShowEvent>
-#include <array>
+
 class SceneEditor2;
 class EntityGroup;
 

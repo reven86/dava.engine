@@ -48,14 +48,11 @@ public:
 	EditorLODSystem(DAVA::Scene * scene);
 	virtual ~EditorLODSystem();
 
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+	void AddEntity(DAVA::Entity * entity) override;
+	void RemoveEntity(DAVA::Entity * entity) override;
 
-	static void AddEntityToLods(DAVA::Deque<DAVA::LodComponent *> *to, DAVA::Entity *entity);
-	static void RemoveEntityFromLods(DAVA::Deque<DAVA::LodComponent *> *from, DAVA::Entity *entity);
-
-	static void addEntityToEntities(DAVA::Deque<DAVA::Entity *> *to, DAVA::Entity *entity);
-	static void removeEntityFromEntities(DAVA::Deque<DAVA::Entity *> *from, DAVA::Entity *entity);
+	void AddSelectedLODsRecursive(DAVA::Entity *entity);
+	void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
 
 	void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
 

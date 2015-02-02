@@ -96,7 +96,7 @@ protected:
     
     void SetSpinboxValue(QDoubleSpinBox *spinbox, double value);
     void SetForceLayerValues(int layersCount);
-	void createForceLayerValues(int layersCount);
+	void CreateForceLayerValues(int layersCount);
     
 	void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
     

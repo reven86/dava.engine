@@ -89,7 +89,7 @@ void LODEditor::SetupInternalUI()
     InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 2);
     InitDistanceSpinBox(ui->lod3Name, ui->lod3Distance, 3);
     
-    createForceLayerValues(DAVA::LodComponent::MAX_LOD_LAYERS);
+    CreateForceLayerValues(DAVA::LodComponent::MAX_LOD_LAYERS);
     connect(ui->forceLayer, SIGNAL(activated(int)), SLOT(ForceLayerActivated(int)));
 
 	connect(ui->checkBoxLodEditorMode, SIGNAL(stateChanged(int)), this, SLOT(EditorModeChanged(int)));
@@ -172,17 +172,20 @@ void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int i
 
 void LODEditor::SceneActivated(SceneEditor2 *scene)
 {
-	Q_UNUSED(scene);
-	EditorLODSystem *currentEditorLodSystem = GetCurrentEditorLODSystem();
-	ui->checkBoxLodEditorMode->setChecked(currentEditorLodSystem->GetAllSceneModeEnabled());
-	ui->enableForceDistance->setChecked(currentEditorLodSystem->GetForceDistanceEnabled());
-	ui->forceSlider->setValue(currentEditorLodSystem->GetForceDistance());
-	int index = ui->forceLayer->findData(currentEditorLodSystem->GetForceLayer());
+	DVASSERT(scene);
+	EditorLODSystem *sceneEditorLodSystem = scene->editorLODSystem;
+	ui->checkBoxLodEditorMode->setChecked(sceneEditorLodSystem->GetAllSceneModeEnabled());
+	ui->enableForceDistance->setChecked(sceneEditorLodSystem->GetForceDistanceEnabled());
+	ui->forceSlider->setValue(sceneEditorLodSystem->GetForceDistance());
+	int index = ui->forceLayer->findData(sceneEditorLodSystem->GetForceLayer());
 	if (-1 != index)
 	{
 		ui->forceLayer->setCurrentIndex(index);
 	}
-	LODDataChanged(); 
+	if (scene == QtMainWindow::Instance()->GetCurrentScene())
+	{
+		LODDataChanged();
+	}
 }
 
 void LODEditor::LODDataChanged()
@@ -192,20 +195,20 @@ void LODEditor::LODDataChanged()
 
 	ui->distanceSlider->SetLayersCount(lodLayersCount);
 	SetForceLayerValues(lodLayersCount);
-	for (DAVA::uint32 Unchec = 0; Unchec < lodLayersCount; ++Unchec)
+	for (DAVA::uint32 unchec = 0; unchec < lodLayersCount; ++unchec)
 	{
-		distanceWidgets[Unchec].SetVisible(true);
+		distanceWidgets[unchec].SetVisible(true);
 
-		DAVA::float32 distance = GetCurrentEditorLODSystem()->GetLayerDistance(Unchec);
+		DAVA::float32 distance = GetCurrentEditorLODSystem()->GetLayerDistance(unchec);
 
-		SetSpinboxValue(distanceWidgets[Unchec].distance, distance);
-		ui->distanceSlider->SetDistance(Unchec, distance);
+		SetSpinboxValue(distanceWidgets[unchec].distance, distance);
+		ui->distanceSlider->SetDistance(unchec, distance);
 
-		distanceWidgets[Unchec].name->setText(Format("%d. (%d):", Unchec, GetCurrentEditorLODSystem()->GetLayerTriangles(Unchec)).c_str());
+		distanceWidgets[unchec].name->setText(Format("%d. (%d):", unchec, GetCurrentEditorLODSystem()->GetLayerTriangles(unchec)).c_str());
 	}
-	for (DAVA::int32 Unchec = lodLayersCount; Unchec < DAVA::LodComponent::MAX_LOD_LAYERS; ++Unchec)
+	for (DAVA::int32 unchec = lodLayersCount; unchec < DAVA::LodComponent::MAX_LOD_LAYERS; ++unchec)
 	{
-		distanceWidgets[Unchec].SetVisible(false);
+		distanceWidgets[unchec].SetVisible(false);
 	}
 
 	UpdateWidgetVisibility();
@@ -290,7 +293,7 @@ void LODEditor::SetForceLayerValues(int layersCount)
 	ui->forceLayer->setCurrentIndex(requestedIndex);
 }
 
-void LODEditor::createForceLayerValues(int layersCount)
+void LODEditor::CreateForceLayerValues(int layersCount)
 {
 	ui->forceLayer->clear();
 

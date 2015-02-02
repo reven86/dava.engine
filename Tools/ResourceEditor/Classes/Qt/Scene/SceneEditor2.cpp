@@ -151,7 +151,7 @@ SceneEditor2::SceneEditor2()
     AddSystem(pathSystem, MAKE_COMPONENT_MASK(Component::PATH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     
 	editorLODSystem = new EditorLODSystem(this);
-	AddSystem(editorLODSystem, 1 << Component::LOD_COMPONENT);
+	AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
 
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
