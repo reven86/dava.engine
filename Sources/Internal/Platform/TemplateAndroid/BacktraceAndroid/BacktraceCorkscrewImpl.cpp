@@ -19,7 +19,9 @@ MemoryMapCorkscrewInterface::MemoryMapCorkscrewInterface():map_info(NULL),iterat
 }
 MemoryMapCorkscrewInterface::~MemoryMapCorkscrewInterface()
 {
+	LOGE("FRAME_STACK releaseng map_info1");
 	release_my_map_info_list(map_info);
+	LOGE("FRAME_STACK releaseng map_info");
 }
 MemoryMapIterator & MemoryMapCorkscrewInterface::GetIterator() const
 {
@@ -115,6 +117,7 @@ void BacktraceCorkscrewImpl::BuildMemoryMap()
 	{
 		LOGE("FRAME_STACK building process map ");
 		processMap = new MemoryMapCorkscrewInterface();
+		LOGE("FRAME_STACK building process map done");
 	}
 }
 const MemoryMapInterface * BacktraceCorkscrewImpl::GetMemoryMap() const

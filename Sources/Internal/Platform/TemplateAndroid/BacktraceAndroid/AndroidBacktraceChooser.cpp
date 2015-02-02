@@ -29,6 +29,7 @@ BacktraceInterface* AndroidBacktraceChooser::ChooseBacktraceAndroid()
 		// building memory memp of process at this point
 		// all important libs are likely to be loaded at this point
 		backtraceProvider->BuildMemoryMap();
+		return backtraceProvider;
 	}
 	else
 	{

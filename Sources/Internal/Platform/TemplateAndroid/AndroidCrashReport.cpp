@@ -128,7 +128,7 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 static struct sigaction *sa_old;
 void AndroidCrashReport::Init()
 {
-#if defined(DCRASH_HANDLER_CUSTOMSIGNALS)
+#if defined(CRASH_HANDLER_CUSTOMSIGNALS)
 	//creating custom signal handler
 	//this is legacy implementation and uses some asynch unsafe functions
 	BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
@@ -177,9 +177,6 @@ void AndroidCrashReport::Init()
 	size_t offset = strlen(teamcityBuildNamePrototype);
 	strcpy(teamcityBuildName+ offset
 		,teamcityBuildNamePrototypePlaceHolder);
-	
-	offset += strlen(teamcityBuildNamePrototypePlaceHolder);
-	strcpy(teamcityBuildName+offset,teamcityBuildNamePrototypeAddr);
 	
 	
 	offset += strlen(teamcityBuildNamePrototypePlaceHolder);
@@ -243,7 +240,6 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 		//backtraceProvider->Backtrace(&AndroidCrashReport::onStackFrame,sigcontext,siginfo);
 		backtraceProvider->Backtrace(AndroidCrashReport::OnStackFrame
 				,sigcontext,siginfo);
-		return;
 	}
 	else
 	{
