@@ -193,7 +193,7 @@ namespace DAVA
 		va_start(vl, text);
 		char tmp[4096] = { 0 };
 		vsnprintf(tmp, sizeof(tmp) - 2, text, vl);
-		strcat(tmp, "\x0D\x0A");
+		strcat(tmp, "\n");
 		file->Write(text, sizeof(char) * strlen(tmp));
 		file->Release();
 		va_end(vl);
@@ -258,7 +258,7 @@ namespace DAVA
 	{
 		String fileName = Format("%s_%s.yaml", autoSys->groupName, autoSys->testFileName);
 		Logger::Debug("AutotestingDB::Save keyed archive '%s' to device.", fileName.c_str());
-		return archive->SaveToYamlFile(FileSystem::Instance()->GetCurrentDocumentsDirectory() + Format("%s.txt", fileName.c_str()));
+		return archive->SaveToYamlFile(FileSystem::Instance()->GetCurrentDocumentsDirectory() + Format("%s.log", fileName.c_str()));
 	}
 
 	bool AutotestingDB::SaveToDB(MongodbUpdateObject *dbUpdateObject)
