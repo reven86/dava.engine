@@ -172,6 +172,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				MotionEvent.AXIS_X,
 				MotionEvent.AXIS_Y,
 				MotionEvent.AXIS_Z,
+				MotionEvent.AXIS_RX,
+				MotionEvent.AXIS_RY,
 				MotionEvent.AXIS_RZ,
 				MotionEvent.AXIS_LTRIGGER,
 				MotionEvent.AXIS_RTRIGGER

@@ -75,6 +75,8 @@ void GamepadDevice::InitInternal()
     keyTranslator[0x01] = (uint8)GAMEPAD_ELEMENT_AXIS_LY;      //AXIS_Y
     keyTranslator[0x0B] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_Z
     keyTranslator[0x0E] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RZ
+    keyTranslator[0x0C] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_RX
+    keyTranslator[0x0D] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RY
         
     keyTranslator[0x13] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_UP
     keyTranslator[0x14] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_DOWN
