@@ -20,6 +20,7 @@
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		496ABE8D179E6FEB00BCA6E9 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 496ABE8C179E6FEB00BCA6E9 /* AdSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		49A0DB291796F8050000970C /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49A0DB281796F8050000970C /* MessageUI.framework */; };
+		50194D661A52D91500557DAB /* NetworkTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50194D641A52D91500557DAB /* NetworkTest.cpp */; };
 		5CDC2530156CDED900742348 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5CDC252F156CDED900742348 /* MainWindow-iPad.xib */; };
 		5CDC2533156CE21000742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2532156CE20F00742348 /* libz.dylib */; };
 		74AF633D18852FE100070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF633C18852FE100070C35 /* Security.framework */; };
@@ -99,6 +100,8 @@
 		32CA4F630368D1EE00C91783 /* UnitTests_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitTests_Prefix.pch; sourceTree = "<group>"; };
 		496ABE8C179E6FEB00BCA6E9 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		49A0DB281796F8050000970C /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		50194D641A52D91500557DAB /* NetworkTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkTest.cpp; path = Tests/NetworkTest.cpp; sourceTree = "<group>"; };
+		50194D651A52D91500557DAB /* NetworkTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkTest.h; path = Tests/NetworkTest.h; sourceTree = "<group>"; };
 		5CDC252F156CDED900742348 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "MainWindow-iPad.xib"; path = "iOSSpecific/iPad/MainWindow-iPad.xib"; sourceTree = "<group>"; };
 		5CDC2532156CE20F00742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		74AF633C18852FE100070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -318,6 +321,8 @@
 			children = (
 				CCB2B8F51A656699003A5D44 /* Cpp14.cpp */,
 				CCB2B8F61A656699003A5D44 /* Cpp14.h */,
+				50194D641A52D91500557DAB /* NetworkTest.cpp */,
+				50194D651A52D91500557DAB /* NetworkTest.h */,
 				0264E31D1A43002200BD7279 /* JobManagerTest.cpp */,
 				0264E31E1A43002200BD7279 /* JobManagerTest.h */,
 				CC11984F1A38BF27006931D7 /* ComponentsTest.cpp */,
@@ -507,6 +512,7 @@
 				032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */,
 				CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */,
 				CC1198791A38BF27006931D7 /* SplitTest.cpp in Sources */,
+				50194D661A52D91500557DAB /* NetworkTest.cpp in Sources */,
 				CC1198711A38BF27006931D7 /* FunctionBindSingalTest.cpp in Sources */,
 				CC1198721A38BF27006931D7 /* HashMapTest.cpp in Sources */,
 				CC11984C1A38BF0D006931D7 /* GameCore.cpp in Sources */,
