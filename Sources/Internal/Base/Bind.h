@@ -725,7 +725,7 @@ namespace DAVA
 		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3, p4, p5, p6);
         PointerOwner<BoundType> owner = PointerOwner<BoundType>::OwnRetainRelease(b);
         b->Release();
-        return typename BoundType::OutgoingFunctionType ret(owner, &BoundType::invoke);
+        return typename BoundType::OutgoingFunctionType(owner, &BoundType::invoke);
     }
 
 	template<typename F, typename P1, typename P2,  typename P3,  typename P4,  typename P5,  typename P6,  typename P7>
