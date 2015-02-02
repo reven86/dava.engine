@@ -460,6 +460,13 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vec
 bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet, int32 baseMipMap)
 {
 #if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__)
+    if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+    {
+        Logger::Error("Decompressing FORMAT_ATC_RGBA_INTERPOLATED_ALPHA disabled on OSX platform, because of bug in qualcomm library");
+        return false;
+    }
+#endif
 	uint8* compressedImges = new uint8[info.dataSize];
 	
 	if(!dec.getRawData(compressedImges, info.dataSize))
