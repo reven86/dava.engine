@@ -63,8 +63,9 @@ JobManager::~JobManager()
 
 void JobManager::Update()
 {
-    LockGuard<Mutex> guard(mainQueueMutex);
+    bool hasFinishedJobs = false;
 
+    mainQueueMutex.Lock();
     if(!mainJobs.empty())
     {
         // extract all jobs from queue
@@ -95,11 +96,15 @@ void JobManager::Update()
             curMainJob = MainJob();
         }
 
-        {
-            // signal that jobs are finished
-            LockGuard<Mutex> cvguard(mainCVMutex);
-            Thread::Broadcast(&mainCV);
-        }
+        hasFinishedJobs = true;
+    }
+    mainQueueMutex.Unlock();
+
+    // signal that jobs are finished
+    if(hasFinishedJobs)
+    {
+        LockGuard<Mutex> cvguard(mainCVMutex);
+        Thread::Broadcast(&mainCV);
     }
 }
 
