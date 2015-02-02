@@ -71,6 +71,10 @@ protected:
     void    SetupTriangle();
     void    SetupCube();
 
+    void SetupTank();
+
+    void DrawTank();
+
 
     struct
     VertexP
@@ -102,6 +106,21 @@ protected:
     Object      cube;
     uint64      cube_t0;
     float       cube_angle;
+
+    struct Tank
+    {
+        Vector<rhi::Handle> vb;
+        Vector<rhi::Handle> ib;
+        Vector<uint32> indCount;
+        rhi::Handle ps;
+        rhi::Handle vp_const[2];
+        rhi::Handle fp_const;
+        rhi::Handle tex;
+    };
+
+    Tank tank;
+
+    
 };
 
 

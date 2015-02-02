@@ -33,6 +33,7 @@
     #include "../RHI/rhi_ShaderCache.h"
 
     #include "Base/Profiler.h"
+#include "Render/RenderBase.h"
 
 
 using namespace DAVA;
@@ -377,13 +378,105 @@ GameCore::SetupCube()
     cube_angle  = 0;
 }
 
+void GameCore::SetupTank()
+{
+    SceneFileV2 *sceneFile = new SceneFileV2();
+    sceneFile->EnableDebugLog(false);
+    SceneArchive *archive = sceneFile->LoadSceneArchive("~res:/3d/test.sc2");
+    if (!archive) return;
+    for (int32 i = 0, sz = archive->dataNodes.size(); i < sz; ++i)
+    {
+        String name = archive->dataNodes[i]->GetString("##name");
+        if (name == "PolygonGroup")
+        {            
+            KeyedArchive *keyedArchive = archive->dataNodes[i];
+            int32 vertexFormat = keyedArchive->GetInt32("vertexFormat");
+            int32 vertexStride = GetVertexSize(vertexFormat);
+            int32 vertexCount = keyedArchive->GetInt32("vertexCount");
+            int32 indexCount = keyedArchive->GetInt32("indexCount");
+            int32 textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
+            ePrimitiveType primitiveType = (ePrimitiveType)keyedArchive->GetInt32("primitiveType");
+            int32 cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
+            if (vertexFormat != (EVF_VERTEX | EVF_NORMAL | EVF_TEXCOORD0))
+                continue; //for now only this format
+            int32 formatPacking = keyedArchive->GetInt32("packing");
+
+            {
+                int size = keyedArchive->GetByteArraySize("vertices");
+                if (size != vertexCount * vertexStride)
+                {
+                    Logger::Error("PolygonGroup::Load - Something is going wrong, size of vertex array is incorrect");
+                    return;
+                }
+
+                const uint8 * archiveData = keyedArchive->GetByteArray("vertices");
+                rhi::Handle vb = rhi::VertexBuffer::Create(vertexCount * vertexStride);
+                rhi::VertexBuffer::Update(vb, archiveData, 0, vertexCount * vertexStride);
+                tank.vb.push_back(vb);
+                /*uint8 *meshData = new uint8[vertexCount * vertexStride];
+                Memcpy(meshData, archiveData, size); //all streams in data required - just copy*/
+            }
+
+            int32 indexFormat = keyedArchive->GetInt32("indexFormat");
+            {
+                int size = keyedArchive->GetByteArraySize("indices");
+                uint16 *indexArray = new uint16[indexCount];
+                const uint8 * archiveData = keyedArchive->GetByteArray("indices");
+                rhi::Handle ib = rhi::IndexBuffer::Create(indexCount * INDEX_FORMAT_SIZE[indexFormat], 0);
+                rhi::IndexBuffer::Update(ib, archiveData, 0, indexCount * INDEX_FORMAT_SIZE[indexFormat]);
+                tank.ib.push_back(ib);
+                tank.indCount.push_back(indexCount);
+                /*memcpy(indexArray, archiveData, indexCount * INDEX_FORMAT_SIZE[indexFormat]);*/
+            }
+        }
+    }
+
+    Vector<Image* > images;
+
+    ImageSystem::Instance()->Load("~res:/3d/test.png", images, 0);
+    if (images.size())
+    {
+        Image *img = images[0];
+        PixelFormat format = img->GetPixelFormat();
+        uint32 w = img->GetWidth();
+        uint32 h = img->GetHeight();
+        tank.tex = rhi::Texture::Create(w, h, rhi::TEXTURE_FORMAT_A8R8G8B8);
+        uint8*  tex = (uint8*)(rhi::Texture::Map(tank.tex));
+        memcpy(tex, img->GetData(), w*h*4);
+        rhi::Texture::Unmap(tank.tex);
+    }
+
+    rhi::PipelineState::Descriptor  psDesc;
+
+    psDesc.vertexLayout.Clear();
+    psDesc.vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    psDesc.vertexLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
+    psDesc.vertexLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    psDesc.vprogUid = FastName("vp-shaded");
+    psDesc.fprogUid = FastName("fp-shaded");
+
+    tank.ps = rhi::PipelineState::Create(psDesc);
+    tank.vp_const[0] = rhi::PipelineState::CreateVProgConstBuffer(tank.ps, 0);
+    tank.vp_const[1] = rhi::PipelineState::CreateVProgConstBuffer(tank.ps, 1);
+    tank.fp_const = rhi::PipelineState::CreateFProgConstBuffer(tank.ps, 0);
+    
+
+      
+
+    /*rhi::Handle ps;
+    rhi::Handle vp_const[2];
+    rhi::Handle fp_const;
+    rhi::Handle tex;*/
+}
+
 void GameCore::OnAppStarted()
 {
     rhi::Initialize();
-    rhi::ShaderCache::Initialize();
-    
+    rhi::ShaderCache::Initialize();                
+
     SetupTriangle();
     SetupCube();
+    SetupTank();
 }
 
 void GameCore::OnAppFinished()
@@ -427,11 +520,75 @@ void GameCore::BeginFrame()
 {
 }
 
+void GameCore::DrawTank()
+{
+    rhi::RenderPassConfig   pass_desc;
+
+    pass_desc.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    pass_desc.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    pass_desc.colorBuffer[0].clearColor[0] = 0.25f;
+    pass_desc.colorBuffer[0].clearColor[1] = 0.25f;
+    pass_desc.colorBuffer[0].clearColor[2] = 0.35f;
+    pass_desc.colorBuffer[0].clearColor[3] = 1.0f;
+    pass_desc.depthBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    pass_desc.depthBuffer.storeAction = rhi::STOREACTION_STORE;
+
+    rhi::Handle cb[1];
+    rhi::Handle pass = rhi::RenderPass::Allocate(pass_desc, 1, cb);
+    rhi::RenderPass::Begin(pass);
+    rhi::CommandBuffer::Begin(cb[0]);    
+
+    float angle = 0.001f*float(SystemTimer::Instance()->AbsoluteMS()) * (30.0f*3.1415f / 180.0f);    
+
+    float clr[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    Matrix4 world;
+    Matrix4 view_proj;
+
+    world.Identity();
+    world.CreateRotation(Vector3(0, 1, 0), angle);    
+    world.SetTranslationVector(Vector3(0, 0, 25));
+    //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
+
+    view_proj.Identity();
+    view_proj.BuildProjectionFovLH(75.0f, Core::Instance()->GetPhysicalScreenWidth() / Core::Instance()->GetPhysicalScreenHeight(), 1.0f, 1000.0f);
+
+
+    rhi::ConstBuffer::SetConst(tank.fp_const, 0, 1, clr);
+    rhi::ConstBuffer::SetConst(tank.vp_const[0], 0, 4, view_proj.data);
+    rhi::ConstBuffer::SetConst(tank.vp_const[1], 0, 4, world.data);
+
+    rhi::CommandBuffer::SetPipelineState(cb[0], tank.ps);
+    rhi::CommandBuffer::SetVertexConstBuffer(cb[0], 0, tank.vp_const[0]);
+    rhi::CommandBuffer::SetVertexConstBuffer(cb[0], 1, tank.vp_const[1]);
+    rhi::CommandBuffer::SetFragmentConstBuffer(cb[0], 0, tank.fp_const);
+    rhi::CommandBuffer::SetFragmentTexture(cb[0], 0, tank.tex);    
+
+    for (int32 i = 0, sz = tank.vb.size(); i < sz; ++i)
+    {
+        rhi::CommandBuffer::SetVertexData(cb[0], tank.vb[i]);
+        rhi::CommandBuffer::SetIndices(cb[0], tank.ib[i]);
+        rhi::CommandBuffer::DrawIndexedPrimitive(cb[0], rhi::PRIMITIVE_TRIANGLELIST, tank.indCount[i]);
+    }
+
+
+    rhi::CommandBuffer::End(cb[0]);
+    rhi::RenderPass::End(pass);
+}
+
 void
 GameCore::Draw()
 {
     SCOPED_NAMED_TIMING("GameCore::Draw");
     //-    ApplicationCore::BeginFrame();
+
+#define DRAW_TANK 0
+
+
+#if DRAW_TANK
+    DrawTank();
+    return;
+#endif
+
 
 #define USE_SECOND_CB 1
 
@@ -483,6 +640,8 @@ GameCore::Draw()
     world.CreateRotation( Vector3(0,1,0), cube_angle );
 //    world.CreateRotation( Vector3(1,0,0), cube_angle );
     world.SetTranslationVector( Vector3(0,0,5) );
+    //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
+    
     view_proj.Identity();
     view_proj.BuildProjectionFovLH( 75.0f, Core::Instance()->GetPhysicalScreenWidth()/Core::Instance()->GetPhysicalScreenHeight(), 1.0f,1000.0f );
     
@@ -491,13 +650,13 @@ GameCore::Draw()
     rhi::ConstBuffer::SetConst( cube.vp_const[0], 0, 4, view_proj.data );
     rhi::ConstBuffer::SetConst( cube.vp_const[1], 0, 4, world.data );
 
-    rhi::CommandBuffer::SetPipelineState( cb[0], cube.ps );
-    rhi::CommandBuffer::SetVertexData( cb[0], cube.vb );
+    rhi::CommandBuffer::SetPipelineState( cb[0], cube.ps );    
     rhi::CommandBuffer::SetVertexConstBuffer( cb[0], 0, cube.vp_const[0] );
     rhi::CommandBuffer::SetVertexConstBuffer( cb[0], 1, cube.vp_const[1] );
     rhi::CommandBuffer::SetFragmentConstBuffer( cb[0], 0, cube.fp_const );
-    rhi::CommandBuffer::SetFragmentTexture( cb[0], 0, cube.tex );
-    rhi::CommandBuffer::DrawPrimitive( cb[0], rhi::PRIMITIVE_TRIANGLELIST, 12 );
+    rhi::CommandBuffer::SetFragmentTexture(cb[0], 0, cube.tex);
+    rhi::CommandBuffer::SetVertexData(cb[0], cube.vb);    
+    rhi::CommandBuffer::DrawPrimitive( cb[0], rhi::PRIMITIVE_TRIANGLELIST, 12 );    
 
     #if USE_SECOND_CB
     {

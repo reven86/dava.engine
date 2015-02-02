@@ -108,6 +108,9 @@
     <None Include="MCPP\mcpp-porting.html" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Win32Framework\Win32Framework.vcxproj">
+      <Project>{a6472d47-5050-406d-89e9-4725192e32f2}</Project>
+    </ProjectReference>
     <ProjectReference Include="RHI-DX9\RHI-DX9.vcxproj">
       <Project>{ebd4c4ac-6f43-4984-b2e2-61aeb10cabe3}</Project>
     </ProjectReference>
