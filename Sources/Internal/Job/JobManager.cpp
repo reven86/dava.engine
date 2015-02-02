@@ -141,28 +141,18 @@ uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJo
 
 void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
 {
-    CommonWaitMainJob(Bind(&JobManager::HasMainJobs, this, invokerThreadId));
-}
-
-void JobManager::WaitMainJobID(uint32 mainJobID)
-{
-    CommonWaitMainJob(Bind(&JobManager::HasMainJobID, this, mainJobID));
-}
-
-void JobManager::CommonWaitMainJob(const Function<bool()> &hasJobsFn)
-{
     if(Thread::IsMainThread())
     {
         // if wait was invoked from main-thread 
         // and there are some jobs user is waiting for
         // we should immediately execute them 
-        if(hasJobsFn())
+        if(HasMainJobs())
         {
             // just run update, it will execute all of main-thread jobs
             Update();
 
             // assert is something goes wrong
-            DVASSERT(!hasJobsFn() && "Job exepected to be executed at this point, but seems it is still in queue");
+            DVASSERT(!HasMainJobs() && "Job exepected to be executed at this point, but seems it is still in queue");
         }
     }
     else
@@ -173,7 +163,38 @@ void JobManager::CommonWaitMainJob(const Function<bool()> &hasJobsFn)
 
         // Now check if there are some jobs in the queue and wait for them
         LockGuard<Mutex> guard(mainCVMutex);
-        while(hasJobsFn())
+        while(HasMainJobs())
+        {
+            Thread::Wait(&mainCV, &mainCVMutex);
+        }
+    }
+}
+
+void JobManager::WaitMainJobID(uint32 mainJobID)
+{
+    if(Thread::IsMainThread())
+    {
+        // if wait was invoked from main-thread 
+        // and there are some jobs user is waiting for
+        // we should immediately execute them 
+        if(HasMainJobID(mainJobID))
+        {
+            // just run update, it will execute all of main-thread jobs
+            Update();
+
+            // assert is something goes wrong
+            DVASSERT(!HasMainJobID(mainJobID) && "Job exepected to be executed at this point, but seems it is still in queue");
+        }
+    }
+    else
+    {
+        // If main thread is locked by WaitWorkerJobs this instruction will unlock
+        // main thread, allowing it to perform all scheduled main-thread jobs
+        workerDoneSem.Post();
+
+        // Now check if there are some jobs in the queue and wait for them
+        LockGuard<Mutex> guard(mainCVMutex);
+        while(HasMainJobID(mainJobID))
         {
             Thread::Wait(&mainCV, &mainCVMutex);
         }

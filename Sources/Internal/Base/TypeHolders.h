@@ -138,6 +138,39 @@ struct OwnerRetainReleaseRule : public OwnerRule
 template<typename T>
 struct PointerOwner
 {
+protected:
+    PointerOwner(T *_pointer, OwnerRule* _rule)
+        : pointer(_pointer)
+        , staticRule(_rule)
+    {
+        staticRule->Retain(pointer);
+    }
+
+public:
+    PointerOwner& operator=(const PointerOwner& owner)
+    {
+        if(this != &owner)
+        {
+            staticRule->Release(pointer);
+            pointer = owner.pointer;
+            staticRule = owner.staticRule;
+            staticRule->Retain(pointer);
+        }
+        return *this;
+    }
+
+    PointerOwner(const PointerOwner& owner)
+    {
+        pointer = owner.pointer;
+        staticRule = owner.staticRule;
+        staticRule->Retain(pointer);
+    }
+
+    ~PointerOwner()
+    {
+        staticRule->Release(pointer);
+    }
+
     template<typename R>
     static PointerOwner<T> Own(T *_pointer)
     {
@@ -159,27 +192,21 @@ struct PointerOwner
 
     T* pointer;
     OwnerRule* staticRule;
-
-protected:
-    PointerOwner(T *_pointer, OwnerRule* _rule) 
-        : pointer(_pointer)
-        , staticRule(_rule)
-    { }
 };
 
 struct ObjectPointerHolder
 {
 public:
-	void *object;
+    void *object;
     OwnerRule *rule;
 
-	ObjectPointerHolder() 
+    ObjectPointerHolder()
         : object(NULL)
-    { 
+    {
         SetDefaultRule();
     }
 
-	ObjectPointerHolder(void *obj) 
+    ObjectPointerHolder(void *obj)
         : object(obj)
     {
         SetDefaultRule();
@@ -192,41 +219,38 @@ public:
     }
 
     template<typename T>
- 	ObjectPointerHolder(const PointerOwner<T> &owner)
- 		: object(owner.pointer)
+    ObjectPointerHolder(const PointerOwner<T> &owner)
+        : object(owner.pointer)
         , rule(owner.staticRule)
- 	{
+    {
         rule->Retain(object);
     }
 
-	~ObjectPointerHolder()
-	{
-		rule->Release(object);
-	}
+    ~ObjectPointerHolder()
+    {
+        rule->Release(object);
+    }
 
- 	ObjectPointerHolder(const ObjectPointerHolder& holder)
- 	{
- 		object = holder.object;
+    ObjectPointerHolder(const ObjectPointerHolder& holder)
+    {
+        object = holder.object;
         rule = holder.rule;
-
         rule->Retain(object);
- 	}
- 
- 	ObjectPointerHolder& operator=(const ObjectPointerHolder& holder)
- 	{
+    }
+
+    ObjectPointerHolder& operator=(const ObjectPointerHolder& holder)
+    {
         if(this != &holder)
         {
             rule->Release(object);
- 
             object = holder.object;
             rule = holder.rule;
- 
             rule->Retain(object);
         }
- 
- 		return *this;
- 	}
- 
+
+        return *this;
+    }
+
 protected:
     void SetDefaultRule()
     {
