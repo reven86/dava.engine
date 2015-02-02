@@ -40,6 +40,7 @@
 		CC1197BA1A38BAE1006931D7 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1197AA1A38BAE1006931D7 /* TextSizeTest.cpp */; };
 		CC1197D01A38BBBA006931D7 /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CC1197C51A38BB7E006931D7 /* libFrameworkTools.a */; };
 		CC4FD2291A5174A3004FAF22 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */; };
+		E8EC65721A7FA3D700332AE6 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */; };
 		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
 		FE9892E511638EF700500198 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E111638EF700500198 /* InfoPlist.strings */; };
 		FE9892E611638EF700500198 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E311638EF700500198 /* MainMenu.xib */; };
@@ -181,6 +182,8 @@
 		CC1197BE1A38BB7E006931D7 /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
 		CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cpp14.cpp; path = Classes/Tests/Cpp14.cpp; sourceTree = "<group>"; };
 		CC4FD2281A5174A3004FAF22 /* Cpp14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cpp14.h; path = Classes/Tests/Cpp14.h; sourceTree = "<group>"; };
+		E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Classes/Tests/FormatsTest.cpp; sourceTree = "<group>"; };
+		E8EC65711A7FA3D700332AE6 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FormatsTest.h; path = Classes/Tests/FormatsTest.h; sourceTree = "<group>"; };
 		FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE9892E211638EF700500198 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = MacOSSpecific/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -319,6 +322,8 @@
 		CC11978D1A38BACC006931D7 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */,
+				E8EC65711A7FA3D700332AE6 /* FormatsTest.h */,
 				CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */,
 				CC4FD2281A5174A3004FAF22 /* Cpp14.h */,
 				0264E3241A43006E00BD7279 /* JobManagerTest.cpp */,
@@ -550,6 +555,7 @@
 				CC11978A1A38BAB9006931D7 /* GameCore.cpp in Sources */,
 				CC1197AF1A38BAE1006931D7 /* FileSystemTest.cpp in Sources */,
 				CC1197B51A38BAE1006931D7 /* MathTest.cpp in Sources */,
+				E8EC65721A7FA3D700332AE6 /* FormatsTest.cpp in Sources */,
 				CC1197AE1A38BAE1006931D7 /* FileListTest.cpp in Sources */,
 				CC1197891A38BAB9006931D7 /* FrameworkMain.cpp in Sources */,
 				CC1197881A38BAB9006931D7 /* BaseScreen.cpp in Sources */,

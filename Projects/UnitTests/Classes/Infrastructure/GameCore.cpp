@@ -51,6 +51,7 @@
 #include "Tests/JobManagerTest.h"
 #include "Tests/Cpp14.h"
 #include "Tests/JNITest.h"
+#include "Tests/FormatsTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -85,6 +86,7 @@ void GameCore::RegisterTests()
     new KeyedArchiveYamlTest();
     new JobManagerTest();
     new Cpp14Test ();
+    new FormatsTest();
 }
 
 #include <fstream>

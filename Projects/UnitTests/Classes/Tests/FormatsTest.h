@@ -36,32 +36,18 @@ using namespace DAVA;
 
 #include "TestTemplate.h"
 
-class FormatsTest : public TestTemplate<FormatsTest>
+class FormatsTest: public TestTemplate<FormatsTest>
 {
+    static constexpr float32 MAX_DIFFERENCE = 2.f; //in persents
 protected:
     ~FormatsTest(){}
 public:
 	FormatsTest();
 
-	virtual void LoadResources();
-	virtual void UnloadResources();
+	void LoadResources() override;
+	void UnloadResources() override;
 
     void TestFunction(PerfFuncData * data);
-    
-    virtual bool RunTest(int32 testNum);
-    
-	virtual void DidAppear();
-	virtual void Update(float32 timeElapsed);
-
-private:
-	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
-    
-protected:
- 	UIButton* finishTestBtn;
-
-    bool testFinished;
-	float onScreenTime;
-
 };
 
 
