@@ -280,6 +280,8 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
 	Font::StringMetrics metrics;
 	metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, 0);
     
+	float32 ascent = fontInternal->lineHeight * GetSizeScale();
+
     for (uint32 charPos = 0; charPos < strLength; ++charPos)
     {
         char16 charId = str.at(charPos);
@@ -315,6 +317,8 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
         float32 startHeight = charDescription.yOffset * sizeScale;
         float32 fullHeight = (charDescription.height + charDescription.yOffset) * sizeScale;
         
+		ascent = Min(startHeight, ascent);
+
         startHeight += yOffset;
         fullHeight += yOffset;
 
@@ -322,6 +326,10 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
 		metrics.drawRect.y = Min(metrics.drawRect.y, (int32)startHeight);
 		metrics.drawRect.dx = Max(metrics.drawRect.dx, (int32)(startX + width));
 		metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight));
+
+		
+		//const float32 borderAlign = (startHeight - yOffset)*2.0f;
+		//metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight + borderAlign));
 
         if (vertexBuffer)
         {	
@@ -368,6 +376,8 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
         charDrawed++;
     }
     lastY += yOffset + GetFontHeight();
+
+	metrics.drawRect.dy += (int32)(ascent);
 
 	metrics.drawRect.dx -= metrics.drawRect.x;
 	metrics.drawRect.dy -= metrics.drawRect.y;
