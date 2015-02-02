@@ -287,8 +287,8 @@ public class JNIDeviceInfo {
 			    free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
 			} else
 			{
-			    capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-			    free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+			    capacity = statFs.getBlockCount() * statFs.getBlockSize();
+			    free = statFs.getAvailableBlocks() * statFs.getBlockSize();
 			}
 
             boolean isEmulated = Environment.isExternalStorageEmulated();
