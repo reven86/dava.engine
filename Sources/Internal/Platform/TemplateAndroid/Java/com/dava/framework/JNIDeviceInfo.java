@@ -236,15 +236,25 @@ public class JNIDeviceInfo {
 		}
 	}
 
-	public static StorageInfo GetInternalStorageInfo()
+	@SuppressWarnings("deprecation")
+    public static StorageInfo GetInternalStorageInfo()
 	{
 		String path = Environment.getDataDirectory().getPath();
 		path += "/";
 		StatFs statFs = new StatFs(path);
 
-		long capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
-		long free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
-
+		long capacity = 0;
+		long free = 0;
+		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) // 4.2
+		{
+		    capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
+		    free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+		} else
+		{
+		    capacity = statFs.getBlockCount() * statFs.getBlockSize();
+		    free = statFs.getAvailableBlocks() * statFs.getBlockSize();
+		}
 		return new StorageInfo(path, false, false, capacity, free);
 	}
 
@@ -259,7 +269,8 @@ public class JNIDeviceInfo {
 		return false;
 	}
 
-	public static StorageInfo GetPrimaryExternalStorageInfo()
+	@SuppressWarnings("deprecation")
+    public static StorageInfo GetPrimaryExternalStorageInfo()
 	{
 		if (IsPrimaryExternalStoragePresent())
 		{
@@ -267,8 +278,18 @@ public class JNIDeviceInfo {
 			path += "/";
 			StatFs statFs = new StatFs(path);
 
-            long capacity = (long)statFs.getBlockCountLong() * (long)statFs.getBlockSizeLong();
-            long free = (long)statFs.getAvailableBlocksLong() * (long)statFs.getBlockSizeLong();
+			long capacity = 0;
+			long free = 0;
+			
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) // 4.2
+			{
+			    capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
+			    free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+			} else
+			{
+			    capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+			    free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+			}
 
             boolean isEmulated = Environment.isExternalStorageEmulated();
             boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
