@@ -107,11 +107,11 @@ public:
 };
 
 
-typedef Pool<CommandBuffer_t>   CommandBufferPool;
-typedef Pool<RenderPass_t>      RenderPassPool;
+typedef Pool<CommandBuffer_t,RESOURCE_COMMAND_BUFFER>   CommandBufferPool;
+typedef Pool<RenderPass_t,RESOURCE_RENDER_PASS>         RenderPassPool;
 
-RHI_IMPL_POOL(CommandBuffer_t);
-RHI_IMPL_POOL(RenderPass_t);
+RHI_IMPL_POOL(CommandBuffer_t,RESOURCE_COMMAND_BUFFER);
+RHI_IMPL_POOL(RenderPass_t,RESOURCE_RENDER_PASS);
 
     
 const uint64   CommandBuffer_t::EndCmd = 0xFFFFFFFF;
@@ -604,7 +604,7 @@ Present()
             CommandBuffer_t* cb   = CommandBufferPool::Get( cb_h );
 
             cb->Execute();
-            Pool<CommandBuffer_t>::Free( cb_h );
+            CommandBufferPool::Free( cb_h );
         }
 
         RenderPassPool::Free( _CmdQueue[i] );

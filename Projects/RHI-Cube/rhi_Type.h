@@ -45,6 +45,19 @@ typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
 
 enum
+ResourceType
+{
+    RESOURCE_VERTEX_BUFFER  = 11,
+    RESOURCE_INDEX_BUFFER   = 12,
+    RESOURCE_CONST_BUFFER   = 22,
+    RESOURCE_TEXTURE        = 31,
+    RESOURCE_PIPELINE_STATE = 41,
+    RESOURCE_RENDER_PASS    = 43,
+    RESOURCE_COMMAND_BUFFER = 44
+};
+
+
+enum
 Api
 {
     RHI_DX11,

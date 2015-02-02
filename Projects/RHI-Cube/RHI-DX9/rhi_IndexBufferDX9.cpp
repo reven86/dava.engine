@@ -27,8 +27,8 @@ public:
     unsigned                _mapped:1;
 };
 
-typedef Pool<IndexBufferDX9_t>   IndexBufferDX9Pool;
-RHI_IMPL_POOL(IndexBufferDX9_t);
+typedef Pool<IndexBufferDX9_t,RESOURCE_INDEX_BUFFER>    IndexBufferDX9Pool;
+RHI_IMPL_POOL(IndexBufferDX9_t,RESOURCE_INDEX_BUFFER);
 
 
 //==============================================================================

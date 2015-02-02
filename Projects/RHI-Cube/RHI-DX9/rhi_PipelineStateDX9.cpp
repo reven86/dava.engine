@@ -216,11 +216,11 @@ public:
     FragmentProgDX9     fprog;
 };
 
-typedef Pool<PipelineStateDX9_t>            PipelineStateDX9Pool;
-typedef Pool<PipelineStateDX9_t::ConstBuf>  ConstBufDX9Pool;
+typedef Pool<PipelineStateDX9_t,RESOURCE_PIPELINE_STATE>            PipelineStateDX9Pool;
+typedef Pool<PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER>    ConstBufDX9Pool;
 
-RHI_IMPL_POOL(PipelineStateDX9_t);
-RHI_IMPL_POOL(PipelineStateDX9_t::ConstBuf);
+RHI_IMPL_POOL(PipelineStateDX9_t,RESOURCE_PIPELINE_STATE);
+RHI_IMPL_POOL(PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER);
 
 
 //------------------------------------------------------------------------------

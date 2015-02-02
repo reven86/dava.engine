@@ -28,9 +28,9 @@ public:
     unsigned                _mapped:1;
 };
 
-typedef Pool<VertexBufferDX9_t>   VertexBufferDX9Pool;
+typedef Pool<VertexBufferDX9_t,RESOURCE_VERTEX_BUFFER>   VertexBufferDX9Pool;
 
-RHI_IMPL_POOL(VertexBufferDX9_t);
+RHI_IMPL_POOL(VertexBufferDX9_t,RESOURCE_VERTEX_BUFFER);
 
 
 VertexBufferDX9_t::VertexBufferDX9_t()

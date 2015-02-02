@@ -50,7 +50,7 @@ enum
 };
 
 
-template <class T>
+template <class T, ResourceType RT>
 class
 Pool
 {
@@ -76,16 +76,16 @@ private:
     static unsigned ObjectCount;
 };
 
-#define RHI_IMPL_POOL(T) \
-template<> rhi::Pool<T>::Entry* rhi::Pool<T>::Object      = 0; \
-template<> unsigned             rhi::Pool<T>::ObjectCount = 1024; \
+#define RHI_IMPL_POOL(T,RT) \
+template<> rhi::Pool<T,RT>::Entry*  rhi::Pool<T,RT>::Object      = 0; \
+template<> unsigned                 rhi::Pool<T,RT>::ObjectCount = 1024; \
 
 
 //------------------------------------------------------------------------------
 
-template <class T>
+template <class T, ResourceType RT>
 inline Handle
-Pool<T>::Alloc()
+Pool<T,RT>::Alloc()
 {
     uint32  handle = InvalidHandle;
 
@@ -108,39 +108,43 @@ Pool<T>::Alloc()
             ++e->generation;
             
             handle = 0;
-            handle = ((uint32(e-Object)<<HANDLE_INDEX_SHIFT) & HANDLE_INDEX_MASK) | (((e->generation)<<HANDLE_GENERATION_SHIFT)&HANDLE_GENERATION_MASK);
+            handle = ((uint32(e-Object)<<HANDLE_INDEX_SHIFT) & HANDLE_INDEX_MASK) | 
+                     (((e->generation)<<HANDLE_GENERATION_SHIFT)&HANDLE_GENERATION_MASK) |
+                     ((RT<<HANDLE_TYPE_SHIFT)&HANDLE_TYPE_MASK);
             break;
         }
     }
     
     return handle;
-//-    return Handle(new T());
 }
 
 
 //------------------------------------------------------------------------------
 
-template <class T>
+template <class T, ResourceType RT>
 inline void
-Pool<T>::Free( Handle h )
+Pool<T,RT>::Free( Handle h )
 {
-    uint32  index = (h&HANDLE_INDEX_MASK)>>HANDLE_INDEX_SHIFT;    
+    uint32  index = (h&HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;    
+    uint32  type  = (h&HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;    
+    DVASSERT(type == RT);
     DVASSERT(index < ObjectCount);
     Entry*  e     = Object + index;
 
     DVASSERT(e->allocated);
     e->allocated = false;
-//-    delete (T*)h;
 }
 
 
 //------------------------------------------------------------------------------
 
-template <class T>
+template <class T, ResourceType RT>
 inline T*
-Pool<T>::Get( Handle h )
+Pool<T,RT>::Get( Handle h )
 {
     T*      object = 0;
+    uint32  type   = (h&HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
+    DVASSERT(type == RT);
     uint32  index  = (h&HANDLE_INDEX_MASK)>>HANDLE_INDEX_SHIFT;
     uint32  gen    = (h&HANDLE_GENERATION_MASK)>>HANDLE_GENERATION_SHIFT;
     DVASSERT(index < ObjectCount);
@@ -150,7 +154,6 @@ Pool<T>::Get( Handle h )
     DVASSERT(e->generation == gen);
 
     return &(e->object);
-//-    return (T*)h;
 }
 
 

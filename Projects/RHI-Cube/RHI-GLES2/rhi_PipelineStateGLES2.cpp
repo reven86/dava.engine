@@ -95,8 +95,8 @@ public:
     unsigned            glProg;
 };
 
-typedef Pool<PipelineStateGLES2_t>  PipelineStateGLES2Pool;
-RHI_IMPL_POOL(PipelineStateGLES2_t);
+typedef Pool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE>  PipelineStateGLES2Pool;
+RHI_IMPL_POOL(PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE);
 
 
 namespace PipelineState

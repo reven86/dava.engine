@@ -32,8 +32,8 @@ public:
     unsigned    mapped:1;
 };
 
-typedef Pool<IndexBufferGLES2_t>   IndexBufferGLES2Pool;
-RHI_IMPL_POOL(IndexBufferGLES2_t);
+typedef Pool<IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER>   IndexBufferGLES2Pool;
+RHI_IMPL_POOL(IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER);
 
 
 //==============================================================================
