@@ -39,6 +39,7 @@
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/LibPngHelpers.h"
 #include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/LibTgaHelper.h"
 
 namespace DAVA 
 {
@@ -49,6 +50,7 @@ ImageSystem::ImageSystem()
     wrappers[FILE_FORMAT_DDS] = new LibDdsHelper();
     wrappers[FILE_FORMAT_PVR] = new LibPVRHelper();
     wrappers[FILE_FORMAT_JPEG] = new LibJpegWrapper();
+    wrappers[FILE_FORMAT_TGA] = new LibTgaWrapper();
 }
     
 ImageSystem::~ImageSystem()

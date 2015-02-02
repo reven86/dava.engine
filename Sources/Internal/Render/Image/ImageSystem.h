@@ -55,6 +55,7 @@ public:
         FILE_FORMAT_DDS,
         FILE_FORMAT_PVR,
         FILE_FORMAT_JPEG,
+        FILE_FORMAT_TGA,
         FILE_FORMAT_COUNT
     };
 

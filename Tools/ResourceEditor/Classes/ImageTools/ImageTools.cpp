@@ -66,10 +66,9 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	
 	for(size_t i = 0; i < files.size(); ++i)
 	{
-		//FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
 		const FilePath& imagePathname = files[i];
 		
-		File *imageFile = File::Create(imagePathname, File::OPEN | File::READ);
+		DAVA::ScopedPtr<File> imageFile(File::Create(imagePathname, File::OPEN | File::READ));
 		if(!imageFile)
 		{
 			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't open file %s", imagePathname.GetAbsolutePathname().c_str());
@@ -77,29 +76,22 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 		}
 		
 		ImageSystem* system = ImageSystem::Instance();
-		if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->IsImage(imageFile))
-		{
-			size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PNG)->GetDataSize(imageFile);
-		}
-		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->GetDataSize(imageFile);
-		}
-		else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_PVR)->GetDataSize(imageFile);
-		}
-        else if(system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->IsImage(imageFile))
-		{
-            size += system->GetImageFormatInterface(ImageSystem::FILE_FORMAT_JPEG)->GetDataSize(imageFile);
-		}
+
+        ImageFormatInterface* imageInterface = system->GetImageFormatInterface(imagePathname);
+
+        if (!imageInterface)
+            imageInterface = system->GetImageFormatInterface(imageFile);
+
+        if (imageInterface)
+        {
+            size += imageInterface->GetDataSize(imageFile);
+        }
 		else
 		{
 			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());
 			DVASSERT(false);
 		}
 		
-		SafeRelease(imageFile);
 	}
 	
     return size;

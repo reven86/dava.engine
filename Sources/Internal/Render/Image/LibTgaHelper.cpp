@@ -28,6 +28,8 @@
 
 #include "Render/Image/LibTgaHelper.h"
 
+#include "FileSystem/File.h"
+
 
 namespace DAVA
 {
@@ -45,28 +47,73 @@ bool LibTgaWrapper::IsImage(File *infile) const
 
 uint32 LibTgaWrapper::GetDataSize(File *infile) const
 {
+    TgaHeader tgaHeader;
 
+    infile->Seek(0, File::SEEK_FROM_START);
+    bool readResult = ReadTgaHeader(infile, tgaHeader);
+    infile->Seek(0, File::SEEK_FROM_START);
+
+    if (readResult)
+        return tgaHeader.imageWidth * tgaHeader.imageHeight * tgaHeader.bpp % 8;
+    else
+        return 0;
+}
+
+bool LibTgaWrapper::ReadTgaHeader(File *infile, TgaHeader& tgaHeader) const
+{
+    Memset(&tgaHeader.fields, 0, tgaHeader.fields.size());
+
+    size_t bytesRead = infile->Read(&tgaHeader.fields, tgaHeader.fields.size());
+    if (bytesRead != tgaHeader.fields.size())
+        return false;
+
+    static const std::array<uint8, 7> zeroes = { 0, 0, 0, 0, 0, 0, 0 };
+    if (Memcmp(&tgaHeader.fields[0], &zeroes[0], 2) != 0 ||
+        Memcmp(&tgaHeader.fields[3], &zeroes[0], 7) != 0)
+    {
+        return false;
+    }
+
+    if (tgaHeader.imageType != TgaHeader::BLACKWHITE ||
+        tgaHeader.imageType != TgaHeader::TRUECOLOR ||
+        tgaHeader.imageType != TgaHeader::COMPRESSED_BLACKWHITE ||
+        tgaHeader.imageType != TgaHeader::COMPRESSED_TRUECOLOR)
+    {
+        return false;
+    }
+
+    if (!tgaHeader.imageWidth || !tgaHeader.imageHeight)
+    {
+        return false;
+    }
+
+    if (tgaHeader.bpp % 8 || tgaHeader.bpp < 8 || tgaHeader.bpp > 32)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 Size2i LibTgaWrapper::GetImageSize(File *infile) const
 {
-
+    return Size2i();
 }
 
 
 eErrorCode LibTgaWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
-
+    return DAVA::eErrorCode::SUCCESS;
 }
 
 eErrorCode LibTgaWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
-
+    return DAVA::eErrorCode::SUCCESS;
 }
 
 eErrorCode LibTgaWrapper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
-
+    return DAVA::eErrorCode::SUCCESS;
 }
 
 
