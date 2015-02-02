@@ -102,11 +102,11 @@ public:
     id<MTLRenderPipelineState>  state;
 };
 
-typedef Pool<PipelineStateMetal_t>              PipelineStateMetalPool;
-typedef Pool<PipelineStateMetal_t::ConstBuf>    ConstBufMetalPool;
+typedef Pool<PipelineStateMetal_t,RESOURCE_PIPELINE_STATE>          PipelineStateMetalPool;
+typedef Pool<PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER>  ConstBufMetalPool;
 
-RHI_IMPL_POOL(PipelineStateMetal_t);
-RHI_IMPL_POOL(PipelineStateMetal_t::ConstBuf);
+RHI_IMPL_POOL(PipelineStateMetal_t,RESOURCE_PIPELINE_STATE);
+RHI_IMPL_POOL(PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER);
 
 
 static RingBufferMetal                          DefaultConstRingBuffer;

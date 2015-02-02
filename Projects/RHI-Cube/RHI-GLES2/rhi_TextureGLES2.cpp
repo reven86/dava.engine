@@ -39,8 +39,8 @@ TextureGLES2_t::TextureGLES2_t()
 {
 }
 
-typedef Pool<TextureGLES2_t>    TextureGLES2Pool;
-RHI_IMPL_POOL(TextureGLES2_t);
+typedef Pool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
+RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
 
 
 namespace Texture

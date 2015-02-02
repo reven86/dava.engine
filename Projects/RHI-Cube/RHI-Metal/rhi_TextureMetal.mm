@@ -30,8 +30,8 @@ public:
     uint32          is_mapped:1;
 };
 
-typedef Pool<TextureMetal_t>    TextureMetalPool;
-RHI_IMPL_POOL(TextureMetal_t);
+typedef Pool<TextureMetal_t,RESOURCE_TEXTURE>    TextureMetalPool;
+RHI_IMPL_POOL(TextureMetal_t,RESOURCE_TEXTURE);
 
 
 namespace Texture
