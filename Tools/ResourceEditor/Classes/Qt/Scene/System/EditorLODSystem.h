@@ -50,24 +50,18 @@ public:
 	void AddEntity(DAVA::Entity * entity) override;
 	void RemoveEntity(DAVA::Entity * entity) override;
 
-	void AddSelectedLODsRecursive(DAVA::Entity *entity);
-	void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
-
 	void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
 
-	void CollectLODDataFromScene();
-
 	void CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
-	bool CanCreatePlaneLOD();
-	DAVA::FilePath GetDefaultTexturePathForPlaneEntity();
+	bool CanCreatePlaneLOD() const;
+	DAVA::FilePath GetDefaultTexturePathForPlaneEntity() const;
 
-	static void EnumerateLODsRecursive(DAVA::Entity *entity, DAVA::Vector<DAVA::LodComponent *> * lods);
 	static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
 
 	//TODO: remove after lod editing implementation
 	DAVA_DEPRECATED(void CopyLastLodToLod0());
 
-	bool CanDeleteLod();
+	bool CanDeleteLod() const;
 
 	void DeleteFirstLOD();
 	void DeleteLastLOD();
@@ -93,11 +87,17 @@ public:
 	inline bool GetAllSceneModeEnabled() const;
 	void SetAllSceneModeEnabled(bool enabled);
 protected:
+	void AddSelectedLODsRecursive(DAVA::Entity *entity);
+	void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
+	
+	void CollectLODDataFromScene();
+
 	void UpdateForceLayer();
 	void UpdateForceDistance();
 	void UpdateAllSceneModeEnabled();
 	void UpdateForceData();
 	void ResetForceState(DAVA::Entity *entity);
+	void ResetForceState(DAVA::LodComponent *lodComponent);
 
 	DAVA::uint32 sceneLodsLayersCount;
 	bool forceDistanceEnabled;
@@ -108,10 +108,9 @@ protected:
 	std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> lodTrianglesCount;
 	std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS > lodDistances;
 
-	DAVA::Deque<DAVA::Entity *> sceneEntities;
 	DAVA::Deque<DAVA::LodComponent *> sceneLODs;
 	DAVA::Deque<DAVA::LodComponent *> selectedLODs;
-	inline DAVA::Deque<DAVA::LodComponent *> &getCurrentLODs();
+	inline const DAVA::Deque<DAVA::LodComponent *> &getCurrentLODs() const;
 };
 
 inline DAVA::uint32 EditorLODSystem::GetLayerTriangles(DAVA::uint32 layerNum) const
@@ -149,7 +148,7 @@ inline bool EditorLODSystem::GetAllSceneModeEnabled() const
 	return allSceneModeEnabled;
 }
 
-inline DAVA::Deque<DAVA::LodComponent *> &EditorLODSystem::getCurrentLODs()
+inline const DAVA::Deque<DAVA::LodComponent *> &EditorLODSystem::getCurrentLODs() const
 {
 	return allSceneModeEnabled ? sceneLODs : selectedLODs;
 }
