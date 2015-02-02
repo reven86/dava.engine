@@ -2,9 +2,13 @@
 #define __FRAMEWORKLOOP_H__
 
 
+#include <QPointer>
+
 #include "DavaLoop.h"
 #include "Platform/Qt5/QtLayer.h"
 
+
+class DavaGLWidgetV2;
 
 class FrameworkLoop
     : public LoopItem
@@ -16,6 +20,8 @@ public:
     FrameworkLoop();
     ~FrameworkLoop();
 
+    void SetGLWidget( QWidget *w );
+
     // LoopItem
     void ProcessFrame() override;
 
@@ -24,6 +30,7 @@ public:
     void ShowAssertMessage( const char* message ) override;
 
 private:
+    QPointer< DavaGLWidgetV2 > glWidget;
 };
 
 

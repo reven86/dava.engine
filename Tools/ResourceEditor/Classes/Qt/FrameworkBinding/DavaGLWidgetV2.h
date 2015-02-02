@@ -19,6 +19,9 @@ public:
     void Init();
     quint64 GetContextId() const;
 
+    void BeginFrame();
+    void EndFrame();
+
 private:
     void initializeGL() override;
 };

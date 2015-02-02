@@ -72,6 +72,7 @@
 
 #include "FrameworkBinding/DavaLoop.h"
 #include "FrameworkBinding/FrameworkLoop.h"
+#include "FrameworkBinding/DavaGLWidgetV2.h"
 
 
 void UnpackHelpDoc();
@@ -183,7 +184,10 @@ int main(int argc, char *argv[])
             DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
 
             // Register event loop
-            DavaLoop::Instance()->StartLoop( new FrameworkLoop() );
+            QWidget *glWidget = QtMainWindow::Instance()->GetSceneWidget()->GetDavaWidget();
+            FrameworkLoop *loop = new FrameworkLoop();
+            loop->SetGLWidget( glWidget );
+            DavaLoop::Instance()->StartLoop( loop );
 
 		    // start app
 		    ret = a.exec();

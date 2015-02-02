@@ -35,11 +35,12 @@ void DavaGLWidgetV2::initializeGL()
     QOpenGLContext *c = context();
     const bool result = c->create();
     DVASSERT( result );
-    makeCurrent();
 }
 
 void DavaGLWidgetV2::Init()
 {
+    BeginFrame();
+
     const int w = width();
     const int h = height();
     
@@ -47,6 +48,8 @@ void DavaGLWidgetV2::Init()
 
     qtLayer->SetupWidget( GetContextId(), w, h );
     qtLayer->OnResume();
+
+    EndFrame();
 }
 
 quint64 DavaGLWidgetV2::GetContextId() const
@@ -56,4 +59,14 @@ quint64 DavaGLWidgetV2::GetContextId() const
     const quint64 contextId = reinterpret_cast<quint64>( nativeContext.context() );
 
     return contextId;
+}
+
+void DavaGLWidgetV2::BeginFrame()
+{
+    makeCurrent();
+}
+
+void DavaGLWidgetV2::EndFrame()
+{
+    doneCurrent();
 }
