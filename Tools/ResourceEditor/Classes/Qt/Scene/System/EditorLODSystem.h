@@ -34,7 +34,6 @@
 // framework
 #include "Entity/SceneSystem.h"
 #include "DAVAEngine.h"
-#include <array>
 
 class EntityGroup;
 class Command2;
