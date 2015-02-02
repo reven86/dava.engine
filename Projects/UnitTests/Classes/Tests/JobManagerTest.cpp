@@ -155,9 +155,8 @@ void JobManagerTest::ThreadFunc(BaseObject * bo, void * userParam, void * caller
     TestJobOwner * jobOwner = new TestJobOwner(&data->ownedMainJobsVar);
     for (uint32 i = 0; i < JOBS_COUNT; ++i)
     {
-        JobManager::Instance()->CreateOwnedMainJob(MakeFunction(jobOwner, &TestJobOwner::AnyFunction), jobOwner);
+        JobManager::Instance()->CreateMainJob(MakeFunction(PointerOwner<TestJobOwner>::OwnRetainRelease(jobOwner), &TestJobOwner::AnyFunction));
     }
     jobOwner->Release();
-
     JobManager::Instance()->WaitMainJobs();
 }
