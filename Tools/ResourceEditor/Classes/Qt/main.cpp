@@ -107,7 +107,6 @@ int main(int argc, char *argv[])
     ParticleEmitter::FORCE_DEEP_CLONE = true;
 
 	CommandLineManager cmdLine;
-
 	if(cmdLine.IsEnabled())
 	{
 		Core::Instance()->EnableConsoleMode();
@@ -117,7 +116,7 @@ int main(int argc, char *argv[])
 
 #if defined (__DAVAENGINE_MACOS__)
         DAVA::QtLayerMacOS *qtLayer = (DAVA::QtLayerMacOS *) DAVA::QtLayer::Instance();
-        qtLayer->InitializeGlWindow((void *)NULL, 0, 0);
+        qtLayer->InitializeGlWindow(nullptr, 0, 0);
 
         DAVA::QtLayer::Instance()->Resize(0, 0);
 #elif defined (__DAVAENGINE_WIN32__)
@@ -154,6 +153,7 @@ int main(int argc, char *argv[])
 	}
     else
     {
+        
 #ifdef Q_OS_MAC
         FixOSXFonts();  // Must be called before creating QApplication instance
 #endif
@@ -168,7 +168,6 @@ int main(int argc, char *argv[])
 
         if ( runGuard.tryToRun() )
         {
-            
             LicenceDialog licenceDlg;
             if ( licenceDlg.process() )
             {
@@ -211,7 +210,7 @@ int main(int argc, char *argv[])
 	DAVA::QtLayer::Instance()->Release();
 	DAVA::Core::Instance()->Release();
 
-	return ret;
+    return ret;
 }
 
 void UnpackHelpDoc()
