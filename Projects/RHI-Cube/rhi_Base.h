@@ -191,13 +191,8 @@ void    End( Handle pass );
 namespace CommandBuffer
 {
 
-//- Handle  Allocate();
-//- void    Submit( Handle cmdBuf ); // cmd.buf handle becomes invalid at this point
-
 void    Begin( Handle cmdBuf );
-//- void    Begin( Handle cmdBuf, const RenderPassConfig& pass );
 void    End( Handle cmdBuf );
-
 
 void    Clear( Handle cmdBuf );
 void    SetPipelineState( Handle cmdBuf, Handle ps );

@@ -28,6 +28,7 @@ public:
 };
 
 typedef Pool<IndexBufferDX9_t>   IndexBufferDX9Pool;
+RHI_IMPL_POOL(IndexBufferDX9_t);
 
 
 //==============================================================================

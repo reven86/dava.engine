@@ -105,6 +105,10 @@ public:
 typedef Pool<PipelineStateMetal_t>              PipelineStateMetalPool;
 typedef Pool<PipelineStateMetal_t::ConstBuf>    ConstBufMetalPool;
 
+RHI_IMPL_POOL(PipelineStateMetal_t);
+RHI_IMPL_POOL(PipelineStateMetal_t::ConstBuf);
+
+
 static RingBufferMetal                          DefaultConstRingBuffer;
 
 

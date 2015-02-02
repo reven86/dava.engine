@@ -41,8 +41,8 @@
 namespace rhi
 {
 
-typedef uint64 Handle;
-static const uint64 InvalidHandle = 0;
+typedef uint32 Handle;
+static const uint32 InvalidHandle = 0;
 
 enum
 Api

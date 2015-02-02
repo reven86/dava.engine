@@ -35,6 +35,21 @@
 namespace rhi
 {
 
+enum
+{
+    HANDLE_INDEX_MASK       = 0x0000FFFFU,
+    HANDLE_INDEX_SHIFT      = 0,
+
+    HANDLE_GENERATION_MASK  = 0x00FF0000U,
+    HANDLE_GENERATION_SHIFT = 16,
+    
+    HANDLE_TYPE_MASK        = 0xFF000000U,
+    HANDLE_TYPE_SHIFT       = 24,
+
+    HANDLE_FORCEUINT32      = 0xFFFFFFFFU 
+};
+
+
 template <class T>
 class
 Pool
@@ -48,7 +63,22 @@ public:
 
 
 private:
+
+    struct
+    Entry
+    {
+        T       object;
+        uint32  allocated:1;
+        uint32  generation:8;
+    };
+
+    static Entry*   Object;
+    static unsigned ObjectCount;
 };
+
+#define RHI_IMPL_POOL(T) \
+template<> rhi::Pool<T>::Entry* rhi::Pool<T>::Object      = 0; \
+template<> unsigned             rhi::Pool<T>::ObjectCount = 1024; \
 
 
 //------------------------------------------------------------------------------
@@ -57,7 +87,34 @@ template <class T>
 inline Handle
 Pool<T>::Alloc()
 {
-    return Handle(new T());
+    uint32  handle = InvalidHandle;
+
+    if( !Object )
+    {
+        Object = new Entry[ObjectCount];
+        
+        for( Entry* e=Object,*e_end=Object+ObjectCount; e!=e_end; ++e )
+        {
+            e->allocated  = false;
+            e->generation = 0;
+        }
+    }
+
+    for( Entry* e=Object,*e_end=Object+ObjectCount; e!=e_end; ++e )
+    {
+        if( !e->allocated )
+        {
+            e->allocated = true;
+            ++e->generation;
+            
+            handle = 0;
+            handle = ((uint32(e-Object)<<HANDLE_INDEX_SHIFT) & HANDLE_INDEX_MASK) | (((e->generation)<<HANDLE_GENERATION_SHIFT)&HANDLE_GENERATION_MASK);
+            break;
+        }
+    }
+    
+    return handle;
+//-    return Handle(new T());
 }
 
 
@@ -67,7 +124,13 @@ template <class T>
 inline void
 Pool<T>::Free( Handle h )
 {
-    delete (T*)h;
+    uint32  index = (h&HANDLE_INDEX_MASK)>>HANDLE_INDEX_SHIFT;    
+    DVASSERT(index < ObjectCount);
+    Entry*  e     = Object + index;
+
+    DVASSERT(e->allocated);
+    e->allocated = false;
+//-    delete (T*)h;
 }
 
 
@@ -77,7 +140,17 @@ template <class T>
 inline T*
 Pool<T>::Get( Handle h )
 {
-    return (T*)h;
+    T*      object = 0;
+    uint32  index  = (h&HANDLE_INDEX_MASK)>>HANDLE_INDEX_SHIFT;
+    uint32  gen    = (h&HANDLE_GENERATION_MASK)>>HANDLE_GENERATION_SHIFT;
+    DVASSERT(index < ObjectCount);
+    Entry*  e     = Object + index;
+
+    DVASSERT(e->allocated);
+    DVASSERT(e->generation == gen);
+
+    return &(e->object);
+//-    return (T*)h;
 }
 
 

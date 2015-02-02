@@ -23,13 +23,14 @@ public:
                             VertexBufferDX9_t();
                             ~VertexBufferDX9_t();
 
-
     unsigned                _size;
     IDirect3DVertexBuffer9* _vb9;
     unsigned                _mapped:1;
 };
 
 typedef Pool<VertexBufferDX9_t>   VertexBufferDX9Pool;
+
+RHI_IMPL_POOL(VertexBufferDX9_t);
 
 
 VertexBufferDX9_t::VertexBufferDX9_t()

@@ -34,6 +34,7 @@ VertexBufferGLES2_t
 };
 
 typedef Pool<VertexBufferGLES2_t>   VertexBufferGLES2Pool;
+RHI_IMPL_POOL(VertexBufferGLES2_t);
 
 
 //==============================================================================

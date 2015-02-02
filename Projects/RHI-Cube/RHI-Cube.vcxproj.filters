@@ -68,9 +68,6 @@
     <ClInclude Include="Classes\FrameworkMain.h">
       <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="rhi_Pool.h">
-      <Filter>RHI %28private/impl%29</Filter>
-    </ClInclude>
     <ClInclude Include="rhi_Base.h">
       <Filter>RHI-interface</Filter>
     </ClInclude>
