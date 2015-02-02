@@ -41,7 +41,25 @@ namespace DAVA
 {
 
 class File;
+class JniCrashReporter
+{
+public:
+    struct CrashStep
+    {
+        const char * module;
+        const char * function;
+        int32 fileLine;
+    };
+	JniCrashReporter();
+    void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
+       
+private:
+	JNI::JavaClass jniCrashReporter;
+	Function<void (jstringArray, jstringArray, jintArray)> throwJavaExpetion;
 
+	JNI::JavaClass jniString;
+};
+    
 class AndroidCrashReport
 {
 public:
@@ -50,29 +68,24 @@ public:
 
 private:
 	static void SignalHandler(int signal, siginfo_t *info, void *uapVoid);
-
+	static void OnStackFrame(pointer_size addr);
+	JniCrashReporter::CrashStep FormatTeamcityIdStep(int32 addr);
 private:
 	static stack_t s_sigstk;
+	
+	//pre allocated here to be used inside signal handler
+	static Vector<JniCrashReporter::CrashStep> crashSteps;
+    static const size_t functionStringSize = 30;
+    static const size_t maxStackSize = 256;
+	
+	static const char * teamcityBuildNamePrototype;
+	static const char * teamcityBuildNamePrototypeEnd;
+	static const char * teamcityBuildNamePrototypePlaceHolder;
+	
+	static char * teamcityBuildName;
+    static char functionString[maxStackSize][functionStringSize];
 };
 
-class JniCrashReporter
-{
-public:
-	struct CrashStep
-	{
-		String module;
-		String function;
-		int32 fileLine;
-	};
-	JniCrashReporter();
-	void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
-
-private:
-	JNI::JavaClass jniCrashReporter;
-	Function<void (jstringArray, jstringArray, jintArray)> throwJavaExpetion;
-
-	JNI::JavaClass jniString;
-};
 
 
 }

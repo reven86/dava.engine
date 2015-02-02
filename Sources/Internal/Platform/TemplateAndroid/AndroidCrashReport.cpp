@@ -34,12 +34,13 @@
 #include "FileSystem/File.h"
 #include <dlfcn.h>
 #include <unistd.h>
-
+#include <stdio.h>
+#include <string.h>
 
 #include "ExternC/AndroidLayer.h"
 
-
-
+#include "BacktraceAndroid/BacktraceInterface.h"
+#include "BacktraceAndroid/AndroidBacktraceChooser.h"
 /* Maximum value of a caught signal. */
 #define SIG_NUMBER_MAX 32
 
@@ -47,6 +48,12 @@ namespace DAVA
 {
 
 
+char * AndroidCrashReport::teamcityBuildName  = nullptr;
+Vector<JniCrashReporter::CrashStep> AndroidCrashReport::crashSteps ;
+const char * AndroidCrashReport::teamcityBuildNamePrototype = "CrashApp::CrashedSignal";
+const char * AndroidCrashReport::teamcityBuildNamePrototypeEnd = "()";
+const char * AndroidCrashReport::teamcityBuildNamePrototypePlaceHolder = "FFFFFFFFFF";
+char AndroidCrashReport::functionString[AndroidCrashReport::maxStackSize][AndroidCrashReport::functionStringSize];
 
 static int fatalSignals[] = {
 	SIGABRT,
@@ -56,6 +63,32 @@ static int fatalSignals[] = {
 	SIGSEGV,
 	SIGTRAP
 };
+//This function is needed to format string inside signal
+// unfortunatly "man signal" does not list sprintf as signal safe 
+//so it depends on particular implementation
+char map[] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+template< typename T>
+void ToHex(T value, char * str, int size,bool endline)
+{
+    if(size < 4) return;
+    int strLen = static_cast<int>(sizeof(value)*2)+(endline?3:2);
+    if(strLen > size)
+        strLen = size;
+
+	if(endline)
+    	str[strLen-1] = '\0';
+    str[0] = '0';
+    str[1] = 'x';
+    for(int i = strLen-2; i >= 2; i--)
+    {
+        T tmp =(0xF & value);
+        str[i] = tmp;
+        str[i] = map[str[i]];
+        value = value >> 4;
+    }
+	if(endline)
+    	str[size-1] = '\0';
+}
 
 static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 
@@ -79,8 +112,8 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
     int* fileLines = new int[chashSteps.size()];
     for (uint i = 0; i < chashSteps.size(); ++i)
     {
-        env->SetObjectArrayElement(jModuleArray, i, env->NewStringUTF(chashSteps[i].module.c_str()));
-        env->SetObjectArrayElement(jFunctionArray, i, env->NewStringUTF(chashSteps[i].function.c_str()));
+        env->SetObjectArrayElement(jModuleArray, i, env->NewStringUTF(chashSteps[i].module));
+        env->SetObjectArrayElement(jFunctionArray, i, env->NewStringUTF(chashSteps[i].function));
         fileLines[i] = chashSteps[i].fileLine;
     }
     env->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
@@ -90,128 +123,108 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
     delete [] fileLines;
 }
 
-//libcorkscrew definition
-typedef struct map_info {
-    struct map_info* next;
-    uintptr_t start;
-    uintptr_t end;
-    bool is_readable;
-    bool is_executable;
-    void* data; // arbitrary data associated with the map by the user, initially NULL
-    char name[];
-} map_info_t;
 
-typedef struct {
-    uintptr_t absolute_pc;
-    uintptr_t stack_top;
-    size_t stack_size;
-} backtrace_frame_t;
-
-typedef struct {
-    uintptr_t relative_pc;
-    uintptr_t relative_symbol_addr;
-    char* map_name;
-    char* symbol_name;
-    char* demangled_name;
-} backtrace_symbol_t;
-
-typedef ssize_t (*t_unwind_backtrace_signal_arch)(siginfo_t* si, void* sc, const map_info_t* lst, backtrace_frame_t* bt, size_t ignore_depth, size_t max_depth);
-static t_unwind_backtrace_signal_arch unwind_backtrace_signal_arch;
-
-typedef map_info_t* (*t_acquire_my_map_info_list)();
-static t_acquire_my_map_info_list acquire_my_map_info_list;
-
-typedef void (*t_release_my_map_info_list)(map_info_t* milist);
-static t_release_my_map_info_list release_my_map_info_list;
-
-typedef void (*t_get_backtrace_symbols)(const backtrace_frame_t* backtrace, size_t frames, backtrace_symbol_t* symbols);
-static t_get_backtrace_symbols get_backtrace_symbols;
-
-typedef void (*t_free_backtrace_symbols)(backtrace_symbol_t* symbols, size_t frames);
-static t_free_backtrace_symbols free_backtrace_symbols;
-//libcorkscrew definition
 
 static struct sigaction *sa_old;
-
 void AndroidCrashReport::Init()
 {
-	/*
-	 * define USE_NDKSTACK_TOOL for desybolicating callstack with ndk-stack tool
-	 * adb logcat | ./ndk-stack -sym
-	 *
-	 * define DESYM_STACK for desybolicating callstack with libcorkscrew
-	 */
-#if defined(__DAVAENGINE_DEBUG__) && defined(USE_NDKSTACK_TOOL)
-	return;
-#endif
-	void* libcorkscrew = dlopen("/system/lib/libcorkscrew.so", RTLD_NOW);
-	if (libcorkscrew)
+#if defined(DCRASH_HANDLER_CUSTOMSIGNALS)
+	//creating custom signal handler
+	//this is legacy implementation and uses some asynch unsafe functions
+	BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
+	if(backtraceProvider != nullptr)
 	{
-		unwind_backtrace_signal_arch = (t_unwind_backtrace_signal_arch) dlsym(libcorkscrew, "unwind_backtrace_signal_arch");
-		if (!unwind_backtrace_signal_arch) LOGE("unwind_backtrace_signal_arch not found");
+		s_sigstk.ss_size = 64 * 1024;
+		s_sigstk.ss_sp = malloc(s_sigstk.ss_size);
+		s_sigstk.ss_flags = 0;
 
-		acquire_my_map_info_list = (t_acquire_my_map_info_list) dlsym(libcorkscrew, "acquire_my_map_info_list");
-		if (!acquire_my_map_info_list) LOGE("acquire_my_map_info_list not found");
+		if (sigaltstack(&s_sigstk, 0) < 0)
+		{
+			LOGE("CUSTOMSIGNALS Could not initialize alternative signal stack");
+		}
+		sa_old = (struct sigaction*)::malloc(sizeof(struct sigaction)*SIG_NUMBER_MAX);
 
-		get_backtrace_symbols = (t_get_backtrace_symbols) dlsym(libcorkscrew, "get_backtrace_symbols");
-		if (!get_backtrace_symbols) LOGE("get_backtrace_symbols not found");
-
-		free_backtrace_symbols = (t_free_backtrace_symbols) dlsym(libcorkscrew, "free_backtrace_symbols");
-		if (!free_backtrace_symbols) LOGE("free_backtrace_symbols not found");
-
-		release_my_map_info_list = (t_release_my_map_info_list) dlsym(libcorkscrew, "release_my_map_info_list");
-		if (!release_my_map_info_list) LOGE("release_my_map_info_list not found");
+		for (int i = 0; i < fatalSignalsCount; i++)
+		{
+			struct sigaction sa;
+			memset(&sa, 0, sizeof(sa));
+			sa.sa_flags = SA_SIGINFO|SA_ONSTACK;
+			sigemptyset(&sa.sa_mask);
+			sa.sa_sigaction = &SignalHandler;
+		
+			if (sigaction(fatalSignals[i], &sa, &sa_old[fatalSignals[i]]) != 0)
+			{
+				LOGE("CUSTOMSIGNALS Signal registration for failed:");
+			}
+		}
+		// all important libs are likely to be loaded at this point
+		backtraceProvider->BuildMemoryMap();
 	}
 	else
 	{
-		LOGE("libcorkscrew not found");
+		LOGE("CUSTOMSIGNALS This device is doesn't have a valid backtrace implementattion!");
 	}
-#if defined(__arm__)
-    s_libunwindLoaded = DynLoadLibunwind();
+	crashSteps.reserve(maxStackSize);
+	//we pre-format the first step here to avoid doing it in signal
+	//crashSteps.push_back(FormatTeamcityIdStep(0,));
+
+	size_t protoLen = strlen(teamcityBuildNamePrototype) 
+		+strlen(teamcityBuildNamePrototypeEnd)+  strlen(teamcityBuildNamePrototypePlaceHolder) ;
+	
+    teamcityBuildName = new char[protoLen];
+	strcpy(teamcityBuildName,teamcityBuildNamePrototype);
+	
+	size_t offset = strlen(teamcityBuildNamePrototype);
+	strcpy(teamcityBuildName+ offset
+		,teamcityBuildNamePrototypePlaceHolder);
+	
+	offset += strlen(teamcityBuildNamePrototypePlaceHolder);
+	strcpy(teamcityBuildName+offset,teamcityBuildNamePrototypeAddr);
+	
+	
+	offset += strlen(teamcityBuildNamePrototypePlaceHolder);
+	strcpy(teamcityBuildName+offset,teamcityBuildNamePrototypeEnd);
+	
+	
 #endif
-	s_sigstk.ss_size = 64 * 1024;
-	s_sigstk.ss_sp = malloc(s_sigstk.ss_size);
-	s_sigstk.ss_flags = 0;
 
-	if (sigaltstack(&s_sigstk, 0) < 0)
-	{
-		LOGE("Could not initialize alternative signal stack");
-	}
-	sa_old = (struct sigaction*)::malloc(sizeof(struct sigaction)*SIG_NUMBER_MAX);
-
-	for (int i = 0; i < fatalSignalsCount; i++)
-	{
-		struct sigaction sa;
-		memset(&sa, 0, sizeof(sa));
-		sa.sa_flags = SA_SIGINFO|SA_ONSTACK;
-		sigemptyset(&sa.sa_mask);
-		sa.sa_sigaction = &SignalHandler;
-		
-		if (sigaction(fatalSignals[i], &sa, &sa_old[fatalSignals[i]]) != 0)
-		{
-			LOGE("Signal registration for failed:");
-		}
-	}
+	
 }
-
-const map_info_t* find_map_info(const map_info_t* milist, uintptr_t addr) {
-    const map_info_t* mi = milist;
-    while (mi && !(addr >= mi->start && addr < mi->end)) {
-        mi = mi->next;
-    }
-    return mi;
-}
-JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int signal, siginfo_t *siginfo,int32 addr)
+JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int32 addr)
 {
     JniCrashReporter::CrashStep buildId;
 #ifdef TEAMCITY_BUILD_TYPE_ID
     buildId.module = TEAMCITY_BUILD_TYPE_ID;
 #endif
-    char fakeFunction[64];
-    snprintf(fakeFunction, 64,"CrashApp::CrashedSignal%dAddr0x%08x()",signal,reinterpret_cast<int32>(siginfo->si_addr));
-    buildId.function = std::string(fakeFunction);
+    
+	
+	ToHex(addr,teamcityBuildName+strlen(teamcityBuildNamePrototype),strlen(teamcityBuildNamePrototypePlaceHolder),false);
+	buildId.function = teamcityBuildNamePrototype;
     buildId.fileLine = (addr);
     return buildId;
+}
+void AndroidCrashReport::OnStackFrame(pointer_size addr)
+{
+	if(crashSteps.size() >= maxStackSize) return;
+#ifdef TEAMCITY_BUILD_TYPE_ID	
+	//no sence in adding crash step without crash id
+	if(crashSteps.size() == 0)
+	{
+		crashSteps.push_back(FormatTeamcityIdStep(addr));
+	}
+#endif
+	const char * libName = NULL;
+	pointer_size relAddres = 0;
+	BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
+	backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
+	ToHex(relAddres,functionString[crashSteps.size()],functionStringSize,true);
+	JniCrashReporter::CrashStep step;
+	step.module = libName;
+	step.function = functionString[crashSteps.size()];
+	step.fileLine = relAddres;
+	//LOGE("FRAME_STACK frame stack 0x%lx %s %s",step.fileLine,step.function, step.module);
+	crashSteps.push_back(step);
+
 }
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
@@ -222,99 +235,16 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 
 	alarm(30);
 	//kill the app if it freezes
-
-	Vector<JniCrashReporter::CrashStep> crashSteps;
-    // Android from 4.2 till 5.0(excluding)
-	if (unwind_backtrace_signal_arch != NULL)
+	
+	BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
+	if(backtraceProvider != nullptr)
 	{
-		map_info_t *map_info = acquire_my_map_info_list();
-		backtrace_frame_t frames[256] = {0};
-
-		const ssize_t size = unwind_backtrace_signal_arch(siginfo, sigcontext, map_info, frames, 0, 255);
-
-
-		for (int i = 0; i < size; ++i)
-		{
-			JniCrashReporter::CrashStep step;
-
-			const map_info_t* mi = find_map_info(map_info, frames[i].absolute_pc);
-			if (mi)
-			{
-				char s[256];
-				const backtrace_frame_t* frame = &frames[i];
-				snprintf(s,256, "0x%08x", (frame->absolute_pc - mi->start));
-				step.function = std::string(s);
-				if (mi->name[0])
-				{
-					step.module = std::string(strdup(mi->name)) + " ";
-				}
-#ifdef TEAMCITY_BUILD_TYPE_ID				
-				if (i == 0)
-				{
-                    crashSteps.push_back(FormatTeamcityIdStep(signal,siginfo,(frame->absolute_pc - mi->start)));
-				}
-#endif				
-
-			}
-
-			step.fileLine = 0;
-
-			crashSteps.push_back(step);
-            if(!step.function.empty())
-                LOGE("CRASH-STACK-TRACE:%s",step.function.c_str());
-		}
-		//free_backtrace_symbols(symbols, size);
-		//release_my_map_info_list(map_info);
-        
+		//LOGE("FRAME_STACK backtracing %d %d",sigcontext,siginfo);
+		//backtraceProvider->Backtrace(&AndroidCrashReport::onStackFrame,sigcontext,siginfo);
+		backtraceProvider->Backtrace(AndroidCrashReport::OnStackFrame
+				,sigcontext,siginfo);
+		return;
 	}
-#if defined(__arm__)
-    // Android 5.0 and up hopefully
-    else if (s_libunwindLoaded == true)
-    {
-        LOGE("Alternative Crash reporting is on!");
-        // mapping can change so we can't preload it
-        DAVA::UnwindProcMaps unwindMap;
-       
-        unw_word_t ipInstructionsStack[256] = {0};
-        
-        //custom format context for libunwind
-        unw_context_t uctx;
-        
-        ConvertContextARM((ucontext_t*)sigcontext,&uctx);
-        int32 foundFrames = GetAndroidBacktrace(&uctx, ipInstructionsStack, 255);
-        char * libName = NULL;
-        unw_word_t addresInLib;
-        LOGE("ALTERNATIVE-CRASH-REPORT: %d",foundFrames);
-        for (int32 i=0;i<foundFrames; i++)
-        {
-            JniCrashReporter::CrashStep step;
-            unwindMap.FindLocalAddresInfo(ipInstructionsStack[i],&libName,&addresInLib);
-            char s[256];
-            
-            snprintf(s,256, "0x%08x", addresInLib);
-            step.function = std::string(s);
-            step.fileLine = 0;
-            if (libName != NULL)
-            {
-                step.module = std::string(libName) + " ";
-            }
-#ifdef TEAMCITY_BUILD_TYPE_ID
-            if ( i =0 )
-            {
-                crashSteps.push_back(FormatTeamcityIdStep(signal,siginfo,addresInLib));
-            }
-#endif
-            LOGE("ALTERNATIVE-CRASH-REPORT: ADRESS 0x%08x",addresInLib);
-            crashSteps.push_back(step);
-            if(!step.function.empty())
-                LOGE("CRASH-STACK-TRACE:%s",step.function.c_str());
-            if(!step.module.empty())
-                LOGE("CRASH-STACK-TRACE:%s",step.module.c_str());
-            
-        }
-        
-    }
-#endif //#if defined(__arm__)
 	else
 	{
 		JniCrashReporter::CrashStep step;
@@ -331,7 +261,7 @@ void AndroidCrashReport::ThrowExeption(const String& message)
 	Vector<JniCrashReporter::CrashStep> crashSteps;
 
 	JniCrashReporter::CrashStep step;
-	step.module = message;
+	step.module = message.c_str();
 	crashSteps.push_back(step);
 
 	JniCrashReporter crashReport;
