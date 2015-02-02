@@ -161,7 +161,7 @@ function GetParameter(name, default)
     end
     if testData and testData[name] then
         return testData[name]
-    elseif default then
+    elseif default ~= nil then
         return default
     end
     OnError("Couldn't find value for variable " .. name)
@@ -355,8 +355,8 @@ function IsOnScreen(control, background)
     local rect = geomData:GetUnrotatedRect()
     geomData = screen:GetGeometricData()
     local backRect = geomData:GetUnrotatedRect()
-    return toboolean((rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y)
-            and (rect.y + rect.dy <= backRect.y + backRect.dy))
+    return toboolean((backRect.x - rect.x <= 1) and ((rect.x + rect.dx) - (backRect.x + backRect.dx) <= 1) and (backRect.y - rect.y <= 1)
+            and ((rect.y + rect.dy) - (backRect.y + backRect.dy) <= 1))
 end
 
 function IsCenterOnScreen(control, background)

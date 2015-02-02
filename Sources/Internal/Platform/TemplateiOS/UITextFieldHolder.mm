@@ -33,7 +33,7 @@
 #include "UI/UITextFieldiPhone.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 @implementation UITextFieldHolder
 
@@ -215,7 +215,7 @@
 	textField.autocorrectionType = [self convertAutoCorrectionType: (DAVA::UITextField::eAutoCorrectionType)cppTextField->GetAutoCorrectionType()];
 	
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
-	textField.spellCheckingType = [self convertSpellCheckingType: cppTextField->GetSpellCheckingType()];
+	textField.spellCheckingType = [self convertSpellCheckingType: (DAVA::UITextField::eSpellCheckingType)cppTextField->GetSpellCheckingType()];
 #endif
 	textField.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
 	textField.keyboardAppearance = [self convertKeyboardAppearanceType: (DAVA::UITextField::eKeyboardAppearanceType)cppTextField->GetKeyboardAppearanceType()];

@@ -102,6 +102,8 @@ TextBlock::TextBlock()
     , cacheOx(0)
     , cacheOy(0)
     , textureForInvalidation(NULL)
+    , scale(1.f, 1.f)
+	, angle(0.f)
 {
     font = NULL;
     isMultilineEnabled = false;
@@ -196,9 +198,29 @@ void TextBlock::SetPosition(const Vector2& position)
     this->position = position;
 }
 
-void TextBlock::SetPivotPoint(const Vector2& pivotPoint)
+void TextBlock::SetAngle(const float _angle)
 {
-    this->pivotPoint = pivotPoint;
+	angle = _angle;
+}
+
+void TextBlock::SetPivot(const Vector2 & _pivot)
+{
+	pivot = _pivot;
+}
+
+void TextBlock::SetScale(const Vector2 & _scale)
+{
+    mutex.Lock();
+
+    if (scale != _scale)
+    {
+        scale = _scale;
+
+        mutex.Unlock();
+        Prepare();
+        return;
+    }
+    mutex.Unlock();
 }
 
 void TextBlock::SetText(const WideString & _string, const Vector2 &requestedTextRectSize)
@@ -478,7 +500,7 @@ void TextBlock::CalculateCacheParams()
     CleanLine(visualText);
 
     bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
-    renderSize = originalFontSize;
+    renderSize = originalFontSize * scale.y;
     font->SetSize(renderSize);
     Vector2 drawSize = rectSize;
 
@@ -842,6 +864,8 @@ void TextBlock::CalculateCacheParams()
         for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
         {
             Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
+            stringSize.drawRect.dx += stringSize.drawRect.x;
+            stringSize.drawRect.x = 0;
             stringSizes.push_back(stringSize.width);
             if(requestedSize.dx >= 0)
             {
@@ -952,6 +976,7 @@ TextBlock * TextBlock::Clone()
 {
     TextBlock *block = new TextBlock();
 
+    block->SetScale(scale);
     block->SetRectSize(rectSize);
     block->SetMultiline(GetMultiline(), GetMultilineBySymbol());
     block->SetAlign(align);
