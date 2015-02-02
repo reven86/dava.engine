@@ -193,12 +193,12 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
 {
     VegetationCustomGeometrySerializationDataPtr result;
 
-    DAVA::ScopedPtr<Scene> scene(new Scene);
+    ScopedPtr<Scene> scene(new Scene);
     Entity* sceneRootNode = scene->GetRootNode(scenePath);
     
     if (!sceneRootNode)
     {
-        DAVA::Logger::Error("Cannot load custom geometry scene specified");
+        Logger::Error("Cannot load custom geometry scene specified");
         return result;
     }
     
@@ -215,7 +215,7 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
     Entity* currentVariation = sceneRootNode->FindByName(VEGETATION_ENTITY_VARIATION_0);
     if (!currentVariation)
     {
-        DAVA::Logger::Error("Invalid scene structure: variations!");
+        Logger::Error("Invalid scene structure: variations!");
         return result;
     }
 
@@ -225,7 +225,7 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
         Entity* layerEntity = currentVariation->FindByName(VEGETATION_ENTITY_LAYER_NAMES[layerIndex]);
         if (!layerEntity)
         {
-            DAVA::Logger::Error("Invalid scene structure: layers!");
+            Logger::Error("Invalid scene structure: layers!");
             return result;
         }
 
@@ -239,24 +239,17 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
         Vector<Vector<Vector3> >& layerNormals = normalLods[normalLods.size() - 1];
         Vector<Vector<VegetationIndex> >& layerIndices = indexLods[indexLods.size() - 1];
 
-        RenderComponent* rc = GetRenderComponent(layerEntity);
-        if (!rc)
-        {
-            DAVA::Logger::Error("Invalid scene structure: no render component!");
-            return result;
-        }
-
-        RenderObject* ro = rc->GetRenderObject();
+        RenderObject* ro = GetRenderObject(layerEntity);
         if (!ro)
         {
-            DAVA::Logger::Error("Invalid scene structure: no render object!");
+            Logger::Error("Invalid scene structure: no render object!");
             return result;
         }
 
         uint32 renderBatchCount = ro->GetRenderBatchCount();
         if (!ro->GetRenderBatchCount())
         {
-            DAVA::Logger::Error("Invalid scene structure: no render batches!");
+            Logger::Error("Invalid scene structure: no render batches!");
             return result;
         }
 

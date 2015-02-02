@@ -1197,7 +1197,7 @@ void VegetationRenderObject::ClearRenderBatches()
     renderBatchPool.ReturnAll();
 }
 
-inline void VegetationRenderObject::SetCustomGeometryPath(const FilePath& path)
+void VegetationRenderObject::SetCustomGeometryPath(const FilePath& path)
 {
     if (!path.IsEmpty() && path.Exists())
     {

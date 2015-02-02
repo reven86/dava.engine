@@ -156,7 +156,7 @@ public:
     inline bool GetVegetationVisible() const;
     
     inline const FilePath& GetCustomGeometryPath() const;
-    inline void SetCustomGeometryPath(const FilePath& path);
+    void SetCustomGeometryPath(const FilePath& path);
     
     inline void SetCameraBias(const float32& bias);
     inline float32 GetCameraBias() const;
