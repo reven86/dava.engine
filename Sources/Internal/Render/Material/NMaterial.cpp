@@ -115,7 +115,7 @@ const FastName NMaterial::FLAG_TILED_DECAL_MASK = FastName("TILED_DECAL_MASK");
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterial::FLAG_SPECULAR = FastName("SPECULAR");
-const FastName NMaterial::FLAG_SPEARATE_NORMALMAPPS = FastName("SPEARATE_NORMALMAPPS");
+const FastName NMaterial::FLAG_SEPARATE_NORMALMAPS = FastName("SEPARATE_NORMALMAPS");
 
 const FastName NMaterial::FLAG_SPHERICAL_LIT = FastName("SPHERICAL_LIT");
 

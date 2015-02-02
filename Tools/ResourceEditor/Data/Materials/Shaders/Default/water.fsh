@@ -40,7 +40,7 @@ varying highp vec2 varTexCoordDecal;
 
 
 uniform sampler2D normalmap;
-#if defined(SPEARATE_NORMALMAPPS)
+#if defined(SEPARATE_NORMALMAPS)
 uniform sampler2D normalmap1; 
 #endif
 
@@ -135,7 +135,7 @@ void main()
   
     //compute normal
     lowp vec3 normal0 = texture2D (normalmap, varTexCoord0).rgb;
-    #if defined(SPEARATE_NORMALMAPPS)
+    #if defined(SEPARATE_NORMALMAPS)
         lowp vec3 normal1 = texture2D (normalmap1, varTexCoord1).rgb;    
     #else
         lowp vec3 normal1 = texture2D (normalmap, varTexCoord1).rgb;
@@ -160,8 +160,7 @@ void main()
     lowp float lambertFactor = max (dot (-cameraToPointInTangentSpaceNorm, normal), 0.0);
     lowp float fresnel = FresnelShlick(lambertFactor, fresnelBias, fresnelPow);
 #if defined (SPECULAR) && defined (REAL_REFLECTION)
-    lowp vec3 halfVec = normalize(normalize(varLightVec)-cameraToPointInTangentSpaceNorm);
-    //lowp vec3 resSpecularColor = pow (max (dot (halfVec, normal), 0.0), materialSpecularShininess) * lightColor0;
+    lowp vec3 halfVec = normalize(normalize(varLightVec)-cameraToPointInTangentSpaceNorm);    
     
     float glossPower = pow(5000.0, inGlossiness); //textureColor0.a;
     float specularNorm = (glossPower + 2.0) / 8.0;
