@@ -254,5 +254,12 @@ void QualitySwitcher::OnOptionClick(bool checked)
     {
         FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
         QualitySettingsSystem::Instance()->EnableOption(optionName, checked);
+        
+        SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+        for (int tab = 0; tab < tabWidget->GetTabCount(); ++tab)
+        {
+            Scene* scene = tabWidget->GetTabScene(tab);
+            UpdateEntitiesToQuality(scene);
+        }
     }
 }

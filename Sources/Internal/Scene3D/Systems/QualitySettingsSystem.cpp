@@ -39,6 +39,7 @@ namespace DAVA
 
 const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("Vegetation Animation");
 const FastName QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW("Stencil Shadows");
+const FastName QualitySettingsSystem::QUALITY_OPTION_WATER_DECORATIONS("Water Decorations");
 
 QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
@@ -50,6 +51,7 @@ QualitySettingsSystem::QualitySettingsSystem()
 
     EnableOption(QUALITY_OPTION_VEGETATION_ANIMATION, true);
     EnableOption(QUALITY_OPTION_STENCIL_SHADOW, true);
+    EnableOption(QUALITY_OPTION_WATER_DECORATIONS, false);
 }
 
 void QualitySettingsSystem::Load(const FilePath &path)

@@ -58,6 +58,7 @@ class QualitySettingsSystem: public StaticSingleton<QualitySettingsSystem>
 public:
     static const FastName QUALITY_OPTION_VEGETATION_ANIMATION;
     static const FastName QUALITY_OPTION_STENCIL_SHADOW;
+    static const FastName QUALITY_OPTION_WATER_DECORATIONS;
 
     QualitySettingsSystem();
 
