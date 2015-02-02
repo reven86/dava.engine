@@ -706,6 +706,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIMovieView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackage.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackagesCache.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIParticles.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIPopup.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreen.h" />
@@ -1182,6 +1183,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIMovieView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackagesCache.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIParticles.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIPopup.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreen.cpp" />

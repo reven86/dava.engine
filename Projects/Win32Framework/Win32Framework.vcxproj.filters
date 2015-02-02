@@ -1663,6 +1663,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.h">
       <Filter>Internal\Scene3D\Components\Waypoint</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackagesCache.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h">
       <Filter>Internal\Network\Base</Filter>
     </ClInclude>
@@ -3090,6 +3093,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.cpp">
       <Filter>Internal\Scene3D\Components\Waypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackagesCache.cpp">
+      <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp">
       <Filter>Internal\Network\Base</Filter>

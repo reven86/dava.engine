@@ -780,6 +780,8 @@
 		322FFD5219C042880000ED71 /* UIPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322FFD3C19C042880000ED71 /* UIPackage.cpp */; };
 		322FFD5319C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
 		322FFD5519C042880000ED71 /* UIPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 322FFD3D19C042880000ED71 /* UIPackage.h */; };
+		326A1B551A791D9800970D22 /* UIPackagesCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 326A1B531A791D9800970D22 /* UIPackagesCache.cpp */; };
+		326A1B561A791D9800970D22 /* UIPackagesCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 326A1B541A791D9800970D22 /* UIPackagesCache.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F34E1BB1A234DDA000681BB /* JobThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34E1B91A234DDA000681BB /* JobThread.cpp */; };
 		4F34E1BC1A234DDA000681BB /* JobThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1BA1A234DDA000681BB /* JobThread.h */; };
@@ -2780,6 +2782,8 @@
 		322FFD3B19C042880000ED71 /* UIPackageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackageLoader.h; sourceTree = "<group>"; };
 		322FFD3C19C042880000ED71 /* UIPackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackage.cpp; sourceTree = "<group>"; };
 		322FFD3D19C042880000ED71 /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
+		326A1B531A791D9800970D22 /* UIPackagesCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackagesCache.cpp; sourceTree = "<group>"; };
+		326A1B541A791D9800970D22 /* UIPackagesCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackagesCache.h; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		4F34E1B91A234DDA000681BB /* JobThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobThread.cpp; path = Job/JobThread.cpp; sourceTree = "<group>"; };
@@ -4996,6 +5000,8 @@
 				322FFD3B19C042880000ED71 /* UIPackageLoader.h */,
 				322FFD3C19C042880000ED71 /* UIPackage.cpp */,
 				322FFD3D19C042880000ED71 /* UIPackage.h */,
+				326A1B531A791D9800970D22 /* UIPackagesCache.cpp */,
+				326A1B541A791D9800970D22 /* UIPackagesCache.h */,
 				EAAD9FFE1892A458001E1AA2 /* UIParticles.cpp */,
 				EAAD9FFF1892A458001E1AA2 /* UIParticles.h */,
 				C18593D816F30BED005D30E2 /* UIAggregatorControl.cpp */,
@@ -5937,6 +5943,7 @@
 				E8989FD316BD24E500732C04 /* SwitchNode.h in Headers */,
 				EAAC988D1937333E00549BAD /* MeshUtils.h in Headers */,
 				5013F6941859EB0400FB3C51 /* StaticOcclusionSystem.h in Headers */,
+				326A1B561A791D9800970D22 /* UIPackagesCache.h in Headers */,
 				E8989FD516BD24E500732C04 /* BaseProcessSystem.h in Headers */,
 				E8989FD716BD24E500732C04 /* DebugRenderSystem.h in Headers */,
 				E8989FDB16BD24E500732C04 /* EventSystem.h in Headers */,
@@ -7235,6 +7242,7 @@
 				E8989F4316BD24E500732C04 /* RenderEffect.cpp in Sources */,
 				CC0D7B3D1A76055A00309408 /* WaypointComponent.cpp in Sources */,
 				6280BAA918D6F909007809B7 /* DateTimeApple.mm in Sources */,
+				326A1B551A791D9800970D22 /* UIPackagesCache.cpp in Sources */,
 				CC84B01C18211A9000934482 /* JobManager.cpp in Sources */,
 				E8989F4516BD24E500732C04 /* RenderGrayscaleEffect.cpp in Sources */,
 				E8989F4716BD24E500732C04 /* RenderHelper.cpp in Sources */,

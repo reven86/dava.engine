@@ -6,6 +6,8 @@
 #include "UIControls/ControlProperties/PropertiesRoot.h"
 
 class PackageSerializer;
+class PackageNode;
+class ControlPrototype;
 
 class ControlNode : public PackageBaseNode
 {
@@ -18,14 +20,18 @@ public:
     };
     
 private:
-    ControlNode(DAVA::UIControl *control);
-    ControlNode(ControlNode *node, DAVA::UIPackage *prototypePackage, eCreationType creationType);
-    ControlNode(ControlNode *node);
+    ControlNode(DAVA::UIControl *control, PropertiesRoot *propertiesRoot, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
-    static ControlNode *CreateFromPrototype(ControlNode *node, DAVA::UIPackage *prototypePackage);
+    
+    static ControlNode *CreateFromPrototype(ControlPrototype *prototype);
+    
+private:
+    static ControlNode *CreateFromPrototypeImpl(ControlNode *prototypeChild, bool root);
+
+public:
     ControlNode *Clone();
     
     void Add(ControlNode *node);
@@ -57,8 +63,7 @@ private:
     PropertiesRoot *propertiesRoot;
     DAVA::Vector<ControlNode*>nodes;
     
-    ControlNode *prototype;
-    DAVA::UIPackage *prototypePackage;
+    ControlPrototype *prototype;
 
     eCreationType creationType;
     

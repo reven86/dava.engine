@@ -146,6 +146,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIPackage.h"
+#include "UI/UIPackagesCache.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/DefaultUIPackageBuilder.h"
 #include "UI/UIEvent.h"

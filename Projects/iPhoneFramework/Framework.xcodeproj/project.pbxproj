@@ -881,6 +881,8 @@
 		32B074C619E53C0C0069981A /* UIPackageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */; };
 		32B074C719E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
 		32B074C819E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
+		32F29AB51A7B733800EB2325 /* UIPackagesCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32F29AB31A7B733800EB2325 /* UIPackagesCache.cpp */; };
+		32F29AB61A7B733800EB2325 /* UIPackagesCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 32F29AB41A7B733800EB2325 /* UIPackagesCache.h */; };
 		496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
 		497BF6E216F751ED00AC57C6 /* DeviceInfoiOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 497BF6E116F751ED00AC57C6 /* DeviceInfoiOS.mm */; };
 		4F25831019BDC94000C28926 /* Bind.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F25830A19BDC94000C28926 /* Bind.h */; };
@@ -1966,6 +1968,8 @@
 		32B074BA19E53C0C0069981A /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
 		32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackageLoader.cpp; sourceTree = "<group>"; };
 		32B074BC19E53C0C0069981A /* UIPackageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackageLoader.h; sourceTree = "<group>"; };
+		32F29AB31A7B733800EB2325 /* UIPackagesCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackagesCache.cpp; sourceTree = "<group>"; };
+		32F29AB41A7B733800EB2325 /* UIPackagesCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackagesCache.h; sourceTree = "<group>"; };
 		496526CF167F173400107C70 /* libdxt_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_ios.a; path = ../../Libs/libs/libdxt_ios.a; sourceTree = "<group>"; };
 		497BF6E116F751ED00AC57C6 /* DeviceInfoiOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceInfoiOS.mm; sourceTree = "<group>"; };
 		4F25830A19BDC94000C28926 /* Bind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Bind.h; sourceTree = "<group>"; };
@@ -4134,6 +4138,8 @@
 		E8B3CA2E16B9326E002BD35F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				32F29AB31A7B733800EB2325 /* UIPackagesCache.cpp */,
+				32F29AB41A7B733800EB2325 /* UIPackagesCache.h */,
 				1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */,
 				150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */,
 				150353911A02D5AA00C90B4F /* AbstractUIPackageBuilder.h */,
@@ -4952,6 +4958,7 @@
 				64493E0E19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
 				CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */,
 				E8B3CB6016B9326E002BD35F /* RectPacker.h in Headers */,
+				32F29AB61A7B733800EB2325 /* UIPackagesCache.h in Headers */,
 				E8B3CB6116B9326E002BD35F /* Sphere.h in Headers */,
 				E8983CC618C8A540002FB974 /* ES3Renderer.h in Headers */,
 				E8B3CB6316B9326E002BD35F /* Spline.h in Headers */,
@@ -5954,6 +5961,7 @@
 				32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */,
 				CC0D7B531A76066700309408 /* WaypointComponent.cpp in Sources */,
 				E8B3CC0316B9326E002BD35F /* ShadowRect.cpp in Sources */,
+				32F29AB51A7B733800EB2325 /* UIPackagesCache.cpp in Sources */,
 				02FD7EC319237D43007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
 				E8B3CC0516B9326E002BD35F /* ShadowVolume.cpp in Sources */,
 				E8B3CC0716B9326E002BD35F /* ShadowVolumeRenderPass.cpp in Sources */,
