@@ -57,7 +57,6 @@
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
-    runOnlyThisTest = "NetworkTest";
 }
 
 void GameCore::OnError()
