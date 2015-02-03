@@ -54,6 +54,8 @@ JniWebView::JniWebView()
 	openURL = jniWebView.GetStaticMethod<void, jint, jstring>("OpenURL");
 	loadHtmlString = jniWebView.GetStaticMethod<void, jint, jstring>("LoadHtmlString");
 	executeJScript = jniWebView.GetStaticMethod<void, jint, jstring>("ExecuteJScript");
+	getCookie = jniWebView.GetStaticMethod<jstring, jstring, jstring>("GetCookie");
+	getCookies = jniWebView.GetStaticMethod<jobjectArray, jstring>("GetCookies");
 	deleteCookies = jniWebView.GetStaticMethod<void, jstring>("DeleteCookies");
 	openFromBuffer = jniWebView.GetStaticMethod<void, jint, jstring, jstring>("OpenFromBuffer");
 	setRect = jniWebView.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("SetRect");
@@ -122,20 +124,16 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 {
 	JNIEnv *env = JNI::GetEnv();
 
-	jmethodID mid = env->GetStaticMethodID(jniWebView, "GetCookie", JNI::SignatureString::FromTypes<jstring, jstring, jstring>().c_str());
 	String returnStr = "";
 
-	if (mid)
-	{
-		jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
-		jstring jName = env->NewStringUTF(cookieName.c_str());
-		jobject item = env->CallStaticObjectMethod(jniWebView, mid, jTargetURL, jName);
+    jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
+    jstring jName = env->NewStringUTF(cookieName.c_str());
+    jobject item = getCookie(jTargetURL, jName);
 
-		JNI::CreateStringFromJni(jstring(item), returnStr);
+    JNI::CreateStringFromJni(jstring(item), returnStr);
 
-		env->DeleteLocalRef(jTargetURL);
-		env->DeleteLocalRef(jName);
-	}
+    env->DeleteLocalRef(jTargetURL);
+    env->DeleteLocalRef(jName);
 
 	return returnStr;
 }
@@ -144,33 +142,29 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 {
 	JNIEnv *env = JNI::GetEnv();
 
-	jmethodID mid = env->GetStaticMethodID(jniWebView, "GetCookies", JNI::SignatureString::FromTypes<jobjectArray, jstring>().c_str());
 	Map<String, String> cookiesMap;
 
-	if (mid)
-	{
-		jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
+	jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
 
-		jobjectArray jArray = (jobjectArray) env->CallStaticObjectMethod(jniWebView, mid, jTargetURL);
-		if (jArray)
-		{
-			jsize size = env->GetArrayLength(jArray);
-			for (jsize i = 0; i < size; ++i)
-			{
-				jobject item = env->GetObjectArrayElement(jArray, i);
-				String cookiesString = "";
-				JNI::CreateStringFromJni(jstring(item), cookiesString);
+    jobjectArray jArray = getCookies(jTargetURL);
+    if (jArray)
+    {
+        jsize size = env->GetArrayLength(jArray);
+        for (jsize i = 0; i < size; ++i)
+        {
+            jobject item = env->GetObjectArrayElement(jArray, i);
+            String cookiesString = "";
+            JNI::CreateStringFromJni(jstring(item), cookiesString);
 
-				Vector<String> cookieEntry;
-				Split(cookiesString, "=", cookieEntry);
+            Vector<String> cookieEntry;
+            Split(cookiesString, "=", cookieEntry);
 
-				DVASSERT(1 < cookieEntry.size());
-				cookiesMap[cookieEntry[0]] = cookieEntry[1];
-			}
-		}
+            DVASSERT(1 < cookieEntry.size());
+            cookiesMap[cookieEntry[0]] = cookieEntry[1];
+        }
+    }
 
-		env->DeleteLocalRef(jTargetURL);
-	}
+    env->DeleteLocalRef(jTargetURL);
 
 	return cookiesMap;
 }
