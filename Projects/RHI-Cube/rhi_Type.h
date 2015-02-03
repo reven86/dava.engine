@@ -92,8 +92,10 @@ SamplerState
 
 enum
 {
-    MAX_CONST_BUFFER_COUNT  = 8,
-    MAX_RENDER_TARGET_COUNT = 2
+    MAX_CONST_BUFFER_COUNT      = 8,
+    MAX_RENDER_TARGET_COUNT     = 2,
+    MAX_TEXTURE_SAMPLER_COUNT   = 8,
+    MAX_VERTEX_STREAM_COUNT     = 8
 };
 
 enum
