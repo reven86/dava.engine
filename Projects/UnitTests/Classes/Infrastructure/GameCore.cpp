@@ -57,6 +57,7 @@
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
+    runOnlyThisTest = "FormatsTest";
 }
 
 void GameCore::OnError()
@@ -85,7 +86,7 @@ void GameCore::RegisterTests()
     new TextSizeTest();
     new KeyedArchiveYamlTest();
     new JobManagerTest();
-    new Cpp14Test ();
+    new Cpp14Test();
     new FormatsTest();
 }
 

@@ -46,6 +46,7 @@
 		CC11987A1A38BF27006931D7 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1198691A38BF27006931D7 /* StringFormatTest.cpp */; };
 		CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC11986B1A38BF27006931D7 /* TextSizeTest.cpp */; };
 		CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCB2B8F51A656699003A5D44 /* Cpp14.cpp */; };
+		E8EC658D1A7FCB8800332AE6 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8EC658B1A7FCB8800332AE6 /* FormatsTest.cpp */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
 		FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F51163F304009E83B6 /* AVFoundation.framework */; };
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
@@ -150,6 +151,8 @@
 		CCB2B8F51A656699003A5D44 /* Cpp14.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cpp14.cpp; path = Tests/Cpp14.cpp; sourceTree = "<group>"; };
 		CCB2B8F61A656699003A5D44 /* Cpp14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cpp14.h; path = Tests/Cpp14.h; sourceTree = "<group>"; };
 		E80D2FB0164D518100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
+		E8EC658B1A7FCB8800332AE6 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Tests/FormatsTest.cpp; sourceTree = "<group>"; };
+		E8EC658C1A7FCB8800332AE6 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FormatsTest.h; path = Tests/FormatsTest.h; sourceTree = "<group>"; };
 		FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		FE76D9F51163F304009E83B6 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -316,6 +319,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E8EC658B1A7FCB8800332AE6 /* FormatsTest.cpp */,
+				E8EC658C1A7FCB8800332AE6 /* FormatsTest.h */,
 				CCB2B8F51A656699003A5D44 /* Cpp14.cpp */,
 				CCB2B8F61A656699003A5D44 /* Cpp14.h */,
 				0264E31D1A43002200BD7279 /* JobManagerTest.cpp */,
@@ -504,6 +509,7 @@
 				CC1198751A38BF27006931D7 /* LocalizationTest.cpp in Sources */,
 				CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */,
 				CC11984A1A38BF0D006931D7 /* BaseScreen.cpp in Sources */,
+				E8EC658D1A7FCB8800332AE6 /* FormatsTest.cpp in Sources */,
 				032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */,
 				CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */,
 				CC1198791A38BF27006931D7 /* SplitTest.cpp in Sources */,

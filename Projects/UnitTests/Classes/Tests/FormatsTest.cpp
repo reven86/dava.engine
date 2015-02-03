@@ -57,24 +57,18 @@ void FormatsTest::TestFunction(PerfFuncData * data)
     
     for(uint32 f = FORMAT_RGBA8888; f < FORMAT_COUNT; ++f)
     {
-        if(FORMAT_REMOVED_DXT_1N == f)
-        {
-            continue;
-        }
-        
-        if(FORMAT_PVR2_2 <= f)
-        {
-            //not implemented reading in dava.framework
-            continue;
-        }
-        
         const DAVA::PixelFormat requestedFormat = (const DAVA::PixelFormat)f;
+        if(IsFormatSupportedByTest(requestedFormat) == false)
+        {
+            continue;
+        }
+        
         const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
         
         data->testData.message = Format("\nFormatsTest: \n\tformat = %s\n", formatName.c_str());
 
         
-        const DAVA::FilePath pngPathname(DAVA::Format("~res:/TestData/FormatTest/%s.png", formatName.c_str()));
+        const DAVA::FilePath pngPathname(DAVA::Format("~res:/TestData/FormatsTest/%s.png", formatName.c_str()));
         const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
      
         DAVA::Vector<DAVA::Image *> pngImages, compressedImages;
@@ -108,3 +102,51 @@ void FormatsTest::TestFunction(PerfFuncData * data)
 #endif //#if defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
 }
+
+bool FormatsTest::IsFormatSupportedByTest(const DAVA::PixelFormat format) const
+{
+    const DAVA::PixelFormatDescriptor & descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(format);
+    
+    switch (format)
+    {
+        case DAVA::FORMAT_RGBA8888:
+
+        case DAVA::FORMAT_PVR2:
+        case DAVA::FORMAT_PVR4:
+        case DAVA::FORMAT_DXT1:
+        case DAVA::FORMAT_DXT1A:
+        case DAVA::FORMAT_DXT3:
+        case DAVA::FORMAT_DXT5:
+        case DAVA::FORMAT_DXT5NM:
+        case DAVA::FORMAT_ATC_RGB:
+        case DAVA::FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+#if !defined (__DAVAENGINE_MACOS__)
+        case DAVA::FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+#endif //#if !defined (__DAVAENGINE_MACOS__)
+            return (!descriptor.isHardwareSupported);
+
+            
+        case DAVA::FORMAT_REMOVED_DXT_1N:
+            return false; //removed format
+
+            
+        case DAVA::FORMAT_A16:
+        case DAVA::FORMAT_RGBA16161616:
+        case DAVA::FORMAT_RGBA32323232:
+            return false; // has no test data
+
+        default:
+            break;
+    }
+    
+    
+    if(FORMAT_PVR2_2 <= format)
+    {
+        //not implemented reading in dava.framework
+        return false;
+    }
+    
+    return false;
+}
+
+

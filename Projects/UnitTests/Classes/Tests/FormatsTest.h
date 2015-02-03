@@ -48,6 +48,11 @@ public:
 	void UnloadResources() override;
 
     void TestFunction(PerfFuncData * data);
+    
+    
+private:
+    
+    bool IsFormatSupportedByTest(const DAVA::PixelFormat format) const;
 };
 
 
