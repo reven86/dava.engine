@@ -58,8 +58,8 @@ void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const
 {
     serializer->BeginArray("ImportedPackages");
     
-    for (auto it = packageControlsNode.begin(); it != packageControlsNode.end(); ++it)
-        serializer->PutValue((*it)->GetPackagePath().GetFrameworkPath());
+    for (PackageControlsNode *controlsNode : packageControlsNode)
+        serializer->PutValue(controlsNode->GetPackagePath().GetFrameworkPath());
     
     serializer->EndArray();
 }

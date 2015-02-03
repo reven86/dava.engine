@@ -1,11 +1,3 @@
-//
-//  Project.cpp
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 11.9.14.
-//
-//
-
 #include "Project.h"
 #include "DAVAEngine.h"
 #include "EditorFontManager.h"
@@ -14,7 +6,7 @@
 #include "UIControls/EditorUIPackageBuilder.h"
 #include "UIControls/LegacyEditorUIPackageLoader.h"
 #include "UIControls/PackageHierarchy/PackageNode.h"
-#include "UIControls/PackageSerializer.h"
+#include "UIControls/YamlPackageSerializer.h"
 
 #include <QDir>
 
@@ -201,7 +193,7 @@ bool Project::SavePackage(PackageNode *package)
 {
     YamlPackageSerializer serializer;
     package->Serialize(&serializer);
-    YamlEmitter::SaveToYamlFile(package->GetPackage()->GetFilePath(), serializer.GetYamlNode());
+    serializer.WriteToFile(package->GetPath());
     return true;
 }
 

@@ -31,7 +31,7 @@
 #include "DAVAEngine.h"
 
 #import <UIKit/UIKit.h>
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 #import "Platform/TemplateiOS/BackgroundView.h"
 
 @interface WebViewURLDelegate : NSObject<UIWebViewDelegate>

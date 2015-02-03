@@ -78,7 +78,7 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z);
 
 	//JNIGLSurfaceView
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobject classthis, jint action, jint id, jfloat x, jfloat y, jdouble time, jint source, jint tapCount);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobject classthis, jint action, jint source, jint groupSize, jobject activeInputs, jobject allInputs);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyDown(JNIEnv * env, jobject classthis, jint keyCode);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyUp(JNIEnv * env, jobject classthis, jint keyCode);
 
@@ -90,18 +90,33 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeOnPauseView(JNIEnv * env, jobject classthis, jboolean isLock);
 };
 
-
-DAVA::CorePlatformAndroid *core = NULL;
-
 #define MAX_PATH_SZ 260
-char documentsFolderPathEx[MAX_PATH_SZ];
-char documentsFolderPathIn[MAX_PATH_SZ];
-char folderDocuments[MAX_PATH_SZ];
-char assetsFolderPath[MAX_PATH_SZ];
-char androidLogTag[MAX_PATH_SZ];
-char androidPackageName[MAX_PATH_SZ];
 
-AndroidDelegate *androidDelegate;
+namespace 
+{
+	DAVA::CorePlatformAndroid *core = NULL;
+
+	char documentsFolderPathEx[MAX_PATH_SZ];
+	char documentsFolderPathIn[MAX_PATH_SZ];
+	char folderDocuments[MAX_PATH_SZ];
+	char assetsFolderPath[MAX_PATH_SZ];
+	char androidLogTag[MAX_PATH_SZ];
+	char androidPackageName[MAX_PATH_SZ];
+
+	DAVA::JNI::JavaClass* gArrayListClass = nullptr;
+	DAVA::JNI::JavaClass* gInputEventClass = nullptr;
+
+	DAVA::Function< jobject(jobject, jint) > gArrayListGetMethod;
+	DAVA::Function< jint(jobject) > gArrayListSizeMethod;
+
+	jfieldID gInputEventTidField;
+	jfieldID gInputEventXField;
+	jfieldID gInputEventYField;
+	jfieldID gInputEventTimeField;
+	jfieldID gInputEventTapCountField;
+
+	AndroidDelegate *androidDelegate;
+}
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -172,6 +187,20 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
 	DAVA::JNI::CreateStringFromJni(env, commandLineParams, commandLine);
 
 	InitApplication(env, commandLine);
+
+	gArrayListClass = new DAVA::JNI::JavaClass("java/util/ArrayList");
+	gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent");
+
+	gArrayListGetMethod = gArrayListClass->GetMethod<jobject, jint>("get");
+	gArrayListSizeMethod = gArrayListClass->GetMethod<jint>("size");
+
+	gInputEventTidField = env->GetFieldID(*gInputEventClass, "tid", DAVA::JNI::TypeMetrics<jint>());
+	gInputEventXField = env->GetFieldID(*gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
+	gInputEventYField = env->GetFieldID(*gInputEventClass, "y", DAVA::JNI::TypeMetrics<jfloat>());
+	gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
+	gInputEventTapCountField = env->GetFieldID(*gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
+
+
 }
 
 void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis)
@@ -259,6 +288,9 @@ void Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv * env, jobject c
 	{
 		core->OnDestroyActivity();
 	}
+
+	DAVA::SafeDelete(gArrayListClass);
+	DAVA::SafeDelete(gInputEventClass);
 }
 
 void Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, jobject classthis, jfloat x, jfloat y, jfloat z)
@@ -271,14 +303,101 @@ void Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv * env, job
 	}
 }
 
+namespace
+{
+	DAVA::int32 GetPhase(DAVA::int32 action, DAVA::int32 source)
+	{
+		DAVA::int32 phase = DAVA::UIEvent::PHASE_DRAG;
+		switch(action)
+		{
+			case 5: //ACTION_POINTER_DOWN
+			case 0://ACTION_DOWN
+			phase = DAVA::UIEvent::PHASE_BEGAN;
+			break;
+
+			case 6://ACTION_POINTER_UP
+			case 1://ACTION_UP
+			phase = DAVA::UIEvent::PHASE_ENDED;
+			break;
+
+			case 2://ACTION_MOVE
+			{
+				if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
+				{
+					phase = DAVA::UIEvent::PHASE_JOYSTICK;
+				}
+				else //Touches
+					phase = DAVA::UIEvent::PHASE_DRAG;
+			}
+			break;
+
+			case 3://ACTION_CANCEL
+			phase = DAVA::UIEvent::PHASE_CANCELLED;
+			break;
+
+			case 4://ACTION_OUTSIDE
+			break;
+		}
+
+		return phase;
+	}
+
+	DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv * env, jobject input, jint action, jint source)
+	{
+		DAVA::UIEvent event;
+		event.tid = env->GetIntField(input, gInputEventTidField);
+		event.point.x = event.physPoint.x = env->GetFloatField(input, gInputEventXField);
+		event.point.y = event.physPoint.y = env->GetFloatField(input, gInputEventYField);
+		event.phase = GetPhase(action, source);
+		event.tapCount = env->GetIntField(input, gInputEventTapCountField);
+		event.timestamp = env->GetDoubleField(input, gInputEventTimeField);
+
+		return event;
+	}
+}
 
 // CALLED FROM JNIGLSurfaceView
-void Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobject classthis, jint action, jint id, jfloat x, jfloat y, jdouble time, jint source, jint tapCount)
+
+void Java_com_dava_framework_JNIGLSurfaceView_nativeOnInput(JNIEnv * env, jobject classthis, jint action, jint source, jint groupSize, jobject javaActiveInputs, jobject javaAllInputs)
 {
+	//action, activeEvents, allEvents, time
+
 	if(core)
 	{
-		core->OnInput(action, id, x, y, time, source, tapCount);
+		DAVA::Vector< DAVA::UIEvent > activeInputs;
+		DAVA::Vector< DAVA::UIEvent > allInputs;
+
+		int allInputsCount = gArrayListSizeMethod(javaAllInputs);
+		int activeInputsCount = gArrayListSizeMethod(javaActiveInputs);
+
+		int inputsCount = DAVA::Max(allInputsCount, activeInputsCount);
+
+		for(int groupStartIndex = 0; groupStartIndex < inputsCount; groupStartIndex += groupSize)
+		{
+			int groupEndIndex = groupStartIndex + groupSize;
+
+			allInputs.clear();
+			activeInputs.clear();
+
+			for (int touchIndex = groupStartIndex; touchIndex < groupEndIndex; ++touchIndex)
+			{
+				if (touchIndex < allInputsCount)
+				{
+					jobject jInput = gArrayListGetMethod(javaAllInputs, touchIndex);
+
+					allInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
+				}
+				if (touchIndex < activeInputsCount)
+				{
+					jobject jInput = gArrayListGetMethod(javaActiveInputs, touchIndex);
+
+					activeInputs.push_back(CreateUIEventFromJavaEvent(env, jInput, action, source));
+				}
+			}
+			core->OnInput(action, source, activeInputs, allInputs);
+		}
 	}
+
 }
 
 void Java_com_dava_framework_JNIGLSurfaceView_nativeOnKeyDown(JNIEnv * env, jobject classthis, jint keyCode)

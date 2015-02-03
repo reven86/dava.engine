@@ -32,7 +32,7 @@
 #include "MovieViewControliOS.h"
 
 #import <MediaPlayer/MediaPlayer.h>
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 namespace DAVA {
 

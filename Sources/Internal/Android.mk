@@ -89,6 +89,11 @@ LOCAL_MODULE := unibreak_android
 LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libunibreak_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := uv_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
 
 DAVA_ROOT := $(LOCAL_PATH)
 
@@ -125,6 +130,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Base/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Services/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
@@ -155,6 +163,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/bsdiff/*.c) \
                      $(wildcard $(LOCAL_PATH)/DLC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DataStorage/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DataStorage/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Notification/*.cpp))
 
 ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
@@ -176,6 +186,7 @@ LOCAL_CFLAGS += -DDAVA_FMOD
 LOCAL_CPPFLAGS += -std=c++1y
 LOCAL_CFLAGS += -Qunused-arguments
 LOCAL_CFLAGS += -Werror
+LOCAL_CFLAGS += -Wno-error=deprecated-register
 
 LOCAL_CPP_FEATURES += exceptions
 
@@ -224,6 +235,7 @@ LOCAL_STATIC_LIBRARIES += crypto_android
 LOCAL_STATIC_LIBRARIES += zip_android
 LOCAL_STATIC_LIBRARIES += fribidi_android
 LOCAL_STATIC_LIBRARIES += unibreak_android
+LOCAL_STATIC_LIBRARIES += uv_android
 
 LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
 

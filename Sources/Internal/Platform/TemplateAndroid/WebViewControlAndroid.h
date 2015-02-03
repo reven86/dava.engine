@@ -126,6 +126,8 @@ private:
 	Function<void (jint, jstring)> openURL;
 	Function<void (jint, jstring)> loadHtmlString;
 	Function<void (jint, jstring)> executeJScript;
+	Function<jstring (jstring, jstring)> getCookie;
+	Function<jobjectArray (jstring)> getCookies;
 	Function<void (jstring)> deleteCookies;
 	Function<void (jint, jstring, jstring)> openFromBuffer;
 	Function<void (jint, jfloat, jfloat, jfloat, jfloat)> setRect;

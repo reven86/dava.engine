@@ -30,7 +30,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Platform/DPIHelper.h"
-#include "DeviceInfo.h"
+#include "Platform/DeviceInfo.h"
 
 #include <UIKit/UIKit.h>
 #include <UIKit/UIDevice.h>

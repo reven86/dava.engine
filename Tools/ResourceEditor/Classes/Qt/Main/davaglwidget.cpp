@@ -55,6 +55,9 @@
 	#include "Win32/CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#include "Network/NetCore.h"
+#endif
 
 #include "Classes/Qt/Main/mainwindow.h"
 #include "ui_mainwindow.h"

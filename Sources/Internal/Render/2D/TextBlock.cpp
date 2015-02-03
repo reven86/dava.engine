@@ -103,6 +103,7 @@ TextBlock::TextBlock()
     , cacheOy(0)
     , textureForInvalidation(NULL)
     , scale(1.f, 1.f)
+	, angle(0.f)
 {
     font = NULL;
     isMultilineEnabled = false;
@@ -195,6 +196,16 @@ void TextBlock::SetRectSize(const Vector2 & size)
 void TextBlock::SetPosition(const Vector2& position)
 {
     this->position = position;
+}
+
+void TextBlock::SetAngle(const float _angle)
+{
+	angle = _angle;
+}
+
+void TextBlock::SetPivot(const Vector2 & _pivot)
+{
+	pivot = _pivot;
 }
 
 void TextBlock::SetScale(const Vector2 & _scale)
@@ -853,6 +864,8 @@ void TextBlock::CalculateCacheParams()
         for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
         {
             Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
+            stringSize.drawRect.dx += stringSize.drawRect.x;
+            stringSize.drawRect.x = 0;
             stringSizes.push_back(stringSize.width);
             if(requestedSize.dx >= 0)
             {

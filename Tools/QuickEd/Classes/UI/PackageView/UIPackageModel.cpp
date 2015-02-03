@@ -13,6 +13,7 @@
 #include "UIControls/PackageHierarchy/ControlNode.h"
 #include "UIControls/PackageHierarchy/PackageControlsNode.h"
 #include "UIControls/PackageHierarchy/ImportedPackagesNode.h"
+#include "UIControls/PackageHierarchy/ControlPrototype.h"
 #include "PackageModelCommands.h"
 
 #include "UIPackageMimeData.h"
@@ -31,6 +32,18 @@ UIPackageModel::~UIPackageModel()
 {
     document = NULL;
     SafeRelease(root);
+}
+
+QModelIndex UIPackageModel::indexByNode(PackageBaseNode *node) const
+{
+    PackageBaseNode *parent = node->GetParent();
+    if (parent == NULL || parent == root)
+        return QModelIndex();
+    
+    if (parent)
+        return createIndex(parent->GetIndex(node), 0, node);
+    else
+        return createIndex(0, 0, parent);
 }
 
 QModelIndex UIPackageModel::index(int row, int column, const QModelIndex &parent) const
@@ -284,9 +297,12 @@ void UIPackageModel::InsertItem(const QString &name, int dstRow, const QModelInd
         PackageControlsNode *packageControls = root->GetImportedPackagesNode()->FindPackageControlsNodeByName(packName);
         if (packageControls)
         {
-            ControlNode *prototype = packageControls->FindControlNodeByName(controlName);
-            if (prototype)
-                node = ControlNode::CreateFromPrototype(prototype, packageControls->GetPackage());
+            ControlNode *prototypeControl = packageControls->FindControlNodeByName(controlName);
+            if (prototypeControl)
+            {
+                RefPtr<ControlPrototype> prototype(new ControlPrototype(prototypeControl, packageControls->GetPackagePath()));
+                node = ControlNode::CreateFromPrototype(prototype.Get());
+            }
         }
     }
     else
@@ -299,9 +315,12 @@ void UIPackageModel::InsertItem(const QString &name, int dstRow, const QModelInd
         }
         else
         {
-            ControlNode *prototype = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
-            if (prototype)
-                node = ControlNode::CreateFromPrototype(prototype, NULL);
+            ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
+            if (prototypeControl)
+            {
+                RefPtr<ControlPrototype> prototype(new ControlPrototype(prototypeControl));
+                node = ControlNode::CreateFromPrototype(prototype.Get());
+            }
         }
     }
     
