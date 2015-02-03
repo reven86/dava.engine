@@ -208,7 +208,10 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
 
     RefreshActions(selectedIndexList);
 
-    emit SelectionRootControlChanged(selectedRootControl, deselectedRootControl);
+    if (selectedRootControl != deselectedRootControl)
+    {
+        emit SelectionRootControlChanged(selectedRootControl, deselectedRootControl);
+    }
     emit SelectionControlChanged(selectedControl, deselectedControl);
 }
 
@@ -287,3 +290,16 @@ void PackageDockWidget::filterTextChanged(const QString &filterText)
     }
 }
 
+void PackageDockWidget::OnControlSelectedInEditor(ControlNode *node)
+{
+    QModelIndex srcIndex = document->GetTreeContext()->model->indexByNode(node);
+    QModelIndex dstIndex = document->GetTreeContext()->proxyModel->mapFromSource(srcIndex);
+    ui->treeView->selectionModel()->select(dstIndex, QItemSelectionModel::ClearAndSelect);
+    ui->treeView->expand(dstIndex);
+    ui->treeView->scrollTo(dstIndex);
+}
+
+void PackageDockWidget::OnAllControlsDeselectedInEditor()
+{
+    
+}
