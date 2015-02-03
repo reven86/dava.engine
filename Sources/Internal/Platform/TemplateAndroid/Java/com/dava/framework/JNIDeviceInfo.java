@@ -235,17 +235,38 @@ public class JNIDeviceInfo {
 			this.freeSpace = freeSpace;
 		}
 	}
+	
+	private static class StorageCapacity
+	{
+	    public long capacity = 0;
+	    public long free = 0;
+	}
 
-	public static StorageInfo GetInternalStorageInfo()
+	@SuppressWarnings("deprecation")
+	private static StorageCapacity getCapacityAndFreeSpace(String path)
+	{
+        StatFs statFs = new StatFs(path);
+
+		StorageCapacity st = new StorageCapacity();
+		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) // 4.2
+		{
+		    st.capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
+		    st.free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+		} else
+		{
+		    st.capacity = statFs.getBlockCount() * statFs.getBlockSize();
+		    st.free = statFs.getAvailableBlocks() * statFs.getBlockSize();
+		}
+        return st;
+    }
+	
+    public static StorageInfo GetInternalStorageInfo()
 	{
 		String path = Environment.getDataDirectory().getPath();
 		path += "/";
-		StatFs statFs = new StatFs(path);
-
-		long capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
-		long free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
-
-		return new StorageInfo(path, false, false, capacity, free);
+		StorageCapacity st = getCapacityAndFreeSpace(path);
+		return new StorageInfo(path, false, false, st.capacity, st.free);
 	}
 
 	public static boolean IsPrimaryExternalStoragePresent()
@@ -259,21 +280,19 @@ public class JNIDeviceInfo {
 		return false;
 	}
 
-	public static StorageInfo GetPrimaryExternalStorageInfo()
+    public static StorageInfo GetPrimaryExternalStorageInfo()
 	{
 		if (IsPrimaryExternalStoragePresent())
 		{
 			String path = Environment.getExternalStorageDirectory().getPath();
 			path += "/";
-			StatFs statFs = new StatFs(path);
-
-            long capacity = (long)statFs.getBlockCountLong() * (long)statFs.getBlockSizeLong();
-            long free = (long)statFs.getAvailableBlocksLong() * (long)statFs.getBlockSizeLong();
+			
+			StorageCapacity st = getCapacityAndFreeSpace(path);
 
             boolean isEmulated = Environment.isExternalStorageEmulated();
             boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
 
-            return new StorageInfo(path, isReadOnly, isEmulated, capacity, free);
+            return new StorageInfo(path, isReadOnly, isEmulated, st.capacity, st.free);
         }
 
 		return new StorageInfo("", false, false, -1, -1);
