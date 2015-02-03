@@ -155,9 +155,10 @@ protected:
     /**
      * \brief Clean line.
      * \param [in,out] string The string.
-     * \param trimRight (Optional) true to trim right.
+     * \param trim (Optional) true to trim.
+     * \param rtl (Optional) true to trim for rtl text.
      */
-    void CleanLine(WideString& string, bool trimRight = false);
+    void CleanLine(WideString& string, bool trim = false, bool rtl = false);
 
     Vector2 rectSize;
     bool needRedraw;

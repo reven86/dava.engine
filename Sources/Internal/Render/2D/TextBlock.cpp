@@ -994,7 +994,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
                 {
                     StringUtils::BiDiReorder(line, isRtl);
                 }
-                CleanLine(line, pos < textLength - 1);
+                CleanLine(line, pos < textLength - 1, isRtl);
                 resultVector.push_back(line);
                 currentWidth = 0.f;
                 lastPossibleBreak = 0;
@@ -1021,7 +1021,7 @@ void TextBlock::SplitTextToStrings(const WideString& string, Vector2 const& targ
         {
             StringUtils::BiDiReorder(line, isRtl);
         }
-        CleanLine(line, true);
+        CleanLine(line, true, isRtl);
         resultVector.push_back(line);
         currentWidth = 0.f;
         lastPossibleBreak = 0;
@@ -1118,11 +1118,11 @@ void TextBlock::SplitTextBySymbolsToStrings(const WideString& string, Vector2 co
     resultVector.push_back(currentLine);
 }
 
-void TextBlock::CleanLine(WideString& string, bool trimRight)
+void TextBlock::CleanLine(WideString& string, bool trim /*= false*/, bool rtl /*= false*/)
 {
-    if (trimRight)
+    if (trim)
     {
-    	WideString trimed = StringUtils::TrimRight(string);
+    	WideString trimed = !rtl ? StringUtils::TrimRight(string) : StringUtils::TrimLeft(string);
         string.swap(trimed);
     }
 
