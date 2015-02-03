@@ -52,7 +52,7 @@ WideString StringUtils::Trim(const WideString& string)
     WideString::const_iterator it = string.begin();
     WideString::const_iterator end = string.end();
     WideString::const_reverse_iterator rit = string.rbegin();
-    while (it != end && iswspace(*it)) ++it;
+    while (it != end && IsWhitespace(*it)) ++it;
     while (rit.base() != it && iswspace(*rit)) ++rit;
     return WideString(it, rit.base());
 }
@@ -61,7 +61,7 @@ WideString StringUtils::TrimLeft(const WideString& string)
 {
     WideString::const_iterator it = string.begin();
     WideString::const_iterator end = string.end();
-    while (it != end && iswspace(*it)) ++it;
+    while (it != end && IsWhitespace(*it)) ++it;
     return WideString(it, end);
 }
 
@@ -69,7 +69,7 @@ WideString StringUtils::TrimRight(const WideString& string)
 {
     WideString::const_reverse_iterator rit = string.rbegin();
     WideString::const_reverse_iterator rend = string.rend();
-    while (rit != rend && iswspace(*rit)) ++rit;
+    while (rit != rend && IsWhitespace(*rit)) ++rit;
     return WideString(rend.base(), rit.base());
 }
 

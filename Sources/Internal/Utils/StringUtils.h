@@ -86,7 +86,17 @@ WideString TrimRight(const WideString& string);
  */
 inline bool IsWhitespace(char16 t)
 {
-    return iswspace(static_cast<wint_t>(t)) != 0;
+    return t == L' '   // Space
+        || t == L'\n'  // Line end
+        || t == L'\r'  // Caret return
+        || t == L'\t'  // Tab
+        || t == L'\v'  // Vertical tab
+        || t == 0x00A0 // Non-break space
+        || t == 0x200B // Zero-width spaced
+        || t == 0x200E // Zero-width Left-to-right zero-width character
+        || t == 0x200F // Zero-width Right-to-left zero-width non-Arabic character
+        || t == 0x061C // Right-to-left zero-width Arabic character
+        ;
 }
 
 /**
