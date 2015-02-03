@@ -6167,23 +6167,27 @@ fail:
 static int _wrap_AutotestingSystemLua_SaveKeyedArchiveToDevice(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-  DAVA::KeyedArchive *arg2 = (DAVA::KeyedArchive *) 0 ;
+  DAVA::String *arg2 = 0 ;
+  DAVA::KeyedArchive *arg3 = (DAVA::KeyedArchive *) 0 ;
+  DAVA::String temp2 ;
   bool result;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",2,2)
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",3,3)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",1,"DAVA::AutotestingSystemLua *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",2,"DAVA::KeyedArchive *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",2,"DAVA::String const &");
+  if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SaveKeyedArchiveToDevice",3,"DAVA::KeyedArchive *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDevice",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
   
+  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__KeyedArchive,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDevice",2,SWIGTYPE_p_DAVA__KeyedArchive);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_DAVA__KeyedArchive,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_SaveKeyedArchiveToDevice",3,SWIGTYPE_p_DAVA__KeyedArchive);
   }
   
-  result = (bool)(arg1)->SaveKeyedArchiveToDevice(arg2);
+  result = (bool)(arg1)->SaveKeyedArchiveToDevice((DAVA::String const &)*arg2,arg3);
   lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   return SWIG_arg;
   

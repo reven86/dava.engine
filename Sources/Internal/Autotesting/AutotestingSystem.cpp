@@ -92,7 +92,7 @@ namespace DAVA
 
 		FetchParametersFromDB();
 
-		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s", groupName.c_str(), testFileName.c_str());
+		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
 		if (!FileSystem::Instance()->IsFile(FilePath(testFilePath)))
 		{
 			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", testFilePath.c_str());

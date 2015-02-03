@@ -315,10 +315,10 @@ namespace DAVA
 		return AutotestingDB::Instance()->ReadString(name);
 	}
 
-	bool AutotestingSystemLua::SaveKeyedArchiveToDevice(KeyedArchive *archive)
+	bool AutotestingSystemLua::SaveKeyedArchiveToDevice(const String &archiveName, KeyedArchive *archive)
 	{
 		Logger::Debug("AutotestingSystemLua::SaveKeyedArchiveToDevice");
-		return AutotestingDB::Instance()->SaveKeyedArchiveToDevice(archive);
+		return AutotestingDB::Instance()->SaveKeyedArchiveToDevice(archiveName, archive);
 	}
 
 	String AutotestingSystemLua::MakeScreenshot()
