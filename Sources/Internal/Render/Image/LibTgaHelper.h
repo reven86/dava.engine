@@ -60,26 +60,29 @@ private:
     {
         enum IMAGE_TYPE{
             TRUECOLOR = 2,
-            BLACKWHITE = 3,
+            GRAYSCALE = 3,
             COMPRESSED_TRUECOLOR = 10,
-            COMPRESSED_BLACKWHITE = 11
+            COMPRESSED_GRAYSCALE = 11
         };
         struct {
             uint8 idlength;         // should be 0
             uint8 colorMapType;     // should be 0
             uint8 imageType;        // can be 2,3,10,11
-            uint8 colorMapData[5];  // should be 0
+            uint8 colorMapData[5];  // should be 0,0,0,0,0
             uint16 originX;         // should be 0
             uint16 originY;         // should be 0
-            uint16 imageWidth;      // width in pixels
-            uint16 imageHeight;     // height in pixels
+            uint16 width;           // image width in pixels
+            uint16 height;          // image height in pixels
             uint8 bpp;              // can be 8,16,24,32
-            uint8 imageDescriptor;  // not significant
+            uint8 descriptor;       // valid values are 1,4,8 - number of alpha bits
         };
         std::array<uint8, 18> fields;
     };
 
-    bool ReadTgaHeader(File *infile, TgaHeader& tgaHeader) const;
+    eErrorCode ReadTgaHeader(File *infile, TgaHeader& tgaHeader, PixelFormat& pixelFormat) const;
+    eErrorCode ReadCompressedTga(File *infile, const TgaHeader& tgaHeader, ScopedPtr<Image>& image) const;
+    eErrorCode ReadUncompressedTga(File *infile, const TgaHeader& tgaHeader, ScopedPtr<Image>& image) const;
+    PixelFormat DefinePixelFormat(const TgaHeader& tgaHeader) const;
 };
 
 };
