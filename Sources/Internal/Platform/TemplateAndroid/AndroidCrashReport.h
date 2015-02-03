@@ -69,7 +69,7 @@ public:
 private:
 	static void SignalHandler(int signal, siginfo_t *info, void *uapVoid);
 	static void OnStackFrame(pointer_size addr);
-	JniCrashReporter::CrashStep FormatTeamcityIdStep(int32 addr);
+	static JniCrashReporter::CrashStep FormatTeamcityIdStep(int32 addr);
 private:
 	static stack_t s_sigstk;
 	
