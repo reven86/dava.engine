@@ -47,7 +47,6 @@ protected:
 public:
     UIParticles(const Rect &rect = Rect());
 
-    void AddControl(UIControl *control) override;
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData &geometricData) override;
 
@@ -114,13 +113,7 @@ private:
     bool delayedDeleteAllParticles;
     bool needHandleAutoStart;
 
-    struct ParticleCameraWrap
-    {
-        Camera *camera;
-        ParticleCameraWrap();
-        ~ParticleCameraWrap();
-    };
-    static ParticleCameraWrap defaultCamera;
+    static Camera *defaultCamera;
 public:
     INTROSPECTION_EXTEND(UIParticles, UIControl,
         PROPERTY("effectPath", "Effect path", GetEffectPath, SetEffectPath, I_SAVE | I_VIEW | I_EDIT)

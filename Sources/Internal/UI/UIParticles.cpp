@@ -37,19 +37,7 @@
 namespace DAVA {
 
 /* this camera is required just for preparing draw data*/
-UIParticles::ParticleCameraWrap UIParticles::defaultCamera;
-UIParticles::ParticleCameraWrap::ParticleCameraWrap():camera(new Camera())
-{
-    camera->SetPosition(Vector3(0,0,-1));
-    camera->SetUp(Vector3(0,-1,0));    
-    camera->RebuildCameraFromValues();
-    camera->RebuildViewMatrix();
-
-}
-UIParticles::ParticleCameraWrap::~ParticleCameraWrap()
-{
-    SafeRelease(camera);
-}
+Camera *UIParticles::defaultCamera = nullptr;
 
 UIParticles::UIParticles(const Rect &rect)
     : UIControl(rect)
@@ -63,12 +51,33 @@ UIParticles::UIParticles(const Rect &rect)
     , delayedDeleteAllParticles(false)
     , needHandleAutoStart(false)
 {
+    if (defaultCamera != nullptr)
+    {
+        defaultCamera->Retain();
+    }
+    else
+    {
+        defaultCamera = new Camera();
+        defaultCamera->SetPosition(-Vector3::UnitZ);
+        defaultCamera->SetUp(-Vector3::UnitY);
+        defaultCamera->RebuildCameraFromValues();
+        defaultCamera->RebuildViewMatrix(); 
+    }
 }
 
 UIParticles::~UIParticles()
 {
     UnloadEffect();
     SafeDelete(system);
+
+    if (defaultCamera->GetRetainCount() != 1)
+    {
+        defaultCamera->Release();
+    }
+    else
+    {
+        SafeRelease(defaultCamera);
+    }
 }
 
 void UIParticles::WillAppear()
@@ -196,11 +205,6 @@ void UIParticles::DoRestart()
     system->RunEffect(effect);
 }
 
-void UIParticles::AddControl(UIControl *control)
-{
-    DVASSERT(0 && "UIParticles do not support children");
-}
-
 void UIParticles::Update(float32 timeElapsed)
 {
     updateTime = timeElapsed;
@@ -221,16 +225,16 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
     if ( !effect || effect->state == ParticleEffectComponent::STATE_STOPPED)
         return;
 
-    matrix.CreateRotation(Vector3(0,0,1), -geometricData.angle);
+    matrix.CreateRotation(Vector3::UnitZ, -geometricData.angle);
     matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));
     system->Process(updateTime);
-    updateTime = 0;
+    updateTime = 0.0f;
     
     RenderSystem2D::Instance()->UpdateClip();
 
-    effect->effectRenderObject->PrepareToRender(defaultCamera.camera);
+    effect->effectRenderObject->PrepareToRender(defaultCamera);
     for (int32 i=0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i<sz; ++i)
-        effect->effectRenderObject->GetActiveRenderBatch(i)->Draw(PASS_FORWARD, defaultCamera.camera);
+        effect->effectRenderObject->GetActiveRenderBatch(i)->Draw(PASS_FORWARD, defaultCamera);
 }
 
 void UIParticles::LoadEffect(const FilePath& path)
