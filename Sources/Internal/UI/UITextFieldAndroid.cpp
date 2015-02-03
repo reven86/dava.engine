@@ -408,20 +408,21 @@ bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocat
 
 void UITextFieldAndroid::TextFieldOnTextChanged(const WideString& newText, const WideString& oldText)
 {
-	UITextFieldDelegate* delegate = textField->GetDelegate();
-	if (delegate)
-	{
-		delegate->TextFieldOnTextChanged(textField, newText, oldText);
-	}
+    UITextFieldDelegate* delegate = textField->GetDelegate();
+    if (delegate)
+    {
+        delegate->TextFieldOnTextChanged(textField, newText, oldText);
+    }
 }
 
 void UITextFieldAndroid::TextFieldOnTextChanged(uint32_t id, const WideString& newText, const WideString& oldText)
 {
-	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
-	if (!control)
-		return;
-
-	control->TextFieldOnTextChanged(newText, oldText);
+    UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+    if (!control)
+    {
+        return;
+    }
+    control->TextFieldOnTextChanged(newText, oldText);
 }
 
 void UITextFieldAndroid::TextFieldShouldReturn()

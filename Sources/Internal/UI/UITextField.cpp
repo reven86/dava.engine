@@ -60,7 +60,7 @@ void UITextFieldDelegate::TextFieldLostFocus(UITextField * /*textField*/)
 {
 };
     
-void UITextFieldDelegate::TextFieldOnTextChanged(UITextField * /*textField*/, const WideString& newText, const WideString& oldText)
+void UITextFieldDelegate::TextFieldOnTextChanged(UITextField * /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
 {
 };
 
