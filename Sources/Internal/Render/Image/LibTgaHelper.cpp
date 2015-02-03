@@ -58,7 +58,7 @@ uint32 LibTgaWrapper::GetDataSize(File *infile) const
     infile->Seek(0, File::SEEK_FROM_START);
 
     if (readResult == SUCCESS)
-        return tgaHeader.width * tgaHeader.height * tgaHeader.bpp % 8;
+        return tgaHeader.width * tgaHeader.height * (tgaHeader.bpp >> 3);
     else
         return 0;
 }
@@ -91,10 +91,12 @@ DAVA::eErrorCode LibTgaWrapper::ReadTgaHeader(File *infile, TgaHeader& tgaHeader
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    if (   tgaHeader.bpp !=  8 
-        && tgaHeader.bpp != 16 
-        && tgaHeader.bpp != 24 
-        && tgaHeader.bpp != 32)
+    if (   tgaHeader.bpp !=   8 
+        && tgaHeader.bpp !=  16 
+        && tgaHeader.bpp !=  24 
+        && tgaHeader.bpp !=  32
+        && tgaHeader.bpp !=  64
+        && tgaHeader.bpp != 128)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -191,6 +193,16 @@ PixelFormat LibTgaWrapper::DefinePixelFormat(const TgaHeader& tgaHeader) const
             else
                 return FORMAT_INVALID;
         }
+        else if (tgaHeader.bpp == 64)
+        {
+            return FORMAT_RGBA16161616;
+        }
+        else if (tgaHeader.bpp == 128)
+        {
+            return FORMAT_RGBA32323232;
+        }
+        else
+            return FORMAT_INVALID;
     }
     else if (tgaHeader.imageType == TgaHeader::GRAYSCALE || tgaHeader.imageType == TgaHeader::COMPRESSED_GRAYSCALE)
     {
@@ -207,12 +219,60 @@ PixelFormat LibTgaWrapper::DefinePixelFormat(const TgaHeader& tgaHeader) const
 
 eErrorCode LibTgaWrapper::ReadUncompressedTga(File *infile, const TgaHeader& tgaHeader, ScopedPtr<Image>& image) const
 {
+    uint32 bytesRead = infile->Read(image->data, image->dataSize);
+    if (bytesRead != image->dataSize)
+        return ERROR_READ_FAIL;
 
+//     uint32 bytesPerPixel = tgaHeader.bpp >> 3;
+//     for (uint32 cswap = 0; (cswap+2) < bytesRead; cswap += bytesPerPixel)
+//     {
+//         image->data[cswap] ^= image->data[cswap + 2] ^=
+//             image->data[cswap] ^= image->data[cswap + 2];
+//     }
+    
+    return SUCCESS;
 }
 
 eErrorCode LibTgaWrapper::ReadCompressedTga(File *infile, const TgaHeader& tgaHeader, ScopedPtr<Image>& image) const
 {
+    uint32 bytesPerPixel = tgaHeader.bpp >> 3;
 
+    uint8 chunkHeader;
+    Vector<uint8> pixelBuffer(bytesPerPixel);
+
+    for (uint32 bytesWritten = 0; bytesWritten < image->dataSize;)
+    {
+        if (infile->Read(&chunkHeader, 1) != 1)
+            return ERROR_READ_FAIL;
+
+        if (chunkHeader < 128)  // is raw section
+        {
+            ++chunkHeader;      // number of raw pixels
+
+            for (uint8 i = 0; 
+                (i < chunkHeader) && (bytesWritten < image->dataSize); 
+                ++i, bytesWritten += bytesPerPixel)
+            {
+                if (infile->Read(&image->data[bytesWritten], bytesPerPixel) != bytesPerPixel)
+                    return ERROR_READ_FAIL;
+            }
+            
+        }
+        else                    // is compressed section
+        {
+            chunkHeader -= 127; // number of repeated pixels
+
+            if (infile->Read(&pixelBuffer, bytesPerPixel) != bytesPerPixel)
+                return ERROR_READ_FAIL;
+
+            for (uint8 i = 0; 
+                (i < chunkHeader) && (bytesWritten < image->dataSize); 
+                ++i, bytesWritten += bytesPerPixel)
+            {
+                Memcpy(&image->data[bytesWritten], &pixelBuffer, bytesPerPixel);
+            }
+        }
+    }
 }
 
 eErrorCode LibTgaWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const

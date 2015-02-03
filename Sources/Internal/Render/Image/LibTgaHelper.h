@@ -73,7 +73,7 @@ private:
             uint16 originY;         // should be 0
             uint16 width;           // image width in pixels
             uint16 height;          // image height in pixels
-            uint8 bpp;              // can be 8,16,24,32
+            uint8 bpp;              // can be 8,16,24,32,64,128
             uint8 descriptor;       // valid values are 1,4,8 - number of alpha bits
         };
         std::array<uint8, 18> fields;
