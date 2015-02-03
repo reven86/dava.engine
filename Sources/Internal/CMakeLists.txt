@@ -24,7 +24,7 @@ set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGET
 
 if( ANDROID )
     find_package( ZLIB )
- 
+
     set ( LIST_LIBRARIES
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_android.a"
@@ -43,13 +43,16 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter_android.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libbox2d.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "libEGL.so"
          "libGLESv1_CM.so"
          "liblog.so"
          "libandroid.so"
          "-lGLESv2"
          "-lstdc++" )
-        
+
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
 
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D__ANDROID__ )
@@ -151,7 +154,9 @@ include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
 
 add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
+
 add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
+
 
 if( LINK_THIRD_PARTY )                 
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} ALL     "${LIST_SHARED_LIBRARIES}" )

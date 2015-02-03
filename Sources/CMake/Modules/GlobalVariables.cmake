@@ -50,7 +50,7 @@ if     ( ANDROID )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/${ANDROID_NDK_ABI_NAME}" ) 
     
 elseif ( IOS     ) 
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/ios" ) 
+    set ( DAVA_THIRD_PARTY_LIBRARIES _PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/ios" ) 
   
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" ) 
@@ -62,7 +62,10 @@ endif  ()
 
 #compiller flags
 
-set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
+if( NOT DISABLE_DUBUG )
+    set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
+
+endif  ()
 
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" ) #-std=c++1y -std=c++14
@@ -116,3 +119,4 @@ foreach(NameAndValue ${ConfigContents})
   endif()
 #  message("---" [${Name}] "  " [${Value}] )
 endforeach()   
+

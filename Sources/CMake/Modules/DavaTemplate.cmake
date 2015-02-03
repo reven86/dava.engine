@@ -3,6 +3,16 @@
 #set( MACOS_ICO            )
 #set( MACOS_DATA           )
 #set( MACOS_DYLIB          )
+
+#set( ANDROID_PACKAGE            )
+#set( ANDROID_APP_NAME           )
+#set( ANDROID_MIN_SDK_VERSION    )
+#set( ANDROID_TARGET_SDK_VERSION )
+#set( ANDROID_KEY_STORE_PATH     )#dava.config
+#set( ANDROID_KEY_ALIAS_NAME     )#dava.config
+#set( ANDROID_STORE_PASSWORD     )#dava.config
+#set( ANDROID_ALIAS_PASSWORD     )#dava.config
+
 #set( ADDED_SRC            )
 #set( LIBRARIES            )
 #set( LIBRARIES_RELEASE    )
@@ -10,15 +20,14 @@
 #set( ADDED_BINARY_DIR     )
 #set( EXECUTABLE_FLAG      )
 #
+
 macro( setup_main_executable )
 
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 
 if( APPLE )
-
     file ( GLOB_RECURSE RESOURCES_LIST ${MACOS_DATA} )
     foreach ( FILE ${RESOURCES_LIST} )
-
         get_filename_component ( FILE_PATH ${FILE} PATH ) 
         STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" FILE_GROUP ${FILE_PATH} )
 
@@ -37,14 +46,75 @@ if( APPLE )
 
 endif()
 
-add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
-    ${ADDED_SRC} 
-    ${PROJECT_SOURCE_FILES} 
-    ${RESOURCES_LIST}
-)
 
-if( APPLE )
+if( ANDROID )
+    add_library( ${PROJECT_NAME} SHARED
+        ${ADDED_SRC} 
+        ${PROJECT_SOURCE_FILES} 
+    )
 
+else()                             
+    add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
+        ${ADDED_SRC} 
+        ${PROJECT_SOURCE_FILES} 
+        ${RESOURCES_LIST}
+    )
+
+endif()
+
+
+
+if( ANDROID )
+    set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
+    set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_NATIVE_API_LEVEL} )
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AntProperties.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/ant.properties )
+
+    if( ANDROID_JAVA_SRC )
+        foreach ( ITEM ${ANDROID_JAVA_SRC} )
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ITEM} ${CMAKE_BINARY_DIR}/src )
+        endforeach ()
+    endif()
+
+    if( ANDROID_JAVA_LIBS )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_LIBS} ${CMAKE_BINARY_DIR}/libs )
+    endif()
+
+    if( ANDROID_JAVA_RES )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_RES} ${CMAKE_BINARY_DIR}/res )
+    endif()
+
+    if( ANDROID_JAVA_ASSET )
+        if( ANDROID_JAVA_ASSET_FOLDER )
+            set( ASSETS_FOLDER "/${ANDROID_JAVA_ASSET_FOLDER}" )    
+        endif()
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_ASSET} ${CMAKE_BINARY_DIR}/assets${ASSETS_FOLDER} )
+    endif()
+
+    if( ANDROID_ICO )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )     
+    endif()
+
+    ADD_CUSTOM_COMMAND(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+        COMMAND  android update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . 
+        COMMAND  ant release
+    )
+        
+    file ( GLOB SO_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.so )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME} )
+    foreach ( FILE ${SO_FILES} )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${FILE}  ${CMAKE_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME} )
+    endforeach ()
+
+    set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
+
+elseif( MACOS )
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
     POST_BUILD
@@ -65,9 +135,14 @@ if( APPLE )
                           )
 
 elseif ( MSVC )
+    if( NOENTRY_FLAG )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY:\"\" /NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" ) 
 
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )    
+    else()
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )    
     
+    endif()
+
     if( DEBUG_INFO )   
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
     else()
