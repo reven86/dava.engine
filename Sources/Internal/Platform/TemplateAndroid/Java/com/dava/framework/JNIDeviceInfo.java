@@ -58,7 +58,7 @@ public class JNIDeviceInfo {
 
 	public static void GetTimeZone()
 	{
-		SetJString(TimeZone.getDefault().getDisplayName(Locale.US));
+		SetJString(TimeZone.getDefault().getID());
 	}
 
 	public static void GetUDID()

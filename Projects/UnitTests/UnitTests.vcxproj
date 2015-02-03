@@ -20,6 +20,7 @@
     <ClInclude Include="Classes\Infrastructure\UITestTemplate.h" />
     <ClInclude Include="Classes\Tests\ComponentsTest.h" />
     <ClInclude Include="Classes\Tests\Cpp14.h" />
+    <ClInclude Include="Classes\Tests\DataVaultTest.h" />
     <ClInclude Include="Classes\Tests\DateTimeTest.h" />
     <ClInclude Include="Classes\Tests\FileListTest.h" />
     <ClInclude Include="Classes\Tests\FileSystemTest.h" />
@@ -31,6 +32,7 @@
     <ClInclude Include="Classes\Tests\LocalizationTest.h" />
     <ClInclude Include="Classes\Tests\MathTest.h" />
     <ClInclude Include="Classes\Tests\MemoryAllocatorsTest.h" />
+    <ClInclude Include="Classes\Tests\NetworkTest.h" />
     <ClInclude Include="Classes\Tests\SaveImageTest.h" />
     <ClInclude Include="Classes\Tests\SplitTest.h" />
     <ClInclude Include="Classes\Tests\StringFormatTest.h" />
@@ -44,6 +46,7 @@
     <ClCompile Include="Classes\Infrastructure\TextureUtils.cpp" />
     <ClCompile Include="Classes\Tests\ComponentsTest.cpp" />
     <ClCompile Include="Classes\Tests\Cpp14.cpp" />
+    <ClCompile Include="Classes\Tests\DataVaultTest.cpp" />
     <ClCompile Include="Classes\Tests\DateTimeTest.cpp" />
     <ClCompile Include="Classes\Tests\FileListTest.cpp" />
     <ClCompile Include="Classes\Tests\FileSystemTest.cpp" />
@@ -55,6 +58,7 @@
     <ClCompile Include="Classes\Tests\LocalizationTest.cpp" />
     <ClCompile Include="Classes\Tests\MathTest.cpp" />
     <ClCompile Include="Classes\Tests\MemoryAllocatorsTest.cpp" />
+    <ClCompile Include="Classes\Tests\NetworkTest.cpp" />
     <ClCompile Include="Classes\Tests\SaveImageTest.cpp" />
     <ClCompile Include="Classes\Tests\SplitTest.cpp" />
     <ClCompile Include="Classes\Tests\StringFormatTest.cpp" />
@@ -122,7 +126,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -131,12 +135,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <IgnoreSpecificDefaultLibraries>
-      </IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <EnableCOMDATFolding>
-      </EnableCOMDATFolding>
-      <AdditionalOptions>/ignore:4204 /ignore:4099 /ignore:4098 /ignore:4075 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

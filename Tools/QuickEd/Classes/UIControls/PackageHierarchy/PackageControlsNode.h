@@ -5,11 +5,12 @@
 #include "ControlNode.h"
 
 class PackageSerializer;
+class PackageNode;
 
 class PackageControlsNode : public PackageBaseNode
 {
 public:
-    PackageControlsNode(PackageBaseNode *parent, DAVA::UIPackage *package);
+    PackageControlsNode(PackageNode *parent, DAVA::UIPackage *_package, const DAVA::FilePath &_packagePath);
     virtual ~PackageControlsNode();
     
     void Add(ControlNode *node);
@@ -34,8 +35,10 @@ public:
 private:
     DAVA::String name;
     DAVA::Vector<ControlNode*> nodes;
-    DAVA::UIPackage *package;
     bool readOnly;
+    
+    DAVA::UIPackage *package;
+    DAVA::FilePath packagePath;
 };
 
 #endif // __UI_EDITOR_PACKAGE_CONTROLS_NODE_H__

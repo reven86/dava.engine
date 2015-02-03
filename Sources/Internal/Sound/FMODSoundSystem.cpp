@@ -42,7 +42,7 @@
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"
-#include "musicios.h"
+#include "Sound/iOS/musicios.h"
 #endif
 
 #define MAX_SOUND_CHANNELS 48
