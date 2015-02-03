@@ -41,6 +41,9 @@ private slots:
     void OnPaste();
     void OnCut();
     void OnDelete();
+    
+    void OnControlSelectedInEditor(ControlNode *node);
+    void OnAllControlsDeselectedInEditor();
 
 signals:
     void SelectionRootControlChanged(const QList<ControlNode*> &activatedRootControls, const QList<ControlNode*> &deactivatedRootControls);

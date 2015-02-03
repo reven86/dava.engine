@@ -22,7 +22,7 @@ protected:
 public:
     virtual int GetCount() const = 0;
     virtual PackageBaseNode *Get(int index) const = 0;
-    int GetIndex(PackageBaseNode *node) const;
+    int GetIndex(const PackageBaseNode *node) const;
     
     PackageBaseNode *GetParent() const;
     void SetParent(PackageBaseNode *parent);

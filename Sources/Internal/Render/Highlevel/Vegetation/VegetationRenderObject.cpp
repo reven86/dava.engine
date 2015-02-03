@@ -142,7 +142,6 @@ VegetationRenderObject::VegetationRenderObject() :
     heightmapTexture(NULL),
     //cameraBias(25.0f)
     cameraBias(0.0f),
-    customGeometryData(NULL),
     layersAnimationSpring(2.f, 2.f, 2.f, 2.f),
     layersAnimationDrag(1.4f, 1.4f, 1.4f, 1.4f)
 {
@@ -181,8 +180,6 @@ VegetationRenderObject::~VegetationRenderObject()
 
     SafeRelease(heightmap);
     SafeRelease(heightmapTexture);
-    
-    SafeDelete(customGeometryData);
 }
     
 RenderObject* VegetationRenderObject::Clone(RenderObject *newObject)
@@ -200,10 +197,10 @@ RenderObject* VegetationRenderObject::Clone(RenderObject *newObject)
     
     VegetationRenderObject* vegetationRenderObject = static_cast<VegetationRenderObject*>(newObject);
     
-    SafeDelete(vegetationRenderObject->customGeometryData);
+    vegetationRenderObject->customGeometryData.reset();
     if(customGeometryData)
     {
-        vegetationRenderObject->customGeometryData = new VegetationCustomGeometrySerializationData(*customGeometryData);
+        vegetationRenderObject->customGeometryData.reset(new VegetationCustomGeometrySerializationData(*customGeometryData));
     }
     
     vegetationRenderObject->densityMap.clear();
@@ -266,7 +263,7 @@ void VegetationRenderObject::Save(KeyedArchive *archive, SerializationContext *s
     
     archive->SetFloat("vro.cameraBias", cameraBias);
     
-    if(customGeometryData != NULL)
+    if(customGeometryData)
     {
         KeyedArchive* customGeometryArchive = new KeyedArchive();
         SaveCustomGeometryData(serializationContext, customGeometryArchive, customGeometryData);
@@ -321,7 +318,7 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
         String customGeometry = archive->GetString("vro.customGeometry");
 		if(customGeometry.empty() == false)
 		{
-            if(customGeometryData != NULL)
+            if(customGeometryData)
             {
                 SetCustomGeometryPathInternal(serializationContext->GetScenePath() + customGeometry);
             }
@@ -947,7 +944,7 @@ bool VegetationRenderObject::IsValidGeometryData() const
      return (worldSize.Length() > 0 &&
              heightmap != NULL &&
              densityMap.size() > 0 &&
-             (!textureSheetPath.IsEmpty() || customGeometryData != NULL));
+             (!textureSheetPath.IsEmpty() || customGeometryData));
 }
     
 bool VegetationRenderObject::IsValidSpatialData() const
@@ -1019,7 +1016,7 @@ void VegetationRenderObject::InitLodRanges()
 
 void VegetationRenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
 {
-    if(customGeometryData != NULL)
+    if(customGeometryData)
     {
         size_t layerCount = customGeometryData->GetLayerCount();
         for(size_t i = 0; i < layerCount; ++i)
@@ -1200,6 +1197,21 @@ void VegetationRenderObject::ClearRenderBatches()
     renderBatchPool.ReturnAll();
 }
 
+void VegetationRenderObject::SetCustomGeometryPath(const FilePath& path)
+{
+    if (!path.IsEmpty() && path.Exists())
+    {
+        VegetationCustomGeometrySerializationDataReader reader;
+        VegetationCustomGeometrySerializationDataPtr fetchedData = reader.ReadScene(path);
+
+        if (fetchedData)
+        {
+            customGeometryData = std::move(fetchedData);
+            SetCustomGeometryPathInternal(path);
+        }
+    }
+}
+
 void VegetationRenderObject::SetCustomGeometryPathInternal(const FilePath& path)
 {
     customGeometryPath = path;
@@ -1210,19 +1222,7 @@ void VegetationRenderObject::SetCustomGeometryPathInternal(const FilePath& path)
     }
 }
 
-void VegetationRenderObject::ImportDataFromExternalScene(const FilePath& path)
-{
-    SafeDelete(customGeometryData);
-    
-    if(!path.IsEmpty() &&
-       path.Exists())
-    {
-        VegetationCustomGeometrySerializationDataReader reader;
-        customGeometryData = reader.ReadScene(path);
-    }
-}
-
-VegetationCustomGeometrySerializationData* VegetationRenderObject::LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive)
+VegetationCustomGeometrySerializationDataPtr VegetationRenderObject::LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive)
 {
     uint32 layerCount = srcArchive->GetUInt32("cgsd.layerCount");
     
@@ -1298,18 +1298,18 @@ VegetationCustomGeometrySerializationData* VegetationRenderObject::LoadCustomGeo
         }
     }
 
-    VegetationCustomGeometrySerializationData* data = new VegetationCustomGeometrySerializationData(materials,
+    VegetationCustomGeometrySerializationDataPtr data(new VegetationCustomGeometrySerializationData(materials,
                                                                                                     positions,
                                                                                                     texCoords,
                                                                                                     normals,
-                                                                                                    indices);
+                                                                                                    indices));
     
     return data;
 }
     
 void VegetationRenderObject::SaveCustomGeometryData(SerializationContext* context,
                                                     KeyedArchive* dstArchive,
-                                                    VegetationCustomGeometrySerializationData* data)
+                                                    const VegetationCustomGeometrySerializationDataPtr& data)
 {
     uint32 layerCount = data->GetLayerCount();
     dstArchive->SetUInt32("cgsd.layerCount", layerCount);

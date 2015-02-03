@@ -1,6 +1,8 @@
 #include "EditScreen.h"
 #include "EditorSettings.h"
 
+#include "ControlSelectionListener.h"
+
 using namespace DAVA;
 
 
@@ -13,7 +15,9 @@ CheckeredCanvas::CheckeredCanvas()
 }
 
 CheckeredCanvas::~CheckeredCanvas()
-{}
+{
+    ClearSelections();
+}
 
 void CheckeredCanvas::Draw( const UIGeometricData &geometricData )
 {
@@ -30,14 +34,111 @@ void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
     // Grid constants.
     static const float32 scaleTresholdToDrawGrid = 8.0f; // 800%+ as requested.
 
-    if (GetScale().x < scaleTresholdToDrawGrid)
+    if (GetScale().x >= scaleTresholdToDrawGrid)
     {
-        return;
+        Color gridColor = EditorSettings::Instance()->GetGrigColor();
+        RenderHelper::Instance()->DrawGrid(geometricData.GetUnrotatedRect(), Vector2(GetScale().x, GetScale().x), gridColor, RenderState::RENDERSTATE_2D_BLEND);
     }
+    
+    for (auto &control : selectionControls)
+    {
+        Color oldColor = RenderManager::Instance()->GetColor();
 
-    Color gridColor = EditorSettings::Instance()->GetGrigColor();
-    RenderHelper::Instance()->DrawGrid(geometricData.GetUnrotatedRect(), Vector2(GetScale().x, GetScale().x), gridColor, RenderState::RENDERSTATE_2D_BLEND);
+        UIControl *parent = control->GetParent();
+        if (parent && parent != this)
+        {
+            RenderManager::Instance()->SetColor(0.5f, 0.5f, 0.5f, 1.f);
+            RenderHelper::Instance()->DrawRect(parent->GetGeometricData().GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
+        }
+        
+        RenderManager::Instance()->SetColor(1, 0, 0, 1);
+        RenderHelper::Instance()->DrawRect(control->GetGeometricData().GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
+        
+        RenderManager::Instance()->SetColor(oldColor);
+    }
 }
+
+bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
+{
+    if (currentInput->phase == UIEvent::PHASE_BEGAN || currentInput->phase == UIEvent::PHASE_DRAG)
+    {
+        UIControl *control = GetControlByPos(this, currentInput->point);
+        if (control)
+        {
+            for (auto listener : selectionListeners)
+            {
+                UIControl *parentControl = control;
+                while (parentControl->GetParent() != nullptr && parentControl->GetParent() != this)
+                    parentControl = parentControl->GetParent();
+
+                DVASSERT(parentControl->GetParent() == this);
+                
+                listener->OnControlSelected(parentControl, control);
+            }
+        }
+        else
+        {
+            for (auto listener : selectionListeners)
+                listener->OnAllControlsDeselected();
+        }
+    }
+    return true;
+}
+
+void CheckeredCanvas::SelectControl(UIControl *control)
+{
+    if (selectionControls.find(control) == selectionControls.end())
+    {
+        selectionControls.insert(SafeRetain(control));
+    }
+}
+
+void CheckeredCanvas::RemoveSelection(UIControl *control)
+{
+    auto it = selectionControls.find(control);
+    if (it != selectionControls.end())
+    {
+        (*it)->Release();
+        selectionControls.erase(it);
+    }
+}
+
+void CheckeredCanvas::ClearSelections()
+{
+    for (auto &control : selectionControls)
+        control->Release();
+    
+    selectionControls.clear();
+}
+
+UIControl *CheckeredCanvas::GetControlByPos(UIControl *control, const DAVA::Vector2 &pos)
+{
+    const List<UIControl*> &children = control->GetChildren();
+    for (auto it = children.rbegin(); it != children.rend(); ++it)
+    {
+        UIControl *c = GetControlByPos(*it, pos);
+        if (c)
+            return c;
+    }
+    
+    if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
+        return control;
+    
+    return nullptr;
+}
+
+void CheckeredCanvas::AddControlSelectionListener(ControlSelectionListener *listener)
+{
+    selectionListeners.push_back(listener);
+}
+
+void CheckeredCanvas::RemoveControlSelectionListener(ControlSelectionListener *listener)
+{
+    auto it = std::find(selectionListeners.begin(), selectionListeners.end(), listener);
+    if (it != selectionListeners.end())
+        selectionListeners.erase(it);
+}
+
 
 PackageCanvas::PackageCanvas()
     : UIControl()
@@ -72,6 +173,6 @@ void PackageCanvas::LayoutCanvas()
         rect.x = (maxWidth - rect.dx)/2.0f;
         control->SetRect(rect);
 
-        curY += rect.dy;
+        curY += rect.dy + 5;
     }
 }
