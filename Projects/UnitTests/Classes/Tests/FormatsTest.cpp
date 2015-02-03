@@ -32,6 +32,8 @@
 #include "Render/PixelFormatDescriptor.h"
 #include "Infrastructure/TextureUtils.h"
 
+const DAVA::float32 FormatsTest::MAX_DIFFERENCE = 2.f; //in persents
+
 
 FormatsTest::FormatsTest()
 : TestTemplate<FormatsTest>("FormatsTest")

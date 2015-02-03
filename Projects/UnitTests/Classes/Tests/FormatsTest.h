@@ -38,7 +38,7 @@ using namespace DAVA;
 
 class FormatsTest: public TestTemplate<FormatsTest>
 {
-    static constexpr float32 MAX_DIFFERENCE = 2.f; //in persents
+	static const DAVA::float32 MAX_DIFFERENCE; //in persents
 protected:
     ~FormatsTest(){}
 public:

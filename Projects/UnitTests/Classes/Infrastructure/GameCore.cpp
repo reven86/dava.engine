@@ -57,7 +57,6 @@
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
-    runOnlyThisTest = "FormatsTest";
 }
 
 void GameCore::OnError()
