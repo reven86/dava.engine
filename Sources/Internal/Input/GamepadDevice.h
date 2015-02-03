@@ -104,7 +104,7 @@ public:
 
     inline uint8 GetDavaEventIdForSystemKeycode(int32 systemKey);
     inline uint8 GetDavaEventIdForSystemAxis(int32 systemKey);
-    inline void OnTriggersDisabled();
+    inline void OnTriggersAvailable(bool isAvailable);
         
 private:
     uint8 keyTranslator[MAX_TRANSLATOR_KEYS];
@@ -147,9 +147,12 @@ uint8 GamepadDevice::GetDavaEventIdForSystemAxis(int32 systemKey)
     return axisTranslator[systemKey];
 }
 
-void GamepadDevice::GamepadDevice::OnTriggersDisabled()
+void GamepadDevice::GamepadDevice::OnTriggersAvailable(bool isAvailable)
 {
-    profile = GAMEPAD_PROFILE_NO_TRIGGERS;
+    if(isAvailable)
+        profile = GAMEPAD_PROFILE_EXTENDED;
+    else
+        profile = GAMEPAD_PROFILE_NO_TRIGGERS;
 }
 #endif
     

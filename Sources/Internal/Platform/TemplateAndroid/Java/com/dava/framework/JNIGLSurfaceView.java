@@ -1,21 +1,15 @@
 package com.dava.framework;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.hardware.input.InputManager.InputDeviceListener;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.InputDevice;
-import android.view.InputDevice.MotionRange;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ViewGroup.LayoutParams;
@@ -33,14 +27,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
-	private native void nativeOnGamepadConnected(int deviceId);
-	private native void nativeOnGamepadDisconnected(int deviceId);
-	private native void nativeOnGamepadTriggersDisabled();
+	
+	private Integer[] gamepadAxises = null;
 	
 	MOGAListener mogaListener = null;
-	GamepadListener gemapadListener = null;
-
-	Integer[] gamepadAxises = null;
 	
 	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode() + 1];
 
@@ -89,43 +79,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		setRenderMode(RENDERMODE_CONTINUOUSLY);
 		
 		mogaListener = new MOGAListener(this);
-		gemapadListener = new GamepadListener();
-		
-		final List<Integer> suppertedAxises = Arrays.asList(
-				MotionEvent.AXIS_X,
-				MotionEvent.AXIS_Y,
-				MotionEvent.AXIS_Z,
-				MotionEvent.AXIS_RX,
-				MotionEvent.AXIS_RY,
-				MotionEvent.AXIS_RZ,
-				MotionEvent.AXIS_LTRIGGER,
-				MotionEvent.AXIS_RTRIGGER,
-				MotionEvent.AXIS_BRAKE,
-				MotionEvent.AXIS_GAS
-		);
-				
-		int[] inputDevices = InputDevice.getDeviceIds();
-		Set<Integer> avalibleAxises = new HashSet<Integer>(); 
-		for(int id : inputDevices)
-		{
-			if((InputDevice.getDevice(id).getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
-			{
-				nativeOnGamepadConnected(id);
-				
-				List<MotionRange> ranges = InputDevice.getDevice(id).getMotionRanges();
-				for(MotionRange r : ranges)
-				{
-					int axisId = r.getAxis();
-					if(suppertedAxises.contains(axisId))
-						avalibleAxises.add(axisId);
-				}
-			}
-		}
-		
-		gamepadAxises = avalibleAxises.toArray(new Integer[0]);
-		
-		if(!avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) && !avalibleAxises.contains(MotionEvent.AXIS_BRAKE))
-			nativeOnGamepadTriggersDisabled();
 		
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
 		{
@@ -135,6 +88,11 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		setDebugFlags(0);
 		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
+	}
+	
+	public void SetAvailableGamepadAxises(Integer[] axises)
+	{
+		gamepadAxises = axises;
 	}
 	
     @Override
@@ -396,27 +354,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
     {
     	queueEvent(new InputRunnable(event, 1));
     	return true;
-    }
-    
-    class GamepadListener implements InputDeviceListener
-    {
-		@Override
-		public void onInputDeviceAdded(int deviceId) 
-		{
-			nativeOnGamepadConnected(deviceId);
-		}
-
-		@Override
-		public void onInputDeviceChanged(int deviceId) 
-		{	
-		}
-
-		@Override
-		public void onInputDeviceRemoved(int deviceId) 
-		{
-			nativeOnGamepadDisconnected(deviceId);
-		}
-    	
     }
     
     class MOGAListener implements ControllerListener

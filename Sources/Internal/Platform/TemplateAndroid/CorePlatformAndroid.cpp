@@ -351,9 +351,9 @@ namespace DAVA
 		InputSystem::Instance()->GetGamepadDevice().SetAvailable(isAvailable);
 	}
 
-	void CorePlatformAndroid::OnGamepadTriggersDisabled()
+	void CorePlatformAndroid::OnGamepadTriggersAvailable(bool isAvailable)
 	{
-		InputSystem::Instance()->GetGamepadDevice().OnTriggersDisabled();
+		InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(isAvailable);
 	}
 
 	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
