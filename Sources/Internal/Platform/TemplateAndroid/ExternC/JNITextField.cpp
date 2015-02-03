@@ -57,6 +57,23 @@ extern "C"
 		return env->NewStringUTF(returnStr.c_str());
 	}
 
+	void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
+	{
+		DAVA::WideString newString, oldString;
+
+		jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);
+		jsize lengthOfArray = env->GetArrayLength(newText);
+		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, newString);
+		env->ReleaseByteArrayElements(newText, bufferPtr, 0);
+
+		bufferPtr = env->GetByteArrayElements(oldText, NULL);
+		lengthOfArray = env->GetArrayLength(oldText);
+		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
+		env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
+
+		DAVA::UITextFieldAndroid::TextFieldOnTextChanged(id, newString, oldString);
+	}
+
 	void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
 	{
 	    // Recalculate to virtual coordinates.
