@@ -47,6 +47,8 @@ protected:
     Thread *thread;
     JobQueueWorker *workerQueue;
     Semaphore *workerDoneSem;
+    volatile bool threadCancel;
+    volatile bool threadFinished;
 
     void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
 };

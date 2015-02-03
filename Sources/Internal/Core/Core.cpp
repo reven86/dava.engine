@@ -451,12 +451,8 @@ void Core::SystemAppStarted()
     FilePath file = "~res:/Autotesting/id.yaml";
     if (file.Exists())
     {
-    AutotestingSystem::Instance()->OnAppStarted();
+        AutotestingSystem::Instance()->OnAppStarted();
         isAutotesting = true;
-    }
-    else
-    {
-        Logger::Debug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
     }
 #endif //__DAVAENGINE_AUTOTESTING__
 }
