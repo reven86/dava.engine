@@ -57,44 +57,35 @@ void GamepadDevice::InitInternal()
 void GamepadDevice::InitInternal()
 {
     Memset(keyTranslator, INVALID_DAVAKEY, MAX_TRANSLATOR_KEYS);
-        
+    Memset(axisTranslator, INVALID_DAVAKEY, MAX_TRANSLATOR_KEYS);
+    
     keyTranslator[0x60] = (uint8)GAMEPAD_ELEMENT_BUTTON_A;     //BUTTON_A
     keyTranslator[0x61] = (uint8)GAMEPAD_ELEMENT_BUTTON_B;     //BUTTON_B
     keyTranslator[0x63] = (uint8)GAMEPAD_ELEMENT_BUTTON_X;     //BUTTON_X
     keyTranslator[0x64] = (uint8)GAMEPAD_ELEMENT_BUTTON_Y;     //BUTTON_Y
-        
+    
     keyTranslator[0x66] = (uint8)GAMEPAD_ELEMENT_BUTTON_LS;    //BUTTON_L1
     keyTranslator[0x67] = (uint8)GAMEPAD_ELEMENT_BUTTON_RS;    //BUTTON_R1
     keyTranslator[0x68] = (uint8)GAMEPAD_ELEMENT_LT;           //BUTTON_L2
     keyTranslator[0x69] = (uint8)GAMEPAD_ELEMENT_RT;           //BUTTON_R2
-        
-    keyTranslator[0x11] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_LTRIGGER
-    keyTranslator[0x12] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_RTRIGGER
-        
-    keyTranslator[0x00] = (uint8)GAMEPAD_ELEMENT_AXIS_LX;      //AXIS_X
-    keyTranslator[0x01] = (uint8)GAMEPAD_ELEMENT_AXIS_LY;      //AXIS_Y
-    keyTranslator[0x0B] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_Z
-    keyTranslator[0x0E] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RZ
-    keyTranslator[0x0C] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_RX
-    keyTranslator[0x0D] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RY
-        
+    
     keyTranslator[0x13] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_UP
     keyTranslator[0x14] = (uint8)GAMEPAD_ELEMENT_DPAD_Y;       //DPAD_DOWN
     keyTranslator[0x15] = (uint8)GAMEPAD_ELEMENT_DPAD_X;       //DPAD_LEFT
     keyTranslator[0x16] = (uint8)GAMEPAD_ELEMENT_DPAD_X;       //DPAD_RIGHT
-}
     
-GamepadDevice::eDavaGamepadElement GamepadDevice::GetDavaEventIdForSystemKey(int32 systemKey)
-{
-    DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
-    return (eDavaGamepadElement)keyTranslator[systemKey];
-}
+    axisTranslator[0x11] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_LTRIGGER
+    axisTranslator[0x12] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_RTRIGGER
+    axisTranslator[0x17] = (uint8)GAMEPAD_ELEMENT_LT;           //AXIS_BREAK
+    axisTranslator[0x16] = (uint8)GAMEPAD_ELEMENT_RT;           //AXIS_GAS
     
-void GamepadDevice::OnTriggersDisabled()
-{
-    profile = GAMEPAD_PROFILE_NO_TRIGGERS;
+    axisTranslator[0x00] = (uint8)GAMEPAD_ELEMENT_AXIS_LX;      //AXIS_X
+    axisTranslator[0x01] = (uint8)GAMEPAD_ELEMENT_AXIS_LY;      //AXIS_Y
+    axisTranslator[0x0B] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_Z
+    axisTranslator[0x0E] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RZ
+    axisTranslator[0x0C] = (uint8)GAMEPAD_ELEMENT_AXIS_RX;      //AXIS_RX
+    axisTranslator[0x0D] = (uint8)GAMEPAD_ELEMENT_AXIS_RY;      //AXIS_RY
 }
-    
 #endif
 
 }

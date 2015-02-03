@@ -32,7 +32,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private native void nativeOnInput(int action, int id, float x, float y, double time, int source, int tapCount);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
-	private native void nativeOnGamepadElement(int elementKey, float value);
+	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
 	private native void nativeOnGamepadConnected(int deviceId);
 	private native void nativeOnGamepadDisconnected(int deviceId);
 	private native void nativeOnGamepadTriggersDisabled();
@@ -99,7 +99,9 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				MotionEvent.AXIS_RY,
 				MotionEvent.AXIS_RZ,
 				MotionEvent.AXIS_LTRIGGER,
-				MotionEvent.AXIS_RTRIGGER
+				MotionEvent.AXIS_RTRIGGER,
+				MotionEvent.AXIS_BRAKE,
+				MotionEvent.AXIS_GAS
 		);
 				
 		int[] inputDevices = InputDevice.getDeviceIds();
@@ -115,14 +117,14 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				{
 					int axisId = r.getAxis();
 					if(suppertedAxises.contains(axisId))
-						avalibleAxises.add(r.getAxis());
+						avalibleAxises.add(axisId);
 				}
 			}
 		}
 		
 		gamepadAxises = avalibleAxises.toArray(new Integer[0]);
 		
-		if(!avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) || !avalibleAxises.contains(MotionEvent.AXIS_RTRIGGER))
+		if(!avalibleAxises.contains(MotionEvent.AXIS_LTRIGGER) && !avalibleAxises.contains(MotionEvent.AXIS_BRAKE))
 			nativeOnGamepadTriggersDisabled();
 		
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
@@ -291,11 +293,11 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				{
 					if(event.id == MotionEvent.AXIS_Y || event.id == MotionEvent.AXIS_RZ || event.id == MotionEvent.AXIS_RY) 
 					{
-						nativeOnGamepadElement(event.id, -event.x);
+						nativeOnGamepadElement(event.id, -event.x, false);
 					} 
 					else 
 					{
-						nativeOnGamepadElement(event.id, event.x);
+						nativeOnGamepadElement(event.id, event.x, false);
 					}
 				}
 				else 
@@ -324,7 +326,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	public void run() {
     		if(KeyEvent.isGamepadButton(keyCode))
     		{
-    			nativeOnGamepadElement(keyCode, 1.f);
+    			nativeOnGamepadElement(keyCode, 1.f, true);
     		}
     		else
     		{
@@ -363,7 +365,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	
     	if(KeyEvent.isGamepadButton(keyCode))
     	{
-    		nativeOnGamepadElement(keyCode, 0.f);
+    		nativeOnGamepadElement(keyCode, 0.f, true);
     	}
     	else
     	{
@@ -439,7 +441,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			else if(event.getAction() == com.bda.controller.KeyEvent.ACTION_UP)
 			{
 		    	pressedKeys[keyCode] = false;
-		        nativeOnGamepadElement(keyCode, 0.f);
+		        nativeOnGamepadElement(keyCode, 0.f, true);
 			}
 		}
 		@Override

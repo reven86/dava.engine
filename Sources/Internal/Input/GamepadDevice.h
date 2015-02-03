@@ -101,12 +101,14 @@ public:
 public:
     static const uint8 INVALID_DAVAKEY = 0xFF;
     static const uint32 MAX_TRANSLATOR_KEYS = 256;
-        
-    eDavaGamepadElement GetDavaEventIdForSystemKey(int32 systemKey);
-    void OnTriggersDisabled();
+
+    inline uint8 GetDavaEventIdForSystemKeycode(int32 systemKey);
+    inline uint8 GetDavaEventIdForSystemAxis(int32 systemKey);
+    inline void OnTriggersDisabled();
         
 private:
     uint8 keyTranslator[MAX_TRANSLATOR_KEYS];
+    uint8 axisTranslator[MAX_TRANSLATOR_KEYS];
 #endif
 };
     
@@ -131,7 +133,26 @@ inline float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement
     DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
     return elementValues[element];
 }
+    
+#if defined(__DAVAENGINE_ANDROID__)
+uint8 GamepadDevice::GetDavaEventIdForSystemKeycode(int32 systemKey)
+{
+    DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
+    return keyTranslator[systemKey];
+}
 
+uint8 GamepadDevice::GetDavaEventIdForSystemAxis(int32 systemKey)
+{
+    DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
+    return axisTranslator[systemKey];
+}
+
+void GamepadDevice::GamepadDevice::OnTriggersDisabled()
+{
+    profile = GAMEPAD_PROFILE_NO_TRIGGERS;
+}
+#endif
+    
 }
 
 #endif //__GAMEPAD_DEVICE_H_
