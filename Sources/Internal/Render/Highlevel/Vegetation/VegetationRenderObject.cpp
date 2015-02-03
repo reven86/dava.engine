@@ -1201,8 +1201,8 @@ void VegetationRenderObject::SetCustomGeometryPath(const FilePath& path)
 {
     if (!path.IsEmpty() && path.Exists())
     {
-        VegetationCustomGeometrySerializationDataReader reader;
-        VegetationCustomGeometrySerializationDataPtr fetchedData = reader.ReadScene(path);
+        VegetationCustomGeometrySerializationDataPtr fetchedData = 
+            VegetationCustomGeometrySerializationDataReader::ReadScene(path);
 
         if (fetchedData)
         {
