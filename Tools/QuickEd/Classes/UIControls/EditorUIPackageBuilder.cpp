@@ -9,6 +9,8 @@
 #include "UIControls/ControlProperties/ValueProperty.h"
 #include "UIControls/ControlProperties/LocalizedTextValueProperty.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
+#include "UIControls/PackageHierarchy/ControlPrototype.h"
+#include "UI/UIPackage.h"
 
 using namespace DAVA;
 
@@ -31,8 +33,8 @@ RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePa
 {
     DVASSERT(packageNode == NULL);
     SafeRelease(packageNode);
-    RefPtr<UIPackage> package(new UIPackage(packagePath));
-    packageNode = new PackageNode(package.Get());
+    RefPtr<UIPackage> package(new UIPackage());
+    packageNode = new PackageNode(package.Get(), packagePath);
     return package;
 }
 
@@ -101,28 +103,32 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
 {
-    ControlNode *prototypeNode = NULL;
-    UIPackage *prototypePackage = NULL;
+    RefPtr<ControlPrototype> prototype;
+    
     if (packageName.empty())
     {
-        prototypeNode = packageNode->GetPackageControlsNode()->FindControlNodeByName(prototypeName);
+        ControlNode *prototypeNode = packageNode->GetPackageControlsNode()->FindControlNodeByName(prototypeName);
         if (!prototypeNode)
         {
             if (loader->LoadControlByName(prototypeName))
                 prototypeNode = packageNode->GetPackageControlsNode()->FindControlNodeByName(prototypeName);
         }
+
+        if (prototypeNode)
+            prototype = new ControlPrototype(prototypeNode);
     }
     else
     {
         PackageControlsNode *importedPackage = packageNode->GetImportedPackagesNode()->FindPackageControlsNodeByName(packageName);
         if (importedPackage)
         {
-            prototypePackage = importedPackage->GetPackage();
-            prototypeNode = importedPackage->FindControlNodeByName(prototypeName);
+            ControlNode *prototypeNode = importedPackage->FindControlNodeByName(prototypeName);
+            if (prototypeNode)
+                prototype = new ControlPrototype(prototypeNode, importedPackage->GetPackagePath());
         }
     }
-    DVASSERT(prototypeNode);
-    ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode, prototypePackage);
+    DVASSERT(prototype);
+    ControlNode *node = ControlNode::CreateFromPrototype(prototype.Get());
     node->GetControl()->SetCustomControlClassName(customClassName);
     controlsStack.push_back(ControlDescr(node, true));
 

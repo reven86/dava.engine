@@ -311,31 +311,15 @@ void VisibilityToolSystem::SetVisibilityArea()
 
 void VisibilityToolSystem::SetVisibilityPointInternal()
 {
-	Sprite* sprite = Sprite::CreateAsRenderTarget(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE, FORMAT_RGBA8888);
-
 	Sprite* cursorSprite = Sprite::CreateFromTexture(crossTexture, 0, 0,
 													 crossTexture->GetWidth(), crossTexture->GetHeight());
 
-    RenderSystem2D::Instance()->PushRenderTarget();
-    RenderSystem2D::Instance()->SetRenderTarget(sprite);
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
-    Sprite::DrawState drawState;
-    drawState.SetPosition(0.f, 0.f);
-	drawState.SetScaleSize(sprite->GetWidth(), sprite->GetHeight(), cursorSprite->GetWidth(), cursorSprite->GetHeight());
-    
-    RenderSystem2D::Instance()->Setup2DMatrices();
-    RenderSystem2D::Instance()->Draw(cursorSprite, &drawState);
-
-    RenderSystem2D::Instance()->PopRenderTarget();
-
 	SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
 	DVASSERT(scene);
-	scene->Exec(new ActionSetVisibilityPoint(originalImage, sprite,
-											 drawSystem->GetVisibilityToolProxy(), cursorPosition));
+	scene->Exec(new ActionSetVisibilityPoint(originalImage, cursorSprite,
+											 drawSystem->GetVisibilityToolProxy(), cursorPosition, Vector2(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE)));
 
 	SafeRelease(originalImage);
-	SafeRelease(sprite);
 	SafeRelease(cursorSprite);
 
 	SetState(VT_STATE_NORMAL);

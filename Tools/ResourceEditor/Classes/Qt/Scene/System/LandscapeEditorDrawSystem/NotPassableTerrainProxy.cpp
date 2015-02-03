@@ -162,6 +162,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
     RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(drawRect);
     RenderSystem2D::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->UpdateClip();
 
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
