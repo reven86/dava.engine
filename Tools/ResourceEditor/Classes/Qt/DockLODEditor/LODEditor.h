@@ -68,7 +68,7 @@ protected slots:
 	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
-    void LODDataChanged();
+    void LODDataChanged(SceneEditor2 *scene = nullptr);
     void LODDistanceChangedBySpinbox(double value);
     void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous);
     
@@ -100,9 +100,8 @@ protected:
     
 	void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
     
-    void UpdateWidgetVisibility();
-    
-    void UpdateDeleteLODButtons();
+    void UpdateWidgetVisibility(EditorLODSystem *editorLODSystem);
+	void UpdateDeleteLODButtons(EditorLODSystem *editorLODSystem);
 
 	EditorLODSystem *GetCurrentEditorLODSystem();
 

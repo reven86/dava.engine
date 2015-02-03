@@ -232,6 +232,7 @@ void EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 texture
 		sceneEditor2->Exec(new CreatePlaneLODCommand(currentLOD, fromLayer, textureSize, texturePath));
 	}
 	sceneEditor2->EndBatch();
+	CollectLODDataFromScene();
 }
 
 void EditorLODSystem::CopyLastLodToLod0()
@@ -249,6 +250,7 @@ void EditorLODSystem::CopyLastLodToLod0()
 		sceneEditor2->Exec(new CopyLastLODToLod0Command(currentLOD));
 	}
 	sceneEditor2->EndBatch();
+	CollectLODDataFromScene();
 }
 
 bool EditorLODSystem::CanCreatePlaneLOD() const
@@ -325,6 +327,7 @@ void EditorLODSystem::DeleteFirstLOD()
 		sceneEditor2->Exec(new DeleteLODCommand(currentLOD, 0, -1));
 	}
 	sceneEditor2->EndBatch();
+	CollectLODDataFromScene();
 }
 
 void EditorLODSystem::DeleteLastLOD()
@@ -344,6 +347,7 @@ void EditorLODSystem::DeleteLastLOD()
 		}
 	}
 	sceneEditor2->EndBatch();
+	CollectLODDataFromScene();
 }
 
 void EditorLODSystem::SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distance)
@@ -362,10 +366,16 @@ void EditorLODSystem::SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 dist
 		sceneEditor2->Exec(new ChangeLODDistanceCommand(lod, layerNum, distance));
 	}
 	sceneEditor2->EndBatch();
+	CollectLODDataFromScene();
 }
 
 void EditorLODSystem::SetForceDistanceEnabled(bool enable)
 {
+	if (forceDistanceEnabled == enable)
+	{
+		return;
+	}
+
 	forceDistanceEnabled = enable;
 	UpdateForceDistance();
 }
@@ -376,6 +386,7 @@ void EditorLODSystem::SetForceDistance(DAVA::float32 distance)
 	{
 		return;
 	}
+
 	forceDistance = distance;
 	UpdateForceDistance();
 }
