@@ -76,9 +76,9 @@ public:
         
     void Reset();
         
-    inline bool IsAvailable();
-    inline eDavaGamepadProfile GetProfile();
-    inline float32 GetElementState(eDavaGamepadElement element);
+    inline bool IsAvailable() const;
+    inline eDavaGamepadProfile GetProfile() const;
+    inline float32 GetElementState(eDavaGamepadElement element) const;
         
     inline void SystemProcessElement(eDavaGamepadElement element, float32 newValue);
 
@@ -102,8 +102,8 @@ public:
     static const uint8 INVALID_DAVAKEY = 0xFF;
     static const uint32 MAX_TRANSLATOR_KEYS = 256;
 
-    inline uint8 GetDavaEventIdForSystemKeycode(int32 systemKey);
-    inline uint8 GetDavaEventIdForSystemAxis(int32 systemKey);
+    inline uint8 GetDavaEventIdForSystemKeycode(int32 systemKey) const;
+    inline uint8 GetDavaEventIdForSystemAxis(int32 systemKey) const;
     inline void OnTriggersAvailable(bool isAvailable);
         
 private:
@@ -112,12 +112,12 @@ private:
 #endif
 };
     
-inline bool GamepadDevice::IsAvailable()
+inline bool GamepadDevice::IsAvailable() const
 {
     return isAvailable;
 }
 
-inline GamepadDevice::eDavaGamepadProfile GamepadDevice::GetProfile()
+inline GamepadDevice::eDavaGamepadProfile GamepadDevice::GetProfile() const
 {
     return profile;
 }
@@ -128,26 +128,26 @@ inline void GamepadDevice::SystemProcessElement(GamepadDevice::eDavaGamepadEleme
     elementValues[element] = value;
 }
 
-inline float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement element)
+inline float32 GamepadDevice::GetElementState(GamepadDevice::eDavaGamepadElement element) const
 {
     DVASSERT(element >= 0 && element < GAMEPAD_ELEMENT_COUNT);
     return elementValues[element];
 }
     
 #if defined(__DAVAENGINE_ANDROID__)
-uint8 GamepadDevice::GetDavaEventIdForSystemKeycode(int32 systemKey)
+inline uint8 GamepadDevice::GetDavaEventIdForSystemKeycode(int32 systemKey) const
 {
     DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
     return keyTranslator[systemKey];
 }
 
-uint8 GamepadDevice::GetDavaEventIdForSystemAxis(int32 systemKey)
+inline uint8 GamepadDevice::GetDavaEventIdForSystemAxis(int32 systemKey) const
 {
     DVASSERT(systemKey < MAX_TRANSLATOR_KEYS);
     return axisTranslator[systemKey];
 }
 
-void GamepadDevice::GamepadDevice::OnTriggersAvailable(bool isAvailable)
+inline void GamepadDevice::GamepadDevice::OnTriggersAvailable(bool isAvailable)
 {
     if(isAvailable)
         profile = GAMEPAD_PROFILE_EXTENDED;
