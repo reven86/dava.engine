@@ -80,7 +80,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     
     SetFPS(60);
     renderTimer = new QTimer(this);
-//    renderTimer->singleShot(16, this, SLOT(OnRenderTimer()));
 }
 
 DavaGLWidget::~DavaGLWidget()
@@ -148,43 +147,12 @@ void DavaGLWidget::paintGL()
     const DAVA::uint64 nextFrameDelta = Max((DAVA::uint64)1, requestedFrameDelta - frameTimer.elapsed());
     
     renderTimer->singleShot((int) nextFrameDelta, this, SLOT(OnRenderTimer()));
-//    renderTimer->singleShot((int) 16, this, SLOT(OnRenderTimer()));
 }
 
 
 void DavaGLWidget::OnRenderTimer()
 {
     update();
-    
-    
-//    uint64 delta = SystemTimer::Instance()->AbsoluteMS() - tt;
-//    tt = SystemTimer::Instance()->AbsoluteMS();
-//    Logger::Info("FPS: %d (%lld)", (1000 / delta), delta);
-
-    
-//    QElapsedTimer frameTimer;
-//    frameTimer.start();
-
-//    makeCurrent();
-    
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-//    const int dpr = devicePixelRatio();
-//    if(dpr != currentDPR)
-//    {
-//        currentDPR = dpr;
-//        PerformSizeChange();
-//    }
-    
-//    DAVA::QtLayer::Instance()->ProcessFrame();
-    
-//    doneCurrent();
-//    update();
-
-//    const DAVA::uint64 requestedFrameDelta = 1000 / fps;
-//    const DAVA::uint64 nextFrameDelta =  (requestedFrameDelta >= frameTimer.elapsed()) ? requestedFrameDelta - frameTimer.elapsed(): 1; //  Max((DAVA::uint64)1, requestedFrameDelta - frameTimer.elapsed());
-//    renderTimer->singleShot((int) nextFrameDelta, this, SLOT(OnRenderTimer()));
-//    renderTimer->singleShot((int) 16, this, SLOT(OnRenderTimer()));
 }
 
 

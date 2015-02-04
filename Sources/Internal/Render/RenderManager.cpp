@@ -563,16 +563,7 @@ void RenderManager::VerifyRenderContext()
 	//In order to fix call QApplication::processEvents in case of Qt or equivalent in case of native app or
 	//postpone result processing via delayed selector execution.
     
-//    DVASSERT(curRenderContext == renderContextId);
-    
-    if(curRenderContext == renderContextId)
-    {
-    }
-    else
-    {
-        Logger::Info("render context not equal");
-    }
-    
+    DVASSERT(curRenderContext == renderContextId);
 
 #endif
 }

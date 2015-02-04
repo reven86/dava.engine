@@ -84,6 +84,10 @@ public:
     
 	DavaGLWidget * GetDavaWidget() const;
    
+    
+    void LockOpenGLContext();
+    void UnlockOpenGLContext();
+    
 signals:
     
     void CloseTabRequest(int index, Request *closeRequest);
