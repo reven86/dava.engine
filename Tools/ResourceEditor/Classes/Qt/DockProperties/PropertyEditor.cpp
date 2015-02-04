@@ -225,6 +225,8 @@ void PropertyEditor::ResetProperties()
                         bool isRemovable = true;
                         switch (component->GetType())
                         {
+                        case Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT:
+                        case Component::DEBUG_RENDER_COMPONENT:
                         case Component::TRANSFORM_COMPONENT:
                         case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
                             isRemovable = false;
