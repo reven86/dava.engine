@@ -54,6 +54,7 @@ class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
 
+class DeviceListController;
 
 class QtMainWindow
     : public QMainWindow
@@ -258,6 +259,7 @@ private slots:
 
     void DebugVersionInfo();
     void DebugColorPicker();
+    void DebugDeviceList();
 
 private:
 	Ui::MainWindow *ui;
@@ -306,6 +308,8 @@ private:
     //Need for any debug functionality
     DeveloperTools *developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
+
+    QPointer<DeviceListController> deviceListController;
 };
 
 

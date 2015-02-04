@@ -1,15 +1,9 @@
-//
-//  EditScreen.h
-//  UIEditor
-//
-//  Created by Alexey Strokachuk on 9/11/14.
-//
-//
-
 #ifndef __UIEditor_EditScreen_h__
 #define __UIEditor_EditScreen_h__
 
 #include "DAVAEngine.h"
+
+class ControlSelectionListener;
 
 class CheckeredCanvas: public DAVA::UIControl
 {
@@ -18,9 +12,24 @@ public:
 private:
     virtual ~CheckeredCanvas();
     
-    virtual void Draw(const DAVA::UIGeometricData &geometricData);
-    virtual void DrawAfterChilds(const DAVA::UIGeometricData &geometricData);
+public:
+    virtual void Draw(const DAVA::UIGeometricData &geometricData) override;
+    virtual void DrawAfterChilds(const DAVA::UIGeometricData &geometricData) override;
+    virtual bool SystemInput(DAVA::UIEvent *currentInput) override;
+
+public:
+    void SelectControl(UIControl *control);
+    void RemoveSelection(UIControl *control);
+    void ClearSelections();
+    UIControl *GetControlByPos(UIControl *control, const DAVA::Vector2 &pos);
+    
+    void AddControlSelectionListener(ControlSelectionListener *listener);
+    void RemoveControlSelectionListener(ControlSelectionListener *listener);
+
 private:
+    DAVA::Set<UIControl*> selectionControls;
+    DAVA::List<ControlSelectionListener*> selectionListeners;
+    
 };
 
 class PackageCanvas: public DAVA::UIControl

@@ -68,16 +68,16 @@ public:
 	ActionSetVisibilityPoint(Image* originalImage,
 							 Sprite* cursorSprite,
 							 VisibilityToolProxy* visibilityToolProxy,
-							 const Vector2& visibilityPoint);
+							 const Vector2& visibilityPoint,
+                             const Vector2& cursorSize);
 	~ActionSetVisibilityPoint();
 
 protected:
-//	Image* undoImage;
+    
 	Sprite* cursorSprite;
 	VisibilityToolProxy* visibilityToolProxy;
-//	Vector2 undoVisibilityPoint;
 	Vector2 redoVisibilityPoint;
-//	bool undoVisibilityPointSet;
+    Vector2 cursorSize;
 
 	virtual void Redo();
 };
