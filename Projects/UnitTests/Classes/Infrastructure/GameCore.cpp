@@ -67,10 +67,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-//DataVaultTest on MacOS requires iCloud account - unportable
-#if !defined(__DAVAENGINE_MACOS__)
     new DataVaultTest();
-#endif
 #if defined(__DAVAENGINE_ANDROID__)
     new JNITest();
 #endif
