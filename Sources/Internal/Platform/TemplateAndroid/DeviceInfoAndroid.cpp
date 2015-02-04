@@ -42,6 +42,26 @@ DAVA::String intermediateStr;
 extern "C"
 {
 
+#define DAVA_JNI_EXCEPTION_CHECK \
+        {\
+            JNIEnv *env = JNI::GetEnv();\
+            jthrowable e = env->ExceptionOccurred();\
+            if (nullptr != e)\
+            {\
+                /*first you SHOULD clear exception state in VM*/ \
+                env->ExceptionClear();\
+                jmethodID toString = env->GetMethodID(\
+                        env->FindClass("java/lang/Object"),\
+                        "toString", "()Ljava/lang/String;");\
+                jstring estring = (jstring) env->CallObjectMethod(e, toString);\
+                jboolean isCopy = false;\
+                const char* utf = env->GetStringUTFChars(estring, &isCopy);\
+                String error(utf);\
+                env->ReleaseStringUTFChars(estring, utf);\
+                DVASSERT_MSG(false, error.c_str());\
+            }\
+        }
+
 void Java_com_dava_framework_JNIDeviceInfo_SetJString(JNIEnv* env, jobject classthis, jstring jString)
 {
 	char str[256] = {0};
@@ -219,7 +239,7 @@ DeviceInfo::StorageInfo JniDeviceInfo::GetInternalStorageInfo()
 	if (mid)
 	{
 		jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-
+		DAVA_JNI_EXCEPTION_CHECK
 		if (object)
 		{
 			info = StorageInfoFromJava(object);
@@ -250,7 +270,7 @@ DeviceInfo::StorageInfo JniDeviceInfo::GetPrimaryExternalStorageInfo()
 	if (mid)
 	{
 		jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-
+		DAVA_JNI_EXCEPTION_CHECK
 		if (object)
 		{
 			info = StorageInfoFromJava(object);
@@ -272,6 +292,7 @@ List<DeviceInfo::StorageInfo> JniDeviceInfo::GetSecondaryExternalStoragesList()
 	if (mid)
 	{
 		jarray array = (jarray)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+		DAVA_JNI_EXCEPTION_CHECK
 		if (array)
 		{
 			jsize length = env->GetArrayLength(array);

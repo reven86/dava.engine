@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
@@ -25,6 +26,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings.Secure;
+import android.util.Log;
 
 public class JNIDeviceInfo {
 	final static String TAG = "JNIDeviceInfo";
@@ -242,23 +244,30 @@ public class JNIDeviceInfo {
 	    public long free = 0;
 	}
 
-	@SuppressWarnings("deprecation")
 	private static StorageCapacity getCapacityAndFreeSpace(String path)
 	{
         StatFs statFs = new StatFs(path);
 
-		StorageCapacity st = new StorageCapacity();
+		StorageCapacity sc = new StorageCapacity();
 		
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) // 4.2
+		fillCapacityAndFreeSpace(statFs, sc);
+        return sc;
+    }
+
+	
+    @SuppressWarnings("deprecation")
+    private static void fillCapacityAndFreeSpace(StatFs statFs,
+            StorageCapacity st) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) // 4.2
 		{
 		    st.capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
 		    st.free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
 		} else
 		{
-		    st.capacity = statFs.getBlockCount() * statFs.getBlockSize();
-		    st.free = statFs.getAvailableBlocks() * statFs.getBlockSize();
+		    // do not remove (long) conversion may return negative values
+		    st.capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+		    st.free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
 		}
-        return st;
     }
 	
     public static StorageInfo GetInternalStorageInfo()
@@ -349,19 +358,22 @@ public class JNIDeviceInfo {
 							continue;
 						}
 
-			            long capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
-			            long free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+						StorageCapacity sc = new StorageCapacity();
+						
+						fillCapacityAndFreeSpace(statFs, sc);
 
-						infos.add(new StorageInfo(mountPoint, readonly, false, capacity, free));
+						infos.add(new StorageInfo(mountPoint, readonly, false, sc.capacity, sc.free));
 					}
 				}
 			}
 		}
 		catch (FileNotFoundException e)
 		{
+		    Log.e(TAG, e.getMessage());
 		}
 		catch (IOException e)
 		{
+		    Log.e(TAG, e.getMessage());
 		}
 		finally
 		{
@@ -373,6 +385,7 @@ public class JNIDeviceInfo {
 				}
 				catch (IOException e)
 				{
+				    Log.e(TAG, e.getMessage());
 				}
 			}
 		}
