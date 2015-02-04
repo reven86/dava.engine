@@ -66,11 +66,13 @@ public:
     };
 
     
-    MemoryManager(){};
-	virtual ~MemoryManager() {};
+    MemoryManager(){}
+	virtual ~MemoryManager() {}
 		
-    virtual void	*New(size_t size, eMemoryPool poolIndex, const char * userInfo) { return 0; };
-	virtual void	DumpLog(uint32_t dumpFlags) {};
+    virtual void	*New(size_t size, eMemoryPool poolIndex, const char * userInfo)  =0;
+    virtual void Delete(void * ptr) = 0;
+	virtual void	DumpLog(uint32_t dumpFlags) {}
+    virtual void    FinalLog(){}
 };
 	
 }; 

@@ -42,7 +42,7 @@
 #include <stdlib.h>  // For malloc() and free()
 #include <iostream>  // For std::cout
 #include <ostream>   // For std::endl
-
+#include "Debug/mem_malloc.h"
 namespace DAVA
 {
     
@@ -141,7 +141,7 @@ public:
         }
         
         // Mallocator wraps malloc().
-        void * const pv = malloc(n * sizeof(T));
+        void * const pv = mem_malloc(n * sizeof(T));
         
         // Allocators should throw std::bad_alloc in the case of memory allocation failure.
         if (pv == NULL) {
@@ -158,7 +158,7 @@ public:
 //        << " of size " << sizeof(T) << "." << std::endl;
         
         // Mallocator wraps free().
-        free(p);
+        mem_free(p);
     }
     
     

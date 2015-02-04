@@ -1072,6 +1072,9 @@
 		B79723F01A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
 		B79723F11A125F96009421F3 /* BiDiHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = B79723ED1A125F96009421F3 /* BiDiHelper.h */; };
 		B7D6C97419C9856B0095250A /* libfribidi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D6C97319C9856B0095250A /* libfribidi_ios.a */; };
+		B89EE4F11A81113E002675DB /* MemoryManagerDebugNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B89EE4F01A81113E002675DB /* MemoryManagerDebugNew.cpp */; };
+		B8FC01741A823420001015B7 /* mem_malloc.h in Headers */ = {isa = PBXBuildFile; fileRef = B8FC01731A823420001015B7 /* mem_malloc.h */; };
+		B8FC01751A823420001015B7 /* mem_malloc.h in Headers */ = {isa = PBXBuildFile; fileRef = B8FC01731A823420001015B7 /* mem_malloc.h */; };
 		C13E6DB8186861FA00D1B2CE /* DFFont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C13E6DB6186861FA00D1B2CE /* DFFont.cpp */; };
 		C13E6DB9186861FA00D1B2CE /* DFFont.h in Headers */ = {isa = PBXBuildFile; fileRef = C13E6DB7186861FA00D1B2CE /* DFFont.h */; };
 		C172EC2A18C9F9D4004309CF /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */; };
@@ -2060,6 +2063,8 @@
 		B79723EC1A125F96009421F3 /* BiDiHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BiDiHelper.cpp; sourceTree = "<group>"; };
 		B79723ED1A125F96009421F3 /* BiDiHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BiDiHelper.h; sourceTree = "<group>"; };
 		B7D6C97319C9856B0095250A /* libfribidi_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfribidi_ios.a; path = ../../Libs/libs/libfribidi_ios.a; sourceTree = "<group>"; };
+		B89EE4F01A81113E002675DB /* MemoryManagerDebugNew.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryManagerDebugNew.cpp; sourceTree = "<group>"; };
+		B8FC01731A823420001015B7 /* mem_malloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mem_malloc.h; sourceTree = "<group>"; };
 		C13E6DB6186861FA00D1B2CE /* DFFont.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DFFont.cpp; sourceTree = "<group>"; };
 		C13E6DB7186861FA00D1B2CE /* DFFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DFFont.h; sourceTree = "<group>"; };
 		C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextBlockDistanceRender.cpp; sourceTree = "<group>"; };
@@ -3230,6 +3235,7 @@
 		E8B3C80416B9326D002BD35F /* Debug */ = {
 			isa = PBXGroup;
 			children = (
+				B89EE4F01A81113E002675DB /* MemoryManagerDebugNew.cpp */,
 				17D7E5F417A6C06B00861981 /* UIDismissionHandlerAlertView.h */,
 				17D7E5F517A6C06B00861981 /* UIDismissionHandlerAlertView.mm */,
 				CC247FEC16D69F1700183D40 /* DVAssertMessage.cpp */,
@@ -3248,6 +3254,7 @@
 				E8B3C80D16B9326D002BD35F /* Replay.h */,
 				E8B3C80E16B9326D002BD35F /* Stats.cpp */,
 				E8B3C80F16B9326D002BD35F /* Stats.h */,
+				B8FC01731A823420001015B7 /* mem_malloc.h */,
 			);
 			path = Debug;
 			sourceTree = "<group>";
@@ -4554,6 +4561,7 @@
 				02FD80801924997C007762C0 /* UIScrollView.h in Headers */,
 				02FD80811924997C007762C0 /* UIScrollViewContainer.h in Headers */,
 				02FD80831924997C007762C0 /* IMovieViewControl.h in Headers */,
+				B8FC01751A823420001015B7 /* mem_malloc.h in Headers */,
 				02FD80841924997C007762C0 /* UIMovieView.h in Headers */,
 				647EFC7E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				02FD80851924997C007762C0 /* MovieViewControliOS.h in Headers */,
@@ -5037,6 +5045,7 @@
 				02C4E8CE18154E520052803E /* GameAPI.h in Headers */,
 				A695E52618113195008A0F20 /* ShaderCache.h in Headers */,
 				A695E52C18113315008A0F20 /* RenderBatchArray.h in Headers */,
+				B8FC01741A823420001015B7 /* mem_malloc.h in Headers */,
 				E8525D1E1A30910400FDF76E /* WASDControllerComponent.h in Headers */,
 				A695E52E18113315008A0F20 /* RenderHierarchy.h in Headers */,
 				A695E53318113327008A0F20 /* SerializationContext.h in Headers */,
@@ -5643,6 +5652,7 @@
 				84D18C0019201BEF009E3E90 /* ImageSystem.cpp in Sources */,
 				024BD5BD1A2C9299000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				D7FEF14B19864E5C00B2C7AF /* DownloadManager.cpp in Sources */,
+				B89EE4F11A81113E002675DB /* MemoryManagerDebugNew.cpp in Sources */,
 				E8B3CB7516B9326E002BD35F /* Particle.cpp in Sources */,
 				E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */,
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,

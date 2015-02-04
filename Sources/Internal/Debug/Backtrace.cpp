@@ -39,7 +39,7 @@
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")
 #endif
-
+#include "mem_malloc.h"
 #include <cstdlib>
 
 namespace DAVA 
@@ -123,7 +123,7 @@ void BacktraceTree::GenerateSymbols()
         bt.array[0] = p;
         CreateBacktraceLog(&bt, &btLog);
         
-        char * str = (char*)malloc(strlen(btLog.strings[0])+1);
+        char * str = (char*)mem_malloc(strlen(btLog.strings[0])+1);
         strcpy(str, btLog.strings[0]);
         
         symbols[p] = str;
@@ -181,7 +181,7 @@ void BacktraceTree::Insert(BacktraceTree::BacktraceTreeNode * head, Backtrace * 
     
 Backtrace* BacktraceTree::GetBacktraceByTreeNode(BacktraceTreeNode * node)
 {
-    Backtrace * backtrace = (Backtrace*) malloc(sizeof(Backtrace));
+    Backtrace * backtrace = (Backtrace*) mem_malloc(sizeof(Backtrace));
     
     backtrace->size = 0;
     while(1)
@@ -199,7 +199,7 @@ Backtrace* BacktraceTree::GetBacktraceByTreeNode(BacktraceTreeNode * node)
     
 Backtrace * CreateBacktrace()
 {
-    Backtrace * bt = (Backtrace*) malloc(sizeof(Backtrace));
+    Backtrace * bt = (Backtrace*) mem_malloc(sizeof(Backtrace));
     //GetBacktrace(bt);
     return bt;
 }
@@ -235,7 +235,7 @@ void ReleaseBacktrace(Backtrace * backtrace)
 
 void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log)
 {
-    log->strings = (char**)malloc(sizeof(char*) * backtrace->size); 
+    log->strings = (char**)mem_malloc(sizeof(char*) * backtrace->size);
     log->size = backtrace->size;
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     char **strings = backtrace_symbols(backtrace->array, backtrace->size); 
@@ -247,10 +247,10 @@ void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log)
     // address of this function.
     for (uint32 i = 0; i < backtrace->size; i++)
     {
-        log->strings[i] = (char*)malloc(512);
+        log->strings[i] = (char*)mem_malloc(512);
         
         int len = strlen(strings[i]);
-        char * temp = (char*)malloc(sizeof(char) * len + 100);
+        char * temp = (char*)mem_malloc(sizeof(char) * len + 100);
         strcpy(temp, strings[i]);
 
         char * tokens[100];
@@ -289,14 +289,14 @@ void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log)
                 //snprintf(log->strings[i], 512, "%s %s %s", tokens[3], tokens[4], tokens[5]);
             }
             
-            free(ret);
+            mem_free(ret);
         }else
         {
             snprintf(log->strings[i], 512, "%s", strings[i]);
         }
-        free(temp);
+        mem_free(temp);
     }
-    free(strings);
+    mem_free(strings);
 #elif defined(__DAVAENGINE_WIN32__)
     
     SYMBOL_INFO  * symbol;
@@ -313,20 +313,20 @@ void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log)
     for(uint32 i = 0; i < backtrace->size; i++ )
     {
         SymFromAddr( process, (DWORD64)( backtrace->array[i] ), 0, symbol );
-        log->strings[i] = (char*)malloc(512);
+        log->strings[i] = (char*)mem_malloc(512);
         _snprintf(log->strings[i], 512, "%i: %s - 0x%0X\n", backtrace->size - i - 1, symbol->Name, symbol->Address);
         //printf( "%i: %s - 0x%0X\n", frames - i - 1, symbol->Name, symbol->Address );
     }
     
-    free( symbol );
+    mem_free( symbol );
 #endif
 }
 
 void ReleaseBacktraceLog(BacktraceLog * log)
 {
     for (uint32 k = 0; k < log->size; ++k)
-        free(log->strings[k]);
-    free(log->strings);
+        mem_free(log->strings[k]);
+    mem_free(log->strings);
 }
 
 void PrintBackTraceToLog()
@@ -343,7 +343,7 @@ void PrintBackTraceToLog()
     for (i = 0; i < size; ++i) {
         Logger::FrameworkDebug("%p : %s\n", array[i], strings[i]);
     }
-    free(strings);
+    mem_free(strings);
 #elif defined(__DAVAENGINE_WIN32__)
 // Check out this function http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633(v=vs.85).aspx
 /* Should be able to do the same stuff on windows. 

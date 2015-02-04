@@ -41,17 +41,34 @@
 #include "Base/ObjectFactory.h"
 #include <functional>
 #include <sstream>
+#include <mutex>
 #include "Debug/Stats.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 #include <malloc.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include <malloc.h>
+#include <dlfcn.h>
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <malloc/malloc.h>
+#include <dlfcn.h>
 #endif
 
+#include "mem_malloc.h"
 #ifdef ENABLE_MEMORY_MANAGER
+#if !defined(__DAVAENGINE_WIN32__)
+typedef void* (*t_malloc)(size_t sz);
+t_malloc sys_malloc = nullptr;
+
+typedef void (*t_free)(void * );
+t_free sys_free = nullptr;
+
+
+
+#else
+#define mem_malloc malloc
+#define mem_free free
+#endif
 
 #ifdef new
 #undef new
@@ -59,8 +76,11 @@
 
 namespace DAVA 
 {
-        
+#if !defined(__DAVAENGINE_WIN32__)
+struct __attribute__((aligned(16),packed))MemoryBlock
+#else
 struct MemoryBlock
+#endif
 {
     MemoryBlock * next;             // 8 or 4
     MemoryBlock * prev;             // 8 or 4
@@ -157,24 +177,28 @@ public:
 	MemoryManagerImpl();
 	virtual ~MemoryManagerImpl();
 	
-	virtual void	*New(size_t size, eMemoryPool poolIndex, const char * userInfo);
-	virtual void	Delete(void * pointer);
+	virtual void	*New(size_t size, eMemoryPool poolIndex, const char * userInfo) override;
+	virtual void	Delete(void * pointer) override;
     void            DumpLeaks(File * leaksLogFile, BacktraceTree::BacktraceTreeNode * node, int32 depth);
 	virtual void	DumpLog(uint32_t dumpFlags);
-    
+    static size_t GetSize(void *p);
 	void	CheckMemblockOverrun(MemoryBlock * memBlock);
 
+    static std::mutex instanceLock;
+    
 	static MemoryManagerImpl * Instance() 
 	{
+       instanceLock.lock();
 		//static MemoryManagerImpl instance;
 		//return &instance;
 		if (instance_new == 0)
 		{
 			uint32 sizeofMemoryBlock = sizeof(MemoryBlock);
             assert(sizeofMemoryBlock % 16 == 0);
-			void * addr = malloc(sizeof(MemoryManagerImpl));
+			void * addr = mem_malloc(sizeof(MemoryManagerImpl));
 			instance_new = new(addr) MemoryManagerImpl(); //(sizeof(MemoryManagerImpl), addr);
 		}
+       instanceLock.unlock();
 		return instance_new;					 
 	} 
     
@@ -221,7 +245,7 @@ public:
     {
         MemoryPoolInfo()
         {
-            headBlock = (MemoryBlock*)malloc(sizeof(MemoryBlock*));
+            headBlock = (MemoryBlock*)mem_malloc(sizeof(MemoryBlock*));
             headBlock->next = headBlock;
             headBlock->prev = headBlock;
             blockCount = 0;
@@ -311,6 +335,7 @@ public:
 	
 	int MemoryManagerImpl::useClass = 0;
 	MemoryManagerImpl * MemoryManagerImpl::instance_new = 0;
+    std::mutex MemoryManagerImpl::instanceLock;
 }
 
 //DAVA::FastName defaultUserInfo;
@@ -421,14 +446,15 @@ void	*MemoryManagerImpl::New(size_t size, eMemoryPool poolIndex, const char * us
 		size += 16 - (size & 15);
 	}
     
-    MemoryBlock * block = (MemoryBlock *)malloc(sizeof(MemoryBlock) + CHECK_SIZE + size);
+    MemoryBlock * block = (MemoryBlock *)mem_malloc(sizeof(MemoryBlock) + CHECK_SIZE + size);
     
 
     //if (!block)throw std::bad_alloc();
     
     Backtrace bt;
+#if !defined(__DAVAENGINE_ANDROID__)
     GetBacktrace(&bt, 2);
-    
+#endif
     BacktraceSet::iterator it = backtraceSet.find(&bt);
     if (it != backtraceSet.end())
     {
@@ -445,8 +471,7 @@ void	*MemoryManagerImpl::New(size_t size, eMemoryPool poolIndex, const char * us
 #if defined(__DAVAENGINE_WIN32__)
     block->mallocSize = static_cast<uint32>(_msize(block));
 #elif defined(__DAVAENGINE_ANDROID__)
-#error "cannot use malloc_usable_size on android"
-    block->mallocSize = 0;
+    block->mallocSize = 0;//static_cast<uint32>(malloc_usable_size(block));
     //block->mallocSize = static_cast<uint32>(malloc_usable_size(block));
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     block->mallocSize = static_cast<uint32>(malloc_size(block));
@@ -496,7 +521,13 @@ void	MemoryManagerImpl::CheckMemblockOverrun(MemoryBlock * memBlock)
 //		}
 //	}
 }
-            
+size_t MemoryManagerImpl::GetSize(void *ptr)
+{
+    uint8 * uint8ptr = (uint8*)ptr;
+    uint8ptr -= (sizeof(MemoryBlock) + HALF_CHECK_SIZE);
+    MemoryBlock * block = (MemoryBlock*)(uint8ptr);
+    return block->size;
+}
 void	MemoryManagerImpl::Delete(void * ptr)
 {
 	if (ptr)
@@ -512,17 +543,24 @@ void	MemoryManagerImpl::Delete(void * ptr)
         uint32 * checkHeadRead = (uint32*)checkHead;
         uint32 * checkTailRead = (uint32*)checkTail;
 
-        if ((checkHeadRead[0] != CHECK_CODE_HEAD) || 
+        if((checkHeadRead[0] != CHECK_CODE_HEAD) || (checkHeadRead[1] != CHECK_CODE_HEAD))
+        {
+            //memory probably was allocated by something else
+            sys_free(ptr);
+            mutex.Unlock();
+            return;
+        }
+      /*  if ((checkHeadRead[0] != CHECK_CODE_HEAD) ||
             (checkHeadRead[1] != CHECK_CODE_HEAD) || 
             (checkTailRead[0] != CHECK_CODE_TAIL) || 
             (checkTailRead[1] != CHECK_CODE_TAIL))
         {
             Logger::Error("fatal: block: %p overwritten during usage", ptr);
-        }
+        }*/
         //Logger::FrameworkDebug("free: %p %p", block, ptr);
         
         EraseMemoryBlock(block);
-        free(block);
+        mem_free(block);
         
         mutex.Unlock();
 	}
@@ -724,6 +762,87 @@ void MemoryManagerImpl::DumpLog(uint32 dumpFlags)
 }
 
 };
+
+
+inline void checkMalloc()
+{
+    if(sys_malloc == nullptr)
+    {
+        void *handler =(void*)-1;
+        sys_malloc = (t_malloc)dlsym(handler,"malloc");
+    }
+    
+}
+inline void checkFree()
+{
+    if(sys_free == nullptr)
+    {
+        void *handler =(void*)-1;
+        sys_free = (t_free)dlsym(handler,"free");
+    }
+    
+}
+
+void * malloc(size_t size)
+{
+    checkMalloc();
+    if(sys_malloc != nullptr)
+    {
+        return DAVA::MemoryManager::Instance()->New(size,MEMORY_POOL_DEFAULT,nullptr);
+    }
+    return nullptr;
+    
+}
+void free(void * ptr)
+{
+    checkFree();
+    if(sys_free!= nullptr)
+    {
+        DAVA::MemoryManager::Instance()->Delete(ptr);
+    }
+    return;
+    
+}
+
+void* mem_malloc(size_t size)
+{
+    checkMalloc();
+    if(sys_malloc != nullptr)
+    {
+        return sys_malloc(size);
+    }
+    return nullptr;
+}
+void mem_free(void * p)
+{
+    checkFree();
+    if(sys_free != nullptr)
+    {
+        return sys_free(p);
+    }
+    return;
+}
+void *realloc(void* ptr, size_t size)
+{
+   
+    
+    //free(ptr);
+    void * p =  malloc(size);
+    //there is some function calls with ptr == nullptr
+    if(ptr == nullptr)
+    {
+        return p;
+    }
+    
+    size_t sizeWas = DAVA::MemoryManagerImpl::GetSize(ptr);
+    if(sizeWas > size )
+    {
+        sizeWas = size;
+    }
+    memcpy(p,ptr,sizeWas);
+    free(ptr);
+    return p;
+}
 
 #endif // MEMORY_MANAGER
 
