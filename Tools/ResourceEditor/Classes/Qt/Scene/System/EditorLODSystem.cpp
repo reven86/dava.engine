@@ -62,7 +62,7 @@ void EditorLODSystem::RemoveSelectedLODsRecursive(DAVA::Entity *entity)
 	auto count = entity->GetChildrenCount();
 	for (auto i = 0; i < count; i++)
 	{
-		AddSelectedLODsRecursive(entity->GetChild(i));
+		RemoveSelectedLODsRecursive(entity->GetChild(i));
 	}
 }
 
@@ -122,7 +122,7 @@ void EditorLODSystem::ResetForceState(DAVA::LodComponent *lodComponent)
 	DVASSERT(lodComponent);
 	lodComponent->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
 	lodComponent->SetForceLodLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
-	lodComponent->currentLod = -1;
+	lodComponent->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
 }
 
 void EditorLODSystem::CollectLODDataFromScene()
@@ -403,10 +403,7 @@ void EditorLODSystem::UpdateForceDistance()
 	}
 	else
 	{
-		for (DAVA::LodComponent *currentLOD : getCurrentLODs())
-		{
-			currentLOD->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
-		}
+		UpdateForceLayer();
 	}
 }
 

@@ -76,7 +76,9 @@ void LODEditor::SetupInternalUI()
     connect(ui->viewLODButton, SIGNAL(released()), SLOT(ViewLODButtonReleased()));
     connect(ui->editLODButton, SIGNAL(released()), SLOT(EditLODButtonReleased()));
     
-    connect(ui->enableForceDistance, SIGNAL(stateChanged(int)), SLOT(ForceDistanceStateChanged(int)));
+	connect(ui->enableForceDistance, SIGNAL(toggled(bool)), SLOT(ForceDistanceStateChanged(bool)));
+	connect(ui->enableForceDistance, SIGNAL(toggled(bool)), ui->forceSlider, SLOT(setEnabled(bool)));
+	connect(ui->enableForceDistance, SIGNAL(toggled(bool)), ui->forceLayer, SLOT(setDisabled(bool)));
     connect(ui->forceSlider, SIGNAL(valueChanged(int)), SLOT(ForceDistanceChanged(int)));
     ui->forceSlider->setRange(0, DAVA::LodComponent::MAX_LOD_DISTANCE);
     ui->forceSlider->setValue(0);
@@ -130,22 +132,9 @@ void LODEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bo
 	}
 }
 
-void LODEditor::ForceDistanceStateChanged(int checked)
+void LODEditor::ForceDistanceStateChanged(bool checked)
 {
-    bool enable = (checked == Qt::Checked);
-	GetCurrentEditorLODSystem()->SetForceDistanceEnabled(enable);
-    
-    if(!enable)
-    {
-        int layer = ui->forceLayer->itemData(ui->forceLayer->currentIndex()).toInt();
-        GetCurrentEditorLODSystem()->SetForceLayer(layer);
-    }
-    
-	ui->enableForceDistance->setChecked(checked);
-	ui->forceSlider->setValue(GetCurrentEditorLODSystem()->GetForceDistance());
-
-    ui->forceLayer->setEnabled(!enable);
-	ui->forceSlider->setEnabled(enable);
+	GetCurrentEditorLODSystem()->SetForceDistanceEnabled(checked);
 }
 
 void LODEditor::ForceDistanceChanged(int distance)
@@ -187,7 +176,7 @@ void LODEditor::SceneActivated(SceneEditor2 *scene)
 
 void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
 {
-	EditorLODSystem *currentLODSystem;
+	const EditorLODSystem *currentLODSystem;
 	if (nullptr != scene)
 	{
 		currentLODSystem = scene->editorLODSystem;
@@ -196,11 +185,12 @@ void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
 	{
 		currentLODSystem = GetCurrentEditorLODSystem();
 	}
+
 	DAVA::uint32 lodLayersCount = currentLODSystem->GetSceneLodsLayersCount();
 	DVASSERT(lodLayersCount <= DAVA::LodComponent::MAX_LOD_LAYERS);
 
 	ui->distanceSlider->SetLayersCount(lodLayersCount);
-	SetForceLayerValues(lodLayersCount);
+	SetForceLayerValues(currentLODSystem, lodLayersCount);
 	for (DAVA::uint32 unchec = 0; unchec < lodLayersCount; ++unchec)
 	{
 		distanceWidgets[unchec].SetVisible(true);
@@ -223,8 +213,6 @@ void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
 	ui->createPlaneLodButton->setEnabled(currentLODSystem->CanCreatePlaneLOD());
 
 	UpdateDeleteLODButtons(currentLODSystem);
-
-	ForceDistanceStateChanged(currentLODSystem->GetForceDistanceEnabled() ? Qt::Checked : Qt::Unchecked);
 }
 
 void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous)
@@ -283,23 +271,6 @@ void LODEditor::ForceLayerActivated(int index)
     GetCurrentEditorLODSystem()->SetForceLayer(layer);
 }
 
-//TODO: refactor this function
-void LODEditor::SetForceLayerValues(int layersCount)
-{
-    ui->forceLayer->clear();
-    
-    ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
-
-	int requestedIndex = GetCurrentEditorLODSystem()->GetForceLayer() + 1;
-	int itemsCount = Max(requestedIndex, layersCount);
-	for(DAVA::int32 i = 0; i < itemsCount; ++i)
-    {
-        ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
-    }
-    
-	ui->forceLayer->setCurrentIndex(requestedIndex);
-}
-
 void LODEditor::CreateForceLayerValues(int layersCount)
 {
 	ui->forceLayer->clear();
@@ -347,7 +318,7 @@ void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
 	frameButton->setIcon(icon);
 }
 
-void LODEditor::UpdateWidgetVisibility(EditorLODSystem *editorLODSystem)
+void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
 {
 	DVASSERT(editorLODSystem);
 	bool visible = (editorLODSystem->GetSceneLodsLayersCount() != 0);
@@ -358,7 +329,24 @@ void LODEditor::UpdateWidgetVisibility(EditorLODSystem *editorLODSystem)
     ui->frameEditLOD->setVisible(visible);
 }
 
-void LODEditor::UpdateDeleteLODButtons(EditorLODSystem *editorLODSystem)
+//TODO: refactor this function
+void LODEditor::SetForceLayerValues(const EditorLODSystem *editorLODSystem, int layersCount)
+{
+	ui->forceLayer->clear();
+
+	ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
+
+	int requestedIndex = editorLODSystem->GetForceLayer() + 1;
+	int itemsCount = Max(requestedIndex, layersCount);
+	for (DAVA::int32 i = 0; i < itemsCount; ++i)
+	{
+		ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
+	}
+
+	ui->forceLayer->setCurrentIndex(requestedIndex);
+}
+
+void LODEditor::UpdateDeleteLODButtons(const EditorLODSystem *editorLODSystem)
 {
 	DVASSERT(editorLODSystem);
 	bool canDeleteLOD = editorLODSystem->CanDeleteLod();
