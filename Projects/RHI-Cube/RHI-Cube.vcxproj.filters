@@ -60,6 +60,9 @@
     <ClCompile Include="MCPP\mcpp_main.cpp">
       <Filter>MCPP</Filter>
     </ClCompile>
+    <ClCompile Include="SceneRenderTest.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\GameCore.h">
@@ -103,6 +106,12 @@
     </ClInclude>
     <ClInclude Include="MCPP\system.h">
       <Filter>MCPP</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneRenderTest.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="rhi_Manticore.h">
+      <Filter>RHI-interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

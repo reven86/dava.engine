@@ -129,7 +129,7 @@ public:
 	
     pointer_size layerSortingKey;
 
-protected:
+public:
     void BindDynamicParameters(Camera * camera);
     
     uint32 renderLayerIDsBitmaskFromMaterial;

@@ -44,7 +44,7 @@ Handle  CreateVertexBuffer( uint32 size );
 void    DeleteVertexBuffer( Handle vb );
 
 void*   MapVertexBuffer( Handle vb, uint32 offset, uint32 size );
-void    UnmapVertexBuffer( vb );
+void    UnmapVertexBuffer(Handle vb);
 
 void    UpdateVertexBuffer( Handle vb, const void* data, uint32 offset, uint32 size );
 
@@ -56,7 +56,7 @@ Handle  CreateIndexBuffer( uint32 size );
 void    DeleteIndexBuffer( Handle vb );
 
 void*   MapIndexBuffer( Handle vb, uint32 offset, uint32 size );
-void    UnmapIndexBuffer( vb );
+void    UnmapIndexBuffer(Handle vb);
 
 void    UpdateIndexBuffer( Handle vb, const void* data, uint32 offset, uint32 size );
 
