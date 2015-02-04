@@ -98,7 +98,7 @@ String YamlPackageSerializer::WriteToString()
 {
     DynamicMemoryFile *file = DynamicMemoryFile::Create(File::WRITE);
     YamlEmitter::SaveToYamlFile(GetYamlNode(), file);
-    String str((const char*)file->GetData());
+    String str((const char*)file->GetData(), file->GetSize());
     SafeRelease(file);
     return str;
 }

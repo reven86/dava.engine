@@ -2,6 +2,7 @@
 
 #include "PackageControlsNode.h"
 #include "../PackageSerializer.h"
+#include "PackageRef.h"
 
 using namespace DAVA;
 
@@ -29,7 +30,7 @@ int ImportedPackagesNode::GetCount() const
     return (int) packageControlsNode.size();
 }
 
-PackageBaseNode *ImportedPackagesNode::Get(int index) const
+PackageControlsNode *ImportedPackagesNode::Get(int index) const
 {
     return packageControlsNode[index];
 }
@@ -41,12 +42,12 @@ String ImportedPackagesNode::GetName() const
 
 PackageControlsNode *ImportedPackagesNode::FindPackageControlsNodeByName(const DAVA::String &name) const
 {
-    for (auto it = packageControlsNode.begin(); it != packageControlsNode.end(); ++it)
+    for (PackageControlsNode *node : packageControlsNode)
     {
-        if ((*it)->GetName() == name)
-            return *it;
+        if (node->GetPackageRef()->GetName() == name)
+            return node;
     }
-    return NULL;
+    return nullptr;
 }
 
 int ImportedPackagesNode::GetFlags() const
@@ -59,7 +60,7 @@ void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const
     serializer->BeginArray("ImportedPackages");
     
     for (PackageControlsNode *controlsNode : packageControlsNode)
-        serializer->PutValue(controlsNode->GetPackagePath().GetFrameworkPath());
+        serializer->PutValue(controlsNode->GetPackageRef()->GetPath().GetFrameworkPath());
     
     serializer->EndArray();
 }

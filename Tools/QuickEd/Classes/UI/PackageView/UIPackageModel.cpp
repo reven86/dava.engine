@@ -300,7 +300,7 @@ void UIPackageModel::InsertItem(const QString &name, int dstRow, const QModelInd
             ControlNode *prototypeControl = packageControls->FindControlNodeByName(controlName);
             if (prototypeControl)
             {
-                RefPtr<ControlPrototype> prototype(new ControlPrototype(prototypeControl, packageControls->GetPackagePath()));
+                RefPtr<ControlPrototype> prototype(new ControlPrototype(prototypeControl, packageControls->GetPackageRef(), true));
                 node = ControlNode::CreateFromPrototype(prototype.Get());
             }
         }
@@ -318,7 +318,7 @@ void UIPackageModel::InsertItem(const QString &name, int dstRow, const QModelInd
             ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
             if (prototypeControl)
             {
-                RefPtr<ControlPrototype> prototype(new ControlPrototype(prototypeControl));
+                RefPtr<ControlPrototype> prototype(new ControlPrototype(prototypeControl, root->GetPackageControlsNode()->GetPackageRef(), false));
                 node = ControlNode::CreateFromPrototype(prototype.Get());
             }
         }

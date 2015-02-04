@@ -10,6 +10,7 @@
 #include "UIControls/ControlProperties/LocalizedTextValueProperty.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
 #include "UIControls/PackageHierarchy/ControlPrototype.h"
+#include "UIControls/PackageHierarchy/PackageRef.h"
 #include "UI/UIPackage.h"
 
 using namespace DAVA;
@@ -34,7 +35,8 @@ RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePa
     DVASSERT(packageNode == NULL);
     SafeRelease(packageNode);
     RefPtr<UIPackage> package(new UIPackage());
-    packageNode = new PackageNode(package.Get(), packagePath);
+    ScopedPtr<PackageRef> ref(new PackageRef(packagePath, package.Get()));
+    packageNode = new PackageNode(ref);
     return package;
 }
 
@@ -115,7 +117,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
         }
 
         if (prototypeNode)
-            prototype = new ControlPrototype(prototypeNode);
+            prototype = new ControlPrototype(prototypeNode, packageNode->GetPackageControlsNode()->GetPackageRef(), false);
     }
     else
     {
@@ -124,7 +126,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
         {
             ControlNode *prototypeNode = importedPackage->FindControlNodeByName(prototypeName);
             if (prototypeNode)
-                prototype = new ControlPrototype(prototypeNode, importedPackage->GetPackagePath());
+                prototype = new ControlPrototype(prototypeNode, importedPackage->GetPackageRef(), true);
         }
     }
     DVASSERT(prototype);

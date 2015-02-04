@@ -44,6 +44,7 @@ public:
     virtual DAVA::String GetName() const;
     DAVA::UIControl *GetControl() const;
     DAVA::String GetPrototypeName() const;
+    ControlPrototype *GetPrototype() const;
 
     virtual int GetFlags() const override;
     void SetReadOnly();

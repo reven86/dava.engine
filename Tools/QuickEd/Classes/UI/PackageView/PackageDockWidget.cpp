@@ -19,8 +19,11 @@
 #include "UI/PackageView/PackageModelCommands.h"
 #include "UIControls/PackageHierarchy/PackageBaseNode.h"
 #include "UIControls/PackageHierarchy/ControlNode.h"
+#include "UIControls/PackageHierarchy/PackageNode.h"
 #include "UIControls/PackageHierarchy/ImportedPackagesNode.h"
 #include "UIControls/PackageHierarchy/PackageControlsNode.h"
+#include "UIControls/PackageHierarchy/PackageRef.h"
+#include "UIControls/YamlPackageSerializer.h"
 
 #include "Project.h"
 #include "Utils/QtDavaConvertion.h"
@@ -90,6 +93,7 @@ void PackageDockWidget::SetDocument(PackageDocument *newDocument)
     if (document)
     {
         ui->treeView->setModel(document->GetTreeContext()->proxyModel);
+        ui->treeView->selectionModel()->select(*document->GetTreeContext()->currentSelection, QItemSelectionModel::ClearAndSelect);
         ui->treeView->expandToDepth(0);
         ui->treeView->setColumnWidth(0, ui->treeView->size().width());
 
@@ -168,10 +172,14 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
     QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(proxySelected);
     QItemSelection deselected = document->GetTreeContext()->proxyModel->mapSelectionToSource(proxyDeselected);
     
-    QModelIndexList selectedIndexList = selected.indexes();
+    QItemSelection *currentSelection = document->GetTreeContext()->currentSelection;
+    currentSelection->merge(deselected, QItemSelectionModel::Deselect);
+    currentSelection->merge(selected, QItemSelectionModel::Select);
+    
+    QModelIndexList selectedIndexList = currentSelection->indexes();
     if (!selectedIndexList.empty())
     {
-        foreach(QModelIndex index, selectedIndexList)
+        for(QModelIndex &index : selectedIndexList)
         {
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
             if (node->GetControl())
@@ -187,24 +195,24 @@ void PackageDockWidget::OnSelectionChanged(const QItemSelection &proxySelected, 
         }
     }
 
-    QModelIndexList deselectedIndexList = deselected.indexes();
-    if (!selectedIndexList.empty())
-    {
-        foreach(QModelIndex index, deselectedIndexList)
-        {
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-            if (node->GetControl())
-            {
-                deselectedControl.push_back(static_cast<ControlNode*>(node));
-                
-                while(node->GetParent() && node->GetParent()->GetControl())
-                    node = node->GetParent();
-                
-                if (deselectedRootControl.indexOf(static_cast<ControlNode*>(node)) < 0)
-                    deselectedRootControl.push_back(static_cast<ControlNode*>(node));
-            }
-        }
-    }
+//    QModelIndexList deselectedIndexList = deselected.indexes();
+//    if (!selectedIndexList.empty())
+//    {
+//        foreach(QModelIndex index, deselectedIndexList)
+//        {
+//            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+//            if (node->GetControl())
+//            {
+//                deselectedControl.push_back(static_cast<ControlNode*>(node));
+//                
+//                while(node->GetParent() && node->GetParent()->GetControl())
+//                    node = node->GetParent();
+//                
+//                if (deselectedRootControl.indexOf(static_cast<ControlNode*>(node)) < 0)
+//                    deselectedRootControl.push_back(static_cast<ControlNode*>(node));
+//            }
+//        }
+//    }
 
     RefreshActions(selectedIndexList);
 
@@ -242,21 +250,70 @@ void PackageDockWidget::OnImport()
 
 void PackageDockWidget::OnCopy()
 {
-//    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
-//    QModelIndexList selectedIndexList = selected.indexes();
-//    QClipboard *clipboard = QApplication::clipboard();
-//    
-//    if (!selectedIndexList.empty())
-//    {
-//        clipboard->setMimeData(<#QMimeData *data#>)
-//        //foreach(QModelIndex index, selectedIndexList)
-//        
-//    }
+    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+    QModelIndexList selectedIndexList = selected.indexes();
+    QClipboard *clipboard = QApplication::clipboard();
+    
+    if (!selectedIndexList.empty())
+    {
+        ScopedPtr<UIPackage> virtualUIPackage(new UIPackage());
+        ScopedPtr<PackageRef> packageRef(new PackageRef(FilePath(), virtualUIPackage));
+        ScopedPtr<PackageNode> virtualPackage(new PackageNode(packageRef));
+        
+        for (QModelIndex &index : selectedIndexList)
+        {
+            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+            if (controlNode)
+                virtualPackage->AddControlWithResolvingDependencies(controlNode);
+        }
+        
+        YamlPackageSerializer serializer;
+        virtualPackage->Serialize(&serializer);
+        String str = serializer.WriteToString();
+        QMimeData data;
+        data.setText(QString(str.c_str()));
+        clipboard->setMimeData(&data);
+    }
 }
 
 void PackageDockWidget::OnPaste()
 {
-
+    QItemSelection selected = document->GetTreeContext()->proxyModel->mapSelectionToSource(ui->treeView->selectionModel()->selection());
+    QModelIndexList selectedIndexList = selected.indexes();
+    QClipboard *clipboard = QApplication::clipboard();
+    
+    if (!selectedIndexList.empty())
+    {
+//        FilePath path(packagePath.toStdString());
+//        String fwPath = path.GetFrameworkPath();
+//        
+//        EditorUIPackageBuilder builder;
+//        UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
+//        if (newPackage)
+//        {
+//            SafeRelease(newPackage);
+//            RefPtr<PackageNode> packageNode = builder.GetPackageNode();
+//
+//            ScopedPtr<UIPackage> virtualUIPackage(new UIPackage());
+//            ScopedPtr<PackageNode> virtualPackage(new PackageNode(virtualUIPackage, FilePath()));
+//            
+//            for (QModelIndex &index : selectedIndexList)
+//            {
+//                PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+//                ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+//                if (controlNode)
+//                    virtualPackage->AddControlWithResolvingDependencies(controlNode);
+//            }
+//            
+//            YamlPackageSerializer serializer;
+//            virtualPackage->Serialize(&serializer);
+//            String str = serializer.WriteToString();
+//            QMimeData data;
+//            data.setText(QString(str.c_str()));
+//            clipboard->setMimeData(&data);
+//        }
+    }
 }
 
 void PackageDockWidget::OnCut()

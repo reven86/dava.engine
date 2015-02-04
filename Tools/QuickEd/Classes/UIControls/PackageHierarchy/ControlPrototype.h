@@ -3,12 +3,13 @@
 
 #include "Base/BaseObject.h"
 
+class PackageRef;
 class ControlNode;
 
 class ControlPrototype : public DAVA::BaseObject
 {
 public:
-    ControlPrototype(ControlNode *_controlNode, const DAVA::FilePath &packagePath = DAVA::FilePath());
+    ControlPrototype(ControlNode *_controlNode, PackageRef *_packageRef, bool isPackageImported);
     
 protected:
     virtual ~ControlPrototype();
@@ -16,10 +17,12 @@ protected:
 public:
     ControlNode *GetControlNode() const;
     DAVA::String GetName() const;
+    PackageRef *GetPackageRef() const;
     
 private:
     ControlNode *controlNode;
-    DAVA::FilePath packagePath;
+    PackageRef *packageRef;
+    bool isPackageImported;
 };
 
 #endif //__QUICKED_CONTROL_PROTOTYPE_H__

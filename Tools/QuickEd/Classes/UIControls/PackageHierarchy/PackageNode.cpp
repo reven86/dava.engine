@@ -3,23 +3,24 @@
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
 #include "../PackageSerializer.h"
+#include "ControlPrototype.h"
+#include "PackageRef.h"
 
 using namespace DAVA;
 
-PackageNode::PackageNode(DAVA::UIPackage *aPackage, const FilePath &_path)
-    : PackageBaseNode(NULL)
-    , package(SafeRetain(aPackage))
-    , path(_path)
-    , importedPackagesNode(NULL)
-    , packageControlsNode(NULL)
+PackageNode::PackageNode(PackageRef *_packageRef)
+    : PackageBaseNode(nullptr)
+    , packageRef(SafeRetain(_packageRef))
+    , importedPackagesNode(nullptr)
+    , packageControlsNode(nullptr)
 {
     importedPackagesNode = new ImportedPackagesNode(this);
-    packageControlsNode = new PackageControlsNode(this, package, path);
+    packageControlsNode = new PackageControlsNode(this, packageRef);
 }
 
 PackageNode::~PackageNode()
 {
-    SafeRelease(package);
+    SafeRelease(packageRef);
     importedPackagesNode->SetParent(NULL);
     SafeRelease(importedPackagesNode);
     packageControlsNode->SetParent(NULL);
@@ -43,7 +44,7 @@ PackageBaseNode *PackageNode::Get(int index) const
 
 String PackageNode::GetName() const
 {
-    return path.GetBasename();
+    return packageRef->GetName();
 }
 
 int PackageNode::GetFlags() const 
@@ -51,14 +52,9 @@ int PackageNode::GetFlags() const
     return 0;
 }
 
-UIPackage *PackageNode::GetPackage() const
+PackageRef *PackageNode::GetPackageRef() const
 {
-    return package;
-}
-
-const FilePath &PackageNode::GetPath() const
-{
-    return path;
+    return packageRef;
 }
 
 ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
@@ -79,4 +75,51 @@ void PackageNode::Serialize(PackageSerializer *serializer) const
 
     importedPackagesNode->Serialize(serializer);
     packageControlsNode->Serialize(serializer);
+}
+
+void PackageNode::AddControlWithResolvingDependencies(ControlNode *sourceControl)
+{
+    Set<FilePath> newPackages;
+    CollectPackages(newPackages, sourceControl);
+    
+    for (const FilePath &path : newPackages)
+    {
+        bool found = false;
+        for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
+        {
+            PackageControlsNode *controlNode = importedPackagesNode->Get(index);
+            if (controlNode->GetPackageRef()->GetPath() == path)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            ScopedPtr<PackageRef> ref(new PackageRef(path, nullptr));
+            ScopedPtr<PackageControlsNode> newPackageControlsNode(new PackageControlsNode(nullptr, ref));
+            importedPackagesNode->Add(newPackageControlsNode);
+        }
+    }
+    
+    ScopedPtr<ControlNode> dest(sourceControl->Clone());
+    packageControlsNode->Add(dest);
+}
+
+
+void PackageNode::CollectPackages(Set<FilePath> &packages, ControlNode *node) const
+{
+    if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
+    {
+        ControlPrototype *prototype = node->GetPrototype();
+        if (prototype)
+        {
+            
+            if (packages.find(prototype->GetPackageRef()->GetPath()) == packages.end())
+                packages.insert(prototype->GetPackageRef()->GetPath());
+        }
+    }
+    
+    for (int32 index = 0; index < node->GetCount(); index++)
+        CollectPackages(packages, node->Get(index));
 }

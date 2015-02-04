@@ -1,11 +1,3 @@
-//
-//  LocalizedTextValueProperty.h
-//  UIEditor
-//
-//  Created by Dmitry Belsky on 7.10.14.
-//
-//
-
 #ifndef __UI_EDITOR_LOCALIZED_TEXT_VALUE_PROPERTY__
 #define __UI_EDITOR_LOCALIZED_TEXT_VALUE_PROPERTY__
 

@@ -1,5 +1,8 @@
 #include "ControlNode.h"
 
+#include "UI/UIControl.h"
+#include "Base/ObjectFactory.h"
+
 #include "PackageNode.h"
 #include "../PackageSerializer.h"
 
@@ -163,6 +166,11 @@ String ControlNode::GetPrototypeName() const
         return "";
 
     return prototype->GetName();
+}
+
+ControlPrototype *ControlNode::GetPrototype() const
+{
+    return prototype;
 }
 
 int ControlNode::GetFlags() const
