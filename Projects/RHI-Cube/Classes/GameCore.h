@@ -71,9 +71,11 @@ protected:
     void    SetupTriangle();
     void    SetupCube();
 
-    void SetupTank();
+    void    SetupTank();
+    void    DrawTank();
 
-    void DrawTank();
+    void    manticoreDraw();
+    void    rhiDraw();
 
 
     struct
@@ -99,6 +101,7 @@ protected:
         rhi::Handle vp_const[2];
         rhi::Handle fp_const;
         rhi::Handle tex;
+        rhi::Handle texSet;
     };
 
     Object      triangle;

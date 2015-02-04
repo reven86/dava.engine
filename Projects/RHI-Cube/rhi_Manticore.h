@@ -44,7 +44,8 @@ Handle  CreateVertexBuffer( uint32 size );
 void    DeleteVertexBuffer( Handle vb );
 
 void*   MapVertexBuffer( Handle vb, uint32 offset, uint32 size );
-void    UnmapVertexBuffer(Handle vb);
+
+void    UnmapVertexBuffer( Handle vb );
 
 void    UpdateVertexBuffer( Handle vb, const void* data, uint32 offset, uint32 size );
 
@@ -53,12 +54,12 @@ void    UpdateVertexBuffer( Handle vb, const void* data, uint32 offset, uint32 s
 // index buffer
 
 Handle  CreateIndexBuffer( uint32 size );
-void    DeleteIndexBuffer( Handle vb );
+void    DeleteIndexBuffer( Handle ib );
 
-void*   MapIndexBuffer( Handle vb, uint32 offset, uint32 size );
-void    UnmapIndexBuffer(Handle vb);
+void*   MapIndexBuffer( Handle ib, uint32 offset, uint32 size );
+void    UnmapIndexBuffer( Handle ib );
 
-void    UpdateIndexBuffer( Handle vb, const void* data, uint32 offset, uint32 size );
+void    UpdateIndexBuffer( Handle ib, const void* data, uint32 offset, uint32 size );
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +91,7 @@ void    ReleaseTextureSet( Handle ts );
 ////////////////////////////////////////////////////////////////////////////////
 // render-pass
 
-Handle  AllocateRenderPass( const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf );
+Handle  AllocateRenderPass( const RenderPassConfig& passDesc, uint32 batchDrawerCount, Handle* batchDrawer );
 void    BeginRenderPass( Handle pass );
 void    EndRenderPass( Handle pass ); // no explicit render-pass 'release' needed
 
@@ -111,14 +112,15 @@ BatchDescriptor
     Handle              vertexConst[MAX_CONST_BUFFER_COUNT];
     uint32              fragmentConstCount;
     Handle              fragmentConst[MAX_CONST_BUFFER_COUNT];
-    Handle              vertexTextureSet;
-    Handle              fragmentTextureSet;
+    Handle              textureSet;
+    PrimitiveType       primitiveType;
+    uint32              primitiveCount;
 };
 
-void    BeginDraw( Handle cmdBuf );
-void    EndDraw( Handle cmdBuf );
+void    BeginDraw( Handle batchDrawer );
+void    EndDraw( Handle batchDrawer ); // 'batchDrawer' handle invalid after this, no explicit "release" needed
 
-void    DrawBatch( Handle cmdBuf, const BatchDescriptor& batchDesc );
+void    DrawBatch( Handle batchDrawer, const BatchDescriptor& batchDesc );
 
 
 } // namespace rhi

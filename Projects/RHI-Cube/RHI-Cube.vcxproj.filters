@@ -60,8 +60,12 @@
     <ClCompile Include="MCPP\mcpp_main.cpp">
       <Filter>MCPP</Filter>
     </ClCompile>
+
     <ClCompile Include="SceneRenderTest.cpp">
       <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\rhi_Manticore.cpp">
+      <Filter>RHI %28private/impl%29</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

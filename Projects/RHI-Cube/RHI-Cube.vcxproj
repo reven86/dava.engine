@@ -82,6 +82,7 @@
     <ClCompile Include="MCPP\support.cpp" />
     <ClCompile Include="MCPP\system.cpp" />
     <ClCompile Include="MCPP\_mcpp.cpp" />
+    <ClCompile Include="RHI\rhi_Manticore.cpp" />
     <ClCompile Include="RHI\rhi_ShaderCache.cpp" />
     <ClCompile Include="RHI\rhi_VertexLayout.cpp" />
     <ClCompile Include="SceneRenderTest.cpp" />
