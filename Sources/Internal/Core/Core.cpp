@@ -198,6 +198,9 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
+    // Finish network infrastructure
+    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
+    Net::NetCore::Instance()->Finish(true);
     Net::NetCore::Instance()->Release();
 
 	UIControlBackground::ReleaseRenderObject();
@@ -451,12 +454,8 @@ void Core::SystemAppStarted()
     FilePath file = "~res:/Autotesting/id.yaml";
     if (file.Exists())
     {
-    AutotestingSystem::Instance()->OnAppStarted();
+        AutotestingSystem::Instance()->OnAppStarted();
         isAutotesting = true;
-    }
-    else
-    {
-        Logger::Debug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
     }
 #endif //__DAVAENGINE_AUTOTESTING__
 }
@@ -466,10 +465,6 @@ void Core::SystemAppFinished()
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->OnAppFinished();
 #endif //__DAVAENGINE_AUTOTESTING__
-
-    // Finish network infrastructure
-    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
-    Net::NetCore::Instance()->Finish(true);
 
 	if (core)core->OnAppFinished();
 }
