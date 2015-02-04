@@ -353,7 +353,7 @@ void LODEditor::CopyLODToLod0Clicked()
 	{
 		return;
 	}
-	if(GetCurrentEditorLODSystem()->CopyLastLodToLod0());
+	GetCurrentEditorLODSystem()->CopyLastLodToLod0();
 }
 
 void LODEditor::CreatePlaneLODClicked()
