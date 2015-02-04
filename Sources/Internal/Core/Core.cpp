@@ -71,10 +71,6 @@
 #	include "Input/AccelerometerAndroid.h"
 #endif //PLATFORMS
 
-#ifdef __DAVAENGINE_AUTOTESTING__
-#include "Autotesting/AutotestingSystem.h"
-#endif
-
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 #include <EGL/eglext.h>
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
@@ -92,8 +88,7 @@ Core::Core()
 {
     globalFrameIndex = 1;
     isActive = false;
-    isAutotesting = false;
-	firstRun = true;
+    firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
 }
@@ -167,10 +162,6 @@ void Core::CreateSingletons()
 	
 	new UIScreenManager();
 
-#ifdef __DAVAENGINE_AUTOTESTING__
-    new AutotestingSystem();
-#endif
-
 	Thread::InitMainThread();
 
     new DownloadManager();
@@ -228,9 +219,6 @@ void Core::ReleaseSingletons()
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
 	RenderManager::Instance()->Release();
-#ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->Release();
-#endif
 
 	InputSystem::Instance()->Release();
 	JobManager::Instance()->Release();
@@ -449,23 +437,10 @@ void Core::SystemAppStarted()
 	}
 
 	if (core)core->OnAppStarted();
-    
-#ifdef __DAVAENGINE_AUTOTESTING__
-    FilePath file = "~res:/Autotesting/id.yaml";
-    if (file.Exists())
-    {
-        AutotestingSystem::Instance()->OnAppStarted();
-        isAutotesting = true;
-    }
-#endif //__DAVAENGINE_AUTOTESTING__
 }
 	
 void Core::SystemAppFinished()
 {
-#ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->OnAppFinished();
-#endif //__DAVAENGINE_AUTOTESTING__
-
 	if (core)core->OnAppFinished();
 }
 
