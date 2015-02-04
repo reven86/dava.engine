@@ -127,10 +127,7 @@ void LODEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bo
 			firstCommand->GetId() == CMDID_LOD_DELETE ||
 			firstCommand->GetId() == CMDID_LOD_CREATE_PLANE))
 		{
-			if (!redo)
-			{
-				scene->editorLODSystem->CollectLODDataFromScene();
-			}
+			scene->editorLODSystem->CollectLODDataFromScene();
 			LODDataChanged(scene);
 		}
 	}
@@ -336,17 +333,8 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
 //TODO: refactor this function
 void LODEditor::SetForceLayerValues(const EditorLODSystem *editorLODSystem, int layersCount)
 {
-	ui->forceLayer->clear();
-
-	ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
-
 	int requestedIndex = editorLODSystem->GetForceLayer() + 1;
-	int itemsCount = Max(requestedIndex, layersCount);
-	for (DAVA::int32 i = 0; i < itemsCount; ++i)
-	{
-		ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
-	}
-
+	CreateForceLayerValues(layersCount);
 	ui->forceLayer->setCurrentIndex(requestedIndex);
 }
 
@@ -365,7 +353,7 @@ void LODEditor::CopyLODToLod0Clicked()
 	{
 		return;
 	}
-	GetCurrentEditorLODSystem()->CopyLastLodToLod0();
+	if(GetCurrentEditorLODSystem()->CopyLastLodToLod0());
 }
 
 void LODEditor::CreatePlaneLODClicked()
@@ -386,8 +374,6 @@ void LODEditor::CreatePlaneLODClicked()
 
         QtMainWindow::Instance()->WaitStop();
     }
-	LODDataChanged();
-
 }
 
 void LODEditor::EditorModeChanged(int newMode)
@@ -409,14 +395,28 @@ EditorLODSystem *LODEditor::GetCurrentEditorLODSystem()
 
 void LODEditor::DeleteFirstLOD()
 {
-	GetCurrentEditorLODSystem()->DeleteFirstLOD();
-	LODDataChanged();
+	int requestedIndex = ui->forceLayer->currentIndex();
+	if(GetCurrentEditorLODSystem()->DeleteFirstLOD()
+		&& requestedIndex 
+		&& requestedIndex == ui->forceLayer->count())
+	{
+		requestedIndex--;
+		ui->forceLayer->setCurrentIndex(requestedIndex);
+		ForceLayerActivated(requestedIndex);
+	}
 }
 
 void LODEditor::DeleteLastLOD()
 {
-	GetCurrentEditorLODSystem()->DeleteLastLOD();
-	LODDataChanged();
+	int requestedIndex = ui->forceLayer->currentIndex();
+	if(GetCurrentEditorLODSystem()->DeleteLastLOD()
+		&& requestedIndex 
+		&& requestedIndex == ui->forceLayer->count())
+	{
+		requestedIndex--;
+		ui->forceLayer->setCurrentIndex(requestedIndex);
+		ForceLayerActivated(requestedIndex);
+	}
 }
 
 void LODEditor::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)

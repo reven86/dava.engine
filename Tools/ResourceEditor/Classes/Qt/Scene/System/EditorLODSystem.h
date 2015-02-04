@@ -52,19 +52,19 @@ public:
 
 	void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
 
-	void CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
+	bool CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
 	bool CanCreatePlaneLOD() const;
 	DAVA::FilePath GetDefaultTexturePathForPlaneEntity() const;
 
 	static void AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> &triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
 
 	//TODO: remove after lod editing implementation
-	DAVA_DEPRECATED(void CopyLastLodToLod0());
+	DAVA_DEPRECATED(bool CopyLastLodToLod0());
 
 	bool CanDeleteLod() const;
 
-	void DeleteFirstLOD();
-	void DeleteLastLOD();
+	bool DeleteFirstLOD();
+	bool DeleteLastLOD();
 
 	void SceneSelectionChanged(const EntityGroup *selected, const EntityGroup *deselected);
 
