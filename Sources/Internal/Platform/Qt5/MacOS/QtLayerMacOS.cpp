@@ -67,7 +67,9 @@ void QtLayerMacOS::WidgetDestroyed()
 void QtLayerMacOS::OnSuspend()
 {
     SoundSystem::Instance()->Suspend();
-    Core::Instance()->SetIsActive(false);
+    // Comment this out to allow event loop run while Resource Editor is inactive
+    // This fix was done in the same manner as in QtLayerWin32::OnSuspend
+    //Core::Instance()->SetIsActive(false);
 }
     
 void QtLayerMacOS::OnResume()

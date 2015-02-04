@@ -161,15 +161,83 @@ void GraphicsViewContext::SetCanvasPosition(const QPoint &newCanvasPosition)
     }
 }
 
+
+void GraphicsViewContext::OnControlSelected(DAVA::UIControl *rootControl, DAVA::UIControl *selectedControl)
+{
+    auto it = rootNodes.find(rootControl);
+    if (it != rootNodes.end())
+    {
+        Vector<UIControl*> path;
+        ControlNode *node = it->second;
+        if (selectedControl == rootControl)
+        {
+            // ok
+        }
+        else
+        {
+            UIControl *c = selectedControl;
+            while (c && c != rootControl)
+            {
+                path.push_back(c);
+                c = c->GetParent();
+            }
+        
+        
+            for (auto it = path.rbegin(); it != path.rend(); ++it)
+            {
+                bool found = false;
+                for (int32 index = 0; index < node->GetCount(); index++)
+                {
+                    ControlNode *child = node->Get(index);
+                    if (child->GetControl() == *it)
+                    {
+                        node = child;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found)
+                {
+                    node = nullptr;
+                    break;
+                }
+            }
+        }
+
+        if (node)
+        {
+            emit ControlNodeSelected(node);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void GraphicsViewContext::OnAllControlsDeselected()
+{
+    emit AllControlsDeselected();
+}
+
 void GraphicsViewContext::OnActiveRootControlsChanged(const QList<ControlNode*> &activatedControls, const QList<ControlNode*> &/*deactivatedControls*/)
 {
+    rootNodes.clear();
     canvas->RemoveAllControls();
 
     //const DAVA::Vector<DAVA::UIControl *> &activeControls = document->GetActiveRootControls();
 
     foreach(ControlNode *controlNode, activatedControls)
     {
-        ScopedPtr<UIControl> checkeredCanvas(new CheckeredCanvas());
+        rootNodes[controlNode->GetControl()] = controlNode;
+        
+        ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
+        checkeredCanvas->AddControlSelectionListener(this);
         checkeredCanvas->AddControl(controlNode->GetControl());
         checkeredCanvas->SetSize(controlNode->GetControl()->GetSize());
         canvas->AddControl(checkeredCanvas);
@@ -193,6 +261,25 @@ void GraphicsViewContext::OnActiveRootControlsChanged(const QList<ControlNode*> 
     SetCanvasPosition( QPoint(newPosition.x, newPosition.y) );
 }
 
+void GraphicsViewContext::OnSelectedControlsChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode*> &deactivatedControls)
+{
+    for (ControlNode *node : deactivatedControls)
+    {
+        UIControl *control = node->GetControl();
+        CheckeredCanvas *rootContainer = FindControlContainer(control);
+        if (rootContainer)
+            rootContainer->RemoveSelection(control);
+    }
+    
+    for (ControlNode *node : activatedControls)
+    {
+        UIControl *control = node->GetControl();
+        CheckeredCanvas *rootContainer = FindControlContainer(control);
+        if (rootContainer)
+            rootContainer->SelectControl(control);
+    }
+}
+
 QPoint GraphicsViewContext::GetCanvasPosition() const
 {
     return QPoint(canvasPosition.x, canvasPosition.y);
@@ -201,4 +288,17 @@ QPoint GraphicsViewContext::GetCanvasPosition() const
 int GraphicsViewContext::GetCanvasScale() const
 {
     return canvas->GetScale().x*100.0f;
+}
+
+CheckeredCanvas *GraphicsViewContext::FindControlContainer(UIControl *control)
+{
+    UIControl *c = control;
+    
+    while (c->GetParent() && c->GetParent() != canvas)
+        c = c->GetParent();
+    
+    if (c)
+        return dynamic_cast<CheckeredCanvas*>(c);
+    
+    return nullptr;
 }

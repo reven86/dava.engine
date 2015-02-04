@@ -119,6 +119,10 @@
 #include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 #include "Classes/Qt/DockConsole/LogWidget.h"
+#include "Classes/Qt/DockConsole/LogModel.h"
+
+#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
+#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
 
 #include "Classes/Commands2/PaintHeightDeltaAction.h"
 
@@ -605,6 +609,7 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
+        DAVA::Logger::AddCustomOutput(logWidget->Model());
         dockConsole = new QDockWidget(logWidget->windowTitle(), this);
         dockConsole->setWidget(logWidget);
         dockConsole->setObjectName(QString( "dock_%1" ).arg(dockConsole->widget()->objectName()));
@@ -776,6 +781,7 @@ void QtMainWindow::SetupActions()
         connect(act, SIGNAL(triggered()), SLOT(DebugVersionInfo()));
 #endif
 	}
+    connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
     QObject::connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
 
@@ -3110,6 +3116,21 @@ void QtMainWindow::DebugColorPicker()
     ColorPicker *cp = new ColorPicker(this);
 
     cp->Exec();
+}
+
+void QtMainWindow::DebugDeviceList()
+{
+    // Create controller and window if they are not exist
+    // Pointer deviceListController automatically becomes NULL on window destruction
+    if (NULL == deviceListController)
+    {
+        DeviceListWidget *w = new DeviceListWidget(this);
+        w->setAttribute(Qt::WA_DeleteOnClose);
+
+        deviceListController = new DeviceListController(w);
+        deviceListController->SetView(w);
+    }
+    deviceListController->ShowView();
 }
 
 void QtMainWindow::OnGenerateHeightDelta()
