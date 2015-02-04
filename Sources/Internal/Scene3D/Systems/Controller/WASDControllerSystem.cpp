@@ -74,6 +74,14 @@ void WASDControllerSystem::Process(float32 timeElapsed)
     if(0 == size) return;
     
     KeyboardDevice *keyboard = InputSystem::Instance()->GetKeyboard();
+    if(     keyboard->IsKeyPressed(DVKEY_SHIFT)
+       ||   keyboard->IsKeyPressed(DVKEY_CTRL)
+       ||   keyboard->IsKeyPressed(DVKEY_ALT)
+       )
+    {
+        return;
+    }
+    
     for(uint32 i = 0; i < size; ++i)
     {
         Camera *camera = GetCamera(entities[i]);

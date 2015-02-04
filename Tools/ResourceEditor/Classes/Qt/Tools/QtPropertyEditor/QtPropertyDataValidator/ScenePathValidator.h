@@ -26,33 +26,18 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_THREAD_H__
-#define __DAVAENGINE_JOB_THREAD_H__
+#ifndef __RESOURCEEDITORQT__SCENEPATHVALIDATOR__
+#define __RESOURCEEDITORQT__SCENEPATHVALIDATOR__
 
-#include "Platform/Thread.h"
-#include "JobQueue.h"
+#include "PathValidator.h"
 
-namespace DAVA
-{
-
-class JobThread
+class ScenePathValidator : public PathValidator
 {
 public:
-    JobThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
-    ~JobThread();
-
-    void Cancel();
+    ScenePathValidator(const QStringList& value);
 
 protected:
-    Thread *thread;
-    JobQueueWorker *workerQueue;
-    Semaphore *workerDoneSem;
-    volatile bool threadCancel;
-    volatile bool threadFinished;
-
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
+    virtual bool ValidateInternal(const QVariant &v);
 };
 
-}
-
-#endif // __DAVAENGINE_JOB_THREAD_H__
+#endif /* defined(__RESOURCEEDITORQT__SCENEPATHVALIDATOR__) */
