@@ -104,7 +104,7 @@ public:
 
     inline eIndexFormat GetIndexFormat() const;
     
-private:
+public:
     Map<eVertexFormat, RenderDataStream *> streamMap;
     Vector<RenderDataStream *> streamArray;
     uint32 resultVertexFormat;
