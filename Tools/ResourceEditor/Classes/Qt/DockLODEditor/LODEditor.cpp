@@ -127,6 +127,10 @@ void LODEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bo
 			firstCommand->GetId() == CMDID_LOD_DELETE ||
 			firstCommand->GetId() == CMDID_LOD_CREATE_PLANE))
 		{
+			if (!redo)
+			{
+				scene->editorLODSystem->CollectLODDataFromScene();
+			}
 			LODDataChanged(scene);
 		}
 	}

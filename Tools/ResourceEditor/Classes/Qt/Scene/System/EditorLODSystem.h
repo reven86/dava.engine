@@ -84,14 +84,14 @@ public:
 	inline DAVA::int32 GetForceLayer() const;
 	void SetForceLayer(DAVA::int32 layer);
 
+	void CollectLODDataFromScene();
+
 	inline bool GetAllSceneModeEnabled() const;
 	void SetAllSceneModeEnabled(bool enabled);
 protected:
 	void AddSelectedLODsRecursive(DAVA::Entity *entity);
 	void RemoveSelectedLODsRecursive(DAVA::Entity *entity);
 	
-	void CollectLODDataFromScene();
-
 	void UpdateForceLayer();
 	void UpdateForceDistance();
 	void UpdateAllSceneModeEnabled();
