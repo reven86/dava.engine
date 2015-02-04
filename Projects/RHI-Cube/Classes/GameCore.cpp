@@ -30,6 +30,7 @@
     #include "GameCore.h"
     
     #include "../rhi_Base.h"
+    #include "../rhi_Manticore.h"
     #include "../RHI/rhi_ShaderCache.h"
 
     #include "Base/Profiler.h"
@@ -374,6 +375,10 @@ GameCore::SetupCube()
     cube.vp_const[1] = rhi::PipelineState::CreateVProgConstBuffer( cube.ps, 1 );
     cube.fp_const    = rhi::PipelineState::CreateFProgConstBuffer( cube.ps, 0 );
 
+
+    rhi::TextureSetDescriptor   td = { 1, {cube.tex} };
+    cube.texSet = rhi::AcquireTextureSet( td );
+
     cube_t0     = SystemTimer::Instance()->AbsoluteMS();
     cube_angle  = 0;
 }
@@ -578,6 +583,14 @@ void GameCore::DrawTank()
 void
 GameCore::Draw()
 {
+//    rhiDraw();
+    manticoreDraw();
+}
+
+
+void
+GameCore::rhiDraw()
+{
     SCOPED_NAMED_TIMING("GameCore::Draw");
     //-    ApplicationCore::BeginFrame();
 
@@ -618,7 +631,7 @@ GameCore::Draw()
 #if 0
     
     rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
-    
+
     rhi::CommandBuffer::SetPipelineState( cb, triangle.ps );
     rhi::CommandBuffer::SetVertexData( cb, triangle.vb );
     rhi::CommandBuffer::SetIndices( cb, triangle.ib );
@@ -696,6 +709,131 @@ GameCore::Draw()
 
     rhi::RenderPass::End( pass );
 }
+
+
+void
+GameCore::manticoreDraw()
+{
+    #define USE_SECOND_CB 1
+
+
+    rhi::RenderPassConfig   pass_desc;
+    float                   clr[4] = { 1.0f, 0.6f, 0.0f, 1.0f };
+
+    pass_desc.colorBuffer[0].loadAction     = rhi::LOADACTION_CLEAR;
+    pass_desc.colorBuffer[0].storeAction    = rhi::STOREACTION_STORE;
+    pass_desc.colorBuffer[0].clearColor[0]  = 0.25f;
+    pass_desc.colorBuffer[0].clearColor[1]  = 0.25f;
+    pass_desc.colorBuffer[0].clearColor[2]  = 0.35f;
+    pass_desc.colorBuffer[0].clearColor[3]  = 1.0f;
+    pass_desc.depthBuffer.loadAction        = rhi::LOADACTION_CLEAR;
+    pass_desc.depthBuffer.storeAction       = rhi::STOREACTION_STORE;
+
+    rhi::Handle cb[2];
+    #if USE_SECOND_CB
+    rhi::Handle pass = rhi::AllocateRenderPass( pass_desc, 2, cb );
+    #else
+    rhi::Handle pass = rhi::AllocateRenderPass( pass_desc, 1, cb );
+    #endif
+
+
+    rhi::RenderPass::Begin( pass );
+    rhi::BeginDraw( cb[0] );
+
+#if 0
+    
+    rhi::BatchDescriptor    desc;
+
+    desc.vertexStreamCount      = 1;
+    desc.vertexStream[0]        = triangle.vb;
+    desc.indexBuffer            = triangle.ib;
+    desc.renderPipelineState    = triangle.ps;
+    desc.vertexConstCount       = 0;
+    desc.fragmentConstCount     = 1;
+    desc.fragmentConst[0]       = triangle.fp_const;
+    desc.textureSet             = rhi::InvalidHandle;
+    desc.primitiveType          = rhi::PRIMITIVE_TRIANGLELIST;
+    desc.primitiveCount         = 1;
+
+    rhi::UpdateConstBuffer( triangle.fp_const, 0, clr, 1 );
+    rhi::DrawBatch( cb[0], desc );
+
+#else
+
+    uint64  cube_t1 = SystemTimer::Instance()->AbsoluteMS();
+    uint64  dt      = cube_t1 - cube_t0;
+    
+    cube_angle += 0.001f*float(dt) * (30.0f*3.1415f/180.0f);
+    cube_t0     = cube_t1;
+    
+    Matrix4 world;
+    Matrix4 view_proj;
+    
+    world.Identity();
+    world.CreateRotation( Vector3(0,1,0), cube_angle );
+//    world.CreateRotation( Vector3(1,0,0), cube_angle );
+    world.SetTranslationVector( Vector3(0,0,5) );
+    //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
+    
+    view_proj.Identity();
+    view_proj.BuildProjectionFovLH( 75.0f, Core::Instance()->GetPhysicalScreenWidth()/Core::Instance()->GetPhysicalScreenHeight(), 1.0f,1000.0f );
+    
+    
+    rhi::ConstBuffer::SetConst( cube.fp_const, 0, 1, clr );
+    rhi::ConstBuffer::SetConst( cube.vp_const[0], 0, 4, view_proj.data );
+    rhi::ConstBuffer::SetConst( cube.vp_const[1], 0, 4, world.data );
+
+    rhi::BatchDescriptor    desc;
+
+    desc.vertexStreamCount      = 1;
+    desc.vertexStream[0]        = cube.vb;
+    desc.indexBuffer            = rhi::InvalidHandle;
+    desc.renderPipelineState    = cube.ps;
+    desc.vertexConstCount       = 2;
+    desc.vertexConst[0]         = cube.vp_const[0];
+    desc.vertexConst[1]         = cube.vp_const[1];
+    desc.fragmentConstCount     = 1;
+    desc.fragmentConst[0]       = cube.fp_const;
+    desc.textureSet             = cube.texSet;
+    desc.primitiveType          = rhi::PRIMITIVE_TRIANGLELIST;
+    desc.primitiveCount         = 12;
+
+    rhi::UpdateConstBuffer( cube.fp_const, 0, clr, 1 );
+    rhi::UpdateConstBuffer( cube.vp_const[0], 0, view_proj.data, 4 );
+    rhi::UpdateConstBuffer( cube.vp_const[1], 0, world.data, 4 );
+    rhi::DrawBatch( cb[0], desc );
+
+    #if USE_SECOND_CB
+    {
+        const float     w = 3.0f;
+        const unsigned  n = 5;
+        
+        rhi::BeginDraw( cb[1] );
+        for( unsigned i=0; i!=n; ++i )
+        {
+            const uint32 c      = (i+1) * 0x775511; // 0x15015
+            const uint8* cc     = (const uint8*)(&c);
+            const float  clr2[] = { float(cc[2])/255.0f, float(cc[1])/255.0f, float(cc[0])/255.0f, 1.0f };
+
+            world.Identity();
+            world.CreateRotation( Vector3(1,0,0), cube_angle );
+            world.SetTranslationVector( Vector3(-0.5f*w+float(i)*(w/float(n)),1,10) );
+
+            rhi::UpdateConstBuffer( cube.fp_const, 0, clr2, 1 );
+//            rhi::UpdateConstBuffer( cube.vp_const[0], 0, view_proj.data, 4 );
+            rhi::UpdateConstBuffer( cube.vp_const[1], 0, world.data, 4 );
+            rhi::DrawBatch( cb[0], desc );
+        }
+        rhi::EndDraw( cb[1] );
+    }
+    #endif
+
+#endif
+
+    rhi::EndDraw( cb[0] );
+    rhi::RenderPass::End( pass );
+}
+
 
 void GameCore::EndFrame()
 {

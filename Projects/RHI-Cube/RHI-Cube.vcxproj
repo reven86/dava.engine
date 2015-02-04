@@ -82,6 +82,7 @@
     <ClCompile Include="MCPP\support.cpp" />
     <ClCompile Include="MCPP\system.cpp" />
     <ClCompile Include="MCPP\_mcpp.cpp" />
+    <ClCompile Include="RHI\rhi_Manticore.cpp" />
     <ClCompile Include="RHI\rhi_ShaderCache.cpp" />
     <ClCompile Include="RHI\rhi_VertexLayout.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="RHI\rhi_RingBuffer.h" />
     <ClInclude Include="RHI\rhi_ShaderCache.h" />
     <ClInclude Include="rhi_Base.h" />
+    <ClInclude Include="rhi_Manticore.h" />
     <ClInclude Include="rhi_Type.h" />
     <ClInclude Include="rhi_VertexLayout.h" />
   </ItemGroup>

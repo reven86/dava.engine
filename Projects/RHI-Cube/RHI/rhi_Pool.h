@@ -142,18 +142,24 @@ template <class T, ResourceType RT>
 inline T*
 Pool<T,RT>::Get( Handle h )
 {
-    T*      object = 0;
-    uint32  type   = (h&HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
-    DVASSERT(type == RT);
-    uint32  index  = (h&HANDLE_INDEX_MASK)>>HANDLE_INDEX_SHIFT;
-    uint32  gen    = (h&HANDLE_GENERATION_MASK)>>HANDLE_GENERATION_SHIFT;
-    DVASSERT(index < ObjectCount);
-    Entry*  e     = Object + index;
+    T*  object = 0;
 
-    DVASSERT(e->allocated);
-    DVASSERT(e->generation == gen);
+    if( h != InvalidHandle )
+    {
+        uint32  type   = (h&HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
+        DVASSERT(type == RT);
+        uint32  index  = (h&HANDLE_INDEX_MASK)>>HANDLE_INDEX_SHIFT;
+        uint32  gen    = (h&HANDLE_GENERATION_MASK)>>HANDLE_GENERATION_SHIFT;
+        DVASSERT(index < ObjectCount);
+        Entry*  e     = Object + index;
 
-    return &(e->object);
+        DVASSERT(e->allocated);
+        DVASSERT(e->generation == gen);
+
+        object = &(e->object);
+    }
+
+    return object;
 }
 
 
