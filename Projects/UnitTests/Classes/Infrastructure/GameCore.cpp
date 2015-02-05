@@ -89,6 +89,7 @@ void GameCore::RegisterTests()
     new JobManagerTest();
     new Cpp14Test ();
     new NetworkTest();
+    //$UNITTEST_CTOR
 }
 
 #include <fstream>

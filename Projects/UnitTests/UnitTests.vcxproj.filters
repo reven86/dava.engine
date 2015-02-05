@@ -153,7 +153,6 @@
     <ClInclude Include="Classes\Tests\DataVaultTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
-  </ItemGroup>
     <ClInclude Include="Classes\Tests\NetworkTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
