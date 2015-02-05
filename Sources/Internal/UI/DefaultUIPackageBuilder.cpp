@@ -156,6 +156,11 @@ DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
     }
 }
 
+UIPackage *DefaultUIPackageBuilder::FindInCache(const String &packagePath) const
+{
+    return cache->GetPackage(packagePath);
+}
+
 RefPtr<UIPackage> DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
     RefPtr<UIPackage> package(new UIPackage());
