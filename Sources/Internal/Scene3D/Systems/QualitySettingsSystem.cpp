@@ -491,7 +491,7 @@ bool QualitySettingsSystem::IsQualityVisible(const Entity *entity)
     if(comp)
     {
         if (comp->filterByType)
-            return IsOptionEnabled(comp->GetModelType());
+            return (!comp->modelType.IsValid())||IsOptionEnabled(comp->GetModelType());
         else
             return (GetCurMaterialQuality(comp->requiredGroup) == comp->requiredQuality);
     }
