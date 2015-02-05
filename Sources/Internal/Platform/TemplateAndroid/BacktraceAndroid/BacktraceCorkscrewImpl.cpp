@@ -11,17 +11,17 @@ namespace DAVA
 {
 MemoryMapCorkscrewInterface::MemoryMapCorkscrewInterface():map_info(NULL),iterator(map_info)
 {
-	LOGE("FRAME_STACK making corkscrew map");
+	
 	map_info = acquire_my_map_info_list();
-	LOGE("FRAME_STACK making acquire_my_map_info_list map");
+	
 	iterator = MemoryMapCorkscrewIterator(map_info);
-	LOGE("FRAME_STACK making  iterator");
+	
 }
 MemoryMapCorkscrewInterface::~MemoryMapCorkscrewInterface()
 {
-	LOGE("FRAME_STACK releaseng map_info1");
+	
 	release_my_map_info_list(map_info);
-	LOGE("FRAME_STACK releaseng map_info");
+	
 }
 MemoryMapIterator & MemoryMapCorkscrewInterface::GetIterator() const
 {
@@ -115,9 +115,9 @@ void BacktraceCorkscrewImpl::BuildMemoryMap()
 {
 	if(loaded && processMap == NULL)
 	{
-		LOGE("FRAME_STACK building process map ");
+		
 		processMap = new MemoryMapCorkscrewInterface();
-		LOGE("FRAME_STACK building process map done");
+		
 	}
 }
 const MemoryMapInterface * BacktraceCorkscrewImpl::GetMemoryMap() const
@@ -128,16 +128,20 @@ const MemoryMapInterface * BacktraceCorkscrewImpl::GetMemoryMap() const
 void BacktraceCorkscrewImpl::Backtrace(Function<void(pointer_size)> onFrame,
 		void * context, void * siginfo)
 {
-	LOGE("FRAME_STACK backtracing");
+	
 	if(processMap == NULL)
 		BuildMemoryMap();
 	backtrace_frame_t frames[256] =
 	{ 0 };
-	LOGE("FRAME_STACK backtracing");
+	if(context == NULL)
+	{
+		//if context is null then we are NOT inside signal handler and so print a message
+		LOGE("Backtracing with libcorkscrew outside signalhandler is not implimented");
+		return;
+	}
 	const ssize_t size = unwind_backtrace_signal_arch((siginfo_t*)siginfo, context,
 			processMap->GetMapInfo(), frames, 0, 255);
 
-	LOGE("FRAME_STACK backtracing %d",(int)size);
 	for (int i = 0; i < size; ++i)
 	{
 

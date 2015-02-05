@@ -251,7 +251,12 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 	JniCrashReporter crashReport;
 	crashReport.ThrowJavaExpetion(crashSteps);
 }
-
+void AndroidCrashReport::Unload()
+{
+#if defined(CRASH_HANDLER_CUSTOMSIGNALS)
+	AndroidBacktraceChooser::ReleaseBacktraceInterface();
+#endif
+}
 void AndroidCrashReport::ThrowExeption(const String& message)
 {
 	Vector<JniCrashReporter::CrashStep> crashSteps;

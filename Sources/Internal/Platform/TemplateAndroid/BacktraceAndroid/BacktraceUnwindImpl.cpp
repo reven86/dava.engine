@@ -126,7 +126,7 @@ BacktraceUnwindImpl* BacktraceUnwindImpl::Load()
 }
 void BacktraceUnwindImpl::BuildMemoryMap()
 {
-	if(!loaded) return;
+	if(!loaded || processMap != NULL) return;
 	processMap = new MemoryMapUnwind();
 }
 const MemoryMapInterface * BacktraceUnwindImpl::GetMemoryMap() const

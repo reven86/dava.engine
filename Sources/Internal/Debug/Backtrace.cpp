@@ -37,8 +37,8 @@
 #elif defined(__DAVAENGINE_WIN32__)
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")
-#elif defined(__DAVAENGINE_ANDROID__) && defined(__arm__)
-#include "../Platform/TemplateAndroid/AndroidCrashUtility.h"
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "../Platform/TemplateAndroid/BacktraceAndroid/AndroidBacktraceChooser.h"
 #endif
 
 #include <cstdlib>
@@ -242,7 +242,16 @@ public:
             free(log->strings[k]);
         free(log->strings);
     }
-    
+#if defined(__DAVAENGINE_ANDROID__)
+	void OnStackFrame(pointer_size addr)
+	{
+        DAVA::BacktraceInterface * backtraceProvider = DAVA::AndroidBacktraceChooser::ChooseBacktraceAndroid();
+        const char * libName = NULL;
+        pointer_size relAddres = 0;
+        backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
+        Logger::FrameworkDebug("%p : %s\n", relAddres, libName);
+	}
+#endif
     void PrintBackTraceToLog()
     {
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
@@ -269,8 +278,13 @@ public:
          );        
      */
 #endif
-#if defined(__DAVAENGINE_ANDROID__) && defined(__arm__)
-        PrintAndroidBacktrace();
+#if defined(__DAVAENGINE_ANDROID__)
+        BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
+       
+        if(backtraceProvider != nullptr)
+        {
+            backtraceProvider->Backtrace(OnStackFrame,NULL,0);
+        }
 #endif
     }
 //}

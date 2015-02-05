@@ -40,6 +40,7 @@ public:
 
 private:
 
+	//vector is ok should be loaded long before crash
 	Vector<unw_map_t> memoryMap;
 	unw_map_cursor_t mapCursor;
 	mutable MemoryMapUnwindIterator iterator;
