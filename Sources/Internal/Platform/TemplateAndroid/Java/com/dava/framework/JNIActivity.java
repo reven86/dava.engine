@@ -12,12 +12,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.bda.controller.Controller;
+import com.dava.framework.JNIConst;
 
 public abstract class JNIActivity extends Activity implements JNIAccelerometer.JNIAccelerometerListener
 {
@@ -67,6 +69,22 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
     	activity = this;
         super.onCreate(savedInstanceState);
+        
+        // TODO: Remove it! Check display metrics for test!
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        float diagPx = (float) Math.sqrt(dm.widthPixels * dm.widthPixels + dm.heightPixels * dm.heightPixels);
+        Log.i(JNIConst.LOG_TAG, String.format("DisplayMertics{density=%f, densityDpi=%d, scaledDensity=%f, xdpi=%f, ydpi=%f, w=%d, h=%d, densityDiag=%f, diag=%f}",
+                dm.density,
+                dm.densityDpi,
+                dm.scaledDensity,
+                dm.xdpi,
+                dm.ydpi,
+                dm.widthPixels,
+                dm.heightPixels,
+                diagPx / (float)dm.densityDpi,
+                diagPx / dm.ydpi));
+        //-------------------------------------------------
         
         commandLineParams = initCommandLineParams();
 
