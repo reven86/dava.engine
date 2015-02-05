@@ -554,24 +554,22 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 	VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
 	Sprite* visibilityAreaSprite = visibilityToolProxy->GetSprite();
 
-	RenderManager* manager = RenderManager::Instance();
-	RenderHelper* helper = RenderHelper::Instance();
-
-	manager->SetRenderTarget(visibilityAreaSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(visibilityAreaSprite);
 
 	for(uint32 i = 0; i < points.size(); ++i)
 	{
 		uint32 colorIndex = (uint32)points[i].z;
 		Vector2 pos(points[i].x, points[i].y);
 
-		manager->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-		manager->SetColor(areaPointColors[colorIndex]);
+        RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->SetColor(areaPointColors[colorIndex]);
         RenderSystem2D::Instance()->Setup2DMatrices();
-		helper->DrawPoint(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(pos), 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
+        RenderHelper::Instance()->DrawPoint(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(pos), 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
 	}
 
-	manager->ResetColor();
-	manager->RestoreRenderTarget();
+    RenderManager::Instance()->ResetColor();
+    RenderSystem2D::Instance()->PopRenderTarget();
 }
 
 void VisibilityToolSystem::SaveTexture(const FilePath& filePath)

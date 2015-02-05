@@ -502,7 +502,6 @@ void Core::SystemProcessFrame()
 		if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
 		{
 			VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-			RenderManager::Instance()->SetRenderOrientation(screenOrientation);
             UIScreenManager::Instance()->ScreenSizeChanged();
             UIControlSystem::Instance()->ScreenSizeChanged();
 		}
