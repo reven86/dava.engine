@@ -132,7 +132,7 @@ int ControlNode::GetCount() const
     return (int) nodes.size();
 }
 
-PackageBaseNode *ControlNode::Get(int index) const
+ControlNode *ControlNode::Get(int index) const
 {
     return nodes[index];
 }
