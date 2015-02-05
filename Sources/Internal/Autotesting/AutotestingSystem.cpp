@@ -74,7 +74,8 @@ AutotestingSystem::AutotestingSystem()
 AutotestingSystem::~AutotestingSystem()
 {
 	SafeRelease(luaSystem);
-	AutotestingDB::Instance()->Release();
+	if (AutotestingDB::Instance())
+		AutotestingDB::Instance()->Release();
 }
 
 void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
@@ -114,7 +115,8 @@ void AutotestingSystem::OnAppStarted()
 
 void AutotestingSystem::OnAppFinished()
 {
-
+	Logger::Info("AutotestingSystem::OnAppFinished ");
+	ExitApp();
 }
 
 void AutotestingSystem::RunTests()
@@ -129,7 +131,7 @@ void AutotestingSystem::RunTests()
 
 void AutotestingSystem::OnInit()
 {
-	DVASSERT(isInit);
+	DVASSERT(!isInit);
 	isInit = true;
 }
 
@@ -464,7 +466,9 @@ bool AutotestingSystem::IsTouchDown(int32 id)
 void AutotestingSystem::ExitApp()
 {
 	//Realize JobManager::JOB_MAINLAZY
-	AutotestingDB::Instance()->Release();
+	if (AutotestingDB::Instance())
+		AutotestingDB::Instance()->Release();
+
 	if (needExitApp)
 	{
 		return;

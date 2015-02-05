@@ -136,7 +136,7 @@ namespace DAVA
 		
 		if(!isFound)
 		{
-			AutotestingSystem::Instance()->ForceQuit(Format("AutotestingDB::FindRunArchive couldn't find %s archive", testsName));
+			AutotestingSystem::Instance()->ForceQuit(Format("AutotestingDB::FindRunArchive couldn't find %s archive", testsName.c_str()));
 		}
 		else
 		{
