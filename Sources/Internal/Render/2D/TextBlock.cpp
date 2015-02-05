@@ -797,18 +797,16 @@ void TextBlock::CalculateCacheParams()
         for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
         {
             Font::StringMetrics stringSize = font->GetStringMetrics(multilineStrings[line]);
-            stringSize.drawRect.dx += stringSize.drawRect.x;
-            stringSize.drawRect.x = 0;
             stringSizes.push_back(stringSize.width);
             if(requestedSize.dx >= 0)
             {
                 textSize.width = Max(textSize.width, Min(stringSize.width, (int)drawSize.x));
-                textSize.drawRect.dx = Max(textSize.drawRect.dx, Min(stringSize.drawRect.dx, (int)drawSize.x));
+                textSize.drawRect.dx = Max(textSize.drawRect.dx, Min(stringSize.drawRect.dx + stringSize.drawRect.x, (int)drawSize.x));
             }
             else
             {
                 textSize.width = Max(textSize.width, stringSize.width);
-                textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx);
+                textSize.drawRect.dx = Max(textSize.drawRect.dx, stringSize.drawRect.dx + stringSize.drawRect.x);
             }
             textSize.drawRect.x = Min(textSize.drawRect.x, stringSize.drawRect.x);
             if(0 == line)
@@ -816,6 +814,9 @@ void TextBlock::CalculateCacheParams()
                 textSize.drawRect.y = stringSize.drawRect.y;
             }
         }
+        // Translate right/bottom edge to width/height
+        textSize.drawRect.dx -= textSize.drawRect.x;
+        textSize.drawRect.dy -= textSize.drawRect.y;
     }
 
     if (requestedSize.dx >= 0 && useJustify)
