@@ -24,7 +24,6 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include "Platform/DateTime.h"
 #include "FileSystem/KeyedArchive.h"
 
-#include "AutotestingSystemLua.h"
 #include "Autotesting/AutotestingDB.h"
 
 namespace DAVA
@@ -67,22 +66,29 @@ namespace DAVA
         , multiplayerName("")
         , waitTimeLeft(0.0f)
         , waitCheckTimeLeft(0.0f)
+		, luaSystem(NULL)
 	{
-		new AutotestingSystemLua();
-		new AutotestingDB();
+		
 	}
 
 	AutotestingSystem::~AutotestingSystem()
 	{
-		AutotestingSystemLua::Instance()->Release();
+		SafeRelease(luaSystem);
 		AutotestingDB::Instance()->Release();
+	}
+
+	void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
+	{
+		Logger::Debug("AutotestingSystem::InitLua");
+		luaSystem = new AutotestingSystemLua();
+		luaSystem->SetDelegate(_delegate);
 	}
 
 	// This method is called on application started and it handle autotest initialisation
 	void AutotestingSystem::OnAppStarted()
 	{
 		Logger::Debug("AutotestingSystem::OnAppStarted");
-
+		
 		if (isInit)
 		{
 			Logger::Error("AutotestingSystem::OnAppStarted App already initialized. Skip autotest initialization");
@@ -90,7 +96,7 @@ namespace DAVA
 		}
 
 		FetchParametersFromIdTxt();
-		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
+		deviceName = luaSystem->GetDeviceName();
 
 		SetUpConnectionToDB();
 
@@ -99,7 +105,7 @@ namespace DAVA
 		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s", groupName.c_str(), testFileName.c_str());
 		if (FileSystem::Instance()->IsFile(FilePath(testFilePath)))
 		{
-            AutotestingSystemLua::Instance()->InitFromFile(testFilePath);
+			luaSystem->InitFromFile(testFilePath);
             return;
         }
         Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", testFilePath.c_str());
@@ -198,7 +204,8 @@ namespace DAVA
 		String collection = option->GetString("collection");
 		int32 dbPort = option->GetInt32("port");
 		Logger::Debug("AutotestingSystem::SetUpConnectionToDB %s -> %s[%s:%d]", collection.c_str(), dbName.c_str(), dbAddress.c_str(), dbPort);
-
+		
+		new AutotestingDB();
 		if (!AutotestingDB::Instance()->ConnectToDB(collection, dbName, dbAddress, dbPort))
 		{
 			ForceQuit("Couldn't connect to Test DB");
@@ -282,7 +289,7 @@ namespace DAVA
 
 		if(isRunning)
 		{
-			AutotestingSystemLua::Instance()->Update(timeElapsed);
+			luaSystem->Update(timeElapsed);
 		}
 	}
 
@@ -307,7 +314,7 @@ namespace DAVA
 	{
 		Logger::Debug("AutotestingSystem::OnTestsStarted");
 		startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
-		AutotestingSystemLua::Instance()->StartTest();
+		luaSystem->StartTest();
 	}  
 
 	void AutotestingSystem::OnError(const String & errorMessage)

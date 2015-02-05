@@ -37,9 +37,6 @@
 #include "DAVAEngine.h"
 #include "Base/Singleton.h"
 #include "FileSystem/FileSystem.h"
-#include "Database/MongodbClient.h"
-
-#include "Autotesting/MongodbUpdateObject.h"
 
 #if defined (__DAVAENGINE_MACOS__)
 #define AUTOTESTING_PLATFORM_NAME  "MacOS"
@@ -53,6 +50,8 @@
 #define AUTOTESTING_PLATFORM_NAME  "Unknown"
 #endif //PLATFORMS    
 
+#include "Autotesting/AutotestingSystemLua.h"
+
 #include "Render/RenderManager.h"
 #include "Platform/DateTime.h"
 
@@ -60,7 +59,8 @@ namespace DAVA
 {
 
 class Image;
-
+class AutotestingSystemLuaDelegate;
+class AutotestingSystemLua;
 class AutotestingSystem : public Singleton<AutotestingSystem>, public ScreenShotCallbackDelegate
 {
 public:
@@ -75,6 +75,8 @@ public:
     
     void OnInit();
     inline bool IsInit() { return isInit; };
+
+	void InitLua(AutotestingSystemLuaDelegate* _delegate);
 
 	void OnScreenShot(Image *image) override;
     
@@ -119,8 +121,10 @@ public:
 	uint64 GetCurrentTimeMS();
 	String GetCurrentTimeString();
 	String GetCurrentTimeMsString();
-protected:
 
+	inline AutotestingSystemLua* GetLuaSystem() { return luaSystem; };
+protected:
+	AutotestingSystemLua * luaSystem;
 //DB
     /*void SetUpTestArchive();
 

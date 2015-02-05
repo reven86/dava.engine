@@ -75,6 +75,10 @@
 #include <EGL/eglext.h>
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 namespace DAVA 
 {
 
@@ -91,6 +95,7 @@ Core::Core()
     firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
+	new AutotestingSystem();
 }
 
 Core::~Core()

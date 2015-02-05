@@ -2,7 +2,6 @@
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 
-#include "AutotestingSystem.h"
 #include "AutotestingDB.h"
 
 #include "Utils/Utils.h"
@@ -28,7 +27,6 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 
 namespace DAVA
 {
-
 	AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL)
 	{
 		autotestingLocalizationSystem = new LocalizationSystem();
@@ -106,96 +104,98 @@ namespace DAVA
 		RunScript();
 	}
 
-	int AutotestingSystemLua::Print(lua_State* L)
+	int AutotestingSystemLua::Print(lua_State* luaStack)
 	{
-		const char* str = lua_tostring(L, -1);
+		const char* str = lua_tostring(luaStack, -1);
 		Logger::Debug("AutotestingSystemLua::Print: %s", str);
-		lua_pop(L, 1);
+		lua_pop(luaStack, 1);
 		return 0;
 	}
 
-	const char* AutotestingSystemLua::pushnexttemplate(lua_State* L, const char* path)
+	const char* AutotestingSystemLua::pushnexttemplate(lua_State* luaStack, const char* path)
 	{
 		const char *l;
 		while (*path == *LUA_PATHSEP) path++;  /* skip separators */
 		if (*path == '\0') return NULL;  /* no more templates */
 		l = strchr(path, *LUA_PATHSEP);  /* find next separator */
 		if (l == NULL) l = path + strlen(path);
-		lua_pushlstring(L, path, l - path);  /* template */
+		lua_pushlstring(luaStack, path, l - path);  /* template */
 		return l;
 	}
 
-	const char* AutotestingSystemLua::findfile(lua_State* L, const char* name, const char* pname)
+	const char* AutotestingSystemLua::findfile(lua_State* luaStack, const char* name, const char* pname)
 	{
 		const char* path;
-		name = luaL_gsub(L, name, ".", LUA_DIRSEP);
-		lua_getglobal(L, "package");
-		lua_getfield(L, -1, pname);
-		path = lua_tostring(L, -1);
+		name = luaL_gsub(luaStack, name, ".", LUA_DIRSEP);
+		lua_getglobal(luaStack, "package");
+		lua_getfield(luaStack, -1, pname);
+		path = lua_tostring(luaStack, -1);
 		if (path == NULL)
-			luaL_error(L, LUA_QL("package.%s") " must be a string", pname);
-		lua_pushliteral(L, "");  /* error accumulator */
-		while ((path = pushnexttemplate(L, path)) != NULL) {
+			luaL_error(luaStack, LUA_QL("package.%s") " must be a string", pname);
+		lua_pushliteral(luaStack, "");  /* error accumulator */
+		while ((path = pushnexttemplate(luaStack, path)) != NULL) {
 			const char *filename;
-			filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
-			lua_remove(L, -2);  /* remove path template */
+			filename = luaL_gsub(luaStack, lua_tostring(luaStack, -1), LUA_PATH_MARK, name);
+			lua_remove(luaStack, -2);  /* remove path template */
 			if (FileSystem::Instance()->IsFile(filename))  /* does file exist and is readable? */
 				return filename;  /* return that file name */
-			lua_pushfstring(L, "\n\tno file " LUA_QS, filename);
-			lua_remove(L, -2);  /* remove file name */
-			lua_concat(L, 2);  /* add entry to possible error message */
+			lua_pushfstring(luaStack, "\n\tno file " LUA_QS, filename);
+			lua_remove(luaStack, -2);  /* remove file name */
+			lua_concat(luaStack, 2);  /* add entry to possible error message */
 		}
 		return NULL;  /* not found */
 	}
 
-	int AutotestingSystemLua::ReqModule(lua_State* L)
+	int AutotestingSystemLua::ReqModule(lua_State* luaStack)
 	{
-		String module = lua_tostring(L, -1);
-		lua_pop(L, 1);
-		FilePath path = Instance()->findfile(L, module.c_str(), "path");
-		if (!Instance()->LoadScriptFromFile(path)) 
+		lua_State * luaState = AutotestingSystem::Instance()->GetLuaSystem()->GetLuaState();
+
+		String module = lua_tostring(luaStack, -1);
+		lua_pop(luaStack, 1);
+		FilePath path = AutotestingSystemLua::findfile(luaStack, module.c_str(), "path");
+		if (!AutotestingSystem::Instance()->GetLuaSystem()->LoadScriptFromFile(path))
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::ReqModule: couldn't load module " + path.GetAbsolutePathname());
 		}
-		lua_pushstring(Instance()->luaState, path.GetBasename().c_str());
-		if (!Instance()->RunScript()) 
+		lua_pushstring(luaState, path.GetBasename().c_str());
+		if (!AutotestingSystem::Instance()->GetLuaSystem()->RunScript())
 		{
 			AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::ReqModule: couldn't run module " + path.GetBasename());
 		}
-		lua_pushcfunction(L, lua_tocfunction(Instance()->luaState, -1));
-		lua_pushstring(L, path.GetBasename().c_str());
+		lua_pushcfunction(luaStack, lua_tocfunction(luaState, -1));
+		lua_pushstring(luaStack, path.GetBasename().c_str());
 		return 2;
 	}
 
-	void AutotestingSystemLua::stackDump(lua_State* L) 
+	void AutotestingSystemLua::stackDump(lua_State* luaStack) 
 	{
 		Logger::Debug("*** Stack Dump ***");
 		int i;
-		int top = lua_gettop(L);
+		int top = lua_gettop(luaStack);
 
 		for (i = 1; i <= top; i++) /* repeat for each level */
 		{ 
-			int t = lua_type(L, i);
+			int t = lua_type(luaStack, i);
 			switch (t) 
 			{
 			case LUA_TSTRING: 
 				{ /* strings */
-					Logger::Debug("'%s'", lua_tostring(L, i));
+					Logger::Debug("'%s'", lua_tostring(luaStack, i));
 					break;
 				}
 			case LUA_TBOOLEAN: 
 				{ /* booleans */
-					Logger::Debug(lua_toboolean(L, i) ? "true" : "false");
+					Logger::Debug(lua_toboolean(luaStack, i) ? "true" : "false");
 					break;
 				}
 			case LUA_TNUMBER: 
 				{ /* numbers */
-					Logger::Debug("%g", lua_tonumber(L, i));
+					Logger::Debug("%g", lua_tonumber(luaStack, i));
 					break;
 				}
 			default: 
 				{ /* other values */
-					Logger::Debug("%s", lua_typename(L, t));
+					Logger::Debug("%s", lua_typename(luaStack, t));
 					break;
 				}
 			}
