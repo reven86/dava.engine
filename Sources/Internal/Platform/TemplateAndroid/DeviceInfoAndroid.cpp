@@ -42,26 +42,6 @@ DAVA::String intermediateStr;
 extern "C"
 {
 
-#define DAVA_JNI_EXCEPTION_CHECK \
-        {\
-            JNIEnv *env = JNI::GetEnv();\
-            jthrowable e = env->ExceptionOccurred();\
-            if (nullptr != e)\
-            {\
-                /*first you SHOULD clear exception state in VM*/ \
-                env->ExceptionClear();\
-                jmethodID toString = env->GetMethodID(\
-                        env->FindClass("java/lang/Object"),\
-                        "toString", "()Ljava/lang/String;");\
-                jstring estring = (jstring) env->CallObjectMethod(e, toString);\
-                jboolean isCopy = false;\
-                const char* utf = env->GetStringUTFChars(estring, &isCopy);\
-                String error(utf);\
-                env->ReleaseStringUTFChars(estring, utf);\
-                DVASSERT_MSG(false, error.c_str());\
-            }\
-        }
-
 void Java_com_dava_framework_JNIDeviceInfo_SetJString(JNIEnv* env, jobject classthis, jstring jString)
 {
 	char str[256] = {0};
@@ -98,21 +78,21 @@ JniDeviceInfo::JniDeviceInfo()
 
 String JniDeviceInfo::GetVersion()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getVersion();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetManufacturer()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getManufacturer();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetModel()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 
 	getModel();
 	return intermediateStr;
@@ -120,35 +100,35 @@ String JniDeviceInfo::GetModel()
 
 String JniDeviceInfo::GetLocale()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getLocale();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetRegion()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getRegion();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetTimeZone()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getTimeZone();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetUDID()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getUDID();
 	return intermediateStr;
 }
 
 String JniDeviceInfo::GetName()
 {
-	intermediateStr = "";
+	intermediateStr.clear();
 	getName();
 	return intermediateStr;
 }
@@ -156,12 +136,13 @@ String JniDeviceInfo::GetName()
 int32 JniDeviceInfo::GetZBufferSize()
 {
 	getZBufferSize();
+	// TODO need future refactoring
 	return 0;
 }
 
 String JniDeviceInfo::GetHTTPProxyHost()
 {
-	String returnStr = "";
+	String returnStr;
 	jobject obj = getHTTPProxyHost();
 	JNI::CreateStringFromJni(jstring(obj), returnStr);
 
@@ -170,7 +151,7 @@ String JniDeviceInfo::GetHTTPProxyHost()
 
 String JniDeviceInfo::GetHTTPNonProxyHosts()
 {
-	String returnStr = "";
+	String returnStr;
 	jobject obj = getHTTPNonProxyHosts();
 	JNI::CreateStringFromJni(jstring(obj), returnStr);
 	return returnStr;
