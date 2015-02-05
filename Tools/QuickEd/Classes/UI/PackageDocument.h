@@ -89,10 +89,16 @@ public:
 signals:
     void controlsSelectionChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
     void activeRootControlsChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
-    
+
+    void controlSelectedInEditor(ControlNode *activatedControls);
+    void allControlsDeselectedInEditor();
+
 public slots:
     void OnSelectionRootControlChanged(const QList<ControlNode *> &activatedRootControls, const QList<ControlNode *> &deactivatedRootControls);
     void OnSelectionControlChanged(const QList<ControlNode *> &activatedControls, const QList<ControlNode *> &deactivatedControls);
+
+    void OnControlSelectedInEditor(ControlNode *activatedControls);
+    void OnAllControlDeselectedInEditor();
 
 private:
     void UpdateControlCanvas();

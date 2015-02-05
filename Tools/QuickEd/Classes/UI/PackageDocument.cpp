@@ -31,6 +31,10 @@ PackageDocument::PackageDocument(Project *_project, PackageNode *_package, QObje
 
     graphicsContext = new GraphicsViewContext();
     connect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+    connect(this, SIGNAL(controlsSelectionChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+
+    connect(graphicsContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
+    connect(graphicsContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
 
     propertiesContext = new PropertiesViewContext(this);
     
@@ -51,6 +55,11 @@ PackageDocument::~PackageDocument()
     SafeDelete(treeContext.model);
     SafeDelete(treeContext.proxyModel);
     disconnect(this, SIGNAL(activeRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnActiveRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+    disconnect(this, SIGNAL(selectedRootControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), graphicsContext, SLOT(OnSelectedControlsChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+
+    disconnect(graphicsContext, SIGNAL(ControlNodeSelected(ControlNode*)), this, SLOT(OnControlSelectedInEditor(ControlNode*)));
+    disconnect(graphicsContext, SIGNAL(AllControlsDeselected()), this, SLOT(OnAllControlDeselectedInEditor()));
+
     SafeDelete(graphicsContext);
     SafeDelete(propertiesContext);
     SafeDelete(libraryContext.model);
@@ -94,4 +103,14 @@ void PackageDocument::OnSelectionControlChanged(const QList<ControlNode*> &activ
     }
 
     emit controlsSelectionChanged(activatedControls, deactivatedControls);
+}
+
+void PackageDocument::OnControlSelectedInEditor(ControlNode *activatedControl)
+{
+    emit controlSelectedInEditor(activatedControl);
+}
+
+void PackageDocument::OnAllControlDeselectedInEditor()
+{
+    emit allControlsDeselectedInEditor();
 }

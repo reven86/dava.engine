@@ -38,7 +38,7 @@ public:
     void InsertBelow(ControlNode *node, const ControlNode *belowThis);
     void Remove(ControlNode *node);
     virtual int GetCount() const override;
-    virtual PackageBaseNode *Get(int index) const override;
+    virtual ControlNode *Get(int index) const override;
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const;
