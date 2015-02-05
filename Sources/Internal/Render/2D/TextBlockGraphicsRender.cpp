@@ -32,6 +32,7 @@
 #include "Utils/Utils.h"
 #include "Render/RenderManager.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -67,9 +68,10 @@ void TextBlockGraphicsRender::PreDraw()
 		return;
 	
 	isPredrawed = true;
-	RenderManager::Instance()->SetRenderTarget(sprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+	RenderSystem2D::Instance()->SetRenderTarget(sprite);
 	DrawText();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 }
 	
 Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

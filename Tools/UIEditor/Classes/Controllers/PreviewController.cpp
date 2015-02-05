@@ -357,7 +357,8 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
     ScopedPtr<Sprite> screenshot(Sprite::Create(""));
     screenshot->InitFromTexture(texture, 0, 0, textureRect.dx, textureRect.dy, -1, -1, true);
     
-    RenderManager::Instance()->SetRenderTarget(screenshot);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(screenshot);
     RenderManager::Instance()->ClearWithColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // The clipping rectangle defines on scale and preview mode.
@@ -376,19 +377,19 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
         clipRect = textureRect;
     }
 
-    RenderSystem2D::Instance()->ClipPush();
+    RenderSystem2D::Instance()->PushClip();
     RenderSystem2D::Instance()->SetClip(clipRect);
 
     // Draw the screen with the scale requested, but without any offset.
     Matrix4 wt = Matrix4::MakeScale(Vector3(screen->GetScale().x, screen->GetScale().y, 1.f));
-    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &wt, UPDATE_SEMANTIC_ALWAYS);
+    RenderManager::SetDynamicParam(PARAM_VIEW, &wt, UPDATE_SEMANTIC_ALWAYS);
     
     screen->GetScreenControl()->SetScreenshotMode(true);
     screen->GetScreenControl()->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
     screen->GetScreenControl()->SetScreenshotMode(false);
 
-    RenderSystem2D::Instance()->ClipPop();
-    RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopClip();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
     ScopedPtr<Image> image(texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
     

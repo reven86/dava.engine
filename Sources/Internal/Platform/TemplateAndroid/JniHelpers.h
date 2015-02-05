@@ -686,6 +686,150 @@ template<> struct JniCall<jfloatArray>
 	}
 };
 
+template<> struct JniCall<jdouble>
+{
+	inline static jdouble Call(jobject javaObject, jmethodID javaMethod)
+	{
+		return (jdouble)(GetEnv()->CallDoubleMethod(javaObject, javaMethod));
+	}
+
+	inline static jdouble CallStatic(jclass javaClass, jmethodID javaMethod)
+	{
+		return (jdouble)(GetEnv()->CallStaticDoubleMethod(javaClass, javaMethod));
+	}
+	template<class P1>
+	inline static jdouble Call(jobject javaObject, jmethodID javaMethod, P1 p1)
+	{
+		return (jdouble)(GetEnv()->CallDoubleMethod(javaObject, javaMethod, p1));
+	}
+
+	template<class P1>
+	inline static jdouble CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
+	{
+		return (jdouble)(GetEnv()->CallStaticDoubleMethod(javaClass, javaMethod, p1));
+	}
+
+	template<class P1, class P2>
+	inline static jdouble Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
+	{
+		return (jdouble)(GetEnv()->CallDoubleMethod(javaObject, javaMethod, p1, p2));
+	}
+
+	template<class P1, class P2>
+	inline static jdouble CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	{
+		return (jdouble)(GetEnv()->CallStaticDoubleMethod(javaClass, javaMethod, p1, p2));
+	}
+
+	template<class P1, class P2, class P3>
+	inline static jdouble Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	{
+		return (jdouble)(GetEnv()->CallDoubleMethod(javaObject, javaMethod, p1, p2, p3));
+	}
+
+	template<class P1, class P2, class P3>
+	inline static jdouble CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	{
+		return (jdouble)(GetEnv()->CallStaticDoubleMethod(javaClass, javaMethod, p1, p2, p3));
+	}
+
+	template<class P1, class P2, class P3, class P4>
+	inline static jdouble Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		return (jdouble)(GetEnv()->CallDoubleMethod(javaObject, javaMethod, p1, p2, p3, p4));
+	}
+
+	template<class P1, class P2, class P3, class P4>
+	inline static jdouble CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		return (jdouble)(GetEnv()->CallStaticDoubleMethod(javaClass, javaMethod, p1, p2, p3, p4));
+	}
+
+	template<class P1, class P2, class P3, class P4, class P5>
+	inline static jdouble Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		return (jdouble)(GetEnv()->CallDoubleMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
+	}
+
+	template<class P1, class P2, class P3, class P4, class P5>
+	inline static jdouble CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		return (jdouble)(GetEnv()->CallStaticDoubleMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+	}
+};
+
+template<> struct JniCall<jdoubleArray>
+{
+	inline static jdoubleArray Call(jobject javaObject, jmethodID javaMethod)
+	{
+		return (jdoubleArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod));
+	}
+
+	inline static jdoubleArray CallStatic(jclass javaClass, jmethodID javaMethod)
+	{
+		return (jdoubleArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod));
+	}
+	template<class P1>
+	inline static jdoubleArray Call(jobject javaObject, jmethodID javaMethod, P1 p1)
+	{
+		return (jdoubleArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1));
+	}
+
+	template<class P1>
+	inline static jdoubleArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1)
+	{
+		return (jdoubleArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1));
+	}
+
+	template<class P1, class P2>
+	inline static jdoubleArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2)
+	{
+		return (jdoubleArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2));
+	}
+
+	template<class P1, class P2>
+	inline static jdoubleArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2)
+	{
+		return (jdoubleArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2));
+	}
+
+	template<class P1, class P2, class P3>
+	inline static jdoubleArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	{
+		return (jdoubleArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3));
+	}
+
+	template<class P1, class P2, class P3>
+	inline static jdoubleArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3)
+	{
+		return (jdoubleArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3));
+	}
+
+	template<class P1, class P2, class P3, class P4>
+	inline static jdoubleArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		return (jdoubleArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4));
+	}
+
+	template<class P1, class P2, class P3, class P4>
+	inline static jdoubleArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4)
+	{
+		return (jdoubleArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4));
+	}
+
+	template<class P1, class P2, class P3, class P4, class P5>
+	inline static jdoubleArray Call(jobject javaObject, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		return (jdoubleArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, p1, p2, p3, p4, p5));
+	}
+
+	template<class P1, class P2, class P3, class P4, class P5>
+	inline static jdoubleArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5)
+	{
+		return (jdoubleArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, p1, p2, p3, p4, p5));
+	}
+};
+
 template<> struct JniCall<jlong>
 {
 	inline static jlong Call(jobject javaObject, jmethodID javaMethod)

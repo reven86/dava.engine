@@ -909,7 +909,9 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     
     Vector2 virtualTargetSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(Vector2(SPRITE_SIZE, SPRITE_SIZE));
     Sprite* renderSprite = Sprite::CreateAsRenderTarget(virtualTargetSize.x, virtualTargetSize.y, FORMAT_RGBA8888);
-    RenderManager::Instance()->SetRenderTarget(renderSprite);
+
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(renderSprite);
     if (sprite)
     {
         Sprite::DrawState drawState;
@@ -917,7 +919,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
         RenderSystem2D::Instance()->Draw(sprite, &drawState);        
     }
 
-    RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
     Texture* texture = renderSprite->GetTexture();
     Image* image = texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
     spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
