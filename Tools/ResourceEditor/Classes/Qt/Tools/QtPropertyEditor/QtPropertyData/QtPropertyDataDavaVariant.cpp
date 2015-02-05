@@ -297,7 +297,14 @@ QVariant QtPropertyDataDavaVariant::GetValueAlias() const
 			    DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[i].realValue, curVariantValue.type);
 			    if(v == curVariantValue)
 			    {
-				    ret = allowedValues[i].visibleValue;
+                    if(allowedValues[i].visibleValue.isValid())
+                    {
+                        ret = allowedValues[i].visibleValue;
+                    }
+                    else
+                    {
+                        ret = FromDavaVariant(allowedValues[i].realValue);
+                    }
 				    break;
 			    }
 		    }
@@ -1183,7 +1190,7 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedValuesEditor(QWidget *parent) c
 			// if not - we will create it from dava::varianttype
 			else
 			{
-				text = FromDavaVariant(curVariantValue).toString();
+                text = FromDavaVariant(allowedValues[i].realValue).toString();
 			}
 
 			allowedWidget->addItem(text);
