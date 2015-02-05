@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
@@ -79,6 +80,7 @@ public class JNIMovieViewControl {
 				} else {
 					layout = new RelativeLayout(activity);
 					view = new VideoView(layout.getContext());
+					view.setBackgroundColor(Color.BLACK);
 					RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 					layout.addView(view, params2);
 					control = new MovieControl(id, layout, view, new MediaPlayer());
@@ -234,9 +236,11 @@ public class JNIMovieViewControl {
 						params.height = layoutHeight;
 						params.width = videoWidth * layoutHeight/ videoHeight;
 						params.leftMargin = params.rightMargin = (layoutWidth - params.width) / 2;
+						params.topMargin = params.bottomMargin = 1;
 					} else {
 						params.width = layoutWidth;
 						params.height = videoHeight * layoutWidth / videoWidth;
+						params.leftMargin = params.rightMargin = 1;
 						params.topMargin = params.bottomMargin = (layoutHeight - params.height) / 2;
 					}
 				} break;
