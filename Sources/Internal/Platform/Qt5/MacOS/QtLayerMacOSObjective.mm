@@ -41,8 +41,8 @@ extern void FrameworkWillTerminate();
 namespace DAVA 
 {
 
-NSView *qtNSView = NULL;
-OpenGLView *openGLView = NULL;
+NSView *qtNSView = nil;
+OpenGLView *openGLView = nil;
     
 void QtLayerMacOS::InitializeGlWindow(void *qtView, int32 width, int32 height)
 {
@@ -50,7 +50,7 @@ void QtLayerMacOS::InitializeGlWindow(void *qtView, int32 width, int32 height)
     
     openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
     [qtNSView addSubview: openGLView];
-    
+
 	NSRect rect;
 	rect.origin.x = 0;
 	rect.origin.y = 0;
@@ -92,10 +92,9 @@ void QtLayerMacOS::ProcessFrame()
 
 void QtLayerMacOS::AppFinished()
 {
-    [openGLView removeFromSuperview];
-
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
+
     Core::Instance()->ReleaseSingletons();
 #ifdef ENABLE_MEMORY_MANAGER
     if (DAVA::MemoryManager::Instance() != 0)
@@ -105,6 +104,7 @@ void QtLayerMacOS::AppFinished()
 #endif
     
     [openGLView release];
+    openGLView = nil;
 }
     
 void QtLayerMacOS::MouseMoved(float32 x, float32 y)

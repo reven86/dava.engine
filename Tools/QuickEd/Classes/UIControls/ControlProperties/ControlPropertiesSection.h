@@ -3,6 +3,11 @@
 
 #include "PropertiesSection.h"
 
+namespace DAVA
+{
+    class UIControl;
+}
+
 class ControlPropertiesSection : public PropertiesSection
 {
 public:
@@ -13,8 +18,6 @@ protected:
 
 public:
     virtual DAVA::String GetName() const;
-    void AddPropertiesToNode(DAVA::YamlNode *node) const;
-
 
 private:
     DAVA::UIControl *control;

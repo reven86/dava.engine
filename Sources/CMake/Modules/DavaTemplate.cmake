@@ -56,18 +56,26 @@ if( APPLE )
 
         COMMAND   
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+
+        COMMAND   
+        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Frameworks/libTextureConverter.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
     )
 
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
                             MACOSX_BUNDLE_INFO_PLIST ${MACOS_PLIST} 
                             XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
-                            RESOURCE ${MACOS_ICO}
+                            RESOURCE "${MACOS_ICO}"
                           )
 
 elseif ( MSVC )
 
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" )    
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
+    
+    if( DEBUG_INFO )   
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
+    else()
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS" )
+    endif()
 
     list( APPEND DAVA_BINARY_WIN32_DIR "${ADDED_BINARY_DIR}" )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaVcxprojUserTemplate.in

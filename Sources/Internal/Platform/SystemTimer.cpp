@@ -244,6 +244,42 @@ uint64 SystemTimer::GetAbsoluteNano()
 #endif //PLATFORMS
 }
 
+uint64 SystemTimer::GetAbsoluteUs()
+{
+#if defined(__DAVAENGINE_WIN32__)
+	if (bHighTimerSupport)
+	{
+        LARGE_INTEGER t;
+
+        ::QueryPerformanceCounter( &t );
+    
+        return uint64(((t.QuadPart)*1000000) / liFrequency.QuadPart);
+	}
+	else
+	{
+		return 0;
+	}
+    
+#elif defined(__DAVAENGINE_ANDROID__)
+
+    timespec    ts;
+
+    clock_gettime( CLOCK_REALTIME, &ts );
+    //   this gives more correct time, but slow-as-Hell on lots of devices
+    //   clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts );
+
+    return long(ts.tv_sec*1000000 + ts.tv_nsec/1000);
+
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+
+    return ((mach_absolute_time() * timebase.numer) / timebase.denom)/1000;
+
+#else //PLATFORMS
+	//other plaforms
+	return 0;
+#endif //PLATFORMS
+}
+
 
 uint64 SystemTimer::AbsoluteMS()
 {

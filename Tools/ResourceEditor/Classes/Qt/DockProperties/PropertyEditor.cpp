@@ -48,6 +48,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/HeightmapValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
+#include "Tools/QtPropertyEditor/QtPropertyDataValidator/ScenePathValidator.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
@@ -67,6 +68,7 @@
 
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
+#include "Scene/System/PathSystem.h"
 
 #include "Deprecated/SceneValidator.h"
 
@@ -96,11 +98,11 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
     connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
     connect(mainUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
     connect(mainUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
+    connect(mainUi->actionAddPathComponent, SIGNAL(triggered()), SLOT(OnAddPathComponent()));
     connect(mainUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
     connect(mainUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
     connect(mainUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
-    
-    
+
 	SetUpdateTimeout(5000);
 	SetEditTracking(true);
 	setMouseTracking(true);
@@ -223,6 +225,8 @@ void PropertyEditor::ResetProperties()
                         bool isRemovable = true;
                         switch (component->GetType())
                         {
+                        case Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT:
+                        case Component::DEBUG_RENDER_COMPONENT:
                         case Component::TRANSFORM_COMPONENT:
                         case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
                             isRemovable = false;
@@ -456,6 +460,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 						PATH_IMAGE,
 						PATH_HEIGHTMAP,
 						PATH_TEXT,
+                        PATH_SCENE,
 						PATH_NOT_SPECIFIED
 					};
 
@@ -473,6 +478,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					PathDescriptor("texture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
 					PathDescriptor("lightmap", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
 					PathDescriptor("vegetationTexture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
+                    PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE),
 					PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT),
 					PathDescriptor("densityMap", "All (*.png);;PNG (*.png)", PathDescriptor::PATH_IMAGE),
 				};
@@ -512,6 +518,9 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					case PathDescriptor::PATH_TEXT:
 						variantData->SetValidator(new PathValidator(pathList));
 						break;
+                    case PathDescriptor::PATH_SCENE:
+                        variantData->SetValidator(new ScenePathValidator(pathList));
+                        break;
 
 					default:
 						break;
@@ -739,6 +748,8 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
     case CMDID_SOUND_REMOVE_EVENT:
 	case CMDID_DELETE_RENDER_BATCH:
 	case CMDID_CLONE_LAST_BATCH:
+    case CMDID_EXPAND_PATH:
+    case CMDID_COLLAPSE_PATH:
         {
             bool doReset = (command->GetEntity() == NULL);
             for ( int i = 0; !doReset && i < curNodes.size(); i++ )
@@ -1406,6 +1417,17 @@ void PropertyEditor::OnAddModelTypeComponent()
 void PropertyEditor::OnAddSkeletonComponent()
 {
     OnAddComponent(Component::SKELETON_COMPONENT);
+}
+
+void PropertyEditor::OnAddPathComponent()
+{
+    PathComponent *pathComponent = static_cast<PathComponent *> (Component::CreateByType(Component::PATH_COMPONENT));
+
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    pathComponent->SetName(curScene->pathSystem->GeneratePathName());
+
+    OnAddComponent(pathComponent);
+    SafeDelete(pathComponent);
 }
 
 void PropertyEditor::OnAddRotationControllerComponent()

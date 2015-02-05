@@ -33,7 +33,7 @@
 #include "UI/UITextFieldiPhone.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
 
 @implementation UITextFieldHolder
 
@@ -60,6 +60,12 @@
 		[self setupTraits];
         
         textField.userInteractionEnabled = NO;
+
+        cachedText = [[NSString alloc] initWithString:textField.text];
+        
+        [textField addTarget: self
+                      action: @selector(eventEditingChanged:)
+            forControlEvents: UIControlEventEditingChanged];
 
 		// Done!
 		[self addSubview:textField];
@@ -109,6 +115,8 @@
 
 - (void) dealloc
 {
+    [cachedText release];
+    cachedText = nil;
 	[textField release];
 	textField = 0;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -171,6 +179,26 @@
 	return TRUE;
 }
 
+- (void)eventEditingChanged:(UITextField *)sender
+{
+    if (sender == textField && cppTextField && cppTextField->GetDelegate()
+        && ![cachedText isEqualToString:textField.text])
+    {
+        DAVA::WideString oldString;
+        const char * cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
+        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), oldString);
+        
+        [cachedText release];
+        cachedText = [[NSString alloc] initWithString:textField.text];
+        
+        DAVA::WideString newString;
+        cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
+        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newString);
+        
+        cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newString, oldString);
+    }
+}
+
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
 	return textInputAllowed;
@@ -215,7 +243,7 @@
 	textField.autocorrectionType = [self convertAutoCorrectionType: (DAVA::UITextField::eAutoCorrectionType)cppTextField->GetAutoCorrectionType()];
 	
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
-	textField.spellCheckingType = [self convertSpellCheckingType: cppTextField->GetSpellCheckingType()];
+	textField.spellCheckingType = [self convertSpellCheckingType: (DAVA::UITextField::eSpellCheckingType)cppTextField->GetSpellCheckingType()];
 #endif
 	textField.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
 	textField.keyboardAppearance = [self convertKeyboardAppearanceType: (DAVA::UITextField::eKeyboardAppearanceType)cppTextField->GetKeyboardAppearanceType()];

@@ -43,7 +43,6 @@ DataNode::DataNode()
     index(-1),
     nodeFlags(0)
 {
-    
 }
 
 DataNode::~DataNode()

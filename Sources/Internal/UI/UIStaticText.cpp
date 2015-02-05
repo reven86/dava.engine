@@ -237,11 +237,18 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         UIControl::Draw(geometricData);
         return;
     }
-	const Rect& textBlockRect = CalculateTextBlockRect(geometricData);
+	Rect textBlockRect = CalculateTextBlockRect(geometricData);
+    if (textBlock->GetFont() && textBlock->GetFont()->GetFontType() == Font::TYPE_DISTANCE)
+    {
+        // Correct rect and setup position and scale for distance fonts
+        textBlockRect.dx *= geometricData.scale.dx;
+        textBlockRect.dy *= geometricData.scale.dy;
+        textBlock->SetScale(geometricData.scale);
+		textBlock->SetAngle(geometricData.angle);
+		textBlock->SetPivot(pivotPoint*geometricData.scale);
+    }
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());
-
-	textBlock->SetPivotPoint(geometricData.pivotPoint);
 	textBlock->PreDraw();
 	PrepareSprite();
 
@@ -589,7 +596,6 @@ Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) 
         resultRect.dx -= (margins->right + margins->left);
         resultRect.dy -= (margins->bottom + margins->top);
     }
-
     return resultRect;
 }
 

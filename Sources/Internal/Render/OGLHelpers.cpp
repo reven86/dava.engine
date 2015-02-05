@@ -46,6 +46,10 @@ int32 GetHalfFloatID()
     {
         return GL_HALF_FLOAT_OES;
     }
+    else
+    {
+        return GL_HALF_FLOAT;
+    }
 #else
     return GL_HALF_FLOAT;
 #endif

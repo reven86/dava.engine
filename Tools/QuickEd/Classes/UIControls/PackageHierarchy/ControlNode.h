@@ -5,6 +5,10 @@
 
 #include "UIControls/ControlProperties/PropertiesRoot.h"
 
+class PackageSerializer;
+class PackageNode;
+class ControlPrototype;
+
 class ControlNode : public PackageBaseNode
 {
 public:
@@ -16,21 +20,25 @@ public:
     };
     
 private:
-    ControlNode(DAVA::UIControl *control);
-    ControlNode(ControlNode *node, DAVA::UIPackage *prototypePackage, eCreationType creationType);
-    ControlNode(ControlNode *node);
+    ControlNode(DAVA::UIControl *control, PropertiesRoot *propertiesRoot, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
-    static ControlNode *CreateFromPrototype(ControlNode *node, DAVA::UIPackage *prototypePackage);
+    
+    static ControlNode *CreateFromPrototype(ControlPrototype *prototype);
+    
+private:
+    static ControlNode *CreateFromPrototypeImpl(ControlNode *prototypeChild, bool root);
+
+public:
     ControlNode *Clone();
     
     void Add(ControlNode *node);
     void InsertBelow(ControlNode *node, const ControlNode *belowThis);
     void Remove(ControlNode *node);
     virtual int GetCount() const override;
-    virtual PackageBaseNode *Get(int index) const override;
+    virtual ControlNode *Get(int index) const override;
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const;
@@ -43,15 +51,19 @@ public:
     eCreationType GetCreationType() const { return creationType; }
 
     PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
-    DAVA::YamlNode *Serialize(DAVA::YamlNode *prototypeChildren) const;
+    
+    void Serialize(PackageSerializer *serializer) const;
+    
+private:
+    void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
+    bool HasNonPrototypeChildren() const;
 
 private:
     DAVA::UIControl *control;
     PropertiesRoot *propertiesRoot;
     DAVA::Vector<ControlNode*>nodes;
     
-    ControlNode *prototype;
-    DAVA::UIPackage *prototypePackage;
+    ControlPrototype *prototype;
 
     eCreationType creationType;
     

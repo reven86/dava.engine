@@ -198,11 +198,6 @@ private:
     */
     static void ThreadFunction(void *param);
 
-#if defined(__DAVAENGINE_ANDROID__)
-	static void AttachToJVM();
-	static void DetachFromJVM();
-#endif
-
 	Message	msg;
 	eThreadState state;
 
