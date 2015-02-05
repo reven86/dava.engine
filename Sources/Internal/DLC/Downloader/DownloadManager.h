@@ -32,6 +32,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Function.h"
+#include "Platform/Mutex.h"
 
 #include "DownloaderCommon.h"
 
@@ -39,7 +40,6 @@ namespace DAVA
 {
 
 class Thread;
-class Mutex;
 class Downloader;
 
 class DownloadManager : public Singleton<DownloadManager>

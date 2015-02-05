@@ -55,6 +55,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "DLC/Downloader/SmartDLC.h"
 #include "Render/OcclusionQuery.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
@@ -166,6 +167,7 @@ void Core::CreateSingletons()
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
+    new SmartDLC();
     
     new LocalNotificationController();
 
@@ -197,6 +199,7 @@ void Core::ReleaseSingletons()
 	UIControlBackground::ReleaseRenderObject();
 
 	LocalNotificationController::Instance()->Release();
+    SmartDLC::Instance()->Release();
     DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
 	RenderHelper::Instance()->Release();
@@ -521,6 +524,7 @@ void Core::SystemProcessFrame()
 		
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
+        SmartDLC::Instance()->Update();
 		JobManager::Instance()->Update();
 
         // Poll for network I/O events here

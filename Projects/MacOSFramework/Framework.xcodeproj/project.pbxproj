@@ -1452,6 +1452,12 @@
 		D751822119BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
 		D751822219BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
 		D751822319BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */; };
+		D776948D1A82534300EA1460 /* SmartDLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D776948C1A82534300EA1460 /* SmartDLC.h */; };
+		D776948E1A82534300EA1460 /* SmartDLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D776948C1A82534300EA1460 /* SmartDLC.h */; };
+		D776948F1A82534300EA1460 /* SmartDLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D776948C1A82534300EA1460 /* SmartDLC.h */; };
+		D77694911A82535F00EA1460 /* SmartDLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D77694901A82535F00EA1460 /* SmartDLC.cpp */; };
+		D77694921A82535F00EA1460 /* SmartDLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D77694901A82535F00EA1460 /* SmartDLC.cpp */; };
+		D77694931A82535F00EA1460 /* SmartDLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D77694901A82535F00EA1460 /* SmartDLC.cpp */; };
 		D7C1C1D619CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D719CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D819CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
@@ -3111,6 +3117,8 @@
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
+		D776948C1A82534300EA1460 /* SmartDLC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartDLC.h; sourceTree = "<group>"; };
+		D77694901A82535F00EA1460 /* SmartDLC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartDLC.cpp; sourceTree = "<group>"; };
 		D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
 		D7C556671A7A158600175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
 		D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageMacOS.cpp; sourceTree = "<group>"; };
@@ -4135,6 +4143,8 @@
 				D7E6C596198255BF00B96D1A /* DownloaderCommon.h */,
 				D7E6C597198255BF00B96D1A /* DownloadManager.cpp */,
 				D7E6C598198255BF00B96D1A /* DownloadManager.h */,
+				D776948C1A82534300EA1460 /* SmartDLC.h */,
+				D77694901A82535F00EA1460 /* SmartDLC.cpp */,
 			);
 			path = Downloader;
 			sourceTree = "<group>";
@@ -5334,6 +5344,7 @@
 				1146E11A19D00874009E5FAB /* AnimationComponent.h in Headers */,
 				176DE948174B5561007A983B /* LocalizationSystem.h in Headers */,
 				176DE949174B5561007A983B /* Logger.h in Headers */,
+				D776948F1A82534300EA1460 /* SmartDLC.h in Headers */,
 				176DE94A174B5561007A983B /* ResourceArchive.h in Headers */,
 				176DE94B174B5561007A983B /* VariantType.h in Headers */,
 				176DE94C174B5561007A983B /* XMLParser.h in Headers */,
@@ -5870,6 +5881,7 @@
 				11CB615319C3391B00B48A92 /* AnimationData.h in Headers */,
 				E8989F3316BD24E500732C04 /* MaterialCompiler.h in Headers */,
 				E8989F3516BD24E500732C04 /* MaterialGraph.h in Headers */,
+				D776948D1A82534300EA1460 /* SmartDLC.h in Headers */,
 				E8989F3716BD24E500732C04 /* MaterialGraphNode.h in Headers */,
 				50A3044118575C370082CA8D /* StaticOcclusionRenderPass.h in Headers */,
 				E8989F3916BD24E500732C04 /* NMaterial.h in Headers */,
@@ -6399,6 +6411,7 @@
 				E898A12F16BD265400732C04 /* GameObject.h in Headers */,
 				E898A13016BD265400732C04 /* GameObjectAnimations.h in Headers */,
 				E898A13116BD265400732C04 /* GameObjectManager.h in Headers */,
+				D776948E1A82534300EA1460 /* SmartDLC.h in Headers */,
 				6435963C18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
 				4F53ED2D19A23BE700D3869D /* DownloaderCommon.h in Headers */,
 				4F53ED4419A23BF200D3869D /* bs_common.h in Headers */,
@@ -6777,6 +6790,7 @@
 				320A4B3719E6BA3C0049D713 /* DefaultUIPackageBuilder.cpp in Sources */,
 				176DEA72174B5561007A983B /* FilePath.cpp in Sources */,
 				176DEA73174B5561007A983B /* FileSystem.cpp in Sources */,
+				D77694931A82535F00EA1460 /* SmartDLC.cpp in Sources */,
 				176DEA74174B5561007A983B /* FileSystemObjective.mm in Sources */,
 				176DEA75174B5561007A983B /* KeyedArchive.cpp in Sources */,
 				D7CC263619C43C7C00A3B754 /* LocalNotificationController.cpp in Sources */,
@@ -7340,6 +7354,7 @@
 				E8989F9A16BD24E500732C04 /* DataNode.cpp in Sources */,
 				E89EDE5A1A2E16FA0036E993 /* AutotestingSystemSwig.cpp in Sources */,
 				E8989F9F16BD24E500732C04 /* ImposterManager.cpp in Sources */,
+				D77694911A82535F00EA1460 /* SmartDLC.cpp in Sources */,
 				647EFC41195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
 				E8989FA116BD24E500732C04 /* ImposterNode.cpp in Sources */,
 				CCF00D411A42F63800A577C2 /* EntityFamily.cpp in Sources */,
@@ -7952,6 +7967,7 @@
 				E89EDE4C1A2E16FA0036E993 /* AutotestingSystem.cpp in Sources */,
 				A68290BB17F5EEF9007BAFDC /* SerializationContext.cpp in Sources */,
 				1AD7C36817D895AE00B9977C /* Vector.cpp in Sources */,
+				D77694921A82535F00EA1460 /* SmartDLC.cpp in Sources */,
 				CC0D7B361A76055A00309408 /* EdgeComponent.cpp in Sources */,
 				C172EC5118CA0AEA004309CF /* DFFont.cpp in Sources */,
 				A63BCD6B17EB26E300EA4811 /* Process.cpp in Sources */,
@@ -8080,6 +8096,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../..\"",
