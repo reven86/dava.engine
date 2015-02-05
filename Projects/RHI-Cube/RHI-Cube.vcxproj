@@ -82,8 +82,10 @@
     <ClCompile Include="MCPP\support.cpp" />
     <ClCompile Include="MCPP\system.cpp" />
     <ClCompile Include="MCPP\_mcpp.cpp" />
+    <ClCompile Include="RHI\RegExp.cpp" />
     <ClCompile Include="RHI\rhi_Manticore.cpp" />
     <ClCompile Include="RHI\rhi_ShaderCache.cpp" />
+    <ClCompile Include="RHI\rhi_ShaderSource.cpp" />
     <ClCompile Include="RHI\rhi_VertexLayout.cpp" />
     <ClCompile Include="SceneRenderTest.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
@@ -97,9 +99,11 @@
     <ClInclude Include="MCPP\noconfig.h" />
     <ClInclude Include="MCPP\system.h" />
     <ClInclude Include="MCPP\_mcpp.h" />
+    <ClInclude Include="RHI\RegExp.h" />
     <ClInclude Include="RHI\rhi_Pool.h" />
     <ClInclude Include="RHI\rhi_RingBuffer.h" />
     <ClInclude Include="RHI\rhi_ShaderCache.h" />
+    <ClInclude Include="RHI\rhi_ShaderSource.h" />
     <ClInclude Include="rhi_Base.h" />
     <ClInclude Include="rhi_Manticore.h" />
     <ClInclude Include="rhi_Type.h" />

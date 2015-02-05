@@ -60,11 +60,16 @@
     <ClCompile Include="MCPP\mcpp_main.cpp">
       <Filter>MCPP</Filter>
     </ClCompile>
-
     <ClCompile Include="SceneRenderTest.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="RHI\rhi_Manticore.cpp">
+      <Filter>RHI %28private/impl%29</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\rhi_ShaderSource.cpp">
+      <Filter>RHI %28private/impl%29</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\RegExp.cpp">
       <Filter>RHI %28private/impl%29</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,6 +121,12 @@
     </ClInclude>
     <ClInclude Include="rhi_Manticore.h">
       <Filter>RHI-interface</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\rhi_ShaderSource.h">
+      <Filter>RHI %28private/impl%29</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\RegExp.h">
+      <Filter>RHI %28private/impl%29</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

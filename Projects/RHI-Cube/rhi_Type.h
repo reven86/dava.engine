@@ -317,6 +317,13 @@ const unsigned InvalidIndex = (unsigned)(-1);
 #define     countof(array)              (sizeof(array)/sizeof(array[0]))
 #define     L_ALIGNED_SIZE(size,align)  (((size) + ((align)-1)) & (~((align)-1)))
 
+inline bool
+IsEmptyString( const char* str )
+{
+    return !(str  &&  str[0] != '\0');
+}
+
+
 #define LCP Logger::Info("%s : %i",__FILE__,__LINE__);
 
 #endif // __RHI_TYPE_H__
