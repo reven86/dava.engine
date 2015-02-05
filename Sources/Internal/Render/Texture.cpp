@@ -1109,6 +1109,7 @@ Image * Texture::ReadDataToImage()
     int32 saveFBO = RenderManager::Instance()->HWglGetLastFBO();
     int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 
+    RenderManager::Instance()->HWglBindFBO(fboID);
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
     
     if(FORMAT_INVALID != formatDescriptor.formatID)
@@ -1131,20 +1132,13 @@ Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
     Image *image = NULL;
     if(isRenderTarget)
     {
-        Sprite *renderTarget = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height);
-        RenderManager::Instance()->SetRenderTarget(renderTarget);
-        
         image = ReadDataToImage();
-            
-        RenderManager::Instance()->RestoreRenderTarget();
-        
-        SafeRelease(renderTarget);
     }
     else
     {
         Sprite *renderTarget = Sprite::CreateAsRenderTarget((float32)width, (float32)height, texDescriptor->format, true);
-        RenderManager::Instance()->SetRenderTarget(renderTarget);
-
+        RenderSystem2D::Instance()->PushRenderTarget();
+        RenderSystem2D::Instance()->SetRenderTarget(renderTarget);
         RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 		Sprite *drawTexture = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height, true);
@@ -1154,7 +1148,7 @@ Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
         drawState.SetRenderState(renderState);
         RenderSystem2D::Instance()->Draw(drawTexture, &drawState);
 
-        RenderManager::Instance()->RestoreRenderTarget();
+        RenderSystem2D::Instance()->PopRenderTarget();
         
         image = renderTarget->GetTexture()->CreateImageFromMemory(renderState);
 

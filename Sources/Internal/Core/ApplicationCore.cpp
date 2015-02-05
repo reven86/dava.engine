@@ -37,7 +37,7 @@
 #include "Platform/SystemTimer.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Notification/LocalNotificationController.h"
-
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -77,6 +77,7 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
+    RenderSystem2D::Instance()->Reset();
 	RenderManager::Instance()->BeginFrame();
 }
 
