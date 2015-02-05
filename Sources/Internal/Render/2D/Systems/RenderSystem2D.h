@@ -70,12 +70,16 @@ public:
 	void ClipRect(const Rect &rect);
 	void RemoveClip();
     
-	void ClipPush();
-	void ClipPop();
+	void PushClip();
+	void PopClip();
     void UpdateClip();
 
+    void PushRenderTarget();
+    void PopRenderTarget();
+    void SetRenderTarget(Sprite * target);
+
     void ScreenSizeChanged();
-    
+
     void Setup2DMatrices();
 
     void SetSpriteClipping(bool clipping);
@@ -85,10 +89,16 @@ private:
     void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
 
-    Matrix4 viewMatrix;
+    void Setup2DProjection();
+
+    Matrix4 virtualToPhysicalMatrix;
+    Matrix4 projMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
     
+    std::stack<Sprite *> renderTargetStack;
+    Sprite * currentRenderTarget;
+
 	float32 spriteTempVertices[8];
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;

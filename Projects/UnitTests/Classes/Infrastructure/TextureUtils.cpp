@@ -114,13 +114,13 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *sec
 Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
 {
     Sprite *renderTarget = Sprite::CreateAsRenderTarget(sprite->GetWidth(), sprite->GetHeight(), FORMAT_RGBA8888);
-    RenderManager::Instance()->SetRenderTarget(renderTarget);
-    
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(renderTarget);
     
     Sprite::DrawState drawState;
     RenderSystem2D::Instance()->Draw(sprite, &drawState);
     
-    RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
     
     Texture *renderTargetTexture = renderTarget->GetTexture();
     Image *resultImage = renderTargetTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);

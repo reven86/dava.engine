@@ -280,7 +280,8 @@ void RulerToolSystem::DrawPoints()
 	Sprite* sprite = drawSystem->GetRulerToolProxy()->GetSprite();
 	Texture* targetTexture = sprite->GetTexture();
 
-	RenderManager::Instance()->SetRenderTarget(sprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(sprite);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 	Vector<Vector3> points;
@@ -333,7 +334,7 @@ void RulerToolSystem::DrawPoints()
 	}
 
 	RenderManager::Instance()->ResetColor();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
     
 	drawSystem->GetRulerToolProxy()->UpdateSprite();
 }
