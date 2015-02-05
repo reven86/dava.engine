@@ -76,7 +76,7 @@ namespace DAVA
 		}
 		else
 		{
-			AutotestingSystem::Instance()->ForceQuit(Format("Couldn't find archive for %s device", deviceName));
+			AutotestingSystem::Instance()->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
 		}
 		
 
