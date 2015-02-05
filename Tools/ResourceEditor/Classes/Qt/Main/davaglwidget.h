@@ -39,6 +39,9 @@
 #include "UI/UIEvent.h"
 #include "Platform/Qt5/QtLayer.h"
 
+class QOpenGLContext;
+class QOffscreenSurface;
+
 class DavaGLWidget
 	: public QOpenGLWidget
 	, public DAVA::QtLayerDelegate
@@ -54,6 +57,7 @@ public:
 
     bool IsInitialized() const;
     
+    bool InitializeDefaultOpenGLContext();
     
 signals:
     
@@ -107,6 +111,13 @@ private:
     int currentDPR;
     int currentWidth;
     int currentHeight;
+
+    DAVA::uint64 currentContextID;
+
+    
+    static QOpenGLContext * defaultContext;
+    static QOffscreenSurface * defaultSurface;
+    static DAVA::uint64 defaultContextID;
 };
 
 

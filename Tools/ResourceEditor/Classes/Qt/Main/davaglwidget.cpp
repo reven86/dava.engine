@@ -51,13 +51,15 @@
 
 
 #include <QOpenGLContext>
-#include <QOpenGLFunctions>
-
-
+#include <QOffscreenSurface>
 
 #include "Main/mainwindow.h"
 #include "ui_mainwindow.h"
 
+
+QOpenGLContext * DavaGLWidget::defaultContext = nullptr;
+QOffscreenSurface * DavaGLWidget::defaultSurface = nullptr;
+DAVA::uint64 DavaGLWidget::defaultContextID = 0;
 
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
@@ -68,6 +70,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     , currentDPR(1)
     , currentWidth(0)
     , currentHeight(0)
+    , currentContextID(0)
 {
     setAcceptDrops(true);
     setMouseTracking(true);
@@ -97,6 +100,12 @@ void DavaGLWidget::SetFPS(int _fps)
 
 void DavaGLWidget::initializeGL()
 {
+    context()->setShareContext(defaultContext);
+    
+    currentContextID = (DAVA::uint64)CGLGetCurrentContext();
+    DAVA::Logger::Info("[current]\n\tcurrentContextID = %lld\n\tdefaultContextID = %lld", currentContextID, defaultContextID);
+
+    
     currentDPR = devicePixelRatio();
     
     DAVA::QtLayer::Instance()->InitializeGlWindow();
@@ -108,12 +117,16 @@ void DavaGLWidget::initializeGL()
 
 void DavaGLWidget::resizeGL(int w, int h)
 {
+    DAVA::RenderManager::Instance()->SetRenderContextId(currentContextID);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     currentWidth = w;
     currentHeight = h;
-    
+
     PerformSizeChange();
+
+    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
 }
 
 void DavaGLWidget::paintEvent(QPaintEvent * e)
@@ -122,13 +135,9 @@ void DavaGLWidget::paintEvent(QPaintEvent * e)
 }
 
 
-uint64 tt = 0;
 void DavaGLWidget::paintGL()
 {
-    uint64 delta = SystemTimer::Instance()->AbsoluteMS() - tt;
-    tt = SystemTimer::Instance()->AbsoluteMS();
-//    Logger::Info("FPS: %d (%lld)", (1000 / delta), delta);
-
+    DAVA::RenderManager::Instance()->SetRenderContextId(currentContextID);
     
     QElapsedTimer frameTimer;
     frameTimer.start();
@@ -146,6 +155,8 @@ void DavaGLWidget::paintGL()
     const DAVA::uint64 requestedFrameDelta = 1000 / fps;
     const DAVA::uint64 nextFrameDelta = Max((DAVA::uint64)1, requestedFrameDelta - frameTimer.elapsed());
     
+    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
+
     renderTimer->singleShot((int) nextFrameDelta, this, SLOT(OnRenderTimer()));
 }
 
@@ -160,8 +171,6 @@ void DavaGLWidget::keyPressEvent(QKeyEvent *e)
 {
     char16 keyChar = e->nativeVirtualKey();
     const Qt::KeyboardModifiers modifiers = e->modifiers();
-    
-    makeCurrent();
     
     if(modifiers & Qt::ShiftModifier)
     {
@@ -181,8 +190,6 @@ void DavaGLWidget::keyPressEvent(QKeyEvent *e)
         char16 davaKey = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(keyChar);
         DAVA::QtLayer::Instance()->KeyPressed(keyChar, davaKey, e->count(), e->timestamp());
     }
-    
-    doneCurrent();
 }
 
 void DavaGLWidget::keyReleaseEvent(QKeyEvent *e)
@@ -190,8 +197,6 @@ void DavaGLWidget::keyReleaseEvent(QKeyEvent *e)
     int key = e->key();
     char16 keyChar = e->nativeVirtualKey();
 
-    makeCurrent();
-    
     if(Qt::Key_Shift == key)
     {
         DAVA::InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(DAVA::DVKEY_SHIFT);
@@ -210,15 +215,11 @@ void DavaGLWidget::keyReleaseEvent(QKeyEvent *e)
         char16 davaKey = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(keyChar);
         DAVA::QtLayer::Instance()->KeyReleased(keyChar, davaKey);
     }
-
-    doneCurrent();
 }
 
 
 void DavaGLWidget::mouseMoveEvent(QMouseEvent * event)
 {
-    makeCurrent();
-    
     const Qt::MouseButtons buttons = event->buttons();
     DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
     davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
@@ -238,8 +239,6 @@ void DavaGLWidget::mouseMoveEvent(QMouseEvent * event)
         davaEvent.tid = MapQtButtonToDAVA(Qt::MiddleButton);
         DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
     }
-    
-    doneCurrent();
 }
 
 void DavaGLWidget::mousePressEvent(QMouseEvent * event)
@@ -247,9 +246,7 @@ void DavaGLWidget::mousePressEvent(QMouseEvent * event)
     DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
 
-    makeCurrent();
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    doneCurrent();
 }
 
 void DavaGLWidget::mouseReleaseEvent(QMouseEvent * event)
@@ -257,9 +254,7 @@ void DavaGLWidget::mouseReleaseEvent(QMouseEvent * event)
     DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
-    makeCurrent();
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    doneCurrent();
 }
 
 void DavaGLWidget::mouseDoubleClickEvent(QMouseEvent *event)
@@ -268,9 +263,7 @@ void DavaGLWidget::mouseDoubleClickEvent(QMouseEvent *event)
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     davaEvent.tapCount = 2;
     
-    makeCurrent();
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    doneCurrent();
 }
 
 DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event, int dpr)
@@ -324,9 +317,7 @@ void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
 	newTouch.phase = DAVA::UIEvent::PHASE_MOVE;
 	touches.push_back(newTouch);
 
-    makeCurrent();
     DAVA::UIControlSystem::Instance()->OnInput(DAVA::UIEvent::PHASE_MOVE, emptyTouches, touches);
-    doneCurrent();
 
     event->setDropAction(Qt::LinkAction);
 	event->accept();
@@ -360,3 +351,18 @@ void DavaGLWidget::PerformSizeChange()
     emit Resized(currentWidth, currentHeight, currentDPR);
 }
 
+bool DavaGLWidget::InitializeDefaultOpenGLContext()
+{
+    DVASSERT(nullptr == defaultContext);
+
+    defaultContext = QOpenGLContext::currentContext();
+    if(defaultContext)
+    {
+        context()->setShareContext(defaultContext);
+    }
+        
+    defaultContextID = (DAVA::uint64)CGLGetCurrentContext();
+    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
+    
+    return true;
+}

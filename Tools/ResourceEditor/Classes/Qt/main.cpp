@@ -164,6 +164,8 @@ int main(int argc, char *argv[])
         LicenceDialog licenceDlg;
         if ( licenceDlg.process() )
         {
+            DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
+
             new SceneValidator();
             new TextureCache();
 
@@ -176,19 +178,24 @@ int main(int argc, char *argv[])
 		    UnpackHelpDoc();
 
 		    // create and init UI
-		    new QtMainWindow();
-		    QtMainWindow::Instance()->EnableGlobalTimeout(true);
-		    QtMainWindow::Instance()->show();
+		    QtMainWindow *mainWindow = new QtMainWindow();
+            
+            mainWindow->EnableGlobalTimeout(true);
+            mainWindow->show();
+
+            mainWindow->GetSceneWidget()->GetDavaWidget()->InitializeDefaultOpenGLContext();
+            
 		    ProjectManager::Instance()->ProjectOpenLast();
             if(ProjectManager::Instance()->IsOpened())
-                QtMainWindow::Instance()->OnSceneNew();
+                mainWindow->OnSceneNew();
             
-            DAVA::Logger::Instance()->Log(DAVA::Logger::LEVEL_INFO, QString( "Qt version: %1" ).arg( QT_VERSION_STR ).toStdString().c_str() );
 
 		    // start app
 		    ret = a.exec();
 
-		    QtMainWindow::Instance()->Release();
+            mainWindow->Release();
+            mainWindow = nullptr;
+            
 		    ControlsFactory::ReleaseFonts();
 
 		    SceneValidator::Instance()->Release();

@@ -599,26 +599,26 @@ bool SceneTabWidget::CloseAllTabs()
 
 void SceneTabWidget::LockOpenGLContext()
 {
-    if(davaWidget && davaWidget->IsInitialized())
-    {
-        davaWidget->makeCurrent();
-    }
-    else
-    {
-        DAVA::Logger::Error("Trying to lock not exsisted OpenGL context");
-    }
+//    if(davaWidget && davaWidget->IsInitialized())
+//    {
+//        davaWidget->makeCurrent();
+//    }
+//    else
+//    {
+//        DAVA::Logger::Error("Trying to lock not exsisted OpenGL context");
+//    }
 }
 
 void SceneTabWidget::UnlockOpenGLContext()
 {
-    if(davaWidget && davaWidget->IsInitialized())
-    {
-        davaWidget->doneCurrent();
-    }
-    else
-    {
-        DAVA::Logger::Error("Trying to unlock not exsisted OpenGL context");
-    }
+//    if(davaWidget && davaWidget->IsInitialized())
+//    {
+//        davaWidget->doneCurrent();
+//    }
+//    else
+//    {
+//        DAVA::Logger::Error("Trying to unlock not exsisted OpenGL context");
+//    }
 }
 
 
