@@ -49,7 +49,7 @@ ImageSplitterDialog::ImageSplitterDialog(QWidget *parent) :
     ui->setupUi(this);
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    ui->path->SetFilter("PNG (*.png)");
+    ui->path->SetFilter("PNG (*.png);TGA (*.tga)");
 
     DAVA::FilePath defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
     if (defaultPath.IsEmpty())
@@ -118,9 +118,9 @@ void ImageSplitterDialog::PathSelected(const QString& path)
         SetAcceptableImageSize(DAVA::Vector2(image->GetWidth(), image->GetHeight()));
         
         Channels channels =  ImageTools::CreateSplittedImages(image);
-        DAVA::SafeRelease(image);
+        //DAVA::SafeRelease(image);
         
-        ui->redImgLbl->SetImage(channels.red);
+        ui->redImgLbl->SetImage(image);
         ui->greenImgLbl->SetImage(channels.green);
         ui->blueImgLbl->SetImage(channels.blue);
         ui->alphaImgLbl->SetImage(channels.alpha);

@@ -78,9 +78,9 @@ DAVA::eErrorCode LibTgaWrapper::ReadTgaHeader(File *infile, TgaHeader& tgaHeader
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    if (tgaHeader.imageType != TgaHeader::GRAYSCALE ||
-        tgaHeader.imageType != TgaHeader::TRUECOLOR ||
-        tgaHeader.imageType != TgaHeader::COMPRESSED_GRAYSCALE ||
+    if (tgaHeader.imageType != TgaHeader::GRAYSCALE &&
+        tgaHeader.imageType != TgaHeader::TRUECOLOR &&
+        tgaHeader.imageType != TgaHeader::COMPRESSED_GRAYSCALE &&
         tgaHeader.imageType != TgaHeader::COMPRESSED_TRUECOLOR)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
@@ -101,10 +101,10 @@ DAVA::eErrorCode LibTgaWrapper::ReadTgaHeader(File *infile, TgaHeader& tgaHeader
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    if (   tgaHeader.descriptor != 0
-        && tgaHeader.descriptor != 1
-        && tgaHeader.descriptor != 4
-        && tgaHeader.descriptor != 8)
+    if (   tgaHeader.alpha != 0
+        && tgaHeader.alpha != 1
+        && tgaHeader.alpha != 4
+        && tgaHeader.alpha != 8)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -170,25 +170,25 @@ PixelFormat LibTgaWrapper::DefinePixelFormat(const TgaHeader& tgaHeader) const
     {
         if (tgaHeader.bpp == 16)
         {
-            if (tgaHeader.descriptor == 0)
+            if (tgaHeader.alpha == 0)
                 return FORMAT_RGB565;
-            else if (tgaHeader.descriptor == 1)
+            else if (tgaHeader.alpha == 1)
                 return FORMAT_RGBA5551;
-            else if (tgaHeader.descriptor == 4)
+            else if (tgaHeader.alpha == 4)
                 return FORMAT_RGBA4444;
             else
                 return FORMAT_INVALID;
         }
         else if (tgaHeader.bpp == 24)
         {
-            if (tgaHeader.descriptor == 0)
+            if (tgaHeader.alpha == 0)
                 return FORMAT_RGB888;
             else
                 return FORMAT_INVALID;
         }
         else if (tgaHeader.bpp == 32)
         {
-            if (tgaHeader.descriptor == 8)
+            if (tgaHeader.alpha == 8)
                 return FORMAT_RGBA8888;
             else
                 return FORMAT_INVALID;
@@ -235,12 +235,16 @@ eErrorCode LibTgaWrapper::ReadUncompressedTga(File *infile, const TgaHeader& tga
 
 eErrorCode LibTgaWrapper::ReadCompressedTga(File *infile, const TgaHeader& tgaHeader, ScopedPtr<Image>& image) const
 {
-    uint32 bytesPerPixel = tgaHeader.bpp >> 3;
+    uint8 bytesPerPixel = tgaHeader.bpp >> 3;
+    DVASSERT(bytesPerPixel <= 16);
 
     uint8 chunkHeader;
-    Vector<uint8> pixelBuffer(bytesPerPixel);
+    std::array<uint8,16> pixelBuffer;
 
-    for (uint32 bytesWritten = 0; bytesWritten < image->dataSize;)
+    std::unique_ptr<DataIterator> dataIter;
+    dataIter.reset(CreateDataIterator(image, bytesPerPixel, (TgaHeader::ORIGIN_CORNER)tgaHeader.orig));
+
+    while (!dataIter->AtEnd())
     {
         if (infile->Read(&chunkHeader, 1) != 1)
             return ERROR_READ_FAIL;
@@ -249,29 +253,81 @@ eErrorCode LibTgaWrapper::ReadCompressedTga(File *infile, const TgaHeader& tgaHe
         {
             ++chunkHeader;      // number of raw pixels
 
-            for (uint8 i = 0; 
-                (i < chunkHeader) && (bytesWritten < image->dataSize); 
-                ++i, bytesWritten += bytesPerPixel)
+            for (uint8 i = 0; (i < chunkHeader) && !dataIter->AtEnd(); ++i)
             {
-                if (infile->Read(&image->data[bytesWritten], bytesPerPixel) != bytesPerPixel)
+                if (infile->Read(pixelBuffer.data(), bytesPerPixel) != bytesPerPixel)
                     return ERROR_READ_FAIL;
+
+                dataIter->Write(pixelBuffer.data());
             }
-            
+
         }
         else                    // is compressed section
         {
             chunkHeader -= 127; // number of repeated pixels
 
-            if (infile->Read(&pixelBuffer, bytesPerPixel) != bytesPerPixel)
+            if (infile->Read(pixelBuffer.data(), bytesPerPixel) != bytesPerPixel)
                 return ERROR_READ_FAIL;
 
-            for (uint8 i = 0; 
-                (i < chunkHeader) && (bytesWritten < image->dataSize); 
-                ++i, bytesWritten += bytesPerPixel)
+            for (uint8 i = 0; (i < chunkHeader) && !dataIter->AtEnd(); ++i )
             {
-                Memcpy(&image->data[bytesWritten], &pixelBuffer, bytesPerPixel);
+                dataIter->Write(pixelBuffer.data());
             }
         }
+    }
+    return SUCCESS;
+}
+
+LibTgaWrapper::DataIterator::DataIterator(Image* img, uint8 pixSize) :
+    data(img->data),
+    width(img->width),
+    height(img->height),
+    pixelSize(pixSize),
+    isAtEnd(false)
+{
+    SetAtBegin();
+}
+
+void LibTgaWrapper::BottomLeftIterator::SetAtBegin()
+{
+    ptr = data + (width * pixelSize) * (height - 1);
+    x = 0;
+    y = height - 1;
+}
+
+void LibTgaWrapper::BottomLeftIterator::Write(uint8* pixel)
+{
+    if (!isAtEnd)
+    {
+        Memcpy(ptr, pixel, pixelSize);
+
+        ++x;
+        ptr += pixelSize;
+        if (x == width)
+        {
+            x = 0;
+            ptr -= width * pixelSize;
+            if (--y < 0)
+                isAtEnd = true;
+        }
+    }
+}
+
+LibTgaWrapper::DataIterator* LibTgaWrapper::CreateDataIterator(Image* image, uint8 pixSize, TgaHeader::ORIGIN_CORNER origin) const
+{
+    using IterPtr = std::unique_ptr < LibTgaWrapper::DataIterator >;
+    switch (origin)
+    {
+    case TgaHeader::BOTTOM_LEFT:
+        return new BottomLeftIterator(image, pixSize);
+    case TgaHeader::BOTTOM_RIGHT:
+        return new BottomRightIterator(image, pixSize);
+    case TgaHeader::TOP_LEFT:
+        return new TopLeftIterator(image, pixSize);
+    case TgaHeader::TOP_RIGHT:
+        return new TopRightIterator(image, pixSize);
+    default:
+        DVASSERT(false && "Unknown ORIGIN_CORNER");
     }
 }
 
