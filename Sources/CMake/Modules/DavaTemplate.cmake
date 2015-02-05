@@ -126,7 +126,11 @@ elseif( MACOS )
 
         COMMAND   
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+
+        COMMAND 
+        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}     
     )
+
 
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
                             MACOSX_BUNDLE_INFO_PLIST ${MACOS_PLIST} 

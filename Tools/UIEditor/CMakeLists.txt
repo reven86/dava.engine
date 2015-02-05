@@ -77,9 +77,3 @@ set( ADDED_BINARY_DIR           ${QT_BINARY_DIR} )
 
 setup_main_executable()
 
-if( APPLE )
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-        COMMAND install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}            
-    )
-
-endif()
