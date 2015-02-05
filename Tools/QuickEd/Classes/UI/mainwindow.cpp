@@ -167,6 +167,9 @@ void MainWindow::CurrentTabChanged(int index)
         disconnect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
         disconnect(ui->packageTreeDock, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
         disconnect(ui->packageTreeDock, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+
+        disconnect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageTreeDock, SLOT(OnControlSelectedInEditor(ControlNode*)));
+        disconnect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageTreeDock, SLOT(OnAllControlsDeselectedInEditor()));
         activeDocument->UndoStack()->setActive(false);
     }
     
@@ -187,8 +190,13 @@ void MainWindow::CurrentTabChanged(int index)
     {
         connect(ui->packageTreeDock, SIGNAL(SelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
         connect(ui->packageTreeDock, SIGNAL(SelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)), activeDocument, SLOT(OnSelectionRootControlChanged(const QList<ControlNode*> &, const QList<ControlNode*> &)));
+
+        connect(activeDocument, SIGNAL(controlSelectedInEditor(ControlNode*)), ui->packageTreeDock, SLOT(OnControlSelectedInEditor(ControlNode*)));
+        connect(activeDocument, SIGNAL(allControlsDeselectedInEditor()), ui->packageTreeDock, SLOT(OnAllControlsDeselectedInEditor()));
+
         activeDocument->UndoStack()->setActive(true);
         connect(activeDocument->UndoStack(), SIGNAL(cleanChanged(bool)), this, SLOT(OnCleanChanged(bool)));
+
     }
 
     UpdateSaveButtons();

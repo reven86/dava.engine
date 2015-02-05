@@ -48,6 +48,17 @@ struct CompileTimeError<true>
     
 #define COMPILER_ASSERT(expr) DAVA::CompileTimeError<(expr)>();
 
+// Template for intergal constant types
+template<typename T, T Value>
+struct IntegralConstant
+{
+    static const T value = Value;
+};
+
+// Specializations for boolean constants
+typedef IntegralConstant<bool, false>   FalseType;
+typedef IntegralConstant<bool, true>    TrueType;
+
 template<bool C, typename T = void>
 struct EnableIf
 {

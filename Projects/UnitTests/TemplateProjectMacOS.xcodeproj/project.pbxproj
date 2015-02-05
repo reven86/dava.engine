@@ -14,6 +14,7 @@
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A194183D1B4A000DE581 /* AVFoundation.framework */; };
 		1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A19A183D227A000DE581 /* CoreMedia.framework */; };
+		50C16DD71A52D7E6003C307A /* NetworkTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C16DD51A52D7E6003C307A /* NetworkTest.cpp */; };
 		5CDC2501156CC93300742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2500156CC93300742348 /* libz.dylib */; };
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -43,6 +44,7 @@
 		E8BE2FE21A80CD0C00AC96C2 /* libTextureConverter.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8BE2FE11A80CD0C00AC96C2 /* libTextureConverter.dylib */; };
 		E8BE2FEB1A80CD4700AC96C2 /* libTextureConverter.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E8BE2FE81A80CD2900AC96C2 /* libTextureConverter.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		E8EC65721A7FA3D700332AE6 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */; };
+		D73A573D1A739B3B009FF184 /* DataVaultTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */; };
 		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
 		FE9892E511638EF700500198 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E111638EF700500198 /* InfoPlist.strings */; };
 		FE9892E611638EF700500198 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E311638EF700500198 /* MainMenu.xib */; };
@@ -142,6 +144,8 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* TemplateProjectMacOS_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TemplateProjectMacOS_Prefix.pch; sourceTree = "<group>"; };
+		50C16DD51A52D7E6003C307A /* NetworkTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkTest.cpp; path = Classes/Tests/NetworkTest.cpp; sourceTree = "<group>"; };
+		50C16DD61A52D7E6003C307A /* NetworkTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkTest.h; path = Classes/Tests/NetworkTest.h; sourceTree = "<group>"; };
 		5C6EF11B15751E1B001E45AD /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		5C6EF11D15751E1B001E45AD /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		5C6EF11F15751E1B001E45AD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -198,6 +202,8 @@
 		E8BE2FE81A80CD2900AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
 		E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Classes/Tests/FormatsTest.cpp; sourceTree = "<group>"; };
 		E8EC65711A7FA3D700332AE6 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FormatsTest.h; path = Classes/Tests/FormatsTest.h; sourceTree = "<group>"; };
+		D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataVaultTest.cpp; path = Classes/Tests/DataVaultTest.cpp; sourceTree = "<group>"; };
+		D73A573C1A739B3B009FF184 /* DataVaultTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DataVaultTest.h; path = Classes/Tests/DataVaultTest.h; sourceTree = "<group>"; };
 		FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE9892E211638EF700500198 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = MacOSSpecific/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -341,8 +347,12 @@
 			children = (
 				E8EC65701A7FA3D700332AE6 /* FormatsTest.cpp */,
 				E8EC65711A7FA3D700332AE6 /* FormatsTest.h */,
+				D73A573B1A739B3B009FF184 /* DataVaultTest.cpp */,
+				D73A573C1A739B3B009FF184 /* DataVaultTest.h */,
 				CC4FD2271A5174A3004FAF22 /* Cpp14.cpp */,
 				CC4FD2281A5174A3004FAF22 /* Cpp14.h */,
+				50C16DD51A52D7E6003C307A /* NetworkTest.cpp */,
+				50C16DD61A52D7E6003C307A /* NetworkTest.h */,
 				0264E3241A43006E00BD7279 /* JobManagerTest.cpp */,
 				0264E3251A43006E00BD7279 /* JobManagerTest.h */,
 				CC11978E1A38BAE1006931D7 /* ComponentsTest.cpp */,
@@ -563,6 +573,7 @@
 			files = (
 				CC4FD2291A5174A3004FAF22 /* Cpp14.cpp in Sources */,
 				CC1197B71A38BAE1006931D7 /* SaveImageTest.cpp in Sources */,
+				50C16DD71A52D7E6003C307A /* NetworkTest.cpp in Sources */,
 				CC1197B01A38BAE1006931D7 /* FunctionBindSingalTest.cpp in Sources */,
 				CC1197B21A38BAE1006931D7 /* ImageSizeTest.cpp in Sources */,
 				CC1197AC1A38BAE1006931D7 /* ComponentsTest.cpp in Sources */,
@@ -578,6 +589,7 @@
 				CC1197891A38BAB9006931D7 /* FrameworkMain.cpp in Sources */,
 				CC1197881A38BAB9006931D7 /* BaseScreen.cpp in Sources */,
 				CC11978B1A38BAB9006931D7 /* TeamCityTestsOutput.cpp in Sources */,
+				D73A573D1A739B3B009FF184 /* DataVaultTest.cpp in Sources */,
 				FEA30C331231362D00E691CC /* main.mm in Sources */,
 				CC1197AD1A38BAE1006931D7 /* DateTimeTest.cpp in Sources */,
 				CC1197B61A38BAE1006931D7 /* MemoryAllocatorsTest.cpp in Sources */,

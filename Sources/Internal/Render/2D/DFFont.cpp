@@ -379,8 +379,11 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
 
 	metrics.drawRect.dy += (int32)(ascent);
 
-	metrics.drawRect.dx -= metrics.drawRect.x;
-	metrics.drawRect.dy -= metrics.drawRect.y;
+	//@note : "-1" fix magic fix from FTFont
+	// Transform right/bottom edges into width/height
+	metrics.drawRect.dx += -metrics.drawRect.x + 1;
+	metrics.drawRect.dy += -metrics.drawRect.y + 1;
+
 	metrics.height = (int32)ceilf(lastY);
 	metrics.width = (int32)ceilf(lastX);
 	metrics.baseline = yOffset + (int32)fontInternal->baselineHeight;
