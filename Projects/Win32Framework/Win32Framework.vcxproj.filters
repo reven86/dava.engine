@@ -1792,6 +1792,9 @@
     <ClInclude Include="..\..\Sources\Internal\Network\PeerDesription.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManagerTypes.h">
+      <Filter>Internal\Debug</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">

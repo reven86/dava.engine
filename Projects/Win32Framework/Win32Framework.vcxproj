@@ -295,6 +295,7 @@
     <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssertMessage.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManagerDebugNew.h" />
+    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManagerTypes.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Stats.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\AnimatedObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\Animation.h" />
