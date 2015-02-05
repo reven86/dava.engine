@@ -133,9 +133,10 @@ elseif( MACOS )
                             XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
                             RESOURCE "${MACOS_ICO}"
                           )
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
 elseif ( MSVC )
-    if( NOENTRY_FLAG )
+    if( ${EXECUTABLE_FLAG} STREQUAL "WIN32")
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY:\"\" /NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" ) 
 
     else()
