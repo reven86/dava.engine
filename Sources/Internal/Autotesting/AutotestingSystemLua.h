@@ -78,11 +78,11 @@ public:
     void Update(float32 timeElapsed);
 
 	static int Print(lua_State* L);
-	static int ReqModule(lua_State* L);
+	static int RequireModule(lua_State* L);
 
-	static void  stackDump(lua_State* L);
-	static const char *pushnexttemplate(lua_State* L, const char* path);
-	static const char *findfile(lua_State* L, const char* name, const char* pname);
+	static void  StackDump(lua_State* L);
+	static const char *PushNextTemplate(lua_State* L, const char* path);
+	static const char *FindFile(lua_State* L, const char* name, const char* pname);
 #endif //SWIG
     
     // autotesting system api   
@@ -141,7 +141,7 @@ public:
 	void InitializeDevice(const String &device);
 
 	String GetDeviceName();
-	String GetPlatform() { return AUTOTESTING_PLATFORM_NAME; }
+	String GetPlatform();
 
 	bool IsPhoneScreen();
 

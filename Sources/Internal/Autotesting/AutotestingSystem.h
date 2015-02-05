@@ -38,18 +38,6 @@
 #include "Base/Singleton.h"
 #include "FileSystem/FileSystem.h"
 
-#if defined (__DAVAENGINE_MACOS__)
-#define AUTOTESTING_PLATFORM_NAME  "MacOS"
-#elif defined (__DAVAENGINE_IPHONE__)
-#define AUTOTESTING_PLATFORM_NAME  "iOS"
-#elif defined (__DAVAENGINE_WIN32__)
-#define AUTOTESTING_PLATFORM_NAME  "Windows"
-#elif defined (__DAVAENGINE_ANDROID__)
-#define AUTOTESTING_PLATFORM_NAME  "Android"
-#else
-#define AUTOTESTING_PLATFORM_NAME  "Unknown"
-#endif //PLATFORMS    
-
 #include "Autotesting/AutotestingSystemLua.h"
 
 #include "Render/RenderManager.h"
@@ -106,7 +94,7 @@ public:
     bool FindTouch(int32 id, UIEvent &touch);
     bool IsTouchDown(int32 id);
 
-	String GetScreenShotName();
+	const String & GetScreenShotName();
 	void MakeScreenShot();
 
     // DB Master-Helper relations
@@ -118,7 +106,6 @@ public:
 	String GetStepId() { return Format("Step%03d", stepIndex); };
 	String GetLogId() { return  Format("Message%03d", logIndex); };
     
-	uint64 GetCurrentTimeMS();
 	String GetCurrentTimeString();
 	String GetCurrentTimeMsString();
 

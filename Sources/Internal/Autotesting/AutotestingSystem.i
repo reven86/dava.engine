@@ -12,7 +12,6 @@
 
 %template(Singleton_Autotesting) DAVA::Singleton<DAVA::AutotestingSystemLua>;
 
-
 /* Let's just grab the original header file here */
 %include "std_string.i"
 %import "UIControl.i"

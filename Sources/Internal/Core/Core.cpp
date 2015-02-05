@@ -95,7 +95,6 @@ Core::Core()
     firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
-	new AutotestingSystem();
 }
 
 Core::~Core()
@@ -182,6 +181,10 @@ void Core::CreateSingletons()
     CheckDataTypeSizes();
 
     new Net::NetCore();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	new AutotestingSystem();
+#endif
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -198,6 +201,10 @@ void Core::ReleaseSingletons()
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
     Net::NetCore::Instance()->Release();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	AutotestingSystem::Instance()->Release();
+#endif
 
 	UIControlBackground::ReleaseRenderObject();
 
