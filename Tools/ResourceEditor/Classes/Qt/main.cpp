@@ -161,13 +161,27 @@ int main(int argc, char *argv[])
 		a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 		a.setAttribute(Qt::AA_ShareOpenGLContexts);
     
-		QSurfaceFormat fmt;
+        QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
+        
+        QSurfaceFormat::FormatOptions opt = fmt.options();
+        if((opt & QSurfaceFormat::DebugContext) == 0)
+        {
+            fmt.setOption(opt | QSurfaceFormat::DebugContext);
+        }
+        
 		fmt.setRenderableType(QSurfaceFormat::OpenGL);
+        fmt.setProfile(QSurfaceFormat::CoreProfile);
+        
 		fmt.setVersion(3, 2);
-		fmt.setDepthBufferSize(24);
+        fmt.setRedBufferSize(8);
+        fmt.setGreenBufferSize(8);
+        fmt.setBlueBufferSize(8);
+        fmt.setAlphaBufferSize(8);
+		fmt.setDepthBufferSize(16);
 		fmt.setStencilBufferSize(8);
 		fmt.setSwapInterval(1);
 		fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+        
 		QSurfaceFormat::setDefaultFormat(fmt);
 
         const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
