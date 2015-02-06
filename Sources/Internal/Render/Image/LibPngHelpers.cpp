@@ -634,9 +634,10 @@ bool PngImage::CreateFromFBOSprite(Sprite * fboSprite)
 	format = texture->GetFormat();    
 	if (format == FORMAT_RGBA8888)
 	{
-		RenderManager::Instance()->SetRenderTarget(fboSprite);
-		glReadPixels(0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		RenderManager::Instance()->RestoreRenderTarget();
+        int32 lastFBO = RenderManager::Instance()->HWglGetLastFBO();
+        RenderManager::Instance()->HWglBindFBO(texture->fboID);
+        glReadPixels(0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        RenderManager::Instance()->HWglBindFBO(lastFBO);
 	}
 	return true;
 }

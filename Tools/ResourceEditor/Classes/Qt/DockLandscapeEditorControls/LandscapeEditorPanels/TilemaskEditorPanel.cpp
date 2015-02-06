@@ -268,7 +268,8 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 		Sprite* s = Sprite::CreateFromTexture(t, 0, 0, width, height);
 
 		Sprite* sprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888);
-		RenderManager::Instance()->SetRenderTarget(sprite);
+        RenderSystem2D::Instance()->PushRenderTarget();
+        RenderSystem2D::Instance()->SetRenderTarget(sprite);
         
         Sprite::DrawState drawState;
 		drawState.SetPosition(0.f, 0.f);
@@ -276,7 +277,7 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
         
         RenderSystem2D::Instance()->Setup2DMatrices();
         RenderSystem2D::Instance()->Draw(s, &drawState);
-		RenderManager::Instance()->RestoreRenderTarget();
+        RenderSystem2D::Instance()->PopRenderTarget();
 
 		image = sprite->GetTexture()->CreateImageFromMemory(noBlendDrawState);
 		image->ResizeCanvas(width, height);

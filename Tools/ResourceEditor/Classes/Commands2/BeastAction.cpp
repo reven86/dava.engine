@@ -138,9 +138,11 @@ void BeastAction::Finish(bool canceled)
 	if(land)
 	{
 		FilePath textureName = land->GetTextureName(DAVA::Landscape::TEXTURE_COLOR);
-		textureName.ReplaceFilename("temp_beast.png");
-
-		FileSystem::Instance()->DeleteFile(textureName);
+        if (textureName.Exists())
+        {
+            textureName.ReplaceFilename("temp_beast.png");
+            FileSystem::Instance()->DeleteFile(textureName);
+        }
 	}
 
     FileSystem::Instance()->DeleteDirectory(FileSystem::Instance()->GetCurrentWorkingDirectory() + "temp_beast/");
