@@ -34,7 +34,8 @@
 #include <array>
 #include <memory>
 
-#include "Render/Image/ImageFormatInterface.h"
+#include "ImageFormatInterface.h"
+#include "ColorChannelsExchanger.h"
 
 namespace DAVA 
 {
@@ -70,6 +71,10 @@ private:
             TOP_LEFT = 2,
             TOP_RIGHT = 3
         };
+        ORIGIN_CORNER OriginCorner() const { return (ORIGIN_CORNER)((descriptor >> 4) & 0x03); }
+        uint8 AlphaBits() const { return descriptor & 0x0F; }
+        uint8 BytesPerPixel() const { return bpp >> 3; }
+
         struct {
             uint8 idlength;             // should be 0
             uint8 colorMapType;         // should be 0
@@ -80,58 +85,60 @@ private:
             uint16 width;               // image width in pixels
             uint16 height;              // image height in pixels
             uint8 bpp;                  // can be 8,16,24,32,64,128
-            uint8 :2, orig:2, alpha:4;  // image origin corner and number of alpha bits
+            uint8 descriptor;           // image origin corner and number of alpha bits
         };
         std::array<uint8, 18> fields;
     };
 
-    struct DataIterator
+    struct ImageDataIterator
     {
-        explicit DataIterator(Image* image, uint8 _pixSize);
-        bool AtEnd() const { return isAtEnd; }
+        virtual ~ImageDataIterator() {}
+        void Init(Image* image, uint8 _pixSize);
+        inline bool AtEnd() const { return isAtEnd; }
+        void Write(uint8* pixel);
 
-        virtual void Write(uint8* pixel) = 0;
-        virtual void SetAtBegin() = 0;
-
+    protected:
+        virtual void ResetPtr() = 0;
+        virtual void IncrementPtr() = 0;
+    
     protected:
         uint8* data;
         uint16 width;
         uint16 height;
         uint8 pixelSize;
         uint8* ptr;
-        uint16 x,y;
+        int16 x,y;
         bool isAtEnd;
+        std::unique_ptr<ColorChannelsExchanger> xchg;
     };
 
-    struct BottomLeftIterator : public DataIterator
+    struct BottomLeftIterator : public ImageDataIterator
     {
-        explicit BottomLeftIterator(Image* image, uint8 pixSize) : DataIterator(image, pixSize) {}
-        void Write(uint8* pixel) override;
-        void SetAtBegin() override;
+        void ResetPtr() final;
+        void IncrementPtr() final;
     };
 
-    struct BottomRightIterator : public DataIterator
+    struct BottomRightIterator : public ImageDataIterator
     {
-        explicit BottomRightIterator(Image* image, uint8 pixSize) : DataIterator(image, pixSize) {}
-        void Write(uint8* pixel) override;
-        void SetAtBegin() override;
+        void ResetPtr() final;
+        void IncrementPtr() final;
     };
 
-    struct TopLeftIterator : public DataIterator
+    struct TopLeftIterator : public ImageDataIterator
     {
-        explicit TopLeftIterator(Image* image, uint8 pixSize) : DataIterator(image, pixSize) {}
-        void Write(uint8* pixel) override;
-        void SetAtBegin() override;
+        void ResetPtr() final;
+        void IncrementPtr() final;
+    private:
+        uint8* ptrEnd;
     };
 
-    struct TopRightIterator : public DataIterator
+    struct TopRightIterator : public ImageDataIterator
     {
-        explicit TopRightIterator(Image* image, uint8 pixSize) : DataIterator(image, pixSize) {}
-        void Write(uint8* pixel) override;
-        void SetAtBegin() override;
+        void ResetPtr() final;
+        void IncrementPtr() final;
     };
 
-    DataIterator* CreateDataIterator(Image* image, uint8 pixSize, TgaHeader::ORIGIN_CORNER origin) const;
+    std::unique_ptr<ImageDataIterator> CreateDataIterator(Image* image, uint8 pixSize, TgaHeader::ORIGIN_CORNER origin) const;
 
     eErrorCode ReadTgaHeader(File *infile, TgaHeader& tgaHeader, PixelFormat& pixelFormat) const;
     eErrorCode ReadCompressedTga(File *infile, const TgaHeader& tgaHeader, ScopedPtr<Image>& image) const;

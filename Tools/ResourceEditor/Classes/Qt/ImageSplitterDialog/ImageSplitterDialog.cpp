@@ -120,7 +120,7 @@ void ImageSplitterDialog::PathSelected(const QString& path)
         Channels channels =  ImageTools::CreateSplittedImages(image);
         //DAVA::SafeRelease(image);
         
-        ui->redImgLbl->SetImage(image);
+        ui->redImgLbl->SetImage(channels.red);
         ui->greenImgLbl->SetImage(channels.green);
         ui->blueImgLbl->SetImage(channels.blue);
         ui->alphaImgLbl->SetImage(channels.alpha);
