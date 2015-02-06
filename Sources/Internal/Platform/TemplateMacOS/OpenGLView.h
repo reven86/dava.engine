@@ -36,6 +36,8 @@ using namespace DAVA;
 
 @interface OpenGLView : NSOpenGLView 
 {
+    Vector<DAVA::UIEvent> allTouches;
+    
 	bool sizeChanged;
 	NSTrackingArea *trackingArea;
 	bool isFirstDraw;

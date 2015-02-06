@@ -94,7 +94,12 @@ void UIStaticTextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     }
     
     //bool isUIStaticText = (dynamic_cast<UIStaticTextMetadata*>(activeMetadata)	!= NULL);
-    
+
+    //DF-3280 multiline should be enabled for UIStaticText and UIButton
+    ui->multilineCheckBox->setEnabled(true);
+    ui->multilineBySymbolCheckBox->setEnabled(false); // false by default - this checkbox depends on multilineCheckBox one.
+    ui->multilineWidget->setVisible(true);
+
     // Register checkbox widget for property Multiline only for (DF-3280) UIStaticText and UIButton
     RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_MULTILINE, ui->multilineCheckBox, false, true);
     RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL, ui->multilineBySymbolCheckBox, false, true);
@@ -110,11 +115,6 @@ void UIStaticTextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     ui->returnKeyTypeWidget->setVisible(isUITextField);
     ui->isReturnKeyAutoWidget->setVisible(isUITextField);
     ui->isPasswordWidget->setVisible(isUITextField);
-    
-    //DF-3280 multiline should be enabled for UIStaticText and UIButton
-	ui->multilineCheckBox->setEnabled(true);
-	ui->multilineBySymbolCheckBox->setEnabled(false); // false by default - this checkbox depends on multilineCheckBox one.
-    ui->multilineWidget->setVisible(true);
     
     // Fitting Type is needed for all text-aware controls but UITextField.
     ui->fittingWidget->setVisible(!isUITextField);
@@ -201,6 +201,8 @@ void UIStaticTextPropertyGridWidget::HandleChangePropertyFailed(const QString& p
 
 void UIStaticTextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty)
 {
+    TextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(checkBoxWidget, curProperty);
+
     // Yuri Coder, 2013/10/24. "Multiline By Symbol" checkbox should be unchecked and disabled if
     // "Multiline" one is unchecked - see please DF-2393.
     if (checkBoxWidget && ui->multilineCheckBox && checkBoxWidget == ui->multilineCheckBox)
@@ -213,8 +215,6 @@ void UIStaticTextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(QChec
             ui->multilineBySymbolCheckBox->setCheckState(Qt::Unchecked);
         }
     }
-    
-    TextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(checkBoxWidget, curProperty);
 }
 
 void UIStaticTextPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty)

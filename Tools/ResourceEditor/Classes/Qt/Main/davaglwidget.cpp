@@ -53,6 +53,10 @@
 #include <QOpenGLContext>
 #include <QOffscreenSurface>
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#include "Network/NetCore.h"
+#endif
+
 #include "Main/mainwindow.h"
 #include "ui_mainwindow.h"
 

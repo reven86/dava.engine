@@ -234,8 +234,8 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 {
 	Sprite* colorSprite = drawSystem->GetCustomColorsProxy()->GetSprite();
 	
-	RenderManager::Instance()->SetRenderTarget(colorSprite);
-
+    RenderSystem2D::Instance()->PushRenderTarget();
+	RenderSystem2D::Instance()->SetRenderTarget(colorSprite);
 	RenderManager::Instance()->SetColor(drawColor);
 
 	Vector2 spriteSize = Vector2(cursorSize, cursorSize);
@@ -256,7 +256,7 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
     RenderSystem2D::Instance()->Setup2DMatrices();
     RenderSystem2D::Instance()->Draw(toolImageSprite, &drawState);
 	
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 	RenderManager::Instance()->SetColor(Color::White);
 	
 	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(colorSprite->GetTexture());
@@ -364,12 +364,13 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		{
 			StoreOriginalState();
 		}
-		RenderManager::Instance()->SetRenderTarget(drawSystem->GetCustomColorsProxy()->GetSprite());
+        RenderSystem2D::Instance()->PushRenderTarget();
+        RenderSystem2D::Instance()->SetRenderTarget(drawSystem->GetCustomColorsProxy()->GetSprite());
         
         RenderSystem2D::Instance()->Setup2DMatrices();
         RenderSystem2D::Instance()->Draw(sprite);
         
-		RenderManager::Instance()->RestoreRenderTarget();
+        RenderSystem2D::Instance()->PopRenderTarget();
 		AddRectToAccumulator(Rect(Vector2(0.f, 0.f), Vector2(texture->GetWidth(), texture->GetHeight())));
 
 		SafeRelease(sprite);

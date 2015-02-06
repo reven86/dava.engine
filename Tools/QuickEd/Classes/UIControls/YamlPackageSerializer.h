@@ -1,5 +1,5 @@
-#ifndef __YAML_PACKAGE_SERIALIZER_H__
-#define __YAML_PACKAGE_SERIALIZER_H__
+#ifndef __QUICKED_YAML_PACKAGE_SERIALIZER_H__
+#define __QUICKED_YAML_PACKAGE_SERIALIZER_H__
 
 #include "PackageSerializer.h"
 
@@ -35,4 +35,4 @@ private:
 };
 
 
-#endif // __YAML_PACKAGE_SERIALIZER_H__
+#endif // __QUICKED_YAML_PACKAGE_SERIALIZER_H__
