@@ -101,6 +101,7 @@ public:
 
 	void ApplyTilemask();
 	void UpdateFullTiledTexture(bool force = false);
+    void UpdateFullTiledTextureInternal();
 
 	Vector3 PlacePoint(const Vector3& point);
 

@@ -174,11 +174,11 @@ void ShaderAsset::BindShaderDefaults(Shader * shader)
                 break;
                 case Shader::UT_FLOAT:
                     shader->SetUniformValueByIndex(ui, value.float32Value);
-                    Logger::FrameworkDebug("Assign: %s = %f", uniform->name.c_str(), value.float32Value);
+//                    Logger::FrameworkDebug("Assign: %s = %f", uniform->name.c_str(), value.float32Value);
                 break;
                 case Shader::UT_INT:
                     shader->SetUniformValueByIndex(ui, value.int32Value);
-                    Logger::FrameworkDebug("Assign: %s = %d", uniform->name.c_str(), value.int32Value);
+//                    Logger::FrameworkDebug("Assign: %s = %d", uniform->name.c_str(), value.int32Value);
                 break;
 
                 default:

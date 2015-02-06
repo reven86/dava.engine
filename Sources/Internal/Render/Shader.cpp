@@ -442,7 +442,7 @@ void Shader::RecompileInternal(bool silentDelete)
         
         if(IsAutobindUniform(shaderSemantic))
         {
-            Logger::FrameworkDebug(Format("Autobind: %s %d", attrName.c_str(), shaderSemantic).c_str());
+//            Logger::FrameworkDebug(Format("Autobind: %s %d", attrName.c_str(), shaderSemantic).c_str());
             autobindUniformCount++;
         }
         

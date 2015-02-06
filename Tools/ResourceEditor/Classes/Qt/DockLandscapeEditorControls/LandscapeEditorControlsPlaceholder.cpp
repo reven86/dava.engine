@@ -11,6 +11,8 @@
 
 #include <QVBoxLayout>
 
+#include "Main/davaglwidget.h"
+
 LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* parent)
 :	QWidget(parent)
 ,	activeScene(nullptr)
@@ -29,6 +31,8 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 
 void LandscapeEditorControlsPlaceholder::OnOpenGLInitialized()
 {
+    DavaGLWidget::LogContext();
+    
     DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel && !grassEditorPanel);
     
     customColorsPanel = new CustomColorsPanel();

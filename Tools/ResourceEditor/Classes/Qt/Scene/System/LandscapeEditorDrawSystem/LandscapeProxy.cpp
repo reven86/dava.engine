@@ -357,30 +357,59 @@ void LandscapeProxy::UpdateFullTiledTexture(bool force)
 {
 	if (force || mode == MODE_CUSTOM_LANDSCAPE)
 	{
-		SafeRelease(fullTiledTexture);
+        JobManager::Instance()->CreateMainJob(MakeFunction(this, &LandscapeProxy::UpdateFullTiledTextureInternal), JobManager::JOB_MAINLAZY);
 
-		RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-		RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
-		RenderManager::Instance()->FlushState();
-//		baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK)->GenerateMipmaps();
-
-		eLandscapeMode oldMode = mode;
-		SetMode(MODE_ORIGINAL_LANDSCAPE);
-		fullTiledTexture = baseLandscape->CreateLandscapeTexture();
-		SetMode(oldMode);
-
-		TextureStateData textureStateData;
-		textureStateData.SetTexture(0, fullTiledTexture);
-		UniqueHandle uniqueHandle = RenderManager::Instance()->CreateTextureState(textureStateData);
-		if (fullTiledTextureState != InvalidUniqueHandle)
-		{
-			RenderManager::Instance()->ReleaseTextureState(fullTiledTextureState);
-		}
-		fullTiledTextureState = uniqueHandle;
-
-		UpdateDisplayedTexture();
+        
+//		SafeRelease(fullTiledTexture);
+//
+//		RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+//		RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+//		RenderManager::Instance()->FlushState();
+//
+//		eLandscapeMode oldMode = mode;
+//		SetMode(MODE_ORIGINAL_LANDSCAPE);
+//		fullTiledTexture = baseLandscape->CreateLandscapeTexture();
+//		SetMode(oldMode);
+//
+//		TextureStateData textureStateData;
+//		textureStateData.SetTexture(0, fullTiledTexture);
+//		UniqueHandle uniqueHandle = RenderManager::Instance()->CreateTextureState(textureStateData);
+//		if (fullTiledTextureState != InvalidUniqueHandle)
+//		{
+//			RenderManager::Instance()->ReleaseTextureState(fullTiledTextureState);
+//		}
+//		fullTiledTextureState = uniqueHandle;
+//
+//		UpdateDisplayedTexture();
 	}
 }
+
+void LandscapeProxy::UpdateFullTiledTextureInternal()
+{
+    SafeRelease(fullTiledTexture);
+    
+    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+    RenderManager::Instance()->FlushState();
+    
+    eLandscapeMode oldMode = mode;
+    SetMode(MODE_ORIGINAL_LANDSCAPE);
+    fullTiledTexture = baseLandscape->CreateLandscapeTexture();
+    SetMode(oldMode);
+    
+    TextureStateData textureStateData;
+    textureStateData.SetTexture(0, fullTiledTexture);
+    UniqueHandle uniqueHandle = RenderManager::Instance()->CreateTextureState(textureStateData);
+    if (fullTiledTextureState != InvalidUniqueHandle)
+    {
+        RenderManager::Instance()->ReleaseTextureState(fullTiledTextureState);
+    }
+    fullTiledTextureState = uniqueHandle;
+    
+    UpdateDisplayedTexture();
+}
+
+
 
 Vector3 LandscapeProxy::PlacePoint(const Vector3& point)
 {

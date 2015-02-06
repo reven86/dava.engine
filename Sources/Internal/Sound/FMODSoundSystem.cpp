@@ -322,7 +322,7 @@ void SoundSystem::LoadFEV(const FilePath & filePath)
 
         projectsMap[filePath] = project;
 
-        Logger::Debug("[FMODSoundSystem] Project loaded: %s", filePath.GetFilename().c_str()); //IG: temporary, for testing
+//        Logger::Debug("[FMODSoundSystem] Project loaded: %s", filePath.GetFilename().c_str()); //IG: temporary, for testing
     }
 }
 

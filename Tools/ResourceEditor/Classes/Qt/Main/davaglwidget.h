@@ -59,6 +59,8 @@ public:
     
     bool InitializeDefaultOpenGLContext();
     
+    static void LogContext();
+    
 signals:
     
     void Initialized();

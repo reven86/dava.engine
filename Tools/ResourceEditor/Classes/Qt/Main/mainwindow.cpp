@@ -2389,6 +2389,9 @@ void QtMainWindow::OnHeightmapEditor()
 	{
 		return;
 	}
+    
+    ui->sceneTabWidget->GetDavaWidget()->LogContext();
+    
 
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{

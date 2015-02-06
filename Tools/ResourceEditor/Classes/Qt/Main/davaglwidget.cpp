@@ -111,8 +111,6 @@ void DavaGLWidget::initializeGL()
     DAVA::QtLayer::Instance()->InitializeGlWindow();
     
     isInitialized = true;
-    
-    emit Initialized();
 }
 
 void DavaGLWidget::resizeGL(int w, int h)
@@ -364,5 +362,13 @@ bool DavaGLWidget::InitializeDefaultOpenGLContext()
     defaultContextID = (DAVA::uint64)CGLGetCurrentContext();
     DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
     
+    emit Initialized();
+
     return true;
+}
+
+void DavaGLWidget::LogContext()
+{
+    DAVA::uint64 contextID = (DAVA::uint64)CGLGetCurrentContext();
+    DAVA::Logger::Info("\n[log]\n\tcontextID = %lld\n\tdefaultContextID = %lld", contextID, defaultContextID);
 }
