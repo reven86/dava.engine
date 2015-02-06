@@ -177,6 +177,8 @@ protected:
     LocalizationSystem* autotestingLocalizationSystem;
     
 #endif //SWIG
+private:
+    DAVA::uint8* memoryPool;
 };
 
 };

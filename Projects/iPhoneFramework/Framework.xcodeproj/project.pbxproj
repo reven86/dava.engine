@@ -808,6 +808,12 @@
 		1146E10F19D0066F009E5FAB /* AnimationComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 1146E10D19D0066F009E5FAB /* AnimationComponent.h */; };
 		1146E11019D00672009E5FAB /* AnimationComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 1146E10D19D0066F009E5FAB /* AnimationComponent.h */; };
 		1146E11119D00675009E5FAB /* AnimationComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E10C19D0066F009E5FAB /* AnimationComponent.cpp */; };
+		117A47851A84CC8D001960BE /* target.h in Headers */ = {isa = PBXBuildFile; fileRef = 117A47821A84CC8D001960BE /* target.h */; };
+		117A47861A84CC8D001960BE /* target.h in Headers */ = {isa = PBXBuildFile; fileRef = 117A47821A84CC8D001960BE /* target.h */; };
+		117A47871A84CC8D001960BE /* tlsf.c in Sources */ = {isa = PBXBuildFile; fileRef = 117A47831A84CC8D001960BE /* tlsf.c */; };
+		117A47881A84CC8D001960BE /* tlsf.c in Sources */ = {isa = PBXBuildFile; fileRef = 117A47831A84CC8D001960BE /* tlsf.c */; };
+		117A47891A84CC8D001960BE /* tlsf.h in Headers */ = {isa = PBXBuildFile; fileRef = 117A47841A84CC8D001960BE /* tlsf.h */; };
+		117A478A1A84CC8D001960BE /* tlsf.h in Headers */ = {isa = PBXBuildFile; fileRef = 117A47841A84CC8D001960BE /* tlsf.h */; };
 		11CB614919C338DF00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614719C338DF00B48A92 /* AnimationData.cpp */; };
 		11CB614A19C338DF00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614719C338DF00B48A92 /* AnimationData.cpp */; };
 		11CB614B19C338DF00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614819C338DF00B48A92 /* AnimationData.h */; };
@@ -1941,6 +1947,9 @@
 		1146E10719D00649009E5FAB /* AnimationSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationSystem.h; sourceTree = "<group>"; };
 		1146E10C19D0066F009E5FAB /* AnimationComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationComponent.cpp; sourceTree = "<group>"; };
 		1146E10D19D0066F009E5FAB /* AnimationComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationComponent.h; sourceTree = "<group>"; };
+		117A47821A84CC8D001960BE /* target.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = target.h; sourceTree = "<group>"; };
+		117A47831A84CC8D001960BE /* tlsf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tlsf.c; sourceTree = "<group>"; };
+		117A47841A84CC8D001960BE /* tlsf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tlsf.h; sourceTree = "<group>"; };
 		11CB614719C338DF00B48A92 /* AnimationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationData.cpp; sourceTree = "<group>"; };
 		11CB614819C338DF00B48A92 /* AnimationData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationData.h; sourceTree = "<group>"; };
 		1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefaultUIPackageBuilder.h; sourceTree = "<group>"; };
@@ -3350,6 +3359,9 @@
 				E8B3C7B716B9326D002BD35F /* AutotestingSystem.h */,
 				E8B3C7B916B9326D002BD35F /* MongodbUpdateObject.cpp */,
 				E8B3C7BA16B9326D002BD35F /* MongodbUpdateObject.h */,
+				117A47821A84CC8D001960BE /* target.h */,
+				117A47831A84CC8D001960BE /* tlsf.c */,
+				117A47841A84CC8D001960BE /* tlsf.h */,
 			);
 			path = Autotesting;
 			sourceTree = "<group>";
@@ -4585,6 +4597,7 @@
 				02FD7FC71924997C007762C0 /* IndexBuffer.h in Headers */,
 				02FD7FCB1924997C007762C0 /* MaterialCompiler.h in Headers */,
 				02FD7FCC1924997C007762C0 /* DAVAClassRegistrator.h in Headers */,
+				117A478A1A84CC8D001960BE /* tlsf.h in Headers */,
 				02FD7FCD1924997C007762C0 /* MaterialGraph.h in Headers */,
 				02FD7FCE1924997C007762C0 /* MaterialGraphNode.h in Headers */,
 				02FD7FCF1924997C007762C0 /* NMaterial.h in Headers */,
@@ -4813,6 +4826,7 @@
 				02FD808E1924997C007762C0 /* RenderStateData.h in Headers */,
 				02FD808F1924997C007762C0 /* UIParticles.h in Headers */,
 				17675C2519472C1400054F8F /* LibJpegHelper.h in Headers */,
+				117A47861A84CC8D001960BE /* target.h in Headers */,
 				02FD80901924997C007762C0 /* UniqueStateSet.h in Headers */,
 				02FD80911924997C007762C0 /* TextureStateData.h in Headers */,
 				02FD80921924997C007762C0 /* GamepadDevice.h in Headers */,
@@ -4854,6 +4868,7 @@
 				E8B3CAA016B9326E002BD35F /* Data.h in Headers */,
 				501620801A61693A00E5A914 /* Discoverer.h in Headers */,
 				E8B3CAA216B9326E002BD35F /* DynamicObjectCache.h in Headers */,
+				117A47891A84CC8D001960BE /* tlsf.h in Headers */,
 				E8B3CAA416B9326E002BD35F /* EventDispatcher.h in Headers */,
 				E8B3CAA516B9326E002BD35F /* Exception.h in Headers */,
 				E8B3CAA716B9326E002BD35F /* FastName.h in Headers */,
@@ -5134,6 +5149,7 @@
 				E8B3CC7D16B9326E002BD35F /* UpdatableComponent.h in Headers */,
 				E8B3CC7F16B9326E002BD35F /* DataNode.h in Headers */,
 				E8B3CC8016B9326E002BD35F /* Drawable.h in Headers */,
+				117A47851A84CC8D001960BE /* target.h in Headers */,
 				E8B3CC8416B9326E002BD35F /* ImposterManager.h in Headers */,
 				E8B3CC8616B9326E002BD35F /* ImposterNode.h in Headers */,
 				E8B3CC8816B9326E002BD35F /* LodNode.h in Headers */,
@@ -5576,6 +5592,7 @@
 				02FD81171924997C007762C0 /* ShadowVolume.cpp in Sources */,
 				02FD81181924997C007762C0 /* ShadowVolumeRenderPass.cpp in Sources */,
 				02FD811F1924997C007762C0 /* MaterialCompiler.cpp in Sources */,
+				117A47881A84CC8D001960BE /* tlsf.c in Sources */,
 				02FD81201924997C007762C0 /* MaterialGraph.cpp in Sources */,
 				150353961A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp in Sources */,
 				02FD81221924997C007762C0 /* MaterialGraphNode.cpp in Sources */,
@@ -5885,6 +5902,7 @@
 				E8B3CB1216B9326E002BD35F /* DynamicMemoryFile.cpp in Sources */,
 				E8B3CB1416B9326E002BD35F /* File.cpp in Sources */,
 				E8B3CB1616B9326E002BD35F /* FileList.cpp in Sources */,
+				117A47871A84CC8D001960BE /* tlsf.c in Sources */,
 				D7FEF15519864E5C00B2C7AF /* BSDiff.cpp in Sources */,
 				D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */,
 				E8B3CB1816B9326E002BD35F /* FilePath.cpp in Sources */,
@@ -6501,8 +6519,8 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 				USE_HEADERMAP = NO;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Debug;
 		};
@@ -6554,8 +6572,8 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 				USE_HEADERMAP = NO;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Release;
 		};
@@ -6757,8 +6775,8 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 				USE_HEADERMAP = NO;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = AdHoc;
 		};
@@ -6856,8 +6874,8 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 				USE_HEADERMAP = NO;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Distribution;
 		};

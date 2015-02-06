@@ -11,6 +11,7 @@ extern "C"{
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "tlsf.h"
 };
 
 // directly include wrapped module here to compile only if __DAVAENGINE_AUTOTESTING__ is defined
@@ -27,7 +28,23 @@ extern "C" int luaopen_Polygon2(lua_State *l);
 
 namespace DAVA
 {
-AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL)
+static const int32 LUA_MEMORY_POOL_SIZE = 1024 * 1024 * 5;
+    
+void* lua_allocator(void *ud, void *ptr, size_t osize, size_t nsize)
+{
+    if (nsize == 0)
+    {
+        free_ex(ptr, ud);
+        return NULL;
+    } else if (osize == 0) {
+        return malloc_ex(nsize, ud);
+    } else {
+        return realloc_ex(ptr, nsize, ud);
+    }
+}
+
+
+AutotestingSystemLua::AutotestingSystemLua() : delegate(NULL), luaState(NULL), memoryPool(NULL)
 {
 	autotestingLocalizationSystem = new LocalizationSystem();
 }
@@ -42,6 +59,9 @@ AutotestingSystemLua::~AutotestingSystemLua()
 	}
 	lua_close(luaState);
 	luaState = NULL;
+    
+    destroy_memory_pool(memoryPool);
+    delete [] memoryPool;
 }
 
 void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate* _delegate)
@@ -62,7 +82,10 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 	autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
 	autotestingLocalizationSystem->Init();
 
-	luaState = lua_open();
+    memoryPool = new uint8[LUA_MEMORY_POOL_SIZE];
+    init_memory_pool(LUA_MEMORY_POOL_SIZE, memoryPool);
+    
+    luaState = lua_newstate(lua_allocator, memoryPool);
 	luaL_openlibs(luaState);
 
 	lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
