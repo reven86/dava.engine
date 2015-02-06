@@ -1558,11 +1558,6 @@ void PropertyEditor::OnTriggerWaveComponent()
     }
 }
 
-void PropertyEditor::OnQualityGroupChanged()
-{
-
-}
-
 QString PropertyEditor::GetDefaultFilePath()
 {
 	QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
