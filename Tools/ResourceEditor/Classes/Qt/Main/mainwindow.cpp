@@ -2396,7 +2396,7 @@ void QtMainWindow::OnHeightmapEditor()
 		return;
 	}
     
-    ui->sceneTabWidget->GetDavaWidget()->LogContext();
+    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
     ui->sceneTabWidget->GetDavaWidget()->LockOpenGLContext();
 
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
@@ -2425,6 +2425,9 @@ void QtMainWindow::OnRulerTool()
 	{
 		return;
 	}
+    
+    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
+
 
 	if (sceneEditor->rulerToolSystem->IsLandscapeEditingEnabled())
 	{
@@ -2451,6 +2454,9 @@ void QtMainWindow::OnTilemaskEditor()
 		return;
 	}
 	
+    
+    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
+
 	if (sceneEditor->tilemaskEditorSystem->IsLandscapeEditingEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableTilemaskEditor(sceneEditor));
@@ -2475,6 +2481,8 @@ void QtMainWindow::OnVisibilityTool()
 	{
 		return;
 	}
+    
+    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
 	
 	if (sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled())
 	{
@@ -2501,6 +2509,8 @@ void QtMainWindow::OnNotPassableTerrain()
 		return;
 	}
 	
+    ui->sceneTabWidget->GetDavaWidget()->LogContext(__FUNCTION__);
+
 	if (sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
 	{
 		sceneEditor->Exec(new ActionDisableNotPassable(sceneEditor));

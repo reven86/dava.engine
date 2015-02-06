@@ -148,7 +148,7 @@ void QtLayer::InitializeGlWindow()
 void QtLayer::Resize(int32 width, int32 height)
 {
     RenderManager::Instance()->Init(width, height);
-    RenderSystem2D::Instance()->Init();
+//    RenderSystem2D::Instance()->Init();
     
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
     if(vcs)
