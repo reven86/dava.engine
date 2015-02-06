@@ -238,7 +238,7 @@ void QualitySwitcher::OnMaQualitySelect(int index)
             ApplyMa();
 
             SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
-            for (int tab = 0; tab < tabWidget->GetTabCount(); ++tab)
+            for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
             {
                 Scene* scene = tabWidget->GetTabScene(tab);
                 UpdateEntitiesToQuality(scene);
@@ -256,7 +256,7 @@ void QualitySwitcher::OnOptionClick(bool checked)
         QualitySettingsSystem::Instance()->EnableOption(optionName, checked);
         
         SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
-        for (int tab = 0; tab < tabWidget->GetTabCount(); ++tab)
+        for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
         {
             Scene* scene = tabWidget->GetTabScene(tab);
             UpdateEntitiesToQuality(scene);
