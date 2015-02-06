@@ -13,12 +13,13 @@
 #set( ANDROID_STORE_PASSWORD     )#dava.config
 #set( ANDROID_ALIAS_PASSWORD     )#dava.config
 
-#set( ADDED_SRC            )
-#set( LIBRARIES            )
-#set( LIBRARIES_RELEASE    )
-#set( LIBRARIES_DEBUG      )
-#set( ADDED_BINARY_DIR     )
-#set( EXECUTABLE_FLAG      )
+#set( ADDED_SRC                  )
+#set( LIBRARIES                  )
+#set( LIBRARIES_RELEASE          )
+#set( LIBRARIES_DEBUG            )
+#set( ADDED_BINARY_DIR           )
+#set( EXECUTABLE_FLAG            )
+#set( FILE_TREE_CHECK_FOLDERS    )
 #
 
 macro( setup_main_executable )
@@ -141,8 +142,8 @@ elseif( MACOS )
                           )
     set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
-elseif ( MSVC )
-    if( ${EXECUTABLE_FLAG} STREQUAL "WIN32")
+elseif ( MSVC )       
+    if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32")
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY:\"\" /NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"" ) 
 
     else()
@@ -169,6 +170,9 @@ elseif ( MSVC )
      endif()
 
 endif()
+
+list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
+list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
