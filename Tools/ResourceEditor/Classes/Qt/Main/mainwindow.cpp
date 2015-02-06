@@ -2397,7 +2397,7 @@ void QtMainWindow::OnHeightmapEditor()
 	}
     
     ui->sceneTabWidget->GetDavaWidget()->LogContext();
-    
+    ui->sceneTabWidget->GetDavaWidget()->LockOpenGLContext();
 
 	if (sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
 	{
@@ -2414,6 +2414,8 @@ void QtMainWindow::OnHeightmapEditor()
 			OnLandscapeEditorToggled(sceneEditor);
 		}
 	}
+    
+    ui->sceneTabWidget->GetDavaWidget()->UnlockOpenGlContext();
 }
 
 void QtMainWindow::OnRulerTool()

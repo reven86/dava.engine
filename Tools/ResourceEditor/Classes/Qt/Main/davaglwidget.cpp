@@ -131,12 +131,6 @@ void DavaGLWidget::resizeGL(int w, int h)
     DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
 }
 
-void DavaGLWidget::paintEvent(QPaintEvent * e)
-{
-    QOpenGLWidget::paintEvent(e);
-}
-
-
 void DavaGLWidget::paintGL()
 {
     DAVA::RenderManager::Instance()->SetRenderContextId(currentContextID);
@@ -153,13 +147,12 @@ void DavaGLWidget::paintGL()
 
     
     DAVA::QtLayer::Instance()->ProcessFrame();
+    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
     
     const DAVA::uint64 requestedFrameDelta = 1000 / fps;
-    const DAVA::uint64 nextFrameDelta = Max((DAVA::uint64)1, requestedFrameDelta - frameTimer.elapsed());
-    
-    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
+    const int nextFrameDelta = (requestedFrameDelta >= frameTimer.elapsed()) ? (int)(requestedFrameDelta >= frameTimer.elapsed()): 1;
 
-    renderTimer->singleShot((int) nextFrameDelta, this, SLOT(OnRenderTimer()));
+    renderTimer->singleShot(nextFrameDelta, this, SLOT(OnRenderTimer()));
 }
 
 
@@ -223,7 +216,7 @@ void DavaGLWidget::keyReleaseEvent(QKeyEvent *e)
 void DavaGLWidget::mouseMoveEvent(QMouseEvent * event)
 {
     const Qt::MouseButtons buttons = event->buttons();
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
     davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
 
     if(buttons & Qt::LeftButton)
@@ -245,7 +238,7 @@ void DavaGLWidget::mouseMoveEvent(QMouseEvent * event)
 
 void DavaGLWidget::mousePressEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
 
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
@@ -253,7 +246,7 @@ void DavaGLWidget::mousePressEvent(QMouseEvent * event)
 
 void DavaGLWidget::mouseReleaseEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
@@ -261,18 +254,35 @@ void DavaGLWidget::mouseReleaseEvent(QMouseEvent * event)
 
 void DavaGLWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event, currentDPR);
+    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     davaEvent.tapCount = 2;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
-DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event, int dpr)
+#ifndef QT_NO_WHEELEVENT
+void DavaGLWidget::wheelEvent(QWheelEvent *event)
+{
+    DAVA::UIEvent davaEvent;
+    davaEvent.point = davaEvent.physPoint = Vector2(event->delta() * currentDPR, event->delta() * currentDPR);
+    davaEvent.tid = DAVA::UIEvent::PHASE_WHEEL;
+    davaEvent.phase = DAVA::UIEvent::PHASE_WHEEL;
+
+    davaEvent.timestamp = event->timestamp();
+    davaEvent.tapCount = 1;
+    
+    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+}
+#endif
+
+
+
+DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event) const
 {
     DAVA::UIEvent davaEvent;
     QPoint pos = event->pos();
-    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * dpr, pos.y() * dpr);
+    davaEvent.point = davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.tid = MapQtButtonToDAVA(event->button());
     davaEvent.timestamp = event->timestamp();
     davaEvent.tapCount = 1;
@@ -281,7 +291,7 @@ DAVA::UIEvent DavaGLWidget::MapMouseEventToDAVA(const QMouseEvent *event, int dp
 }
 
 
-DAVA::UIEvent::eButtonID DavaGLWidget::MapQtButtonToDAVA(const Qt::MouseButton button)
+DAVA::UIEvent::eButtonID DavaGLWidget::MapQtButtonToDAVA(const Qt::MouseButton button) const
 {
     switch (button)
     {
@@ -375,4 +385,16 @@ void DavaGLWidget::LogContext()
 {
     DAVA::uint64 contextID = (DAVA::uint64)CGLGetCurrentContext();
     DAVA::Logger::Info("\n[log]\n\tcontextID = %lld\n\tdefaultContextID = %lld", contextID, defaultContextID);
+}
+
+void DavaGLWidget::LockOpenGLContext()
+{
+    makeCurrent();
+    DAVA::RenderManager::Instance()->SetRenderContextId(currentContextID);
+}
+
+void DavaGLWidget::UnlockOpenGlContext()
+{
+    DAVA::RenderManager::Instance()->SetRenderContextId(defaultContextID);
+    doneCurrent();
 }

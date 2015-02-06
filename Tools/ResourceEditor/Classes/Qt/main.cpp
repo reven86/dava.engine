@@ -114,8 +114,7 @@ int main(int argc, char *argv[])
         new SceneValidator();
 
 #if defined (__DAVAENGINE_MACOS__)
-        DAVA::QtLayerMacOS *qtLayer = (DAVA::QtLayerMacOS *) DAVA::QtLayer::Instance();
-        qtLayer->InitializeGlWindow(nullptr, 0, 0);
+        DAVA::QtLayer::Instance()->InitializeGlWindow();
 
         DAVA::QtLayer::Instance()->Resize(0, 0);
 #elif defined (__DAVAENGINE_WIN32__)

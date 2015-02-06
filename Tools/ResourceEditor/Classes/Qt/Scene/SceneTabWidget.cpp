@@ -128,11 +128,9 @@ int SceneTabWidget::OpenTab()
     
 	QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
     
-    LockOpenGLContext();
 	SceneEditor2 *scene = new SceneEditor2();
-    UnlockOpenGLContext();
 
-	DAVA::FilePath newScenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
+    DAVA::FilePath newScenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
 	newScenePath.ReplaceExtension(".sc2");
 
 	scene->SetScenePath(newScenePath);
@@ -200,7 +198,6 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
         return -1;
     }
 
-    LockOpenGLContext();
     SceneEditor2 *scene = new SceneEditor2();
     
     bool sceneWasLoaded = scene->Load(scenePath);
@@ -216,13 +213,9 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePath)
 	else
 	{
         SafeRelease(scene);
-	}
-    UnlockOpenGLContext();
-    
-    if(!sceneWasLoaded)
-    {
         QMessageBox::critical( this, "Open scene error.", "Unexpected opening error. See logs for more info." );
-    }
+	}
+    
 	return tabIndex;
 }
 
@@ -235,7 +228,6 @@ bool SceneTabWidget::CloseTab(int index)
     if(!request.IsAccepted())
         return false;
 
-    LockOpenGLContext();
 	SceneEditor2 *scene = GetTabScene(index);
     if(index == tabBar->currentIndex())
     {
@@ -248,8 +240,6 @@ bool SceneTabWidget::CloseTab(int index)
 
     SafeRelease(scene);
 
-    UnlockOpenGLContext();
-    
     return true;
 }
 
@@ -541,7 +531,6 @@ void SceneTabWidget::ShowScenePreview(const DAVA::FilePath &scenePath)
         previewDialog = new ScenePreviewDialog();
     }
 
-    LockOpenGLContext();
 	if(scenePath.IsEqualToExtension(".sc2"))
 	{
 		previewDialog->Show(scenePath);
@@ -550,18 +539,14 @@ void SceneTabWidget::ShowScenePreview(const DAVA::FilePath &scenePath)
 	{
 		previewDialog->Close();
 	}
-    
-    UnlockOpenGLContext();
 }
 
 void SceneTabWidget::HideScenePreview()
 {
-    LockOpenGLContext();
 	if(previewDialog && previewDialog->GetParent())
 	{
 		previewDialog->Close();
 	}
-    UnlockOpenGLContext();
 }
 
 DavaGLWidget * SceneTabWidget::GetDavaWidget() const
@@ -595,30 +580,6 @@ bool SceneTabWidget::CloseAllTabs()
         count--;
     }
     return true;
-}
-
-void SceneTabWidget::LockOpenGLContext()
-{
-//    if(davaWidget && davaWidget->IsInitialized())
-//    {
-//        davaWidget->makeCurrent();
-//    }
-//    else
-//    {
-//        DAVA::Logger::Error("Trying to lock not exsisted OpenGL context");
-//    }
-}
-
-void SceneTabWidget::UnlockOpenGLContext()
-{
-//    if(davaWidget && davaWidget->IsInitialized())
-//    {
-//        davaWidget->doneCurrent();
-//    }
-//    else
-//    {
-//        DAVA::Logger::Error("Trying to unlock not exsisted OpenGL context");
-//    }
 }
 
 

@@ -171,14 +171,12 @@ void QtLayer::Resize(int32 width, int32 height)
 }
 
     
-static Vector<UIEvent> activeTouches;
-
 void QtLayer::KeyPressed(char16 key1, char16 davaKey, int32 count, uint64 timestamp)
 {
     Vector<UIEvent> touches;
     Vector<UIEvent> emptyTouches;
     
-    for(Vector<UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    for(Vector<UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
         touches.push_back(*it);
     }
@@ -196,7 +194,6 @@ void QtLayer::KeyPressed(char16 key1, char16 davaKey, int32 count, uint64 timest
     touches.pop_back();
     UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
     
-//    InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(key);
     InputSystem::Instance()->GetKeyboard()->OnKeyPressed(davaKey);
 }
 
@@ -204,52 +201,57 @@ void QtLayer::KeyPressed(char16 key1, char16 davaKey, int32 count, uint64 timest
 void QtLayer::KeyReleased(char16 key, char16 davaKey)
 {
     InputSystem::Instance()->GetKeyboard()->OnKeyUnpressed(davaKey);
-//    InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(key);
 }
     
     
-void MoveTouchsToVector(const DAVA::UIEvent &event, Vector<UIEvent> &outTouches)
+void QtLayer::CopyEvents(DAVA::UIEvent &newEvent, const DAVA::UIEvent &sourceEvent)
+{
+    newEvent.tapCount = sourceEvent.tapCount;
+    newEvent.point = sourceEvent.point;
+    newEvent.physPoint = sourceEvent.physPoint;
+    newEvent.timestamp = sourceEvent.timestamp;
+    newEvent.phase = sourceEvent.phase;
+}
+    
+void QtLayer::MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches)
 {
     if(event.phase == UIEvent::PHASE_DRAG)
     {
-        for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
-            it->physPoint = event.physPoint;
-            it->phase = event.phase;
+            CopyEvents(*it, event);
         }
     }
     
-    
     bool isFind = false;
-    for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    for(Vector<UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
         if(it->tid == event.tid)
         {
             isFind = true;
-
-            it->physPoint = event.physPoint;
-            it->phase = event.phase;
+            
+            CopyEvents(*it, event);
             break;
         }
     }
     
     if(!isFind)
     {
-        activeTouches.push_back(event);
+        allTouches.push_back(event);
     }
     
-    for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+    for(Vector<UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
     {
         outTouches.push_back(*it);
     }
     
     if(event.phase == UIEvent::PHASE_ENDED || event.phase == UIEvent::PHASE_MOVE)
     {
-        for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+        for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
         {
             if(it->tid == event.tid)
             {
-                activeTouches.erase(it);
+                allTouches.erase(it);
                 break;
             }
         }
@@ -260,11 +262,11 @@ void MoveTouchsToVector(const DAVA::UIEvent &event, Vector<UIEvent> &outTouches)
 void QtLayer::MouseEvent(const UIEvent & event)
 {
     Vector<UIEvent> touches;
-    Vector<UIEvent> emptyTouches;
 
     MoveTouchsToVector(event, touches);
-    
-    UIControlSystem::Instance()->OnInput(event.phase, emptyTouches, touches);
+
+    UIControlSystem::Instance()->OnInput(event.phase, touches, allTouches);
+    touches.clear();
 }
 
     

@@ -81,8 +81,15 @@ public:
     void MouseEvent(const UIEvent & event);
     
 protected:
+
+    void CopyEvents(UIEvent & newEvent, const UIEvent & sourceEvent);
+    void MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches);
+    
     
     QtLayerDelegate *delegate;
+    
+    Vector<UIEvent> allTouches;
+
     
     bool isDAVAEngineEnabled;
 };

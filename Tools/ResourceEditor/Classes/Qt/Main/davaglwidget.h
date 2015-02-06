@@ -61,6 +61,10 @@ public:
     
     static void LogContext();
     
+    
+    void LockOpenGLContext();
+    void UnlockOpenGlContext();
+    
 signals:
     
     void Initialized();
@@ -76,9 +80,6 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
     
-    void paintEvent(QPaintEvent *) override;
-
-    
 private:
     
     void keyPressEvent(QKeyEvent *) override;
@@ -90,6 +91,11 @@ private:
     
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     
+#ifndef QT_NO_WHEELEVENT
+    void wheelEvent(QWheelEvent *) override;
+#endif
+
+    
 	virtual void dropEvent(QDropEvent *);
 	virtual void dragMoveEvent(QDragMoveEvent *);
 	virtual void dragEnterEvent(QDragEnterEvent *);
@@ -97,8 +103,8 @@ private:
 	virtual void Quit();
     DAVA_DEPRECATED(virtual void ShowAssertMessage(const char * message));
 
-    static DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event, int dpr);
-    static DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button);
+    DAVA::UIEvent MapMouseEventToDAVA(const QMouseEvent *event) const;
+    DAVA::UIEvent::eButtonID MapQtButtonToDAVA(const Qt::MouseButton button) const;
 
     void PerformSizeChange();
     
