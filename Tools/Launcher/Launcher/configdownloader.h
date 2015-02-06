@@ -27,40 +27,44 @@
 =====================================================================================*/
 
 
-#ifndef ERRORVALIDATOR_H
-#define ERRORVALIDATOR_H
+#ifndef CONFIGDOWNLOADER_H
+#define CONFIGDOWNLOADER_H
 
-#include "defines.h"
+#include <QDialog>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QFile>
 
-class ErrorMessanger
+namespace Ui {
+class ConfigDownloader;
+}
+
+class ApplicationManager;
+class ConfigDownloader : public QDialog
 {
+    Q_OBJECT
+    
 public:
-    enum ErrorID
-    {
-        ERROR_DOC_ACCESS = 0,
-        ERROR_NETWORK,
-        ERROR_CONFIG,
-        ERROR_UNPACK,
-        ERROR_IS_RUNNING,
+    explicit ConfigDownloader(ApplicationManager * manager, QWidget *parent = 0);
+    ~ConfigDownloader();
 
-        ERROR_COUNT
-    };
+    virtual int exec();
 
-    ~ErrorMessanger();
-    static ErrorMessanger * Instance();
+private slots:
+    void NetworkError(QNetworkReply::NetworkError code);
+    void DownloadFinished();
+    void OnCancelClicked();
 
-    void ShowErrorMessage(ErrorID id, int errorCode = 0, const QString & addInfo = "");
-    int ShowRetryDlg(bool canCancel);
-    void ShowNotificationDlg(const QString & info);
-
-    void LogMessage(QtMsgType, const QString & msg);
 private:
-    ErrorMessanger();
+    Ui::ConfigDownloader *ui;
 
-    static ErrorMessanger * instatnce;
+    QNetworkAccessManager * networkManager;
+    QNetworkReply * currentDownload;
 
-    QFile logFile;
+    ApplicationManager * appManager;
+
+    int lastErrorCode;
+    QString lastErrorDesrc;
 };
 
-#endif // ERRORVALIDATOR_H
+#endif // CONFIGDOWNLOADER_H
