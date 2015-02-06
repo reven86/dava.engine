@@ -29,6 +29,11 @@ EditorUIPackageBuilder::~EditorUIPackageBuilder()
     SafeRelease(packageNode);
 }
 
+UIPackage * EditorUIPackageBuilder::FindInCache(const String &packagePath) const
+{
+    return nullptr;
+}
+
 RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
     DVASSERT(packageNode == NULL);
