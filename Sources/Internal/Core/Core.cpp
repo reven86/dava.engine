@@ -524,7 +524,6 @@ void Core::SystemProcessFrame()
 		
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        SmartDLC::Instance()->Update();
 		JobManager::Instance()->Update();
 
         // Poll for network I/O events here

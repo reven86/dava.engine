@@ -1190,6 +1190,10 @@
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
 		CCF00D691A443F6200A577C2 /* EntityFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCF00D671A443F6200A577C2 /* EntityFamily.cpp */; };
 		CCF00D6A1A443F6200A577C2 /* EntityFamily.h in Headers */ = {isa = PBXBuildFile; fileRef = CCF00D681A443F6200A577C2 /* EntityFamily.h */; };
+		D70401BA1A84F56D00734556 /* SmartDLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D70401B81A84F56D00734556 /* SmartDLC.cpp */; };
+		D70401BB1A84F56D00734556 /* SmartDLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D70401B81A84F56D00734556 /* SmartDLC.cpp */; };
+		D70401BC1A84F56D00734556 /* SmartDLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D70401B91A84F56D00734556 /* SmartDLC.h */; };
+		D70401BD1A84F56D00734556 /* SmartDLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D70401B91A84F56D00734556 /* SmartDLC.h */; };
 		D751821819BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D751821919BF03E400BB88E0 /* ThreadPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D751821719BF03E400BB88E0 /* ThreadPosix.cpp */; };
 		D7C556371A7A117000175ED9 /* DataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C5562B1A7A117000175ED9 /* DataStorage.h */; };
@@ -2238,6 +2242,8 @@
 		CCF00D671A443F6200A577C2 /* EntityFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityFamily.cpp; sourceTree = "<group>"; };
 		CCF00D681A443F6200A577C2 /* EntityFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFamily.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D70401B81A84F56D00734556 /* SmartDLC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartDLC.cpp; sourceTree = "<group>"; };
+		D70401B91A84F56D00734556 /* SmartDLC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartDLC.h; sourceTree = "<group>"; };
 		D751821719BF03E400BB88E0 /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
 		D7C5562B1A7A117000175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
 		D7C5562D1A7A117000175ED9 /* DataStorageIOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageIOS.cpp; sourceTree = "<group>"; };
@@ -3245,6 +3251,8 @@
 		D7FEF12519864E5C00B2C7AF /* Downloader */ = {
 			isa = PBXGroup;
 			children = (
+				D70401B81A84F56D00734556 /* SmartDLC.cpp */,
+				D70401B91A84F56D00734556 /* SmartDLC.h */,
 				D7FEF12619864E5C00B2C7AF /* CurlDownloader.cpp */,
 				D7FEF12719864E5C00B2C7AF /* CurlDownloader.h */,
 				D7FEF12819864E5C00B2C7AF /* Downloader.cpp */,
@@ -4636,6 +4644,7 @@
 				02FD7FFD1924997C007762C0 /* TransformComponent.h in Headers */,
 				02FD7FFE1924997C007762C0 /* UpdatableComponent.h in Headers */,
 				02FD7FFF1924997C007762C0 /* DataNode.h in Headers */,
+				D70401BD1A84F56D00734556 /* SmartDLC.h in Headers */,
 				02FD80001924997C007762C0 /* Drawable.h in Headers */,
 				02FD80011924997C007762C0 /* ImposterManager.h in Headers */,
 				02FD80021924997C007762C0 /* ImposterNode.h in Headers */,
@@ -5147,6 +5156,7 @@
 				E8B3CC9E16B9326E002BD35F /* Scene.h in Headers */,
 				50194DC71A52D92600557DAB /* TCPClientTransport.h in Headers */,
 				84D18C0719201BEF009E3E90 /* LibPngHelpers.h in Headers */,
+				D70401BC1A84F56D00734556 /* SmartDLC.h in Headers */,
 				50194DA71A52D92600557DAB /* IOLoop.h in Headers */,
 				11CB614B19C338DF00B48A92 /* AnimationData.h in Headers */,
 				E8B3CCA016B9326E002BD35F /* SceneAnimationMixer.h in Headers */,
@@ -5503,6 +5513,7 @@
 				02FD80D61924997C007762C0 /* InputSystem.cpp in Sources */,
 				64493E0B19476F4700AB2715 /* VegetationGeometry.cpp in Sources */,
 				02FD80D71924997C007762C0 /* KeyboardDevice.cpp in Sources */,
+				D70401BB1A84F56D00734556 /* SmartDLC.cpp in Sources */,
 				02FD80D81924997C007762C0 /* musicios.mm in Sources */,
 				02FD80D91924997C007762C0 /* AABBox2.cpp in Sources */,
 				02FD80DA1924997C007762C0 /* AABBox3.cpp in Sources */,
@@ -5929,6 +5940,7 @@
 				E8B3CB5416B9326E002BD35F /* NeonMath.cpp in Sources */,
 				E8B3CB5816B9326E002BD35F /* Polygon2.cpp in Sources */,
 				E8B3CB5A16B9326E002BD35F /* Polygon3.cpp in Sources */,
+				D70401BA1A84F56D00734556 /* SmartDLC.cpp in Sources */,
 				E890390C196D4FB9003126C8 /* ImageFormatInterface.cpp in Sources */,
 				E8B3CB5F16B9326E002BD35F /* RectPacker.cpp in Sources */,
 				E8B3CB6216B9326E002BD35F /* Spline.cpp in Sources */,
@@ -6501,8 +6513,8 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 				USE_HEADERMAP = NO;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Debug;
 		};
@@ -6554,8 +6566,8 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 				USE_HEADERMAP = NO;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Release;
 		};
@@ -6757,8 +6769,8 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 				USE_HEADERMAP = NO;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = AdHoc;
 		};
@@ -6856,8 +6868,8 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
-				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 				USE_HEADERMAP = NO;
+				VALID_ARCHS = "armv7 armv7s arm64 i386 ";
 			};
 			name = Distribution;
 		};

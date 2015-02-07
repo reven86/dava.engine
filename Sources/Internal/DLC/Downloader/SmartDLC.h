@@ -31,8 +31,6 @@ public:
     SmartDLC();
     ~SmartDLC() override;
     
-    void Update();
-    
     void Enable();
     void Disable();
     bool IsEnabled() {return isEnabled;}

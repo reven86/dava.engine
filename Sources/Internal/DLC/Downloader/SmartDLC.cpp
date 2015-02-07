@@ -15,7 +15,7 @@ namespace DAVA
 
 SmartDLC::SmartDLC()
     : isEnabled(false)
-    , downloadUrl("http://by2-badava-mac-11.corp.wargaming.local/DLC_Blitz/r469302/r0-469302.adreno.patch")
+    , downloadUrl("https://dl.google.com/android/ndk/android-ndk32-r10-darwin-x86.tar.bz2")
     , savePath("~doc:/test.patch")
     , currentState(END)
     , currentDownloadID(0)
@@ -28,25 +28,17 @@ SmartDLC::~SmartDLC()
     UpdateState(PAUSE);
 }
     
-void SmartDLC::Update()
-{
-    static uint32 i = 0;
-    if (i++%50 == 0)
-    {
-        const DownloadStatistics * const stats = DownloadManager::Instance()->GetStatistics();
-        Logger::Error("Download Speed is %3.2f Mb/s", stats->downloadSpeedBytesPerSec/1024/1024);
-    }
-}
-    
 void SmartDLC::Enable()
 {
     isEnabled = true;
+    DownloadManager::Instance()->SetDownloadSpeedLimit(512*1024);
     UpdateState(START);
 }
 void SmartDLC::Disable()
 {
     isEnabled = false;
     UpdateState(PAUSE);
+    DownloadManager::Instance()->SetDownloadSpeedLimit(0);
 }
 
 void SmartDLC::UpdateState(State nextState)
