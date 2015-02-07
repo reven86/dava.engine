@@ -469,7 +469,10 @@ QWidget * MainWindow::CreateAppAvalibleTableItem(Application * app)
         comboBox->setFocusPolicy(Qt::NoFocus);
         comboBox->model()->sort(0, Qt::DescendingOrder);
         comboBox->setCurrentIndex(0);
+
+#ifdef Q_OS_DARWIN
         comboBox->setMaximumHeight(26);
+#endif
 
         return comboBox;
     }

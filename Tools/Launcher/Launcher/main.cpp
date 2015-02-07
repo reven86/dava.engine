@@ -29,7 +29,7 @@
 
 #include "mainwindow.h"
 #include "filemanager.h"
-#include <errormessanger.h>
+#include "errormessanger.h"
 #include <QApplication>
 
 void LogMessageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
