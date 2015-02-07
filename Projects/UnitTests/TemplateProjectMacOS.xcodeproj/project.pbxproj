@@ -617,6 +617,10 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectMacOS_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__DAVAENGINE_DEBUG__,
+					MEMPROF_ENABLE,
+				);
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,
@@ -650,6 +654,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectMacOS_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = MEMPROF_ENABLE;
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,

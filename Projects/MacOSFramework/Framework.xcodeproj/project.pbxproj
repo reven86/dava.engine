@@ -980,6 +980,17 @@
 		50ED334D1858B5A200A917D5 /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50ED33491858B5A200A917D5 /* StaticOcclusionComponent.h */; };
 		50ED334E1858B5A200A917D5 /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50ED33491858B5A200A917D5 /* StaticOcclusionComponent.h */; };
 		50ED334F1858B5A200A917D5 /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50ED33491858B5A200A917D5 /* StaticOcclusionComponent.h */; };
+		50FB9D2D1A86872500BDB8A2 /* internal_alloc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D221A86872500BDB8A2 /* internal_alloc.cpp */; };
+		50FB9D2E1A86872500BDB8A2 /* internal_alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D231A86872500BDB8A2 /* internal_alloc.h */; };
+		50FB9D2F1A86872500BDB8A2 /* internal_allocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D241A86872500BDB8A2 /* internal_allocator.h */; };
+		50FB9D301A86872500BDB8A2 /* malloc_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D251A86872500BDB8A2 /* malloc_hook.cpp */; };
+		50FB9D311A86872500BDB8A2 /* malloc_hook.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D261A86872500BDB8A2 /* malloc_hook.h */; };
+		50FB9D321A86872500BDB8A2 /* mem_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D271A86872500BDB8A2 /* mem_profiler.cpp */; };
+		50FB9D331A86872500BDB8A2 /* mem_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D281A86872500BDB8A2 /* mem_profiler.h */; };
+		50FB9D341A86872500BDB8A2 /* mem_profiler_types.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D291A86872500BDB8A2 /* mem_profiler_types.h */; };
+		50FB9D351A86872500BDB8A2 /* memprof_config.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D2A1A86872500BDB8A2 /* memprof_config.h */; };
+		50FB9D361A86872500BDB8A2 /* new_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D2B1A86872500BDB8A2 /* new_hook.cpp */; };
+		50FB9D371A86872500BDB8A2 /* profiled_allocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D2C1A86872500BDB8A2 /* profiled_allocator.h */; };
 		5C42C98414E3AFA400EB3F53 /* libxml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C42C98314E3AFA400EB3F53 /* libxml_macos.a */; };
 		5C50EA1A15761947005ABED7 /* libmongodb_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C50EA1915761947005ABED7 /* libmongodb_macos.a */; };
 		5C77AB7D14C7509D00E92D28 /* libpng_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77AB7C14C7509D00E92D28 /* libpng_macos.a */; };
@@ -2900,6 +2911,17 @@
 		50E19B7D1A3F766600022055 /* STLDebugAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STLDebugAllocator.h; sourceTree = "<group>"; };
 		50ED33481858B5A200A917D5 /* StaticOcclusionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionComponent.cpp; sourceTree = "<group>"; };
 		50ED33491858B5A200A917D5 /* StaticOcclusionComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionComponent.h; sourceTree = "<group>"; };
+		50FB9D221A86872500BDB8A2 /* internal_alloc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = internal_alloc.cpp; sourceTree = "<group>"; };
+		50FB9D231A86872500BDB8A2 /* internal_alloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = internal_alloc.h; sourceTree = "<group>"; };
+		50FB9D241A86872500BDB8A2 /* internal_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = internal_allocator.h; sourceTree = "<group>"; };
+		50FB9D251A86872500BDB8A2 /* malloc_hook.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = malloc_hook.cpp; sourceTree = "<group>"; };
+		50FB9D261A86872500BDB8A2 /* malloc_hook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = malloc_hook.h; sourceTree = "<group>"; };
+		50FB9D271A86872500BDB8A2 /* mem_profiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mem_profiler.cpp; sourceTree = "<group>"; };
+		50FB9D281A86872500BDB8A2 /* mem_profiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mem_profiler.h; sourceTree = "<group>"; };
+		50FB9D291A86872500BDB8A2 /* mem_profiler_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mem_profiler_types.h; sourceTree = "<group>"; };
+		50FB9D2A1A86872500BDB8A2 /* memprof_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memprof_config.h; sourceTree = "<group>"; };
+		50FB9D2B1A86872500BDB8A2 /* new_hook.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = new_hook.cpp; sourceTree = "<group>"; };
+		50FB9D2C1A86872500BDB8A2 /* profiled_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = profiled_allocator.h; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
 		5C50EA1915761947005ABED7 /* libmongodb_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmongodb_macos.a; path = ../../Libs/libs/libmongodb_macos.a; sourceTree = "<group>"; };
 		5C6BF78214C85A2A009297F7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -3957,6 +3979,24 @@
 				50C16DA21A52D7B9003C307A /* NetLogger.h */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		50FB9D211A86872500BDB8A2 /* memprof */ = {
+			isa = PBXGroup;
+			children = (
+				50FB9D221A86872500BDB8A2 /* internal_alloc.cpp */,
+				50FB9D231A86872500BDB8A2 /* internal_alloc.h */,
+				50FB9D241A86872500BDB8A2 /* internal_allocator.h */,
+				50FB9D251A86872500BDB8A2 /* malloc_hook.cpp */,
+				50FB9D261A86872500BDB8A2 /* malloc_hook.h */,
+				50FB9D271A86872500BDB8A2 /* mem_profiler.cpp */,
+				50FB9D281A86872500BDB8A2 /* mem_profiler.h */,
+				50FB9D291A86872500BDB8A2 /* mem_profiler_types.h */,
+				50FB9D2A1A86872500BDB8A2 /* memprof_config.h */,
+				50FB9D2B1A86872500BDB8A2 /* new_hook.cpp */,
+				50FB9D2C1A86872500BDB8A2 /* profiled_allocator.h */,
+			);
+			path = memprof;
 			sourceTree = "<group>";
 		};
 		644C86A719476A7100964F91 /* Vegetation */ = {
@@ -5201,6 +5241,7 @@
 		FECFC0A512E87E3000C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				50FB9D211A86872500BDB8A2 /* memprof */,
 				D7C556621A7A158600175ED9 /* DataStorage */,
 				E8989ABD16BD24E400732C04 /* Animation */,
 				E8989ACD16BD24E400732C04 /* Autotesting */,
@@ -5800,6 +5841,7 @@
 				E8989E4216BD24E500732C04 /* LocalizationSystem.h in Headers */,
 				E8989E4416BD24E500732C04 /* Logger.h in Headers */,
 				E8989E4A16BD24E500732C04 /* ResourceArchive.h in Headers */,
+				50FB9D351A86872500BDB8A2 /* memprof_config.h in Headers */,
 				84CB671F191FC8850086483D /* ImageSystem.h in Headers */,
 				E8989E4C16BD24E500732C04 /* VariantType.h in Headers */,
 				E8989E4E16BD24E500732C04 /* XMLParser.h in Headers */,
@@ -5848,6 +5890,7 @@
 				E8989EA016BD24E500732C04 /* ParticlePropertyLine.h in Headers */,
 				D7E6C5AD198255BF00B96D1A /* DownloaderCommon.h in Headers */,
 				E8989EAB16BD24E500732C04 /* Mutex.h in Headers */,
+				50FB9D311A86872500BDB8A2 /* malloc_hook.h in Headers */,
 				E8BAD5B3185213F100C98C8D /* IntrospectionDynamic.h in Headers */,
 				E8989EBB16BD24E500732C04 /* SystemTimer.h in Headers */,
 				E8989EC716BD24E500732C04 /* AppDelegate.h in Headers */,
@@ -5863,6 +5906,7 @@
 				E8989EDC16BD24E500732C04 /* FontManager.h in Headers */,
 				50C16DBA1A52D7B9003C307A /* IChannel.h in Headers */,
 				E8989EDE16BD24E500732C04 /* FTFont.h in Headers */,
+				50FB9D341A86872500BDB8A2 /* mem_profiler_types.h in Headers */,
 				4F34E1BC1A234DDA000681BB /* JobThread.h in Headers */,
 				D7E6C5AF198255C000B96D1A /* DownloadManager.h in Headers */,
 				644C86E819476A7100964F91 /* VegetationMaterialTransformer.h in Headers */,
@@ -5875,6 +5919,7 @@
 				E8989EE916BD24E500732C04 /* EdgeAdjacency.h in Headers */,
 				E8989EEB16BD24E500732C04 /* PolygonGroup.h in Headers */,
 				E8989EED16BD24E500732C04 /* StaticMesh.h in Headers */,
+				50FB9D2E1A86872500BDB8A2 /* internal_alloc.h in Headers */,
 				50C16DCC1A52D7B9003C307A /* TCPClientTransport.h in Headers */,
 				E8989EEE16BD24E500732C04 /* Cursor.h in Headers */,
 				E8989EF816BD24E500732C04 /* ColorOnlyEffect.h in Headers */,
@@ -5886,6 +5931,7 @@
 				E8989F2B16BD24E500732C04 /* IndexBuffer.h in Headers */,
 				11CB615319C3391B00B48A92 /* AnimationData.h in Headers */,
 				E8989F3316BD24E500732C04 /* MaterialCompiler.h in Headers */,
+				50FB9D331A86872500BDB8A2 /* mem_profiler.h in Headers */,
 				E8989F3516BD24E500732C04 /* MaterialGraph.h in Headers */,
 				E8989F3716BD24E500732C04 /* MaterialGraphNode.h in Headers */,
 				50A3044118575C370082CA8D /* StaticOcclusionRenderPass.h in Headers */,
@@ -5934,6 +5980,7 @@
 				E8989F7316BD24E500732C04 /* Box2DTileCollider.h in Headers */,
 				E8FC12F91869726A0095D8FE /* QualitySettingsSystem.h in Headers */,
 				E8989F7516BD24E500732C04 /* GameObject.h in Headers */,
+				50FB9D371A86872500BDB8A2 /* profiled_allocator.h in Headers */,
 				E8989F7716BD24E500732C04 /* GameObjectAnimations.h in Headers */,
 				E8989F7916BD24E500732C04 /* GameObjectManager.h in Headers */,
 				E8989F7B16BD24E500732C04 /* TextGameObject.h in Headers */,
@@ -5997,6 +6044,7 @@
 				326A1B561A791D9800970D22 /* UIPackagesCache.h in Headers */,
 				E8989FD516BD24E500732C04 /* BaseProcessSystem.h in Headers */,
 				E8989FD716BD24E500732C04 /* DebugRenderSystem.h in Headers */,
+				50FB9D2F1A86872500BDB8A2 /* internal_allocator.h in Headers */,
 				E8989FDB16BD24E500732C04 /* EventSystem.h in Headers */,
 				E8989FDD16BD24E500732C04 /* LightUpdateSystem.h in Headers */,
 				D7C556791A7A158600175ED9 /* DataStorage.h in Headers */,
@@ -7282,6 +7330,7 @@
 				50C16DA41A52D7B9003C307A /* DeadlineTimer.cpp in Sources */,
 				E8989EEF16BD24E500732C04 /* CursorMacOS.mm in Sources */,
 				E8989EF716BD24E500732C04 /* ColorOnlyEffect.cpp in Sources */,
+				50FB9D2D1A86872500BDB8A2 /* internal_alloc.cpp in Sources */,
 				E8989EF916BD24E500732C04 /* MultiTextureEffect.cpp in Sources */,
 				50C16DA91A52D7B9003C307A /* IfAddress.cpp in Sources */,
 				02FD8264192A3859007762C0 /* WaveSystem.cpp in Sources */,
@@ -7339,6 +7388,7 @@
 				D751822119BF1D8800BB88E0 /* ThreadPosix.cpp in Sources */,
 				E8989F7416BD24E500732C04 /* GameObject.cpp in Sources */,
 				E8989F7616BD24E500732C04 /* GameObjectAnimations.cpp in Sources */,
+				50FB9D361A86872500BDB8A2 /* new_hook.cpp in Sources */,
 				02FD7EE319237DA2007762C0 /* SpeedTreeComponent.cpp in Sources */,
 				E8990B4E1A288C8F00FF71A1 /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				E8989F7816BD24E500732C04 /* GameObjectManager.cpp in Sources */,
@@ -7414,6 +7464,7 @@
 				E8990B541A288C8F00FF71A1 /* WASDControllerSystem.cpp in Sources */,
 				E898A00316BD24E500732C04 /* ScrollHelper.cpp in Sources */,
 				E898A00516BD24E500732C04 /* TheoraPlayer.cpp in Sources */,
+				50FB9D301A86872500BDB8A2 /* malloc_hook.cpp in Sources */,
 				E898A00716BD24E500732C04 /* UI3DView.cpp in Sources */,
 				E898A00916BD24E500732C04 /* UIButton.cpp in Sources */,
 				E898A00B16BD24E500732C04 /* UIControl.cpp in Sources */,
@@ -7422,6 +7473,7 @@
 				E898A00F16BD24E500732C04 /* UIControlSystem.cpp in Sources */,
 				0282B87418BC72BE006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				E898A01116BD24E500732C04 /* UIEvent.cpp in Sources */,
+				50FB9D321A86872500BDB8A2 /* mem_profiler.cpp in Sources */,
 				02FD7ED319237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
 				E898A01316BD24E500732C04 /* UIFadeTransition.cpp in Sources */,
 				E898A01516BD24E500732C04 /* UIFileSystemDialog.cpp in Sources */,
@@ -8113,6 +8165,13 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DDARWIN_NO_CARBON,
+					FT2_BUILD_LIBRARY,
+					__DAVAENGINE_DEBUG__,
+					DAVA_FMOD,
+					MEMPROF_ENABLE,
+				);
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,
@@ -8151,6 +8210,12 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DDARWIN_NO_CARBON,
+					FT2_BUILD_LIBRARY,
+					DAVA_FMOD,
+					MEMPROF_ENABLE,
+				);
 				HEADER_SEARCH_PATHS = (
 					./../../Sources/Internal,
 					./../../Sources/External,
