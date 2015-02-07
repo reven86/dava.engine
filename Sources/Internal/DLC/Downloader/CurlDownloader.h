@@ -66,6 +66,11 @@ protected:
      \param[in] timeout - operation timeout
      */
     virtual DownloadError Download(const String &url, const FilePath &savePath, uint8 partsCount, int32 timeout);
+    /**
+     \brief Sets maximum allowed download speed. -1 means unlimited.
+     \param[in] limit - speed limit in bytes per second.
+     */
+    virtual void SetDownloadSpeedLimit(const uint64 limit);
 
 private:
     /**
@@ -165,6 +170,7 @@ private:
     int32 operationTimeout;
     uint64 remoteFileSize;
     uint64 sizeToDownload;
+    uint64 downloadSpeedLimit;
 
     static ErrorWithPriority errorsByPriority[];
     
