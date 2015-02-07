@@ -181,6 +181,9 @@
     <Filter Include="Internal\Network\Services">
       <UniqueIdentifier>{d2eefec1-4620-43a6-b8f5-b6703672b2b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\memprof">
+      <UniqueIdentifier>{7a415933-59d0-4fe1-ab01-0f29fe4fcde8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1795,6 +1798,27 @@
     <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManagerTypes.h">
       <Filter>Internal\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\memprof\internal_alloc.h">
+      <Filter>Internal\memprof</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\memprof\internal_allocator.h">
+      <Filter>Internal\memprof</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\memprof\malloc_hook.h">
+      <Filter>Internal\memprof</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\memprof\mem_profiler.h">
+      <Filter>Internal\memprof</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\memprof\mem_profiler_types.h">
+      <Filter>Internal\memprof</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\memprof\memprof_config.h">
+      <Filter>Internal\memprof</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\memprof\profiled_allocator.h">
+      <Filter>Internal\memprof</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3207,6 +3231,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\PeerDesriptionSerialize.cpp">
       <Filter>Internal\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\memprof\internal_alloc.cpp">
+      <Filter>Internal\memprof</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\memprof\malloc_hook.cpp">
+      <Filter>Internal\memprof</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\memprof\mem_profiler.cpp">
+      <Filter>Internal\memprof</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\memprof\new_hook.cpp">
+      <Filter>Internal\memprof</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -394,6 +394,13 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\memprof\internal_alloc.h" />
+    <ClInclude Include="..\..\Sources\Internal\memprof\internal_allocator.h" />
+    <ClInclude Include="..\..\Sources\Internal\memprof\malloc_hook.h" />
+    <ClInclude Include="..\..\Sources\Internal\memprof\memprof_config.h" />
+    <ClInclude Include="..\..\Sources\Internal\memprof\mem_profiler.h" />
+    <ClInclude Include="..\..\Sources\Internal\memprof\mem_profiler_types.h" />
+    <ClInclude Include="..\..\Sources\Internal\memprof\profiled_allocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />
@@ -899,6 +906,10 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\memprof\internal_alloc.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\memprof\malloc_hook.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\memprof\mem_profiler.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\memprof\new_hook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\IfAddress.cpp" />
