@@ -53,6 +53,7 @@ CurlDownloader::CurlDownloader()
     , operationTimeout(2)
     , remoteFileSize(0)
     , sizeToDownload(0)
+    , downloadSpeedLimit(0)
     , saveResult(DLE_NO_ERROR)
     , chunkInfo(NULL)
     , saveThread(NULL)
@@ -141,6 +142,7 @@ void CurlDownloader::SetupEasyHandle(CURL *handle, DownloadPart *part)
     }
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, static_cast<void *>(part));
 
+    curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, downloadSpeedLimit/downloadParts.size());
     
     // set all timeouts
     SetTimeout(handle);
@@ -535,6 +537,12 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     }
     
     return retCode;
+}
+
+void CurlDownloader::SetDownloadSpeedLimit(const uint64 limit)
+{
+    downloadSpeedLimit = limit;
+    
 }
 
 DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, int32 timeout)

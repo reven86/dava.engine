@@ -99,6 +99,11 @@ protected:
         \brief Returns download statistics structure
      */
     inline const DownloadStatistics * const GetStatistics() const;
+    /**
+         \brief Sets maximum allowed download speed. 0 means unlimited.
+         \param[in] limit - speed limit in bytes per second.
+     */
+    virtual void SetDownloadSpeedLimit(const uint64 limit) = 0;
 
 protected:
     Function<void (uint64)> notifyProgress;
