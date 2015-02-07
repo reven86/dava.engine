@@ -7,7 +7,7 @@
 #define NOMINMAX
 
 #include <windows.h>
-#include <detours.h>
+#include <detours/detours.h>
 //#include <malloc.h>
 #include <cstdlib>
 #elif defined(MEMPROF_MACOS) || defined(MEMPROF_IOS) || defined(MEMPROF_ANDROID)

@@ -1,7 +1,20 @@
 #pragma once
 
-#define MEMPROF_ENABLE  1
+#include "Base/BaseTypes.h"
 
+//#define MEMPROF_ENABLE  1
+
+#if defined(__DAVAENGINE_WIN32__)
+#   define MEMPROF_WIN32    1
+#elif defined(__DAVAENGINE_ANDROID__)
+#   define MEMPROF_ANDROID
+#elif defined(__DAVAENGINE_MACOS__)
+#   define MEMPROF_MACOS    1
+#else
+#   error "Unsupported platform"
+#endif
+
+/*
 #if defined(WIN32) || defined(_WIN32)
 #   define MEMPROF_WIN32   1
 #elif defined(__ANDROID__)
@@ -16,3 +29,4 @@
 #       define MEMPROF_MACOS    1
 #   endif
 #endif
+*/
