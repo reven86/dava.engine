@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-enum class mem_type_e : uintptr_t
+enum class mem_type_e : uint32_t
 {
     MEM_TYPE_INTERNAL = 0,
     MEM_TYPE_NEW,
@@ -16,12 +16,12 @@ enum class mem_type_e : uintptr_t
 
 struct mem_stat_t
 {
-    size_t alloc_size;
-    size_t total_size;
-    size_t peak_alloc_size;
-    size_t peak_total_size;
-    size_t max_block_size;
-    size_t nblocks;
+    uint32_t alloc_size;
+    uint32_t total_size;
+    uint32_t peak_alloc_size;
+    uint32_t peak_total_size;
+    uint32_t max_block_size;
+    uint32_t nblocks;
 };
 
 #if defined(MEMPROF_ENABLE)

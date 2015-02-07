@@ -25,24 +25,25 @@
 
 struct mem_profiler::backtrace_t
 {
-    static const size_t MAX_FRAMES = 15;
+    static const uint32_t MAX_FRAMES = 15;
 
-    size_t depth;
-    void*  frames[MAX_FRAMES];
+    uint32_t depth;
+    uint32_t padding;
+    void*    frames[MAX_FRAMES];
 };
 
 struct mem_profiler::mem_block_t
 {
-    uintptr_t    mark;
     mem_type_e   type;
     mem_block_t* prev;
     mem_block_t* next;
-    size_t       alloc_size;
-    size_t       total_size;
-    size_t       order_no;
+    uint32_t     mark;
+    uint32_t     alloc_size;
+    uint32_t     total_size;
+    uint32_t     order_no;
     //size_t       padding;
 
-    size_t       cur_tag;
+    uint32_t     cur_tag;
     backtrace_t  backtrace;
 };
 
@@ -206,7 +207,7 @@ mem_profiler::mem_block_t* mem_profiler::find_block(void* ptr)
     return nullptr;
 }
 
-mem_profiler::mem_block_t* mem_profiler::find_block(size_t order)
+mem_profiler::mem_block_t* mem_profiler::find_block(uint32_t order)
 {
     mem_block_t* cur_block = head;
     while (cur_block != nullptr)
@@ -241,10 +242,10 @@ void mem_profiler::collect_backtrace(mem_block_t* block, size_t nskip)
 #endif
 }
 
-void mem_profiler::update_stat_after_push(mem_block_t* block, mem_type_e type, size_t depth)
+void mem_profiler::update_stat_after_push(mem_block_t* block, mem_type_e type, uint32_t depth)
 {
     const size_t mem_index = static_cast<size_t>(type);
-    for (size_t i = 0;i <= depth;++i)
+    for (uint32_t i = 0;i <= depth;++i)
     {
         stat[mem_index][i].alloc_size += block->alloc_size;
         stat[mem_index][i].total_size += block->total_size;
@@ -259,10 +260,10 @@ void mem_profiler::update_stat_after_push(mem_block_t* block, mem_type_e type, s
     }
 }
 
-void mem_profiler::update_stat_after_pop(mem_block_t* block, mem_type_e type, size_t depth)
+void mem_profiler::update_stat_after_pop(mem_block_t* block, mem_type_e type, uint32_t depth)
 {
     const size_t mem_index = static_cast<size_t>(type);
-    for (size_t i = 0;i <= depth;++i)
+    for (uint32_t i = 0;i <= depth;++i)
     {
         assert(stat[mem_index][i].nblocks >= 1);
         assert(stat[mem_index][i].alloc_size >= block->alloc_size);
@@ -295,7 +296,7 @@ void mem_profiler::internal_dump_memory_type(FILE* file, size_t mem_index)
         "OTHER"
     };
     fprintf(file, "stat: mem_type=%s, tag_depth=%u\n", mem_descr[mem_index], tag_depth);
-    for (size_t i = 0;i <= tag_depth;++i)
+    for (uint32_t i = 0;i <= tag_depth;++i)
     {
         fprintf(file, "  tag            : %u\n", tag_bookmarks[i].tag);
         fprintf(file, "  alloc_size     : %u  ", stat[mem_index][i].alloc_size);

@@ -20,15 +20,15 @@ class mem_profiler final
     struct bookmark_t
     {
         uint32_t tag;
-        size_t   begin;
-        size_t   end;
+        uint32_t begin;
+        uint32_t end;
     };
 
-    static const uintptr_t BLOCK_MARK = 0xBA0BAB;
-    static const uintptr_t BLOCK_DELETED = 0xACCA;
+    static const uint32_t BLOCK_MARK = 0xBA0BAB;
+    static const uint32_t BLOCK_DELETED = 0xACCA;
     static const size_t BLOCK_ALIGN = 16;
 
-    static const size_t TAG_DEPTH = 3;
+    static const uint32_t TAG_DEPTH = 3;
     static const size_t MEM_COUNT = static_cast<size_t>(mem_type_e::MEM_TYPE_COUNT);
 
 public:
@@ -55,13 +55,13 @@ private:
     void push_block(mem_block_t* block);
     mem_block_t* is_profiled_block(void* ptr);
     mem_block_t* find_block(void* ptr);
-    mem_block_t* find_block(size_t order);
+    mem_block_t* find_block(uint32_t order);
     void pop_block(mem_block_t* block);
 
     void collect_backtrace(mem_block_t* block, size_t nskip);
 
-    void update_stat_after_push(mem_block_t* block, mem_type_e type, size_t depth);
-    void update_stat_after_pop(mem_block_t* block, mem_type_e type, size_t depth);
+    void update_stat_after_push(mem_block_t* block, mem_type_e type, uint32_t depth);
+    void update_stat_after_pop(mem_block_t* block, mem_type_e type, uint32_t depth);
 
     void internal_dump(FILE* file);
     void internal_dump_memory_type(FILE* file, size_t index);
@@ -70,9 +70,9 @@ private:
 
 private:
     mem_block_t* head;
-    size_t       next_order_no;
-    size_t       tag_depth;
-    size_t       ndeletions;
+    uint32_t     next_order_no;
+    uint32_t     tag_depth;
+    uint32_t     ndeletions;
     bookmark_t   tag_bookmarks[TAG_DEPTH];
     mem_stat_t   stat[MEM_COUNT][TAG_DEPTH];
 
