@@ -35,7 +35,7 @@
 
 #include "TestTemplate.h"
 
-//#define NETWORKTEST_WITH_UI_FOR_LOCAL
+#define NETWORKTEST_WITH_UI_FOR_LOCAL
 
 using DAVA::Net::IChannel;
 using DAVA::Net::IChannelListener;
