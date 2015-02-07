@@ -135,13 +135,24 @@
 //#endif 
 //#define __DAVAENGINE_IPHONE__
 
-#if defined(ENABLE_MEMORY_MANAGER)
-#include "Base/STLDebugAllocator.h"
-#define DAVADefaultSTLAllocator std::allocator
-#else
-#define DAVADefaultSTLAllocator std::allocator
-#endif
+//#if defined(ENABLE_MEMORY_MANAGER)
+//#include "Base/STLDebugAllocator.h"
+//#define DAVADefaultSTLAllocator std::allocator
+//#else
+//#define DAVADefaultSTLAllocator std::allocator
+//#endif
 
+namespace DAVA
+{
+#if defined(MEMPROF_ENABLED)
+#include "memprof/profiled_allocator.h"
+template<typename T>
+using DAVADefaultSTLAllocator = profiled_allocator<T>;
+#else
+template<typename T>
+using DAVADefaultSTLAllocator = std::allocator<T>;
+#endif
+}
 
 
 namespace DAVA
@@ -187,33 +198,46 @@ typedef wchar_t		char16;
 typedef float			float32;
 typedef double			float64;
 
-typedef std::string		String;
-#if defined(__DAVAENGINE_ANDROID__)
-	typedef std::basic_string<wchar_t>	WideString;
-#else //#if defined(__DAVAENGINE_ANDROID__)
-	typedef std::wstring	WideString;
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+template<typename CharT>
+using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DAVADefaultSTLAllocator<CharT>>;
 
+typedef BasicString<char8>      String;
+typedef BasicString<wchar_t>    WideString;
+    
+//typedef std::string		String;
+//#if defined(__DAVAENGINE_ANDROID__)
+//	typedef std::basic_string<wchar_t>	WideString;
+//#else //#if defined(__DAVAENGINE_ANDROID__)
+//	typedef std::wstring	WideString;
+//#endif //#if defined(__DAVAENGINE_ANDROID__)
 	
 
 //template <typename _Ty, typename _Ax = std::allocator(_Ty)> 
 //class List : public std::list<_Ty, _Ax>  {};
 
+template<typename T>
+using List = std::list<T, DAVADefaultSTLAllocator<T>>;
+
+template<typename T>
+using Vector = std::vector<T, DAVADefaultSTLAllocator<T>>;
+
+template<typename T>
+using Deque = std::deque<T, DAVADefaultSTLAllocator<T>>;
+
+//template <  typename _E,
+//            typename _A = DAVADefaultSTLAllocator <_E> >
+//class List : public std::list< _E, _A> {};
     
-template <  typename _E,
-            typename _A = DAVADefaultSTLAllocator <_E> >
-class List : public std::list< _E, _A> {};
-    
-template < typename _E,
-           typename _A = DAVADefaultSTLAllocator < _E> >
-class Vector : public std::vector< _E, _A>
-{
-public:
-    typedef _E	   value_type;
-    typedef size_t size_type;
-    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< _E, _A >(n, value) {}
-    Vector() : std::vector< _E, _A >() {}
-};
+//template < typename _E,
+//           typename _A = DAVADefaultSTLAllocator < _E> >
+//class Vector : public std::vector< _E, _A>
+//{
+//public:
+//    typedef _E	   value_type;
+//    typedef size_t size_type;
+//    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< _E, _A >(n, value) {}
+//    Vector() : std::vector< _E, _A >() {}
+//};
 
 //template < typename _E> class Vector : public std::vector< _E>
 //{
@@ -224,15 +248,14 @@ public:
 //    Vector() : std::vector< _E>() {}
 //};
 
-    
 template <  class _Key,
             class _Compare = std::less<_Key>,
             class _Alloc = DAVADefaultSTLAllocator<_Key> >
 class Set : public std::set< _Key, _Compare, _Alloc > {};
     
     
-template < class _E , class _A = DAVADefaultSTLAllocator<_E> >
-class Deque : public std::deque< _E, _A> {};
+//template < class _E , class _A = DAVADefaultSTLAllocator<_E> >
+//class Deque : public std::deque< _E, _A> {};
 
 template<	class _Kty,
 			class _Ty,
