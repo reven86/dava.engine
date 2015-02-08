@@ -38,7 +38,7 @@ generate_source_groups_project(  ROOT_DIR "Classes" ${PLATFORM_SPECIFIC_FOLDER}
 
 set( MACOS_PLIST                 )
 set( MACOS_ICO                   )
-set( MACOS_DATA                  )
+set( MACOS_DATA                  ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_DYLIB                 )
 
 set( ANDROID_PACKAGE             "com.dava.unittests" )
