@@ -4,7 +4,8 @@ import os
 import hashlib
 import timeit
 
-arguments = sys.argv[1:]
+arguments    = sys.argv[1:]
+extensions[] = '.c','.cpp','.h','.hpp','.m','.mm','.ui','.qrc','.a','.so','.qrc','.lib'
 
 if len(arguments) == 0:
     print 'Usage: ./test.py Please enter path to the directory'
@@ -18,7 +19,7 @@ tree_hash  = hashlib.md5()
 for arg in sys.argv:
     for rootdir, dirs, files in os.walk( arg ):
         for file in files:   
-            if file.endswith( ( '.c','.cpp','.h','.hpp','.m','.mm','.ui','.qrc' ) ): 
+            if file.endswith( extensions  ): 
                 array.append( os.path.relpath(( rootdir + file ), ( arg + '/..' ) )  ) 
 #                print os.path.relpath(( rootdir + file ), ( arg + '/..' ) ) 
 #                count= count + 1  

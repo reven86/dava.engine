@@ -142,7 +142,6 @@ if( ZLIB_FOUND )
     list (APPEND LIST_SHARED_LIBRARIES          ${ZLIB_LIBRARY}     )
 endif()
 
-
 # Define source 
 define_source_folders  ()
 generate_source_groups_project ()
@@ -157,13 +156,11 @@ add_definitions        ( ${FRAMEWORK_DEFINITIONS} )
 
 add_library            ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${RESOURCE} )
 
-
 if( LINK_THIRD_PARTY )                 
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} ALL     "${LIST_SHARED_LIBRARIES}" )
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} DEBUG   "${LIST_SHARED_LIBRARIES_DEBUG}" )
    MERGE_STATIC_LIBRARIES( ${PROJECT_NAME} RELEASE "${LIST_SHARED_LIBRARIES_RELEASE}" )
 endif()
-
 
 target_link_libraries  ( ${PROJECT_NAME} ${LIST_SHARED_LIBRARIES} ${LIST_ADDED_SHARED_LIBRARIES} )  
 
@@ -176,4 +173,5 @@ foreach ( FILE ${LIST_SHARED_LIBRARIES_RELEASE} )
 endforeach ()
 
 install_libraries( ${PROJECT_NAME} )
+
 
