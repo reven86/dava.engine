@@ -991,6 +991,8 @@
 		50FB9D351A86872500BDB8A2 /* memprof_config.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D2A1A86872500BDB8A2 /* memprof_config.h */; };
 		50FB9D361A86872500BDB8A2 /* new_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D2B1A86872500BDB8A2 /* new_hook.cpp */; };
 		50FB9D371A86872500BDB8A2 /* profiled_allocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D2C1A86872500BDB8A2 /* profiled_allocator.h */; };
+		50FB9D541A876B0900BDB8A2 /* MemProfService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50FB9D521A876B0900BDB8A2 /* MemProfService.cpp */; };
+		50FB9D551A876B0900BDB8A2 /* MemProfService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50FB9D531A876B0900BDB8A2 /* MemProfService.h */; };
 		5C42C98414E3AFA400EB3F53 /* libxml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C42C98314E3AFA400EB3F53 /* libxml_macos.a */; };
 		5C50EA1A15761947005ABED7 /* libmongodb_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C50EA1915761947005ABED7 /* libmongodb_macos.a */; };
 		5C77AB7D14C7509D00E92D28 /* libpng_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77AB7C14C7509D00E92D28 /* libpng_macos.a */; };
@@ -2922,6 +2924,9 @@
 		50FB9D2A1A86872500BDB8A2 /* memprof_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memprof_config.h; sourceTree = "<group>"; };
 		50FB9D2B1A86872500BDB8A2 /* new_hook.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = new_hook.cpp; sourceTree = "<group>"; };
 		50FB9D2C1A86872500BDB8A2 /* profiled_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = profiled_allocator.h; sourceTree = "<group>"; };
+		50FB9D511A87563400BDB8A2 /* memprof.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memprof.h; sourceTree = "<group>"; };
+		50FB9D521A876B0900BDB8A2 /* MemProfService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemProfService.cpp; sourceTree = "<group>"; };
+		50FB9D531A876B0900BDB8A2 /* MemProfService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemProfService.h; sourceTree = "<group>"; };
 		5C42C98314E3AFA400EB3F53 /* libxml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_macos.a; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
 		5C50EA1915761947005ABED7 /* libmongodb_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmongodb_macos.a; path = ../../Libs/libs/libmongodb_macos.a; sourceTree = "<group>"; };
 		5C6BF78214C85A2A009297F7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -3977,6 +3982,8 @@
 				50C16DA01A52D7B9003C307A /* LogConsumer.h */,
 				50C16DA11A52D7B9003C307A /* NetLogger.cpp */,
 				50C16DA21A52D7B9003C307A /* NetLogger.h */,
+				50FB9D521A876B0900BDB8A2 /* MemProfService.cpp */,
+				50FB9D531A876B0900BDB8A2 /* MemProfService.h */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -3995,6 +4002,7 @@
 				50FB9D2A1A86872500BDB8A2 /* memprof_config.h */,
 				50FB9D2B1A86872500BDB8A2 /* new_hook.cpp */,
 				50FB9D2C1A86872500BDB8A2 /* profiled_allocator.h */,
+				50FB9D511A87563400BDB8A2 /* memprof.h */,
 			);
 			path = memprof;
 			sourceTree = "<group>";
@@ -5779,6 +5787,7 @@
 				E8989DD416BD24E500732C04 /* ObjectFactory.h in Headers */,
 				50C16DB31A52D7B9003C307A /* TCPAcceptorTemplate.h in Headers */,
 				E8989DD616BD24E500732C04 /* Observable.h in Headers */,
+				50FB9D551A876B0900BDB8A2 /* MemProfService.h in Headers */,
 				E8989DD716BD24E500732C04 /* Observer.h in Headers */,
 				E8989DD916BD24E500732C04 /* Radix.h in Headers */,
 				E8989DDA16BD24E500732C04 /* RefPtr.h in Headers */,
@@ -7188,6 +7197,7 @@
 				50C16DCD1A52D7B9003C307A /* TCPServerTransport.cpp in Sources */,
 				A6D82798187716F30006A5DD /* Color.cpp in Sources */,
 				E8989D9C16BD24E500732C04 /* Animation.cpp in Sources */,
+				50FB9D541A876B0900BDB8A2 /* MemProfService.cpp in Sources */,
 				E8989D9E16BD24E500732C04 /* AnimationManager.cpp in Sources */,
 				E8989DA016BD24E500732C04 /* BezierSplineAnimation.cpp in Sources */,
 				E8989DA216BD24E500732C04 /* Interpolation.cpp in Sources */,
