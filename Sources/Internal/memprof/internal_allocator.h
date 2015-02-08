@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "mem_profiler.h"
 #include "internal_alloc.h"
 
 template<typename T>

@@ -6,8 +6,13 @@
 
 //#define TEST_VECTOR
 
+#include "Thread/Spinlock.h"
+#include "Thread/LockGuard.h"
+#include "Platform/Mutex.h"
+
 #include <cstdio>
 #include <vector>
+#include <unordered_map>
 
 #include "mem_profiler_types.h"
 #include "internal_allocator.h"
@@ -75,7 +80,17 @@ private:
     uint32_t     ndeletions;
     bookmark_t   tag_bookmarks[TAG_DEPTH];
     mem_stat_t   stat[MEM_COUNT][TAG_DEPTH];
-
+    
+    typedef DAVA::Spinlock MutexType;
+    //typedef DAVA::Mutex MutexType;
+    typedef DAVA::LockGuard<MutexType> LockType;
+    
+    MutexType mutex;
+    
+    //typedef std::unordered_map<uintptr_t, char*, std::hash<uintptr_t>, std::equal_to<uintptr_t>, internal_allocator<std::pair<const uintptr_t, char*>>> sym_map_t;
+    //typedef std::map<void*, char, std::less<void*>, internal_allocator<std::pair<void*, char*>>> sym_map_t;
+    //sym_map_t* sym;
+    
 #ifdef TEST_VECTOR
     std::vector<int, internal_allocator<int>> v;
 #endif

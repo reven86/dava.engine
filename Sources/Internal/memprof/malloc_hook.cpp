@@ -122,7 +122,7 @@ void malloc_hook::uninstall()
 }
 
 #if defined(MEMPROF_MACOS) || defined(MEMPROF_IOS) || defined(MEMPROF_ANDROID)
-
+/*
 void* malloc(size_t size)
 {
     return mem_profiler::allocate(size, mem_type_e::MEM_TYPE_OTHER);
@@ -132,7 +132,7 @@ void free(void* ptr)
 {
     mem_profiler::deallocate(ptr);
 }
-
+*/
 #endif  // defined(MEMPROF_MACOS) || defined(MEMPROF_IOS) || defined(MEMPROF_ANDROID)
 
 #endif

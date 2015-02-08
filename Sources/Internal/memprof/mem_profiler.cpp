@@ -25,7 +25,11 @@
 
 struct mem_profiler::backtrace_t
 {
-    static const uint32_t MAX_FRAMES = 15;
+#if defined(MEMPROF_MACOS)
+    static const uint32_t MAX_FRAMES = 16;
+#else
+    static const uint32_t MAX_FRAMES = 18;
+#endif
 
     uint32_t depth;
     uint32_t padding;
@@ -34,10 +38,10 @@ struct mem_profiler::backtrace_t
 
 struct mem_profiler::mem_block_t
 {
-    mem_type_e   type;
     mem_block_t* prev;
     mem_block_t* next;
     uint32_t     mark;
+    mem_type_e   type;
     uint32_t     alloc_size;
     uint32_t     total_size;
     uint32_t     order_no;
@@ -104,6 +108,7 @@ void* mem_profiler::internal_allocate(size_t size, mem_type_e type)
     if (total_size & (BLOCK_ALIGN - 1))
         total_size += (BLOCK_ALIGN - (total_size & (BLOCK_ALIGN - 1)));
 
+    LockType lock(mutex);
     mem_block_t* new_block = static_cast<mem_block_t*>(malloc_hook::do_malloc(total_size));
     new_block->mark        = BLOCK_MARK;
     new_block->type        = type;
@@ -124,6 +129,7 @@ void mem_profiler::internal_deallocate(void* ptr)
 {
     if (ptr != nullptr)
     {
+        LockType lock(mutex);
         mem_block_t* block = is_profiled_block(ptr);
         if (block != nullptr)
         {
@@ -149,6 +155,8 @@ void mem_profiler::internal_enter_scope(uint32_t tag)
     v.resize(v.size() + 999);
 #endif
 
+    LockType lock(mutex);
+    
     tag_depth += 1;
     tag_bookmarks[tag_depth].tag   = tag;
     tag_bookmarks[tag_depth].begin = next_order_no;
@@ -159,6 +167,7 @@ void mem_profiler::internal_leave_scope()
 {
     assert(tag_depth > 0);
 
+    LockType lock(mutex);
     tag_bookmarks[tag_depth].end = next_order_no;
     //internal_dump_tag(tag_bookmarks[tag_depth]);
     tag_bookmarks[tag_depth] = bookmark_t();
@@ -277,6 +286,8 @@ void mem_profiler::update_stat_after_pop(mem_block_t* block, mem_type_e type, ui
 
 void mem_profiler::internal_dump(FILE* file)
 {
+    //LockType lock(mutex);
+    
     for (size_t i = static_cast<size_t>(mem_type_e::MEM_TYPE_INTERNAL);i < static_cast<size_t>(mem_type_e::MEM_TYPE_COUNT);++i)
         internal_dump_memory_type(file, i);
     fprintf(file, "External deletions: %u\n", ndeletions);
@@ -348,12 +359,40 @@ void mem_profiler::internal_dump_backtrace(FILE* file, mem_block_t* block)
 
     SymCleanup(hprocess);
 #elif defined(MEMPROF_MACOS)
-    char** symbols = backtrace_symbols(block->backtrace.frames, static_cast<int>(block->backtrace.depth));
-    for (size_t i = 0;i < block->backtrace.depth;++i)
+    if (block->backtrace.depth > 0)
     {
-        fprintf(file, "        addr=%p, func=%s\n", block->backtrace.frames[i], symbols[i]);
+        /*if (!sym)
+        {
+            void* buf = internal_allocate(sizeof(sym_map_t), mem_type_e::MEM_TYPE_INTERNAL);
+            sym = new (buf) sym_map_t;
+        }
+        
+        int32_t div = (int32_t)block->backtrace.depth - 1;
+        for (;div >= 0;--div)
+        {
+            uintptr_t key = reinterpret_cast<uintptr_t>(block->backtrace.frames[div]);
+            auto i = sym->find(key);
+            if (i == sym->end())
+                break;
+        }
+        
+        if (div >= 0)
+        {
+            char** symbols = backtrace_symbols(block->backtrace.frames, static_cast<int>(div));
+            for (int32_t i = 0;i < div;++i)
+            {
+                size_tstrlen(symbols[i]);
+            }
+            free(symbols);
+        }*/
+        
+        char** symbols = backtrace_symbols(block->backtrace.frames, static_cast<int>(block->backtrace.depth));
+        for (size_t i = 0;i < block->backtrace.depth;++i)
+        {
+            fprintf(file, "        addr=%p, func=%s\n", block->backtrace.frames[i], symbols[i]);
+        }
+        free(symbols);
     }
-    free(symbols);
 #elif defined(MEMPROF_ANDROID)
     for (size_t i = 0;i < block->backtrace.depth;++i)
     {

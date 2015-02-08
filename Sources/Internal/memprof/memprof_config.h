@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-
 //#define MEMPROF_ENABLE  1
+
+#include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 #   define MEMPROF_WIN32    1
