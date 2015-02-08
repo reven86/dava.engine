@@ -15,6 +15,7 @@ class QStandardItem;
 
 class DeviceListWidget;
 class DeviceLogController;
+class MemProfController;
 
 // Struct that holds network services for remote device
 // For now only one service - log receiver
@@ -23,6 +24,7 @@ struct DeviceServices
     DeviceServices() : log(NULL) {}
 
     DeviceLogController* log;
+    MemProfController* memprof;
 };
 
 // Register types for use with QVariant
@@ -36,7 +38,8 @@ class DeviceListController : public QObject
 
     enum
     {
-        SERVICE_LOG = 0
+        SERVICE_LOG = 0,
+        SERVICE_MEMPROF = 1
     };
 
     enum DeviceDataRole
@@ -75,6 +78,9 @@ private:
     // Methods to create and delete network services
     DAVA::Net::IChannelListener* CreateLogger(DAVA::uint32 serviceId, void* context);
     void DeleteLogger(DAVA::Net::IChannelListener*, void* context);
+    
+    DAVA::Net::IChannelListener* CreateMemProfiler(DAVA::uint32 serviceId, void* context);
+    void DeleteMemProfiler(DAVA::Net::IChannelListener* obj, void* context);
 
     // Check whether device already has been discovered
     bool AlreadyInModel(const DAVA::Net::Endpoint& endp) const;
