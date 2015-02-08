@@ -87,7 +87,7 @@ void FrameworkWillTerminate()
     FILE* file = fopen(fname, "wb");
     if (file)
     {
-        MEMPROF_DUMP(file);
+        //MEMPROF_DUMP(file);
         fclose(file);
     }
 }

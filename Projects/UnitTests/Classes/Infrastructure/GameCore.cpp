@@ -26,7 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Base/BaseTypes.h"
+#include "Base/FunctionTraits.h"
 #include "GameCore.h"
 
 #include "Platform/DateTime.h"
@@ -55,6 +56,8 @@
 #include "Tests/DataVaultTest.h"
 //$UNITTEST_INCLUDE
 
+#include "memprof/mem_profiler.h"
+
 void GameCore::RunOnlyThisTest()
 {
     //runOnlyThisTest = "TestClassName";
@@ -68,6 +71,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+	/*
     new DataVaultTest();
 #if defined(__DAVAENGINE_ANDROID__)
     new JNITest();
@@ -89,27 +93,36 @@ void GameCore::RegisterTests()
     new KeyedArchiveYamlTest();
     new JobManagerTest();
     new Cpp14Test ();
+    */
     new NetworkTest();
+
     //$UNITTEST_CTOR
 }
 
 #include <fstream>
 #include <algorithm>
+#include <type_traits>
 
 using namespace DAVA;
 
 void GameCore::OnAppStarted()
 {
+	Logger::Debug("GameCore::OnAppStarted");
+    
     InitLogging();
+    InitNetwork();
     RunOnlyThisTest();
     RegisterTests();
     RunTests();
 }
 
 GameCore::GameCore() 
-: currentScreen(NULL),
-currentScreenIndex(0),
-currentTestIndex(0)
+    : currentScreen(NULL)
+    , currentScreenIndex(0)
+    , currentTestIndex(0)
+    , netLogger(true)
+    , loggerInUse(false)
+    , memprofInUse(false)
 {
 }
 
@@ -145,6 +158,7 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::OnAppFinished()
 {
+	Logger::Debug("GameCore::OnAppFinished");
     DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 
     int32 screensSize = screens.size();
@@ -153,6 +167,23 @@ void GameCore::OnAppFinished()
         SafeRelease(screens[i]);
     }
     screens.clear();
+    
+    netLogger.Uninstall();
+/*
+#if defined(__DAVAENGINE_WIN32__)
+    const char8* fname = "c:\\projects\\unittest-memprof.log";
+#elif defined(__DAVAENGINE_ANDROID__)
+    const char8* fname = "/sdcard/unittest-memprof.log";
+#elif defined(__DAVAENGINE_MACOS__)
+    const char8* fname = "/Users/max/projects/unittest-memprof.log";
+#endif
+    FILE* file = fopen(fname, "wb");
+    if (file)
+    {
+        MEMPROF_DUMP(file);
+        fclose(file);
+    }
+*/
 }
 
 void GameCore::OnSuspend()
@@ -202,6 +233,7 @@ void GameCore::Update(float32 timeElapsed)
 {
     ProcessTests();
     ApplicationCore::Update(timeElapsed);
+    memprof.OnUpdate(timeElapsed);
 }
 
 void GameCore::Draw()
@@ -370,8 +402,68 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
 
+const char8 GameCore::announceMulticastGroup[] = "239.192.100.1";
 
+void GameCore::InitNetwork()
+{
+    using namespace DAVA::Net;
+    
+    NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &GameCore::CreateLogger), MakeFunction(this, &GameCore::DeleteLogger));
+    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, MakeFunction(this, &GameCore::CreateMemProfiler), MakeFunction(this, &GameCore::DeleteMemProfiler));
+    
+    NetConfig config(SERVER_ROLE);
+    config.AddTransport(TRANSPORT_TCP, Endpoint(9999));
+    config.AddService(SERVICE_LOG);
+    config.AddService(SERVICE_MEMPROF);
+    
+    peerDescr = PeerDescription(config);
+    
+    Endpoint annoEndpoint(announceMulticastGroup, ANNOUNCE_PORT);
+    NetCore::Instance()->CreateAnnouncer(annoEndpoint, ANNOUNCE_TIME_PERIOD, MakeFunction(this, &GameCore::AnnounceDataSupplier));
+    NetCore::Instance()->CreateController(config, NULL);
+}
 
+size_t GameCore::AnnounceDataSupplier(size_t length, void* buffer)
+{
+    using namespace DAVA::Net;
+    if (true == peerDescr.NetworkInterfaces().empty())
+    {
+        // Get list of available network interfaces
+        // If list is empty then network is unavailable, this can happen on Android, maybe on iOS
+        // It's strange if no network but AnnounceDataSupplier has been invoked
+        peerDescr.SetNetworkInterfaces(NetCore::Instance()->InstalledInterfaces());
+        if (true == peerDescr.NetworkInterfaces().empty())
+            return 0;
+    }
+    return peerDescr.Serialize(buffer, length);
+}
 
+Net::IChannelListener* GameCore::CreateLogger(uint32 serviceId, void* context)
+{
+    if (!loggerInUse)
+    {
+        loggerInUse = true;
+        return &netLogger;
+    }
+    return nullptr;
+}
 
+void GameCore::DeleteLogger(Net::IChannelListener* obj, void* context)
+{
+    loggerInUse = false;
+}
 
+Net::IChannelListener* GameCore::CreateMemProfiler(uint32 serviceId, void* context)
+{
+    if (!memprofInUse)
+    {
+        memprofInUse = true;
+        return &memprof;
+    }
+    return nullptr;
+}
+
+void GameCore::DeleteMemProfiler(Net::IChannelListener* obj, void* context)
+{
+    memprofInUse = false;
+}

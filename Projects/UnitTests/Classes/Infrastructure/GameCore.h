@@ -33,6 +33,10 @@
 #include "DAVAEngine.h"
 #include "TeamCityTestsOutput.h"
 
+#include "Network/PeerDesription.h"
+#include "Network/Services/NetLogger.h"
+#include "Network/Services/MemProfService.h"
+
 #include <fstream>
 
 using namespace DAVA;
@@ -100,6 +104,31 @@ protected:
     
 private:
     void InitLogging();
+    
+    //////////////////////////////////
+    enum eServiceTypes
+    {
+        SERVICE_LOG = 0,
+        SERVICE_MEMPROF = 1
+    };
+    
+    static const uint16 ANNOUNCE_PORT = 9999;
+    static const uint32 ANNOUNCE_TIME_PERIOD = 5;
+    static const char8 announceMulticastGroup[];
+    
+    static const uint16 LOGGER_PORT = 9999;
+    
+    void InitNetwork();
+    
+    size_t AnnounceDataSupplier(size_t length, void* buffer);
+    
+    Net::IChannelListener* CreateLogger(uint32 serviceId, void* context);
+    void DeleteLogger(Net::IChannelListener* obj, void* context);
+    
+    Net::IChannelListener* CreateMemProfiler(uint32 serviceId, void* context);
+    void DeleteMemProfiler(Net::IChannelListener* obj, void* context);
+
+    //////////////////////////////////
 
     void RunOnlyThisTest();
     void OnError();
@@ -118,6 +147,13 @@ private:
     int32 currentTestIndex;
 
     TeamcityTestsOutput teamCityOutput;
+    
+    Net::NetLogger netLogger;
+    Net::MemProfService memprof;
+    Net::PeerDescription peerDescr;
+    
+    bool loggerInUse;
+    bool memprofInUse;
 };
 
 
