@@ -71,8 +71,23 @@ void FrameworkDidLaunched()
     DAVA::Core::Instance()->SetOptions(appOptions);
 }
 
+#include "memprof/mem_profiler.h"
 
 void FrameworkWillTerminate()
 {
+	Logger::Debug("FrameworkWillTerminate");
 
+#if defined(__DAVAENGINE_WIN32__)
+    const char8* fname = "c:\\projects\\unittest-memprof.log";
+#elif defined(__DAVAENGINE_ANDROID__)
+    const char8* fname = "/sdcard/unittest-memprof.log";
+#elif defined(__DAVAENGINE_MACOS__)
+    const char8* fname = "/Users/max/projects/unittest-memprof.log";
+#endif
+    FILE* file = fopen(fname, "wb");
+    if (file)
+    {
+        MEMPROF_DUMP(file);
+        fclose(file);
+    }
 }

@@ -142,18 +142,23 @@
 //#define DAVADefaultSTLAllocator std::allocator
 //#endif
 
+#if defined(MEMPROF_ENABLE)
+#include "memprof/profiled_allocator.h"
+#endif
+
 namespace DAVA
 {
-#if defined(MEMPROF_ENABLED)
-#include "memprof/profiled_allocator.h"
+
+#if defined(MEMPROF_ENABLE)
 template<typename T>
-using DAVADefaultSTLAllocator = profiled_allocator<T>;
+using DAVADefaultSTLAllocator = std::allocator<T>;
+//using DAVADefaultSTLAllocator = profiled_allocator<T>;
 #else
 template<typename T>
 using DAVADefaultSTLAllocator = std::allocator<T>;
 #endif
-}
 
+}
 
 namespace DAVA
 {
@@ -185,32 +190,33 @@ typedef Select<sizeof(void*) == 4, uint32, uint64>::Result pointer_size;
 //#endif
 	
 #ifndef TRUE
-#define TRUE	1
+#define TRUE    1
 #endif
 	
 #ifndef FALSE
-#define	FALSE	0
+#define	FALSE   0
 #endif
 
-typedef char		char8;
-typedef wchar_t		char16;
+typedef char        char8;
+typedef wchar_t     char16;
 
-typedef float			float32;
-typedef double			float64;
+typedef float       float32;
+typedef double      float64;
 
 template<typename CharT>
 using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DAVADefaultSTLAllocator<CharT>>;
 
 typedef BasicString<char8>      String;
 typedef BasicString<wchar_t>    WideString;
-    
-//typedef std::string		String;
-//#if defined(__DAVAENGINE_ANDROID__)
-//	typedef std::basic_string<wchar_t>	WideString;
-//#else //#if defined(__DAVAENGINE_ANDROID__)
-//	typedef std::wstring	WideString;
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
-	
+
+/*
+typedef std::string		String;
+#if defined(__DAVAENGINE_ANDROID__)
+	typedef std::basic_string<wchar_t>	WideString;
+#else //#if defined(__DAVAENGINE_ANDROID__)
+	typedef std::wstring	WideString;
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+*/
 
 //template <typename _Ty, typename _Ax = std::allocator(_Ty)> 
 //class List : public std::list<_Ty, _Ax>  {};
