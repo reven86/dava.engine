@@ -59,6 +59,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Network/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Services/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/memprof/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
@@ -106,7 +107,8 @@ endif
 endif
 
 # set build flags
-LOCAL_CFLAGS += -Dnullptr=0
+#LOCAL_CFLAGS += -Dnullptr=0
+LOCAL_CFLAGS += -DMEMPROF_ENABLE=1
 LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 LOCAL_CFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
