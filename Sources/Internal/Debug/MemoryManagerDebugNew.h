@@ -30,6 +30,8 @@
 
 #include <cstdlib>
 
+#include "memprof/memprof.h"
+
 enum eMemoryPool
 {
     MEMORY_POOL_DEFAULT = 0,
@@ -41,6 +43,10 @@ enum eMemoryPool
 };
 
 void * New(size_t size, eMemoryPool pool, const char * name);
+
+#if defined(MEMPROF_ENABLE)
+#define ENABLE_MEM_MANAGER_TRACK(TYPE)  MEMPROF_CLASS()
+#endif
 
 #if defined(ENABLE_MEMORY_MANAGER)
 
@@ -55,7 +61,7 @@ void operator delete(void * ptr) \
     ::operator delete(ptr);\
 }
 #else 
-#define ENABLE_MEM_MANAGER_TRACK(TYPE)
+//#define ENABLE_MEM_MANAGER_TRACK(TYPE)
 #endif
 
 #endif // __DAVAENGINE_MEMORYMANAGER_DEBUG_NEW_H__

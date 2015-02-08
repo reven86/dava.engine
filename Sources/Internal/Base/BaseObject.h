@@ -41,6 +41,9 @@
 #include "Debug/MemoryManager.h"
 #include <typeinfo>
 
+#include "memprof/memprof.h"
+
+
 namespace DAVA
 {
 

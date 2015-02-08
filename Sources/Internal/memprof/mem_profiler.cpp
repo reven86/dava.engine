@@ -87,6 +87,11 @@ void mem_profiler::deallocate(void* ptr)
     instance()->internal_deallocate(ptr);
 }
 
+uint32_t mem_profiler::block_size(void* ptr)
+{
+    return instance()->internal_block_size(ptr);
+}
+
 void mem_profiler::enter_scope(uint32_t tag)
 {
     instance()->internal_enter_scope(tag);
@@ -95,6 +100,16 @@ void mem_profiler::enter_scope(uint32_t tag)
 void mem_profiler::leave_scope()
 {
     instance()->internal_leave_scope();
+}
+
+void mem_profiler::get_memstat(net_mem_stat_t* dst)
+{
+    mem_profiler* m = instance();
+    dst->next_order = m->next_order_no;
+    dst->tag_depth = m->tag_depth;
+    for (uint32_t i = 0;i < m->tag_depth;++i)
+        dst->tags[i] = m->tag_bookmarks[i].tag;
+    Memcpy(dst->stat, m->stat, sizeof(m->stat));
 }
 
 void mem_profiler::dump(FILE* file)
@@ -144,6 +159,18 @@ void mem_profiler::internal_deallocate(void* ptr)
             malloc_hook::do_free(ptr);
         }
     }
+}
+
+uint32_t mem_profiler::internal_block_size(void* ptr)
+{
+    if (ptr != nullptr)
+    {
+        LockType lock(mutex);
+        mem_block_t* block = is_profiled_block(ptr);
+        if (block != nullptr)
+            return block->alloc_size;
+    }
+    return 0;
 }
 
 void mem_profiler::internal_enter_scope(uint32_t tag)

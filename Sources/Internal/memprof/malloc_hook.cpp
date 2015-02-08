@@ -122,7 +122,7 @@ void malloc_hook::uninstall()
 }
 
 #if defined(MEMPROF_MACOS) || defined(MEMPROF_IOS) || defined(MEMPROF_ANDROID)
-/*
+
 void* malloc(size_t size)
 {
     return mem_profiler::allocate(size, mem_type_e::MEM_TYPE_OTHER);
@@ -132,7 +132,36 @@ void free(void* ptr)
 {
     mem_profiler::deallocate(ptr);
 }
-*/
+
+void* realloc(void* ptr, size_t new_size)
+{
+    if (ptr == nullptr)
+        return malloc(new_size);
+    
+    uint32_t old_size = mem_profiler::block_size(ptr);
+    if (old_size > 0)
+    {
+        void* ptr_new = malloc(new_size);
+        size_t n = old_size;
+        if (old_size > new_size)
+            n = new_size;
+        memcpy(ptr_new, ptr, n);
+        free(ptr);
+        return ptr_new;
+    }
+    else
+        return malloc_hook::do_realloc(ptr, new_size);
+}
+
+void* calloc(size_t count, size_t elem_size)
+{
+    if (elem_size == 0)
+        return nullptr;
+    void* ptr = malloc(count * elem_size);
+    memset(ptr, 0, count * elem_size);
+    return ptr;
+}
+
 #endif  // defined(MEMPROF_MACOS) || defined(MEMPROF_IOS) || defined(MEMPROF_ANDROID)
 
 #endif

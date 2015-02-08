@@ -33,9 +33,10 @@ class mem_profiler final
     static const uint32_t BLOCK_DELETED = 0xACCA;
     static const size_t BLOCK_ALIGN = 16;
 
-    static const uint32_t TAG_DEPTH = 3;
-    static const size_t MEM_COUNT = static_cast<size_t>(mem_type_e::MEM_TYPE_COUNT);
-
+public:
+    static const uint32_t TAG_DEPTH = MEMPROF_TAG_DEPTH;
+    static const size_t MEM_COUNT = MEMPROF_MEM_COUNT;
+    
 public:
     mem_profiler() = default;
     ~mem_profiler() = default;
@@ -44,15 +45,19 @@ public:
 
     static void* allocate(size_t size, mem_type_e type);
     static void deallocate(void* ptr);
+    static uint32_t block_size(void* ptr);
 
     static void enter_scope(uint32_t tag);
     static void leave_scope();
+    
+    static void get_memstat(net_mem_stat_t* dst);
 
     static void dump(FILE* file);
 
 private:
     void* internal_allocate(size_t size, mem_type_e type);
     void internal_deallocate(void* ptr);
+    uint32_t internal_block_size(void* ptr);
 
     void internal_enter_scope(uint32_t tag);
     void internal_leave_scope();
