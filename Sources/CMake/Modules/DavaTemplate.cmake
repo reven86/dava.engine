@@ -26,23 +26,23 @@ macro( setup_main_executable )
 
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 
-if( APPLE )
-    file ( GLOB_RECURSE RESOURCES_LIST ${MACOS_DATA} )
-    foreach ( FILE ${RESOURCES_LIST} )
-        get_filename_component ( FILE_PATH ${FILE} PATH ) 
-        STRING(REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" FILE_GROUP ${FILE_PATH} )
+if( IOS )
+    file ( GLOB_RECURSE RESOURCES_LIST ${IOS_DATA} )
+    list( APPEND RESOURCES_LIST ${IOS_XIB} )
+    list( APPEND RESOURCES_LIST ${IOS_PLIST} )
 
-        set_source_files_properties( ${FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${FILE_GROUP} )
-    endforeach ()
- 
+elseif( MACOS )
     file ( GLOB DYLIB_FILES    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
-    list ( APPEND DYLIB_FILES  ${MACOS_DYLIB} ) 
+    
+    set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
 
-    set_source_files_properties( ${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks )
+    list ( APPEND DYLIB_FILES     "${DYLIB_FILES}" "${MACOS_DYLIB}" )  
 
+    list ( APPEND RESOURCES_LIST  ${MACOS_DATA}  )
     list ( APPEND RESOURCES_LIST  ${DYLIB_FILES} ) 
     list ( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
-    list ( APPEND RESOURCES_LIST  ${MACOS_ICO} )
+    list ( APPEND RESOURCES_LIST  ${MACOS_ICO}   )
+
     list ( APPEND LIBRARIES       ${DYLIB_FILES} )
 
 endif()
@@ -62,7 +62,6 @@ else()
     )
 
 endif()
-
 
 
 if( ANDROID )
@@ -115,32 +114,45 @@ if( ANDROID )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
+elseif( IOS )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST ${IOS_PLISTT} 
+        RESOURCE                "${IOS_XIB}"
+        XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
+    )
+
+    get_target_property ( TARGET_LOC ${PROJECT_NAME} LOCATION )
+    string ( REGEX REPLACE /Contents/MacOS/${PROJECT_NAME} "" TARGET_LOC ${TARGET_LOC} )
+    add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory ${IOS_DATA} ${TARGET_LOC}/Data
+      COMMAND ${CMAKE_COMMAND} -E copy ${IOS_PLISTT} ${CMAKE_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}.dir/Info.plist
+    )
+
 elseif( MACOS )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES
+                            MACOSX_BUNDLE_INFO_PLIST "${MACOS_PLIST}" 
+                            XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
+                            RESOURCE "${RESOURCES_LIST}"
+                          )
+
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
     POST_BUILD
         COMMAND   
-        install_name_tool -change ./libfmodex.dylib    @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/Frameworks/libfmodevent.dylib  
+        install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/Resources/libfmodevent.dylib  
 
         COMMAND   
-        install_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
+        install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}    
 
         COMMAND   
-        install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+        install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
 
         COMMAND 
-        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Frameworks/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}     
+        install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}     
 
         COMMAND   
-        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Frameworks/libTextureConverter.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
     )
-
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES
-                            MACOSX_BUNDLE_INFO_PLIST ${MACOS_PLIST} 
-                            XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
-                            RESOURCE "${MACOS_ICO}"
-                          )
-    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
 
 elseif ( MSVC )       
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32")

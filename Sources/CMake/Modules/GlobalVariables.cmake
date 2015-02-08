@@ -72,12 +72,16 @@ if     ( ANDROID )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
     
 elseif ( IOS     ) 
-    set ( CMAKE_C_FLAGS    "-mno-thumb"  )
-    set ( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
-  
+    set( CMAKE_C_FLAGS    "-mno-thumb"  )
+    set( CMAKE_CXX_FLAGS  "-mno-thumb -fvisibility=hidden" )
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++" )
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
+    set( CMAKE_IOS_SDK_ROOT Latest IOS )
+
 elseif ( MACOS )
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14")
+    set( CMAKE_OSX_DEPLOYMENT_TARGET "10.8" )
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++" )
+    set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
 
 elseif ( WIN32)
     set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP" ) 
