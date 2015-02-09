@@ -46,6 +46,8 @@ void * New(size_t size, eMemoryPool pool, const char * name);
 
 #if defined(MEMPROF_ENABLE)
 #define ENABLE_MEM_MANAGER_TRACK(TYPE)  MEMPROF_CLASS()
+#else
+#define ENABLE_MEM_MANAGER_TRACK(TYPE)
 #endif
 
 #if defined(ENABLE_MEMORY_MANAGER)
