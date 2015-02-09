@@ -154,7 +154,7 @@ void free(void* ptr)
 
 void* realloc(void* ptr, size_t new_size)
 {
-    return malloc_hook::hooked_realloc(PTR, new_size);
+    return malloc_hook::hooked_realloc(ptr, new_size);
     /*
     if (ptr == nullptr)
         return malloc(new_size);

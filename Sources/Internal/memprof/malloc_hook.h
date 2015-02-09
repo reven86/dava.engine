@@ -23,7 +23,8 @@ public:
 private:
     static void install();
     static void uninstall();
-
+    
+public: // make public to call from realloc, calloc on android, macos
     static void* __cdecl hooked_malloc(size_t size);
     static void* __cdecl hooked_calloc(size_t count, size_t elem_size);
     static void* __cdecl hooked_realloc(void* ptr, size_t new_size);
