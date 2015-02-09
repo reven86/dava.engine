@@ -4,7 +4,7 @@
 
 #if defined(MEMPROF_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
+//#define NOMINMAX
 
 #include <windows.h>
 #include <detours/detours.h>
@@ -60,12 +60,31 @@ void* __cdecl malloc_hook::hooked_malloc(size_t size)
 
 void* __cdecl malloc_hook::hooked_calloc(size_t count, size_t elem_size)
 {
-    return nullptr;
+    if (elem_size == 0)
+        return nullptr;
+    void* ptr = malloc(count * elem_size);
+    memset(ptr, 0, count * elem_size);
+    return ptr;
 }
 
 void* __cdecl malloc_hook::hooked_realloc(void* ptr, size_t new_size)
 {
-    return nullptr;
+    if (ptr == nullptr)
+        return malloc(new_size);
+
+    uint32_t old_size = mem_profiler::block_size(ptr);
+    if (old_size > 0)
+    {
+        void* ptr_new = malloc(new_size);
+        size_t n = old_size;
+        if (old_size > new_size)
+            n = new_size;
+        memcpy(ptr_new, ptr, n);
+        free(ptr);
+        return ptr_new;
+    }
+    else
+        return malloc_hook::do_realloc(ptr, new_size);
 }
 
 void __cdecl malloc_hook::hooked_free(void* ptr)
@@ -81,15 +100,15 @@ void malloc_hook::install()
     real_realloc = &realloc;
     real_free    = &free;
 
-    //DetourTransactionBegin();
-    //DetourUpdateThread(GetCurrentThread());
-    //DetourAttach(reinterpret_cast<PVOID*>(&real_calloc), reinterpret_cast<PVOID>(&hooked_calloc));
-    //DetourTransactionCommit();
+    DetourTransactionBegin();
+    DetourUpdateThread(GetCurrentThread());
+    DetourAttach(reinterpret_cast<PVOID*>(&real_calloc), reinterpret_cast<PVOID>(&hooked_calloc));
+    DetourTransactionCommit();
 
-    //DetourTransactionBegin();
-    //DetourUpdateThread(GetCurrentThread());
-    //DetourAttach(reinterpret_cast<PVOID*>(&real_realloc), reinterpret_cast<PVOID>(&hooked_realloc));
-    //DetourTransactionCommit();
+    DetourTransactionBegin();
+    DetourUpdateThread(GetCurrentThread());
+    DetourAttach(reinterpret_cast<PVOID*>(&real_realloc), reinterpret_cast<PVOID>(&hooked_realloc));
+    DetourTransactionCommit();
 
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
@@ -135,6 +154,8 @@ void free(void* ptr)
 
 void* realloc(void* ptr, size_t new_size)
 {
+    return malloc_hook::hooked_realloc(PTR, new_size);
+    /*
     if (ptr == nullptr)
         return malloc(new_size);
     
@@ -151,15 +172,19 @@ void* realloc(void* ptr, size_t new_size)
     }
     else
         return malloc_hook::do_realloc(ptr, new_size);
+    */
 }
 
 void* calloc(size_t count, size_t elem_size)
 {
+    return malloc_hook::hooked_calloc(count, elem_size);
+    /*
     if (elem_size == 0)
         return nullptr;
     void* ptr = malloc(count * elem_size);
     memset(ptr, 0, count * elem_size);
     return ptr;
+    */
 }
 
 #endif  // defined(MEMPROF_MACOS) || defined(MEMPROF_IOS) || defined(MEMPROF_ANDROID)

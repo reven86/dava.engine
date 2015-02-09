@@ -4,7 +4,7 @@
 
 #if defined(MEMPROF_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
+//#define NOMINMAX
 
 #include <windows.h>
 #include <dbghelp.h>

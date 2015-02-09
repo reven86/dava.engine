@@ -84,7 +84,13 @@ void FrameworkWillTerminate()
 #elif defined(__DAVAENGINE_MACOS__)
     const char8* fname = "/Users/max/projects/unittest-memprof.log";
 #endif
+
+#if defined(__DAVAENGINE_WIN32__)
+    FILE* file = nullptr;
+    fopen_s(&file, fname, "wb");
+#else
     FILE* file = fopen(fname, "wb");
+#endif
     if (file)
     {
         //MEMPROF_DUMP(file);
