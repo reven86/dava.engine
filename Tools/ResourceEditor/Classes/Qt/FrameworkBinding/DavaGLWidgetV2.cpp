@@ -1,5 +1,8 @@
 #include "DavaGLWidgetV2.h"
 
+#include "Render/RenderManager.h"
+
+
 #include <QWindow>
 #include <QOpenGLContext>
 #include <QDebug>
@@ -15,7 +18,8 @@ DavaGLWidgetV2::DavaGLWidgetV2( QWidget* parent )
 {
     setAttribute( Qt::WA_NativeWindow );
     setAttribute( Qt::WA_OpaquePaintEvent );
-    //setAttribute( Qt::WA_ );
+    setAttribute( Qt::WA_TranslucentBackground );
+    setAttribute( Qt::WA_NoSystemBackground, true );
 }
 
 DavaGLWidgetV2::~DavaGLWidgetV2()
@@ -48,6 +52,8 @@ void DavaGLWidgetV2::Init()
 
     qtLayer->SetupWidget( GetContextId(), w, h );
     qtLayer->OnResume();
+    const auto fbObject = context->defaultFramebufferObject();
+    DAVA::RenderManager::Instance()->InitFBO( static_cast<GLuint>( 0 ), fbObject );
 
     EndFrame();
 }
