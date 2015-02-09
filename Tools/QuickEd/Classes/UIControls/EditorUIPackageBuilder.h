@@ -13,7 +13,9 @@ class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
 public:
     EditorUIPackageBuilder();
     virtual ~EditorUIPackageBuilder();
-    
+
+    virtual DAVA::UIPackage *FindInCache(const DAVA::String &packagePath) const override;
+
     virtual DAVA::RefPtr<DAVA::UIPackage> BeginPackage(const DAVA::FilePath &packagePath) override;
     virtual void EndPackage() override;
     

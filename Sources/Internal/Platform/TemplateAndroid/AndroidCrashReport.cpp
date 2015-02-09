@@ -68,7 +68,7 @@ stack_t AndroidCrashReport::s_sigstk;
 
 JniCrashReporter::JniCrashReporter()
 	: jniCrashReporter("com/dava/framework/JNICrashReporter")
-    , jniString("java.lang.String")
+    , jniString("java/lang/String")
 {
     throwJavaExpetion = jniCrashReporter.GetStaticMethod<void, jstringArray, jstringArray, jintArray>("ThrowJavaExpetion");
 }
@@ -146,7 +146,7 @@ void AndroidCrashReport::Init()
 	 *
 	 * define DESYM_STACK for desybolicating callstack with libcorkscrew
 	 */
-#if defined(DAVA_DEBUG) && defined(USE_NDKSTACK_TOOL)
+#if defined(__DAVAENGINE_DEBUG__) && defined(USE_NDKSTACK_TOOL)
 	return;
 #endif
 	void* libcorkscrew = dlopen("/system/lib/libcorkscrew.so", RTLD_NOW);

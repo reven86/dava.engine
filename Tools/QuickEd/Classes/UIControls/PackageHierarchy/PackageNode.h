@@ -5,11 +5,12 @@
 
 class ImportedPackagesNode;
 class PackageControlsNode;
+class PackageSerializer;
 
 class PackageNode : public PackageBaseNode
 {
 public:
-    PackageNode(DAVA::UIPackage *package);
+    PackageNode(DAVA::UIPackage *package, const DAVA::FilePath &path);
 private:
     virtual ~PackageNode();
 public:
@@ -20,13 +21,16 @@ public:
     int GetFlags() const override;
     
     DAVA::UIPackage *GetPackage() const;
+    const DAVA::FilePath &GetPath() const;
+    
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;
     
-    DAVA::YamlNode *Serialize() const;
+    void Serialize(PackageSerializer *serializer) const;
     
 private:
     DAVA::UIPackage *package;
+    DAVA::FilePath path;
     
     ImportedPackagesNode *importedPackagesNode;
     PackageControlsNode *packageControlsNode;

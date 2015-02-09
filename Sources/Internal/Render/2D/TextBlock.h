@@ -70,9 +70,9 @@ public:
     static TextBlock * Create(const Vector2 & size);
     
     virtual void SetFont(Font * font);
+    virtual void SetScale(const Vector2 & scale);
     virtual void SetRectSize(const Vector2 & size);
     virtual void SetPosition(const Vector2& position);
-    virtual void SetPivotPoint(const Vector2& pivotPoint);
     virtual void SetAlign(int32 align);
     virtual int32 GetAlign();
 	virtual int32 GetVisualAlign(); // Return align for displaying BiDi-text (w/ mutex lock)
@@ -141,12 +141,15 @@ public:
     TextBlockRender* GetRenderer(){ return textBlockRender; }
 
     /**
-    * \brief Clean line.
-    * \param [in,out] string The string.
-    * \param trimRight (Optional) true to trim right.
-    */
-    static void CleanLine(WideString& string, bool trimRight = false);
+     * \brief Clean line.
+     * \param [in,out] string The string.
+     * \param trim (Optional) true to trim.
+     * \param rtl (Optional) true to trim for rtl text.
+     */
+    static void CleanLine(WideString& string, bool trim = false, bool rtl = false);
 
+	void SetAngle(const float _angle);
+	void SetPivot(const Vector2 & _pivot);
 protected:
 
 	TextBlock();
@@ -176,9 +179,9 @@ protected:
      */
     void SplitTextBySymbolsToStrings(const WideString & string, const Vector2 & targetRectSize, Vector<WideString> & resultVector, const bool forceRtl);
 
-   
-
+    Vector2 scale;
     Vector2 rectSize;
+    Vector2 position;
     Vector2 requestedSize;
 
     Vector2 cacheFinalSize;
@@ -199,8 +202,6 @@ protected:
     int32 fittingTypeUsed;
     bool visualTextCroped;
 #endif //LOCALIZATION_DEBUG
-    Vector2 position;
-    Vector2 pivotPoint;
     int32 align;
     bool useRtlAlign;
     bool isRtl;
@@ -231,6 +232,9 @@ protected:
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;
 	Texture *textureForInvalidation;
+
+	float angle;
+	Vector2 pivot;
 };
 
 }; //end of namespace

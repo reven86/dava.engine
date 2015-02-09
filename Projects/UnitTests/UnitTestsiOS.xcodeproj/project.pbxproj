@@ -20,6 +20,7 @@
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		496ABE8D179E6FEB00BCA6E9 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 496ABE8C179E6FEB00BCA6E9 /* AdSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		49A0DB291796F8050000970C /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49A0DB281796F8050000970C /* MessageUI.framework */; };
+		50194D661A52D91500557DAB /* NetworkTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50194D641A52D91500557DAB /* NetworkTest.cpp */; };
 		5CDC2530156CDED900742348 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5CDC252F156CDED900742348 /* MainWindow-iPad.xib */; };
 		5CDC2533156CE21000742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2532156CE20F00742348 /* libz.dylib */; };
 		74AF633D18852FE100070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF633C18852FE100070C35 /* Security.framework */; };
@@ -46,6 +47,7 @@
 		CC11987A1A38BF27006931D7 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC1198691A38BF27006931D7 /* StringFormatTest.cpp */; };
 		CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC11986B1A38BF27006931D7 /* TextSizeTest.cpp */; };
 		CCB2B8F71A656699003A5D44 /* Cpp14.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCB2B8F51A656699003A5D44 /* Cpp14.cpp */; };
+		D73A575D1A739E34009FF184 /* DataVaultTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73A575B1A739E34009FF184 /* DataVaultTest.cpp */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
 		FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F51163F304009E83B6 /* AVFoundation.framework */; };
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
@@ -99,6 +101,8 @@
 		32CA4F630368D1EE00C91783 /* UnitTests_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitTests_Prefix.pch; sourceTree = "<group>"; };
 		496ABE8C179E6FEB00BCA6E9 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		49A0DB281796F8050000970C /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		50194D641A52D91500557DAB /* NetworkTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkTest.cpp; path = Tests/NetworkTest.cpp; sourceTree = "<group>"; };
+		50194D651A52D91500557DAB /* NetworkTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkTest.h; path = Tests/NetworkTest.h; sourceTree = "<group>"; };
 		5CDC252F156CDED900742348 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "MainWindow-iPad.xib"; path = "iOSSpecific/iPad/MainWindow-iPad.xib"; sourceTree = "<group>"; };
 		5CDC2532156CE20F00742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		74AF633C18852FE100070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -149,6 +153,9 @@
 		CC11986C1A38BF27006931D7 /* TextSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextSizeTest.h; path = Tests/TextSizeTest.h; sourceTree = "<group>"; };
 		CCB2B8F51A656699003A5D44 /* Cpp14.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cpp14.cpp; path = Tests/Cpp14.cpp; sourceTree = "<group>"; };
 		CCB2B8F61A656699003A5D44 /* Cpp14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cpp14.h; path = Tests/Cpp14.h; sourceTree = "<group>"; };
+		D73A575B1A739E34009FF184 /* DataVaultTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataVaultTest.cpp; path = Tests/DataVaultTest.cpp; sourceTree = "<group>"; };
+		D73A575C1A739E34009FF184 /* DataVaultTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DataVaultTest.h; path = Tests/DataVaultTest.h; sourceTree = "<group>"; };
+		D73A577A1A764453009FF184 /* UnitTests.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = UnitTests.entitlements; sourceTree = "<group>"; };
 		E80D2FB0164D518100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -254,6 +261,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				D73A577A1A764453009FF184 /* UnitTests.entitlements */,
 				1770DF4617DF497600000391 /* MediaPlayer.framework */,
 				E80D2FB0164D518100C13D70 /* libbz2.dylib */,
 				5CDC2532156CE20F00742348 /* libz.dylib */,
@@ -316,8 +324,12 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				D73A575B1A739E34009FF184 /* DataVaultTest.cpp */,
+				D73A575C1A739E34009FF184 /* DataVaultTest.h */,
 				CCB2B8F51A656699003A5D44 /* Cpp14.cpp */,
 				CCB2B8F61A656699003A5D44 /* Cpp14.h */,
+				50194D641A52D91500557DAB /* NetworkTest.cpp */,
+				50194D651A52D91500557DAB /* NetworkTest.h */,
 				0264E31D1A43002200BD7279 /* JobManagerTest.cpp */,
 				0264E31E1A43002200BD7279 /* JobManagerTest.h */,
 				CC11984F1A38BF27006931D7 /* ComponentsTest.cpp */,
@@ -406,6 +418,9 @@
 							com.apple.GameCenter = {
 								enabled = 0;
 							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
 						};
 					};
 				};
@@ -493,6 +508,7 @@
 				CC1198771A38BF27006931D7 /* MemoryAllocatorsTest.cpp in Sources */,
 				CC1198781A38BF27006931D7 /* SaveImageTest.cpp in Sources */,
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
+				D73A575D1A739E34009FF184 /* DataVaultTest.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				001CF9281A02539600751045 /* TeamcityOutput.cpp in Sources */,
 				CC11984B1A38BF0D006931D7 /* FrameworkMain.cpp in Sources */,
@@ -507,6 +523,7 @@
 				032D348C1A0912B5007509C3 /* CommandLineParser.cpp in Sources */,
 				CC11987B1A38BF27006931D7 /* TextSizeTest.cpp in Sources */,
 				CC1198791A38BF27006931D7 /* SplitTest.cpp in Sources */,
+				50194D661A52D91500557DAB /* NetworkTest.cpp in Sources */,
 				CC1198711A38BF27006931D7 /* FunctionBindSingalTest.cpp in Sources */,
 				CC1198721A38BF27006931D7 /* HashMapTest.cpp in Sources */,
 				CC11984C1A38BF0D006931D7 /* GameCore.cpp in Sources */,
@@ -530,6 +547,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = UnitTests.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -559,6 +577,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = UnitTests.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -626,6 +645,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = UnitTests.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -663,7 +683,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = __DAVAENGINE_DEBUG__;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;

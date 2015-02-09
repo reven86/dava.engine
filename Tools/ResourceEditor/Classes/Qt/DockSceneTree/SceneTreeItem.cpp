@@ -166,6 +166,8 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 	static QIcon switchIcon(":/QtIcons/switch.png");
 	static QIcon windIcon(":/QtIcons/wind.png");
     static QIcon soIcon(":/QtIcons/so.png");
+    static QIcon pathIcon(":/QtIcons/path.png");
+    static QIcon grassIcon(":/QtIcons/grass.png");
 
 	QIcon ret;
 
@@ -191,6 +193,10 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 		{
 			ret = switchIcon;
 		}
+        else if (NULL != DAVA::GetVegetation(entity))
+        {
+            ret = grassIcon;
+        }
 		else if(NULL != DAVA::GetRenderObject(entity))
 		{
 			ret = renderobjIcon;
@@ -211,6 +217,10 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 		{
 			ret = windIcon;
 		}
+        else if(NULL != DAVA::GetPathComponent(entity))
+        {
+            ret = pathIcon;
+        }
 	}
 
 	if(ret.isNull())

@@ -183,7 +183,10 @@ void TileTexturePreviewWidget::UpdateImage(int32 number)
 void TileTexturePreviewWidget::UpdateColor(int32 number)
 {
 	DVASSERT(number >= 0 && number < (int32)images.size());
+    
+    bool blocked = blockSignals(true);
 
+    
 	QTreeWidgetItem* item = topLevelItem(number);
 	QColor color = ColorToQColor(colors[number]);
 
@@ -196,6 +199,8 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
 	item->setText(0, str);
 
 	UpdateImage(number);
+    
+    blockSignals(blocked);
 }
 
 void TileTexturePreviewWidget::UpdateSelection()
@@ -324,7 +329,8 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 
 	Sprite* dstSprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888, true);
 
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
 	RenderManager::Instance()->SetColor(color);
 
@@ -336,7 +342,7 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
     RenderSystem2D::Instance()->Draw(srcSprite, &drawState);
 
 	RenderManager::Instance()->ResetColor();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 
 	Image* res = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
 

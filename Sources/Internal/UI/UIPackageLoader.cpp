@@ -60,6 +60,13 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
         loadingQueue.clear();
     }
 
+    UIPackage *packageInCache = builder->FindInCache(packagePath.GetStringValue());
+    if (packageInCache != nullptr)
+    {
+        RefPtr<UIPackage> package = packageInCache->Clone();
+        return SafeRetain(package.Get());
+    }
+
     if (!packagePath.Exists())
         return NULL;
     

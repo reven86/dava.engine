@@ -213,7 +213,8 @@ void LandscapeProxy::UpdateDisplayedTexture()
 
 	Sprite *dstSprite = Sprite::CreateAsRenderTarget((float32)fullTiledWidth, (float32)fullTiledHeight, FORMAT_RGBA8888, true);
 
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
+    RenderSystem2D::Instance()->PushRenderTarget();
+    RenderSystem2D::Instance()->SetRenderTarget(dstSprite);
 
     RenderManager::Instance()->SetColor(Color::White);
     RenderHelper::Instance()->FillRect(Rect(0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight), RenderState::RENDERSTATE_2D_BLEND);
@@ -267,7 +268,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	}
 	SafeRelease(rulerToolSprite);
 
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderSystem2D::Instance()->PopRenderTarget();
 	
 	SafeRelease(displayingTexture);
 	displayingTexture = SafeRetain(dstSprite->GetTexture());

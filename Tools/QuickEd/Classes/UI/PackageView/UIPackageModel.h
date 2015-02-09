@@ -20,6 +20,7 @@ public:
     UIPackageModel(PackageDocument *document);
     virtual ~UIPackageModel();
     
+    virtual QModelIndex indexByNode(PackageBaseNode *node) const;
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const  override;

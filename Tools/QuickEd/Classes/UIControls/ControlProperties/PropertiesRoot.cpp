@@ -1,10 +1,14 @@
 #include "PropertiesRoot.h"
 
+#include "UI/UIControl.h"
+
 #include "ControlPropertiesSection.h"
 #include "BackgroundPropertiesSection.h"
 #include "InternalControlPropertiesSection.h"
 #include "ValueProperty.h"
 #include "LocalizedTextValueProperty.h"
+
+#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
@@ -88,6 +92,49 @@ InternalControlPropertiesSection *PropertiesRoot::GetInternalControlPropertiesSe
     return NULL;
 }
 
+void PropertiesRoot::Serialize(PackageSerializer *serializer) const
+{
+    for (const auto section : controlProperties)
+        section->Serialize(serializer);
+
+    bool hasChanges = false;
+    
+    for (const auto section : backgroundProperties)
+    {
+        if (section->HasChanges())
+        {
+            hasChanges = true;
+            break;
+        }
+    }
+    
+    if (!hasChanges)
+    {
+        for (const auto section : internalControlProperties)
+        {
+            if (section->HasChanges())
+            {
+                hasChanges = true;
+                break;
+            }
+        }
+    }
+
+
+    if (hasChanges)
+    {
+        serializer->BeginMap("components");
+
+        for (const auto section : backgroundProperties)
+            section->Serialize(serializer);
+
+        for (const auto section : internalControlProperties)
+            section->Serialize(serializer);
+        
+        serializer->EndArray();
+    }
+}
+
 String PropertiesRoot::GetName() const {
     return "ROOT";
 }
@@ -119,22 +166,6 @@ void PropertiesRoot::MakeControlPropertiesSection(DAVA::UIControl *control, cons
         section->SetParent(this);
         controlProperties.push_back(section);
     }
-}
-
-void PropertiesRoot::AddPropertiesToNode(YamlNode *node) const
-{
-    for (auto it = controlProperties.begin(); it != controlProperties.end(); ++it)
-        (*it)->AddPropertiesToNode(node);
-
-    YamlNode *componentsNode = YamlNode::CreateMapNode(false);
-    for (auto it = backgroundProperties.begin(); it != backgroundProperties.end(); ++it)
-        (*it)->AddPropertiesToNode(componentsNode);
-    for (auto it = internalControlProperties.begin(); it != internalControlProperties.end(); ++it)
-        (*it)->AddPropertiesToNode(componentsNode);
-    if (componentsNode->GetCount() > 0)
-        node->Add("components", componentsNode);
-    else
-        SafeRelease(componentsNode);
 }
 
 void PropertiesRoot::MakeBackgroundPropertiesSection(DAVA::UIControl *control, const PropertiesRoot *sourceProperties, eCopyType copyType)

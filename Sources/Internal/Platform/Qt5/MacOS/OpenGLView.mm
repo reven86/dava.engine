@@ -231,12 +231,14 @@
     return NO;
 }
 
-static Vector<DAVA::UIEvent> activeTouches;
 
-void NSEventToUIEvent(NSEvent *nsEvent, DAVA::UIEvent &uiEvent, const NSRect &viewRect, const NSPoint &offset)
+
+-(void)NSEventToUIEvent:(NSEvent*)nsEvent uiEvent:(DAVA::UIEvent&)uiEvent
 {
     int px = ([nsEvent locationInWindow].x + 0.6);
     int py = ([nsEvent locationInWindow].y + 0.6);
+
+    NSRect viewRect = [self frame];
 
     // mosemove event comes from qt, so don't apply any offset to it
     if(nsEvent.type == NSMouseMoved)
@@ -259,7 +261,7 @@ void NSEventToUIEvent(NSEvent *nsEvent, DAVA::UIEvent &uiEvent, const NSRect &vi
     uiEvent.tapCount = nsEvent.clickCount;
 }
 
-void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outTouches, const NSRect &viewRect, const NSPoint &offset)
+-(void)moveTouchsToVector:(int)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
 {
 	int button = 0;
 	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
@@ -295,21 +297,21 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 	
 	if(phase == UIEvent::PHASE_DRAG)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
-            NSEventToUIEvent(curEvent, *it, viewRect, offset);
+            [self NSEventToUIEvent:curEvent uiEvent:*it];
             it->phase = phase;
 		}
 	}
 	
 	bool isFind = false;
-	for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		if(it->tid == button)
 		{
 			isFind = true;
 			
-            NSEventToUIEvent(curEvent, *it, viewRect, offset);
+            [self NSEventToUIEvent:curEvent uiEvent:*it];
 			it->phase = phase;
 
 			break;
@@ -321,23 +323,23 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 		UIEvent newTouch;
 		newTouch.tid = button;
 
-        NSEventToUIEvent(curEvent, newTouch, viewRect, offset);
+        [self NSEventToUIEvent:curEvent uiEvent:newTouch];
 		newTouch.phase = phase;
-		activeTouches.push_back(newTouch);
+		allTouches.push_back(newTouch);
 	}
 
-	for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		outTouches->push_back(*it);
 	}
 
 	if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
 			{
-				activeTouches.erase(it);
+				allTouches.erase(it);
 				break;
 			}
 		}
@@ -348,15 +350,14 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 -(void)process:(int)touchPhase touch:(NSEvent*)touch
 {
 	Vector<DAVA::UIEvent> touches;
-	Vector<DAVA::UIEvent> emptyTouches;
-	MoveTouchsToVector(touch, touchPhase, &touches, [self frame], offset);
+    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
 //	NSLog(@"----- Touches --------");
 //	for(int i = 0; i < touches.size(); i++)
 //	{
 //		NSLog(@"Button %d       phase %d", touches[i].tid, touches[i].phase);
 //	}
 //	NSLog(@"----- ------- --------");
-	UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+	UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
 	touches.clear();
 }
 
@@ -374,8 +375,8 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 
 - (void)CalcOffset:(NSEvent *)theEvent
 {
-    NSPoint origPos = [self convertPointToBacking:[theEvent locationInWindow]];
-    NSPoint p = [self convertPointFromBase:origPos];
+    NSPoint p = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+    
     offset.x = [theEvent locationInWindow].x - p.x;
     offset.y = [theEvent locationInWindow].y - p.y;
     
@@ -388,22 +389,21 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 //    printf("click [%f, %f]\n", p.x, p.y);
     
     [self CalcOffset:theEvent];
+    [self process:DAVA::UIEvent::PHASE_BEGAN touch:theEvent];
 	[super mouseDown:theEvent];
-	[self process:DAVA::UIEvent::PHASE_BEGAN touch:theEvent];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
-    [super mouseUp:theEvent];
     [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [super mouseUp:theEvent];
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
-    [super mouseDragged:theEvent];
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 
 ///*
@@ -422,38 +422,32 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
-    [super rightMouseDown:theEvent];
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
-    [super rightMouseDragged:theEvent];
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
-    [super rightMouseUp:theEvent];
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
-    [super otherMouseDown:theEvent];
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
-    [super otherMouseDragged:theEvent];
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
     [self CalcOffset:theEvent];
-    [super otherMouseUp:theEvent];
-	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
+    [self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 
 static int32 oldModifersFlags = 0;
@@ -466,13 +460,7 @@ static int32 oldModifersFlags = 0;
             unichar c = [[event characters] characterAtIndex:0];
             
             Vector<DAVA::UIEvent> touches;
-            Vector<DAVA::UIEvent> emptyTouches;
-            
-            for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-            {
-                touches.push_back(*it);
-            }
-            
+
             DAVA::UIEvent ev;
             ev.keyChar = c;
             ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
@@ -482,9 +470,9 @@ static int32 oldModifersFlags = 0;
             
             touches.push_back(ev);
             
-            UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+            UIControlSystem::Instance()->OnInput(0, touches, allTouches);
             touches.pop_back();
-            UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+            UIControlSystem::Instance()->OnInput(0, touches, allTouches);
         }
         
         InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed([event keyCode]);
