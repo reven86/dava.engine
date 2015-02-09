@@ -93,7 +93,12 @@ endif()
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
-target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} ${DAVA_LIBRARY} )
+if ( NOT NOT_USE_DAVA_LIBRARY )
+    list ( APPEND LIBRARIES   ${DAVA_LIBRARY} )
+
+endif()
+  
+target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
