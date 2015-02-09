@@ -1,5 +1,6 @@
 #include "DavaGLWidgetV2.h"
 
+#include <QWindow>
 #include <QOpenGLContext>
 #include <QDebug>
 #include <QtPlatformheaders/QWGLNativeContext>
@@ -9,8 +10,22 @@
 
 
 DavaGLWidgetV2::DavaGLWidgetV2( QWidget* parent )
-    : QOpenGLWidget( parent )
+    : QWidget( parent )
+    , context( nullptr )
 {
+    setAttribute( Qt::WA_NativeWindow );
+    setAttribute( Qt::WA_OpaquePaintEvent );
+    //setAttribute( Qt::WA_ );
+}
+
+DavaGLWidgetV2::~DavaGLWidgetV2()
+{
+}
+
+void DavaGLWidgetV2::Init()
+{
+    context = new QOpenGLContext();
+
     QSurfaceFormat format;
     format.setVersion( 2, 0 );
     format.setProfile( QSurfaceFormat::CompatibilityProfile );
@@ -18,27 +33,12 @@ DavaGLWidgetV2::DavaGLWidgetV2( QWidget* parent )
     format.setStencilBufferSize( 8 );
     format.setSwapBehavior( QSurfaceFormat::DoubleBuffer );
     
-    //setUpdateBehavior( QOpenGLWidget::PartialUpdate );
-
-    setFormat( format );
-}
-
-DavaGLWidgetV2::~DavaGLWidgetV2()
-{
-}
-
-void DavaGLWidgetV2::initializeGL()
-{
-    //initializeOpenGLFunctions();
-    //QOpenGLWidget::initializeGL();
-
-    QOpenGLContext *c = context();
-    const bool result = c->create();
+    context->setFormat( format );
+    const bool result = context->create();
     DVASSERT( result );
-}
 
-void DavaGLWidgetV2::Init()
-{
+    context->makeCurrent( this->windowHandle() );
+
     BeginFrame();
 
     const int w = width();
@@ -54,8 +54,7 @@ void DavaGLWidgetV2::Init()
 
 quint64 DavaGLWidgetV2::GetContextId() const
 {
-    QOpenGLContext *c = context();
-    QWGLNativeContext nativeContext = c->nativeHandle().value< QWGLNativeContext >();
+    QWGLNativeContext nativeContext = context->nativeHandle().value< QWGLNativeContext >();
     const quint64 contextId = reinterpret_cast<quint64>( nativeContext.context() );
 
     return contextId;
@@ -63,10 +62,15 @@ quint64 DavaGLWidgetV2::GetContextId() const
 
 void DavaGLWidgetV2::BeginFrame()
 {
-    makeCurrent();
+    //context->makeCurrent( this->windowHandle() );
 }
 
 void DavaGLWidgetV2::EndFrame()
 {
-    doneCurrent();
+    //context->doneCurrent();
+}
+
+void DavaGLWidgetV2::paintEvent( QPaintEvent* e )
+{
+    Q_UNUSED( e );
 }

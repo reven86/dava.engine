@@ -134,8 +134,10 @@ void SceneTabWidget::ReleaseDAVAUI()
 
 int SceneTabWidget::OpenTab()
 {
+    //return -1;
+
 	QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
-	SceneEditor2 *scene = new SceneEditor2();    
+	SceneEditor2 *scene = new SceneEditor2();
 
 	DAVA::FilePath newScenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
 	newScenePath.ReplaceExtension(".sc2");

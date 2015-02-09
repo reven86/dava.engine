@@ -2,13 +2,12 @@
 #define __DAVAGLWIDGETV2_H__
 
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
+#include <QWidget>
+#include <QOpenGLContext>
 
 
 class DavaGLWidgetV2
-    : public QOpenGLWidget
-    //, protected QOpenGLFunctions
+    : public QWidget
 {
     Q_OBJECT
 
@@ -23,7 +22,13 @@ public:
     void EndFrame();
 
 private:
-    void initializeGL() override;
+    void paintEvent( QPaintEvent *e ) override;
+
+
+
+    QPaintEngine * QWidget::?paintEngine() const override;
+
+    QOpenGLContext *context;
 };
 
 
