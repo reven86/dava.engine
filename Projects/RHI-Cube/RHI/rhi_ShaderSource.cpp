@@ -7,6 +7,7 @@
     using DAVA::DynamicMemoryFile;
 
     #include "RegExp.h"
+    #include "PreProcess.h"
 
 
 namespace rhi
@@ -31,15 +32,16 @@ bool
 ShaderSource::Construct( ProgType progType, const char* srcText )
 {
     bool                success = false;
-    DynamicMemoryFile*  in      = DynamicMemoryFile::Create( (const uint8*)srcText, strlen(srcText)+1, DAVA::File::READ );
+    std::string         src;    PreProcessText( srcText, &src );    
+    DynamicMemoryFile*  in      = DynamicMemoryFile::Create( (const uint8*)src.c_str(), src.length()+1, DAVA::File::READ );
 
     if( in )
     {
-        RegExp  re;
-        RegExp  s_re;
+        RegExp  prop_re;
+        RegExp  sampler_re;
         
-        re.compile( "\\s*DECLARE_PROP__(DYNAMIC|STATIC)_(GLOBAL|LOCAL)\\s*\\(\\s*(float4x4|float4|float1)\\s*\\,\\s*([a-zA-Z_]+[a-zA-Z_0-9]+)\\s*\\,\\s*\\\"(.*)\\\"\\s*\\)" );
-        s_re.compile( "\\s*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\)" );
+        prop_re.compile( "\\s*DECLARE_PROP__(DYNAMIC|STATIC)_(GLOBAL|LOCAL)\\s*\\(\\s*(float4x4|float4|float1)\\s*\\,\\s*([a-zA-Z_]+[a-zA-Z_0-9]+)\\s*\\,\\s*\\\"(.*)\\\"\\s*\\)" );
+        sampler_re.compile( "\\s*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\)" );
     
 
         _Reset();
@@ -49,16 +51,16 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
             char    line[1024];
             uint32  lineLen = in->ReadLine( line, sizeof(line) );
 
-            if( re.test( line ) )
+            if( prop_re.test( line ) )
             {
                 prop.resize( prop.size()+1 );
 
                 ShaderProp& p           = prop.back();
-                char        storage[32];re.get_pattern( 1, countof(storage), storage );
-                char        scope[32];  re.get_pattern( 2, countof(scope), scope );
-                char        ts[32];     re.get_pattern( 3, countof(ts), ts );
-                char        uid[32];    re.get_pattern( 4, countof(uid), uid );
-                char        script[256];re.get_pattern( 5, countof(script), script );
+                char        storage[32];prop_re.get_pattern( 1, countof(storage), storage );
+                char        scope[32];  prop_re.get_pattern( 2, countof(scope), scope );
+                char        ts[32];     prop_re.get_pattern( 3, countof(ts), ts );
+                char        uid[32];    prop_re.get_pattern( 4, countof(uid), uid );
+                char        script[256];prop_re.get_pattern( 5, countof(script), script );
 
                 p.uid     = FastName(uid);
                 p.type    = (_stricmp( ts, "float4x4" ) == 0)  
@@ -151,6 +153,73 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
             if( strstr( line, "VPROG_IN_TEXCOORD" ) )
                 vdecl.AddElement( VS_TEXCOORD, 0, VDT_FLOAT, 2 );
         } // for each line
+
+        type =  progType;
+
+        success = true;
+    }
+
+
+    if( success )
+    {
+        const char* prog_begin  = (progType == PROG_VERTEX)  ? "VPROG_BEGIN"  : "FPROG_BEGIN";
+        const char* prog        = strstr( code.c_str(), prog_begin );
+
+        if( prog )
+        {
+            char        buf_def[1024];
+            int         buf_len         = 0;
+            char        var_def[4*1024];
+            int         var_len         = 0;
+            char        pt      = (progType == PROG_VERTEX)?'V':'F';
+            unsigned    reg     = 0;
+
+            buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "//--------\n" );
+            for( unsigned i=0; i!=buf.size(); ++i )
+            {
+                buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "DECL_%cPROG_BUFFER(%u,%u,%u)\n", pt, i, buf[i].regCount, reg );
+                reg += buf[i].regCount;
+            }
+            buf_len += Snprinf( buf_def+buf_len, sizeof(buf_def)-buf_len, "\n\n" );
+
+            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    //--------\n" );
+            for( std::vector<ShaderProp>::const_iterator p=prop.begin(),p_end=prop.end(); p!=p_end; ++p )
+            {
+                switch( p->type )
+                {
+                    case ShaderProp::TYPE_FLOAT1 :
+                    {
+                        char xyzw[] = "xyzw";
+                        var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
+                    }   break;
+
+                    case ShaderProp::TYPE_FLOAT4 :
+                        var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg );
+                        break;
+
+                    case ShaderProp::TYPE_FLOAT4X4 :
+                    {
+                        var_len += Snprinf
+                        ( 
+                            var_def+var_len, sizeof(var_def)-var_len, 
+                            "    float4x4 %s = float4x4( %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u] );\n", 
+                            p->uid.c_str(), 
+                            pt, p->bufferindex, p->bufferReg+0,
+                            pt, p->bufferindex, p->bufferReg+1,
+                            pt, p->bufferindex, p->bufferReg+2,
+                            pt, p->bufferindex, p->bufferReg+3
+                        );
+                    }   break;
+                };
+            }
+            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "    //--------\n" );
+            var_len += Snprinf( var_def+var_len, sizeof(var_def)-var_len, "\n\n" );
+            
+            unsigned var_pos = (prog-code.c_str()) + strlen("XPROG_BEGIN") + buf_len +2;
+
+            code.insert( prog-code.c_str(), buf_def, buf_len );
+            code.insert( var_pos, var_def, var_len );
+        }
     }
 
     return success;

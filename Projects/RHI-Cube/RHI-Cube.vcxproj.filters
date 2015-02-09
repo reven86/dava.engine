@@ -72,6 +72,9 @@
     <ClCompile Include="RHI\RegExp.cpp">
       <Filter>RHI %28private/impl%29</Filter>
     </ClCompile>
+    <ClCompile Include="RHI\PreProcess.cpp">
+      <Filter>RHI %28private/impl%29</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\GameCore.h">
@@ -126,6 +129,9 @@
       <Filter>RHI %28private/impl%29</Filter>
     </ClInclude>
     <ClInclude Include="RHI\RegExp.h">
+      <Filter>RHI %28private/impl%29</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\PreProcess.h">
       <Filter>RHI %28private/impl%29</Filter>
     </ClInclude>
   </ItemGroup>
