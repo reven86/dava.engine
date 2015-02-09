@@ -59,6 +59,15 @@ ShaderProp
 
 typedef std::vector<ShaderProp> ShaderPropList;
 
+struct
+ShaderSampler
+{
+    FastName    uid;
+};
+
+typedef std::vector<ShaderSampler> ShaderSamplerList;
+
+
 class
 ShaderSource
 {
@@ -70,6 +79,7 @@ public:
 
     const char*             SourceCode() const;
     const ShaderPropList&   Properties() const;
+    const ShaderSamplerList&Samplers() const;
     const VertexLayout&     ShaderVertexLayout() const;
     uint32                  ConstBufferCount() const;
     uint32                  ConstBufferSize( uint32 bufIndex ) const;
@@ -91,11 +101,12 @@ private:
     };
 
 
-    ProgType                type;
-    std::string             code;
-    VertexLayout            vdecl;
-    std::vector<ShaderProp> prop;
-    std::vector<buf_t>      buf;
+    ProgType                    type;
+    std::string                 code;
+    VertexLayout                vdecl;
+    std::vector<ShaderProp>     prop;
+    std::vector<buf_t>          buf;
+    std::vector<ShaderSampler>  sampler;
 };
 
 

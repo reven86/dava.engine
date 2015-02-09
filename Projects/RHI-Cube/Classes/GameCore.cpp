@@ -487,7 +487,7 @@ void GameCore::OnAppStarted()
     
     // ShaderSource smoke-test
 
-    const char*  src =
+    const char*  vp_src =
     "VPROG_IN_BEGIN\n"
     "    VPROG_IN_POSITION\n"
     "    VPROG_IN_NORMAL\n"
@@ -517,10 +517,36 @@ void GameCore::OnAppStarted()
     "\n"
     "VPROG_END\n";
 
-    rhi::ShaderSource   vp;
+    const char*  fp_src =
+    "FPROG_IN_BEGIN\n"
+    "FPROG_IN_TEXCOORD0(uv,2)\n"
+    "FPROG_IN_TEXCOORD1(color,4)\n"
+    "FPROG_IN_END\n"
+    "\n"
+    "FPROG_OUT_BEGIN\n"
+    "    FPROG_OUT_COLOR\n"
+    "FPROG_OUT_END\n"
+    "\n"
+    "DECLARE_PROP__DYNAMIC_LOCAL(float4,tfactor,\"\")\n"
+    "\n"
+    "DECL_SAMPLER2D(albedo)\n"
+    "\n"
+    "\n"
+    "FPROG_BEGIN\n"
+    "    float4  diffuse = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
+    "    FP_OUT_COLOR = tfactor * FP_IN(color);\n"
+    "FPROG_END\n";
 
-    vp.Construct( rhi::PROG_VERTEX, src );
+    rhi::ShaderSource   vp;
+    rhi::ShaderSource   fp;
+
+    vp.Construct( rhi::PROG_VERTEX, vp_src );
+    Logger::Info( "\n\n====================" );
     vp.Dump();
+
+    fp.Construct( rhi::PROG_FRAGMENT, fp_src );
+    Logger::Info( "\n\n====================" );
+    fp.Dump();
 
 }
 

@@ -40,9 +40,11 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
     {
         RegExp  prop_re;
         RegExp  sampler_re;
+        RegExp  texture_re;
         
         prop_re.compile( "\\s*DECLARE_PROP__(DYNAMIC|STATIC)_(GLOBAL|LOCAL)\\s*\\(\\s*(float4x4|float4|float1)\\s*\\,\\s*([a-zA-Z_]+[a-zA-Z_0-9]+)\\s*\\,\\s*\\\"(.*)\\\"\\s*\\)" );
         sampler_re.compile( "\\s*DECL_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\)" );
+        texture_re.compile( "\\s?FP_TEXTURE2D\\s?\\(\\s?([a-zA-Z0-9_]+)\\s?\\," );
     
 
         _Reset();
@@ -137,6 +139,43 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
 
                     cbuf->regCount     += p.bufferRegCount;
                 }
+            }
+            else if( sampler_re.test( line ) )
+            {
+                char                 sname[32]; sampler_re.get_pattern( 1, countof(sname), sname );
+                const RegExp::Match* match      = sampler_re.pattern( 1 );
+
+                int sl = sprintf( line+match->begin, "%u", sampler.size() );
+                int sn = strlen( sname );
+                DVASSERT(sn>=sl);
+                memset( line+match->begin+sl, ' ', sn-sl );
+
+                sampler.resize( sampler.size()+1 );
+                sampler.back().uid  = FastName(sname);
+
+                code.append( line, strlen(line) );
+                code.push_back( '\n' );
+            }
+            else if( texture_re.test( line ) )
+            {
+                const RegExp::Match* match      = texture_re.pattern( 1 );
+                char                 sname[32]; texture_re.get_pattern( 1, countof(sname), sname );
+                FastName             uid        ( sname );
+
+                for( unsigned s=0; s!=sampler.size(); ++s )
+                {
+                    if( sampler[s].uid == uid )
+                    {
+                        int sl = sprintf( line+match->begin, "%u", s );
+                        int sn = strlen( sname );
+                        DVASSERT(sn>=sl);
+                        memset( line+match->begin+sl, ' ', sn-sl );
+                        
+                        break;
+                    }
+                }
+                code.append( line, strlen(line) );
+                code.push_back( '\n' );
             }
             else
             {
@@ -247,6 +286,15 @@ ShaderSource::Properties() const
 
 //------------------------------------------------------------------------------
 
+const ShaderSamplerList&
+ShaderSource::Samplers() const
+{
+    return sampler;
+}
+
+
+//------------------------------------------------------------------------------
+
 const VertexLayout&
 ShaderSource::ShaderVertexLayout() const
 {
@@ -317,6 +365,15 @@ ShaderSource::Dump() const
     {
         Logger::Info( "vertex-layout:" );
         vdecl.Dump();
+    }
+
+    if( type == PROG_FRAGMENT )
+    {
+        Logger::Info( "samplers (%u) :", sampler.size() );
+        for( unsigned s=0; s!=sampler.size(); ++s )
+        {
+            Logger::Info( "  sampler#%u  \"%s\"", s, sampler[s].uid.c_str() );
+        }
     }
 }
 
