@@ -1082,12 +1082,13 @@ void QtPropertyDataDavaVariant::MultilineEditClicked()
 {
     DVASSERT( curVariantValue.type == DAVA::VariantType::TYPE_STRING );
 
-    MultilineEditor editor;
+    MultilineEditor editor( GetOWViewport() );
     QEventLoop loop;
 
     connect( &editor, &MultilineEditor::done, &loop, &QEventLoop::quit );
 
     editor.setWindowFlags( Qt::Window );
+    editor.setWindowModality( Qt::WindowModal );
     editor.SetText( curVariantValue.AsString().c_str() );
     editor.show();
     loop.exec();
