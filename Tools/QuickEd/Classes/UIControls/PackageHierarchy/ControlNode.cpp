@@ -1,85 +1,20 @@
 #include "ControlNode.h"
 
+#include "PackageNode.h"
 #include "../PackageSerializer.h"
+
+#include "ControlPrototype.h"
 
 using namespace DAVA;
 
-ControlNode::ControlNode(UIControl *control)
+ControlNode::ControlNode(UIControl *control, PropertiesRoot *_propertiesRoot, eCreationType creationType)
     : PackageBaseNode(NULL)
     , control(SafeRetain(control))
-    , propertiesRoot(NULL)
+    , propertiesRoot(SafeRetain(_propertiesRoot))
     , prototype(NULL)
-    , prototypePackage(NULL)
-    , creationType(CREATED_FROM_CLASS)
-    , readOnly(false)
-{
-    this->propertiesRoot = new PropertiesRoot(control);
-}
-
-ControlNode::ControlNode(ControlNode *prototype, UIPackage *prototypePackage, eCreationType creationType)
-    : PackageBaseNode(NULL)
-    , control(NULL)
-    , propertiesRoot(NULL)
-    , prototype(NULL)
-    , prototypePackage(NULL)
     , creationType(creationType)
     , readOnly(false)
 {
-    UIControl *sourceControl = prototype->GetControl();
-    control = ObjectFactory::Instance()->New<UIControl>(sourceControl->GetControlClassName());
-    control->SetCustomControlClassName(sourceControl->GetCustomControlClassName());
-    
-    eCreationType childCreationType;
-    if (creationType != CREATED_FROM_CLASS)
-    {
-        this->prototype = SafeRetain(prototype);
-        this->prototypePackage = SafeRetain(prototypePackage);
-        childCreationType = CREATED_FROM_PROTOTYPE_CHILD;
-    }
-    else
-    {
-        DVASSERT(false);
-        
-        this->creationType = CREATED_FROM_CLASS;
-        childCreationType = CREATED_FROM_CLASS;
-    }
-
-    propertiesRoot = new PropertiesRoot(control, prototype->GetPropertiesRoot(), PropertiesRoot::COPY_VALUES);
-    
-    for (auto it = prototype->nodes.begin(); it != prototype->nodes.end(); ++it)
-    {
-        ControlNode *childNode = new ControlNode(*it, NULL, childCreationType);
-        childNode->SetParent(this);
-        nodes.push_back(childNode);
-        control->AddControl(childNode->GetControl());
-    }
-}
-
-ControlNode::ControlNode(ControlNode *node)
-    : PackageBaseNode(NULL)
-    , control(NULL)
-    , propertiesRoot(NULL)
-    , prototype(NULL)
-    , prototypePackage(NULL)
-    , creationType(node->creationType)
-    , readOnly(node->readOnly)
-{
-    UIControl *sourceControl = node->GetControl();
-    control = ObjectFactory::Instance()->New<UIControl>(sourceControl->GetControlClassName());
-    control->SetCustomControlClassName(sourceControl->GetCustomControlClassName());
-    
-    prototype = SafeRetain(node->prototype);
-    prototypePackage = SafeRetain(node->prototypePackage);
-    
-    propertiesRoot = new PropertiesRoot(control, node->GetPropertiesRoot(), PropertiesRoot::COPY_FULL);
-    
-    for (auto it = node->nodes.begin(); it != node->nodes.end(); ++it)
-    {
-        ControlNode *childNode = new ControlNode(*it);
-        childNode->SetParent(this);
-        nodes.push_back(childNode);
-        control->AddControl(childNode->GetControl());
-    }
 }
 
 ControlNode::~ControlNode()
@@ -91,22 +26,61 @@ ControlNode::~ControlNode()
     SafeRelease(control);
     SafeRelease(propertiesRoot);
     SafeRelease(prototype);
-    SafeRelease(prototypePackage);
 }
 
 ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
 {
-    return new ControlNode(control);
+    PropertiesRoot *propertiesRoot = new PropertiesRoot(control);
+    ControlNode *node = new ControlNode(control, propertiesRoot, CREATED_FROM_CLASS);
+    SafeRelease(propertiesRoot);
+    return node;
 }
 
-ControlNode *ControlNode::CreateFromPrototype(ControlNode *node, DAVA::UIPackage *prototypePackage)
+ControlNode *ControlNode::CreateFromPrototype(ControlPrototype *prototype)
 {
-    return new ControlNode(node, prototypePackage, CREATED_FROM_PROTOTYPE);
+    ControlNode *node = CreateFromPrototypeImpl(prototype->GetControlNode(), true);
+    node->prototype = SafeRetain(prototype);
+    
+    return node;
+}
+
+ControlNode *ControlNode::CreateFromPrototypeImpl(ControlNode *prototypeChild, bool root)
+{
+    RefPtr<UIControl> newControl(ObjectFactory::Instance()->New<UIControl>(prototypeChild->GetControl()->GetControlClassName()));
+    newControl->SetCustomControlClassName(prototypeChild->GetControl()->GetCustomControlClassName());
+    
+    RefPtr<PropertiesRoot> propertiesRoot(new PropertiesRoot(newControl.Get(),
+                                                             prototypeChild->GetPropertiesRoot(), PropertiesRoot::COPY_VALUES));
+    
+    ControlNode *node = new ControlNode(newControl.Get(), propertiesRoot.Get(), root ? CREATED_FROM_PROTOTYPE : CREATED_FROM_PROTOTYPE_CHILD);
+    
+    for (ControlNode *sourceChild : prototypeChild->nodes)
+    {
+        RefPtr<ControlNode> childNode(CreateFromPrototypeImpl(sourceChild, false));
+        node->Add(childNode.Get());
+    }
+    
+    return node;
+    
 }
 
 ControlNode *ControlNode::Clone()
 {
-    return new ControlNode(this);
+    RefPtr<UIControl> newControl(ObjectFactory::Instance()->New<UIControl>(control->GetControlClassName()));
+    newControl->SetCustomControlClassName(control->GetCustomControlClassName());
+
+    RefPtr<PropertiesRoot> newPropRoot(new PropertiesRoot(newControl.Get(), propertiesRoot, PropertiesRoot::COPY_FULL));
+
+    ControlNode *node = new ControlNode(newControl.Get(), newPropRoot.Get(), creationType);
+    node->prototype = SafeRetain(prototype);
+
+    for (ControlNode *sourceChild : nodes)
+    {
+        RefPtr<ControlNode> childNode(sourceChild->Clone());
+        node->Add(childNode.Get());
+    }
+
+    return node;
 }
 
 void ControlNode::Add(ControlNode *node)
@@ -130,8 +104,8 @@ void ControlNode::InsertBelow(ControlNode *node, const ControlNode *belowThis)
     }
     else
     {
-        nodes.push_back(SafeRetain(node));
         control->AddControl(node->GetControl());
+        nodes.push_back(SafeRetain(node));
     }
 }
 
@@ -158,7 +132,7 @@ int ControlNode::GetCount() const
     return (int) nodes.size();
 }
 
-PackageBaseNode *ControlNode::Get(int index) const
+ControlNode *ControlNode::Get(int index) const
 {
     return nodes[index];
 }
@@ -187,9 +161,6 @@ String ControlNode::GetPrototypeName() const
 {
     if (!prototype)
         return "";
-
-    if (prototypePackage)
-        return prototypePackage->GetName() + "/" + prototype->GetName();
 
     return prototype->GetName();
 }
@@ -230,7 +201,7 @@ void ControlNode::Serialize(PackageSerializer *serializer) const
     {
         serializer->PutValue("prototype", GetPrototypeName());
 
-        if (!control->GetCustomControlClassName().empty() && prototype->GetControl()->GetCustomControlClassName() != control->GetCustomControlClassName())
+        if (!control->GetCustomControlClassName().empty() && prototype->GetControlNode()->GetControl()->GetCustomControlClassName() != control->GetCustomControlClassName())
             serializer->PutValue("customClass", control->GetCustomControlClassName());
     }
     else if (creationType == CREATED_FROM_CLASS)

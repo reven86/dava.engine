@@ -114,7 +114,7 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         const YamlNode *pathNode = node->Get("aggregatorPath");
         RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
         DVASSERT(importedPackage.Get());
-        builder->BeginControlWithPrototype(importedPackage->GetName(), importedPackage->GetControl(0)->GetName(), "", this);
+        builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());

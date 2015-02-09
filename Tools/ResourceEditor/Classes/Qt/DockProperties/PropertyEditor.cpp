@@ -48,6 +48,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/HeightmapValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
+#include "Tools/QtPropertyEditor/QtPropertyDataValidator/ScenePathValidator.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
@@ -224,6 +225,8 @@ void PropertyEditor::ResetProperties()
                         bool isRemovable = true;
                         switch (component->GetType())
                         {
+                        case Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT:
+                        case Component::DEBUG_RENDER_COMPONENT:
                         case Component::TRANSFORM_COMPONENT:
                         case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
                             isRemovable = false;
@@ -457,6 +460,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 						PATH_IMAGE,
 						PATH_HEIGHTMAP,
 						PATH_TEXT,
+                        PATH_SCENE,
 						PATH_NOT_SPECIFIED
 					};
 
@@ -474,6 +478,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					PathDescriptor("texture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
 					PathDescriptor("lightmap", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
 					PathDescriptor("vegetationTexture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
+                    PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE),
 					PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT),
 					PathDescriptor("densityMap", "All (*.png);;PNG (*.png)", PathDescriptor::PATH_IMAGE),
 				};
@@ -513,6 +518,9 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					case PathDescriptor::PATH_TEXT:
 						variantData->SetValidator(new PathValidator(pathList));
 						break;
+                    case PathDescriptor::PATH_SCENE:
+                        variantData->SetValidator(new ScenePathValidator(pathList));
+                        break;
 
 					default:
 						break;
