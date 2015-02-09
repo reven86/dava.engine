@@ -65,10 +65,6 @@ bool RenderManager::Create( uint64 contextId )
 void RenderManager::Release()
 {
 	Singleton<RenderManager>::Release();
-
-	wglMakeCurrent(0, 0);
-	wglDeleteContext(hRC);
-	ReleaseDC(hWnd, hDC);	
 }
 
 bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)

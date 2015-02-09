@@ -23,10 +23,7 @@ public:
 
 private:
     void paintEvent( QPaintEvent *e ) override;
-
-
-
-    QPaintEngine * QWidget::?paintEngine() const override;
+    QPaintEngine* paintEngine() const override;
 
     QOpenGLContext *context;
 };

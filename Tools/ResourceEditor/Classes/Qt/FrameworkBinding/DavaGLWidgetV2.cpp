@@ -74,3 +74,8 @@ void DavaGLWidgetV2::paintEvent( QPaintEvent* e )
 {
     Q_UNUSED( e );
 }
+
+QPaintEngine* DavaGLWidgetV2::paintEngine() const
+{
+    return nullptr;
+}
