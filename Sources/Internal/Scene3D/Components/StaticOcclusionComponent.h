@@ -132,6 +132,12 @@ protected:
     ~StaticOcclusionDebugDrawComponent();
 private:
     RenderObject * renderObject;
+    
+public:
+    INTROSPECTION_EXTEND(StaticOcclusionDebugDrawComponent, Component,
+        NULL
+    );
+
 };
   
 //

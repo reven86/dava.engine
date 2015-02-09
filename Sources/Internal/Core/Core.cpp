@@ -59,6 +59,8 @@
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 
+#include "Network/NetCore.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
@@ -69,13 +71,13 @@
 #	include "Input/AccelerometerAndroid.h"
 #endif //PLATFORMS
 
-#ifdef __DAVAENGINE_AUTOTESTING__
-#include "Autotesting/AutotestingSystem.h"
-#endif
-
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 #include <EGL/eglext.h>
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
 
 namespace DAVA 
 {
@@ -90,8 +92,7 @@ Core::Core()
 {
     globalFrameIndex = 1;
     isActive = false;
-    isAutotesting = false;
-	firstRun = true;
+    firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
 }
@@ -165,10 +166,6 @@ void Core::CreateSingletons()
 	
 	new UIScreenManager();
 
-#ifdef __DAVAENGINE_AUTOTESTING__
-    new AutotestingSystem();
-#endif
-
 	Thread::InitMainThread();
 
     new DownloadManager();
@@ -180,6 +177,12 @@ void Core::CreateSingletons()
     
     RegisterDAVAClasses();
     CheckDataTypeSizes();
+
+    new Net::NetCore();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	new AutotestingSystem();
+#endif
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -192,6 +195,15 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
+    // Finish network infrastructure
+    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
+    Net::NetCore::Instance()->Finish(true);
+    Net::NetCore::Instance()->Release();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	AutotestingSystem::Instance()->Release();
+#endif
+
 	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
@@ -215,9 +227,6 @@ void Core::ReleaseSingletons()
     VirtualCoordinatesSystem::Instance()->Release();
     RenderSystem2D::Instance()->Release();
 	RenderManager::Instance()->Release();
-#ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->Release();
-#endif
 
 	InputSystem::Instance()->Release();
 	JobManager::Instance()->Release();
@@ -436,26 +445,10 @@ void Core::SystemAppStarted()
 	}
 
 	if (core)core->OnAppStarted();
-    
-#ifdef __DAVAENGINE_AUTOTESTING__
-    FilePath file = "~res:/Autotesting/id.yaml";
-    if (file.Exists())
-    {
-    AutotestingSystem::Instance()->OnAppStarted();
-        isAutotesting = true;
-    }
-    else
-    {
-        Logger::Debug("Core::SystemAppStarted() autotesting doesnt init. There are no id.ayml");
-    }
-#endif //__DAVAENGINE_AUTOTESTING__
 }
 	
 void Core::SystemAppFinished()
 {
-#ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->OnAppFinished();
-#endif //__DAVAENGINE_AUTOTESTING__    
 	if (core)core->OnAppFinished();
 }
 
@@ -512,7 +505,6 @@ void Core::SystemProcessFrame()
 		if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
 		{
 			VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-			RenderManager::Instance()->SetRenderOrientation(screenOrientation);
             UIScreenManager::Instance()->ScreenSizeChanged();
             UIControlSystem::Instance()->ScreenSizeChanged();
 		}
@@ -537,6 +529,10 @@ void Core::SystemProcessFrame()
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
+
+        // Poll for network I/O events here
+        Net::NetCore::Instance()->Poll();
+
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
 		core->Draw();
@@ -580,6 +576,7 @@ void Core::GoForeground()
 	{
 		core->OnForeground();
 	}
+    Net::NetCore::Instance()->RestartAllControllers();
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 }
 

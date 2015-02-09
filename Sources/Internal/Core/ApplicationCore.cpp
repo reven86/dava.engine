@@ -37,7 +37,7 @@
 #include "Platform/SystemTimer.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Notification/LocalNotificationController.h"
-
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
@@ -65,9 +65,8 @@ ApplicationCore::~ApplicationCore()
 void ApplicationCore::Update(float32 timeElapsed)
 {
 	TIME_PROFILE("ApplicationCore::Update");
-
 #ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->Update(timeElapsed);
+	AutotestingSystem::Instance()->Update(timeElapsed);
 #endif
 	SoundSystem::Instance()->Update(timeElapsed);
 	AnimationManager::Instance()->Update(timeElapsed);    
@@ -79,15 +78,16 @@ void ApplicationCore::Draw()
 	TIME_PROFILE("ApplicationCore::Draw");
 
     FrameOcclusionQueryManager::Instance()->ResetFrameStats();
-	UIControlSystem::Instance()->Draw();	
+	UIControlSystem::Instance()->Draw();
 #ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->Draw();
+	AutotestingSystem::Instance()->Draw();
 #endif
     FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
 }
 
 void ApplicationCore::BeginFrame()
 {
+    RenderSystem2D::Instance()->Reset();
 	RenderManager::Instance()->BeginFrame();
     RenderSystem2D::Instance()->Reset();
 }

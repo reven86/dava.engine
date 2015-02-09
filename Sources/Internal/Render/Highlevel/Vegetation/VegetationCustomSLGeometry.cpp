@@ -117,7 +117,7 @@ VegetationCustomSLGeometry::VegetationCustomSLGeometry(const Vector<VegetationLa
                                                    const uint32* _resolutionClusterStride,
                                                    uint32 _resolutionClusterStrideCount,
                                                    const Vector3& _worldSize,
-                                                   VegetationCustomGeometrySerializationData* geometryData)
+                                                   const VegetationCustomGeometrySerializationDataPtr& geometryData)
 {
     maxClusters = _maxClusters;
     
@@ -728,7 +728,7 @@ void VegetationCustomSLGeometry::GenerateSortedClusterIndexData(Vector3& cameraP
     std::stable_sort(sourceIndices.begin(), sourceIndices.end(), PolygonByDistanceCompareFunction);
 }
 
-void VegetationCustomSLGeometry::InitCustomGeometry(VegetationCustomGeometrySerializationData* geometryData)
+void VegetationCustomSLGeometry::InitCustomGeometry(const VegetationCustomGeometrySerializationDataPtr& geometryData)
 {
     uint32 layerCount = geometryData->GetLayerCount();
     for(uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)

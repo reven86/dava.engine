@@ -170,12 +170,16 @@ public:
 	void IntersectClipRect(const Rect &rect);
 	void RemoveClip();
     
-	void ClipPush();
-	void ClipPop();
+	void PushClip();
+	void PopClip();
     void UpdateClip();
 
+    void PushRenderTarget();
+    void PopRenderTarget();
+    void SetRenderTarget(Sprite * target);
+
     void ScreenSizeChanged();
-    
+
     void Setup2DMatrices();
     
     void SetSpriteClipping(bool clipping);
@@ -184,10 +188,16 @@ private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
     static Shader* GetShaderForBatching(Shader* inputShader);
     
-    Matrix4 viewMatrix;
+    void Setup2DProjection();
+
+    Matrix4 virtualToPhysicalMatrix;
+    Matrix4 projMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
     
+    std::stack<Sprite *> renderTargetStack;
+    Sprite * currentRenderTarget;
+
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;
     RenderDataStream * spriteTexCoordStream;

@@ -56,6 +56,9 @@ if( APPLE )
 
         COMMAND   
         install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
+
+        COMMAND   
+        install_name_tool -change ./libTextureConverter.dylib @executable_path/../Frameworks/libTextureConverter.dylib ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}   
     )
 
     set_target_properties ( ${PROJECT_NAME} PROPERTIES

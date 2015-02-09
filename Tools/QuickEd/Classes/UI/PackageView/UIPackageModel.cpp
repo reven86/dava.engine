@@ -34,6 +34,18 @@ UIPackageModel::~UIPackageModel()
     SafeRelease(root);
 }
 
+QModelIndex UIPackageModel::indexByNode(PackageBaseNode *node) const
+{
+    PackageBaseNode *parent = node->GetParent();
+    if (parent == NULL || parent == root)
+        return QModelIndex();
+    
+    if (parent)
+        return createIndex(parent->GetIndex(node), 0, node);
+    else
+        return createIndex(0, 0, parent);
+}
+
 QModelIndex UIPackageModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))

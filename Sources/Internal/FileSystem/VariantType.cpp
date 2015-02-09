@@ -926,7 +926,7 @@ bool VariantType::Read(File * fp)
 			{
 				colorValue = new Color;
 				read = fp->Read(colorValue->color, sizeof(float32) * 4);
-				if (read != sizeof(sizeof(float32) * 4))return false;
+				if (read != sizeof(float32) * 4) return false;
 			}
             break;
 
