@@ -99,7 +99,7 @@ protected:
 	void ResetForceState(DAVA::Entity *entity);
 	void ResetForceState(DAVA::LodComponent *lodComponent);
 
-	DAVA::uint32 sceneLodsLayersCount;
+	DAVA::uint32 currentLodsLayersCount;
 	bool forceDistanceEnabled;
 	DAVA::float32 forceDistance;
 	DAVA::int32 forceLayer;	
@@ -125,7 +125,7 @@ inline DAVA::float32 EditorLODSystem::GetLayerDistance(DAVA::uint32 layerNum) co
 
 inline DAVA::uint32 EditorLODSystem::GetSceneLodsLayersCount() const
 {
-	return sceneLodsLayersCount;
+	return currentLodsLayersCount;
 }
 
 inline bool EditorLODSystem::GetForceDistanceEnabled() const
