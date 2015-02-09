@@ -76,6 +76,9 @@ private:
     QPointer<QAbstractItemView> view;
     mutable QPointer<QWidget> activeEditor;
     mutable bool editorDataWasSet;
+
+private:
+    static QStyleOptionViewItem simplifyText( const QStyleOptionViewItem& option );
 };
 
 #endif // __QT_PROPERY_ITEM_DELEGATE_H__
