@@ -19,7 +19,11 @@ MemProfService::MemProfService()
 MemProfService::~MemProfService()
 {
     for (auto* x : queue)
-        delete x;
+    {
+        alloc.destroy(x);
+        alloc.deallocate(x, sizeof(net_mem_stat_t));
+        //delete x;
+    }
 }
     
 void MemProfService::OnUpdate(float32 timeElapsed)
@@ -28,7 +32,9 @@ void MemProfService::OnUpdate(float32 timeElapsed)
     if (passed < period) return;
 
 #if defined(MEMPROF_ENABLE)
-    net_mem_stat_t* stat = new net_mem_stat_t;
+    net_mem_stat_t* stat = alloc.allocate(1);
+    alloc.construct(stat, net_mem_stat_t());
+    //net_mem_stat_t* stat = new net_mem_stat_t;
     mem_profiler::get_memstat(stat);
     
     stat->timestamp = timestamp;
@@ -98,7 +104,9 @@ void MemProfService::RemoveFirstMessage()
     if(!queue.empty())
     {
         net_mem_stat_t* h = queue.front();
-        delete h;
+        alloc.destroy(h);
+        alloc.deallocate(h, sizeof(net_mem_stat_t));
+        //delete h;
         queue.pop_front();
     }
 }

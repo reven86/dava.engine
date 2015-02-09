@@ -6,6 +6,7 @@
 #include "Network/NetService.h"
 
 #include "memprof/mem_profiler_types.h"
+#include "memprof/internal_allocator.h"
 
 namespace DAVA
 {
@@ -38,7 +39,17 @@ private:
     uint32 passed;
     size_t maxQueueSize;
     uint32 timestamp;
-    Deque<net_mem_stat_t*> queue;
+
+#if defined(MEMPROF_ENABLE)
+    template<typename T>
+    using my_alloc = internal_allocator<T>;
+#else
+    template<typename T>
+    using my_alloc = std::allocator<T>;
+#endif
+    //Deque<net_mem_stat_t*> queue;
+    std::deque<net_mem_stat_t*, my_alloc<net_mem_stat_t*>> queue;
+    my_alloc<net_mem_stat_t> alloc;
 };
 
 }   // namespace Net
