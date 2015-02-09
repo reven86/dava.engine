@@ -1819,6 +1819,12 @@
     <ClInclude Include="..\..\Sources\Internal\memprof\profiled_allocator.h">
       <Filter>Internal\memprof</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MemProfService.h">
+      <Filter>Internal\Network\Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\memprof\memprof.h">
+      <Filter>Internal\memprof</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3243,6 +3249,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\memprof\new_hook.cpp">
       <Filter>Internal\memprof</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MemProfService.cpp">
+      <Filter>Internal\Network\Services</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
