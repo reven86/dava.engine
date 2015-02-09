@@ -167,14 +167,18 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const QString &key, DAVA::Varian
 
 	ChildAdd(key, childData);
 
+    //QToolButton *editMultiline = childData->AddButton();
+    //editMultiline->setIcon( QIcon( ":/QtIcons/pencil.png" ) );
+    //editMultiline->setToolTip( "Multiline editor" );
+    //editMultiline->setIconSize( QSize( 12, 12 ) );
+
 	// add optional widget (button) to remove this key
 	QToolButton *remButton = childData->AddButton();
 	remButton->setIcon(QIcon(":/QtIcons/keyminus.png"));
     remButton->setToolTip("Remove keyed archive member");
 	remButton->setIconSize(QSize(12, 12));
-	//remButton->setAutoRaise(true);
 
-	QObject::connect(remButton, SIGNAL(released()), this, SLOT(RemKeyedArchiveField()));
+	QObject::connect(remButton, SIGNAL(clicked()), this, SLOT(RemKeyedArchiveField()));
 }
 
 void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField()
