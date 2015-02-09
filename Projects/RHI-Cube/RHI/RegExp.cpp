@@ -20,6 +20,9 @@
     #include <stdlib.h>
     #include <ctype.h>
     #include <assert.h>
+    #if defined(__DAVAENGINE_IPHONE__)
+    #include <malloc/malloc.h>
+    #endif
 /*
 #if L_PLATFORM == L_PLATFORM_PSP2  ||  L_PLATFORM == L_PLATFORM_PS3
     #include <alloca.h>
@@ -933,7 +936,11 @@ RegExp::_try_match( char* prog, char* progend )
             #if defined _UNICODE
             if (_wcsnicmp(_src, _input + pmatch[n + 1].begin, len))
             #else
+            #if defined(__DAVAENGINE_IPHONE__)  ||  defined(__DAVAENGINE_MACOS__)
+            if (memcmp(_src, _input + pmatch[n + 1].begin, len))
+            #else
             if (_memicmp(_src, _input + pmatch[n + 1].begin, len))
+            #endif
             #endif
             goto Lnomatch;
         }

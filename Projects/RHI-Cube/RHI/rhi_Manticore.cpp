@@ -239,7 +239,7 @@ ReleaseTextureSet( Handle tsh )
         {
             TextureSetPool::Free( tsh );
 
-            for( std::vector<TextureSetInfo>::const_iterator i=_TextureSetInfo.begin(),i_end=_TextureSetInfo.end(); i!=i_end; ++i )
+            for( std::vector<TextureSetInfo>::iterator i=_TextureSetInfo.begin(),i_end=_TextureSetInfo.end(); i!=i_end; ++i )
             {
                 if( i->handle == tsh )
                 {

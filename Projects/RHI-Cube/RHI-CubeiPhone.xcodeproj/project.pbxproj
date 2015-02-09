@@ -23,6 +23,10 @@
 		874B5A771A5E7C1E00A94F6F /* libRHI-Metal-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 874B5A741A5E7BED00A94F6F /* libRHI-Metal-iOS.a */; };
 		874B5A791A5E7ED900A94F6F /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 874B5A781A5E7ED900A94F6F /* Metal.framework */; };
 		875FBAD31A5BCA380092136F /* ios_gl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 875FBAD21A5BCA380092136F /* ios_gl.mm */; };
+		87D2FCBE1A84C09F00C09586 /* rhi_Manticore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D2FCBA1A84C09F00C09586 /* rhi_Manticore.cpp */; };
+		87D2FCC81A88A0C400C09586 /* PreProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D2FCC21A88A0C400C09586 /* PreProcess.cpp */; };
+		87D2FCC91A88A0C400C09586 /* RegExp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D2FCC41A88A0C400C09586 /* RegExp.cpp */; };
+		87D2FCCA1A88A0C400C09586 /* rhi_ShaderSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D2FCC61A88A0C400C09586 /* rhi_ShaderSource.cpp */; };
 		87F3800A1A5AA26A00085E07 /* rhi_ShaderCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F380071A5AA26A00085E07 /* rhi_ShaderCache.cpp */; };
 		87F3800B1A5AA26A00085E07 /* rhi_VertexLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F380091A5AA26A00085E07 /* rhi_VertexLayout.cpp */; };
 		87F3801E1A5AA29A00085E07 /* _mcpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F3800D1A5AA29A00085E07 /* _mcpp.cpp */; };
@@ -117,6 +121,13 @@
 		875FBAD11A5BCA380092136F /* ios_gl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ios_gl.h; path = iOSSpecific/ios_gl.h; sourceTree = "<group>"; };
 		875FBAD21A5BCA380092136F /* ios_gl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ios_gl.mm; path = iOSSpecific/ios_gl.mm; sourceTree = "<group>"; };
 		87CE38C11A5A86CE0014567D /* RHI-GLES2-iOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "RHI-GLES2-iOS.xcodeproj"; path = "RHI-GLES2-iOS/RHI-GLES2-iOS.xcodeproj"; sourceTree = "<group>"; };
+		87D2FCBA1A84C09F00C09586 /* rhi_Manticore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_Manticore.cpp; path = RHI/rhi_Manticore.cpp; sourceTree = "<group>"; };
+		87D2FCC21A88A0C400C09586 /* PreProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PreProcess.cpp; path = RHI/PreProcess.cpp; sourceTree = "<group>"; };
+		87D2FCC31A88A0C400C09586 /* PreProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PreProcess.h; path = RHI/PreProcess.h; sourceTree = "<group>"; };
+		87D2FCC41A88A0C400C09586 /* RegExp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExp.cpp; path = RHI/RegExp.cpp; sourceTree = "<group>"; };
+		87D2FCC51A88A0C400C09586 /* RegExp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExp.h; path = RHI/RegExp.h; sourceTree = "<group>"; };
+		87D2FCC61A88A0C400C09586 /* rhi_ShaderSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rhi_ShaderSource.cpp; path = RHI/rhi_ShaderSource.cpp; sourceTree = "<group>"; };
+		87D2FCC71A88A0C400C09586 /* rhi_ShaderSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_ShaderSource.h; path = RHI/rhi_ShaderSource.h; sourceTree = "<group>"; };
 		87F380021A5AA22E00085E07 /* rhi_Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rhi_Base.h; sourceTree = "<group>"; };
 		87F380031A5AA22E00085E07 /* rhi_Type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rhi_Type.h; sourceTree = "<group>"; };
 		87F380051A5AA26A00085E07 /* rhi_Pool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rhi_Pool.h; path = RHI/rhi_Pool.h; sourceTree = "<group>"; };
@@ -320,6 +331,13 @@
 		87F380041A5AA24C00085E07 /* RHI-impl */ = {
 			isa = PBXGroup;
 			children = (
+				87D2FCC21A88A0C400C09586 /* PreProcess.cpp */,
+				87D2FCC31A88A0C400C09586 /* PreProcess.h */,
+				87D2FCC41A88A0C400C09586 /* RegExp.cpp */,
+				87D2FCC51A88A0C400C09586 /* RegExp.h */,
+				87D2FCC61A88A0C400C09586 /* rhi_ShaderSource.cpp */,
+				87D2FCC71A88A0C400C09586 /* rhi_ShaderSource.h */,
+				87D2FCBA1A84C09F00C09586 /* rhi_Manticore.cpp */,
 				87F380051A5AA26A00085E07 /* rhi_Pool.h */,
 				87F380061A5AA26A00085E07 /* rhi_RingBuffer.h */,
 				87F380071A5AA26A00085E07 /* rhi_ShaderCache.cpp */,
@@ -503,6 +521,8 @@
 			files = (
 				87F380261A5AA29A00085E07 /* preproc.cpp in Sources */,
 				87F3801E1A5AA29A00085E07 /* _mcpp.cpp in Sources */,
+				87D2FCBE1A84C09F00C09586 /* rhi_Manticore.cpp in Sources */,
+				87D2FCC81A88A0C400C09586 /* PreProcess.cpp in Sources */,
 				87F380211A5AA29A00085E07 /* expand.cpp in Sources */,
 				87F380271A5AA29A00085E07 /* support.cpp in Sources */,
 				87F3800A1A5AA26A00085E07 /* rhi_ShaderCache.cpp in Sources */,
@@ -510,9 +530,11 @@
 				E878726319A210D9007AAA6B /* FrameworkMain.cpp in Sources */,
 				87F380221A5AA29A00085E07 /* mbchar.cpp in Sources */,
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
+				87D2FCCA1A88A0C400C09586 /* rhi_ShaderSource.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				87F3801F1A5AA29A00085E07 /* directive.cpp in Sources */,
 				87F380281A5AA29A00085E07 /* system.cpp in Sources */,
+				87D2FCC91A88A0C400C09586 /* RegExp.cpp in Sources */,
 				E878726419A210D9007AAA6B /* GameCore.cpp in Sources */,
 				87F380231A5AA29A00085E07 /* mcpp_main.cpp in Sources */,
 				875FBAD31A5BCA380092136F /* ios_gl.mm in Sources */,

@@ -10,6 +10,7 @@
     #include "PreProcess.h"
 
 
+
 namespace rhi
 {
 //==============================================================================
@@ -63,13 +64,13 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
                 char        script[256];prop_re.get_pattern( 5, countof(script), script );
 
                 p.uid     = FastName(uid);
-                p.type    = (_stricmp( ts, "float4x4" ) == 0)  
+                p.type    = (stricmp( ts, "float4x4" ) == 0)  
                             ? ShaderProp::TYPE_FLOAT4X4  
-                            : ((_stricmp( ts, "float1" ) == 0) ? ShaderProp::TYPE_FLOAT1 : ShaderProp::TYPE_FLOAT4);
-                p.scope   = (_stricmp( scope, "local" ) == 0)  
+                            : ((stricmp( ts, "float1" ) == 0) ? ShaderProp::TYPE_FLOAT1 : ShaderProp::TYPE_FLOAT4);
+                p.scope   = (stricmp( scope, "local" ) == 0)
                             ? ShaderProp::SCOPE_LOCAL
                             : ShaderProp::SCOPE_GLOBAL;
-                p.storage = (_stricmp( storage, "dynamic" ) == 0)  
+                p.storage = (stricmp( storage, "dynamic" ) == 0)
                             ? ShaderProp::STORAGE_DYNAMIC
                             : ShaderProp::STORAGE_STATIC;
                 memset( p.defaultValue, 0, sizeof(p.defaultValue) );

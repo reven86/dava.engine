@@ -326,5 +326,23 @@ IsEmptyString( const char* str )
 
 #define LCP Logger::Info("%s : %i",__FILE__,__LINE__);
 
+
+
+
+#if defined(__DAVAENGINE_IPHONE__)  ||  defined(__DAVAENGINE_MACOS__)
+
+#define stricmp     strcasecmp
+#define strnicmp    strncasecmp
+
+#endif
+
+#if defined(__DAVAENGINE_WIN32__)
+
+    #define stricmp _strcmpi
+
+#endif
+
+
+
 #endif // __RHI_TYPE_H__
 

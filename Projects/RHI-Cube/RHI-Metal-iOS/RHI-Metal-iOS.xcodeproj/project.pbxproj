@@ -16,6 +16,7 @@
 		874B5A811A5EC08400A94F6F /* rhi_VertexBufferMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B5A801A5EC08400A94F6F /* rhi_VertexBufferMetal.mm */; };
 		874B5A831A5EC42E00A94F6F /* rhi_IndexBufferMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B5A821A5EC42E00A94F6F /* rhi_IndexBufferMetal.mm */; };
 		874B5A851A5EC68500A94F6F /* rhi_PipelineStateMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 874B5A841A5EC68500A94F6F /* rhi_PipelineStateMetal.mm */; };
+		87A0D89C1A70E144002DEDF0 /* rhi_TextureMetal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 87A0D89B1A70E144002DEDF0 /* rhi_TextureMetal.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		874B5A841A5EC68500A94F6F /* rhi_PipelineStateMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rhi_PipelineStateMetal.mm; path = "../RHI-Metal/rhi_PipelineStateMetal.mm"; sourceTree = "<group>"; };
 		879FC9EC1A4945460057D86C /* libRHI-Metal-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libRHI-Metal-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		879FCA281A4990EC0057D86C /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
+		87A0D89B1A70E144002DEDF0 /* rhi_TextureMetal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rhi_TextureMetal.mm; path = "../RHI-Metal/rhi_TextureMetal.mm"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +48,7 @@
 		879FC9E31A4945460057D86C = {
 			isa = PBXGroup;
 			children = (
+				87A0D89B1A70E144002DEDF0 /* rhi_TextureMetal.mm */,
 				872F22531A6154AB007BABE5 /* rhi_RingBufferMetal.h */,
 				872F22541A6154AB007BABE5 /* rhi_RingBufferMetal.mm */,
 				874B5A841A5EC68500A94F6F /* rhi_PipelineStateMetal.mm */,
@@ -142,6 +145,7 @@
 				874B5A811A5EC08400A94F6F /* rhi_VertexBufferMetal.mm in Sources */,
 				874B5A831A5EC42E00A94F6F /* rhi_IndexBufferMetal.mm in Sources */,
 				874B5A7E1A5E952F00A94F6F /* rhi_CommandBufferMetal.mm in Sources */,
+				87A0D89C1A70E144002DEDF0 /* rhi_TextureMetal.mm in Sources */,
 				872F22561A6154AB007BABE5 /* rhi_RingBufferMetal.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
