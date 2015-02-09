@@ -76,6 +76,7 @@ void ImageSplitterDialog::ConnectSignals()
 {
     connect(ui->path, SIGNAL(pathChanged(const QString&)), SLOT(PathSelected(const QString&)));
 
+    connect(ui->wholeImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
     connect(ui->redImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
     connect(ui->greenImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
     connect(ui->blueImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
@@ -112,20 +113,26 @@ void ImageSplitterDialog::PathSelected(const QString& path)
     
     DAVA::FilePath imagePath(path.toStdString());
     DAVA::Image* image = CreateTopLevelImage(imagePath);
-    if(NULL != image && image->GetPixelFormat() == DAVA::FORMAT_RGBA8888)
+    if(NULL != image /*&& image->GetPixelFormat() == DAVA::FORMAT_RGBA8888*/)
     {
         lastSelectedFile = imagePath.GetAbsolutePathname();
         SetAcceptableImageSize(DAVA::Vector2(image->GetWidth(), image->GetHeight()));
         
-        Channels channels =  ImageTools::CreateSplittedImages(image);
-        //DAVA::SafeRelease(image);
+        ui->wholeImgLbl->SetImage(image);
+
+        if (image->GetPixelFormat() == DAVA::FORMAT_RGBA8888 || image->GetPixelFormat() == DAVA::FORMAT_RGBA5551)
+        {
+            Channels channels = ImageTools::CreateSplittedImages(image);
+            //DAVA::SafeRelease(image);
+
+            ui->redImgLbl->SetImage(channels.red);
+            ui->greenImgLbl->SetImage(channels.green);
+            ui->blueImgLbl->SetImage(channels.blue);
+            ui->alphaImgLbl->SetImage(channels.alpha);
+
+            channels.ReleaseImages();
+        }
         
-        ui->redImgLbl->SetImage(channels.red);
-        ui->greenImgLbl->SetImage(channels.green);
-        ui->blueImgLbl->SetImage(channels.blue);
-        ui->alphaImgLbl->SetImage(channels.alpha);
-        
-        channels.ReleaseImages();
     }
     else
     {
@@ -173,6 +180,7 @@ void ImageSplitterDialog::ImageAreaChanged()
 void ImageSplitterDialog::OnRestoreClicked()
 {
     SetAcceptableImageSize(DAVA::Vector2(0,0));
+    ui->wholeImgLbl->ClearArea();
     ui->redImgLbl->ClearArea();
     ui->greenImgLbl->ClearArea();
     ui->blueImgLbl->ClearArea();

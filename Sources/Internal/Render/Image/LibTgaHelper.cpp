@@ -283,6 +283,16 @@ eErrorCode LibTgaWrapper::ReadCompressedTga(File *infile, const TgaHeader& tgaHe
     return SUCCESS;
 }
 
+eErrorCode LibTgaWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+{
+    return DAVA::eErrorCode::SUCCESS;
+}
+
+eErrorCode LibTgaWrapper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+{
+    return DAVA::eErrorCode::SUCCESS;
+}
+
 void LibTgaWrapper::ImageDataIterator::Init(Image* img, uint8 pixSize)
 {
     data = img->data;
@@ -394,16 +404,5 @@ std::unique_ptr<LibTgaWrapper::ImageDataIterator> LibTgaWrapper::CreateDataItera
     result->Init(image, pixSize);
     return result;
 }
-
-eErrorCode LibTgaWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
-{
-    return DAVA::eErrorCode::SUCCESS;
-}
-
-eErrorCode LibTgaWrapper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
-{
-    return DAVA::eErrorCode::SUCCESS;
-}
-
 
 };
