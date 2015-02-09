@@ -203,17 +203,18 @@ JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int32 addr)
 void AndroidCrashReport::OnStackFrame(pointer_size addr)
 {
 	if(crashSteps.size() >= maxStackSize) return;
-#ifdef TEAMCITY_BUILD_TYPE_ID	
-	//no sence in adding crash step without crash id
-	if(crashSteps.size() == 0)
-	{
-		crashSteps.push_back(FormatTeamcityIdStep(addr));
-	}
-#endif
+
 	const char * libName = NULL;
 	pointer_size relAddres = 0;
 	BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
 	backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
+#ifdef TEAMCITY_BUILD_TYPE_ID	
+	//no sence in adding crash step without crash id
+	if(crashSteps.size() == 0)
+	{
+		crashSteps.push_back(FormatTeamcityIdStep(relAddres));
+	}
+#endif
 	ToHex(relAddres,functionString[crashSteps.size()],functionStringSize,true);
 	JniCrashReporter::CrashStep step;
 	step.module = libName;
